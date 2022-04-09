@@ -20,7 +20,7 @@ from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 if _TRANSFORMERS_AVAILABLE:
     from transformers import PreTrainedModel, PreTrainedTokenizerBase
 else:
-    PreTrainedModel = PreTrainedTokenizerBase = None
+    PreTrainedModel = PreTrainedTokenizerBase = None  # type: ignore
     __doctest_skip__ = ["infolm"]
 
 
@@ -60,10 +60,10 @@ class _IMEnum(EnumStr):
         """
         _allowed_im = [im.lower() for im in _IMEnum._member_names_]
 
-        value = super().from_str(value)
-        if value is not None and value in _allowed_im:
-            return value
-        raise ValueError(f"Invalid information measure got. Please use one of {_allowed_im}.")
+        enum_key = super().from_str(value)
+        if enum_key is not None and enum_key in _allowed_im:
+            return enum_key
+        raise ValueError(f"Invalid information measure. Expected one of {_allowed_im}, but got {enum_key}.")
 
 
 class _InformationMeasure:
@@ -89,7 +89,7 @@ class _InformationMeasure:
         ValueError:
             If information measure is alpha divergence and parameter `alpha` equals 0 or 1.
         ValueError:
-            If information measure is beta divergence and parameter `beta` equals 0 or -
+            If information measure is beta divergence and parameter `beta` equals 0 or -1.
         ValueError:
             If information measure is AB divergence and parameter `alpha`, `beta` or `alpha + beta` equal 0.
         ValueError:
@@ -109,20 +109,26 @@ class _InformationMeasure:
         if self.information_measure in [_IMEnum.BETA_DIVERGENCE, _IMEnum.AB_DIVERGENCE]:
             if not isinstance(beta, float):
                 raise ValueError(f"Parameter `beta` is expected to be defined for {information_measure}.")
-        if self.information_measure == _IMEnum.ALPHA_DIVERGENCE and alpha in [0, 1]:
-            raise ValueError(f"Parameter `alpha` is expected to be differened from 0 and 1 for {information_measure}.")
-        if self.information_measure == _IMEnum.BETA_DIVERGENCE and alpha in [0, -1]:
-            raise ValueError(f"Parameter `beta` is expected to be differened from 0 and -1 for {information_measure}.")
-        if self.information_measure == _IMEnum.AB_DIVERGENCE and 0 in [alpha, beta, alpha + beta]:
+        if self.information_measure == _IMEnum.ALPHA_DIVERGENCE and (not isinstance(alpha, float) or alpha in [0, 1]):
             raise ValueError(
-                "Parameters `alpha`, `beta` and their sum are expected to be differened from 0 for "
-                f"{information_measure}."
+                f"Parameter `alpha` is expected to be float differened from 0 and 1 for {information_measure}."
             )
-        if self.information_measure == _IMEnum.RENYI_DIVERGENCE and alpha == 1:
-            raise ValueError(f"Parameter `alpha` is expected to be differened from 1 for {information_measure}.")
+        if self.information_measure == _IMEnum.BETA_DIVERGENCE and (not isinstance(beta, float) or beta in [0, -1]):
+            raise ValueError(
+                f"Parameter `beta` is expected to be float differened from 0 and -1 for {information_measure}."
+            )
+        if self.information_measure == _IMEnum.AB_DIVERGENCE:
+            if any(not isinstance(p, float) for p in [alpha, beta]) or 0 in [alpha, beta, alpha + beta]:  # type: ignore
+                raise ValueError(
+                    "Parameters `alpha`, `beta` and their sum are expected to be differened from 0 for "
+                    f"{information_measure}."
+                )
+        if self.information_measure == _IMEnum.RENYI_DIVERGENCE and (not isinstance(alpha, float) or alpha == 1):
+            raise ValueError(f"Parameter `alpha` is expected to be float differened from 1 for {information_measure}.")
 
-        self.alpha = alpha
-        self.beta = beta
+        # We ensure self.alpha and self.beta to be different from None to ensure mypy compliance
+        self.alpha = alpha or 0
+        self.beta = beta or 0
 
     def __call__(self, preds_distribution: Tensor, target_distribtuion: Tensor) -> Tensor:
         information_measure_function = getattr(self, f"_calculate_{self.information_measure}")
@@ -177,6 +183,7 @@ class _InformationMeasure:
         x = torch.log(torch.sum(target_distribution ** (self.beta + self.alpha), dim=-1))
         y = torch.log(torch.sum(preds_distribution ** (self.beta + self.alpha), dim=-1))
         z = torch.log(torch.sum(target_distribution**self.alpha * preds_distribution**self.beta, dim=-1))
+
         ab_divergence = (
             x / (self.beta * (self.beta + self.alpha)) + y / (self.beta + self.alpha) - z / (self.alpha * self.beta)
         )
@@ -299,7 +306,7 @@ def _get_dataloader(
     return dataloader
 
 
-def _get_special_tokens_map(tokenizer: PreTrainedModel) -> Dict[str, int]:
+def _get_special_tokens_map(tokenizer: PreTrainedTokenizerBase) -> Dict[str, int]:
     """Build a dictionary of model/tokenizer special tokens.
 
     Args:
@@ -315,7 +322,7 @@ def _get_special_tokens_map(tokenizer: PreTrainedModel) -> Dict[str, int]:
         "sep_token_id": tokenizer.sep_token_id,
         "cls_token_id": tokenizer.cls_token_id,
     }
-    return special_tokens_maps
+    return special_tokens_maps  # type: ignore
 
 
 def _get_token_mask(input_ids: Tensor, pad_token_id: int, sep_token_id: int, cls_token_id: int) -> Tensor:
@@ -362,7 +369,7 @@ def _get_batch_distribution(
         A discrete probability distribution.
     """
     seq_len = batch["input_ids"].shape[1]
-    prob_distribution_batch: Union[Tensor, List[Tensor]] = []
+    prob_distribution_batch_list: List[Tensor] = []
     token_mask = _get_token_mask(
         batch["input_ids"],
         special_tokens_map["pad_token_id"],
@@ -379,11 +386,11 @@ def _get_batch_distribution(
             :, mask_idx, :
         ]  # [batch_size, seq_len, vocab_size] -> [batch_size, vocab_size]
         prob_distribution = F.softmax(logits_distribution / temperature, dim=-1)
-        prob_distribution_batch.append(prob_distribution.unsqueeze(1).cpu())  # [batch_size, 1, vocab_size]
+        prob_distribution_batch_list.append(prob_distribution.unsqueeze(1).cpu())  # [batch_size, 1, vocab_size]
         # Clean from memory
         del input_ids, logits_distribution, prob_distribution
 
-    prob_distribution_batch = torch.cat(prob_distribution_batch, dim=1)  # [batch_size, seq_len, vocab_size]
+    prob_distribution_batch = torch.cat(prob_distribution_batch_list, dim=1)  # [batch_size, seq_len, vocab_size]
     prob_distribution_batch = torch.einsum("bsv, bs -> bsv", prob_distribution_batch, token_mask)
     prob_distribution_batch = prob_distribution_batch.sum(dim=1) / token_mask.sum(dim=1).unsqueeze(1)
 
@@ -463,7 +470,7 @@ def _infolm_compute(
     information_measure_cls: _InformationMeasure,
     special_tokens_map: Dict[str, int],
     verbose: bool = True,
-):
+) -> Tensor:
     """Calculate selected information measure using the pre-trained language model.
 
     Args:
@@ -515,6 +522,7 @@ def infolm(
     """
     Calculate `InfoLM`_ [1] - i.e. calculate a distance/divergence between predicted and reference sentence discrete
     distribution using one of the following information measures:
+
         - `KL divergence`_
         - `alpha divergence`_
         - `beta divergence`_

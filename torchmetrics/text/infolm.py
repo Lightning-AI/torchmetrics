@@ -114,12 +114,12 @@ class InfoLM(Metric):
     ):
         super().__init__(compute_on_step=compute_on_step, **kwargs)
         self.model_name_or_path = model_name_or_path
-        self.temperate = temperature
+        self.temperature = temperature
         self.information_measure = information_measure
         self.idf = idf
         self.alpha = alpha
         self.beta = beta
-        self._device = device
+        self._device = torch.device(device or "cpu")
         self.batch_size = batch_size
         self.num_threads = num_threads
         self.verbose = verbose

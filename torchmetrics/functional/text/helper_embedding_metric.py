@@ -14,7 +14,7 @@ if _TRANSFORMERS_AUTO_AVAILABLE:
 if _TRANSFORMERS_AVAILABLE:
     from transformers import PreTrainedModel, PreTrainedTokenizerBase
 else:
-    PreTrainedModel = PreTrainedTokenizerBase = None
+    PreTrainedModel = PreTrainedTokenizerBase = None  # type: ignore
 
 if _TQDM_AVAILABLE:
     import tqdm
@@ -138,7 +138,7 @@ def _check_shape_of_model_output(output: Tensor, input_ids: Tensor) -> None:
 
 
 def _load_tokenizer_and_model(
-    model_name_or_path: Union[str, os.PathLike], device: Union[str, torch.device]
+    model_name_or_path: Union[str, os.PathLike], device: Optional[Union[str, torch.device]] = None
 ) -> Tuple[PreTrainedTokenizerBase, PreTrainedModel]:
     """Load HuggingFace `transformers`' tokenizer and model. This function also handle a device placement.
 
