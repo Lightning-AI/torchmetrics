@@ -21,3 +21,4 @@ from torchmetrics.functional.retrieval.precision_recall_curve import retrieval_p
 from torchmetrics.functional.retrieval.r_precision import retrieval_r_precision  # noqa: F401
 from torchmetrics.functional.retrieval.recall import retrieval_recall  # noqa: F401
 from torchmetrics.functional.retrieval.reciprocal_rank import retrieval_reciprocal_rank  # noqa: F401
+from torchmetrics.functional.retrieval.recall_precision import retrieval_recall_at_precision  # noqa: F401
