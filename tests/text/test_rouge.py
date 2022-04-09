@@ -18,6 +18,7 @@ from typing import Callable, Sequence
 
 import pytest
 import torch
+from torch import Tensor
 
 from tests.text.helpers import TextTester
 from tests.text.inputs import Input, _inputs_multiple_references, _inputs_single_sentence_single_reference
@@ -47,7 +48,7 @@ def _compute_rouge_score(
     rouge_level: str,
     metric: str,
     accumulate: str = "avg",
-):
+) -> Tensor:
     """Evaluates rouge scores from rouge-score package for baseline evaluation."""
     if isinstance(target, list) and all(isinstance(tgt, str) for tgt in target):
         target = [target] if isinstance(preds, str) else [[tgt] for tgt in target]
@@ -109,8 +110,8 @@ def _compute_rouge_score(
 )
 @pytest.mark.parametrize("accumulate", ["avg", "best"])
 class TestROUGEScore(TextTester):
-    @pytest.mark.parametrize("ddp", [False])
-    @pytest.mark.parametrize("dist_sync_on_step", [False])
+    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
     def test_rouge_score_class(
         self, ddp, dist_sync_on_step, preds, targets, pl_rouge_metric_key, use_stemmer, accumulate
     ):
