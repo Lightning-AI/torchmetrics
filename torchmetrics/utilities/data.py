@@ -16,8 +16,6 @@ from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Union
 import torch
 from torch import Tensor, tensor
 
-from torchmetrics.utilities.prints import rank_zero_warn
-
 METRIC_EPS = 1e-6
 
 
@@ -143,37 +141,6 @@ def to_categorical(x: Tensor, argmax_dim: int = 1) -> Tensor:
         tensor([1, 0])
     """
     return torch.argmax(x, dim=argmax_dim)
-
-
-def get_num_classes(
-    preds: Tensor,
-    target: Tensor,
-    num_classes: Optional[int] = None,
-) -> int:
-    """Calculates the number of classes for a given prediction and target tensor.
-
-    Args:
-        preds: predicted values
-        target: true labels
-        num_classes: number of classes if known
-
-    Return:
-        An integer that represents the number of classes.
-    """
-    num_target_classes = int(target.max().detach().item() + 1)
-    num_pred_classes = int(preds.max().detach().item() + 1)
-    num_all_classes = max(num_target_classes, num_pred_classes)
-
-    if num_classes is None:
-        num_classes = num_all_classes
-    elif num_classes != num_all_classes:
-        rank_zero_warn(
-            f"You have set {num_classes} number of classes which is"
-            f" different from predicted ({num_pred_classes}) and"
-            f" target ({num_target_classes}) number of classes",
-            RuntimeWarning,
-        )
-    return num_classes
 
 
 def apply_to_collection(
