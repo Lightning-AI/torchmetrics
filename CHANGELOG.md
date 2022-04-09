@@ -40,13 +40,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added `**kwargs` argument for passing additional arguments to base class ([#833](https://github.com/PyTorchLightning/metrics/pull/833))
 
-- Added a new NLP metric `InfoLM` ([]())
-
 
 - Added negative `ignore_index` for the Accuracy metric ([#362](https://github.com/PyTorchLightning/metrics/pull/362))
 
 
 - Added `adaptive_k` for the `RetrievalPrecision` metric ([#910](https://github.com/PyTorchLightning/metrics/pull/910))
+
+
+- Added a new NLP metric `InfoLM` ([#915](https://github.com/PyTorchLightning/metrics/pull/915))
 
 
 ### Changed
