@@ -26,6 +26,7 @@ from torchmetrics.utilities.imports import _NLTK_AVAILABLE, _TRANSFORMERS_AUTO_A
 
 if _TRANSFORMERS_AUTO_AVAILABLE:
     from torchmetrics.text.bert import BERTScore  # noqa: F401
+    from torchmetrics.text.infolm import InfoLM  # noqa: F401
 
 if _NLTK_AVAILABLE:
     from torchmetrics.text.rouge import ROUGEScore  # noqa: F401

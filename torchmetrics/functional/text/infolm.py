@@ -20,26 +20,16 @@ from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 if _TRANSFORMERS_AVAILABLE:
     from transformers import PreTrainedModel, PreTrainedTokenizerBase
 else:
+    PreTrainedModel = PreTrainedTokenizerBase = None
     __doctest_skip__ = ["infolm"]
-
-
-_ALLOWED_INFORMATION_MEASURE = (
-    "kl_divergence",
-    "alpha_divergence",
-    "beta_divergence",
-    "ab_divergence" "renyi_divergence",
-    "l1_distance",
-    "l2_distance",
-    "l_infinity_distance",
-    "fisher_rao_distance",
-)
 
 
 _ALLOWED_INFORMATION_MEASURE_LITERAL = Literal[
     "kl_divergence",
     "alpha_divergence",
     "beta_divergence",
-    "ab_divergence" "renyi_divergence",
+    "ab_divergence",
+    "renyi_divergence",
     "l1_distance",
     "l2_distance",
     "l_infinity_distance",
@@ -68,11 +58,12 @@ class _IMEnum(EnumStr):
             ValueError:
                 If required information measure is not among the supported options.
         """
-        statuses = [status for status in dir(cls) if not status.startswith("_")]
-        for st in statuses:
-            if st.lower() == value.lower():
-                return getattr(cls, st)
-        raise ValueError(f"Invalid information measure got. Please use one of {_ALLOWED_INFORMATION_MEASURE}.")
+        _allowed_im = [im.lower() for im in _IMEnum._member_names_]
+
+        value = super().from_str(value)
+        if value is not None and value in _allowed_im:
+            return value
+        raise ValueError(f"Invalid information measure got. Please use one of {_allowed_im}.")
 
 
 class _InformationMeasure:
@@ -167,7 +158,7 @@ class _InformationMeasure:
         """
         _alpha_denom = self.alpha * (self.alpha - 1)
         alpha_divergence = (
-            1 - torch.sum(target_distribution ** self.alpha * preds_distribution ** (1 - self.alpha), dim=-1)
+            1 - torch.sum(target_distribution**self.alpha * preds_distribution ** (1 - self.alpha), dim=-1)
         ) / _alpha_denom
         return alpha_divergence
 
@@ -185,7 +176,7 @@ class _InformationMeasure:
         """
         x = torch.log(torch.sum(target_distribution ** (self.beta + self.alpha), dim=-1))
         y = torch.log(torch.sum(preds_distribution ** (self.beta + self.alpha), dim=-1))
-        z = torch.log(torch.sum(target_distribution ** self.alpha * preds_distribution ** self.beta, dim=-1))
+        z = torch.log(torch.sum(target_distribution**self.alpha * preds_distribution**self.beta, dim=-1))
         ab_divergence = (
             x / (self.beta * (self.beta + self.alpha)) + y / (self.beta + self.alpha) - z / (self.alpha * self.beta)
         )
@@ -220,7 +211,7 @@ class _InformationMeasure:
             Rényi divergence between discrete distributions of predicted and reference sentences.
         """
         renyi_divergence = (
-            torch.log(torch.sum(target_distribution ** self.alpha * preds_distribution ** (1 - self.alpha), dim=-1))
+            torch.log(torch.sum(target_distribution**self.alpha * preds_distribution ** (1 - self.alpha), dim=-1))
         ) / (self.alpha - 1)
         return renyi_divergence
 

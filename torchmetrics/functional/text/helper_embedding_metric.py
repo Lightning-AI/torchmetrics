@@ -13,6 +13,8 @@ if _TRANSFORMERS_AUTO_AVAILABLE:
     from transformers.models.auto import AutoModelForMaskedLM, AutoTokenizer
 if _TRANSFORMERS_AVAILABLE:
     from transformers import PreTrainedModel, PreTrainedTokenizerBase
+else:
+    PreTrainedModel = PreTrainedTokenizerBase = None
 
 if _TQDM_AVAILABLE:
     import tqdm
