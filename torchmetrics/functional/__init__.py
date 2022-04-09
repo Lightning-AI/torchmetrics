@@ -38,7 +38,6 @@ from torchmetrics.functional.classification.ranking import (
 from torchmetrics.functional.classification.roc import roc
 from torchmetrics.functional.classification.specificity import specificity
 from torchmetrics.functional.classification.stat_scores import stat_scores
-from torchmetrics.functional.image.d_lambda import spectral_distortion_index
 from torchmetrics.functional.image.ergas import error_relative_global_dimensionless_synthesis
 from torchmetrics.functional.image.gradients import image_gradients
 from torchmetrics.functional.image.psnr import peak_signal_noise_ratio
@@ -63,13 +62,11 @@ from torchmetrics.functional.regression.r2 import r2_score
 from torchmetrics.functional.regression.spearman import spearman_corrcoef
 from torchmetrics.functional.regression.symmetric_mape import symmetric_mean_absolute_percentage_error
 from torchmetrics.functional.regression.tweedie_deviance import tweedie_deviance_score
-from torchmetrics.functional.regression.wmape import weighted_mean_absolute_percentage_error
 from torchmetrics.functional.retrieval.average_precision import retrieval_average_precision
 from torchmetrics.functional.retrieval.fall_out import retrieval_fall_out
 from torchmetrics.functional.retrieval.hit_rate import retrieval_hit_rate
 from torchmetrics.functional.retrieval.ndcg import retrieval_normalized_dcg
 from torchmetrics.functional.retrieval.precision import retrieval_precision
-from torchmetrics.functional.retrieval.precision_recall_curve import retrieval_precision_recall_curve
 from torchmetrics.functional.retrieval.r_precision import retrieval_r_precision
 from torchmetrics.functional.retrieval.recall import retrieval_recall
 from torchmetrics.functional.retrieval.reciprocal_rank import retrieval_reciprocal_rank
@@ -97,7 +94,6 @@ __all__ = [
     "average_precision",
     "bleu_score",
     "calibration_error",
-    "char_error_rate",
     "chrf_score",
     "cohen_kappa",
     "confusion_matrix",
@@ -117,7 +113,6 @@ __all__ = [
     "kl_divergence",
     "label_ranking_average_precision",
     "label_ranking_loss",
-    "match_error_rate",
     "matthews_corrcoef",
     "mean_absolute_error",
     "mean_absolute_percentage_error",
@@ -145,7 +140,6 @@ __all__ = [
     "retrieval_r_precision",
     "retrieval_recall",
     "retrieval_reciprocal_rank",
-    "retrieval_precision_recall_curve",
     "roc",
     "rouge_score",
     "sacre_bleu_score",
@@ -155,7 +149,6 @@ __all__ = [
     "signal_noise_ratio",
     "spearman_corrcoef",
     "specificity",
-    "spectral_distortion_index",
     "squad",
     "structural_similarity_index_measure",
     "stat_scores",
@@ -163,8 +156,9 @@ __all__ = [
     "translation_edit_rate",
     "universal_image_quality_index",
     "spectral_angle_mapper",
-    "weighted_mean_absolute_percentage_error",
     "word_error_rate",
+    "char_error_rate",
+    "match_error_rate",
     "word_information_lost",
     "word_information_preserved",
 ]
