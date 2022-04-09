@@ -87,7 +87,7 @@ from torchmetrics.utilities.imports import _TRANSFORMERS_AUTO_AVAILABLE, _TRANSF
 if _TRANSFORMERS_AUTO_AVAILABLE:
     from torchmetrics.functional.text.bert import bert_score  # noqa: F401
 if _TRANSFORMERS_AVAILABLE:
-    from torchmetrics.functional.text.infolm import infolm
+    from torchmetrics.functional.text.infolm import infolm  # noqa: F401
 
 __all__ = [
     "accuracy",
@@ -111,7 +111,6 @@ __all__ = [
     "hamming_distance",
     "hinge_loss",
     "image_gradients",
-    "infolm",
     "jaccard_index",
     "kl_divergence",
     "label_ranking_average_precision",

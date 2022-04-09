@@ -27,6 +27,10 @@ from torchmetrics.functional.text.infolm import (
     _InformationMeasure,
 )
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
+
+if not _TRANSFORMERS_AVAILABLE:
+    __doctest_skip__ = ["InfoLM"]
 
 
 class InfoLM(Metric):
