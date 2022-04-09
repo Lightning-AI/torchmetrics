@@ -678,6 +678,12 @@ ExtendedEditDistance
 .. autoclass:: torchmetrics.ExtendedEditDistance
     :noindex:
 
+InfoLM
+~~~~~~
+
+.. autoclass:: torchmetrics.text.infolm.InfoLM
+    :noindex:
+
 MatchErrorRate
 ~~~~~~~~~~~~~~
 
