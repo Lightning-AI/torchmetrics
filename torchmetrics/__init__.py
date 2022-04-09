@@ -80,6 +80,7 @@ from torchmetrics.retrieval import (  # noqa: E402
     RetrievalPrecision,
     RetrievalRecall,
     RetrievalRPrecision,
+    RetrievalRecallAtFixedPrecision,
 )
 from torchmetrics.text import (  # noqa: E402
     BLEUScore,
