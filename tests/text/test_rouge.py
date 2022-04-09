@@ -16,12 +16,11 @@ import re
 from functools import partial
 from typing import Callable, Sequence
 
-import numpy as np
 import pytest
 import torch
 
 from tests.text.helpers import TextTester
-from tests.text.inputs import _inputs_multiple_references, _inputs_single_sentence_single_reference
+from tests.text.inputs import Input, _inputs_multiple_references, _inputs_single_sentence_single_reference
 from torchmetrics.functional.text.rouge import rouge_score
 from torchmetrics.text.rouge import ROUGEScore
 from torchmetrics.utilities.imports import _NLTK_AVAILABLE, _ROUGE_SCORE_AVAILABLE
@@ -35,13 +34,19 @@ else:
 ROUGE_KEYS = ("rouge1", "rouge2", "rougeL", "rougeLsum")
 
 
+# Some randomly adjusted input from CNN/DailyMail dataset which brakes the test
+_preds = "A trainer said her and Moschetto, 54s or weapons say . \nAuthorities Moschetto of ."
+_target = "A lawyer says him .\nMoschetto, 54 and prosecutors say .\nAuthority abc Moschetto  ."
+_inputs_summarization = Input(preds=_preds, targets=_target)
+
+
 def _compute_rouge_score(
     preds: Sequence[str],
     target: Sequence[Sequence[str]],
     use_stemmer: bool,
     rouge_level: str,
     metric: str,
-    accumulate: str,
+    accumulate: str = "avg",
 ):
     """Evaluates rouge scores from rouge-score package for baseline evaluation."""
     if isinstance(target, list) and all(isinstance(tgt, str) for tgt in target):
@@ -75,7 +80,7 @@ def _compute_rouge_score(
 
     rs_scores = aggregator.aggregate()
     rs_result = getattr(rs_scores[rouge_level].mid, metric)
-    return rs_result
+    return torch.tensor(rs_result, dtype=torch.float)
 
 
 @pytest.mark.skipif(not _NLTK_AVAILABLE, reason="test requires nltk")
@@ -104,8 +109,8 @@ def _compute_rouge_score(
 )
 @pytest.mark.parametrize("accumulate", ["avg", "best"])
 class TestROUGEScore(TextTester):
-    @pytest.mark.parametrize("ddp", [False, True])
-    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
+    @pytest.mark.parametrize("ddp", [False])
+    @pytest.mark.parametrize("dist_sync_on_step", [False])
     def test_rouge_score_class(
         self, ddp, dist_sync_on_step, preds, targets, pl_rouge_metric_key, use_stemmer, accumulate
     ):
@@ -208,4 +213,34 @@ def test_rouge_metric_normalizer_tokenizer(pl_rouge_metric_key):
     )
     metrics_score = scorer.compute()
 
-    np.isclose(metrics_score[rouge_level + "_" + metric], original_score, atol=1e-8, equal_nan=True)
+    assert torch.isclose(metrics_score[rouge_level + "_" + metric], original_score)
+
+
+@pytest.mark.parametrize(
+    "pl_rouge_metric_key",
+    [
+        "rougeL_precision",
+        "rougeL_recall",
+        "rougeL_fmeasure",
+        "rougeLsum_precision",
+        "rougeLsum_recall",
+        "rougeLsum_fmeasure",
+    ],
+)
+def test_rouge_lsum_score(pl_rouge_metric_key):
+    rouge_level, metric = pl_rouge_metric_key.split("_")
+    original_score = _compute_rouge_score(
+        preds=_inputs_summarization.preds,
+        target=_inputs_summarization.targets,
+        rouge_level=rouge_level,
+        metric=metric,
+        use_stemmer=False,
+    )
+
+    scorer = ROUGEScore(rouge_keys=rouge_level, use_stemmer=True)
+    metrics_score = scorer(
+        _inputs_single_sentence_single_reference.preds,
+        _inputs_single_sentence_single_reference.targets,
+    )
+
+    assert torch.isclose(metrics_score[rouge_level + "_" + metric], original_score)
