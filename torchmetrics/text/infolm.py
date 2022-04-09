@@ -37,6 +37,7 @@ class InfoLM(Metric):
     """
     Calculate `InfoLM`_ [1] - i.e. calculate a distance/divergence between predicted and reference sentence discrete
     distribution using one of the following information measures:
+
         - `KL divergence`_
         - `alpha divergence`_
         - `beta divergence`_
