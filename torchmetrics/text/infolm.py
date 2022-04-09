@@ -119,7 +119,7 @@ class InfoLM(Metric):
         self.idf = idf
         self.alpha = alpha
         self.beta = beta
-        self.device = device
+        self._device = device
         self.batch_size = batch_size
         self.num_threads = num_threads
         self.verbose = verbose
