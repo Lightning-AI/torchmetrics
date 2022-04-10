@@ -62,7 +62,7 @@ def _np_d_lambda(preds, target, p):
     "preds, target, p",
     [(i.preds, i.target, i.p) for i in _inputs],
 )
-class TestD_Lambda(MetricTester):
+class TestSpectralDistortionIndex(MetricTester):
     atol = 6e-3
 
     @pytest.mark.parametrize("ddp", [True, False])
@@ -87,7 +87,7 @@ class TestD_Lambda(MetricTester):
             metric_args={"p": p},
         )
 
-    # UQI half + cpu does not work due to missing support in torch.log
+    # SpectralDistortionIndex half + cpu does not work due to missing support in torch.log
     @pytest.mark.xfail(reason="Spectral Distortion Index metric does not support cpu + half precision")
     def test_d_lambda_half_cpu(self, preds, target, p):
         self.run_precision_test_cpu(preds, target, SpectralDistortionIndex, spectral_distortion_index, {"p": p})

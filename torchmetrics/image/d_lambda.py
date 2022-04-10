@@ -23,7 +23,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class SpectralDistortionIndex(Metric):
-    """Computes Spectral Distortion Index (SpectralDistortionIndex_).
+    """Computes Spectral Distortion Index (SpectralDistortionIndex_) also now as D_lambda is used to compare the spectral distortion between two images.
 
     Args:
         p: Large spectral differences
@@ -36,8 +36,6 @@ class SpectralDistortionIndex(Metric):
     kwargs:
             Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    Return:
-        Tensor with SpectralDistortionIndex score
 
     Example:
         >>> import torch
@@ -59,7 +57,7 @@ class SpectralDistortionIndex(Metric):
     preds: List[Tensor]
     target: List[Tensor]
     higher_is_better: bool = True
-
+    is_differentiable: bool = True
     def __init__(
         self, p: int = 1, reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean", **kwargs: Any
     ) -> None:
@@ -70,8 +68,6 @@ class SpectralDistortionIndex(Metric):
             " to large memory footprint."
         )
 
-        self.add_state("preds", default=[], dist_reduce_fx="cat")
-        self.add_state("target", default=[], dist_reduce_fx="cat")
         if not isinstance(p, int) or p <= 0:
             raise ValueError(f"Expected `p` to be a positive integer. Got p: {p}.")
         self.p = p
@@ -79,6 +75,8 @@ class SpectralDistortionIndex(Metric):
         if reduction not in ALLOWED_REDUCTION:
             raise ValueError(f"Expected argument `reduction` be one of {ALLOWED_REDUCTION} but got {reduction}")
         self.reduction = reduction
+        self.add_state("preds", default=[], dist_reduce_fx="cat")
+        self.add_state("target", default=[], dist_reduce_fx="cat")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with preds and target.
@@ -92,7 +90,7 @@ class SpectralDistortionIndex(Metric):
         self.target.append(target)
 
     def compute(self) -> Tensor:
-        """Computes explained variance over state."""
+        """Computes and returns spectral distortion index. """
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         return _d_lambda_compute(preds, target, self.p, self.reduction)
