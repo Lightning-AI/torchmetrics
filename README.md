@@ -90,7 +90,7 @@ ______________________________________________________________________
 
 ## What is Torchmetrics
 
-TorchMetrics is a collection of 50+ PyTorch metrics implementations and an easy-to-use API to create custom metrics. It offers:
+TorchMetrics is a collection of 80+ PyTorch metrics implementations and an easy-to-use API to create custom metrics. It offers:
 
 - A standardized interface to increase reproducibility
 - Reduces boilerplate
