@@ -94,7 +94,8 @@ def spectral_distortion_index(
     p: int = 1,
     reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
 ) -> Tensor:
-    """Spectral Distortion Index (SpectralDistortionIndex_) also now as D_lambda is used to compare the spectral distortion between two images. 
+    """Spectral Distortion Index (SpectralDistortionIndex_) also now as D_lambda is used to compare the spectral
+    distortion between two images.
 
     Args:
         preds: Low resolution multispectral image

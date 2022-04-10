@@ -23,7 +23,8 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class SpectralDistortionIndex(Metric):
-    """Computes Spectral Distortion Index (SpectralDistortionIndex_) also now as D_lambda is used to compare the spectral distortion between two images.
+    """Computes Spectral Distortion Index (SpectralDistortionIndex_) also now as D_lambda is used to compare the
+    spectral distortion between two images.
 
     Args:
         p: Large spectral differences
@@ -58,6 +59,7 @@ class SpectralDistortionIndex(Metric):
     target: List[Tensor]
     higher_is_better: bool = True
     is_differentiable: bool = True
+
     def __init__(
         self, p: int = 1, reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean", **kwargs: Any
     ) -> None:
@@ -90,7 +92,7 @@ class SpectralDistortionIndex(Metric):
         self.target.append(target)
 
     def compute(self) -> Tensor:
-        """Computes and returns spectral distortion index. """
+        """Computes and returns spectral distortion index."""
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         return _d_lambda_compute(preds, target, self.p, self.reduction)
