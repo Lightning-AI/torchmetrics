@@ -237,7 +237,8 @@ def _rouge_l_score(pred: Sequence[str], target: Sequence[str]) -> Dict[str, Tens
 
 def _rouge_lsum_score(pred: Sequence[Sequence[str]], target: Sequence[Sequence[str]]) -> Dict[str, Tensor]:
     """This computes precision, recall and F1 score for the Rouge-LSum metric. More information can be found in Section
-    3.2 of the referenced paper [1].
+    3.2 of the referenced paper [1]. This implementation follow the official implementation from:
+    https://github.com/google-research/google-research/blob/master/rouge/rouge_scorer.py
 
     Args:
         pred:
