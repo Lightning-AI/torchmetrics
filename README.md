@@ -282,8 +282,10 @@ We currently have implemented metrics within the following domains:
   [Accuracy](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#accuracy),
   [F1Score](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#f1score),
   [AUROC](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#auroc)
-  and [19 more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#classification-metrics)
+  and [many more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#classification-metrics)
   )
+- Detection (
+  [MeanAveragePrecision](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#meanaverageprecision))
 - Information Retrieval (
   [RetrievalMAP](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#retrievalmap),
   [RetrievalMRR](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#retrievalmrr),
@@ -294,22 +296,22 @@ We currently have implemented metrics within the following domains:
   [FrechetInceptionDistance](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#FrechetInceptionDistance),
   [KernelInceptionDistance](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#KernelInceptionDistance),
   [StructuralSimilarityIndexMeasure](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#StructuralSimilarityIndexMeasure)
-  and [2 more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#image-metrics)
+  and [many more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#image-metrics)
   )
 - Regression (
   [ExplainedVariance](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#explainedvariance),
   [PearsonCorrCoef](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#pearsoncorrcoef),
   [R2Score](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#r2score)
-  and [few more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#regression-metrics)
+  and [many more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#regression-metrics)
   )
 - Text (
   [BleuScore](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#bleuscore),
   [RougeScore](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#rougescore),
   [WordErrorRate](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#WordErrorRate)
-  and [few more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#text)
+  and [many more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#text)
   )
 
-In total torchmetrics contains 60+ metrics!
+In total torchmetrics contains 80+ metrics!
 
 ## Contribute!
 
