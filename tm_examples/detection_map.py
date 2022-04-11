@@ -18,7 +18,7 @@ python detection_map.py.
 
 import torch
 
-from torchmetrics.detection.map import MeanAveragePrecision
+from torchmetrics.detection.mean_ap import MeanAveragePrecision
 
 # Preds should be a list of elements, where each element is a dict
 # containing 3 keys: boxes, scores, labels

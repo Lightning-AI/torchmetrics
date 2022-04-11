@@ -15,6 +15,7 @@ clean:
 	rm -rf ./docs/source/api
 	rm -rf build
 	rm -rf dist
+	rm -rf *.egg-info
 
 test: clean env
 

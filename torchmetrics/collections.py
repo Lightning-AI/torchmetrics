@@ -19,6 +19,7 @@ from torch import Tensor, nn
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities.data import _flatten_dict
 
 # this is just a bypass for this module name collision with build-in one
 from torchmetrics.utilities.imports import OrderedDict
@@ -130,7 +131,9 @@ class MetricCollection(nn.ModuleDict):
         Positional arguments (args) will be passed to every metric in the collection, while keyword arguments (kwargs)
         will be filtered based on the signature of the individual metric.
         """
-        return {k: m(*args, **m._filter_kwargs(**kwargs)) for k, m in self.items()}
+        res = {k: m(*args, **m._filter_kwargs(**kwargs)) for k, m in self.items(keep_base=True)}
+        res = _flatten_dict(res)
+        return {self._set_name(k): v for k, v in res.items()}
 
     def update(self, *args: Any, **kwargs: Any) -> None:
         """Iteratively call update for each metric.
@@ -188,7 +191,8 @@ class MetricCollection(nn.ModuleDict):
         for idx, values in enumerate(temp.values()):
             self._groups[idx] = values
 
-    def _equal_metric_states(self, metric1: Metric, metric2: Metric) -> bool:
+    @staticmethod
+    def _equal_metric_states(metric1: Metric, metric2: Metric) -> bool:
         """Check if the metric state of two metrics are the same."""
         if metric1._defaults.keys() != metric2._defaults.keys():
             return False
@@ -218,8 +222,9 @@ class MetricCollection(nn.ModuleDict):
                     mi = getattr(self, cg[i])
                     for state in m0._defaults:
                         setattr(mi, state, getattr(m0, state))
-
-        return {k: m.compute() for k, m in self.items()}
+        res = {k: m.compute() for k, m in self.items(keep_base=True)}
+        res = _flatten_dict(res)
+        return {self._set_name(k): v for k, v in res.items()}
 
     def reset(self, exclude_states: Optional[Sequence[str]] = None) -> None:
         """Iteratively call reset for each metric.

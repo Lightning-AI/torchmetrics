@@ -27,6 +27,7 @@ from tests.retrieval.inputs import _input_retrieval_scores_all_target as _irs_al
 from tests.retrieval.inputs import _input_retrieval_scores_empty as _irs_empty
 from tests.retrieval.inputs import _input_retrieval_scores_extra as _irs_extra
 from tests.retrieval.inputs import _input_retrieval_scores_float_target as _irs_float_tgt
+from tests.retrieval.inputs import _input_retrieval_scores_for_adaptive_k as _irs_adpt_k
 from tests.retrieval.inputs import _input_retrieval_scores_int_target as _irs_int_tgt
 from tests.retrieval.inputs import _input_retrieval_scores_mismatching_sizes as _irs_mis_sz
 from tests.retrieval.inputs import _input_retrieval_scores_mismatching_sizes_func as _irs_mis_sz_fn
@@ -159,6 +160,14 @@ _errors_test_functional_metric_parameters_k = dict(
     argvalues=[
         (_irs.preds, _irs.target, "`k` has to be a positive integer or None", dict(k=-10)),
         (_irs.preds, _irs.target, "`k` has to be a positive integer or None", dict(k=4.0)),
+    ],
+)
+
+_errors_test_functional_metric_parameters_adaptive_k = dict(
+    argnames="preds,target,message,metric_args",
+    argvalues=[
+        (_irs.preds, _irs.target, "`adaptive_k` has to be a boolean", dict(adaptive_k=10)),
+        (_irs.preds, _irs.target, "`adaptive_k` has to be a boolean", dict(adaptive_k=None)),
     ],
 )
 
@@ -302,6 +311,15 @@ _errors_test_class_metric_parameters_k = dict(
     argnames="indexes,preds,target,message,metric_args",
     argvalues=[
         (_irs.index, _irs.preds, _irs.target, "`k` has to be a positive integer or None", dict(k=-10)),
+        (_irs.index, _irs.preds, _irs.target, "`k` has to be a positive integer or None", dict(k=4.0)),
+    ],
+)
+
+_errors_test_class_metric_parameters_adaptive_k = dict(
+    argnames="indexes,preds,target,message,metric_args",
+    argvalues=[
+        (_irs.index, _irs.preds, _irs.target, "`adaptive_k` has to be a boolean", dict(adaptive_k=10)),
+        (_irs.index, _irs.preds, _irs.target, "`adaptive_k` has to be a boolean", dict(adaptive_k=None)),
     ],
 )
 
@@ -311,6 +329,7 @@ _default_metric_class_input_arguments = dict(
         (_irs.indexes, _irs.preds, _irs.target),
         (_irs_extra.indexes, _irs_extra.preds, _irs_extra.target),
         (_irs_no_tgt.indexes, _irs_no_tgt.preds, _irs_no_tgt.target),
+        (_irs_adpt_k.indexes, _irs_adpt_k.preds, _irs_adpt_k.target),
     ],
 )
 
@@ -485,7 +504,7 @@ class RetrievalMetricTester(MetricTester):
         metric_functional: Callable,
     ):
         if not torch.cuda.is_available():
-            pytest.skip()
+            pytest.skip("Test requires GPU")
 
         def metric_functional_ignore_indexes(preds, target, indexes):
             return metric_functional(preds, target)

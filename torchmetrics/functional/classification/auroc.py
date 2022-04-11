@@ -20,6 +20,7 @@ from torch import Tensor, tensor
 from torchmetrics.functional.classification.auc import _auc_compute_without_check
 from torchmetrics.functional.classification.roc import roc
 from torchmetrics.utilities.checks import _input_format_classification
+from torchmetrics.utilities.data import _bincount
 from torchmetrics.utilities.enums import AverageMethod, DataType
 from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
 
@@ -166,7 +167,7 @@ def _auroc_compute(
                 if mode == DataType.MULTILABEL:
                     support = torch.sum(target, dim=0)
                 else:
-                    support = torch.bincount(target.flatten(), minlength=num_classes)
+                    support = _bincount(target.flatten(), minlength=num_classes)
                 return torch.sum(torch.stack(auc_scores) * support / support.sum())
 
             allowed_average = (AverageMethod.NONE.value, AverageMethod.MACRO.value, AverageMethod.WEIGHTED.value)
@@ -189,7 +190,7 @@ def _auroc_compute(
     partial_auc = _auc_compute_without_check(fpr, tpr, 1.0)
 
     # McClish correction: standardize result to be 0.5 if non-discriminant and 1 if maximal
-    min_area: Tensor = 0.5 * max_area ** 2
+    min_area: Tensor = 0.5 * max_area**2
     return 0.5 * (1 + (partial_auc - min_area) / (max_area - min_area))
 
 

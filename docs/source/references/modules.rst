@@ -274,6 +274,12 @@ ConfusionMatrix
 .. autoclass:: torchmetrics.ConfusionMatrix
     :noindex:
 
+CoverageError
+~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.CoverageError
+    :noindex:
+
 F1Score
 ~~~~~~~
 
@@ -308,6 +314,18 @@ KLDivergence
 ~~~~~~~~~~~~
 
 .. autoclass:: torchmetrics.KLDivergence
+    :noindex:
+
+LabelRankingAveragePrecision
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.LabelRankingAveragePrecision
+    :noindex:
+
+LabelRankingLoss
+~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.LabelRankingLoss
     :noindex:
 
 MatthewsCorrCoef
@@ -362,6 +380,12 @@ Image
 Image quality metrics can be used to access the quality of synthetic generated images from machine
 learning algorithms such as `Generative Adverserial Networks (GANs) <https://en.wikipedia.org/wiki/Generative_adversarial_network>`_.
 
+ErrorRelativeGlobalDimensionlessSynthesis
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.image.ergas.ErrorRelativeGlobalDimensionlessSynthesis
+    :noindex:
+
 FrechetInceptionDistance
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -398,6 +422,12 @@ PeakSignalNoiseRatio
 .. autoclass:: torchmetrics.PeakSignalNoiseRatio
     :noindex:
 
+SpectralAngleMapper
+~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.SpectralAngleMapper
+    :noindex:
+
 StructuralSimilarityIndexMeasure
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -419,7 +449,7 @@ Object detection metrics can be used to evaluate the predicted detections with g
 MeanAveragePrecision
 ~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.detection.map.MeanAveragePrecision
+.. autoclass:: torchmetrics.detection.mean_ap.MeanAveragePrecision
     :noindex:
 
 **********
@@ -546,8 +576,8 @@ the set of pairs ``(Q_i, D_j)`` having the same query ``Q_i``.
     >>> preds = torch.tensor([0.8, -0.4, 1.0, 1.4, 0.0])
     >>> target = torch.tensor([0, 1, 0, 1, 1])
 
-    >>> map = RetrievalMAP() # or some other retrieval metric
-    >>> map(preds, target, indexes=indexes)
+    >>> rmap = RetrievalMAP() # or some other retrieval metric
+    >>> rmap(preds, target, indexes=indexes)
     tensor(0.6667)
 
     >>> # the previous instruction is roughly equivalent to
@@ -708,6 +738,12 @@ BootStrapper
 ~~~~~~~~~~~~
 
 .. autoclass:: torchmetrics.BootStrapper
+    :noindex:
+
+ClasswiseWrapper
+~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.ClasswiseWrapper
     :noindex:
 
 MetricTracker

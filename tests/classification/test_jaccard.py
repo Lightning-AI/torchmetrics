@@ -155,6 +155,7 @@ def test_jaccard(half_ones, reduction, ignore_index, expected):
     jaccard_val = jaccard_index(
         preds=preds,
         target=target,
+        num_classes=3,
         ignore_index=ignore_index,
         reduction=reduction,
     )

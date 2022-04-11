@@ -32,12 +32,15 @@ from torchmetrics.classification import (  # noqa: E402
     CalibrationError,
     CohenKappa,
     ConfusionMatrix,
+    CoverageError,
     F1Score,
     FBetaScore,
     HammingDistance,
     HingeLoss,
     JaccardIndex,
     KLDivergence,
+    LabelRankingAveragePrecision,
+    LabelRankingLoss,
     MatthewsCorrCoef,
     Precision,
     PrecisionRecallCurve,
@@ -47,8 +50,10 @@ from torchmetrics.classification import (  # noqa: E402
 )
 from torchmetrics.collections import MetricCollection  # noqa: E402
 from torchmetrics.image import (  # noqa: E402
+    ErrorRelativeGlobalDimensionlessSynthesis,
     MultiScaleStructuralSimilarityIndexMeasure,
     PeakSignalNoiseRatio,
+    SpectralAngleMapper,
     StructuralSimilarityIndexMeasure,
     UniversalImageQualityIndex,
 )
@@ -89,7 +94,13 @@ from torchmetrics.text import (  # noqa: E402
     WordInfoLost,
     WordInfoPreserved,
 )
-from torchmetrics.wrappers import BootStrapper, MetricTracker, MinMaxMetric, MultioutputWrapper  # noqa: E402
+from torchmetrics.wrappers import (  # noqa: E402
+    BootStrapper,
+    ClasswiseWrapper,
+    MetricTracker,
+    MinMaxMetric,
+    MultioutputWrapper,
+)
 
 __all__ = [
     "functional",
@@ -104,11 +115,14 @@ __all__ = [
     "BootStrapper",
     "CalibrationError",
     "CatMetric",
+    "ClasswiseWrapper",
     "CHRFScore",
     "CohenKappa",
     "ConfusionMatrix",
     "CosineSimilarity",
+    "CoverageError",
     "TweedieDevianceScore",
+    "ErrorRelativeGlobalDimensionlessSynthesis",
     "ExplainedVariance",
     "ExtendedEditDistance",
     "F1Score",
@@ -117,6 +131,8 @@ __all__ = [
     "HingeLoss",
     "JaccardIndex",
     "KLDivergence",
+    "LabelRankingAveragePrecision",
+    "LabelRankingLoss",
     "MatthewsCorrCoef",
     "MaxMetric",
     "MeanAbsoluteError",
@@ -154,6 +170,7 @@ __all__ = [
     "SignalNoiseRatio",
     "SpearmanCorrCoef",
     "Specificity",
+    "SpectralAngleMapper",
     "SQuAD",
     "StructuralSimilarityIndexMeasure",
     "StatScores",

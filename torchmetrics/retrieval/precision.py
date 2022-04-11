@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional
+from typing import Any, Dict, Optional
 
 from torch import Tensor, tensor
 
@@ -47,20 +47,15 @@ class RetrievalPrecision(RetrievalMetric):
         ignore_index:
             Ignore predictions where the target is equal to this number.
         k: consider only the top k elements for each query (default: `None`, which considers them all)
+        adaptive_k: adjust `k` to `min(k, number of documents)` for each query
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
 
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step.
-        process_group:
-            Specify the process group on which synchronization is called.
-        dist_sync_fn:
-            Callback that performs the allgather operation on the metric state. When `None`, DDP
-            will be used to perform the allgather.
+        kwargs:
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
@@ -68,7 +63,9 @@ class RetrievalPrecision(RetrievalMetric):
         ValueError:
             If ``ignore_index`` is not `None` or an integer.
         ValueError:
-            If ``k`` parameter is not `None` or an integer larger than 0.
+            If ``k`` is not `None` or an integer larger than 0.
+        ValueError:
+            If ``adaptive_k`` is not boolean.
 
     Example:
         >>> from torchmetrics import RetrievalPrecision
@@ -87,23 +84,23 @@ class RetrievalPrecision(RetrievalMetric):
         empty_target_action: str = "neg",
         ignore_index: Optional[int] = None,
         k: Optional[int] = None,
+        adaptive_k: bool = False,
         compute_on_step: Optional[bool] = None,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None,
+        **kwargs: Dict[str, Any],
     ) -> None:
         super().__init__(
             empty_target_action=empty_target_action,
             ignore_index=ignore_index,
             compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-            dist_sync_fn=dist_sync_fn,
+            **kwargs,
         )
 
         if (k is not None) and not (isinstance(k, int) and k > 0):
             raise ValueError("`k` has to be a positive integer or None")
+        if not isinstance(adaptive_k, bool):
+            raise ValueError("`adaptive_k` has to be a boolean")
         self.k = k
+        self.adaptive_k = adaptive_k
 
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
-        return retrieval_precision(preds, target, k=self.k)
+        return retrieval_precision(preds, target, k=self.k, adaptive_k=self.adaptive_k)

@@ -15,9 +15,9 @@ from typing import Optional
 
 import torch
 from torch import Tensor
+from typing_extensions import Literal
 
 from torchmetrics.functional.classification.confusion_matrix import _confusion_matrix_update
-from torchmetrics.utilities.data import get_num_classes
 from torchmetrics.utilities.distributed import reduce
 
 
@@ -26,7 +26,7 @@ def _jaccard_from_confmat(
     num_classes: int,
     ignore_index: Optional[int] = None,
     absent_score: float = 0.0,
-    reduction: str = "elementwise_mean",
+    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
 ) -> Tensor:
     """Computes the intersection over union from confusion matrix.
 
@@ -41,7 +41,7 @@ def _jaccard_from_confmat(
 
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
-            - ``'none'``: no reduction will be applied
+            - ``'none'`` or ``None``: no reduction will be applied
     """
 
     # Remove the ignored class index from the scores.
@@ -69,11 +69,11 @@ def _jaccard_from_confmat(
 def jaccard_index(
     preds: Tensor,
     target: Tensor,
+    num_classes: int,
     ignore_index: Optional[int] = None,
     absent_score: float = 0.0,
     threshold: float = 0.5,
-    num_classes: Optional[int] = None,
-    reduction: str = "elementwise_mean",
+    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
 ) -> Tensor:
     r"""
     Computes `Jaccard index`_
@@ -95,6 +95,7 @@ def jaccard_index(
     Args:
         preds: tensor containing predictions from model (probabilities, or labels) with shape ``[N, d1, d2, ...]``
         target: tensor containing ground truth labels with shape ``[N, d1, d2, ...]``
+        num_classes: Specify the number of classes
         ignore_index: optional int specifying a target class to ignore. If given,
             this class index does not contribute to the returned score, regardless
             of reduction method. Has no effect if given an int that is not in the
@@ -107,13 +108,12 @@ def jaccard_index(
             assigned the `absent_score`.
         threshold:
             Threshold value for binary or multi-label probabilities.
-        num_classes:
-            Optionally specify the number of classes
+
         reduction: a method to reduce metric score over labels.
 
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
-            - ``'none'``: no reduction will be applied
+            - ``'none'`` or ``None``: no reduction will be applied
 
     Return:
         IoU score: Tensor containing single value if reduction is
@@ -124,10 +124,9 @@ def jaccard_index(
         >>> target = torch.randint(0, 2, (10, 25, 25))
         >>> pred = torch.tensor(target)
         >>> pred[2:5, 7:13, 9:15] = 1 - pred[2:5, 7:13, 9:15]
-        >>> jaccard_index(pred, target)
+        >>> jaccard_index(pred, target, num_classes=2)
         tensor(0.9660)
     """
 
-    num_classes = get_num_classes(preds=preds, target=target, num_classes=num_classes)
     confmat = _confusion_matrix_update(preds, target, num_classes, threshold)
     return _jaccard_from_confmat(confmat, num_classes, ignore_index, absent_score, reduction)

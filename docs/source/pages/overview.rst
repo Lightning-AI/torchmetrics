@@ -241,7 +241,7 @@ MetricCollection
 
 In many cases it is beneficial to evaluate the model output by multiple metrics.
 In this case the ``MetricCollection`` class may come in handy. It accepts a sequence
-of metrics and wraps theses into a single callable metric class, with the same
+of metrics and wraps these into a single callable metric class, with the same
 interface as any other metric.
 
 Example:
@@ -348,3 +348,24 @@ In practise this means that:
     val = metric.compute() # this value cannot be back-propagated
 
 A functional metric is differentiable if its corresponding modular metric is differentiable.
+
+.. _Metric kwargs:
+
+*****************************
+Advanced distributed settings
+*****************************
+
+If you are running in a distributed environment, ``TorchMetrics`` will automatically take care of the distributed
+synchronization for you. However, the following three keyword arguments can be given to any metric class for
+further control over the distributed aggregation:
+
+- ``dist_sync_on_step``: This argument is ``bool`` that indicates if the metric should syncronize between
+  different devices every time ``forward`` is called. Setting this to ``True`` is in general not recommended
+  as syncronization is an expensive operation to do after each batch.
+
+- ``process_group``: By default we syncronize across the *world* i.e. all proceses being computed on. You
+  can provide an ``torch._C._distributed_c10d.ProcessGroup`` in this argument to specify exactly what
+  devices should be syncronized over.
+
+- ``dist_sync_fn``: By default we use :func:`torch.distributed.all_gather` to perform the synchronization between
+  devices. Provide another callable function for this argument to perform custom distributed synchronization.

@@ -11,12 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, List, Mapping, Optional, Sequence, Union
+from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Union
 
 import torch
 from torch import Tensor, tensor
-
-from torchmetrics.utilities.prints import rank_zero_warn
 
 METRIC_EPS = 1e-6
 
@@ -51,7 +49,20 @@ def dim_zero_min(x: Tensor) -> Tensor:
 
 
 def _flatten(x: Sequence) -> list:
+    """flatten list of list into single list."""
     return [item for sublist in x for item in sublist]
+
+
+def _flatten_dict(x: Dict) -> Dict:
+    """flatten dict of dicts into single dict."""
+    new_dict = {}
+    for key, value in x.items():
+        if isinstance(value, dict):
+            for k, v in value.items():
+                new_dict[k] = v
+        else:
+            new_dict[key] = value
+    return new_dict
 
 
 def to_onehot(
@@ -130,37 +141,6 @@ def to_categorical(x: Tensor, argmax_dim: int = 1) -> Tensor:
         tensor([1, 0])
     """
     return torch.argmax(x, dim=argmax_dim)
-
-
-def get_num_classes(
-    preds: Tensor,
-    target: Tensor,
-    num_classes: Optional[int] = None,
-) -> int:
-    """Calculates the number of classes for a given prediction and target tensor.
-
-    Args:
-        preds: predicted values
-        target: true labels
-        num_classes: number of classes if known
-
-    Return:
-        An integer that represents the number of classes.
-    """
-    num_target_classes = int(target.max().detach().item() + 1)
-    num_pred_classes = int(preds.max().detach().item() + 1)
-    num_all_classes = max(num_target_classes, num_pred_classes)
-
-    if num_classes is None:
-        num_classes = num_all_classes
-    elif num_classes != num_all_classes:
-        rank_zero_warn(
-            f"You have set {num_classes} number of classes which is"
-            f" different from predicted ({num_pred_classes}) and"
-            f" target ({num_target_classes}) number of classes",
-            RuntimeWarning,
-        )
-    return num_classes
 
 
 def apply_to_collection(
@@ -246,3 +226,25 @@ def _squeeze_scalar_element_tensor(x: Tensor) -> Tensor:
 
 def _squeeze_if_scalar(data: Any) -> Any:
     return apply_to_collection(data, Tensor, _squeeze_scalar_element_tensor)
+
+
+def _bincount(x: Tensor, minlength: Optional[int] = None) -> Tensor:
+    """torch.bincount currently does not support deterministic mode on GPU. This implementation fallsback to a for-
+    loop counting occurences in that case.
+
+    Args:
+        x: tensor to count
+        minlength: minimum length to count
+
+    Returns:
+        Number of occurences for each unique element in x
+    """
+    if x.is_cuda and torch.are_deterministic_algorithms_enabled():
+        if minlength is None:
+            minlength = len(torch.unique(x))
+        output = torch.zeros(minlength, device=x.device, dtype=torch.long)
+        for i in range(minlength):
+            output[i] = (x == i).sum()
+        return output
+    else:
+        return torch.bincount(x, minlength=minlength)
