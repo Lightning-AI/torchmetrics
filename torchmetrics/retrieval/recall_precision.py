@@ -11,15 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple
 
+import torch
 from torch import Tensor, tensor
 
-from torchmetrics.functional.retrieval.recall_precision import retrieval_recall_at_precision
-from torchmetrics.retrieval.base import RetrievalMetric
+from torchmetrics import RetrievalRecall, RetrievalPrecision, Metric
+from torchmetrics.utilities.checks import _check_retrieval_inputs
 
 
-class RetrievalRecallAtFixedPrecision(RetrievalMetric):
+class RetrievalRecallAtFixedPrecision(Metric):
     """
     Computes `IR Recall at fixed Precision`_.
 
@@ -84,14 +85,10 @@ class RetrievalRecallAtFixedPrecision(RetrievalMetric):
         self,
         min_precision: float,
         max_k: Optional[int] = None,
-        empty_target_action: str = "neg",
-        ignore_index: Optional[int] = None,
         compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
         super().__init__(
-            empty_target_action=empty_target_action,
-            ignore_index=ignore_index,
             compute_on_step=compute_on_step,
             **kwargs,
         )
@@ -105,7 +102,36 @@ class RetrievalRecallAtFixedPrecision(RetrievalMetric):
         self.max_k = max_k
         self.min_precision = min_precision
 
-    def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
-        return retrieval_recall_at_precision(
-            preds, target, min_precision=self.min_precision, max_k=self.max_k
+    def update(self, preds: Tensor, target: Tensor, indexes: Tensor) -> None:  # type: ignore
+        """Check shape, check and convert dtypes, flatten and add to accumulators."""
+        if indexes is None:
+            raise ValueError("Argument `indexes` cannot be None")
+
+        indexes, preds, target = _check_retrieval_inputs(
+            indexes, preds, target, allow_non_binary_target=self.allow_non_binary_target, ignore_index=self.ignore_index
         )
+
+        self.indexes.append(indexes)
+        self.preds.append(preds)
+        self.target.append(target)
+
+    def compute(self) -> Tuple[Tensor, int]:
+        # concat all data
+        indexes = torch.cat(self.indexes, dim=0)
+        preds = torch.cat(self.preds, dim=0)
+        target = torch.cat(self.target, dim=0)
+
+        # precision recall k
+        prk = []
+        for k in range(1, self.max_k + 1):
+            rr = RetrievalRecall(k=k)
+            rp = RetrievalPrecision(k=k)
+            item = rp(preds, target, indexes=indexes), rr(preds, target, indexes=indexes), k
+            prk.append(item)
+
+        # find best
+        best_recall, _, best_k = max(
+            (r, p, k) for p, r, k in prk if p >= self.min_precision
+        )
+
+        return best_recall, best_k
