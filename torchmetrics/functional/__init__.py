@@ -38,6 +38,7 @@ from torchmetrics.functional.classification.ranking import (
 from torchmetrics.functional.classification.roc import roc
 from torchmetrics.functional.classification.specificity import specificity
 from torchmetrics.functional.classification.stat_scores import stat_scores
+from torchmetrics.functional.image.d_lambda import spectral_distortion_index
 from torchmetrics.functional.image.ergas import error_relative_global_dimensionless_synthesis
 from torchmetrics.functional.image.gradients import image_gradients
 from torchmetrics.functional.image.psnr import peak_signal_noise_ratio
@@ -149,6 +150,7 @@ __all__ = [
     "signal_noise_ratio",
     "spearman_corrcoef",
     "specificity",
+    "spectral_distortion_index",
     "squad",
     "structural_similarity_index_measure",
     "stat_scores",
