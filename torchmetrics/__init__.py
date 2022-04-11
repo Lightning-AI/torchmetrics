@@ -54,6 +54,7 @@ from torchmetrics.image import (  # noqa: E402
     MultiScaleStructuralSimilarityIndexMeasure,
     PeakSignalNoiseRatio,
     SpectralAngleMapper,
+    SpectralDistortionIndex,
     StructuralSimilarityIndexMeasure,
     UniversalImageQualityIndex,
 )
@@ -174,6 +175,7 @@ __all__ = [
     "SpearmanCorrCoef",
     "Specificity",
     "SpectralAngleMapper",
+    "SpectralDistortionIndex",
     "SQuAD",
     "StructuralSimilarityIndexMeasure",
     "StatScores",
