@@ -8,7 +8,7 @@ ______________________________________________________________________
 
 <p align="center">
   <a href="#what-is-torchmetrics">What is Torchmetrics</a> •
-  <a href="#implementing-your-own-metric">Implementing a metric</a> •
+  <a href="#implementing-your-own-module-metric">Implementing a metric</a> •
   <a href="#build-in-metrics">Built-in metrics</a> •
   <a href="https://torchmetrics.readthedocs.io/en/stable/">Docs</a> •
   <a href="#community">Community</a> •
@@ -90,7 +90,7 @@ ______________________________________________________________________
 
 ## What is Torchmetrics
 
-TorchMetrics is a collection of 50+ PyTorch metrics implementations and an easy-to-use API to create custom metrics. It offers:
+TorchMetrics is a collection of 80+ PyTorch metrics implementations and an easy-to-use API to create custom metrics. It offers:
 
 - A standardized interface to increase reproducibility
 - Reduces boilerplate
@@ -282,8 +282,10 @@ We currently have implemented metrics within the following domains:
   [Accuracy](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#accuracy),
   [F1Score](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#f1score),
   [AUROC](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#auroc)
-  and [19 more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#classification-metrics)
+  and [many more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#classification-metrics)
   )
+- Detection (
+  [MeanAveragePrecision](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#meanaverageprecision))
 - Information Retrieval (
   [RetrievalMAP](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#retrievalmap),
   [RetrievalMRR](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#retrievalmrr),
@@ -294,22 +296,22 @@ We currently have implemented metrics within the following domains:
   [FrechetInceptionDistance](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#FrechetInceptionDistance),
   [KernelInceptionDistance](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#KernelInceptionDistance),
   [StructuralSimilarityIndexMeasure](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#StructuralSimilarityIndexMeasure)
-  and [2 more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#image-metrics)
+  and [many more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#image-metrics)
   )
 - Regression (
   [ExplainedVariance](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#explainedvariance),
   [PearsonCorrCoef](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#pearsoncorrcoef),
   [R2Score](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#r2score)
-  and [few more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#regression-metrics)
+  and [many more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#regression-metrics)
   )
 - Text (
   [BleuScore](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#bleuscore),
   [RougeScore](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#rougescore),
   [WordErrorRate](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#WordErrorRate)
-  and [few more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#text)
+  and [many more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#text)
   )
 
-In total torchmetrics contains 60+ metrics!
+In total torchmetrics contains 80+ metrics!
 
 ## Contribute!
 
@@ -329,7 +331,7 @@ For help or questions, join our huge community on [Slack](https://join.slack.com
 We’re excited to continue the strong legacy of open source software and have been inspired
 over the years by Caffe, Theano, Keras, PyTorch, torchbearer, ignite, sklearn and fast.ai.
 
-If you want to cite this framework feel free to use GitHub's built-in citation option to generate a bibtex or APA-Style citation based on [this file](https://github.com/PyTorchLightning/metrics/blolb/master/CITATION.cff)(but only if you loved it 😊).
+If you want to cite this framework feel free to use GitHub's built-in citation option to generate a bibtex or APA-Style citation based on [this file](https://github.com/PyTorchLightning/metrics/blob/master/CITATION.cff)(but only if you loved it 😊).
 
 ## License
 
