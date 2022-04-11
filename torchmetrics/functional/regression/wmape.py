@@ -56,10 +56,11 @@ def _weighted_mean_absolute_percentage_error_compute(
 
 def weighted_mean_absolute_percentage_error(preds: Tensor, target: Tensor) -> Tensor:
     r"""
-    Computes weighted mean absolute percentage error (WMAPE_):
+    Computes weighted mean absolute percentage error (`WMAPE`_). The output of WMAPE metric
+    is a non-negative floating point, where the optimal value is 0. It is computes as:
 
     .. math::
-        \text{WMAPE} = \frac{\sum_{t=1}^n | y - \hat{y} | }{y}
+        \text{WMAPE} = \frac{\sum_{t=1}^n | y_t - \hat{y}_t | }{\sum_{t=1}^n |y_t| }
 
     Where :math:`y` is a tensor of target values, and :math:`\hat{y}` is a tensor of predictions.
 

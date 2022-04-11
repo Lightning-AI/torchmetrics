@@ -23,16 +23,17 @@ from torchmetrics.metric import Metric
 
 class WeightedMeanAbsolutePercentageError(Metric):
     r"""
-    Computes weighted absolute percentage error (`WAPE`_).
+    Computes weighted mean absolute percentage error (`WMAPE`_). The output of WMAPE metric
+    is a non-negative floating point, where the optimal value is 0. It is computes as:
+
+    .. math::
+        \text{WMAPE} = \frac{\sum_{t=1}^n | y_t - \hat{y}_t | }{\sum_{t=1}^n |y_t| }
 
     Where :math:`y` is a tensor of target values, and :math:`\hat{y}` is a tensor of predictions.
 
     Args:
         kwargs:
             Additional keyword arguments, see :ref:`Metric kwargs` for more info.
-
-    Note:
-        WAPE output is a non-negative floating point. Best result is 0.0 .
 
     Example:
         >>> import torch
@@ -67,5 +68,5 @@ class WeightedMeanAbsolutePercentageError(Metric):
         self.sum_scale += sum_scale
 
     def compute(self) -> Tensor:
-        """Computes weighted absolute percentage error over state."""
+        """Computes weighted mean absolute percentage error over state."""
         return _weighted_mean_absolute_percentage_error_compute(self.sum_abs_error, self.sum_scale)
