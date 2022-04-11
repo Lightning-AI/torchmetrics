@@ -271,8 +271,8 @@ class Metric(Module, ABC):
         self._should_unsync = True
         self._to_sync = True
         self._computed = None
-        self.compute_on_cpu = _temp_compute_on_cpu
         self._enable_grad = False
+        self.compute_on_cpu = _temp_compute_on_cpu
 
         return self._forward_cache
 
@@ -308,10 +308,10 @@ class Metric(Module, ABC):
         def wrapped_func(*args: Any, **kwargs: Any) -> None:
             self._computed = None
             self._update_called = True
-            update(*args, **kwargs)
+            with torch.set_grad_enabled(self._enable_grad):
+                update(*args, **kwargs)
             if self.compute_on_cpu:
                 self._move_list_states_to_cpu()
-            return
 
         return wrapped_func
 
@@ -321,14 +321,6 @@ class Metric(Module, ABC):
             current_val = getattr(self, key)
             if isinstance(current_val, Sequence):
                 setattr(self, key, [cur_v.to("cpu") for cur_v in current_val])
-
-        def wrapped_func(*args: Any, **kwargs: Any) -> Optional[Any]:
-            self._computed = None
-            self._update_called = True
-            with torch.set_grad_enabled(self._enable_grad):
-                return self.update(*args, **kwargs)
-
-        return wrapped_func
 
     def sync(
         self,
