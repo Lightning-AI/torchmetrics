@@ -50,7 +50,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `reset_real_features` argument image quality assesment metrics ([#722](https://github.com/PyTorchLightning/metrics/pull/722))
 
 
-- Added `WeightedMeanAbsolutePercentageError` to regression package ([]())
+- Added `WeightedMeanAbsolutePercentageError` to regression package ([#948](https://github.com/PyTorchLightning/metrics/pull/948))
+
 
 ### Changed
 
