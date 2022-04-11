@@ -14,14 +14,15 @@
 
 import re
 from functools import partial
-from typing import Callable, Sequence
+from typing import Callable, Sequence, Union
 
-import numpy as np
 import pytest
 import torch
+from torch import Tensor
+from typing_extensions import Literal
 
 from tests.text.helpers import TextTester
-from tests.text.inputs import _inputs_multiple_references, _inputs_single_sentence_single_reference
+from tests.text.inputs import Input, _inputs_multiple_references, _inputs_single_sentence_single_reference
 from torchmetrics.functional.text.rouge import rouge_score
 from torchmetrics.text.rouge import ROUGEScore
 from torchmetrics.utilities.imports import _NLTK_AVAILABLE, _ROUGE_SCORE_AVAILABLE
@@ -35,25 +36,36 @@ else:
 ROUGE_KEYS = ("rouge1", "rouge2", "rougeL", "rougeLsum")
 
 
+# Some randomly adjusted input from CNN/DailyMail dataset which brakes the test
+_preds = "A lawyer says him .\nMoschetto, 54 and prosecutors say .\nAuthority abc Moschetto  ."
+_target = "A trainer said her and Moschetto, 54s or weapons say . \nAuthorities Moschetto of ."
+_inputs_summarization = Input(preds=_preds, targets=_target)
+
+
 def _compute_rouge_score(
-    preds: Sequence[str],
-    target: Sequence[Sequence[str]],
+    preds: Union[str, Sequence[str]],
+    target: Union[str, Sequence[Union[str, Sequence[str]]]],
     use_stemmer: bool,
     rouge_level: str,
     metric: str,
-    accumulate: str,
-):
+    accumulate: Literal = ["avg", "best", None],
+) -> Tensor:
     """Evaluates rouge scores from rouge-score package for baseline evaluation."""
     if isinstance(target, list) and all(isinstance(tgt, str) for tgt in target):
         target = [target] if isinstance(preds, str) else [[tgt] for tgt in target]
 
-    if isinstance(preds, str):
+    if isinstance(preds, str) and accumulate:
         preds = [preds]
 
-    if isinstance(target, str):
+    if isinstance(target, str) and accumulate:
         target = [[target]]
 
     scorer = RougeScorer(ROUGE_KEYS, use_stemmer=use_stemmer)
+    if not accumulate:
+        rs_scores = scorer.score(target, preds)
+        rs_result = getattr(rs_scores[rouge_level], metric)
+        return torch.tensor(rs_result, dtype=torch.float)
+
     aggregator = BootstrapAggregator()
 
     for target_raw, pred_raw in zip(target, preds):
@@ -75,7 +87,7 @@ def _compute_rouge_score(
 
     rs_scores = aggregator.aggregate()
     rs_result = getattr(rs_scores[rouge_level].mid, metric)
-    return rs_result
+    return torch.tensor(rs_result, dtype=torch.float)
 
 
 @pytest.mark.skipif(not _NLTK_AVAILABLE, reason="test requires nltk")
@@ -208,4 +220,37 @@ def test_rouge_metric_normalizer_tokenizer(pl_rouge_metric_key):
     )
     metrics_score = scorer.compute()
 
-    np.isclose(metrics_score[rouge_level + "_" + metric], original_score, atol=1e-8, equal_nan=True)
+    assert torch.isclose(metrics_score[rouge_level + "_" + metric], original_score)
+
+
+@pytest.mark.parametrize(
+    "pl_rouge_metric_key",
+    [
+        "rougeL_precision",
+        "rougeL_recall",
+        "rougeL_fmeasure",
+        "rougeLsum_precision",
+        "rougeLsum_recall",
+        "rougeLsum_fmeasure",
+    ],
+)
+@pytest.mark.parametrize("use_stemmer", [False, True])
+def test_rouge_lsum_score(pl_rouge_metric_key, use_stemmer):
+    """Specific tests to verify the correctness of Rouge-L and Rouge-LSum metric."""
+    rouge_level, metric = pl_rouge_metric_key.split("_")
+    original_score = _compute_rouge_score(
+        preds=_inputs_summarization.preds,
+        target=_inputs_summarization.targets,
+        rouge_level=rouge_level,
+        metric=metric,
+        accumulate=None,
+        use_stemmer=use_stemmer,
+    )
+
+    metrics_score = rouge_score(
+        _inputs_summarization.preds,
+        _inputs_summarization.targets,
+        rouge_keys=rouge_level,
+        use_stemmer=use_stemmer,
+    )
+    assert torch.isclose(metrics_score[rouge_level + "_" + metric], original_score)

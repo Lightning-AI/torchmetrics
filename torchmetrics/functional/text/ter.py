@@ -92,7 +92,7 @@ class _TercomTokenizer:
         self.lowercase = lowercase
         self.asian_support = asian_support
 
-    @lru_cache(maxsize=2 ** 16)
+    @lru_cache(maxsize=2**16)
     def __call__(self, sentence: str) -> str:
         """Apply a different tokenization techniques according.
 

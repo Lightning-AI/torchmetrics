@@ -153,3 +153,28 @@ def test_compare_fid(tmpdir, feature=2048):
     tm_res = metric.compute()
 
     assert torch.allclose(tm_res.cpu(), torch.tensor([torch_fid["frechet_inception_distance"]]), atol=1e-3)
+
+
+@pytest.mark.parametrize("reset_real_features", [True, False])
+def test_reset_real_features_arg(reset_real_features):
+    metric = FrechetInceptionDistance(feature=64, reset_real_features=reset_real_features)
+
+    metric.update(torch.randint(0, 180, (2, 3, 299, 299), dtype=torch.uint8), real=True)
+    metric.update(torch.randint(0, 180, (2, 3, 299, 299), dtype=torch.uint8), real=False)
+
+    assert len(metric.real_features) == 1
+    assert list(metric.real_features[0].shape) == [2, 64]
+
+    assert len(metric.fake_features) == 1
+    assert list(metric.fake_features[0].shape) == [2, 64]
+
+    metric.reset()
+
+    # fake features should always reset
+    assert len(metric.fake_features) == 0
+
+    if reset_real_features:
+        assert len(metric.real_features) == 0
+    else:
+        assert len(metric.real_features) == 1
+        assert list(metric.real_features[0].shape) == [2, 64]
