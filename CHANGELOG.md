@@ -44,7 +44,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added negative `ignore_index` for the Accuracy metric ([#362](https://github.com/PyTorchLightning/metrics/pull/362))
 
 
+- Added `SpectralDistortionIndex` metric to image domain ([#873](https://github.com/PyTorchLightning/metrics/pull/873))
+
+
 - Added `adaptive_k` for the `RetrievalPrecision` metric ([#910](https://github.com/PyTorchLightning/metrics/pull/910))
+
+
+- Added `reset_real_features` argument image quality assesment metrics ([#722](https://github.com/PyTorchLightning/metrics/pull/722))
+
+
+- Added new keyword argument `compute_on_cpu` to all metrics ([#867](https://github.com/PyTorchLightning/metrics/pull/867))
 
 
 - Added `Perplexity` metric ([#922](https://github.com/PyTorchLightning/metrics/pull/922))
@@ -52,7 +61,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Made `num_classes` in `jaccard_index` a required argument ([#853](https://github.com/PyTorchLightning/metrics/pull/853))
+- Made `num_classes` in `jaccard_index` a required argument ([#853](https://github.com/PyTorchLightning/metrics/pull/853), [#914](https://github.com/PyTorchLightning/metrics/pull/914))
 
 
 - Added normalizer, tokenizer to ROUGE metric ([#838](https://github.com/PyTorchLightning/metrics/pull/838))
@@ -134,6 +143,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 - Fixed `BestScore` on GPU ([#912](https://github.com/PyTorchLightning/metrics/pull/912))
+
+- Fixed Lsum computation for `ROUGEScore` ([#944](https://github.com/PyTorchLightning/metrics/pull/944))
 
 
 ## [0.7.3] - 2022-03-23
