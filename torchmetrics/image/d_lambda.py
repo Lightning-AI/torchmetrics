@@ -16,7 +16,7 @@ from typing import Any, List
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.functional.image.d_lambda import _d_lambda_compute, _d_lambda_update
+from torchmetrics.functional.image.d_lambda import _spectral_distortion_index_compute, _spectral_distortion_index_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
@@ -87,7 +87,7 @@ class SpectralDistortionIndex(Metric):
             preds: Low resolution multispectral image
             target: High resolution fused image
         """
-        preds, target = _d_lambda_update(preds, target)
+        preds, target = _spectral_distortion_index_update(preds, target)
         self.preds.append(preds)
         self.target.append(target)
 
@@ -95,4 +95,4 @@ class SpectralDistortionIndex(Metric):
         """Computes and returns spectral distortion index."""
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
-        return _d_lambda_compute(preds, target, self.p, self.reduction)
+        return _spectral_distortion_index_compute(preds, target, self.p, self.reduction)

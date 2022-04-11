@@ -23,7 +23,7 @@ from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.distributed import reduce
 
 
-def _d_lambda_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
+def _spectral_distortion_index_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
     """Updates and returns variables required to compute Spectral Distortion Index. Checks for same shape and type
     of the input tensors.
 
@@ -44,7 +44,7 @@ def _d_lambda_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
     return preds, target
 
 
-def _d_lambda_compute(
+def _spectral_distortion_index_compute(
     preds: Tensor,
     target: Tensor,
     p: int = 1,
@@ -128,5 +128,5 @@ def spectral_distortion_index(
     """
     if not isinstance(p, int) or p <= 0:
         raise ValueError(f"Expected `p` to be a positive integer. Got p: {p}.")
-    preds, target = _d_lambda_update(preds, target)
-    return _d_lambda_compute(preds, target, p, reduction)
+    preds, target = _spectral_distortion_index_update(preds, target)
+    return _spectral_distortion_index_compute(preds, target, p, reduction)
