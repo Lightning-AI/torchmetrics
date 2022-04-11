@@ -422,15 +422,19 @@ PeakSignalNoiseRatio
 .. autoclass:: torchmetrics.PeakSignalNoiseRatio
     :noindex:
 
+
 RelativeAverageSpectralError
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: torchmetrics.RelativeAverageSpectralError
     :noindex:
 
+
 RootMeanSquaredErrorUsingSlidingWindow
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 .. autoclass:: torchmetrics.RootMeanSquaredErrorUsingSlidingWindow
+    :noindex:
+
 
 SpectralAngleMapper
 ~~~~~~~~~~~~~~~~~~~
@@ -438,11 +442,20 @@ SpectralAngleMapper
 .. autoclass:: torchmetrics.SpectralAngleMapper
     :noindex:
 
+
+SpectralDistortionIndex
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.SpectralDistortionIndex
+    :noindex:
+
+
 StructuralSimilarityIndexMeasure
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: torchmetrics.StructuralSimilarityIndexMeasure
     :noindex:
+
 
 UniversalImageQualityIndex
 ~~~~~~~~~~~~~~~~~~~~~~~~~~

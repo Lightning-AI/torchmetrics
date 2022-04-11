@@ -56,6 +56,7 @@ from torchmetrics.image import (  # noqa: E402
     RelativeAverageSpectralError,
     RootMeanSquaredErrorUsingSlidingWindow,
     SpectralAngleMapper,
+    SpectralDistortionIndex,
     StructuralSimilarityIndexMeasure,
     UniversalImageQualityIndex,
 )
@@ -175,6 +176,7 @@ __all__ = [
     "SpearmanCorrCoef",
     "Specificity",
     "SpectralAngleMapper",
+    "SpectralDistortionIndex",
     "SQuAD",
     "StructuralSimilarityIndexMeasure",
     "StatScores",
