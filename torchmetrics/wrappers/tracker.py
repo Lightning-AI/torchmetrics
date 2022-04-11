@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import warnings
 from copy import deepcopy
 from typing import Any, Dict, List, Tuple, Union
 
@@ -142,13 +141,9 @@ class MetricTracker(nn.ModuleList):
             return {k: torch.stack([r[k] for r in res], dim=0) for k in keys}
         return torch.stack(res, dim=0)
 
-    def reset(self, exclude_states: Optional[Sequence[str]] = None) -> None:
-        """Resets the current metric being tracked.
-
-        Args:
-            exclude_states: sequence of strings indicating metric states that should not be reset.
-        """
-        self[-1].reset(exclude_states)
+    def reset(self) -> None:
+        """Resets the current metric being tracked."""
+        self[-1].reset()
 
     def reset_all(self) -> None:
         """Resets all metrics being tracked."""
@@ -157,14 +152,7 @@ class MetricTracker(nn.ModuleList):
 
     def best_metric(
         self, return_step: bool = False
-    ) -> Union[
-        None,
-        float,
-        Tuple[int, float],
-        Tuple[None, None],
-        Dict[str, Union[float, None]],
-        Tuple[Dict[str, Union[int, None]], Dict[str, Union[float, None]]],
-    ]:
+    ) -> Union[float, Tuple[int, float], Dict[str, float], Tuple[Dict[str, int], Dict[str, float]]]:
         """Returns the highest metric out of all tracked.
 
         Args:
@@ -175,39 +163,18 @@ class MetricTracker(nn.ModuleList):
         """
         if isinstance(self._base_metric, Metric):
             fn = torch.max if self.maximize else torch.min
-            try:
-                idx, best = fn(self.compute_all(), 0)
-                if return_step:
-                    return idx.item(), best.item()
-                return best.item()
-            except ValueError as error:
-                warnings.warn(
-                    f"Encountered the following error when trying to get the best metric: {error}"
-                    "this is probably due to the 'best' not being defined for this metric."
-                    "Returning `None` instead.",
-                    UserWarning,
-                )
-                if return_step:
-                    return None, None
-                return None
-
-        else:  # this is a metric collection
+            idx, best = fn(self.compute_all(), 0)
+            if return_step:
+                return idx.item(), best.item()
+            return best.item()
+        else:
             res = self.compute_all()
             maximize = self.maximize if isinstance(self.maximize, list) else len(res) * [self.maximize]
             idx, best = {}, {}
             for i, (k, v) in enumerate(res.items()):
-                try:
-                    fn = torch.max if maximize[i] else torch.min
-                    out = fn(v, 0)
-                    idx[k], best[k] = out[0].item(), out[1].item()
-                except ValueError as error:
-                    warnings.warn(
-                        f"Encountered the following error when trying to get the best metric for metric {k}:"
-                        f"{error} this is probably due to the 'best' not being defined for this metric."
-                        "Returning `None` instead.",
-                        UserWarning,
-                    )
-                    idx[k], best[k] = None, None
+                fn = torch.max if maximize[i] else torch.min
+                out = fn(v, 0)
+                idx[k], best[k] = out[0].item(), out[1].item()
 
             if return_step:
                 return idx, best

@@ -226,14 +226,10 @@ class MetricCollection(nn.ModuleDict):
         res = _flatten_dict(res)
         return {self._set_name(k): v for k, v in res.items()}
 
-    def reset(self, exclude_states: Optional[Sequence[str]] = None) -> None:
-        """Iteratively call reset for each metric.
-
-        Args:
-            exclude_states: sequence of strings indicating metric states that should not be reset.
-        """
+    def reset(self) -> None:
+        """Iteratively call reset for each metric."""
         for _, m in self.items(keep_base=True):
-            m.reset(exclude_states=exclude_states)
+            m.reset()
 
     def clone(self, prefix: Optional[str] = None, postfix: Optional[str] = None) -> "MetricCollection":
         """Make a copy of the metric collection
