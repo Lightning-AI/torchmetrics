@@ -70,7 +70,7 @@ from torchmetrics.regression import (  # noqa: E402
     SpearmanCorrCoef,
     SymmetricMeanAbsolutePercentageError,
     TweedieDevianceScore,
-    WeightedAbsolutePercentageError,
+    WeightedMeanAbsolutePercentageError,
 )
 from torchmetrics.retrieval import (  # noqa: E402
     RetrievalFallOut,
@@ -181,7 +181,7 @@ __all__ = [
     "SymmetricMeanAbsolutePercentageError",
     "TranslationEditRate",
     "UniversalImageQualityIndex",
-    "WeightedAbsolutePercentageError",
+    "WeightedMeanAbsolutePercentageError",
     "WordErrorRate",
     "WordInfoLost",
     "WordInfoPreserved",

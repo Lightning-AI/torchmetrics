@@ -79,3 +79,4 @@
 .. _ExtendedEditDistance: https://aclanthology.org/W19-5359.pdf
 .. _MultiScaleSSIM: https://ece.uwaterloo.ca/~z70wang/publications/msssim.pdf
 .. _UniversalImageQualityIndex: https://ieeexplore.ieee.org/document/995823
+.. _WMAPE: https://en.wikipedia.org/wiki/WMAPE

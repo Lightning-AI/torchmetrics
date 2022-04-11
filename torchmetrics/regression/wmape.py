@@ -1,14 +1,14 @@
 import torch
 from torch import Tensor
 
-from torchmetrics.functional.regression.wape import (
-    _weighted_absolute_percentage_error_compute,
-    _weighted_absolute_percentage_error_update,
+from torchmetrics.functional.regression.wmape import (
+    _weighted_mean_absolute_percentage_error_compute,
+    _weighted_mean_absolute_percentage_error_update,
 )
 from torchmetrics.metric import Metric
 
 
-class WeightedAbsolutePercentageError(Metric):
+class WeightedMeanAbsolutePercentageError(Metric):
     r"""
     Computes weighted absolute percentage error (`WAPE`_).
 
@@ -45,11 +45,11 @@ class WeightedAbsolutePercentageError(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        sum_abs_error, sum_scale = _weighted_absolute_percentage_error_update(preds, target)
+        sum_abs_error, sum_scale = _weighted_mean_absolute_percentage_error_update(preds, target)
 
         self.sum_abs_error += sum_abs_error
         self.sum_scale += sum_scale
 
     def compute(self) -> Tensor:
         """Computes weighted absolute percentage error over state."""
-        return _weighted_absolute_percentage_error_compute(self.sum_abs_error, self.sum_scale)
+        return _weighted_mean_absolute_percentage_error_compute(self.sum_abs_error, self.sum_scale)

@@ -6,7 +6,7 @@ from torch import Tensor
 from torchmetrics.utilities.checks import _check_same_shape
 
 
-def _weighted_absolute_percentage_error_update(
+def _weighted_mean_absolute_percentage_error_update(
     preds: Tensor,
     target: Tensor,
 ) -> Tuple[Tensor, int]:
@@ -16,7 +16,6 @@ def _weighted_absolute_percentage_error_update(
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
-        epsilon: Avoids ZeroDivisionError.
     """
 
     _check_same_shape(preds, target)
@@ -27,7 +26,7 @@ def _weighted_absolute_percentage_error_update(
     return sum_abs_error, sum_scale
 
 
-def _weighted_absolute_percentage_error_compute(
+def _weighted_mean_absolute_percentage_error_compute(
     sum_abs_error: Tensor,
     sum_scale: Tensor,
     epsilon: float = 1.17e-06,
@@ -35,15 +34,19 @@ def _weighted_absolute_percentage_error_compute(
     """Computes Weighted Absolute Percentage Error.
 
     Args:
-        num_obs: Number of predictions or observations
+        sum_abs_error: scalar with sum of absolute errors
+        sum_scale: scalar with sum of target values
+        epsilon: small float to prevent division by zero
     """
-
     return sum_abs_error / torch.clamp(sum_scale, min=epsilon)
 
 
-def weighted_absolute_percentage_error(preds: Tensor, target: Tensor) -> Tensor:
+def weighted_mean_absolute_percentage_error(preds: Tensor, target: Tensor) -> Tensor:
     r"""
-    Computes weighted absolute percentage error (WAPE_):
+    Computes weighted mean absolute percentage error (WMAPE_):
+
+    .. math::
+        \text{WMAPE} = \frac{\sum_{t=1}^n | y - \hat{y} | }{y}
 
     Where :math:`y` is a tensor of target values, and :math:`\hat{y}` is a tensor of predictions.
 
@@ -52,17 +55,22 @@ def weighted_absolute_percentage_error(preds: Tensor, target: Tensor) -> Tensor:
         target: ground truth labels
 
     Return:
-        Tensor with WAPE.
+        Tensor with WMAPE.
 
     Example:
-
+        >>> import torch
+        >>> _ = torch.manual_seed(42)
+        >>> preds = torch.randn(20,)
+        >>> target = torch.randn(20,)
+        >>> weighted_mean_absolute_percentage_error(preds, target)
+        tensor(1.3967)
 
     """
-    sum_abs_error, sum_scale = _weighted_absolute_percentage_error_update(
+    sum_abs_error, sum_scale = _weighted_mean_absolute_percentage_error_update(
         preds,
         target,
     )
-    weighted_ape = _weighted_absolute_percentage_error_compute(
+    weighted_ape = _weighted_mean_absolute_percentage_error_compute(
         sum_abs_error,
         sum_scale,
     )
