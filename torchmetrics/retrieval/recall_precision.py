@@ -16,7 +16,8 @@ from typing import Any, Dict, Optional, Tuple
 import torch
 from torch import Tensor, tensor
 
-from torchmetrics import RetrievalRecall, RetrievalPrecision, Metric
+from torchmetrics import Metric
+from torchmetrics.retrieval import RetrievalRecall, RetrievalPrecision
 from torchmetrics.utilities.checks import _check_retrieval_inputs
 
 
@@ -85,13 +86,28 @@ class RetrievalRecallAtFixedPrecision(Metric):
         self,
         min_precision: float,
         max_k: Optional[int] = None,
+        empty_target_action: str = "neg",
+        ignore_index: Optional[int] = None,
         compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(
-            compute_on_step=compute_on_step,
-            **kwargs,
-        )
+        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        self.allow_non_binary_target = False
+
+        empty_target_action_options = ("error", "skip", "neg", "pos")
+        if empty_target_action not in empty_target_action_options:
+            raise ValueError(f"Argument `empty_target_action` received a wrong value `{empty_target_action}`.")
+
+        self.empty_target_action = empty_target_action
+
+        if ignore_index is not None and not isinstance(ignore_index, int):
+            raise ValueError("Argument `ignore_index` must be an integer or None.")
+
+        self.ignore_index = ignore_index
+
+        self.add_state("indexes", default=[], dist_reduce_fx=None)
+        self.add_state("preds", default=[], dist_reduce_fx=None)
+        self.add_state("target", default=[], dist_reduce_fx=None)
 
         if (max_k is not None) and not (isinstance(max_k, int) and max_k > 0):
             raise ValueError("`max_k` has to be a positive integer or None")
@@ -120,6 +136,9 @@ class RetrievalRecallAtFixedPrecision(Metric):
         indexes = torch.cat(self.indexes, dim=0)
         preds = torch.cat(self.preds, dim=0)
         target = torch.cat(self.target, dim=0)
+
+        if self.max_k is None:
+            self.max_k = preds.shape[-1]
 
         # precision recall k
         prk = []
