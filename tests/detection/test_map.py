@@ -99,6 +99,7 @@ _inputs = Input(
     ],
 )
 
+# example from this issue https://github.com/PyTorchLightning/metrics/issues/943
 _inputs2 = Input(
     preds=[
         [
