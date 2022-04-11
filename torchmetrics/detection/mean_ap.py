@@ -381,12 +381,12 @@ class MeanAveragePrecision(Metric):
 
         # Detections
         nb_det = 0
-        det_ignore = torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool, device=self.device)
+        det_ignore = torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool, device=gt.device)
 
         return {
-            "dtMatches": torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool, device=self.device),
-            "gtMatches": torch.zeros((nb_iou_thrs, nb_gt), dtype=torch.bool, device=self.device),
-            "dtScores": torch.zeros(nb_det, dtype=torch.bool, device=self.device),
+            "dtMatches": torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool, device=gt.device),
+            "gtMatches": torch.zeros((nb_iou_thrs, nb_gt), dtype=torch.bool, device=gt.device),
+            "dtScores": torch.zeros(nb_det, dtype=torch.bool, device=gt.device),
             "gtIgnore": gt_ignore,
             "dtIgnore": det_ignore,
         }
@@ -397,7 +397,7 @@ class MeanAveragePrecision(Metric):
         """Some predictions but no GT."""
         # GTs
         nb_gt = 0
-        gt_ignore = torch.zeros(nb_gt, dtype=torch.bool, device=self.device)
+        gt_ignore = torch.zeros(nb_gt, dtype=torch.bool, device=det.device)
 
         # Detections
         det = det[det_label_mask]
@@ -408,14 +408,14 @@ class MeanAveragePrecision(Metric):
         if len(det) > max_det:
             det = det[:max_det]
         nb_det = len(det)
-        det_areas = box_area(det).to(self.device)
+        det_areas = box_area(det).to(det.device)
         det_ignore_area = (det_areas < area_range[0]) | (det_areas > area_range[1])
         ar = det_ignore_area.reshape((1, nb_det))
         det_ignore = torch.repeat_interleave(ar, nb_iou_thrs, 0)
 
         return {
-            "dtMatches": torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool, device=self.device),
-            "gtMatches": torch.zeros((nb_iou_thrs, nb_gt), dtype=torch.bool, device=self.device),
+            "dtMatches": torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool, device=det.device),
+            "gtMatches": torch.zeros((nb_iou_thrs, nb_gt), dtype=torch.bool, device=det.device),
             "dtScores": scores_sorted,
             "gtIgnore": gt_ignore,
             "dtIgnore": det_ignore,

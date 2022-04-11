@@ -99,6 +99,39 @@ _inputs = Input(
     ],
 )
 
+_inputs2 = Input(
+    preds=[
+        [
+            dict(
+                boxes=torch.Tensor([[258.0, 41.0, 606.0, 285.0]]),
+                scores=torch.Tensor([0.536]),
+                labels=torch.IntTensor([0]),
+            ),
+        ],
+        [
+            dict(
+                boxes=torch.Tensor([[258.0, 41.0, 606.0, 285.0]]),
+                scores=torch.Tensor([0.536]),
+                labels=torch.IntTensor([0]),
+            )
+        ],
+    ],
+    target=[
+        [
+            dict(
+                boxes=torch.Tensor([[214.0, 41.0, 562.0, 285.0]]),
+                labels=torch.IntTensor([0]),
+            )
+        ],
+        [
+            dict(
+                boxes=torch.Tensor([]),
+                labels=torch.IntTensor([]),
+            )
+        ],
+    ],
+)
+
 
 def _compare_fn(preds, target) -> dict:
     """Comparison function for map implementation.
@@ -248,12 +281,13 @@ def _move_to_gpu(input):
 
 @pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
 @pytest.mark.skipif(_gpu_test_condition, reason="test requires CUDA availability")
-def test_map_gpu():
+@pytest.mark.parametrize("inputs", [_inputs, _inputs2])
+def test_map_gpu(inputs):
     """Test predictions on single gpu."""
     metric = MeanAveragePrecision()
     metric = metric.to("cuda")
-    preds = _inputs.preds[0]
-    targets = _inputs.target[0]
+    preds = inputs.preds[0]
+    targets = inputs.target[0]
 
     metric.update(_move_to_gpu(preds), _move_to_gpu(targets))
     metric.compute()
