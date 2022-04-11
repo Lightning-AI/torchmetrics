@@ -66,8 +66,8 @@ def _spectral_distortion_index_compute(
         >>> _ = torch.manual_seed(42)
         >>> preds = torch.rand([16, 3, 16, 16])
         >>> target = torch.rand([16, 3, 16, 16])
-        >>> preds, target = _d_lambda_update(preds, target)
-        >>> _d_lambda_compute(preds, target)
+        >>> preds, target = _spectral_distortion_index_update(preds, target)
+        >>> _spectral_distortion_index_compute(preds, target)
         tensor(0.0234)
     """
     length = preds.shape[1]
