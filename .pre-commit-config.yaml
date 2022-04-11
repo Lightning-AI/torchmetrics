@@ -34,11 +34,11 @@ repos:
       - id: check-executables-have-shebangs
       - id: check-case-conflict
       - id: check-added-large-files
-        args: ['--maxkb=250', '--enforce-all']
+        args: ['--maxkb=100', '--enforce-all']
       - id: detect-private-key
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v2.31.0
+    rev: v2.31.1
     hooks:
       - id: pyupgrade
         args: [--py36-plus]
@@ -58,13 +58,13 @@ repos:
         require_serial: false
 
   - repo: https://github.com/psf/black
-    rev: 21.12b0
+    rev: 22.3.0
     hooks:
       - id: black
         name: Format code
 
   - repo: https://github.com/executablebooks/mdformat
-    rev: 0.7.11
+    rev: 0.7.14
     hooks:
       - id: mdformat
         additional_dependencies:

@@ -15,6 +15,7 @@ from typing import Any, Dict, List, Optional
 
 import torch
 from torch import Tensor
+from typing_extensions import Literal
 
 from torchmetrics.functional.regression.cosine_similarity import _cosine_similarity_compute, _cosine_similarity_update
 from torchmetrics.metric import Metric
@@ -65,7 +66,7 @@ class CosineSimilarity(Metric):
 
     def __init__(
         self,
-        reduction: str = "sum",
+        reduction: Literal["mean", "sum", "none", None] = "sum",
         compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
@@ -78,7 +79,7 @@ class CosineSimilarity(Metric):
         self.add_state("preds", [], dist_reduce_fx="cat")
         self.add_state("target", [], dist_reduce_fx="cat")
 
-    def _update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update metric states with predictions and targets.
 
         Args:
@@ -90,7 +91,7 @@ class CosineSimilarity(Metric):
         self.preds.append(preds)
         self.target.append(target)
 
-    def _compute(self) -> Tensor:
+    def compute(self) -> Tensor:
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         return _cosine_similarity_compute(preds, target, self.reduction)

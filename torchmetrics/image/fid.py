@@ -161,6 +161,10 @@ class FrechetInceptionDistance(Metric):
             - an ``nn.Module`` for using a custom feature extractor. Expects that its forward method returns
               an ``[N,d]`` matrix where ``N`` is the batch size and ``d`` is the feature size.
 
+        reset_real_features: Whether to also reset the real features. Since in many cases the real dataset does not
+            change, the features can cached them to avoid recomputing them which is costly. Set this to ``False`` if
+            your dataset does not change.
+
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
 
@@ -186,6 +190,8 @@ class FrechetInceptionDistance(Metric):
             If ``feature`` is set to an ``int`` not in [64, 192, 768, 2048]
         TypeError:
             If ``feature`` is not an ``str``, ``int`` or ``torch.nn.Module``
+        ValueError:
+            If ``reset_real_features`` is not an ``bool``
 
     Example:
         >>> import torch
@@ -203,11 +209,13 @@ class FrechetInceptionDistance(Metric):
     """
     real_features: List[Tensor]
     fake_features: List[Tensor]
-    higher_is_better = False
+    higher_is_better: bool = False
+    is_differentiable: bool = False
 
     def __init__(
         self,
         feature: Union[int, torch.nn.Module] = 2048,
+        reset_real_features: bool = True,
         compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
@@ -237,10 +245,14 @@ class FrechetInceptionDistance(Metric):
         else:
             raise TypeError("Got unknown input to argument `feature`")
 
+        if not isinstance(reset_real_features, bool):
+            raise ValueError("Arugment `reset_real_features` expected to be a bool")
+        self.reset_real_features = reset_real_features
+
         self.add_state("real_features", [], dist_reduce_fx=None)
         self.add_state("fake_features", [], dist_reduce_fx=None)
 
-    def _update(self, imgs: Tensor, real: bool) -> None:  # type: ignore
+    def update(self, imgs: Tensor, real: bool) -> None:  # type: ignore
         """Update the state with extracted features.
 
         Args:
@@ -254,7 +266,7 @@ class FrechetInceptionDistance(Metric):
         else:
             self.fake_features.append(features)
 
-    def _compute(self) -> Tensor:
+    def compute(self) -> Tensor:
         """Calculate FID score based on accumulated extracted features from the two distributions."""
         real_features = dim_zero_cat(self.real_features)
         fake_features = dim_zero_cat(self.fake_features)
@@ -274,3 +286,12 @@ class FrechetInceptionDistance(Metric):
 
         # compute fid
         return _compute_fid(mean1, cov1, mean2, cov2).to(orig_dtype)
+
+    def reset(self) -> None:
+        if not self.reset_real_features:
+            # remove temporarily to avoid resetting
+            value = self._defaults.pop("real_features")
+            super().reset()
+            self._defaults["real_features"] = value
+        else:
+            super().reset()

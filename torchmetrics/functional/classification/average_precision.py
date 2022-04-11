@@ -21,6 +21,7 @@ from torchmetrics.functional.classification.precision_recall_curve import (
     _precision_recall_curve_compute,
     _precision_recall_curve_update,
 )
+from torchmetrics.utilities.data import _bincount
 
 
 def _average_precision_update(
@@ -102,7 +103,7 @@ def _average_precision_compute(
         if preds.ndim == target.ndim and target.ndim > 1:
             weights = target.sum(dim=0).float()
         else:
-            weights = torch.bincount(target, minlength=num_classes).float()
+            weights = _bincount(target, minlength=num_classes).float()
         weights = weights / torch.sum(weights)
     else:
         weights = None

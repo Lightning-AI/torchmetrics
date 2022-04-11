@@ -10,6 +10,7 @@ on:  # Trigger the workflow on push or pull request, but only for the master bra
 jobs:
   pkg-check:
     runs-on: ubuntu-20.04
+    timeout-minutes: 10
 
     steps:
       - uses: actions/checkout@master
@@ -41,6 +42,7 @@ jobs:
       matrix:
         os: [ubuntu-20.04, macOS-10.15 , windows-2019]
         python-version: [3.7]
+    timeout-minutes: 10
 
     steps:
       - uses: actions/checkout@v2
