@@ -53,8 +53,9 @@ def _sk_pearsonr(preds, target):
 class TestPearsonCorrcoef(MetricTester):
     atol = 1e-2
 
+    @pytest.mark.parametrize("compute_on_cpu", [True, False])
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_pearson_corrcoef(self, preds, target, ddp):
+    def test_pearson_corrcoef(self, preds, target, compute_on_cpu, ddp):
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -62,6 +63,7 @@ class TestPearsonCorrcoef(MetricTester):
             metric_class=PearsonCorrCoef,
             sk_metric=_sk_pearsonr,
             dist_sync_on_step=False,
+            metric_args={"compute_on_cpu": compute_on_cpu},
         )
 
     def test_pearson_corrcoef_functional(self, preds, target):
