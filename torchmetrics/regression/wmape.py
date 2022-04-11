@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Any, Dict
+
 import torch
 from torch import Tensor
 
@@ -50,7 +52,7 @@ class WeightedMeanAbsolutePercentageError(Metric):
     sum_abs_error: Tensor
     sum_scale: Tensor
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: Dict[str, Any]) -> None:
         super().__init__(**kwargs)
         self.add_state("sum_abs_error", default=torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("sum_scale", default=torch.tensor(0.0), dist_reduce_fx="sum")
