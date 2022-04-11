@@ -53,7 +53,7 @@ class WeightedMeanAbsolutePercentageError(Metric):
     sum_scale: Tensor
 
     def __init__(self, **kwargs: Dict[str, Any]) -> None:
-        super().__init__(**kwargs)
+        super().__init__(compute_on_step=None, **kwargs)
         self.add_state("sum_abs_error", default=torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("sum_scale", default=torch.tensor(0.0), dist_reduce_fx="sum")
 
