@@ -135,6 +135,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed `BestScore` on GPU ([#912](https://github.com/PyTorchLightning/metrics/pull/912))
 
+- Fixed Lsum computation for `ROUGEScore` ([#944](https://github.com/PyTorchLightning/metrics/pull/944))
+
 
 ## [0.7.3] - 2022-03-23
 
