@@ -286,10 +286,8 @@ def test_map_gpu(inputs):
     """Test predictions on single gpu."""
     metric = MeanAveragePrecision()
     metric = metric.to("cuda")
-    preds = inputs.preds[0]
-    targets = inputs.target[0]
-
-    metric.update(_move_to_gpu(preds), _move_to_gpu(targets))
+    for preds, targets in zip(inputs.preds, inputs.target):
+        metric.update(_move_to_gpu(preds), _move_to_gpu(targets))
     metric.compute()
 
 
