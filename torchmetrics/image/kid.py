@@ -148,6 +148,8 @@ class KernelInceptionDistance(Metric):
             If ``gamma`` is niether ``None`` or a float larger than 0
         ValueError:
             If ``coef`` is not an float larger than 0
+        ValueError:
+            If ``reset_real_features`` is not an ``bool``
 
     Example:
         >>> import torch
@@ -166,7 +168,8 @@ class KernelInceptionDistance(Metric):
     """
     real_features: List[Tensor]
     fake_features: List[Tensor]
-    higher_is_better = False
+    higher_is_better: bool = False
+    is_differentiable: bool = False
 
     def __init__(
         self,
@@ -226,13 +229,13 @@ class KernelInceptionDistance(Metric):
             raise ValueError("Argument `coef` expected to be float larger than 0")
         self.coef = coef
 
+        if not isinstance(reset_real_features, bool):
+            raise ValueError("Arugment `reset_real_features` expected to be a bool")
+        self.reset_real_features = reset_real_features
+
         # states for extracted features
         self.add_state("real_features", [], dist_reduce_fx=None)
         self.add_state("fake_features", [], dist_reduce_fx=None)
-
-        exclude_states = () if reset_real_features else ("real_features",)
-
-        self._reset_excluded_states = exclude_states
 
     def update(self, imgs: Tensor, real: bool) -> None:  # type: ignore
         """Update the state with extracted features.
@@ -276,5 +279,11 @@ class KernelInceptionDistance(Metric):
         kid_scores = torch.stack(kid_scores_)
         return kid_scores.mean(), kid_scores.std(unbiased=False)
 
-    def reset(self, exclude_states: Optional[Sequence[str]] = None) -> None:
-        super().reset({*self._reset_excluded_states, *exclude_states})
+    def reset(self) -> None:
+        if not self.reset_real_features:
+            # remove temporarily to avoid resetting
+            value = self._defaults.pop("real_features")
+            super().reset()
+            self._defaults["real_features"] = value
+        else:
+            super().reset()
