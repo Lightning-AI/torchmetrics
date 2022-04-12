@@ -136,6 +136,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed device mismatch for `MAP` metric in specific cases ([#950](https://github.com/PyTorchLightning/metrics/pull/950))
+
 - Improved testing speed ([#820](https://github.com/PyTorchLightning/metrics/pull/820))
 
 
