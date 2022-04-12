@@ -505,11 +505,11 @@ class MeanAveragePrecision(Metric):
             det_ignore, torch.logical_and(det_matches == 0, torch.repeat_interleave(ar, nb_iou_thrs, 0))
         )
         return {
-            "dtMatches": det_matches,
-            "gtMatches": gt_matches,
-            "dtScores": scores_sorted,
-            "gtIgnore": gt_ignore,
-            "dtIgnore": det_ignore,
+            "dtMatches": det_matches.to(self.device),
+            "gtMatches": gt_matches.to(self.device),
+            "dtScores": scores_sorted.to(self.device),
+            "gtIgnore": gt_ignore.to(self.device),
+            "dtIgnore": det_ignore.to(self.device),
         }
 
     @staticmethod
@@ -585,7 +585,7 @@ class MeanAveragePrecision(Metric):
             else:
                 prec = prec[:, :, area_inds, mdet_inds]
 
-        mean_prec = Tensor([-1]) if len(prec[prec > -1]) == 0 else torch.mean(prec[prec > -1])
+        mean_prec = torch.tensor([-1]) if len(prec[prec > -1]) == 0 else torch.mean(prec[prec > -1])
         return mean_prec
 
     def _calculate(self, class_ids: List) -> Tuple[MAPMetricResults, MARMetricResults]:
@@ -623,7 +623,7 @@ class MeanAveragePrecision(Metric):
         scores = -torch.ones((nb_iou_thrs, nb_rec_thrs, nb_classes, nb_bbox_areas, nb_max_det_thrs))
 
         # move tensors if necessary
-        rec_thresholds_tensor = Tensor(self.rec_thresholds)
+        rec_thresholds_tensor = torch.tensor(self.rec_thresholds)
 
         # retrieve E at each category, area range, and max number of detections
         for idx_cls, _ in enumerate(class_ids):
@@ -771,8 +771,8 @@ class MeanAveragePrecision(Metric):
         map_val, mar_val = self._summarize_results(precisions, recalls)
 
         # if class mode is enabled, evaluate metrics per class
-        map_per_class_values: Tensor = Tensor([-1])
-        mar_max_dets_per_class_values: Tensor = Tensor([-1])
+        map_per_class_values: Tensor = torch.tensor([-1])
+        mar_max_dets_per_class_values: Tensor = torch.tensor([-1])
         if self.class_metrics:
             map_per_class_list = []
             mar_max_dets_per_class_list = []
@@ -784,8 +784,8 @@ class MeanAveragePrecision(Metric):
                 map_per_class_list.append(cls_map.map)
                 mar_max_dets_per_class_list.append(cls_mar[f"mar_{self.max_detection_thresholds[-1]}"])
 
-            map_per_class_values = Tensor(map_per_class_list)
-            mar_max_dets_per_class_values = Tensor(mar_max_dets_per_class_list)
+            map_per_class_values = torch.tensor(map_per_class_list)
+            mar_max_dets_per_class_values = torch.tensor(mar_max_dets_per_class_list)
 
         metrics = COCOMetricResults()
         metrics.update(map_val)
