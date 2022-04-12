@@ -79,8 +79,8 @@ from torchmetrics.retrieval import (  # noqa: E402
     RetrievalNormalizedDCG,
     RetrievalPrecision,
     RetrievalRecall,
-    RetrievalRPrecision,
     RetrievalRecallAtFixedPrecision,
+    RetrievalRPrecision,
 )
 from torchmetrics.text import (  # noqa: E402
     BLEUScore,
