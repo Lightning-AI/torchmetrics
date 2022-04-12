@@ -104,6 +104,7 @@ extensions = [
     "sphinx_autodoc_typehints",
     "sphinx_paramlinks",
     "sphinx.ext.githubpages",
+    "pt_lightning_sphinx_theme.extensions.lightning_tutorials",
 ]
 
 # Add any paths that contain templates here, relative to this directory.

@@ -30,7 +30,7 @@ class StatScores(Metric):
     ``reduce`` parameter, and additionally by the ``mdmc_reduce`` parameter in the
     multi-dimensional multi-class case.
 
-    Accepts all inputs listed in :ref:`references/modules:input types`.
+    Accepts all inputs listed in :ref:`pages/classification:input types`.
 
     Args:
         threshold:
@@ -72,7 +72,7 @@ class StatScores(Metric):
             one of the following:
 
             - ``None`` [default]: Should be left unchanged if your data is not multi-dimensional
-              multi-class (see :ref:`references/modules:input types` for the definition of input types).
+              multi-class (see :ref:`pages/classification:input types` for the definition of input types).
 
             - ``'samplewise'``: In this case, the statistics are computed separately for each
               sample on the ``N`` axis, and then the outputs are concatenated together. In each
@@ -87,7 +87,7 @@ class StatScores(Metric):
         multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
             than what they appear to be. See the parameter's
-            :ref:`documentation section <references/modules:using the multiclass parameter>`
+            :ref:`documentation section <pages/classification:using the multiclass parameter>`
             for a more detailed explanation and examples.
 
         compute_on_step:
@@ -182,7 +182,7 @@ class StatScores(Metric):
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets. See
-        :ref:`references/modules:input types` for more information on input
+        :ref:`pages/classification:input types` for more information on input
         types.
 
         Args:
