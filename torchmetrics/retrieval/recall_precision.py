@@ -19,6 +19,7 @@ from torch import Tensor, tensor
 from torchmetrics import Metric
 from torchmetrics.retrieval import RetrievalRecall, RetrievalPrecision
 from torchmetrics.utilities.checks import _check_retrieval_inputs
+from torchmetrics.utilities.data import get_group_indexes
 
 
 class RetrievalRecallAtFixedPrecision(Metric):
@@ -86,6 +87,7 @@ class RetrievalRecallAtFixedPrecision(Metric):
         self,
         min_precision: float,
         max_k: Optional[int] = None,
+        adaptive_k: bool = False,
         empty_target_action: str = "neg",
         ignore_index: Optional[int] = None,
         compute_on_step: Optional[bool] = None,
@@ -112,10 +114,14 @@ class RetrievalRecallAtFixedPrecision(Metric):
         if (max_k is not None) and not (isinstance(max_k, int) and max_k > 0):
             raise ValueError("`max_k` has to be a positive integer or None")
 
+        if not isinstance(adaptive_k, bool):
+            raise ValueError("`adaptive_k` has to be a boolean")
+
         if not(isinstance(min_precision, float) and 0. <= min_precision <= 1.):
             raise ValueError("`min_precision` has to be a positive float between 0 and 1")
 
         self.max_k = max_k
+        self.adaptive_k = adaptive_k
         self.min_precision = min_precision
 
     def update(self, preds: Tensor, target: Tensor, indexes: Tensor) -> None:  # type: ignore
@@ -138,13 +144,25 @@ class RetrievalRecallAtFixedPrecision(Metric):
         target = torch.cat(self.target, dim=0)
 
         if self.max_k is None:
-            self.max_k = preds.shape[-1]
+            groups = get_group_indexes(indexes)
+            self.max_k = max(map(len, groups))
 
         # precision recall k
         prk = []
         for k in range(1, self.max_k + 1):
-            rr = RetrievalRecall(k=k)
-            rp = RetrievalPrecision(k=k)
+            rr = RetrievalRecall(
+                k=k,
+                empty_target_action=self.empty_target_action,
+                ignore_index=self.ignore_index,
+                compute_on_step=self.compute_on_step,
+            )
+            rp = RetrievalPrecision(
+                k=k,
+                adaptive_k=self.adaptive_k,
+                empty_target_action=self.empty_target_action,
+                ignore_index=self.ignore_index,
+                compute_on_step=self.compute_on_step,
+            )
             item = rp(preds, target, indexes=indexes), rr(preds, target, indexes=indexes), k
             prk.append(item)
 
