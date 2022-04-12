@@ -18,14 +18,13 @@ import torch
 from torch import Tensor, tensor
 
 from torchmetrics import Metric
-from torchmetrics.retrieval import RetrievalRecall, RetrievalPrecision
+from torchmetrics.retrieval import RetrievalPrecision, RetrievalRecall
 from torchmetrics.utilities.checks import _check_retrieval_inputs
 from torchmetrics.utilities.data import get_group_indexes
 
 
 class RetrievalRecallAtFixedPrecision(Metric):
-    """
-    Computes `IR Recall at fixed Precision`_.
+    """Computes `IR Recall at fixed Precision`_.
 
     Forward accepts:
 
@@ -121,7 +120,7 @@ class RetrievalRecallAtFixedPrecision(Metric):
         if not isinstance(adaptive_k, bool):
             raise ValueError("`adaptive_k` has to be a boolean")
 
-        if not(isinstance(min_precision, float) and 0. <= min_precision <= 1.):
+        if not (isinstance(min_precision, float) and 0.0 <= min_precision <= 1.0):
             raise ValueError("`min_precision` has to be a positive float between 0 and 1")
 
         self.max_k = max_k
@@ -171,8 +170,6 @@ class RetrievalRecallAtFixedPrecision(Metric):
             prk.append(item)
 
         # find best
-        best_recall, _, best_k = max(
-            (r, p, k) for p, r, k in prk if p >= self.min_precision
-        )
+        best_recall, _, best_k = max((r, p, k) for p, r, k in prk if p >= self.min_precision)
 
         return best_recall, best_k

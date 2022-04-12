@@ -1,5 +1,6 @@
-from torchmetrics import RetrievalRecallAtFixedPrecision
 from torch import tensor
+
+from torchmetrics import RetrievalRecallAtFixedPrecision
 
 
 class TestRetrievalRecallAtFixedPrecision:
