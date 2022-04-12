@@ -72,6 +72,7 @@ from torchmetrics.regression import (  # noqa: E402
     SpearmanCorrCoef,
     SymmetricMeanAbsolutePercentageError,
     TweedieDevianceScore,
+    WeightedMeanAbsolutePercentageError,
 )
 from torchmetrics.retrieval import (  # noqa: E402
     RetrievalFallOut,
@@ -118,6 +119,7 @@ __all__ = [
     "CalibrationError",
     "CatMetric",
     "ClasswiseWrapper",
+    "CharErrorRate",
     "CHRFScore",
     "CohenKappa",
     "ConfusionMatrix",
@@ -135,6 +137,7 @@ __all__ = [
     "KLDivergence",
     "LabelRankingAveragePrecision",
     "LabelRankingLoss",
+    "MatchErrorRate",
     "MatthewsCorrCoef",
     "MaxMetric",
     "MeanAbsoluteError",
@@ -182,9 +185,8 @@ __all__ = [
     "SymmetricMeanAbsolutePercentageError",
     "TranslationEditRate",
     "UniversalImageQualityIndex",
+    "WeightedMeanAbsolutePercentageError",
     "WordErrorRate",
-    "CharErrorRate",
-    "MatchErrorRate",
     "WordInfoLost",
     "WordInfoPreserved",
 ]

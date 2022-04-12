@@ -548,6 +548,13 @@ TweedieDevianceScore
     :noindex:
 
 
+WeightedMeanAbsolutePercentageError
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.WeightedMeanAbsolutePercentageError
+    :noindex:
+
+
 *********
 Retrieval
 *********

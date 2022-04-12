@@ -401,6 +401,13 @@ tweedie_deviance_score [func]
     :noindex:
 
 
+weighted_mean_absolute_percentage_error [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.weighted_mean_absolute_percentage_error
+    :noindex:
+
+
 ****************
 Pairwise Metrics
 ****************
