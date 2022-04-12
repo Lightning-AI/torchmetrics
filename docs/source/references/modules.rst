@@ -463,7 +463,7 @@ MeanAveragePrecision
     :noindex:
 
 PanopticQuality
-~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
 
 .. autoclass:: torchmetrics.detection.panoptic_quality.PanopticQuality
     :noindex:
