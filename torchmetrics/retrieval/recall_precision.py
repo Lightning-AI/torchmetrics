@@ -40,9 +40,9 @@ class RetrievalRecallAtFixedPrecision(Metric):
 
     Args:
         min_precision: float value specifying minimum precision threshold.
-        max_k:
-            Calculate recall and precision for all possible top k from 0 to max_k
-            (default: `None`, which considers all possible top k)
+        max_k: Calculate recall and precision for all possible top k from 0 to max_k
+               (default: `None`, which considers all possible top k)
+        adaptive_k: adjust `k` to `min(k, number of documents)` for each query
         empty_target_action:
             Specify what to do with queries that do not have at least a positive ``target``. Choose from:
 
@@ -96,8 +96,8 @@ class RetrievalRecallAtFixedPrecision(Metric):
     ) -> None:
         super().__init__(compute_on_step=compute_on_step, **kwargs)
         self.allow_non_binary_target = False
-        self.RetrievalRecall = partial(RetrievalRecall, **kwargs)
-        self.RetrievalPrecision = partial(RetrievalPrecision, **kwargs)
+        self.retrieval_recall_class = partial(RetrievalRecall, **kwargs)
+        self.retrieval_precision_class = partial(RetrievalPrecision, **kwargs)
         self.compute_on_step = compute_on_step
 
         empty_target_action_options = ("error", "skip", "neg", "pos")
@@ -154,13 +154,13 @@ class RetrievalRecallAtFixedPrecision(Metric):
         # precision recall k
         prk = []
         for k in range(1, self.max_k + 1):
-            rr = self.RetrievalRecall(
+            rr = self.retrieval_recall_class(
                 k=k,
                 empty_target_action=self.empty_target_action,
                 ignore_index=self.ignore_index,
                 compute_on_step=self.compute_on_step,
             )
-            rp = self.RetrievalPrecision(
+            rp = self.retrieval_precision_class(
                 k=k,
                 adaptive_k=self.adaptive_k,
                 empty_target_action=self.empty_target_action,
