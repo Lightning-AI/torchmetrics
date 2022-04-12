@@ -259,10 +259,20 @@ to_onehot [func]
     :noindex:
 
 
+*********
+Detection
+*********
+
+panoptic_quality [func]
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.panoptic_quality
+    :noindex:
+
+
 *****
 Image
 *****
-
 
 error_relative_global_dimensionless_synthesis [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
