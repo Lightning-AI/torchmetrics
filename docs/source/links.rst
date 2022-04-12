@@ -80,3 +80,4 @@
 .. _MultiScaleSSIM: https://ece.uwaterloo.ca/~z70wang/publications/msssim.pdf
 .. _UniversalImageQualityIndex: https://ieeexplore.ieee.org/document/995823
 .. _SpectralDistortionIndex: https://www.semanticscholar.org/paper/Multispectral-and-panchromatic-data-fusion-without-Alparone-Aiazzi/b6db12e3785326577cb95fd743fecbf5bc66c7c9
+.. _WMAPE: https://en.wikipedia.org/wiki/WMAPE
