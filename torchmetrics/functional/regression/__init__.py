@@ -21,3 +21,4 @@ from torchmetrics.functional.regression.pearson import pearson_corrcoef  # noqa:
 from torchmetrics.functional.regression.r2 import r2_score  # noqa: F401
 from torchmetrics.functional.regression.spearman import spearman_corrcoef  # noqa: F401
 from torchmetrics.functional.regression.tweedie_deviance import tweedie_deviance_score  # noqa: F401
+from torchmetrics.functional.regression.wmape import weighted_mean_absolute_percentage_error  # noqa: F401
