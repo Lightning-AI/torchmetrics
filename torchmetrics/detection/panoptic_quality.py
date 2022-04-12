@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Dict, Set
+from typing import Any, Set
 
 import torch
 
@@ -76,7 +76,7 @@ class PanopticQuality(Metric):
         things: Set[int],
         stuff: Set[int],
         allow_unknown_preds_category: bool = False,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ):  # type: ignore
         super().__init__(**kwargs)
 
@@ -94,11 +94,7 @@ class PanopticQuality(Metric):
         self.add_state("false_positives", default=torch.zeros(n_categories, dtype=torch.int), dist_reduce_fx="sum")
         self.add_state("false_negatives", default=torch.zeros(n_categories, dtype=torch.int), dist_reduce_fx="sum")
 
-    def update(
-        self,
-        preds: torch.Tensor,
-        target: torch.Tensor,
-    ) -> None:  # type: ignore
+    def update(self, preds: torch.Tensor, target: torch.Tensor) -> None:  # type: ignore
         r"""
         Update state with predictions and targets.
 

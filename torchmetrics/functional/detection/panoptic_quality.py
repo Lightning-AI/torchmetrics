@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
-from typing import Dict, List, Set, Tuple
+from typing import Any, Dict, List, Set, Tuple
 
 import torch
 from torch import Tensor
@@ -36,12 +34,12 @@ def _get_color_areas(img: torch.Tensor) -> Dict[Tuple, torch.Tensor]:
     return dict(zip(_totuple(unique_keys), unique_keys_area))
 
 
-def _is_set_int(value) -> bool:
+def _is_set_int(value: Any) -> bool:
     """Check wheter value is a `Set[int]`"""
     return isinstance(value, Set) and set(map(type, value)).issubset({int})
 
 
-def _validate_categories(things: Set[int], stuff: Set[int]):
+def _validate_categories(things: Set[int], stuff: Set[int]) -> None:
     """Validate metric arguments `things` and `stuff`."""
     if not _is_set_int(things):
         raise ValueError("Expected argument `things` to be of type `Set[int]`")
@@ -63,12 +61,12 @@ def _validate_inputs(preds: torch.Tensor, target: torch.Tensor) -> None:
         raise ValueError("Expected argument `preds` to have shape [height, width, 2]")
 
 
-def _get_void_color(things: Set[int], stuff: Set[int]):
+def _get_void_color(things: Set[int], stuff: Set[int]) -> Tuple[int]:
     unused_category_id = 1 + max([0] + list(things) + list(stuff))
     return (unused_category_id, 0)
 
 
-def _get_category_id_to_continous_id(things: Set[int], stuff: Set[int]):
+def _get_category_id_to_continous_id(things: Set[int], stuff: Set[int]) -> Dict[int, int]:
     # things metrics are stored with a continous id in [0, len(things)[,
     thing_id_to_continuous_id = {thing_id: idx for idx, thing_id in enumerate(things)}
     # stuff metrics are stored with a continous id in [len(things), len(things) + len(stuffs)[
