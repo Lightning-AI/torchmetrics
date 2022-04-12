@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from functools import partial
 from typing import Any, Dict, Optional, Tuple
 
 import torch
@@ -95,6 +96,9 @@ class RetrievalRecallAtFixedPrecision(Metric):
     ) -> None:
         super().__init__(compute_on_step=compute_on_step, **kwargs)
         self.allow_non_binary_target = False
+        self.RetrievalRecall = partial(RetrievalRecall, **kwargs)
+        self.RetrievalPrecision = partial(RetrievalPrecision, **kwargs)
+        self.compute_on_step = compute_on_step
 
         empty_target_action_options = ("error", "skip", "neg", "pos")
         if empty_target_action not in empty_target_action_options:
@@ -150,13 +154,13 @@ class RetrievalRecallAtFixedPrecision(Metric):
         # precision recall k
         prk = []
         for k in range(1, self.max_k + 1):
-            rr = RetrievalRecall(
+            rr = self.RetrievalRecall(
                 k=k,
                 empty_target_action=self.empty_target_action,
                 ignore_index=self.ignore_index,
                 compute_on_step=self.compute_on_step,
             )
-            rp = RetrievalPrecision(
+            rp = self.RetrievalPrecision(
                 k=k,
                 adaptive_k=self.adaptive_k,
                 empty_target_action=self.empty_target_action,
