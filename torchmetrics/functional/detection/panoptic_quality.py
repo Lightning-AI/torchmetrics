@@ -61,7 +61,7 @@ def _validate_inputs(preds: torch.Tensor, target: torch.Tensor) -> None:
         raise ValueError("Expected argument `preds` to have shape [height, width, 2]")
 
 
-def _get_void_color(things: Set[int], stuff: Set[int]) -> Tuple[int]:
+def _get_void_color(things: Set[int], stuff: Set[int]) -> Tuple[int, int]:
     unused_category_id = 1 + max([0] + list(things) + list(stuff))
     return (unused_category_id, 0)
 
