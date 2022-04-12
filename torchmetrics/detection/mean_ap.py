@@ -585,7 +585,7 @@ class MeanAveragePrecision(Metric):
             else:
                 prec = prec[:, :, area_inds, mdet_inds]
 
-        mean_prec = torch.tensor([-1.]) if len(prec[prec > -1]) == 0 else torch.mean(prec[prec > -1])
+        mean_prec = torch.tensor([-1.0]) if len(prec[prec > -1]) == 0 else torch.mean(prec[prec > -1])
         return mean_prec
 
     def _calculate(self, class_ids: List) -> Tuple[MAPMetricResults, MARMetricResults]:
@@ -771,8 +771,8 @@ class MeanAveragePrecision(Metric):
         map_val, mar_val = self._summarize_results(precisions, recalls)
 
         # if class mode is enabled, evaluate metrics per class
-        map_per_class_values: Tensor = torch.tensor([-1.])
-        mar_max_dets_per_class_values: Tensor = torch.tensor([-1.])
+        map_per_class_values: Tensor = torch.tensor([-1.0])
+        mar_max_dets_per_class_values: Tensor = torch.tensor([-1.0])
         if self.class_metrics:
             map_per_class_list = []
             mar_max_dets_per_class_list = []
