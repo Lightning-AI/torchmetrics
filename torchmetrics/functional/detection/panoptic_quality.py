@@ -42,6 +42,7 @@ def _is_set_int(value) -> bool:
 
 
 def _validate_categories(things: Set[int], stuff: Set[int]):
+    """Validate metric arguments `things` and `stuff`."""
     if not _is_set_int(things):
         raise ValueError("Expected argument `things` to be of type `Set[int]`")
     if not _is_set_int(stuff):
@@ -51,6 +52,7 @@ def _validate_categories(things: Set[int], stuff: Set[int]):
 
 
 def _validate_inputs(preds: torch.Tensor, target: torch.Tensor) -> None:
+    """Validate predictions and target have the correct shape."""
     if not isinstance(preds, torch.Tensor):
         raise ValueError("Expected argument `preds` to be of type `torch.Tensor`")
     if not isinstance(target, torch.Tensor):
