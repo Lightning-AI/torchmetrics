@@ -36,7 +36,7 @@ class HammingDistance(Metric):
     treats each possible label separately - meaning that, for example, multi-class data is
     treated as if it were multi-label.
 
-    Accepts all input types listed in :ref:`references/modules:input types`.
+    Accepts all input types listed in :ref:`pages/classification:input types`.
 
     Args:
         threshold:
@@ -84,7 +84,7 @@ class HammingDistance(Metric):
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets. See
-        :ref:`references/modules:input types` for more information on input
+        :ref:`pages/classification:input types` for more information on input
         types.
 
         Args:
