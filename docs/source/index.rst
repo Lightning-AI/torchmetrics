@@ -42,7 +42,7 @@ Install TorchMetrics
    <div class="row" style='font-size: 14px'>
       <div class='col-md-6'>
 
-For pip (and conda) users
+For pip users
 
 .. code-block:: bash
 
@@ -94,12 +94,6 @@ Or directly from conda
 
 
 .. customcalloutitem::
-   :description: Detailed descriptions of each API package.
-   :header: API Reference
-   :button_link: references/metric.html
-
-
-.. customcalloutitem::
    :description: A detailed overview of the TorchMetrics API and concepts.
    :header: Overview
    :button_link: pages/overview.html
@@ -109,6 +103,12 @@ Or directly from conda
    :description: Learn how to implement a custom metric with TorchMetrics.
    :header: Custom Metrics
    :button_link: pages/implement.html
+
+
+.. customcalloutitem::
+   :description: Detailed descriptions of each API package.
+   :header: API Reference
+   :button_link: references/metric.html
 
 
 .. raw:: html
