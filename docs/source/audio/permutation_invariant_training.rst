@@ -1,13 +1,13 @@
 .. customcarditem::
-   :header: Permutation Invariant Training
+   :header: Permutation Invariant Training (PIT)
    :image: https://pl-flash-data.s3.amazonaws.com/assets/thumbnails/audio_classification.svg
    :tags: Audio
 
 .. include:: ../links.rst
 
-##############################
-Permutation Invariant Training
-##############################
+####################################
+Permutation Invariant Training (PIT)
+####################################
 
 Module Interface
 ________________

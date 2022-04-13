@@ -3,9 +3,9 @@
    :image: https://pl-flash-data.s3.amazonaws.com/assets/thumbnails/audio_classification.svg
    :tags: Audio
 
-######
-SI-SNR
-######
+##############################################
+Scale-Invariant Signal-to-Noise Ratio (SI-SNR)
+##############################################
 
 Module Interface
 ________________

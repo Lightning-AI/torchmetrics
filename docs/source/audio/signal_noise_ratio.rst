@@ -3,9 +3,11 @@
    :image: https://pl-flash-data.s3.amazonaws.com/assets/thumbnails/audio_classification.svg
    :tags: Audio
 
-###
-SNR
-###
+.. include:: ../links.rst
+
+###########################
+Signal-to-Noise Ratio (SNR)
+###########################
 
 Module Interface
 ________________

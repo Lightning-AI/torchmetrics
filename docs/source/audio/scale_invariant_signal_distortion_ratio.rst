@@ -3,9 +3,9 @@
    :image: https://pl-flash-data.s3.amazonaws.com/assets/thumbnails/audio_classification.svg
    :tags: Audio
 
-######
-SI-SDR
-######
+###################################################
+Scale-Invariant Signal-to-Distortion Ratio (SI-SDR)
+###################################################
 
 Module Interface
 ________________

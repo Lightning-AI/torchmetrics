@@ -3,9 +3,9 @@
    :image: https://pl-flash-data.s3.amazonaws.com/assets/thumbnails/audio_classification.svg
    :tags: Audio
 
-####
-STOI
-####
+###########################################
+Short-Time Objective Intelligibility (STOI)
+###########################################
 
 Module Interface
 ________________

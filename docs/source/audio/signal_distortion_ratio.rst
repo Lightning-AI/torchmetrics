@@ -3,9 +3,9 @@
    :image: https://pl-flash-data.s3.amazonaws.com/assets/thumbnails/audio_classification.svg
    :tags: Audio
 
-###
-SDR
-###
+################################
+Signal to Distortion Ratio (SDR)
+################################
 
 Module Interface
 ________________
