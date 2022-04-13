@@ -1,11 +1,13 @@
 .. customcarditem::
-   :header: Frechet Inception Distance
+   :header: Frechet Inception Distance (FID)
    :image: https://pl-flash-data.s3.amazonaws.com/assets/thumbnails/image_classification.svg
    :tags: Image
 
-###
-FID
-###
+.. include:: ../links.rst
+
+################################
+Frechet Inception Distance (FID)
+################################
 
 Module Interface
 ________________

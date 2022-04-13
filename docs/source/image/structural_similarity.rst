@@ -5,9 +5,9 @@
 
 .. include:: ../links.rst
 
-####
-SSIM
-####
+##########################################
+Structural Similarity Index Measure (SSIM)
+##########################################
 
 Module Interface
 ________________
