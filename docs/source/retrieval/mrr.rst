@@ -5,9 +5,9 @@
 
 .. include:: ../links.rst
 
-###
-MRR
-###
+####################################
+Retrieval Mean Reciprocal Rank (MRR)
+####################################
 
 Module Interface
 ________________

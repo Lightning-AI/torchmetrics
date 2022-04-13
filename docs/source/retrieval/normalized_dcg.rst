@@ -5,9 +5,9 @@
 
 .. include:: ../links.rst
 
-##############
-Normalized DCG
-##############
+########################
+Retrieval Normalized DCG
+########################
 
 Module Interface
 ________________

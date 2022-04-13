@@ -5,9 +5,9 @@
 
 .. include:: ../links.rst
 
-#####
-WMAPE
-#####
+#############
+Weighted MAPE
+#############
 
 Module Interface
 ________________

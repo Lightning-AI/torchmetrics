@@ -5,9 +5,9 @@
 
 .. include:: ../links.rst
 
-###
-MSE
-###
+########################
+Mean Squared Error (MSE)
+########################
 
 Module Interface
 ________________

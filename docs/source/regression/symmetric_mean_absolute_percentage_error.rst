@@ -5,9 +5,9 @@
 
 .. include:: ../links.rst
 
-#####
-SMAPE
-#####
+################################################
+Symmetric Mean Absolute Percentage Error (SMAPE)
+################################################
 
 Module Interface
 ________________

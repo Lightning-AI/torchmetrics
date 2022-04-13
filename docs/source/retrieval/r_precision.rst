@@ -5,9 +5,9 @@
 
 .. include:: ../links.rst
 
-###########
-R-Precision
-###########
+#####################
+Retrieval R-Precision
+#####################
 
 Module Interface
 ________________

@@ -5,9 +5,9 @@
 
 .. include:: ../links.rst
 
-######
-Recall
-######
+################
+Retrieval Recall
+################
 
 Module Interface
 ________________

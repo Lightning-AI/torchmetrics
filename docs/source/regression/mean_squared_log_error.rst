@@ -5,9 +5,9 @@
 
 .. include:: ../links.rst
 
-####
-MSLE
-####
+#############################
+Mean Squared Log Error (MSLE)
+#############################
 
 Module Interface
 ________________

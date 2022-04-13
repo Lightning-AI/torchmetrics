@@ -5,9 +5,9 @@
 
 .. include:: ../links.rst
 
-###
-MAP
-###
+######################################
+Retrieval Mean Average Precision (MAP)
+######################################
 
 Module Interface
 ________________

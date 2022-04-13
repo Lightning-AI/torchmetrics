@@ -5,9 +5,9 @@
 
 .. include:: ../links.rst
 
-###
-MAE
-###
+#########################
+Mean Absolute Error (MAE)
+#########################
 
 Module Interface
 ________________

@@ -5,9 +5,9 @@
 
 .. include:: ../links.rst
 
-####
-MAPE
-####
+#####################################
+Mean Absolute Percentage Error (MAPE)
+#####################################
 
 Module Interface
 ________________
