@@ -81,3 +81,4 @@
 .. _UniversalImageQualityIndex: https://ieeexplore.ieee.org/document/995823
 .. _SpectralDistortionIndex: https://www.semanticscholar.org/paper/Multispectral-and-panchromatic-data-fusion-without-Alparone-Aiazzi/b6db12e3785326577cb95fd743fecbf5bc66c7c9
 .. _RelativeAverageSpectralError: https://www.researchgate.net/publication/280892682_Data_Fusion_Definitions_and_Architectures_-_Fusion_of_Images_of_Different_Spatial_Resolutions
+.. _WMAPE: https://en.wikipedia.org/wiki/WMAPE

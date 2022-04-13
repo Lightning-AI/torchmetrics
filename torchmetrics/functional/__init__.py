@@ -65,6 +65,7 @@ from torchmetrics.functional.regression.r2 import r2_score
 from torchmetrics.functional.regression.spearman import spearman_corrcoef
 from torchmetrics.functional.regression.symmetric_mape import symmetric_mean_absolute_percentage_error
 from torchmetrics.functional.regression.tweedie_deviance import tweedie_deviance_score
+from torchmetrics.functional.regression.wmape import weighted_mean_absolute_percentage_error
 from torchmetrics.functional.retrieval.average_precision import retrieval_average_precision
 from torchmetrics.functional.retrieval.fall_out import retrieval_fall_out
 from torchmetrics.functional.retrieval.hit_rate import retrieval_hit_rate
@@ -97,6 +98,7 @@ __all__ = [
     "average_precision",
     "bleu_score",
     "calibration_error",
+    "char_error_rate",
     "chrf_score",
     "cohen_kappa",
     "confusion_matrix",
@@ -116,6 +118,7 @@ __all__ = [
     "kl_divergence",
     "label_ranking_average_precision",
     "label_ranking_loss",
+    "match_error_rate",
     "matthews_corrcoef",
     "mean_absolute_error",
     "mean_absolute_percentage_error",
@@ -162,9 +165,8 @@ __all__ = [
     "translation_edit_rate",
     "universal_image_quality_index",
     "spectral_angle_mapper",
+    "weighted_mean_absolute_percentage_error",
     "word_error_rate",
-    "char_error_rate",
-    "match_error_rate",
     "word_information_lost",
     "word_information_preserved",
 ]
