@@ -3,9 +3,9 @@
    :image: https://pl-flash-data.s3.amazonaws.com/assets/thumbnails/image_classification.svg
    :tags: Image
 
-#####################################################
-Error Relative Global Dimensionless Synthesis (ERGAS)
-#####################################################
+############################################
+Error Relative Global Dim. Synthesis (ERGAS)
+############################################
 
 Module Interface
 ________________

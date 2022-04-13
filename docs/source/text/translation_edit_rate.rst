@@ -3,9 +3,11 @@
    :image: https://pl-flash-data.s3.amazonaws.com/assets/thumbnails/summarization.svg
    :tags: Text
 
-###
-TER
-###
+.. include:: ../links.rst
+
+###########################
+Translation Edit Rate (TER)
+###########################
 
 Module Interface
 ________________

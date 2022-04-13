@@ -5,9 +5,9 @@
 
 .. include:: ../links.rst
 
-####
-PSNR
-####
+#################################
+Peak Signal-to-Noise Ratio (PSNR)
+#################################
 
 Module Interface
 ________________

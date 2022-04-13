@@ -175,7 +175,7 @@ the following limitations:
 * Some metrics does not work at all in half precision on CPU. We have explicitly stated this in their docstring,
   but they are also listed below:
 
-  - :ref:`image/peak_signal_noise_ratio:PSNR`
+  - :ref:`image/peak_signal_noise_ratio:Peak Signal-to-Noise Ratio (PSNR)`
   - :ref:`image/structural_similarity:Structural Similarity Index Measure (SSIM)`
   - :ref:`classification/kl_divergence:KL Divergence`
 
