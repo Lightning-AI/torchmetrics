@@ -200,8 +200,7 @@ class Recall(StatScores):
             Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
             ``average`` parameter). Should be one of the following:
 
-            - ``None`` [default]: Should be left unchanged if your data is not multi-dimensional
-              multi-class.
+            - ``None`` [default]: Should be left unchanged if your data is not multi-dimensional multi-class.
 
             - ``'samplewise'``: In this case, the statistics are computed separately for each
               sample on the ``N`` axis, and then averaged over samples.
@@ -223,6 +222,7 @@ class Recall(StatScores):
             Number of the highest probability or logit score predictions considered finding the correct label,
             relevant only for (multi-dimensional) multi-class. The default value (``None``) will be interpreted
             as 1 for these inputs.
+
             Should be left at default (``None``) for all other types of inputs.
 
         multiclass:

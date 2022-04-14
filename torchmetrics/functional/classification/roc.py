@@ -35,9 +35,9 @@ def _roc_update(
         preds: Predicted tensor
         target: Ground truth tensor
         num_classes: integer with number of classes for multi-label and multiclass problems.
-            Should be set to ``None`` for binary problems
+            Should be set to ``None`` for binary problems.
         pos_label: integer determining the positive class. Default is ``None``
-            which for binary problem is translate to 1. For multiclass problems
+            which for binary problem is translated to 1. For multiclass problems
             this argument should not be set as we iteratively change it in the
             range [0,num_classes-1]
     """
@@ -150,11 +150,11 @@ def _roc_compute(
         preds: Predicted tensor
         target: Ground truth tensor
         num_classes: integer with number of classes for multi-label and multiclass problems.
-            Should be set to ``None`` for binary problems
+            Should be set to ``None`` for binary problems.
         pos_label: integer determining the positive class. Default is ``None``
-            which for binary problem is translate to 1. For multiclass problems
+            which for binary problem is translated to 1. For multiclass problems
             this argument should not be set as we iteratively change it in the
-            range [0,num_classes-1]
+            range ``[0, num_classes-1]``
         sample_weights: sample weights for each data point
 
     Example:
@@ -218,11 +218,11 @@ def roc(
         preds: predictions from model (logits or probabilities)
         target: ground truth values
         num_classes: integer with number of classes for multi-label and multiclass problems.
-            Should be set to ``None`` for binary problems
+            Should be set to ``None`` for binary problems.
         pos_label: integer determining the positive class. Default is ``None``
-            which for binary problem is translate to 1. For multiclass problems
+            which for binary problem is translated to 1. For multiclass problems
             this argument should not be set as we iteratively change it in the
-            range [0,num_classes-1]
+            range ``[0, num_classes-1]``
         sample_weights: sample weights for each data point
 
     Returns:

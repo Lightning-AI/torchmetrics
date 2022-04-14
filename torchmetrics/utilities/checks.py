@@ -169,7 +169,7 @@ def _check_num_classes_mc(
 
 
 def _check_num_classes_ml(num_classes: int, multiclass: Optional[bool], implied_classes: int) -> None:
-    """This checks that the consistency of `num_classes` with the data and `multiclass` param for multi-label
+    """This checks that the consistency of ``num_classes`` with the data and ``multiclass`` param for multi-label
     data."""
 
     if multiclass and num_classes != 2:
@@ -216,7 +216,7 @@ def _check_classification_inputs(
     over-rides with ``multiclass`` by checking (for multi-class and multi-dim multi-class
     cases) that there are only up to 2 distinct labels.
 
-    In case where preds are floats (probabilities), it is checked whether they are in [0,1] interval.
+    In case where preds are floats (probabilities), it is checked whether they are in ``[0,1]`` interval.
 
     When ``num_classes`` is given, it is checked that it is consistent with input cases (binary,
     multi-label, ...), and that, if available, the implied number of classes in the ``C``
@@ -226,7 +226,7 @@ def _check_classification_inputs(
     value against ``C`` dimension is checked for (multi-dimensional) multi-class cases.
 
     If ``top_k`` is set (not None) for inputs that do not have probability predictions (and
-    are not binary), an error is raised. Similarly if ``top_k`` is set to a number that
+    are not binary), an error is raised. Similarly, if ``top_k`` is set to a number that
     is higher than or equal to the ``C`` dimension of ``preds``, an error is raised.
 
     Preds and target tensors are expected to be squeezed already - all dimensions should be
@@ -353,7 +353,7 @@ def _input_format_classification(
 
     In multi-label case, normally targets and preds are returned as ``(N, C)`` binary tensors, with
     preds being binarized as in the binary case. Here the ``C`` dimension is obtained by flattening
-    all dimensions after the first one. However if ``multiclass=True``, then both are returned as
+    all dimensions after the first one. However, if ``multiclass=True``, then both are returned as
     ``(N, 2, C)``, by an equivalent transformation as in the binary case.
 
     In multi-dimensional multi-class case, normally both target and preds are returned as
@@ -379,9 +379,9 @@ def _input_format_classification(
             either from the shape of inputs, or the maximum label in the ``target`` and ``preds``
             tensor, where applicable.
         top_k:
-            Number of highest probability entries for each sample to convert to 1s - relevant
+            Number of the highest probability entries for each sample to convert to 1s - relevant
             only for (multi-dimensional) multi-class inputs with probability predictions. The
-            default value (``None``) will be interepreted as 1 for these inputs.
+            default value (``None``) will be interpreted as 1 for these inputs.
 
             Should be left unset (``None``) for all other types of inputs.
         multiclass:
@@ -545,13 +545,12 @@ def _check_retrieval_inputs(
 
     Raises:
         ValueError:
-            If ``preds`` and ``target`` don't have the same shape, if they are empty
-            or not of the correct ``dtypes``.
+            If ``preds`` and ``target`` don't have the same shape, if they are empty or not of the correct ``dtypes``.
 
     Returns:
-        indexes: as torch.long
-        preds: as torch.float32
-        target: as torch.long
+        indexes: as ``torch.long``
+        preds: as ``torch.float32``
+        target: as ``torch.long``
     """
     if indexes.shape != preds.shape or preds.shape != target.shape:
         raise ValueError("`indexes`, `preds` and `target` must be of the same shape")
@@ -590,8 +589,7 @@ def _check_retrieval_target_and_prediction_types(
 
     Raises:
         ValueError:
-            If ``preds`` and ``target`` don't have the same shape, if they are empty
-            or not of the correct ``dtypes``.
+            If ``preds`` and ``target`` don't have the same shape, if they are empty or not of the correct ``dtypes``.
     """
     if target.dtype not in (torch.bool, torch.long, torch.int) and not torch.is_floating_point(target):
         raise ValueError("`target` must be a tensor of booleans, integers or floats")

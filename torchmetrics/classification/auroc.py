@@ -48,6 +48,7 @@ class AUROC(Metric):
 
     Args:
         num_classes: integer with number of classes for multi-label and multiclass problems.
+
             Should be set to ``None`` for binary problems
         pos_label: integer determining the positive class. Default is ``None``
             which for binary problem is translated to 1. For multiclass problems

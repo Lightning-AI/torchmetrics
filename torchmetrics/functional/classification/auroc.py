@@ -68,10 +68,11 @@ def _auroc_compute(
         num_classes: integer with number of classes for multi-label and multiclass problems.
             Should be set to ``None`` for binary problems
         pos_label: integer determining the positive class.
+
             Should be set to ``None`` for binary problems
         average: Defines the reduction that is applied to the output:
         max_fpr: If not ``None``, calculates standardized partial AUC over the
-            range [0, max_fpr]. Should be a float between 0 and 1.
+            range ``[0, max_fpr]``. Should be a float between 0 and 1.
         sample_weights: sample weights for each data point
 
     Example:
@@ -232,7 +233,7 @@ def auroc(
             - ``None`` computes and returns the metric per class
         max_fpr:
             If not ``None``, calculates standardized partial AUC over the
-            range [0, max_fpr]. Should be a float between 0 and 1.
+            range ``[0, max_fpr]``. Should be a float between 0 and 1.
         sample_weights: sample weights for each data point
 
     Raises:
