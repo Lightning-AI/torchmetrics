@@ -24,22 +24,19 @@ from torchmetrics.metric import Metric
 
 class MetricTracker(nn.ModuleList):
     """A wrapper class that can help keeping track of a metric or metric collection over time and implement useful
-    methods. The wrapper implements the standard `update`, `compute`, `reset` methods that just calls corresponding
-    method of the currently tracked metric. However, the following additional methods are provided:
+    methods. The wrapper implements the standard ``.update()``, ``.compute()``, ``.reset()`` methods that just
+    calls corresponding method of the currently tracked metric. However, the following additional methods are provided:
 
         -``MetricTracker.n_steps``: number of metrics being tracked
-
         -``MetricTracker.increment()``: initialize a new metric for being tracked
-
         -``MetricTracker.compute_all()``: get the metric value for all steps
-
         -``MetricTracker.best_metric()``: returns the best value
 
     Args:
-        metric: instance of a `torchmetrics.Metric` or `torchmetrics.MetricCollection` to keep track
-            of at each timestep.
+        metric: instance of a ``torchmetrics.Metric`` or ``torchmetrics.MetricCollection``
+            to keep track of at each timestep.
         maximize: either single bool or list of bool indicating if higher metric values are
-            better (`True`) or lower is better (`False`).
+            better (``True``) or lower is better (``False``).
 
     Example (single metric):
         >>> from torchmetrics import Accuracy, MetricTracker
@@ -113,7 +110,7 @@ class MetricTracker(nn.ModuleList):
         return len(self) - 1  # subtract the base metric
 
     def increment(self) -> None:
-        """Creates a new instace of the input metric that will be updated next."""
+        """Creates a new instance of the input metric that will be updated next."""
         self._increment_called = True
         self.append(deepcopy(self._base_metric))
 
@@ -164,10 +161,10 @@ class MetricTracker(nn.ModuleList):
         """Returns the highest metric out of all tracked.
 
         Args:
-            return_step: If `True` will also return the step with the highest metric value.
+            return_step: If ``True`` will also return the step with the highest metric value.
 
         Returns:
-            The best metric value, and optionally the timestep.
+            The best metric value, and optionally the time-step.
         """
         if isinstance(self._base_metric, Metric):
             fn = torch.max if self.maximize else torch.min

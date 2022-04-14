@@ -22,7 +22,7 @@ from torchmetrics.metric import Metric
 
 class MinMaxMetric(Metric):
     """Wrapper Metric that tracks both the minimum and maximum of a scalar/tensor across an experiment. The min/max
-    value will be updated each time `.compute` is called.
+    value will be updated each time ``.compute`` is called.
 
     Args:
         base_metric:
@@ -37,7 +37,7 @@ class MinMaxMetric(Metric):
 
     Raises:
         ValueError
-            If ``base_metric` argument is not an subclasses instance of ``torchmetrics.Metric``
+            If ``base_metric` argument is not a subclasses instance of ``torchmetrics.Metric``
 
     Example::
         >>> import torch
