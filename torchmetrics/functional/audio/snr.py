@@ -30,12 +30,9 @@ def signal_noise_ratio(preds: Tensor, target: Tensor, zero_mean: bool = False) -
     SNR means that the audio is clear.
 
     Args:
-        preds:
-            shape ``[...,time]``
-        target:
-            shape ``[...,time]``
-        zero_mean:
-            if to zero mean target and preds or not
+        preds: shape ``[...,time]``
+        target: shape ``[...,time]``
+        zero_mean: if to zero mean target and preds or not
 
     Returns:
         snr value of shape [...]
@@ -71,10 +68,8 @@ def scale_invariant_signal_noise_ratio(preds: Tensor, target: Tensor) -> Tensor:
     """Scale-invariant signal-to-noise ratio (SI-SNR).
 
     Args:
-        preds:
-            shape ``[...,time]``
-        target:
-            shape ``[...,time]``
+        preds: shape ``[...,time]``
+        target: shape ``[...,time]``
 
     Returns:
         si-snr value of shape [...]
