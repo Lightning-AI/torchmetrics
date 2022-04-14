@@ -50,8 +50,8 @@ class TranslationEditRate(Metric):
         tensor(0.1538)
 
     References:
-    [1] A Study of Translation Edit Rate with Targeted Human Annotation by Mathew Snover, Bonnie Dorr, Richard Schwartz,
-    Linnea Micciulla and John Makhoul `TER`_
+        [1] A Study of Translation Edit Rate with Targeted Human Annotation by Mathew Snover, Bonnie Dorr, Richard Schwartz,
+        Linnea Micciulla and John Makhoul `TER`_
     """
 
     is_differentiable = False

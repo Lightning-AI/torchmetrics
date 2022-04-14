@@ -639,6 +639,7 @@ def chrf_score(
 
     References:
         [1] chrF: character n-gram F-score for automatic MT evaluation by Maja Popović `chrF score`_
+
         [2] chrF++: words helping character n-grams by Maja Popović `chrF++ score`_
     """
     if not isinstance(n_char_order, int) or n_char_order < 1:

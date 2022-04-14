@@ -76,12 +76,12 @@ def cohen_kappa(
 ) -> Tensor:
     r"""Calculates `Cohen's kappa score`_ that measures inter-annotator agreement.
 
-    It is defined as
+     It is defined as
 
      .. math::
          \kappa = (p_o - p_e) / (1 - p_e)
 
-     where :math:`p_o` is the empirical probability of agreement and :math:`p_e` isg
+     where :math:`p_o` is the empirical probability of agreement and :math:`p_e` is
      the expected agreement when both annotators assign labels randomly. Note that
      :math:`p_e` is estimated using a per-annotator empirical prior over the
      class labels.

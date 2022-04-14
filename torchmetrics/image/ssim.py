@@ -186,8 +186,8 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         tensor(0.9558)
 
     References:
-    [1] Multi-Scale Structural Similarity For Image Quality Assessment by Zhou Wang, Eero P. Simoncelli and Alan C.
-    Bovik `MultiScaleSSIM`_
+        [1] Multi-Scale Structural Similarity For Image Quality Assessment by Zhou Wang, Eero P. Simoncelli and Alan C.
+        Bovik `MultiScaleSSIM`_
     """
 
     preds: List[Tensor]
