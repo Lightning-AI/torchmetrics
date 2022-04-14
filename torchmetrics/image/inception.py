@@ -82,7 +82,7 @@ class InceptionScore(Metric):
         ValueError:
             If ``feature`` is set to an ``str`` or ``int`` and ``torch-fidelity`` is not installed
         ValueError:
-            If ``feature`` is set to an ``str`` or ``int`` and not one of ['logits_unbiased', 64, 192, 768, 2048]
+            If ``feature`` is set to an ``str`` or ``int`` and not one of ``['logits_unbiased', 64, 192, 768, 2048]``
         TypeError:
             If ``feature`` is not an ``str``, ``int`` or ``torch.nn.Module``
 

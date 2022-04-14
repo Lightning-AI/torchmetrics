@@ -29,6 +29,7 @@ class SpectralAngleMapper(Metric):
 
     Args:
         reduction: a method to reduce metric score over labels.
+
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
             - ``'none'`` or ``None``: no reduction will be applied

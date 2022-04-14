@@ -34,6 +34,7 @@ class StructuralSimilarityIndexMeasure(Metric):
         kernel_size: the size of the uniform kernel, anisotropic kernels are possible.
             Ignored if a Gaussian kernel is used
         reduction: a method to reduce metric score over labels.
+
             - ``'elementwise_mean'``: takes the mean
             - ``'sum'``: takes the sum
             - ``'none'`` or ``None``: no reduction will be applied
@@ -46,7 +47,6 @@ class StructuralSimilarityIndexMeasure(Metric):
         return_contrast_sensitivity: If true, the constant term is returned as a second argument.
             The luminance term can be obtained with luminance=ssim/contrast
             Mutually exclusive with ``return_full_image``
-
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
 
@@ -140,10 +140,11 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
     Structural Similarity Index Measure by incorporating image details at different resolution scores.
 
     Args:
-        gaussian_kernel: If true (default), a gaussian kernel is used, if false a uniform kernel is used
+        gaussian_kernel: If ``True`` (default), a gaussian kernel is used, if false a uniform kernel is used
         kernel_size: size of the gaussian kernel
         sigma: Standard deviation of the gaussian kernel
         reduction: a method to reduce metric score over labels.
+
             - ``'elementwise_mean'``: takes the mean
             - ``'sum'``: takes the sum
             - ``'none'`` or ``None``: no reduction will be applied
@@ -163,6 +164,7 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
                 Argument has no use anymore and will be removed v0.9.
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+
     Return:
         Tensor with Multi-Scale SSIM score
 
@@ -249,8 +251,8 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         """Update state with predictions and targets.
 
         Args:
-            preds: Predictions from model of shape `[N, C, H, W]`
-            target: Ground truth values of shape `[N, C, H, W]`
+            preds: Predictions from model of shape ``[N, C, H, W]``
+            target: Ground truth values of shape ``[N, C, H, W]``
         """
         preds, target = _ssim_update(preds, target)
         self.preds.append(preds)
