@@ -26,7 +26,7 @@ def _bootstrap_sampler(
     size: int,
     sampling_strategy: str = "poisson",
 ) -> Tensor:
-    """Resample a tensor along its first dimension with replacement
+    """Resample a tensor along its first dimension with replacement.
 
     Args:
         size: number of samples
