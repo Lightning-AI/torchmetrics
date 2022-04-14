@@ -25,7 +25,8 @@ from torchmetrics.metric import Metric
 class MetricTracker(nn.ModuleList):
     """A wrapper class that can help keeping track of a metric or metric collection over time and implement useful
     methods. The wrapper implements the standard ``.update()``, ``.compute()``, ``.reset()`` methods that just
-    calls corresponding method of the currently tracked metric. However, the following additional methods are provided:
+    calls corresponding method of the currently tracked metric. However, the following additional methods are
+    provided:
 
         -``MetricTracker.n_steps``: number of metrics being tracked
         -``MetricTracker.increment()``: initialize a new metric for being tracked
