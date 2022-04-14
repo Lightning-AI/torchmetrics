@@ -456,16 +456,18 @@ def bert_score(
     baseline_url: Optional[str] = None,
 ) -> Dict[str, Union[List[float], str]]:
     """`Bert_score Evaluating Text Generation`_ leverages the pre-trained contextual embeddings from BERT and
-    matches words in candidate and reference sentences by cosine similarity. It has been shown to correlate with
-    human judgment on sentence-level and system-level evaluation. Moreover, BERTScore computes precision, recall,
-    and F1 measure, which can be useful for evaluating different language generation tasks.
+    matches words in candidate and reference sentences by cosine similarity.
 
-    This implemenation follows the original implementation from `BERT_score`_
+    It has been shown to correlate with human judgment on sentence-level and system-level evaluation.
+    Moreover, BERTScore computes precision, recall, and F1 measure, which can be useful for evaluating different
+    language generation tasks.
+
+    This implemenation follows the original implementation from `BERT_score`_.
 
     Args:
         preds: Either an iterable of predicted sentences or a ``Dict[input_ids, attention_mask]``.
         target: Either an iterable of target sentences or a  ``Dict[input_ids, attention_mask]``.
-        model_name_or_path: A name or a model path used to load `transformers` pretrained model.
+        model_name_or_path: A name or a model path used to load ``transformers`` pretrained model.
         num_layers: A layer of representation to use.
         all_layers:
             An indication of whether the representation from all model's layers should be used.
@@ -477,12 +479,12 @@ def bert_score(
             containing ``"input_ids"`` and ``"attention_mask"`` represented by ``torch.Tensor``.
             It is up to the user's model of whether ``"input_ids"`` is a ``torch.Tensor`` of input ids or embedding
             vectors. his tokenizer must prepend an equivalent of ``[CLS]`` token and append an equivalent of ``[SEP]``
-             token as `transformers` tokenizer does.
+            token as `transformers` tokenizer does.
         user_forward_fn:
             A user's own forward function used in a combination with ``user_model``.
             This function must take ``user_model`` and a python dictionary of containing ``"input_ids"``
-            and ``"attention_mask"`` represented by `torch.Tensor`
-            as an input and return the model's output represented by the single ``torch.Tensor``.
+            and ``"attention_mask"`` represented by ``torch.Tensor`` as an input and return the model's output
+            represented by the single ``torch.Tensor``.
         verbose: An indication of whether a progress bar to be displayed during the embeddings' calculation.
         idf: An indication of whether normalization using inverse document frequencies should be used.
         device: A device to be used for calculation.
@@ -501,7 +503,7 @@ def bert_score(
         baseline_url: A url path to the user's own  csv/tsv file with the baseline scale.
 
     Returns:
-        Python dictionary containing the keys `precision`, `recall` and `f1` with corresponding values.
+        Python dictionary containing the keys ``precision``, ``recall`` and ``f1`` with corresponding values.
 
     Raises:
         ValueError:
