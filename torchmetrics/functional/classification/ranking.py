@@ -102,7 +102,7 @@ def coverage_error(preds: Tensor, target: Tensor, sample_weight: Optional[Tensor
 def _label_ranking_average_precision_update(
     preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None
 ) -> Tuple[Tensor, int, Optional[Tensor]]:
-    """Accumulate state for label ranking average precision
+    """Accumulate state for label ranking average precision.
 
     Args:
         preds: tensor with predictions
@@ -173,13 +173,12 @@ def label_ranking_average_precision(preds: Tensor, target: Tensor, sample_weight
 def _label_ranking_loss_update(
     preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None
 ) -> Tuple[Tensor, int, Optional[Tensor]]:
-    """Accumulate state for label ranking loss
+    """Accumulate state for label ranking loss.
 
     Args:
         preds: tensor with predictions
         target: tensor with ground truth labels
         sample_weight: optional tensor with weight for each sample
-
     """
     _check_ranking_input(preds, target, sample_weight)
     n_preds, n_labels = preds.shape

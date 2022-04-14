@@ -24,8 +24,7 @@ from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_8
 def _binning_with_loop(
     confidences: Tensor, accuracies: Tensor, bin_boundaries: Tensor
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    """
-    Compute calibration bins using for loops. Use for pytorch < 1.6
+    """Compute calibration bins using for loops. Use for pytorch < 1.6.
 
     Args:
         confidences: The confidence (i.e. predicted prob) of the top1 prediction.

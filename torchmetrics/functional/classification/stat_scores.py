@@ -119,8 +119,8 @@ def _stat_scores_update(
     ignore_index: Optional[int] = None,
     mode: DataType = None,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-    """Updates and returns the number of true positives, false positives, true negatives, false negatives.
-    Raises ValueError if:
+    """Updates and returns the number of true positives, false positives, true negatives, false negatives. Raises
+    ValueError if:
 
         - The `ignore_index` is not valid
         - When `ignore_index` is used with binary data
