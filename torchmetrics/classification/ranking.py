@@ -32,8 +32,7 @@ class CoverageError(Metric):
     cover all true labels. The best value is equal to the average number of labels in the target tensor per sample.
 
     Args:
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
         >>> from torchmetrics import CoverageError
@@ -89,8 +88,7 @@ class LabelRankingAveragePrecision(Metric):
     total labels with lower score. Best score is 1.
 
     Args:
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
         >>> from torchmetrics import LabelRankingAveragePrecision
@@ -145,8 +143,7 @@ class LabelRankingLoss(Metric):
     number of labels not in the label set. The best score is 0.
 
     Args:
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
         >>> from torchmetrics import LabelRankingLoss

@@ -119,8 +119,7 @@ def permutation_invariant_training(
         eval_func:
             the function to find the best permutation, can be 'min' or 'max',
             i.e. the smaller the better or the larger the better.
-        kwargs:
-            additional args for metric_func
+        kwargs: Additional args for metric_func
 
     Returns:
         best_metric of shape [batch],

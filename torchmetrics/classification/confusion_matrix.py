@@ -60,8 +60,7 @@ class ConfusionMatrix(Metric):
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (binary data):
         >>> from torchmetrics import ConfusionMatrix

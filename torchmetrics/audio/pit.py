@@ -43,8 +43,7 @@ class PermutationInvariantTraining(Metric):
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        kwargs:
-            Additional keyword arguments for either the ``metric_func`` or distributed communication,
+        kwargs: Additional keyword arguments for either the ``metric_func`` or distributed communication,
             see :ref:`Metric kwargs` for more info.
 
     Returns:

@@ -33,8 +33,7 @@ class SpectralAngleMapper(Metric):
             - ``'sum'``: takes the sum
             - ``'none'`` or ``None``: no reduction will be applied
 
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Return:
         Tensor with SpectralAngleMapper score

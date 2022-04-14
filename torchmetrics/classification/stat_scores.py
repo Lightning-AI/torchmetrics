@@ -89,8 +89,7 @@ class StatScores(Metric):
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
@@ -224,7 +223,7 @@ class StatScores(Metric):
             shape depends on the ``reduce`` and ``mdmc_reduce`` (in case of multi-dimensional
             multi-class data) parameters:
 
-            - If the data is not multi-dimensional multi-class, then:
+            - If the data is not multi-dimensional multi-class, then
 
               - If ``reduce='micro'``, the shape will be ``(5, )``
               - If ``reduce='macro'``, the shape will be ``(C, 5)``,
@@ -232,7 +231,7 @@ class StatScores(Metric):
               - If ``reduce='samples'``, the shape will be ``(N, 5)``, where ``N`` stands for
                 the number of samples
 
-            - If the data is multi-dimensional multi-class and ``mdmc_reduce='global'``, then:
+            - If the data is multi-dimensional multi-class and ``mdmc_reduce='global'``, then
 
               - If ``reduce='micro'``, the shape will be ``(5, )``
               - If ``reduce='macro'``, the shape will be ``(C, 5)``
@@ -240,7 +239,7 @@ class StatScores(Metric):
                 the product of sizes of all "extra" dimensions of the data (i.e. all dimensions
                 except for ``C`` and ``N``)
 
-            - If the data is multi-dimensional multi-class and ``mdmc_reduce='samplewise'``, then:
+            - If the data is multi-dimensional multi-class and ``mdmc_reduce='samplewise'``, then
 
               - If ``reduce='micro'``, the shape will be ``(N, 5)``
               - If ``reduce='macro'``, the shape will be ``(N, C, 5)``
