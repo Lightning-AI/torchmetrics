@@ -20,9 +20,9 @@ from torchmetrics.metric import Metric
 
 
 class HingeLoss(Metric):
-    r"""
-    Computes the mean `Hinge loss`_, typically used for Support Vector
-    Machines (SVMs). In the binary case it is defined as:
+    r"""Computes the mean `Hinge loss`_, typically used for Support Vector Machines (SVMs).
+
+    In the binary case it is defined as:
 
     .. math::
         \text{Hinge loss} = \max(0, 1 - y \times \hat{y})

@@ -21,8 +21,7 @@ from torchmetrics.utilities.enums import AverageMethod
 
 
 class FBetaScore(StatScores):
-    r"""
-    Computes `F-score`_, specifically:
+    r"""Computes `F-score`_, specifically:
 
     .. math::
         F_\beta = (1 + \beta^2) * \frac{\text{precision} * \text{recall}}
@@ -43,10 +42,8 @@ class FBetaScore(StatScores):
     If preds has an extra dimension as in the case of multi-class scores we perform an argmax on ``dim=1``.
 
     Args:
-        num_classes:
-            Number of classes. Necessary for ``'macro'``, ``'weighted'`` and ``None`` average methods.
-        beta:
-            Beta coefficient in the F measure.
+        num_classes: Number of classes. Necessary for ``'macro'``, ``'weighted'`` and ``None`` average methods.
+        beta: Beta coefficient in the F measure.
         threshold:
             Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
             of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
@@ -93,9 +90,9 @@ class FBetaScore(StatScores):
             or ``'none'``, the score for the ignored class will be returned as ``nan``.
 
         top_k:
-            Number of highest probability or logit score predictions considered to find the correct label,
-            relevant only for (multi-dimensional) multi-class inputs. The
-            default value (``None``) will be interpreted as 1 for these inputs.
+            Number of the highest probability or logit score predictions considered finding the correct label,
+            relevant only for (multi-dimensional) multi-class inputs. The default value (``None``) will be interpreted
+            as 1 for these inputs.
 
             Should be left at default (``None``) for all other types of inputs.
 
@@ -162,14 +159,15 @@ class FBetaScore(StatScores):
         self.average = average
 
     def compute(self) -> Tensor:
-        """Computes fbeta over state."""
+        """Computes f-beta over state."""
         tp, fp, tn, fn = self._get_final_stats()
         return _fbeta_compute(tp, fp, tn, fn, self.beta, self.ignore_index, self.average, self.mdmc_reduce)
 
 
 class F1Score(FBetaScore):
-    """Computes F1 metric. F1 metrics correspond to a harmonic mean of the precision and recall scores.
+    """Computes F1 metric.
 
+    F1 metrics correspond to a harmonic mean of the precision and recall scores.
     Works with binary, multiclass, and multilabel data. Accepts logits or probabilities from a model
     output or integer class values in prediction. Works with multi-dimensional preds and target.
 
@@ -187,8 +185,8 @@ class F1Score(FBetaScore):
         num_classes:
             Number of classes. Necessary for ``'macro'``, ``'weighted'`` and ``None`` average methods.
         threshold:
-            Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
-            of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
+            Threshold for transforming probability or logit predictions to binary ``(0,1)`` predictions, in the case
+            of binary or multi-label inputs. Default value of ``0.5`` corresponds to input being probabilities.
         average:
             Defines the reduction that is applied. Should be one of the following:
 
@@ -229,11 +227,11 @@ class F1Score(FBetaScore):
             or ``'none'``, the score for the ignored class will be returned as ``nan``.
 
         top_k:
-            Number of highest probability or logit score predictions considered to find the correct label,
+            Number of the highest probability or logit score predictions considered finding the correct label,
             relevant only for (multi-dimensional) multi-class inputs. The
             default value (``None``) will be interpreted as 1 for these inputs.
-
             Should be left at default (``None``) for all other types of inputs.
+
         multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
             than what they appear to be. See the parameter's

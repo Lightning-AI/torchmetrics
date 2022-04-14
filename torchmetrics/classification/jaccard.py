@@ -22,8 +22,7 @@ from torchmetrics.functional.classification.jaccard import _jaccard_from_confmat
 
 
 class JaccardIndex(ConfusionMatrix):
-    r"""
-    Computes Intersection over union, or `Jaccard index`_:
+    r"""Computes Intersection over union, or `Jaccard index`_:
 
     .. math:: J(A,B) = \frac{|A\cap B|}{|A\cup B|}
 
@@ -50,17 +49,16 @@ class JaccardIndex(ConfusionMatrix):
             to the returned score, regardless of reduction method. Has no effect if given an int that is not in the
             range [0, num_classes-1]. By default, no index is ignored, and all classes are used.
         absent_score: score to use for an individual class, if no instances of the class index were present in
-            `pred` AND no instances of the class index were present in ``target``. For example, if we have 3 classes,
+            ``pred`` AND no instances of the class index were present in ``target``. For example, if we have 3 classes,
             [0, 0] for `pred`, and [0, 2] for ``target``, then class 1 would be assigned the `absent_score`.
-        threshold:
-            Threshold value for binary or multi-label probabilities.
-        multilabel:
-            determines if data is multilabel or not.
-        reduction: a method to reduce metric score over labels.
+        threshold: Threshold value for binary or multi-label probabilities.
+        multilabel: determines if data is multilabel or not.
+        reduction: a method to reduce metric score over labels:
 
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
             - ``'none'``: no reduction will be applied
+
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
 

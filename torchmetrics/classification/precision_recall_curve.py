@@ -39,10 +39,9 @@ class PrecisionRecallCurve(Metric):
     Args:
         num_classes: integer with number of classes for multi-label and multiclass problems.
             Should be set to ``None`` for binary problems
-        pos_label: integer determining the positive class. Default is ``None``
-            which for binary problem is translate to 1. For multiclass problems
-            this argument should not be set as we iteratively change it in the
-            range [0,num_classes-1]
+        pos_label: integer determining the positive class. Default is ``None`` which for binary problem is translated
+            to 1. For multiclass problems this argument should not be set as we iteratively change it in the range
+            ``[0, num_classes-1]``
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
 
@@ -128,12 +127,12 @@ class PrecisionRecallCurve(Metric):
             3-element tuple containing
 
             precision:
-                tensor where element i is the precision of predictions with
-                score >= thresholds[i] and the last element is 1.
+                tensor where element ``i`` is the precision of predictions with
+                ``score >= thresholds[i]`` and the last element is 1.
                 If multiclass, this is a list of such tensors, one for each class.
             recall:
-                tensor where element i is the recall of predictions with
-                score >= thresholds[i] and the last element is 0.
+                tensor where element ``i`` is the recall of predictions with
+                ``score >= thresholds[i]`` and the last element is 0.
                 If multiclass, this is a list of such tensors, one for each class.
             thresholds:
                 Thresholds used for computing precision/recall scores

@@ -21,10 +21,10 @@ from torchmetrics.metric import Metric
 
 
 class ConfusionMatrix(Metric):
-    r"""
-    Computes the `confusion matrix`_.  Works with binary,
-    multiclass, and multilabel data.  Accepts probabilities or logits from a model output or integer class
-    values in prediction. Works with multi-dimensional preds and target, but it should be noted that
+    r"""Computes the `confusion matrix`_.
+
+    Works with binary, multiclass, and multilabel data. Accepts probabilities or logits from a model output
+    or integer class values in prediction. Works with multi-dimensional preds and target, but it should be noted that
     additional dimensions will be flattened.
 
     Forward accepts
@@ -37,12 +37,12 @@ class ConfusionMatrix(Metric):
 
     If preds has an extra dimension as in the case of multi-class scores we perform an argmax on ``dim=1``.
 
-    If working with multilabel data, setting the `is_multilabel` argument to `True` will make sure that a
+    If working with multilabel data, setting the ``is_multilabel`` argument to ``True`` will make sure that a
     `confusion matrix gets calculated per label`_.
 
     Args:
         num_classes: Number of classes in the dataset.
-        normalize: Normalization mode for confusion matrix. Choose from
+        normalize: Normalization mode for confusion matrix. Choose from:
 
             - ``None`` or ``'none'``: no normalization (default)
             - ``'true'``: normalization over the targets (most commonly used)
@@ -50,11 +50,10 @@ class ConfusionMatrix(Metric):
             - ``'all'``: normalization over the whole matrix
 
         threshold:
-            Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
-            of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
+            Threshold for transforming probability or logit predictions to binary ``(0,1)`` predictions, in the case
+            of binary or multi-label inputs. Default value of ``0.5`` corresponds to input being probabilities.
 
-        multilabel:
-            determines if data is multilabel or not.
+        multilabel: determines if data is multilabel or not.
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
 
@@ -134,7 +133,7 @@ class ConfusionMatrix(Metric):
         """Computes confusion matrix.
 
         Returns:
-            If `multilabel=False` this will be a `[n_classes, n_classes]` tensor and if `multilabel=True`
-            this will be a `[n_classes, 2, 2]` tensor
+            If ``multilabel=False`` this will be a ``[n_classes, n_classes]`` tensor and if ``multilabel=True``
+            this will be a ``[n_classes, 2, 2]`` tensor.
         """
         return _confusion_matrix_compute(self.confmat, self.normalize)

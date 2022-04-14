@@ -22,9 +22,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class CalibrationError(Metric):
-    r"""
-
-    `Computes the Top-label Calibration Error`_
+    r"""`Computes the Top-label Calibration Error`_
     Three different norms are implemented, each corresponding to variations on the calibration error metric.
 
     L1 norm (Expected Calibration Error)
@@ -50,7 +48,7 @@ class CalibrationError(Metric):
         L2-norm debiasing is not yet supported.
 
     Args:
-        n_bins: Number of bins to use when computing probabilites and accuracies.
+        n_bins: Number of bins to use when computing probabilities and accuracies.
         norm: Norm used to compare empirical and expected probability bins.
             Defaults to "l1", or Expected Calibration Error.
         debias: Applies debiasing term, only implemented for l2 norm. Defaults to True.
@@ -91,7 +89,7 @@ class CalibrationError(Metric):
         self.add_state("accuracies", [], dist_reduce_fx="cat")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Computes top-level confidences and accuracies for the input probabilites and appends them to internal
+        """Computes top-level confidences and accuracies for the input probabilities and appends them to internal
         state.
 
         Args:

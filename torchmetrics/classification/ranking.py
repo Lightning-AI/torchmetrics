@@ -83,9 +83,10 @@ class CoverageError(Metric):
 
 
 class LabelRankingAveragePrecision(Metric):
-    """Computes label ranking average precision score for multilabel data [1]. The score is the average over each
-    ground truth label assigned to each sample of the ratio of true vs. total labels with lower score. Best score
-    is 1.
+    """Computes label ranking average precision score for multilabel data [1].
+
+    The score is the average over each ground truth label assigned to each sample of the ratio of true vs.
+    total labels with lower score. Best score is 1.
 
     Args:
         kwargs:

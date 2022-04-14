@@ -23,8 +23,7 @@ from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
 
 class StatScores(Metric):
     r"""Computes the number of true positives, false positives, true negatives, false negatives.
-    Related to `Type I and Type II errors`_
-    and the `confusion matrix`_.
+    Related to `Type I and Type II errors`_ and the `confusion matrix`_.
 
     The reduction method (how the statistics are aggregated) is controlled by the
     ``reduce`` parameter, and additionally by the ``mdmc_reduce`` parameter in the
@@ -38,28 +37,24 @@ class StatScores(Metric):
             of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
 
         top_k:
-            Number of highest probability or logit score predictions considered to find the correct label,
-            relevant only for (multi-dimensional) multi-class inputs. The
-            default value (``None``) will be interpreted as 1 for these inputs.
-
-            Should be left at default (``None``) for all other types of inputs.
+            Number of the highest probability or logit score predictions considered finding the correct label,
+            relevant only for (multi-dimensional) multi-class inputs. The default value (``None``) will be interpreted
+            as 1 for these inputs. Should be left at default (``None``) for all other types of inputs.
 
         reduce:
             Defines the reduction that is applied. Should be one of the following:
 
-            - ``'micro'`` [default]: Counts the statistics by summing over all [sample, class]
+            - ``'micro'`` [default]: Counts the statistics by summing over all ``[sample, class]``
               combinations (globally). Each statistic is represented by a single integer.
             - ``'macro'``: Counts the statistics for each class separately (over all samples).
-              Each statistic is represented by a ``(C,)`` tensor. Requires ``num_classes``
-              to be set.
+              Each statistic is represented by a ``(C,)`` tensor. Requires ``num_classes`` to be set.
             - ``'samples'``: Counts the statistics for each sample separately (over all classes).
               Each statistic is represented by a ``(N, )`` 1d tensor.
 
             .. note:: What is considered a sample in the multi-dimensional multi-class case
                 depends on the value of ``mdmc_reduce``.
 
-        num_classes:
-            Number of classes. Necessary for (multi-dimensional) multi-class or multi-label data.
+        num_classes: Number of classes. Necessary for (multi-dimensional) multi-class or multi-label data.
 
         ignore_index:
             Specify a class (label) to ignore. If given, this class index does not contribute
@@ -67,9 +62,7 @@ class StatScores(Metric):
             ``reduce='macro'``, the class statistics for the ignored class will all be returned
             as ``-1``.
 
-        mdmc_reduce:
-            Defines how the multi-dimensional multi-class inputs are handeled. Should be
-            one of the following:
+        mdmc_reduce: Defines how the multi-dimensional multi-class inputs are handeled. Should be one of the following:
 
             - ``None`` [default]: Should be left unchanged if your data is not multi-dimensional
               multi-class (see :ref:`pages/classification:input types` for the definition of input types).
@@ -181,9 +174,9 @@ class StatScores(Metric):
             self.add_state(s, default=default(), dist_reduce_fx=reduce_fn)
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets. See
-        :ref:`pages/classification:input types` for more information on input
-        types.
+        """Update state with predictions and targets.
+
+        See :ref:`pages/classification:input types` for more information on input types.
 
         Args:
             preds: Predictions from model (probabilities, logits or labels)
@@ -231,7 +224,7 @@ class StatScores(Metric):
             shape depends on the ``reduce`` and ``mdmc_reduce`` (in case of multi-dimensional
             multi-class data) parameters:
 
-            - If the data is not multi-dimensional multi-class, then
+            - If the data is not multi-dimensional multi-class, then:
 
               - If ``reduce='micro'``, the shape will be ``(5, )``
               - If ``reduce='macro'``, the shape will be ``(C, 5)``,
@@ -239,7 +232,7 @@ class StatScores(Metric):
               - If ``reduce='samples'``, the shape will be ``(N, 5)``, where ``N`` stands for
                 the number of samples
 
-            - If the data is multi-dimensional multi-class and ``mdmc_reduce='global'``, then
+            - If the data is multi-dimensional multi-class and ``mdmc_reduce='global'``, then:
 
               - If ``reduce='micro'``, the shape will be ``(5, )``
               - If ``reduce='macro'``, the shape will be ``(C, 5)``
@@ -247,7 +240,7 @@ class StatScores(Metric):
                 the product of sizes of all "extra" dimensions of the data (i.e. all dimensions
                 except for ``C`` and ``N``)
 
-            - If the data is multi-dimensional multi-class and ``mdmc_reduce='samplewise'``, then
+            - If the data is multi-dimensional multi-class and ``mdmc_reduce='samplewise'``, then:
 
               - If ``reduce='micro'``, the shape will be ``(N, 5)``
               - If ``reduce='macro'``, the shape will be ``(N, C, 5)``

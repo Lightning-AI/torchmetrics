@@ -36,13 +36,14 @@ class KLDivergence(Metric):
         p: data distribution with shape ``[N, d]``
         q: prior or approximate distribution with shape ``[N, d]``
         log_prob: bool indicating if input is log-probabilities or probabilities. If given as probabilities,
-            will normalize to make sure the distributes sum to 1
+            will normalize to make sure the distributes sum to 1.
         reduction:
             Determines how to reduce over the ``N``/batch dimension:
 
             - ``'mean'`` [default]: Averages score across samples
             - ``'sum'``: Sum score across samples
             - ``'none'`` or ``None``: Returns score per sample
+
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
 
@@ -55,9 +56,9 @@ class KLDivergence(Metric):
 
     Raises:
         TypeError:
-            If ``log_prob`` is not an ``bool``
+            If ``log_prob`` is not an ``bool``.
         ValueError:
-            If ``reduction`` is not one of ``'mean'``, ``'sum'``, ``'none'`` or ``None``
+            If ``reduction`` is not one of ``'mean'``, ``'sum'``, ``'none'`` or ``None``.
 
     .. note::
         Half precision is only support on GPU for this metric
