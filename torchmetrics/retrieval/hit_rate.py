@@ -46,7 +46,7 @@ class RetrievalHitRate(RetrievalMetric):
 
         ignore_index:
             Ignore predictions where the target is equal to this number.
-        k: consider only the top k elements for each query (default: `None`, which considers them all)
+        k: consider only the top k elements for each query (default: ``None``, which considers them all)
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
 

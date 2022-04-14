@@ -42,8 +42,7 @@ class RetrievalMRR(RetrievalMetric):
             - ``'skip'``: skip those queries; if all queries are skipped, ``0.0`` is returned
             - ``'error'``: raise a ``ValueError``
 
-        ignore_index:
-            Ignore predictions where the target is equal to this number.
+        ignore_index: Ignore predictions where the target is equal to this number.
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
 

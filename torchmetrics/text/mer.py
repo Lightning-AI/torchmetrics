@@ -22,8 +22,8 @@ from torchmetrics.metric import Metric
 
 
 class MatchErrorRate(Metric):
-    r"""
-    Match Error Rate (MER_) is a common metric of the performance of an automatic speech recognition system.
+    r"""Match Error Rate (MER_) is a common metric of the performance of an automatic speech recognition system.
+
     This value indicates the percentage of words that were incorrectly predicted and inserted.
     The lower the value, the better the performance of the ASR system with a MatchErrorRate of 0 being a perfect score.
     Match error rate can then be computed as:
@@ -32,11 +32,11 @@ class MatchErrorRate(Metric):
         mer = \frac{S + D + I}{N + I} = \frac{S + D + I}{S + D + C + I}
 
     where:
-        - S is the number of substitutions,
-        - D is the number of deletions,
-        - I is the number of insertions,
-        - C is the number of correct words,
-        - N is the number of words in the reference (N=S+D+C).
+        - :math:`S` is the number of substitutions,
+        - :math:`D` is the number of deletions,
+        - :math:`I` is the number of insertions,
+        - :math:`C` is the number of correct words,
+        - :math:`N` is the number of words in the reference (:math:`N=S+D+C`).
 
 
     Args:

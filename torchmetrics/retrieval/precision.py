@@ -46,8 +46,8 @@ class RetrievalPrecision(RetrievalMetric):
 
         ignore_index:
             Ignore predictions where the target is equal to this number.
-        k: consider only the top k elements for each query (default: `None`, which considers them all)
-        adaptive_k: adjust `k` to `min(k, number of documents)` for each query
+        k: consider only the top k elements for each query (default: ``None``, which considers them all)
+        adaptive_k: adjust ``k`` to ``min(k, number of documents)`` for each query
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
 

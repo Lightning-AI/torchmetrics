@@ -30,10 +30,8 @@ class BLEUScore(Metric):
     """Calculate `BLEU score`_ of machine translated text with one or more references.
 
     Args:
-        n_gram:
-            Gram value ranged from 1 to 4 (Default 4)
-        smooth:
-            Whether or not to apply smoothing, see [2]
+        n_gram: Gram value ranged from 1 to 4
+        smooth: Whether or not to apply smoothing, see [2]
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
 

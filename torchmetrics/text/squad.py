@@ -75,8 +75,7 @@ class SQuAD(Metric):
 
         Args:
             preds:
-                A Dictionary or List of Dictionary-s that map `id` and `prediction_text` to the respective values.
-
+                A Dictionary or List of Dictionary-s that map ``id`` and ``prediction_text`` to the respective values.
                 Example prediction:
 
                 .. code-block:: python
@@ -84,8 +83,7 @@ class SQuAD(Metric):
                     {"prediction_text": "TorchMetrics is awesome", "id": "123"}
 
             target:
-                A Dictioinary or List of Dictionary-s that contain the `answers` and `id` in the SQuAD Format.
-
+                A Dictionary or List of Dictionary-s that contain the ``answers`` and ``id`` in the SQuAD Format.
                 Example target:
 
                 .. code-block:: python

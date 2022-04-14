@@ -22,22 +22,18 @@ from torchmetrics.metric import Metric
 
 
 class TranslationEditRate(Metric):
-    """Calculate Translation edit rate (`TER`_)  of machine translated text with one or more references. This
-    implementation follows the implmenetaions from
+    """Calculate Translation edit rate (`TER`_)  of machine translated text with one or more references.
+
+    This implementation follows the implmenetaions from
     https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/ter.py. The `sacrebleu` implmenetation is a
     near-exact reimplementation of the Tercom algorithm, produces identical results on all "sane" outputs.
 
     Args:
-        normalize:
-            An indication whether a general tokenization to be applied.
-        no_punctuation:
-            An indication whteher a punctuation to be removed from the sentences.
-        lowercase:
-            An indication whether to enable case-insesitivity.
-        asian_support:
-            An indication whether asian characters to be processed.
-        return_sentence_level_score:
-            An indication whether a sentence-level TER to be returned.
+        normalize: An indication whether a general tokenization to be applied.
+        no_punctuation: An indication whteher a punctuation to be removed from the sentences.
+        lowercase: An indication whether to enable case-insesitivity.
+        asian_support: An indication whether asian characters to be processed.
+        return_sentence_level_score: An indication whether a sentence-level TER to be returned.
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
 
@@ -98,10 +94,8 @@ class TranslationEditRate(Metric):
         """Update TER statistics.
 
         Args:
-            preds:
-                An iterable of hypothesis corpus.
-            target:
-                An iterable of iterables of reference corpus.
+            preds: An iterable of hypothesis corpus.
+            target: An iterable of iterables of reference corpus.
         """
         self.total_num_edits, self.total_tgt_len, self.sentence_ter = _ter_update(
             preds,
@@ -117,7 +111,7 @@ class TranslationEditRate(Metric):
 
         Return:
             A corpus-level translation edit rate (TER).
-            (Optionally) A list of sentence-level translation_edit_rate (TER) if `return_sentence_level_score=True`.
+            (Optionally) A list of sentence-level translation_edit_rate (TER) if ``return_sentence_level_score=True``.
         """
         ter = _ter_compute(self.total_num_edits, self.total_tgt_len)
         if self.sentence_ter is not None:
