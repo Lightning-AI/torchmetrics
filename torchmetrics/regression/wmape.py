@@ -34,8 +34,7 @@ class WeightedMeanAbsolutePercentageError(Metric):
     Where :math:`y` is a tensor of target values, and :math:`\hat{y}` is a tensor of predictions.
 
     Args:
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
         >>> import torch

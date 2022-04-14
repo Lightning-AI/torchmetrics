@@ -20,9 +20,9 @@ from torchmetrics.metric import Metric
 
 
 class HingeLoss(Metric):
-    r"""
-    Computes the mean `Hinge loss`_, typically used for Support Vector
-    Machines (SVMs). In the binary case it is defined as:
+    r"""Computes the mean `Hinge loss`_, typically used for Support Vector Machines (SVMs).
+
+    In the binary case it is defined as:
 
     .. math::
         \text{Hinge loss} = \max(0, 1 - y \times \hat{y})
@@ -60,8 +60,7 @@ class HingeLoss(Metric):
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
 
     Raises:

@@ -71,7 +71,7 @@ class Accuracy(StatScores):
             .. note:: What is considered a sample in the multi-dimensional multi-class case
                 depends on the value of ``mdmc_average``.
 
-            .. note:: If ``'none'`` and a given class doesn't occur in the `preds` or `target`,
+            .. note:: If ``'none'`` and a given class doesn't occur in the ``preds`` or ``target``,
                 the value for the class will be ``nan``.
 
         mdmc_average:
@@ -98,7 +98,7 @@ class Accuracy(StatScores):
             or ``'none'``, the score for the ignored class will be returned as ``nan``.
 
         top_k:
-            Number of highest probability or logit score predictions considered to find the correct label,
+            Number of the highest probability or logit score predictions considered finding the correct label,
             relevant only for (multi-dimensional) multi-class inputs. The
             default value (``None``) will be interpreted as 1 for these inputs.
 
@@ -132,8 +132,7 @@ class Accuracy(StatScores):
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:

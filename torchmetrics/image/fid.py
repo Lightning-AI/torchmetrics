@@ -60,7 +60,7 @@ class NoTrainInceptionV3(FeatureExtractorInceptionV3):
 class MatrixSquareRoot(Function):
     """Square root of a positive definite matrix.
 
-    All credit to:     `Square Root of a Positive Definite Matrix`_
+    All credit to `Square Root of a Positive Definite Matrix`_
     """
 
     @staticmethod
@@ -106,7 +106,7 @@ def _compute_fid(mu1: Tensor, sigma1: Tensor, mu2: Tensor, sigma2: Tensor, eps: 
         sigma1: covariance matrix over activations calculated on predicted (x) samples
         mu2: mean of activations calculated on target (y) samples
         sigma2: covariance matrix over activations calculated on target (y) samples
-        eps: offset constant. used if sigma_1 @ sigma_2 matrix is singular
+        eps: offset constant - used if sigma_1 @ sigma_2 matrix is singular
 
     Returns:
         Scalar value of the distance between sets.
@@ -137,7 +137,7 @@ class FrechetInceptionDistance(Metric):
     originally proposed in [1].
 
     Using the default feature extraction (Inception v3 using the original weights from [2]), the input is
-    expected to be mini-batches of 3-channel RGB images of shape (3 x H x W) with dtype uint8. All images
+    expected to be mini-batches of 3-channel RGB images of shape (``3 x H x W``) with dtype uint8. All images
     will be resized to 299 x 299 which is the size of the original training data. The boolian flag ``real``
     determines if the images should update the statistics of the real distribution or the fake distribution.
 
@@ -171,8 +171,7 @@ class FrechetInceptionDistance(Metric):
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     References:
         [1] Rethinking the Inception Architecture for Computer Vision
@@ -246,7 +245,7 @@ class FrechetInceptionDistance(Metric):
             raise TypeError("Got unknown input to argument `feature`")
 
         if not isinstance(reset_real_features, bool):
-            raise ValueError("Arugment `reset_real_features` expected to be a bool")
+            raise ValueError("Argument `reset_real_features` expected to be a bool")
         self.reset_real_features = reset_real_features
 
         self.add_state("real_features", [], dist_reduce_fx=None)
@@ -257,7 +256,7 @@ class FrechetInceptionDistance(Metric):
 
         Args:
             imgs: tensor with images feed to the feature extractor
-            real: bool indicating if imgs belong to the real or the fake distribution
+            real: bool indicating if ``imgs`` belong to the real or the fake distribution
         """
         features = self.inception(imgs)
 

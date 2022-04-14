@@ -20,8 +20,7 @@ from torchmetrics.functional.classification.precision_recall import _precision_c
 
 
 class Precision(StatScores):
-    r"""
-    Computes `Precision`_:
+    r"""Computes `Precision`_:
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 
@@ -69,9 +68,9 @@ class Precision(StatScores):
               and computing the metric for the sample based on that.
 
             - ``'global'``: In this case the ``N`` and ``...`` dimensions of the inputs
-              (see :ref:`pages/classification:input types`)
-              are flattened into a new ``N_X`` sample axis, i.e. the inputs are treated as if they
-              were ``(N_X, C)``. From here on the ``average`` parameter applies as usual.
+              (see :ref:`pages/classification:input types`) are flattened into a new ``N_X`` sample axis, i.e.
+              the inputs are treated as if they were ``(N_X, C)``.
+              From here on the ``average`` parameter applies as usual.
 
         ignore_index:
             Integer specifying a target class to ignore. If given, this class index does not contribute
@@ -79,10 +78,9 @@ class Precision(StatScores):
             or ``'none'``, the score for the ignored class will be returned as ``nan``.
 
         top_k:
-            Number of highest probability or logit score predictions considered to find the correct label,
+            Number of the highest probability or logit score predictions considered finding the correct label,
             relevant only for (multi-dimensional) multi-class inputs. The
             default value (``None``) will be interpreted as 1 for these inputs.
-
             Should be left at default (``None``) for all other types of inputs.
 
         multiclass:
@@ -97,8 +95,7 @@ class Precision(StatScores):
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
@@ -154,7 +151,7 @@ class Precision(StatScores):
         """Computes the precision score based on inputs passed in to ``update`` previously.
 
         Return:
-            The shape of the returned tensor depends on the ``average`` parameter
+            The shape of the returned tensor depends on the ``average`` parameter:
 
             - If ``average in ['micro', 'macro', 'weighted', 'samples']``, a one-element tensor will be returned
             - If ``average in ['none', None]``, the shape will be ``(C,)``, where ``C`` stands  for the number
@@ -165,8 +162,7 @@ class Precision(StatScores):
 
 
 class Recall(StatScores):
-    r"""
-    Computes `Recall`_:
+    r"""Computes `Recall`_:
 
     .. math:: \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
 
@@ -182,8 +178,8 @@ class Recall(StatScores):
         num_classes:
             Number of classes. Necessary for ``'macro'``, ``'weighted'`` and ``None`` average methods.
         threshold:
-            Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
-            of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
+            Threshold for transforming probability or logit predictions to binary ``(0,1)`` predictions, in the case
+            of binary or multi-label inputs. Default value of ``0.5`` corresponds to input being probabilities.
         average:
             Defines the reduction that is applied. Should be one of the following:
 
@@ -204,8 +200,7 @@ class Recall(StatScores):
             Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
             ``average`` parameter). Should be one of the following:
 
-            - ``None`` [default]: Should be left unchanged if your data is not multi-dimensional
-              multi-class.
+            - ``None`` [default]: Should be left unchanged if your data is not multi-dimensional multi-class.
 
             - ``'samplewise'``: In this case, the statistics are computed separately for each
               sample on the ``N`` axis, and then averaged over samples.
@@ -224,9 +219,9 @@ class Recall(StatScores):
             or ``'none'``, the score for the ignored class will be returned as ``nan``.
 
         top_k:
-            Number of highest probability or logit score predictions considered to find the correct label,
-            relevant only for (multi-dimensional) multi-class. The
-            default value (``None``) will be interpreted as 1 for these inputs.
+            Number of the highest probability or logit score predictions considered finding the correct label,
+            relevant only for (multi-dimensional) multi-class. The default value (``None``) will be interpreted
+            as 1 for these inputs.
 
             Should be left at default (``None``) for all other types of inputs.
 
@@ -242,8 +237,7 @@ class Recall(StatScores):
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
@@ -299,7 +293,7 @@ class Recall(StatScores):
         """Computes the recall score based on inputs passed in to ``update`` previously.
 
         Return:
-            The shape of the returned tensor depends on the ``average`` parameter
+            The shape of the returned tensor depends on the ``average`` parameter:
 
             - If ``average in ['micro', 'macro', 'weighted', 'samples']``, a one-element tensor will be returned
             - If ``average in ['none', None]``, the shape will be ``(C,)``, where ``C`` stands  for the number

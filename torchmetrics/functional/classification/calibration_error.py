@@ -24,12 +24,12 @@ from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_8
 def _binning_with_loop(
     confidences: Tensor, accuracies: Tensor, bin_boundaries: Tensor
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    """
-    Compute calibration bins using for loops. Use for pytorch < 1.6
+    """Compute calibration bins using for loops. Use for pytorch < 1.6.
+
     Args:
         confidences: The confidence (i.e. predicted prob) of the top1 prediction.
         accuracies: 1.0 if the top-1 prediction was correct, 0.0 otherwise.
-        bin_boundaries: Bin boundaries separating the linspace from 0 to 1.
+        bin_boundaries: Bin boundaries separating the ``linspace`` from 0 to 1.
 
     Returns:
         tuple with binned accuracy, binned confidence and binned probabilities
@@ -51,12 +51,12 @@ def _binning_with_loop(
 def _binning_bucketize(
     confidences: Tensor, accuracies: Tensor, bin_boundaries: Tensor
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    """Compute calibration bins using torch.bucketize. Use for pytorch >= 1.6.
+    """Compute calibration bins using ``torch.bucketize``. Use for pytorch >= 1.6.
 
     Args:
         confidences: The confidence (i.e. predicted prob) of the top1 prediction.
         accuracies: 1.0 if the top-1 prediction was correct, 0.0 otherwise.
-        bin_boundaries: Bin boundaries separating the linspace from 0 to 1.
+        bin_boundaries: Bin boundaries separating the ``linspace`` from 0 to 1.
 
     Returns:
         tuple with binned accuracy, binned confidence and binned probabilities
@@ -91,7 +91,7 @@ def _ce_compute(
     Args:
         confidences: The confidence (i.e. predicted prob) of the top1 prediction.
         accuracies: 1.0 if the top-1 prediction was correct, 0.0 otherwise.
-        bin_boundaries: Bin boundaries separating the linspace from 0 to 1.
+        bin_boundaries: Bin boundaries separating the ``linspace`` from 0 to 1.
         norm: Norm function to use when computing calibration error. Defaults to "l1".
         debias: Apply debiasing to L2 norm computation as in
             `Verified Uncertainty Calibration`_. Defaults to False.
@@ -131,7 +131,7 @@ def _ce_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
     correctness.
 
     Args:
-        preds:  Input softmaxed predictions.
+        preds:  Input ``softmaxed`` predictions.
         target: Labels.
 
     Raises:
@@ -162,8 +162,7 @@ def _ce_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
 
 
 def calibration_error(preds: Tensor, target: Tensor, n_bins: int = 15, norm: str = "l1") -> Tensor:
-    r"""
-    `Computes the Top-label Calibration Error`_
+    r"""`Computes the Top-label Calibration Error`_
 
     Three different norms are implemented, each corresponding to variations on the calibration error metric.
 
@@ -192,7 +191,7 @@ def calibration_error(preds: Tensor, target: Tensor, n_bins: int = 15, norm: str
     Args:
         preds: Model output probabilities.
         target: Ground-truth target class labels.
-        n_bins: Number of bins to use when computing t. Defaults to 15.
+        n_bins: Number of bins to use when computing t.
         norm: Norm used to compare empirical and expected probability bins.
             Defaults to "l1", or Expected Calibration Error.
     """

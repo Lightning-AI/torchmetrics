@@ -21,8 +21,7 @@ from torchmetrics.metric import Metric
 
 
 class MeanSquaredLogError(Metric):
-    r"""
-    Computes `mean squared logarithmic error`_ (MSLE):
+    r"""Computes `mean squared logarithmic error`_ (MSLE):
 
     .. math:: \text{MSLE} = \frac{1}{N}\sum_i^N (\log_e(1 + y_i) - \log_e(1 + \hat{y_i}))^2
 
@@ -35,8 +34,7 @@ class MeanSquaredLogError(Metric):
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
         >>> from torchmetrics import MeanSquaredLogError

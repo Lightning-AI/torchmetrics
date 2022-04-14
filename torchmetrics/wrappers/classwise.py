@@ -12,7 +12,6 @@ class ClasswiseWrapper(Metric):
     Args:
         metric: base metric that should be wrapped. It is assumed that the metric outputs a single
             tensor that is split along the first dimension.
-
         labels: list of strings indicating the different classes.
 
     Example:

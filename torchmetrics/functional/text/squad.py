@@ -144,8 +144,7 @@ def _squad_update(
     """Compute F1 Score and Exact Match for a collection of predictions and references.
 
     Args:
-        preds:
-            A dictionary mapping an `id` to the predicted `answer`.
+        preds: A dictionary mapping an `id` to the predicted `answer`.
         target:
             A list of dictionary mapping `paragraphs` to list of dictionary mapping `qas` to a list of dictionary
             containing `id` and list of all possible `answers`.
@@ -187,10 +186,6 @@ def _squad_update(
 def _squad_compute(f1: Tensor, exact_match: Tensor, total: Tensor) -> Dict[str, Tensor]:
     """Aggregate the F1 Score and Exact match for the batch.
 
-    Args:
-        scores:
-            F1 Score, Exact Match, and Total number of examples in the batch
-
     Return:
         Dictionary containing the F1 score, Exact match score for the batch.
     """
@@ -203,8 +198,7 @@ def squad(preds: PREDS_TYPE, target: TARGETS_TYPE) -> Dict[str, Tensor]:
     """Calculate `SQuAD Metric`_ .
 
     Args:
-        preds:
-            A Dictionary or List of Dictionary-s that map `id` and `prediction_text` to the respective values.
+        preds: A Dictionary or List of Dictionary-s that map `id` and `prediction_text` to the respective values.
 
             Example prediction:
 
@@ -212,8 +206,7 @@ def squad(preds: PREDS_TYPE, target: TARGETS_TYPE) -> Dict[str, Tensor]:
 
                 {"prediction_text": "TorchMetrics is awesome", "id": "123"}
 
-        target:
-            A Dictionary or List of Dictionary-s that contain the `answers` and `id` in the SQuAD Format.
+        target: A Dictionary or List of Dictionary-s that contain the `answers` and `id` in the SQuAD Format.
 
             Example target:
 

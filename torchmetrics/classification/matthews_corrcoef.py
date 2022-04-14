@@ -24,10 +24,9 @@ from torchmetrics.metric import Metric
 
 
 class MatthewsCorrCoef(Metric):
-    r"""
-    Calculates `Matthews correlation coefficient`_ that measures
-    the general correlation or quality of a classification. In the binary case it
-    is defined as:
+    r"""Calculates `Matthews correlation coefficient`_ that measures the general correlation or quality of a classification.
+
+    In the binary case it is defined as:
 
     .. math::
         MCC = \frac{TP*TN - FP*FN}{\sqrt{(TP+FP)*(TP+FN)*(TN+FP)*(TN+FN)}}
@@ -51,16 +50,14 @@ class MatthewsCorrCoef(Metric):
 
     Args:
         num_classes: Number of classes in the dataset.
-        threshold:
-            Threshold value for binary or multi-label probabilites.
+        threshold: Threshold value for binary or multi-label probabilites.
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
 
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
         >>> from torchmetrics import MatthewsCorrCoef

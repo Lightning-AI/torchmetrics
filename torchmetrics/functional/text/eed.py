@@ -119,22 +119,17 @@ def _eed_function(
     deletion: float = 0.2,
     insertion: float = 1.0,
 ) -> float:
-    """Computes extended edit distance score for two lists of strings: hyp and ref. Code adapted from:
-    https://github.com/rwth-i6/ExtendedEditDistance/blob/master/EED.py.
+    """Computes extended edit distance score for two lists of strings: hyp and ref.
+
+    Code adapted from: https://github.com/rwth-i6/ExtendedEditDistance/blob/master/EED.py.
 
     Args:
-        hyp:
-            A hypothesis string
-        ref:
-            A reference string
-        alpha:
-            optimal jump penalty, penalty for jumps between characters
-        rho:
-            coverage cost, penalty for repetition of characters
-        deletion:
-            penalty for deletion of character
-        insertion:
-            penalty for insertion or substitution of character
+        hyp: A hypothesis string
+        ref: A reference string
+        alpha: optimal jump penalty, penalty for jumps between characters
+        rho: coverage cost, penalty for repetition of characters
+        deletion: penalty for deletion of character
+        insertion: penalty for insertion or substitution of character
 
     Return:
         Extended edit distance score as float
@@ -238,8 +233,7 @@ def _eed_compute(sentence_level_scores: List[Tensor]) -> Tensor:
     """Final step in extended edit distance.
 
     Args:
-        sentence_level_scores:
-            list of sentence-level scores as floats
+        sentence_level_scores: list of sentence-level scores as floats
 
     Return:
         average of scores as a tensor
@@ -256,7 +250,7 @@ def _preprocess_sentences(
     target: Sequence[Union[str, Sequence[str]]],
     language: Union[Literal["en"], Literal["ja"]],
 ) -> Tuple[Union[str, Sequence[str]], Sequence[Union[str, Sequence[str]]]]:
-    """Proprocess strings according to language requirements.
+    """Preprocess strings according to language requirements.
 
     Args:
         preds: An iterable of hypothesis corpus.
@@ -267,7 +261,7 @@ def _preprocess_sentences(
         Tuple of lists that contain the cleaned strings for target and preds
 
     Raises:
-        ValueError: If a different language than 'en" or 'ja' is used
+        ValueError: If a different language than ``'en'`` or ``'ja'`` is used
         ValueError: If length of target not equal to length of preds
         ValueError: If objects in reference and hypothesis corpus are not strings
     """
@@ -299,24 +293,15 @@ def _compute_sentence_statistics(
     """Compute scores for ExtendedEditDistance.
 
     Args:
-        target_words:
-            An iterable of reference words
-        preds_word:
-            A hypothesis word
-        alpha:
-            An optimal jump penalty, penalty for jumps between characters
-        rho:
-            coverage cost, penalty for repetition of characters
-        deletion:
-            penalty for deletion of character
-        insertion:
-            penalty for insertion or substitution of character
-        decide_score_fn:
-            decides which score
+        target_words: An iterable of reference words
+        preds_word: A hypothesis word
+        alpha: An optimal jump penalty, penalty for jumps between characters
+        rho: coverage cost, penalty for repetition of characters
+        deletion: penalty for deletion of character
+        insertion: penalty for insertion or substitution of character
 
     Return:
-        best_score:
-            best (lowest) sentence-level score as a Tensor
+        best_score: best (lowest) sentence-level score as a Tensor
     """
     best_score = inf
 
@@ -341,22 +326,14 @@ def _eed_update(
     """Compute scores for ExtendedEditDistance.
 
     Args:
-        preds:
-            An iterable of hypothesis corpus
-        target:
-            An iterable of iterables of reference corpus
-        language:
-            Language used in sentences. Only supports English (en) and Japanese (ja) for now. Defaults to en
-        alpha:
-            optimal jump penalty, penalty for jumps between characters
-        rho:
-            coverage cost, penalty for repetition of characters
-        deletion:
-            penalty for deletion of character
-        insertion:
-            penalty for insertion or substitution of character
-        sentence_eed:
-            list of sentence-level scores
+        preds: An iterable of hypothesis corpus
+        target: An iterable of iterables of reference corpus
+        language: Language used in sentences. Only supports English (en) and Japanese (ja) for now. Defaults to en
+        alpha: optimal jump penalty, penalty for jumps between characters
+        rho: coverage cost, penalty for repetition of characters
+        deletion: penalty for deletion of character
+        insertion: penalty for insertion or substitution of character
+        sentence_eed: list of sentence-level scores
 
     Return:
         individual sentence scores as a list of Tensors
@@ -388,25 +365,17 @@ def extended_edit_distance(
     insertion: float = 1.0,
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
     """Computes extended edit distance score (`ExtendedEditDistance`_) [1] for strings or list of strings. The
-    metric utilises the Levenshtein distance and extends it by adding an additional jump operation.
+    metric utilises the Levenshtein distance and extends it by adding a jump operation.
 
     Args:
-        preds:
-            An iterable of hypothesis corpus.
-        target:
-            An iterable of iterables of reference corpus.
-        language:
-            Language used in sentences. Only supports English (en) and Japanese (ja) for now. Defaults to en
-        return_sentence_level_score:
-            An indication of whether sentence-level EED score is to be returned.
-        alpha:
-            optimal jump penalty, penalty for jumps between characters
-        rho:
-            coverage cost, penalty for repetition of characters
-        deletion:
-            penalty for deletion of character
-        insertion:
-            penalty for insertion or substitution of character
+        preds: An iterable of hypothesis corpus.
+        target: An iterable of iterables of reference corpus.
+        language: Language used in sentences. Only supports English (en) and Japanese (ja) for now. Defaults to en
+        return_sentence_level_score: An indication of whether sentence-level EED score is to be returned.
+        alpha: optimal jump penalty, penalty for jumps between characters
+        rho: coverage cost, penalty for repetition of characters
+        deletion: penalty for deletion of character
+        insertion: penalty for insertion or substitution of character
 
     Return:
         Extended edit distance score as a tensor

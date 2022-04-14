@@ -24,7 +24,7 @@ def retrieval_recall(preds: Tensor, target: Tensor, k: Optional[int] = None) -> 
     retrieved among all the relevant documents.
 
     ``preds`` and ``target`` should be of the same shape and live on the same device. If no ``target`` is ``True``,
-    ``0`` is returned. ``target`` must be either `bool` or `integers` and ``preds`` must be `float`,
+    ``0`` is returned. ``target`` must be either `bool` or `integers` and ``preds`` must be ``float``,
     otherwise an error is raised. If you want to measure Recall@K, ``k`` must be a positive integer.
 
     Args:

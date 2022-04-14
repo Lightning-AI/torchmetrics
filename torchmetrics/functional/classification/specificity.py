@@ -78,8 +78,7 @@ def specificity(
     top_k: Optional[int] = None,
     multiclass: Optional[bool] = None,
 ) -> Tensor:
-    r"""
-    Computes `Specificity`_
+    r"""Computes `Specificity`_
 
     .. math:: \text{Specificity} = \frac{\text{TN}}{\text{TN} + \text{FP}}
 
@@ -110,15 +109,14 @@ def specificity(
             .. note:: What is considered a sample in the multi-dimensional multi-class case
                 depends on the value of ``mdmc_average``.
 
-            .. note:: If ``'none'`` and a given class doesn't occur in the `preds` or `target`,
+            .. note:: If ``'none'`` and a given class doesn't occur in the ``preds`` or ``target``,
                 the value for the class will be ``nan``.
 
         mdmc_average:
             Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
             ``average`` parameter). Should be one of the following:
 
-            - ``None`` [default]: Should be left unchanged if your data is not multi-dimensional
-              multi-class.
+            - ``None`` [default]: Should be left unchanged if your data is not multi-dimensional multi-class.
 
             - ``'samplewise'``: In this case, the statistics are computed separately for each
               sample on the ``N`` axis, and then averaged over samples.
@@ -135,10 +133,8 @@ def specificity(
             Integer specifying a target class to ignore. If given, this class index does not contribute
             to the returned score, regardless of reduction method. If an index is ignored, and ``average=None``
             or ``'none'``, the score for the ignored class will be returned as ``nan``.
-
         num_classes:
             Number of classes. Necessary for ``'macro'``, ``'weighted'`` and ``None`` average methods.
-
         threshold:
             Threshold probability value for transforming probability predictions to binary
             (0,1) predictions, in the case of binary or multi-label inputs
@@ -164,15 +160,13 @@ def specificity(
 
     Raises:
         ValueError:
-            If ``average`` is not one of ``"micro"``, ``"macro"``, ``"weighted"``,
-            ``"samples"``, ``"none"`` or ``None``.
+            If ``average`` is not one of ``"micro"``, ``"macro"``, ``"weighted"``, ``"samples"``, ``"none"`` or ``None``
         ValueError:
             If ``mdmc_average`` is not one of ``None``, ``"samplewise"``, ``"global"``.
         ValueError:
             If ``average`` is set but ``num_classes`` is not provided.
         ValueError:
-            If ``num_classes`` is set
-            and ``ignore_index`` is not in the range ``[0, num_classes)``.
+            If ``num_classes`` is set and ``ignore_index`` is not in the range ``[0, num_classes)``.
 
     Example:
         >>> from torchmetrics.functional import specificity
@@ -182,16 +176,15 @@ def specificity(
         tensor(0.6111)
         >>> specificity(preds, target, average='micro')
         tensor(0.6250)
-
     """
 
-    allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
+    allowed_average = ("micro", "macro", "weighted", "samples", "none", None)
     if average not in allowed_average:
         raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
 
-    allowed_mdmc_average = [None, "samplewise", "global"]
+    allowed_mdmc_average = (None, "samplewise", "global")
     if mdmc_average not in allowed_mdmc_average:
-        raise ValueError("The `mdmc_average` has to be one of {allowed_mdmc_average}, got {mdmc_average}.")
+        raise ValueError(f"The `mdmc_average` has to be one of {allowed_mdmc_average}, got {mdmc_average}.")
 
     if average in ["macro", "weighted", "none", None] and (not num_classes or num_classes < 1):
         raise ValueError(f"When you set `average` as {average}, you have to provide the number of classes.")

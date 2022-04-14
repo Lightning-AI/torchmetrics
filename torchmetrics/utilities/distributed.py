@@ -48,7 +48,7 @@ def class_reduce(
     class_reduction: Literal["micro", "macro", "weighted", "none", None] = "none",
 ) -> Tensor:
     """
-    Function used to reduce classification metrics of the form `num / denom * weights`.
+    Function used to reduce classification metrics of the form ``num / denom * weights``.
     For example for calculating standard accuracy the num would be number of
     true positives per class, denom would be the support per class, and weights
     would be a tensor of 1s
@@ -57,7 +57,7 @@ def class_reduce(
         num: numerator tensor
         denom: denominator tensor
         weights: weights for each class
-        class_reduction: reduction method for multiclass problems
+        class_reduction: reduction method for multiclass problems:
 
             - ``'micro'``: calculate metrics globally (default)
             - ``'macro'``: calculate metrics for each label, and find their unweighted mean.
@@ -110,7 +110,7 @@ def gather_all_tensors(result: Tensor, group: Optional[Any] = None) -> List[Tens
 
     Return:
         gathered_result: list with size equal to the process group where
-            gathered_result[i] corresponds to result tensor from process i
+            ``gathered_result[i]`` corresponds to result tensor from process ``i``
     """
     if group is None:
         group = torch.distributed.group.WORLD

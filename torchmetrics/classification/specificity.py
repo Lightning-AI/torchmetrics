@@ -21,8 +21,7 @@ from torchmetrics.functional.classification.specificity import _specificity_comp
 
 
 class Specificity(StatScores):
-    r"""
-    Computes `Specificity`_:
+    r"""Computes `Specificity`_:
 
     .. math:: \text{Specificity} = \frac{\text{TN}}{\text{TN} + \text{FP}}
 
@@ -80,7 +79,7 @@ class Specificity(StatScores):
             or ``'none'``, the score for the ignored class will be returned as ``nan``.
 
         top_k:
-            Number of highest probability entries for each sample to convert to 1s - relevant
+            Number of the highest probability entries for each sample to convert to 1s - relevant
             only for inputs with probability predictions. If this parameter is set for multi-label
             inputs, it will take precedence over ``threshold``. For (multi-dim) multi-class inputs,
             this parameter defaults to 1.
@@ -99,8 +98,7 @@ class Specificity(StatScores):
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
@@ -155,7 +153,7 @@ class Specificity(StatScores):
         """Computes the specificity score based on inputs passed in to ``update`` previously.
 
         Return:
-            The shape of the returned tensor depends on the ``average`` parameter
+            The shape of the returned tensor depends on the ``average`` parameter:
 
             - If ``average in ['micro', 'macro', 'weighted', 'samples']``, a one-element tensor will be returned
             - If ``average in ['none', None]``, the shape will be ``(C,)``, where ``C`` stands  for the number

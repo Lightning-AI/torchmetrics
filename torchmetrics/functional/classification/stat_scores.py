@@ -46,7 +46,7 @@ def _drop_negative_ignored_indices(
         # In case or multi-dimensional multi-class with logits
         n_dims = len(preds.shape)
         num_classes = preds.shape[1]
-        # move class dim to last so that we can flatten the addtional dimensions into N: [N, C, ...] -> [N, ..., C]
+        # move class dim to last so that we can flatten the additional dimensions into N: [N, C, ...] -> [N, ..., C]
         preds = preds.transpose(1, n_dims - 1)
 
         # flatten: [N, ..., C] -> [N', C]
@@ -68,24 +68,23 @@ def _stat_scores(
     """Calculate the number of tp, fp, tn, fn.
 
     Args:
-        preds:
-            An ``(N, C)`` or ``(N, C, X)`` tensor of predictions (0 or 1)
-        target:
-            An ``(N, C)`` or ``(N, C, X)`` tensor of true labels (0 or 1)
-        reduce:
-            One of ``'micro'``, ``'macro'``, ``'samples'``
+        preds: An ``(N, C)`` or ``(N, C, X)`` tensor of predictions (0 or 1)
+        target: An ``(N, C)`` or ``(N, C, X)`` tensor of true labels (0 or 1)
+        reduce: One of ``'micro'``, ``'macro'``, ``'samples'``
 
     Return:
         Returns a list of 4 tensors; tp, fp, tn, fn.
-        The shape of the returned tensors depnds on the shape of the inputs
+        The shape of the returned tensors depends on the shape of the inputs
         and the ``reduce`` parameter:
 
-        If inputs are of the shape ``(N, C)``, then
+        If inputs are of the shape ``(N, C)``, then:
+
         - If ``reduce='micro'``, the returned tensors are 1 element tensors
         - If ``reduce='macro'``, the returned tensors are ``(C,)`` tensors
-        - If ``reduce'samples'``, the returned tensors are ``(N,)`` tensors
+        - If ``reduce='samples'``, the returned tensors are ``(N,)`` tensors
 
-        If inputs are of the shape ``(N, C, X)``, then
+        If inputs are of the shape ``(N, C, X)``, then:
+
         - If ``reduce='micro'``, the returned tensors are ``(N,)`` tensors
         - If ``reduce='macro'``, the returned tensors are ``(N,C)`` tensors
         - If ``reduce='samples'``, the returned tensors are ``(N,X)`` tensors
@@ -120,20 +119,20 @@ def _stat_scores_update(
     ignore_index: Optional[int] = None,
     mode: DataType = None,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-    """Updates and returns the the number of true positives, false positives, true negatives, false negatives.
-    Raises ValueError if:
+    """Updates and returns the number of true positives, false positives, true negatives, false negatives. Raises
+    ValueError if:
 
         - The `ignore_index` is not valid
         - When `ignore_index` is used with binary data
-        - When inputs are multi-dimensional multi-class, and the `mdmc_reduce` parameter is not set
+        - When inputs are multi-dimensional multi-class, and the ``mdmc_reduce`` parameter is not set
 
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
         reduce: Defines the reduction that is applied
-        mdmc_reduce: Defines how the multi-dimensional multi-class inputs are handeled
+        mdmc_reduce: Defines how the multi-dimensional multi-class inputs are handled
         num_classes: Number of classes. Necessary for (multi-dimensional) multi-class or multi-label data.
-        top_k: Number of highest probability or logit score predictions considered to find the correct label,
+        top_k: Number of the highest probability or logit score predictions considered finding the correct label,
             relevant only for (multi-dimensional) multi-class inputs
         threshold: Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
             of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities
@@ -298,8 +297,7 @@ def stat_scores(
     ignore_index: Optional[int] = None,
 ) -> Tensor:
     r"""Computes the number of true positives, false positives, true negatives, false negatives.
-    Related to `Type I and Type II errors`_
-    and the `confusion matrix`_.
+    Related to `Type I and Type II errors`_ and the `confusion matrix`_.
 
     The reduction method (how the statistics are aggregated) is controlled by the
     ``reduce`` parameter, and additionally by the ``mdmc_reduce`` parameter in the
@@ -311,14 +309,12 @@ def stat_scores(
         threshold:
             Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
             of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
-
         top_k:
             Number of highest probability or logit score predictions considered to find the correct label,
             relevant only for (multi-dimensional) multi-class inputs. The
             default value (``None``) will be interpreted as 1 for these inputs.
 
             Should be left at default (``None``) for all other types of inputs.
-
         reduce:
             Defines the reduction that is applied. Should be one of the following:
 
@@ -335,13 +331,11 @@ def stat_scores(
 
         num_classes:
             Number of classes. Necessary for (multi-dimensional) multi-class or multi-label data.
-
         ignore_index:
             Specify a class (label) to ignore. If given, this class index does not contribute
             to the returned score, regardless of reduction method. If an index is ignored, and
             ``reduce='macro'``, the class statistics for the ignored class will all be returned
             as ``-1``.
-
         mdmc_reduce:
             Defines how the multi-dimensional multi-class inputs are handeled. Should be
             one of the following:
@@ -374,8 +368,7 @@ def stat_scores(
         - If the data is not multi-dimensional multi-class, then
 
           - If ``reduce='micro'``, the shape will be ``(5, )``
-          - If ``reduce='macro'``, the shape will be ``(C, 5)``,
-            where ``C`` stands for the number of classes
+          - If ``reduce='macro'``, the shape will be ``(C, 5)``, where ``C`` stands for the number of classes
           - If ``reduce='samples'``, the shape will be ``(N, 5)``, where ``N`` stands for
             the number of samples
 
@@ -401,8 +394,7 @@ def stat_scores(
         ValueError:
             If ``reduce`` is set to ``"macro"`` and ``num_classes`` is not provided.
         ValueError:
-            If ``num_classes`` is set
-            and ``ignore_index`` is not in the range ``[0, num_classes)``.
+            If ``num_classes`` is set and ``ignore_index`` is not in the range ``[0, num_classes)``.
         ValueError:
             If ``ignore_index`` is used with ``binary data``.
         ValueError:

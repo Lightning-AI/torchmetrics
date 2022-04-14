@@ -94,24 +94,18 @@ class KernelInceptionDistance(Metric):
         means that by default ``forward`` will just call ``update`` underneat.
 
     Args:
-        feature:
-            Either an str, integer or ``nn.Module``:
+        feature: Either an str, integer or ``nn.Module``:
 
             - an str or integer will indicate the inceptionv3 feature layer to choose. Can be one of the following:
               'logits_unbiased', 64, 192, 768, 2048
             - an ``nn.Module`` for using a custom feature extractor. Expects that its forward method returns
               an ``[N,d]`` matrix where ``N`` is the batch size and ``d`` is the feature size.
 
-        subsets:
-            Number of subsets to calculate the mean and standard deviation scores over
-        subset_size:
-            Number of randomly picked samples in each subset
-        degree:
-            Degree of the polynomial kernel function
-        gamma:
-            Scale-length of polynomial kernel. If set to ``None`` will be automatically set to the feature size
-        coef:
-            Bias term in the polynomial kernel.
+        subsets: Number of subsets to calculate the mean and standard deviation scores over
+        subset_size: Number of randomly picked samples in each subset
+        degree: Degree of the polynomial kernel function
+        gamma: Scale-length of polynomial kernel. If set to ``None`` will be automatically set to the feature size
+        coef: Bias term in the polynomial kernel.
         reset_real_features: Whether to also reset the real features. Since in many cases the real dataset does not
             change, the features can cached them to avoid recomputing them which is costly. Set this to ``False`` if
             your dataset does not change.
@@ -121,8 +115,7 @@ class KernelInceptionDistance(Metric):
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     References:
         [1] Demystifying MMD GANs
@@ -137,7 +130,7 @@ class KernelInceptionDistance(Metric):
         ValueError:
             If ``feature`` is set to an ``int`` (default settings) and ``torch-fidelity`` is not installed
         ValueError:
-            If ``feature`` is set to an ``int`` not in [64, 192, 768, 2048]
+            If ``feature`` is set to an ``int`` not in ``[64, 192, 768, 2048]``
         ValueError:
             If ``subsets`` is not an integer larger than 0
         ValueError:
@@ -242,7 +235,7 @@ class KernelInceptionDistance(Metric):
 
         Args:
             imgs: tensor with images feed to the feature extractor
-            real: bool indicating if imgs belong to the real or the fake distribution
+            real: bool indicating if ``imgs`` belong to the real or the fake distribution
         """
         features = self.inception(imgs)
 
