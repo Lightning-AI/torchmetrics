@@ -36,7 +36,7 @@ def _jaccard_from_confmat(
         ignore_index: optional int specifying a target class to ignore. If given, this class index does not contribute
             to the returned score, regardless of reduction method.
         absent_score: score to use for an individual class, if no instances of the class index were present in `pred`
-            AND no instances of the class index were present in `target`.
+            AND no instances of the class index were present in ``target``.
         reduction: a method to reduce metric score over labels.
 
             - ``'elementwise_mean'``: takes the mean (default)
@@ -103,8 +103,8 @@ def jaccard_index(
             from pred and target. By default, no index is ignored, and all classes are used.
         absent_score: score to use for an individual class, if no instances of
             the class index were present in `pred` AND no instances of the class
-            index were present in `target`. For example, if we have 3 classes,
-            [0, 0] for `pred`, and [0, 2] for `target`, then class 1 would be
+            index were present in ``target``. For example, if we have 3 classes,
+            [0, 0] for `pred`, and [0, 2] for ``target``, then class 1 would be
             assigned the `absent_score`.
         threshold:
             Threshold value for binary or multi-label probabilities.

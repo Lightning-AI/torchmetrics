@@ -36,15 +36,15 @@ def _check_shape_and_type_consistency_hinge(
     preds: Tensor,
     target: Tensor,
 ) -> DataType:
-    """Checks shape and type of `preds` and `target` and returns mode of the input tensors.
+    """Checks shape and type of ``preds`` and ``target`` and returns mode of the input tensors.
 
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
 
     Raises:
-        `ValueError`: if `target` is not one dimensional
-        `ValueError`: if `preds` and `target` do not have the same shape in the first dimension
+        `ValueError`: if ``target`` is not one dimensional
+        `ValueError`: if ``preds`` and ``target`` do not have the same shape in the first dimension
         `ValueError`: if `pred` is neither one nor two dimensional
     """
 

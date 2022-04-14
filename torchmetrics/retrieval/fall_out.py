@@ -98,7 +98,7 @@ class RetrievalFallOut(RetrievalMetric):
         self.k = k
 
     def compute(self) -> Tensor:
-        """First concat state `indexes`, `preds` and `target` since they were stored as lists.
+        """First concat state ``indexes``, ``preds`` and ``target`` since they were stored as lists.
 
         After that, compute list of groups that will help in keeping together predictions about the same query. Finally,
         for each group compute the `_metric` if the number of negative targets is at least 1, otherwise behave as

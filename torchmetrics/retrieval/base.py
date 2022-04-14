@@ -33,10 +33,10 @@ class RetrievalMetric(Metric, ABC):
     - ``target`` (long or bool tensor): ``(N, ...)``
     - ``indexes`` (long tensor): ``(N, ...)``
 
-    `indexes`, `preds` and `target` must have the same dimension and will be flatten
+    ``indexes``, ``preds`` and ``target`` must have the same dimension and will be flatten
     to single dimension once provided.
 
-    `indexes` indicate to which query a prediction belongs.
+    ``indexes`` indicate to which query a prediction belongs.
     Predictions will be first grouped by indexes. Then the
     real metric, defined by overriding the `_metric` method,
     will be computed as the mean of the scores over each query.

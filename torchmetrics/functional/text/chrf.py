@@ -485,7 +485,7 @@ def _chrf_score_update(
 
     Raises:
         ValueError:
-            If length of `preds` and `target` differs.
+            If length of ``preds`` and ``target`` differs.
     """
     target_corpus, preds = _validate_inputs(target, preds)
 
