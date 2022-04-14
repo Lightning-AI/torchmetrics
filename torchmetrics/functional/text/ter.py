@@ -554,8 +554,8 @@ def translation_edit_rate(
         tensor(0.1538)
 
     References:
-        [1] A Study of Translation Edit Rate with Targeted Human Annotation by Mathew Snover, Bonnie Dorr, Richard Schwartz,
-        Linnea Micciulla and John Makhoul `TER`_
+        [1] A Study of Translation Edit Rate with Targeted Human Annotation
+        by Mathew Snover, Bonnie Dorr, Richard Schwartz, Linnea Micciulla and John Makhoul `TER`_
     """
     if not isinstance(normalize, bool):
         raise ValueError(f"Expected argument `normalize` to be of type boolean but got {normalize}.")

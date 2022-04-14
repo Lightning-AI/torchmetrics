@@ -400,7 +400,8 @@ def rouge_score(
 
     Args:
         preds: An iterable of predicted sentences or a single predicted sentence.
-        target: An iterable of iterables of target sentences or an iterable of target sentences or a single target sentence.
+        target:
+            An iterable of iterables of target sentences or an iterable of target sentences or a single target sentence.
         accumulate:
             Useful incase of multi-reference rouge score.
 

@@ -323,7 +323,8 @@ def _calculate_sentence_level_chrf_score(
         f_score: A sentence-level chrF/chrF++ score.
         matching_char_n_grams:
             A total number of matching character n-grams between the best matching reference and hypothesis.
-        matching_word_n_grams:  A total number of matching word n-grams between the best matching reference and hypothesis.
+        matching_word_n_grams:
+            A total number of matching word n-grams between the best matching reference and hypothesis.
         target_char_n_grams: A total number of reference character n-grams.
         target_word_n_grams: A total number of reference word n-grams.
     """
