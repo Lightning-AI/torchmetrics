@@ -88,8 +88,7 @@ class _LevenshteinEditDistance:
         computation.
 
         Args:
-            prediction_tokens:
-                A tokenized predicted sentence.
+            prediction_tokens: A tokenized predicted sentence.
 
         Return:
             A tuple of a calculated edit distance and a trace of executed operations.
@@ -115,12 +114,10 @@ class _LevenshteinEditDistance:
         """A dynamic programming algorithm to compute the Levenhstein edit distance.
 
         Args:
-            prediction_tokens:
-                A tokenized predicted sentence.
-            prediction_start:
-                An index where a predicted sentence to be considered from.
-            cache:
-                A cached Levenshtein edit distance.
+            prediction_tokens: A tokenized predicted sentence.
+            prediction_start: An index where a predicted sentence to be considered from.
+            cache: A cached Levenshtein edit distance.
+
         Returns:
             Edit distance between the predicted sentence and the reference sentence
         """
@@ -181,10 +178,7 @@ class _LevenshteinEditDistance:
         """Get a trace of executed operations from the edit distance matrix.
 
         Args:
-            prediction_len:
-                A length of a tokenized predicted sentence.
-            reference_len:
-                A length of a tokenized reference sentence.
+            prediction_len: A length of a tokenized predicted sentence.
             edit_distance:
                 A matrix of the Levenshtedin edit distance. The element part of the matrix is a tuple of an edit
                 operation cost and an edit operation itself.
@@ -221,8 +215,7 @@ class _LevenshteinEditDistance:
         that case we skip over these initial words.
 
         Args:
-            prediction_tokens:
-                A tokenized predicted sentence.
+            prediction_tokens: A tokenized predicted sentence.
             edit_distance:
                 A matrix of the Levenshtedin edit distance. The element part of the matrix is a tuple of an edit
                 operation cost and an edit operation itself.
@@ -251,13 +244,12 @@ class _LevenshteinEditDistance:
         """Find the already calculated rows of the Levenshtein edit distance matric.
 
         Args:
-            prediction_tokens:
-                A tokenized predicted sentence.
+            prediction_tokens: A tokenized predicted sentence.
 
         Return:
             A tuple of a start hypothesis position and `edit_distance` matrix.
-            prediction_start:
-                An index where a predicted sentence to be considered from.
+
+            prediction_start: An index where a predicted sentence to be considered from.
             edit_distance:
                 A matrix of the cached Levenshtedin edit distance. The element part of the matrix is a tuple of an edit
                 operation cost and an edit operation itself.
@@ -280,8 +272,7 @@ class _LevenshteinEditDistance:
         """Precomputed empty matrix row for Levenhstein edit distance.
 
         Args:
-            length:
-                A length of a tokenized sentence.
+            length: A length of a tokenized sentence.
 
         Return:
             A list of tuples containing infinite edit operation costs and yet undefined edit operations.
@@ -295,8 +286,7 @@ class _LevenshteinEditDistance:
         word.
 
         Args:
-            length:
-                A length of a tokenized sentence.
+            length: A length of a tokenized sentence.
 
         Return:
             A list of tuples containing edit operation costs of insert and insert edit operations.
@@ -313,16 +303,12 @@ def _validate_inputs(
     metrics.
 
     Args:
-        reference_corpus:
-            An iterable of iterables of reference corpus.
-        hypothesis_corpus:
-            An iterable of hypothesis corpus.
+        reference_corpus: An iterable of iterables of reference corpus.
+        hypothesis_corpus: An iterable of hypothesis corpus.
 
     Return:
-        reference_corpus:
-            An iterable of iterables of reference corpus.
-        hypothesis_corpus:
-            An iterable of hypothesis corpus.
+        reference_corpus: An iterable of iterables of reference corpus.
+        hypothesis_corpus: An iterable of hypothesis corpus.
 
     Raises:
         ValueError:
@@ -372,12 +358,11 @@ def _flip_trace(trace: Tuple[_EDIT_OPERATIONS, ...]) -> Tuple[_EDIT_OPERATIONS, 
     insertions and deletions.
 
     Args:
-        trace:
-            A tuple of edit operations (`_EDIT_OPERAIONS`).
+        trace: A tuple of edit operations.
 
     Return:
         inverted_trace:
-            A tuple of inverted edit operations (`_EDIT_OPERAIONS`).
+            A tuple of inverted edit operations.
     """
     _flip_operations: Dict[_EDIT_OPERATIONS, _EDIT_OPERATIONS] = {
         _EDIT_OPERATIONS.OP_INSERT: _EDIT_OPERATIONS.OP_DELETE,
@@ -399,16 +384,12 @@ def _trace_to_alignment(trace: Tuple[_EDIT_OPERATIONS, ...]) -> Tuple[Dict[int, 
     """Transform trace of edit operations into an alignment of the sequences.
 
     Args:
-        trace:
-            A trace of edit operations as a tuple of `_EDIT_OPERATIONS` enumerates.
+        trace: A trace of edit operations as a tuple of `_EDIT_OPERATIONS` enumerates.
 
     Return:
-        alignments:
-            A dictionary mapping aligned positions between a reference and a hypothesis.
-        reference_errors:
-            A list of error positions in a reference.
-        hypothesis_errors:
-            A list of error positions in a hypothesis.
+        alignments: A dictionary mapping aligned positions between a reference and a hypothesis.
+        reference_errors: A list of error positions in a reference.
+        hypothesis_errors: A list of error positions in a hypothesis.
 
     Raises:
         ValueError:

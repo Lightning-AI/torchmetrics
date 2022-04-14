@@ -56,12 +56,9 @@ def _compute_metrics(hits_or_lcs: int, pred_len: int, target_len: int) -> Dict[s
     predicted and target sentences.
 
     Args:
-        hits_or_lcs:
-            A number of matches or a length of the longest common subsequence.
-        pred_len:
-            A length of a tokenized predicted sentence.
-        target_len:
-            A length of a tokenized target sentence.
+        hits_or_lcs: A number of matches or a length of the longest common subsequence.
+        pred_len: A length of a tokenized predicted sentence.
+        target_len: A length of a tokenized target sentence.
     """
     precision = hits_or_lcs / pred_len
     recall = hits_or_lcs / target_len
@@ -78,10 +75,8 @@ def _lcs(
     """Common DP algorithm to compute the length of the longest common subsequence.
 
     Args:
-        pred_tokens:
-            A tokenized predicted sentence.
-        target_tokens:
-            A tokenized target sentence.
+        pred_tokens: A tokenized predicted sentence.
+        target_tokens: A tokenized target sentence.
     """
     lcs = [[0] * (len(pred_tokens) + 1) for _ in range(len(target_tokens) + 1)]
     for i in range(1, len(target_tokens) + 1):
@@ -101,12 +96,9 @@ def _backtracked_lcs(
     """Backtrack LCS table.
 
     Args:
-        lcs_table:
-            A table containing information for the calculation of the longest common subsequence.
-        pred_tokens:
-            A tokenized predicted sentence.
-        target_tokens:
-            A tokenized target sentence.
+        lcs_table: A table containing information for the calculation of the longest common subsequence.
+        pred_tokens: A tokenized predicted sentence.
+        target_tokens: A tokenized target sentence.
     """
     i = len(pred_tokens)
     j = len(target_tokens)
@@ -127,10 +119,8 @@ def _union_lcs(pred_tokens_list: Sequence[Sequence[str]], target_tokens: Sequenc
     """Find union LCS between a target sentence and iterable of predicted tokens.
 
     Args:
-        pred_tokens_list:
-            A tokenized predicted sentence split by '\n'.
-        target_tokens:
-            A tokenized single part of target sentence split by '\n'.
+        pred_tokens_list: A tokenized predicted sentence split by '\n'.
+        target_tokens: A tokenized single part of target sentence split by '\n'.
 
     Return:
     """
@@ -161,17 +151,14 @@ def _normalize_and_tokenize_text(
     score_Text Normalizition`_
 
     Args:
-        text:
-            An input sentence.
-        stemmer:
-            Porter stemmer instance to strip word suffixes to improve matching.
-        normalizer:
-            A user's own normalizer function.
+        text: An input sentence.
+        stemmer: Porter stemmer instance to strip word suffixes to improve matching.
+        normalizer: A user's own normalizer function.
             If this is ``None``, replacing any non-alpha-numeric characters with spaces is default.
-            This function must take a `str` and return a `str`.
+            This function must take a ``str`` and return a ``str``.
         tokenizer:
-            A user's own tokenizer function. If this is ``None``, spliting by spaces is default
-            This function must take a `str` and return `Sequence[str]`
+            A user's own tokenizer function. If this is ``None``, splitting by spaces is default
+            This function must take a ``str`` and return ``Sequence[str]``
     """
 
     # If normalizer is none, replace any non-alpha-numeric characters with spaces.
@@ -194,12 +181,9 @@ def _rouge_n_score(pred: Sequence[str], target: Sequence[str], n_gram: int) -> D
     """This computes precision, recall and F1 score for the Rouge-N metric.
 
     Args:
-        pred:
-            A predicted sentence.
-        target:
-            A target sentence.
-        n_gram:
-            N-gram overlap.
+        pred: A predicted sentence.
+        target: A target sentence.
+        n_gram: N-gram overlap.
     """
 
     def _create_ngrams(tokens: Sequence[str], n: int) -> Counter:
@@ -222,10 +206,8 @@ def _rouge_l_score(pred: Sequence[str], target: Sequence[str]) -> Dict[str, Tens
     """This computes precision, recall and F1 score for the Rouge-L metric.
 
     Args:
-        pred:
-            A predicted sentence.
-        target:
-            A target sentence.
+        pred: A predicted sentence.
+        target: A target sentence.
     """
     pred_len, target_len = len(pred), len(target)
     if 0 in (pred_len, target_len):
@@ -241,10 +223,8 @@ def _rouge_lsum_score(pred: Sequence[Sequence[str]], target: Sequence[Sequence[s
     https://github.com/google-research/google-research/blob/master/rouge/rouge_scorer.py
 
     Args:
-        pred:
-            An iterable of predicted sentence split by '\n'.
-        target:
-            An iterable target sentence split by '\n'.
+        pred: An iterable of predicted sentence split by '\n'.
+        target: An iterable target sentence split by '\n'.
 
     References
         [1] ROUGE: A Package for Automatic Evaluation of Summaries by Chin-Yew Lin. https://aclanthology.org/W04-1013/
@@ -289,19 +269,14 @@ def _rouge_score_update(
     """Update the rouge score with the current set of predicted and target sentences.
 
     Args:
-        preds:
-            An iterable of predicted sentences.
-        target:
-            An iterable of iterable of target sentences.
-        rouge_keys_values:
-            List of N-grams/'L'/'Lsum' arguments.
-        accumulate:
-            Useful incase of multi-reference rouge score.
+        preds: An iterable of predicted sentences.
+        target: An iterable of iterable of target sentences.
+        rouge_keys_values: List of N-grams/'L'/'Lsum' arguments.
+        accumulate: Useful incase of multi-reference rouge score.
             ``avg`` takes the avg of all references with respect to predictions
             ``best`` takes the best fmeasure score obtained between prediction and multiple corresponding references.
             Allowed values are ``avg`` and ``best``.
-        stemmer:
-            Porter stemmer instance to strip word suffixes to improve matching.
+        stemmer: Porter stemmer instance to strip word suffixes to improve matching.
         normalizer:
             A user's own normalizer function.
             If this is ``None``, replacing any non-alpha-numeric characters with spaces is default.
@@ -399,8 +374,7 @@ def _rouge_score_compute(sentence_results: Dict[str, List[Tensor]]) -> Dict[str,
     """Compute the combined ROUGE metric for all the input set of predicted and target sentences.
 
     Args:
-        sentence_results:
-            Rouge-N/Rouge-L/Rouge-LSum metrics calculated for single sentence.
+        sentence_results: Rouge-N/Rouge-L/Rouge-LSum metrics calculated for single sentence.
     """
     results: Dict[str, Tensor] = {}
     # Obtain mean scores for individual rouge metrics
@@ -425,25 +399,21 @@ def rouge_score(
     """Calculate `Calculate Rouge Score`_ , used for automatic summarization.
 
     Args:
-        preds:
-            An iterable of predicted sentences or a single predicted sentence.
-        target:
-            An iterable of iterables of target sentences or an iterable of target sentences or a single target sentence.
+        preds: An iterable of predicted sentences or a single predicted sentence.
+        target: An iterable of iterables of target sentences or an iterable of target sentences or a single target sentence.
         accumulate:
             Useful incase of multi-reference rouge score.
+
             - ``avg`` takes the avg of all references with respect to predictions
             - ``best`` takes the best fmeasure score obtained between prediction and multiple corresponding references.
-        use_stemmer:
-            Use Porter stemmer to strip word suffixes to improve matching.
-        normalizer:
-            A user's own normalizer function.
+
+        use_stemmer: Use Porter stemmer to strip word suffixes to improve matching.
+        normalizer: A user's own normalizer function.
             If this is ``None``, replacing any non-alpha-numeric characters with spaces is default.
-            This function must take a `str` and return a `str`.
-        tokenizer:
-            A user's own tokenizer function. If this is ``None``, spliting by spaces is default
-            This function must take a `str` and return `Sequence[str]`
-        rouge_keys:
-            A list of rouge types to calculate.
+            This function must take a ``str`` and return a ``str``.
+        tokenizer: A user's own tokenizer function. If this is ``None``, spliting by spaces is default
+            This function must take a ``str`` and return ``Sequence[str]``
+        rouge_keys: A list of rouge types to calculate.
             Keys that are allowed are ``rougeL``, ``rougeLsum``, and ``rouge1`` through ``rouge9``.
 
     Return:

@@ -28,6 +28,7 @@ def _wil_update(
     Args:
         preds: Transcription(s) to score as a string or list of strings
         target: Reference(s) for each speech input as a string or list of strings
+
     Returns:
         Number of edit operations to get from the reference to the prediction, summed over all samples
         Number of words overall references
@@ -59,6 +60,7 @@ def _wil_compute(errors: Tensor, target_total: Tensor, preds_total: Tensor) -> T
         errors: Number of edit operations to get from the reference to the prediction, summed over all samples
         target_total: Number of words overall references
         preds_total: Number of words overall prediction
+
     Returns:
         Word Information Lost score
     """
@@ -74,10 +76,8 @@ def word_information_lost(
     the performance of the ASR system with a Word Information Lost rate of 0 being a perfect score.
 
     Args:
-        preds:
-            Transcription(s) to score as a string or list of strings
-        target:
-            Reference(s) for each speech input as a string or list of strings
+        preds: Transcription(s) to score as a string or list of strings
+        target: Reference(s) for each speech input as a string or list of strings
 
     Returns:
         Word Information Lost rate
