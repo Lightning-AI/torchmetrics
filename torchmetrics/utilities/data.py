@@ -194,8 +194,8 @@ def apply_to_collection(
 
 
 def get_group_indexes(indexes: Tensor) -> List[Tensor]:
-    """Given an integer ``torch.Tensor`` ``indexes``, return a ``torch.Tensor`` of indexes for each different value in
-    ``indexes``.
+    """Given an integer ``torch.Tensor`` ``indexes``, return a ``torch.Tensor`` of indexes for each different value
+    in ``indexes``.
 
     Args:
         indexes: a ``torch.Tensor``
