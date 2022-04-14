@@ -246,7 +246,8 @@ def _handle_corner_cases_during_shifting(
     target_start: int,
     length: int,
 ) -> bool:
-    """A helper function which returns ``True`` if any of corner cases has been met. Otherwise, ``False`` is returned.
+    """A helper function which returns ``True`` if any of corner cases has been met. Otherwise, ``False`` is
+    returned.
 
     Args:
         alignments: A dictionary mapping aligned positions between a reference and a hypothesis.
