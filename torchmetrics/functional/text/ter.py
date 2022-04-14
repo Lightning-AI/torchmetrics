@@ -290,7 +290,7 @@ def _handle_corner_cases_during_shifting(
 
 
 def _perform_shift(words: List[str], start: int, length: int, target: int) -> List[str]:
-    """Perform a shift in `words` from `start` to ``target``.
+    """Perform a shift in ``words`` from ``start`` to ``target``.
 
     Args:
         words:
