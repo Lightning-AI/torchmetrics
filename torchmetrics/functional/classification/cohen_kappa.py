@@ -26,7 +26,8 @@ def _cohen_kappa_compute(confmat: Tensor, weights: Optional[str] = None) -> Tens
 
     Args:
         confmat: Confusion matrix without normalization
-        weights: Weighting type to calculate the score. Choose from
+        weights: Weighting type to calculate the score. Choose from:
+
             - ``None`` or ``'none'``: no weighting
             - ``'linear'``: linear weighting
             - ``'quadratic'``: quadratic weighting
@@ -73,9 +74,9 @@ def cohen_kappa(
     weights: Optional[str] = None,
     threshold: float = 0.5,
 ) -> Tensor:
-    r"""
-    Calculates `Cohen's kappa score`_ that measures inter-annotator agreement.
-     It is defined as
+    r"""Calculates `Cohen's kappa score`_ that measures inter-annotator agreement.
+
+    It is defined as
 
      .. math::
          \kappa = (p_o - p_e) / (1 - p_e)
@@ -88,18 +89,15 @@ def cohen_kappa(
      Args:
          preds: (float or long tensor), Either a ``(N, ...)`` tensor with labels or
              ``(N, C, ...)`` where C is the number of classes, tensor with labels/probabilities
-
          target: ``target`` (long tensor), tensor with shape ``(N, ...)`` with ground true labels
-
          num_classes: Number of classes in the dataset.
+         weights: Weighting type to calculate the score. Choose from:
 
-         weights: Weighting type to calculate the score. Choose from
              - ``None`` or ``'none'``: no weighting
              - ``'linear'``: linear weighting
              - ``'quadratic'``: quadratic weighting
 
-         threshold:
-             Threshold value for binary or multi-label probabilities.
+         threshold: Threshold value for binary or multi-label probabilities.
 
      Example:
          >>> from torchmetrics.functional import cohen_kappa

@@ -83,8 +83,7 @@ def precision(
     top_k: Optional[int] = None,
     multiclass: Optional[bool] = None,
 ) -> Tensor:
-    r"""
-    Computes `Precision`_
+    r"""Computes `Precision`_
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 
@@ -162,20 +161,17 @@ def precision(
         The shape of the returned tensor depends on the ``average`` parameter
 
         - If ``average in ['micro', 'macro', 'weighted', 'samples']``, a one-element tensor will be returned
-        - If ``average in ['none', None]``, the shape will be ``(C,)``, where ``C`` stands  for the number
-          of classes
+        - If ``average in ['none', None]``, the shape will be ``(C,)``, where ``C`` stands  for the number of classes
 
     Raises:
         ValueError:
-            If ``average`` is not one of ``"micro"``, ``"macro"``, ``"weighted"``,
-            ``"samples"``, ``"none"`` or ``None``.
+            If ``average`` is not one of ``"micro"``, ``"macro"``, ``"weighted"``, ``"samples"``, ``"none"`` or ``None``
         ValueError:
             If ``mdmc_average`` is not one of ``None``, ``"samplewise"``, ``"global"``.
         ValueError:
             If ``average`` is set but ``num_classes`` is not provided.
         ValueError:
-            If ``num_classes`` is set
-            and ``ignore_index`` is not in the range ``[0, num_classes)``.
+            If ``num_classes`` is set and ``ignore_index`` is not in the range ``[0, num_classes)``.
 
     Example:
         >>> from torchmetrics.functional import precision
@@ -279,8 +275,7 @@ def recall(
     top_k: Optional[int] = None,
     multiclass: Optional[bool] = None,
 ) -> Tensor:
-    r"""
-    Computes `Recall`_
+    r"""Computes `Recall`_
 
     .. math:: \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
 
@@ -344,7 +339,7 @@ def recall(
             Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
             of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
         top_k:
-            Number of highest probability or logit score predictions considered to find the correct label,
+            Number of the highest probability or logit score predictions considered finding the correct label,
             relevant only for (multi-dimensional) multi-class inputs. The
             default value (``None``) will be interpreted as 1 for these inputs.
 
@@ -359,20 +354,17 @@ def recall(
         The shape of the returned tensor depends on the ``average`` parameter
 
         - If ``average in ['micro', 'macro', 'weighted', 'samples']``, a one-element tensor will be returned
-        - If ``average in ['none', None]``, the shape will be ``(C,)``, where ``C`` stands  for the number
-          of classes
+        - If ``average in ['none', None]``, the shape will be ``(C,)``, where ``C`` stands  for the number of classes
 
     Raises:
         ValueError:
-            If ``average`` is not one of ``"micro"``, ``"macro"``, ``"weighted"``,
-            ``"samples"``, ``"none"`` or ``None``.
+            If ``average`` is not one of ``"micro"``, ``"macro"``, ``"weighted"``, ``"samples"``, ``"none"`` or ``None``
         ValueError:
             If ``mdmc_average`` is not one of ``None``, ``"samplewise"``, ``"global"``.
         ValueError:
             If ``average`` is set but ``num_classes`` is not provided.
         ValueError:
-            If ``num_classes`` is set
-            and ``ignore_index`` is not in the range ``[0, num_classes)``.
+            If ``num_classes`` is set and ``ignore_index`` is not in the range ``[0, num_classes)``.
 
     Example:
         >>> from torchmetrics.functional import recall
@@ -384,13 +376,13 @@ def recall(
         tensor(0.2500)
 
     """
-    allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
+    allowed_average = ("micro", "macro", "weighted", "samples", "none", None)
     if average not in allowed_average:
         raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
 
-    allowed_mdmc_average = [None, "samplewise", "global"]
+    allowed_mdmc_average = (None, "samplewise", "global")
     if mdmc_average not in allowed_mdmc_average:
-        raise ValueError("The `mdmc_average` has to be one of {allowed_mdmc_average}, got {mdmc_average}.")
+        raise ValueError(f"The `mdmc_average` has to be one of {allowed_mdmc_average}, got {mdmc_average}.")
 
     if average in ["macro", "weighted", "none", None] and (not num_classes or num_classes < 1):
         raise ValueError(f"When you set `average` as {average}, you have to provide the number of classes.")
@@ -425,11 +417,9 @@ def precision_recall(
     top_k: Optional[int] = None,
     multiclass: Optional[bool] = None,
 ) -> Tuple[Tensor, Tensor]:
-    r"""
-    Computes `Precision`_
+    r"""Computes `Precision`_
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
-
 
     .. math:: \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
 
@@ -484,10 +474,8 @@ def precision_recall(
             Integer specifying a target class to ignore. If given, this class index does not contribute
             to the returned score, regardless of reduction method. If an index is ignored, and ``average=None``
             or ``'none'``, the score for the ignored class will be returned as ``nan``.
-
         num_classes:
             Number of classes. Necessary for ``'macro'``, ``'weighted'`` and ``None`` average methods.
-
         threshold:
             Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
             of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
@@ -513,15 +501,13 @@ def precision_recall(
 
     Raises:
         ValueError:
-            If ``average`` is not one of ``"micro"``, ``"macro"``, ``"weighted"``,
-            ``"samples"``, ``"none"`` or ``None``.
+            If ``average`` is not one of ``"micro"``, ``"macro"``, ``"weighted"``, ``"samples"``, ``"none"`` or ``None``
         ValueError:
             If ``mdmc_average`` is not one of ``None``, ``"samplewise"``, ``"global"``.
         ValueError:
             If ``average`` is set but ``num_classes`` is not provided.
         ValueError:
-            If ``num_classes`` is set
-            and ``ignore_index`` is not in the range ``[0, num_classes)``.
+            If ``num_classes`` is set and ``ignore_index`` is not in the range ``[0, num_classes)``.
 
     Example:
         >>> from torchmetrics.functional import precision_recall
@@ -533,13 +519,13 @@ def precision_recall(
         (tensor(0.2500), tensor(0.2500))
 
     """
-    allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
+    allowed_average = ("micro", "macro", "weighted", "samples", "none", None)
     if average not in allowed_average:
         raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
 
-    allowed_mdmc_average = [None, "samplewise", "global"]
+    allowed_mdmc_average = (None, "samplewise", "global")
     if mdmc_average not in allowed_mdmc_average:
-        raise ValueError("The `mdmc_average` has to be one of {allowed_mdmc_average}, got {mdmc_average}.")
+        raise ValueError(f"The `mdmc_average` has to be one of {allowed_mdmc_average}, got {mdmc_average}.")
 
     if average in ["macro", "weighted", "none", None] and (not num_classes or num_classes < 1):
         raise ValueError(f"When you set `average` as {average}, you have to provide the number of classes.")

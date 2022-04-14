@@ -103,11 +103,11 @@ def _label_ranking_average_precision_update(
     preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None
 ) -> Tuple[Tensor, int, Optional[Tensor]]:
     """Accumulate state for label ranking average precision
+
     Args:
         preds: tensor with predictions
         target: tensor with ground truth labels
         sample_weight: optional tensor with weight for each sample
-
     """
     _check_ranking_input(preds, target, sample_weight)
     # Invert so that the highest score receives rank 1
@@ -174,6 +174,7 @@ def _label_ranking_loss_update(
     preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None
 ) -> Tuple[Tensor, int, Optional[Tensor]]:
     """Accumulate state for label ranking loss
+
     Args:
         preds: tensor with predictions
         target: tensor with ground truth labels
