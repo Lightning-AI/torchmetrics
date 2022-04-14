@@ -24,8 +24,7 @@ from torchmetrics.metric import Metric
 
 
 class MeanAbsolutePercentageError(Metric):
-    r"""
-    Computes `Mean Absolute Percentage Error`_ (MAPE):
+    r"""Computes `Mean Absolute Percentage Error`_ (MAPE):
 
     .. math:: \text{MAPE} = \frac{1}{n}\sum_{i=1}^n\frac{|   y_i - \hat{y_i} |}{\max(\epsilon, | y_i |)}
 
@@ -44,7 +43,7 @@ class MeanAbsolutePercentageError(Metric):
         The epsilon value is taken from `scikit-learn's implementation of MAPE`_.
 
     Note:
-        MAPE output is a non-negative floating point. Best result is 0.0 . But it is important to note that,
+        MAPE output is a non-negative floating point. Best result is ``0.0`` . But it is important to note that,
         bad predictions, can lead to arbitarily large values. Especially when some ``target`` values are close to 0.
         This `MAPE implementation returns`_ a very large number instead of ``inf``.
 

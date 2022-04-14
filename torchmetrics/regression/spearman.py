@@ -23,14 +23,14 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class SpearmanCorrCoef(Metric):
-    r"""
-    Computes `spearmans rank correlation coefficient`_.
+    r"""Computes `spearmans rank correlation coefficient`_.
 
     .. math:
         r_s = = \frac{cov(rg_x, rg_y)}{\sigma_{rg_x} * \sigma_{rg_y}}
 
-    where rg_x and rg_y are the rank associated to the variables x and y. Spearmans correlations coefficient
-    corresponds to the standard pearsons correlation coefficient calculated on the rank variables.
+    where :math:`rg_x` and :math:`rg_y` are the rank associated to the variables :math:`x` and :math:`y`.
+    Spearmans correlations coefficient corresponds to the standard pearsons correlation coefficient calculated
+    on the rank variables.
 
     Args:
         compute_on_step:
@@ -81,7 +81,7 @@ class SpearmanCorrCoef(Metric):
         self.target.append(target)
 
     def compute(self) -> Tensor:
-        """Computes spearmans correlation coefficient."""
+        """Computes Spearman's correlation coefficient."""
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         return _spearman_corrcoef_compute(preds, target)

@@ -23,8 +23,7 @@ from torchmetrics.metric import Metric
 
 
 class SymmetricMeanAbsolutePercentageError(Metric):
-    r"""
-    Computes symmetric mean absolute percentage error (`SMAPE`_).
+    r"""Computes symmetric mean absolute percentage error (`SMAPE`_).
 
     .. math:: \text{SMAPE} = \frac{2}{n}\sum_1^n max(\frac{|   y_i - \hat{y_i} |}{| y_i | + | \hat{y_i} |, \epsilon})
 

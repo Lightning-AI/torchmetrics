@@ -21,8 +21,7 @@ from torchmetrics.metric import Metric
 
 
 class R2Score(Metric):
-    r"""
-    Computes r2 score also known as `R2 Score_Coefficient Determination`_:
+    r"""Computes r2 score also known as `R2 Score_Coefficient Determination`_:
 
     .. math:: R^2 = 1 - \frac{SS_{res}}{SS_{tot}}
 
@@ -32,24 +31,19 @@ class R2Score(Metric):
 
     .. math:: R^2_{adj} = 1 - \frac{(1-R^2)(n-1)}{n-k-1}
 
-    where the parameter :math:`k` (the number of independent regressors) should
-    be provided as the `adjusted` argument.
+    where the parameter :math:`k` (the number of independent regressors) should be provided as the `adjusted` argument.
 
     Forward accepts
 
     - ``preds`` (float tensor): ``(N,)`` or ``(N, M)`` (multioutput)
     - ``target`` (float tensor): ``(N,)`` or ``(N, M)`` (multioutput)
 
-    In the case of multioutput, as default the variances will be uniformly
-    averaged over the additional dimensions. Please see argument `multioutput`
-    for changing this behavior.
+    In the case of multioutput, as default the variances will be uniformly averaged over the additional dimensions.
+    Please see argument ``multioutput`` for changing this behavior.
 
     Args:
-        num_outputs:
-            Number of outputs in multioutput setting (default is 1)
-        adjusted:
-            number of independent regressors for calculating adjusted r2 score.
-            Default 0 (standard r2 score).
+        num_outputs: Number of outputs in multioutput setting (default is 1)
+        adjusted: number of independent regressors for calculating adjusted r2 score.
         multioutput:
             Defines aggregation in the case of multiple output scores. Can be one
             of the following strings (default is ``'uniform_average'``.):

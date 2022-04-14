@@ -53,14 +53,12 @@ def _final_aggregation(
 
 
 class PearsonCorrCoef(Metric):
-    r"""
-    Computes `Pearson Correlation Coefficient`_:
+    r"""Computes `Pearson Correlation Coefficient`_:
 
     .. math::
         P_{corr}(x,y) = \frac{cov(x,y)}{\sigma_x \sigma_y}
 
-    Where :math:`y` is a tensor of target values, and :math:`x` is a
-    tensor of predictions.
+    Where :math:`y` is a tensor of target values, and :math:`x` is a tensor of predictions.
 
     Forward accepts
 

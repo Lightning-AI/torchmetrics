@@ -24,8 +24,7 @@ from torchmetrics.metric import Metric
 
 
 class TweedieDevianceScore(Metric):
-    r"""
-    Computes the `Tweedie Deviance Score`_ between targets and predictions:
+    r"""Computes the `Tweedie Deviance Score`_ between targets and predictions:
 
     .. math::
         deviance\_score(\hat{y},y) =
@@ -46,6 +45,7 @@ class TweedieDevianceScore(Metric):
 
     Args:
         power:
+
             - power < 0 : Extreme stable distribution. (Requires: preds > 0.)
             - power = 0 : Normal distribution. (Requires: targets and preds can be any real numbers.)
             - power = 1 : Poisson distribution. (Requires: targets >= 0 and y_pred > 0.)
@@ -53,6 +53,7 @@ class TweedieDevianceScore(Metric):
             - power = 2 : Gamma distribution. (Requires: targets > 0 and preds > 0.)
             - power = 3 : Inverse Gaussian distribution. (Requires: targets > 0 and preds > 0.)
             - otherwise : Positive stable distribution. (Requires: targets > 0 and preds > 0.)
+
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
 

@@ -24,31 +24,28 @@ from torchmetrics.metric import Metric
 
 
 class ExplainedVariance(Metric):
-    r"""
-    Computes `explained variance`_:
+    r"""Computes `explained variance`_:
 
     .. math:: \text{ExplainedVariance} = 1 - \frac{\text{Var}(y - \hat{y})}{\text{Var}(y)}
 
-    Where :math:`y` is a tensor of target values, and :math:`\hat{y}` is a
-    tensor of predictions.
+    Where :math:`y` is a tensor of target values, and :math:`\hat{y}` is a tensor of predictions.
 
     Forward accepts
 
     - ``preds`` (float tensor): ``(N,)`` or ``(N, ...)`` (multioutput)
     - ``target`` (long tensor): ``(N,)`` or ``(N, ...)`` (multioutput)
 
-    In the case of multioutput, as default the variances will be uniformly
-    averaged over the additional dimensions. Please see argument `multioutput`
-    for changing this behavior.
+    In the case of multioutput, as default the variances will be uniformly averaged over the additional dimensions.
+    Please see argument ``multioutput`` for changing this behavior.
 
     Args:
         multioutput:
             Defines aggregation in the case of multiple output scores. Can be one
-            of the following strings (default is `'uniform_average'`.):
+            of the following strings (default is ``'uniform_average'``.):
 
-            * `'raw_values'` returns full set of scores
-            * `'uniform_average'` scores are uniformly averaged
-            * `'variance_weighted'` scores are weighted by their individual variances
+            * ``'raw_values'`` returns full set of scores
+            * ``'uniform_average'`` scores are uniformly averaged
+            * ``'variance_weighted'`` scores are weighted by their individual variances
 
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
