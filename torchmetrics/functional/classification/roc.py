@@ -52,7 +52,8 @@ def _roc_compute_single_class(
     sample_weights: Optional[Sequence] = None,
 ) -> Tuple[Tensor, Tensor, Tensor]:
     """Computes Receiver Operating Characteristic for single class inputs. Returns tensor with false positive
-    rates, tensor with true positive rates, tensor with thresholds used for computing false- and true-postive rates.
+    rates, tensor with true positive rates, tensor with thresholds used for computing false- and true-postive
+    rates.
 
     Args:
         preds: Predicted tensor
