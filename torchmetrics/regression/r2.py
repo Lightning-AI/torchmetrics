@@ -42,11 +42,9 @@ class R2Score(Metric):
     Please see argument ``multioutput`` for changing this behavior.
 
     Args:
-        num_outputs: Number of outputs in multioutput setting (default is 1)
+        num_outputs: Number of outputs in multioutput setting
         adjusted: number of independent regressors for calculating adjusted r2 score.
-        multioutput:
-            Defines aggregation in the case of multiple output scores. Can be one
-            of the following strings (default is ``'uniform_average'``.):
+        multioutput: Defines aggregation in the case of multiple output scores. Can be one of the following strings:
 
             * ``'raw_values'`` returns full set of scores
             * ``'uniform_average'`` scores are uniformly averaged

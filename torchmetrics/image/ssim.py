@@ -28,7 +28,7 @@ class StructuralSimilarityIndexMeasure(Metric):
     Args:
         preds: estimated image
         target: ground truth image
-        gaussian_kernel: If true (default), a gaussian kernel is used, if false a uniform kernel is used
+        gaussian_kernel: If ``True`` (default), a gaussian kernel is used, if false a uniform kernel is used
         sigma: Standard deviation of the gaussian kernel, anisotropic kernels are possible.
             Ignored if a uniform kernel is used
         kernel_size: the size of the uniform kernel, anisotropic kernels are possible.

@@ -36,7 +36,7 @@ class SacreBLEUScore(BLEUScore):
     The SacreBLEU implementation differs from the NLTK BLEU implementation in tokenization techniques.
 
     Args:
-        n_gram: Gram value ranged from 1 to 4 (Default 4)
+        n_gram: Gram value ranged from 1 to 4
         smooth: Whether to apply smoothing, see [2]
         tokenize: Tokenization technique to be used.
             Supported tokenization: ``['none', '13a', 'zh', 'intl', 'char']``
