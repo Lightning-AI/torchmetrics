@@ -7,6 +7,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
 
+## [unReleased] - 2022-MM-DD
+
+### Added
+
+-
+
+
+-
+
+
+### Changed
+
+-
+
+
+-
+
+
+### Deprecated
+
+-
+
+
+-
+
+
+### Removed
+
+-
+
+
+-
+
+
+### Fixed
+
+-
+
+
+-
+
+
 ## [0.8.0] - 2022-04-14
 
 ### Added
@@ -45,7 +87,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-- Removed support for versions of Lightning lower than v1.5 ([#788](https://github.com/PyTorchLightning/metrics/pull/788))
+- Removed support for versions of [Pytorch-Lightning](https://github.com/PyTorchLightning/pytorch-lightning) lower than v1.5 ([#788](https://github.com/PyTorchLightning/metrics/pull/788))
 - Removed deprecated functions, and warnings in Text ([#773](https://github.com/PyTorchLightning/metrics/pull/773))
   * `WER` and `functional.wer`
 - Removed deprecated functions and warnings in Image ([#796](https://github.com/PyTorchLightning/metrics/pull/796))
@@ -67,7 +109,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   * `SDR` and `functional.audio.sdr` and `functional.audio.si_sdr`
   * `SNR` and `functional.audio.snr` and `functional.audio.si_snr`
   * `STOI` and `functional.audio.stoi`
-
+- Removed unused `get_num_classes` from `torchmetrics.utilities.data` ([#914](https://github.com/PyTorchLightning/metrics/pull/914))
 
 ### Fixed
 
