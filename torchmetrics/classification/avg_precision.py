@@ -57,12 +57,6 @@ class AveragePrecision(Metric):
             - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
               the metric for every class.
 
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (binary case):
@@ -93,10 +87,9 @@ class AveragePrecision(Metric):
         num_classes: Optional[int] = None,
         pos_label: Optional[int] = None,
         average: Optional[str] = "macro",
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
 
         self.num_classes = num_classes
         self.pos_label = pos_label
