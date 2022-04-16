@@ -70,7 +70,7 @@ class PeakSignalNoiseRatio(Metric):
     """
     min_target: Tensor
     max_target: Tensor
-    higher_is_better = False
+    higher_is_better = True
 
     def __init__(
         self,
