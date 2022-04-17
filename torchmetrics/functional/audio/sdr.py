@@ -45,7 +45,7 @@ else:
 
 
 def _symmetric_toeplitz(v: Tensor) -> Tensor:
-    """Construct a symmetric Toeplitz matrix using v
+    """Construct a symmetric Toeplitz matrix using v.
 
     Args:
         v: shape [..., L]
@@ -74,11 +74,10 @@ def _compute_autocorr_crosscorr(
     preds: torch.Tensor,
     L: int,
 ) -> Tuple[torch.Tensor, torch.Tensor]:
-    """Compute the auto correlation of `target` and the cross correlation of `target` and `preds` using \
-        the fast Fourier transform (FFT). \
-    Let's denotes the symmetric Toeplitz matric of the auto correlation of `target` as `R`, the cross correlation \
-    as 'b', then solving the equation `Rh=b` could have `h` as the coordinate of `preds` in the column space of \
-    the L shifts of `target`.
+    """Compute the auto correlation of `target` and the cross correlation of `target` and `preds` using \ the fast
+    Fourier transform (FFT). \ Let's denotes the symmetric Toeplitz matric of the auto correlation of `target` as
+    `R`, the cross correlation \ as 'b', then solving the equation `Rh=b` could have `h` as the coordinate of
+    `preds` in the column space of \ the L shifts of `target`.
 
     Args:
         target: the target (reference) signal of shape [..., time]
@@ -90,7 +89,7 @@ def _compute_autocorr_crosscorr(
         the cross correlation of `target` and `preds` of shape [..., L]
     """
     # the valid length for the signal after convolution
-    n_fft = 2**math.ceil(math.log2(preds.shape[-1] + target.shape[-1] - 1))
+    n_fft = 2 ** math.ceil(math.log2(preds.shape[-1] + target.shape[-1] - 1))
 
     # computes the auto correlation of `target`
     T = torch.fft.rfft(target, n=n_fft, dim=-1)
