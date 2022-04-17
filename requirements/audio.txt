@@ -1,4 +1,2 @@
 pesq>=0.0.3
 pystoi
-fast-bss-eval>=0.1.0
-torch_complex  # needed for fast-bss-eval torch<=1.7

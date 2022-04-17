@@ -23,7 +23,7 @@ __doctest_requires__ = {"SignalDistortionRatio": ["fast_bss_eval"]}
 
 
 class SignalDistortionRatio(Metric):
-    r"""Signal to Distortion Ratio (SDR) [1,2,3]
+    r"""Signal to Distortion Ratio (SDR) [1,2]
 
     Forward accepts
 
@@ -32,10 +32,13 @@ class SignalDistortionRatio(Metric):
 
     Args:
         use_cg_iter:
-            If provided, an iterative method is used to solve for the distortion filter coefficients instead
-            of direct Gaussian elimination. This can speed up the computation of the metrics in case the filters
-            are long. Using a value of 10 here has been shown to provide good accuracy in most cases and is sufficient
-            when using this loss to train neural separation networks.
+            If provided, conjugate gradient descent is used to solve for the distortion
+            filter coefficients instead of direct Gaussian elimination, which requires that
+            ``fast-bss-eval`` is installed and pytorch version >= 1.8.
+            This can speed up the computation of the metrics in case the filters
+            are long. Using a value of 10 here has been shown to provide
+            good accuracy in most cases and is sufficient when using this
+            loss to train neural separation networks.
         filter_length: The length of the distortion filter allowed
         zero_mean:
             When set to True, the mean of all signals is subtracted prior to computation of the metrics
@@ -50,10 +53,6 @@ class SignalDistortionRatio(Metric):
                 Argument has no use anymore and will be removed v0.9.
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
-
-    Raises:
-        ModuleNotFoundError:
-            If ``fast-bss-eval`` package is not installed
 
     Example:
         >>> from torchmetrics.audio import SignalDistortionRatio
@@ -74,13 +73,7 @@ class SignalDistortionRatio(Metric):
         tensor(-11.6051)
 
     .. note::
-       1. when pytorch<1.8.0, numpy will be used to calculate this metric, which causes ``sdr`` to be
-            non-differentiable and slower to calculate
-
-       2. using this metrics requires you to have ``fast-bss-eval`` install. Either install as ``pip install
-          torchmetrics[audio]`` or ``pip install fast-bss-eval``
-
-       3. preds and target need to have the same dtype, otherwise target will be converted to preds' dtype
+       1. preds and target need to have the same dtype, otherwise target will be converted to preds' dtype
 
 
     References:
@@ -88,8 +81,6 @@ class SignalDistortionRatio(Metric):
         IEEE Transactions on Audio, Speech and Language Processing, 14(4), 1462–1469.
 
         [2] Scheibler, R. (2021). SDR -- Medium Rare with Fast Computations.
-
-        [3] https://github.com/fakufaku/fast_bss_eval
     """
 
     sum_sdr: Tensor
