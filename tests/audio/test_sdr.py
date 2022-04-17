@@ -99,7 +99,6 @@ class TestSDR(MetricTester):
             metric_args=dict(),
         )
 
-    @pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_8, reason="sdr is not differentiable for pytorch < 1.8")
     def test_sdr_differentiability(self, preds, target, sk_metric):
         self.run_differentiability_test(
             preds=preds,
