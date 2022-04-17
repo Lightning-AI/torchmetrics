@@ -74,7 +74,7 @@ def _compute_autocorr_crosscorr(
     preds: torch.Tensor,
     L: int,
 ) -> Tuple[torch.Tensor, torch.Tensor]:
-    """Compute the auto correlation of `target` and the cross correlation of `target` and `preds` using \ the fast
+    r"""Compute the auto correlation of `target` and the cross correlation of `target` and `preds` using \ the fast
     Fourier transform (FFT). \ Let's denotes the symmetric Toeplitz matric of the auto correlation of `target` as
     `R`, the cross correlation \ as 'b', then solving the equation `Rh=b` could have `h` as the coordinate of
     `preds` in the column space of \ the L shifts of `target`.
