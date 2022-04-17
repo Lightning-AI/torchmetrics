@@ -18,7 +18,7 @@ from torch import Tensor
 from torch.nn import functional as F
 from typing_extensions import Literal
 
-from torchmetrics.functional.image.helper import _gaussian_kernel
+from torchmetrics.functional.image.helper import _gaussian_kernel_2d
 from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.distributed import reduce
 
@@ -60,8 +60,8 @@ def _uqi_compute(
     Args:
         preds: estimated image
         target: ground truth image
-        kernel_size: size of the gaussian kernel (default: (11, 11))
-        sigma: Standard deviation of the gaussian kernel (default: (1.5, 1.5))
+        kernel_size: size of the gaussian kernel
+        sigma: Standard deviation of the gaussian kernel
         reduction: a method to reduce metric score over labels.
 
             - ``'elementwise_mean'``: takes the mean (default)
@@ -95,7 +95,7 @@ def _uqi_compute(
     device = preds.device
     channel = preds.size(1)
     dtype = preds.dtype
-    kernel = _gaussian_kernel(channel, kernel_size, sigma, dtype, device)
+    kernel = _gaussian_kernel_2d(channel, kernel_size, sigma, dtype, device)
     pad_h = (kernel_size[0] - 1) // 2
     pad_w = (kernel_size[1] - 1) // 2
 
@@ -136,8 +136,8 @@ def universal_image_quality_index(
     Args:
         preds: estimated image
         target: ground truth image
-        kernel_size: size of the gaussian kernel (default: (11, 11))
-        sigma: Standard deviation of the gaussian kernel (default: (1.5, 1.5))
+        kernel_size: size of the gaussian kernel
+        sigma: Standard deviation of the gaussian kernel
         reduction: a method to reduce metric score over labels.
 
             - ``'elementwise_mean'``: takes the mean (default)
@@ -169,11 +169,12 @@ def universal_image_quality_index(
         tensor(0.9216)
 
     References:
-    [1] Zhou Wang and A. C. Bovik, "A universal image quality index," in IEEE Signal Processing Letters, vol. 9,
-    no. 3, pp. 81-84, March 2002, doi: 10.1109/97.995823.
-    [2] Zhou Wang, A. C. Bovik, H. R. Sheikh and E. P. Simoncelli, "Image quality assessment: from error visibility
-    to structural similarity," in IEEE Transactions on Image Processing, vol. 13, no. 4, pp. 600-612, April 2004,
-    doi: 10.1109/TIP.2003.819861.
+        [1] Zhou Wang and A. C. Bovik, "A universal image quality index," in IEEE Signal Processing Letters, vol. 9,
+        no. 3, pp. 81-84, March 2002, doi: 10.1109/97.995823.
+
+        [2] Zhou Wang, A. C. Bovik, H. R. Sheikh and E. P. Simoncelli, "Image quality assessment: from error visibility
+        to structural similarity," in IEEE Transactions on Image Processing, vol. 13, no. 4, pp. 600-612, April 2004,
+        doi: 10.1109/TIP.2003.819861.
     """
     preds, target = _uqi_update(preds, target)
     return _uqi_compute(preds, target, kernel_size, sigma, reduction, data_range)

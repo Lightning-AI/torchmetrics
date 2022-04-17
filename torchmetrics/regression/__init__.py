@@ -22,3 +22,4 @@ from torchmetrics.regression.r2 import R2Score  # noqa: F401
 from torchmetrics.regression.spearman import SpearmanCorrCoef  # noqa: F401
 from torchmetrics.regression.symmetric_mape import SymmetricMeanAbsolutePercentageError  # noqa: F401
 from torchmetrics.regression.tweedie_deviance import TweedieDevianceScore  # noqa: F401
+from torchmetrics.regression.wmape import WeightedMeanAbsolutePercentageError  # noqa: F401

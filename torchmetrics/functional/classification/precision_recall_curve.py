@@ -73,9 +73,9 @@ def _precision_recall_curve_update(
         preds: Predicted tensor
         target: Ground truth tensor
         num_classes: integer with number of classes for multi-label and multiclass problems.
-            Should be set to ``None`` for binary problems
+            Should be set to ``None`` for binary problems.
         pos_label: integer determining the positive class. Default is ``None``
-            which for binary problem is translate to 1. For multiclass problems
+            which for binary problem is translated to 1. For multiclass problems
             this argument should not be set as we iteratively change it in the
             range [0,num_classes-1]
     """
@@ -169,7 +169,7 @@ def _precision_recall_curve_compute_multi_class(
         preds: Predicted tensor
         target: Ground truth tensor
         num_classes: integer with number of classes for multi-label and multiclass problems.
-            Should be set to ``None`` for binary problems
+            Should be set to ``None`` for binary problems.
         sample_weights: sample weights for each data point
     """
 
@@ -213,11 +213,11 @@ def _precision_recall_curve_compute(
         preds: Predicted tensor
         target: Ground truth tensor
         num_classes: integer with number of classes for multi-label and multiclass problems.
-            Should be set to ``None`` for binary problems
+            Should be set to ``None`` for binary problems.
         pos_label: integer determining the positive class. Default is ``None``
-            which for binary problem is translate to 1. For multiclass problems
+            which for binary problem is translated to 1. For multiclass problems
             this argument should not be set as we iteratively change it in the
-            range [0,num_classes-1]
+            range ``[0,num_classes-1]``
         sample_weights: sample weights for each data point
 
     Example:
@@ -273,23 +273,22 @@ def precision_recall_curve(
         preds: predictions from model (probabilities)
         target: ground truth labels
         num_classes: integer with number of classes for multi-label and multiclass problems.
-            Should be set to ``None`` for binary problems
-        pos_label: integer determining the positive class. Default is ``None``
-            which for binary problem is translate to 1. For multiclass problems
-            this argument should not be set as we iteratively change it in the
-            range [0,num_classes-1]
+            Should be set to ``None`` for binary problems.
+        pos_label: integer determining the positive class. Default is ``None`` which for binary problem is translated
+            to 1. For multiclass problems this argument should not be set as we iteratively change it in the
+            range ``[0, num_classes-1]``
         sample_weights: sample weights for each data point
 
     Returns:
         3-element tuple containing
 
         precision:
-            tensor where element i is the precision of predictions with
-            score >= thresholds[i] and the last element is 1.
+            tensor where element ``i`` is the precision of predictions with
+            ``score >= thresholds[i]`` and the last element is 1.
             If multiclass, this is a list of such tensors, one for each class.
         recall:
-            tensor where element i is the recall of predictions with
-            score >= thresholds[i] and the last element is 0.
+            tensor where element ``i`` is the recall of predictions with
+            ``score >= thresholds[i]`` and the last element is 0.
             If multiclass, this is a list of such tensors, one for each class.
         thresholds:
             Thresholds used for computing precision/recall scores
@@ -299,8 +298,7 @@ def precision_recall_curve(
             If ``preds`` and ``target`` don't have the same number of dimensions,
             or one additional dimension for ``preds``.
         ValueError:
-            If the number of classes deduced from ``preds`` is not the same as the
-            ``num_classes`` provided.
+            If the number of classes deduced from ``preds`` is not the same as the ``num_classes`` provided.
 
     Example (binary case):
         >>> from torchmetrics.functional import precision_recall_curve

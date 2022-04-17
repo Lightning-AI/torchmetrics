@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import warnings
 from copy import deepcopy
 from typing import Any, Dict, List, Tuple, Union
 
@@ -23,22 +24,20 @@ from torchmetrics.metric import Metric
 
 class MetricTracker(nn.ModuleList):
     """A wrapper class that can help keeping track of a metric or metric collection over time and implement useful
-    methods. The wrapper implements the standard `update`, `compute`, `reset` methods that just calls corresponding
-    method of the currently tracked metric. However, the following additional methods are provided:
+    methods. The wrapper implements the standard ``.update()``, ``.compute()``, ``.reset()`` methods that just
+    calls corresponding method of the currently tracked metric. However, the following additional methods are
+    provided:
 
         -``MetricTracker.n_steps``: number of metrics being tracked
-
         -``MetricTracker.increment()``: initialize a new metric for being tracked
-
         -``MetricTracker.compute_all()``: get the metric value for all steps
-
         -``MetricTracker.best_metric()``: returns the best value
 
     Args:
-        metric: instance of a `torchmetrics.Metric` or `torchmetrics.MetricCollection` to keep track
-            of at each timestep.
+        metric: instance of a ``torchmetrics.Metric`` or ``torchmetrics.MetricCollection``
+            to keep track of at each timestep.
         maximize: either single bool or list of bool indicating if higher metric values are
-            better (`True`) or lower is better (`False`).
+            better (``True``) or lower is better (``False``).
 
     Example (single metric):
         >>> from torchmetrics import Accuracy, MetricTracker
@@ -112,7 +111,7 @@ class MetricTracker(nn.ModuleList):
         return len(self) - 1  # subtract the base metric
 
     def increment(self) -> None:
-        """Creates a new instace of the input metric that will be updated next."""
+        """Creates a new instance of the input metric that will be updated next."""
         self._increment_called = True
         self.append(deepcopy(self._base_metric))
 
@@ -152,29 +151,57 @@ class MetricTracker(nn.ModuleList):
 
     def best_metric(
         self, return_step: bool = False
-    ) -> Union[float, Tuple[int, float], Dict[str, float], Tuple[Dict[str, int], Dict[str, float]]]:
+    ) -> Union[
+        None,
+        float,
+        Tuple[int, float],
+        Tuple[None, None],
+        Dict[str, Union[float, None]],
+        Tuple[Dict[str, Union[int, None]], Dict[str, Union[float, None]]],
+    ]:
         """Returns the highest metric out of all tracked.
 
         Args:
-            return_step: If `True` will also return the step with the highest metric value.
+            return_step: If ``True`` will also return the step with the highest metric value.
 
         Returns:
-            The best metric value, and optionally the timestep.
+            The best metric value, and optionally the time-step.
         """
         if isinstance(self._base_metric, Metric):
             fn = torch.max if self.maximize else torch.min
-            idx, best = fn(self.compute_all(), 0)
-            if return_step:
-                return idx.item(), best.item()
-            return best.item()
-        else:
+            try:
+                idx, best = fn(self.compute_all(), 0)
+                if return_step:
+                    return idx.item(), best.item()
+                return best.item()
+            except ValueError as error:
+                warnings.warn(
+                    f"Encountered the following error when trying to get the best metric: {error}"
+                    "this is probably due to the 'best' not being defined for this metric."
+                    "Returning `None` instead.",
+                    UserWarning,
+                )
+                if return_step:
+                    return None, None
+                return None
+
+        else:  # this is a metric collection
             res = self.compute_all()
             maximize = self.maximize if isinstance(self.maximize, list) else len(res) * [self.maximize]
             idx, best = {}, {}
             for i, (k, v) in enumerate(res.items()):
-                fn = torch.max if maximize[i] else torch.min
-                out = fn(v, 0)
-                idx[k], best[k] = out[0].item(), out[1].item()
+                try:
+                    fn = torch.max if maximize[i] else torch.min
+                    out = fn(v, 0)
+                    idx[k], best[k] = out[0].item(), out[1].item()
+                except ValueError as error:
+                    warnings.warn(
+                        f"Encountered the following error when trying to get the best metric for metric {k}:"
+                        f"{error} this is probably due to the 'best' not being defined for this metric."
+                        "Returning `None` instead.",
+                        UserWarning,
+                    )
+                    idx[k], best[k] = None, None
 
             if return_step:
                 return idx, best

@@ -16,7 +16,7 @@ import torch
 from torch import tensor
 
 from torchmetrics.utilities import rank_zero_debug, rank_zero_info, rank_zero_warn
-from torchmetrics.utilities.data import _bincount, _flatten, _flatten_dict, get_num_classes, to_categorical, to_onehot
+from torchmetrics.utilities.data import _bincount, _flatten, _flatten_dict, to_categorical, to_onehot
 from torchmetrics.utilities.distributed import class_reduce, reduce
 
 
@@ -90,18 +90,6 @@ def test_to_categorical():
 
     assert result.shape == expected.shape
     assert torch.allclose(result, expected.to(result.dtype))
-
-
-@pytest.mark.parametrize(
-    ["preds", "target", "num_classes", "expected_num_classes"],
-    [
-        (torch.rand(32, 10, 28, 28), torch.randint(10, (32, 28, 28)), 10, 10),
-        (torch.rand(32, 10, 28, 28), torch.randint(10, (32, 28, 28)), None, 10),
-        (torch.rand(32, 28, 28), torch.randint(10, (32, 28, 28)), None, 10),
-    ],
-)
-def test_get_num_classes(preds, target, num_classes, expected_num_classes):
-    assert get_num_classes(preds, target, num_classes) == expected_num_classes
 
 
 def test_flatten_list():

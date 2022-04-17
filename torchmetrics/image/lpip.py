@@ -44,7 +44,7 @@ def _valid_img(img: Tensor) -> bool:
 class LearnedPerceptualImagePatchSimilarity(Metric):
     """The Learned Perceptual Image Patch Similarity (`LPIPS_`) is used to judge the perceptual similarity between
     two images. LPIPS essentially computes the similarity between the activations of two image patches for some
-    pre-defined network. This measure have been shown to match human perseption well. A low LPIPS score means that
+    pre-defined network. This measure has been shown to match human perseption well. A low LPIPS score means that
     image patches are perceptual similar.
 
     Both input image patches are expected to have shape `[N, 3, H, W]` and be normalized to the [-1,1]
@@ -65,8 +65,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ModuleNotFoundError:
@@ -92,7 +91,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
     real_features: List[Tensor]
     fake_features: List[Tensor]
 
-    # due to the use of named tuple in the backbone the net variable cannot be scriptet
+    # due to the use of named tuple in the backbone the net variable cannot be scripted
     __jit_ignored_attributes__ = ["net"]
 
     def __init__(
@@ -127,8 +126,8 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
         """Update internal states with lpips score.
 
         Args:
-            img1: tensor with images of shape [N, 3, H, W]
-            img2: tensor with images of shape [N, 3, H, W]
+            img1: tensor with images of shape ``[N, 3, H, W]``
+            img2: tensor with images of shape ``[N, 3, H, W]``
         """
         if not (_valid_img(img1) and _valid_img(img2)):
             raise ValueError(

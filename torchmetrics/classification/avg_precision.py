@@ -41,9 +41,9 @@ class AveragePrecision(Metric):
         num_classes: integer with number of classes. Not nessesary to provide
             for binary problems.
         pos_label: integer determining the positive class. Default is ``None``
-            which for binary problem is translate to 1. For multiclass problems
+            which for binary problem is translated to 1. For multiclass problems
             this argument should not be set as we iteratively change it in the
-            range [0,num_classes-1]
+            range ``[0, num_classes-1]``
         average:
             defines the reduction that is applied in the case of multiclass and multilabel input.
             Should be one of the following:
@@ -63,8 +63,7 @@ class AveragePrecision(Metric):
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (binary case):
         >>> from torchmetrics import AveragePrecision
@@ -133,8 +132,7 @@ class AveragePrecision(Metric):
         """Compute the average precision score.
 
         Returns:
-            tensor with average precision. If multiclass will return list
-            of such tensors, one for each class
+            tensor with average precision. If multiclass return list of such tensors, one for each class
         """
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)

@@ -60,7 +60,7 @@ class NoTrainInceptionV3(FeatureExtractorInceptionV3):
 class MatrixSquareRoot(Function):
     """Square root of a positive definite matrix.
 
-    All credit to:     `Square Root of a Positive Definite Matrix`_
+    All credit to `Square Root of a Positive Definite Matrix`_
     """
 
     @staticmethod
@@ -106,7 +106,7 @@ def _compute_fid(mu1: Tensor, sigma1: Tensor, mu2: Tensor, sigma2: Tensor, eps: 
         sigma1: covariance matrix over activations calculated on predicted (x) samples
         mu2: mean of activations calculated on target (y) samples
         sigma2: covariance matrix over activations calculated on target (y) samples
-        eps: offset constant. used if sigma_1 @ sigma_2 matrix is singular
+        eps: offset constant - used if sigma_1 @ sigma_2 matrix is singular
 
     Returns:
         Scalar value of the distance between sets.
@@ -137,7 +137,7 @@ class FrechetInceptionDistance(Metric):
     originally proposed in [1].
 
     Using the default feature extraction (Inception v3 using the original weights from [2]), the input is
-    expected to be mini-batches of 3-channel RGB images of shape (3 x H x W) with dtype uint8. All images
+    expected to be mini-batches of 3-channel RGB images of shape (``3 x H x W``) with dtype uint8. All images
     will be resized to 299 x 299 which is the size of the original training data. The boolian flag ``real``
     determines if the images should update the statistics of the real distribution or the fake distribution.
 
@@ -161,14 +161,17 @@ class FrechetInceptionDistance(Metric):
             - an ``nn.Module`` for using a custom feature extractor. Expects that its forward method returns
               an ``[N,d]`` matrix where ``N`` is the batch size and ``d`` is the feature size.
 
+        reset_real_features: Whether to also reset the real features. Since in many cases the real dataset does not
+            change, the features can cached them to avoid recomputing them which is costly. Set this to ``False`` if
+            your dataset does not change.
+
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
 
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     References:
         [1] Rethinking the Inception Architecture for Computer Vision
@@ -186,6 +189,8 @@ class FrechetInceptionDistance(Metric):
             If ``feature`` is set to an ``int`` not in [64, 192, 768, 2048]
         TypeError:
             If ``feature`` is not an ``str``, ``int`` or ``torch.nn.Module``
+        ValueError:
+            If ``reset_real_features`` is not an ``bool``
 
     Example:
         >>> import torch
@@ -203,11 +208,13 @@ class FrechetInceptionDistance(Metric):
     """
     real_features: List[Tensor]
     fake_features: List[Tensor]
-    higher_is_better = False
+    higher_is_better: bool = False
+    is_differentiable: bool = False
 
     def __init__(
         self,
         feature: Union[int, torch.nn.Module] = 2048,
+        reset_real_features: bool = True,
         compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
@@ -237,6 +244,10 @@ class FrechetInceptionDistance(Metric):
         else:
             raise TypeError("Got unknown input to argument `feature`")
 
+        if not isinstance(reset_real_features, bool):
+            raise ValueError("Argument `reset_real_features` expected to be a bool")
+        self.reset_real_features = reset_real_features
+
         self.add_state("real_features", [], dist_reduce_fx=None)
         self.add_state("fake_features", [], dist_reduce_fx=None)
 
@@ -245,7 +256,7 @@ class FrechetInceptionDistance(Metric):
 
         Args:
             imgs: tensor with images feed to the feature extractor
-            real: bool indicating if imgs belong to the real or the fake distribution
+            real: bool indicating if ``imgs`` belong to the real or the fake distribution
         """
         features = self.inception(imgs)
 
@@ -274,3 +285,12 @@ class FrechetInceptionDistance(Metric):
 
         # compute fid
         return _compute_fid(mean1, cov1, mean2, cov2).to(orig_dtype)
+
+    def reset(self) -> None:
+        if not self.reset_real_features:
+            # remove temporarily to avoid resetting
+            value = self._defaults.pop("real_features")
+            super().reset()
+            self._defaults["real_features"] = value
+        else:
+            super().reset()

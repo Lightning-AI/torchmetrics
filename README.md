@@ -8,7 +8,7 @@ ______________________________________________________________________
 
 <p align="center">
   <a href="#what-is-torchmetrics">What is Torchmetrics</a> •
-  <a href="#implementing-your-own-metric">Implementing a metric</a> •
+  <a href="#implementing-your-own-module-metric">Implementing a metric</a> •
   <a href="#build-in-metrics">Built-in metrics</a> •
   <a href="https://torchmetrics.readthedocs.io/en/stable/">Docs</a> •
   <a href="#community">Community</a> •
@@ -29,7 +29,7 @@ ______________________________________________________________________
 [![Build Status](https://dev.azure.com/PytorchLightning/Metrics/_apis/build/status/PyTorchLightning.metrics?branchName=master)](https://dev.azure.com/PytorchLightning/Metrics/_build/latest?definitionId=3&branchName=master)
 [![codecov](https://codecov.io/gh/PyTorchLightning/metrics/branch/master/graph/badge.svg?token=NER6LPI3HS)](https://codecov.io/gh/PyTorchLightning/metrics)
 
-[![Slack](https://img.shields.io/badge/slack-chat-green.svg?logo=slack)](https://join.slack.com/t/pytorch-lightning/shared_invite/zt-12iz3cds1-uyyyBYJLiaL2bqVmMN7n~A)
+[![Slack](https://img.shields.io/badge/slack-chat-green.svg?logo=slack)](https://www.pytorchlightning.ai/community)
 [![Documentation Status](https://readthedocs.org/projects/torchmetrics/badge/?version=latest)](https://torchmetrics.readthedocs.io/en/latest/?badge=latest)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5844769.svg)](https://doi.org/10.5281/zenodo.5844769)
 [![JOSS status](https://joss.theoj.org/papers/561d9bb59b400158bc8204e2639dca43/status.svg)](https://joss.theoj.org/papers/561d9bb59b400158bc8204e2639dca43)
@@ -90,7 +90,7 @@ ______________________________________________________________________
 
 ## What is Torchmetrics
 
-TorchMetrics is a collection of 50+ PyTorch metrics implementations and an easy-to-use API to create custom metrics. It offers:
+TorchMetrics is a collection of 80+ PyTorch metrics implementations and an easy-to-use API to create custom metrics. It offers:
 
 - A standardized interface to increase reproducibility
 - Reduces boilerplate
@@ -211,7 +211,7 @@ def metric_ddp(rank, world_size):
 
 
 if __name__ == "__main__":
-    world_size = 2  # number of gpus to parallize over
+    world_size = 2  # number of gpus to parallelize over
     mp.spawn(metric_ddp, args=(world_size,), nprocs=world_size, join=True)
 ```
 
@@ -282,8 +282,10 @@ We currently have implemented metrics within the following domains:
   [Accuracy](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#accuracy),
   [F1Score](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#f1score),
   [AUROC](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#auroc)
-  and [19 more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#classification-metrics)
+  and [many more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#classification-metrics)
   )
+- Detection (
+  [MeanAveragePrecision](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#meanaverageprecision))
 - Information Retrieval (
   [RetrievalMAP](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#retrievalmap),
   [RetrievalMRR](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#retrievalmrr),
@@ -294,22 +296,22 @@ We currently have implemented metrics within the following domains:
   [FrechetInceptionDistance](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#FrechetInceptionDistance),
   [KernelInceptionDistance](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#KernelInceptionDistance),
   [StructuralSimilarityIndexMeasure](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#StructuralSimilarityIndexMeasure)
-  and [2 more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#image-metrics)
+  and [many more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#image-metrics)
   )
 - Regression (
   [ExplainedVariance](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#explainedvariance),
   [PearsonCorrCoef](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#pearsoncorrcoef),
   [R2Score](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#r2score)
-  and [few more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#regression-metrics)
+  and [many more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#regression-metrics)
   )
 - Text (
   [BleuScore](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#bleuscore),
   [RougeScore](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#rougescore),
   [WordErrorRate](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#WordErrorRate)
-  and [few more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#text)
+  and [many more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#text)
   )
 
-In total torchmetrics contains 60+ metrics!
+In total torchmetrics contains 80+ metrics!
 
 ## Contribute!
 
@@ -317,19 +319,18 @@ The lightning + torchmetric team is hard at work adding even more metrics.
 But we're looking for incredible contributors like you to submit new metrics
 and improve existing ones!
 
-Join our [Slack](https://join.slack.com/t/pytorch-lightning/shared_invite/zt-12iz3cds1-uyyyBYJLiaL2bqVmMN7n~A)
-to get help becoming a contributor!
+Join our [Slack](https://www.pytorchlightning.ai/community) to get help become a contributor!
 
 ## Community
 
-For help or questions, join our huge community on [Slack](https://join.slack.com/t/pytorch-lightning/shared_invite/zt-12iz3cds1-uyyyBYJLiaL2bqVmMN7n~A)!
+For help or questions, join our huge community on [Slack](https://www.pytorchlightning.ai/community)!
 
 ## Citation
 
 We’re excited to continue the strong legacy of open source software and have been inspired
 over the years by Caffe, Theano, Keras, PyTorch, torchbearer, ignite, sklearn and fast.ai.
 
-If you want to cite this framework feel free to use GitHub's built-in citation option to generate a bibtex or APA-Style citation based on [this file](https://github.com/PyTorchLightning/metrics/blolb/master/CITATION.cff)(but only if you loved it 😊).
+If you want to cite this framework feel free to use GitHub's built-in citation option to generate a bibtex or APA-Style citation based on [this file](https://github.com/PyTorchLightning/metrics/blob/master/CITATION.cff) (but only if you loved it 😊).
 
 ## License
 

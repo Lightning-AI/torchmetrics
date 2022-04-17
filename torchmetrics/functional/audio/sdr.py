@@ -59,26 +59,20 @@ def signal_distortion_ratio(
     r"""Signal to Distortion Ratio (SDR) [1,2,3]
 
     Args:
-        preds:
-            shape ``[..., time]``
-        target:
-            shape ``[..., time]``
+        preds: shape ``[..., time]``
+        target: shape ``[..., time]``
         use_cg_iter:
-            If provided, an iterative method is used to solve for the distortion
-            filter coefficients instead of direct Gaussian elimination.
-            This can speed up the computation of the metrics in case the filters
-            are long. Using a value of 10 here has been shown to provide
-            good accuracy in most cases and is sufficient when using this
-            loss to train neural separation networks.
-        filter_length:
-            The length of the distortion filter allowed
-        zero_mean:
-            When set to True, the mean of all signals is subtracted prior to computation of the metrics
+            If provided, an iterative method is used to solve for the distortion filter coefficients instead of direct
+            Gaussian elimination.
+            This can speed up the computation of the metrics in case the filters are long. Using a value of 10 here
+            has been shown to provide good accuracy in most cases and is sufficient when using this loss to train
+            neural separation networks.
+        filter_length: The length of the distortion filter allowed
+        zero_mean: When set to True, the mean of all signals is subtracted prior to computation of the metrics
         load_diag:
             If provided, this small value is added to the diagonal coefficients of
             the system metrics when solving for the filter coefficients.
-            This can help stabilize the metric in the case where some of the reference
-            signals may sometimes be zero
+            This can help stabilize the metric in the case where some reference signals may sometimes be zero
 
     Raises:
         ModuleNotFoundError:
@@ -210,12 +204,9 @@ def scale_invariant_signal_distortion_ratio(preds: Tensor, target: Tensor, zero_
     considered an overall measure of how good a source sound.
 
     Args:
-        preds:
-            shape ``[...,time]``
-        target:
-            shape ``[...,time]``
-        zero_mean:
-            If to zero mean target and preds or not
+        preds: shape ``[...,time]``
+        target: shape ``[...,time]``
+        zero_mean: If to zero mean target and preds or not
 
     Returns:
         si-sdr value of shape [...]
@@ -239,13 +230,13 @@ def scale_invariant_signal_distortion_ratio(preds: Tensor, target: Tensor, zero_
         preds = preds - torch.mean(preds, dim=-1, keepdim=True)
 
     alpha = (torch.sum(preds * target, dim=-1, keepdim=True) + eps) / (
-        torch.sum(target ** 2, dim=-1, keepdim=True) + eps
+        torch.sum(target**2, dim=-1, keepdim=True) + eps
     )
     target_scaled = alpha * target
 
     noise = target_scaled - preds
 
-    val = (torch.sum(target_scaled ** 2, dim=-1) + eps) / (torch.sum(noise ** 2, dim=-1) + eps)
+    val = (torch.sum(target_scaled**2, dim=-1) + eps) / (torch.sum(noise**2, dim=-1) + eps)
     val = 10 * torch.log10(val)
 
     return val

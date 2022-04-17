@@ -54,10 +54,8 @@ def _prepare_n_grams_dicts(
     character and word n-grams.
 
     Args:
-        n_char_order:
-            A character n-gram order.
-        n_word_order:
-            A word n-gram order.
+        n_char_order: A character n-gram order.
+        n_word_order: A word n-gram order.
 
     Return:
         Dictionaries with default zero values for total reference, hypothesis and matching character and word
@@ -84,10 +82,8 @@ def _get_characters(sentence: str, whitespace: bool) -> List[str]:
     """Split sentence into individual characters.
 
     Args:
-        sentence:
-            An input sentence to split.
-        whitespace:
-            An indication whether to keep whitespaces during character n-gram extraction.
+        sentence: An input sentence to split.
+        whitespace: An indication whether to keep whitespaces during character n-gram extraction.
 
     Return:
         A list of separated characters.
@@ -102,8 +98,7 @@ def _separate_word_and_punctiation(word: str) -> List[str]:
     Separates out punctuations from beginning and end of words for chrF. Adapted from https://github.com/m-popovic/chrF
     and https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/chrf.py.
     Args:
-        word:
-            An input word to be separated from a punctuation if present.
+        word: An input word to be separated from a punctuation if present.
 
     Return:
         A list of a single word or a separated word and punctuation.
@@ -122,11 +117,10 @@ def _get_words_and_punctiation(sentence: str) -> List[str]:
     """Separates out punctuations from beginning and end of words for chrF for all words in the sentence.
 
     Args:
-        sentence:
-            An input sentence to split
+        sentence: An input sentence to split
 
     Return:
-        An aggregated list of separated words and punctuations..
+        An aggregated list of separated words and punctuations.
     """
     return sum((_separate_word_and_punctiation(word) for word in sentence.strip().split()), [])
 
@@ -134,10 +128,8 @@ def _get_words_and_punctiation(sentence: str) -> List[str]:
 def _ngram_counts(char_or_word_list: List[str], n_gram_order: int) -> Dict[int, Dict[Tuple[str, ...], Tensor]]:
     """
     Args:
-        char_or_word_list:
-            A list of characters of words
-        n_gram_order:
-            A largest number of n-gram.
+        char_or_word_list: A list of characters of words
+        n_gram_order: The largest number of n-gram.
 
     Return:
         A dictionary of dictionaries with a counts of given n-grams.
@@ -159,26 +151,17 @@ def _get_n_grams_counts_and_total_ngrams(
 ]:
     """
     Args:
-        sentence:
-            An input sentence
-        n_char_order:
-            A character n-gram order.
-        n_word_order:
-            A word n-gram order.
-        lowercase:
-            An indication whether to enable case-insesitivity.
-        whitespace:
-            An indication whether to keep whitespaces during character n-gram extraction.
+        sentence: An input sentence
+        n_char_order: A character n-gram order.
+        n_word_order: A word n-gram order.
+        lowercase: An indication whether to enable case-insensitivity.
+        whitespace: An indication whether to keep whitespaces during character n-gram extraction.
 
     Return:
-        char_n_grams_counts:
-            A dictionary of dictionaries with sentence character n-grams.
-        word_n_grams_counts:
-            A dictionary of dictionaries with sentence word n-grams.
-        total_char_n_grams:
-            A dictionary containing a total number of sentence character n-grams.
-        total_word_n_grams:
-            A dictionary containing a total number of sentence word n-grams.
+        char_n_grams_counts: A dictionary of dictionaries with sentence character n-grams.
+        word_n_grams_counts: A dictionary of dictionaries with sentence word n-grams.
+        total_char_n_grams: A dictionary containing a total number of sentence character n-grams.
+        total_word_n_grams: A dictionary containing a total number of sentence word n-grams.
     """
 
     def _char_and_word_ngrams_counts(
@@ -235,10 +218,8 @@ def _sum_over_dicts(total_n_grams: Dict[int, Tensor], n_grams: Dict[int, Tensor]
     """Aggregate total n-grams to keep corpus-level statistics.
 
     Args:
-        total_n_grams:
-            A dictionary containing a total corpus-level number of n-grams.
-        n_grams:
-            A dictionary containing a sentence-level number of n-grams.
+        total_n_grams: A dictionary containing a total corpus-level number of n-grams.
+        n_grams: A dictionary containing a sentence-level number of n-grams.
 
     Return:
         A dictionary containing a total corpus-level number of n-grams.
@@ -258,26 +239,22 @@ def _calculate_fscore(
     n_order: float,
     beta: float,
 ) -> Tensor:
-    """Calculate sentence-level chrF/chrF++ score. For given hypothesis and reference statistics (either sentence-
-    level or corpus-level) the chrF/chrF++ score is returned.
+    """Calculate sentence-level chrF/chrF++ score.
+
+    For given hypothesis and reference statistics (either sentence-level or corpus-level)
+    the chrF/chrF++ score is returned.
 
     Args:
         matching_char_n_grams:
             A total number of matching character n-grams between the best matching reference and hypothesis.
         matching_word_n_grams:
             A total number of matching word n-grams between the best matching reference and hypothesis.
-        hyp_char_n_grams:
-            A total number of hypothesis character n-grams.
-        hyp_word_n_grams:
-            A total number of hypothesis word n-grams.
-        ref_char_n_grams:
-            A total number of reference character n-grams.
-        ref_word_n_grams:
-            A total number of reference word n-grams.
-        n_order:
-            A sum of character and word n-gram order.
-        beta:
-            A parameter determining an importance of recall w.r.t. precision. If `beta=1`, their importance is equal.
+        hyp_char_n_grams: A total number of hypothesis character n-grams.
+        hyp_word_n_grams: A total number of hypothesis word n-grams.
+        ref_char_n_grams: A total number of reference character n-grams.
+        ref_word_n_grams: A total number of reference word n-grams.
+        n_order: A sum of character and word n-gram order.
+        beta: A parameter determining an importance of recall w.r.t. precision. If `beta=1`, their importance is equal.
 
     Return:
         A chrF/chrF++ score. This function is universal both for sentence-level and corpus-level calucation.
@@ -294,10 +271,10 @@ def _calculate_fscore(
             n: matching_n_grams[n] / ref_n_grams[n] if ref_n_grams[n] > 0 else tensor(0.0) for n in matching_n_grams
         }
         denominator: Dict[int, Tensor] = {
-            n: torch.max(beta ** 2 * precision[n] + recall[n], _EPS_SMOOTHING) for n in matching_n_grams
+            n: torch.max(beta**2 * precision[n] + recall[n], _EPS_SMOOTHING) for n in matching_n_grams
         }
         f_score: Dict[int, Tensor] = {
-            n: (1 + beta ** 2) * precision[n] * recall[n] / denominator[n] for n in matching_n_grams
+            n: (1 + beta**2) * precision[n] * recall[n] / denominator[n] for n in matching_n_grams
         }
 
         return f_score
@@ -322,46 +299,34 @@ def _calculate_sentence_level_chrf_score(
     lowercase: bool,
     whitespace: bool,
 ) -> Tuple[Tensor, Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor]]:
-    """Calculate the best sentence-level chrF/chrF++ score. For a given pre-processed hypothesis, all references
-    are evaluated and score and statistics for the best matching reference is returned.
+    """Calculate the best sentence-level chrF/chrF++ score.
+
+    For a given pre-processed hypothesis, all references are evaluated and score and statistics
+    for the best matching reference is returned.
 
     Args:
-        targets:
-            An iterable of references.
-        preds_char_n_grams_counts:
-            A dictionary of dictionaries with hypothesis character n-grams.
-        preds_word_n_grams_counts:
-            A dictionary of dictionaries with hypothesis word n-grams.
-        pred_char_n_grams:
-            A total number of hypothesis character n-grams.
-        pred_word_n_grams:
-            A total number of hypothesis word n-grams.
-        n_char_order:
-            A character n-gram order.
-        n_word_order:
-            A word n-gram order.
-        n_order:
-            A sum of character and word n-gram order.
-        beta:
-            A parameter determining an importance of recall w.r.t. precision. If `beta=1`, their importance is equal.
-        lowercase:
-            An indication whether to enable case-insesitivity.
-        whitespace:
-            An indication whether to keep whitespaces during character n-gram extraction.
+        targets: An iterable of references.
+        preds_char_n_grams_counts: A dictionary of dictionaries with hypothesis character n-grams.
+        preds_word_n_grams_counts: A dictionary of dictionaries with hypothesis word n-grams.
+        pred_char_n_grams: A total number of hypothesis character n-grams.
+        pred_word_n_grams: A total number of hypothesis word n-grams.
+        n_char_order: A character n-gram order.
+        n_word_order: A word n-gram order.
+        n_order: A sum of character and word n-gram order.
+        beta: A parameter determining an importance of recall w.r.t. precision. If `beta=1`, their importance is equal.
+        lowercase: An indication whether to enable case-insensitivity.
+        whitespace: An indication whether to keep whitespaces during character n-gram extraction.
 
     Return:
         Return chrF/chrF++ score and statistics for the best matching hypothesis and reference.
 
-        f_score:
-            A sentence-level chrF/chrF++ score.
+        f_score: A sentence-level chrF/chrF++ score.
         matching_char_n_grams:
             A total number of matching character n-grams between the best matching reference and hypothesis.
         matching_word_n_grams:
             A total number of matching word n-grams between the best matching reference and hypothesis.
-        target_char_n_grams:
-            A total number of reference character n-grams.
-        target_word_n_grams:
-            A total number of reference word n-grams.
+        target_char_n_grams: A total number of reference character n-grams.
+        target_word_n_grams: A total number of reference word n-grams.
     """
 
     best_f_score = tensor(0.0)
@@ -434,58 +399,36 @@ def _chrf_score_update(
 ]:
     """
     Args:
-        preds:
-            An iterable of hypothesis corpus.
-        target:
-            An iterable of iterables of reference corpus.
-        total_preds_char_n_grams:
-            A dictionary containing a total number of hypothesis character n-grams.
-        total_preds_word_n_grams:
-            A dictionary containing a total number of hypothesis word n-grams.
-        total_target_char_n_grams:
-            A dictionary containing a total number of reference character n-grams.
-        total_target_word_n_grams:
-            A dictionary containing a total number of reference word n-grams.
+        preds: An iterable of hypothesis corpus.
+        target: An iterable of iterables of reference corpus.
+        total_preds_char_n_grams: A dictionary containing a total number of hypothesis character n-grams.
+        total_preds_word_n_grams: A dictionary containing a total number of hypothesis word n-grams.
+        total_target_char_n_grams: A dictionary containing a total number of reference character n-grams.
+        total_target_word_n_grams: A dictionary containing a total number of reference word n-grams.
         total_matching_char_n_grams:
             A dictionary containing a total number of matching character n-grams between references and hypotheses.
         total_matching_word_n_grams:
             A dictionary containing a total number of total matching word n-grams between references and hypotheses.
-        n_char_order:
-            A character n-gram order.
-        n_word_order:
-            A word n-gram order.
-        n_order:
-            Sum of charachter and word n-gram order.
-        beta:
-            A parameter determining an importance of recall w.r.t. precision. If `beta=1`, their importance is equal.
-        lowercase:
-            An indication whether to enable case-insesitivity.
-        whitespace:
-            An indication whether to keep whitespaces during character n-gram extraction.
-        sentence_chrf_score:
-            A list of sentence-level chrF/chrF++ scores.
+        n_char_order: A character n-gram order.
+        n_word_order: A word n-gram order.
+        n_order: Sum of character and word n-gram order.
+        beta: A parameter determining an importance of recall w.r.t. precision. If `beta=1`, their importance is equal.
+        lowercase: An indication whether to enable case-insensitivity.
+        whitespace: An indication whether to keep whitespaces during character n-gram extraction.
+        sentence_chrf_score: A list of sentence-level chrF/chrF++ scores.
 
     Return:
-        total_target_char_n_grams:
-            An updated dictionary containing a total number of reference character n-grams.
-        total_target_word_n_grams:
-            An updated dictionary containing a total number of reference word n-grams.
-        total_preds_char_n_grams:
-            An updated dictionary containing a total number of hypothesis character n-grams.
-        total_preds_word_n_grams:
-            An updated dictionary containing a total number of hypothesis word n-grams.
-        total_matching_char_n_grams:
-            An updated dictionary containing a total number of matching character n-grams between references and
-            hypotheses.
-        total_matching_word_n_grams:
-            An updated dictionary containing a total number of total matching word n-grams between references and
-            hypotheses.
-        sentence_chrf_score:
-            (Optionally) A list of sentence-level chrF/chrF++ scores.
+        total_target_char_n_grams: number of reference character n-grams.
+        total_target_word_n_grams: number of reference word n-grams.
+        total_preds_char_n_grams: number of hypothesis character n-grams.
+        total_preds_word_n_grams: number of hypothesis word n-grams.
+        total_matching_char_n_grams: number of matching character n-grams between references and hypotheses.
+        total_matching_word_n_grams: number of total matching word n-grams between references and hypotheses.
+        sentence_chrf_score: A list of sentence-level chrF/chrF++ scores.
 
     Raises:
         ValueError:
-            If length of `preds` and `target` differs.
+            If length of ``preds`` and ``target`` differs.
     """
     target_corpus, preds = _validate_inputs(target, preds)
 
@@ -551,20 +494,13 @@ def _chrf_score_compute(
     """Compute chrF/chrF++ score based on pre-computed target, prediction and matching character and word n-grams.
 
     Args:
-        total_preds_char_n_grams:
-            A dictionary containing a total number of hypothesis character n-grams.
-        total_preds_word_n_grams:
-            A dictionary containing a total number of hypothesis word n-grams.
-        total_target_char_n_grams:
-            A dictionary containing a total number of reference character n-grams.
-        total_target_word_n_grams:
-            A dictionary containing a total number of reference word n-grams.
-        total_matching_char_n_grams:
-            A dictionary containing a total number of matching character n-grams between references and hypotheses.
-        total_matching_word_n_grams:
-            A dictionary containing a total number of total matching word n-grams between references and hypotheses.
-        n_order:
-            A sum of charachter and word n-gram order.
+        total_preds_char_n_grams: number of hypothesis character n-grams.
+        total_preds_word_n_grams: number of hypothesis word n-grams.
+        total_target_char_n_grams: number of reference character n-grams.
+        total_target_word_n_grams: number of reference word n-grams.
+        total_matching_char_n_grams: number of matching character n-grams between references and hypotheses.
+        total_matching_word_n_grams: number of total matching word n-grams between references and hypotheses.
+        n_order: A sum of character and word n-gram order.
         beta:
             A parameter determining an importance of recall w.r.t. precision. If `beta=1`, their importance is equal.
 
@@ -600,10 +536,8 @@ def chrf_score(
     https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/chrf.py.
 
     Args:
-        preds:
-            An iterable of hypothesis corpus.
-        target:
-            An iterable of iterables of reference corpus.
+        preds: An iterable of hypothesis corpus.
+        target: An iterable of iterables of reference corpus.
         n_char_order:
             A character n-gram order. If `n_char_order=6`, the metrics refers to the official chrF/chrF++.
         n_word_order:
@@ -611,12 +545,9 @@ def chrf_score(
             metric is equivalent to the original chrF.
         beta:
             A parameter determining an importance of recall w.r.t. precision. If `beta=1`, their importance is equal.
-        lowercase:
-            An indication whether to enable case-insesitivity.
-        whitespace:
-            An indication whether to keep whitespaces during character n-gram extraction.
-        return_sentence_level_score:
-            An indication whether a sentence-level chrF/chrF++ score to be returned.
+        lowercase: An indication whether to enable case-insesitivity.
+        whitespace: An indication whether to keep whitespaces during character n-gram extraction.
+        return_sentence_level_score: An indication whether a sentence-level chrF/chrF++ score to be returned.
 
     Return:
         A corpus-level chrF/chrF++ score.
@@ -639,6 +570,7 @@ def chrf_score(
 
     References:
         [1] chrF: character n-gram F-score for automatic MT evaluation by Maja Popović `chrF score`_
+
         [2] chrF++: words helping character n-grams by Maja Popović `chrF++ score`_
     """
     if not isinstance(n_char_order, int) or n_char_order < 1:

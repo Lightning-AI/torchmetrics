@@ -93,6 +93,8 @@ class Metric(Module, ABC):
 
         kwargs: additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
+            - compute_on_cpu: If metric state should be stored on CPU during computations. Only works
+                for list states.
             - dist_sync_on_step: If metric state should synchronize on ``forward()``
             - process_group: The process group on which the synchronization is called
             - dist_sync_fn: function that performs the allgather option on the metric state
@@ -120,6 +122,11 @@ class Metric(Module, ABC):
             warnings.warn(
                 "Argument `compute_on_step` is deprecated in v0.8 and will be removed in v0.9", DeprecationWarning
             )
+        self.compute_on_cpu = kwargs.pop("compute_on_cpu", False)
+        if not isinstance(self.compute_on_cpu, bool):
+            raise ValueError(
+                f"Expected keyword argument `compute_on_cpu` to be an `bool` but got {self.compute_on_cpu}"
+            )
 
         self.dist_sync_on_step = kwargs.pop("dist_sync_on_step", False)
         if not isinstance(self.dist_sync_on_step, bool):
@@ -144,6 +151,7 @@ class Metric(Module, ABC):
         self._update_called = False
         self._to_sync = True
         self._should_unsync = True
+        self._enable_grad = False
 
         # initialize state
         self._defaults: Dict[str, Union[List, Tensor]] = {}
@@ -236,17 +244,21 @@ class Metric(Module, ABC):
                 "HINT: Did you forget to call ``unsync`` ?."
             )
 
-        with torch.no_grad():
-            self.update(*args, **kwargs)
+        # global accumulation
+        self.update(*args, **kwargs)
 
         self._to_sync = self.dist_sync_on_step  # type: ignore
         # skip restore cache operation from compute as cache is stored below.
         self._should_unsync = False
+        # skip computing on cpu for the batch
+        _temp_compute_on_cpu = self.compute_on_cpu
+        self.compute_on_cpu = False
 
         # save context before switch
         cache = {attr: getattr(self, attr) for attr in self._defaults}
 
         # call reset, update, compute, on single batch
+        self._enable_grad = True  # allow grads for batch computation
         self.reset()
         self.update(*args, **kwargs)
         self._forward_cache = self.compute()
@@ -259,6 +271,8 @@ class Metric(Module, ABC):
         self._should_unsync = True
         self._to_sync = True
         self._computed = None
+        self._enable_grad = False
+        self.compute_on_cpu = _temp_compute_on_cpu
 
         return self._forward_cache
 
@@ -291,12 +305,22 @@ class Metric(Module, ABC):
 
     def _wrap_update(self, update: Callable) -> Callable:
         @functools.wraps(update)
-        def wrapped_func(*args: Any, **kwargs: Any) -> Optional[Any]:
+        def wrapped_func(*args: Any, **kwargs: Any) -> None:
             self._computed = None
             self._update_called = True
-            return update(*args, **kwargs)
+            with torch.set_grad_enabled(self._enable_grad):
+                update(*args, **kwargs)
+            if self.compute_on_cpu:
+                self._move_list_states_to_cpu()
 
         return wrapped_func
+
+    def _move_list_states_to_cpu(self) -> None:
+        """Move list states to cpu to save GPU memory."""
+        for key in self._defaults.keys():
+            current_val = getattr(self, key)
+            if isinstance(current_val, Sequence):
+                setattr(self, key, [cur_v.to("cpu") for cur_v in current_val])
 
     def sync(
         self,

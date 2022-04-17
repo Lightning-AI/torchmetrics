@@ -18,7 +18,7 @@ from torch import Tensor
 
 
 def _auc_update(x: Tensor, y: Tensor) -> Tuple[Tensor, Tensor]:
-    """Updates and returns variables required to compute area under the curve. Checks if the 2 input tenseor have
+    """Updates and returns variables required to compute area under the curve. Checks if the 2 input tenser have
     the same number of elements and if they are 1d.
 
     Args:
@@ -110,7 +110,7 @@ def auc(x: Tensor, y: Tensor, reorder: bool = False) -> Tensor:
         reorder: if True, will reorder the arrays to make it either increasing or decreasing
 
     Return:
-        Tensor containing AUC score (float)
+        Tensor containing AUC score
 
     Raises:
         ValueError:
@@ -118,7 +118,7 @@ def auc(x: Tensor, y: Tensor, reorder: bool = False) -> Tensor:
         ValueError:
             If both ``x`` and ``y`` don't have the same numnber of elements.
         ValueError:
-            If ``x`` tesnsor is neither increasing or decreasing.
+            If ``x`` tesnsor is neither increasing nor decreasing.
 
     Example:
         >>> from torchmetrics.functional import auc

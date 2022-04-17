@@ -22,7 +22,7 @@ from torchmetrics.metric import Metric
 
 class MinMaxMetric(Metric):
     """Wrapper Metric that tracks both the minimum and maximum of a scalar/tensor across an experiment. The min/max
-    value will be updated each time `.compute` is called.
+    value will be updated each time ``.compute`` is called.
 
     Args:
         base_metric:
@@ -33,12 +33,11 @@ class MinMaxMetric(Metric):
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError
-            If ``base_metric` argument is not an subclasses instance of ``torchmetrics.Metric``
+            If ``base_metric` argument is not a subclasses instance of ``torchmetrics.Metric``
 
     Example::
         >>> import torch

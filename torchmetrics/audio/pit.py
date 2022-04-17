@@ -32,8 +32,8 @@ class PermutationInvariantTraining(Metric):
 
     Args:
         metric_func:
-            a metric function accept a batch of target and estimate, i.e. metric_func(preds[:, i, ...],
-            target[:, j, ...]), and returns a batch of metric tensors [batch]
+            a metric function accept a batch of target and estimate,
+            i.e. ``metric_func(preds[:, i, ...], target[:, j, ...])``, and returns a batch of metric tensors ``[batch]``
         eval_func:
             the function to find the best permutation, can be 'min' or 'max', i.e. the smaller the better
             or the larger the better.
@@ -43,8 +43,7 @@ class PermutationInvariantTraining(Metric):
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        kwargs:
-            Additional keyword arguments for either the `metric_func` or distributed communication,
+        kwargs: Additional keyword arguments for either the ``metric_func`` or distributed communication,
             see :ref:`Metric kwargs` for more info.
 
     Returns:
