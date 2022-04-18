@@ -23,6 +23,10 @@ from torchmetrics.utilities.checks import _check_retrieval_inputs
 from torchmetrics.utilities.data import get_group_indexes
 
 
+class MinPrecisionError(Exception):
+    """Bad option `min_precision`"""
+
+
 class RetrievalRecallAtFixedPrecision(Metric):
     """Computes `IR Recall at fixed Precision`_.
 
@@ -85,7 +89,7 @@ class RetrievalRecallAtFixedPrecision(Metric):
 
     def __init__(
         self,
-        min_precision: float,
+        min_precision: float = 0.0,
         max_k: Optional[int] = None,
         adaptive_k: bool = False,
         empty_target_action: str = "neg",
@@ -169,7 +173,13 @@ class RetrievalRecallAtFixedPrecision(Metric):
             item = rp(preds, target, indexes=indexes), rr(preds, target, indexes=indexes), k
             prk.append(item)
 
-        # find best
-        best_recall, _, best_k = max((r, p, k) for p, r, k in prk if p >= self.min_precision)
+        recalls_at_k = [(r, k) for p, r, k in prk if p >= self.min_precision]
 
-        return best_recall, best_k
+        if not recalls_at_k:
+            raise MinPrecisionError(
+                f'Not found recalls to precision: {self.min_precision}. '
+                f'Try lower values.'
+            )
+
+        # return best pair recall, k
+        return max(recalls_at_k)
