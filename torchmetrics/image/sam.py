@@ -29,12 +29,12 @@ class SpectralAngleMapper(Metric):
 
     Args:
         reduction: a method to reduce metric score over labels.
+
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
             - ``'none'`` or ``None``: no reduction will be applied
 
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Return:
         Tensor with SpectralAngleMapper score
@@ -48,9 +48,10 @@ class SpectralAngleMapper(Metric):
         >>> sam(preds, target)
         tensor(0.5943)
 
-    References: Roberta H. Yuhas, Alexander F. H. Goetz and Joe W. Boardman, "Discrimination among semi-arid
-    landscape endmembers using the Spectral Angle Mapper (SAM) algorithm" in PL, Summaries of the Third Annual JPL
-    Airborne Geoscience Workshop, vol. 1, June 1, 1992.
+    References:
+        [1] Roberta H. Yuhas, Alexander F. H. Goetz and Joe W. Boardman, "Discrimination among semi-arid
+        landscape endmembers using the Spectral Angle Mapper (SAM) algorithm" in PL, Summaries of the Third Annual JPL
+        Airborne Geoscience Workshop, vol. 1, June 1, 1992.
     """
 
     preds: List[Tensor]

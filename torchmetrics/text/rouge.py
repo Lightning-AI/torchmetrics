@@ -29,25 +29,25 @@ __doctest_requires__ = {("ROUGEScore",): ["nltk"]}
 
 
 class ROUGEScore(Metric):
-    """`Calculate Rouge Score`_, used for automatic summarization. This implementation should imitate the behaviour
-    of the `rouge-score` package `Python ROUGE Implementation`
+    """`Calculate Rouge Score`_, used for automatic summarization.
+
+    This implementation should imitate the behaviour of the `rouge-score` package `Python ROUGE Implementation`
 
     Args:
-        use_stemmer:
-            Use Porter stemmer to strip word suffixes to improve matching.
-        normalizer:
-            A user's own normalizer function.
+        use_stemmer: Use Porter stemmer to strip word suffixes to improve matching.
+        normalizer: A user's own normalizer function.
             If this is ``None``, replacing any non-alpha-numeric characters with spaces is default.
-            This function must take a `str` and return a `str`.
+            This function must take a ``str`` and return a ``str``.
         tokenizer:
             A user's own tokenizer function. If this is ``None``, spliting by spaces is default
-            This function must take a `str` and return `Sequence[str]`
+            This function must take a `str` and return ``Sequence[str]``
         accumulate:
-            Useful incase of multi-reference rouge score.
+            Useful in case of multi-reference rouge score.
+
             - ``avg`` takes the avg of all references with respect to predictions
             - ``best`` takes the best fmeasure score obtained between prediction and multiple corresponding references.
-        rouge_keys:
-            A list of rouge types to calculate.
+
+        rouge_keys: A list of rouge types to calculate.
             Keys that are allowed are ``rougeL``, ``rougeLsum``, and ``rouge1`` through ``rouge9``.
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
@@ -55,8 +55,7 @@ class ROUGEScore(Metric):
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
         >>> from torchmetrics.text.rouge import ROUGEScore
@@ -138,11 +137,8 @@ class ROUGEScore(Metric):
         """Compute rouge scores.
 
         Args:
-            preds:
-                An iterable of predicted sentences or a single predicted sentence.
-            target:
-                An iterable of iterable of target sentences or an iterable
-                of target sentences or a single target sentence.
+            preds: An iterable of predicted sentences or a single predicted sentence.
+            target: An iterable of target sentences or an iterable of target sentences or a single target sentence.
         """
         if isinstance(target, list) and all(isinstance(tgt, str) for tgt in target):
             target = [target] if isinstance(preds, str) else [[tgt] for tgt in target]

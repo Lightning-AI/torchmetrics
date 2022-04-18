@@ -21,7 +21,7 @@ def retrieval_reciprocal_rank(preds: Tensor, target: Tensor) -> Tensor:
     """Computes reciprocal rank (for information retrieval). See `Mean Reciprocal Rank`_
 
     ``preds`` and ``target`` should be of the same shape and live on the same device. If no ``target`` is ``True``,
-    0 is returned. ``target`` must be either `bool` or `integers` and ``preds`` must be `float`,
+    0 is returned. ``target`` must be either `bool` or `integers` and ``preds`` must be ``float``,
     otherwise an error is raised.
 
     Args:

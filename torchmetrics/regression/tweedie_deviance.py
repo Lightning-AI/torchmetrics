@@ -24,8 +24,7 @@ from torchmetrics.metric import Metric
 
 
 class TweedieDevianceScore(Metric):
-    r"""
-    Computes the `Tweedie Deviance Score`_ between targets and predictions:
+    r"""Computes the `Tweedie Deviance Score`_ between targets and predictions:
 
     .. math::
         deviance\_score(\hat{y},y) =
@@ -46,6 +45,7 @@ class TweedieDevianceScore(Metric):
 
     Args:
         power:
+
             - power < 0 : Extreme stable distribution. (Requires: preds > 0.)
             - power = 0 : Normal distribution. (Requires: targets and preds can be any real numbers.)
             - power = 1 : Poisson distribution. (Requires: targets >= 0 and y_pred > 0.)
@@ -53,14 +53,14 @@ class TweedieDevianceScore(Metric):
             - power = 2 : Gamma distribution. (Requires: targets > 0 and preds > 0.)
             - power = 3 : Inverse Gaussian distribution. (Requires: targets > 0 and preds > 0.)
             - otherwise : Positive stable distribution. (Requires: targets > 0 and preds > 0.)
+
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
 
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
         >>> from torchmetrics import TweedieDevianceScore

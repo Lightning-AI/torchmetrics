@@ -50,8 +50,7 @@ class PeakSignalNoiseRatio(Metric):
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
@@ -71,7 +70,7 @@ class PeakSignalNoiseRatio(Metric):
     """
     min_target: Tensor
     max_target: Tensor
-    higher_is_better = False
+    higher_is_better = True
 
     def __init__(
         self,

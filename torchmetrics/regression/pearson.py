@@ -53,14 +53,12 @@ def _final_aggregation(
 
 
 class PearsonCorrCoef(Metric):
-    r"""
-    Computes `Pearson Correlation Coefficient`_:
+    r"""Computes `Pearson Correlation Coefficient`_:
 
     .. math::
         P_{corr}(x,y) = \frac{cov(x,y)}{\sigma_x \sigma_y}
 
-    Where :math:`y` is a tensor of target values, and :math:`x` is a
-    tensor of predictions.
+    Where :math:`y` is a tensor of target values, and :math:`x` is a tensor of predictions.
 
     Forward accepts
 
@@ -74,8 +72,7 @@ class PearsonCorrCoef(Metric):
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
         >>> from torchmetrics import PearsonCorrCoef

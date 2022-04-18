@@ -39,16 +39,14 @@ class CosineSimilarity(Metric):
     - ``target`` (float tensor): ``(N,d)``
 
     Args:
-        reduction: how to reduce over the batch dimension using 'sum', 'mean' or 'none'
-                    (taking the individual scores)
+        reduction: how to reduce over the batch dimension using 'sum', 'mean' or 'none' (taking the individual scores)
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
 
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
         >>> from torchmetrics import CosineSimilarity

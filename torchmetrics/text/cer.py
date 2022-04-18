@@ -22,9 +22,10 @@ from torchmetrics.metric import Metric
 
 
 class CharErrorRate(Metric):
-    r"""
-    Character error rate (CharErrorRate_) is a metric of the performance of an automatic speech recognition
-    (ASR) system. This value indicates the percentage of characters that were incorrectly predicted.
+    r"""Character Error Rate (CER_) is a metric of the performance of an automatic speech recognition
+    (ASR) system.
+
+    This value indicates the percentage of characters that were incorrectly predicted.
     The lower the value, the better the performance of the ASR system with a CharErrorRate of 0 being
     a perfect score.
     Character error rate can then be computed as:
@@ -33,11 +34,11 @@ class CharErrorRate(Metric):
         CharErrorRate = \frac{S + D + I}{N} = \frac{S + D + I}{S + D + C}
 
     where:
-        - S is the number of substitutions,
-        - D is the number of deletions,
-        - I is the number of insertions,
-        - C is the number of correct characters,
-        - N is the number of characters in the reference (N=S+D+C).
+        - :math:`S` is the number of substitutions,
+        - :math:`D` is the number of deletions,
+        - :math:`I` is the number of insertions,
+        - :math:`C` is the number of correct characters,
+        - :math:`N` is the number of characters in the reference (N=S+D+C).
 
     Compute CharErrorRate score of transcribed segments against references.
 
@@ -48,8 +49,7 @@ class CharErrorRate(Metric):
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Returns:
         Character error rate score

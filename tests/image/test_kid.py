@@ -163,3 +163,28 @@ def test_compare_kid(tmpdir, feature=2048):
 
     assert torch.allclose(tm_mean.cpu(), torch.tensor([torch_fid["kernel_inception_distance_mean"]]), atol=1e-3)
     assert torch.allclose(tm_std.cpu(), torch.tensor([torch_fid["kernel_inception_distance_std"]]), atol=1e-3)
+
+
+@pytest.mark.parametrize("reset_real_features", [True, False])
+def test_reset_real_features_arg(reset_real_features):
+    metric = KernelInceptionDistance(feature=64, reset_real_features=reset_real_features)
+
+    metric.update(torch.randint(0, 180, (2, 3, 299, 299), dtype=torch.uint8), real=True)
+    metric.update(torch.randint(0, 180, (2, 3, 299, 299), dtype=torch.uint8), real=False)
+
+    assert len(metric.real_features) == 1
+    assert list(metric.real_features[0].shape) == [2, 64]
+
+    assert len(metric.fake_features) == 1
+    assert list(metric.fake_features[0].shape) == [2, 64]
+
+    metric.reset()
+
+    # fake features should always reset
+    assert len(metric.fake_features) == 0
+
+    if reset_real_features:
+        assert len(metric.real_features) == 0
+    else:
+        assert len(metric.real_features) == 1
+        assert list(metric.real_features[0].shape) == [2, 64]

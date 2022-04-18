@@ -32,8 +32,7 @@ class CoverageError(Metric):
     cover all true labels. The best value is equal to the average number of labels in the target tensor per sample.
 
     Args:
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
         >>> from torchmetrics import CoverageError
@@ -46,7 +45,7 @@ class CoverageError(Metric):
 
     References:
         [1] Tsoumakas, G., Katakis, I., & Vlahavas, I. (2010). Mining multi-label data. In Data mining and
-            knowledge discovery handbook (pp. 667-685). Springer US.
+        knowledge discovery handbook (pp. 667-685). Springer US.
     """
 
     coverage: Tensor
@@ -83,13 +82,13 @@ class CoverageError(Metric):
 
 
 class LabelRankingAveragePrecision(Metric):
-    """Computes label ranking average precision score for multilabel data [1]. The score is the average over each
-    ground truth label assigned to each sample of the ratio of true vs. total labels with lower score. Best score
-    is 1.
+    """Computes label ranking average precision score for multilabel data [1].
+
+    The score is the average over each ground truth label assigned to each sample of the ratio of true vs.
+    total labels with lower score. Best score is 1.
 
     Args:
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
         >>> from torchmetrics import LabelRankingAveragePrecision
@@ -102,7 +101,7 @@ class LabelRankingAveragePrecision(Metric):
 
     References:
         [1] Tsoumakas, G., Katakis, I., & Vlahavas, I. (2010). Mining multi-label data. In Data mining and
-            knowledge discovery handbook (pp. 667-685). Springer US.
+        knowledge discovery handbook (pp. 667-685). Springer US.
     """
 
     score: Tensor
@@ -144,8 +143,7 @@ class LabelRankingLoss(Metric):
     number of labels not in the label set. The best score is 0.
 
     Args:
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
         >>> from torchmetrics import LabelRankingLoss
@@ -158,7 +156,7 @@ class LabelRankingLoss(Metric):
 
     References:
         [1] Tsoumakas, G., Katakis, I., & Vlahavas, I. (2010). Mining multi-label data. In Data mining and
-            knowledge discovery handbook (pp. 667-685). Springer US.
+        knowledge discovery handbook (pp. 667-685). Springer US.
     """
 
     loss: Tensor

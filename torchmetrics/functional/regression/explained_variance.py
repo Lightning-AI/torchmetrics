@@ -58,11 +58,11 @@ def _explained_variance_compute(
         sum_target: Sum of target values
         sum_squared_target: Sum of squares of target values
         multioutput: Defines aggregation in the case of multiple output scores. Can be one
-            of the following strings (default is `'uniform_average'`.):
+            of the following strings:
 
-            * `'raw_values'` returns full set of scores
-            * `'uniform_average'` scores are uniformly averaged
-            * `'variance_weighted'` scores are weighted by their individual variances
+            * ``'raw_values'`` returns full set of scores
+            * ``'uniform_average'`` scores are uniformly averaged
+            * ``'variance_weighted'`` scores are weighted by their individual variances
 
     Example:
         >>> target = torch.tensor([[0.5, 1], [-1, 1], [7, -6]])
@@ -108,11 +108,11 @@ def explained_variance(
         preds: estimated labels
         target: ground truth labels
         multioutput: Defines aggregation in the case of multiple output scores. Can be one
-            of the following strings (default is `'uniform_average'`.):
+            of the following strings):
 
-            * `'raw_values'` returns full set of scores
-            * `'uniform_average'` scores are uniformly averaged
-            * `'variance_weighted'` scores are weighted by their individual variances
+            * ``'raw_values'`` returns full set of scores
+            * ``'uniform_average'`` scores are uniformly averaged
+            * ``'variance_weighted'`` scores are weighted by their individual variances
 
     Example:
         >>> from torchmetrics.functional import explained_variance

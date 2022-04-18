@@ -21,24 +21,21 @@ from torchmetrics.metric import Metric
 
 
 class MeanSquaredError(Metric):
-    r"""
-    Computes `mean squared error`_ (MSE):
+    r"""Computes `mean squared error`_ (MSE):
 
     .. math:: \text{MSE} = \frac{1}{N}\sum_i^N(y_i - \hat{y_i})^2
 
     Where :math:`y` is a tensor of target values, and :math:`\hat{y}` is a tensor of predictions.
 
     Args:
-        squared:
-            If True returns MSE value, if False returns RMSE value.
+        squared: If True returns MSE value, if False returns RMSE value.
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
 
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
         >>> from torchmetrics import MeanSquaredError

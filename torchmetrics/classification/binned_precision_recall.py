@@ -67,12 +67,11 @@ class BinnedPrecisionRecallCurve(Metric):
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
-            If ``thresholds`` is not a int, list or tensor
+            If ``thresholds`` is not a ``int``, ``list`` or ``tensor``
 
     Example (binary case):
         >>> from torchmetrics import BinnedPrecisionRecallCurve
@@ -200,8 +199,7 @@ class BinnedAveragePrecision(BinnedPrecisionRecallCurve):
     - ``target`` (long tensor): ``(N, ...)`` with integer labels
 
     Args:
-        num_classes: integer with number of classes. Not nessesary to provide
-            for binary problems.
+        num_classes: integer with number of classes. Not nessesary to provide for binary problems.
         thresholds: list or tensor with specific thresholds or a number of bins from linear sampling.
             It is used for computation will lead to more detailed curve and accurate estimates,
             but will be slower and consume more memory
@@ -211,12 +209,11 @@ class BinnedAveragePrecision(BinnedPrecisionRecallCurve):
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
-            If ``thresholds`` is not a list or tensor
+            If ``thresholds`` is not a ``list`` or ``tensor``
 
     Example (binary case):
         >>> from torchmetrics import BinnedAveragePrecision
@@ -256,7 +253,7 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
     - ``target`` (long tensor): ``(N, ...)`` with integer labels
 
     Args:
-        num_classes: integer with number of classes. Provide 1 for for binary problems.
+        num_classes: integer with number of classes. Provide 1 for binary problems.
         min_precision: float value specifying minimum precision threshold.
         thresholds: list or tensor with specific thresholds or a number of bins from linear sampling.
             It is used for computation will lead to more detailed curve and accurate estimates,
@@ -267,8 +264,7 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:

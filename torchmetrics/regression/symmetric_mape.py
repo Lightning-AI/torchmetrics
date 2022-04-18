@@ -23,8 +23,7 @@ from torchmetrics.metric import Metric
 
 
 class SymmetricMeanAbsolutePercentageError(Metric):
-    r"""
-    Computes symmetric mean absolute percentage error (`SMAPE`_).
+    r"""Computes symmetric mean absolute percentage error (`SMAPE`_).
 
     .. math:: \text{SMAPE} = \frac{2}{n}\sum_1^n max(\frac{|   y_i - \hat{y_i} |}{| y_i | + | \hat{y_i} |, \epsilon})
 
@@ -37,8 +36,7 @@ class SymmetricMeanAbsolutePercentageError(Metric):
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Note:
         The epsilon value is taken from `scikit-learn's implementation of SMAPE`_.

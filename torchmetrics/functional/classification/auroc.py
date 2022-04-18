@@ -71,7 +71,7 @@ def _auroc_compute(
             Should be set to ``None`` for binary problems
         average: Defines the reduction that is applied to the output:
         max_fpr: If not ``None``, calculates standardized partial AUC over the
-            range [0, max_fpr]. Should be a float between 0 and 1.
+            range ``[0, max_fpr]``. Should be a float between 0 and 1.
         sample_weights: sample weights for each data point
 
     Example:
@@ -213,7 +213,7 @@ def auroc(
     .. note::
         If either the positive class or negative class is completly missing in the target tensor,
         the auroc score is meaningless in this case and a score of 0 will be returned together
-        with an warning.
+        with a warning.
 
     Args:
         preds: predictions from model (logits or probabilities)
@@ -225,21 +225,23 @@ def auroc(
             this argument should not be set as we iteratively change it in the
             range [0,num_classes-1]
         average:
+
             - ``'micro'`` computes metric globally. Only works for multilabel problems
             - ``'macro'`` computes metric for each class and uniformly averages them
             - ``'weighted'`` computes metric for each class and does a weighted-average,
               where each class is weighted by their support (accounts for class imbalance)
             - ``None`` computes and returns the metric per class
+
         max_fpr:
             If not ``None``, calculates standardized partial AUC over the
-            range [0, max_fpr]. Should be a float between 0 and 1.
+            range ``[0, max_fpr]``. Should be a float between 0 and 1.
         sample_weights: sample weights for each data point
 
     Raises:
         ValueError:
             If ``max_fpr`` is not a ``float`` in the range ``(0, 1]``.
         RuntimeError:
-            If ``PyTorch version`` is ``below 1.6`` since max_fpr requires `torch.bucketize`
+            If ``PyTorch version`` is below 1.6 since max_fpr requires ``torch.bucketize``
             which is not available below 1.6.
         ValueError:
             If ``max_fpr`` is not set to ``None`` and the mode is ``not binary``
