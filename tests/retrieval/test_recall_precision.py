@@ -22,8 +22,7 @@ from torch import Tensor, tensor
 
 from tests import MetricTester
 from tests.helpers import seed_all
-from tests.retrieval.helpers import _irs
-from tests.retrieval.helpers import get_group_indexes
+from tests.retrieval.helpers import _irs, get_group_indexes
 from tests.retrieval.test_precision import _precision_at_k
 from tests.retrieval.test_recall import _recall_at_k
 from torchmetrics import RetrievalRecallAtFixedPrecision
@@ -107,18 +106,13 @@ def test_compute_recall_at_precision_metric():
     assert res == (tensor(0.5000), 1)
 
 
-@pytest.mark.parametrize(
-    "indexes,preds,target",
-    [
-        (i, p,t) for i, p, t in zip(_irs.indexes, _irs.preds, _irs.target)
-    ]
-)
+@pytest.mark.parametrize("indexes,preds,target", [(i, p, t) for i, p, t in zip(_irs.indexes, _irs.preds, _irs.target)])
 @pytest.mark.parametrize("ddp", [False])
 @pytest.mark.parametrize("dist_sync_on_step", [False])
 @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
 @pytest.mark.parametrize("ignore_index", [None, 1])  # avoid setting 0, otherwise test with all 0 targets will fail
 @pytest.mark.parametrize("max_k", [None, 1, 4, 10])
-@pytest.mark.parametrize("min_precision", [.0, .2])
+@pytest.mark.parametrize("min_precision", [0.0, 0.2])
 class TestRetrievalRecallAtFixedPrecision(MetricTester):
     atol = 0.02
 
