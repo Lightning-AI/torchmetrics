@@ -17,29 +17,28 @@ from functools import partial
 from typing import Tuple, Union
 
 import numpy as np
-from numpy import array
 import pytest
 import torch
-from torch import tensor
-from torch import Tensor
+from numpy import array
+from torch import Tensor, tensor
 
 from tests.helpers import seed_all
 from tests.helpers.testers import MetricTester
-from tests.retrieval.test_recall import _recall_at_k
-from tests.retrieval.test_precision import _precision_at_k
 from tests.retrieval.helpers import get_group_indexes
+from tests.retrieval.test_precision import _precision_at_k
+from tests.retrieval.test_recall import _recall_at_k
 from torchmetrics import RetrievalRecallAtFixedPrecision
 
 seed_all(42)
 
 
 def _compute_recall_at_precision_metric(
-        preds: Union[Tensor, array],
-        target: Union[Tensor, array],
-        indexes: Union[Tensor, array] = None,
-        max_k: int = None,
-        min_precision: float = 0.0,
-        ignore_index: int = None,
+    preds: Union[Tensor, array],
+    target: Union[Tensor, array],
+    indexes: Union[Tensor, array] = None,
+    max_k: int = None,
+    min_precision: float = 0.0,
+    ignore_index: int = None,
 ) -> Tuple[Tensor, int]:
     """Compute metric with multiple iterations over every query predictions set."""
     recalls, precisions = [], []
@@ -85,9 +84,7 @@ def _compute_recall_at_precision_metric(
     recalls = tensor(recalls).mean(dim=0)
     precisions = tensor(precisions).mean(dim=0)
 
-    recalls_at_k = [
-        (r, k) for p, r, k in zip(precisions, recalls, max_k_range) if p >= min_precision
-    ]
+    recalls_at_k = [(r, k) for p, r, k in zip(precisions, recalls, max_k_range) if p >= min_precision]
 
     assert recalls_at_k
 

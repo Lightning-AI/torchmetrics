@@ -176,10 +176,7 @@ class RetrievalRecallAtFixedPrecision(Metric):
         recalls_at_k = [(r, k) for p, r, k in prk if p >= self.min_precision]
 
         if not recalls_at_k:
-            raise MinPrecisionError(
-                f'Not found recalls to precision: {self.min_precision}. '
-                f'Try lower values.'
-            )
+            raise MinPrecisionError(f"Not found recalls to precision: {self.min_precision}. " f"Try lower values.")
 
         # return best pair recall, k
         return max(recalls_at_k)
