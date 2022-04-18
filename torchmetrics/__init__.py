@@ -167,6 +167,7 @@ __all__ = [
     "RetrievalPrecision",
     "RetrievalRecall",
     "RetrievalRPrecision",
+    "RetrievalRecallAtFixedPrecision",
     "ROC",
     "SacreBLEUScore",
     "SignalDistortionRatio",
