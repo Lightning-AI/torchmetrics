@@ -144,7 +144,7 @@ class RetrievalRecallAtFixedPrecision(Metric):
         self.preds.append(preds)
         self.target.append(target)
 
-    def compute(self) -> Tuple[Tensor, int]:
+    def compute(self) -> Tuple[Tensor, Tensor]:
         # concat all data
         indexes = torch.cat(self.indexes, dim=0)
         preds = torch.cat(self.preds, dim=0)
@@ -170,13 +170,13 @@ class RetrievalRecallAtFixedPrecision(Metric):
                 ignore_index=self.ignore_index,
                 compute_on_step=self.compute_on_step,
             )
-            item = rp(preds, target, indexes=indexes), rr(preds, target, indexes=indexes), k
+            item = rp(preds, target, indexes=indexes), rr(preds, target, indexes=indexes), tensor(k)
             prk.append(item)
 
         recalls_at_k = [(r, k) for p, r, k in prk if p >= self.min_precision]
 
         if not recalls_at_k:
-            raise MinPrecisionError(f"Not found recalls to precision: {self.min_precision}. " f"Try lower values.")
+            raise MinPrecisionError(f"Not found recalls to precision: {self.min_precision}. Try lower values.")
 
         # return best pair recall, k
         return max(recalls_at_k)
