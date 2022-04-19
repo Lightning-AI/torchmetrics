@@ -16,7 +16,7 @@ import inspect
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from copy import deepcopy
-from typing import Any, Callable, Dict, Generator, List, Optional, Sequence, Union
+from typing import Any, Callable, Dict, Generator, List, Optional, Sequence, Union, no_type_check
 
 import torch
 from torch import Tensor
@@ -74,6 +74,7 @@ class Metric(Module, ABC):
     is_differentiable: Optional[bool] = None
     higher_is_better: Optional[bool] = None
 
+    @no_type_check
     def __init__(
         self,
         **kwargs: Dict[str, Any],
