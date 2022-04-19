@@ -23,7 +23,7 @@ from torch import Tensor, tensor
 
 from tests.helpers import seed_all
 from tests.helpers.testers import Metric, MetricTester
-from tests.retrieval.helpers import _default_metric_class_input_arguments, get_group_indexes, _errors_test_class_metric
+from tests.retrieval.helpers import _default_metric_class_input_arguments, _errors_test_class_metric, get_group_indexes
 from tests.retrieval.test_precision import _precision_at_k
 from tests.retrieval.test_recall import _recall_at_k
 from torchmetrics import RetrievalRecallAtFixedPrecision
@@ -190,17 +190,11 @@ _error_test_class_metric_min_precision = dict(
     argvalues=[
         (
             1.0,
-            tensor([
-                [0, 1, 1, 2, 2, 2]
-            ]),
-            tensor([
-                [0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
-            ]),
-            tensor([
-                [False, False, False, False, False, False]
-            ]),
+            tensor([[0, 1, 1, 2, 2, 2]]),
+            tensor([[0.5, 0.5, 0.5, 0.5, 0.5, 0.5]]),
+            tensor([[False, False, False, False, False, False]]),
         )
-    ]
+    ],
 )
 
 
@@ -209,9 +203,7 @@ _error_test_class_metric_min_precision = dict(
 @pytest.mark.parametrize("max_k", [1, 2, 5, 10])
 @pytest.mark.parametrize(**_error_test_class_metric_min_precision)
 class TestRetrievalRecallAtPrecisionError(RetrievalRecallAtPrecisionMetricTester):
-    def test_min_precision_error(
-        self, indexes, preds, target, empty_target_action, ignore_index, max_k, min_precision
-    ):
+    def test_min_precision_error(self, indexes, preds, target, empty_target_action, ignore_index, max_k, min_precision):
         metric_args = dict(
             max_k=max_k, min_precision=min_precision, empty_target_action=empty_target_action, ignore_index=ignore_index
         )
