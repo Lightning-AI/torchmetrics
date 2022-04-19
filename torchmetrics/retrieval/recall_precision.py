@@ -150,13 +150,16 @@ class RetrievalRecallAtFixedPrecision(Metric):
         preds = torch.cat(self.preds, dim=0)
         target = torch.cat(self.target, dim=0)
 
-        if self.max_k is None:
+        # don't want to change self.max_k
+        max_k = self.max_k
+        if max_k is None:
+            # set max_k as max size of group
             groups = get_group_indexes(indexes)
-            self.max_k = max(map(len, groups))
+            max_k = max(map(len, groups))
 
         # precision recall k
         prk = []
-        for k in torch.arange(1, self.max_k + 1):
+        for k in torch.arange(1, max_k + 1):
             rr = self.retrieval_recall_class(
                 k=k.item(),
                 empty_target_action=self.empty_target_action,

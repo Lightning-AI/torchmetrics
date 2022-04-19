@@ -159,7 +159,7 @@ class RetrievalRecallAtPrecisionMetricTester(MetricTester):
 @pytest.mark.parametrize("dist_sync_on_step", [False])
 @pytest.mark.parametrize("empty_target_action", ["neg", "skip", "pos"])
 @pytest.mark.parametrize("ignore_index", [None, 1])  # avoid setting 0, otherwise test with all 0 targets will fail
-@pytest.mark.parametrize("max_k", [1, 2, 5, 10])
+@pytest.mark.parametrize("max_k", [None, 1, 2, 5, 10])
 @pytest.mark.parametrize("min_precision", [0.0])
 @pytest.mark.parametrize(**_default_metric_class_input_arguments)
 class TestRetrievalRecallAtPrecision(RetrievalRecallAtPrecisionMetricTester):
