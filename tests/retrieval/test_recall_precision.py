@@ -23,7 +23,7 @@ from torch import Tensor, tensor
 
 from tests.helpers import seed_all
 from tests.helpers.testers import Metric, MetricTester
-from tests.retrieval.helpers import _default_metric_class_input_arguments, get_group_indexes
+from tests.retrieval.helpers import _default_metric_class_input_arguments, get_group_indexes, _errors_test_class_metric
 from tests.retrieval.test_precision import _precision_at_k
 from tests.retrieval.test_recall import _recall_at_k
 from torchmetrics import RetrievalRecallAtFixedPrecision
@@ -181,4 +181,46 @@ class TestRetrievalRecallAtPrecision(RetrievalRecallAtPrecisionMetricTester):
             sk_metric=_compute_recall_at_precision_metric,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
+        )
+
+
+# guarantied zero precision value
+_error_test_class_metric_min_precision = dict(
+    argnames="min_precision,indexes,preds,target",
+    argvalues=[
+        (
+            1.0,
+            tensor([
+                [0, 1, 1, 2, 2, 2]
+            ]),
+            tensor([
+                [0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
+            ]),
+            tensor([
+                [False, False, False, False, False, False]
+            ]),
+        )
+    ]
+)
+
+
+@pytest.mark.parametrize("empty_target_action", ["neg", "skip", "pos"])
+@pytest.mark.parametrize("ignore_index", [None, 1])  # avoid setting 0, otherwise test with all 0 targets will fail
+@pytest.mark.parametrize("max_k", [1, 2, 5, 10])
+@pytest.mark.parametrize(**_error_test_class_metric_min_precision)
+class TestRetrievalRecallAtPrecisionError(RetrievalRecallAtPrecisionMetricTester):
+    def test_min_precision_error(
+        self, indexes, preds, target, empty_target_action, ignore_index, max_k, min_precision
+    ):
+        metric_args = dict(
+            max_k=max_k, min_precision=min_precision, empty_target_action=empty_target_action, ignore_index=ignore_index
+        )
+
+        _errors_test_class_metric(
+            indexes=indexes,
+            preds=preds,
+            target=target,
+            metric_class=RetrievalRecallAtFixedPrecision,
+            metric_args=metric_args,
+            exception_type=MinPrecisionError,
         )
