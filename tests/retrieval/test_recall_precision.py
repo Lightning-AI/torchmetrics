@@ -18,6 +18,7 @@ from typing import Callable, Tuple, Union
 import numpy as np
 import pytest
 from numpy import array
+import torch
 from torch import Tensor, tensor
 
 from tests.helpers import seed_all
@@ -69,7 +70,7 @@ def _compute_recall_at_precision_metric(
     if max_k is None:
         max_k = max(map(len, groups))
 
-    max_k_range = list(range(1, max_k + 1))
+    max_k_range = torch.arange(1, max_k + 1)
 
     for group in groups:
         trg, prd = target[group], preds[group]
@@ -89,8 +90,8 @@ def _compute_recall_at_precision_metric(
 
         else:
             for k in max_k_range:
-                r.append(_recall_at_k(trg, prd, k=k))
-                p.append(_precision_at_k(trg, prd, k=k))
+                r.append(_recall_at_k(trg, prd, k=k.item()))
+                p.append(_precision_at_k(trg, prd, k=k.item()))
 
             recalls.append(r)
             precisions.append(p)
@@ -101,7 +102,7 @@ def _compute_recall_at_precision_metric(
     recalls = tensor(recalls).mean(dim=0)
     precisions = tensor(precisions).mean(dim=0)
 
-    recalls_at_k = [(r, tensor(k)) for p, r, k in zip(precisions, recalls, max_k_range) if p >= min_precision]
+    recalls_at_k = [(r, k) for p, r, k in zip(precisions, recalls, max_k_range) if p >= min_precision]
 
     if not recalls_at_k:
         raise MinPrecisionError(f"Not found recalls to precision: {min_precision}. Try lower values.")

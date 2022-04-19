@@ -156,21 +156,21 @@ class RetrievalRecallAtFixedPrecision(Metric):
 
         # precision recall k
         prk = []
-        for k in range(1, self.max_k + 1):
+        for k in torch.arange(1, self.max_k + 1):
             rr = self.retrieval_recall_class(
-                k=k,
+                k=k.item(),
                 empty_target_action=self.empty_target_action,
                 ignore_index=self.ignore_index,
                 compute_on_step=self.compute_on_step,
             )
             rp = self.retrieval_precision_class(
-                k=k,
+                k=k.item(),
                 adaptive_k=self.adaptive_k,
                 empty_target_action=self.empty_target_action,
                 ignore_index=self.ignore_index,
                 compute_on_step=self.compute_on_step,
             )
-            item = rp(preds, target, indexes=indexes), rr(preds, target, indexes=indexes), tensor(k)
+            item = rp(preds, target, indexes=indexes), rr(preds, target, indexes=indexes), k
             prk.append(item)
 
         recalls_at_k = [(r, k) for p, r, k in prk if p >= self.min_precision]
