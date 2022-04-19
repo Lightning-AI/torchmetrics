@@ -123,7 +123,7 @@ def test_compute_recall_at_precision_metric():
         max_k,
         min_precision,
     )
-    assert res == (tensor(0.5000), 1)
+    assert res == (tensor(0.5000), tensor(1))
 
 
 class RetrievalRecallAtPrecisionMetricTester(MetricTester):
