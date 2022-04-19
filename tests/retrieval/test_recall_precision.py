@@ -128,16 +128,16 @@ def test_compute_recall_at_precision_metric():
 
 class RetrievalRecallAtPrecisionMetricTester(MetricTester):
     def run_class_metric_test(
-            self,
-            ddp: bool,
-            indexes: Tensor,
-            preds: Tensor,
-            target: Tensor,
-            metric_class: Metric,
-            sk_metric: Callable,
-            dist_sync_on_step: bool,
-            metric_args: dict,
-            reverse: bool = False,
+        self,
+        ddp: bool,
+        indexes: Tensor,
+        preds: Tensor,
+        target: Tensor,
+        metric_class: Metric,
+        sk_metric: Callable,
+        dist_sync_on_step: bool,
+        metric_args: dict,
+        reverse: bool = False,
     ):
         _sk_metric_adapted = partial(sk_metric, reverse=reverse, **metric_args)
 
