@@ -74,7 +74,7 @@ class Metric(Module, ABC):
     is_differentiable: Optional[bool] = None
     higher_is_better: Optional[bool] = None
 
-    @no_type_check
+    @no_type_check  # TODO: remove when compute_on_step is removed from codebase
     def __init__(
         self,
         **kwargs: Dict[str, Any],
