@@ -82,7 +82,7 @@ class RetrievalRecallAtFixedPrecision(Metric):
         >>> target = tensor([True, False, False, True, True, False, True])
         >>> r = RetrievalRecallAtFixedPrecision(min_precision=0.8)
         >>> r(preds, target, indexes=indexes)
-        (tensor(0.5000), 1)
+        (tensor(0.5000), tensor(1))
     """
 
     higher_is_better = True
