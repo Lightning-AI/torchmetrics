@@ -17,8 +17,8 @@ from typing import Callable, Tuple, Union
 
 import numpy as np
 import pytest
-from numpy import array
 import torch
+from numpy import array
 from torch import Tensor, tensor
 
 from tests.helpers import seed_all
