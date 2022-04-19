@@ -12,20 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-from typing import Tuple, Union
+from functools import partial
+from typing import Callable, Tuple, Union
 
 import numpy as np
 import pytest
 from numpy import array
 from torch import Tensor, tensor
 
-from tests import MetricTester
 from tests.helpers import seed_all
-from tests.retrieval.helpers import _irs, get_group_indexes
+from tests.helpers.testers import Metric, MetricTester
+from tests.retrieval.helpers import _default_metric_class_input_arguments, get_group_indexes
 from tests.retrieval.test_precision import _precision_at_k
 from tests.retrieval.test_recall import _recall_at_k
 from torchmetrics import RetrievalRecallAtFixedPrecision
+from torchmetrics.retrieval.recall_precision import MinPrecisionError
 
 seed_all(42)
 
@@ -37,7 +38,9 @@ def _compute_recall_at_precision_metric(
     max_k: int = None,
     min_precision: float = 0.0,
     ignore_index: int = None,
-) -> Tuple[Tensor, int]:
+    empty_target_action: str = "skip",
+    reverse: bool = False,
+) -> Tuple[Tensor, Tensor]:
     """Compute metric with multiple iterations over every query predictions set."""
     recalls, precisions = [], []
 
@@ -72,19 +75,36 @@ def _compute_recall_at_precision_metric(
         trg, prd = target[group], preds[group]
         r, p = [], []
 
-        for k in max_k_range:
-            r.append(_recall_at_k(trg, prd, k=k))
-            p.append(_precision_at_k(trg, prd, k=k))
+        if ((1 - trg) if reverse else trg).sum() == 0:
+            if empty_target_action == "skip":
+                pass
+            elif empty_target_action == "pos":
+                arr = [1.0] * max_k
+                recalls.append(arr)
+                precisions.append(arr)
+            elif empty_target_action == "neg":
+                arr = [0.0] * max_k
+                recalls.append(arr)
+                precisions.append(arr)
 
-        recalls.append(r)
-        precisions.append(p)
+        else:
+            for k in max_k_range:
+                r.append(_recall_at_k(trg, prd, k=k))
+                p.append(_precision_at_k(trg, prd, k=k))
+
+            recalls.append(r)
+            precisions.append(p)
+
+    if not recalls:
+        return tensor(0.0), tensor(max_k)
 
     recalls = tensor(recalls).mean(dim=0)
     precisions = tensor(precisions).mean(dim=0)
 
-    recalls_at_k = [(r, k) for p, r, k in zip(precisions, recalls, max_k_range) if p >= min_precision]
+    recalls_at_k = [(r, tensor(k)) for p, r, k in zip(precisions, recalls, max_k_range) if p >= min_precision]
 
-    assert recalls_at_k
+    if not recalls_at_k:
+        raise MinPrecisionError(f"Not found recalls to precision: {min_precision}. Try lower values.")
 
     return max(recalls_at_k)
 
@@ -106,19 +126,50 @@ def test_compute_recall_at_precision_metric():
     assert res == (tensor(0.5000), 1)
 
 
-@pytest.mark.parametrize("indexes,preds,target", [(i, p, t) for i, p, t in zip(_irs.indexes, _irs.preds, _irs.target)])
+class RetrievalRecallAtPrecisionMetricTester(MetricTester):
+    def run_class_metric_test(
+            self,
+            ddp: bool,
+            indexes: Tensor,
+            preds: Tensor,
+            target: Tensor,
+            metric_class: Metric,
+            sk_metric: Callable,
+            dist_sync_on_step: bool,
+            metric_args: dict,
+            reverse: bool = False,
+    ):
+        _sk_metric_adapted = partial(sk_metric, reverse=reverse, **metric_args)
+
+        super().run_class_metric_test(
+            ddp=ddp,
+            preds=preds,
+            target=target,
+            metric_class=metric_class,
+            sk_metric=_sk_metric_adapted,
+            dist_sync_on_step=dist_sync_on_step,
+            metric_args=metric_args,
+            fragment_kwargs=True,
+            indexes=indexes,  # every additional argument will be passed to metric_class and _sk_metric_adapted
+        )
+
+
 @pytest.mark.parametrize("ddp", [False])
 @pytest.mark.parametrize("dist_sync_on_step", [False])
-@pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
+@pytest.mark.parametrize("empty_target_action", ["neg", "skip", "pos"])
 @pytest.mark.parametrize("ignore_index", [None, 1])  # avoid setting 0, otherwise test with all 0 targets will fail
-@pytest.mark.parametrize("max_k", [None, 1, 4, 10])
-@pytest.mark.parametrize("min_precision", [0.0, 0.2])
-class TestRetrievalRecallAtFixedPrecision(MetricTester):
+@pytest.mark.parametrize("max_k", [1, 2, 5, 10])
+@pytest.mark.parametrize("min_precision", [0.0])
+@pytest.mark.parametrize(**_default_metric_class_input_arguments)
+class TestRetrievalRecallAtPrecision(RetrievalRecallAtPrecisionMetricTester):
     atol = 0.02
 
-    def test_12312312(
+    def test_class_metric(
         self, indexes, preds, target, ddp, dist_sync_on_step, empty_target_action, ignore_index, max_k, min_precision
     ):
+        metric_args = dict(
+            max_k=max_k, min_precision=min_precision, empty_target_action=empty_target_action, ignore_index=ignore_index
+        )
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -128,10 +179,5 @@ class TestRetrievalRecallAtFixedPrecision(MetricTester):
             metric_class=RetrievalRecallAtFixedPrecision,
             sk_metric=_compute_recall_at_precision_metric,
             dist_sync_on_step=dist_sync_on_step,
-            metric_args={
-                "max_k": max_k,
-                "min_precision": min_precision,
-                "ignore_index": ignore_index,
-                "empty_target_action": empty_target_action,
-            },
+            metric_args=metric_args,
         )
