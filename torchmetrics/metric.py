@@ -76,7 +76,7 @@ class Metric(Module, ABC):
 
     def __init__(
         self,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__()
 
