@@ -198,7 +198,7 @@ _error_test_class_metric_min_precision = dict(
 )
 
 
-@pytest.mark.parametrize("empty_target_action", ["neg", "skip", "pos"])
+@pytest.mark.parametrize("empty_target_action", ["neg", "skip"])  # "pos" action cause to 1.0 precision value
 @pytest.mark.parametrize("ignore_index", [None, 1])  # avoid setting 0, otherwise test with all 0 targets will fail
 @pytest.mark.parametrize("max_k", [1, 2, 5, 10])
 @pytest.mark.parametrize(**_error_test_class_metric_min_precision)
