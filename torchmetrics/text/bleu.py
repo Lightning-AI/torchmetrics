@@ -17,7 +17,6 @@
 # Date: 2020-07-18
 # Link: https://pytorch.org/text/_modules/torchtext/data/metrics.html#bleu_score
 from typing import Any, Dict, Optional, Sequence
-from warnings import warn
 
 import torch
 from torch import Tensor, tensor
@@ -71,10 +70,6 @@ class BLEUScore(Metric):
         **kwargs: Dict[str, Any],
     ):
         super().__init__(compute_on_step=compute_on_step, **kwargs)
-        warn(
-            "Input order of targets and preds were changed to predictions firsts and targets second in v0.7."
-            " Warning will be removed in v0.8."
-        )
         self.n_gram = n_gram
         self.smooth = smooth
 
