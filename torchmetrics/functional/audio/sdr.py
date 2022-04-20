@@ -44,11 +44,11 @@ else:
     toeplitz_conjugate_gradient = None
 
 
-def _symmetric_toeplitz(v: Tensor) -> Tensor:
-    """Construct a symmetric Toeplitz matrix using v.
+def _symmetric_toeplitz(vector: Tensor) -> Tensor:
+    """Construct a symmetric Toeplitz matrix using one vector.
 
     Args:
-        v: shape [..., L]
+        vector: shape [..., L]
 
     Example:
         >>> from torchmetrics.functional.audio.sdr import _symmetric_toeplitz
@@ -64,9 +64,9 @@ def _symmetric_toeplitz(v: Tensor) -> Tensor:
     Returns:
         a symmetric Toeplitz matrix of shape [..., L, L]
     """
-    vals = torch.cat([torch.flip(v, dims=(-1,)), v[..., 1:]], dim=-1)
-    L = v.shape[-1]
-    return torch.as_strided(vals, size=vals.shape[:-1] + (L, L), stride=vals.stride()[:-1] + (1, 1)).flip(dims=(-1,))
+    vec_exp = torch.cat([torch.flip(vector, dims=(-1,)), vector[..., 1:]], dim=-1)
+    v_len = vector.shape[-1]
+    return torch.as_strided(vec_exp, size=vec_exp.shape[:-1] + (v_len, v_len), stride=vec_exp.stride()[:-1] + (1, 1)).flip(dims=(-1,))
 
 
 def _compute_autocorr_crosscorr(
