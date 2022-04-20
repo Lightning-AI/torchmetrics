@@ -74,35 +74,34 @@ def _symmetric_toeplitz(vector: Tensor) -> Tensor:
 def _compute_autocorr_crosscorr(
     target: torch.Tensor,
     preds: torch.Tensor,
-    L: int,
+    corr_len: int,
 ) -> Tuple[torch.Tensor, torch.Tensor]:
     r"""Compute the auto correlation of `target` and the cross correlation of `target` and `preds` using the fast
     Fourier transform (FFT). Let's denotes the symmetric Toeplitz matric of the auto correlation of `target` as
     `R`, the cross correlation as 'b', then solving the equation `Rh=b` could have `h` as the coordinate of
-    `preds` in the column space of the L shifts of `target`.
+    `preds` in the column space of the `corr_len` shifts of `target`.
 
     Args:
         target: the target (reference) signal of shape [..., time]
         preds: the preds (estimated) signal of shape [..., time]
-        L: the length of the auto correlation and cross correlation
+        corr_len: the length of the auto correlation and cross correlation
 
     Returns:
-        the auto correlation of `target` of shape [..., L]
-        the cross correlation of `target` and `preds` of shape [..., L]
+        the auto correlation of `target` of shape [..., corr_len]
+        the cross correlation of `target` and `preds` of shape [..., corr_len]
     """
     # the valid length for the signal after convolution
     n_fft = 2 ** math.ceil(math.log2(preds.shape[-1] + target.shape[-1] - 1))
 
     # computes the auto correlation of `target`
-    T = torch.fft.rfft(target, n=n_fft, dim=-1)
-    # R_0 is the first row of the symmetric Toeplitz matric
-    R_0 = torch.fft.irfft(T.real**2 + T.imag**2, n=n_fft)[..., :L]
+    t_fft = torch.fft.rfft(target, n=n_fft, dim=-1)
+    # r_0 is the first row of the symmetric Toeplitz matric
+    r_0 = torch.fft.irfft(t_fft.real**2 + t_fft.imag**2, n=n_fft)[..., :corr_len]
 
     # computes the cross-correlation of `target` and `preds`
-    P = torch.fft.rfft(preds, n=n_fft, dim=-1)
-    TP = T.conj() * P
-    b = torch.fft.irfft(TP, n=n_fft, dim=-1)[..., :L]
-    return R_0, b
+    p_fft = torch.fft.rfft(preds, n=n_fft, dim=-1)
+    b = torch.fft.irfft(t_fft.conj() * p_fft, n=n_fft, dim=-1)[..., :corr_len]
+    return r_0, b
 
 
 def signal_distortion_ratio(
@@ -189,15 +188,15 @@ def signal_distortion_ratio(
 
     # solve for the optimal filter
     # compute auto-correlation and cross-correlation
-    R_0, b = _compute_autocorr_crosscorr(target, preds, L=filter_length)
+    r_0, b = _compute_autocorr_crosscorr(target, preds, corr_len=filter_length)
 
     if load_diag is not None:
-        # the diagonal factor of the Toeplitz matrix is the first coefficient of R_0
-        R_0[..., 0] += load_diag
+        # the diagonal factor of the Toeplitz matrix is the first coefficient of r_0
+        r_0[..., 0] += load_diag
 
     if use_cg_iter is not None and _FAST_BSS_EVAL_AVAILABLE and _TORCH_GREATER_EQUAL_1_8:
         # use preconditioned conjugate gradient
-        sol = toeplitz_conjugate_gradient(R_0, b, n_iter=use_cg_iter)
+        sol = toeplitz_conjugate_gradient(r_0, b, n_iter=use_cg_iter)
     else:
         if use_cg_iter is not None:
             if not _FAST_BSS_EVAL_AVAILABLE:
@@ -216,8 +215,8 @@ def signal_distortion_ratio(
                     UserWarning,
                 )
         # regular matrix solver
-        R = _symmetric_toeplitz(R_0)  # the auto-correlation of the L shifts of `target`
-        sol = solve(R, b)
+        r = _symmetric_toeplitz(r_0)  # the auto-correlation of the L shifts of `target`
+        sol = solve(r, b)
 
     # compute the coherence
     coh = torch.einsum("...l,...l->...", b, sol)
