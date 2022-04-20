@@ -17,7 +17,6 @@ from torch import Tensor, tensor
 
 from torchmetrics.functional.audio.sdr import scale_invariant_signal_distortion_ratio, signal_distortion_ratio
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.imports import _FAST_BSS_EVAL_AVAILABLE
 
 __doctest_requires__ = {"SignalDistortionRatio": ["fast_bss_eval"]}
 
@@ -97,11 +96,6 @@ class SignalDistortionRatio(Metric):
         compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        if not _FAST_BSS_EVAL_AVAILABLE:
-            raise ModuleNotFoundError(
-                "SDR metric requires that `fast-bss-eval` is installed."
-                " Either install as `pip install torchmetrics[audio]` or `pip install fast-bss-eval`."
-            )
         super().__init__(compute_on_step=compute_on_step, **kwargs)
 
         self.use_cg_iter = use_cg_iter
