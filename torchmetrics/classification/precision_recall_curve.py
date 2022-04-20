@@ -42,11 +42,6 @@ class PrecisionRecallCurve(Metric):
         pos_label: integer determining the positive class. Default is ``None`` which for binary problem is translated
             to 1. For multiclass problems this argument should not be set as we iteratively change it in the range
             ``[0, num_classes-1]``
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
@@ -88,10 +83,9 @@ class PrecisionRecallCurve(Metric):
         self,
         num_classes: Optional[int] = None,
         pos_label: Optional[int] = None,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
 
         self.num_classes = num_classes
         self.pos_label = pos_label
