@@ -201,37 +201,32 @@ class Metric(Module, ABC):
 
         Returns the metric value over inputs if ``compute_on_step`` is True.
         """
-        # add current step
+        # check if states are already synced
         if self._is_synced:
             raise TorchMetricsUserError(
-                "The Metric shouldn't be synced when performing ``update``. "
+                "The Metric shouldn't be synced when performing ``forward``. "
                 "HINT: Did you forget to call ``unsync`` ?."
             )
+        # store global state and reset to default
+        global_state = {attr: getattr(self, attr) for attr in self._defaults.keys()}
+        self.reset()
 
-        # global accumulation
-        self.update(*args, **kwargs)
-
-        self._to_sync = self.dist_sync_on_step  # type: ignore
-        # skip restore cache operation from compute as cache is stored below.
+        # local syncronization settings
+        self._to_sync = self.dist_sync_on_step
         self._should_unsync = False
-        # skip computing on cpu for the batch
         _temp_compute_on_cpu = self.compute_on_cpu
         self.compute_on_cpu = False
-
-        # save context before switch
-        cache = {attr: getattr(self, attr) for attr in self._defaults}
-
-        # call reset, update, compute, on single batch
         self._enable_grad = True  # allow grads for batch computation
-        self.reset()
+
+        # calculate batch state and compute batch value
         self.update(*args, **kwargs)
         self._forward_cache = self.compute()
 
-        # restore context
-        for attr, val in cache.items():
-            setattr(self, attr, val)
-        self._is_synced = False
+        # reduce batch and global state
+        self._reduce_state(global_state)
 
+        # restore context
+        self._is_synced = False
         self._should_unsync = True
         self._to_sync = True
         self._computed = None
@@ -239,6 +234,18 @@ class Metric(Module, ABC):
         self.compute_on_cpu = _temp_compute_on_cpu
 
         return self._forward_cache
+
+    def _reduce_state(self, state_to_reduce: Dict[str, Any]) -> None:
+        for attr in self._defaults.keys():
+            current_state = getattr(self, attr)
+            incoming_state = state_to_reduce[attr]
+            reduce_fn = self._reductions[attr]
+            if isinstance(current_state, Tensor):
+                values = torch.stack([current_state, incoming_state])
+            else:
+                values = _flatten([current_state, incoming_state])
+            reduced = reduce_fn(values) if reduce_fn is not None else values
+            setattr(self, attr, reduced if isinstance(current_state, Tensor) else [reduced])
 
     def _sync_dist(self, dist_sync_fn: Callable = gather_all_tensors, process_group: Optional[Any] = None) -> None:
         input_dict = {attr: getattr(self, attr) for attr in self._reductions}
