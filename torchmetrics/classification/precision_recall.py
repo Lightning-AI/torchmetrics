@@ -89,12 +89,6 @@ class Precision(StatScores):
             :ref:`documentation section <pages/classification:using the multiclass parameter>`
             for a more detailed explanation and examples.
 
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -126,7 +120,6 @@ class Precision(StatScores):
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
         multiclass: Optional[bool] = None,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
         allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
@@ -141,7 +134,6 @@ class Precision(StatScores):
             num_classes=num_classes,
             multiclass=multiclass,
             ignore_index=ignore_index,
-            compute_on_step=compute_on_step,
             **kwargs,
         )
 
@@ -231,12 +223,6 @@ class Recall(StatScores):
             :ref:`documentation section <pages/classification:using the multiclass parameter>`
             for a more detailed explanation and examples.
 
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -268,7 +254,6 @@ class Recall(StatScores):
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
         multiclass: Optional[bool] = None,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
         allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
@@ -283,7 +268,6 @@ class Recall(StatScores):
             num_classes=num_classes,
             multiclass=multiclass,
             ignore_index=ignore_index,
-            compute_on_step=compute_on_step,
             **kwargs,
         )
 
