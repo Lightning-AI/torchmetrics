@@ -116,7 +116,7 @@ class BinnedPrecisionRecallCurve(Metric):
     def __init__(
         self,
         num_classes: int,
-        thresholds: Union[int, Tensor, List[float], None] = None,
+        thresholds: Union[int, Tensor, List[float]] = 100,
         **kwargs: Dict[str, Any],
     ) -> None:
         super().__init__(**kwargs)
@@ -278,7 +278,7 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
         self,
         num_classes: int,
         min_precision: float,
-        thresholds: Union[int, Tensor, List[float], None] = None,
+        thresholds: Union[int, Tensor, List[float]] = 100,
         **kwargs: Dict[str, Any],
     ) -> None:
         super().__init__(num_classes=num_classes, thresholds=thresholds, **kwargs)
