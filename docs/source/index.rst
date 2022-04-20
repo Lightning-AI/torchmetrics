@@ -199,13 +199,27 @@ Or directly from conda
    text/*
 
 .. toctree::
+   :maxdepth: 2
+   :name: aggregation
+   :caption: Aggregation
+   :glob:
+
+   aggregation/*
+
+.. toctree::
+   :maxdepth: 2
+   :name: wrappers
+   :caption: Wrappers
+   :glob:
+
+   wrappers/*
+
+.. toctree::
    :maxdepth: 3
    :name: metrics
    :caption: API Reference
 
    references/metric
-   references/aggregation
-   references/wrappers
    references/utilities
 
 .. toctree::
