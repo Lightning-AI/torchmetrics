@@ -59,12 +59,6 @@ class JaccardIndex(ConfusionMatrix):
             - ``'sum'``: takes the sum
             - ``'none'``: no reduction will be applied
 
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
@@ -88,7 +82,6 @@ class JaccardIndex(ConfusionMatrix):
         threshold: float = 0.5,
         multilabel: bool = False,
         reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
         super().__init__(
@@ -96,7 +89,6 @@ class JaccardIndex(ConfusionMatrix):
             normalize=None,
             threshold=threshold,
             multilabel=multilabel,
-            compute_on_step=compute_on_step,
             **kwargs,
         )
         self.reduction = reduction

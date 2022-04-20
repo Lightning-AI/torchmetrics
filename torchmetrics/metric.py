@@ -13,7 +13,6 @@
 # limitations under the License.
 import functools
 import inspect
-import warnings
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from copy import deepcopy
@@ -61,36 +60,6 @@ class Metric(Module, ABC):
         automatically calls ``update()`` and also returns the metric value at the current step.
 
     Args:
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
-        dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step.
-
-            .. deprecated:: v0.8
-                Argument is deprecated and will be removed in v0.9 in favour of instead
-                passing it in as keyword argument.
-
-        process_group:
-            Specify the process group on which synchronization is called. Defaults is `None`
-            which selects the entire world
-
-            .. deprecated:: v0.8
-                Argument is deprecated and will be removed in v0.9 in favour of instead
-                passing it in as keyword argument.
-
-        dist_sync_fn:
-            Callback that performs the allgather operation on the metric state. When `None`, DDP
-            will be used to perform the allgather.
-
-            .. deprecated:: v0.8
-                Argument is deprecated and will be removed in v0.9 in favour of instead
-                passing it in as keyword argument.
-
         kwargs: additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
             - compute_on_cpu: If metric state should be stored on CPU during computations. Only works
@@ -107,8 +76,7 @@ class Metric(Module, ABC):
 
     def __init__(
         self,
-        compute_on_step: Optional[bool] = None,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__()
 
@@ -118,10 +86,6 @@ class Metric(Module, ABC):
 
         self._device = torch.device("cpu")
 
-        if compute_on_step is not None:
-            warnings.warn(
-                "Argument `compute_on_step` is deprecated in v0.8 and will be removed in v0.9", DeprecationWarning
-            )
         self.compute_on_cpu = kwargs.pop("compute_on_cpu", False)
         if not isinstance(self.compute_on_cpu, bool):
             raise ValueError(
