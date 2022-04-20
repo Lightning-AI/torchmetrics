@@ -66,7 +66,9 @@ def _symmetric_toeplitz(vector: Tensor) -> Tensor:
     """
     vec_exp = torch.cat([torch.flip(vector, dims=(-1,)), vector[..., 1:]], dim=-1)
     v_len = vector.shape[-1]
-    return torch.as_strided(vec_exp, size=vec_exp.shape[:-1] + (v_len, v_len), stride=vec_exp.stride()[:-1] + (1, 1)).flip(dims=(-1,))
+    return torch.as_strided(
+        vec_exp, size=vec_exp.shape[:-1] + (v_len, v_len), stride=vec_exp.stride()[:-1] + (1, 1)
+    ).flip(dims=(-1,))
 
 
 def _compute_autocorr_crosscorr(
