@@ -198,14 +198,14 @@ def signal_distortion_ratio(
         sol = toeplitz_conjugate_gradient(R_0, b, n_iter=use_cg_iter)
     else:
         if use_cg_iter is not None:
-            if _FAST_BSS_EVAL_AVAILABLE is False:
+            if not _FAST_BSS_EVAL_AVAILABLE:
                 warnings.warn(
                     "The `use_cg_iter` parameter of `SDR` requires that `fast-bss-eval` is installed. "
                     "To dispear this warning, you could install `fast-bss-eval` using `pip install fast-bss-eval` "
                     "or set `use_cg_iter=None`. For this time, the solver provided by Pytorch is used.",
                     UserWarning,
                 )
-            elif _TORCH_GREATER_EQUAL_1_8 is False:
+            elif not _TORCH_GREATER_EQUAL_1_8:
                 warnings.warn(
                     "The `use_cg_iter` parameter of `SDR` requires a Pytorch version >= 1.8. "
                     "To dispear this warning, you could change to Pytorch v1.8+ or set `use_cg_iter=None`. "
