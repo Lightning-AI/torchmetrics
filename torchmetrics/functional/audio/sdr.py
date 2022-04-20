@@ -203,8 +203,9 @@ def signal_distortion_ratio(
             if not _FAST_BSS_EVAL_AVAILABLE:
                 warnings.warn(
                     "The `use_cg_iter` parameter of `SDR` requires that `fast-bss-eval` is installed. "
-                    "To make this this warning disappear, you could install `fast-bss-eval` using `pip install fast-bss-eval` "
-                    "or set `use_cg_iter=None`. For this time, the solver provided by Pytorch is used.",
+                    "To make this this warning disappear, you could install `fast-bss-eval` using "
+                    "`pip install fast-bss-eval` or set `use_cg_iter=None`. For this time, the solver "
+                    "provided by Pytorch is used.",
                     UserWarning,
                 )
             elif not _TORCH_GREATER_EQUAL_1_8:
