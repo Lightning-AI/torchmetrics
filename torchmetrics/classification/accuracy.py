@@ -126,12 +126,6 @@ class Accuracy(StatScores):
               ``preds = preds.flatten()`` and same for ``target``). Note that the ``top_k`` parameter
               still applies in both cases, if set.
 
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -175,7 +169,6 @@ class Accuracy(StatScores):
         top_k: Optional[int] = None,
         multiclass: Optional[bool] = None,
         subset_accuracy: bool = False,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
         allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
@@ -190,7 +183,6 @@ class Accuracy(StatScores):
             num_classes=num_classes,
             multiclass=multiclass,
             ignore_index=ignore_index,
-            compute_on_step=compute_on_step,
             **kwargs,
         )
 
