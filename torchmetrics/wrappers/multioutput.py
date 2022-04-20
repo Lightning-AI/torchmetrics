@@ -26,22 +26,20 @@ class MultioutputWrapper(Metric):
     Several torchmetrics metrics, such as :class:`torchmetrics.regression.spearman.SpearmanCorrcoef` lack support for
     multioutput mode. This class wraps such metrics to support computing one metric per output.
     Unlike specific torchmetric metrics, it doesn't support any aggregation across outputs.
-    This means if you set `num_outputs` to 2, `compute()` will return a Tensor of dimension
-    (2, ...) where ... represents the dimensions the metric returns when not wrapped.
+    This means if you set ``num_outputs`` to 2, ``.compute()`` will return a Tensor of dimension
+    ``(2, ...)`` where ``...`` represents the dimensions the metric returns when not wrapped.
 
     In addition to enabling multioutput support for metrics that lack it, this class also supports, albeit in a crude
     fashion, dealing with missing labels (or other data). When ``remove_nans`` is passed, the class will remove the
     intersection of NaN containing "rows" upon each update for each output. For example, suppose a user uses
     `MultioutputWrapper` to wrap :class:`torchmetrics.regression.r2.R2Score` with 2 outputs, one of which occasionally
-    has missing labels for classes like ``R2Score`` is that this class supports removing NaN values
+    has missing labels for classes like ``R2Score`` is that this class supports removing ``NaN`` values
     (parameter ``remove_nans``) on a per-output basis. When ``remove_nans`` is passed the wrapper will remove all rows
 
     Args:
-        base_metric:
-            Metric being wrapped.
-        num_outputs:
-            Expected dimensionality of the output dimension. This parameter is
-            used to determine the number of distinct metrics we need to track.
+        base_metric: Metric being wrapped.
+        num_outputs: Expected dimensionality of the output dimension.
+            This parameter is used to determine the number of distinct metrics we need to track.
         output_dim:
             Dimension on which output is expected. Note that while this provides some flexibility, the output dimension
             must be the same for all inputs to update. This applies even for metrics such as `Accuracy` where the labels
@@ -49,10 +47,10 @@ class MultioutputWrapper(Metric):
             dimension can be set to -1 for both, even if -1 corresponds to different dimensions in different inputs.
         remove_nans:
             Whether to remove the intersection of rows containing NaNs from the values passed through to each underlying
-            metric. Proper operation requires all tensors passed to update to have dimension `(N, ...)` where N
+            metric. Proper operation requires all tensors passed to update to have dimension ``(N, ...)`` where N
             represents the length of the batch or dataset being passed in.
         squeeze_outputs:
-            If true, will squeeze the 1-item dimensions left after `index_select` is applied.
+            If ``True``, will squeeze the 1-item dimensions left after ``index_select`` is applied.
             This is sometimes unnecessary but harmless for metrics such as `R2Score` but useful
             for certain classification metrics that can't handle additional 1-item dimensions.
 

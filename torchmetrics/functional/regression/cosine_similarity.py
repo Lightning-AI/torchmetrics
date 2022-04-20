@@ -69,8 +69,7 @@ def _cosine_similarity_compute(preds: Tensor, target: Tensor, reduction: Optiona
 
 def cosine_similarity(preds: Tensor, target: Tensor, reduction: Optional[str] = "sum") -> Tensor:
     r"""
-    Computes the `Cosine Similarity`_
-    between targets and predictions:
+    Computes the `Cosine Similarity`_ between targets and predictions:
 
     .. math::
         cos_{sim}(x,y) = \frac{x \cdot y}{||x|| \cdot ||y||} =

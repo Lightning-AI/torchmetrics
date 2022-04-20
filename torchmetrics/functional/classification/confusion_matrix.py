@@ -59,7 +59,8 @@ def _confusion_matrix_compute(confmat: Tensor, normalize: Optional[str] = None) 
 
     Args:
         confmat: Confusion matrix without normalization
-        normalize: Normalization mode for confusion matrix. Choose from
+        normalize: Normalization mode for confusion matrix. Choose from:
+
             - ``None`` or ``'none'``: no normalization (default)
             - ``'true'``: normalization over the targets (most commonly used)
             - ``'pred'``: normalization over the predictions
@@ -131,7 +132,7 @@ def confusion_matrix(
 
     If preds has an extra dimension as in the case of multi-class scores we perform an argmax on ``dim=1``.
 
-    If working with multilabel data, setting the `is_multilabel` argument to `True` will make sure that a
+    If working with multilabel data, setting the ``is_multilabel`` argument to ``True`` will make sure that a
     `confusion matrix gets calculated per label`_.
 
     Args:
@@ -139,7 +140,7 @@ def confusion_matrix(
             ``(N, C, ...)`` where C is the number of classes, tensor with labels/logits/probabilities
         target: ``target`` (long tensor), tensor with shape ``(N, ...)`` with ground true labels
         num_classes: Number of classes in the dataset.
-        normalize: Normalization mode for confusion matrix. Choose from
+        normalize: Normalization mode for confusion matrix. Choose from:
 
             - ``None`` or ``'none'``: no normalization (default)
             - ``'true'``: normalization over the targets (most commonly used)

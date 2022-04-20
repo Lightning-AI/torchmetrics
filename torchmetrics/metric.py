@@ -13,7 +13,6 @@
 # limitations under the License.
 import functools
 import inspect
-import warnings
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from copy import deepcopy
@@ -61,38 +60,10 @@ class Metric(Module, ABC):
         automatically calls ``update()`` and also returns the metric value at the current step.
 
     Args:
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
-        dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step.
-
-            .. deprecated:: v0.8
-                Argument is deprecated and will be removed in v0.9 in favour of instead
-                passing it in as keyword argument.
-
-        process_group:
-            Specify the process group on which synchronization is called. Defaults is `None`
-            which selects the entire world
-
-            .. deprecated:: v0.8
-                Argument is deprecated and will be removed in v0.9 in favour of instead
-                passing it in as keyword argument.
-
-        dist_sync_fn:
-            Callback that performs the allgather operation on the metric state. When `None`, DDP
-            will be used to perform the allgather.
-
-            .. deprecated:: v0.8
-                Argument is deprecated and will be removed in v0.9 in favour of instead
-                passing it in as keyword argument.
-
         kwargs: additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
+            - compute_on_cpu: If metric state should be stored on CPU during computations. Only works
+                for list states.
             - dist_sync_on_step: If metric state should synchronize on ``forward()``
             - process_group: The process group on which the synchronization is called
             - dist_sync_fn: function that performs the allgather option on the metric state
@@ -105,8 +76,7 @@ class Metric(Module, ABC):
 
     def __init__(
         self,
-        compute_on_step: Optional[bool] = None,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__()
 
@@ -116,9 +86,10 @@ class Metric(Module, ABC):
 
         self._device = torch.device("cpu")
 
-        if compute_on_step is not None:
-            warnings.warn(
-                "Argument `compute_on_step` is deprecated in v0.8 and will be removed in v0.9", DeprecationWarning
+        self.compute_on_cpu = kwargs.pop("compute_on_cpu", False)
+        if not isinstance(self.compute_on_cpu, bool):
+            raise ValueError(
+                f"Expected keyword argument `compute_on_cpu` to be an `bool` but got {self.compute_on_cpu}"
             )
 
         self.dist_sync_on_step = kwargs.pop("dist_sync_on_step", False)
@@ -243,6 +214,9 @@ class Metric(Module, ABC):
         self._to_sync = self.dist_sync_on_step  # type: ignore
         # skip restore cache operation from compute as cache is stored below.
         self._should_unsync = False
+        # skip computing on cpu for the batch
+        _temp_compute_on_cpu = self.compute_on_cpu
+        self.compute_on_cpu = False
 
         # save context before switch
         cache = {attr: getattr(self, attr) for attr in self._defaults}
@@ -262,6 +236,7 @@ class Metric(Module, ABC):
         self._to_sync = True
         self._computed = None
         self._enable_grad = False
+        self.compute_on_cpu = _temp_compute_on_cpu
 
         return self._forward_cache
 
@@ -294,13 +269,22 @@ class Metric(Module, ABC):
 
     def _wrap_update(self, update: Callable) -> Callable:
         @functools.wraps(update)
-        def wrapped_func(*args: Any, **kwargs: Any) -> Optional[Any]:
+        def wrapped_func(*args: Any, **kwargs: Any) -> None:
             self._computed = None
             self._update_called = True
             with torch.set_grad_enabled(self._enable_grad):
-                return update(*args, **kwargs)
+                update(*args, **kwargs)
+            if self.compute_on_cpu:
+                self._move_list_states_to_cpu()
 
         return wrapped_func
+
+    def _move_list_states_to_cpu(self) -> None:
+        """Move list states to cpu to save GPU memory."""
+        for key in self._defaults.keys():
+            current_val = getattr(self, key)
+            if isinstance(current_val, Sequence):
+                setattr(self, key, [cur_v.to("cpu") for cur_v in current_val])
 
     def sync(
         self,

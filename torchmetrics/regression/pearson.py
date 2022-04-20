@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 
 import torch
 from torch import Tensor
@@ -53,14 +53,12 @@ def _final_aggregation(
 
 
 class PearsonCorrCoef(Metric):
-    r"""
-    Computes `Pearson Correlation Coefficient`_:
+    r"""Computes `Pearson Correlation Coefficient`_:
 
     .. math::
         P_{corr}(x,y) = \frac{cov(x,y)}{\sigma_x \sigma_y}
 
-    Where :math:`y` is a tensor of target values, and :math:`x` is a
-    tensor of predictions.
+    Where :math:`y` is a tensor of target values, and :math:`x` is a tensor of predictions.
 
     Forward accepts
 
@@ -68,14 +66,7 @@ class PearsonCorrCoef(Metric):
     - ``target``(float tensor): ``(N,)``
 
     Args:
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
         >>> from torchmetrics import PearsonCorrCoef
@@ -99,10 +90,9 @@ class PearsonCorrCoef(Metric):
 
     def __init__(
         self,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
 
         self.add_state("mean_x", default=torch.tensor(0.0), dist_reduce_fx=None)
         self.add_state("mean_y", default=torch.tensor(0.0), dist_reduce_fx=None)

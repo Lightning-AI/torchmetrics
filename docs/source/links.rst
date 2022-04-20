@@ -79,6 +79,12 @@
 .. _ExtendedEditDistance: https://aclanthology.org/W19-5359.pdf
 .. _MultiScaleSSIM: https://ece.uwaterloo.ca/~z70wang/publications/msssim.pdf
 .. _UniversalImageQualityIndex: https://ieeexplore.ieee.org/document/995823
+.. _SpectralDistortionIndex: https://www.semanticscholar.org/paper/Multispectral-and-panchromatic-data-fusion-without-Alparone-Aiazzi/b6db12e3785326577cb95fd743fecbf5bc66c7c9
+.. _WMAPE: https://en.wikipedia.org/wiki/WMAPE
+.. _CER: https://rechtsprechung-im-ostseeraum.archiv.uni-greifswald.de/word-error-rate-character-error-rate-how-to-evaluate-a-model
+.. _MER: https://www.isca-speech.org/archive_v0/archive_papers/interspeech_2004/i04_2765.pdf
+.. _WIL: https://www.isca-speech.org/archive_v0/archive_papers/interspeech_2004/i04_2765.pdf
+.. _WIP: https://infoscience.epfl.ch/record/82766
 .. _InfoLM: https://arxiv.org/pdf/2112.01589.pdf
 .. _alpha divergence: https://static.renyi.hu/renyi_cikkek/1961_on_measures_of_entropy_and_information.pdf
 .. _beta divergence: https://www.sciencedirect.com/science/article/pii/S0047259X08000456

@@ -36,16 +36,16 @@ def _check_shape_and_type_consistency_hinge(
     preds: Tensor,
     target: Tensor,
 ) -> DataType:
-    """Checks shape and type of `preds` and `target` and returns mode of the input tensors.
+    """Checks shape and type of ``preds`` and ``target`` and returns mode of the input tensors.
 
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
 
     Raises:
-        `ValueError`: if `target` is not one dimensional
-        `ValueError`: if `preds` and `target` do not have the same shape in the first dimension
-        `ValueError`: if `pred` is neither one nor two dimensional
+        `ValueError`: if ``target`` is not one dimensional
+        `ValueError`: if ``preds`` and ``target`` do not have the same shape in the first dimension
+        `ValueError`: if ``preds`` is neither one nor two-dimensional
     """
 
     if target.ndim > 1:
@@ -125,7 +125,7 @@ def _hinge_compute(measure: Tensor, total: Tensor) -> Tensor:
     """Computes mean Hinge loss.
 
     Args:
-        measure: Sum over hinge losses for each each observation
+        measure: Sum over hinge losses for each observation
         total: Number of observations
 
     Example:

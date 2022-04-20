@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 import torch
 from torch import Tensor, tensor
@@ -21,9 +21,7 @@ from torchmetrics.metric import Metric
 
 
 class HammingDistance(Metric):
-    r"""
-    Computes the average `Hamming distance`_ (also
-    known as Hamming loss) between targets and predictions:
+    r"""Computes the average `Hamming distance`_ (also known as Hamming loss) between targets and predictions:
 
     .. math::
         \text{Hamming distance} = \frac{1}{N \cdot L}\sum_i^N \sum_l^L 1(y_{il} \neq \hat{y_{il}})
@@ -36,20 +34,14 @@ class HammingDistance(Metric):
     treats each possible label separately - meaning that, for example, multi-class data is
     treated as if it were multi-label.
 
-    Accepts all input types listed in :ref:`references/modules:input types`.
+    Accepts all input types listed in :ref:`pages/classification:input types`.
 
     Args:
         threshold:
-            Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
-            of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
+            Threshold for transforming probability or logit predictions to binary ``(0,1)`` predictions, in the case
+            of binary or multi-label inputs. Default value of ``0.5`` corresponds to input being probabilities.
 
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
@@ -72,10 +64,9 @@ class HammingDistance(Metric):
     def __init__(
         self,
         threshold: float = 0.5,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
 
         self.add_state("correct", default=tensor(0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
@@ -83,9 +74,9 @@ class HammingDistance(Metric):
         self.threshold = threshold
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets. See
-        :ref:`references/modules:input types` for more information on input
-        types.
+        """Update state with predictions and targets.
+
+        See :ref:`pages/classification:input types` for more information on input types.
 
         Args:
             preds: Predictions from model (probabilities, logits or labels)

@@ -11,7 +11,7 @@ The ``torchmetrics`` is a Metrics API created for easy metric development and us
 PyTorch and PyTorch Lightning. It is rigorously tested for all edge cases and includes a growing list of
 common metric implementations.
 
-The metrics API provides ``update()``, ``compute()``, ``reset()`` functions to the user. The metric :ref:`base class <references/modules:base class>` inherits
+The metrics API provides ``update()``, ``compute()``, ``reset()`` functions to the user. The metric :ref:`base class <references/metric:torchmetrics.Metric>` inherits
 :class:`torch.nn.Module` which allows us to call ``metric(...)`` directly. The ``forward()`` method of the base ``Metric`` class
 serves the dual purpose of calling ``update()`` on its input and simultaneously returning the value of the metric over the
 provided input.
@@ -175,9 +175,9 @@ the following limitations:
 * Some metrics does not work at all in half precision on CPU. We have explicitly stated this in their docstring,
   but they are also listed below:
 
-  - :ref:`references/modules:PeakSignalNoiseRatio` and :ref:`references/functional:peak_signal_noise_ratio [func]`
-  - :ref:`references/modules:StructuralSimilarityIndexMeasure` and :ref:`references/functional:structural_similarity_index_measure [func]`
-  - :ref:`references/modules:KLDivergence` and :ref:`references/functional:kl_divergence [func]`
+  - :ref:`image/peak_signal_noise_ratio:Peak Signal-to-Noise Ratio (PSNR)`
+  - :ref:`image/structural_similarity:Structural Similarity Index Measure (SSIM)`
+  - :ref:`classification/kl_divergence:KL Divergence`
 
 You can always check the precision/dtype of the metric by checking the `.dtype` property.
 
@@ -351,9 +351,19 @@ A functional metric is differentiable if its corresponding modular metric is dif
 
 .. _Metric kwargs:
 
-*****************************
-Advanced distributed settings
-*****************************
+************************
+Advanced metric settings
+************************
+
+The following is a list of additional arguments that can be given to any metric class (in the ``**kwargs`` argument)
+that will alter how metric states are stored and synced.
+
+If you are running metrics on GPU and are encountering that you are running out of GPU VRAM then the following
+argument can help:
+
+- ``compute_on_cpu`` will automatically move the metric states to cpu after calling ``update``, making sure that
+  GPU memory is not filling up. The consequence will be that the ``compute`` method will be called on CPU instead
+  of GPU. Only applies to metric states that are lists.
 
 If you are running in a distributed environment, ``TorchMetrics`` will automatically take care of the distributed
 synchronization for you. However, the following three keyword arguments can be given to any metric class for

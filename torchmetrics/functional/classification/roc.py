@@ -35,9 +35,9 @@ def _roc_update(
         preds: Predicted tensor
         target: Ground truth tensor
         num_classes: integer with number of classes for multi-label and multiclass problems.
-            Should be set to ``None`` for binary problems
+            Should be set to ``None`` for binary problems.
         pos_label: integer determining the positive class. Default is ``None``
-            which for binary problem is translate to 1. For multiclass problems
+            which for binary problem is translated to 1. For multiclass problems
             this argument should not be set as we iteratively change it in the
             range [0,num_classes-1]
     """
@@ -52,16 +52,15 @@ def _roc_compute_single_class(
     sample_weights: Optional[Sequence] = None,
 ) -> Tuple[Tensor, Tensor, Tensor]:
     """Computes Receiver Operating Characteristic for single class inputs. Returns tensor with false positive
-    rates, tensor with true positive rates, tensor with thresholds used for computing false- and true postive
+    rates, tensor with true positive rates, tensor with thresholds used for computing false- and true-postive
     rates.
 
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
-        pos_label: integer determining the positive class. Default is ``None``
-            which for binary problem is translate to 1. For multiclass problems
-            this argument should not be set as we iteratively change it in the
-            range [0,num_classes-1]
+        pos_label: integer determining the positive class. Default is ``None`` which for binary problem is translated
+            to 1. For multiclass problems this argument should not be set as we iteratively change it in the
+            range ``[0, num_classes-1]``
         sample_weights: sample weights for each data point
     """
 
@@ -103,15 +102,12 @@ def _roc_compute_multi_class(
     sample_weights: Optional[Sequence] = None,
 ) -> Tuple[List[Tensor], List[Tensor], List[Tensor]]:
     """Computes Receiver Operating Characteristic for multi class inputs. Returns tensor with false positive rates,
-    tensor with true positive rates, tensor with thresholds used for computing false- and true postive rates.
+    tensor with true positive rates, tensor with thresholds used for computing false- and true-postive rates.
 
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
-        pos_label: integer determining the positive class. Default is ``None``
-            which for binary problem is translate to 1. For multiclass problems
-            this argument should not be set as we iteratively change it in the
-            range [0,num_classes-1]
+        num_classes: number of classes
         sample_weights: sample weights for each data point
     """
 
@@ -150,11 +146,10 @@ def _roc_compute(
         preds: Predicted tensor
         target: Ground truth tensor
         num_classes: integer with number of classes for multi-label and multiclass problems.
-            Should be set to ``None`` for binary problems
-        pos_label: integer determining the positive class. Default is ``None``
-            which for binary problem is translate to 1. For multiclass problems
-            this argument should not be set as we iteratively change it in the
-            range [0,num_classes-1]
+            Should be set to ``None`` for binary problems.
+        pos_label: integer determining the positive class. Default is ``None`` which for binary problem is translated
+            to 1. For multiclass problems this argument should not be set as we iteratively change it in the
+            range ``[0, num_classes-1]``
         sample_weights: sample weights for each data point
 
     Example:
@@ -211,31 +206,27 @@ def roc(
 
     .. note::
         If either the positive class or negative class is completly missing in the target tensor,
-        the roc values are not well defined in this case and a tensor of zeros will be returned (either fpr
-        or tpr depending on what class is missing) together with an warning.
+        the roc values are not well-defined in this case and a tensor of zeros will be returned (either fpr
+        or tpr depending on what class is missing) together with a warning.
 
     Args:
         preds: predictions from model (logits or probabilities)
         target: ground truth values
         num_classes: integer with number of classes for multi-label and multiclass problems.
-            Should be set to ``None`` for binary problems
-        pos_label: integer determining the positive class. Default is ``None``
-            which for binary problem is translate to 1. For multiclass problems
-            this argument should not be set as we iteratively change it in the
-            range [0,num_classes-1]
+            Should be set to ``None`` for binary problems.
+        pos_label: integer determining the positive class. Default is ``None`` which for binary problem is translated
+            to 1. For multiclass problems this argument should not be set as we iteratively change it in the
+            range ``[0, num_classes-1]``
         sample_weights: sample weights for each data point
 
     Returns:
         3-element tuple containing
 
-        fpr:
-            tensor with false positive rates.
+        fpr: tensor with false positive rates.
             If multiclass or multilabel, this is a list of such tensors, one for each class/label.
-        tpr:
-            tensor with true positive rates.
+        tpr: tensor with true positive rates.
             If multiclass or multilabel, this is a list of such tensors, one for each class/label.
-        thresholds:
-            tensor with thresholds used for computing false- and true postive rates
+        thresholds: tensor with thresholds used for computing false- and true postive rates
             If multiclass or multilabel, this is a list of such tensors, one for each class/label.
 
     Example (binary case):

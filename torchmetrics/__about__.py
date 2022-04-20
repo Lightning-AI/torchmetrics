@@ -1,4 +1,4 @@
-__version__ = "0.8.0dev"
+__version__ = "0.9.0dev"
 __author__ = "PyTorchLightning et al."
 __author_email__ = "name@pytorchlightning.ai"
 __license__ = "Apache-2.0"
@@ -11,7 +11,7 @@ Torchmetrics is a metrics API created for easy metric development and usage in b
 [PyTorch Lightning](https://pytorch-lightning.readthedocs.io/en/stable/). It was originally a part of
 Pytorch Lightning, but got split off so users could take advantage of the large collection of metrics
 implemented without having to install Pytorch Lightning (even though we would love for you to try it out).
-We currently have around 60+ metrics implemented and we continuously are adding more metrics, both within
+We currently have around 80+ metrics implemented and we continuously are adding more metrics, both within
 already covered domains (classification, regression ect.) but also new domains (object detection ect.).
 We make sure that all our metrics are rigorously tested such that you can trust them.
 """

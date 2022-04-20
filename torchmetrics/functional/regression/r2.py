@@ -21,7 +21,9 @@ from torchmetrics.utilities.checks import _check_same_shape
 
 
 def _r2_score_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-    """Updates and returns variables required to compute R2 score. Checks for same shape and 1D/2D input tensors.
+    """Updates and returns variables required to compute R2 score.
+
+    Checks for same shape and 1D/2D input tensors.
 
     Args:
         preds: Predicted tensor
@@ -60,9 +62,7 @@ def _r2_score_compute(
         rss: Residual sum of squares
         n_obs: Number of predictions or observations
         adjusted: number of independent regressors for calculating adjusted r2 score.
-            Default 0 (standard r2 score).
-        multioutput: Defines aggregation in the case of multiple output scores. Can be one
-            of the following strings (default is `'uniform_average'`.):
+        multioutput: Defines aggregation in the case of multiple output scores. Can be one of the following strings:
 
             * `'raw_values'` returns full set of scores
             * `'uniform_average'` scores are uniformly averaged
@@ -136,9 +136,7 @@ def r2_score(
         preds: estimated labels
         target: ground truth labels
         adjusted: number of independent regressors for calculating adjusted r2 score.
-            Default 0 (standard r2 score).
-        multioutput: Defines aggregation in the case of multiple output scores. Can be one
-            of the following strings (default is ``'uniform_average'``.):
+        multioutput: Defines aggregation in the case of multiple output scores. Can be one of the following strings:
 
             * ``'raw_values'`` returns full set of scores
             * ``'uniform_average'`` scores are uniformly averaged
@@ -148,11 +146,9 @@ def r2_score(
         ValueError:
             If both ``preds`` and ``targets`` are not ``1D`` or ``2D`` tensors.
         ValueError:
-            If ``len(preds)`` is less than ``2``
-            since at least ``2`` sampels are needed to calculate r2 score.
+            If ``len(preds)`` is less than ``2`` since at least ``2`` sampels are needed to calculate r2 score.
         ValueError:
-            If ``multioutput`` is not one of ``raw_values``,
-            ``uniform_average`` or ``variance_weighted``.
+            If ``multioutput`` is not one of ``raw_values``, ``uniform_average`` or ``variance_weighted``.
         ValueError:
             If ``adjusted`` is not an ``integer`` greater than ``0``.
 

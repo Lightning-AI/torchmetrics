@@ -52,38 +52,31 @@ def _get_embeddings_and_idf_scale(
     verbose: bool = False,
     user_forward_fn: Callable[[torch.nn.Module, Dict[str, Tensor]], Tensor] = None,
 ) -> Tuple[Tensor, Tensor]:
-    """Calculate sentence embeddings and the inverse-document-frequence scaling factor.
+    """Calculate sentence embeddings and the inverse-document-frequency scaling factor.
     Args:
-        dataloader:
-            `torch.utils.data.DataLoader` instance.
-        target_len:
-            A length of the longest sequence in the data. Used for padding the model output.
-        model:
-            BERT model.
-        device:
-            A device to be used for calculation.
-        num_layers:
-            The layer of representation to use.
-        all_layers:
-            An indication whether representation from all model layers should be used for BERTScore.
-        idf:
-            An Indication whether normalization using inverse document frequencies should be used.
-        verbose:
-            An indication of whether a progress bar to be displayed during the embeddings calculation.
+        dataloader: dataloader instance.
+        target_len: A length of the longest sequence in the data. Used for padding the model output.
+        model: BERT model.
+        device: A device to be used for calculation.
+        num_layers: The layer of representation to use.
+        all_layers: An indication whether representation from all model layers should be used for BERTScore.
+        idf: An Indication whether normalization using inverse document frequencies should be used.
+        verbose: An indication of whether a progress bar to be displayed during the embeddings' calculation.
         user_forward_fn:
-            A user's own forward function used in a combination with `user_model`. This function must take `user_model`
-            and a python dictionary of containing `"input_ids"` and `"attention_mask"` represented by `torch.Tensor`
-            as an input and return the model's output represented by the single `torch.Tensor`.
+            A user's own forward function used in a combination with ``user_model``. This function must
+            take ``user_model`` and a python dictionary of containing ``"input_ids"`` and ``"attention_mask"``
+            represented by ``torch.Tensor`` as an input and return the model's output represented by the single
+            ``torch.Tensor``.
 
     Return:
         A tuple of torch.Tensors containing the model's embeddings and the normalized tokens IDF.
-        When `idf = False`, tokens IDF is not calculated, and a matrix of mean weights is returned instead.
-        For a single sentence, `mean_weight = 1/seq_len`, where `seq_len` is a sum over the corresponding
-        `attention_mask`.
+        When ``idf = False``, tokens IDF is not calculated, and a matrix of mean weights is returned instead.
+        For a single sentence, ``mean_weight = 1/seq_len``, where ``seq_len`` is a sum over the corresponding
+        ``attention_mask``.
 
     Raises:
         ValueError:
-            If `all_layers = True` and a model, which is not from the `transformers` package, is used.
+            If ``all_layers = True`` and a model, which is not from the ``transformers`` package, is used.
     """
     embeddings_list: List[Tensor] = []
     idf_scale_list: List[Tensor] = []
@@ -143,7 +136,7 @@ def _get_precision_recall_f1(
     """Calculate precision, recall and F1 score over candidate and reference sentences.
 
     Args:
-        preds_embeddings: Embeddings of candidate sentenecs.
+        preds_embeddings: Embeddings of candidate sentences.
         target_embeddings: Embeddings of reference sentences.
         preds_idf_scale: An IDF scale factor for candidate sentences.
         target_idf_scale: An IDF scale factor for reference sentences.
@@ -259,72 +252,58 @@ def bert_score(
     baseline_url: Optional[str] = None,
 ) -> Dict[str, Union[List[float], str]]:
     """`Bert_score Evaluating Text Generation`_ leverages the pre-trained contextual embeddings from BERT and
-    matches words in candidate and reference sentences by cosine similarity. It has been shown to correlate with
-    human judgment on sentence-level and system-level evaluation. Moreover, BERTScore computes precision, recall,
-    and F1 measure, which can be useful for evaluating different language generation tasks.
+    matches words in candidate and reference sentences by cosine similarity.
 
-    This implemenation follows the original implementation from `BERT_score`_
+    It has been shown to correlate with human judgment on sentence-level and system-level evaluation.
+    Moreover, BERTScore computes precision, recall, and F1 measure, which can be useful for evaluating different
+    language generation tasks.
+
+    This implemenation follows the original implementation from `BERT_score`_.
 
     Args:
-        preds:
-            Either an iterable of predicted sentences or a `Dict[str, torch.Tensor]` containing `input_ids` and
-            `attention_mask` `torch.Tensor`.
-        target:
-            Either an iterable of target sentences or a `Dict[str, torch.Tensor]` containing `input_ids` and
-            `attention_mask` `torch.Tensor`.
-        model_name_or_path:
-            A name or a model path used to load `transformers` pretrained model.
-        num_layers:
-            A layer of representation to use.
+        preds: Either an iterable of predicted sentences or a ``Dict[input_ids, attention_mask]``.
+        target: Either an iterable of target sentences or a  ``Dict[input_ids, attention_mask]``.
+        model_name_or_path: A name or a model path used to load ``transformers`` pretrained model.
+        num_layers: A layer of representation to use.
         all_layers:
             An indication of whether the representation from all model's layers should be used.
-            If `all_layers = True`, the argument `num_layers` is ignored.
-        model:
-            A user's own model. Must be of `torch.nn.Module` instance.
+            If ``all_layers = True``, the argument ``num_layers`` is ignored.
+        model: A user's own model.
         user_tokenizer:
-            A user's own tokenizer used with the own model. This must be an instance with the `__call__` method.
-            This method must take an iterable of sentences (`List[str]`) and must return a python dictionary
-            containing `"input_ids"` and `"attention_mask"` represented by `torch.Tensor`. It is up to the user's model
-            of whether `"input_ids"` is a `torch.Tensor` of input ids or embedding vectors.
-            This tokenizer must prepend an equivalent of `[CLS]` token and append an equivalent of `[SEP]` token
-            as `transformers` tokenizer does.
+            A user's own tokenizer used with the own model. This must be an instance with the ``__call__`` method.
+            This method must take an iterable of sentences (``List[str]``) and must return a python dictionary
+            containing ``"input_ids"`` and ``"attention_mask"`` represented by ``torch.Tensor``.
+            It is up to the user's model of whether ``"input_ids"`` is a ``torch.Tensor`` of input ids or embedding
+            vectors. his tokenizer must prepend an equivalent of ``[CLS]`` token and append an equivalent of ``[SEP]``
+            token as `transformers` tokenizer does.
         user_forward_fn:
-            A user's own forward function used in a combination with `user_model`. This function must take `user_model`
-            and a python dictionary of containing `"input_ids"` and `"attention_mask"` represented by `torch.Tensor`
-            as an input and return the model's output represented by the single `torch.Tensor`.
-        verbose:
-            An indication of whether a progress bar to be displayed during the embeddings calculation.
-        idf:
-            An indication of whether normalization using inverse document frequencies should be used.
-        device:
-            A device to be used for calculation.
-        max_length:
-            A maximum length of input sequences. Sequences longer than `max_length` are to be trimmed.
-        batch_size:
-            A batch size used for model processing.
-        num_threads:
-            A number of threads to use for a dataloader.
-        return_hash:
-            An indication of whether the correspodning `hash_code` should be returned.
-        lang:
-            A language of input sentences. It is used when the scores are rescaled with a baseline.
+            A user's own forward function used in a combination with ``user_model``.
+            This function must take ``user_model`` and a python dictionary of containing ``"input_ids"``
+            and ``"attention_mask"`` represented by ``torch.Tensor`` as an input and return the model's output
+            represented by the single ``torch.Tensor``.
+        verbose: An indication of whether a progress bar to be displayed during the embeddings' calculation.
+        idf: An indication of whether normalization using inverse document frequencies should be used.
+        device: A device to be used for calculation.
+        max_length: A maximum length of input sequences. Sequences longer than ``max_length`` are to be trimmed.
+        batch_size: A batch size used for model processing.
+        num_threads: A number of threads to use for a dataloader.
+        return_hash: An indication of whether the correspodning ``hash_code`` should be returned.
+        lang: A language of input sentences. It is used when the scores are rescaled with a baseline.
         rescale_with_baseline:
             An indication of whether bertscore should be rescaled with a pre-computed baseline.
-            When a pretrained model from `transformers` model is used, the corresponding baseline is downloaded
-            from the original `bert-score` package from `BERT_score`_ if available.
+            When a pretrained model from ``transformers`` model is used, the corresponding baseline is downloaded
+            from the original ``bert-score`` package from `BERT_score`_ if available.
             In other cases, please specify a path to the baseline csv/tsv file, which must follow the formatting
             of the files from `BERT_score`_
-        baseline_path:
-            A path to the user's own local csv/tsv file with the baseline scale.
-        baseline_url:
-            A url path to the user's own  csv/tsv file with the baseline scale.
+        baseline_path: A path to the user's own local csv/tsv file with the baseline scale.
+        baseline_url: A url path to the user's own  csv/tsv file with the baseline scale.
 
     Returns:
-        Python dictionary containing the keys `precision`, `recall` and `f1` with corresponding values.
+        Python dictionary containing the keys ``precision``, ``recall`` and ``f1`` with corresponding values.
 
     Raises:
         ValueError:
-            If `len(preds) != len(target)`.
+            If ``len(preds) != len(target)``.
         ModuleNotFoundError:
             If `tqdm` package is required and not installed.
         ModuleNotFoundError:
