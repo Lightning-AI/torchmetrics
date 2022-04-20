@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import torch
 from torch import Tensor
@@ -52,11 +52,6 @@ class CalibrationError(Metric):
         norm: Norm used to compare empirical and expected probability bins.
             Defaults to "l1", or Expected Calibration Error.
         debias: Applies debiasing term, only implemented for l2 norm. Defaults to True.
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
     """
@@ -69,11 +64,10 @@ class CalibrationError(Metric):
         self,
         n_bins: int = 15,
         norm: str = "l1",
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ):
 
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
 
         if norm not in self.DISTANCES:
             raise ValueError(f"Norm {norm} is not supported. Please select from l1, l2, or max. ")
