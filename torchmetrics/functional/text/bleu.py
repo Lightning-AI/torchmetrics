@@ -153,7 +153,7 @@ def bleu_score(
     Args:
         preds: An iterable of machine translated corpus
         target: An iterable of iterables of reference corpus
-        n_gram: Gram value ranged from 1 to 4 (Default 4)
+        n_gram: Gram value ranged from 1 to 4
         smooth: Whether to apply smoothing – see [2]
 
     Return:
