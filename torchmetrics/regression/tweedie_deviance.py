@@ -54,12 +54,6 @@ class TweedieDevianceScore(Metric):
             - power = 3 : Inverse Gaussian distribution. (Requires: targets > 0 and preds > 0.)
             - otherwise : Positive stable distribution. (Requires: targets > 0 and preds > 0.)
 
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
@@ -79,10 +73,9 @@ class TweedieDevianceScore(Metric):
     def __init__(
         self,
         power: float = 0.0,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
         if 0 < power < 1:
             raise ValueError(f"Deviance Score is not defined for power={power}.")
 

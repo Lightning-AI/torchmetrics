@@ -47,12 +47,6 @@ class ExplainedVariance(Metric):
             * ``'uniform_average'`` scores are uniformly averaged
             * ``'variance_weighted'`` scores are weighted by their individual variances
 
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -85,10 +79,9 @@ class ExplainedVariance(Metric):
     def __init__(
         self,
         multioutput: str = "uniform_average",
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
         allowed_multioutput = ("raw_values", "uniform_average", "variance_weighted")
         if multioutput not in allowed_multioutput:
             raise ValueError(

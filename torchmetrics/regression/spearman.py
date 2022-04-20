@@ -33,12 +33,6 @@ class SpearmanCorrCoef(Metric):
     on the rank variables.
 
     Args:
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
@@ -57,10 +51,9 @@ class SpearmanCorrCoef(Metric):
 
     def __init__(
         self,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
         rank_zero_warn(
             "Metric `SpearmanCorrcoef` will save all targets and predictions in the buffer."
             " For large datasets, this may lead to large memory footprint."

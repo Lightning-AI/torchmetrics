@@ -29,12 +29,6 @@ class MeanSquaredError(Metric):
 
     Args:
         squared: If True returns MSE value, if False returns RMSE value.
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
@@ -54,10 +48,9 @@ class MeanSquaredError(Metric):
     def __init__(
         self,
         squared: bool = True,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
 
         self.add_state("sum_squared_error", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
