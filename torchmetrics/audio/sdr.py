@@ -73,7 +73,7 @@ class SignalDistortionRatio(Metric):
         tensor(-11.6051)
 
     .. note::
-       1. preds and target need to have the same dtype, otherwise target will be converted to preds' dtype
+       Preds and target need to have the same dtype, otherwise target will be converted to preds' dtype
 
 
     References:

@@ -74,10 +74,10 @@ def _compute_autocorr_crosscorr(
     preds: torch.Tensor,
     L: int,
 ) -> Tuple[torch.Tensor, torch.Tensor]:
-    r"""Compute the auto correlation of `target` and the cross correlation of `target` and `preds` using \ the fast
-    Fourier transform (FFT). \ Let's denotes the symmetric Toeplitz matric of the auto correlation of `target` as
-    `R`, the cross correlation \ as 'b', then solving the equation `Rh=b` could have `h` as the coordinate of
-    `preds` in the column space of \ the L shifts of `target`.
+    r"""Compute the auto correlation of `target` and the cross correlation of `target` and `preds` using the fast
+    Fourier transform (FFT). Let's denotes the symmetric Toeplitz matric of the auto correlation of `target` as
+    `R`, the cross correlation as 'b', then solving the equation `Rh=b` could have `h` as the coordinate of
+    `preds` in the column space of the L shifts of `target`.
 
     Args:
         target: the target (reference) signal of shape [..., time]
@@ -156,7 +156,7 @@ def signal_distortion_ratio(
                 [0, 1]])
 
     .. note::
-       1. preds and target need to have the same dtype, otherwise target will be converted to preds' dtype
+       Preds and target need to have the same dtype, otherwise target will be converted to preds' dtype
 
 
     References:
@@ -201,14 +201,14 @@ def signal_distortion_ratio(
             if not _FAST_BSS_EVAL_AVAILABLE:
                 warnings.warn(
                     "The `use_cg_iter` parameter of `SDR` requires that `fast-bss-eval` is installed. "
-                    "To dispear this warning, you could install `fast-bss-eval` using `pip install fast-bss-eval` "
+                    "To make this this warning disappear, you could install `fast-bss-eval` using `pip install fast-bss-eval` "
                     "or set `use_cg_iter=None`. For this time, the solver provided by Pytorch is used.",
                     UserWarning,
                 )
             elif not _TORCH_GREATER_EQUAL_1_8:
                 warnings.warn(
                     "The `use_cg_iter` parameter of `SDR` requires a Pytorch version >= 1.8. "
-                    "To dispear this warning, you could change to Pytorch v1.8+ or set `use_cg_iter=None`. "
+                    "To make this this warning disappear, you could change to Pytorch v1.8+ or set `use_cg_iter=None`. "
                     "For this time, the solver provided by Pytorch is used.",
                     UserWarning,
                 )
