@@ -273,23 +273,20 @@ def _compare_fn(preds, target) -> dict:
 def _compare_fn_segm(preds, target) -> dict:
     """Comparison function for map implementation.
 
-           Official pycocotools results calculated from a subset of https://GitHub.com/cocodataset/cocoapi/tree/master/results
-        Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.352
-             Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.752
-            Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.252
-            Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = -1.000
-            Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = -1.000
-            Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.352
-            Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.350
-            Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.350
-            Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.350
-            Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = -1.000
-            Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = -1.000
-            Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.350
-    <<<<<<< HEAD
-    =======
+       Official pycocotools results calculated from a subset of https://GitHub.com/cocodataset/cocoapi/tree/master/results
+    Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.352
+         Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.752
+        Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.252
+        Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = -1.000
+        Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = -1.000
+        Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.352
+        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.350
+        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.350
+        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.350
+        Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = -1.000
+        Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = -1.000
+        Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.350
 
-    >>>>>>> test added (required native RLE encoding from COCO); fixed IOU
     """
     return {
         "map": torch.Tensor([0.352]),
