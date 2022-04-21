@@ -469,6 +469,7 @@ class MeanAveragePrecision(Metric):
         """Some predictions but no GT."""
         # GTs
         nb_gt = 0
+
         gt_ignore = torch.zeros(nb_gt, dtype=torch.bool, device=self.device)
 
         # Detections
@@ -480,7 +481,7 @@ class MeanAveragePrecision(Metric):
         if len(det) > max_det:
             det = det[:max_det]
         nb_det = len(det)
-        det_areas = box_area(det).to(self.device)
+        det_areas = compute_area(det, type=self.iou_type).to(self.device)
         det_ignore_area = (det_areas < area_range[0]) | (det_areas > area_range[1])
         ar = det_ignore_area.reshape((1, nb_det))
         det_ignore = torch.repeat_interleave(ar, nb_iou_thrs, 0)
@@ -488,9 +489,9 @@ class MeanAveragePrecision(Metric):
         return {
             "dtMatches": torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool, device=self.device),
             "gtMatches": torch.zeros((nb_iou_thrs, nb_gt), dtype=torch.bool, device=self.device),
-            "dtScores": scores_sorted,
-            "gtIgnore": gt_ignore,
-            "dtIgnore": det_ignore,
+            "dtScores": scores_sorted.to(self.device),
+            "gtIgnore": gt_ignore.to(self.device),
+            "dtIgnore": det_ignore.to(self.device),
         }
 
     def _evaluate_image(
@@ -768,6 +769,7 @@ class MeanAveragePrecision(Metric):
         img_eval_cls_bbox = [e for e in img_eval_cls_bbox if e is not None]
         if not img_eval_cls_bbox:
             return recall, precision, scores
+
         det_scores = torch.cat([e["dtScores"][:max_det] for e in img_eval_cls_bbox])
 
         # different sorting method generates slightly different results.
