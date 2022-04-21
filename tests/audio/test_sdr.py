@@ -27,7 +27,7 @@ from tests.helpers import seed_all
 from tests.helpers.testers import MetricTester
 from torchmetrics.audio import SignalDistortionRatio
 from torchmetrics.functional import signal_distortion_ratio
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6, _TORCH_GREATER_EQUAL_1_8, _TORCH_LOWER_1_12_DEV
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 
 seed_all(42)
 
@@ -99,7 +99,6 @@ class TestSDR(MetricTester):
             metric_args=dict(),
         )
 
-    @pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_8, reason="sdr is not differentiable for pytorch < 1.8")
     def test_sdr_differentiability(self, preds, target, sk_metric):
         self.run_differentiability_test(
             preds=preds,
@@ -155,14 +154,7 @@ def test_too_low_precision():
     preds = torch.tensor(data["preds"])
     target = torch.tensor(data["target"])
 
-    if _TORCH_GREATER_EQUAL_1_8 and _TORCH_LOWER_1_12_DEV:
-        with pytest.warns(
-            UserWarning,
-            match="Detected `nan` or `inf` value in computed metric, retrying computation in double precision",
-        ):
-            sdr_tm = signal_distortion_ratio(preds, target)
-    else:  # when pytorch < 1.8 or pytorch >= 1.12, sdr doesn't have this problem
-        sdr_tm = signal_distortion_ratio(preds, target).double()
+    sdr_tm = signal_distortion_ratio(preds, target).double()
 
     # check equality with bss_eval_sources in every pytorch version
     sdr_bss, _, _, _ = bss_eval_sources(target.numpy(), preds.numpy(), False)
