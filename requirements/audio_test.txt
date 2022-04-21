@@ -1,3 +1,5 @@
 pypesq
 mir_eval>=0.6
 speechmetrics @ https://github.com/aliutkus/speechmetrics/archive/refs/heads/master.zip
+fast-bss-eval>=0.1.0
+torch_complex  # needed for fast-bss-eval torch<=1.7
