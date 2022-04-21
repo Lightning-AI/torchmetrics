@@ -35,7 +35,7 @@ else:
     from torch import solve as _solve
 
     def solve(A: Tensor, b: Tensor) -> Tensor:
-        return _solve(b[...,None], A)[0][...,0]
+        return _solve(b[..., None], A)[0][..., 0]
 
 
 if _FAST_BSS_EVAL_AVAILABLE and _TORCH_GREATER_EQUAL_1_8:
