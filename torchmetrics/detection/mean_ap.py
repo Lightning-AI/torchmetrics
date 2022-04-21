@@ -113,6 +113,9 @@ def segm_iou(inputs, targets, smooth=1e-5):
     n_targets = targets.shape[0]
     # flatten label and prediction tensors
 
+    inputs = inputs.reshape(n_inputs, -1).repeat_interleave(n_targets, 0)
+    targets = targets.reshape(n_targets, -1).repeat(n_inputs, 1)
+
     # i1 * t1
     # i1 * t2
     # i2 * t1
@@ -428,6 +431,7 @@ class MeanAveragePrecision(Metric):
             det = det[:max_det]
 
         ious = compute_iou(det, gt)
+
         return ious
 
     def __evaluate_image_gt_no_preds(

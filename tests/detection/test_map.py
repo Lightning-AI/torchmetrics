@@ -19,7 +19,6 @@ import numpy as np
 import pytest
 import torch
 from pycocotools import mask
-from torch import Tensor
 
 from tests.helpers.testers import MetricTester
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
@@ -322,6 +321,42 @@ def _compare_fn_segm(preds, target) -> dict:
         Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = -1.000
         Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = -1.000
         Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.350
+    """
+    return {
+        "map": torch.Tensor([0.352]),
+        "map_50": torch.Tensor([0.742]),
+        "map_75": torch.Tensor([0.252]),
+        "map_small": torch.Tensor([-1]),
+        "map_medium": torch.Tensor([-1]),
+        "map_large": torch.Tensor([0.352]),
+        "mar_1": torch.Tensor([0.35]),
+        "mar_10": torch.Tensor([0.35]),
+        "mar_100": torch.Tensor([0.35]),
+        "mar_small": torch.Tensor([-1]),
+        "mar_medium": torch.Tensor([-1]),
+        "mar_large": torch.Tensor([0.35]),
+        "map_per_class": torch.Tensor([0.4039604, -1.0, 0.3]),
+        "mar_100_per_class": torch.Tensor([0.4, -1.0, 0.3]),
+    }
+
+
+def _compare_fn_segm(preds, target) -> dict:
+    """Comparison function for map implementation.
+
+       Official pycocotools results calculated from a subset of https://GitHub.com/cocodataset/cocoapi/tree/master/results
+    Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.352
+         Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.752
+        Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.252
+        Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = -1.000
+        Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = -1.000
+        Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.352
+        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.350
+        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.350
+        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.350
+        Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = -1.000
+        Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = -1.000
+        Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.350
+
     """
     return {
         "map": torch.Tensor([0.352]),
