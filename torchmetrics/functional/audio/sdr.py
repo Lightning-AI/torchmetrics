@@ -94,13 +94,28 @@ def _compute_autocorr_crosscorr(
     n_fft = 2 ** math.ceil(math.log2(preds.shape[-1] + target.shape[-1] - 1))
 
     # computes the auto correlation of `target`
-    t_fft = torch.fft.rfft(target, n=n_fft, dim=-1)
     # r_0 is the first row of the symmetric Toeplitz matric
-    r_0 = torch.fft.irfft(t_fft.real**2 + t_fft.imag**2, n=n_fft)[..., :corr_len]
+    if _TORCH_GREATER_EQUAL_1_7:
+        t_fft = torch.fft.rfft(target, n=n_fft, dim=-1)
+        r_0 = torch.fft.irfft(t_fft.real**2 + t_fft.imag**2, n=n_fft)[..., :corr_len]
+    else:
+        t_fft = torch.rfft(target, signal_ndim=1)
+        real = t_fft[..., 0]**2 + t_fft[..., 1]**2
+        imag = torch.zeros(real.shape, dtype=real.dtype, device=real.device)
+        result = torch.stack([real, imag], len(real.shape))
+        r_0 = torch.irfft(result, signal_ndim=1)[..., :corr_len]
 
     # computes the cross-correlation of `target` and `preds`
-    p_fft = torch.fft.rfft(preds, n=n_fft, dim=-1)
-    b = torch.fft.irfft(t_fft.conj() * p_fft, n=n_fft, dim=-1)[..., :corr_len]
+    if _TORCH_GREATER_EQUAL_1_7:
+        p_fft = torch.fft.rfft(preds, n=n_fft, dim=-1)
+        b = torch.fft.irfft(t_fft.conj() * p_fft, n=n_fft, dim=-1)[..., :corr_len]
+    else:
+        p_fft = torch.rfft(preds, signal_ndim=1)
+        real = t_fft[..., 0] * p_fft[..., 0] + t_fft[..., 1] * p_fft[..., 1]
+        imag = t_fft[..., 0] * p_fft[..., 1] - t_fft[..., 1] * p_fft[..., 0]
+        result = torch.stack([real, imag], len(real.shape))
+        b = torch.irfft(result, signal_ndim=1)[..., :corr_len]
+
     return r_0, b
 
 
