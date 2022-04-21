@@ -25,14 +25,16 @@ from torchmetrics.utilities.imports import _FAST_BSS_EVAL_AVAILABLE, _TORCH_GREA
 # import or def the norm/solve function
 if _TORCH_GREATER_EQUAL_1_8:
     from torch.linalg import norm
+
     solve = torch.linalg.solve
 else:
     from torch import norm
-    from torch.nn.functional import pad
     from torch import solve as _solve
+    from torch.nn.functional import pad
 
     def solve(A: Tensor, b: Tensor) -> Tensor:
         return _solve(b[..., None], A)[0][..., 0]
+
 
 if _FAST_BSS_EVAL_AVAILABLE and _TORCH_GREATER_EQUAL_1_8:
     from fast_bss_eval.torch.cgd import toeplitz_conjugate_gradient
