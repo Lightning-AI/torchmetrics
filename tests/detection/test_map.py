@@ -108,7 +108,7 @@ _inputs_masks = Input(
 )
 
 
-_inputs_bboxes = Input(
+_inputs = Input(
     preds=[
         [
             dict(
@@ -355,8 +355,8 @@ class TestMAP(MetricTester):
         """Test modular implementation for correctness."""
         self.run_class_metric_test(
             ddp=ddp,
-            preds=_inputs_bboxes.preds,
-            target=_inputs_bboxes.target,
+            preds=_inputs.preds,
+            target=_inputs.target,
             metric_class=MeanAveragePrecision,
             sk_metric=_compare_fn,
             dist_sync_on_step=False,
@@ -365,7 +365,7 @@ class TestMAP(MetricTester):
         )
 
     @pytest.mark.parametrize("ddp", [False])
-    def test_map_segm(self, ddp):
+    def test_map_segm(self, compute_on_cpu, ddp):
         """Test modular implementation for correctness."""
 
         self.run_class_metric_test(
@@ -376,7 +376,7 @@ class TestMAP(MetricTester):
             sk_metric=_compare_fn_segm,
             dist_sync_on_step=False,
             check_batch=False,
-            metric_args={"class_metrics": True, "iou_type": "segm"},
+            metric_args={"class_metrics": True, "compute_on_cpu": compute_on_cpu, "iou_type": "segm"},
         )
 
 
@@ -521,7 +521,7 @@ def test_segm_iou_empty_mask():
     metric.update(
         [
             dict(
-                masks=torch.randint(0, 1, (1, 10, 10)),
+                masks=torch.randint(0, 1, (1, 10, 10)).bool(),
                 scores=torch.Tensor([0.5]),
                 labels=torch.IntTensor([4]),
             ),
@@ -530,6 +530,7 @@ def test_segm_iou_empty_mask():
             dict(masks=torch.Tensor([]), labels=torch.IntTensor([])),
         ],
     )
+
     metric.compute()
 
 
