@@ -14,8 +14,10 @@
 
 from collections import namedtuple
 
+import numpy as np
 import pytest
 import torch
+from pycocotools import mask
 
 from tests.helpers.testers import MetricTester
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
@@ -23,7 +25,87 @@ from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_
 
 Input = namedtuple("Input", ["preds", "target"])
 
-_inputs_masks = Input(preds=[], target=[])
+_inputs_masks = Input(
+    preds=[
+        [
+            dict(
+                masks=torch.Tensor(
+                    mask.decode(
+                        {
+                            "size": [478, 640],
+                            "counts": "VQi31m>0O2N100O100O2N100O10001N101O1N2O1O2M2O1O1N3N1O1N2O2N1N2O1O1N3N1O1N2O2N1N2O1O2M2O1O1M3M4K4M3M3M4L3M3M3M4L3L4M3M3M4L3M3M3M4L3O1N2N101N1O2O0O2N101N1O2O0O2N101N1O2O0O1O2N101N1O2O0O2N101N1O2O0O2N101N1O2O0O1O2O0O2N101N1O2O0O2N101N101O001O1O001O1N2O001O1O1O001O1O1O001O1O001O1O1N101O1O1O001O1O1O001O1O1O001O1N2O001O1O001O1O1O001O1O1O001O1O1N010000O10000O10000O10000O100O010O100O100O100O10000O100O100O10O0100O100O100O100O1O100O100O1O010O100O1O2O0O2N101N101N1O2O1N1O2O0O2O0O2N2O0O2N101N101N2N101N101N1O2O1N1O2O0O20O2O0O2O001N101N100O2O001N101N101N101O0O101N101N101N101O0O101N101N1010O010O010O00010O0O2N1O2N1O2N1O2N1O2N1O2N1O2N1O2N1O2N1O2N1O2N1O2N1O2N1O2N1O2N1O2M2M4L3M4L3M4RNREGP;5UEGo:3XEHk:4ZEHj:2\\EJg:1_EKe:0`ELc:OcEMa:NdEN_:MgE0\\:JjE2Y:JlE2X:HnE4a<LZd?",
+                        },
+                    )
+                )
+                .unsqueeze(0)
+                .bool(),
+                scores=torch.Tensor([0.236]),
+                labels=torch.IntTensor([4]),
+            ),
+            dict(
+                masks=torch.Tensor(
+                    np.stack(
+                        [
+                            mask.decode(
+                                {
+                                    "size": [640, 565],
+                                    "counts": "]aV1;Yc0f0[Oe0[Of0ZOe0[Of0YOf0^Oc0D;E;E<D;E<D;E<D;E5K2N2N2N2N3M2N2N2N2N2N2N2N3M2M3N2N2N2N2N2N3M1O1O2N1O1O1O2N1O1O2N1O1O1O2N1O1O2N1O1O1O2N1O1O2N1O1O1O2M2O1O1O1O1O1O1O1O1O1O1O1O1O1O1O1O1O1O1O1O1O1O1O1O1O1O1O1O1O1O1O1O1O001N2O1QMeDXM\\;c2oDVMR;j2SEPMn:o2XEkLi:U3ZEgLg:X3[EfLf:Y3\\EeLe:[3\\EcLe:\\3]EcLc:]3]EcLc:\\3_EcLa:]3`EbL`:]3bEbL^:]3dEbL[:_3fE`LY:`3iE_LW:a3jE^LU:b3lE^LS:b3oE]LP:c3RF]Lm9b3UF]Lj9c3XF\\Lg9d3[F[Ld9g3\\FXLc9i3]FWLc9j3]FULb9l3_FSL`9n3aFQL^9Q4bFnK^9R4cFmK\\9U4dFkKZ9V4gFiKX9Y4gFgKX9Z4iFeKW9\\4iFcKV9^4kFaKT9a4lF^KS9c4nF\\KR9e4mF[KR9f4oFYKP9i4PGVKo8k4RGTKm8n4RGSKm8m4TGoJn8R5SGhJQ9Z5oF`JU9a5kFZJZ9g5^22N2N2N2O2M2N2N2N2O1N2N2N3N1N2N2N2N2O1N2N2N3N1N2N2N2N2O1N2N2N2O1N3M2N2N2O1N2N2N2O1N1O2N1O101N1O2N100O2M2M4M2N3L3N2M4M2N3L3N2N3L3N3L3N2N3L3N3L3N2N3L3N3L\\MQG]Jm8c5XGZJf8g5_GVJ]8k5hGRJV8n5PHoIX7f6mHWIS7h6RITIn6j6WITIg6l6^IPIb6P7aInH^6R7fIjHY6W7jIfHV6Z7nIcHP6^7SJ_Hm5a7WJ\\Hh5c7\\JZHc5g7aJUH_5k7dJSH[5m7iJoGV5R8mJkGS5U8nJjGR5V8oJiGP5W8RKhGn4X8SKgGl4Z8UKfGj4Z8WKeGi4[8XKdGg4]8ZKbGf4^8[KaGe4_8\\K`Gc4`8_K_Ga4a8`K^G`4b8aK]G^4d8cK[G]4e8dKZG\\4f8eKYGZ4h8gKWGY4h8iKWGV4j8kKUGU4k8lKTGT4l8mKSGR4n8oKRGP4n8QLQGo3P9_3101O0O101N101N100O2N101N1O101N101N1O100O0001O010O00001O000010O01O00001O000010O01O00010O01O010O0010O010O00010O01O010O010O0010O01O010O010O0001N10001O000O101O00001N1000001O0O10001O00000010O0010O01O0010O01O0010O00010O01O0010O01O1O100O1O00100O1O100O1O1O100O1O1O100O1O010O1O1O01O01O0010O01O0010O01O010O001O010O0000100O00100O001O100O001O10O01O1O10O01O1O0O2N2N2N1O2N2N1O2N2N2N1O2M3N2N2N2N2N2N2N2N2N2N2N1O2N2N2N2N2N2N2N2N2N2N2O1N2N2N3N1N2N2N3N1N2N2O2M2N2N2O2M2N2N2O2M2N2N2O2M2NUO",
+                                }
+                            ),
+                            mask.decode(
+                                {
+                                    "size": [640, 565],
+                                    "counts": "hY8k2U>P3]Nc1WOi000001O0000001O00001O00001O0000001O00001O00001O0O10001O000O2O00001N1000001N10001O0O10001O0O101O00001N1000001N10001O0O101O000O1000000O100000E;G81000O10O100000O01000000O10O1000O100000O10O100000O01000000O10O1000O1^MnCVMR<h2RDVMm;j2VDTMj;k2XDSMi;l2ZDRMf;l2^DRMb;m2aDQM_;n2dDoL];P3fDnLZ;Q3hDnLX;P3lDnLT;Q3oDmLQ;R3REkLo:T3TEjLl:U3WEiLi:W3XEhLh:W3[EfLf:Z3\\EdLd:\\3^EbLb:^3`E`L`:`3`E_La:a3`E^L`:a3bE^L^:b3cE]L]:c3dE[L]:e3dEZL\\:f3eEYL[:f3gEYLY:g3hEWLY:i3gEWLY:i3hEVLX:j3iEULW:k3jETLV:k3lESLU:m3lERLT:n3mEQLS:o3nEPLR:P4nEoKS:Q4nEnKR:Q4PFnKP:R4QFmKo9S4RFkKo9U4RFjKn9_4jE`KV:a4jE^KV:c4iE\\KX:e4hEZKX:g4hEXKX:i4hEVKX:k4hESKY:n4gEQKY:P5fEPKZ:Q5fEnJZ:S5fElJZ:U5fEiJ[:X5V21O1O1O001O1O001O1O001O1O001O1O001O1O001O1O001O1O001O10O01O00001O010O0010O2O2M2O2M3N1N3M2O0O100O100O10O0100O100O100O00100O100O100O010O100O100O1O010O100O100O100fMo@C[?0k@N^?Eh@8b?[Od@c0e?POa@m0i?fN]@X1l?[NZ@b1Ta0N2O1N2O1N2O1N2N2N2N2N2N2N2L4J6J6I7JoYa5",
+                                }
+                            ),
+                        ]
+                    )
+                ).bool(),
+                scores=torch.Tensor([0.318, 0.726]),
+                labels=torch.IntTensor([3, 2]),
+            ),  # 73
+        ],
+    ],
+    target=[
+        [
+            dict(
+                masks=torch.Tensor(
+                    mask.decode(
+                        {
+                            "size": [478, 640],
+                            "counts": "n_T31m>0O2N100O100O2N100O10001N101O1N2O1O2M2O1O1N3N1O1N2O2N1N2O1O1N3N1O1N2O2N1N2O1O2M2O1O1M3M4K4M3M3M4L3M3M3M4L3L4M3M3M4L3M3M3M4L3O1N2N101N1O2O0O2N101N1O2O0O2N101N1O2O0O1O2N101N1O2O0O2N101N1O2O0O2N101N1O2O0O1O2O0O2N101N1O2O0O2N101N101O001O1O001O1N2O001O1O1O001O1O1O001O1O001O1O1N101O1O1O001O1O1O001O1O1O001O1N2O001O1O001O1O1O001O1O1O001O1O1N010000O10000O10000O10000O100O010O100O100O100O10000O100O100O10O0100O100O100O100O1O100O100O1O010O100O1O2O0O2N101N101N1O2O1N1O2O0O2O0O2N2O0O2N101N101N2N101N101N1O2O1N1O2O0O20O2O0O2O001N101N100O2O001N101N101N101O0O101N101N101N101O0O101N101N1010O010O010O00010O0O2N1O2N1O2N1O2N1O2N1O2N1O2N1O2N1O2N1O2N1O2N1O2N1O2N1O2N1O2N1O2M2M4L3M4L3M4RNREGP;5UEGo:3XEHk:4ZEHj:2\\EJg:1_EKe:0`ELc:OcEMa:NdEN_:MgE0\\:JjE2Y:JlE2X:HnE4a<LbUT1",
+                        }
+                    )
+                )
+                .unsqueeze(0)
+                .bool(),
+                labels=torch.IntTensor([4]),
+            ),  # 42
+            dict(
+                labels=torch.IntTensor([2, 2]),
+                masks=torch.Tensor(
+                    np.stack(
+                        [
+                            mask.decode(
+                                {
+                                    "size": [640, 565],
+                                    "counts": b"]a8;Yc0f0[Oe0[Of0ZOe0[Of0YOf0^Oc0D;E;E<D;E<D;E<D;E5K2N2N2N2N3M2N2N2N2N2N2N2N3M2M3N2N2N2N2N2N3M1O1O2N1O1O1O2N1O1O2N1O1O1O2N1O1O2N1O1O1O2N1O1O2N1O1O1O2M2O1O1O1O1O1O1O1O1O1O1O1O1O1O1O1O1O1O1O1O1O1O1O1O1O1O1O1O1O1O1O1O1O001N2O1QMeDXM\\;c2oDVMR;j2SEPMn:o2XEkLi:U3ZEgLg:X3[EfLf:Y3\\EeLe:[3\\EcLe:\\3]EcLc:]3]EcLc:\\3_EcLa:]3`EbL`:]3bEbL^:]3dEbL[:_3fE`LY:`3iE_LW:a3jE^LU:b3lE^LS:b3oE]LP:c3RF]Lm9b3UF]Lj9c3XF\\Lg9d3[F[Ld9g3\\FXLc9i3]FWLc9j3]FULb9l3_FSL`9n3aFQL^9Q4bFnK^9R4cFmK\\9U4dFkKZ9V4gFiKX9Y4gFgKX9Z4iFeKW9\\4iFcKV9^4kFaKT9a4lF^KS9c4nF\\KR9e4mF[KR9f4oFYKP9i4PGVKo8k4RGTKm8n4RGSKm8m4TGoJn8R5SGhJQ9Z5oF`JU9a5kFZJZ9g5^22N2N2N2O2M2N2N2N2O1N2N2N3N1N2N2N2N2O1N2N2N3N1N2N2N2N2O1N2N2N2O1N3M2N2N2O1N2N2N2O1N1O2N1O101N1O2N100O2M2M4M2N3L3N2M4M2N3L3N2N3L3N3L3N2N3L3N3L3N2N3L3N3L\\MQG]Jm8c5XGZJf8g5_GVJ]8k5hGRJV8n5PHoIX7f6mHWIS7h6RITIn6j6WITIg6l6^IPIb6P7aInH^6R7fIjHY6W7jIfHV6Z7nIcHP6^7SJ_Hm5a7WJ\\Hh5c7\\JZHc5g7aJUH_5k7dJSH[5m7iJoGV5R8mJkGS5U8nJjGR5V8oJiGP5W8RKhGn4X8SKgGl4Z8UKfGj4Z8WKeGi4[8XKdGg4]8ZKbGf4^8[KaGe4_8\\K`Gc4`8_K_Ga4a8`K^G`4b8aK]G^4d8cK[G]4e8dKZG\\4f8eKYGZ4h8gKWGY4h8iKWGV4j8kKUGU4k8lKTGT4l8mKSGR4n8oKRGP4n8QLQGo3P9_3101O0O101N101N100O2N101N1O101N101N1O100O0001O010O00001O000010O01O00001O000010O01O00010O01O010O0010O010O00010O01O010O010O0010O01O010O010O0001N10001O000O101O00001N1000001O0O10001O00000010O0010O01O0010O01O0010O00010O01O0010O01O1O100O1O00100O1O100O1O1O100O1O1O100O1O010O1O1O01O01O0010O01O0010O01O010O001O010O0000100O00100O001O100O001O10O01O1O10O01O1O0O2N2N2N1O2N2N1O2N2N2N1O2M3N2N2N2N2N2N2N2N2N2N2N1O2N2N2N2N2N2N2N2N2N2N2O1N2N2N3N1N2N2N3N1N2N2O2M2N2N2O2M2N2N2O2M2N2N2O2M2N2N2O2M2N2N2O2M2N2N2O2M2K5L5J5L4L4K6K4L4K5L5J5L4L4K6K4H8_Oa0@a0B=H8GTo9",
+                                }
+                            ),
+                            mask.decode(
+                                {
+                                    "size": [640, 565],
+                                    "counts": b"h]1k2U>P3]Nc1WOi000001O0000001O00001O00001O0000001O00001O00001O0O10001O000O2O00001N1000001N10001O0O10001O0O101O00001N1000001N10001O0O101O000O1000000O100000E;G81000O10O100000O01000000O10O1000O100000O10O100000O01000000O10O1000O1^MnCVMR<h2RDVMm;j2VDTMj;k2XDSMi;l2ZDRMf;l2^DRMb;m2aDQM_;n2dDoL];P3fDnLZ;Q3hDnLX;P3lDnLT;Q3oDmLQ;R3REkLo:T3TEjLl:U3WEiLi:W3XEhLh:W3[EfLf:Z3\\EdLd:\\3^EbLb:^3`E`L`:`3`E_La:a3`E^L`:a3bE^L^:b3cE]L]:c3dE[L]:e3dEZL\\:f3eEYL[:f3gEYLY:g3hEWLY:i3gEWLY:i3hEVLX:j3iEULW:k3jETLV:k3lESLU:m3lERLT:n3mEQLS:o3nEPLR:P4nEoKS:Q4nEnKR:Q4PFnKP:R4QFmKo9S4RFkKo9U4RFjKn9_4jE`KV:a4jE^KV:c4iE\\KX:e4hEZKX:g4hEXKX:i4hEVKX:k4hESKY:n4gEQKY:P5fEPKZ:Q5fEnJZ:S5fElJZ:U5fEiJ[:X5V21O1O1O001O1O001O1O001O1O001O1O001O1O001O1O001O1O001O10O01O00001O010O0010O2O2M2O2M3N1N3M2O0O100O100O10O0100O100O100O00100O100O100O010O100O100O1O010O100O100O100fMo@C[?0k@N^?Eh@8b?[Od@c0e?POa@m0i?fN]@X1l?[NZ@b1Ta0N2O1N2O1N2O1N2N2N2N2N2N2N2L4J6J6I7JoUh5",
+                                }
+                            ),
+                        ]
+                    )
+                ).bool(),  # 73,
+            ),
+        ],
+    ],
+)
+
 
 _inputs_bboxes = Input(
     preds=[
@@ -215,6 +297,42 @@ def _compare_fn(preds, target) -> dict:
     }
 
 
+def _compare_fn_segm(preds, target) -> dict:
+    """Comparison function for map implementation.
+
+       Official pycocotools results calculated from a subset of https://GitHub.com/cocodataset/cocoapi/tree/master/results
+    Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.352
+         Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.752
+        Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.252
+        Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = -1.000
+        Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = -1.000
+        Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.352
+        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.350
+        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.350
+        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.350
+        Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = -1.000
+        Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = -1.000
+        Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.350
+
+    """
+    return {
+        "map": torch.Tensor([0.352]),
+        "map_50": torch.Tensor([0.742]),
+        "map_75": torch.Tensor([0.252]),
+        "map_small": torch.Tensor([-1]),
+        "map_medium": torch.Tensor([-1]),
+        "map_large": torch.Tensor([0.352]),
+        "mar_1": torch.Tensor([0.35]),
+        "mar_10": torch.Tensor([0.35]),
+        "mar_100": torch.Tensor([0.35]),
+        "mar_small": torch.Tensor([-1]),
+        "mar_medium": torch.Tensor([-1]),
+        "mar_large": torch.Tensor([0.35]),
+        "map_per_class": torch.Tensor([0.4039604, -1.0, 0.3]),
+        "mar_100_per_class": torch.Tensor([0.4, -1.0, 0.3]),
+    }
+
+
 _pytest_condition = not (_TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8)
 
 
@@ -231,7 +349,8 @@ class TestMAP(MetricTester):
     atol = 1e-1
 
     @pytest.mark.parametrize("ddp", [False, True])
-    def test_map(self, compute_on_cpu, ddp):
+    def test_map_bbox(self, compute_on_cpu, ddp):
+
         """Test modular implementation for correctness."""
         self.run_class_metric_test(
             ddp=ddp,
@@ -242,6 +361,21 @@ class TestMAP(MetricTester):
             dist_sync_on_step=False,
             check_batch=False,
             metric_args={"class_metrics": True, "compute_on_cpu": compute_on_cpu},
+        )
+
+    @pytest.mark.parametrize("ddp", [False])
+    def test_map_segm(self, ddp):
+        """Test modular implementation for correctness."""
+
+        self.run_class_metric_test(
+            ddp=ddp,
+            preds=_inputs_masks.preds,
+            target=_inputs_masks.target,
+            metric_class=MeanAveragePrecision,
+            sk_metric=_compare_fn_segm,
+            dist_sync_on_step=False,
+            check_batch=False,
+            metric_args={"class_metrics": True, "iou_type": "segm"},
         )
 
 
