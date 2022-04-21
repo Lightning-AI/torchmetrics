@@ -172,7 +172,7 @@ def signal_distortion_ratio(
                 [0, 1]])
 
     .. note::
-       Preds and target need to have the same dtype, otherwise target will be converted to preds' dtype
+       Preds and target are converted to double precision in signal_distortion_ratio
 
 
     References:
@@ -182,16 +182,10 @@ def signal_distortion_ratio(
         [2] Scheibler, R. (2021). SDR -- Medium Rare with Fast Computations.
     """
     _check_same_shape(preds, target)
-
-    if not preds.dtype.is_floating_point:
-        preds = preds.float()  # for torch.norm
-
-    # half precision support
-    if preds.dtype == torch.float16:
-        preds = preds.to(torch.float32)
-
-    if preds.dtype != target.dtype:  # for torch.linalg.solve
-        target = target.to(preds.dtype)
+    
+    # use double precision
+    preds = preds.double()
+    target = target.double()
 
     if zero_mean:
         preds = preds - preds.mean(dim=-1, keepdim=True)
@@ -239,15 +233,6 @@ def signal_distortion_ratio(
     # transform to decibels
     ratio = coh / (1 - coh)
     val = 10.0 * torch.log10(ratio)
-
-    # recompute sdr in float64 if val is NaN or Inf
-    if (torch.isnan(val).any() or torch.isinf(val).any()) and preds.dtype != torch.float64:
-        warnings.warn(
-            "Detected `nan` or `inf` value in computed metric, retrying computation in double precision",
-            UserWarning,
-        )
-        val = signal_distortion_ratio(preds.double(), target.double(), use_cg_iter, filter_length, zero_mean, load_diag)
-
     return val
 
 

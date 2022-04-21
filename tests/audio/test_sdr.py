@@ -154,14 +154,7 @@ def test_too_low_precision():
     preds = torch.tensor(data["preds"])
     target = torch.tensor(data["target"])
 
-    if _TORCH_LOWER_1_12_DEV:
-        with pytest.warns(
-            UserWarning,
-            match="Detected `nan` or `inf` value in computed metric, retrying computation in double precision",
-        ):
-            sdr_tm = signal_distortion_ratio(preds, target)
-    else:  # when pytorch >= 1.12, sdr doesn't have this problem
-        sdr_tm = signal_distortion_ratio(preds, target).double()
+    sdr_tm = signal_distortion_ratio(preds, target).double()
 
     # check equality with bss_eval_sources in every pytorch version
     sdr_bss, _, _, _ = bss_eval_sources(target.numpy(), preds.numpy(), False)
