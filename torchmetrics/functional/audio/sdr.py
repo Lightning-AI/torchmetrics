@@ -198,8 +198,8 @@ def signal_distortion_ratio(
         target = target - target.mean(dim=-1, keepdim=True)
 
     # normalize along time-axis to make preds and target have unit norm
-    target = target / torch.clamp(norm(target, dim=-1, keepdims=True), min=1e-6)
-    preds = preds / torch.clamp(norm(preds, dim=-1, keepdims=True), min=1e-6)
+    target = target / torch.clamp(norm(target, dim=-1, keepdim=True), min=1e-6)
+    preds = preds / torch.clamp(norm(preds, dim=-1, keepdim=True), min=1e-6)
 
     # solve for the optimal filter
     # compute auto-correlation and cross-correlation
