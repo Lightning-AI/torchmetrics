@@ -98,6 +98,15 @@ class COCOMetricResults(BaseMetricResults):
     )
 
 
+def _segm_iou(mask1, mask2):
+
+    intersection = (mask1 * mask2).sum()
+    if intersection == 0:
+        return 0.0
+    union = torch.logical_or(mask1, mask2).to(torch.int).sum()
+    return (intersection / union).unsqueeze(0)
+
+
 def segm_iou(inputs, targets, smooth=1):
 
     n_inputs = inputs.shape[0]
