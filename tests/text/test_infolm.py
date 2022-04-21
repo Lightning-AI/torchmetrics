@@ -61,14 +61,14 @@ def reference_infolm_score(preds, target, model_name, information_measure, idf, 
     ["information_measure", "idf", "alpha", "beta"],
     [
         ("kl_divergence", False, 0.25, 0.25),
-        # ("alpha_divergence", True, 0.4, 0.3),
-        # ("beta_divergence", False, None, 0.6),
-        # ("ab_divergence", True, 0.25, 0.25),
-        # ("renyi_divergence", False, 0.3, 0.1),
-        # ("l1_distance", True, None, None),
-        # ("l2_distance", False, None, None),
-        # ("l_infinity_distance", True, None, None),
-        # ("fisher_rao_distance", False, 0.25, 0.25),
+        ("alpha_divergence", True, 0.4, 0.3),
+        ("beta_divergence", False, None, 0.6),
+        ("ab_divergence", True, 0.25, 0.25),
+        ("renyi_divergence", False, 0.3, 0.1),
+        ("l1_distance", True, None, None),
+        ("l2_distance", False, None, None),
+        ("l_infinity_distance", True, None, None),
+        ("fisher_rao_distance", False, 0.25, 0.25),
     ],
 )
 @pytest.mark.parametrize(
@@ -78,8 +78,8 @@ def reference_infolm_score(preds, target, model_name, information_measure, idf, 
 class TestInfoLM(TextTester):
     atol = 1e-4
 
-    @pytest.mark.parametrize("ddp", [False])
-    @pytest.mark.parametrize("dist_sync_on_step", [False])
+    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
     def test_infolm_class(self, ddp, dist_sync_on_step, preds, targets, information_measure, idf, alpha, beta):
         metric_args = {
             "model_name_or_path": MODEL_NAME,
