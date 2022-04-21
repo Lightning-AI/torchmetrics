@@ -29,6 +29,24 @@ else:
 log = logging.getLogger(__name__)
 
 
+def mask_area(input):
+    n_inputs = len(input)
+
+    return input.reshape(n_inputs, -1).sum(1)
+
+
+def compute_area(input, type="bbox"):
+    if len(input) == 0:
+
+        return torch.Tensor([]).to(input.device)
+
+    if type == "bbox":
+
+        return box_area(input)
+    else:
+        return mask_area(input)
+
+
 class BaseMetricResults(dict):
     """Base metric class, that allows fields for pre-defined metrics."""
 
@@ -80,13 +98,23 @@ class COCOMetricResults(BaseMetricResults):
     )
 
 
+def _segm_iou(mask1, mask2):
+
+    intersection = (mask1 * mask2).sum()
+    if intersection == 0:
+        return 0.0
+    union = torch.logical_or(mask1, mask2).to(torch.int).sum()
+    return (intersection / union).unsqueeze(0)
+
+
 def segm_iou(inputs, targets, smooth=1):
 
     n_inputs = inputs.shape[0]
     n_targets = targets.shape[0]
     # flatten label and prediction tensors
-    inputs = inputs.view(n_inputs, -1).repeat_interleave(n_targets, 0)
-    targets = targets.view(n_targets, -1).repeat(n_inputs, 1)
+
+    inputs = inputs.reshape(n_inputs, -1).repeat_interleave(n_targets, 0)
+    targets = targets.reshape(n_targets, -1).repeat(n_inputs, 1)
 
     # i1 * t1
     # i1 * t2
@@ -408,6 +436,7 @@ class MeanAveragePrecision(Metric):
             det = det[:max_det]
 
         ious = compute_iou(det, gt)
+
         return ious
 
     def __evaluate_image_gt_no_preds(
@@ -506,13 +535,14 @@ class MeanAveragePrecision(Metric):
         if gt.numel() == 0 and det.numel() == 0:
             return None
 
-        areas = box_area(gt)
+        areas = compute_area(gt, self.iou_type)
         ignore_area = (areas < area_range[0]) | (areas > area_range[1])
 
         # sort dt highest score first, sort gt ignore last
         ignore_area_sorted, gtind = torch.sort(ignore_area.to(torch.uint8))
         # Convert to uint8 temporarily and back to bool, because "Sort currently does not support bool dtype on CUDA"
         ignore_area_sorted = ignore_area_sorted.to(torch.bool)
+
         gt = gt[gtind]
         scores = self.detection_scores[idx]
         scores_filtered = scores[det_label_mask]
@@ -542,12 +572,13 @@ class MeanAveragePrecision(Metric):
                     gt_matches[idx_iou, m] = 1
 
         # set unmatched detections outside of area range to ignore
-        det_areas = box_area(det)
+        det_areas = compute_area(det, self.iou_type)
         det_ignore_area = (det_areas < area_range[0]) | (det_areas > area_range[1])
         ar = det_ignore_area.reshape((1, nb_det))
         det_ignore = torch.logical_or(
             det_ignore, torch.logical_and(det_matches == 0, torch.repeat_interleave(ar, nb_iou_thrs, 0))
         )
+
         return {
             "dtMatches": det_matches.to(self.device),
             "gtMatches": gt_matches.to(self.device),
