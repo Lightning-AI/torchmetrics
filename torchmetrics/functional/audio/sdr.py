@@ -182,7 +182,7 @@ def signal_distortion_ratio(
         [2] Scheibler, R. (2021). SDR -- Medium Rare with Fast Computations.
     """
     _check_same_shape(preds, target)
-    
+
     # use double precision
     preds = preds.double()
     target = target.double()
