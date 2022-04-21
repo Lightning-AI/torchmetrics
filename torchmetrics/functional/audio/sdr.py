@@ -100,7 +100,7 @@ def _compute_autocorr_crosscorr(
         r_0 = torch.fft.irfft(t_fft.real**2 + t_fft.imag**2, n=n_fft)[..., :corr_len]
     else:
         t_fft = torch.rfft(target, signal_ndim=1)
-        real = t_fft[..., 0]**2 + t_fft[..., 1]**2
+        real = t_fft[..., 0] ** 2 + t_fft[..., 1] ** 2
         imag = torch.zeros(real.shape, dtype=real.dtype, device=real.device)
         result = torch.stack([real, imag], len(real.shape))
         r_0 = torch.irfft(result, signal_ndim=1)[..., :corr_len]
