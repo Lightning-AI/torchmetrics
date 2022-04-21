@@ -362,8 +362,8 @@ class TestMAP(MetricTester):
         """Test modular implementation for correctness."""
         self.run_class_metric_test(
             ddp=ddp,
-            preds=_inputs.preds,
-            target=_inputs.target,
+            preds=_inputs_bboxes.preds,
+            target=_inputs_bboxes.target,
             metric_class=MeanAveragePrecision,
             sk_metric=_compare_fn,
             dist_sync_on_step=False,
