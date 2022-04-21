@@ -314,7 +314,6 @@ def _compare_fn_segm(preds, target) -> dict:
         Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = -1.000
         Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = -1.000
         Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.350
-
     """
     return {
         "map": torch.Tensor([0.352]),
