@@ -20,10 +20,10 @@ import torch
 from torch import Tensor
 
 from torchmetrics.utilities.checks import _check_same_shape
-from torchmetrics.utilities.imports import _FAST_BSS_EVAL_AVAILABLE, _TORCH_GREATER_EQUAL_1_7, _TORCH_GREATER_EQUAL_1_8
+from torchmetrics.utilities.imports import _FAST_BSS_EVAL_AVAILABLE, _TORCH_GREATER_EQUAL_1_8
 
 # import or def the norm function
-if _TORCH_GREATER_EQUAL_1_7:
+if _TORCH_GREATER_EQUAL_1_8:
     from torch.linalg import norm
 else:
     from torch import norm
@@ -95,7 +95,7 @@ def _compute_autocorr_crosscorr(
 
     # computes the auto correlation of `target`
     # r_0 is the first row of the symmetric Toeplitz matric
-    if _TORCH_GREATER_EQUAL_1_7:
+    if _TORCH_GREATER_EQUAL_1_8:
         t_fft = torch.fft.rfft(target, n=n_fft, dim=-1)
         r_0 = torch.fft.irfft(t_fft.real**2 + t_fft.imag**2, n=n_fft)[..., :corr_len]
     else:
@@ -106,7 +106,7 @@ def _compute_autocorr_crosscorr(
         r_0 = torch.irfft(result, signal_ndim=1)[..., :corr_len]
 
     # computes the cross-correlation of `target` and `preds`
-    if _TORCH_GREATER_EQUAL_1_7:
+    if _TORCH_GREATER_EQUAL_1_8:
         p_fft = torch.fft.rfft(preds, n=n_fft, dim=-1)
         b = torch.fft.irfft(t_fft.conj() * p_fft, n=n_fft, dim=-1)[..., :corr_len]
     else:
@@ -182,7 +182,7 @@ def signal_distortion_ratio(
         [2] Scheibler, R. (2021). SDR -- Medium Rare with Fast Computations.
     """
     _check_same_shape(preds, target)
-    
+
     # use double precision
     preds = preds.double()
     target = target.double()
