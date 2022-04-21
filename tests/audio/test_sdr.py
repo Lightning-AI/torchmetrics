@@ -27,7 +27,7 @@ from tests.helpers import seed_all
 from tests.helpers.testers import MetricTester
 from torchmetrics.audio import SignalDistortionRatio
 from torchmetrics.functional import signal_distortion_ratio
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6, _TORCH_LOWER_1_12_DEV
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 
 seed_all(42)
 
