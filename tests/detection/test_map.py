@@ -23,7 +23,9 @@ from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_
 
 Input = namedtuple("Input", ["preds", "target"])
 
-_inputs = Input(
+_inputs_masks = Input(preds=[], target=[])
+
+_inputs_bboxes = Input(
     preds=[
         [
             dict(
@@ -156,7 +158,7 @@ _inputs3 = Input(
 def _compare_fn(preds, target) -> dict:
     """Comparison function for map implementation.
 
-    Official pycocotools results calculated from a subset of https://github.com/cocodataset/cocoapi/tree/master/results
+    Official pycocotools results calculated from a subset of https://GitHub.com/cocodataset/cocoapi/tree/master/results
         All classes
         Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.706
         Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.901
@@ -233,8 +235,8 @@ class TestMAP(MetricTester):
         """Test modular implementation for correctness."""
         self.run_class_metric_test(
             ddp=ddp,
-            preds=_inputs.preds,
-            target=_inputs.target,
+            preds=_inputs_bboxes.preds,
+            target=_inputs_bboxes.target,
             metric_class=MeanAveragePrecision,
             sk_metric=_compare_fn,
             dist_sync_on_step=False,
