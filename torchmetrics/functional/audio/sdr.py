@@ -22,21 +22,17 @@ from torch import Tensor
 from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.imports import _FAST_BSS_EVAL_AVAILABLE, _TORCH_GREATER_EQUAL_1_8
 
-# import or def the norm function
+# import or def the norm/solve function
 if _TORCH_GREATER_EQUAL_1_8:
     from torch.linalg import norm
-else:
-    from torch import norm
-
-# import or redirect the solve function
-if _TORCH_GREATER_EQUAL_1_8:
     solve = torch.linalg.solve
 else:
+    from torch import norm
+    from torch.nn.functional import pad
     from torch import solve as _solve
 
     def solve(A: Tensor, b: Tensor) -> Tensor:
         return _solve(b[..., None], A)[0][..., 0]
-
 
 if _FAST_BSS_EVAL_AVAILABLE and _TORCH_GREATER_EQUAL_1_8:
     from fast_bss_eval.torch.cgd import toeplitz_conjugate_gradient
@@ -99,22 +95,24 @@ def _compute_autocorr_crosscorr(
         t_fft = torch.fft.rfft(target, n=n_fft, dim=-1)
         r_0 = torch.fft.irfft(t_fft.real**2 + t_fft.imag**2, n=n_fft)[..., :corr_len]
     else:
-        t_fft = torch.rfft(target, signal_ndim=1)
+        t_pad = pad(target, (0, n_fft - target.shape[-1]), "constant", 0)
+        t_fft = torch.rfft(t_pad, signal_ndim=1)
         real = t_fft[..., 0] ** 2 + t_fft[..., 1] ** 2
         imag = torch.zeros(real.shape, dtype=real.dtype, device=real.device)
         result = torch.stack([real, imag], len(real.shape))
-        r_0 = torch.irfft(result, signal_ndim=1)[..., :corr_len]
+        r_0 = torch.irfft(result, signal_ndim=1, signal_sizes=[n_fft])[..., :corr_len]
 
     # computes the cross-correlation of `target` and `preds`
     if _TORCH_GREATER_EQUAL_1_8:
         p_fft = torch.fft.rfft(preds, n=n_fft, dim=-1)
         b = torch.fft.irfft(t_fft.conj() * p_fft, n=n_fft, dim=-1)[..., :corr_len]
     else:
-        p_fft = torch.rfft(preds, signal_ndim=1)
+        p_pad = pad(preds, (0, n_fft - preds.shape[-1]), "constant", 0)
+        p_fft = torch.rfft(p_pad, signal_ndim=1)
         real = t_fft[..., 0] * p_fft[..., 0] + t_fft[..., 1] * p_fft[..., 1]
         imag = t_fft[..., 0] * p_fft[..., 1] - t_fft[..., 1] * p_fft[..., 0]
         result = torch.stack([real, imag], len(real.shape))
-        b = torch.irfft(result, signal_ndim=1)[..., :corr_len]
+        b = torch.irfft(result, signal_ndim=1, signal_sizes=[n_fft])[..., :corr_len]
 
     return r_0, b
 
@@ -171,10 +169,6 @@ def signal_distortion_ratio(
                 [1, 0],
                 [0, 1]])
 
-    .. note::
-       Preds and target are converted to double precision in signal_distortion_ratio
-
-
     References:
         [1] Vincent, E., Gribonval, R., & Fevotte, C. (2006). Performance measurement in blind audio source separation.
         IEEE Transactions on Audio, Speech and Language Processing, 14(4), 1462–1469.
@@ -184,6 +178,7 @@ def signal_distortion_ratio(
     _check_same_shape(preds, target)
 
     # use double precision
+    preds_dtype = preds.dtype
     preds = preds.double()
     target = target.double()
 
@@ -233,7 +228,11 @@ def signal_distortion_ratio(
     # transform to decibels
     ratio = coh / (1 - coh)
     val = 10.0 * torch.log10(ratio)
-    return val
+
+    if preds_dtype == torch.float64:
+        return val
+    else:
+        return val.float()
 
 
 def scale_invariant_signal_distortion_ratio(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:

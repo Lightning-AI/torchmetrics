@@ -71,10 +71,6 @@ class SignalDistortionRatio(Metric):
         >>> pit(preds, target)
         tensor(-11.6051)
 
-    .. note::
-       Preds and target are converted to double precision in signal_distortion_ratio
-
-
     References:
         [1] Vincent, E., Gribonval, R., & Fevotte, C. (2006). Performance measurement in blind audio source separation.
         IEEE Transactions on Audio, Speech and Language Processing, 14(4), 1462–1469.
