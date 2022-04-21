@@ -455,6 +455,12 @@ def _infolm_update(
     Return:
         Tokenizerd ``preds`` and ``target`` sentences represented with ``input_ids`` and ``attention_mask`` tensors.
     """
+    # HuggingFace tokenizer expects an input to be of a type str or List[str]
+    if not isinstance(preds, (str, list)):
+        preds = list(preds)
+    if not isinstance(target, (str, list)):
+        target = list(target)
+
     preds_input = tokenizer(preds, padding="max_length", max_length=max_length, truncation=True, return_tensors="pt")
     target_input = tokenizer(target, padding="max_length", max_length=max_length, truncation=True, return_tensors="pt")
 
