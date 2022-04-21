@@ -244,8 +244,8 @@ class Metric(Module, ABC):
                 values = torch.stack([current_state, incoming_state])
             else:
                 values = _flatten([current_state, incoming_state])
-            reduced = reduce_fn(values) if reduce_fn is not None else values
-            setattr(self, attr, reduced if isinstance(current_state, Tensor) else [reduced])
+            reduced = reduce_fn(values) if reduce_fn is not None and reduce_fn != dim_zero_cat else values
+            setattr(self, attr, reduced)
 
     def _sync_dist(self, dist_sync_fn: Callable = gather_all_tensors, process_group: Optional[Any] = None) -> None:
         input_dict = {attr: getattr(self, attr) for attr in self._reductions}
