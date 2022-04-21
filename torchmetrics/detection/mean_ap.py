@@ -107,7 +107,7 @@ def _segm_iou(mask1, mask2):
     return (intersection / union).unsqueeze(0)
 
 
-def segm_iou(inputs, targets, smooth=1):
+def segm_iou(inputs, targets, smooth=1e-5):
 
     n_inputs = inputs.shape[0]
     n_targets = targets.shape[0]
@@ -209,6 +209,8 @@ class MeanAveragePrecision(Metric):
     Args:
         box_format:
             Input format of given boxes. Supported formats are ``[`xyxy`, `xywh`, `cxcywh`]``.
+        iou_type:
+            Type of input (either masks or bounding-boxes) used for computing IOU. Supported IOU types are ``[`bboxes`, `segm`]``.
         iou_thresholds:
             IoU thresholds for evaluation. If set to ``None`` it corresponds to the stepped range ``[0.5,...,0.95]``
             with step ``0.05``. Else provide a list of floats.
