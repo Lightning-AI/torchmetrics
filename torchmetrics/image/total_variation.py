@@ -3,8 +3,7 @@ import torch
 
 
 class TotalVariation(Metric):
-    """
-    A method to calculate total variation loss.
+    """A method to calculate total variation loss.
 
     .. note::
 
@@ -25,19 +24,13 @@ class TotalVariation(Metric):
     total: torch.Tensor
 
     def __init__(self, dist_sync_on_step: bool = False, compute_on_step: bool = True):
-        super().__init__(
-            dist_sync_on_step=dist_sync_on_step, compute_on_step=compute_on_step
-        )
-        self.add_state(
-            "current", default=torch.tensor(0, dtype=torch.float), dist_reduce_fx="sum"
-        )
-        self.add_state(
-            "total", default=torch.tensor(0, dtype=torch.int), dist_reduce_fx="sum"
-        )
+        super().__init__(dist_sync_on_step=dist_sync_on_step, compute_on_step=compute_on_step)
+        self.add_state("current", default=torch.tensor(0, dtype=torch.float), dist_reduce_fx="sum")
+        self.add_state("total", default=torch.tensor(0, dtype=torch.int), dist_reduce_fx="sum")
 
     def update(self, sample: torch.Tensor) -> None:
-        """
-        Update method for TV Loss.
+        """Update method for TV Loss.
+
         :param sample: A NCHW image batch.
         :type sample: torch.Tensor
 
@@ -48,12 +41,8 @@ class TotalVariation(Metric):
         _width = sample.size()[3]
         _count_height = self.tensor_size(sample[:, :, 1:, :])
         _count_width = self.tensor_size(sample[:, :, :, 1:])
-        _height_tv = torch.pow(
-            (sample[:, :, 1:, :] - sample[:, :, : _height - 1, :]), 2
-        ).sum()
-        _width_tv = torch.pow(
-            (sample[:, :, :, 1:] - sample[:, :, :, : _width - 1]), 2
-        ).sum()
+        _height_tv = torch.pow((sample[:, :, 1:, :] - sample[:, :, : _height - 1, :]), 2).sum()
+        _width_tv = torch.pow((sample[:, :, :, 1:] - sample[:, :, :, : _width - 1]), 2).sum()
         self.current += 2 * (_height_tv / _count_height + _width_tv / _count_width)
         self.total += sample.numel()
 
