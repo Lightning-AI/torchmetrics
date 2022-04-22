@@ -44,12 +44,6 @@ class PeakSignalNoiseRatio(Metric):
         dim:
             Dimensions to reduce PSNR scores over, provided as either an integer or a list of integers. Default is
             None meaning scores will be reduced across all dimensions and all batches.
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -78,10 +72,9 @@ class PeakSignalNoiseRatio(Metric):
         base: float = 10.0,
         reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
         dim: Optional[Union[int, Tuple[int, ...]]] = None,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
 
         if dim is None and reduction != "elementwise_mean":
             rank_zero_warn(f"The `reduction={reduction}` will not have any effect when `dim` is None.")

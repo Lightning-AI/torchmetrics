@@ -59,12 +59,6 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
     Args:
         net_type: str indicating backbone network type to use. Choose between `'alex'`, `'vgg'` or `'squeeze'`
         reduction: str indicating how to reduce over the batch dimension. Choose between `'sum'` or `'mean'`.
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -98,10 +92,9 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
         self,
         net_type: str = "alex",
         reduction: Literal["sum", "mean"] = "mean",
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
 
         if not _LPIPS_AVAILABLE:
             raise ModuleNotFoundError(
