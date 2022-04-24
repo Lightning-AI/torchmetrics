@@ -133,6 +133,8 @@ _inputs2 = Input(
     ],
 )
 
+# Test empty preds case, to ensure bool inputs are properly casted to uint8
+# From https://github.com/PyTorchLightning/metrics/issues/981
 _inputs3 = Input(
     preds=[
         [
