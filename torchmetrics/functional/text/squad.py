@@ -133,7 +133,7 @@ def _squad_input_check(
     _fn_answer = lambda tgt: dict(
         answers=[dict(text=txt) for txt in tgt["answers"]["text"]], id=tgt["id"]  # type: ignore
     )
-    targets_dict = [dict(paragraphs=[dict(qas=[_fn_answer(target) for target in targets])])]
+    targets_dict = [{"paragraphs": [dict(qas=[_fn_answer(target) for target in targets])]}]
     return preds_dict, targets_dict
 
 

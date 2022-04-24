@@ -700,7 +700,7 @@ class MeanAveragePrecision(Metric):
         det_matches = torch.cat([e["dtMatches"][:, :max_det] for e in img_eval_cls_bbox], axis=1)[:, inds]
         det_ignore = torch.cat([e["dtIgnore"][:, :max_det] for e in img_eval_cls_bbox], axis=1)[:, inds]
         gt_ignore = torch.cat([e["gtIgnore"] for e in img_eval_cls_bbox])
-        npig = torch.count_nonzero(gt_ignore == False)  # noqa: E712
+        npig = torch.count_nonzero(gt_ignore is False)  # noqa: E712
         if npig == 0:
             return recall, precision, scores
         tps = torch.logical_and(det_matches, torch.logical_not(det_ignore))

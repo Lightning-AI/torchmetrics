@@ -458,7 +458,7 @@ def rouge_score(
     stemmer = nltk.stem.porter.PorterStemmer() if use_stemmer else None
 
     if not isinstance(rouge_keys, tuple):
-        rouge_keys = tuple([rouge_keys])
+        rouge_keys = (rouge_keys, )
     for key in rouge_keys:
         if key not in ALLOWED_ROUGE_KEYS.keys():
             raise ValueError(f"Got unknown rouge key {key}. Expected to be one of {list(ALLOWED_ROUGE_KEYS.keys())}")
