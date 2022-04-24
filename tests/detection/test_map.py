@@ -133,20 +133,18 @@ _inputs2 = Input(
     ],
 )
 
+# Test empty preds case, to ensure bool inputs are properly casted to uint8
+# From https://github.com/PyTorchLightning/metrics/issues/981
 _inputs3 = Input(
-    preds = [
+    preds=[
         [
-            dict(
-                boxes = torch.tensor([]),
-                scores = torch.tensor([]),
-                labels = torch.tensor([])
-            ),
+            dict(boxes=torch.tensor([]), scores=torch.tensor([]), labels=torch.tensor([])),
         ],
     ],
     target=[
         [
             dict(
-                boxes=torch.tensor([[1., 2., 3., 4.]]),
+                boxes=torch.tensor([[1.0, 2.0, 3.0, 4.0]]),
                 scores=torch.tensor([0.8]),
                 labels=torch.tensor([1]),
             ),
