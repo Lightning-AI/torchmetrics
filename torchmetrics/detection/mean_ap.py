@@ -694,7 +694,12 @@ class MeanAveragePrecision(Metric):
 
         # different sorting method generates slightly different results.
         # mergesort is used to be consistent as Matlab implementation.
-        inds = torch.argsort(det_scores, descending=True)
+        # Sort in PyTorch does not support bool types on CUDA (yet, 1.11.0)
+        if det_scores.is_cuda and det_scores.dtype is torch.bool:
+            # Explicitly cast to uint8 to avoid error for bool inputs on CUDA to argsort
+            inds = torch.argsort(det_scores.to(torch.uint8), descending=True)
+        else:
+            inds = torch.argsort(det_scores, descending=True)
         det_scores_sorted = det_scores[inds]
 
         det_matches = torch.cat([e["dtMatches"][:, :max_det] for e in img_eval_cls_bbox], axis=1)[:, inds]

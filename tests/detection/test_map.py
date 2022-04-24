@@ -58,7 +58,7 @@ _inputs = Input(
                 scores=torch.Tensor([0.699]),
                 labels=torch.IntTensor([5]),
             ),  # coco image id 133
-        ],
+        ], 
     ],
     target=[
         [
@@ -95,7 +95,7 @@ _inputs = Input(
                 boxes=torch.Tensor([[13.99, 2.87, 640.00, 421.52]]),
                 labels=torch.IntTensor([5]),
             ),  # coco image id 133
-        ],
+        ], 
     ],
 )
 
@@ -129,6 +129,27 @@ _inputs2 = Input(
                 boxes=torch.Tensor([]),
                 labels=torch.IntTensor([]),
             )
+        ],
+    ],
+)
+
+_inputs3 = Input(
+    preds = [
+        [
+            dict(
+                boxes = torch.tensor([]),
+                scores = torch.tensor([]),
+                labels = torch.tensor([])
+            ),
+        ],
+    ],
+    target=[
+        [
+            dict(
+                boxes=torch.tensor([[1., 2., 3., 4.]]),
+                scores=torch.tensor([0.8]),
+                labels=torch.tensor([1]),
+            ),
         ],
     ],
 )
@@ -283,7 +304,7 @@ def _move_to_gpu(input):
 
 @pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
 @pytest.mark.skipif(_gpu_test_condition, reason="test requires CUDA availability")
-@pytest.mark.parametrize("inputs", [_inputs, _inputs2])
+@pytest.mark.parametrize("inputs", [_inputs, _inputs2, _inputs3])
 def test_map_gpu(inputs):
     """Test predictions on single gpu."""
     metric = MeanAveragePrecision()
