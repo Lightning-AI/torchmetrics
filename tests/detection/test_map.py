@@ -134,19 +134,15 @@ _inputs2 = Input(
 )
 
 _inputs3 = Input(
-    preds = [
+    preds=[
         [
-            dict(
-                boxes = torch.tensor([]),
-                scores = torch.tensor([]),
-                labels = torch.tensor([])
-            ),
+            dict(boxes=torch.tensor([]), scores=torch.tensor([]), labels=torch.tensor([])),
         ],
     ],
     target=[
         [
             dict(
-                boxes=torch.tensor([[1., 2., 3., 4.]]),
+                boxes=torch.tensor([[1.0, 2.0, 3.0, 4.0]]),
                 scores=torch.tensor([0.8]),
                 labels=torch.tensor([1]),
             ),
