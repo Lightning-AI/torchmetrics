@@ -205,7 +205,7 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         self.add_state("preds", default=[], dist_reduce_fx="cat")
         self.add_state("target", default=[], dist_reduce_fx="cat")
 
-        if not (isinstance(kernel_size, Sequence) or isinstance(kernel_size, int)):
+        if not (isinstance(kernel_size, (Sequence, int))):
             raise ValueError(
                 f"Argument `kernel_size` expected to be an sequence or an int, or a single int. Got {kernel_size}"
             )
