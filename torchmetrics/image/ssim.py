@@ -47,12 +47,6 @@ class StructuralSimilarityIndexMeasure(Metric):
         return_contrast_sensitivity: If true, the constant term is returned as a second argument.
             The luminance term can be obtained with luminance=ssim/contrast
             Mutually exclusive with ``return_full_image``
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Return:
@@ -81,12 +75,11 @@ class StructuralSimilarityIndexMeasure(Metric):
         data_range: Optional[float] = None,
         k1: float = 0.01,
         k2: float = 0.03,
-        compute_on_step: Optional[bool] = None,
         return_full_image: bool = False,
         return_contrast_sensitivity: bool = False,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
         rank_zero_warn(
             "Metric `SSIM` will save all targets and"
             " predictions in buffer. For large datasets this may lead"
@@ -157,12 +150,6 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         normalize: When MultiScaleStructuralSimilarityIndexMeasure loss is used for training, it is desirable to use
             normalizes to improve the training stability. This `normalize` argument is out of scope of the original
             implementation [1], and it is adapted from https://github.com/jorge-pessoa/pytorch-msssim instead.
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Return:
@@ -206,10 +193,9 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         k2: float = 0.03,
         betas: Tuple[float, ...] = (0.0448, 0.2856, 0.3001, 0.2363, 0.1333),
         normalize: Literal["relu", "simple", None] = None,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
         rank_zero_warn(
             "Metric `MS_SSIM` will save all targets and"
             " predictions in buffer. For large datasets this may lead"
