@@ -243,7 +243,7 @@ def _check_classification_inputs(
             either from the shape of inputs, or the maximum label in the ``target`` and ``preds``
             tensor, where applicable.
         top_k:
-            Number of highest probability entries for each sample to convert to 1s - relevant
+            Number of the highest probability entries for each sample to convert to 1s - relevant
             only for inputs with probability predictions. The default value (``None``) will be
             interpreted as 1 for these inputs. If this parameter is set for multi-label inputs,
             it will take precedence over threshold.
@@ -342,7 +342,7 @@ def _input_format_classification(
 
     In binary case, targets are normally returned as ``(N,1)`` tensor, while preds are transformed
     into a binary tensor (elements become 1 if the probability is greater than or equal to
-    ``threshold`` or 0 otherwise). If ``multiclass=True``, then then both targets are preds
+    ``threshold`` or 0 otherwise). If ``multiclass=True``, then both targets are preds
     become ``(N, 2)`` tensors by a one-hot transformation; with the thresholding being applied to
     preds first.
 
@@ -461,7 +461,7 @@ def _input_format_classification_one_hot(
     Args:
         num_classes: number of classes
         preds: either tensor with labels, tensor with probabilities/logits or multilabel tensor
-        target: tensor with ground true labels
+        target: tensor with ground-true labels
         threshold: float used for thresholding multilabel input
         multilabel: boolean flag indicating if input is multilabel
 
@@ -503,7 +503,7 @@ def _check_retrieval_functional_inputs(
     target: Tensor,
     allow_non_binary_target: bool = False,
 ) -> Tuple[Tensor, Tensor]:
-    """Check ``preds`` and ``target`` tensors are of the same shape and of the correct dtype.
+    """Check ``preds`` and ``target`` tensors are of the same shape and of the correct data type.
 
     Args:
         preds: either tensor with scores/logits
@@ -535,7 +535,7 @@ def _check_retrieval_inputs(
     allow_non_binary_target: bool = False,
     ignore_index: Optional[int] = None,
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    """Check ``indexes``, ``preds`` and ``target`` tensors are of the same shape and of the correct dtype.
+    """Check ``indexes``, ``preds`` and ``target`` tensors are of the same shape and of the correct data type.
 
     Args:
         indexes: tensor with queries indexes
@@ -580,7 +580,7 @@ def _check_retrieval_target_and_prediction_types(
     target: Tensor,
     allow_non_binary_target: bool = False,
 ) -> Tuple[Tensor, Tensor]:
-    """Check ``preds`` and ``target`` tensors are of the same shape and of the correct dtype.
+    """Check ``preds`` and ``target`` tensors are of the same shape and of the correct data type.
 
     Args:
         preds: either tensor with scores/logits
