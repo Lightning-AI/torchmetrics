@@ -252,13 +252,15 @@ class Metric(Module, ABC):
                 reduced = torch.min(current_state, incoming_state)
             elif reduce_fn == dim_zero_cat:  # or (reduce_fn is None and isinstance(current_state, list)):
                 reduced = incoming_state + current_state
-            elif reduce_fn is None:
+            elif reduce_fn is None and isinstance(current_state, Tensor):
                 if incoming_state.ndim > 0:  # TODO: figure out why this works
                     reduced = torch.cat([current_state.expand(1), incoming_state], dim=0)
                 else:
                     reduced = torch.stack([current_state, incoming_state], dim=0)
+            elif reduce_fn is None and isinstance(current_state, list):
+                reduced = _flatten(current_state, incoming_state)
             else:
-                reduced = reduce_fn(torch.stack([current_state, incoming_state]))
+                reduced = reduce_fn(torch.stack([current_state, incoming_state]))  # type: ignore
 
             setattr(self, attr, reduced)
 
