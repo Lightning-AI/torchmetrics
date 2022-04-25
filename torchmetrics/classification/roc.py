@@ -114,8 +114,8 @@ class ROC(Metric):
         self.num_classes = num_classes
         self.pos_label = pos_label
 
-        self.add_state("preds", default=[], dist_reduce_fx=None)
-        self.add_state("target", default=[], dist_reduce_fx=None)
+        self.add_state("preds", default=[], dist_reduce_fx="cat")
+        self.add_state("target", default=[], dist_reduce_fx="cat")
 
         rank_zero_warn(
             "Metric `ROC` will save all targets and predictions in buffer."

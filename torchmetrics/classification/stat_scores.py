@@ -151,7 +151,7 @@ class StatScores(Metric):
             raise ValueError(f"The `ignore_index` {ignore_index} is not valid for inputs with {num_classes} classes")
 
         default: Callable = lambda: []
-        reduce_fn: Optional[str] = None
+        reduce_fn: Optional[str] = "cat"
         if mdmc_reduce != "samplewise" and reduce != "samples":
             if reduce == "micro":
                 zeros_shape = []

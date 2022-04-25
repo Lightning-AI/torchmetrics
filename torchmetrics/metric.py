@@ -240,11 +240,24 @@ class Metric(Module, ABC):
             current_state = getattr(self, attr)
             incoming_state = state_to_reduce[attr]
             reduce_fn = self._reductions[attr]
-            if isinstance(current_state, Tensor):
-                values = torch.stack([current_state, incoming_state])
+            if reduce_fn == dim_zero_sum:
+                reduced = current_state + incoming_state
+            elif reduce_fn == dim_zero_mean:
+                reduced = (current_state + incoming_state) / 2.0
+            elif reduce_fn == dim_zero_max:
+                reduced = torch.max(current_state, incoming_state)
+            elif reduce_fn == dim_zero_min:
+                reduced = torch.min(current_state, incoming_state)
+            elif reduce_fn == dim_zero_cat:  # or (reduce_fn is None and isinstance(current_state, list)):
+                reduced = incoming_state + current_state
+            elif reduce_fn is None:
+                if incoming_state.ndim > 0:  # TODO: figure out why this works
+                    reduced = torch.cat([current_state.expand(1), incoming_state], dim=0)
+                else:
+                    reduced = torch.stack([current_state, incoming_state], dim=0)
             else:
-                values = _flatten([current_state, incoming_state])
-            reduced = reduce_fn(values) if reduce_fn is not None and reduce_fn != dim_zero_cat else values
+                reduced = reduce_fn(torch.stack([current_state, incoming_state]))
+
             setattr(self, attr, reduced)
 
     def _sync_dist(self, dist_sync_fn: Callable = gather_all_tensors, process_group: Optional[Any] = None) -> None:

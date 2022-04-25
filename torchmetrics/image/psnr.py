@@ -90,8 +90,8 @@ class PeakSignalNoiseRatio(Metric):
             self.add_state("sum_squared_error", default=tensor(0.0), dist_reduce_fx="sum")
             self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
         else:
-            self.add_state("sum_squared_error", default=[])
-            self.add_state("total", default=[])
+            self.add_state("sum_squared_error", default=[], dist_reduce_fx="cat")
+            self.add_state("total", default=[], dist_reduce_fx="cat")
 
         if data_range is None:
             if dim is not None:
