@@ -258,7 +258,7 @@ class Metric(Module, ABC):
                 else:
                     reduced = torch.stack([current_state, incoming_state], dim=0)
             elif reduce_fn is None and isinstance(current_state, list):
-                reduced = _flatten(current_state, incoming_state)
+                reduced = _flatten([current_state, incoming_state])
             else:
                 reduced = reduce_fn(torch.stack([current_state, incoming_state]))  # type: ignore
 
