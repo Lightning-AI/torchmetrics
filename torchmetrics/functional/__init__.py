@@ -43,6 +43,7 @@ from torchmetrics.functional.image.ergas import error_relative_global_dimensionl
 from torchmetrics.functional.image.gradients import image_gradients
 from torchmetrics.functional.image.psnr import peak_signal_noise_ratio
 from torchmetrics.functional.image.sam import spectral_angle_mapper
+from torchmetrics.functional.image.scc import spatial_correlation_coefficient
 from torchmetrics.functional.image.ssim import (
     multiscale_structural_similarity_index_measure,
     structural_similarity_index_measure,
@@ -152,6 +153,7 @@ __all__ = [
     "scale_invariant_signal_noise_ratio",
     "signal_noise_ratio",
     "spearman_corrcoef",
+    "spatial_correlation_coefficient",
     "specificity",
     "spectral_distortion_index",
     "squad",
