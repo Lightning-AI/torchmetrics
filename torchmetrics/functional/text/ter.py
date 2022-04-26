@@ -74,30 +74,25 @@ class _TercomTokenizer:
         lowercase: bool = True,
         asian_support: bool = False,
     ) -> None:
-
         """Initialize the tokenizer.
 
         Args:
-            normalize:
-            An indication whether a general tokenization to be applied.
-        no_punctuation:
-            An indication whteher a punctuation to be removed from the sentences.
-        lowercase:
-            An indication whether to enable case-insesitivity.
-        asian_support:
-            An indication whether asian characters to be processed.
+            normalize: An indication whether a general tokenization to be applied.
+            no_punctuation: An indication whteher a punctuation to be removed from the sentences.
+            lowercase: An indication whether to enable case-insesitivity.
+            asian_support: An indication whether asian characters to be processed.
         """
         self.normalize = normalize
         self.no_punctuation = no_punctuation
         self.lowercase = lowercase
         self.asian_support = asian_support
 
-    @lru_cache(maxsize=2 ** 16)
+    @lru_cache(maxsize=2**16)
     def __call__(self, sentence: str) -> str:
         """Apply a different tokenization techniques according.
 
         Args:
-            An input sentence to pre-process and tokenize.
+            sentence: An input sentence to pre-process and tokenize.
 
         Return:
             A tokenized and pre-processed sentence.
@@ -196,10 +191,9 @@ def _preprocess_sentence(sentence: str, tokenizer: _TercomTokenizer) -> str:
     """Given a sentence, apply tokenization.
 
     Args:
-        sentence:
-            The input sentence string.
-        tokenizer:
-            An instance of `_TercomTokenizer` handling a sentence tokenization.
+        sentence: The input sentence string.
+        tokenizer: An instance of ``_TercomTokenizer`` handling a sentence tokenization.
+
     Return:
         The pre-processed output sentence string.
     """
@@ -210,15 +204,12 @@ def _find_shifted_pairs(pred_words: List[str], target_words: List[str]) -> Itera
     """Find matching word sub-sequences in two lists of words. Ignores sub-sequences starting at the same position.
 
     Args:
-        pred_words:
-            A list of a tokenized hypothesis sentence.
-        target_words:
-            A list of a tokenized reference sentence.
+        pred_words: A list of a tokenized hypothesis sentence.
+        target_words: A list of a tokenized reference sentence.
 
     Return:
-        Yields tuples of `(target_start, pred_start, length` such that:
-        target_words[target_start : target_start + length] ==\
-            pred_words[pred_start : pred_start + length]
+        Yields tuples of ``target_start, pred_start, length`` such that:
+        ``target_words[target_start : target_start + length] == pred_words[pred_start : pred_start + length]``
 
         pred_start:
             A list of hypothesis start indices.
@@ -255,21 +246,16 @@ def _handle_corner_cases_during_shifting(
     target_start: int,
     length: int,
 ) -> bool:
-    """A helper function which returns `True` if any of corner cases has been met. Otherwise, `False` is returned.
+    """A helper function which returns ``True`` if any of corner cases has been met. Otherwise, ``False`` is
+    returned.
 
     Args:
-        alignments:
-            A dictionary mapping aligned positions between a reference and a hypothesis.
-        pred_errors:
-            A list of error positions in a hypothesis.
-        target_errors:
-            A list of error positions in a reference.
-        pred_start:
-            A hypothesis start index.
-        target_start:
-            A reference start index.
-        length:
-            A length of a word span to be considered.
+        alignments: A dictionary mapping aligned positions between a reference and a hypothesis.
+        pred_errors: A list of error positions in a hypothesis.
+        target_errors: A list of error positions in a reference.
+        pred_start: A hypothesis start index.
+        target_start: A reference start index.
+        length: A length of a word span to be considered.
 
     Return:
         An indication whether any of conrner cases has been met.
@@ -290,17 +276,13 @@ def _handle_corner_cases_during_shifting(
 
 
 def _perform_shift(words: List[str], start: int, length: int, target: int) -> List[str]:
-    """Perform a shift in `words` from `start` to `target`.
+    """Perform a shift in ``words`` from ``start`` to ``target``.
 
     Args:
-        words:
-            A words to shift.
-        start:
-            An index where to start shifting from.
-        length:
-            A number of how many words to be considered.
-        target:
-            An index where to end shifting.
+        words: A words to shift.
+        start: An index where to start shifting from.
+        length: A number of how many words to be considered.
+        target: An index where to end shifting.
 
     Return:
         A list of shifted words.
@@ -340,14 +322,10 @@ def _shift_words(
     choices. (The paragraph copied from https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/lib_ter.py)
 
     Args:
-        pred_words:
-            A list of tokenized hypothesis sentence.
-        target_words:
-            A list of lists of tokenized reference sentences.
-        cached_edit_distance:
-            A pre-computed edit distance between a hypothesis and a reference.
-        checked_candidates:
-            A number of checked hypothesis candidates to match a provided reference.
+        pred_words: A list of tokenized hypothesis sentence.
+        target_words: A list of lists of tokenized reference sentences.
+        cached_edit_distance: A pre-computed edit distance between a hypothesis and a reference.
+        checked_candidates: A number of checked hypothesis candidates to match a provided reference.
 
     Return:
         best_score:
@@ -413,10 +391,8 @@ def _translation_edit_rate(pred_words: List[str], target_words: List[str]) -> Te
     """Compute translation edit rate between hypothesis and reference sentences.
 
     Args:
-        pred_words:
-            A list of a tokenized hypothesis sentence.
-        target_words:
-            A list of lists of tokenized reference sentences.
+        pred_words: A list of a tokenized hypothesis sentence.
+        target_words: A list of lists of tokenized reference sentences.
 
     Return:
         A number of required edits to match hypothesis and reference sentences.
@@ -449,10 +425,8 @@ def _compute_sentence_statistics(pred_words: List[str], target_words: List[List[
     """Compute sentence TER statistics between hypothesis and provided references.
 
     Args:
-        pred_words:
-            A list of tokenized hypothesis sentence.
-        target_words:
-            A list of lists of tokenized reference sentences.
+        pred_words: A list of tokenized hypothesis sentence.
+        target_words: A list of lists of tokenized reference sentences.
 
     Return:
         best_num_edits:
@@ -476,10 +450,9 @@ def _compute_sentence_statistics(pred_words: List[str], target_words: List[List[
 def _compute_ter_score_from_statistics(num_edits: Tensor, tgt_length: Tensor) -> Tensor:
     """Compute TER score based on pre-computed a number of edits and an average reference length.
 
-        num_edits:
-            A number of required edits to match hypothesis and reference sentences.
-        tgt_length:
-            An average length of reference sentences.
+    Args:
+        num_edits: A number of required edits to match hypothesis and reference sentences.
+        tgt_length: An average length of reference sentences.
 
     Return:
         A corpus-level TER score or 1 if reference_length == 0.
@@ -504,15 +477,11 @@ def _ter_update(
     """Update TER statistics.
 
     Args:
-        preds:
-            An iterable of hypothesis corpus.
-        target:
-            An iterable of iterables of reference corpus.
+        preds: An iterable of hypothesis corpus.
+        target: An iterable of iterables of reference corpus.
         tokenizer:
-        total_num_edits:
-            A total number of required edits to match hypothesis and reference sentences.
-        total_tgt_length:
-            A total average length of reference sentences.
+        total_num_edits: A total number of required edits to match hypothesis and reference sentences.
+        total_tgt_length: A total average length of reference sentences.
 
     Return:
         total_num_edits:
@@ -524,7 +493,7 @@ def _ter_update(
 
     Raises:
         ValueError:
-            If length of `preds` and `target` differs.
+            If length of ``preds`` and ``target`` differs.
     """
     target, preds = _validate_inputs(target, preds)
 
@@ -542,10 +511,8 @@ def _ter_update(
 def _ter_compute(total_num_edits: Tensor, total_tgt_length: Tensor) -> Tensor:
     """Compute TER based on pre-computed a total number of edits and a total average reference length.
     Args:
-        total_num_edits:
-            A total number of required edits to match hypothesis and reference sentences.
-        total_tgt_length:
-            A total average length of reference sentences.
+        total_num_edits: A total number of required edits to match hypothesis and reference sentences.
+        total_tgt_length: A total average length of reference sentences.
 
     Return:
         A corpus-level TER score.
@@ -568,20 +535,13 @@ def translation_edit_rate(
     near-exact reimplementation of the Tercom algorithm, produces identical results on all "sane" outputs.
 
     Args:
-        preds:
-            An iterable of hypothesis corpus.
-        target:
-            An iterable of iterables of reference corpus.
-        normalize:
-            An indication whether a general tokenization to be applied.
-        no_punctuation:
-            An indication whteher a punctuation to be removed from the sentences.
-        lowercase:
-            An indication whether to enable case-insesitivity.
-        asian_support:
-            An indication whether asian characters to be processed.
-        return_sentence_level_score:
-            An indication whether a sentence-level TER to be returned.
+        preds: An iterable of hypothesis corpus.
+        target: An iterable of iterables of reference corpus.
+        normalize: An indication whether a general tokenization to be applied.
+        no_punctuation: An indication whteher a punctuation to be removed from the sentences.
+        lowercase: An indication whether to enable case-insesitivity.
+        asian_support: An indication whether asian characters to be processed.
+        return_sentence_level_score: An indication whether a sentence-level TER to be returned.
 
     Return:
         A corpus-level translation edit rate (TER).
@@ -594,8 +554,8 @@ def translation_edit_rate(
         tensor(0.1538)
 
     References:
-    [1] A Study of Translation Edit Rate with Targeted Human Annotation by Mathew Snover, Bonnie Dorr, Richard Schwartz,
-    Linnea Micciulla and John Makhoul `TER`_
+        [1] A Study of Translation Edit Rate with Targeted Human Annotation
+        by Mathew Snover, Bonnie Dorr, Richard Schwartz, Linnea Micciulla and John Makhoul `TER`_
     """
     if not isinstance(normalize, bool):
         raise ValueError(f"Expected argument `normalize` to be of type boolean but got {normalize}.")

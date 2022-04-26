@@ -47,7 +47,7 @@ class Accuracy(StatScores):
     changed to subset accuracy (which requires all labels or sub-samples in the sample to
     be correctly predicted) by setting ``subset_accuracy=True``.
 
-    Accepts all input types listed in :ref:`references/modules:input types`.
+    Accepts all input types listed in :ref:`pages/classification:input types`.
 
     Args:
         num_classes:
@@ -71,7 +71,7 @@ class Accuracy(StatScores):
             .. note:: What is considered a sample in the multi-dimensional multi-class case
                 depends on the value of ``mdmc_average``.
 
-            .. note:: If ``'none'`` and a given class doesn't occur in the `preds` or `target`,
+            .. note:: If ``'none'`` and a given class doesn't occur in the ``preds`` or ``target``,
                 the value for the class will be ``nan``.
 
         mdmc_average:
@@ -84,11 +84,11 @@ class Accuracy(StatScores):
             - ``'samplewise'``: In this case, the statistics are computed separately for each
               sample on the ``N`` axis, and then averaged over samples.
               The computation for each sample is done by treating the flattened extra axes ``...``
-              (see :ref:`references/modules:input types`) as the ``N`` dimension within the sample,
+              (see :ref:`pages/classification:input types`) as the ``N`` dimension within the sample,
               and computing the metric for the sample based on that.
 
             - ``'global'``: In this case the ``N`` and ``...`` dimensions of the inputs
-              (see :ref:`references/modules:input types`)
+              (see :ref:`pages/classification:input types`)
               are flattened into a new ``N_X`` sample axis, i.e. the inputs are treated as if they
               were ``(N_X, C)``. From here on the ``average`` parameter applies as usual.
 
@@ -98,7 +98,7 @@ class Accuracy(StatScores):
             or ``'none'``, the score for the ignored class will be returned as ``nan``.
 
         top_k:
-            Number of highest probability or logit score predictions considered to find the correct label,
+            Number of the highest probability or logit score predictions considered finding the correct label,
             relevant only for (multi-dimensional) multi-class inputs. The
             default value (``None``) will be interpreted as 1 for these inputs.
 
@@ -107,7 +107,7 @@ class Accuracy(StatScores):
         multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
             than what they appear to be. See the parameter's
-            :ref:`documentation section <references/modules:using the multiclass parameter>`
+            :ref:`documentation section <pages/classification:using the multiclass parameter>`
             for a more detailed explanation and examples.
 
         subset_accuracy:
@@ -126,14 +126,7 @@ class Accuracy(StatScores):
               ``preds = preds.flatten()`` and same for ``target``). Note that the ``top_k`` parameter
               still applies in both cases, if set.
 
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
@@ -176,7 +169,6 @@ class Accuracy(StatScores):
         top_k: Optional[int] = None,
         multiclass: Optional[bool] = None,
         subset_accuracy: bool = False,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
         allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
@@ -191,7 +183,6 @@ class Accuracy(StatScores):
             num_classes=num_classes,
             multiclass=multiclass,
             ignore_index=ignore_index,
-            compute_on_step=compute_on_step,
             **kwargs,
         )
 
@@ -212,7 +203,7 @@ class Accuracy(StatScores):
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets. See
-        :ref:`references/modules:input types` for more information on input
+        :ref:`pages/classification:input types` for more information on input
         types.
 
         Args:

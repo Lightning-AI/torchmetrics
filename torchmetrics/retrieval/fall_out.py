@@ -55,8 +55,7 @@ class RetrievalFallOut(RetrievalMetric):
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
@@ -98,7 +97,7 @@ class RetrievalFallOut(RetrievalMetric):
         self.k = k
 
     def compute(self) -> Tensor:
-        """First concat state `indexes`, `preds` and `target` since they were stored as lists.
+        """First concat state ``indexes``, ``preds`` and ``target`` since they were stored as lists.
 
         After that, compute list of groups that will help in keeping together predictions about the same query. Finally,
         for each group compute the `_metric` if the number of negative targets is at least 1, otherwise behave as

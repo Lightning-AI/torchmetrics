@@ -41,9 +41,9 @@ class AveragePrecision(Metric):
         num_classes: integer with number of classes. Not nessesary to provide
             for binary problems.
         pos_label: integer determining the positive class. Default is ``None``
-            which for binary problem is translate to 1. For multiclass problems
+            which for binary problem is translated to 1. For multiclass problems
             this argument should not be set as we iteratively change it in the
-            range [0,num_classes-1]
+            range ``[0, num_classes-1]``
         average:
             defines the reduction that is applied in the case of multiclass and multilabel input.
             Should be one of the following:
@@ -57,14 +57,7 @@ class AveragePrecision(Metric):
             - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
               the metric for every class.
 
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (binary case):
         >>> from torchmetrics import AveragePrecision
@@ -94,10 +87,9 @@ class AveragePrecision(Metric):
         num_classes: Optional[int] = None,
         pos_label: Optional[int] = None,
         average: Optional[str] = "macro",
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
 
         self.num_classes = num_classes
         self.pos_label = pos_label
@@ -133,8 +125,7 @@ class AveragePrecision(Metric):
         """Compute the average precision score.
 
         Returns:
-            tensor with average precision. If multiclass will return list
-            of such tensors, one for each class
+            tensor with average precision. If multiclass return list of such tensors, one for each class
         """
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)

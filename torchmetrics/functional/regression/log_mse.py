@@ -37,8 +37,8 @@ def _mean_squared_log_error_compute(sum_squared_log_error: Tensor, n_obs: int) -
     """Computes Mean Squared Log Error.
 
     Args:
-        sum_squared_log_error: Sum of square of log errors over all observations
-                                (log error = log(target) - log(prediction))
+        sum_squared_log_error:
+            Sum of square of log errors over all observations ``(log error = log(target) - log(prediction))``
         n_obs: Number of predictions or observations
 
     Example:

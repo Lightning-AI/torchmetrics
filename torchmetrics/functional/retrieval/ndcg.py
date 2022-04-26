@@ -29,13 +29,13 @@ def retrieval_normalized_dcg(preds: Tensor, target: Tensor, k: Optional[int] = N
     """Computes `Normalized Discounted Cumulative Gain`_ (for information retrieval).
 
     ``preds`` and ``target`` should be of the same shape and live on the same device.
-    ``target`` must be either `bool` or `integers` and ``preds`` must be `float`,
+    ``target`` must be either `bool` or `integers` and ``preds`` must be ``float``,
     otherwise an error is raised.
 
     Args:
         preds: estimated probabilities of each document to be relevant.
         target: ground truth about each document relevance.
-        k: consider only the top k elements (default: `None`, which considers them all)
+        k: consider only the top k elements (default: ``None``, which considers them all)
 
     Return:
         a single-value tensor with the nDCG of the predictions ``preds`` w.r.t. the labels ``target``.

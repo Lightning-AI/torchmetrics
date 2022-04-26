@@ -7,6 +7,7 @@ import torch
 import torch.distributed as dist
 import torch.multiprocessing as mp
 
+from tests.text.helpers import skip_on_connection_issues
 from torchmetrics.functional.text.bert import bert_score as metrics_bert_score
 from torchmetrics.text.bert import BERTScore
 from torchmetrics.utilities.imports import _BERTSCORE_AVAILABLE
@@ -59,6 +60,7 @@ targets_batched = [targets[0:2], targets[2:]]
     [(preds, targets)],
 )
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
+@skip_on_connection_issues()
 def test_score_fn(preds, targets):
     """Tests for functional."""
     original_score = original_bert_score(preds, targets, model_type=MODEL_NAME, num_layers=8, idf=False, batch_size=3)
@@ -77,6 +79,7 @@ def test_score_fn(preds, targets):
     [(preds, targets)],
 )
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
+@skip_on_connection_issues()
 def test_score_fn_with_idf(preds, targets):
     """Tests for functional with IDF rescaling."""
     original_score = original_bert_score(preds, targets, model_type=MODEL_NAME, num_layers=12, idf=True, batch_size=3)
@@ -94,16 +97,21 @@ def test_score_fn_with_idf(preds, targets):
     "preds,targets",
     [(preds, targets)],
 )
+@pytest.mark.parametrize("device", ["cpu", "cuda", None])
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
-def test_score_fn_all_layers(preds, targets):
+@skip_on_connection_issues()
+def test_score_fn_all_layers(preds, targets, device):
     """Tests for functional and all layers."""
+    if not torch.cuda.is_available() and device == "cuda":
+        pytest.skip("Test requires GPU support")
+
     original_score = original_bert_score(
         preds, targets, model_type=MODEL_NAME, all_layers=True, idf=False, batch_size=3
     )
     original_score = _parse_original_bert_score(original_score)
 
     metrics_score = metrics_bert_score(
-        preds, targets, model_name_or_path=MODEL_NAME, all_layers=True, idf=False, batch_size=3
+        preds, targets, model_name_or_path=MODEL_NAME, all_layers=True, idf=False, batch_size=3, device=device
     )
 
     for metric in _METRICS:
@@ -115,6 +123,7 @@ def test_score_fn_all_layers(preds, targets):
     [(preds, targets)],
 )
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
+@skip_on_connection_issues()
 def test_score_fn_all_layers_with_idf(preds, targets):
     """Tests for functional and all layers with IDF rescaling."""
     original_score = original_bert_score(preds, targets, model_type=MODEL_NAME, all_layers=True, idf=True, batch_size=3)
@@ -133,6 +142,7 @@ def test_score_fn_all_layers_with_idf(preds, targets):
     [(preds, targets)],
 )
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
+@skip_on_connection_issues()
 def test_score_fn_all_layers_rescale_with_baseline(preds, targets):
     """Tests for functional with baseline rescaling."""
     original_score = original_bert_score(
@@ -167,6 +177,7 @@ def test_score_fn_all_layers_rescale_with_baseline(preds, targets):
     [(preds, targets)],
 )
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
+@skip_on_connection_issues()
 def test_score_fn_rescale_with_baseline(preds, targets):
     """Tests for functional with baseline rescaling with all layers."""
     original_score = original_bert_score(
@@ -201,6 +212,7 @@ def test_score_fn_rescale_with_baseline(preds, targets):
     [(preds, targets)],
 )
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
+@skip_on_connection_issues()
 def test_score(preds, targets):
     """Tests for metric."""
     original_score = original_bert_score(preds, targets, model_type=MODEL_NAME, num_layers=8, idf=False, batch_size=3)
@@ -219,6 +231,7 @@ def test_score(preds, targets):
     [(preds, targets)],
 )
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
+@skip_on_connection_issues()
 def test_score_with_idf(preds, targets):
     """Tests for metric with IDF rescaling."""
     original_score = original_bert_score(preds, targets, model_type=MODEL_NAME, num_layers=8, idf=True, batch_size=3)
@@ -237,6 +250,7 @@ def test_score_with_idf(preds, targets):
     [(preds, targets)],
 )
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
+@skip_on_connection_issues()
 def test_score_all_layers(preds, targets):
     """Tests for metric and all layers."""
     original_score = original_bert_score(
@@ -257,6 +271,7 @@ def test_score_all_layers(preds, targets):
     [(preds, targets)],
 )
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
+@skip_on_connection_issues()
 def test_score_all_layers_with_idf(preds, targets):
     """Tests for metric and all layers with IDF rescaling."""
     original_score = original_bert_score(preds, targets, model_type=MODEL_NAME, all_layers=True, idf=True, batch_size=3)
@@ -275,6 +290,7 @@ def test_score_all_layers_with_idf(preds, targets):
     [(preds_batched, targets_batched)],
 )
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
+@skip_on_connection_issues()
 def test_accumulation(preds, targets):
     """Tests for metric works with accumulation."""
     original_score = original_bert_score(
@@ -316,6 +332,7 @@ def _test_score_ddp_fn(rank, world_size, preds, targets):
     [(preds, targets)],
 )
 @pytest.mark.skipif(not (_BERTSCORE_AVAILABLE and dist.is_available()), reason="test requires bert_score")
+@skip_on_connection_issues()
 def test_score_ddp(preds, targets):
     """Tests for metric using DDP."""
     world_size = 2

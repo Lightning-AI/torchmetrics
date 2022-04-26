@@ -42,7 +42,7 @@ def maximum_mean_discrepancy(k_xx: Tensor, k_xy: Tensor, k_yy: Tensor) -> Tensor
     k_xy_sum = k_xy_sums.sum()
 
     value = (kt_xx_sum + kt_yy_sum) / (m * (m - 1))
-    value -= 2 * k_xy_sum / (m ** 2)
+    value -= 2 * k_xy_sum / (m**2)
     return value
 
 
@@ -89,37 +89,23 @@ class KernelInceptionDistance(Metric):
         is installed. Either install as ``pip install torchmetrics[image]`` or
         ``pip install torch-fidelity``
 
-    .. note:: the ``forward`` method can be used but ``compute_on_step`` is disabled by default (oppesit of
-        all other metrics) as this metric does not really make sense to calculate on a single batch. This
-        means that by default ``forward`` will just call ``update`` underneat.
-
     Args:
-        feature:
-            Either an str, integer or ``nn.Module``:
+        feature: Either an str, integer or ``nn.Module``:
 
             - an str or integer will indicate the inceptionv3 feature layer to choose. Can be one of the following:
               'logits_unbiased', 64, 192, 768, 2048
             - an ``nn.Module`` for using a custom feature extractor. Expects that its forward method returns
               an ``[N,d]`` matrix where ``N`` is the batch size and ``d`` is the feature size.
 
-        subsets:
-            Number of subsets to calculate the mean and standard deviation scores over
-        subset_size:
-            Number of randomly picked samples in each subset
-        degree:
-            Degree of the polynomial kernel function
-        gamma:
-            Scale-length of polynomial kernel. If set to ``None`` will be automatically set to the feature size
-        coef:
-            Bias term in the polynomial kernel.
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        subsets: Number of subsets to calculate the mean and standard deviation scores over
+        subset_size: Number of randomly picked samples in each subset
+        degree: Degree of the polynomial kernel function
+        gamma: Scale-length of polynomial kernel. If set to ``None`` will be automatically set to the feature size
+        coef: Bias term in the polynomial kernel.
+        reset_real_features: Whether to also reset the real features. Since in many cases the real dataset does not
+            change, the features can cached them to avoid recomputing them which is costly. Set this to ``False`` if
+            your dataset does not change.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     References:
         [1] Demystifying MMD GANs
@@ -134,7 +120,7 @@ class KernelInceptionDistance(Metric):
         ValueError:
             If ``feature`` is set to an ``int`` (default settings) and ``torch-fidelity`` is not installed
         ValueError:
-            If ``feature`` is set to an ``int`` not in [64, 192, 768, 2048]
+            If ``feature`` is set to an ``int`` not in ``[64, 192, 768, 2048]``
         ValueError:
             If ``subsets`` is not an integer larger than 0
         ValueError:
@@ -145,6 +131,8 @@ class KernelInceptionDistance(Metric):
             If ``gamma`` is niether ``None`` or a float larger than 0
         ValueError:
             If ``coef`` is not an float larger than 0
+        ValueError:
+            If ``reset_real_features`` is not an ``bool``
 
     Example:
         >>> import torch
@@ -163,7 +151,8 @@ class KernelInceptionDistance(Metric):
     """
     real_features: List[Tensor]
     fake_features: List[Tensor]
-    higher_is_better = False
+    higher_is_better: bool = False
+    is_differentiable: bool = False
 
     def __init__(
         self,
@@ -173,10 +162,10 @@ class KernelInceptionDistance(Metric):
         degree: int = 3,
         gamma: Optional[float] = None,  # type: ignore
         coef: float = 1.0,
-        compute_on_step: Optional[bool] = None,
+        reset_real_features: bool = True,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
 
         rank_zero_warn(
             "Metric `Kernel Inception Distance` will save all extracted features in buffer."
@@ -222,6 +211,10 @@ class KernelInceptionDistance(Metric):
             raise ValueError("Argument `coef` expected to be float larger than 0")
         self.coef = coef
 
+        if not isinstance(reset_real_features, bool):
+            raise ValueError("Arugment `reset_real_features` expected to be a bool")
+        self.reset_real_features = reset_real_features
+
         # states for extracted features
         self.add_state("real_features", [], dist_reduce_fx=None)
         self.add_state("fake_features", [], dist_reduce_fx=None)
@@ -231,7 +224,7 @@ class KernelInceptionDistance(Metric):
 
         Args:
             imgs: tensor with images feed to the feature extractor
-            real: bool indicating if imgs belong to the real or the fake distribution
+            real: bool indicating if ``imgs`` belong to the real or the fake distribution
         """
         features = self.inception(imgs)
 
@@ -267,3 +260,12 @@ class KernelInceptionDistance(Metric):
             kid_scores_.append(o)
         kid_scores = torch.stack(kid_scores_)
         return kid_scores.mean(), kid_scores.std(unbiased=False)
+
+    def reset(self) -> None:
+        if not self.reset_real_features:
+            # remove temporarily to avoid resetting
+            value = self._defaults.pop("real_features")
+            super().reset()
+            self._defaults["real_features"] = value
+        else:
+            super().reset()

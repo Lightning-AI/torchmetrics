@@ -26,7 +26,8 @@ def _cohen_kappa_compute(confmat: Tensor, weights: Optional[str] = None) -> Tens
 
     Args:
         confmat: Confusion matrix without normalization
-        weights: Weighting type to calculate the score. Choose from
+        weights: Weighting type to calculate the score. Choose from:
+
             - ``None`` or ``'none'``: no weighting
             - ``'linear'``: linear weighting
             - ``'quadratic'``: quadratic weighting
@@ -73,40 +74,37 @@ def cohen_kappa(
     weights: Optional[str] = None,
     threshold: float = 0.5,
 ) -> Tensor:
-    r"""
-    Calculates `Cohen's kappa score`_ that measures inter-annotator agreement.
-     It is defined as
+    r"""Calculates `Cohen's kappa score`_ that measures inter-annotator agreement.
 
-     .. math::
-         \kappa = (p_o - p_e) / (1 - p_e)
+    It is defined as
 
-     where :math:`p_o` is the empirical probability of agreement and :math:`p_e` isg
-     the expected agreement when both annotators assign labels randomly. Note that
-     :math:`p_e` is estimated using a per-annotator empirical prior over the
-     class labels.
+    .. math::
+        \kappa = (p_o - p_e) / (1 - p_e)
 
-     Args:
-         preds: (float or long tensor), Either a ``(N, ...)`` tensor with labels or
-             ``(N, C, ...)`` where C is the number of classes, tensor with labels/probabilities
+    where :math:`p_o` is the empirical probability of agreement and :math:`p_e` is
+    the expected agreement when both annotators assign labels randomly. Note that
+    :math:`p_e` is estimated using a per-annotator empirical prior over the
+    class labels.
 
-         target: ``target`` (long tensor), tensor with shape ``(N, ...)`` with ground true labels
+    Args:
+        preds: (float or long tensor), Either a ``(N, ...)`` tensor with labels or
+            ``(N, C, ...)`` where C is the number of classes, tensor with labels/probabilities
+        target: ``target`` (long tensor), tensor with shape ``(N, ...)`` with ground true labels
+        num_classes: Number of classes in the dataset.
+        weights: Weighting type to calculate the score. Choose from:
 
-         num_classes: Number of classes in the dataset.
+            - ``None`` or ``'none'``: no weighting
+            - ``'linear'``: linear weighting
+            - ``'quadratic'``: quadratic weighting
 
-         weights: Weighting type to calculate the score. Choose from
-             - ``None`` or ``'none'``: no weighting
-             - ``'linear'``: linear weighting
-             - ``'quadratic'``: quadratic weighting
+        threshold: Threshold value for binary or multi-label probabilities.
 
-         threshold:
-             Threshold value for binary or multi-label probabilities.
-
-     Example:
-         >>> from torchmetrics.functional import cohen_kappa
-         >>> target = torch.tensor([1, 1, 0, 0])
-         >>> preds = torch.tensor([0, 1, 0, 0])
-         >>> cohen_kappa(preds, target, num_classes=2)
-         tensor(0.5000)
+    Example:
+        >>> from torchmetrics.functional import cohen_kappa
+        >>> target = torch.tensor([1, 1, 0, 0])
+        >>> preds = torch.tensor([0, 1, 0, 0])
+        >>> cohen_kappa(preds, target, num_classes=2)
+        tensor(0.5000)
     """
     confmat = _cohen_kappa_update(preds, target, num_classes, threshold)
     return _cohen_kappa_compute(confmat, weights)

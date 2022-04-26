@@ -21,23 +21,21 @@ from torchmetrics.metric import Metric
 
 
 class WordInfoPreserved(Metric):
-    r"""
-    word Information Preserved (WordInfoPreserved_) is a metric of the performance of an automatic speech
+    r"""Word Information Preserved (WIP_) is a metric of the performance of an automatic speech
     recognition system. This value indicates the percentage of words that were correctly predicted between
     a set of ground-truth sentences and a set of hypothesis sentences.
     The higher the value, the better the performance of the ASR system with a WordInfoPreserved of 0
     being a perfect score.
-    word Information Preserved rate can then be computed as:
+    Word Information Preserved rate can then be computed as:
 
     .. math::
         wip = \frac{C}{N} + \frac{C}{P}
 
     where:
 
-        - C is the number of correct words,
-        - N is the number of words in the reference
-        - P is the number of words in the prediction
-
+        - :math:`C` is the number of correct words,
+        - :math:`N` is the number of words in the reference
+        - :math:`P` is the number of words in the prediction
 
     Args:
         compute_on_step:
@@ -46,8 +44,7 @@ class WordInfoPreserved(Metric):
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
 
     Examples:
@@ -78,10 +75,8 @@ class WordInfoPreserved(Metric):
         """Store predictions/references for computing word Information Preserved scores.
 
         Args:
-            preds:
-                Transcription(s) to score as a string or list of strings
-            target:
-                Reference(s) for each speech input as a string or list of strings
+            preds: Transcription(s) to score as a string or list of strings
+            target: Reference(s) for each speech input as a string or list of strings
         """
         errors, target_total, preds_total = _wip_update(preds, target)
         self.errors += errors

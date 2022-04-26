@@ -37,6 +37,9 @@ def test_error_on_wrong_input():
     with pytest.raises(ValueError, match="Expected keyword argument `dist_sync_fn` to be an callable function.*"):
         DummyMetric(dist_sync_fn=[2, 3])
 
+    with pytest.raises(ValueError, match="Expected keyword argument `compute_on_cpu` to be an `bool` bu.*"):
+        DummyMetric(compute_on_cpu=None)
+
 
 def test_inherit():
     """Test that metric that inherits can be instanciated."""
@@ -377,7 +380,7 @@ def test_constant_memory(device, requires_grad):
         if device == "cpu":
             pid = os.getpid()
             py = psutil.Process(pid)
-            return py.memory_info()[0] / 2.0 ** 30
+            return py.memory_info()[0] / 2.0**30
         else:
             return torch.cuda.memory_allocated()
 

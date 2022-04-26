@@ -49,8 +49,9 @@ def pairwise_linear_similarity(
     .. math::
         s_{lin}(x,y) = <x,y> = \sum_{d=1}^D x_d \cdot y_d
 
-    If both `x` and `y` are passed in, the calculation will be performed pairwise between the rows of `x` and `y`.
-    If only `x` is passed in, the calculation will be performed between the rows of `x`.
+    If both :math:`x` and :math:`y` are passed in, the calculation will be performed pairwise between
+    the rows of :math:`x` and :math:`y`.
+    If only :math:`x` is passed in, the calculation will be performed between the rows of :math:`x`.
 
     Args:
         x: Tensor with shape ``[N, d]``

@@ -23,13 +23,13 @@ def retrieval_precision(preds: Tensor, target: Tensor, k: Optional[int] = None, 
     among all the retrieved documents.
 
     ``preds`` and ``target`` should be of the same shape and live on the same device. If no ``target`` is ``True``,
-    ``0`` is returned. ``target`` must be either `bool` or `integers` and ``preds`` must be `float`,
+    ``0`` is returned. ``target`` must be either `bool` or `integers` and ``preds`` must be ``float``,
     otherwise an error is raised. If you want to measure Precision@K, ``k`` must be a positive integer.
 
     Args:
         preds: estimated probabilities of each document to be relevant.
         target: ground truth about each document being relevant or not.
-        k: consider only the top k elements (default: `None`, which considers them all)
+        k: consider only the top k elements (default: ``None``, which considers them all)
         adaptive_k: adjust `k` to `min(k, number of documents)` for each query
 
     Returns:

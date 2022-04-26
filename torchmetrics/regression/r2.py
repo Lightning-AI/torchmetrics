@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 import torch
 from torch import Tensor, tensor
@@ -21,8 +21,7 @@ from torchmetrics.metric import Metric
 
 
 class R2Score(Metric):
-    r"""
-    Computes r2 score also known as `R2 Score_Coefficient Determination`_:
+    r"""Computes r2 score also known as `R2 Score_Coefficient Determination`_:
 
     .. math:: R^2 = 1 - \frac{SS_{res}}{SS_{tot}}
 
@@ -32,40 +31,25 @@ class R2Score(Metric):
 
     .. math:: R^2_{adj} = 1 - \frac{(1-R^2)(n-1)}{n-k-1}
 
-    where the parameter :math:`k` (the number of independent regressors) should
-    be provided as the `adjusted` argument.
+    where the parameter :math:`k` (the number of independent regressors) should be provided as the `adjusted` argument.
 
     Forward accepts
 
     - ``preds`` (float tensor): ``(N,)`` or ``(N, M)`` (multioutput)
     - ``target`` (float tensor): ``(N,)`` or ``(N, M)`` (multioutput)
 
-    In the case of multioutput, as default the variances will be uniformly
-    averaged over the additional dimensions. Please see argument `multioutput`
-    for changing this behavior.
+    In the case of multioutput, as default the variances will be uniformly averaged over the additional dimensions.
+    Please see argument ``multioutput`` for changing this behavior.
 
     Args:
-        num_outputs:
-            Number of outputs in multioutput setting (default is 1)
-        adjusted:
-            number of independent regressors for calculating adjusted r2 score.
-            Default 0 (standard r2 score).
-        multioutput:
-            Defines aggregation in the case of multiple output scores. Can be one
-            of the following strings (default is ``'uniform_average'``.):
+        num_outputs: Number of outputs in multioutput setting
+        adjusted: number of independent regressors for calculating adjusted r2 score.
+        multioutput: Defines aggregation in the case of multiple output scores. Can be one of the following strings:
 
             * ``'raw_values'`` returns full set of scores
             * ``'uniform_average'`` scores are uniformly averaged
             * ``'variance_weighted'`` scores are weighted by their individual variances
-
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
@@ -100,10 +84,9 @@ class R2Score(Metric):
         num_outputs: int = 1,
         adjusted: int = 0,
         multioutput: str = "uniform_average",
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
 
         self.num_outputs = num_outputs
 
