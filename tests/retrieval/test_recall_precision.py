@@ -23,7 +23,7 @@ from torch import Tensor, tensor
 
 from tests.helpers import seed_all
 from tests.helpers.testers import Metric, MetricTester
-from tests.retrieval.helpers import _default_metric_class_input_arguments, _errors_test_class_metric, get_group_indexes
+from tests.retrieval.helpers import _default_metric_class_input_arguments, get_group_indexes
 from tests.retrieval.test_precision import _precision_at_k
 from tests.retrieval.test_recall import _recall_at_k
 from torchmetrics import RetrievalRecallAtFixedPrecision
