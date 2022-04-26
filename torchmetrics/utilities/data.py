@@ -157,10 +157,10 @@ def apply_to_collection(
         data: the collection to apply the function to
         dtype: the given function will be applied to all elements of this dtype
         function: the function to apply
-        *args: positional arguments (will be forwarded to calls of ``function``)
+        *args: positional arguments (will be forwarded to call of ``function``)
         wrong_dtype: the given function won't be applied if this type is specified and the given collections is of
             the :attr:`wrong_type` even if it is of type :attr`dtype`
-        **kwargs: keyword arguments (will be forwarded to calls of ``function``)
+        **kwargs: keyword arguments (will be forwarded to call of ``function``)
 
     Returns:
         the resulting collection

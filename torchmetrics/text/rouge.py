@@ -109,7 +109,7 @@ class ROUGEScore(Metric):
             import nltk
 
         if not isinstance(rouge_keys, tuple):
-            rouge_keys = tuple([rouge_keys])
+            rouge_keys = (rouge_keys,)
         for key in rouge_keys:
             if key not in ALLOWED_ROUGE_KEYS:
                 raise ValueError(f"Got unknown rouge key {key}. Expected to be one of {ALLOWED_ROUGE_KEYS}")

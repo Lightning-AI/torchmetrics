@@ -377,7 +377,7 @@ def test_error_on_wrong_input():
         metric.update([], torch.Tensor())  # type: ignore
 
     with pytest.raises(ValueError, match="Expected argument `preds` and `target` to have the same length"):
-        metric.update([dict()], [dict(), dict()])
+        metric.update([{}], [{}, {}])
 
     with pytest.raises(ValueError, match="Expected all dicts in `preds` to contain the `boxes` key"):
         metric.update(
