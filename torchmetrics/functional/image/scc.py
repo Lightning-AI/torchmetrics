@@ -93,7 +93,10 @@ def _scc_compute(
 
     coefs = torch.zeros((batch_size, classes, preds.shape[2], preds.shape[3]))
 
-    kernel = torch.div(torch.ones((1, 1, kernel_size[0], kernel_size[1])), kernel_size[0] * kernel_size[1])
+    kernel = torch.div(
+        torch.ones(1, 1, kernel_size[0], kernel_size[1], dtype=preds.dtype, device=preds.device),
+        kernel_size[0] * kernel_size[1],
+    )
 
     for i in range(classes):
 
@@ -103,30 +106,26 @@ def _scc_compute(
 
         preds_sum_sq, target_sum_sq, preds_target_sum_mul = mu1 * mu1, mu2 * mu2, mu1 * mu2
 
-        outputs_1 = (
-            F.conv2d(
-                preds[:, i, :, :].unsqueeze(1) * preds[:, i, :, :].unsqueeze(1),
-                kernel,
-                padding="same",
-            )
-            - preds_sum_sq
+        outputs_1 = F.conv2d(
+            preds[:, i, :, :].unsqueeze(1) * preds[:, i, :, :].unsqueeze(1),
+            kernel,
+            padding="same",
         )
-        outputs_2 = (
-            F.conv2d(
-                target[:, i, :, :].unsqueeze(1) * target[:, i, :, :].unsqueeze(1),
-                kernel,
-                padding="same",
-            )
-            - target_sum_sq
+        outputs_1 -= preds_sum_sq
+
+        outputs_2 = F.conv2d(
+            target[:, i, :, :].unsqueeze(1) * target[:, i, :, :].unsqueeze(1),
+            kernel,
+            padding="same",
         )
-        outputs_3 = (
-            F.conv2d(
-                preds[:, i, :, :].unsqueeze(1) * target[:, i, :, :].unsqueeze(1),
-                kernel,
-                padding="same",
-            )
-            - preds_target_sum_mul
+        outputs_2 -= target_sum_sq
+
+        outputs_3 = F.conv2d(
+            preds[:, i, :, :].unsqueeze(1) * target[:, i, :, :].unsqueeze(1),
+            kernel,
+            padding="same",
         )
+        outputs_3 -= preds_target_sum_mul
 
         sigma_preds_sq, sigma_target_sq, sigma_preds_target = outputs_1, outputs_2, outputs_3
 

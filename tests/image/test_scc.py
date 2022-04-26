@@ -22,3 +22,82 @@ from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 from torchmetrics.functional.image.scc import spatial_correlation_coefficient
 from torchmetrics.image.scc import SpatialCorrelationCoefficient
+
+seed_all(42)
+
+
+def _reference_scc(preds, target, reduction):
+    val = 0.0
+    for p, t in zip(preds, target):
+        val += scc(t.numpy(), p.numpy())
+    val = val if reduction == "sum" else val / preds.shape[0]
+    return val
+
+
+Input = namedtuple("Input", ["preds", "target"])
+
+_inputs = []
+for size, channel, dtype in [
+    (12, 3, torch.float),
+    (13, 3, torch.float32),
+    (14, 3, torch.double),
+    (15, 3, torch.float64),
+]:
+    preds = torch.rand(NUM_BATCHES, BATCH_SIZE, channel, size, size, dtype=dtype)
+    target = torch.rand(NUM_BATCHES, BATCH_SIZE, channel, size, size, dtype=dtype)
+    _inputs.append(Input(preds=preds, target=target))
+
+
+@pytest.mark.parametrize("reduction", ["sum", "elementwise_mean"])
+@pytest.mark.parametrize(
+    "preds, target",
+    [(i.preds, i.target) for i in _inputs],
+)
+class TestSpatialCorrelationCoefficient(MetricTester):
+    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
+    def test_scc(self, reduction, preds, target, ddp, dist_sync_on_step):
+        self.run_class_metric_test(
+            ddp,
+            preds,
+            target,
+            SpatialCorrelationCoefficient,
+            partial(_reference_scc, reduction=reduction),
+            dist_sync_on_step,
+            metric_args=dict(reduction=reduction),
+        )
+
+    def test_scc_functional(self, reduction, preds, target):
+        self.run_functional_metric_test(
+            preds,
+            target,
+            spatial_correlation_coefficient,
+            partial(_reference_scc, reduction=reduction),
+            metric_args=dict(reduction=reduction),
+        )
+
+    # SAM half + cpu does not work due to missing support in torch.log
+    @pytest.mark.xfail(reason="SCC metric does not support cpu + half precision")
+    def test_scc_half_cpu(self, reduction, preds, target):
+        self.run_precision_test_cpu(
+            preds,
+            target,
+            SpatialCorrelationCoefficient,
+            spatial_correlation_coefficient,
+        )
+
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
+    def test_scc_half_gpu(self, reduction, preds, target):
+        self.run_precision_test_gpu(preds, target, SpatialCorrelationCoefficient, spatial_correlation_coefficient)
+
+
+def test_error_on_different_shape(metric_class=SpatialCorrelationCoefficient):
+    metric = metric_class()
+    with pytest.raises(RuntimeError):
+        metric(torch.randn([1, 3, 16, 16]), torch.randn([1, 1, 16, 16]))
+
+
+def test_error_on_invalid_shape(metric_class=SpatialCorrelationCoefficient):
+    metric = metric_class()
+    with pytest.raises(ValueError):
+        metric(torch.randn([3, 16, 16]), torch.randn([3, 16, 16]))
