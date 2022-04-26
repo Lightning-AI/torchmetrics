@@ -27,7 +27,6 @@ from tests.retrieval.helpers import _default_metric_class_input_arguments, _erro
 from tests.retrieval.test_precision import _precision_at_k
 from tests.retrieval.test_recall import _recall_at_k
 from torchmetrics import RetrievalRecallAtFixedPrecision
-from torchmetrics.retrieval.recall_precision import MinPrecisionError
 
 seed_all(42)
 
@@ -38,6 +37,7 @@ def _compute_recall_at_precision_metric(
     indexes: Union[Tensor, array] = None,
     max_k: int = None,
     min_precision: float = 0.0,
+    adaptive_k: bool = False,
     ignore_index: int = None,
     empty_target_action: str = "skip",
     reverse: bool = False,
@@ -91,7 +91,7 @@ def _compute_recall_at_precision_metric(
         else:
             for k in max_k_range:
                 r.append(_recall_at_k(trg, prd, k=k.item()))
-                p.append(_precision_at_k(trg, prd, k=k.item()))
+                p.append(_precision_at_k(trg, prd, k=k.item(), adaptive_k=adaptive_k))
 
             recalls.append(r)
             precisions.append(p)
@@ -105,7 +105,7 @@ def _compute_recall_at_precision_metric(
     recalls_at_k = [(r, k) for p, r, k in zip(precisions, recalls, max_k_range) if p >= min_precision]
 
     if not recalls_at_k:
-        raise MinPrecisionError(f"Not found recalls to precision: {min_precision}. Try lower values.")
+        return tensor(0.0), tensor(max_k)
 
     return max(recalls_at_k)
 
@@ -160,16 +160,31 @@ class RetrievalRecallAtPrecisionMetricTester(MetricTester):
 @pytest.mark.parametrize("empty_target_action", ["neg", "skip", "pos"])
 @pytest.mark.parametrize("ignore_index", [None, 1])  # avoid setting 0, otherwise test with all 0 targets will fail
 @pytest.mark.parametrize("max_k", [None, 1, 2, 5, 10])
-@pytest.mark.parametrize("min_precision", [0.0])
+@pytest.mark.parametrize("min_precision", [0.0, 0.5, 0.9])
+@pytest.mark.parametrize("adaptive_k", [False, True])
 @pytest.mark.parametrize(**_default_metric_class_input_arguments)
 class TestRetrievalRecallAtPrecision(RetrievalRecallAtPrecisionMetricTester):
     atol = 0.02
 
     def test_class_metric(
-        self, indexes, preds, target, ddp, dist_sync_on_step, empty_target_action, ignore_index, max_k, min_precision
+        self,
+        indexes,
+        preds,
+        target,
+        ddp,
+        dist_sync_on_step,
+        empty_target_action,
+        ignore_index,
+        max_k,
+        min_precision,
+        adaptive_k
     ):
         metric_args = dict(
-            max_k=max_k, min_precision=min_precision, empty_target_action=empty_target_action, ignore_index=ignore_index
+            max_k=max_k,
+            min_precision=min_precision,
+            adaptive_k=adaptive_k,
+            empty_target_action=empty_target_action,
+            ignore_index=ignore_index
         )
 
         self.run_class_metric_test(
@@ -181,38 +196,4 @@ class TestRetrievalRecallAtPrecision(RetrievalRecallAtPrecisionMetricTester):
             sk_metric=_compute_recall_at_precision_metric,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
-        )
-
-
-# guarantied zero precision value
-_error_test_class_metric_min_precision = dict(
-    argnames="min_precision,indexes,preds,target",
-    argvalues=[
-        (
-            1.0,
-            tensor([[0, 1, 1, 2, 2, 2]]),
-            tensor([[0.5, 0.5, 0.5, 0.5, 0.5, 0.5]]),
-            tensor([[False, False, False, False, False, False]]),
-        )
-    ],
-)
-
-
-@pytest.mark.parametrize("empty_target_action", ["neg", "skip"])  # "pos" action cause to 1.0 precision value
-@pytest.mark.parametrize("ignore_index", [None, 1])  # avoid setting 0, otherwise test with all 0 targets will fail
-@pytest.mark.parametrize("max_k", [1, 2, 5, 10])
-@pytest.mark.parametrize(**_error_test_class_metric_min_precision)
-class TestRetrievalRecallAtPrecisionError(RetrievalRecallAtPrecisionMetricTester):
-    def test_min_precision_error(self, indexes, preds, target, empty_target_action, ignore_index, max_k, min_precision):
-        metric_args = dict(
-            max_k=max_k, min_precision=min_precision, empty_target_action=empty_target_action, ignore_index=ignore_index
-        )
-
-        _errors_test_class_metric(
-            indexes=indexes,
-            preds=preds,
-            target=target,
-            metric_class=RetrievalRecallAtFixedPrecision,
-            metric_args=metric_args,
-            exception_type=MinPrecisionError,
         )
