@@ -11,20 +11,36 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from functools import partial
 from typing import Any, Dict, Optional, Tuple
 
 import torch
 from torch import Tensor, tensor
 
 from torchmetrics import Metric
-from torchmetrics.retrieval import RetrievalPrecision, RetrievalRecall
+from torchmetrics.functional.retrieval.recall_precision_curve import retrieval_recall_precision_curve
 from torchmetrics.utilities.checks import _check_retrieval_inputs
 from torchmetrics.utilities.data import get_group_indexes
 
 
-class MinPrecisionError(Exception):
-    """Bad option `min_precision`"""
+def _retrieval_recall_at_fixed_precision(
+        precision: Tensor,
+        recall: Tensor,
+        top_k: Tensor,
+        min_precision: float,
+) -> Tuple[Tensor, Tensor]:
+    try:
+        max_recall, best_k = max(
+            (r, k) for p, r, k in zip(precision, recall, top_k) if p >= min_precision
+        )
+
+    except ValueError:
+        max_recall = torch.tensor(0.0, device=recall.device, dtype=recall.dtype)
+        best_k = torch.tensor(len(top_k))
+
+    if max_recall == 0.0:
+        best_k = torch.tensor(len(top_k), device=top_k.device, dtype=top_k.dtype)
+
+    return max_recall, best_k
 
 
 class RetrievalRecallAtFixedPrecision(Metric):
@@ -43,7 +59,7 @@ class RetrievalRecallAtFixedPrecision(Metric):
 
     Args:
         min_precision: float value specifying minimum precision threshold.
-        max_k: Calculate recall and precision for all possible top k from 0 to max_k
+        max_k: Calculate recall and precision for all possible top k from 1 to max_k
                (default: `None`, which considers all possible top k)
         adaptive_k: adjust `k` to `min(k, number of documents)` for each query
         empty_target_action:
@@ -99,8 +115,6 @@ class RetrievalRecallAtFixedPrecision(Metric):
     ) -> None:
         super().__init__(compute_on_step=compute_on_step, **kwargs)
         self.allow_non_binary_target = False
-        self.retrieval_recall_class = partial(RetrievalRecall, **kwargs)
-        self.retrieval_precision_class = partial(RetrievalPrecision, **kwargs)
         self.compute_on_step = compute_on_step
 
         empty_target_action_options = ("error", "skip", "neg", "pos")
@@ -149,37 +163,40 @@ class RetrievalRecallAtFixedPrecision(Metric):
         indexes = torch.cat(self.indexes, dim=0)
         preds = torch.cat(self.preds, dim=0)
         target = torch.cat(self.target, dim=0)
+        groups = get_group_indexes(indexes)
 
         # don't want to change self.max_k
         max_k = self.max_k
         if max_k is None:
-            # set max_k as max size of group
-            groups = get_group_indexes(indexes)
+            # set max_k as size of max group by size
             max_k = max(map(len, groups))
 
-        # precision recall k
-        prk = []
-        for k in torch.arange(1, max_k + 1):
-            rr = self.retrieval_recall_class(
-                k=k.item(),
-                empty_target_action=self.empty_target_action,
-                ignore_index=self.ignore_index,
-                compute_on_step=self.compute_on_step,
-            )
-            rp = self.retrieval_precision_class(
-                k=k.item(),
-                adaptive_k=self.adaptive_k,
-                empty_target_action=self.empty_target_action,
-                ignore_index=self.ignore_index,
-                compute_on_step=self.compute_on_step,
-            )
-            item = rp(preds, target, indexes=indexes), rr(preds, target, indexes=indexes), k
-            prk.append(item)
+        precisions, recalls = [], []
 
-        recalls_at_k = [(r, k) for p, r, k in prk if p >= self.min_precision]
+        for group in groups:
+            mini_preds = preds[group]
+            mini_target = target[group]
 
-        if not recalls_at_k:
-            raise MinPrecisionError(f"Not found recalls to precision: {self.min_precision}. Try lower values.")
+            if not mini_target.sum():
+                if self.empty_target_action == "error":
+                    raise ValueError("`compute` method was provided with a query with no positive target.")
+                elif self.empty_target_action == "pos":
+                    recalls.append(torch.ones(max_k, device=preds.device))
+                    precisions.append(torch.ones(max_k, device=preds.device))
+                elif self.empty_target_action == "neg":
+                    recalls.append(torch.zeros(max_k, device=preds.device))
+                    precisions.append(torch.zeros(max_k, device=preds.device))
+            else:
+                recall, precision, _ = retrieval_recall_precision_curve(
+                    mini_preds, mini_target, max_k, self.adaptive_k
+                )
 
-        # return best pair recall, k
-        return max(recalls_at_k)
+                recalls.append(recall)
+                precisions.append(precision)
+
+        return _retrieval_recall_at_fixed_precision(
+            precision=torch.stack([x.to(preds) for x in precisions]).mean(dim=0) if precisions else torch.zeros(max_k).to(preds),
+            recall=torch.stack([x.to(preds) for x in recalls]).mean(dim=0) if recalls else torch.zeros(max_k).to(preds),
+            top_k=torch.arange(1, max_k + 1, device=preds.device),
+            min_precision=self.min_precision
+        )
