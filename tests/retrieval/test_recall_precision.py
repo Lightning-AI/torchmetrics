@@ -177,14 +177,14 @@ class TestRetrievalRecallAtPrecision(RetrievalRecallAtPrecisionMetricTester):
         ignore_index,
         max_k,
         min_precision,
-        adaptive_k
+        adaptive_k,
     ):
         metric_args = dict(
             max_k=max_k,
             min_precision=min_precision,
             adaptive_k=adaptive_k,
             empty_target_action=empty_target_action,
-            ignore_index=ignore_index
+            ignore_index=ignore_index,
         )
 
         self.run_class_metric_test(
