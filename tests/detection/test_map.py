@@ -334,7 +334,7 @@ class TestMAP(MetricTester):
             metric_args={"class_metrics": True, "compute_on_cpu": compute_on_cpu},
         )
 
-    @pytest.mark.parametrize("ddp", [False])
+    @pytest.mark.parametrize("ddp", [False, True])
     def test_map_segm(self, compute_on_cpu, ddp):
         """Test modular implementation for correctness."""
 
