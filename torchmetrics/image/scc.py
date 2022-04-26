@@ -11,8 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Dict, List, Sequence
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -27,15 +26,15 @@ class SpatialCorrelationCoefficient(Metric):
     preds: List[Tensor]
     target: List[Tensor]
     higher_is_better: bool = True
+    is_differentiable: bool = True
 
     def __init__(
         self,
         kernel_size: Sequence[int] = (9, 9),
         reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
         rank_zero_warn(
             "Metric `SpatialCorrelationCoefficient` will save all target and"
             " predictions in buffer. For large datasets this may lead"
@@ -59,7 +58,7 @@ class SpatialCorrelationCoefficient(Metric):
         self.target.append(target)
 
     def compute(self) -> Tensor:
-        """Computes explained variance over state."""
+        """Computes spatial correlation coefficient over the metric states."""
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         return _scc_compute(preds, target, self.kernel_size, self.reduction)
