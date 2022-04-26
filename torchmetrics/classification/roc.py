@@ -34,24 +34,17 @@ class ROC(Metric):
 
     .. note::
         If either the positive class or negative class is completly missing in the target tensor,
-        the roc values are not well defined in this case and a tensor of zeros will be returned (either fpr
-        or tpr depending on what class is missing) together with an warning.
+        the roc values are not well-defined in this case and a tensor of zeros will be returned (either fpr
+        or tpr depending on what class is missing) together with a warning.
 
     Args:
         num_classes: integer with number of classes for multi-label and multiclass problems.
             Should be set to ``None`` for binary problems
-        pos_label: integer determining the positive class. Default is ``None``
-            which for binary problem is translate to 1. For multiclass problems
-            this argument should not be set as we iteratively change it in the
-            range [0,num_classes-1]
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
+        pos_label: integer determining the positive class. Default is ``None`` which for binary problem is translated
+            to 1. For multiclass problems this argument should not be set as we iteratively change it in the range
+            ``[0,num_classes-1]``
 
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (binary case):
         >>> from torchmetrics import ROC
@@ -114,10 +107,9 @@ class ROC(Metric):
         self,
         num_classes: Optional[int] = None,
         pos_label: Optional[int] = None,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
 
         self.num_classes = num_classes
         self.pos_label = pos_label
@@ -149,14 +141,12 @@ class ROC(Metric):
         Returns:
             3-element tuple containing
 
-            fpr:
-                tensor with false positive rates.
+            fpr: tensor with false positive rates.
                 If multiclass, this is a list of such tensors, one for each class.
-            tpr:
-                tensor with true positive rates.
+            tpr: tensor with true positive rates.
                 If multiclass, this is a list of such tensors, one for each class.
             thresholds:
-                thresholds used for computing false- and true postive rates
+                thresholds used for computing false- and true-positive rates
         """
         preds = torch.cat(self.preds, dim=0)
         target = torch.cat(self.target, dim=0)

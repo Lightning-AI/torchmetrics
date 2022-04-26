@@ -48,11 +48,12 @@ class AUROC(Metric):
 
     Args:
         num_classes: integer with number of classes for multi-label and multiclass problems.
+
             Should be set to ``None`` for binary problems
         pos_label: integer determining the positive class. Default is ``None``
-            which for binary problem is translate to 1. For multiclass problems
+            which for binary problem is translated to 1. For multiclass problems
             this argument should not be set as we iteratively change it in the
-            range [0,num_classes-1]
+            range ``[0, num_classes-1]``
         average:
             - ``'micro'`` computes metric globally. Only works for multilabel problems
             - ``'macro'`` computes metric for each class and uniformly averages them
@@ -61,15 +62,9 @@ class AUROC(Metric):
             - ``None`` computes and returns the metric per class
         max_fpr:
             If not ``None``, calculates standardized partial AUC over the
-            range [0, max_fpr]. Should be a float between 0 and 1.
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
+            range ``[0, max_fpr]``. Should be a float between 0 and 1.
 
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
@@ -77,7 +72,7 @@ class AUROC(Metric):
         ValueError:
             If ``max_fpr`` is not a ``float`` in the range ``(0, 1]``.
         RuntimeError:
-            If ``PyTorch version`` is ``below 1.6`` since max_fpr requires ``torch.bucketize``
+            If ``PyTorch version`` is ``below 1.6`` since ``max_fpr`` requires ``torch.bucketize``
             which is not available below 1.6.
         ValueError:
             If the mode of data (binary, multi-label, multi-class) changes between batches.
@@ -113,10 +108,9 @@ class AUROC(Metric):
         pos_label: Optional[int] = None,
         average: Optional[str] = "macro",
         max_fpr: Optional[float] = None,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
 
         self.num_classes = num_classes
         self.pos_label = pos_label

@@ -17,13 +17,12 @@ from torch import Tensor, tensor
 
 from torchmetrics.functional.audio.sdr import scale_invariant_signal_distortion_ratio, signal_distortion_ratio
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.imports import _FAST_BSS_EVAL_AVAILABLE
 
 __doctest_requires__ = {"SignalDistortionRatio": ["fast_bss_eval"]}
 
 
 class SignalDistortionRatio(Metric):
-    r"""Signal to Distortion Ratio (SDR) [1,2,3]
+    r"""Signal to Distortion Ratio (SDR) [1,2]
 
     Forward accepts
 
@@ -32,20 +31,19 @@ class SignalDistortionRatio(Metric):
 
     Args:
         use_cg_iter:
-            If provided, an iterative method is used to solve for the distortion
-            filter coefficients instead of direct Gaussian elimination.
+            If provided, conjugate gradient descent is used to solve for the distortion
+            filter coefficients instead of direct Gaussian elimination, which requires that
+            ``fast-bss-eval`` is installed and pytorch version >= 1.8.
             This can speed up the computation of the metrics in case the filters
             are long. Using a value of 10 here has been shown to provide
             good accuracy in most cases and is sufficient when using this
             loss to train neural separation networks.
-        filter_length:
-            The length of the distortion filter allowed
+        filter_length: The length of the distortion filter allowed
         zero_mean:
             When set to True, the mean of all signals is subtracted prior to computation of the metrics
         load_diag:
-            If provided, this small value is added to the diagonal coefficients of
-            the system metrics when solving for the filter coefficients.
-            This can help stabilize the metric in the case where some of the reference
+            If provided, this small value is added to the diagonal coefficients of the system metrics when solving
+            for the filter coefficients. This can help stabilize the metric in the case where some reference
             signals may sometimes be zero
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
@@ -53,12 +51,7 @@ class SignalDistortionRatio(Metric):
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
-
-    Raises:
-        ModuleNotFoundError:
-            If ``fast-bss-eval`` package is not installed
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
         >>> from torchmetrics.audio import SignalDistortionRatio
@@ -78,23 +71,11 @@ class SignalDistortionRatio(Metric):
         >>> pit(preds, target)
         tensor(-11.6051)
 
-    .. note::
-       1. when pytorch<1.8.0, numpy will be used to calculate this metric, which causes ``sdr`` to be
-            non-differentiable and slower to calculate
-
-       2. using this metrics requires you to have ``fast-bss-eval`` install. Either install as ``pip install
-          torchmetrics[audio]`` or ``pip install fast-bss-eval``
-
-       3. preds and target need to have the same dtype, otherwise target will be converted to preds' dtype
-
-
     References:
         [1] Vincent, E., Gribonval, R., & Fevotte, C. (2006). Performance measurement in blind audio source separation.
         IEEE Transactions on Audio, Speech and Language Processing, 14(4), 1462–1469.
 
         [2] Scheibler, R. (2021). SDR -- Medium Rare with Fast Computations.
-
-        [3] https://github.com/fakufaku/fast_bss_eval
     """
 
     sum_sdr: Tensor
@@ -111,11 +92,6 @@ class SignalDistortionRatio(Metric):
         compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        if not _FAST_BSS_EVAL_AVAILABLE:
-            raise ModuleNotFoundError(
-                "SDR metric requires that `fast-bss-eval` is installed."
-                " Either install as `pip install torchmetrics[audio]` or `pip install fast-bss-eval`."
-            )
         super().__init__(compute_on_step=compute_on_step, **kwargs)
 
         self.use_cg_iter = use_cg_iter
@@ -155,16 +131,14 @@ class ScaleInvariantSignalDistortionRatio(Metric):
     - ``target``: ``shape [...,time]``
 
     Args:
-        zero_mean:
-            if to zero mean target and preds or not
+        zero_mean: if to zero mean target and preds or not
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
 
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         TypeError:

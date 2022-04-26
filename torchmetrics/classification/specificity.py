@@ -21,8 +21,7 @@ from torchmetrics.functional.classification.specificity import _specificity_comp
 
 
 class Specificity(StatScores):
-    r"""
-    Computes `Specificity`_:
+    r"""Computes `Specificity`_:
 
     .. math:: \text{Specificity} = \frac{\text{TN}}{\text{TN} + \text{FP}}
 
@@ -32,7 +31,7 @@ class Specificity(StatScores):
 
     The reduction method (how the specificity scores are aggregated) is controlled by the
     ``average`` parameter, and additionally by the ``mdmc_average`` parameter in the
-    multi-dimensional multi-class case. Accepts all inputs listed in :ref:`references/modules:input types`.
+    multi-dimensional multi-class case. Accepts all inputs listed in :ref:`pages/classification:input types`.
 
     Args:
         num_classes:
@@ -66,11 +65,11 @@ class Specificity(StatScores):
             - ``'samplewise'``: In this case, the statistics are computed separately for each
               sample on the ``N`` axis, and then averaged over samples.
               The computation for each sample is done by treating the flattened extra axes ``...``
-              (see :ref:`references/modules:input types`) as the ``N`` dimension within the sample,
+              (see :ref:`pages/classification:input types`) as the ``N`` dimension within the sample,
               and computing the metric for the sample based on that.
 
             - ``'global'``: In this case the ``N`` and ``...`` dimensions of the inputs
-              (see :ref:`references/modules:input types`)
+              (see :ref:`pages/classification:input types`)
               are flattened into a new ``N_X`` sample axis, i.e. the inputs are treated as if they
               were ``(N_X, C)``. From here on the ``average`` parameter applies as usual.
 
@@ -80,7 +79,7 @@ class Specificity(StatScores):
             or ``'none'``, the score for the ignored class will be returned as ``nan``.
 
         top_k:
-            Number of highest probability entries for each sample to convert to 1s - relevant
+            Number of the highest probability entries for each sample to convert to 1s - relevant
             only for inputs with probability predictions. If this parameter is set for multi-label
             inputs, it will take precedence over ``threshold``. For (multi-dim) multi-class inputs,
             this parameter defaults to 1.
@@ -90,17 +89,10 @@ class Specificity(StatScores):
         multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
             than what they appear to be. See the parameter's
-            :ref:`documentation section <references/modules:using the multiclass parameter>`
+            :ref:`documentation section <pages/classification:using the multiclass parameter>`
             for a more detailed explanation and examples.
 
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
@@ -130,7 +122,6 @@ class Specificity(StatScores):
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
         multiclass: Optional[bool] = None,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
         allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
@@ -145,7 +136,6 @@ class Specificity(StatScores):
             num_classes=num_classes,
             multiclass=multiclass,
             ignore_index=ignore_index,
-            compute_on_step=compute_on_step,
             **kwargs,
         )
 
@@ -155,7 +145,7 @@ class Specificity(StatScores):
         """Computes the specificity score based on inputs passed in to ``update`` previously.
 
         Return:
-            The shape of the returned tensor depends on the ``average`` parameter
+            The shape of the returned tensor depends on the ``average`` parameter:
 
             - If ``average in ['micro', 'macro', 'weighted', 'samples']``, a one-element tensor will be returned
             - If ``average in ['none', None]``, the shape will be ``(C,)``, where ``C`` stands  for the number

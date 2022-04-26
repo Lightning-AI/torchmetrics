@@ -21,7 +21,7 @@ def retrieval_average_precision(preds: Tensor, target: Tensor) -> Tensor:
     """Computes average precision (for information retrieval), as explained in `IR Average precision`_.
 
     ``preds`` and ``target`` should be of the same shape and live on the same device. If no ``target`` is ``True``,
-    ``0`` is returned. ``target`` must be either `bool` or `integers` and ``preds`` must be `float`,
+    ``0`` is returned. ``target`` must be either `bool` or `integers` and ``preds`` must be ``float``,
     otherwise an error is raised.
 
     Args:

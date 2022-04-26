@@ -46,19 +46,14 @@ class BERTScore(Metric):
     This implemenation follows the original implementation from `BERT_score`_.
 
     Args:
-        preds:
-            An iterable of predicted sentences.
-        target:
-            An iterable of target sentences.
-        model_type:
-            A name or a model path used to load `transformers` pretrained model.
-        num_layers:
-            A layer of representation to use.
+        preds: An iterable of predicted sentences.
+        target: An iterable of target sentences.
+        model_type: A name or a model path used to load `transformers` pretrained model.
+        num_layers: A layer of representation to use.
         all_layers:
             An indication of whether the representation from all model's layers should be used.
             If `all_layers = True`, the argument `num_layers` is ignored.
-        model:
-            A user's own model. Must be of `torch.nn.Module` instance.
+        model:  A user's own model. Must be of `torch.nn.Module` instance.
         user_tokenizer:
             A user's own tokenizer used with the own model. This must be an instance with the `__call__` method.
             This method must take an iterable of sentences (`List[str]`) and must return a python dictionary
@@ -70,40 +65,29 @@ class BERTScore(Metric):
             A user's own forward function used in a combination with `user_model`. This function must take `user_model`
             and a python dictionary of containing `"input_ids"` and `"attention_mask"` represented by `torch.Tensor`
             as an input and return the model's output represented by the single `torch.Tensor`.
-        verbose:
-            An indication of whether a progress bar to be displayed during the embeddings calculation.
-        idf:
-            An indication whether normalization using inverse document frequencies should be used.
-        device:
-            A device to be used for calculation.
-        max_length:
-            A maximum length of input sequences. Sequences longer than `max_length` are to be trimmed.
-        batch_size:
-            A batch size used for model processing.
-        num_threads:
-            A number of threads to use for a dataloader.
-        return_hash:
-            An indication of whether the correspodning `hash_code` should be returned.
-        lang:
-            A language of input sentences.
+        verbose: An indication of whether a progress bar to be displayed during the embeddings calculation.
+        idf: An indication whether normalization using inverse document frequencies should be used.
+        device: A device to be used for calculation.
+        max_length: A maximum length of input sequences. Sequences longer than `max_length` are to be trimmed.
+        batch_size: A batch size used for model processing.
+        num_threads: A number of threads to use for a dataloader.
+        return_hash: An indication of whether the correspodning `hash_code` should be returned.
+        lang: A language of input sentences.
         rescale_with_baseline:
             An indication of whether bertscore should be rescaled with a pre-computed baseline.
             When a pretrained model from `transformers` model is used, the corresponding baseline is downloaded
             from the original `bert-score` package from `BERT_score`_ if available.
             In other cases, please specify a path to the baseline csv/tsv file, which must follow the formatting
             of the files from `BERT_score`_.
-        baseline_path:
-            A path to the user's own local csv/tsv file with the baseline scale.
-        baseline_url:
-            A url path to the user's own  csv/tsv file with the baseline scale.
+        baseline_path: A path to the user's own local csv/tsv file with the baseline scale.
+        baseline_url: A url path to the user's own  csv/tsv file with the baseline scale.
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
 
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Returns:
         Python dictionary containing the keys `precision`, `recall` and `f1` with corresponding values.
@@ -197,10 +181,8 @@ class BERTScore(Metric):
         tokenized form to ensure the DDP mode working.
 
         Args:
-            preds:
-                An iterable of predicted sentences.
-            target:
-                An iterable of reference sentences.
+            preds: An iterable of predicted sentences.
+            target: An iterable of reference sentences.
         """
         preds_dict = _preprocess_text(
             preds,

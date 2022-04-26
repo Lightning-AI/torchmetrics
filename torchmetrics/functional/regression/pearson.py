@@ -29,8 +29,9 @@ def _pearson_corrcoef_update(
     corr_xy: Tensor,
     n_prior: Tensor,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor, Tensor, Tensor]:
-    """Updates and returns variables required to compute Pearson Correlation Coefficient. Checks for same shape of
-    input tensors.
+    """Updates and returns variables required to compute Pearson Correlation Coefficient.
+
+    Checks for same shape of input tensors.
 
     Args:
         mean_x: current mean estimate of x tensor

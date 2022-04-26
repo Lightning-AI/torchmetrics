@@ -55,7 +55,7 @@ def _ergas_compute(
     Args:
         preds: estimated image
         target: ground truth image
-        ratio: ratio of high resolution to low resolution (default=4)
+        ratio: ratio of high resolution to low resolution
         reduction: a method to reduce metric score over labels.
 
             - ``'elementwise_mean'``: takes the mean (default)
@@ -93,7 +93,7 @@ def error_relative_global_dimensionless_synthesis(
     Args:
         preds: estimated image
         target: ground truth image
-        ratio: ratio of high resolution to low resolution (default=4)
+        ratio: ratio of high resolution to low resolution
         reduction: a method to reduce metric score over labels.
 
             - ``'elementwise_mean'``: takes the mean (default)
@@ -108,6 +108,7 @@ def error_relative_global_dimensionless_synthesis(
             If ``preds`` and ``target`` don't have the same data type.
         ValueError:
             If ``preds`` and ``target`` don't have ``BxCxHxW shape``.
+
     Example:
         >>> from torchmetrics.functional import error_relative_global_dimensionless_synthesis
         >>> preds = torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42))
@@ -116,9 +117,10 @@ def error_relative_global_dimensionless_synthesis(
         >>> torch.round(ergds)
         tensor(154.)
 
-    References: Qian Du; Nicholas H. Younan; Roger King; Vijay P. Shah, "On the Performance Evaluation of
-    Pan-Sharpening Techniques" in IEEE Geoscience and Remote Sensing Letters, vol. 4, no. 4, pp. 518-522,
-    15 October 2007, doi: 10.1109/LGRS.2007.896328.
+    References:
+        [1] Qian Du; Nicholas H. Younan; Roger King; Vijay P. Shah, "On the Performance Evaluation of
+        Pan-Sharpening Techniques" in IEEE Geoscience and Remote Sensing Letters, vol. 4, no. 4, pp. 518-522,
+        15 October 2007, doi: 10.1109/LGRS.2007.896328.
     """
     preds, target = _ergas_update(preds, target)
     return _ergas_compute(preds, target, ratio, reduction)

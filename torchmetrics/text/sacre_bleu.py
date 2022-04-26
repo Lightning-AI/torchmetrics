@@ -36,23 +36,18 @@ class SacreBLEUScore(BLEUScore):
     The SacreBLEU implementation differs from the NLTK BLEU implementation in tokenization techniques.
 
     Args:
-        n_gram:
-            Gram value ranged from 1 to 4 (Default 4)
-        smooth:
-            Whether or not to apply smoothing, see [2]
-        tokenize:
-            Tokenization technique to be used. (Default '13a')
-            Supported tokenization: ['none', '13a', 'zh', 'intl', 'char']
-        lowercase:
-            If ``True``, BLEU score over lowercased text is calculated.
+        n_gram: Gram value ranged from 1 to 4
+        smooth: Whether to apply smoothing, see [2]
+        tokenize: Tokenization technique to be used.
+            Supported tokenization: ``['none', '13a', 'zh', 'intl', 'char']``
+        lowercase:  If ``True``, BLEU score over lowercased text is calculated.
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
 
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
      Raises:
         ValueError:

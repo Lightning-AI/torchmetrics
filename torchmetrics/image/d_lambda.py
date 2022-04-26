@@ -34,8 +34,7 @@ class SpectralDistortionIndex(Metric):
             - ``'sum'``: takes the sum
             - ``'none'``: no reduction will be applied
 
-    kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
 
     Example:
@@ -50,9 +49,9 @@ class SpectralDistortionIndex(Metric):
 
     References:
         [1] Alparone, Luciano & Aiazzi, Bruno & Baronti, Stefano & Garzelli, Andrea & Nencini,
-            Filippo & Selva, Massimo. (2008). Multispectral and Panchromatic Data Fusion
-            Assessment Without Reference. ASPRS Journal of Photogrammetric Engineering
-            and Remote Sensing. 74. 193-200. 10.14358/PERS.74.2.193.
+        Filippo & Selva, Massimo. (2008). Multispectral and Panchromatic Data Fusion
+        Assessment Without Reference. ASPRS Journal of Photogrammetric Engineering
+        and Remote Sensing. 74. 193-200. 10.14358/PERS.74.2.193.
     """
 
     preds: List[Tensor]

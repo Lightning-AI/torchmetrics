@@ -41,16 +41,11 @@ def perceptual_evaluation_speech_quality(
         most likely have to reinstall ``pesq``.
 
     Args:
-        preds:
-            shape ``[...,time]``
-        target:
-            shape ``[...,time]``
-        fs:
-            sampling frequency, should be 16000 or 8000 (Hz)
-        mode:
-            'wb' (wide-band) or 'nb' (narrow-band)
-        keep_same_device:
-            whether to move the pesq value to the device of preds
+        preds: shape ``[...,time]``
+        target: shape ``[...,time]``
+        fs: sampling frequency, should be 16000 or 8000 (Hz)
+        mode: ``'wb'`` (wide-band) or ``'nb'`` (narrow-band)
+        keep_same_device: whether to move the pesq value to the device of preds
 
     Returns:
         pesq value of shape [...]

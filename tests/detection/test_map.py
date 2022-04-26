@@ -99,6 +99,59 @@ _inputs = Input(
     ],
 )
 
+# example from this issue https://github.com/PyTorchLightning/metrics/issues/943
+_inputs2 = Input(
+    preds=[
+        [
+            dict(
+                boxes=torch.Tensor([[258.0, 41.0, 606.0, 285.0]]),
+                scores=torch.Tensor([0.536]),
+                labels=torch.IntTensor([0]),
+            ),
+        ],
+        [
+            dict(
+                boxes=torch.Tensor([[258.0, 41.0, 606.0, 285.0]]),
+                scores=torch.Tensor([0.536]),
+                labels=torch.IntTensor([0]),
+            )
+        ],
+    ],
+    target=[
+        [
+            dict(
+                boxes=torch.Tensor([[214.0, 41.0, 562.0, 285.0]]),
+                labels=torch.IntTensor([0]),
+            )
+        ],
+        [
+            dict(
+                boxes=torch.Tensor([]),
+                labels=torch.IntTensor([]),
+            )
+        ],
+    ],
+)
+
+# Test empty preds case, to ensure bool inputs are properly casted to uint8
+# From https://github.com/PyTorchLightning/metrics/issues/981
+_inputs3 = Input(
+    preds=[
+        [
+            dict(boxes=torch.tensor([]), scores=torch.tensor([]), labels=torch.tensor([])),
+        ],
+    ],
+    target=[
+        [
+            dict(
+                boxes=torch.tensor([[1.0, 2.0, 3.0, 4.0]]),
+                scores=torch.tensor([0.8]),
+                labels=torch.tensor([1]),
+            ),
+        ],
+    ],
+)
+
 
 def _compare_fn(preds, target) -> dict:
     """Comparison function for map implementation.
@@ -249,14 +302,13 @@ def _move_to_gpu(input):
 
 @pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
 @pytest.mark.skipif(_gpu_test_condition, reason="test requires CUDA availability")
-def test_map_gpu():
+@pytest.mark.parametrize("inputs", [_inputs, _inputs2, _inputs3])
+def test_map_gpu(inputs):
     """Test predictions on single gpu."""
     metric = MeanAveragePrecision()
     metric = metric.to("cuda")
-    preds = _inputs.preds[0]
-    targets = _inputs.target[0]
-
-    metric.update(_move_to_gpu(preds), _move_to_gpu(targets))
+    for preds, targets in zip(inputs.preds, inputs.target):
+        metric.update(_move_to_gpu(preds), _move_to_gpu(targets))
     metric.compute()
 
 
@@ -325,7 +377,7 @@ def test_error_on_wrong_input():
         metric.update([], torch.Tensor())  # type: ignore
 
     with pytest.raises(ValueError, match="Expected argument `preds` and `target` to have the same length"):
-        metric.update([dict()], [dict(), dict()])
+        metric.update([{}], [{}, {}])
 
     with pytest.raises(ValueError, match="Expected all dicts in `preds` to contain the `boxes` key"):
         metric.update(

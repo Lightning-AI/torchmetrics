@@ -65,7 +65,7 @@ def _transform_changelog(path_in: str, path_out: str) -> None:
         elif ln.startswith("### "):
             ln = ln.replace("###", f"### {chlog_ver} -")
             chlog_lines[i] = ln
-    with open(path_out, "w") as fp:
+    with open(path_out, "w", encoding="utf-8") as fp:
         fp.writelines(chlog_lines)
 
 
@@ -104,6 +104,7 @@ extensions = [
     "sphinx_autodoc_typehints",
     "sphinx_paramlinks",
     "sphinx.ext.githubpages",
+    "pt_lightning_sphinx_theme.extensions.lightning_tutorials",
 ]
 
 # Add any paths that contain templates here, relative to this directory.

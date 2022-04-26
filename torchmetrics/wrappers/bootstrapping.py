@@ -26,15 +26,14 @@ def _bootstrap_sampler(
     size: int,
     sampling_strategy: str = "poisson",
 ) -> Tensor:
-    """Resample a tensor along its first dimension with replacement
+    """Resample a tensor along its first dimension with replacement.
+
     Args:
         size: number of samples
         sampling_strategy: the strategy to use for sampling, either ``'poisson'`` or ``'multinomial'``
-        generator: a instance of ``torch.Generator`` that controls the sampling
 
     Returns:
         resampled tensor
-
     """
     if sampling_strategy == "poisson":
         p = torch.distributions.Poisson(1)
@@ -49,24 +48,18 @@ def _bootstrap_sampler(
 class BootStrapper(Metric):
     r"""
     Using `Turn a Metric into a Bootstrapped`_
+
     That can automate the process of getting confidence intervals for metric values. This wrapper
     class basically keeps multiple copies of the same base metric in memory and whenever ``update`` or
     ``forward`` is called, all input tensors are resampled (with replacement) along the first dimension.
 
     Args:
-        base_metric:
-            base metric class to wrap
-        num_bootstraps:
-            number of copies to make of the base metric for bootstrapping
-        mean:
-            if ``True`` return the mean of the bootstraps
-        std:
-            if ``True`` return the standard diviation of the bootstraps
-        quantile:
-            if given, returns the quantile of the bootstraps. Can only be used with
-            pytorch version 1.6 or higher
-        raw:
-            if ``True``, return all bootstrapped values
+        base_metric: base metric class to wrap
+        num_bootstraps: number of copies to make of the base metric for bootstrapping
+        mean: if ``True`` return the mean of the bootstraps
+        std: if ``True`` return the standard diviation of the bootstraps
+        quantile: if given, returns the quantile of the bootstraps. Can only be used with pytorch version 1.6 or higher
+        raw: if ``True``, return all bootstrapped values
         sampling_strategy:
             Determines how to produce bootstrapped samplings. Either ``'poisson'`` or ``multinomial``.
             If ``'possion'`` is chosen, the number of times each sample will be included in the bootstrap
@@ -79,8 +72,7 @@ class BootStrapper(Metric):
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example::
         >>> from pprint import pprint
@@ -134,7 +126,7 @@ class BootStrapper(Metric):
     def update(self, *args: Any, **kwargs: Any) -> None:
         """Updates the state of the base metric.
 
-        Any tensor passed in will be bootstrapped along dimension 0
+        Any tensor passed in will be bootstrapped along dimension 0.
         """
         for idx in range(self.num_bootstraps):
             args_sizes = apply_to_collection(args, Tensor, len)
@@ -153,8 +145,8 @@ class BootStrapper(Metric):
     def compute(self) -> Dict[str, Tensor]:
         """Computes the bootstrapped metric values.
 
-        Allways returns a dict of tensors, which can contain the following keys: ``mean``, ``std``, ``quantile`` and
-        ``raw`` depending on how the class was initialized
+        Always returns a dict of tensors, which can contain the following keys: ``mean``, ``std``, ``quantile`` and
+        ``raw`` depending on how the class was initialized.
         """
         computed_vals = torch.stack([m.compute() for m in self.metrics], dim=0)
         output_dict = {}

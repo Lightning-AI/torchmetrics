@@ -87,8 +87,8 @@ def _single_dimension_pad(inputs: Tensor, dim: int, pad: int) -> Tensor:
 
     Args:
         inputs: tensor to pad
-        dim: integer, dimension to pad along
-        pad: integer, amount of padding to add
+        dim: dimension to pad along
+        pad: amount of padding to add
 
     Returns:
         padded input

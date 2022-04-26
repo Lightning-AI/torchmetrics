@@ -33,11 +33,12 @@ def _find_repeats(data: Tensor) -> Tensor:
 
 
 def _rank_data(data: Tensor) -> Tensor:
-    """Calculate the rank for each element of a tensor. The rank refers to the indices of an element in the
-    corresponding sorted tensor (starting from 1). Duplicates of the same value will be assigned the mean of their
-    rank.
+    """Calculate the rank for each element of a tensor.
 
-    Adopted from:     `Rank of element tensor`_
+    The rank refers to the indices of an element in the corresponding sorted tensor (starting from 1).
+    Duplicates of the same value will be assigned the mean of their rank.
+
+    Adopted from `Rank of element tensor`_
     """
     n = data.numel()
     rank = torch.empty_like(data)
@@ -52,8 +53,9 @@ def _rank_data(data: Tensor) -> Tensor:
 
 
 def _spearman_corrcoef_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
-    """Updates and returns variables required to compute Spearman Correlation Coefficient. Checks for same shape
-    and type of input tensors.
+    """Updates and returns variables required to compute Spearman Correlation Coefficient.
+
+    Checks for same shape and type of input tensors.
 
     Args:
         preds: Predicted tensor
@@ -79,7 +81,7 @@ def _spearman_corrcoef_compute(preds: Tensor, target: Tensor, eps: float = 1e-6)
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
-        eps: Avoids ZeroDivisionError.
+        eps: Avoids ``ZeroDivisionError``.
 
     Example:
         >>> target = torch.tensor([3, -0.5, 2, 7])

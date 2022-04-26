@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import torch
 from torch import Tensor
@@ -22,9 +22,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class CalibrationError(Metric):
-    r"""
-
-    `Computes the Top-label Calibration Error`_
+    r"""`Computes the Top-label Calibration Error`_
     Three different norms are implemented, each corresponding to variations on the calibration error metric.
 
     L1 norm (Expected Calibration Error)
@@ -50,18 +48,12 @@ class CalibrationError(Metric):
         L2-norm debiasing is not yet supported.
 
     Args:
-        n_bins: Number of bins to use when computing probabilites and accuracies.
+        n_bins: Number of bins to use when computing probabilities and accuracies.
         norm: Norm used to compare empirical and expected probability bins.
             Defaults to "l1", or Expected Calibration Error.
         debias: Applies debiasing term, only implemented for l2 norm. Defaults to True.
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
 
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
     """
     DISTANCES = {"l1", "l2", "max"}
     higher_is_better = False
@@ -72,11 +64,10 @@ class CalibrationError(Metric):
         self,
         n_bins: int = 15,
         norm: str = "l1",
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ):
 
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
 
         if norm not in self.DISTANCES:
             raise ValueError(f"Norm {norm} is not supported. Please select from l1, l2, or max. ")
@@ -91,7 +82,7 @@ class CalibrationError(Metric):
         self.add_state("accuracies", [], dist_reduce_fx="cat")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Computes top-level confidences and accuracies for the input probabilites and appends them to internal
+        """Computes top-level confidences and accuracies for the input probabilities and appends them to internal
         state.
 
         Args:

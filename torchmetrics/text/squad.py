@@ -37,8 +37,7 @@ class SQuAD(Metric):
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
         >>> from torchmetrics import SQuAD
@@ -76,8 +75,7 @@ class SQuAD(Metric):
 
         Args:
             preds:
-                A Dictionary or List of Dictionary-s that map `id` and `prediction_text` to the respective values.
-
+                A Dictionary or List of Dictionary-s that map ``id`` and ``prediction_text`` to the respective values.
                 Example prediction:
 
                 .. code-block:: python
@@ -85,8 +83,7 @@ class SQuAD(Metric):
                     {"prediction_text": "TorchMetrics is awesome", "id": "123"}
 
             target:
-                A Dictioinary or List of Dictionary-s that contain the `answers` and `id` in the SQuAD Format.
-
+                A Dictionary or List of Dictionary-s that contain the ``answers`` and ``id`` in the SQuAD Format.
                 Example target:
 
                 .. code-block:: python

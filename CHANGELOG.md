@@ -7,57 +7,76 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
 
-## [UnReleased] - 2022-MM-DD
+## [unReleased] - 2022-MM-DD
 
 ### Added
 
-- Added new image metric `SpectralAngleMapper` ([#885](https://github.com/PyTorchLightning/metrics/pull/885))
+-
 
 
-- Added `CoverageError` to classification metrics ([#787](https://github.com/PyTorchLightning/metrics/pull/787))
+-
 
 
-- Added `LabelRankingAveragePrecision` and `LabelRankingLoss` ([#787](https://github.com/PyTorchLightning/metrics/pull/787))
+### Changed
+
+- Reimplemented the `signal_distortion_ratio` metric, which removed the absolute requirement of `fast-bss-eval` ([#964](https://github.com/PyTorchLightning/metrics/pull/964))
 
 
-- Added support for `MetricCollection` in `MetricTracker` ([#718](https://github.com/PyTorchLightning/metrics/pull/718))
+-
 
 
-- Added new image metric `ErrorRelativeGlobalDimensionlessSynthesis` ([#894](https://github.com/PyTorchLightning/metrics/pull/894))
+### Deprecated
+
+-
 
 
-- Added new image metric `UniversalImageQualityIndex` ([#824](https://github.com/PyTorchLightning/metrics/pull/824))
+-
 
 
-- Added support for 3D image and uniform kernel in `StructuralSimilarityIndexMeasure` ([#818](https://github.com/PyTorchLightning/metrics/pull/818))
+### Removed
+
+- Removed deprecated `compute_on_step` argument ([#962](https://github.com/PyTorchLightning/metrics/pull/962))
 
 
-- Added smart update of `MetricCollection` ([#709](https://github.com/PyTorchLightning/metrics/pull/709))
+- Removed deprecated `compute_on_step` argument in Regression ([#967](https://github.com/PyTorchLightning/metrics/pull/967))
 
 
-- Added `ClasswiseWrapper` for better logging of classification metrics with multiple output values ([#832](https://github.com/PyTorchLightning/metrics/pull/832))
+- Removed deprecated `compute_on_step` argument in Image ([#979](https://github.com/PyTorchLightning/metrics/pull/979))
 
 
-- Added `**kwargs` argument for passing additional arguments to base class ([#833](https://github.com/PyTorchLightning/metrics/pull/833))
+### Fixed
+
+- Fixed "Sort currently does not support bool dtype on CUDA" error in MAP for empty preds ([#983](https://github.com/PyTorchLightning/metrics/pull/983))
 
 
-- Added negative `ignore_index` for the Accuracy metric ([#362](https://github.com/PyTorchLightning/metrics/pull/362))
+- Fixed `BinnedPrecisionRecallCurve` when `thresholds` argument is not provided ([#968](https://github.com/PyTorchLightning/metrics/pull/968))
 
 
-- Added `SpectralDistortionIndex` metric to image domain ([#873](https://github.com/PyTorchLightning/metrics/pull/873))
+-
 
 
-- Added `adaptive_k` for the `RetrievalPrecision` metric ([#910](https://github.com/PyTorchLightning/metrics/pull/910))
+## [0.8.0] - 2022-04-14
 
-
-- Added `reset_real_features` argument image quality assesment metrics ([#722](https://github.com/PyTorchLightning/metrics/pull/722))
-
-
-- Added new keyword argument `compute_on_cpu` to all metrics ([#867](https://github.com/PyTorchLightning/metrics/pull/867))
-
+### Added
 
 - Added `WeightedMeanAbsolutePercentageError` to regression package ([#948](https://github.com/PyTorchLightning/metrics/pull/948))
-
+- Added new classification metrics:
+  * `CoverageError` ([#787](https://github.com/PyTorchLightning/metrics/pull/787))
+  * `LabelRankingAveragePrecision` and `LabelRankingLoss` ([#787](https://github.com/PyTorchLightning/metrics/pull/787))
+- Added new image metric:
+  * `SpectralAngleMapper` ([#885](https://github.com/PyTorchLightning/metrics/pull/885))
+  * `ErrorRelativeGlobalDimensionlessSynthesis` ([#894](https://github.com/PyTorchLightning/metrics/pull/894))
+  * `UniversalImageQualityIndex` ([#824](https://github.com/PyTorchLightning/metrics/pull/824))
+  * `SpectralDistortionIndex` ([#873](https://github.com/PyTorchLightning/metrics/pull/873))
+- Added support for `MetricCollection` in `MetricTracker` ([#718](https://github.com/PyTorchLightning/metrics/pull/718))
+- Added support for 3D image and uniform kernel in `StructuralSimilarityIndexMeasure` ([#818](https://github.com/PyTorchLightning/metrics/pull/818))
+- Added smart update of `MetricCollection` ([#709](https://github.com/PyTorchLightning/metrics/pull/709))
+- Added `ClasswiseWrapper` for better logging of classification metrics with multiple output values ([#832](https://github.com/PyTorchLightning/metrics/pull/832))
+- Added `**kwargs` argument for passing additional arguments to base class ([#833](https://github.com/PyTorchLightning/metrics/pull/833))
+- Added negative `ignore_index` for the Accuracy metric ([#362](https://github.com/PyTorchLightning/metrics/pull/362))
+- Added `adaptive_k` for the `RetrievalPrecision` metric ([#910](https://github.com/PyTorchLightning/metrics/pull/910))
+- Added `reset_real_features` argument image quality assessment metrics ([#722](https://github.com/PyTorchLightning/metrics/pull/722))
+- Added new keyword argument `compute_on_cpu` to all metrics ([#867](https://github.com/PyTorchLightning/metrics/pull/867))
 
 - Added new detection metric `PanopticQuality` ([#929](https://github.com/PyTorchLightning/metrics/pull/929))
 
@@ -65,88 +84,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Made `num_classes` in `jaccard_index` a required argument ([#853](https://github.com/PyTorchLightning/metrics/pull/853), [#914](https://github.com/PyTorchLightning/metrics/pull/914))
-
-
 - Added normalizer, tokenizer to ROUGE metric ([#838](https://github.com/PyTorchLightning/metrics/pull/838))
-
-
 - Improved shape checking of `permutation_invariant_training` ([#864](https://github.com/PyTorchLightning/metrics/pull/864))
-
-
 - Allowed reduction `None` ([#891](https://github.com/PyTorchLightning/metrics/pull/891))
-
-
 - `MetricTracker.best_metric` will now give a warning when computing on metric that do not have a best ([#913](https://github.com/PyTorchLightning/metrics/pull/913))
-
 
 ### Deprecated
 
 - Deprecated argument `compute_on_step` ([#792](https://github.com/PyTorchLightning/metrics/pull/792))
-
-
 - Deprecated passing in `dist_sync_on_step`, `process_group`, `dist_sync_fn` direct argument ([#833](https://github.com/PyTorchLightning/metrics/pull/833))
-
 
 ### Removed
 
-- Removed support for versions of Lightning lower than v1.5 ([#788](https://github.com/PyTorchLightning/metrics/pull/788))
-
-
+- Removed support for versions of [Pytorch-Lightning](https://github.com/PyTorchLightning/pytorch-lightning) lower than v1.5 ([#788](https://github.com/PyTorchLightning/metrics/pull/788))
 - Removed deprecated functions, and warnings in Text ([#773](https://github.com/PyTorchLightning/metrics/pull/773))
-  * `functional.wer`
-  * `WER`
+  * `WER` and `functional.wer`
 - Removed deprecated functions and warnings in Image ([#796](https://github.com/PyTorchLightning/metrics/pull/796))
-  * `functional.ssim`
-  * `functional.psnr`
-  * `SSIM`
-  * `PSNR`
-
-
+  * `SSIM` and `functional.ssim`
+  * `PSNR` and `functional.psnr`
 - Removed deprecated functions, and warnings in classification and regression ([#806](https://github.com/PyTorchLightning/metrics/pull/806))
-  * `FBeta`
-  * `F1`
-  * `Hinge`
-  * `IoU`
-  * `functional.iou`
+  * `FBeta` and `functional.fbeta`
+  * `F1` and `functional.f1`
+  * `Hinge` and `functional.hinge`
+  * `IoU` and `functional.iou`
   * `MatthewsCorrcoef`
   * `PearsonCorrcoef`
   * `SpearmanCorrcoef`
-  * `functional.fbeta`
-  * `functional.f1`
-  * `functional.hinge`
-
-
-
 - Removed deprecated functions, and warnings in detection and pairwise ([#804](https://github.com/PyTorchLightning/metrics/pull/804))
-  * `MAP`
-  * `functional.pairwise.manhatten`
-
-
+  * `MAP` and `functional.pairwise.manhatten`
 - Removed deprecated functions, and warnings in Audio ([#805](https://github.com/PyTorchLightning/metrics/pull/805))
-  * `PESQ`
-  * `PIT`
-  * `SDR`
-  * `SNR`
-  * `STOI`
-  * `functional.audio.pesq`
-  * `functional.audio.pit`
-  * `functional.audio.sdr`
-  * `functional.audio.snr`
-  * `functional.audio.stoi`
-  * `functional.audio.si_sdr`
-  * `functional.audio.si_snr`
-
+  * `PESQ` and `functional.audio.pesq`
+  * `PIT` and `functional.audio.pit`
+  * `SDR` and `functional.audio.sdr` and `functional.audio.si_sdr`
+  * `SNR` and `functional.audio.snr` and `functional.audio.si_snr`
+  * `STOI` and `functional.audio.stoi`
+- Removed unused `get_num_classes` from `torchmetrics.utilities.data` ([#914](https://github.com/PyTorchLightning/metrics/pull/914))
 
 ### Fixed
 
+- Fixed device mismatch for `MAP` metric in specific cases ([#950](https://github.com/PyTorchLightning/metrics/pull/950))
 - Improved testing speed ([#820](https://github.com/PyTorchLightning/metrics/pull/820))
-
-
 - Fixed compatibility of `ClasswiseWrapper` with the `prefix` argument of `MetricCollection` ([#843](https://github.com/PyTorchLightning/metrics/pull/843))
-
-
 - Fixed `BestScore` on GPU ([#912](https://github.com/PyTorchLightning/metrics/pull/912))
-
 - Fixed Lsum computation for `ROUGEScore` ([#944](https://github.com/PyTorchLightning/metrics/pull/944))
 
 

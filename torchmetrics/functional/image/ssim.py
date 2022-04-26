@@ -70,6 +70,7 @@ def _ssim_compute(
         kernel_size: the size of the uniform kernel, anisotropic kernels are possible.
             Ignored if a Gaussian kernel is used
         reduction: a method to reduce metric score over labels.
+
             - ``'elementwise_mean'``: takes the mean
             - ``'sum'``: takes the sum
             - ``'none'`` or ``None``: no reduction will be applied
@@ -217,6 +218,7 @@ def structural_similarity_index_measure(
         kernel_size: the size of the uniform kernel, anisotropic kernels are possible.
             Ignored if a Gaussian kernel is used
         reduction: a method to reduce metric score over labels.
+
             - ``'elementwise_mean'``: takes the mean
             - ``'sum'``: takes the sum
             - ``'none'`` or ``None``: no reduction will be applied
@@ -317,15 +319,17 @@ def _multiscale_ssim_compute(
     ),
     normalize: Optional[Literal["relu", "simple"]] = None,
 ) -> Tensor:
-    """Computes Multi-Scale Structual Similarity Index Measure. Adapted from: https://github.com/jorge-
-    pessoa/pytorch-msssim/blob/master/pytorch_msssim/__init__.py.
+    """Computes Multi-Scale Structual Similarity Index Measure.
+
+    Adapted from: https://github.com/jorge-pessoa/pytorch-msssim/blob/master/pytorch_msssim/__init__.py.
 
     Args:
         preds: estimated image
         target: ground truth image
-        kernel_size: size of the gaussian kernel (default: (11, 11))
-        sigma: Standard deviation of the gaussian kernel (default: (1.5, 1.5))
+        kernel_size: size of the gaussian kernel
+        sigma: Standard deviation of the gaussian kernel
         reduction: a method to reduce metric score over labels.
+
             - ``'elementwise_mean'``: takes the mean
             - ``'sum'``: takes the sum
             - ``'none'`` or ``None``: no reduction will be applied
@@ -333,7 +337,7 @@ def _multiscale_ssim_compute(
         data_range: Range of the image. If ``None``, it is determined from the image (max - min)
         k1: Parameter of structural similarity index measure.
         k2: Parameter of structural similarity index measure.
-        betas: Exponent parameters for individual similarities and contrastive sensitivies returned by different image
+        betas: Exponent parameters for individual similarities and contrastive sensitives returned by different image
             resolutions.
         normalize: When MultiScaleSSIM loss is used for training, it is desirable to use normalizes to improve the
             training stability. This `normalize` argument is out of scope of the original implementation [1], and it is
@@ -425,11 +429,12 @@ def multiscale_structural_similarity_index_measure(
     Structual Similarity Index Measure by incorporating image details at different resolution scores.
 
     Args:
-        preds: Predictions from model of shape `[N, C, H, W]`
-        target: Ground truth values of shape `[N, C, H, W]`
-        kernel_size: size of the gaussian kernel (default: (11, 11))
-        sigma: Standard deviation of the gaussian kernel (default: (1.5, 1.5))
+        preds: Predictions from model of shape ``[N, C, H, W]``
+        target: Ground truth values of shape ``[N, C, H, W]``
+        kernel_size: size of the gaussian kernel
+        sigma: Standard deviation of the gaussian kernel
         reduction: a method to reduce metric score over labels.
+
             - ``'elementwise_mean'``: takes the mean
             - ``'sum'``: takes the sum
             - ``'none'`` or ``None``: no reduction will be applied
@@ -466,8 +471,8 @@ def multiscale_structural_similarity_index_measure(
         tensor(0.9558)
 
     References:
-    [1] Multi-Scale Structural Similarity For Image Quality Assessment by Zhou Wang, Eero P. Simoncelli and Alan C.
-    Bovik `MultiScaleSSIM`_
+        [1] Multi-Scale Structural Similarity For Image Quality Assessment by Zhou Wang, Eero P. Simoncelli and Alan C.
+        Bovik `MultiScaleSSIM`_
     """
     if not isinstance(betas, tuple):
         raise ValueError("Argument `betas` is expected to be of a type tuple.")

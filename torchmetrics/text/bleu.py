@@ -17,7 +17,6 @@
 # Date: 2020-07-18
 # Link: https://pytorch.org/text/_modules/torchtext/data/metrics.html#bleu_score
 from typing import Any, Dict, Optional, Sequence
-from warnings import warn
 
 import torch
 from torch import Tensor, tensor
@@ -30,18 +29,15 @@ class BLEUScore(Metric):
     """Calculate `BLEU score`_ of machine translated text with one or more references.
 
     Args:
-        n_gram:
-            Gram value ranged from 1 to 4 (Default 4)
-        smooth:
-            Whether or not to apply smoothing, see [2]
+        n_gram: Gram value ranged from 1 to 4
+        smooth: Whether or not to apply smoothing, see [2]
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
 
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
         >>> from torchmetrics import BLEUScore
@@ -74,10 +70,6 @@ class BLEUScore(Metric):
         **kwargs: Dict[str, Any],
     ):
         super().__init__(compute_on_step=compute_on_step, **kwargs)
-        warn(
-            "Input order of targets and preds were changed to predictions firsts and targets second in v0.7."
-            " Warning will be removed in v0.8."
-        )
         self.n_gram = n_gram
         self.smooth = smooth
 
