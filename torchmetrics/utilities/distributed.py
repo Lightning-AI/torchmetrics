@@ -19,11 +19,11 @@ from torch import Tensor
 from typing_extensions import Literal
 
 
-def reduce(to_reduce: Tensor, reduction: Literal["elementwise_mean", "sum", "none", None]) -> Tensor:
+def reduce(x: Tensor, reduction: Literal["elementwise_mean", "sum", "none", None]) -> Tensor:
     """Reduces a given tensor by a given reduction method.
 
     Args:
-        to_reduce: the tensor, which shall be reduced
+        x: the tensor, which shall be reduced
         reduction:  a string specifying the reduction method ('elementwise_mean', 'none', 'sum')
 
     Return:
@@ -33,11 +33,11 @@ def reduce(to_reduce: Tensor, reduction: Literal["elementwise_mean", "sum", "non
         ValueError if an invalid reduction parameter was given
     """
     if reduction == "elementwise_mean":
-        return torch.mean(to_reduce)
+        return torch.mean(x)
     if reduction == "none" or reduction is None:
-        return to_reduce
+        return x
     if reduction == "sum":
-        return torch.sum(to_reduce)
+        return torch.sum(x)
     raise ValueError("Reduction parameter unknown.")
 
 
