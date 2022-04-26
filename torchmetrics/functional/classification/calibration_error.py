@@ -143,11 +143,11 @@ def _ce_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
     _, _, mode = _input_format_classification(preds, target)
 
     if mode == DataType.BINARY:
-        if not torch.logical_and(0 <= preds, preds <= 1).all():
+        if not ((0 <= preds) * (preds <= 1)).all():
             preds = preds.sigmoid()
         confidences, accuracies = preds, target
     elif mode == DataType.MULTICLASS:
-        if not torch.logical_and(0 <= preds, preds <= 1).all():
+        if not ((0 <= preds) * (preds <= 1)).all():
             preds = preds.softmax(dim=1)
         confidences, predictions = preds.max(dim=1)
         accuracies = predictions.eq(target)
