@@ -39,7 +39,7 @@ class PanopticQuality(Metric):
     where IOU, TP, FP and FN are respectively the sum of the intersection over union for true positives,
     the number of true postitives, false positives and false negatives.
 
-    .. note::mean
+    .. note::
         This metric is inspired by the PQ implementation of panopticapi
         `<https://github.com/cocodataset/panopticapi/blob/master/panopticapi/evaluation.py>`,
         , a standard implementation for the PQ metric for object detection.
@@ -109,9 +109,11 @@ class PanopticQuality(Metric):
 
         Raises:
             ValueError:
-                If ``preds`` or ``target`` has wrong shape.
+                If ``preds`` or ``target`` is not an ``torch.Tensor``
             ValueError:
-                If ``preds`` containts
+                If ``preds`` or ``target`` has different shape.
+            ValueError:
+                If ``preds`` is not a 3D tensor where the final dimension have size 2
         """
         _validate_inputs(preds, target)
         flatten_preds = _prepocess_image(
