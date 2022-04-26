@@ -14,6 +14,7 @@
 """Import utilities."""
 import operator
 from collections import OrderedDict  # noqa: F401
+from functools import lru_cache
 from importlib import import_module
 from importlib.util import find_spec
 from typing import Callable, Optional
@@ -22,6 +23,7 @@ from packaging.version import Version
 from pkg_resources import DistributionNotFound, get_distribution
 
 
+@lru_cache()
 def _package_available(package_name: str) -> bool:
     """Check if a package is available in your environment.
 
@@ -40,6 +42,7 @@ def _package_available(package_name: str) -> bool:
         return False
 
 
+@lru_cache()
 def _module_available(module_path: str) -> bool:
     """Check if a module path is available in your environment.
 
@@ -64,6 +67,7 @@ def _module_available(module_path: str) -> bool:
     return True
 
 
+@lru_cache()
 def _compare_version(package: str, op: Callable, version: str) -> Optional[bool]:
     """Compare package version with some requirements.
 
