@@ -23,15 +23,13 @@ from torchmetrics.utilities.data import get_group_indexes
 
 
 def _retrieval_recall_at_fixed_precision(
-        precision: Tensor,
-        recall: Tensor,
-        top_k: Tensor,
-        min_precision: float,
+    precision: Tensor,
+    recall: Tensor,
+    top_k: Tensor,
+    min_precision: float,
 ) -> Tuple[Tensor, Tensor]:
     try:
-        max_recall, best_k = max(
-            (r, k) for p, r, k in zip(precision, recall, top_k) if p >= min_precision
-        )
+        max_recall, best_k = max((r, k) for p, r, k in zip(precision, recall, top_k) if p >= min_precision)
 
     except ValueError:
         max_recall = torch.tensor(0.0, device=recall.device, dtype=recall.dtype)
@@ -187,16 +185,16 @@ class RetrievalRecallAtFixedPrecision(Metric):
                     recalls.append(torch.zeros(max_k, device=preds.device))
                     precisions.append(torch.zeros(max_k, device=preds.device))
             else:
-                recall, precision, _ = retrieval_recall_precision_curve(
-                    mini_preds, mini_target, max_k, self.adaptive_k
-                )
+                recall, precision, _ = retrieval_recall_precision_curve(mini_preds, mini_target, max_k, self.adaptive_k)
 
                 recalls.append(recall)
                 precisions.append(precision)
 
         return _retrieval_recall_at_fixed_precision(
-            precision=torch.stack([x.to(preds) for x in precisions]).mean(dim=0) if precisions else torch.zeros(max_k).to(preds),
+            precision=torch.stack([x.to(preds) for x in precisions]).mean(dim=0)
+            if precisions
+            else torch.zeros(max_k).to(preds),
             recall=torch.stack([x.to(preds) for x in recalls]).mean(dim=0) if recalls else torch.zeros(max_k).to(preds),
             top_k=torch.arange(1, max_k + 1, device=preds.device),
-            min_precision=self.min_precision
+            min_precision=self.min_precision,
         )

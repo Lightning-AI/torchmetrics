@@ -11,24 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple, Optional
+from typing import Optional, Tuple
 
 import torch
-from torch import Tensor, tensor, cumsum
+from torch import Tensor, cumsum, tensor
 from torch.nn.functional import pad
 
 from torchmetrics.utilities.checks import _check_retrieval_functional_inputs
 
 
 def retrieval_recall_precision_curve(
-    preds: Tensor,
-    target: Tensor,
-    max_k: Optional[int] = None,
-    adaptive_k: bool = False
+    preds: Tensor, target: Tensor, max_k: Optional[int] = None, adaptive_k: bool = False
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    """
-    Computes recall and precision metrics (for information retrieval) to plot recall-precision
-    curve.
+    """Computes recall and precision metrics (for information retrieval) to plot recall-precision curve.
 
     Recall is the fraction of relevant documents retrieved among all the relevant documents.
     Precision is the fraction of relevant documents among all the retrieved documents.
@@ -89,7 +84,7 @@ def retrieval_recall_precision_curve(
         return torch.zeros(max_k, device=preds.device), torch.zeros(max_k, device=preds.device), topk
 
     relevant = target[preds.topk(min(max_k, preds.shape[-1]), dim=-1)[1]].float()
-    relevant = cumsum(pad(relevant, (0, max(0, max_k - len(relevant))), "constant", 0.), dim=0)
+    relevant = cumsum(pad(relevant, (0, max(0, max_k - len(relevant))), "constant", 0.0), dim=0)
 
     recall = relevant / target.sum()
     precision = relevant / topk
