@@ -212,7 +212,7 @@ _inputs3 = Input(
 def _compare_fn(preds, target) -> dict:
     """Comparison function for map implementation.
 
-    Official pycocotools results calculated from a subset of https://GitHub.com/cocodataset/cocoapi/tree/master/results
+    Official pycocotools results calculated from a subset of https://github.com/cocodataset/cocoapi/tree/master/results
         All classes
         Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.706
         Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.901
