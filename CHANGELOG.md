@@ -11,10 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
--
-
-
--
+- Added `SpatialCorrelationCoefficient` to image domain ([#800](https://github.com/PyTorchLightning/metrics/pull/800))
 
 
 ### Changed
