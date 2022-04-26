@@ -11,7 +11,7 @@ The ``torchmetrics`` is a Metrics API created for easy metric development and us
 PyTorch and PyTorch Lightning. It is rigorously tested for all edge cases and includes a growing list of
 common metric implementations.
 
-The metrics API provides ``update()``, ``compute()``, ``reset()`` functions to the user. The metric :ref:`base class <references/modules:base class>` inherits
+The metrics API provides ``update()``, ``compute()``, ``reset()`` functions to the user. The metric :ref:`base class <references/metric:torchmetrics.Metric>` inherits
 :class:`torch.nn.Module` which allows us to call ``metric(...)`` directly. The ``forward()`` method of the base ``Metric`` class
 serves the dual purpose of calling ``update()`` on its input and simultaneously returning the value of the metric over the
 provided input.
@@ -175,9 +175,9 @@ the following limitations:
 * Some metrics does not work at all in half precision on CPU. We have explicitly stated this in their docstring,
   but they are also listed below:
 
-  - :ref:`references/modules:PeakSignalNoiseRatio` and :ref:`references/functional:peak_signal_noise_ratio [func]`
-  - :ref:`references/modules:StructuralSimilarityIndexMeasure` and :ref:`references/functional:structural_similarity_index_measure [func]`
-  - :ref:`references/modules:KLDivergence` and :ref:`references/functional:kl_divergence [func]`
+  - :ref:`image/peak_signal_noise_ratio:Peak Signal-to-Noise Ratio (PSNR)`
+  - :ref:`image/structural_similarity:Structural Similarity Index Measure (SSIM)`
+  - :ref:`classification/kl_divergence:KL Divergence`
 
 You can always check the precision/dtype of the metric by checking the `.dtype` property.
 

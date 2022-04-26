@@ -33,10 +33,10 @@ class RetrievalMetric(Metric, ABC):
     - ``target`` (long or bool tensor): ``(N, ...)``
     - ``indexes`` (long tensor): ``(N, ...)``
 
-    `indexes`, `preds` and `target` must have the same dimension and will be flatten
+    ``indexes``, ``preds`` and ``target`` must have the same dimension and will be flatten
     to single dimension once provided.
 
-    `indexes` indicate to which query a prediction belongs.
+    ``indexes`` indicate to which query a prediction belongs.
     Predictions will be first grouped by indexes. Then the
     real metric, defined by overriding the `_metric` method,
     will be computed as the mean of the scores over each query.
@@ -59,8 +59,7 @@ class RetrievalMetric(Metric, ABC):
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:

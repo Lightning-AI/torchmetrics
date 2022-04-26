@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 import torch
 from torch import Tensor
@@ -24,10 +24,9 @@ from torchmetrics.metric import Metric
 
 
 class MatthewsCorrCoef(Metric):
-    r"""
-    Calculates `Matthews correlation coefficient`_ that measures
-    the general correlation or quality of a classification. In the binary case it
-    is defined as:
+    r"""Calculates `Matthews correlation coefficient`_ that measures the general correlation or quality of a classification.
+
+    In the binary case it is defined as:
 
     .. math::
         MCC = \frac{TP*TN - FP*FN}{\sqrt{(TP+FP)*(TP+FN)*(TN+FP)*(TN+FN)}}
@@ -51,16 +50,9 @@ class MatthewsCorrCoef(Metric):
 
     Args:
         num_classes: Number of classes in the dataset.
-        threshold:
-            Threshold value for binary or multi-label probabilites.
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
+        threshold: Threshold value for binary or multi-label probabilites.
 
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
         >>> from torchmetrics import MatthewsCorrCoef
@@ -79,10 +71,9 @@ class MatthewsCorrCoef(Metric):
         self,
         num_classes: int,
         threshold: float = 0.5,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
         self.num_classes = num_classes
         self.threshold = threshold
 

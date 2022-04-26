@@ -1,3 +1,2 @@
 pesq>=0.0.3
 pystoi
-fast-bss-eval>=0.1.0

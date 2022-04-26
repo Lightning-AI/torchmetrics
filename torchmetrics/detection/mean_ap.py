@@ -156,16 +156,16 @@ class MeanAveragePrecision(Metric):
 
     Args:
         box_format:
-            Input format of given boxes. Supported formats are [`xyxy`, `xywh`, `cxcywh`].
+            Input format of given boxes. Supported formats are ``[`xyxy`, `xywh`, `cxcywh`]``.
         iou_thresholds:
-            IoU thresholds for evaluation. If set to `None` it corresponds to the stepped range `[0.5,...,0.95]`
-            with step `0.05`. Else provide a list of floats.
+            IoU thresholds for evaluation. If set to ``None`` it corresponds to the stepped range ``[0.5,...,0.95]``
+            with step ``0.05``. Else provide a list of floats.
         rec_thresholds:
-            Recall thresholds for evaluation. If set to `None` it corresponds to the stepped range `[0,...,1]`
-            with step `0.01`. Else provide a list of floats.
+            Recall thresholds for evaluation. If set to ``None`` it corresponds to the stepped range ``[0,...,1]``
+            with step ``0.01``. Else provide a list of floats.
         max_detection_thresholds:
-            Thresholds on max detections per image. If set to `None` will use thresholds `[1, 10, 100]`.
-            Else please provide a list of ints.
+            Thresholds on max detections per image. If set to `None` will use thresholds ``[1, 10, 100]``.
+            Else, please provide a list of ints.
         class_metrics:
             Option to enable per-class metrics for mAP and mAR_100. Has a performance impact.
         compute_on_step:
@@ -174,8 +174,7 @@ class MeanAveragePrecision(Metric):
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
         >>> import torch
@@ -273,35 +272,33 @@ class MeanAveragePrecision(Metric):
 
         Args:
             preds: A list consisting of dictionaries each containing the key-values
-            (each dictionary corresponds to a single image):
-            - ``boxes``: ``torch.FloatTensor`` of shape
-                [num_boxes, 4] containing `num_boxes` detection boxes of the format
-                specified in the contructor. By default, this method expects
-                [xmin, ymin, xmax, ymax] in absolute image coordinates.
-            - ``scores``: ``torch.FloatTensor`` of shape
-                [num_boxes] containing detection scores for the boxes.
-            - ``labels``: ``torch.IntTensor`` of shape
-                [num_boxes] containing 0-indexed detection classes for the boxes.
+                (each dictionary corresponds to a single image):
+
+                - ``boxes``: ``torch.FloatTensor`` of shape ``[num_boxes, 4]`` containing ``num_boxes`` detection boxes
+                  of the format specified in the constructor. By default, this method expects
+                  ``[xmin, ymin, xmax, ymax]`` in absolute image coordinates.
+                - ``scores``: ``torch.FloatTensor`` of shape ``[num_boxes]`` containing detection scores for the boxes.
+                - ``labels``: ``torch.IntTensor`` of shape ``[num_boxes]`` containing 0-indexed detection classes
+                  for the boxes.
 
             target: A list consisting of dictionaries each containing the key-values
-            (each dictionary corresponds to a single image):
-            - ``boxes``: ``torch.FloatTensor`` of shape
-                [num_boxes, 4] containing `num_boxes` ground truth boxes of the format
-                specified in the contructor. By default, this method expects
-                [xmin, ymin, xmax, ymax] in absolute image coordinates.
-            - ``labels``: ``torch.IntTensor`` of shape
-                [num_boxes] containing 1-indexed ground truth classes for the boxes.
+                (each dictionary corresponds to a single image):
+
+                - ``boxes``: ``torch.FloatTensor`` of shape ``[num_boxes, 4]`` containing ``num_boxes``
+                  ground truth boxes of the format specified in the constructor. By default, this method expects
+                  ``[xmin, ymin, xmax, ymax]`` in absolute image coordinates.
+                - ``labels``: ``torch.IntTensor`` of shape ``[num_boxes]`` containing 1-indexed ground truth
+                   classes for the boxes.
 
         Raises:
             ValueError:
-                If ``preds`` is not of type List[Dict[str, Tensor]]
+                If ``preds`` is not of type ``List[Dict[str, Tensor]]``
             ValueError:
-                If ``target`` is not of type List[Dict[str, Tensor]]
+                If ``target`` is not of type ``List[Dict[str, Tensor]]``
             ValueError:
                 If ``preds`` and ``target`` are not of the same length
             ValueError:
-                If any of ``preds.boxes``, ``preds.scores``
-                and ``preds.labels`` are not of the same length
+                If any of ``preds.boxes``, ``preds.scores`` and ``preds.labels`` are not of the same length
             ValueError:
                 If any of ``target.boxes`` and ``target.labels`` are not of the same length
             ValueError:
@@ -521,8 +518,6 @@ class MeanAveragePrecision(Metric):
         Args:
             thr:
                 Current threshold value.
-            nb_gt:
-                Number of ground truth elements.
             gt_matches:
                 Tensor showing if a ground truth matches for threshold ``t`` exists.
             idx_iou:
@@ -559,7 +554,7 @@ class MeanAveragePrecision(Metric):
             avg_prec:
                 Calculate average precision. Else calculate average recall.
             iou_threshold:
-                IoU threshold. If set to `None` it all values are used. Else results are filtered.
+                IoU threshold. If set to ``None`` it all values are used. Else results are filtered.
             area_range:
                 Bounding box area range key.
             max_dets:
@@ -699,7 +694,10 @@ class MeanAveragePrecision(Metric):
 
         # different sorting method generates slightly different results.
         # mergesort is used to be consistent as Matlab implementation.
-        inds = torch.argsort(det_scores, descending=True)
+        # Sort in PyTorch does not support bool types on CUDA (yet, 1.11.0)
+        dtype = torch.uint8 if det_scores.is_cuda and det_scores.dtype is torch.bool else det_scores.dtype
+        # Explicitly cast to uint8 to avoid error for bool inputs on CUDA to argsort
+        inds = torch.argsort(det_scores.to(dtype), descending=True)
         det_scores_sorted = det_scores[inds]
 
         det_matches = torch.cat([e["dtMatches"][:, :max_det] for e in img_eval_cls_bbox], axis=1)[:, inds]
@@ -743,7 +741,7 @@ class MeanAveragePrecision(Metric):
         """Compute the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)` scores.
 
         Note:
-            `map` score is calculated with @[ IoU=self.iou_thresholds | area=all | max_dets=max_detection_thresholds ]
+            ``map`` score is calculated with @[ IoU=self.iou_thresholds | area=all | max_dets=max_detection_thresholds ]
 
             Caution: If the initialization parameters are changed, dictionary keys for mAR can change as well.
             The default properties are also accessible via fields and will raise an ``AttributeError`` if not available.

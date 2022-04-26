@@ -19,8 +19,8 @@ from torch import Tensor
 def _check_input(
     x: Tensor, y: Optional[Tensor] = None, zero_diagonal: Optional[bool] = None
 ) -> Tuple[Tensor, Tensor, bool]:
-    """Check that input has the right dimensionality and sets the zero_diagonal argument if user has not provided
-    import module.
+    """Check that input has the right dimensionality and sets the ``zero_diagonal`` argument if user has not
+    provided import module.
 
     Args:
         x: tensor of shape ``[N,d]``
@@ -47,7 +47,7 @@ def _reduce_distance_matrix(distmat: Tensor, reduction: Optional[str] = None) ->
     """Final reduction of distance matrix.
 
     Args:
-        distance: a ``[N,M]`` matrix
+        distmat: a ``[N,M]`` matrix
         reduction: string determining how to reduce along last dimension
     """
     if reduction == "mean":
