@@ -52,6 +52,8 @@ def _sewar_rmse_sw(preds, target, window_size):
 
 @pytest.mark.parametrize("preds, target, window_size", [(i.preds, i.target, i.window_size) for i in _inputs])
 class TestRootMeanSquareErrorWithSlidingWindow(MetricTester):
+    atol = 1e-2
+
     @pytest.mark.parametrize("ddp", [False])
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
     def test_rmse_sw(self, preds, target, window_size, ddp, dist_sync_on_step):

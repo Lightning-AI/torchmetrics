@@ -63,7 +63,10 @@ def _rmse_sw_update(
             f" but got {round(window_size / 2)}."
         )
 
-    total_images += target.shape[0]
+    if total_images is not None:
+        total_images += target.shape[0]
+    else:
+        total_images = target.shape[0]
     error = (preds - target) ** 2
     error = _uniform_filter(error, window_size)
     _rmse_map = torch.sqrt(error)
@@ -72,8 +75,13 @@ def _rmse_sw_update(
     if rmse_val_sum is not None:
         rmse_val = _rmse_map[:, :, crop_slide:-crop_slide, crop_slide:-crop_slide]
         rmse_val_sum += rmse_val.sum(0).mean()
+    else:
+        rmse_val_sum = _rmse_map[:, :, crop_slide:-crop_slide, crop_slide:-crop_slide].sum(0).mean()
+
     if rmse_map is not None:
         rmse_map += _rmse_map.sum(0)
+    else:
+        rmse_map = _rmse_map.sum(0)
 
     return rmse_val_sum, rmse_map, total_images
 
@@ -127,13 +135,8 @@ def root_mean_squared_error_using_sliding_window(
     if not isinstance(window_size, int) or isinstance(window_size, int) and window_size < 1:
         raise ValueError("Argument `window_size` is expected to be a positive integer.")
 
-    _img_shape = target.shape[1:]  # channels, width, height
-    rmse_val_sum = torch.tensor(0.0, device=target.device)
-    rmse_map = torch.zeros(_img_shape, dtype=target.dtype, device=target.device)
-    total_images = torch.tensor(0.0, device=target.device)
-
     rmse_val_sum, rmse_map, total_images = _rmse_sw_update(
-        preds, target, window_size, rmse_val_sum, rmse_map, total_images
+        preds, target, window_size, rmse_val_sum=None, rmse_map=None, total_images=None
     )
     rmse, rmse_map = _rmse_sw_compute(rmse_val_sum, rmse_map, total_images)
 

@@ -62,7 +62,7 @@ class RootMeanSquaredErrorUsingSlidingWindow(Metric):
     ) -> None:
         super().__init__(compute_on_step=compute_on_step, **kwargs)
         self.add_state("rmse_val_sum", default=torch.tensor(0.0), dist_reduce_fx="sum")
-        self.add_state("add_total_images", default=torch.tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("total_images", default=torch.tensor(0.0), dist_reduce_fx="sum")
 
         if not isinstance(window_size, int) or isinstance(window_size, int) and window_size < 1:
             raise ValueError("Argument `window_size` is expected to be a positive integer.")
@@ -82,11 +82,12 @@ class RootMeanSquaredErrorUsingSlidingWindow(Metric):
             self.rmse_map = torch.zeros(_img_shape, dtype=target.dtype, device=target.device)
 
         self.rmse_val_sum, self.rmse_map, self.total_images = _rmse_sw_update(
-            preds, target, self.window_size, self.rmse_val_sum, self.rmse_map, self.add_total_images
+            preds, target, self.window_size, self.rmse_val_sum, self.rmse_map, self.total_images
         )
 
     def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
         """Computes Root Mean Squared Error (using sliding window) and potentially return RMSE map."""
+        print(self.total_images)
         rmse, rmse_map = _rmse_sw_compute(self.rmse_val_sum, self.rmse_map, self.total_images)
         if self.return_rmse_map:
             return rmse, rmse_map
