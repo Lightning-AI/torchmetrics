@@ -42,8 +42,7 @@ def _compute_recall_at_precision_metric(
     empty_target_action: str = "skip",
     reverse: bool = False,
 ) -> Tuple[Tensor, Tensor]:
-    """
-    Compute metric with multiple iterations over every query predictions set.
+    """Compute metric with multiple iterations over every query predictions set.
 
     Didn't find a reliable implementation of Precision in Information Retrieval, so, reimplementing here.
     A good explanation can be found here:
@@ -109,9 +108,7 @@ def _compute_recall_at_precision_metric(
     recalls = tensor(recalls).mean(dim=0)
     precisions = tensor(precisions).mean(dim=0)
 
-    recalls_at_k = [
-        (r, k) for p, r, k in zip(precisions, recalls, max_k_range) if p > min_precision - e_tol
-    ]
+    recalls_at_k = [(r, k) for p, r, k in zip(precisions, recalls, max_k_range) if p > min_precision - e_tol]
 
     if not recalls_at_k:
         return tensor(0.0), tensor(max_k)
