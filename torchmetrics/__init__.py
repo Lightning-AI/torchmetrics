@@ -82,6 +82,7 @@ from torchmetrics.retrieval import (  # noqa: E402
     RetrievalPrecision,
     RetrievalPrecisionRecallCurve,
     RetrievalRecall,
+    RetrievalPrecisionRecallCurve,
     RetrievalRecallAtFixedPrecision,
     RetrievalRPrecision,
     RetrievalRecallAtFixedPrecision,
