@@ -29,7 +29,7 @@ seed_all(42)
 def _reference_scc(preds, target, reduction):
     val = 0.0
     for p, t in zip(preds, target):
-        val += scc(t.numpy(), p.numpy())
+        val += scc(t.permute(1, 2, 0).numpy(), p.permute(1, 2, 0).numpy(), ws=9)
     val = val if reduction == "sum" else val / preds.shape[0]
     return val
 
@@ -38,13 +38,13 @@ Input = namedtuple("Input", ["preds", "target"])
 
 _inputs = []
 for size, channel, dtype in [
-    (12, 3, torch.float),
+    (12, 3, torch.uint8),
     (13, 3, torch.float32),
     (14, 3, torch.double),
     (15, 3, torch.float64),
 ]:
-    preds = torch.rand(NUM_BATCHES, BATCH_SIZE, channel, size, size, dtype=dtype)
-    target = torch.rand(NUM_BATCHES, BATCH_SIZE, channel, size, size, dtype=dtype)
+    preds = torch.randint(0, 255, (NUM_BATCHES, BATCH_SIZE, channel, size, size), dtype=dtype)
+    target = torch.randint(0, 255, (NUM_BATCHES, BATCH_SIZE, channel, size, size), dtype=dtype)
     _inputs.append(Input(preds=preds, target=target))
 
 
@@ -54,6 +54,8 @@ for size, channel, dtype in [
     [(i.preds, i.target) for i in _inputs],
 )
 class TestSpatialCorrelationCoefficient(MetricTester):
+    atol = 1e-3
+
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_scc(self, reduction, preds, target, ddp, dist_sync_on_step):

@@ -174,7 +174,6 @@ def spatial_correlation_coefficient(
             - ``'sum'``: takes the sum
             - ``'none'``: no reduction will be applied
 
-
     Return:
         Tensor with Spatial Correlation Coefficient score
 
@@ -188,9 +187,7 @@ def spatial_correlation_coefficient(
         ValueError:
             If one of the elements of ``kernel_size`` is not an ``odd positive number``.
 
-
-
-        Example:
+    Example:
         >>> from torchmetrics.functional.image.scc import spatial_correlation_coefficient
         >>> preds = torch.ones([16, 3, 16, 16])
         >>> target = torch.ones([16, 3, 16, 16])

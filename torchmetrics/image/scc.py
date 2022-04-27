@@ -23,6 +23,19 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class SpatialCorrelationCoefficient(Metric):
+    """
+
+
+    Example:
+        >>> import torch
+        >>> from torchmetrics import SpatialCorrelationCoefficient
+        >>> metric = SpatialCorrelationCoefficient()
+        >>> preds = torch.ones([16, 3, 16, 16])
+        >>> target = torch.ones([16, 3, 16, 16])
+        >>> metric(preds, target)
+        tensor(1.)
+    """
+
     preds: List[Tensor]
     target: List[Tensor]
     higher_is_better: bool = True
