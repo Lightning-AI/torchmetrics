@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 import torch
 from torch import Tensor
@@ -56,10 +56,9 @@ class RelativeAverageSpectralError(Metric):
         self,
         window_size: int = 8,
         return_rmse_map: bool = False,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
         self.add_state("add_total_images", default=torch.tensor(0.0), dist_reduce_fx="sum")
 
         if not isinstance(window_size, int) or isinstance(window_size, int) and window_size < 1:
