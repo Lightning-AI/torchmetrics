@@ -20,16 +20,16 @@ from torch.nn.functional import pad
 from torchmetrics.utilities.checks import _check_retrieval_functional_inputs
 
 
-def retrieval_recall_precision_curve(
+def retrieval_precision_recall_curve(
     preds: Tensor, target: Tensor, max_k: Optional[int] = None, adaptive_k: bool = False
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    """Computes recall and precision metrics (for information retrieval) to plot recall-precision curve.
-
-    Recall is the fraction of relevant documents retrieved among all the relevant documents.
-    Precision is the fraction of relevant documents among all the retrieved documents.
+    """Computes precision-recall pairs for different k (from 1 to `max_k`).
 
     In a ranked retrieval context, appropriate sets of retrieved documents are naturally given by
     the top k retrieved documents.
+
+    Recall is the fraction of relevant documents retrieved among all the relevant documents.
+    Precision is the fraction of relevant documents among all the retrieved documents.
 
     For each such set, precision and recall values can be plotted to give a recall-precision
     curve.
@@ -46,8 +46,8 @@ def retrieval_recall_precision_curve(
         adaptive_k: adjust `max_k` to `min(max_k, number of documents)` for each query
 
     Returns:
-        tensor with the recall values for each k (at ``k``) from 1 to max_k
-        tensor with the precision values for each k (at ``k``) from 1 to max_k
+        tensor with the recall values for each k (at ``k``) from 1 to `max_k`
+        tensor with the precision values for each k (at ``k``) from 1 to `max_k`
         tensor with all possibles k
 
     Raises:
@@ -57,11 +57,11 @@ def retrieval_recall_precision_curve(
             If ``adaptive_k`` is not boolean.
 
     Example:
-        >>> from  torchmetrics.functional import retrieval_recall_precision_curve
+        >>> from  torchmetrics.functional import retrieval_precision_recall_curve
         >>> preds = tensor([0.2, 0.3, 0.5])
         >>> target = tensor([True, False, True])
-        >>> retrieval_recall_precision_curve(preds, target, max_k=2)
-        (tensor([0.5000, 0.5000]), tensor([1.0000, 0.5000]), tensor([1, 2]))
+        >>> retrieval_precision_recall_curve(preds, target, max_k=2)
+        tensor([1.0000, 0.5000]), (tensor([0.5000, 0.5000]), tensor([1, 2]))
     """
     preds, target = _check_retrieval_functional_inputs(preds, target)
 
@@ -89,4 +89,4 @@ def retrieval_recall_precision_curve(
     recall = relevant / target.sum()
     precision = relevant / topk
 
-    return recall, precision, topk
+    return precision, recall, topk

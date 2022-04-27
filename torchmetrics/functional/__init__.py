@@ -71,7 +71,7 @@ from torchmetrics.functional.retrieval.ndcg import retrieval_normalized_dcg
 from torchmetrics.functional.retrieval.precision import retrieval_precision
 from torchmetrics.functional.retrieval.r_precision import retrieval_r_precision
 from torchmetrics.functional.retrieval.recall import retrieval_recall
-from torchmetrics.functional.retrieval.recall_precision_curve import retrieval_recall_precision_curve
+from torchmetrics.functional.retrieval.precision_recall_curve import retrieval_precision_recall_curve
 from torchmetrics.functional.retrieval.reciprocal_rank import retrieval_reciprocal_rank
 from torchmetrics.functional.text.bleu import bleu_score
 from torchmetrics.functional.text.cer import char_error_rate
@@ -145,7 +145,7 @@ __all__ = [
     "retrieval_r_precision",
     "retrieval_recall",
     "retrieval_reciprocal_rank",
-    "retrieval_recall_precision_curve",
+    "retrieval_precision_recall_curve",
     "roc",
     "rouge_score",
     "sacre_bleu_score",
