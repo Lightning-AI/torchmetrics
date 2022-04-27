@@ -113,13 +113,13 @@ class RetrievalPrecisionRecallCurve(Metric):
     higher_is_better = True
 
     def __init__(
-            self,
-            max_k: Optional[int] = None,
-            adaptive_k: bool = False,
-            empty_target_action: str = "neg",
-            ignore_index: Optional[int] = None,
-            compute_on_step: Optional[bool] = None,
-            **kwargs: Dict[str, Any],
+        self,
+        max_k: Optional[int] = None,
+        adaptive_k: bool = False,
+        empty_target_action: str = "neg",
+        ignore_index: Optional[int] = None,
+        compute_on_step: Optional[bool] = None,
+        **kwargs: Dict[str, Any],
     ) -> None:
         super().__init__(compute_on_step=compute_on_step, **kwargs)
         self.allow_non_binary_target = False
@@ -195,7 +195,9 @@ class RetrievalPrecisionRecallCurve(Metric):
                 precisions.append(precision)
                 recalls.append(recall)
 
-        precision = torch.stack([x.to(preds) for x in precisions]).mean(dim=0) if precisions else torch.zeros(max_k).to(preds)
+        precision = (
+            torch.stack([x.to(preds) for x in precisions]).mean(dim=0) if precisions else torch.zeros(max_k).to(preds)
+        )
         recall = torch.stack([x.to(preds) for x in recalls]).mean(dim=0) if recalls else torch.zeros(max_k).to(preds)
         top_k = torch.arange(1, max_k + 1, device=preds.device)
 
@@ -278,7 +280,7 @@ class RetrievalRecallAtFixedPrecision(RetrievalPrecisionRecallCurve):
             empty_target_action=empty_target_action,
             ignore_index=ignore_index,
             compute_on_step=compute_on_step,
-            **kwargs
+            **kwargs,
         )
 
         if not (isinstance(min_precision, float) and 0.0 <= min_precision <= 1.0):
