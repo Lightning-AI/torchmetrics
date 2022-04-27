@@ -60,7 +60,7 @@ def retrieval_recall_precision_curve(
         >>> from  torchmetrics.functional import retrieval_recall_precision_curve
         >>> preds = tensor([0.2, 0.3, 0.5])
         >>> target = tensor([True, False, True])
-        >>> retrieval_recall_precision_curve(preds, target, k=2)
+        >>> retrieval_recall_precision_curve(preds, target, max_k=2)
         (tensor([0.5000, 0.5000]), tensor([1.0000, 0.5000]), tensor([1, 2]))
     """
     preds, target = _check_retrieval_functional_inputs(preds, target)
