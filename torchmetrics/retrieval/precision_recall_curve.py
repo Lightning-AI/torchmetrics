@@ -19,7 +19,7 @@ from torch import Tensor, tensor
 from torchmetrics import Metric
 from torchmetrics.functional.retrieval.precision_recall_curve import retrieval_precision_recall_curve
 from torchmetrics.utilities.checks import _check_retrieval_inputs
-from torchmetrics.utilities.data import get_group_indexes, dim_zero_cat
+from torchmetrics.utilities.data import dim_zero_cat, get_group_indexes
 
 
 def _retrieval_recall_at_fixed_precision(
@@ -28,8 +28,7 @@ def _retrieval_recall_at_fixed_precision(
     top_k: Tensor,
     min_precision: float,
 ) -> Tuple[Tensor, Tensor]:
-    """
-    Computes maximum recall with condition that corresponding precision >= `min_precision`.
+    """Computes maximum recall with condition that corresponding precision >= `min_precision`.
 
     Args:
         top_k: tensor with all possible k
@@ -41,9 +40,7 @@ def _retrieval_recall_at_fixed_precision(
         Maximum recall value, corresponding it best k
     """
     try:
-        max_recall, best_k = max(
-            (r, k) for p, r, k in zip(precision, recall, top_k) if p >= min_precision
-        )
+        max_recall, best_k = max((r, k) for p, r, k in zip(precision, recall, top_k) if p >= min_precision)
 
     except ValueError:
         max_recall = torch.tensor(0.0, device=recall.device, dtype=recall.dtype)
