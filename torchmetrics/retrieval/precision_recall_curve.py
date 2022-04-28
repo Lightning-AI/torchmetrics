@@ -19,7 +19,7 @@ from torch import Tensor, tensor
 from torchmetrics import Metric
 from torchmetrics.functional.retrieval.precision_recall_curve import retrieval_precision_recall_curve
 from torchmetrics.utilities.checks import _check_retrieval_inputs
-from torchmetrics.utilities.data import get_group_indexes
+from torchmetrics.utilities.data import get_group_indexes, dim_zero_cat
 
 
 def _retrieval_recall_at_fixed_precision(
@@ -169,9 +169,9 @@ class RetrievalPrecisionRecallCurve(Metric):
 
     def compute(self) -> Tuple[Tensor, Tensor, Tensor]:
         # concat all data
-        indexes = torch.cat(self.indexes, dim=0)
-        preds = torch.cat(self.preds, dim=0)
-        target = torch.cat(self.target, dim=0)
+        indexes = dim_zero_cat(self.indexes)
+        preds = dim_zero_cat(self.preds)
+        target = dim_zero_cat(self.target)
         groups = get_group_indexes(indexes)
 
         # don't want to change self.max_k
