@@ -263,31 +263,35 @@ class Metric(Module, ABC):
 
         return self._forward_cache
 
-    def _reduce_state(self, state_to_reduce: Dict[str, Any]) -> None:
-        """some doc string would be nice."""
+    def _reduce_states(self, incoming_state: Dict[str, Any]) -> None:
+        """Adds an incoming metric state to the current state of the metric.
+
+        Args:
+            incoming_state: a dict containing a metric state similar metric itself
+        """
         for attr in self._defaults.keys():
-            current_state = getattr(self, attr)
-            incoming_state = state_to_reduce[attr]
+            local_state = getattr(self, attr)
+            global_state = incoming_state[attr]
             reduce_fn = self._reductions[attr]
             if reduce_fn == dim_zero_sum:
-                reduced = current_state + incoming_state
+                reduced = global_state + local_state
             elif reduce_fn == dim_zero_mean:
-                reduced = (current_state + incoming_state) / 2.0
+                reduced = (global_state + local_state) / 2.0
             elif reduce_fn == dim_zero_max:
-                reduced = torch.max(current_state, incoming_state)
+                reduced = torch.max(global_state, local_state)
             elif reduce_fn == dim_zero_min:
-                reduced = torch.min(current_state, incoming_state)
+                reduced = torch.min(global_state, local_state)
             elif reduce_fn == dim_zero_cat:  # or (reduce_fn is None and isinstance(current_state, list)):
-                reduced = incoming_state + current_state
-            elif reduce_fn is None and isinstance(current_state, Tensor):
-                if incoming_state.ndim > 0:  # TODO: figure out why this works
-                    reduced = torch.cat([current_state.expand(1), incoming_state], dim=0)
+                reduced = global_state + local_state
+            elif reduce_fn is None and isinstance(local_state, Tensor):
+                if global_state.ndim > 0:  # TODO: figure out why this works
+                    reduced = torch.cat([global_state, local_state.expand(1)], dim=0)
                 else:
-                    reduced = torch.stack([current_state, incoming_state], dim=0)
-            elif reduce_fn is None and isinstance(current_state, list):
-                reduced = _flatten([current_state, incoming_state])
+                    reduced = torch.stack([global_state, local_state], dim=0)
+            elif reduce_fn is None and isinstance(global_state, list):
+                reduced = _flatten([global_state, local_state])
             else:
-                reduced = reduce_fn(torch.stack([current_state, incoming_state]))  # type: ignore
+                reduced = reduce_fn(torch.stack([global_state, local_state]))  # type: ignore
 
             setattr(self, attr, reduced)
 
