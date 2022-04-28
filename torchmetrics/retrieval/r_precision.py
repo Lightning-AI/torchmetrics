@@ -44,12 +44,6 @@ class RetrievalRPrecision(RetrievalMetric):
 
         ignore_index:
             Ignore predictions where the target is equal to this number.
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
