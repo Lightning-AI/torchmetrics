@@ -36,19 +36,34 @@ def _final_aggregation(
     mx1, my1, vx1, vy1, cxy1, n1 = means_x[0], means_y[0], vars_x[0], vars_y[0], corrs_xy[0], nbs[0]
     for i in range(1, len(means_x)):
         mx2, my2, vx2, vy2, cxy2, n2 = means_x[i], means_y[i], vars_x[i], vars_y[i], corrs_xy[i], nbs[i]
-
         nb = n1 + n2
         mean_x = (n1 * mx1 + n2 * mx2) / nb
         mean_y = (n1 * my1 + n2 * my2) / nb
-        var_x = 1 / (n1 + n2 - 1) * ((n1 - 1) * vx1 + (n2 - 1) * vx2 + ((n1 * n2) / (n1 + n2)) * (mx1 - mx2) ** 2)
-        var_y = 1 / (n1 + n2 - 1) * ((n1 - 1) * vy1 + (n2 - 1) * vy2 + ((n1 * n2) / (n1 + n2)) * (my1 - my2) ** 2)
 
-        corr1 = n1 * cxy1 + n1 * (mx1 - mean_x) * (my1 - mean_y)
-        corr2 = n2 * cxy2 + n2 * (mx2 - mean_x) * (my2 - mean_y)
-        corr_xy = (corr1 + corr2) / (n1 + n2)
+        # var_x
+        magic_element_x1 = (n1 + 1) * mean_x - n1 * mx1
+        vx1 += (magic_element_x1 - mx1) * (magic_element_x1 - mean_x) - (magic_element_x1 - mean_x) ** 2
+        magic_element_x2 = (n2 + 1) * mean_x - n2 * mx2
+        vx2 += (magic_element_x2 - mx2) * (magic_element_x2 - mean_x) - (magic_element_x2 - mean_x) ** 2
+        var_x = vx1 + vx2
+
+        # var_y
+        magic_element_y1 = (n1 + 1) * mean_y - n1 * my1
+        vy1 += (magic_element_y1 - my1) * (magic_element_y1 - mean_y) - (magic_element_y1 - mean_y) ** 2
+        magic_element_y2 = (n2 + 1) * mean_y - n2 * my2
+        vy2 += (magic_element_y2 - my2) * (magic_element_y2 - mean_y) - (magic_element_y2 - mean_y) ** 2
+        var_y = vy1 + vy2
+
+        # corr
+        cxy1 += (magic_element_x1 - mx1) * (magic_element_y1 - mean_y) - (magic_element_x1 - mean_x) * (
+            magic_element_y1 - mean_y
+        )
+        cxy2 += (magic_element_x2 - mx2) * (magic_element_y2 - mean_y) - (magic_element_x2 - mean_x) * (
+            magic_element_y2 - mean_y
+        )
+        corr_xy = cxy1 + cxy2
 
         mx1, my1, vx1, vy1, cxy1, n1 = mean_x, mean_y, var_x, var_y, corr_xy, nb
-
     return var_x, var_y, corr_xy, nb
 
 
@@ -123,5 +138,4 @@ class PearsonCorrCoef(Metric):
             var_y = self.var_y
             corr_xy = self.corr_xy
             n_total = self.n_total
-
         return _pearson_corrcoef_compute(var_x, var_y, corr_xy, n_total)
