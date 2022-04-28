@@ -40,6 +40,27 @@ Example implementation:
             return self.correct.float() / self.total
 
 
+Additionally you may want to set the class properties: `is_differentiable`, `higher_is_better` and
+`full_state_update`. Note that none of them are strictly required for the metric to work.
+
+.. testcode::
+
+   from torchmetrics import Metric
+
+   class MyMetric(Metric):
+      # Set to True if the metric is differentiable else set to False
+      is_differentiable: Optional[bool] = None
+
+      # Set to True if the metric reaches it optimal value when the metric is maximized.
+      # Set to False if it when the metric is minimized.
+      higher_is_better: Optional[bool] = True
+
+      # Set to True if the metric during 'update' requires access to the global metric
+      # state for its calculations. If not, setting this to False indicates that all
+      # batch states are independent and we will optimize the runtime of 'forward'
+      full_state_update: bool = True
+
+
 Internal implementation details
 -------------------------------
 
