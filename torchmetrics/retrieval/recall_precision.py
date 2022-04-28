@@ -260,7 +260,6 @@ class RetrievalRecallAtFixedPrecision(RetrievalPrecisionRecallCurve):
         adaptive_k: bool = False,
         empty_target_action: str = "neg",
         ignore_index: Optional[int] = None,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
         super().__init__(
@@ -268,7 +267,6 @@ class RetrievalRecallAtFixedPrecision(RetrievalPrecisionRecallCurve):
             adaptive_k=adaptive_k,
             empty_target_action=empty_target_action,
             ignore_index=ignore_index,
-            compute_on_step=compute_on_step,
             **kwargs,
         )
 
