@@ -22,6 +22,7 @@ from typing import Dict, List, Union
 import torch
 import torch.nn as nn
 from torch import Tensor
+from torch.nn import Module
 
 from torchmetrics.text.bert import BERTScore
 
@@ -89,16 +90,14 @@ class UserTokenizer:
         return output_dict
 
 
-def get_user_model_encoder(
-    num_layers: int = _NUM_LAYERS, d_model: int = _MODEL_DIM, nhead: int = _NHEAD
-) -> torch.nn.Module:
+def get_user_model_encoder(num_layers: int = _NUM_LAYERS, d_model: int = _MODEL_DIM, nhead: int = _NHEAD) -> Module:
     """Initialize the Transformer encoder."""
     encoder_layer = nn.TransformerEncoderLayer(d_model=d_model, nhead=nhead)
     transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
     return transformer_encoder
 
 
-def user_forward_fn(model: torch.nn.Module, batch: Dict[str, Tensor]) -> Tensor:
+def user_forward_fn(model: Module, batch: Dict[str, Tensor]) -> Tensor:
     """User forward function used for the computation of model embeddings.
 
     This function might be arbitrarily complicated inside. However, to ensure functionality, it should obey the

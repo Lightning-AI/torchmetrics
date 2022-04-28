@@ -16,6 +16,7 @@ from warnings import warn
 
 import torch
 from torch import Tensor
+from torch.nn import Module
 
 from torchmetrics.functional.text.bert import _preprocess_text, bert_score
 from torchmetrics.metric import Metric
@@ -116,9 +117,9 @@ class BERTScore(Metric):
         model_name_or_path: Optional[str] = None,
         num_layers: Optional[int] = None,
         all_layers: bool = False,
-        model: Optional[torch.nn.Module] = None,
+        model: Optional[Module] = None,
         user_tokenizer: Optional[Any] = None,
-        user_forward_fn: Callable[[torch.nn.Module, Dict[str, Tensor]], Tensor] = None,
+        user_forward_fn: Callable[[Module, Dict[str, Tensor]], Tensor] = None,
         verbose: bool = False,
         idf: bool = False,
         device: Optional[Union[str, torch.device]] = None,

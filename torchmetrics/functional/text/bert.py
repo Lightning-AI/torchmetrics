@@ -20,6 +20,7 @@ from warnings import warn
 
 import torch
 from torch import Tensor
+from torch.nn import Module
 from torch.utils.data import DataLoader, Dataset
 
 from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_AUTO_AVAILABLE
@@ -248,13 +249,13 @@ def _check_shape_of_model_output(output: Tensor, input_ids: Tensor) -> None:
 def _get_embeddings_and_idf_scale(
     dataloader: DataLoader,
     target_len: int,
-    model: torch.nn.Module,
+    model: Module,
     device: Optional[Union[str, torch.device]] = None,
     num_layers: Optional[int] = None,
     all_layers: bool = False,
     idf: bool = False,
     verbose: bool = False,
-    user_forward_fn: Callable[[torch.nn.Module, Dict[str, Tensor]], Tensor] = None,
+    user_forward_fn: Callable[[Module, Dict[str, Tensor]], Tensor] = None,
 ) -> Tuple[Tensor, Tensor]:
     """Calculate sentence embeddings and the inverse-document-frequency scaling factor.
     Args:
@@ -440,9 +441,9 @@ def bert_score(
     model_name_or_path: Optional[str] = None,
     num_layers: Optional[int] = None,
     all_layers: bool = False,
-    model: Optional[torch.nn.Module] = None,
+    model: Optional[Module] = None,
     user_tokenizer: Any = None,
-    user_forward_fn: Callable[[torch.nn.Module, Dict[str, Tensor]], Tensor] = None,
+    user_forward_fn: Callable[[Module, Dict[str, Tensor]], Tensor] = None,
     verbose: bool = False,
     idf: bool = False,
     device: Optional[Union[str, torch.device]] = None,

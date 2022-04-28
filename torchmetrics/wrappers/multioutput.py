@@ -2,7 +2,8 @@ from copy import deepcopy
 from typing import Any, List, Tuple
 
 import torch
-from torch import Tensor, nn
+from torch import Tensor
+from torch.nn import ModuleList
 
 from torchmetrics import Metric
 from torchmetrics.utilities import apply_to_collection
@@ -88,7 +89,7 @@ class MultioutputWrapper(Metric):
         squeeze_outputs: bool = True,
     ):
         super().__init__()
-        self.metrics = nn.ModuleList([deepcopy(base_metric) for _ in range(num_outputs)])
+        self.metrics = ModuleList([deepcopy(base_metric) for _ in range(num_outputs)])
         self.output_dim = output_dim
         self.remove_nans = remove_nans
         self.squeeze_outputs = squeeze_outputs
