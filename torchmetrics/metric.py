@@ -264,6 +264,7 @@ class Metric(Module, ABC):
         return self._forward_cache
 
     def _reduce_state(self, state_to_reduce: Dict[str, Any]) -> None:
+        """some doc string would be nice."""
         for attr in self._defaults.keys():
             current_state = getattr(self, attr)
             incoming_state = state_to_reduce[attr]

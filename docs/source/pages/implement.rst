@@ -1,5 +1,9 @@
 .. _implement:
 
+.. testsetup:: *
+
+    from typing import Optional
+
 *********************
 Implementing a Metric
 *********************
