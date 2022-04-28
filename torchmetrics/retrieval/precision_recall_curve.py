@@ -92,12 +92,6 @@ class RetrievalPrecisionRecallCurve(Metric):
 
         ignore_index:
             Ignore predictions where the target is equal to this number.
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
         kwargs:
             Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
@@ -132,10 +126,9 @@ class RetrievalPrecisionRecallCurve(Metric):
         adaptive_k: bool = False,
         empty_target_action: str = "neg",
         ignore_index: Optional[int] = None,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
         self.allow_non_binary_target = False
 
         empty_target_action_options = ("error", "skip", "neg", "pos")
@@ -149,18 +142,17 @@ class RetrievalPrecisionRecallCurve(Metric):
 
         self.ignore_index = ignore_index
 
-        self.add_state("indexes", default=[], dist_reduce_fx=None)
-        self.add_state("preds", default=[], dist_reduce_fx=None)
-        self.add_state("target", default=[], dist_reduce_fx=None)
-
         if (max_k is not None) and not (isinstance(max_k, int) and max_k > 0):
             raise ValueError("`max_k` has to be a positive integer or None")
+        self.max_k = max_k
 
         if not isinstance(adaptive_k, bool):
             raise ValueError("`adaptive_k` has to be a boolean")
-
-        self.max_k = max_k
         self.adaptive_k = adaptive_k
+
+        self.add_state("indexes", default=[], dist_reduce_fx=None)
+        self.add_state("preds", default=[], dist_reduce_fx=None)
+        self.add_state("target", default=[], dist_reduce_fx=None)
 
     def update(self, preds: Tensor, target: Tensor, indexes: Tensor) -> None:  # type: ignore
         """Check shape, check and convert dtypes, flatten and add to accumulators."""
@@ -247,12 +239,6 @@ class RetrievalRecallAtFixedPrecision(RetrievalPrecisionRecallCurve):
 
         ignore_index:
             Ignore predictions where the target is equal to this number.
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
         kwargs:
             Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
@@ -285,7 +271,6 @@ class RetrievalRecallAtFixedPrecision(RetrievalPrecisionRecallCurve):
         adaptive_k: bool = False,
         empty_target_action: str = "neg",
         ignore_index: Optional[int] = None,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
         super().__init__(
@@ -293,7 +278,6 @@ class RetrievalRecallAtFixedPrecision(RetrievalPrecisionRecallCurve):
             adaptive_k=adaptive_k,
             empty_target_action=empty_target_action,
             ignore_index=ignore_index,
-            compute_on_step=compute_on_step,
             **kwargs,
         )
 
