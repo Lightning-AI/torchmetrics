@@ -131,18 +131,17 @@ class RetrievalPrecisionRecallCurve(Metric):
 
         self.ignore_index = ignore_index
 
+        if (max_k is not None) and not (isinstance(max_k, int) and max_k > 0):
+            raise ValueError("`max_k` has to be a positive integer or None")
+        self.max_k = max_k
+        
+        if not isinstance(adaptive_k, bool):
+            raise ValueError("`adaptive_k` has to be a boolean")
+        self.adaptive_k = adaptive_k
+        
         self.add_state("indexes", default=[], dist_reduce_fx=None)
         self.add_state("preds", default=[], dist_reduce_fx=None)
         self.add_state("target", default=[], dist_reduce_fx=None)
-
-        if (max_k is not None) and not (isinstance(max_k, int) and max_k > 0):
-            raise ValueError("`max_k` has to be a positive integer or None")
-
-        if not isinstance(adaptive_k, bool):
-            raise ValueError("`adaptive_k` has to be a boolean")
-
-        self.max_k = max_k
-        self.adaptive_k = adaptive_k
 
     def update(self, preds: Tensor, target: Tensor, indexes: Tensor) -> None:  # type: ignore
         """Check shape, check and convert dtypes, flatten and add to accumulators."""
