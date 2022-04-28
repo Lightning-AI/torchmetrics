@@ -59,7 +59,7 @@ class AssistantCLI:
             lines = [ln for ln in lines if not ln.startswith(pkg)]
         logging.info(lines)
 
-        with open(req_file, "w") as fp:
+        with open(req_file, "w", encoding="utf-8") as fp:
             fp.writelines(lines)
 
     @staticmethod
@@ -71,17 +71,17 @@ class AssistantCLI:
         with open(fpath) as fp:
             req = fp.read()
         req = re.sub(r"torch>=[\d\.]+", f"torch>={LUT_PYTHON_TORCH[py_ver]}", req)
-        with open(fpath, "w") as fp:
+        with open(fpath, "w", encoding="utf-8") as fp:
             fp.write(req)
 
     @staticmethod
     def replace_min_requirements(fpath: str) -> None:
         """Replace all `>=` by `==` in given file."""
         logging.info(f"processing: {fpath}")
-        with open(fpath) as fp:
+        with open(fpath, encoding="utf-8") as fp:
             req = fp.read()
         req = req.replace(">=", "==")
-        with open(fpath, "w") as fp:
+        with open(fpath, "w", encoding="utf-8") as fp:
             fp.write(req)
 
     @staticmethod

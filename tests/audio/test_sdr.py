@@ -87,7 +87,7 @@ class TestSDR(MetricTester):
             SignalDistortionRatio,
             sk_metric=partial(average_metric, metric_func=sk_metric),
             dist_sync_on_step=dist_sync_on_step,
-            metric_args=dict(),
+            metric_args={},
         )
 
     def test_sdr_functional(self, preds, target, sk_metric):
@@ -96,7 +96,7 @@ class TestSDR(MetricTester):
             target,
             signal_distortion_ratio,
             sk_metric,
-            metric_args=dict(),
+            metric_args={},
         )
 
     def test_sdr_differentiability(self, preds, target, sk_metric):
@@ -105,7 +105,7 @@ class TestSDR(MetricTester):
             target=target,
             metric_module=SignalDistortionRatio,
             metric_functional=signal_distortion_ratio,
-            metric_args=dict(),
+            metric_args={},
         )
 
     @pytest.mark.skipif(
@@ -117,7 +117,7 @@ class TestSDR(MetricTester):
             target=target,
             metric_module=SignalDistortionRatio,
             metric_functional=signal_distortion_ratio,
-            metric_args=dict(),
+            metric_args={},
         )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
@@ -127,7 +127,7 @@ class TestSDR(MetricTester):
             target=target,
             metric_module=SignalDistortionRatio,
             metric_functional=signal_distortion_ratio,
-            metric_args=dict(),
+            metric_args={},
         )
 
 

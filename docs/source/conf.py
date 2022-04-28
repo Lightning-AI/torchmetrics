@@ -65,7 +65,7 @@ def _transform_changelog(path_in: str, path_out: str) -> None:
         elif ln.startswith("### "):
             ln = ln.replace("###", f"### {chlog_ver} -")
             chlog_lines[i] = ln
-    with open(path_out, "w") as fp:
+    with open(path_out, "w", encoding="utf-8") as fp:
         fp.writelines(chlog_lines)
 
 
