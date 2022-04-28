@@ -38,6 +38,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed deprecated `compute_on_step` argument in Image ([#979](https://github.com/PyTorchLightning/metrics/pull/979))
 
 
+- Removed deprecated `compute_on_step` argument in Wrappers ([#991](https://github.com/PyTorchLightning/metrics/pull/991))
+
+
 ### Fixed
 
 - Fixed "Sort currently does not support bool dtype on CUDA" error in MAP for empty preds ([#983](https://github.com/PyTorchLightning/metrics/pull/983))
