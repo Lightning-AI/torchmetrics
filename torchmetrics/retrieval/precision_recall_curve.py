@@ -27,21 +27,32 @@ def _retrieval_recall_at_fixed_precision(
     recall: Tensor,
     top_k: Tensor,
     min_precision: float,
-) -> Tuple[Tensor, Tensor, Tensor]:
+) -> Tuple[Tensor, Tensor]:
+    """
+    Computes maximum recall with condition that corresponding precision >= `min_precision`.
+
+    Args:
+        top_k: tensor with all possible k
+        precision: tensor with all values precisions@k for k from top_k tensor
+        recall: tensor with all values recall@k for k from top_k tensor
+        min_precision: float value specifying minimum precision threshold.
+
+    Returns:
+        Maximum recall value, corresponding it best k
+    """
     try:
-        max_recall, curr_precision, best_k = max(
-            (r, p, k) for p, r, k in zip(precision, recall, top_k) if p >= min_precision
+        max_recall, best_k = max(
+            (r, k) for p, r, k in zip(precision, recall, top_k) if p >= min_precision
         )
 
     except ValueError:
         max_recall = torch.tensor(0.0, device=recall.device, dtype=recall.dtype)
-        curr_precision = torch.tensor(0.0, device=recall.device, dtype=recall.dtype)
         best_k = torch.tensor(len(top_k))
 
     if max_recall == 0.0:
         best_k = torch.tensor(len(top_k), device=top_k.device, dtype=top_k.dtype)
 
-    return max_recall, curr_precision, best_k
+    return max_recall, best_k
 
 
 class RetrievalPrecisionRecallCurve(Metric):
@@ -291,7 +302,7 @@ class RetrievalRecallAtFixedPrecision(RetrievalPrecisionRecallCurve):
 
         self.min_precision = min_precision
 
-    def compute(self) -> Tuple[Tensor, Tensor, Tensor]:
+    def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore
         precisions, recalls, top_k = super().compute()
 
         return _retrieval_recall_at_fixed_precision(precisions, recalls, top_k, self.min_precision)

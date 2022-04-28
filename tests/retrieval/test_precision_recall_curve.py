@@ -26,17 +26,16 @@ from tests.helpers.testers import Metric, MetricTester
 from tests.retrieval.helpers import _default_metric_class_input_arguments, get_group_indexes
 from tests.retrieval.test_precision import _precision_at_k
 from tests.retrieval.test_recall import _recall_at_k
-from torchmetrics import RetrievalRecallAtFixedPrecision
+from torchmetrics import RetrievalPrecisionRecallCurve
 
 seed_all(42)
 
 
-def _compute_recall_at_precision_metric(
+def _compute_precision_recall_curve(
     preds: Union[Tensor, array],
     target: Union[Tensor, array],
     indexes: Union[Tensor, array] = None,
     max_k: int = None,
-    min_precision: float = 0.0,
     adaptive_k: bool = False,
     ignore_index: int = None,
     empty_target_action: str = "skip",
@@ -44,11 +43,12 @@ def _compute_recall_at_precision_metric(
 ) -> Tuple[Tensor, Tensor, Tensor]:
     """Compute metric with multiple iterations over every query predictions set.
 
-    Didn't find a reliable implementation of Precision in Information Retrieval, so, reimplementing here.
+    Didn't find a reliable implementation of precision-recall curve in Information Retrieval,
+    so, reimplementing here.
+
     A good explanation can be found here:
     `<https://nlp.stanford.edu/IR-book/pdf/08eval.pdf>_`. (part 8.4)
     """
-    e_tol = 0.00001  # for torch.float64 comparision
     recalls, precisions = [], []
 
     if indexes is None:
@@ -76,7 +76,7 @@ def _compute_recall_at_precision_metric(
     if max_k is None:
         max_k = max(map(len, groups))
 
-    max_k_range = torch.arange(1, max_k + 1)
+    top_k = torch.arange(1, max_k + 1)
 
     for group in groups:
         trg, prd = target[group], preds[group]
@@ -95,7 +95,7 @@ def _compute_recall_at_precision_metric(
                 precisions.append(arr)
 
         else:
-            for k in max_k_range:
+            for k in top_k:
                 r.append(_recall_at_k(trg, prd, k=k.item()))
                 p.append(_precision_at_k(trg, prd, k=k.item(), adaptive_k=adaptive_k))
 
@@ -103,37 +103,15 @@ def _compute_recall_at_precision_metric(
             precisions.append(p)
 
     if not recalls:
-        return tensor(0.0), tensor(0.0), tensor(max_k)
+        return torch.zeros(max_k), torch.zeros(max_k), top_k
 
     recalls = tensor(recalls).mean(dim=0)
     precisions = tensor(precisions).mean(dim=0)
 
-    recalls_at_k = [(r, p, k) for p, r, k in zip(precisions, recalls, max_k_range) if p > min_precision - e_tol]
-
-    if not recalls_at_k:
-        return tensor(0.0), tensor(0.0), tensor(max_k)
-
-    return max(recalls_at_k)
+    return precisions, recalls, top_k
 
 
-def test_compute_recall_at_precision_metric():
-    indexes = tensor([0, 0, 0, 0, 1, 1, 1])
-    preds = tensor([0.4, 0.01, 0.5, 0.6, 0.2, 0.3, 0.5])
-    target = tensor([True, False, False, True, True, False, True])
-    max_k = 3
-    min_precision = 0.8
-
-    res = _compute_recall_at_precision_metric(
-        preds,
-        target,
-        indexes,
-        max_k,
-        min_precision,
-    )
-    assert res == (tensor(0.5000), tensor(1))
-
-
-class RetrievalRecallAtPrecisionMetricTester(MetricTester):
+class RetrievalPrecisionRecallCurveTester(MetricTester):
     def run_class_metric_test(
         self,
         ddp: bool,
@@ -166,10 +144,9 @@ class RetrievalRecallAtPrecisionMetricTester(MetricTester):
 @pytest.mark.parametrize("empty_target_action", ["neg", "skip", "pos"])
 @pytest.mark.parametrize("ignore_index", [None, 1])  # avoid setting 0, otherwise test with all 0 targets will fail
 @pytest.mark.parametrize("max_k", [None, 1, 2, 5, 10])
-@pytest.mark.parametrize("min_precision", [0.0, 0.5, 0.9])
 @pytest.mark.parametrize("adaptive_k", [False, True])
 @pytest.mark.parametrize(**_default_metric_class_input_arguments)
-class TestRetrievalRecallAtPrecision(RetrievalRecallAtPrecisionMetricTester):
+class TestRetrievalPrecisionRecallCurve(RetrievalPrecisionRecallCurveTester):
     atol = 0.02
 
     def test_class_metric(
@@ -182,12 +159,10 @@ class TestRetrievalRecallAtPrecision(RetrievalRecallAtPrecisionMetricTester):
         empty_target_action,
         ignore_index,
         max_k,
-        min_precision,
         adaptive_k,
     ):
         metric_args = dict(
             max_k=max_k,
-            min_precision=min_precision,
             adaptive_k=adaptive_k,
             empty_target_action=empty_target_action,
             ignore_index=ignore_index,
@@ -198,8 +173,8 @@ class TestRetrievalRecallAtPrecision(RetrievalRecallAtPrecisionMetricTester):
             indexes=indexes,
             preds=preds,
             target=target,
-            metric_class=RetrievalRecallAtFixedPrecision,
-            sk_metric=_compute_recall_at_precision_metric,
+            metric_class=RetrievalPrecisionRecallCurve,
+            sk_metric=_compute_precision_recall_curve,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
         )
