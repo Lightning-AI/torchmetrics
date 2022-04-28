@@ -11,18 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
--
-
-
--
+- Added class property `full_state_update` that determines `forward` should call `update` once or twice ([#984](https://github.com/PyTorchLightning/metrics/pull/984))
 
 
 ### Changed
 
 - Reimplemented the `signal_distortion_ratio` metric, which removed the absolute requirement of `fast-bss-eval` ([#964](https://github.com/PyTorchLightning/metrics/pull/964))
-
-
-- Changed `forward` method to only calling `update` a single time instead of twice ([#984](https://github.com/PyTorchLightning/metrics/pull/984))
 
 
 ### Deprecated
