@@ -27,7 +27,7 @@ if _TORCH_FIDELITY_AVAILABLE:
     from torch_fidelity.feature_extractor_inceptionv3 import FeatureExtractorInceptionV3
 else:
 
-    class FeatureExtractorInceptionV3(torch.nn.Module):  # type: ignore
+    class FeatureExtractorInceptionV3(nn.Module):  # type: ignore
         pass
 
     __doctest_skip__ = ["FrechetInceptionDistance", "FID"]

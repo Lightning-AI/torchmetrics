@@ -65,7 +65,7 @@ class BERTScore(Metric):
             A user's own forward function used in a combination with `user_model`. This function must take `user_model`
             and a python dictionary of containing `"input_ids"` and `"attention_mask"` represented by `torch.Tensor`
             as an input and return the model's output represented by the single `torch.Tensor`.
-        verbose: An indication of whether a progress bar to be displayed during the embeddings calculation.
+        verbose: An indication of whether a progress bar to be displayed during the embeddings' calculation.
         idf: An indication whether normalization using inverse document frequencies should be used.
         device: A device to be used for calculation.
         max_length: A maximum length of input sequences. Sequences longer than `max_length` are to be trimmed.
@@ -118,7 +118,7 @@ class BERTScore(Metric):
         all_layers: bool = False,
         model: Optional[torch.nn.Module] = None,
         user_tokenizer: Optional[Any] = None,
-        user_forward_fn: Callable[[torch.nn.Module, Dict[str, torch.Tensor]], torch.Tensor] = None,
+        user_forward_fn: Callable[[torch.nn.Module, Dict[str, Tensor]], Tensor] = None,
         verbose: bool = False,
         idf: bool = False,
         device: Optional[Union[str, torch.device]] = None,

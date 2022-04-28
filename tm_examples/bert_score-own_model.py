@@ -21,6 +21,7 @@ from typing import Dict, List, Union
 
 import torch
 import torch.nn as nn
+from torch import Tensor
 
 from torchmetrics.text.bert import BERTScore
 
@@ -52,7 +53,7 @@ class UserTokenizer:
             self.PAD_TOKEN: torch.zeros(1, _MODEL_DIM),
         }
 
-    def __call__(self, sentences: Union[str, List[str]], max_len: int = _MAX_LEN) -> Dict[str, torch.Tensor]:
+    def __call__(self, sentences: Union[str, List[str]], max_len: int = _MAX_LEN) -> Dict[str, Tensor]:
         """The `__call__` method must be defined for this class. To ensure the functionality, the `__call__` method
         should obey the input/output arguments structure described below.
 
@@ -63,10 +64,9 @@ class UserTokenizer:
                 Maximum length of pre-processed text. `int`
 
         Return:
-            Python dictionary containing the keys `input_ids` and `attention_mask` with corresponding `torch.Tensor`
-            values.
+            Python dictionary containing the keys `input_ids` and `attention_mask` with corresponding values.
         """
-        output_dict: Dict[str, torch.Tensor] = {}
+        output_dict: Dict[str, Tensor] = {}
         if isinstance(sentences, str):
             sentences = [sentences]
         # Add special tokens
@@ -98,7 +98,7 @@ def get_user_model_encoder(
     return transformer_encoder
 
 
-def user_forward_fn(model: torch.nn.Module, batch: Dict[str, torch.Tensor]) -> torch.Tensor:
+def user_forward_fn(model: torch.nn.Module, batch: Dict[str, Tensor]) -> Tensor:
     """User forward function used for the computation of model embeddings.
 
     This function might be arbitrarily complicated inside. However, to ensure functionality, it should obey the
@@ -106,12 +106,10 @@ def user_forward_fn(model: torch.nn.Module, batch: Dict[str, torch.Tensor]) -> t
 
     Args:
         model:
-            `torch.nn.Module`
         batch:
-            `Dict[str, torch.Tensor]`
 
     Return:
-        The model output. `torch.Tensor`
+        The model output.
     """
     return model(batch["input_ids"])
 

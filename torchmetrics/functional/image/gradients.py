@@ -56,7 +56,7 @@ def image_gradients(img: Tensor) -> Tuple[Tensor, Tensor]:
 
     Raises:
         TypeError:
-            If ``img`` is not of the type <torch.Tensor>.
+            If ``img`` is not of the type ``torch.Tensor``.
         RuntimeError:
             If ``img`` is not a 4D tensor.
 

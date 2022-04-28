@@ -2,13 +2,13 @@ from copy import deepcopy
 from typing import Any, List, Tuple
 
 import torch
-from torch import nn
+from torch import Tensor, nn
 
 from torchmetrics import Metric
 from torchmetrics.utilities import apply_to_collection
 
 
-def _get_nan_indices(*tensors: torch.Tensor) -> torch.Tensor:
+def _get_nan_indices(*tensors: Tensor) -> Tensor:
     """Get indices of rows along dim 0 which have NaN values."""
     if len(tensors) == 0:
         raise ValueError("Must pass at least one tensor as argument")
@@ -93,17 +93,15 @@ class MultioutputWrapper(Metric):
         self.remove_nans = remove_nans
         self.squeeze_outputs = squeeze_outputs
 
-    def _get_args_kwargs_by_output(
-        self, *args: torch.Tensor, **kwargs: torch.Tensor
-    ) -> List[Tuple[torch.Tensor, torch.Tensor]]:
+    def _get_args_kwargs_by_output(self, *args: Tensor, **kwargs: Tensor) -> List[Tuple[Tensor, Tensor]]:
         """Get args and kwargs reshaped to be output-specific and (maybe) having NaNs stripped out."""
         args_kwargs_by_output = []
         for i in range(len(self.metrics)):
             selected_args = apply_to_collection(
-                args, torch.Tensor, torch.index_select, dim=self.output_dim, index=torch.tensor(i, device=self.device)
+                args, Tensor, torch.index_select, dim=self.output_dim, index=torch.tensor(i, device=self.device)
             )
             selected_kwargs = apply_to_collection(
-                kwargs, torch.Tensor, torch.index_select, dim=self.output_dim, index=torch.tensor(i, device=self.device)
+                kwargs, Tensor, torch.index_select, dim=self.output_dim, index=torch.tensor(i, device=self.device)
             )
             if self.remove_nans:
                 args_kwargs = selected_args + tuple(selected_kwargs.values())
@@ -122,7 +120,7 @@ class MultioutputWrapper(Metric):
         for metric, (selected_args, selected_kwargs) in zip(self.metrics, reshaped_args_kwargs):
             metric.update(*selected_args, **selected_kwargs)
 
-    def compute(self) -> List[torch.Tensor]:
+    def compute(self) -> List[Tensor]:
         """Compute metrics."""
         return [m.compute() for m in self.metrics]
 

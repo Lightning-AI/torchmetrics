@@ -197,7 +197,7 @@ class TextDataset(Dataset):
 
     @staticmethod
     def _set_of_tokens(input_ids: Tensor) -> Set:
-        """Return set of tokens from the ``input_ids`` ``torch.Tensor``."""
+        """Return set of tokens from the ``input_ids``."""
         return set(input_ids.tolist())
 
 
@@ -273,7 +273,7 @@ def _get_embeddings_and_idf_scale(
             ``torch.Tensor``.
 
     Return:
-        A tuple of torch.Tensors containing the model's embeddings and the normalized tokens IDF.
+        A tuple of ``torch.Tensor``s containing the model's embeddings and the normalized tokens IDF.
         When ``idf = False``, tokens IDF is not calculated, and a matrix of mean weights is returned instead.
         For a single sentence, ``mean_weight = 1/seq_len``, where ``seq_len`` is a sum over the corresponding
         ``attention_mask``.

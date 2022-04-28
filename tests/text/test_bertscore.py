@@ -6,6 +6,7 @@ import pytest
 import torch
 import torch.distributed as dist
 import torch.multiprocessing as mp
+from torch import Tensor
 
 from tests.text.helpers import skip_on_connection_issues
 from torchmetrics.functional.text.bert import bert_score as metrics_bert_score
@@ -45,7 +46,7 @@ def _assert_list(preds: Any, targets: Any, threshold: float = 1e-8):
     assert np.allclose(preds, targets, atol=threshold, equal_nan=True)
 
 
-def _parse_original_bert_score(score: torch.Tensor) -> Dict[str, List[float]]:
+def _parse_original_bert_score(score: Tensor) -> Dict[str, List[float]]:
     """Parse the BERT score returned by the original `bert-score` package."""
     score_dict = {metric: value.tolist() for metric, value in zip(_METRICS, score)}
     return score_dict

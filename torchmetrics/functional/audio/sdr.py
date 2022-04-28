@@ -70,10 +70,10 @@ def _symmetric_toeplitz(vector: Tensor) -> Tensor:
 
 
 def _compute_autocorr_crosscorr(
-    target: torch.Tensor,
-    preds: torch.Tensor,
-    corr_len: int,
-) -> Tuple[torch.Tensor, torch.Tensor]:
+    target: Tensor,
+    preds: Tensor,
+    corr_len: int
+) -> Tuple[Tensor, Tensor]:
     r"""Compute the auto correlation of `target` and the cross correlation of `target` and `preds` using the fast
     Fourier transform (FFT). Let's denotes the symmetric Toeplitz matric of the auto correlation of `target` as
     `R`, the cross correlation as 'b', then solving the equation `Rh=b` could have `h` as the coordinate of
