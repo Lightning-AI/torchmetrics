@@ -66,12 +66,6 @@ class BootStrapper(Metric):
             will be given by :math:`n\sim Poisson(\lambda=1)`, which approximates the true bootstrap distribution
             when the number of samples is large. If ``'multinomial'`` is chosen, we will apply true bootstrapping
             at the batch level to approximate bootstrapping over the hole dataset.
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example::
@@ -96,10 +90,9 @@ class BootStrapper(Metric):
         quantile: Optional[Union[float, Tensor]] = None,
         raw: bool = False,
         sampling_strategy: str = "poisson",
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
         if not isinstance(base_metric, Metric):
             raise ValueError(
                 "Expected base metric to be an instance of torchmetrics.Metric" f" but received {base_metric}"
