@@ -89,13 +89,26 @@ The cache is first emptied on the next call to ``update``.
 
 ``forward`` serves the dual purpose of both returning the metric on the current data and updating the internal
 metric state for accumulating over multiple batches. The ``forward()`` method achieves this by combining calls
-to ``update``, ``compute`` and ``reset`` in the following way:
+to ``update``, ``compute`` and ``reset``. Depending on the class property ``full_state_update``, ``forward``
+can behave in two ways:
+* If ``full_state_update`` is ``True`` it indicates that the metric during ``update`` requires access to the full
+metric state and we therefore need to do two calls to ``update`` to secure that the metric is calculated correctly
+  1. Calls ``update()`` to update the global metric state (for accumulation over multiple batches)
+  2. Caches the global state.
+  3. Calls ``reset()`` to clear global metric state.
+  4. Calls ``update()`` to update local metric state.
+  5. Calls ``compute()`` to calculate metric for current batch.
+  6. Restores the global state.
+* If ``full_state_update`` is ``False`` (default) the metric state of one batch is completly independent of the state of
+other batches, which means that we only need to call ``update`` once..
+  1. Caches the global state.
+  2. Calls ``reset`` the metric to its default state
+  3. Calls ``update`` to update the state with local batch statistics
+  4. Calls ``compute`` to calculate the metric for the current batch
+  5. Reduce the global state and batch state into a single state that becomes the new global state
 
-1. Caches the global state.
-2. Calls ``reset`` the metric to its default state
-3. Calls ``update`` to update the state with local batch statistics
-4. Calls ``compute`` to calculate the metric for the current batch
-5. Reduce the global state and batch state into a single state that becomes the new global state
+If implementing your own metric, we recommend trying out the metric with ``full_state_update`` class property set to
+both ``True`` and ``False``. If the results are equal, then setting it to ``False`` will usually give the best performance.
 
 ---------
 
