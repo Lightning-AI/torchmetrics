@@ -3,8 +3,10 @@ import re
 
 import numpy as np
 import pytest
+from scipy.special import softmax as _softmax
 
-from tests.classification.inputs import _input_binary_prob
+from tests.classification.inputs import _input_binary_logits, _input_binary_prob
+from tests.classification.inputs import _input_multiclass_logits as _input_mcls_logits
 from tests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
 from tests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
@@ -24,8 +26,12 @@ seed_all(42)
 def _sk_calibration(preds, target, n_bins, norm, debias=False):
     _, _, mode = _input_format_classification(preds, target, threshold=THRESHOLD)
     sk_preds, sk_target = preds.numpy(), target.numpy()
-
+    if mode == DataType.BINARY:
+        if not np.logical_and(0 <= sk_preds, sk_preds <= 1).all():
+            sk_preds = 1.0 / (1 + np.exp(-sk_preds))  # sigmoid transform
     if mode == DataType.MULTICLASS:
+        if not np.logical_and(0 <= sk_preds, sk_preds <= 1).all():
+            sk_preds = _softmax(sk_preds, axis=1)
         # binary label is whether or not the predicted class is correct
         sk_target = np.equal(np.argmax(sk_preds, axis=1), sk_target)
         sk_preds = np.max(sk_preds, axis=1)
@@ -46,7 +52,9 @@ def _sk_calibration(preds, target, n_bins, norm, debias=False):
     "preds, target",
     [
         (_input_binary_prob.preds, _input_binary_prob.target),
+        (_input_binary_logits.preds, _input_binary_logits.target),
         (_input_mcls_prob.preds, _input_mcls_prob.target),
+        (_input_mcls_logits.preds, _input_mcls_logits.target),
         (_input_mdmc_prob.preds, _input_mdmc_prob.target),
     ],
 )
