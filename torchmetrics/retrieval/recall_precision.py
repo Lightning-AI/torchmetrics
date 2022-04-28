@@ -115,10 +115,9 @@ class RetrievalPrecisionRecallCurve(Metric):
         adaptive_k: bool = False,
         empty_target_action: str = "neg",
         ignore_index: Optional[int] = None,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
         self.allow_non_binary_target = False
 
         empty_target_action_options = ("error", "skip", "neg", "pos")
