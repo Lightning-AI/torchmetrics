@@ -73,6 +73,7 @@ class Metric(Module, ABC):
     __jit_unused_properties__ = ["is_differentiable"]
     is_differentiable: Optional[bool] = None
     higher_is_better: Optional[bool] = None
+    full_state_update: bool = True
 
     def __init__(
         self,
@@ -209,23 +210,48 @@ class Metric(Module, ABC):
                 "The Metric shouldn't be synced when performing ``forward``. "
                 "HINT: Did you forget to call ``unsync`` ?."
             )
-        # store global state and reset to default
-        global_state = {attr: getattr(self, attr) for attr in self._defaults.keys()}
-        self.reset()
 
-        # local syncronization settings
-        self._to_sync = self.dist_sync_on_step
-        self._should_unsync = False
-        _temp_compute_on_cpu = self.compute_on_cpu
-        self.compute_on_cpu = False
-        self._enable_grad = True  # allow grads for batch computation
+        if self.full_state_update:
+            # global accumulation
+            self.update(*args, **kwargs)
 
-        # calculate batch state and compute batch value
-        self.update(*args, **kwargs)
-        self._forward_cache = self.compute()
+            self._to_sync = self.dist_sync_on_step  # type: ignore
+            # skip restore cache operation from compute as cache is stored below.
+            self._should_unsync = False
+            # skip computing on cpu for the batch
+            _temp_compute_on_cpu = self.compute_on_cpu
+            self.compute_on_cpu = False
 
-        # reduce batch and global state
-        self._reduce_state(global_state)
+            # save context before switch
+            cache = {attr: getattr(self, attr) for attr in self._defaults}
+
+            # call reset, update, compute, on single batch
+            self._enable_grad = True  # allow grads for batch computation
+            self.reset()
+            self.update(*args, **kwargs)
+            self._forward_cache = self.compute()
+
+            # restore context
+            for attr, val in cache.items():
+                setattr(self, attr, val)
+        else:
+            # store global state and reset to default
+            global_state = {attr: getattr(self, attr) for attr in self._defaults.keys()}
+            self.reset()
+
+            # local syncronization settings
+            self._to_sync = self.dist_sync_on_step
+            self._should_unsync = False
+            _temp_compute_on_cpu = self.compute_on_cpu
+            self.compute_on_cpu = False
+            self._enable_grad = True  # allow grads for batch computation
+
+            # calculate batch state and compute batch value
+            self.update(*args, **kwargs)
+            self._forward_cache = self.compute()
+
+            # reduce batch and global state
+            self._reduce_state(global_state)
 
         # restore context
         self._is_synced = False
@@ -474,7 +500,7 @@ class Metric(Module, ABC):
         self.compute: Callable = self._wrap_compute(self.compute)  # type: ignore
 
     def __setattr__(self, name: str, value: Any) -> None:
-        if name in ("higher_is_better", "is_differentiable"):
+        if name in ("higher_is_better", "is_differentiable", "full_state_update"):
             raise RuntimeError(f"Can't change const `{name}`.")
         super().__setattr__(name, value)
 
