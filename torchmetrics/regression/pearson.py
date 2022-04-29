@@ -41,26 +41,22 @@ def _final_aggregation(
         mean_y = (n1 * my1 + n2 * my2) / nb
 
         # var_x
-        magic_element_x1 = (n1 + 1) * mean_x - n1 * mx1
-        vx1 += (magic_element_x1 - mx1) * (magic_element_x1 - mean_x) - (magic_element_x1 - mean_x) ** 2
-        magic_element_x2 = (n2 + 1) * mean_x - n2 * mx2
-        vx2 += (magic_element_x2 - mx2) * (magic_element_x2 - mean_x) - (magic_element_x2 - mean_x) ** 2
+        element_x1 = (n1 + 1) * mean_x - n1 * mx1
+        vx1 += (element_x1 - mx1) * (element_x1 - mean_x) - (element_x1 - mean_x) ** 2
+        element_x2 = (n2 + 1) * mean_x - n2 * mx2
+        vx2 += (element_x2 - mx2) * (element_x2 - mean_x) - (element_x2 - mean_x) ** 2
         var_x = vx1 + vx2
 
         # var_y
-        magic_element_y1 = (n1 + 1) * mean_y - n1 * my1
-        vy1 += (magic_element_y1 - my1) * (magic_element_y1 - mean_y) - (magic_element_y1 - mean_y) ** 2
-        magic_element_y2 = (n2 + 1) * mean_y - n2 * my2
-        vy2 += (magic_element_y2 - my2) * (magic_element_y2 - mean_y) - (magic_element_y2 - mean_y) ** 2
+        element_y1 = (n1 + 1) * mean_y - n1 * my1
+        vy1 += (element_y1 - my1) * (element_y1 - mean_y) - (element_y1 - mean_y) ** 2
+        element_y2 = (n2 + 1) * mean_y - n2 * my2
+        vy2 += (element_y2 - my2) * (element_y2 - mean_y) - (element_y2 - mean_y) ** 2
         var_y = vy1 + vy2
 
         # corr
-        cxy1 += (magic_element_x1 - mx1) * (magic_element_y1 - mean_y) - (magic_element_x1 - mean_x) * (
-            magic_element_y1 - mean_y
-        )
-        cxy2 += (magic_element_x2 - mx2) * (magic_element_y2 - mean_y) - (magic_element_x2 - mean_x) * (
-            magic_element_y2 - mean_y
-        )
+        cxy1 += (element_x1 - mx1) * (element_y1 - mean_y) - (element_x1 - mean_x) * (element_y1 - mean_y)
+        cxy2 += (element_x2 - mx2) * (element_y2 - mean_y) - (element_x2 - mean_x) * (element_y2 - mean_y)
         corr_xy = cxy1 + cxy2
 
         mx1, my1, vx1, vy1, cxy1, n1 = mean_x, mean_y, var_x, var_y, corr_xy, nb
