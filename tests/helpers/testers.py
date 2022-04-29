@@ -151,9 +151,7 @@ def _class_test(
         metric_args = {}
 
     # Instantiate metric
-    metric = metric_class(
-        compute_on_step=check_dist_sync_on_step or check_batch, dist_sync_on_step=dist_sync_on_step, **metric_args
-    )
+    metric = metric_class(dist_sync_on_step=dist_sync_on_step, **metric_args)
     with pytest.raises(RuntimeError):
         metric.is_differentiable = not metric.is_differentiable
     with pytest.raises(RuntimeError):
