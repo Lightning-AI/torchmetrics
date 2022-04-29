@@ -197,9 +197,11 @@ class Metric(Module, ABC):
 
     @torch.jit.unused
     def forward(self, *args: Any, **kwargs: Any) -> Any:
-        """Automatically calls ``update()``.
+        """``forward`` serves the dual purpose of both computing the metric on the current batch of inputs but also
+        add the batch statistics to the overall accumululating metric state.
 
-        Returns the metric value over inputs if ``compute_on_step`` is True.
+        Input arguments are the exact same as corresponding ``update`` method. The returned output is the exact same as
+        the output of ``compute``.
         """
         # add current step
         if self._is_synced:
@@ -799,12 +801,10 @@ class CompositionalMetric(Metric):
         )
 
         if val_a is None:
-            # compute_on_step of metric_a is False
             return None
 
         if val_b is None:
             if isinstance(self.metric_b, Metric):
-                # compute_on_step of metric_b is False
                 return None
 
             # Unary op
