@@ -11,7 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
--
+- Added `RetrievalPrecisionRecallCurve` to retrieval package ([#951](https://github.com/PyTorchLightning/metrics/pull/951))
+
+- Added `RetrievalRecallAtFixedPrecision` to retrieval package ([#951](https://github.com/PyTorchLightning/metrics/pull/951))
 
 
 -
