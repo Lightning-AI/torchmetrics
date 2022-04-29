@@ -80,7 +80,9 @@ from torchmetrics.retrieval import (  # noqa: E402
     RetrievalMRR,
     RetrievalNormalizedDCG,
     RetrievalPrecision,
+    RetrievalPrecisionRecallCurve,
     RetrievalRecall,
+    RetrievalRecallAtFixedPrecision,
     RetrievalRPrecision,
 )
 from torchmetrics.text import (  # noqa: E402
@@ -166,6 +168,8 @@ __all__ = [
     "RetrievalPrecision",
     "RetrievalRecall",
     "RetrievalRPrecision",
+    "RetrievalPrecisionRecallCurve",
+    "RetrievalRecallAtFixedPrecision",
     "ROC",
     "SacreBLEUScore",
     "SignalDistortionRatio",

@@ -11,7 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
--
+- Added `RetrievalPrecisionRecallCurve` to retrieval package ([#951](https://github.com/PyTorchLightning/metrics/pull/951))
+
+- Added `RetrievalRecallAtFixedPrecision` to retrieval package ([#951](https://github.com/PyTorchLightning/metrics/pull/951))
 
 
 -
@@ -19,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Reimplemented the `signal_distortion_ratio` metric, which removed the absolute requirement of `fast-bss-eval` ([#964](https://github.com/PyTorchLightning/metrics/pull/964))
+-
 
 
 -
@@ -35,23 +37,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-- Removed deprecated `compute_on_step` argument ([#962](https://github.com/PyTorchLightning/metrics/pull/962))
+- Removed deprecated `compute_on_step` argument in base classes([#962](https://github.com/PyTorchLightning/metrics/pull/962))
 
 
 - Removed deprecated `compute_on_step` argument in Regression ([#967](https://github.com/PyTorchLightning/metrics/pull/967))
 
 
+- Removed deprecated `compute_on_step` argument in Retrieval ([#993](https://github.com/PyTorchLightning/metrics/pull/993))
+
+
 - Removed deprecated `compute_on_step` argument in Image ([#979](https://github.com/PyTorchLightning/metrics/pull/979))
+
+
+- Removed deprecated `compute_on_step` argument in Wrappers ([#991](https://github.com/PyTorchLightning/metrics/pull/991))
+
+
+- Removed deprecated `compute_on_step` argument in aggregation ([#990](https://github.com/PyTorchLightning/metrics/pull/990))
 
 
 ### Fixed
 
+-
+
+
+-
+
+
+## [0.8.1] - 2022-04-27
+
+### Changed
+
+- Reimplemented the `signal_distortion_ratio` metric, which removed the absolute requirement of `fast-bss-eval` ([#964](https://github.com/PyTorchLightning/metrics/pull/964))
+
+### Fixed
+
 - Fixed "Sort currently does not support bool dtype on CUDA" error in MAP for empty preds ([#983](https://github.com/PyTorchLightning/metrics/pull/983))
-
-
 - Fixed `BinnedPrecisionRecallCurve` when `thresholds` argument is not provided ([#968](https://github.com/PyTorchLightning/metrics/pull/968))
-
-
 - Fixed `CalibrationError` to work on logit input ([#985](https://github.com/PyTorchLightning/metrics/pull/985))
 
 
