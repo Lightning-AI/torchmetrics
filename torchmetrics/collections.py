@@ -15,7 +15,8 @@ from copy import deepcopy
 from typing import Any, Dict, Hashable, Iterable, List, Optional, Sequence, Tuple, Union
 
 import torch
-from torch import Tensor, nn
+from torch import Tensor
+from torch.nn import Module, ModuleDict
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
@@ -25,7 +26,7 @@ from torchmetrics.utilities.data import _flatten_dict
 from torchmetrics.utilities.imports import OrderedDict
 
 
-class MetricCollection(nn.ModuleDict):
+class MetricCollection(ModuleDict):
     """MetricCollection class can be used to chain metrics that have the same call pattern into one single class.
 
     Args:
@@ -347,7 +348,7 @@ class MetricCollection(nn.ModuleDict):
             return self._modules.keys()
         return self._to_renamed_ordered_dict().keys()
 
-    def items(self, keep_base: bool = False) -> Iterable[Tuple[str, nn.Module]]:
+    def items(self, keep_base: bool = False) -> Iterable[Tuple[str, Module]]:
         r"""Return an iterable of the ModuleDict key/value pairs.
         Args:
             keep_base: Whether to add prefix/postfix on the items collection.

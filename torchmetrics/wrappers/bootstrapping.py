@@ -15,7 +15,8 @@ from copy import deepcopy
 from typing import Any, Dict, Optional, Union
 
 import torch
-from torch import Tensor, nn
+from torch import Tensor
+from torch.nn import ModuleList
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import apply_to_collection
@@ -98,7 +99,7 @@ class BootStrapper(Metric):
                 "Expected base metric to be an instance of torchmetrics.Metric" f" but received {base_metric}"
             )
 
-        self.metrics = nn.ModuleList([deepcopy(base_metric) for _ in range(num_bootstraps)])
+        self.metrics = ModuleList([deepcopy(base_metric) for _ in range(num_bootstraps)])
         self.num_bootstraps = num_bootstraps
 
         self.mean = mean

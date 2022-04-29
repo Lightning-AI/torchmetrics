@@ -16,6 +16,7 @@ import pickle
 import pytest
 import torch
 from scipy.linalg import sqrtm as scipy_sqrtm
+from torch.nn import Module
 from torch.utils.data import Dataset
 
 from torchmetrics.image.fid import FrechetInceptionDistance, sqrtm
@@ -44,7 +45,7 @@ def test_matrix_sqrt(matrix_size):
 def test_no_train():
     """Assert that metric never leaves evaluation mode."""
 
-    class MyModel(torch.nn.Module):
+    class MyModel(Module):
         def __init__(self):
             super().__init__()
             self.metric = FrechetInceptionDistance()
