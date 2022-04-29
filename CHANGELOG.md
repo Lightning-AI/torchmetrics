@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
 
+## [unReleased] - 2022-MM-DD
+
+### Changed
+
+-
+
+
+-
+
+
+### Fixed
+
+- Fixed multi device aggregation in `PearsonCorrCoef` ([#998](https://github.com/PyTorchLightning/metrics/pull/998))
+
+
+- Fixed MAP metric when using custom list of thresholds ([#995](https://github.com/PyTorchLightning/metrics/issues/995))
+
+
 ## [0.8.1] - 2022-04-27
 
 ### Changed
@@ -18,9 +36,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed "Sort currently does not support bool dtype on CUDA" error in MAP for empty preds ([#983](https://github.com/PyTorchLightning/metrics/pull/983))
 - Fixed `BinnedPrecisionRecallCurve` when `thresholds` argument is not provided ([#968](https://github.com/PyTorchLightning/metrics/pull/968))
 - Fixed `CalibrationError` to work on logit input ([#985](https://github.com/PyTorchLightning/metrics/pull/985))
-
-
-- Fixed MAP metric when using custom list of thresholds ([#995](https://github.com/PyTorchLightning/metrics/issues/995))
 
 
 ## [0.8.0] - 2022-04-14
