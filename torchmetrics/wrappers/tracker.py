@@ -16,13 +16,14 @@ from copy import deepcopy
 from typing import Any, Dict, List, Tuple, Union
 
 import torch
-from torch import Tensor, nn
+from torch import Tensor
+from torch.nn import ModuleList
 
 from torchmetrics.collections import MetricCollection
 from torchmetrics.metric import Metric
 
 
-class MetricTracker(nn.ModuleList):
+class MetricTracker(ModuleList):
     """A wrapper class that can help keeping track of a metric or metric collection over time and implement useful
     methods. The wrapper implements the standard ``.update()``, ``.compute()``, ``.reset()`` methods that just
     calls corresponding method of the currently tracked metric. However, the following additional methods are

@@ -178,7 +178,7 @@ def _class_test(
         batch_result = metric(preds[i], target[i], **batch_kwargs_update)
 
         if metric.dist_sync_on_step and check_dist_sync_on_step and rank == 0:
-            if isinstance(preds, torch.Tensor):
+            if isinstance(preds, Tensor):
                 ddp_preds = torch.cat([preds[i + r] for r in range(worldsize)]).cpu()
                 ddp_target = torch.cat([target[i + r] for r in range(worldsize)]).cpu()
             else:
@@ -201,8 +201,8 @@ def _class_test(
                 k: v.cpu() if isinstance(v, Tensor) else v
                 for k, v in (batch_kwargs_update if fragment_kwargs else kwargs_update).items()
             }
-            preds_ = preds[i].cpu() if isinstance(preds, torch.Tensor) else preds[i]
-            target_ = target[i].cpu() if isinstance(target, torch.Tensor) else target[i]
+            preds_ = preds[i].cpu() if isinstance(preds, Tensor) else preds[i]
+            target_ = target[i].cpu() if isinstance(target, Tensor) else target[i]
             sk_batch_result = sk_metric(preds_, target_, **batch_kwargs_update)
             if isinstance(batch_result, dict):
                 for key in batch_result.keys():
@@ -221,7 +221,7 @@ def _class_test(
     else:
         _assert_tensor(result)
 
-    if isinstance(preds, torch.Tensor):
+    if isinstance(preds, Tensor):
         total_preds = torch.cat([preds[i] for i in range(num_batches)]).cpu()
         total_target = torch.cat([target[i] for i in range(num_batches)]).cpu()
     else:
