@@ -312,6 +312,19 @@ def test_map_gpu(inputs):
     metric.compute()
 
 
+@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
+@pytest.mark.skipif(_gpu_test_condition, reason="test requires CUDA availability")
+def test_map_with_custom_thresholds():
+    """Test that map works with custom iou thresholds."""
+    metric = MeanAveragePrecision(iou_thresholds=[0.1, 0.2])
+    metric = metric.to("cuda")
+    for preds, targets in zip(_inputs.preds, _inputs.target):
+        metric.update(_move_to_gpu(preds), _move_to_gpu(targets))
+    res = metric.compute()
+    assert res["map_50"].item() == -1
+    assert res["map_75"].item() == -1
+
+
 @pytest.mark.skipif(_pytest_condition, reason="test requires that pycocotools and torchvision=>0.8.0 is installed")
 def test_empty_metric():
     """Test empty metric."""
