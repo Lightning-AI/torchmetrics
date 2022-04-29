@@ -46,8 +46,8 @@ def retrieval_precision_recall_curve(
         adaptive_k: adjust `max_k` to `min(max_k, number of documents)` for each query
 
     Returns:
-        tensor with the recall values for each k (at ``k``) from 1 to `max_k`
         tensor with the precision values for each k (at ``k``) from 1 to `max_k`
+        tensor with the recall values for each k (at ``k``) from 1 to `max_k`
         tensor with all possibles k
 
     Raises:
@@ -60,8 +60,13 @@ def retrieval_precision_recall_curve(
         >>> from  torchmetrics.functional import retrieval_precision_recall_curve
         >>> preds = tensor([0.2, 0.3, 0.5])
         >>> target = tensor([True, False, True])
-        >>> retrieval_precision_recall_curve(preds, target, max_k=2)
-        (tensor([1.0000, 0.5000]), tensor([0.5000, 0.5000]), tensor([1, 2]))
+        >>> precisions, recalls, top_k = retrieval_precision_recall_curve(preds, target, max_k=2)
+        >>> precisions
+        tensor([1.0000, 0.5000])
+        >>> recalls
+        tensor([0.5000, 0.5000])
+        >>> top_k
+        tensor([1, 2])
     """
     preds, target = _check_retrieval_functional_inputs(preds, target)
 
