@@ -18,6 +18,7 @@ from collections import namedtuple
 import numpy as np
 import pytest
 from pycocotools import mask
+import torch
 from torch import Tensor
 
 from tests.helpers.testers import MetricTester
