@@ -17,8 +17,8 @@ from collections import namedtuple
 
 import numpy as np
 import pytest
-from torch import Tensor
 from pycocotools import mask
+from torch import Tensor
 
 from tests.helpers.testers import MetricTester
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
