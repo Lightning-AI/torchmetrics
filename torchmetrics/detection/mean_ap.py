@@ -210,7 +210,8 @@ class MeanAveragePrecision(Metric):
         box_format:
             Input format of given boxes. Supported formats are ``[`xyxy`, `xywh`, `cxcywh`]``.
         iou_type:
-            Type of input (either masks or bounding-boxes) used for computing IOU. Supported IOU types are ``[`bboxes`, `segm`]``.
+            Type of input (either masks or bounding-boxes) used for computing IOU. 
+            Supported IOU types are ``[`bboxes`, `segm`]``.
         iou_thresholds:
             IoU thresholds for evaluation. If set to ``None`` it corresponds to the stepped range ``[0.5,...,0.95]``
             with step ``0.05``. Else provide a list of floats.

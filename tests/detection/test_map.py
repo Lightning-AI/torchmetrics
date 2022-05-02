@@ -273,9 +273,9 @@ def _compare_fn(preds, target) -> dict:
 def _compare_fn_segm(preds, target) -> dict:
     """Comparison function for map implementation for instance segmentation.
 
-       Official pycocotools results calculated from a subset of https://github.com/cocodataset/cocoapi/tree/master/results
-    Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.352
-         Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.752
+    Official pycocotools results calculated from a subset of https://github.com/cocodataset/cocoapi/tree/master/results
+        Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.352
+        Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.752
         Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.252
         Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = -1.000
         Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = -1.000
