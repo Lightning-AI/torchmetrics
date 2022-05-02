@@ -734,8 +734,14 @@ class MeanAveragePrecision(Metric):
         map_metrics = MAPMetricResults()
         map_metrics.map = self._summarize(results, True)
         last_max_det_thr = self.max_detection_thresholds[-1]
-        map_metrics.map_50 = self._summarize(results, True, iou_threshold=0.5, max_dets=last_max_det_thr)
-        map_metrics.map_75 = self._summarize(results, True, iou_threshold=0.75, max_dets=last_max_det_thr)
+        if 0.5 in self.iou_thresholds:
+            map_metrics.map_50 = self._summarize(results, True, iou_threshold=0.5, max_dets=last_max_det_thr)
+        else:
+            map_metrics.map_50 = torch.tensor([-1])
+        if 0.75 in self.iou_thresholds:
+            map_metrics.map_75 = self._summarize(results, True, iou_threshold=0.75, max_dets=last_max_det_thr)
+        else:
+            map_metrics.map_75 = torch.tensor([-1])
         map_metrics.map_small = self._summarize(results, True, area_range="small", max_dets=last_max_det_thr)
         map_metrics.map_medium = self._summarize(results, True, area_range="medium", max_dets=last_max_det_thr)
         map_metrics.map_large = self._summarize(results, True, area_range="large", max_dets=last_max_det_thr)
@@ -832,8 +838,6 @@ class MeanAveragePrecision(Metric):
             dict containing
 
             - map: ``torch.Tensor``
-            - map_50: ``torch.Tensor``
-            - map_75: ``torch.Tensor``
             - map_small: ``torch.Tensor``
             - map_medium: ``torch.Tensor``
             - map_large: ``torch.Tensor``
@@ -843,6 +847,8 @@ class MeanAveragePrecision(Metric):
             - mar_small: ``torch.Tensor``
             - mar_medium: ``torch.Tensor``
             - mar_large: ``torch.Tensor``
+            - map_50: ``torch.Tensor`` (-1 if 0.5 not in the list of iou thresholds)
+            - map_75: ``torch.Tensor`` (-1 if 0.75 not in the list of iou thresholds)
             - map_per_class: ``torch.Tensor`` (-1 if class metrics are disabled)
             - mar_100_per_class: ``torch.Tensor`` (-1 if class metrics are disabled)
         """
