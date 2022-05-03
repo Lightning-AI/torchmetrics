@@ -361,7 +361,7 @@ Metrics and hyperparameter optimization
 ***************************************
 
 If you want to directly optimize a metric it needs to support backpropagation (see section above).
-However, if you are just interested in using a metric for hyperparameter tuning and is not sure
+However, if you are just interested in using a metric for hyperparameter tuning and are not sure
 if the metric should be maximized or minimized, all modular metric classes have the ``higher_is_better``
 property that can be used to determine this:
 
