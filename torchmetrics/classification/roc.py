@@ -19,6 +19,7 @@ from torch import Tensor
 from torchmetrics.functional.classification.roc import _roc_compute, _roc_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities.data import dim_zero_cat
 
 
 class ROC(Metric):
@@ -148,8 +149,8 @@ class ROC(Metric):
             thresholds:
                 thresholds used for computing false- and true-positive rates
         """
-        preds = torch.cat(self.preds, dim=0)
-        target = torch.cat(self.target, dim=0)
+        preds = dim_zero_cat(self.preds)
+        target = dim_zero_cat(self.target)
         if not self.num_classes:
             raise ValueError(f"`num_classes` bas to be positive number, but got {self.num_classes}")
         return _roc_compute(preds, target, self.num_classes, self.pos_label)
