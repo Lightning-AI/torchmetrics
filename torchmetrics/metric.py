@@ -126,7 +126,7 @@ class Metric(Module, ABC):
         # state management
         self._is_synced = False
         self._cache: Optional[Dict[str, Union[List[Tensor], Tensor]]] = None
-        
+
     @property
     def _update_called(self) -> bool:
         # Needed for lightning integration
