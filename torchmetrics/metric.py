@@ -284,10 +284,7 @@ class Metric(Module, ABC):
             elif reduce_fn == dim_zero_cat:  # or (reduce_fn is None and isinstance(current_state, list)):
                 reduced = global_state + local_state
             elif reduce_fn is None and isinstance(local_state, Tensor):
-                if global_state.ndim > 0:  # TODO: figure out why this works
-                    reduced = torch.cat([global_state, local_state.expand(1)], dim=0)
-                else:
-                    reduced = torch.stack([global_state, local_state], dim=0)
+                reduced = torch.stack([global_state, local_state])
             elif reduce_fn is None and isinstance(global_state, list):
                 reduced = _flatten([global_state, local_state])
             else:
