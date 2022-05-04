@@ -854,12 +854,10 @@ class CompositionalMetric(Metric):
         )
 
         if val_a is None:
-            # compute_on_step of metric_a is False
             return None
 
         if val_b is None:
             if isinstance(self.metric_b, Metric):
-                # compute_on_step of metric_b is False
                 return None
 
             # Unary op

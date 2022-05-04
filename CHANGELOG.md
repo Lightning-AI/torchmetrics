@@ -11,8 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added class property `full_state_update` that determines `forward` should call `update` once or twice ([#984](https://github.com/PyTorchLightning/metrics/pull/984))
+- Added `RetrievalPrecisionRecallCurve` to retrieval package ([#951](https://github.com/PyTorchLightning/metrics/pull/951))
 
+- Added `RetrievalRecallAtFixedPrecision` to retrieval package ([#951](https://github.com/PyTorchLightning/metrics/pull/951))
+
+- Added class property `full_state_update` that determines `forward` should call `update` once or twice ([#984](https://github.com/PyTorchLightning/metrics/pull/984))
 
 ### Changed
 
@@ -29,10 +32,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-- Removed deprecated `compute_on_step` argument ([#962](https://github.com/PyTorchLightning/metrics/pull/962))
+- Removed deprecated `compute_on_step` argument in base classes([#962](https://github.com/PyTorchLightning/metrics/pull/962))
 
 
 - Removed deprecated `compute_on_step` argument in Regression ([#967](https://github.com/PyTorchLightning/metrics/pull/967))
+
+
+- Removed deprecated `compute_on_step` argument in Retrieval ([#993](https://github.com/PyTorchLightning/metrics/pull/993))
 
 
 - Removed deprecated `compute_on_step` argument in Image ([#979](https://github.com/PyTorchLightning/metrics/pull/979))
@@ -41,9 +47,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed deprecated `compute_on_step` argument in Wrappers ([#991](https://github.com/PyTorchLightning/metrics/pull/991))
 
 
+- Removed deprecated `compute_on_step` argument in aggregation ([#990](https://github.com/PyTorchLightning/metrics/pull/990))
+
+
 ### Fixed
 
--
+- Fixed multi device aggregation in `PearsonCorrCoef` ([#998](https://github.com/PyTorchLightning/metrics/pull/998))
 
 
 -
@@ -60,6 +69,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed "Sort currently does not support bool dtype on CUDA" error in MAP for empty preds ([#983](https://github.com/PyTorchLightning/metrics/pull/983))
 - Fixed `BinnedPrecisionRecallCurve` when `thresholds` argument is not provided ([#968](https://github.com/PyTorchLightning/metrics/pull/968))
 - Fixed `CalibrationError` to work on logit input ([#985](https://github.com/PyTorchLightning/metrics/pull/985))
+
+
+- Fixed MAP metric when using custom list of thresholds ([#995](https://github.com/PyTorchLightning/metrics/issues/995))
 
 
 ## [0.8.0] - 2022-04-14

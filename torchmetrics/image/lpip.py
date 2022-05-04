@@ -15,6 +15,7 @@ from typing import Any, Dict, List
 
 import torch
 from torch import Tensor
+from torch.nn import Module
 from typing_extensions import Literal
 
 from torchmetrics.metric import Metric
@@ -24,7 +25,7 @@ if _LPIPS_AVAILABLE:
     from lpips import LPIPS as _LPIPS
 else:
 
-    class _LPIPS(torch.nn.Module):  # type: ignore
+    class _LPIPS(Module):  # type: ignore
         pass
 
     __doctest_skip__ = ["LearnedPerceptualImagePatchSimilarity", "LPIPS"]

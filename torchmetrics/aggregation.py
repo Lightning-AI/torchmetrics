@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import warnings
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Union
 
 import torch
 from torch import Tensor
@@ -33,12 +33,6 @@ class BaseAggregator(Metric):
             - ``'ignore'``: all `nan` values are silently removed
             - a float: if a float is provided will impude any `nan` values with this value
 
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -55,10 +49,9 @@ class BaseAggregator(Metric):
         fn: Union[Callable, str],
         default_value: Union[Tensor, List],
         nan_strategy: Union[str, float] = "error",
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ):
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
         allowed_nan_strategy = ("error", "warn", "ignore")
         if nan_strategy not in allowed_nan_strategy and not isinstance(nan_strategy, float):
             raise ValueError(
@@ -108,12 +101,6 @@ class MaxMetric(BaseAggregator):
             - ``'ignore'``: all `nan` values are silently removed
             - a float: if a float is provided will impude any `nan` values with this value
 
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -132,14 +119,12 @@ class MaxMetric(BaseAggregator):
     def __init__(
         self,
         nan_strategy: Union[str, float] = "warn",
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ):
         super().__init__(
             "max",
             -torch.tensor(float("inf")),
             nan_strategy,
-            compute_on_step,
             **kwargs,
         )
 
@@ -165,12 +150,6 @@ class MinMetric(BaseAggregator):
             - ``'ignore'``: all `nan` values are silently removed
             - a float: if a float is provided will impude any `nan` values with this value
 
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -189,14 +168,12 @@ class MinMetric(BaseAggregator):
     def __init__(
         self,
         nan_strategy: Union[str, float] = "warn",
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ):
         super().__init__(
             "min",
             torch.tensor(float("inf")),
             nan_strategy,
-            compute_on_step,
             **kwargs,
         )
 
@@ -222,12 +199,6 @@ class SumMetric(BaseAggregator):
             - ``'ignore'``: all `nan` values are silently removed
             - a float: if a float is provided will impude any `nan` values with this value
 
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -246,14 +217,12 @@ class SumMetric(BaseAggregator):
     def __init__(
         self,
         nan_strategy: Union[str, float] = "warn",
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ):
         super().__init__(
             "sum",
             torch.tensor(0.0),
             nan_strategy,
-            compute_on_step,
             **kwargs,
         )
 
@@ -278,12 +247,6 @@ class CatMetric(BaseAggregator):
             - ``'ignore'``: all `nan` values are silently removed
             - a float: if a float is provided will impude any `nan` values with this value
 
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -302,10 +265,9 @@ class CatMetric(BaseAggregator):
     def __init__(
         self,
         nan_strategy: Union[str, float] = "warn",
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ):
-        super().__init__("cat", [], nan_strategy, compute_on_step, **kwargs)
+        super().__init__("cat", [], nan_strategy, **kwargs)
 
     def update(self, value: Union[float, Tensor]) -> None:  # type: ignore
         """Update state with data.
@@ -335,12 +297,6 @@ class MeanMetric(BaseAggregator):
             - ``'ignore'``: all `nan` values are silently removed
             - a float: if a float is provided will impude any `nan` values with this value
 
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -359,14 +315,12 @@ class MeanMetric(BaseAggregator):
     def __init__(
         self,
         nan_strategy: Union[str, float] = "warn",
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ):
         super().__init__(
             "sum",
             torch.tensor(0.0),
             nan_strategy,
-            compute_on_step,
             **kwargs,
         )
         self.add_state("weight", default=torch.tensor(0.0), dist_reduce_fx="sum")

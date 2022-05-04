@@ -5,6 +5,7 @@ import pytest
 import torch
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import r2_score as sk_r2score
+from torch import Tensor
 
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES, MetricTester
@@ -31,11 +32,11 @@ class _MultioutputMetric(Metric):
             num_outputs=num_outputs,
         )
 
-    def update(self, preds: torch.Tensor, target: torch.Tensor) -> None:
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Update the each pair of outputs and predictions."""
         return self.metric.update(preds, target)
 
-    def compute(self) -> torch.Tensor:
+    def compute(self) -> Tensor:
         """Compute the R2 score between each pair of outputs and predictions."""
         return self.metric.compute()
 

@@ -17,6 +17,7 @@ import numpy as np
 import torch
 from torch import Tensor
 from torch.autograd import Function
+from torch.nn import Module
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_info, rank_zero_warn
@@ -27,7 +28,7 @@ if _TORCH_FIDELITY_AVAILABLE:
     from torch_fidelity.feature_extractor_inceptionv3 import FeatureExtractorInceptionV3
 else:
 
-    class FeatureExtractorInceptionV3(torch.nn.Module):  # type: ignore
+    class FeatureExtractorInceptionV3(Module):  # type: ignore
         pass
 
     __doctest_skip__ = ["FrechetInceptionDistance", "FID"]
@@ -202,7 +203,7 @@ class FrechetInceptionDistance(Metric):
 
     def __init__(
         self,
-        feature: Union[int, torch.nn.Module] = 2048,
+        feature: Union[int, Module] = 2048,
         reset_real_features: bool = True,
         **kwargs: Dict[str, Any],
     ) -> None:
@@ -227,7 +228,7 @@ class FrechetInceptionDistance(Metric):
                 )
 
             self.inception = NoTrainInceptionV3(name="inception-v3-compat", features_list=[str(feature)])
-        elif isinstance(feature, torch.nn.Module):
+        elif isinstance(feature, Module):
             self.inception = feature
         else:
             raise TypeError("Got unknown input to argument `feature`")
