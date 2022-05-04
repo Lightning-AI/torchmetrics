@@ -90,6 +90,7 @@ class PearsonCorrCoef(Metric):
     """
     is_differentiable = True
     higher_is_better = None  # both -1 and 1 are optimal
+    full_state_update: bool = True
     preds: List[Tensor]
     target: List[Tensor]
     mean_x: Tensor

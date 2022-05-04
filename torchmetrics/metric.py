@@ -113,7 +113,7 @@ class Metric(Module, ABC):
         self.compute: Callable = self._wrap_compute(self.compute)  # type: ignore
         self._computed = None
         self._forward_cache = None
-        self._update_called = False
+        self._update_count = 0
         self._to_sync = True
         self._should_unsync = True
         self._enable_grad = False
@@ -211,7 +211,7 @@ class Metric(Module, ABC):
                 "HINT: Did you forget to call ``unsync`` ?."
             )
 
-        if self.full_state_update:
+        if self.full_state_update or self.dist_sync_on_step:
             # global accumulation
             self.update(*args, **kwargs)
 
@@ -229,6 +229,7 @@ class Metric(Module, ABC):
             self._enable_grad = True  # allow grads for batch computation
             self.reset()
             self.update(*args, **kwargs)
+            self._update_count -= 1  # subtract from the overall count
             self._forward_cache = self.compute()
 
             # restore context
@@ -251,7 +252,7 @@ class Metric(Module, ABC):
             self._forward_cache = self.compute()
 
             # reduce batch and global state
-            self._reduce_state(global_state)
+            self._reduce_states(global_state)
 
         # restore context
         self._is_synced = False
@@ -276,7 +277,7 @@ class Metric(Module, ABC):
             if reduce_fn == dim_zero_sum:
                 reduced = global_state + local_state
             elif reduce_fn == dim_zero_mean:
-                reduced = (global_state + local_state) / 2.0
+                reduced = (self._update_count * global_state + local_state) / (self._update_count + 1)
             elif reduce_fn == dim_zero_max:
                 reduced = torch.max(global_state, local_state)
             elif reduce_fn == dim_zero_min:
@@ -323,7 +324,8 @@ class Metric(Module, ABC):
         @functools.wraps(update)
         def wrapped_func(*args: Any, **kwargs: Any) -> None:
             self._computed = None
-            self._update_called = True
+            self._update_count += 1
+            self._update_count
             with torch.set_grad_enabled(self._enable_grad):
                 update(*args, **kwargs)
             if self.compute_on_cpu:
@@ -433,7 +435,7 @@ class Metric(Module, ABC):
     def _wrap_compute(self, compute: Callable) -> Callable:
         @functools.wraps(compute)
         def wrapped_func(*args: Any, **kwargs: Any) -> Any:
-            if not self._update_called:
+            if self._update_count == 0:
                 rank_zero_warn(
                     f"The ``compute`` method of metric {self.__class__.__name__}"
                     " was called before the ``update`` method which may lead to errors,"
@@ -471,7 +473,7 @@ class Metric(Module, ABC):
 
     def reset(self) -> None:
         """This method automatically resets the metric state variables to their default value."""
-        self._update_called = False
+        self._update_count = 0
         self._forward_cache = None
         self._computed = None
 
