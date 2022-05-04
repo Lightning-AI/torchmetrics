@@ -55,6 +55,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed deprecated `compute_on_step` argument in aggregation ([#990](https://github.com/PyTorchLightning/metrics/pull/990))
 
 
+- Removed deprecated `compute_on_step` argument in aggregation ([#1005](https://github.com/PyTorchLightning/metrics/pull/1005))
+
+
 ### Fixed
 
 - Fixed multi device aggregation in `PearsonCorrCoef` ([#998](https://github.com/PyTorchLightning/metrics/pull/998))
