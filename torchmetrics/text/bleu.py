@@ -31,12 +31,6 @@ class BLEUScore(Metric):
     Args:
         n_gram: Gram value ranged from 1 to 4
         smooth: Whether or not to apply smoothing, see [2]
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
@@ -66,10 +60,9 @@ class BLEUScore(Metric):
         self,
         n_gram: int = 4,
         smooth: bool = False,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ):
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
         self.n_gram = n_gram
         self.smooth = smooth
 
