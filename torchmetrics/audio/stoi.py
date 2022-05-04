@@ -44,11 +44,6 @@ class ShortTimeObjectiveIntelligibility(Metric):
     Args:
         fs: sampling frequency (Hz)
         extended: whether to use the extended STOI described in [4]
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
@@ -91,10 +86,9 @@ class ShortTimeObjectiveIntelligibility(Metric):
         self,
         fs: int,
         extended: bool = False,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
         if not _PYSTOI_AVAILABLE:
             raise ModuleNotFoundError(
                 "STOI metric requires that `pystoi` is installed."
