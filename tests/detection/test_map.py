@@ -19,6 +19,7 @@ import numpy as np
 import pytest
 import torch
 from pycocotools import mask
+from torch import Tensor
 
 from tests.helpers.testers import MetricTester
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
