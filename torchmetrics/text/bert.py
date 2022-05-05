@@ -82,12 +82,6 @@ class BERTScore(Metric):
             of the files from `BERT_score`_.
         baseline_path: A path to the user's own local csv/tsv file with the baseline scale.
         baseline_url: A url path to the user's own  csv/tsv file with the baseline scale.
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Returns:
@@ -131,10 +125,9 @@ class BERTScore(Metric):
         rescale_with_baseline: bool = False,
         baseline_path: Optional[str] = None,
         baseline_url: Optional[str] = None,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ):
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
         self.model_name_or_path = model_name_or_path or _DEFAULT_MODEL
         self.num_layers = num_layers
         self.all_layers = all_layers
