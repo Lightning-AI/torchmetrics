@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added `RetrievalPrecisionRecallCurve` to retrieval package ([#951](https://github.com/PyTorchLightning/metrics/pull/951))
 
+
 - Added `RetrievalRecallAtFixedPrecision` to retrieval package ([#951](https://github.com/PyTorchLightning/metrics/pull/951))
 
 
@@ -37,22 +38,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-- Removed deprecated `compute_on_step` argument in base classes([#962](https://github.com/PyTorchLightning/metrics/pull/962))
+- Removed deprecated `compute_on_step` argument (
+    [#962](https://github.com/PyTorchLightning/metrics/pull/962),
+    [#967](https://github.com/PyTorchLightning/metrics/pull/967),
+    [#979](https://github.com/PyTorchLightning/metrics/pull/979),
+    [#990](https://github.com/PyTorchLightning/metrics/pull/990),
+    [#991](https://github.com/PyTorchLightning/metrics/pull/991),
+    [#993](https://github.com/PyTorchLightning/metrics/pull/993),
+    [#1005](https://github.com/PyTorchLightning/metrics/pull/1005),
+    [#1004](https://github.com/PyTorchLightning/metrics/pull/1004),
+    [#1007](https://github.com/PyTorchLightning/metrics/pull/1007)
+)
 
-
-- Removed deprecated `compute_on_step` argument in Regression ([#967](https://github.com/PyTorchLightning/metrics/pull/967))
-
-
-- Removed deprecated `compute_on_step` argument in Retrieval ([#993](https://github.com/PyTorchLightning/metrics/pull/993))
-
-
-- Removed deprecated `compute_on_step` argument in Image ([#979](https://github.com/PyTorchLightning/metrics/pull/979))
-
-
-- Removed deprecated `compute_on_step` argument in Wrappers ([#991](https://github.com/PyTorchLightning/metrics/pull/991))
-
-
-- Removed deprecated `compute_on_step` argument in aggregation ([#990](https://github.com/PyTorchLightning/metrics/pull/990))
 
 
 ### Fixed
@@ -60,7 +57,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed multi device aggregation in `PearsonCorrCoef` ([#998](https://github.com/PyTorchLightning/metrics/pull/998))
 
 
--
+- Fixed compatibility with future Pytorch 1.12 in `pairwise_cosine_similarity` ([#1011](https://github.com/PyTorchLightning/metrics/pull/1011))
 
 
 ## [0.8.1] - 2022-04-27
