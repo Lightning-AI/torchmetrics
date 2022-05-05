@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict
 
 from torch import Tensor, tensor
 
@@ -37,11 +37,6 @@ class PermutationInvariantTraining(Metric):
         eval_func:
             the function to find the best permutation, can be 'min' or 'max', i.e. the smaller the better
             or the larger the better.
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
 
         kwargs: Additional keyword arguments for either the ``metric_func`` or distributed communication,
             see :ref:`Metric kwargs` for more info.
@@ -74,7 +69,6 @@ class PermutationInvariantTraining(Metric):
         self,
         metric_func: Callable,
         eval_func: str = "max",
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
         base_kwargs: Dict[str, Any] = {
@@ -82,7 +76,7 @@ class PermutationInvariantTraining(Metric):
             "process_group": kwargs.pop("process_group", None),
             "dist_sync_fn": kwargs.pop("dist_sync_fn", None),
         }
-        super().__init__(compute_on_step=compute_on_step, **base_kwargs)
+        super().__init__(**base_kwargs)
         self.metric_func = metric_func
         self.eval_func = eval_func
         self.kwargs = kwargs
