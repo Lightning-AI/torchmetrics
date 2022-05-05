@@ -17,6 +17,7 @@ import numpy as np
 import torch
 from torch import Tensor
 from torch.autograd import Function
+from torch.nn import Module
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_info, rank_zero_warn
@@ -27,7 +28,7 @@ if _TORCH_FIDELITY_AVAILABLE:
     from torch_fidelity.feature_extractor_inceptionv3 import FeatureExtractorInceptionV3
 else:
 
-    class FeatureExtractorInceptionV3(torch.nn.Module):  # type: ignore
+    class FeatureExtractorInceptionV3(Module):  # type: ignore
         pass
 
     __doctest_skip__ = ["FrechetInceptionDistance", "FID"]
@@ -148,10 +149,6 @@ class FrechetInceptionDistance(Metric):
         is installed. Either install as ``pip install torchmetrics[image]`` or
         ``pip install torch-fidelity``
 
-    .. note:: the ``forward`` method can be used but ``compute_on_step`` is disabled by default (oppesit of
-        all other metrics) as this metric does not really make sense to calculate on a single batch. This
-        means that by default ``forward`` will just call ``update`` underneat.
-
     Args:
         feature:
             Either an integer or ``nn.Module``:
@@ -164,13 +161,6 @@ class FrechetInceptionDistance(Metric):
         reset_real_features: Whether to also reset the real features. Since in many cases the real dataset does not
             change, the features can cached them to avoid recomputing them which is costly. Set this to ``False`` if
             your dataset does not change.
-
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     References:
@@ -213,12 +203,11 @@ class FrechetInceptionDistance(Metric):
 
     def __init__(
         self,
-        feature: Union[int, torch.nn.Module] = 2048,
+        feature: Union[int, Module] = 2048,
         reset_real_features: bool = True,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
 
         rank_zero_warn(
             "Metric `FrechetInceptionDistance` will save all extracted features in buffer."
@@ -239,7 +228,7 @@ class FrechetInceptionDistance(Metric):
                 )
 
             self.inception = NoTrainInceptionV3(name="inception-v3-compat", features_list=[str(feature)])
-        elif isinstance(feature, torch.nn.Module):
+        elif isinstance(feature, Module):
             self.inception = feature
         else:
             raise TypeError("Got unknown input to argument `feature`")

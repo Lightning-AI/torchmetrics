@@ -15,6 +15,7 @@ import pickle
 
 import pytest
 import torch
+from torch.nn import Module
 from torch.utils.data import Dataset
 
 from torchmetrics.image.inception import InceptionScore
@@ -27,7 +28,7 @@ torch.manual_seed(42)
 def test_no_train():
     """Assert that metric never leaves evaluation mode."""
 
-    class MyModel(torch.nn.Module):
+    class MyModel(Module):
         def __init__(self):
             super().__init__()
             self.metric = InceptionScore()

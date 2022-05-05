@@ -111,9 +111,8 @@ def _auroc_compute(
         # max_fpr parameter is only support for binary
         if mode != DataType.BINARY:
             raise ValueError(
-                f"Partial AUC computation not available in"
-                f" multilabel/multiclass setting, 'max_fpr' must be"
-                f" set to `None`, received `{max_fpr}`."
+                "Partial AUC computation not available in multilabel/multiclass setting,"
+                f" 'max_fpr' must be set to `None`, received `{max_fpr}`."
             )
 
     # calculate fpr, tpr
@@ -172,7 +171,7 @@ def _auroc_compute(
 
             allowed_average = (AverageMethod.NONE.value, AverageMethod.MACRO.value, AverageMethod.WEIGHTED.value)
             raise ValueError(
-                f"Argument `average` expected to be one of the following:" f" {allowed_average} but got {average}"
+                f"Argument `average` expected to be one of the following: {allowed_average} but got {average}"
             )
 
         return _auc_compute_without_check(fpr, tpr, 1.0)
