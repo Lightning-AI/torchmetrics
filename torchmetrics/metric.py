@@ -219,6 +219,7 @@ class Metric(Module, ABC):
         if self.full_state_update or self.dist_sync_on_step:
             # global accumulation
             self.update(*args, **kwargs)
+            _update_count = self._update_count
 
             self._to_sync = self.dist_sync_on_step  # type: ignore
             # skip restore cache operation from compute as cache is stored below.
@@ -234,12 +235,12 @@ class Metric(Module, ABC):
             self._enable_grad = True  # allow grads for batch computation
             self.reset()
             self.update(*args, **kwargs)
-            self._update_count -= 1  # subtract from the overall count
             self._forward_cache = self.compute()
 
             # restore context
             for attr, val in cache.items():
                 setattr(self, attr, val)
+            self._update_count = _update_count
         else:
             # store global state and reset to default
             global_state = {attr: getattr(self, attr) for attr in self._defaults.keys()}
@@ -330,7 +331,6 @@ class Metric(Module, ABC):
         def wrapped_func(*args: Any, **kwargs: Any) -> None:
             self._computed = None
             self._update_count += 1
-            self._update_count
             with torch.set_grad_enabled(self._enable_grad):
                 update(*args, **kwargs)
             if self.compute_on_cpu:
