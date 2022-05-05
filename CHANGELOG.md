@@ -16,7 +16,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added `RetrievalRecallAtFixedPrecision` to retrieval package ([#951](https://github.com/PyTorchLightning/metrics/pull/951))
 
+
 - Added class property `full_state_update` that determines `forward` should call `update` once or twice ([#984](https://github.com/PyTorchLightning/metrics/pull/984))
+
+
+- Added support for nested metric collections ([#1003](https://github.com/PyTorchLightning/metrics/pull/1003))
+
 
 ### Changed
 
