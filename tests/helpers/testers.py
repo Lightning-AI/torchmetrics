@@ -213,6 +213,9 @@ def _class_test(
     # check that metrics are hashable
     assert hash(metric)
 
+    # assert that state dict is empty
+    assert metric.state_dict() == {}
+
     # check on all batches on all ranks
     result = metric.compute()
     if isinstance(result, dict):
