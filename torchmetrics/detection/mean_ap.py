@@ -33,8 +33,9 @@ log = logging.getLogger(__name__)
 
 
 def compute_area(input, iou_type="bbox"):
-    """
-    Compute area of input depending on the specified iou_type. Default output for empty input is torch.Tensor([])
+    """Compute area of input depending on the specified iou_type.
+
+    Default output for empty input is torch.Tensor([])
     """
     if len(input) == 0:
 
@@ -53,9 +54,7 @@ def compute_area(input, iou_type="bbox"):
 
 
 def compute_iou(det, gt, iou_type="bbox") -> Tensor:
-    """
-    Compute IOU between detections and ground-truth using the specified iou_type
-    """
+    """Compute IOU between detections and ground-truth using the specified iou_type."""
 
     if iou_type == "bbox":
         return box_iou(torch.stack(det), torch.stack(gt))
