@@ -895,10 +895,4 @@ class MeanAveragePrecision(Metric):
         metrics.map_per_class = map_per_class_values
         metrics[f"mar_{self.max_detection_thresholds[-1]}_per_class"] = mar_max_dets_per_class_values
 
-        # Reset
-        # self.detections = []
-        # self.detection_labels = []
-        # self.detection_scores = []
-        # self.groundtruths = []
-        # self.groundtruth_labels = []
         return metrics
