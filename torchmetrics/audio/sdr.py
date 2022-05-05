@@ -45,11 +45,6 @@ class SignalDistortionRatio(Metric):
             If provided, this small value is added to the diagonal coefficients of the system metrics when solving
             for the filter coefficients. This can help stabilize the metric in the case where some reference
             signals may sometimes be zero
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
@@ -89,10 +84,9 @@ class SignalDistortionRatio(Metric):
         filter_length: int = 512,
         zero_mean: bool = False,
         load_diag: Optional[float] = None,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
 
         self.use_cg_iter = use_cg_iter
         self.filter_length = filter_length
@@ -132,11 +126,6 @@ class ScaleInvariantSignalDistortionRatio(Metric):
 
     Args:
         zero_mean: if to zero mean target and preds or not
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
@@ -169,10 +158,9 @@ class ScaleInvariantSignalDistortionRatio(Metric):
     def __init__(
         self,
         zero_mean: bool = False,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
         self.zero_mean = zero_mean
 
         self.add_state("sum_si_sdr", default=tensor(0.0), dist_reduce_fx="sum")
