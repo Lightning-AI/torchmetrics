@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import logging
+from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
@@ -31,32 +32,37 @@ else:
 log = logging.getLogger(__name__)
 
 
-def mask_area(input):
-    n_inputs = len(input)
-
-    return input.reshape(n_inputs, -1).sum(1)
-
-
-def compute_area(input, type="bbox"):
+def compute_area(input, iou_type="bbox"):
+    """
+    Compute area of input depending on the specified iou_type. Default output for empty input is torch.Tensor([])
+    """
     if len(input) == 0:
 
         return torch.Tensor([])
 
-    if type == "bbox":
+    if iou_type == "bbox":
         return box_area(torch.stack(input))
-    else:
+    elif iou_type == "segm":
 
         input = [{"size": i[0], "counts": i[1]} for i in input]
         area = torch.tensor(mask_utils.area(input).astype("int"))
 
         return area
-
-
-def compute_iou(det, gt, type="bbox") -> Tensor:
-    if type == "bbox":
-        return box_iou(torch.stack(det), torch.stack(gt))
     else:
-        return segm_iou(det, gt)
+        raise Exception(f"IOU type {iou_type} is not supported")
+
+
+def compute_iou(det, gt, iou_type="bbox") -> Tensor:
+    """
+    Compute IOU between detections and ground-truth using the specified iou_type
+    """
+
+    if iou_type == "bbox":
+        return box_iou(torch.stack(det), torch.stack(gt))
+    elif iou_type == "segm":
+        return _segm_iou(det, gt)
+    else:
+        raise Exception(f"IOU type {iou_type} is not supported")
 
 
 class BaseMetricResults(dict):
@@ -110,11 +116,15 @@ class COCOMetricResults(BaseMetricResults):
     )
 
 
-def segm_iou(det, gt):
-    if isinstance(det, dict):
-        det = [det]
-    if isinstance(gt, dict):
-        gt = [gt]
+def _segm_iou(det, gt):
+    """
+    Compute IOU between detections and ground-truths using mask-IOU. Based on pycocotools toolkit for mask_utils
+    Args:
+       det: A list of detection masks as [(RLE_SIZE, RLE_COUNTS)], where RLE_SIZE is (width, height) dimension of the input and RLE_COUNTS is its RLE representation;
+
+       gt: A list of ground-truth masks as [(RLE_SIZE, RLE_COUNTS)], where RLE_SIZE is (width, height) dimension of the input and RLE_COUNTS is its RLE representation;
+
+    """
 
     det = [{"size": i[0], "counts": i[1]} for i in det]
     gt = [{"size": i[0], "counts": i[1]} for i in gt]
@@ -492,7 +502,7 @@ class MeanAveragePrecision(Metric):
         if len(det) > max_det:
             det = det[:max_det]
         nb_det = len(det)
-        det_areas = compute_area(det, type=self.iou_type).to(self.device)
+        det_areas = compute_area(det, iou_type=self.iou_type).to(self.device)
         det_ignore_area = (det_areas < area_range[0]) | (det_areas > area_range[1])
         ar = det_ignore_area.reshape((1, nb_det))
         det_ignore = torch.repeat_interleave(ar, nb_iou_thrs, 0)
@@ -551,7 +561,7 @@ class MeanAveragePrecision(Metric):
         if isinstance(gt, dict):
             gt = [gt]
 
-        areas = compute_area(gt, self.iou_type).to(self.device)
+        areas = compute_area(gt, iou_type=self.iou_type).to(self.device)
         ignore_area = torch.tensor(areas < area_range[0]) | (areas > area_range[1])
 
         # sort dt highest score first, sort gt ignore last
@@ -589,7 +599,7 @@ class MeanAveragePrecision(Metric):
                     gt_matches[idx_iou, m] = 1
 
         # set unmatched detections outside of area range to ignore
-        det_areas = compute_area(det, self.iou_type).to(self.device)
+        det_areas = compute_area(det, iou_type=self.iou_type).to(self.device)
         det_ignore_area = (det_areas < area_range[0]) | (det_areas > area_range[1])
         ar = det_ignore_area.reshape((1, nb_det))
         det_ignore = torch.logical_or(
