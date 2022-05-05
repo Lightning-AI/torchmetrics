@@ -401,3 +401,36 @@ def test_error_on_wrong_specified_compute_groups():
         MetricCollection(
             ConfusionMatrix(3), Recall(3), Precision(3), compute_groups=[["ConfusionMatrix"], ["Recall", "Accuracy"]]
         )
+
+
+@pytest.mark.parametrize(
+    "input_collections",
+    [
+        [
+            MetricCollection(
+                [Accuracy(num_classes=3, average="macro"), Precision(num_classes=3, average="macro")], prefix="macro_"
+            ),
+            MetricCollection(
+                [Accuracy(num_classes=3, average="micro"), Precision(num_classes=3, average="micro")], prefix="micro_"
+            ),
+        ],
+        {
+            "macro": MetricCollection(
+                [Accuracy(num_classes=3, average="macro"), Precision(num_classes=3, average="macro")]
+            ),
+            "micro": MetricCollection(
+                [Accuracy(num_classes=3, average="micro"), Precision(num_classes=3, average="micro")]
+            ),
+        },
+    ],
+)
+def test_nested_collections(input_collections):
+    """Test that nested collections gets flattened to a single collection."""
+    metrics = MetricCollection(input_collections, prefix="valmetrics/")
+    preds = torch.randn(10, 3).softmax(dim=-1)
+    target = torch.randint(3, (10,))
+    val = metrics(preds, target)
+    assert "valmetrics/macro_Accuracy" in val
+    assert "valmetrics/macro_Precision" in val
+    assert "valmetrics/micro_Accuracy" in val
+    assert "valmetrics/micro_Precision" in val
