@@ -216,8 +216,6 @@ class TestStatScores(MetricTester):
                 "ignore_index": ignore_index,
                 "top_k": top_k,
             },
-            check_dist_sync_on_step=True,
-            check_batch=True,
         )
 
     def test_stat_scores_fn(

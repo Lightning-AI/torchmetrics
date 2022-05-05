@@ -16,6 +16,7 @@ from collections import namedtuple
 
 import pytest
 import torch
+from torch import Tensor
 
 from tests.helpers.testers import MetricTester
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
@@ -27,19 +28,19 @@ _inputs = Input(
     preds=[
         [
             dict(
-                boxes=torch.Tensor([[258.15, 41.29, 606.41, 285.07]]),
-                scores=torch.Tensor([0.236]),
+                boxes=Tensor([[258.15, 41.29, 606.41, 285.07]]),
+                scores=Tensor([0.236]),
                 labels=torch.IntTensor([4]),
             ),  # coco image id 42
             dict(
-                boxes=torch.Tensor([[61.00, 22.75, 565.00, 632.42], [12.66, 3.32, 281.26, 275.23]]),
-                scores=torch.Tensor([0.318, 0.726]),
+                boxes=Tensor([[61.00, 22.75, 565.00, 632.42], [12.66, 3.32, 281.26, 275.23]]),
+                scores=Tensor([0.318, 0.726]),
                 labels=torch.IntTensor([3, 2]),
             ),  # coco image id 73
         ],
         [
             dict(
-                boxes=torch.Tensor(
+                boxes=Tensor(
                     [
                         [87.87, 276.25, 384.29, 379.43],
                         [0.00, 3.66, 142.15, 316.06],
@@ -50,12 +51,12 @@ _inputs = Input(
                         [276.11, 103.84, 291.44, 150.72],
                     ]
                 ),
-                scores=torch.Tensor([0.546, 0.3, 0.407, 0.611, 0.335, 0.805, 0.953]),
+                scores=Tensor([0.546, 0.3, 0.407, 0.611, 0.335, 0.805, 0.953]),
                 labels=torch.IntTensor([4, 1, 0, 0, 0, 0, 0]),
             ),  # coco image id 74
             dict(
-                boxes=torch.Tensor([[0.00, 2.87, 601.00, 421.52]]),
-                scores=torch.Tensor([0.699]),
+                boxes=Tensor([[0.00, 2.87, 601.00, 421.52]]),
+                scores=Tensor([0.699]),
                 labels=torch.IntTensor([5]),
             ),  # coco image id 133
         ],
@@ -63,11 +64,11 @@ _inputs = Input(
     target=[
         [
             dict(
-                boxes=torch.Tensor([[214.1500, 41.2900, 562.4100, 285.0700]]),
+                boxes=Tensor([[214.1500, 41.2900, 562.4100, 285.0700]]),
                 labels=torch.IntTensor([4]),
             ),  # coco image id 42
             dict(
-                boxes=torch.Tensor(
+                boxes=Tensor(
                     [
                         [13.00, 22.75, 548.98, 632.42],
                         [1.66, 3.32, 270.26, 275.23],
@@ -78,7 +79,7 @@ _inputs = Input(
         ],
         [
             dict(
-                boxes=torch.Tensor(
+                boxes=Tensor(
                     [
                         [61.87, 276.25, 358.29, 379.43],
                         [2.75, 3.66, 162.15, 316.06],
@@ -92,7 +93,7 @@ _inputs = Input(
                 labels=torch.IntTensor([4, 1, 0, 0, 0, 0, 0]),
             ),  # coco image id 74
             dict(
-                boxes=torch.Tensor([[13.99, 2.87, 640.00, 421.52]]),
+                boxes=Tensor([[13.99, 2.87, 640.00, 421.52]]),
                 labels=torch.IntTensor([5]),
             ),  # coco image id 133
         ],
@@ -104,15 +105,15 @@ _inputs2 = Input(
     preds=[
         [
             dict(
-                boxes=torch.Tensor([[258.0, 41.0, 606.0, 285.0]]),
-                scores=torch.Tensor([0.536]),
+                boxes=Tensor([[258.0, 41.0, 606.0, 285.0]]),
+                scores=Tensor([0.536]),
                 labels=torch.IntTensor([0]),
             ),
         ],
         [
             dict(
-                boxes=torch.Tensor([[258.0, 41.0, 606.0, 285.0]]),
-                scores=torch.Tensor([0.536]),
+                boxes=Tensor([[258.0, 41.0, 606.0, 285.0]]),
+                scores=Tensor([0.536]),
                 labels=torch.IntTensor([0]),
             )
         ],
@@ -120,13 +121,13 @@ _inputs2 = Input(
     target=[
         [
             dict(
-                boxes=torch.Tensor([[214.0, 41.0, 562.0, 285.0]]),
+                boxes=Tensor([[214.0, 41.0, 562.0, 285.0]]),
                 labels=torch.IntTensor([0]),
             )
         ],
         [
             dict(
-                boxes=torch.Tensor([]),
+                boxes=Tensor([]),
                 labels=torch.IntTensor([]),
             )
         ],
@@ -196,20 +197,20 @@ def _compare_fn(preds, target) -> dict:
         Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.900
     """
     return {
-        "map": torch.Tensor([0.706]),
-        "map_50": torch.Tensor([0.901]),
-        "map_75": torch.Tensor([0.846]),
-        "map_small": torch.Tensor([0.689]),
-        "map_medium": torch.Tensor([0.800]),
-        "map_large": torch.Tensor([0.701]),
-        "mar_1": torch.Tensor([0.592]),
-        "mar_10": torch.Tensor([0.716]),
-        "mar_100": torch.Tensor([0.716]),
-        "mar_small": torch.Tensor([0.767]),
-        "mar_medium": torch.Tensor([0.800]),
-        "mar_large": torch.Tensor([0.700]),
-        "map_per_class": torch.Tensor([0.725, 0.800, 0.454, -1.000, 0.650, 0.900]),
-        "mar_100_per_class": torch.Tensor([0.780, 0.800, 0.450, -1.000, 0.650, 0.900]),
+        "map": Tensor([0.706]),
+        "map_50": Tensor([0.901]),
+        "map_75": Tensor([0.846]),
+        "map_small": Tensor([0.689]),
+        "map_medium": Tensor([0.800]),
+        "map_large": Tensor([0.701]),
+        "mar_1": Tensor([0.592]),
+        "mar_10": Tensor([0.716]),
+        "mar_100": Tensor([0.716]),
+        "mar_small": Tensor([0.767]),
+        "mar_medium": Tensor([0.800]),
+        "mar_large": Tensor([0.700]),
+        "map_per_class": Tensor([0.725, 0.800, 0.454, -1.000, 0.650, 0.900]),
+        "mar_100_per_class": Tensor([0.780, 0.800, 0.450, -1.000, 0.650, 0.900]),
     }
 
 
@@ -260,7 +261,7 @@ def test_empty_preds():
 
     metric.update(
         [
-            dict(boxes=torch.Tensor([]), scores=torch.Tensor([]), labels=torch.IntTensor([])),
+            dict(boxes=Tensor([]), scores=torch.Tensor([]), labels=torch.IntTensor([])),
         ],
         [
             dict(boxes=torch.Tensor([[214.1500, 41.2900, 562.4100, 285.0700]]), labels=torch.IntTensor([4])),
@@ -310,6 +311,19 @@ def test_map_gpu(inputs):
     for preds, targets in zip(inputs.preds, inputs.target):
         metric.update(_move_to_gpu(preds), _move_to_gpu(targets))
     metric.compute()
+
+
+@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
+@pytest.mark.skipif(_gpu_test_condition, reason="test requires CUDA availability")
+def test_map_with_custom_thresholds():
+    """Test that map works with custom iou thresholds."""
+    metric = MeanAveragePrecision(iou_thresholds=[0.1, 0.2])
+    metric = metric.to("cuda")
+    for preds, targets in zip(_inputs.preds, _inputs.target):
+        metric.update(_move_to_gpu(preds), _move_to_gpu(targets))
+    res = metric.compute()
+    assert res["map_50"].item() == -1
+    assert res["map_75"].item() == -1
 
 
 @pytest.mark.skipif(_pytest_condition, reason="test requires that pycocotools and torchvision=>0.8.0 is installed")
