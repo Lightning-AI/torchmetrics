@@ -55,10 +55,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed deprecated `compute_on_step` argument in aggregation ([#990](https://github.com/PyTorchLightning/metrics/pull/990))
 
 
+- Removed deprecated `compute_on_step` argument in detection ([#1005](https://github.com/PyTorchLightning/metrics/pull/1005))
+
+
 - Removed deprecated `compute_on_step` argument in text ([#1004](https://github.com/PyTorchLightning/metrics/pull/1004))
 
 
 - Removed deprecated `compute_on_step` argument in audio ([#1007](https://github.com/PyTorchLightning/metrics/pull/1007))
+
 
 
 ### Fixed
