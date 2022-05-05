@@ -34,12 +34,6 @@ class TranslationEditRate(Metric):
         lowercase: An indication whether to enable case-insesitivity.
         asian_support: An indication whether asian characters to be processed.
         return_sentence_level_score: An indication whether a sentence-level TER to be returned.
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
@@ -67,10 +61,9 @@ class TranslationEditRate(Metric):
         lowercase: bool = True,
         asian_support: bool = False,
         return_sentence_level_score: bool = False,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ):
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
         if not isinstance(normalize, bool):
             raise ValueError(f"Expected argument `normalize` to be of type boolean but got {normalize}.")
         if not isinstance(no_punctuation, bool):
