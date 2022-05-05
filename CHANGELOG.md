@@ -25,6 +25,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed MAP metric when using custom list of thresholds ([#995](https://github.com/PyTorchLightning/metrics/issues/995))
 
 
+- Fixed compatibility with future Pytorch 1.12 in `pairwise_cosine_similarity` ([#1011](https://github.com/PyTorchLightning/metrics/pull/1011))
+
+
 ## [0.8.1] - 2022-04-27
 
 ### Changed
