@@ -26,7 +26,7 @@ _ps_dict: dict = {}  # _ps_dict[str(spk_num)+str(device)] = permutations
 
 
 def _find_best_perm_by_linear_sum_assignment(
-    metric_mtx: torch.Tensor,
+    metric_mtx: Tensor,
     eval_func: Union[torch.min, torch.max],
 ) -> Tuple[Tensor, Tensor]:
     """Solves the linear sum assignment problem using scipy, and returns the best metric values and the
@@ -50,7 +50,7 @@ def _find_best_perm_by_linear_sum_assignment(
 
 
 def _find_best_perm_by_exhaustive_method(
-    metric_mtx: torch.Tensor,
+    metric_mtx: Tensor,
     eval_func: Union[torch.min, torch.max],
 ) -> Tuple[Tensor, Tensor]:
     """Solves the linear sum assignment problem using exhaustive method, i.e. exhaustively calculates the metric
@@ -93,7 +93,7 @@ def _find_best_perm_by_exhaustive_method(
 
 
 def permutation_invariant_training(
-    preds: torch.Tensor, target: torch.Tensor, metric_func: Callable, eval_func: str = "max", **kwargs: Dict[str, Any]
+    preds: Tensor, target: torch.Tensor, metric_func: Callable, eval_func: str = "max", **kwargs: Dict[str, Any]
 ) -> Tuple[Tensor, Tensor]:
     """Permutation invariant training (PIT). The ``permutation_invariant_training`` implements the famous
     Permutation Invariant Training method.
