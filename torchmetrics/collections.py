@@ -320,7 +320,7 @@ class MetricCollection(ModuleDict):
             self._groups_checked = True
         else:
             # Initialize all metrics as their own compute group
-            self._groups = {i: [str(k)] for i, k in enumerate(self.keys(keep_base=False))}
+            self._groups = {i: [str(k)] for i, k in enumerate(self.keys(keep_base=True))}
 
     @property
     def compute_groups(self) -> Dict[int, List[str]]:
