@@ -20,7 +20,8 @@ import numpy as np
 import psutil
 import pytest
 import torch
-from torch import Tensor, nn, tensor
+from torch import Tensor, tensor
+from torch.nn import Module
 
 from tests.helpers import seed_all
 from tests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum
@@ -245,7 +246,7 @@ def test_load_state_dict(tmpdir):
 def test_child_metric_state_dict():
     """test that child metric states will be added to parent state dict."""
 
-    class TestModule(nn.Module):
+    class TestModule(Module):
         def __init__(self):
             super().__init__()
             self.metric = DummyMetric()
@@ -346,7 +347,7 @@ def test_forward_and_compute_to_device(metric_class):
 def test_device_if_child_module(metric_class):
     """Test that if a metric is a child module all values gets moved to the correct device."""
 
-    class TestModule(nn.Module):
+    class TestModule(Module):
         def __init__(self):
             super().__init__()
             self.metric = metric_class()

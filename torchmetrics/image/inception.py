@@ -15,6 +15,7 @@ from typing import Any, Dict, List, Tuple, Union
 
 import torch
 from torch import Tensor
+from torch.nn import Module
 
 from torchmetrics.image.fid import NoTrainInceptionV3
 from torchmetrics.metric import Metric
@@ -92,7 +93,7 @@ class InceptionScore(Metric):
 
     def __init__(
         self,
-        feature: Union[str, int, torch.nn.Module] = "logits_unbiased",
+        feature: Union[str, int, Module] = "logits_unbiased",
         splits: int = 10,
         **kwargs: Dict[str, Any],
     ) -> None:
@@ -117,7 +118,7 @@ class InceptionScore(Metric):
                 )
 
             self.inception = NoTrainInceptionV3(name="inception-v3-compat", features_list=[str(feature)])
-        elif isinstance(feature, torch.nn.Module):
+        elif isinstance(feature, Module):
             self.inception = feature
         else:
             raise TypeError("Got unknown input to argument `feature`")

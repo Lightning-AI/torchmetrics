@@ -156,7 +156,7 @@ class KernelInceptionDistance(Metric):
 
     def __init__(
         self,
-        feature: Union[str, int, torch.nn.Module] = 2048,
+        feature: Union[str, int, Module] = 2048,
         subsets: int = 100,
         subset_size: int = 1000,
         degree: int = 3,
