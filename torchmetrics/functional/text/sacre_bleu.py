@@ -136,6 +136,7 @@ class _SacreBLEUTokenizer:
     @classmethod
     def _tokenize_regex(cls, line: str) -> str:
         """Common post-processing tokenizer for `13a` and `zh` tokenizers.
+
         Args:
             line: a segment to tokenize
 
@@ -201,7 +202,7 @@ class _SacreBLEUTokenizer:
     def _tokenize_zh(cls, line: str) -> str:
         """The tokenization of Chinese text in this script contains two
         steps: separate each Chinese characters (by utf-8 encoding); tokenize
-        the non Chinese part (following the `13a` i.e. mteval tokenizer).
+        the Chinese part (following the `13a` i.e. mteval tokenizer).
         Author: Shujian Huang huangsj@nju.edu.cn
 
         Args:
@@ -287,19 +288,13 @@ def sacre_bleu_score(
     follows the behaviour of SacreBLEU [2] implementation from https://github.com/mjpost/sacrebleu.
 
     Args:
-        preds:
-            An iterable of machine translated corpus
-        target:
-            An iterable of iterables of reference corpus
-        n_gram:
-            Gram value ranged from 1 to 4 (Default 4)
-        smooth:
-            Whether or not to apply smoothing – see [2]
-        tokenize:
-            Tokenization technique to be used. (Default '13a')
+        preds: An iterable of machine translated corpus
+        target: An iterable of iterables of reference corpus
+        n_gram: Gram value ranged from 1 to 4
+        smooth: Whether to apply smoothing – see [2]
+        tokenize: Tokenization technique to be used.
             Supported tokenization: ['none', '13a', 'zh', 'intl', 'char']
-        lowercase:
-            If ``True``, BLEU score over lowercased text is calculated.
+        lowercase: If ``True``, BLEU score over lowercased text is calculated.
 
     Return:
         Tensor with BLEU Score

@@ -20,6 +20,16 @@ from typing_extensions import Literal
 from torchmetrics.functional.pairwise.helpers import _check_input, _reduce_distance_matrix
 
 
+def _safe_matmul(x: Tensor, y: Tensor) -> Tensor:
+    """Safe calculation of matrix multiplication.
+
+    If input is float16, will cast to float32 for computation and back again.
+    """
+    if x.dtype == torch.float16 or y.dtype == torch.float16:
+        return (x.float() @ y.T.float()).half()
+    return x @ y.T
+
+
 def _pairwise_cosine_similarity_update(
     x: Tensor, y: Optional[Tensor] = None, zero_diagonal: Optional[bool] = None
 ) -> Tensor:
@@ -37,7 +47,7 @@ def _pairwise_cosine_similarity_update(
     norm = torch.norm(y, p=2, dim=1)
     y /= norm.unsqueeze(1)
 
-    distance = x @ y.T
+    distance = _safe_matmul(x, y)
     if zero_diagonal:
         distance.fill_diagonal_(0)
     return distance
@@ -49,23 +59,23 @@ def pairwise_cosine_similarity(
     reduction: Literal["mean", "sum", "none", None] = None,
     zero_diagonal: Optional[bool] = None,
 ) -> Tensor:
-    r"""
-    Calculates pairwise cosine similarity:
+    r"""Calculates pairwise cosine similarity:
 
     .. math::
         s_{cos}(x,y) = \frac{<x,y>}{||x|| \cdot ||y||}
                      = \frac{\sum_{d=1}^D x_d \cdot y_d }{\sqrt{\sum_{d=1}^D x_i^2} \cdot \sqrt{\sum_{d=1}^D x_i^2}}
 
-    If both `x` and `y` are passed in, the calculation will be performed pairwise between the rows of `x` and `y`.
-    If only `x` is passed in, the calculation will be performed between the rows of `x`.
+    If both :math:`x` and :math:`y` are passed in, the calculation will be performed pairwise
+    between the rows of :math:`x` and :math:`y`.
+    If only :math:`x` is passed in, the calculation will be performed between the rows of :math:`x`.
 
     Args:
         x: Tensor with shape ``[N, d]``
         y: Tensor with shape ``[M, d]``, optional
         reduction: reduction to apply along the last dimension. Choose between `'mean'`, `'sum'`
             (applied along column dimension) or  `'none'`, `None` for no reduction
-        zero_diagonal: if the diagonal of the distance matrix should be set to 0. If only `x` is given
-            this defaults to `True` else if `y` is also given it defaults to `False`
+        zero_diagonal: if the diagonal of the distance matrix should be set to 0. If only :math:`x` is given
+            this defaults to ``True`` else if :math:`y` is also given it defaults to ``False``
 
     Returns:
         A ``[N,N]`` matrix of distances if only ``x`` is given, else a ``[N,M]`` matrix

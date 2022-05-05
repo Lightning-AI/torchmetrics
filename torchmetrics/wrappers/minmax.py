@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Union
 
 import torch
 from torch import Tensor
@@ -22,23 +22,16 @@ from torchmetrics.metric import Metric
 
 class MinMaxMetric(Metric):
     """Wrapper Metric that tracks both the minimum and maximum of a scalar/tensor across an experiment. The min/max
-    value will be updated each time `.compute` is called.
+    value will be updated each time ``.compute`` is called.
 
     Args:
         base_metric:
             The metric of which you want to keep track of its maximum and minimum values.
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError
-            If ``base_metric` argument is not an subclasses instance of ``torchmetrics.Metric``
+            If ``base_metric` argument is not a subclasses instance of ``torchmetrics.Metric``
 
     Example::
         >>> import torch
@@ -64,10 +57,9 @@ class MinMaxMetric(Metric):
     def __init__(
         self,
         base_metric: Metric,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
         if not isinstance(base_metric, Metric):
             raise ValueError(
                 f"Expected base metric to be an instance of `torchmetrics.Metric` but received {base_metric}"

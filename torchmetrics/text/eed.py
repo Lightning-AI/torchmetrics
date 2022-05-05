@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, List, Sequence, Tuple, Union
 
 from torch import Tensor, stack
 from typing_extensions import Literal
@@ -22,30 +22,18 @@ from torchmetrics.metric import Metric
 
 
 class ExtendedEditDistance(Metric):
-    """Computes extended edit distance score (`ExtendedEditDistance`_) [1] for strings or list of strings. The
-    metric utilises the Levenshtein distance and extends it by adding an additional jump operation.
+    """Computes extended edit distance score (`ExtendedEditDistance`_) [1] for strings or list of strings.
+
+    The metric utilises the Levenshtein distance and extends it by adding a jump operation.
 
     Args:
-        language:
-            Language used in sentences. Only supports English (en) and Japanese (ja) for now. Defaults to en
-        return_sentence_level_score:
-            An indication of whether sentence-level EED score is to be returned
-        alpha:
-            optimal jump penalty, penalty for jumps between characters
-        rho:
-            coverage cost, penalty for repetition of characters
-        deletion:
-            penalty for deletion of character
-        insertion:
-            penalty for insertion or substitution of character
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        language: Language used in sentences. Only supports English (en) and Japanese (ja) for now.
+        return_sentence_level_score: An indication of whether sentence-level EED score is to be returned
+        alpha: optimal jump penalty, penalty for jumps between characters
+        rho: coverage cost, penalty for repetition of characters
+        deletion: penalty for deletion of character
+        insertion: penalty for insertion or substitution of character
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Return:
         Extended edit distance score as a tensor
@@ -75,10 +63,9 @@ class ExtendedEditDistance(Metric):
         rho: float = 0.3,
         deletion: float = 0.2,
         insertion: float = 1.0,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ):
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
 
         if language not in ("en", "ja"):
             raise ValueError(f"Expected argument `language` to either be `en` or `ja` but got {language}")

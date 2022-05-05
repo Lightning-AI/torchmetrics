@@ -13,7 +13,6 @@
 # limitations under the License.
 import functools
 import inspect
-import warnings
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from copy import deepcopy
@@ -61,36 +60,6 @@ class Metric(Module, ABC):
         automatically calls ``update()`` and also returns the metric value at the current step.
 
     Args:
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
-        dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step.
-
-            .. deprecated:: v0.8
-                Argument is deprecated and will be removed in v0.9 in favour of instead
-                passing it in as keyword argument.
-
-        process_group:
-            Specify the process group on which synchronization is called. Defaults is `None`
-            which selects the entire world
-
-            .. deprecated:: v0.8
-                Argument is deprecated and will be removed in v0.9 in favour of instead
-                passing it in as keyword argument.
-
-        dist_sync_fn:
-            Callback that performs the allgather operation on the metric state. When `None`, DDP
-            will be used to perform the allgather.
-
-            .. deprecated:: v0.8
-                Argument is deprecated and will be removed in v0.9 in favour of instead
-                passing it in as keyword argument.
-
         kwargs: additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
             - compute_on_cpu: If metric state should be stored on CPU during computations. Only works
@@ -107,8 +76,7 @@ class Metric(Module, ABC):
 
     def __init__(
         self,
-        compute_on_step: Optional[bool] = None,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__()
 
@@ -118,10 +86,6 @@ class Metric(Module, ABC):
 
         self._device = torch.device("cpu")
 
-        if compute_on_step is not None:
-            warnings.warn(
-                "Argument `compute_on_step` is deprecated in v0.8 and will be removed in v0.9", DeprecationWarning
-            )
         self.compute_on_cpu = kwargs.pop("compute_on_cpu", False)
         if not isinstance(self.compute_on_cpu, bool):
             raise ValueError(
@@ -233,9 +197,11 @@ class Metric(Module, ABC):
 
     @torch.jit.unused
     def forward(self, *args: Any, **kwargs: Any) -> Any:
-        """Automatically calls ``update()``.
+        """``forward`` serves the dual purpose of both computing the metric on the current batch of inputs but also
+        add the batch statistics to the overall accumululating metric state.
 
-        Returns the metric value over inputs if ``compute_on_step`` is True.
+        Input arguments are the exact same as corresponding ``update`` method. The returned output is the exact same as
+        the output of ``compute``.
         """
         # add current step
         if self._is_synced:
@@ -619,7 +585,7 @@ class Metric(Module, ABC):
             k: v for k, v in kwargs.items() if (k in _sign_params.keys() and _sign_params[k].kind not in _params)
         }
 
-        exists_var_keyword = any([v.kind == inspect.Parameter.VAR_KEYWORD for v in _sign_params.values()])
+        exists_var_keyword = any(v.kind == inspect.Parameter.VAR_KEYWORD for v in _sign_params.values())
         # if no kwargs filtered, return all kwargs as default
         if not filtered_kwargs and not exists_var_keyword:
             # no kwargs in update signature -> don't return any kwargs
@@ -835,12 +801,10 @@ class CompositionalMetric(Metric):
         )
 
         if val_a is None:
-            # compute_on_step of metric_a is False
             return None
 
         if val_b is None:
             if isinstance(self.metric_b, Metric):
-                # compute_on_step of metric_b is False
                 return None
 
             # Unary op

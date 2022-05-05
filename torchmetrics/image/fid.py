@@ -17,6 +17,7 @@ import numpy as np
 import torch
 from torch import Tensor
 from torch.autograd import Function
+from torch.nn import Module
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_info, rank_zero_warn
@@ -27,7 +28,7 @@ if _TORCH_FIDELITY_AVAILABLE:
     from torch_fidelity.feature_extractor_inceptionv3 import FeatureExtractorInceptionV3
 else:
 
-    class FeatureExtractorInceptionV3(torch.nn.Module):  # type: ignore
+    class FeatureExtractorInceptionV3(Module):  # type: ignore
         pass
 
     __doctest_skip__ = ["FrechetInceptionDistance", "FID"]
@@ -60,7 +61,7 @@ class NoTrainInceptionV3(FeatureExtractorInceptionV3):
 class MatrixSquareRoot(Function):
     """Square root of a positive definite matrix.
 
-    All credit to:     `Square Root of a Positive Definite Matrix`_
+    All credit to `Square Root of a Positive Definite Matrix`_
     """
 
     @staticmethod
@@ -106,7 +107,7 @@ def _compute_fid(mu1: Tensor, sigma1: Tensor, mu2: Tensor, sigma2: Tensor, eps: 
         sigma1: covariance matrix over activations calculated on predicted (x) samples
         mu2: mean of activations calculated on target (y) samples
         sigma2: covariance matrix over activations calculated on target (y) samples
-        eps: offset constant. used if sigma_1 @ sigma_2 matrix is singular
+        eps: offset constant - used if sigma_1 @ sigma_2 matrix is singular
 
     Returns:
         Scalar value of the distance between sets.
@@ -137,7 +138,7 @@ class FrechetInceptionDistance(Metric):
     originally proposed in [1].
 
     Using the default feature extraction (Inception v3 using the original weights from [2]), the input is
-    expected to be mini-batches of 3-channel RGB images of shape (3 x H x W) with dtype uint8. All images
+    expected to be mini-batches of 3-channel RGB images of shape (``3 x H x W``) with dtype uint8. All images
     will be resized to 299 x 299 which is the size of the original training data. The boolian flag ``real``
     determines if the images should update the statistics of the real distribution or the fake distribution.
 
@@ -147,10 +148,6 @@ class FrechetInceptionDistance(Metric):
     .. note:: using this metric with the default feature extractor requires that ``torch-fidelity``
         is installed. Either install as ``pip install torchmetrics[image]`` or
         ``pip install torch-fidelity``
-
-    .. note:: the ``forward`` method can be used but ``compute_on_step`` is disabled by default (oppesit of
-        all other metrics) as this metric does not really make sense to calculate on a single batch. This
-        means that by default ``forward`` will just call ``update`` underneat.
 
     Args:
         feature:
@@ -164,15 +161,7 @@ class FrechetInceptionDistance(Metric):
         reset_real_features: Whether to also reset the real features. Since in many cases the real dataset does not
             change, the features can cached them to avoid recomputing them which is costly. Set this to ``False`` if
             your dataset does not change.
-
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     References:
         [1] Rethinking the Inception Architecture for Computer Vision
@@ -214,12 +203,11 @@ class FrechetInceptionDistance(Metric):
 
     def __init__(
         self,
-        feature: Union[int, torch.nn.Module] = 2048,
+        feature: Union[int, Module] = 2048,
         reset_real_features: bool = True,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
 
         rank_zero_warn(
             "Metric `FrechetInceptionDistance` will save all extracted features in buffer."
@@ -240,13 +228,13 @@ class FrechetInceptionDistance(Metric):
                 )
 
             self.inception = NoTrainInceptionV3(name="inception-v3-compat", features_list=[str(feature)])
-        elif isinstance(feature, torch.nn.Module):
+        elif isinstance(feature, Module):
             self.inception = feature
         else:
             raise TypeError("Got unknown input to argument `feature`")
 
         if not isinstance(reset_real_features, bool):
-            raise ValueError("Arugment `reset_real_features` expected to be a bool")
+            raise ValueError("Argument `reset_real_features` expected to be a bool")
         self.reset_real_features = reset_real_features
 
         self.add_state("real_features", [], dist_reduce_fx=None)
@@ -257,7 +245,7 @@ class FrechetInceptionDistance(Metric):
 
         Args:
             imgs: tensor with images feed to the feature extractor
-            real: bool indicating if imgs belong to the real or the fake distribution
+            real: bool indicating if ``imgs`` belong to the real or the fake distribution
         """
         features = self.inception(imgs)
 

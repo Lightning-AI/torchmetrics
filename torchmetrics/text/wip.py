@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Union
 
 from torch import Tensor, tensor
 
@@ -21,33 +21,24 @@ from torchmetrics.metric import Metric
 
 
 class WordInfoPreserved(Metric):
-    r"""
-    word Information Preserved (WordInfoPreserved_) is a metric of the performance of an automatic speech
+    r"""Word Information Preserved (WIP_) is a metric of the performance of an automatic speech
     recognition system. This value indicates the percentage of words that were correctly predicted between
     a set of ground-truth sentences and a set of hypothesis sentences.
     The higher the value, the better the performance of the ASR system with a WordInfoPreserved of 0
     being a perfect score.
-    word Information Preserved rate can then be computed as:
+    Word Information Preserved rate can then be computed as:
 
     .. math::
         wip = \frac{C}{N} + \frac{C}{P}
 
     where:
 
-        - C is the number of correct words,
-        - N is the number of words in the reference
-        - P is the number of words in the prediction
-
+        - :math:`C` is the number of correct words,
+        - :math:`N` is the number of words in the reference
+        - :math:`P` is the number of words in the prediction
 
     Args:
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
 
     Examples:
@@ -66,10 +57,9 @@ class WordInfoPreserved(Metric):
 
     def __init__(
         self,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ):
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
         self.add_state("errors", tensor(0.0), dist_reduce_fx="sum")
         self.add_state("target_total", tensor(0.0), dist_reduce_fx="sum")
         self.add_state("preds_total", tensor(0.0), dist_reduce_fx="sum")
@@ -78,10 +68,8 @@ class WordInfoPreserved(Metric):
         """Store predictions/references for computing word Information Preserved scores.
 
         Args:
-            preds:
-                Transcription(s) to score as a string or list of strings
-            target:
-                Reference(s) for each speech input as a string or list of strings
+            preds: Transcription(s) to score as a string or list of strings
+            target: Reference(s) for each speech input as a string or list of strings
         """
         errors, target_total, preds_total = _wip_update(preds, target)
         self.errors += errors

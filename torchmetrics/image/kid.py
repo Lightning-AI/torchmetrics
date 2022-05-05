@@ -89,40 +89,23 @@ class KernelInceptionDistance(Metric):
         is installed. Either install as ``pip install torchmetrics[image]`` or
         ``pip install torch-fidelity``
 
-    .. note:: the ``forward`` method can be used but ``compute_on_step`` is disabled by default (oppesit of
-        all other metrics) as this metric does not really make sense to calculate on a single batch. This
-        means that by default ``forward`` will just call ``update`` underneat.
-
     Args:
-        feature:
-            Either an str, integer or ``nn.Module``:
+        feature: Either an str, integer or ``nn.Module``:
 
             - an str or integer will indicate the inceptionv3 feature layer to choose. Can be one of the following:
               'logits_unbiased', 64, 192, 768, 2048
             - an ``nn.Module`` for using a custom feature extractor. Expects that its forward method returns
               an ``[N,d]`` matrix where ``N`` is the batch size and ``d`` is the feature size.
 
-        subsets:
-            Number of subsets to calculate the mean and standard deviation scores over
-        subset_size:
-            Number of randomly picked samples in each subset
-        degree:
-            Degree of the polynomial kernel function
-        gamma:
-            Scale-length of polynomial kernel. If set to ``None`` will be automatically set to the feature size
-        coef:
-            Bias term in the polynomial kernel.
+        subsets: Number of subsets to calculate the mean and standard deviation scores over
+        subset_size: Number of randomly picked samples in each subset
+        degree: Degree of the polynomial kernel function
+        gamma: Scale-length of polynomial kernel. If set to ``None`` will be automatically set to the feature size
+        coef: Bias term in the polynomial kernel.
         reset_real_features: Whether to also reset the real features. Since in many cases the real dataset does not
             change, the features can cached them to avoid recomputing them which is costly. Set this to ``False`` if
             your dataset does not change.
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     References:
         [1] Demystifying MMD GANs
@@ -137,7 +120,7 @@ class KernelInceptionDistance(Metric):
         ValueError:
             If ``feature`` is set to an ``int`` (default settings) and ``torch-fidelity`` is not installed
         ValueError:
-            If ``feature`` is set to an ``int`` not in [64, 192, 768, 2048]
+            If ``feature`` is set to an ``int`` not in ``[64, 192, 768, 2048]``
         ValueError:
             If ``subsets`` is not an integer larger than 0
         ValueError:
@@ -173,17 +156,16 @@ class KernelInceptionDistance(Metric):
 
     def __init__(
         self,
-        feature: Union[str, int, torch.nn.Module] = 2048,
+        feature: Union[str, int, Module] = 2048,
         subsets: int = 100,
         subset_size: int = 1000,
         degree: int = 3,
         gamma: Optional[float] = None,  # type: ignore
         coef: float = 1.0,
         reset_real_features: bool = True,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
 
         rank_zero_warn(
             "Metric `Kernel Inception Distance` will save all extracted features in buffer."
@@ -242,7 +224,7 @@ class KernelInceptionDistance(Metric):
 
         Args:
             imgs: tensor with images feed to the feature extractor
-            real: bool indicating if imgs belong to the real or the fake distribution
+            real: bool indicating if ``imgs`` belong to the real or the fake distribution
         """
         features = self.inception(imgs)
 
