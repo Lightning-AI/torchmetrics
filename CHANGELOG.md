@@ -73,6 +73,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed compatibility with future Pytorch 1.12 in `pairwise_cosine_similarity` ([#1011](https://github.com/PyTorchLightning/metrics/pull/1011))
 
 
+- Fixed non-empty state dict for calibration error ([#1012](https://github.com/PyTorchLightning/metrics/pull/1012))
+
+
 ## [0.8.1] - 2022-04-27
 
 ### Changed
