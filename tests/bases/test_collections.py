@@ -254,6 +254,8 @@ def test_collection_check_arg():
 
 
 def test_collection_filtering():
+    """Test that collections works with the kwargs argument."""
+
     class DummyMetric(Metric):
         def __init__(self):
             super().__init__()
@@ -310,11 +312,20 @@ def test_collection_filtering():
         ),
     ],
 )
-def test_check_compute_groups(metrics, expected):
+@pytest.mark.parametrize(
+    "prefix, postfix",
+    [
+        [None, None],
+        ["prefix_", None],
+        [None, "_postfix"],
+        ["prefix_", "_postfix"],
+    ],
+)
+def test_check_compute_groups(metrics, expected, prefix, postfix):
     """Check that compute groups are formed after initialization."""
-    m = MetricCollection(deepcopy(metrics), compute_groups=True)
+    m = MetricCollection(deepcopy(metrics), prefix=prefix, postfix=postfix, compute_groups=True)
     # Construct without for comparison
-    m2 = MetricCollection(deepcopy(metrics), compute_groups=False)
+    m2 = MetricCollection(deepcopy(metrics), prefix=prefix, postfix=postfix, compute_groups=False)
 
     assert len(m.compute_groups) == len(m)
     assert m2.compute_groups == {}
