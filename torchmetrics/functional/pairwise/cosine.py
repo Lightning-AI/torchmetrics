@@ -18,6 +18,7 @@ from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.functional.pairwise.helpers import _check_input, _reduce_distance_matrix
+from torchmetrics.utilities.compute import _safe_matmul
 
 
 def _pairwise_cosine_similarity_update(
@@ -37,7 +38,7 @@ def _pairwise_cosine_similarity_update(
     norm = torch.norm(y, p=2, dim=1)
     y /= norm.unsqueeze(1)
 
-    distance = x @ y.T
+    distance = _safe_matmul(x, y)
     if zero_diagonal:
         distance.fill_diagonal_(0)
     return distance
