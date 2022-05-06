@@ -7,28 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
 
-## [unReleased] - 2022-MM-DD
-
-### Changed
-
--
-
-
--
+## [0.8.2] - 2022-05-06
 
 
 ### Fixed
 
 - Fixed multi device aggregation in `PearsonCorrCoef` ([#998](https://github.com/PyTorchLightning/metrics/pull/998))
-
-
-- Fixed compatibility with future Pytorch 1.12 in `safe_matmul` ([#1011](https://github.com/PyTorchLightning/metrics/pull/1011), [#1014](https://github.com/PyTorchLightning/metrics/pull/1014))
-
-
 - Fixed MAP metric when using custom list of thresholds ([#995](https://github.com/PyTorchLightning/metrics/issues/995))
-
-
 - Fixed compatibility between compute groups in `MetricCollection` and prefix/postfix arg ([#1007](https://github.com/PyTorchLightning/metrics/pull/1008))
+- Fixed compatibility with future Pytorch 1.12 in `safe_matmul` ([#1011](https://github.com/PyTorchLightning/metrics/pull/1011), [#1014](https://github.com/PyTorchLightning/metrics/pull/1014))
 
 
 ## [0.8.1] - 2022-04-27
