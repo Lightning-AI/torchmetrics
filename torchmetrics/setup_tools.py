@@ -13,31 +13,8 @@
 # limitations under the License.
 import os
 import re
-from typing import List
 
 _PROJECT_ROOT = os.path.dirname(os.path.dirname(__file__))
-
-
-def _load_requirements(path_dir: str, file_name: str = "requirements.txt", comment_char: str = "#") -> List[str]:
-    """Load requirements from a file.
-
-    >>> _load_requirements(_PROJECT_ROOT)
-    ['numpy...', 'torch...']
-    """
-    with open(os.path.join(path_dir, file_name)) as file:
-        lines = [ln.strip() for ln in file.readlines()]
-    reqs = []
-    for ln in lines:
-        # filer all comments
-        if comment_char in ln:
-            char_idx = min(ln.index(ch) for ch in comment_char)
-            ln = ln[:char_idx].strip()
-        # skip directly installed dependencies
-        if ln.startswith("http") or ln.startswith("git") or ln.startswith("-r") or "@" in ln:
-            continue
-        if ln:  # if requirement is not empty
-            reqs.append(ln)
-    return reqs
 
 
 def _load_readme_description(path_dir: str, homepage: str, version: str) -> str:

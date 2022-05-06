@@ -5,6 +5,7 @@ from functools import partial
 from importlib.util import module_from_spec, spec_from_file_location
 from typing import Tuple
 
+from pkg_resources import parse_requirements
 from setuptools import find_packages, setup
 
 _PATH_ROOT = os.path.realpath(os.path.dirname(__file__))
@@ -18,6 +19,11 @@ def _load_py_module(fname, pkg="torchmetrics"):
     return py
 
 
+def _load_requirements(path_dir: str, file_name: str = "requirements.txt") -> list:
+    reqs = parse_requirements(open(os.path.join(path_dir, file_name)).readlines())
+    return list(map(str, reqs))
+
+
 about = _load_py_module("__about__.py")
 setup_tools = _load_py_module("setup_tools.py")
 long_description = setup_tools._load_readme_description(
@@ -27,12 +33,12 @@ long_description = setup_tools._load_readme_description(
 )
 
 
-BASE_REQUIREMENTS = setup_tools._load_requirements(path_dir=_PATH_ROOT, file_name="requirements.txt")
+BASE_REQUIREMENTS = _load_requirements(path_dir=_PATH_ROOT, file_name="requirements.txt")
 
 
 def _prepare_extras(skip_files: Tuple[str] = ("devel.txt",)):
     # find all extra requirements
-    _load_req = partial(setup_tools._load_requirements, path_dir=_PATH_REQUIRE)
+    _load_req = partial(_load_requirements, path_dir=_PATH_REQUIRE)
     found_req_files = sorted(os.path.basename(p) for p in glob.glob(os.path.join(_PATH_REQUIRE, "*.txt")))
     # filter unwanted files
     found_req_files = [n for n in found_req_files if n not in skip_files]
