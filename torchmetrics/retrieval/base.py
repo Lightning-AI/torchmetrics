@@ -62,10 +62,13 @@ class RetrievalMetric(Metric, ABC):
             If ``ignore_index`` is not `None` or an integer.
     """
 
+    is_differentiable: bool = False
+    higher_is_better: bool = True
+    full_state_update: bool = False
+
     indexes: List[Tensor]
     preds: List[Tensor]
     target: List[Tensor]
-    higher_is_better = True
 
     def __init__(
         self,
