@@ -217,48 +217,42 @@ class Metric(Module, ABC):
             )
 
         if self.full_state_update or self.dist_sync_on_step:
-            # global accumulation
-            self.update(*args, **kwargs)
-            _update_count = self._update_count
-
-            self._to_sync = self.dist_sync_on_step  # type: ignore
-            # skip restore cache operation from compute as cache is stored below.
-            self._should_unsync = False
-            # skip computing on cpu for the batch
-            _temp_compute_on_cpu = self.compute_on_cpu
-            self.compute_on_cpu = False
-
-            # save context before switch
-            cache = {attr: getattr(self, attr) for attr in self._defaults}
-
-            # call reset, update, compute, on single batch
-            self._enable_grad = True  # allow grads for batch computation
-            self.reset()
-            self.update(*args, **kwargs)
-            self._forward_cache = self.compute()
-
-            # restore context
-            for attr, val in cache.items():
-                setattr(self, attr, val)
-            self._update_count = _update_count
+            self._forward_cache = self._forward_full_state_update(*args, **kwargs)
         else:
-            # store global state and reset to default
-            global_state = {attr: getattr(self, attr) for attr in self._defaults.keys()}
-            self.reset()
+            self._forward_cache = self._forward_reduce_state_update(*args, **kwargs)
 
-            # local syncronization settings
-            self._to_sync = self.dist_sync_on_step
-            self._should_unsync = False
-            _temp_compute_on_cpu = self.compute_on_cpu
-            self.compute_on_cpu = False
-            self._enable_grad = True  # allow grads for batch computation
+        return self._forward_cache
 
-            # calculate batch state and compute batch value
-            self.update(*args, **kwargs)
-            self._forward_cache = self.compute()
+    def _forward_full_state_update(self, *args: Any, **kwargs: Any) -> Any:
+        """forward computation using two calls to `update` to calculate the metric value on the current batch and
+        accumulate global state.
 
-            # reduce batch and global state
-            self._reduce_states(global_state)
+        Doing this secures that metrics that need access to the full metric state during `update` works as expected.
+        """
+        # global accumulation
+        self.update(*args, **kwargs)
+        _update_count = self._update_count
+
+        self._to_sync = self.dist_sync_on_step  # type: ignore
+        # skip restore cache operation from compute as cache is stored below.
+        self._should_unsync = False
+        # skip computing on cpu for the batch
+        _temp_compute_on_cpu = self.compute_on_cpu
+        self.compute_on_cpu = False
+
+        # save context before switch
+        cache = {attr: getattr(self, attr) for attr in self._defaults}
+
+        # call reset, update, compute, on single batch
+        self._enable_grad = True  # allow grads for batch computation
+        self.reset()
+        self.update(*args, **kwargs)
+        batch_val = self.compute()
+
+        # restore context
+        for attr, val in cache.items():
+            setattr(self, attr, val)
+        self._update_count = _update_count
 
         # restore context
         self._is_synced = False
@@ -268,7 +262,43 @@ class Metric(Module, ABC):
         self._enable_grad = False
         self.compute_on_cpu = _temp_compute_on_cpu
 
-        return self._forward_cache
+        return batch_val
+
+    def _forward_reduce_state_update(self, *args: Any, **kwargs: Any) -> Any:
+        """forward computation using single call to `update` to calculate the metric value on the current batch and
+        accumulate global state.
+
+        This can be done when the global metric state is a sinple reduction of batch states.
+        """
+        # store global state and reset to default
+        global_state = {attr: getattr(self, attr) for attr in self._defaults.keys()}
+        _update_count = self._update_count
+        self.reset()
+
+        # local syncronization settings
+        self._to_sync = self.dist_sync_on_step
+        self._should_unsync = False
+        _temp_compute_on_cpu = self.compute_on_cpu
+        self.compute_on_cpu = False
+        self._enable_grad = True  # allow grads for batch computation
+
+        # calculate batch state and compute batch value
+        self.update(*args, **kwargs)
+        batch_val = self.compute()
+
+        # reduce batch and global state
+        self._update_count = _update_count + 1
+        self._reduce_states(global_state)
+
+        # restore context
+        self._is_synced = False
+        self._should_unsync = True
+        self._to_sync = True
+        self._computed = None
+        self._enable_grad = False
+        self.compute_on_cpu = _temp_compute_on_cpu
+
+        return batch_val
 
     def _reduce_states(self, incoming_state: Dict[str, Any]) -> None:
         """Adds an incoming metric state to the current state of the metric.
