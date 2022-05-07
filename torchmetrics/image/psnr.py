@@ -62,9 +62,12 @@ class PeakSignalNoiseRatio(Metric):
         Half precision is only support on GPU for this metric
 
     """
+    is_differentiable: bool = True
+    higher_is_better: bool = True
+    full_state_update: bool = False
+
     min_target: Tensor
     max_target: Tensor
-    higher_is_better = True
 
     def __init__(
         self,
