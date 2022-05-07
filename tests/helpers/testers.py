@@ -121,6 +121,7 @@ def _class_test(
     device: str = "cpu",
     fragment_kwargs: bool = False,
     check_scriptable: bool = True,
+    check_state_dict: bool = True,
     **kwargs_update: Any,
 ):
     """Utility function doing the actual comparison between class metric and reference metric.
@@ -214,7 +215,8 @@ def _class_test(
     assert hash(metric)
 
     # assert that state dict is empty
-    assert metric.state_dict() == {}
+    if check_state_dict:
+        assert metric.state_dict() == {}
 
     # check on all batches on all ranks
     result = metric.compute()
