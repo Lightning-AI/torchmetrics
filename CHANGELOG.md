@@ -53,11 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
--
-
-
--
-
+- Fixed non-empty state dict for a few metrics ([#1012](https://github.com/PyTorchLightning/metrics/pull/1012))
 
 
 ## [0.8.2] - 2022-05-06
@@ -69,9 +65,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed MAP metric when using custom list of thresholds ([#995](https://github.com/PyTorchLightning/metrics/issues/995))
 - Fixed compatibility between compute groups in `MetricCollection` and prefix/postfix arg ([#1007](https://github.com/PyTorchLightning/metrics/pull/1008))
 - Fixed compatibility with future Pytorch 1.12 in `safe_matmul` ([#1011](https://github.com/PyTorchLightning/metrics/pull/1011), [#1014](https://github.com/PyTorchLightning/metrics/pull/1014))
-
-
-- Fixed non-empty state dict for calibration error ([#1012](https://github.com/PyTorchLightning/metrics/pull/1012))
 
 
 ## [0.8.1] - 2022-04-27
