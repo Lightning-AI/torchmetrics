@@ -100,7 +100,9 @@ class ROC(Metric):
          tensor([1.1837, 0.1837, 0.1338, 0.1183, 0.1138])]
     """
 
-    is_differentiable = False
+    is_differentiable: bool = False
+    higher_is_better: Optional[bool] = None
+    full_state_update: bool = False
     preds: List[Tensor]
     target: List[Tensor]
 

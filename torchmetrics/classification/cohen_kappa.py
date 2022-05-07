@@ -67,8 +67,9 @@ class CohenKappa(Metric):
         tensor(0.5000)
 
     """
-    is_differentiable = False
-    higher_is_better = True
+    is_differentiable: bool = False
+    higher_is_better: bool = True
+    full_state_update: bool = False
     confmat: Tensor
 
     def __init__(

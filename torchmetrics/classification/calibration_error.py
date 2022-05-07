@@ -55,8 +55,10 @@ class CalibrationError(Metric):
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
     """
+    is_differentiable: bool = False
+    higher_is_better: bool = False
+    full_state_update: bool = False
     DISTANCES = {"l1", "l2", "max"}
-    higher_is_better = False
     confidences: List[Tensor]
     accuracies: List[Tensor]
 

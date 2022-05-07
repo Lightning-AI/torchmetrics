@@ -110,7 +110,9 @@ class StatScores(Metric):
         tensor([2, 2, 6, 2, 4])
 
     """
-    is_differentiable = False
+    is_differentiable: bool = False
+    higher_is_better: Optional[bool] = None
+    full_state_update: bool = False
     # TODO: canot be used because if scripting
     # tp: Union[Tensor, List[Tensor]]
     # fp: Union[Tensor, List[Tensor]]
