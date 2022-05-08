@@ -15,8 +15,9 @@ from typing import Any, Dict, Optional
 
 from torch import Tensor
 
-from torchmetrics.classification.stat_scores import StatScores  # isort:skip
 from torchmetrics.functional.classification.dice import _dice_compute
+
+from torchmetrics.classification.stat_scores import StatScores  # isort:skip
 
 
 class Dice(StatScores):
@@ -112,17 +113,17 @@ class Dice(StatScores):
     higher_is_better = True
 
     def __init__(
-            self,
-            background: bool = False,
-            zero_division: int = 0,
-            num_classes: Optional[int] = None,
-            threshold: float = 0.5,
-            average: str = "micro",
-            mdmc_average: Optional[str] = None,
-            ignore_index: Optional[int] = None,
-            top_k: Optional[int] = None,
-            multiclass: Optional[bool] = None,
-            **kwargs: Dict[str, Any],
+        self,
+        background: bool = False,
+        zero_division: int = 0,
+        num_classes: Optional[int] = None,
+        threshold: float = 0.5,
+        average: str = "micro",
+        mdmc_average: Optional[str] = None,
+        ignore_index: Optional[int] = None,
+        top_k: Optional[int] = None,
+        multiclass: Optional[bool] = None,
+        **kwargs: Dict[str, Any],
     ) -> None:
         allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
         if average not in allowed_average:
@@ -135,15 +136,15 @@ class Dice(StatScores):
             raise ValueError("When you set `ignore_index`, you have to set background `bg` to True.")
 
         super().__init__(
-                reduce="macro" if average in ["weighted", "none", None] else average,
-                mdmc_reduce=mdmc_average,
-                threshold=threshold,
-                top_k=top_k,
-                num_classes=num_classes,
-                multiclass=multiclass,
-                ignore_index=ignore_index,
-                **kwargs,
-            )
+            reduce="macro" if average in ["weighted", "none", None] else average,
+            mdmc_reduce=mdmc_average,
+            threshold=threshold,
+            top_k=top_k,
+            num_classes=num_classes,
+            multiclass=multiclass,
+            ignore_index=ignore_index,
+            **kwargs,
+        )
 
         self.average = average
         self.zero_division = zero_division

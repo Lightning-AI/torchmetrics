@@ -15,16 +15,14 @@ from functools import partial
 
 import pytest
 import torch
-from torch import tensor, Tensor
+from torch import Tensor, tensor
 
 from tests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
-from tests.helpers.testers import MetricTester
 from tests.helpers import seed_all
+from tests.helpers.testers import MetricTester
 from torchmetrics import Dice
+from torchmetrics.functional import dice, dice_score
 from torchmetrics.functional.classification.dice import _stat_scores
-from torchmetrics.functional import dice_score
-from torchmetrics.functional import dice
-
 
 seed_all(42)
 
@@ -99,9 +97,7 @@ def test_dice(pred, target, expected):
 
 @pytest.mark.parametrize(
     "preds, target",
-    [
-        (_input_mcls_prob.preds, _input_mcls_prob.target)
-    ],
+    [(_input_mcls_prob.preds, _input_mcls_prob.target)],
 )
 @pytest.mark.parametrize("background", [False, True])
 class TestDice(MetricTester):

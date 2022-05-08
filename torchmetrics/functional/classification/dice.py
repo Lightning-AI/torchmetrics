@@ -11,17 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple, Optional
+from typing import Optional, Tuple
 
 import torch
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.utilities.data import to_categorical
-from torchmetrics.utilities.distributed import reduce
-
 from torchmetrics.functional.classification.stat_scores import _reduce_stat_scores, _stat_scores_update
 from torchmetrics.utilities.checks import _input_squeeze
+from torchmetrics.utilities.data import to_categorical
+from torchmetrics.utilities.distributed import reduce
 from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
 
 
