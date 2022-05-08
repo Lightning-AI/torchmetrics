@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `RetrievalRecallAtFixedPrecision` to retrieval package ([#951](https://github.com/PyTorchLightning/metrics/pull/951))
 
 
--
+- Added support for nested metric collections ([#1003](https://github.com/PyTorchLightning/metrics/pull/1003))
 
 
 ### Changed
@@ -37,22 +37,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-- Removed deprecated `compute_on_step` argument in base classes([#962](https://github.com/PyTorchLightning/metrics/pull/962))
-
-
-- Removed deprecated `compute_on_step` argument in Regression ([#967](https://github.com/PyTorchLightning/metrics/pull/967))
-
-
-- Removed deprecated `compute_on_step` argument in Retrieval ([#993](https://github.com/PyTorchLightning/metrics/pull/993))
-
-
-- Removed deprecated `compute_on_step` argument in Image ([#979](https://github.com/PyTorchLightning/metrics/pull/979))
-
-
-- Removed deprecated `compute_on_step` argument in Wrappers ([#991](https://github.com/PyTorchLightning/metrics/pull/991))
-
-
-- Removed deprecated `compute_on_step` argument in aggregation ([#990](https://github.com/PyTorchLightning/metrics/pull/990))
+- Removed deprecated `compute_on_step` argument (
+    [#962](https://github.com/PyTorchLightning/metrics/pull/962),
+    [#967](https://github.com/PyTorchLightning/metrics/pull/967),
+    [#979](https://github.com/PyTorchLightning/metrics/pull/979),
+    [#990](https://github.com/PyTorchLightning/metrics/pull/990),
+    [#991](https://github.com/PyTorchLightning/metrics/pull/991),
+    [#993](https://github.com/PyTorchLightning/metrics/pull/993),
+    [#1005](https://github.com/PyTorchLightning/metrics/pull/1005),
+    [#1004](https://github.com/PyTorchLightning/metrics/pull/1004),
+    [#1007](https://github.com/PyTorchLightning/metrics/pull/1007)
+)
 
 
 ### Fixed
@@ -61,6 +56,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 -
+
+
+
+## [0.8.2] - 2022-05-06
+
+
+### Fixed
+
+- Fixed multi device aggregation in `PearsonCorrCoef` ([#998](https://github.com/PyTorchLightning/metrics/pull/998))
+- Fixed MAP metric when using custom list of thresholds ([#995](https://github.com/PyTorchLightning/metrics/issues/995))
+- Fixed compatibility between compute groups in `MetricCollection` and prefix/postfix arg ([#1007](https://github.com/PyTorchLightning/metrics/pull/1008))
+- Fixed compatibility with future Pytorch 1.12 in `safe_matmul` ([#1011](https://github.com/PyTorchLightning/metrics/pull/1011), [#1014](https://github.com/PyTorchLightning/metrics/pull/1014))
 
 
 ## [0.8.1] - 2022-04-27
