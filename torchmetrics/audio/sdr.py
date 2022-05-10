@@ -75,8 +75,9 @@ class SignalDistortionRatio(Metric):
 
     sum_sdr: Tensor
     total: Tensor
-    is_differentiable = True
-    higher_is_better = True
+    full_state_update: bool = False
+    is_differentiable: bool = True
+    higher_is_better: bool = True
 
     def __init__(
         self,

@@ -87,8 +87,9 @@ class HingeLoss(Metric):
         tensor([2.2333, 1.5000, 1.2333])
 
     """
-    is_differentiable = True
-    higher_is_better = False
+    is_differentiable: bool = True
+    higher_is_better: bool = False
+    full_state_update: bool = False
     measure: Tensor
     total: Tensor
 

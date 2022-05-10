@@ -156,6 +156,7 @@ class Accuracy(StatScores):
     """
     is_differentiable = False
     higher_is_better = True
+    full_state_update: bool = False
     correct: Tensor
     total: Tensor
 

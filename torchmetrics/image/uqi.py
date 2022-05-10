@@ -51,9 +51,12 @@ class UniversalImageQualityIndex(Metric):
         tensor(0.9216)
     """
 
+    is_differentiable: bool = True
+    higher_is_better: bool = True
+    full_state_update: bool = False
+
     preds: List[Tensor]
     target: List[Tensor]
-    higher_is_better: bool = True
 
     def __init__(
         self,
