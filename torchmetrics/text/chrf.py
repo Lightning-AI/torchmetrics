@@ -82,8 +82,10 @@ class CHRFScore(Metric):
         [2] chrF++: words helping character n-grams by Maja Popović `chrF++ score`_
     """
 
-    is_differentiable = False
-    higher_is_better = True
+    is_differentiable: bool = False
+    higher_is_better: bool = True
+    full_state_update: bool = True
+
     sentence_chrf_score: Optional[List[Tensor]] = None
 
     def __init__(

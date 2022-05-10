@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from torch import Tensor
 
@@ -35,7 +35,9 @@ class AUC(Metric):
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
     """
-    is_differentiable = False
+    is_differentiable: bool = False
+    higher_is_better: Optional[bool] = None
+    full_state_update: bool = False
     x: List[Tensor]
     y: List[Tensor]
 

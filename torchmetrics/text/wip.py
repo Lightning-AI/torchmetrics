@@ -49,8 +49,10 @@ class WordInfoPreserved(Metric):
         >>> metric(preds, target)
         tensor(0.3472)
     """
-    is_differentiable = False
-    higher_is_better = False
+    is_differentiable: bool = False
+    higher_is_better: bool = False
+    full_state_update: bool = False
+
     errors: Tensor
     preds_total: Tensor
     target_total: Tensor
