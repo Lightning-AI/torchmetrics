@@ -15,18 +15,24 @@ import logging
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
-import pycocotools.mask as mask_utils
 import torch
 from torch import IntTensor, Tensor
 
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.imports import _TORCHVISION_GREATER_EQUAL_0_8
+from torchmetrics.utilities.imports import _PYCOCOTOOLS_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
 
 if _TORCHVISION_GREATER_EQUAL_0_8:
     from torchvision.ops import box_area, box_convert, box_iou
 else:
     box_convert = box_iou = box_area = None
     __doctest_skip__ = ["MeanAveragePrecision"]
+
+if _PYCOCOTOOLS_AVAILABLE:
+    import pycocotools.mask as mask_utils
+else:
+    mask_utils = None
+    __doctest_skip__ = ["MeanAveragePrecision"]
+
 
 log = logging.getLogger(__name__)
 
