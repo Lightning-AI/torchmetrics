@@ -2,8 +2,7 @@ import torch
 
 
 def total_variation(img: torch.Tensor) -> torch.Tensor:
-    """
-    Computes total variation loss.
+    """Computes total variation loss.
 
     Adapted from https://github.com/jxgu1016/Total_Variation_Loss.pytorch
     Args:
