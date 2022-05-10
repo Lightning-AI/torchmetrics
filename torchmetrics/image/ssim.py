@@ -62,9 +62,12 @@ class StructuralSimilarityIndexMeasure(Metric):
         tensor(0.9219)
     """
 
+    higher_is_better: bool = True
+    is_differentiable: bool = True
+    full_state_update: bool = False
+
     preds: List[Tensor]
     target: List[Tensor]
-    higher_is_better = True
 
     def __init__(
         self,
@@ -177,10 +180,12 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         Bovik `MultiScaleSSIM`_
     """
 
+    higher_is_better: bool = True
+    is_differentiable: bool = True
+    full_state_update: bool = False
+
     preds: List[Tensor]
     target: List[Tensor]
-    higher_is_better = True
-    is_differentiable = True
 
     def __init__(
         self,

@@ -280,6 +280,9 @@ class MeanAveragePrecision(Metric):
         ValueError:
             If ``class_metrics`` is not a boolean
     """
+    is_differentiable: bool = False
+    higher_is_better: Optional[bool] = None
+    full_state_update: bool = True
 
     detections: List[Tensor]
     detection_scores: List[Tensor]

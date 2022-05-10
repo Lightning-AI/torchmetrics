@@ -56,10 +56,12 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
         15 October 2007, doi: 10.1109/LGRS.2007.896328.
     """
 
-    preds: List[Tensor]
-    target: List[Tensor]
     higher_is_better: bool = False
     is_differentiable: bool = True
+    full_state_update: bool = False
+
+    preds: List[Tensor]
+    target: List[Tensor]
 
     def __init__(
         self,

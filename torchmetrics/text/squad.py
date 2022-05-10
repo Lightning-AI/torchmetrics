@@ -46,8 +46,9 @@ class SQuAD(Metric):
         Lopyrev, Percy Liang `SQuAD Metric`_ .
     """
 
-    is_differentiable = False
-    higher_is_better = True
+    is_differentiable: bool = False
+    higher_is_better: bool = True
+    full_state_update: bool = False
 
     f1_score: Tensor
     exact_match: Tensor

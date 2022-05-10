@@ -26,7 +26,6 @@ class DummyMetric(Metric):
         super().__init__()
         self.add_state("_num_updates", tensor(0), dist_reduce_fx="sum")
         self._val_to_return = val_to_return
-        self._update_called = True
 
     def update(self, *args, **kwargs) -> None:
         self._num_updates += 1

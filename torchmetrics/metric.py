@@ -73,6 +73,7 @@ class Metric(Module, ABC):
     __jit_unused_properties__ = ["is_differentiable"]
     is_differentiable: Optional[bool] = None
     higher_is_better: Optional[bool] = None
+    full_state_update: bool = True
 
     def __init__(
         self,
@@ -112,7 +113,7 @@ class Metric(Module, ABC):
         self.compute: Callable = self._wrap_compute(self.compute)  # type: ignore
         self._computed = None
         self._forward_cache = None
-        self._update_called = False
+        self._update_count = 0
         self._to_sync = True
         self._should_unsync = True
         self._enable_grad = False
@@ -125,6 +126,11 @@ class Metric(Module, ABC):
         # state management
         self._is_synced = False
         self._cache: Optional[Dict[str, Union[List[Tensor], Tensor]]] = None
+
+    @property
+    def _update_called(self) -> bool:
+        # Needed for lightning integration
+        return self._update_count > 0
 
     def add_state(
         self,
@@ -203,15 +209,29 @@ class Metric(Module, ABC):
         Input arguments are the exact same as corresponding ``update`` method. The returned output is the exact same as
         the output of ``compute``.
         """
-        # add current step
+        # check if states are already synced
         if self._is_synced:
             raise TorchMetricsUserError(
-                "The Metric shouldn't be synced when performing ``update``. "
+                "The Metric shouldn't be synced when performing ``forward``. "
                 "HINT: Did you forget to call ``unsync`` ?."
             )
 
+        if self.full_state_update or self.dist_sync_on_step:
+            self._forward_cache = self._forward_full_state_update(*args, **kwargs)
+        else:
+            self._forward_cache = self._forward_reduce_state_update(*args, **kwargs)
+
+        return self._forward_cache
+
+    def _forward_full_state_update(self, *args: Any, **kwargs: Any) -> Any:
+        """forward computation using two calls to `update` to calculate the metric value on the current batch and
+        accumulate global state.
+
+        Doing this secures that metrics that need access to the full metric state during `update` works as expected.
+        """
         # global accumulation
         self.update(*args, **kwargs)
+        _update_count = self._update_count
 
         self._to_sync = self.dist_sync_on_step  # type: ignore
         # skip restore cache operation from compute as cache is stored below.
@@ -227,20 +247,87 @@ class Metric(Module, ABC):
         self._enable_grad = True  # allow grads for batch computation
         self.reset()
         self.update(*args, **kwargs)
-        self._forward_cache = self.compute()
+        batch_val = self.compute()
 
         # restore context
         for attr, val in cache.items():
             setattr(self, attr, val)
-        self._is_synced = False
+        self._update_count = _update_count
 
+        # restore context
+        self._is_synced = False
         self._should_unsync = True
         self._to_sync = True
         self._computed = None
         self._enable_grad = False
         self.compute_on_cpu = _temp_compute_on_cpu
 
-        return self._forward_cache
+        return batch_val
+
+    def _forward_reduce_state_update(self, *args: Any, **kwargs: Any) -> Any:
+        """forward computation using single call to `update` to calculate the metric value on the current batch and
+        accumulate global state.
+
+        This can be done when the global metric state is a sinple reduction of batch states.
+        """
+        # store global state and reset to default
+        global_state = {attr: getattr(self, attr) for attr in self._defaults.keys()}
+        _update_count = self._update_count
+        self.reset()
+
+        # local syncronization settings
+        self._to_sync = self.dist_sync_on_step
+        self._should_unsync = False
+        _temp_compute_on_cpu = self.compute_on_cpu
+        self.compute_on_cpu = False
+        self._enable_grad = True  # allow grads for batch computation
+
+        # calculate batch state and compute batch value
+        self.update(*args, **kwargs)
+        batch_val = self.compute()
+
+        # reduce batch and global state
+        self._update_count = _update_count + 1
+        self._reduce_states(global_state)
+
+        # restore context
+        self._is_synced = False
+        self._should_unsync = True
+        self._to_sync = True
+        self._computed = None
+        self._enable_grad = False
+        self.compute_on_cpu = _temp_compute_on_cpu
+
+        return batch_val
+
+    def _reduce_states(self, incoming_state: Dict[str, Any]) -> None:
+        """Adds an incoming metric state to the current state of the metric.
+
+        Args:
+            incoming_state: a dict containing a metric state similar metric itself
+        """
+        for attr in self._defaults.keys():
+            local_state = getattr(self, attr)
+            global_state = incoming_state[attr]
+            reduce_fn = self._reductions[attr]
+            if reduce_fn == dim_zero_sum:
+                reduced = global_state + local_state
+            elif reduce_fn == dim_zero_mean:
+                reduced = ((self._update_count - 1) * global_state + local_state) / self._update_count
+            elif reduce_fn == dim_zero_max:
+                reduced = torch.max(global_state, local_state)
+            elif reduce_fn == dim_zero_min:
+                reduced = torch.min(global_state, local_state)
+            elif reduce_fn == dim_zero_cat:
+                reduced = global_state + local_state
+            elif reduce_fn is None and isinstance(global_state, Tensor):
+                reduced = torch.stack([global_state, local_state])
+            elif reduce_fn is None and isinstance(global_state, list):
+                reduced = _flatten([global_state, local_state])
+            else:
+                reduced = reduce_fn(torch.stack([global_state, local_state]))  # type: ignore
+
+            setattr(self, attr, reduced)
 
     def _sync_dist(self, dist_sync_fn: Callable = gather_all_tensors, process_group: Optional[Any] = None) -> None:
         input_dict = {attr: getattr(self, attr) for attr in self._reductions}
@@ -274,7 +361,7 @@ class Metric(Module, ABC):
         @functools.wraps(update)
         def wrapped_func(*args: Any, **kwargs: Any) -> None:
             self._computed = None
-            self._update_called = True
+            self._update_count += 1
             with torch.set_grad_enabled(self._enable_grad):
                 update(*args, **kwargs)
             if self.compute_on_cpu:
@@ -384,7 +471,7 @@ class Metric(Module, ABC):
     def _wrap_compute(self, compute: Callable) -> Callable:
         @functools.wraps(compute)
         def wrapped_func(*args: Any, **kwargs: Any) -> Any:
-            if not self._update_called:
+            if self._update_count == 0:
                 rank_zero_warn(
                     f"The ``compute`` method of metric {self.__class__.__name__}"
                     " was called before the ``update`` method which may lead to errors,"
@@ -422,7 +509,7 @@ class Metric(Module, ABC):
 
     def reset(self) -> None:
         """This method automatically resets the metric state variables to their default value."""
-        self._update_called = False
+        self._update_count = 0
         self._forward_cache = None
         self._computed = None
 
@@ -453,7 +540,7 @@ class Metric(Module, ABC):
         self.compute: Callable = self._wrap_compute(self.compute)  # type: ignore
 
     def __setattr__(self, name: str, value: Any) -> None:
-        if name in ("higher_is_better", "is_differentiable"):
+        if name in ("higher_is_better", "is_differentiable", "full_state_update"):
             raise RuntimeError(f"Can't change const `{name}`.")
         super().__setattr__(name, value)
 
