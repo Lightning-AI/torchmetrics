@@ -33,6 +33,7 @@ from torchmetrics.classification import (  # noqa: E402
     CohenKappa,
     ConfusionMatrix,
     CoverageError,
+    Dice,
     F1Score,
     FBetaScore,
     HammingDistance,

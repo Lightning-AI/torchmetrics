@@ -21,7 +21,7 @@ from torchmetrics.functional.classification.average_precision import average_pre
 from torchmetrics.functional.classification.calibration_error import calibration_error
 from torchmetrics.functional.classification.cohen_kappa import cohen_kappa
 from torchmetrics.functional.classification.confusion_matrix import confusion_matrix
-from torchmetrics.functional.classification.dice import dice_score
+from torchmetrics.functional.classification.dice import dice_score, dice
 from torchmetrics.functional.classification.f_beta import f1_score, fbeta_score
 from torchmetrics.functional.classification.hamming import hamming_distance
 from torchmetrics.functional.classification.hinge import hinge_loss
@@ -105,6 +105,7 @@ __all__ = [
     "coverage_error",
     "tweedie_deviance_score",
     "dice_score",
+    "dice",
     "error_relative_global_dimensionless_synthesis",
     "explained_variance",
     "extended_edit_distance",
