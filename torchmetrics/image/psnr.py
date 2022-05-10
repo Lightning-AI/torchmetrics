@@ -62,9 +62,12 @@ class PeakSignalNoiseRatio(Metric):
         Half precision is only support on GPU for this metric
 
     """
+    is_differentiable: bool = True
+    higher_is_better: bool = True
+    full_state_update: bool = False
+
     min_target: Tensor
     max_target: Tensor
-    higher_is_better = True
 
     def __init__(
         self,
@@ -83,8 +86,8 @@ class PeakSignalNoiseRatio(Metric):
             self.add_state("sum_squared_error", default=tensor(0.0), dist_reduce_fx="sum")
             self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
         else:
-            self.add_state("sum_squared_error", default=[])
-            self.add_state("total", default=[])
+            self.add_state("sum_squared_error", default=[], dist_reduce_fx="cat")
+            self.add_state("total", default=[], dist_reduce_fx="cat")
 
         if data_range is None:
             if dim is not None:

@@ -44,8 +44,9 @@ class SpearmanCorrCoef(Metric):
         tensor(1.0000)
 
     """
-    is_differentiable = False
-    higher_is_better = True
+    is_differentiable: bool = False
+    higher_is_better: bool = True
+    full_state_update: bool = False
     preds: List[Tensor]
     target: List[Tensor]
 

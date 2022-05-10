@@ -67,7 +67,9 @@ class RetrievalHitRate(RetrievalMetric):
         tensor(0.5000)
     """
 
-    higher_is_better = True
+    is_differentiable: bool = False
+    higher_is_better: bool = True
+    full_state_update: bool = False
 
     def __init__(
         self,

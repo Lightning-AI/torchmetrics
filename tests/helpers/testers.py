@@ -572,7 +572,7 @@ class DummyMetric(Metric):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.add_state("x", tensor(0.0), dist_reduce_fx=None)
+        self.add_state("x", tensor(0.0), dist_reduce_fx="sum")
 
     def update(self):
         pass
@@ -586,7 +586,7 @@ class DummyListMetric(Metric):
 
     def __init__(self):
         super().__init__()
-        self.add_state("x", [], dist_reduce_fx=None)
+        self.add_state("x", [], dist_reduce_fx="cat")
 
     def update(self):
         pass

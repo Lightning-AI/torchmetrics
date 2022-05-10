@@ -72,8 +72,9 @@ class PerceptualEvaluationSpeechQuality(Metric):
 
     sum_pesq: Tensor
     total: Tensor
-    is_differentiable = False
-    higher_is_better = True
+    full_state_update: bool = False
+    is_differentiable: bool = False
+    higher_is_better: bool = True
 
     def __init__(
         self,
