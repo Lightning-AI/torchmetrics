@@ -128,9 +128,11 @@ def _segm_iou(det: List[Tuple[np.ndarray, np.ndarray]], gt: List[Tuple[np.ndarra
     """
     Compute IOU between detections and ground-truths using mask-IOU. Based on pycocotools toolkit for mask_utils
     Args:
-       det: A list of detection masks as [(RLE_SIZE, RLE_COUNTS)], where RLE_SIZE is (width, height) dimension of the input and RLE_COUNTS is its RLE representation;
+       det: A list of detection masks as ``[(RLE_SIZE, RLE_COUNTS)]``, where ``RLE_SIZE`` is (width, height) dimension
+           of the input and RLE_COUNTS is its RLE representation;
 
-       gt: A list of ground-truth masks as [(RLE_SIZE, RLE_COUNTS)], where RLE_SIZE is (width, height) dimension of the input and RLE_COUNTS is its RLE representation;
+       gt: A list of ground-truth masks as ``[(RLE_SIZE, RLE_COUNTS)]``, where ``RLE_SIZE`` is (width, height) dimension
+           of the input and RLE_COUNTS is its RLE representation;
 
     """
 
@@ -222,7 +224,8 @@ class MeanAveragePrecision(Metric):
         box_format:
             Input format of given boxes. Supported formats are ``[`xyxy`, `xywh`, `cxcywh`]``.
         iou_type:
-            Type of input (either masks or bounding-boxes) used for computing IOU. Supported IOU types are ``[`bboxes`, `segm`]``.
+            Type of input (either masks or bounding-boxes) used for computing IOU.
+            Supported IOU types are ``[`bboxes`, `segm`]``.
         iou_thresholds:
             IoU thresholds for evaluation. If set to ``None`` it corresponds to the stepped range ``[0.5,...,0.95]``
             with step ``0.05``. Else provide a list of floats.
@@ -315,10 +318,10 @@ class MeanAveragePrecision(Metric):
             raise ValueError(f"Expected argument `iou_type` to be one of {allowed_iou_types} but got {iou_type}")
         self.iou_type = iou_type
         self.bbox_area_ranges = {
-            "all": (0 ** 2, int(1e5 ** 2)),
-            "small": (0 ** 2, 32 ** 2),
-            "medium": (32 ** 2, 96 ** 2),
-            "large": (96 ** 2, int(1e5 ** 2)),
+            "all": (0**2, int(1e5**2)),
+            "small": (0**2, 32**2),
+            "medium": (32**2, 96**2),
+            "large": (96**2, int(1e5**2)),
         }
 
         if not isinstance(class_metrics, bool):
