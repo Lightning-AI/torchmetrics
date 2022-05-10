@@ -106,7 +106,7 @@ class Dice(StatScores):
         >>> target = torch.tensor([1, 1, 2, 0])
         >>> dice = Dice(average='micro')
         >>> dice(preds, target)
-        tensor(0.3333)
+        tensor(0.2500)
 
     """
     is_differentiable = False
