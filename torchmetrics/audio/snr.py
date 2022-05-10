@@ -60,8 +60,9 @@ class SignalNoiseRatio(Metric):
         and Signal Processing (ICASSP) 2019.
 
     """
-    is_differentiable = True
-    higher_is_better = True
+    full_state_update: bool = False
+    is_differentiable: bool = True
+    higher_is_better: bool = True
     sum_snr: Tensor
     total: Tensor
 

@@ -88,8 +88,11 @@ class InceptionScore(Metric):
         (tensor(1.0544), tensor(0.0117))
 
     """
+    is_differentiable: bool = False
+    higher_is_better: bool = True
+    full_state_update: bool = False
+
     features: List
-    higher_is_better = True
 
     def __init__(
         self,

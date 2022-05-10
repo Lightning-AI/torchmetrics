@@ -48,6 +48,7 @@ class WeightedMeanAbsolutePercentageError(Metric):
     """
     is_differentiable: bool = True
     higher_is_better: bool = False
+    full_state_update: bool = False
     sum_abs_error: Tensor
     sum_scale: Tensor
 

@@ -81,8 +81,10 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
         tensor(0.3566, grad_fn=<SqueezeBackward0>)
     """
 
-    is_differentiable = True
-    higher_is_better = False
+    is_differentiable: bool = True
+    higher_is_better: bool = False
+    full_state_update: bool = False
+
     real_features: List[Tensor]
     fake_features: List[Tensor]
 

@@ -61,7 +61,8 @@ class PermutationInvariantTraining(Metric):
         Signal Process. ICASSP, IEEE, New Orleans, LA, 2017: pp. 241–245. https://doi.org/10.1109/ICASSP.2017.7952154.
     """
 
-    is_differentiable = True
+    full_state_update: bool = False
+    is_differentiable: bool = True
     sum_pit_metric: Tensor
     total: Tensor
 

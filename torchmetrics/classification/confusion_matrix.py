@@ -85,7 +85,9 @@ class ConfusionMatrix(Metric):
                 [[0, 1], [0, 1]]])
 
     """
-    is_differentiable = False
+    is_differentiable: bool = False
+    higher_is_better: Optional[bool] = None
+    full_state_update: bool = False
     confmat: Tensor
 
     def __init__(
