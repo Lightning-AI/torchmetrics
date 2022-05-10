@@ -55,8 +55,10 @@ class CalibrationError(Metric):
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
     """
+    is_differentiable: bool = False
+    higher_is_better: bool = False
+    full_state_update: bool = False
     DISTANCES = {"l1", "l2", "max"}
-    higher_is_better = False
     confidences: List[Tensor]
     accuracies: List[Tensor]
 
@@ -75,7 +77,7 @@ class CalibrationError(Metric):
         if not isinstance(n_bins, int) or n_bins <= 0:
             raise ValueError(f"Expected argument `n_bins` to be a int larger than 0 but got {n_bins}")
         self.n_bins = n_bins
-        self.register_buffer("bin_boundaries", torch.linspace(0, 1, n_bins + 1))
+        self.bin_boundaries = torch.linspace(0, 1, n_bins + 1)
         self.norm = norm
 
         self.add_state("confidences", [], dist_reduce_fx="cat")
@@ -102,4 +104,4 @@ class CalibrationError(Metric):
         """
         confidences = dim_zero_cat(self.confidences)
         accuracies = dim_zero_cat(self.accuracies)
-        return _ce_compute(confidences, accuracies, self.bin_boundaries, norm=self.norm)
+        return _ce_compute(confidences, accuracies, self.bin_boundaries.to(self.device), norm=self.norm)

@@ -75,7 +75,9 @@ class PrecisionRecallCurve(Metric):
         [tensor(0.7500), tensor(0.7500), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor(0.0500)]
     """
 
-    is_differentiable = False
+    is_differentiable: bool = False
+    higher_is_better: Optional[bool] = None
+    full_state_update: bool = False
     preds: List[Tensor]
     target: List[Tensor]
 

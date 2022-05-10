@@ -48,8 +48,10 @@ class TranslationEditRate(Metric):
         by Mathew Snover, Bonnie Dorr, Richard Schwartz, Linnea Micciulla and John Makhoul `TER`_
     """
 
-    is_differentiable = False
-    higher_is_better = False
+    is_differentiable: bool = False
+    higher_is_better: bool = False
+    full_state_update: bool = False
+
     total_num_edits: Tensor
     total_tgt_len: Tensor
     sentence_ter: Optional[List[Tensor]] = None

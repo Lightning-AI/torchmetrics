@@ -99,8 +99,10 @@ class BERTScore(Metric):
         {'f1': [1.0, 0.996], 'precision': [1.0, 0.996], 'recall': [1.0, 0.996]}
     """
 
-    is_differentiable = False
-    higher_is_better = True
+    is_differentiable: bool = False
+    higher_is_better: bool = True
+    full_state_update: bool = False
+
     preds_input_ids: List[Tensor]
     preds_attention_mask: List[Tensor]
     target_input_ids: List[Tensor]

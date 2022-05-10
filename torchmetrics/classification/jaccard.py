@@ -83,8 +83,9 @@ class JaccardIndex(ConfusionMatrix):
         tensor(0.9660)
 
     """
-    is_differentiable = False
-    higher_is_better = True
+    is_differentiable: bool = False
+    higher_is_better: bool = True
+    full_state_update: bool = False
 
     def __init__(
         self,

@@ -54,10 +54,12 @@ class SpectralDistortionIndex(Metric):
         and Remote Sensing. 74. 193-200. 10.14358/PERS.74.2.193.
     """
 
-    preds: List[Tensor]
-    target: List[Tensor]
     higher_is_better: bool = True
     is_differentiable: bool = True
+    full_state_update: bool = False
+
+    preds: List[Tensor]
+    target: List[Tensor]
 
     def __init__(
         self, p: int = 1, reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean", **kwargs: Any

@@ -59,6 +59,7 @@ class TestLPIPS(MetricTester):
             sk_metric=partial(_compare_fn, net_type=net_type),
             dist_sync_on_step=False,
             check_scriptable=False,
+            check_state_dict=False,
             metric_args={"net_type": net_type},
         )
 

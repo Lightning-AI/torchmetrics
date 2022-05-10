@@ -196,10 +196,13 @@ class FrechetInceptionDistance(Metric):
         tensor(12.7202)
 
     """
-    real_features: List[Tensor]
-    fake_features: List[Tensor]
+
     higher_is_better: bool = False
     is_differentiable: bool = False
+    full_state_update: bool = False
+
+    real_features: List[Tensor]
+    fake_features: List[Tensor]
 
     def __init__(
         self,
