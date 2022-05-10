@@ -127,6 +127,7 @@ __all__ = [
     "ConfusionMatrix",
     "CosineSimilarity",
     "CoverageError",
+    "Dice",
     "TweedieDevianceScore",
     "ErrorRelativeGlobalDimensionlessSynthesis",
     "ExplainedVariance",

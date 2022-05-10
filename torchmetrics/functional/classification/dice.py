@@ -273,10 +273,10 @@ def dice(
             If ``num_classes`` is set and ``ignore_index`` is not in the range ``[0, num_classes)``.
 
     Example:
-        >>> from torchmetrics.functional import recall
+        >>> from torchmetrics.functional import dice
         >>> preds  = torch.tensor([2, 0, 2, 1])
         >>> target = torch.tensor([1, 1, 2, 0])
-        >>> recall(preds, target, average='micro')
+        >>> dice(preds, target, average='micro')
         tensor(0.3333)
 
     """
