@@ -280,7 +280,7 @@ def dice(
         tensor(0.3333)
 
     """
-    allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
+    allowed_average = ("micro", "macro", "weighted", "samples", "none", None)
     if average not in allowed_average:
         raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
 
@@ -304,7 +304,7 @@ def dice(
         raise ValueError("When you set `ignore_index`, you have to set background `bg` to True.")
 
     preds, target = _input_squeeze(preds, target)
-    reduce = "macro" if average in ["weighted", "none", None] else average
+    reduce = "macro" if average in ("weighted", "none", None) else average
 
     tp, fp, _, fn = _stat_scores_update(
         preds,

@@ -125,7 +125,7 @@ class Dice(StatScores):
         multiclass: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
+        allowed_average = ("micro", "macro", "weighted", "samples", "none", None)
         if average not in allowed_average:
             raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
 
@@ -136,7 +136,7 @@ class Dice(StatScores):
             raise ValueError("When you set `ignore_index`, you have to set background `bg` to True.")
 
         super().__init__(
-            reduce="macro" if average in ["weighted", "none", None] else average,
+            reduce="macro" if average in ("weighted", "none", None) else average,
             mdmc_reduce=mdmc_average,
             threshold=threshold,
             top_k=top_k,
