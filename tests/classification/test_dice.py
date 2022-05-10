@@ -11,60 +11,62 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
 from functools import partial
 
 import pytest
-import torch
 from torch import Tensor, tensor
 
+from tests.classification.inputs import _input_binary, _input_binary_logits, _input_binary_prob
+from tests.classification.inputs import _input_multiclass as _input_mcls
+from tests.classification.inputs import _input_multiclass_logits as _input_mcls_logits
 from tests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
+from tests.classification.inputs import _input_multiclass_with_missing_class as _input_miss_class
+from tests.classification.inputs import _input_multilabel as _input_mlb
+from tests.classification.inputs import _input_multilabel_logits as _input_mlb_logits
+from tests.classification.inputs import _input_multilabel_multidim as _input_mlmd
+from tests.classification.inputs import _input_multilabel_multidim_prob as _input_mlmd_prob
+from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
 from tests.helpers import seed_all
 from tests.helpers.testers import MetricTester
 from torchmetrics import Dice
 from torchmetrics.functional import dice, dice_score
-from torchmetrics.functional.classification.dice import _stat_scores
+from torchmetrics.utilities.checks import _input_format_classification
+from torchmetrics.functional.classification.stat_scores import _del_column
+from torchmetrics.utilities.enums import DataType
+
+from scipy.spatial.distance import dice as _sc_dice
 
 seed_all(42)
 
 
-def _dice_score(
+def _sk_dice(
     preds: Tensor,
     target: Tensor,
-    background: bool = False,
-    nan_score: float = 0.0,
-) -> Tensor:
+    ignore_index: Optional[int] = None,
+) -> float:
     """
-    Compute dice score from prediction scores.
-    There is no implementation of Dice in sklearn. I used public information about
-    metric: `https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient`
+    Compute dice score from prediction and target. Used scipy implementation.
 
     Args:
         preds: prediction tensor
         target: target tensor
-        background: whether to also compute dice for the background
-        nan_score: the value to use for the score if denominator equals zero
-
+        ignore_index:
+            Integer specifying a target class to ignore. Recommend set to index of background class.
     Return:
-        Tensor containing dice score
+        Float dice score
 
     """
-    num_classes = preds.shape[1]
-    bg_inv = 1 - int(background)
+    sk_preds, sk_target, mode = _input_format_classification(preds, target)
 
-    tp = tensor(0, device=preds.device)
-    fp = tensor(0, device=preds.device)
-    fn = tensor(0, device=preds.device)
+    if ignore_index is not None and mode != DataType.BINARY:
+        sk_preds = _del_column(sk_preds, ignore_index)
+        sk_target = _del_column(sk_target, ignore_index)
 
-    for i in range(bg_inv, num_classes):
-        tp_cls, fp_cls, _, fn_cls, _ = _stat_scores(preds=preds, target=target, class_index=i)
+    sk_preds, sk_target = sk_preds.numpy(), sk_target.numpy()
+    sk_preds, sk_target = sk_preds.reshape(-1), sk_target.reshape(-1)
 
-        tp += tp_cls
-        fp += fp_cls
-        fn += fn_cls
-
-    denom = (2 * tp + fp + fn).to(torch.float)
-    score = (2 * tp).to(torch.float) / denom if torch.is_nonzero(denom) else nan_score
-    return score
+    return 1 - _sc_dice(sk_preds, sk_target)
 
 
 @pytest.mark.parametrize(
@@ -91,34 +93,77 @@ def test_dice_score(pred, target, expected):
     ],
 )
 def test_dice(pred, target, expected):
-    score = dice(tensor(pred), tensor(target))
+    score = dice(tensor(pred), tensor(target), ignore_index=0)
     assert score == expected
 
 
 @pytest.mark.parametrize(
     "preds, target",
-    [(_input_mcls_prob.preds, _input_mcls_prob.target)],
+    [
+        (_input_binary.preds, _input_binary.target),
+        (_input_binary_logits.preds, _input_binary_logits.target),
+        (_input_binary_prob.preds, _input_binary_prob.target),
+    ],
 )
-@pytest.mark.parametrize("background", [False, True])
-class TestDice(MetricTester):
+@pytest.mark.parametrize("ignore_index", [None])
+class TestDiceBinary(MetricTester):
     @pytest.mark.parametrize("ddp", [False])
     @pytest.mark.parametrize("dist_sync_on_step", [False])
-    def test_dice_class(self, ddp, dist_sync_on_step, preds, target, background):
+    def test_dice_class(self, ddp, dist_sync_on_step, preds, target, ignore_index):
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
             target=target,
             metric_class=Dice,
-            sk_metric=partial(_dice_score, background=background),
+            sk_metric=partial(_sk_dice, ignore_index=ignore_index),
             dist_sync_on_step=dist_sync_on_step,
-            metric_args={"background": background},
+            metric_args={"ignore_index": ignore_index},
         )
 
-    def test_dice_fn(self, preds, target, background):
+    def test_dice_fn(self, preds, target, ignore_index):
         self.run_functional_metric_test(
             preds,
             target,
             metric_functional=dice,
-            sk_metric=partial(_dice_score, background=background),
-            metric_args={"background": background},
+            sk_metric=partial(_sk_dice, ignore_index=ignore_index),
+            metric_args={"ignore_index": ignore_index},
+        )
+
+
+@pytest.mark.parametrize(
+    "preds, target",
+    [
+        (_input_mcls.preds, _input_mcls.target),
+        (_input_mcls_logits.preds, _input_mcls_logits.target),
+        (_input_mcls_prob.preds, _input_mcls_prob.target),
+        (_input_miss_class.preds, _input_miss_class.target),
+        (_input_mlb.preds, _input_mlb.target),
+        (_input_mlb_logits.preds, _input_mlb_logits.target),
+        (_input_mlmd.preds, _input_mlmd.target),
+        (_input_mlmd_prob.preds, _input_mlmd_prob.target),
+        (_input_mlb_prob.preds, _input_mlb_prob.target),
+    ],
+)
+@pytest.mark.parametrize("ignore_index", [None, 0])
+class TestDiceMulti(MetricTester):
+    @pytest.mark.parametrize("ddp", [False])
+    @pytest.mark.parametrize("dist_sync_on_step", [False])
+    def test_dice_class(self, ddp, dist_sync_on_step, preds, target, ignore_index):
+        self.run_class_metric_test(
+            ddp=ddp,
+            preds=preds,
+            target=target,
+            metric_class=Dice,
+            sk_metric=partial(_sk_dice, ignore_index=ignore_index),
+            dist_sync_on_step=dist_sync_on_step,
+            metric_args={"ignore_index": ignore_index},
+        )
+
+    def test_dice_fn(self, preds, target, ignore_index):
+        self.run_functional_metric_test(
+            preds,
+            target,
+            metric_functional=dice,
+            sk_metric=partial(_sk_dice, ignore_index=ignore_index),
+            metric_args={"ignore_index": ignore_index},
         )

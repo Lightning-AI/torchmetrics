@@ -28,13 +28,13 @@ class Dice(StatScores):
     Where :math:`\text{TP}` and :math:`\text{FP}` represent the number of true positives and
     false positives respecitively.
 
+    It is recommend set `ignore_index` to index of background class.
+
     The reduction method (how the precision scores are aggregated) is controlled by the
     ``average`` parameter, and additionally by the ``mdmc_average`` parameter in the
     multi-dimensional multi-class case. Accepts all inputs listed in :ref:`pages/classification:input types`.
 
     Args:
-        background:
-            Whether to also compute dice for the background.
         num_classes:
             Number of classes. Necessary for ``'macro'``, ``'weighted'`` and ``None`` average methods.
         threshold:
@@ -114,12 +114,11 @@ class Dice(StatScores):
 
     def __init__(
         self,
-        background: bool = False,
         zero_division: int = 0,
         num_classes: Optional[int] = None,
         threshold: float = 0.5,
         average: str = "micro",
-        mdmc_average: Optional[str] = None,
+        mdmc_average: Optional[str] = "global",
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
         multiclass: Optional[bool] = None,
@@ -128,12 +127,6 @@ class Dice(StatScores):
         allowed_average = ("micro", "macro", "weighted", "samples", "none", None)
         if average not in allowed_average:
             raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
-
-        if not background and ignore_index is None:
-            # not compute dice for the background
-            ignore_index = 0
-        elif ignore_index is not None:
-            raise ValueError("When you set `ignore_index`, you have to set background `bg` to True.")
 
         super().__init__(
             reduce="macro" if average in ("weighted", "none", None) else average,

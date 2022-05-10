@@ -170,7 +170,6 @@ def _dice_compute(
 def dice(
     preds: Tensor,
     target: Tensor,
-    background: bool = False,
     zero_division: int = 0,
     average: str = "micro",
     mdmc_average: Optional[str] = "global",
@@ -187,6 +186,8 @@ def dice(
     Where :math:`\text{TP}` and :math:`\text{FN}` represent the number of true positives and
     false negatives respecitively.
 
+    It is recommend set `ignore_index` to index of background class.
+
     The reduction method (how the recall scores are aggregated) is controlled by the
     ``average`` parameter, and additionally by the ``mdmc_average`` parameter in the
     multi-dimensional multi-class case. Accepts all inputs listed in :ref:`pages/classification:input types`.
@@ -194,7 +195,6 @@ def dice(
     Args:
         preds: Predictions from model (probabilities, logits or labels)
         target: Ground truth values
-        background: Whether to also compute dice for the background
         zero_division: The value to use for the score if denominator equals zero
         average:
             Defines the reduction that is applied. Should be one of the following:
@@ -274,7 +274,7 @@ def dice(
 
     Example:
         >>> from torchmetrics.functional import dice
-        >>> preds  = torch.tensor([2, 0, 2, 1])
+        >>> preds = torch.tensor([2, 0, 2, 1])
         >>> target = torch.tensor([1, 1, 2, 0])
         >>> dice(preds, target, average='micro')
         tensor(0.3333)
@@ -296,12 +296,6 @@ def dice(
 
     if top_k is not None and (not isinstance(top_k, int) or top_k <= 0):
         raise ValueError(f"The `top_k` should be an integer larger than 0, got {top_k}")
-
-    if not background and ignore_index is None:
-        # not compute dice for the background
-        ignore_index = 0
-    elif ignore_index is not None:
-        raise ValueError("When you set `ignore_index`, you have to set background `bg` to True.")
 
     preds, target = _input_squeeze(preds, target)
     reduce = "macro" if average in ("weighted", "none", None) else average
