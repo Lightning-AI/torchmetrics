@@ -26,13 +26,10 @@ def total_variation(img: torch.Tensor) -> torch.Tensor:
         A loss scalar value.
     """
 
-    def tensor_size(t):
-        return t.size()[1] * t.size()[2] * t.size()[3]
 
-    _height = img.size()[2]
-    _width = img.size()[3]
-    _count_height = tensor_size(img[:, :, 1:, :])
-    _count_width = tensor_size(img[:, :, :, 1:])
+    _batchsize, _channels, _height, _width = img.shape[1:]
+    _count_height = _channels * (_height - 1) * _width
+    _count_width = _channels * _height * (_width - 1)
     _height_tv = torch.pow((img[:, :, 1:, :] - img[:, :, : _height - 1, :]), 2).sum()
     _width_tv = torch.pow((img[:, :, :, 1:] - img[:, :, :, : _width - 1]), 2).sum()
-    return (2 * (_height_tv / _count_height + _width_tv / _count_width)) / img.size()[0]
+    return (2 * (_height_tv / _count_height + _width_tv / _count_width)) / _batchsize
