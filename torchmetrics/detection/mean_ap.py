@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import logging
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 import pycocotools.mask as mask_utils
@@ -31,7 +31,7 @@ else:
 log = logging.getLogger(__name__)
 
 
-def compute_area(input, iou_type="bbox"):
+def compute_area(input: List[Any], iou_type: str = "bbox") -> Tensor:
     """Compute area of input depending on the specified iou_type.
 
     Default output for empty input is torch.Tensor([])
@@ -52,7 +52,11 @@ def compute_area(input, iou_type="bbox"):
         raise Exception(f"IOU type {iou_type} is not supported")
 
 
-def compute_iou(det, gt, iou_type="bbox") -> Tensor:
+def compute_iou(
+    det: List[Any],
+    gt: List[Any],
+    iou_type: str = "bbox",
+) -> Tensor:
     """Compute IOU between detections and ground-truth using the specified iou_type."""
 
     if iou_type == "bbox":
@@ -114,7 +118,7 @@ class COCOMetricResults(BaseMetricResults):
     )
 
 
-def _segm_iou(det, gt):
+def _segm_iou(det: List[Tuple[np.ndarray, np.ndarray]], gt: List[Tuple[np.ndarray, np.ndarray]]) -> torch.Tensor:
     """
     Compute IOU between detections and ground-truths using mask-IOU. Based on pycocotools toolkit for mask_utils
     Args:
@@ -391,7 +395,7 @@ class MeanAveragePrecision(Metric):
                     current_to_cpu.append(cur_v)
             setattr(self, key, current_to_cpu)
 
-    def _get_safe_item_values(self, item):
+    def _get_safe_item_values(self, item: Dict[str, Any]) -> Union[Tensor, Tuple]:
 
         if self.iou_type == "bbox":
             boxes = _fix_empty_tensors(item["boxes"])
