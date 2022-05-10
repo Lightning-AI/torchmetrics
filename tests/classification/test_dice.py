@@ -11,10 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional
 from functools import partial
+from typing import Optional
 
 import pytest
+from scipy.spatial.distance import dice as _sc_dice
 from torch import Tensor, tensor
 
 from tests.classification.inputs import _input_binary, _input_binary_logits, _input_binary_prob
@@ -31,11 +32,9 @@ from tests.helpers import seed_all
 from tests.helpers.testers import MetricTester
 from torchmetrics import Dice
 from torchmetrics.functional import dice, dice_score
-from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.functional.classification.stat_scores import _del_column
+from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import DataType
-
-from scipy.spatial.distance import dice as _sc_dice
 
 seed_all(42)
 
@@ -45,8 +44,7 @@ def _sk_dice(
     target: Tensor,
     ignore_index: Optional[int] = None,
 ) -> float:
-    """
-    Compute dice score from prediction and target. Used scipy implementation.
+    """Compute dice score from prediction and target. Used scipy implementation.
 
     Args:
         preds: prediction tensor
@@ -55,7 +53,6 @@ def _sk_dice(
             Integer specifying a target class to ignore. Recommend set to index of background class.
     Return:
         Float dice score
-
     """
     sk_preds, sk_target, mode = _input_format_classification(preds, target)
 
