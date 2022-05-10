@@ -26,7 +26,6 @@ def total_variation(img: torch.Tensor) -> torch.Tensor:
         A loss scalar value.
     """
 
-
     _batchsize, _channels, _height, _width = img.shape[1:]
     _count_height = _channels * (_height - 1) * _width
     _count_width = _channels * _height * (_width - 1)
