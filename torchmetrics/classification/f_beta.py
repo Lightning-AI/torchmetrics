@@ -118,6 +118,7 @@ class FBetaScore(StatScores):
         tensor(0.3333)
 
     """
+    full_state_update: bool = False
 
     def __init__(
         self,
@@ -242,8 +243,9 @@ class F1Score(FBetaScore):
         tensor(0.3333)
     """
 
-    is_differentiable = False
-    higher_is_better = True
+    is_differentiable: bool = False
+    higher_is_better: bool = True
+    full_state_update: bool = False
 
     def __init__(
         self,

@@ -68,6 +68,10 @@ class SacreBLEUScore(BLEUScore):
         and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och `Machine Translation Evolution`_
     """
 
+    is_differentiable: bool = False
+    higher_is_better: bool = True
+    full_state_update: bool = True
+
     def __init__(
         self,
         n_gram: int = 4,
