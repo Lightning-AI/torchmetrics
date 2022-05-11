@@ -44,7 +44,7 @@ def _sk_dice(
     target: Tensor,
     ignore_index: Optional[int] = None,
 ) -> float:
-    """Compute dice score from prediction and target. Used scipy implementation.
+    """Compute dice score from prediction and target. Used scipy implementation of main dice logic.
 
     Args:
         preds: prediction tensor
@@ -61,9 +61,8 @@ def _sk_dice(
         sk_target = _del_column(sk_target, ignore_index)
 
     sk_preds, sk_target = sk_preds.numpy(), sk_target.numpy()
-    sk_preds, sk_target = sk_preds.reshape(-1), sk_target.reshape(-1)
 
-    return 1 - _sc_dice(sk_preds, sk_target)
+    return 1 - _sc_dice(sk_preds.reshape(-1), sk_target.reshape(-1))
 
 
 @pytest.mark.parametrize(
