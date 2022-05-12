@@ -59,6 +59,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed non-empty state dict for a few metrics ([#1012](https://github.com/PyTorchLightning/metrics/pull/1012))
 
 
+- Fixed case where `KLDivergence` could output `Nan` ([#1030](https://github.com/PyTorchLightning/metrics/pull/1030))
+
+
 ## [0.8.2] - 2022-05-06
 
 
