@@ -261,9 +261,13 @@ def _reduce_stat_scores(
     else:
         weights = weights.float()
 
-    numerator = torch.where(zero_div_mask, tensor(float(zero_division), device=numerator.device), numerator)
-    denominator = torch.where(zero_div_mask | ignore_mask, tensor(1.0, device=denominator.device), denominator)
-    weights = torch.where(ignore_mask, tensor(0.0, device=weights.device), weights)
+    numerator = torch.where(
+        zero_div_mask, tensor(zero_division, dtype=numerator.dtype, device=numerator.device), numerator
+    )
+    denominator = torch.where(
+        zero_div_mask | ignore_mask, tensor(1.0, dtype=denominator.dtype, device=denominator.device), denominator
+    )
+    weights = torch.where(ignore_mask, tensor(0.0, dtype=weights.dtype, device=weights.device), weights)
 
     if average not in (AverageMethod.MICRO, AverageMethod.NONE, None):
         weights = weights / weights.sum(dim=-1, keepdim=True)
@@ -271,7 +275,7 @@ def _reduce_stat_scores(
     scores = weights * (numerator / denominator)
 
     # This is in case where sum(weights) = 0, which happens if we ignore the only present class with average='weighted'
-    scores = torch.where(torch.isnan(scores), tensor(float(zero_division), device=scores.device), scores)
+    scores = torch.where(torch.isnan(scores), tensor(zero_division, dtype=scores.dtype, device=scores.device), scores)
 
     if mdmc_average == MDMCAverageMethod.SAMPLEWISE:
         scores = scores.mean(dim=0)
