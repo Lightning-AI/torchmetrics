@@ -19,7 +19,8 @@ from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.utilities.checks import _check_same_shape
-from torchmetrics.utilities.data import METRIC_EPS, xlogy
+from torchmetrics.utilities.compute import _safe_xlogy
+from torchmetrics.utilities.data import METRIC_EPS
 
 
 def _kld_update(p: Tensor, q: Tensor, log_prob: bool) -> Tuple[Tensor, int]:
@@ -43,7 +44,7 @@ def _kld_update(p: Tensor, q: Tensor, log_prob: bool) -> Tuple[Tensor, int]:
         p = p / p.sum(axis=-1, keepdim=True)
         q = q / q.sum(axis=-1, keepdim=True)
         q = torch.clamp(q, METRIC_EPS)
-        measures = xlogy(p, p / q).sum(axis=-1)
+        measures = _safe_xlogy(p, p / q).sum(axis=-1)
 
     return measures, total
 
