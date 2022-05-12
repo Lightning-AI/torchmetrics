@@ -15,9 +15,8 @@ from typing import Any, Dict, Optional
 
 from torch import Tensor
 
-from torchmetrics.functional.classification.dice import _dice_compute
-
 from torchmetrics.classification.stat_scores import StatScores
+from torchmetrics.functional.classification.dice import _dice_compute
 
 
 class Dice(StatScores):
