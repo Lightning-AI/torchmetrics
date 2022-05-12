@@ -119,3 +119,10 @@ def test_zero_probability():
     metric = KLDivergence()
     metric.update(torch.tensor([[1, 0, 0], [1, 0, 0], [0, 0, 1]]), torch.tensor(torch.randn(3, 3).softmax(dim=-1)))
     assert not torch.isnan(metric.compute())
+
+
+def test_inf_case():
+    """When q = 0 in kl divergence the score should be inf."""
+    metric = KLDivergence()
+    metric.update(torch.tensor([[0.3, 0.3, 0.4]]), torch.tensor([[0.5, 0.5, 0]]))
+    assert not torch.isfinite(metric.compute())
