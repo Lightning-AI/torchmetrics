@@ -60,6 +60,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed bug when comparing states while finding compute groups ([#1022](https://github.com/PyTorchLightning/metrics/pull/1022))
 
+- Fixed `torch.double` support in stat score metrics ([#1023](https://github.com/PyTorchLightning/metrics/pull/1023))
+
 
 ## [0.8.2] - 2022-05-06
 
