@@ -17,7 +17,7 @@ from torch import Tensor
 
 from torchmetrics.functional.classification.dice import _dice_compute
 
-from torchmetrics.classification.stat_scores import StatScores  # isort:skip
+from torchmetrics.classification.stat_scores import StatScores
 
 
 class Dice(StatScores):
