@@ -248,3 +248,10 @@ def _bincount(x: Tensor, minlength: Optional[int] = None) -> Tensor:
         return output
     else:
         return torch.bincount(x, minlength=minlength)
+
+
+def xlogy(x: Tensor, y: Tensor) -> Tensor:
+    """Computes x * log(y). Returns 0 if x=0"""
+    res = x * torch.log(y)
+    res[x == 0] = 0.0
+    return res
