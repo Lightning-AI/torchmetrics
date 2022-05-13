@@ -26,6 +26,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added support for nested metric collections ([#1003](https://github.com/PyTorchLightning/metrics/pull/1003))
 
 
+- Added `Dice` to classification package ([#1021](https://github.com/PyTorchLightning/metrics/pull/1021))
+
+
 ### Changed
 
 -
