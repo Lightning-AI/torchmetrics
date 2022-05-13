@@ -17,13 +17,7 @@ import torch
 from torch import Tensor
 
 from torchmetrics.utilities.checks import _check_same_shape
-
-
-def xlogy(x: Tensor, y: Tensor) -> Tensor:
-    """Computes x * log(y). Returns 0 if x=0"""
-    res = x * torch.log(y)
-    res[x == 0] = 0.0
-    return res
+from torchmetrics.utilities.compute import _safe_xlogy
 
 
 def _tweedie_deviance_score_update(preds: Tensor, targets: Tensor, power: float = 0.0) -> Tuple[Tensor, Tensor]:
@@ -58,7 +52,7 @@ def _tweedie_deviance_score_update(preds: Tensor, targets: Tensor, power: float 
                 f"For power={power}, 'preds' has to be strictly positive and 'targets' cannot be negative."
             )
 
-        deviance_score = 2 * (xlogy(targets, targets / preds) + preds - targets)
+        deviance_score = 2 * (_safe_xlogy(targets, targets / preds) + preds - targets)
     elif power == 2:
         # Gamma distribution
         if torch.any(preds <= 0) or torch.any(targets <= 0):
