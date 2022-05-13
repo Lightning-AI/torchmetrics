@@ -20,7 +20,17 @@ import torch
 
 from tests.helpers import seed_all
 from tests.helpers.testers import DummyMetricDiff, DummyMetricSum
-from torchmetrics import Accuracy, CohenKappa, ConfusionMatrix, F1Score, Metric, MetricCollection, Precision, Recall
+from torchmetrics import (
+    Accuracy,
+    CohenKappa,
+    ConfusionMatrix,
+    F1Score,
+    MatthewsCorrCoef,
+    Metric,
+    MetricCollection,
+    Precision,
+    Recall,
+)
 
 seed_all(42)
 
@@ -403,6 +413,24 @@ def test_compute_group_define_by_user():
     preds = torch.randn(10, 3).softmax(dim=-1)
     target = torch.randint(3, (10,))
     m.update(preds, target)
+    assert m.compute()
+
+
+def test_compute_on_different_dtype():
+    """Check that extraction of compute groups are robust towards difference in dtype."""
+    m = MetricCollection(
+        [
+            ConfusionMatrix(num_classes=3),
+            MatthewsCorrCoef(num_classes=3),
+        ]
+    )
+    assert not m._groups_checked
+    assert m.compute_groups == {0: ["ConfusionMatrix"], 1: ["MatthewsCorrCoef"]}
+    preds = torch.randn(10, 3).softmax(dim=-1)
+    target = torch.randint(3, (10,))
+    for _ in range(2):
+        m.update(preds, target)
+    assert m.compute_groups == {0: ["ConfusionMatrix", "MatthewsCorrCoef"]}
     assert m.compute()
 
 
