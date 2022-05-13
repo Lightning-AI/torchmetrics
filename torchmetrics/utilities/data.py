@@ -248,3 +248,10 @@ def _bincount(x: Tensor, minlength: Optional[int] = None) -> Tensor:
         return output
     else:
         return torch.bincount(x, minlength=minlength)
+
+
+def allclose(tensor1: Tensor, tensor2: Tensor) -> bool:
+    """Wrapper of torch.allclose that is robust towards dtype difference."""
+    if tensor1.dtype != tensor2.dtype:
+        tensor2 = tensor2.to(dtype=tensor1.dtype)
+    return torch.allclose(tensor1, tensor2)
