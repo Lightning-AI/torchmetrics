@@ -136,10 +136,10 @@ def _segm_iou(det: List[Tuple[np.ndarray, np.ndarray]], gt: List[Tuple[np.ndarra
 
     """
 
-    det = [{"size": i[0], "counts": i[1]} for i in det]
-    gt = [{"size": i[0], "counts": i[1]} for i in gt]
+    det_coco_format = [{"size": i[0], "counts": i[1]} for i in det]
+    gt_coco_format = [{"size": i[0], "counts": i[1]} for i in gt]
 
-    return torch.tensor(mask_utils.iou(det, gt, [False for _ in gt]))
+    return torch.tensor(mask_utils.iou(det_coco_format, gt_coco_format, [False for _ in gt]))
 
 
 def _input_validator(
@@ -318,10 +318,10 @@ class MeanAveragePrecision(Metric):
             raise ValueError(f"Expected argument `iou_type` to be one of {allowed_iou_types} but got {iou_type}")
         self.iou_type = iou_type
         self.bbox_area_ranges = {
-            "all": (0**2, int(1e5**2)),
-            "small": (0**2, 32**2),
-            "medium": (32**2, 96**2),
-            "large": (96**2, int(1e5**2)),
+            "all": (0 ** 2, int(1e5 ** 2)),
+            "small": (0 ** 2, 32 ** 2),
+            "medium": (32 ** 2, 96 ** 2),
+            "large": (96 ** 2, int(1e5 ** 2)),
         }
 
         if not isinstance(class_metrics, bool):
