@@ -22,7 +22,7 @@ from torchmetrics.functional.classification.dice import _dice_compute
 class Dice(StatScores):
     r"""Computes `Dice`_:
 
-    .. math:: \text{Precision} = \frac{\text{2 * TP}}{\text{2 * TP} + \text{FP} + \text{FN}}
+    .. math:: \text{Dice} = \frac{\text{2 * TP}}{\text{2 * TP} + \text{FP} + \text{FN}}
 
     Where :math:`\text{TP}` and :math:`\text{FP}` represent the number of true positives and
     false positives respecitively.
