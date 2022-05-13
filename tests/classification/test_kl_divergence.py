@@ -117,7 +117,10 @@ def test_error_on_multidim_tensors():
 def test_zero_probability():
     """When p = 0 in kl divergence the score should not output Nan."""
     metric = KLDivergence()
-    metric.update(torch.tensor([[1, 0, 0], [1, 0, 0], [0, 0, 1]]), torch.tensor(torch.randn(3, 3).softmax(dim=-1)))
+    metric.update(
+        torch.tensor([[1.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 1.0]]),
+        torch.tensor(torch.randn(3, 3).softmax(dim=-1)),
+    )
     assert not torch.isnan(metric.compute())
 
 
