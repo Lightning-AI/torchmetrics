@@ -22,6 +22,8 @@
 .. _Matthews correlation coefficient: https://en.wikipedia.org/wiki/Matthews_correlation_coefficient
 .. _Precision: https://en.wikipedia.org/wiki/Precision_and_recall
 .. _Recall: https://en.wikipedia.org/wiki/Precision_and_recall
+.. _Dice:https://en.wikipedia.org/wiki/Sørensen–Dice_coefficient
+.. _scipy implementation of Dice: https://github.com/scipy/scipy/blob/v1.8.0/scipy/spatial/distance.py#L1368-L1424
 .. _Specificity: https://en.wikipedia.org/wiki/Sensitivity_and_specificity
 .. _Type I and Type II errors: https://en.wikipedia.org/wiki/Type_I_and_type_II_errors
 .. _confusion matrix: https://en.wikipedia.org/wiki/Confusion_matrix#Table_of_confusion
