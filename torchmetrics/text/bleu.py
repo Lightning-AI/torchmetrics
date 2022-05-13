@@ -49,8 +49,10 @@ class BLEUScore(Metric):
         and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och `Machine Translation Evolution`_
     """
 
-    is_differentiable = False
-    higher_is_better = True
+    is_differentiable: bool = False
+    higher_is_better: bool = True
+    full_state_update: bool = True
+
     preds_len: Tensor
     target_len: Tensor
     numerator: Tensor

@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -109,6 +109,9 @@ class BinnedPrecisionRecallCurve(Metric):
         tensor([0.0000, 0.5000, 1.0000])]
     """
 
+    is_differentiable: bool = False
+    higher_is_better: Optional[bool] = None
+    full_state_update: bool = False
     TPs: Tensor
     FPs: Tensor
     FNs: Tensor
@@ -124,14 +127,13 @@ class BinnedPrecisionRecallCurve(Metric):
         self.num_classes = num_classes
         if isinstance(thresholds, int):
             self.num_thresholds = thresholds
-            thresholds = torch.linspace(0, 1.0, thresholds)
-            self.register_buffer("thresholds", thresholds)
+            self.thresholds = torch.linspace(0, 1.0, thresholds)
+
         elif thresholds is not None:
             if not isinstance(thresholds, (list, Tensor)):
                 raise ValueError("Expected argument `thresholds` to either be an integer, list of floats or a tensor")
-            thresholds = torch.tensor(thresholds) if isinstance(thresholds, list) else thresholds
-            self.num_thresholds = thresholds.numel()
-            self.register_buffer("thresholds", thresholds)
+            self.thresholds = torch.tensor(thresholds) if isinstance(thresholds, list) else thresholds
+            self.num_thresholds = self.thresholds.numel()
 
         for name in ("TPs", "FPs", "FNs"):
             self.add_state(

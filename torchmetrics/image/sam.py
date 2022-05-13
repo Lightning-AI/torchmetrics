@@ -54,10 +54,12 @@ class SpectralAngleMapper(Metric):
         Airborne Geoscience Workshop, vol. 1, June 1, 1992.
     """
 
-    preds: List[Tensor]
-    target: List[Tensor]
     higher_is_better: bool = False
     is_differentiable: bool = True
+    full_state_update: bool = False
+
+    preds: List[Tensor]
+    target: List[Tensor]
 
     def __init__(
         self,

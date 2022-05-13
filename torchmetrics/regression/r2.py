@@ -72,8 +72,9 @@ class R2Score(Metric):
         tensor([0.9654, 0.9082])
 
     """
-    is_differentiable = True
-    higher_is_better = True
+    is_differentiable: bool = True
+    higher_is_better: bool = True
+    full_state_update: bool = False
     sum_squared_error: Tensor
     sum_error: Tensor
     residual: Tensor
