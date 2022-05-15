@@ -14,53 +14,14 @@
 from typing import Optional, Tuple
 
 import torch
+import math
 from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.functional.classification.stat_scores import _reduce_stat_scores, _stat_scores_update
 from torchmetrics.utilities.checks import _input_squeeze
-from torchmetrics.utilities.data import to_categorical
-from torchmetrics.utilities.distributed import reduce
 from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
 from torchmetrics.utilities.prints import rank_zero_warn
-
-
-def _stat_scores(
-    preds: Tensor,
-    target: Tensor,
-    class_index: int,
-    argmax_dim: int = 1,
-) -> Tuple[Tensor, Tensor, Tensor, Tensor, Tensor]:
-    """Calculates the number of true positive, false positive, true negative and false negative for a specific
-    class.
-
-    Args:
-        preds: prediction tensor
-        target: target tensor
-        class_index: class to calculate over
-        argmax_dim: if pred is a tensor of probabilities, this indicates the
-            axis the argmax transformation will be applied over
-
-    Return:
-        True Positive, False Positive, True Negative, False Negative, Support
-
-    Example:
-        >>> x = torch.tensor([1, 2, 3])
-        >>> y = torch.tensor([0, 2, 3])
-        >>> tp, fp, tn, fn, sup = _stat_scores(x, y, class_index=1)
-        >>> tp, fp, tn, fn, sup
-        (tensor(0), tensor(1), tensor(2), tensor(0), tensor(0))
-    """
-    if preds.ndim == target.ndim + 1:
-        preds = to_categorical(preds, argmax_dim=argmax_dim)
-
-    tp = ((preds == class_index) * (target == class_index)).to(torch.long).sum()
-    fp = ((preds == class_index) * (target != class_index)).to(torch.long).sum()
-    tn = ((preds != class_index) * (target != class_index)).to(torch.long).sum()
-    fn = ((preds != class_index) * (target == class_index)).to(torch.long).sum()
-    sup = (target == class_index).to(torch.long).sum()
-
-    return tp, fp, tn, fn, sup
 
 
 def dice_score(
@@ -73,6 +34,9 @@ def dice_score(
 ) -> Tensor:
     """Compute dice score from prediction scores.
 
+    Supports only "macro" approach, which mean calculate the metric for each class separately,
+    and average the metrics across classes (with equal weights for each class).
+
     .. deprecated:: v0.9
         The `dice_score` function was deprecated in v0.9 and will be removed in v0.10. Use `dice` function instead.
 
@@ -81,8 +45,15 @@ def dice_score(
         target: ground-truth labels
         bg: whether to also compute dice for the background
         nan_score: score to return, if a NaN occurs during computation
-        no_fg_score: score to return, if no foreground pixel was found in target
-        reduction: a method to reduce metric score over labels.
+        no_fg_score: (default, ``0.0``) score to return, if no foreground pixel was found in target
+
+            .. deprecated:: v0.9
+                All different from default options will be changed to default.
+
+        reduction: (default, ``'elementwise_mean'``) a method to reduce metric score over labels.
+
+            .. deprecated:: v0.9
+                All different from default options will be changed to default.
 
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
@@ -106,22 +77,31 @@ def dice_score(
         DeprecationWarning,
     )
     num_classes = preds.shape[1]
-    bg_inv = 1 - int(bg)
-    scores = torch.zeros(num_classes - bg_inv, device=preds.device, dtype=torch.float32)
-    for i in range(bg_inv, num_classes):
-        if not (target == i).any():
-            # no foreground class
-            scores[i - bg_inv] += no_fg_score
-            continue
 
-        # TODO: rewrite to use general `stat_scores`
-        tp, fp, _, fn, _ = _stat_scores(preds=preds, target=target, class_index=i)
-        denom = (2 * tp + fp + fn).to(torch.float)
-        # nan result
-        score_cls = (2 * tp).to(torch.float) / denom if torch.is_nonzero(denom) else nan_score
+    if no_fg_score != 0.0:
+        no_fg_score = 0.0
+        rank_zero_warn(f"Deprecated parameter. Switched to default `no_fg_score` = {no_fg_score}.")
 
-        scores[i - bg_inv] += score_cls
-    return reduce(scores, reduction=reduction)
+    if reduction != "elementwise_mean":
+        reduction = "elementwise_mean"
+        rank_zero_warn(f"Deprecated parameter. Switched to default `reduction` = {reduction}.")
+
+    zero_division = math.floor(nan_score)
+    if zero_division != nan_score:
+        rank_zero_warn(f"Deprecated parameter. `nan_score` converted to integer {zero_division}.")
+
+    ignore_index = None
+    if not bg:
+        ignore_index = 0
+
+    return dice(
+        preds,
+        target,
+        ignore_index=ignore_index,
+        average="macro",
+        num_classes=num_classes,
+        zero_division=zero_division,
+    )
 
 
 def _dice_compute(
