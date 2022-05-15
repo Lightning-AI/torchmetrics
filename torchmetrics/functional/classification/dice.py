@@ -102,7 +102,7 @@ def dice_score(
         tensor(0.3333)
     """
     rank_zero_warn(
-        "The `dice_score` function was deprecated in v0.9 and will be removed in v1.0. Use `dice` function instead.",
+        "The `dice_score` function was deprecated in v0.9 and will be removed in v0.10. Use `dice` function instead.",
         DeprecationWarning,
     )
     num_classes = preds.shape[1]
