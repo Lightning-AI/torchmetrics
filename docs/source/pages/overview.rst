@@ -96,8 +96,8 @@ be moved to the same device as the input of the metric:
     print(out.device) # cuda:0
 
 However, when **properly defined** inside a :class:`~torch.nn.Module` or
-:class:`~pytorch_lightning.core.lightning.LightningModule` the metric will be be automatically move
-to the same device as the the module when using ``.to(device)``.  Being
+:class:`~pytorch_lightning.core.lightning.LightningModule` the metric will be automatically moved
+to the same device as the module when using ``.to(device)``.  Being
 **properly defined** means that the metric is correctly identified as a child module of the
 model (check ``.children()`` attribute of the model). Therefore, metrics cannot be placed
 in native python ``list`` and ``dict``, as they will not be correctly identified
