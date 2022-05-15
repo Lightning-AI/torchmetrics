@@ -74,7 +74,7 @@ def dice_score(
     """Compute dice score from prediction scores.
 
     .. deprecated:: v0.9
-        The `dice_score` function was deprecated in v0.9 and will be removed in v1.0. Use `dice` function instead.
+        The `dice_score` function was deprecated in v0.9 and will be removed in v0.10. Use `dice` function instead.
 
     Args:
         preds: estimated probabilities
