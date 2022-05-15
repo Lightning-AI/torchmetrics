@@ -22,6 +22,7 @@ from torchmetrics.utilities.checks import _input_squeeze
 from torchmetrics.utilities.data import to_categorical
 from torchmetrics.utilities.distributed import reduce
 from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
+from torchmetrics.utilities.prints import rank_zero_warn
 
 
 def _stat_scores(
@@ -72,6 +73,9 @@ def dice_score(
 ) -> Tensor:
     """Compute dice score from prediction scores.
 
+    .. deprecated:: v0.9
+        The `dice_score` function was deprecated in v0.9 and will be removed in v1.0. Use `dice` function instead.
+
     Args:
         preds: estimated probabilities
         target: ground-truth labels
@@ -97,6 +101,9 @@ def dice_score(
         >>> dice_score(pred, target)
         tensor(0.3333)
     """
+    rank_zero_warn(
+        "The `dice_score` function was deprecated in v0.9 and will be removed in v1.0. Use `dice` function instead."
+    )
     num_classes = preds.shape[1]
     bg_inv = 1 - int(bg)
     scores = torch.zeros(num_classes - bg_inv, device=preds.device, dtype=torch.float32)
