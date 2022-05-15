@@ -97,6 +97,12 @@ class Dice(StatScores):
     Raises:
         ValueError:
             If ``average`` is none of ``"micro"``, ``"macro"``, ``"weighted"``, ``"samples"``, ``"none"``, ``None``.
+        ValueError:
+            If ``mdmc_average`` is not one of ``None``, ``"samplewise"``, ``"global"``.
+        ValueError:
+            If ``average`` is set but ``num_classes`` is not provided.
+        ValueError:
+            If ``num_classes`` is set and ``ignore_index`` is not in the range ``[0, num_classes)``.
 
     Example:
         >>> import torch
