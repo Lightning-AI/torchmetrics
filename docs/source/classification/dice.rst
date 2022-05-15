@@ -26,8 +26,8 @@ ____________________
 Dice Score
 ##########
 
-Functional Interface (will be deprecated)
-_________________________________________
+Functional Interface (was deprecated in v0.9)
+_____________________________________________
 
 .. autofunction:: torchmetrics.functional.dice_score
     :noindex:
