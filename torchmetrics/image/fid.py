@@ -268,12 +268,13 @@ class FrechetInceptionDistance(Metric):
 
         # calculate mean and covariance
         n = real_features.shape[0]
+        m = fake_features.shape[0]
         mean1 = real_features.mean(dim=0)
         mean2 = fake_features.mean(dim=0)
         diff1 = real_features - mean1
         diff2 = fake_features - mean2
         cov1 = 1.0 / (n - 1) * diff1.t().mm(diff1)
-        cov2 = 1.0 / (n - 1) * diff2.t().mm(diff2)
+        cov2 = 1.0 / (m - 1) * diff2.t().mm(diff2)
 
         # compute fid
         return _compute_fid(mean1, cov1, mean2, cov2).to(orig_dtype)

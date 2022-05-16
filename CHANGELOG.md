@@ -26,6 +26,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added support for nested metric collections ([#1003](https://github.com/PyTorchLightning/metrics/pull/1003))
 
 
+- Added `Dice` to classification package ([#1021](https://github.com/PyTorchLightning/metrics/pull/1021))
+
+
 ### Changed
 
 -
@@ -57,6 +60,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fixed non-empty state dict for a few metrics ([#1012](https://github.com/PyTorchLightning/metrics/pull/1012))
+
+
+- Fixed bug when comparing states while finding compute groups ([#1022](https://github.com/PyTorchLightning/metrics/pull/1022))
+
+
+- Fixed `torch.double` support in stat score metrics ([#1023](https://github.com/PyTorchLightning/metrics/pull/1023))
+
+
+- Fixed `FID` calculation for non-equal size real and fake input ([#1028](https://github.com/PyTorchLightning/metrics/pull/1028))
+
+
+- Fixed case where `KLDivergence` could output `Nan` ([#1030](https://github.com/PyTorchLightning/metrics/pull/1030))
 
 
 ## [0.8.2] - 2022-05-06
