@@ -430,7 +430,7 @@ class MeanAveragePrecision(Metric):
             return torch.cat(self.detection_labels + self.groundtruth_labels).unique().tolist()
         return []
 
-    def _compute_iou(self, id: int, class_id: int, max_det: int) -> Tensor:
+    def _compute_iou(self, idx: int, class_id: int, max_det: int) -> Tensor:
         """Computes the Intersection over Union (IoU) for ground truth and detection bounding boxes for the given
         image and class.
 
@@ -444,11 +444,11 @@ class MeanAveragePrecision(Metric):
         """
 
         # if self.iou_type == "bbox":
-        gt = self.groundtruths[id]
-        det = self.detections[id]
+        gt = self.groundtruths[idx]
+        det = self.detections[idx]
 
-        gt_label_mask = (self.groundtruth_labels[id] == class_id).nonzero().squeeze(1)
-        det_label_mask = (self.detection_labels[id] == class_id).nonzero().squeeze(1)
+        gt_label_mask = (self.groundtruth_labels[idx] == class_id).nonzero().squeeze(1)
+        det_label_mask = (self.detection_labels[idx] == class_id).nonzero().squeeze(1)
 
         if len(gt_label_mask) == 0 or len(det_label_mask) == 0:
             return Tensor([])
@@ -460,8 +460,8 @@ class MeanAveragePrecision(Metric):
             return Tensor([])
 
         # Sort by scores and use only max detections
-        scores = self.detection_scores[id]
-        scores_filtered = scores[self.detection_labels[id] == class_id]
+        scores = self.detection_scores[idx]
+        scores_filtered = scores[self.detection_labels[idx] == class_id]
         inds = torch.argsort(scores_filtered, descending=True)
 
         # TODO Fix (only for masks is necessary)
