@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Tuple
+from time import perf_counter
+from typing import Any, Dict, Optional, Sequence, Tuple
 
 import torch
 from torch import Tensor
@@ -604,3 +605,63 @@ def _check_retrieval_target_and_prediction_types(
     preds = preds.float()
 
     return preds.flatten(), target.flatten()
+
+
+def _allclose_recursive(res1: Any, res2: Any, atol: float = 1e-8):
+    """Utility function for recursively asserting that two results are within a certain tolerance."""
+    # single output compare
+    if isinstance(res1, Tensor):
+        return torch.allclose(res1, res2, atol=atol)
+    elif isinstance(res1, Sequence):
+        return all(_allclose_recursive(r1, r2) for r1, r2 in zip(res1, res2))
+    elif isinstance(res1, Dict):
+        return all(_allclose_recursive(res1[k], res2[k]) for k in res1.keys())
+    else:
+        raise ValueError("Unknown format for comparison")
+
+
+def check_forward_no_full_state(
+    metric_class: object,
+    init_args: Dict[str, Any],
+    *input_args,
+    num_update_to_compare: Sequence[int] = [10, 100, 1000],
+    reps: int = 5,
+) -> bool:
+    """"""
+
+    class FullState(metric_class):
+        full_state_update = True
+
+    class PartState(metric_class):
+        full_state_update = False
+
+    fullstate = FullState(**init_args)
+    partstate = PartState(**init_args)
+
+    equal = True
+    for _ in range(10):
+        out1 = fullstate(*input_args)
+        out2 = fullstate(*input_args)
+        equal = equal | _allclose_recursive(out1, out2)
+
+    if not equal:  # we can stop early because the states did not match
+        return False
+
+    res = torch.zeros(2, len(num_update_to_compare), reps)
+    for i, metric in enumerate([fullstate, partstate]):
+        for j, t in enumerate(num_update_to_compare):
+            for r in range(reps):
+                start = perf_counter()
+                for _ in range(t):
+                    _ = metric(*input_args)
+                end = perf_counter()
+                res[i, j, r] = end - start
+                metric.reset()
+
+    mean = torch.mean(res, -1)
+    std = torch.std(res, -1)
+
+    for t in range(len(num_update_to_compare)):
+        print(f"Full state for {num_update_to_compare[t]} steps took: {mean[0, t]}+-{std[0, t]}")
+        print(f"Partial state for {num_update_to_compare[t]} steps took: {mean[0, t]}+-{std[0, t]}")
+        print()
