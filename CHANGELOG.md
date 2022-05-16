@@ -29,6 +29,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `Dice` to classification package ([#1021](https://github.com/PyTorchLightning/metrics/pull/1021))
 
 
+- Added `TotalVariation` to image package ([#978](https://github.com/PyTorchLightning/metrics/pull/978))
+
+
 ### Changed
 
 -
