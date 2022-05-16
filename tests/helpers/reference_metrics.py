@@ -19,6 +19,7 @@ import torch
 import torch.nn.functional as F
 from sklearn.metrics._regression import _check_reg_targets
 from sklearn.utils import assert_all_finite, check_consistent_length, column_or_1d
+from torch import Tensor
 
 from torchmetrics.functional.image.uqi import universal_image_quality_index
 
@@ -233,11 +234,11 @@ def d_lambda(preds: np.ndarray, target: np.ndarray, p: int = 1) -> float:
 
 
 def _sk_ergas(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     ratio: Union[int, float] = 4,
     reduction: str = "elementwise_mean",
-) -> torch.Tensor:
+) -> Tensor:
     """Reference implementation of Erreur Relative Globale Adimensionnelle de Synthèse."""
     reduction_options = ("elementwise_mean", "sum", "none")
     if reduction not in reduction_options:
@@ -264,10 +265,10 @@ def _sk_ergas(
 
 
 def _sk_sam(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     reduction: str = "elementwise_mean",
-) -> torch.Tensor:
+) -> Tensor:
     """Reference implementation of spectral angle mapper."""
     reduction_options = ("elementwise_mean", "sum", "none")
     if reduction not in reduction_options:

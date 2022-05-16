@@ -146,8 +146,8 @@ class BERTScore(Metric):
         self.rescale_with_baseline = rescale_with_baseline
         self.baseline_path = baseline_path
         self.baseline_url = baseline_url
-        self.preds: Dict[str, List[torch.Tensor]] = {"input_ids": [], "attention_mask": []}
-        self.target: Dict[str, List[torch.Tensor]] = {"input_ids": [], "attention_mask": []}
+        self.preds: Dict[str, List[Tensor]] = {"input_ids": [], "attention_mask": []}
+        self.target: Dict[str, List[Tensor]] = {"input_ids": [], "attention_mask": []}
 
         if user_tokenizer:
             self.tokenizer = user_tokenizer
