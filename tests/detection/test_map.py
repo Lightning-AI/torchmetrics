@@ -19,7 +19,7 @@ import numpy as np
 import pytest
 import torch
 from pycocotools import mask
-from torch import Tensor
+from torch import IntTensor, Tensor
 
 from tests.helpers.testers import MetricTester
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
@@ -27,54 +27,30 @@ from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_
 
 Input = namedtuple("Input", ["preds", "target"])
 
-with open("tests/detection/instance_segmentation_inputs.json") as f:
-    inputs_json = json.load(f)
+with open("tests/detection/instance_segmentation_inputs.json") as fp:
+    inputs_json = json.load(fp)
+
+_mask_unsqueeze_bool = lambda m: Tensor(mask.decode(m)).unsqueeze(0).bool()
+_masks_stack_bool = lambda ms: Tensor(np.stack([mask.decode(m) for m in ms])).bool()
 
 _inputs_masks = Input(
     preds=[
         [
+            dict(masks=_mask_unsqueeze_bool(inputs_json["preds"][0]), scores=Tensor([0.236]), labels=IntTensor([4])),
             dict(
-                masks=torch.Tensor(
-                    mask.decode(
-                        inputs_json["preds"][0],
-                    )
-                )
-                .unsqueeze(0)
-                .bool(),
-                scores=torch.Tensor([0.236]),
-                labels=torch.IntTensor([4]),
-            ),
-            dict(
-                masks=torch.Tensor(
-                    np.stack(
-                        [
-                            mask.decode(inputs_json["preds"][1]),
-                            mask.decode(inputs_json["preds"][2]),
-                        ]
-                    )
-                ).bool(),
-                scores=torch.Tensor([0.318, 0.726]),
-                labels=torch.IntTensor([3, 2]),
+                masks=_masks_stack_bool([inputs_json["preds"][1], inputs_json["preds"][2]]),
+                scores=Tensor([0.318, 0.726]),
+                labels=IntTensor([3, 2]),
             ),  # 73
         ],
     ],
     target=[
         [
+            dict(masks=_mask_unsqueeze_bool(inputs_json["targets"][0]), labels=IntTensor([4])),  # 42
             dict(
-                masks=torch.Tensor(mask.decode(inputs_json["targets"][0])).unsqueeze(0).bool(),
-                labels=torch.IntTensor([4]),
-            ),  # 42
-            dict(
-                labels=torch.IntTensor([2, 2]),
-                masks=torch.Tensor(
-                    np.stack(
-                        [
-                            mask.decode(inputs_json["targets"][1]),
-                            mask.decode(inputs_json["targets"][2]),
-                        ]
-                    )
-                ).bool(),  # 73
-            ),
+                masks=_masks_stack_bool([inputs_json["targets"][1], inputs_json["targets"][2]]),
+                labels=IntTensor([2, 2]),
+            ),  # 73
         ],
     ],
 )
@@ -86,12 +62,12 @@ _inputs = Input(
             dict(
                 boxes=Tensor([[258.15, 41.29, 606.41, 285.07]]),
                 scores=Tensor([0.236]),
-                labels=torch.IntTensor([4]),
+                labels=IntTensor([4]),
             ),  # coco image id 42
             dict(
                 boxes=Tensor([[61.00, 22.75, 565.00, 632.42], [12.66, 3.32, 281.26, 275.23]]),
                 scores=Tensor([0.318, 0.726]),
-                labels=torch.IntTensor([3, 2]),
+                labels=IntTensor([3, 2]),
             ),  # coco image id 73
         ],
         [
@@ -108,12 +84,12 @@ _inputs = Input(
                     ]
                 ),
                 scores=Tensor([0.546, 0.3, 0.407, 0.611, 0.335, 0.805, 0.953]),
-                labels=torch.IntTensor([4, 1, 0, 0, 0, 0, 0]),
+                labels=IntTensor([4, 1, 0, 0, 0, 0, 0]),
             ),  # coco image id 74
             dict(
                 boxes=Tensor([[0.00, 2.87, 601.00, 421.52]]),
                 scores=Tensor([0.699]),
-                labels=torch.IntTensor([5]),
+                labels=IntTensor([5]),
             ),  # coco image id 133
         ],
     ],
@@ -121,7 +97,7 @@ _inputs = Input(
         [
             dict(
                 boxes=Tensor([[214.1500, 41.2900, 562.4100, 285.0700]]),
-                labels=torch.IntTensor([4]),
+                labels=IntTensor([4]),
             ),  # coco image id 42
             dict(
                 boxes=Tensor(
@@ -130,7 +106,7 @@ _inputs = Input(
                         [1.66, 3.32, 270.26, 275.23],
                     ]
                 ),
-                labels=torch.IntTensor([2, 2]),
+                labels=IntTensor([2, 2]),
             ),  # coco image id 73
         ],
         [
@@ -146,11 +122,11 @@ _inputs = Input(
                         [277.11, 103.84, 292.44, 150.72],
                     ]
                 ),
-                labels=torch.IntTensor([4, 1, 0, 0, 0, 0, 0]),
+                labels=IntTensor([4, 1, 0, 0, 0, 0, 0]),
             ),  # coco image id 74
             dict(
                 boxes=Tensor([[13.99, 2.87, 640.00, 421.52]]),
-                labels=torch.IntTensor([5]),
+                labels=IntTensor([5]),
             ),  # coco image id 133
         ],
     ],
@@ -163,14 +139,14 @@ _inputs2 = Input(
             dict(
                 boxes=Tensor([[258.0, 41.0, 606.0, 285.0]]),
                 scores=Tensor([0.536]),
-                labels=torch.IntTensor([0]),
+                labels=IntTensor([0]),
             ),
         ],
         [
             dict(
                 boxes=Tensor([[258.0, 41.0, 606.0, 285.0]]),
                 scores=Tensor([0.536]),
-                labels=torch.IntTensor([0]),
+                labels=IntTensor([0]),
             )
         ],
     ],
@@ -178,13 +154,13 @@ _inputs2 = Input(
         [
             dict(
                 boxes=Tensor([[214.0, 41.0, 562.0, 285.0]]),
-                labels=torch.IntTensor([0]),
+                labels=IntTensor([0]),
             )
         ],
         [
             dict(
                 boxes=Tensor([]),
-                labels=torch.IntTensor([]),
+                labels=IntTensor([]),
             )
         ],
     ],
@@ -195,15 +171,15 @@ _inputs2 = Input(
 _inputs3 = Input(
     preds=[
         [
-            dict(boxes=torch.tensor([]), scores=torch.tensor([]), labels=torch.tensor([])),
+            dict(boxes=Tensor([]), scores=Tensor([]), labels=Tensor([])),
         ],
     ],
     target=[
         [
             dict(
-                boxes=torch.tensor([[1.0, 2.0, 3.0, 4.0]]),
-                scores=torch.tensor([0.8]),
-                labels=torch.tensor([1]),
+                boxes=Tensor([[1.0, 2.0, 3.0, 4.0]]),
+                scores=Tensor([0.8]),
+                labels=Tensor([1]),
             ),
         ],
     ],
@@ -288,20 +264,20 @@ def _compare_fn_segm(preds, target) -> dict:
         Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.350
     """
     return {
-        "map": torch.Tensor([0.352]),
-        "map_50": torch.Tensor([0.742]),
-        "map_75": torch.Tensor([0.252]),
-        "map_small": torch.Tensor([-1]),
-        "map_medium": torch.Tensor([-1]),
-        "map_large": torch.Tensor([0.352]),
-        "mar_1": torch.Tensor([0.35]),
-        "mar_10": torch.Tensor([0.35]),
-        "mar_100": torch.Tensor([0.35]),
-        "mar_small": torch.Tensor([-1]),
-        "mar_medium": torch.Tensor([-1]),
-        "mar_large": torch.Tensor([0.35]),
-        "map_per_class": torch.Tensor([0.4039604, -1.0, 0.3]),
-        "mar_100_per_class": torch.Tensor([0.4, -1.0, 0.3]),
+        "map": Tensor([0.352]),
+        "map_50": Tensor([0.742]),
+        "map_75": Tensor([0.252]),
+        "map_small": Tensor([-1]),
+        "map_medium": Tensor([-1]),
+        "map_large": Tensor([0.352]),
+        "mar_1": Tensor([0.35]),
+        "mar_10": Tensor([0.35]),
+        "mar_100": Tensor([0.35]),
+        "mar_small": Tensor([-1]),
+        "mar_medium": Tensor([-1]),
+        "mar_large": Tensor([0.35]),
+        "map_per_class": Tensor([0.4039604, -1.0, 0.3]),
+        "mar_100_per_class": Tensor([0.4, -1.0, 0.3]),
     }
 
 
@@ -368,10 +344,10 @@ def test_empty_preds():
 
     metric.update(
         [
-            dict(boxes=Tensor([]), scores=torch.Tensor([]), labels=torch.IntTensor([])),
+            dict(boxes=Tensor([]), scores=Tensor([]), labels=IntTensor([])),
         ],
         [
-            dict(boxes=torch.Tensor([[214.1500, 41.2900, 562.4100, 285.0700]]), labels=torch.IntTensor([4])),
+            dict(boxes=Tensor([[214.1500, 41.2900, 562.4100, 285.0700]]), labels=IntTensor([4])),
         ],
     )
     metric.compute()
@@ -385,13 +361,13 @@ def test_empty_ground_truths():
     metric.update(
         [
             dict(
-                boxes=torch.Tensor([[214.1500, 41.2900, 562.4100, 285.0700]]),
-                scores=torch.Tensor([0.5]),
-                labels=torch.IntTensor([4]),
+                boxes=Tensor([[214.1500, 41.2900, 562.4100, 285.0700]]),
+                scores=Tensor([0.5]),
+                labels=IntTensor([4]),
             ),
         ],
         [
-            dict(boxes=torch.Tensor([]), labels=torch.IntTensor([])),
+            dict(boxes=Tensor([]), labels=IntTensor([])),
         ],
     )
     metric.compute()
@@ -448,13 +424,13 @@ def test_missing_pred():
     values)
     """
     gts = [
-        dict(boxes=torch.Tensor([[10, 20, 15, 25]]), labels=torch.IntTensor([0])),
-        dict(boxes=torch.Tensor([[10, 20, 15, 25]]), labels=torch.IntTensor([0])),
+        dict(boxes=Tensor([[10, 20, 15, 25]]), labels=IntTensor([0])),
+        dict(boxes=Tensor([[10, 20, 15, 25]]), labels=IntTensor([0])),
     ]
     preds = [
-        dict(boxes=torch.Tensor([[10, 20, 15, 25]]), scores=torch.Tensor([0.9]), labels=torch.IntTensor([0])),
+        dict(boxes=Tensor([[10, 20, 15, 25]]), scores=Tensor([0.9]), labels=IntTensor([0])),
         # Empty prediction
-        dict(boxes=torch.Tensor([]), scores=torch.Tensor([]), labels=torch.IntTensor([])),
+        dict(boxes=Tensor([]), scores=Tensor([]), labels=IntTensor([])),
     ]
     metric = MeanAveragePrecision()
     metric.update(preds, gts)
@@ -470,12 +446,12 @@ def test_missing_gt():
     on where we are sampling (i.e. recall's values)
     """
     gts = [
-        dict(boxes=torch.Tensor([[10, 20, 15, 25]]), labels=torch.IntTensor([0])),
-        dict(boxes=torch.Tensor([]), labels=torch.IntTensor([])),
+        dict(boxes=Tensor([[10, 20, 15, 25]]), labels=IntTensor([0])),
+        dict(boxes=Tensor([]), labels=IntTensor([])),
     ]
     preds = [
-        dict(boxes=torch.Tensor([[10, 20, 15, 25]]), scores=torch.Tensor([0.9]), labels=torch.IntTensor([0])),
-        dict(boxes=torch.Tensor([[10, 20, 15, 25]]), scores=torch.Tensor([0.95]), labels=torch.IntTensor([0])),
+        dict(boxes=Tensor([[10, 20, 15, 25]]), scores=Tensor([0.9]), labels=IntTensor([0])),
+        dict(boxes=Tensor([[10, 20, 15, 25]]), scores=Tensor([0.95]), labels=IntTensor([0])),
     ]
 
     metric = MeanAveragePrecision()
@@ -493,12 +469,12 @@ def test_segm_iou_empty_mask():
         [
             dict(
                 masks=torch.randint(0, 1, (1, 10, 10)).bool(),
-                scores=torch.Tensor([0.5]),
-                labels=torch.IntTensor([4]),
+                scores=Tensor([0.5]),
+                labels=IntTensor([4]),
             ),
         ],
         [
-            dict(masks=torch.Tensor([]), labels=torch.IntTensor([])),
+            dict(masks=Tensor([]), labels=IntTensor([])),
         ],
     )
 
@@ -513,70 +489,70 @@ def test_error_on_wrong_input():
     metric.update([], [])  # no error
 
     with pytest.raises(ValueError, match="Expected argument `preds` to be of type Sequence"):
-        metric.update(torch.Tensor(), [])  # type: ignore
+        metric.update(Tensor(), [])  # type: ignore
 
     with pytest.raises(ValueError, match="Expected argument `target` to be of type Sequence"):
-        metric.update([], torch.Tensor())  # type: ignore
+        metric.update([], Tensor())  # type: ignore
 
     with pytest.raises(ValueError, match="Expected argument `preds` and `target` to have the same length"):
         metric.update([{}], [{}, {}])
 
     with pytest.raises(ValueError, match="Expected all dicts in `preds` to contain the `boxes` key"):
         metric.update(
-            [dict(scores=torch.Tensor(), labels=torch.IntTensor)],
-            [dict(boxes=torch.Tensor(), labels=torch.IntTensor())],
+            [dict(scores=Tensor(), labels=IntTensor)],
+            [dict(boxes=Tensor(), labels=IntTensor())],
         )
 
     with pytest.raises(ValueError, match="Expected all dicts in `preds` to contain the `scores` key"):
         metric.update(
-            [dict(boxes=torch.Tensor(), labels=torch.IntTensor)],
-            [dict(boxes=torch.Tensor(), labels=torch.IntTensor())],
+            [dict(boxes=Tensor(), labels=IntTensor)],
+            [dict(boxes=Tensor(), labels=IntTensor())],
         )
 
     with pytest.raises(ValueError, match="Expected all dicts in `preds` to contain the `labels` key"):
         metric.update(
-            [dict(boxes=torch.Tensor(), scores=torch.IntTensor)],
-            [dict(boxes=torch.Tensor(), labels=torch.IntTensor())],
+            [dict(boxes=Tensor(), scores=IntTensor)],
+            [dict(boxes=Tensor(), labels=IntTensor())],
         )
 
     with pytest.raises(ValueError, match="Expected all dicts in `target` to contain the `boxes` key"):
         metric.update(
-            [dict(boxes=torch.Tensor(), scores=torch.IntTensor, labels=torch.IntTensor)],
-            [dict(labels=torch.IntTensor())],
+            [dict(boxes=Tensor(), scores=IntTensor, labels=IntTensor)],
+            [dict(labels=IntTensor())],
         )
 
     with pytest.raises(ValueError, match="Expected all dicts in `target` to contain the `labels` key"):
         metric.update(
-            [dict(boxes=torch.Tensor(), scores=torch.IntTensor, labels=torch.IntTensor)],
-            [dict(boxes=torch.IntTensor())],
+            [dict(boxes=Tensor(), scores=IntTensor, labels=IntTensor)],
+            [dict(boxes=IntTensor())],
         )
 
     with pytest.raises(ValueError, match="Expected all boxes in `preds` to be of type Tensor"):
         metric.update(
-            [dict(boxes=[], scores=torch.Tensor(), labels=torch.IntTensor())],
-            [dict(boxes=torch.Tensor(), labels=torch.IntTensor())],
+            [dict(boxes=[], scores=Tensor(), labels=IntTensor())],
+            [dict(boxes=Tensor(), labels=IntTensor())],
         )
 
     with pytest.raises(ValueError, match="Expected all scores in `preds` to be of type Tensor"):
         metric.update(
-            [dict(boxes=torch.Tensor(), scores=[], labels=torch.IntTensor())],
-            [dict(boxes=torch.Tensor(), labels=torch.IntTensor())],
+            [dict(boxes=Tensor(), scores=[], labels=IntTensor())],
+            [dict(boxes=Tensor(), labels=IntTensor())],
         )
 
     with pytest.raises(ValueError, match="Expected all labels in `preds` to be of type Tensor"):
         metric.update(
-            [dict(boxes=torch.Tensor(), scores=torch.Tensor(), labels=[])],
-            [dict(boxes=torch.Tensor(), labels=torch.IntTensor())],
+            [dict(boxes=Tensor(), scores=Tensor(), labels=[])],
+            [dict(boxes=Tensor(), labels=IntTensor())],
         )
 
     with pytest.raises(ValueError, match="Expected all boxes in `target` to be of type Tensor"):
         metric.update(
-            [dict(boxes=torch.Tensor(), scores=torch.Tensor(), labels=torch.IntTensor())],
-            [dict(boxes=[], labels=torch.IntTensor())],
+            [dict(boxes=Tensor(), scores=Tensor(), labels=IntTensor())],
+            [dict(boxes=[], labels=IntTensor())],
         )
 
     with pytest.raises(ValueError, match="Expected all labels in `target` to be of type Tensor"):
         metric.update(
-            [dict(boxes=torch.Tensor(), scores=torch.Tensor(), labels=torch.IntTensor())],
-            [dict(boxes=torch.Tensor(), labels=[])],
+            [dict(boxes=Tensor(), scores=Tensor(), labels=IntTensor())],
+            [dict(boxes=Tensor(), labels=[])],
         )
