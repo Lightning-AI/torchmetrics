@@ -17,6 +17,7 @@ from torch import tensor
 
 from torchmetrics import MeanSquaredError, PearsonCorrCoef
 from torchmetrics.utilities import check_forward_no_full_state, rank_zero_debug, rank_zero_info, rank_zero_warn
+from torchmetrics.utilities.checks import _allclose_recursive
 from torchmetrics.utilities.data import _bincount, _flatten, _flatten_dict, to_categorical, to_onehot
 from torchmetrics.utilities.distributed import class_reduce, reduce
 
@@ -137,3 +138,18 @@ def test_check_full_state_update_fn(metric_class, expected):
         input_args=dict(preds=torch.randn(100), target=torch.randn(100)),
     )
     assert out == expected
+
+
+@pytest.mark.parametrize("input, expected",
+    [
+        ((torch.ones(2,), torch.ones(2,)), True), 
+        ((torch.rand(2,), torch.rand(2,)), False),
+        (([torch.ones(2,) for _ in range(2)], [torch.ones(2,) for _ in range(2)]), True),
+        (([torch.rand(2,) for _ in range(2)], [torch.rand(2,) for _ in range(2)]), False),
+        (({f'{i}' : torch.ones(2,) for i in range(2)}, {f'{i}' :torch.ones(2,) for i in range(2)}), True),
+        (({f'{i}' : torch.rand(2,) for i in range(2)}, {f'{i}' :torch.rand(2,) for i in range(2)}), False),
+    ]
+)
+def test_recursive_allclose(input, expected):
+    res = _allclose_recursive(*input)
+    assert res == expected
