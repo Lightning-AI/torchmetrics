@@ -134,9 +134,6 @@ def test_check_full_state_update_fn(metric_class, expected):
     """Test that the check function works as it should."""
     out = check_forward_no_full_state(
         metric_class=metric_class,
-        input_args=dict(
-            preds=torch.randn(100),
-            target=torch.randn(100)
-        ),
+        input_args=dict(preds=torch.randn(100), target=torch.randn(100)),
     )
     assert out == expected
