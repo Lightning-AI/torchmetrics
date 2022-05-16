@@ -622,12 +622,54 @@ def _allclose_recursive(res1: Any, res2: Any, atol: float = 1e-8):
 
 def check_forward_no_full_state(
     metric_class: object,
-    init_args: Dict[str, Any],
-    *input_args,
+    init_args: Dict[str, Any] = {},
+    input_args: Dict[str, Any] = {},
     num_update_to_compare: Sequence[int] = [10, 100, 1000],
     reps: int = 5,
 ) -> bool:
-    """"""
+    """Utility function for checking if the new ``full_state_update`` property can safely be set
+    to ``False`` which will for most metrics results in a speedup when using ``forward``.
+
+    Args:
+        metric_class: metric class object that should be checked
+        init_args: dict containing arguments for initializing the metric class
+        input_args: dict containing arguments to pass to ``forward``
+        num_update_to_compare: if we successfully detech that the flag is safe to set to ``False``
+            we will run some speedup test. This arg should be a list of integers for how many
+            steps to compare over.
+        reps: number of repetitions of speedup test
+
+    Example (states in ``update`` are independent, save to set ``full_state_update=False``)
+        >>> from torchmetrics import ConfusionMatrix
+        >>> check_forward_no_full_state(
+        ...     ConfusionMatrix,
+        ...     init_args = {'num_classes': 3},
+        ...     input_args = {'preds': torch.randint(3, (10,)), 'target': torch.randint(3, (10,))},
+        ... ) # doctest: +SKIP
+        Full state for 10 steps took: 0.0072667645290493965+-3.828236731351353e-05
+        Partial state for 10 steps took: 0.004743088968098164+-0.0005820328951813281
+        Full state for 100 steps took: 0.0730440765619278+-0.0003615743189584464
+        Partial state for 100 steps took: 0.04705753177404404+-0.002143740188330412
+        Full state for 1000 steps took: 0.8512250781059265+-0.052338723093271255
+        Partial state for 1000 steps took: 0.5545409917831421+-0.04722180590033531
+        True
+
+    Example (states in ``update`` are dependend meaning that ``full_state_update=True``):
+        >>> from torchmetrics import ConfusionMatrix
+        >>> class MyMetric(ConfusionMatrix):
+        ...     def update(self, preds, target):
+        ...         super().update(preds, target)
+        ...         # by construction make future states dependent on prior states
+        ...         if self.confmat.sum() > 20:
+        ...             self.reset()
+        >>> check_forward_no_full_state(
+        ...     MyMetric,
+        ...     init_args = {'num_classes': 3},
+        ...     input_args = {'preds': torch.randint(3, (10,)), 'target': torch.randint(3, (10,))},
+        ... )
+        False
+
+    """
 
     class FullState(metric_class):
         full_state_update = True
@@ -640,20 +682,32 @@ def check_forward_no_full_state(
 
     equal = True
     for _ in range(10):
-        out1 = fullstate(*input_args)
-        out2 = fullstate(*input_args)
-        equal = equal | _allclose_recursive(out1, out2)
+        out1 = fullstate(**input_args)
+        try:  # if it fails, the code most likely need access to the full state
+            out2 = partstate(**input_args)
+        except RuntimeError:
+            equal = False
+            break
+        equal = equal & _allclose_recursive(out1, out2)
 
-    if not equal:  # we can stop early because the states did not match
+    res1 = fullstate.compute()
+    try:  # if it fails, the code most likely need access to the full state
+        res2 = partstate.compute()
+    except RuntimeError:
+        equal = False
+    equal = equal & _allclose_recursive(res1, res2)
+
+    if not equal:  # we can stop early because the results did not match
         return False
 
+    # Do timings
     res = torch.zeros(2, len(num_update_to_compare), reps)
     for i, metric in enumerate([fullstate, partstate]):
         for j, t in enumerate(num_update_to_compare):
             for r in range(reps):
                 start = perf_counter()
                 for _ in range(t):
-                    _ = metric(*input_args)
+                    _ = metric(**input_args)
                 end = perf_counter()
                 res[i, j, r] = end - start
                 metric.reset()
@@ -662,6 +716,7 @@ def check_forward_no_full_state(
     std = torch.std(res, -1)
 
     for t in range(len(num_update_to_compare)):
-        print(f"Full state for {num_update_to_compare[t]} steps took: {mean[0, t]}+-{std[0, t]}")
-        print(f"Partial state for {num_update_to_compare[t]} steps took: {mean[0, t]}+-{std[0, t]}")
-        print()
+        print(f"Full state for {num_update_to_compare[t]:0.3f} steps took: {mean[0, t]}+-{std[0, t]:0.3f}")
+        print(f"Partial state for {num_update_to_compare[t]} steps took: {mean[1, t]:0.3f}+-{std[1, t]:0.3f}")
+
+    return (mean[1, -1] < mean[0, -1]).item()  # if faster on average, we recommend upgrading
