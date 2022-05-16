@@ -612,12 +612,14 @@ def _allclose_recursive(res1: Any, res2: Any, atol: float = 1e-8):
     # single output compare
     if isinstance(res1, Tensor):
         return torch.allclose(res1, res2, atol=atol)
+    elif isinstance(res1, str):
+        return res1 == res2
     elif isinstance(res1, Sequence):
         return all(_allclose_recursive(r1, r2) for r1, r2 in zip(res1, res2))
-    elif isinstance(res1, Dict):
+    elif isinstance(res1, Mapping):
         return all(_allclose_recursive(res1[k], res2[k]) for k in res1.keys())
     else:
-        raise ValueError("Unknown format for comparison")
+        return res1 == res2
 
 
 def check_forward_no_full_state(
@@ -680,7 +682,7 @@ def check_forward_no_full_state(
     partstate = PartState(**init_args)
 
     equal = True
-    for _ in range(10):
+    for _ in range(num_update_to_compare[0]):
         out1 = fullstate(**input_args)
         try:  # if it fails, the code most likely need access to the full state
             out2 = partstate(**input_args)
