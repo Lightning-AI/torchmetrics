@@ -78,7 +78,9 @@ class AveragePrecision(Metric):
         [tensor(1.), tensor(1.), tensor(0.2500), tensor(0.2500), tensor(nan)]
     """
 
-    is_differentiable = False
+    is_differentiable: bool = False
+    higher_is_better: Optional[bool] = None
+    full_state_update: bool = False
     preds: List[Tensor]
     target: List[Tensor]
 

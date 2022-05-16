@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Union
 
 import torch
 from torch import Tensor
@@ -27,12 +27,6 @@ class MinMaxMetric(Metric):
     Args:
         base_metric:
             The metric of which you want to keep track of its maximum and minimum values.
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -63,17 +57,16 @@ class MinMaxMetric(Metric):
     def __init__(
         self,
         base_metric: Metric,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
         if not isinstance(base_metric, Metric):
             raise ValueError(
                 f"Expected base metric to be an instance of `torchmetrics.Metric` but received {base_metric}"
             )
         self._base_metric = base_metric
-        self.register_buffer("min_val", torch.tensor(float("inf")))
-        self.register_buffer("max_val", torch.tensor(float("-inf")))
+        self.min_val = torch.tensor(float("inf"))
+        self.max_val = torch.tensor(float("-inf"))
 
     def update(self, *args: Any, **kwargs: Any) -> None:  # type: ignore
         """Updates the underlying metric."""
@@ -90,8 +83,8 @@ class MinMaxMetric(Metric):
             raise RuntimeError(
                 f"Returned value from base metric should be a scalar (int, float or tensor of size 1, but got {val}"
             )
-        self.max_val = val if self.max_val < val else self.max_val
-        self.min_val = val if self.min_val > val else self.min_val
+        self.max_val = val if self.max_val.to(val.device) < val else self.max_val.to(val.device)
+        self.min_val = val if self.min_val.to(val.device) > val else self.min_val.to(val.device)
         return {"raw": val, "max": self.max_val, "min": self.min_val}
 
     def reset(self) -> None:

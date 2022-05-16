@@ -42,6 +42,7 @@ class MeanSquaredError(Metric):
     """
     is_differentiable = True
     higher_is_better = False
+    full_state_update = False
     sum_squared_error: Tensor
     total: Tensor
 

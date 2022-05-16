@@ -11,10 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Tuple, Union
 
 import torch
 from torch import Tensor
+from torch.nn import Module
 
 from torchmetrics.image.fid import NoTrainInceptionV3
 from torchmetrics.metric import Metric
@@ -46,10 +47,6 @@ class InceptionScore(Metric):
         is installed. Either install as ``pip install torchmetrics[image]`` or
         ``pip install torch-fidelity``
 
-    .. note:: the ``forward`` method can be used but ``compute_on_step`` is disabled by default (oppesit of
-        all other metrics) as this metric does not really make sense to calculate on a single batch. This
-        means that by default ``forward`` will just call ``update`` underneat.
-
     Args:
         feature:
             Either an str, integer or ``nn.Module``:
@@ -60,13 +57,6 @@ class InceptionScore(Metric):
               an ``[N,d]`` matrix where ``N`` is the batch size and ``d`` is the feature size.
 
         splits: integer determining how many splits the inception score calculation should be split among
-
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     References:
@@ -98,17 +88,19 @@ class InceptionScore(Metric):
         (tensor(1.0544), tensor(0.0117))
 
     """
+    is_differentiable: bool = False
+    higher_is_better: bool = True
+    full_state_update: bool = False
+
     features: List
-    higher_is_better = True
 
     def __init__(
         self,
-        feature: Union[str, int, torch.nn.Module] = "logits_unbiased",
+        feature: Union[str, int, Module] = "logits_unbiased",
         splits: int = 10,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
 
         rank_zero_warn(
             "Metric `InceptionScore` will save all extracted features in buffer."
@@ -129,7 +121,7 @@ class InceptionScore(Metric):
                 )
 
             self.inception = NoTrainInceptionV3(name="inception-v3-compat", features_list=[str(feature)])
-        elif isinstance(feature, torch.nn.Module):
+        elif isinstance(feature, Module):
             self.inception = feature
         else:
             raise TypeError("Got unknown input to argument `feature`")

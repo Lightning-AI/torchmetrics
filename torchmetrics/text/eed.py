@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, List, Sequence, Tuple, Union
 
 from torch import Tensor, stack
 from typing_extensions import Literal
@@ -33,12 +33,6 @@ class ExtendedEditDistance(Metric):
         rho: coverage cost, penalty for repetition of characters
         deletion: penalty for deletion of character
         insertion: penalty for insertion or substitution of character
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Return:
@@ -57,9 +51,11 @@ class ExtendedEditDistance(Metric):
         to WMT 2019. `ExtendedEditDistance`_
     """
 
+    higher_is_better: bool = False
+    is_differentiable: bool = False
+    full_state_update: bool = False
+
     sentence_eed: List[Tensor]
-    higher_is_better = False
-    is_differentiable = False
 
     def __init__(
         self,
@@ -69,10 +65,9 @@ class ExtendedEditDistance(Metric):
         rho: float = 0.3,
         deletion: float = 0.2,
         insertion: float = 1.0,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ):
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
 
         if language not in ("en", "ja"):
             raise ValueError(f"Expected argument `language` to either be `en` or `ja` but got {language}")

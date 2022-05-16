@@ -53,12 +53,6 @@ class RetrievalMetric(Metric, ABC):
 
         ignore_index:
             Ignore predictions where the target is equal to this number.
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -68,19 +62,21 @@ class RetrievalMetric(Metric, ABC):
             If ``ignore_index`` is not `None` or an integer.
     """
 
+    is_differentiable: bool = False
+    higher_is_better: bool = True
+    full_state_update: bool = False
+
     indexes: List[Tensor]
     preds: List[Tensor]
     target: List[Tensor]
-    higher_is_better = True
 
     def __init__(
         self,
         empty_target_action: str = "neg",
         ignore_index: Optional[int] = None,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
         self.allow_non_binary_target = False
 
         empty_target_action_options = ("error", "skip", "neg", "pos")

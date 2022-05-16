@@ -157,10 +157,10 @@ def apply_to_collection(
         data: the collection to apply the function to
         dtype: the given function will be applied to all elements of this dtype
         function: the function to apply
-        *args: positional arguments (will be forwarded to calls of ``function``)
+        *args: positional arguments (will be forwarded to call of ``function``)
         wrong_dtype: the given function won't be applied if this type is specified and the given collections is of
             the :attr:`wrong_type` even if it is of type :attr`dtype`
-        **kwargs: keyword arguments (will be forwarded to calls of ``function``)
+        **kwargs: keyword arguments (will be forwarded to call of ``function``)
 
     Returns:
         the resulting collection
@@ -194,11 +194,10 @@ def apply_to_collection(
 
 
 def get_group_indexes(indexes: Tensor) -> List[Tensor]:
-    """Given an integer ``torch.Tensor`` ``indexes``, return a ``torch.Tensor`` of indexes for each different value
-    in ``indexes``.
+    """Given an integer ``indexes``, return indexes for each different value in ``indexes``.
 
     Args:
-        indexes: a ``torch.Tensor``
+        indexes:
 
     Return:
         A list of integer ``torch.Tensor``s
@@ -249,3 +248,10 @@ def _bincount(x: Tensor, minlength: Optional[int] = None) -> Tensor:
         return output
     else:
         return torch.bincount(x, minlength=minlength)
+
+
+def allclose(tensor1: Tensor, tensor2: Tensor) -> bool:
+    """Wrapper of torch.allclose that is robust towards dtype difference."""
+    if tensor1.dtype != tensor2.dtype:
+        tensor2 = tensor2.to(dtype=tensor1.dtype)
+    return torch.allclose(tensor1, tensor2)

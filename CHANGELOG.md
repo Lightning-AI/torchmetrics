@@ -11,16 +11,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added `RetrievalPrecisionRecallCurve` to retrieval package ([#951](https://github.com/PyTorchLightning/metrics/pull/951))
+
+
+- Added `RetrievalRecallAtFixedPrecision` to retrieval package ([#951](https://github.com/PyTorchLightning/metrics/pull/951))
+
+
+- Added support for nested metric collections ([#1003](https://github.com/PyTorchLightning/metrics/pull/1003))
+
+
+- Added class property `full_state_update` that determines `forward` should call `update` once or twice ([#984](https://github.com/PyTorchLightning/metrics/pull/984))
+
+
+- Added support for nested metric collections ([#1003](https://github.com/PyTorchLightning/metrics/pull/1003))
+
+
+- Added `Dice` to classification package ([#1021](https://github.com/PyTorchLightning/metrics/pull/1021))
+
+
 - Added a new NLP metric `InfoLM` ([#915](https://github.com/PyTorchLightning/metrics/pull/915))
 
 
--
-
-
 ### Changed
-
-- Reimplemented the `signal_distortion_ratio` metric, which removed the absolute requirement of `fast-bss-eval` ([#964](https://github.com/PyTorchLightning/metrics/pull/964))
-
 
 -
 
@@ -35,18 +47,58 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-- Removed deprecated `compute_on_step` argument ([#962](https://github.com/PyTorchLightning/metrics/pull/962))
-
-
-- Removed deprecated `compute_on_step` argument in Regression ([#967](https://github.com/PyTorchLightning/metrics/pull/967))
+- Removed deprecated `compute_on_step` argument (
+    [#962](https://github.com/PyTorchLightning/metrics/pull/962),
+    [#967](https://github.com/PyTorchLightning/metrics/pull/967),
+    [#979](https://github.com/PyTorchLightning/metrics/pull/979),
+    [#990](https://github.com/PyTorchLightning/metrics/pull/990),
+    [#991](https://github.com/PyTorchLightning/metrics/pull/991),
+    [#993](https://github.com/PyTorchLightning/metrics/pull/993),
+    [#1005](https://github.com/PyTorchLightning/metrics/pull/1005),
+    [#1004](https://github.com/PyTorchLightning/metrics/pull/1004),
+    [#1007](https://github.com/PyTorchLightning/metrics/pull/1007)
+)
 
 
 ### Fixed
 
+- Fixed non-empty state dict for a few metrics ([#1012](https://github.com/PyTorchLightning/metrics/pull/1012))
+
+
+- Fixed bug when comparing states while finding compute groups ([#1022](https://github.com/PyTorchLightning/metrics/pull/1022))
+
+
+- Fixed `torch.double` support in stat score metrics ([#1023](https://github.com/PyTorchLightning/metrics/pull/1023))
+
+
+- Fixed `FID` calculation for non-equal size real and fake input ([#1028](https://github.com/PyTorchLightning/metrics/pull/1028))
+
+
+- Fixed case where `KLDivergence` could output `Nan` ([#1030](https://github.com/PyTorchLightning/metrics/pull/1030))
+
+
+## [0.8.2] - 2022-05-06
+
+
+### Fixed
+
+- Fixed multi device aggregation in `PearsonCorrCoef` ([#998](https://github.com/PyTorchLightning/metrics/pull/998))
+- Fixed MAP metric when using custom list of thresholds ([#995](https://github.com/PyTorchLightning/metrics/issues/995))
+- Fixed compatibility between compute groups in `MetricCollection` and prefix/postfix arg ([#1007](https://github.com/PyTorchLightning/metrics/pull/1008))
+- Fixed compatibility with future Pytorch 1.12 in `safe_matmul` ([#1011](https://github.com/PyTorchLightning/metrics/pull/1011), [#1014](https://github.com/PyTorchLightning/metrics/pull/1014))
+
+
+## [0.8.1] - 2022-04-27
+
+### Changed
+
+- Reimplemented the `signal_distortion_ratio` metric, which removed the absolute requirement of `fast-bss-eval` ([#964](https://github.com/PyTorchLightning/metrics/pull/964))
+
+### Fixed
+
+- Fixed "Sort currently does not support bool dtype on CUDA" error in MAP for empty preds ([#983](https://github.com/PyTorchLightning/metrics/pull/983))
 - Fixed `BinnedPrecisionRecallCurve` when `thresholds` argument is not provided ([#968](https://github.com/PyTorchLightning/metrics/pull/968))
-
-
--
+- Fixed `CalibrationError` to work on logit input ([#985](https://github.com/PyTorchLightning/metrics/pull/985))
 
 
 ### Changed

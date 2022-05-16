@@ -58,12 +58,6 @@ class CHRFScore(Metric):
         lowercase: An indication whether to enable case-insesitivity.
         whitespace: An indication whether keep whitespaces during n-gram extraction.
         return_sentence_level_score: An indication whether a sentence-level chrF/chrF++ score to be returned.
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -88,8 +82,10 @@ class CHRFScore(Metric):
         [2] chrF++: words helping character n-grams by Maja Popović `chrF++ score`_
     """
 
-    is_differentiable = False
-    higher_is_better = True
+    is_differentiable: bool = False
+    higher_is_better: bool = True
+    full_state_update: bool = True
+
     sentence_chrf_score: Optional[List[Tensor]] = None
 
     def __init__(
@@ -100,10 +96,9 @@ class CHRFScore(Metric):
         lowercase: bool = False,
         whitespace: bool = False,
         return_sentence_level_score: bool = False,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ):
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
 
         if not isinstance(n_char_order, int) or n_char_order < 1:
             raise ValueError("Expected argument `n_char_order` to be an integer greater than or equal to 1.")

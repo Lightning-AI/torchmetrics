@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, List, Sequence, Tuple, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -49,12 +49,6 @@ class ROUGEScore(Metric):
 
         rouge_keys: A list of rouge types to calculate.
             Keys that are allowed are ``rougeL``, ``rougeLsum``, and ``rouge1`` through ``rouge9``.
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
@@ -88,7 +82,9 @@ class ROUGEScore(Metric):
         [1] ROUGE: A Package for Automatic Evaluation of Summaries by Chin-Yew Lin `Rouge Detail`_
     """
 
-    higher_is_better = True
+    is_differentiable: bool = False
+    higher_is_better: bool = True
+    full_state_update: bool = True
 
     def __init__(
         self,
@@ -97,10 +93,9 @@ class ROUGEScore(Metric):
         tokenizer: Callable[[str], Sequence[str]] = None,
         accumulate: Literal["avg", "best"] = "best",
         rouge_keys: Union[str, Tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),  # type: ignore
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ):
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
         if use_stemmer or "rougeLsum" in rouge_keys:
             if not _NLTK_AVAILABLE:
                 raise ModuleNotFoundError(
@@ -109,7 +104,7 @@ class ROUGEScore(Metric):
             import nltk
 
         if not isinstance(rouge_keys, tuple):
-            rouge_keys = tuple([rouge_keys])
+            rouge_keys = (rouge_keys,)
         for key in rouge_keys:
             if key not in ALLOWED_ROUGE_KEYS:
                 raise ValueError(f"Got unknown rouge key {key}. Expected to be one of {ALLOWED_ROUGE_KEYS}")
