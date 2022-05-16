@@ -206,7 +206,7 @@ def _label_ranking_loss_update(
     return loss.sum(), n_preds, sample_weight
 
 
-def _label_ranking_loss_compute(loss: torch.Tensor, n_elements: int, sample_weight: Optional[Tensor] = None) -> Tensor:
+def _label_ranking_loss_compute(loss: Tensor, n_elements: int, sample_weight: Optional[Tensor] = None) -> Tensor:
     """Computes the final label ranking loss."""
     if sample_weight is not None and sample_weight != 0.0:
         return loss / sample_weight
