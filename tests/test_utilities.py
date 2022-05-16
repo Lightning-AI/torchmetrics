@@ -16,7 +16,7 @@ import torch
 from torch import tensor
 
 from torchmetrics import MeanSquaredError, PearsonCorrCoef
-from torchmetrics.utilities import rank_zero_debug, rank_zero_info, rank_zero_warn, check_forward_no_full_state
+from torchmetrics.utilities import check_forward_no_full_state, rank_zero_debug, rank_zero_info, rank_zero_warn
 from torchmetrics.utilities.data import _bincount, _flatten, _flatten_dict, to_categorical, to_onehot
 from torchmetrics.utilities.distributed import class_reduce, reduce
 
@@ -131,9 +131,16 @@ def test_bincount():
 
 @pytest.mark.parametrize("metric_class, expected", [(MeanSquaredError, True), (PearsonCorrCoef, False)])
 def test_check_full_state_update_fn(metric_class, expected):
-    """ Test that the check function works as it should."""
+    """Test that the check function works as it should."""
     out = check_forward_no_full_state(
         metric_class=metric_class,
-        input_args={'preds': torch.randn(100,), 'target': torch.randn(100,)}
+        input_args={
+            "preds": torch.randn(
+                100,
+            ),
+            "target": torch.randn(
+                100,
+            ),
+        },
     )
     assert out == expected

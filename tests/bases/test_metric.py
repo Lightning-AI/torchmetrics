@@ -418,6 +418,6 @@ def test_warning_on_not_set_full_state_update(metric_class):
 
     with pytest.warns(
         UserWarning,
-        match=r"Torchmetrics v0.9 introduced a new argument class property called ``full_state_update`` that has.*"
+        match=r"Torchmetrics v0.9 introduced a new argument class property called ``full_state_update`` that has.*",
     ):
         UnsetProperty()

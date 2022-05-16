@@ -627,8 +627,8 @@ def check_forward_no_full_state(
     num_update_to_compare: Sequence[int] = [10, 100, 1000],
     reps: int = 5,
 ) -> bool:
-    """Utility function for checking if the new ``full_state_update`` property can safely be set
-    to ``False`` which will for most metrics results in a speedup when using ``forward``.
+    """Utility function for checking if the new ``full_state_update`` property can safely be set to ``False`` which
+    will for most metrics results in a speedup when using ``forward``.
 
     Args:
         metric_class: metric class object that should be checked
@@ -668,7 +668,6 @@ def check_forward_no_full_state(
         ...     input_args = {'preds': torch.randint(3, (10,)), 'target': torch.randint(3, (10,))},
         ... )
         False
-
     """
 
     class FullState(metric_class):
