@@ -112,3 +112,20 @@ def test_error_on_multidim_tensors():
     metric = KLDivergence()
     with pytest.raises(ValueError, match="Expected both p and q distribution to be 2D but got 3 and 3 respectively"):
         metric(torch.randn(10, 20, 5), torch.randn(10, 20, 5))
+
+
+def test_zero_probability():
+    """When p = 0 in kl divergence the score should not output Nan."""
+    metric = KLDivergence()
+    metric.update(
+        torch.tensor([[1.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 1.0]]),
+        torch.tensor(torch.randn(3, 3).softmax(dim=-1)),
+    )
+    assert not torch.isnan(metric.compute())
+
+
+def test_inf_case():
+    """When q = 0 in kl divergence the score should be inf."""
+    metric = KLDivergence()
+    metric.update(torch.tensor([[0.3, 0.3, 0.4]]), torch.tensor([[0.5, 0.5, 0]]))
+    assert not torch.isfinite(metric.compute())
