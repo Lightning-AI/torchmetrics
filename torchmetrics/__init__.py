@@ -57,6 +57,7 @@ from torchmetrics.image import (  # noqa: E402
     SpectralAngleMapper,
     SpectralDistortionIndex,
     StructuralSimilarityIndexMeasure,
+    TotalVariation,
     UniversalImageQualityIndex,
 )
 from torchmetrics.metric import Metric  # noqa: E402
@@ -187,6 +188,7 @@ __all__ = [
     "StatScores",
     "SumMetric",
     "SymmetricMeanAbsolutePercentageError",
+    "TotalVariation",
     "TranslationEditRate",
     "UniversalImageQualityIndex",
     "WeightedMeanAbsolutePercentageError",
