@@ -409,3 +409,15 @@ def test_constant_memory(device, requires_grad):
         metric.update(x.sum())
         memory = get_memory_usage()
         assert base_memory_level >= memory, "memory increased above base level"
+
+
+@pytest.mark.parametrize("metric_class", [DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum])
+def test_warning_on_not_set_full_state_update(metric_class):
+    class UnsetProperty(metric_class):
+        full_state_update = None
+
+    with pytest.warns(
+        UserWarning,
+        match=r"Torchmetrics v0.9 introduced a new argument class property called ``full_state_update`` that has.*"
+    ):
+        UnsetProperty()

@@ -126,7 +126,7 @@ class Metric(Module, ABC):
         # state management
         self._is_synced = False
         self._cache: Optional[Dict[str, Union[List[Tensor], Tensor]]] = None
-        
+
         if self.full_state_update is None:
             rank_zero_warn(
                 f"""Torchmetrics v0.9 introduced a new argument class property called ``full_state_update`` that has
@@ -138,7 +138,7 @@ class Metric(Module, ABC):
                 default for now) or if ``full_state_update=False`` can be used safely
                 """,
                 UserWarning,
-            )        
+            )
 
     @property
     def _update_called(self) -> bool:
