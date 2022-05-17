@@ -143,96 +143,12 @@ def test_check_full_state_update_fn(metric_class, expected):
 @pytest.mark.parametrize(
     "input, expected",
     [
-        (
-            (
-                torch.ones(
-                    2,
-                ),
-                torch.ones(
-                    2,
-                ),
-            ),
-            True,
-        ),
-        (
-            (
-                torch.rand(
-                    2,
-                ),
-                torch.rand(
-                    2,
-                ),
-            ),
-            False,
-        ),
-        (
-            (
-                [
-                    torch.ones(
-                        2,
-                    )
-                    for _ in range(2)
-                ],
-                [
-                    torch.ones(
-                        2,
-                    )
-                    for _ in range(2)
-                ],
-            ),
-            True,
-        ),
-        (
-            (
-                [
-                    torch.rand(
-                        2,
-                    )
-                    for _ in range(2)
-                ],
-                [
-                    torch.rand(
-                        2,
-                    )
-                    for _ in range(2)
-                ],
-            ),
-            False,
-        ),
-        (
-            (
-                {
-                    f"{i}": torch.ones(
-                        2,
-                    )
-                    for i in range(2)
-                },
-                {
-                    f"{i}": torch.ones(
-                        2,
-                    )
-                    for i in range(2)
-                },
-            ),
-            True,
-        ),
-        (
-            (
-                {
-                    f"{i}": torch.rand(
-                        2,
-                    )
-                    for i in range(2)
-                },
-                {
-                    f"{i}": torch.rand(
-                        2,
-                    )
-                    for i in range(2)
-                },
-            ),
-            False,
-        ),
+        ((torch.ones(2), torch.ones(2)), True),
+        ((torch.rand(2), torch.rand(2)), False),
+        (([torch.ones(2) for _ in range(2)], [torch.ones(2) for _ in range(2)]), True),
+        (([torch.rand(2) for _ in range(2)], [torch.rand(2) for _ in range(2)]), False),
+        (({f"{i}": torch.ones(2) for i in range(2)}, {f"{i}": torch.ones(2) for i in range(2)}), True),
+        (({f"{i}": torch.rand(2) for i in range(2)}, {f"{i}": torch.rand(2) for i in range(2)}), False),
     ],
 )
 def test_recursive_allclose(input, expected):
