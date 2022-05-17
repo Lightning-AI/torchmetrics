@@ -216,7 +216,8 @@ class MeanAveragePrecision(Metric):
         a standard implementation for the mAP metric for object detection.
 
     .. note::
-        This metric requires you to have `torchvision` version 0.8.0 or newer installed (with corresponding
+        This metric requires you to have `torchvision` version 0.8.0 or newer installed (with corresponding.
+        This metric requires `pycocotools` installed when iou_type is `segm`
         version 1.7.0 of torch or newer). Please install with ``pip install torchvision`` or
         ``pip install torchmetrics[detection]``.
 
@@ -319,14 +320,14 @@ class MeanAveragePrecision(Metric):
         self.max_detection_thresholds = max_det_thr.tolist()
         if iou_type not in allowed_iou_types:
             raise ValueError(f"Expected argument `iou_type` to be one of {allowed_iou_types} but got {iou_type}")
-        if iou_type == 'segm' and not _PYCOCOTOOLS_AVAILABLE:
+        if iou_type == "segm" and not _PYCOCOTOOLS_AVAILABLE:
             raise ValueError("When `iou_type` is set to 'segm', pycocotools need to be installed")
         self.iou_type = iou_type
         self.bbox_area_ranges = {
-            "all": (0**2, int(1e5**2)),
-            "small": (0**2, 32**2),
-            "medium": (32**2, 96**2),
-            "large": (96**2, int(1e5**2)),
+            "all": (0 ** 2, int(1e5 ** 2)),
+            "small": (0 ** 2, 32 ** 2),
+            "medium": (32 ** 2, 96 ** 2),
+            "large": (96 ** 2, int(1e5 ** 2)),
         }
 
         if not isinstance(class_metrics, bool):
@@ -578,7 +579,7 @@ class MeanAveragePrecision(Metric):
             gt = [gt]
 
         areas = compute_area(gt, iou_type=self.iou_type).to(self.device)
-        ignore_area = torch.tensor(areas < area_range[0]) | (areas > area_range[1])
+        ignore_area = torch.tensor(float((areas < area_range[0]) | (areas > area_range[1])))
 
         # sort dt highest score first, sort gt ignore last
         ignore_area_sorted, gtind = torch.sort(ignore_area.to(torch.uint8))
