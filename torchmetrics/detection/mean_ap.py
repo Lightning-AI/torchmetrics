@@ -324,10 +324,10 @@ class MeanAveragePrecision(Metric):
             raise ValueError("When `iou_type` is set to 'segm', pycocotools need to be installed")
         self.iou_type = iou_type
         self.bbox_area_ranges = {
-            "all": (0**2, int(1e5**2)),
-            "small": (0**2, 32**2),
-            "medium": (32**2, 96**2),
-            "large": (96**2, int(1e5**2)),
+            "all": (0 ** 2, int(1e5 ** 2)),
+            "small": (0 ** 2, 32 ** 2),
+            "medium": (32 ** 2, 96 ** 2),
+            "large": (96 ** 2, int(1e5 ** 2)),
         }
 
         if not isinstance(class_metrics, bool):
@@ -579,7 +579,8 @@ class MeanAveragePrecision(Metric):
             gt = [gt]
 
         areas = compute_area(gt, iou_type=self.iou_type).to(self.device)
-        ignore_area = torch.tensor(float((areas < area_range[0]) | (areas > area_range[1])))
+
+        ignore_area = torch.logical_or(areas < area_range[0], areas > area_range[1])
 
         # sort dt highest score first, sort gt ignore last
         ignore_area_sorted, gtind = torch.sort(ignore_area.to(torch.uint8))
