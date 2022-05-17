@@ -319,6 +319,8 @@ class MeanAveragePrecision(Metric):
         self.max_detection_thresholds = max_det_thr.tolist()
         if iou_type not in allowed_iou_types:
             raise ValueError(f"Expected argument `iou_type` to be one of {allowed_iou_types} but got {iou_type}")
+        if iou_type == 'segm' and not _PYCOCOTOOLS_AVAILABLE:
+            raise ValueError("When `iou_type` is set to 'segm', pycocotools need to be installed")
         self.iou_type = iou_type
         self.bbox_area_ranges = {
             "all": (0**2, int(1e5**2)),
