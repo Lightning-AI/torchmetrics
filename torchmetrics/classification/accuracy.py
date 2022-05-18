@@ -165,7 +165,7 @@ class Accuracy(StatScores):
         threshold: float = 0.5,
         num_classes: Optional[int] = None,
         average: str = "micro",
-        mdmc_average: Optional[str] = "global",
+        mdmc_average: Optional[str] = None,
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
         multiclass: Optional[bool] = None,
