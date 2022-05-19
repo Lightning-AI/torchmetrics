@@ -21,13 +21,14 @@ import torch
 from pycocotools import mask
 from torch import IntTensor, Tensor
 
+from tests.detection import _SAMPLE_DETECTION_SEGMENTATION
 from tests.helpers.testers import MetricTester
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
 from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
 
 Input = namedtuple("Input", ["preds", "target"])
 
-with open("tests/detection/instance_segmentation_inputs.json") as fp:
+with open(_SAMPLE_DETECTION_SEGMENTATION) as fp:
     inputs_json = json.load(fp)
 
 _mask_unsqueeze_bool = lambda m: Tensor(mask.decode(m)).unsqueeze(0).bool()
