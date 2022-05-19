@@ -17,6 +17,7 @@ import torch
 from torch import Tensor, tensor
 
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_8
+
 if _TORCH_GREATER_EQUAL_1_8:
     deterministic = torch.are_deterministic_algorithms_enabled
 else:
