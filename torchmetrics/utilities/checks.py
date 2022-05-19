@@ -623,7 +623,7 @@ def _allclose_recursive(res1: Any, res2: Any, atol: float = 1e-8) -> bool:
 
 
 def check_forward_no_full_state(
-    metric_class: nn.Module,
+    metric_class: Any,
     init_args: Dict[str, Any] = {},
     input_args: Dict[str, Any] = {},
     num_update_to_compare: Sequence[int] = [10, 100, 1000],
