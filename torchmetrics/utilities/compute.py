@@ -38,3 +38,21 @@ def _safe_xlogy(x: Tensor, y: Tensor) -> Tensor:
     res = x * torch.log(y)
     res[x == 0] = 0.0
     return res
+
+
+# From https://github.com/pytorch/pytorch/issues/21987#issuecomment-539402619
+# From PyTorch v1.10, this is officially supported.
+def nanmean(v: Tensor, *args, inplace: bool = False, **kwargs) -> Tensor:  # type: ignore
+    """Computes the mean of all non-NaN elements along the specified dimensions.
+    
+    Args:
+        v: input tensor
+        inplace: if operation should done inplace
+        *args, **kwargs: additional arguments like ``dim`` that should be passed to the mean
+            operator
+    """
+    if not inplace:
+        v = v.clone()
+    is_nan = torch.isnan(v)
+    v[is_nan] = 0
+    return v.sum(*args, **kwargs) / (~is_nan).float().sum(*args, **kwargs)

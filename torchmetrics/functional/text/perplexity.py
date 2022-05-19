@@ -16,7 +16,7 @@ from typing import Optional, Tuple
 
 from torch import Tensor
 
-from torchmetrics.utilities.data import nanmean
+from torchmetrics.utilities.compute import nanmean
 
 
 def _perplexity_update(probs: Tensor, mask: Optional[Tensor] = None) -> Tuple[Tensor, Tensor]:

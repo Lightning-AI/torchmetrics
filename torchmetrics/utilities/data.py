@@ -219,16 +219,6 @@ def get_group_indexes(indexes: Tensor) -> List[Tensor]:
     return [tensor(x, dtype=torch.long) for x in res.values()]
 
 
-# From https://github.com/pytorch/pytorch/issues/21987#issuecomment-539402619
-# From PyTorch v1.10, this is officially supported.
-def nanmean(v: Tensor, *args, inplace: bool = False, **kwargs) -> Tensor:  # type: ignore
-    if not inplace:
-        v = v.clone()
-    is_nan = torch.isnan(v)
-    v[is_nan] = 0
-    return v.sum(*args, **kwargs) / (~is_nan).float().sum(*args, **kwargs)
-
-
 def _squeeze_scalar_element_tensor(x: Tensor) -> Tensor:
     return x.squeeze() if x.numel() == 1 else x
 
