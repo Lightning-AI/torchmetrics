@@ -15,7 +15,7 @@ from time import perf_counter
 from typing import Any, Dict, Mapping, Optional, Sequence, Tuple
 
 import torch
-from torch import nn, Tensor
+from torch import Tensor, nn
 
 from torchmetrics.utilities.data import select_topk, to_onehot
 from torchmetrics.utilities.enums import DataType
@@ -607,7 +607,7 @@ def _check_retrieval_target_and_prediction_types(
     return preds.flatten(), target.flatten()
 
 
-def _allclose_recursive(res1: Any, res2: Any, atol: float = 1e-8) -> bool:  
+def _allclose_recursive(res1: Any, res2: Any, atol: float = 1e-8) -> bool:
     """Utility function for recursively asserting that two results are within a certain tolerance."""
     # single output compare
     if isinstance(res1, Tensor):
