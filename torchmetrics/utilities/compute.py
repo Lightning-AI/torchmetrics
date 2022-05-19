@@ -44,7 +44,7 @@ def _safe_xlogy(x: Tensor, y: Tensor) -> Tensor:
 # From PyTorch v1.10, this is officially supported.
 def nanmean(v: Tensor, *args, inplace: bool = False, **kwargs) -> Tensor:  # type: ignore
     """Computes the mean of all non-NaN elements along the specified dimensions.
-    
+
     Args:
         v: input tensor
         inplace: if operation should done inplace
