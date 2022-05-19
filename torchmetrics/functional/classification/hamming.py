@@ -75,7 +75,7 @@ def hamming_distance(preds: Tensor, target: Tensor, threshold: float = 0.5) -> T
     treats each possible label separately - meaning that, for example, multi-class data is
     treated as if it were multi-label.
 
-    Accepts all input types listed in :ref:`references/modules:input types`.
+    Accepts all input types listed in :ref:`pages/classification:input types`.
 
     Args:
         preds: Predictions from model (probabilities, logits or labels)
@@ -90,7 +90,6 @@ def hamming_distance(preds: Tensor, target: Tensor, threshold: float = 0.5) -> T
         >>> preds = torch.tensor([[0, 1], [0, 1]])
         >>> hamming_distance(preds, target)
         tensor(0.2500)
-
     """
 
     correct, total = _hamming_distance_update(preds, target, threshold)

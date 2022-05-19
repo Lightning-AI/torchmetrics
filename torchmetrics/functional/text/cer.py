@@ -29,6 +29,7 @@ def _cer_update(
     Args:
         preds: Transcription(s) to score as a string or list of strings
         target: Reference(s) for each speech input as a string or list of strings
+
     Returns:
         Number of edit operations to get from the reference to the prediction, summed over all samples
         Number of character overall references
@@ -53,6 +54,7 @@ def _cer_compute(errors: Tensor, total: Tensor) -> Tensor:
     Args:
         errors: Number of edit operations to get from the reference to the prediction, summed over all samples
         total: Number of characters over all references
+
     Returns:
         Character error rate score
     """
@@ -61,8 +63,9 @@ def _cer_compute(errors: Tensor, total: Tensor) -> Tensor:
 
 def char_error_rate(preds: Union[str, List[str]], target: Union[str, List[str]]) -> Tensor:
     """character error rate is a common metric of the performance of an automatic speech recognition system. This
-    value indicates the percentage of characters that were incorrectly predicted. The lower the value, the better the
-    performance of the ASR system with a CER of 0 being a perfect score.
+    value indicates the percentage of characters that were incorrectly predicted. The lower the value, the better
+    the performance of the ASR system with a CER of 0 being a perfect score.
+
     Args:
         preds: Transcription(s) to score as a string or list of strings
         target: Reference(s) for each speech input as a string or list of strings

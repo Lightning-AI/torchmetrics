@@ -119,7 +119,7 @@ def _bleu_score_compute(
         numerator: Numerator of precision score (true positives)
         denominator: Denominator of precision score (true positives + false positives)
         n_gram: gram value ranged 1 to 4
-        smooth: Whether or not to apply smoothing
+        smooth: Whether to apply smoothing
     """
     device = numerator.device
     if min(numerator) == 0.0:
@@ -151,14 +151,10 @@ def bleu_score(
     """Calculate `BLEU score`_ of machine translated text with one or more references.
 
     Args:
-        preds:
-            An iterable of machine translated corpus
-        target:
-            An iterable of iterables of reference corpus
-        n_gram:
-            Gram value ranged from 1 to 4 (Default 4)
-        smooth:
-            Whether or not to apply smoothing – see [2]
+        preds: An iterable of machine translated corpus
+        target: An iterable of iterables of reference corpus
+        n_gram: Gram value ranged from 1 to 4
+        smooth: Whether to apply smoothing – see [2]
 
     Return:
         Tensor with BLEU Score

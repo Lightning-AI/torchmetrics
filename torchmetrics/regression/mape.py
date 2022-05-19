@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 import torch
 from torch import Tensor, tensor
@@ -24,28 +24,20 @@ from torchmetrics.metric import Metric
 
 
 class MeanAbsolutePercentageError(Metric):
-    r"""
-    Computes `Mean Absolute Percentage Error`_ (MAPE):
+    r"""Computes `Mean Absolute Percentage Error`_ (MAPE):
 
     .. math:: \text{MAPE} = \frac{1}{n}\sum_{i=1}^n\frac{|   y_i - \hat{y_i} |}{\max(\epsilon, | y_i |)}
 
     Where :math:`y` is a tensor of target values, and :math:`\hat{y}` is a tensor of predictions.
 
     Args:
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Note:
         The epsilon value is taken from `scikit-learn's implementation of MAPE`_.
 
     Note:
-        MAPE output is a non-negative floating point. Best result is 0.0 . But it is important to note that,
+        MAPE output is a non-negative floating point. Best result is ``0.0`` . But it is important to note that,
         bad predictions, can lead to arbitarily large values. Especially when some ``target`` values are close to 0.
         This `MAPE implementation returns`_ a very large number instead of ``inf``.
 
@@ -58,17 +50,17 @@ class MeanAbsolutePercentageError(Metric):
         tensor(0.2667)
 
     """
-    is_differentiable = True
-    higher_is_better = False
+    is_differentiable: bool = True
+    higher_is_better: bool = False
+    full_state_update: bool = False
     sum_abs_per_error: Tensor
     total: Tensor
 
     def __init__(
         self,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
 
         self.add_state("sum_abs_per_error", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0.0), dist_reduce_fx="sum")

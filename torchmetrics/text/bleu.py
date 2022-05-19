@@ -16,8 +16,7 @@
 # Authors: torchtext authors and @sluks
 # Date: 2020-07-18
 # Link: https://pytorch.org/text/_modules/torchtext/data/metrics.html#bleu_score
-from typing import Any, Dict, Optional, Sequence
-from warnings import warn
+from typing import Any, Dict, Sequence
 
 import torch
 from torch import Tensor, tensor
@@ -30,18 +29,9 @@ class BLEUScore(Metric):
     """Calculate `BLEU score`_ of machine translated text with one or more references.
 
     Args:
-        n_gram:
-            Gram value ranged from 1 to 4 (Default 4)
-        smooth:
-            Whether or not to apply smoothing, see [2]
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        n_gram: Gram value ranged from 1 to 4
+        smooth: Whether or not to apply smoothing, see [2]
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
         >>> from torchmetrics import BLEUScore
@@ -59,8 +49,10 @@ class BLEUScore(Metric):
         and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och `Machine Translation Evolution`_
     """
 
-    is_differentiable = False
-    higher_is_better = True
+    is_differentiable: bool = False
+    higher_is_better: bool = True
+    full_state_update: bool = True
+
     preds_len: Tensor
     target_len: Tensor
     numerator: Tensor
@@ -70,14 +62,9 @@ class BLEUScore(Metric):
         self,
         n_gram: int = 4,
         smooth: bool = False,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ):
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
-        warn(
-            "Input order of targets and preds were changed to predictions firsts and targets second in v0.7."
-            " Warning will be removed in v0.8."
-        )
+        super().__init__(**kwargs)
         self.n_gram = n_gram
         self.smooth = smooth
 

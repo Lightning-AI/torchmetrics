@@ -32,10 +32,9 @@ def _psnr_compute(
     Args:
         sum_squared_error: Sum of square of errors over all observations
         n_obs: Number of predictions or observations
-        data_range:
-            the range of the data. If None, it is determined from the data (max - min). ``data_range`` must be given
-            when ``dim`` is not None.
-        base: a base of a logarithm to use (default: 10)
+        data_range: the range of the data. If None, it is determined from the data (max - min).
+           ``data_range`` must be given when ``dim`` is not None.
+        base: a base of a logarithm to use
         reduction: a method to reduce metric score over labels.
 
             - ``'elementwise_mean'``: takes the mean (default)
@@ -66,8 +65,7 @@ def _psnr_update(
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
-        dim:
-            Dimensions to reduce PSNR scores over provided as either an integer or a list of integers. Default is
+        dim: Dimensions to reduce PSNR scores over provided as either an integer or a list of integers. Default is
             None meaning scores will be reduced across all dimensions.
     """
 
@@ -105,10 +103,9 @@ def peak_signal_noise_ratio(
     Args:
         preds: estimated signal
         target: groun truth signal
-        data_range:
-            the range of the data. If None, it is determined from the data (max - min). ``data_range`` must be given
-            when ``dim`` is not None.
-        base: a base of a logarithm to use (default: 10)
+        data_range: the range of the data. If None, it is determined from the data (max - min).
+            ``data_range`` must be given when ``dim`` is not None.
+        base: a base of a logarithm to use
         reduction: a method to reduce metric score over labels.
 
             - ``'elementwise_mean'``: takes the mean (default)
@@ -118,6 +115,7 @@ def peak_signal_noise_ratio(
         dim:
             Dimensions to reduce PSNR scores over provided as either an integer or a list of integers. Default is
             None meaning scores will be reduced across all dimensions.
+
     Return:
         Tensor with PSNR score
 

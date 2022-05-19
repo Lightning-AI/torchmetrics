@@ -15,6 +15,7 @@ import math
 from collections import namedtuple
 from functools import partial
 
+import numpy as np
 import pytest
 import torch
 from sklearn.metrics import mean_absolute_error as sk_mean_absolute_error
@@ -32,6 +33,7 @@ from torchmetrics.functional import (
     mean_absolute_percentage_error,
     mean_squared_error,
     mean_squared_log_error,
+    weighted_mean_absolute_percentage_error,
 )
 from torchmetrics.functional.regression.symmetric_mape import symmetric_mean_absolute_percentage_error
 from torchmetrics.regression import (
@@ -39,6 +41,7 @@ from torchmetrics.regression import (
     MeanAbsolutePercentageError,
     MeanSquaredError,
     MeanSquaredLogError,
+    WeightedMeanAbsolutePercentageError,
 )
 from torchmetrics.regression.symmetric_mape import SymmetricMeanAbsolutePercentageError
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
@@ -58,6 +61,10 @@ _multi_target_inputs = Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
     target=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
 )
+
+
+def sk_weighted_mean_abs_percentage_error(target, preds):
+    return np.sum(np.abs(target - preds)) / np.sum(np.abs(target))
 
 
 def _single_target_sk_metric(preds, target, sk_fn, metric_args):
@@ -99,6 +106,12 @@ def _multi_target_sk_metric(preds, target, sk_fn, metric_args):
             {},
         ),
         (MeanSquaredLogError, mean_squared_log_error, sk_mean_squared_log_error, {}),
+        (
+            WeightedMeanAbsolutePercentageError,
+            weighted_mean_absolute_percentage_error,
+            sk_weighted_mean_abs_percentage_error,
+            {},
+        ),
     ],
 )
 class TestMeanError(MetricTester):
@@ -154,6 +167,10 @@ class TestMeanError(MetricTester):
         if metric_class == SymmetricMeanAbsolutePercentageError:
             # MeanSquaredPercentageError half + cpu does not work due to missing support in torch.log
             pytest.xfail("SymmetricMeanAbsolutePercentageError metric does not support cpu + half precision")
+
+        if metric_class == WeightedMeanAbsolutePercentageError:
+            # WeightedMeanAbsolutePercentageError half + cpu does not work due to missing support in torch.clamp
+            pytest.xfail("WeightedMeanAbsolutePercentageError metric does not support cpu + half precision")
 
         self.run_precision_test_cpu(preds, target, metric_class, metric_functional)
 

@@ -44,33 +44,21 @@ _DICT_STATES_TYPES = Tuple[
 
 
 class CHRFScore(Metric):
-    """Calculate `chrf score`_ of machine translated text with one or more references. This implementation supports
-    both ChrF score computation introduced in [1] and chrF++ score introduced in `chrF++ score_`. This
-    implementation follows the implmenetaions from https://github.com/m-popovic/chrF and
+    """Calculate `chrf score`_ of machine translated text with one or more references.
+
+    This implementation supports both ChrF score computation introduced in [1] and chrF++ score introduced
+    in `chrF++ score_`. This implementation follows the implmenetaions from https://github.com/m-popovic/chrF and
     https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/chrf.py.
 
     Args:
-        n_char_order:
-            A character n-gram order. If `n_char_order=6`, the metrics refers to the official chrF/chrF++.
-        n_word_order:
-            A word n-gram order. If `n_word_order=2`, the metric refers to the official chrF++. If `n_word_order=0`, the
-            metric is equivalent to the original ChrF.
-        beta:
-            A parameter determining an importance of recall w.r.t. precision. If `beta=1`, their importance is equal.
-        lowercase:
-            An indication whether to enable case-insesitivity.
-        whitespace:
-            An indication whether keep whitespaces during n-gram extraction.
-        return_sentence_level_score:
-            An indication whether a sentence-level chrF/chrF++ score to be returned.
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        n_char_order: A character n-gram order. If ``n_char_order=6``, the metrics refers to the official chrF/chrF++.
+        n_word_order: A word n-gram order. If ``n_word_order=2``, the metric refers to the official chrF++.
+            If ``n_word_order=0``, the metric is equivalent to the original ChrF.
+        beta: parameter determining an importance of recall w.r.t. precision. If ``beta=1``, their importance is equal.
+        lowercase: An indication whether to enable case-insesitivity.
+        whitespace: An indication whether keep whitespaces during n-gram extraction.
+        return_sentence_level_score: An indication whether a sentence-level chrF/chrF++ score to be returned.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
@@ -90,11 +78,14 @@ class CHRFScore(Metric):
 
     References:
         [1] chrF: character n-gram F-score for automatic MT evaluation by Maja Popović `chrF score`_
+
         [2] chrF++: words helping character n-grams by Maja Popović `chrF++ score`_
     """
 
-    is_differentiable = False
-    higher_is_better = True
+    is_differentiable: bool = False
+    higher_is_better: bool = True
+    full_state_update: bool = True
+
     sentence_chrf_score: Optional[List[Tensor]] = None
 
     def __init__(
@@ -105,10 +96,9 @@ class CHRFScore(Metric):
         lowercase: bool = False,
         whitespace: bool = False,
         return_sentence_level_score: bool = False,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ):
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
 
         if not isinstance(n_char_order, int) or n_char_order < 1:
             raise ValueError("Expected argument `n_char_order` to be an integer greater than or equal to 1.")
@@ -138,10 +128,8 @@ class CHRFScore(Metric):
         """Compute Precision Scores.
 
         Args:
-            preds:
-                An iterable of hypothesis corpus.
-            target:
-                An iterable of iterables of reference corpus.
+            preds: An iterable of hypothesis corpus.
+            target: An iterable of iterables of reference corpus.
         """
         n_grams_dicts_tuple = _chrf_score_update(
             preds,

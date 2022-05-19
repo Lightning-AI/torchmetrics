@@ -93,7 +93,7 @@ def coverage_error(preds: Tensor, target: Tensor, sample_weight: Optional[Tensor
 
     References:
         [1] Tsoumakas, G., Katakis, I., & Vlahavas, I. (2010). Mining multi-label data. In Data mining and
-            knowledge discovery handbook (pp. 667-685). Springer US.
+        knowledge discovery handbook (pp. 667-685). Springer US.
     """
     coverage, n_elements, sample_weight = _coverage_error_update(preds, target, sample_weight)
     return _coverage_error_compute(coverage, n_elements, sample_weight)
@@ -102,12 +102,12 @@ def coverage_error(preds: Tensor, target: Tensor, sample_weight: Optional[Tensor
 def _label_ranking_average_precision_update(
     preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None
 ) -> Tuple[Tensor, int, Optional[Tensor]]:
-    """Accumulate state for label ranking average precision
+    """Accumulate state for label ranking average precision.
+
     Args:
         preds: tensor with predictions
         target: tensor with ground truth labels
         sample_weight: optional tensor with weight for each sample
-
     """
     _check_ranking_input(preds, target, sample_weight)
     # Invert so that the highest score receives rank 1
@@ -164,7 +164,7 @@ def label_ranking_average_precision(preds: Tensor, target: Tensor, sample_weight
 
     References:
         [1] Tsoumakas, G., Katakis, I., & Vlahavas, I. (2010). Mining multi-label data. In Data mining and
-            knowledge discovery handbook (pp. 667-685). Springer US.
+        knowledge discovery handbook (pp. 667-685). Springer US.
     """
     score, n_elements, sample_weight = _label_ranking_average_precision_update(preds, target, sample_weight)
     return _label_ranking_average_precision_compute(score, n_elements, sample_weight)
@@ -173,12 +173,12 @@ def label_ranking_average_precision(preds: Tensor, target: Tensor, sample_weight
 def _label_ranking_loss_update(
     preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None
 ) -> Tuple[Tensor, int, Optional[Tensor]]:
-    """Accumulate state for label ranking loss
+    """Accumulate state for label ranking loss.
+
     Args:
         preds: tensor with predictions
         target: tensor with ground truth labels
         sample_weight: optional tensor with weight for each sample
-
     """
     _check_ranking_input(preds, target, sample_weight)
     n_preds, n_labels = preds.shape
@@ -236,7 +236,7 @@ def label_ranking_loss(preds: Tensor, target: Tensor, sample_weight: Optional[Te
 
     References:
         [1] Tsoumakas, G., Katakis, I., & Vlahavas, I. (2010). Mining multi-label data. In Data mining and
-            knowledge discovery handbook (pp. 667-685). Springer US.
+        knowledge discovery handbook (pp. 667-685). Springer US.
     """
     loss, n_element, sample_weight = _label_ranking_loss_update(preds, target, sample_weight)
     return _label_ranking_loss_compute(loss, n_element, sample_weight)
