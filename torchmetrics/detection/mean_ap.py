@@ -216,8 +216,8 @@ class MeanAveragePrecision(Metric):
         a standard implementation for the mAP metric for object detection.
 
     .. note::
-        This metric requires you to have `torchvision` version 0.8.0 or newer installed 
-        (with corresponding version 1.7.0 of torch or newer). This metric requires `pycocotools` 
+        This metric requires you to have `torchvision` version 0.8.0 or newer installed
+        (with corresponding version 1.7.0 of torch or newer). This metric requires `pycocotools`
         installed when iou_type is `segm`. Please install with ``pip install torchvision`` or
         ``pip install torchmetrics[detection]``.
 
