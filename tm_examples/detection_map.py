@@ -16,8 +16,7 @@
 python detection_map.py.
 """
 
-import torch
-from torch import Tensor
+from torch import IntTensor, Tensor
 
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
 
@@ -34,7 +33,7 @@ preds = [
         scores=Tensor([0.536]),
         # The labels keyword should contain an [N,] tensor
         # with integers of the predicted classes
-        labels=torch.IntTensor([0]),
+        labels=IntTensor([0]),
     )
 ]
 
@@ -45,7 +44,7 @@ preds = [
 target = [
     dict(
         boxes=Tensor([[214.0, 41.0, 562.0, 285.0]]),
-        labels=torch.IntTensor([0]),
+        labels=IntTensor([0]),
     )
 ]
 
