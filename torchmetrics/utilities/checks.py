@@ -15,7 +15,7 @@ from time import perf_counter
 from typing import Any, Dict, Mapping, Optional, Sequence, Tuple
 
 import torch
-from torch import Tensor, nn
+from torch import Tensor
 
 from torchmetrics.utilities.data import select_topk, to_onehot
 from torchmetrics.utilities.enums import DataType
