@@ -18,7 +18,7 @@ from torchmetrics.functional.classification.average_precision import average_pre
 from torchmetrics.functional.classification.calibration_error import calibration_error  # noqa: F401
 from torchmetrics.functional.classification.cohen_kappa import cohen_kappa  # noqa: F401
 from torchmetrics.functional.classification.confusion_matrix import confusion_matrix  # noqa: F401
-from torchmetrics.functional.classification.dice import dice_score  # noqa: F401
+from torchmetrics.functional.classification.dice import dice, dice_score  # noqa: F401
 from torchmetrics.functional.classification.f_beta import f1_score, fbeta_score  # noqa: F401
 from torchmetrics.functional.classification.hamming import hamming_distance  # noqa: F401
 from torchmetrics.functional.classification.hinge import hinge_loss  # noqa: F401
