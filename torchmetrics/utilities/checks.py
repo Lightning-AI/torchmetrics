@@ -647,13 +647,13 @@ def check_forward_no_full_state(
         ...     ConfusionMatrix,
         ...     init_args = {'num_classes': 3},
         ...     input_args = {'preds': torch.randint(3, (10,)), 'target': torch.randint(3, (10,))},
-        ... ) # doctest: +SKIP
-        Full state for 10 steps took: 0.0072667645290493965+-3.828236731351353e-05
-        Partial state for 10 steps took: 0.004743088968098164+-0.0005820328951813281
-        Full state for 100 steps took: 0.0730440765619278+-0.0003615743189584464
-        Partial state for 100 steps took: 0.04705753177404404+-0.002143740188330412
-        Full state for 1000 steps took: 0.8512250781059265+-0.052338723093271255
-        Partial state for 1000 steps took: 0.5545409917831421+-0.04722180590033531
+        ... )  # doctest: +ELLIPSIS
+        Full state for 10 steps took: ...
+        Partial state for 10 steps took: ...
+        Full state for 100 steps took: ...
+        Partial state for 100 steps took: ...
+        Full state for 1000 steps took: ...
+        Partial state for 1000 steps took: ...
         True
 
     Example (states in ``update`` are dependend meaning that ``full_state_update=True``):
@@ -717,7 +717,7 @@ def check_forward_no_full_state(
     std = torch.std(res, -1)
 
     for t in range(len(num_update_to_compare)):
-        print(f"Full state for {num_update_to_compare[t]:0.3f} steps took: {mean[0, t]}+-{std[0, t]:0.3f}")
+        print(f"Full state for {num_update_to_compare[t]} steps took: {mean[0, t]}+-{std[0, t]:0.3f}")
         print(f"Partial state for {num_update_to_compare[t]} steps took: {mean[1, t]:0.3f}+-{std[1, t]:0.3f}")
 
     return (mean[1, -1] < mean[0, -1]).item()  # if faster on average, we recommend upgrading
