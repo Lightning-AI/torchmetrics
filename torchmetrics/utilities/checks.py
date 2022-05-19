@@ -15,7 +15,7 @@ from time import perf_counter
 from typing import Any, Dict, Mapping, Optional, Sequence, Tuple
 
 import torch
-from torch import Tensor
+from torch import nn, Tensor
 
 from torchmetrics.utilities.data import select_topk, to_onehot
 from torchmetrics.utilities.enums import DataType
@@ -607,7 +607,7 @@ def _check_retrieval_target_and_prediction_types(
     return preds.flatten(), target.flatten()
 
 
-def _allclose_recursive(res1: Any, res2: Any, atol: float = 1e-8):
+def _allclose_recursive(res1: Any, res2: Any, atol: float = 1e-8) -> bool:  
     """Utility function for recursively asserting that two results are within a certain tolerance."""
     # single output compare
     if isinstance(res1, Tensor):
@@ -623,7 +623,7 @@ def _allclose_recursive(res1: Any, res2: Any, atol: float = 1e-8):
 
 
 def check_forward_no_full_state(
-    metric_class: object,
+    metric_class: nn.Module,
     init_args: Dict[str, Any] = {},
     input_args: Dict[str, Any] = {},
     num_update_to_compare: Sequence[int] = [10, 100, 1000],
