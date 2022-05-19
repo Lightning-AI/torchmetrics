@@ -16,15 +16,16 @@ from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Union
 import torch
 from torch import Tensor, tensor
 
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_7, _TORCH_GREATER_EQUAL_1_8
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6, _TORCH_GREATER_EQUAL_1_7, _TORCH_GREATER_EQUAL_1_8
 
 if _TORCH_GREATER_EQUAL_1_8:
     deterministic = torch.are_deterministic_algorithms_enabled
 elif _TORCH_GREATER_EQUAL_1_7:
     deterministic = torch.is_deterministic
+elif _TORCH_GREATER_EQUAL_1_6:
+    deterministic = torch._is_deterministic
 else:
-    # Assume for older versions that computations need to be deterministic
-    deterministic = lambda: True
+    deterministic = lambda: False
 
 METRIC_EPS = 1e-6
 
