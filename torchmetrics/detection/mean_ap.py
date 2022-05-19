@@ -51,7 +51,7 @@ def compute_area(input: List[Any], iou_type: str = "bbox") -> Tensor:
     elif iou_type == "segm":
 
         input = [{"size": i[0], "counts": i[1]} for i in input]
-        area = torch.tensor(mask_utils.area(input).astype("int"))
+        area = torch.tensor(mask_utils.area(input).astype("float"))
 
         return area
     else:
