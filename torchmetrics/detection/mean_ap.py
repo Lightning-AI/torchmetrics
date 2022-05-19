@@ -216,9 +216,9 @@ class MeanAveragePrecision(Metric):
         a standard implementation for the mAP metric for object detection.
 
     .. note::
-        This metric requires you to have `torchvision` version 0.8.0 or newer installed (with corresponding.
-        This metric requires `pycocotools` installed when iou_type is `segm`
-        version 1.7.0 of torch or newer). Please install with ``pip install torchvision`` or
+        This metric requires you to have `torchvision` version 0.8.0 or newer installed 
+        (with corresponding version 1.7.0 of torch or newer). This metric requires `pycocotools` 
+        installed when iou_type is `segm`. Please install with ``pip install torchvision`` or
         ``pip install torchmetrics[detection]``.
 
     Args:
@@ -278,6 +278,8 @@ class MeanAveragePrecision(Metric):
     Raises:
         ModuleNotFoundError:
             If ``torchvision`` is not installed or version installed is lower than 0.8.0
+        ModuleNotFoundError:
+            If ``iou_type`` is equal to ``seqm`` and ``pycocotools`` is not installed
         ValueError:
             If ``class_metrics`` is not a boolean
     """
@@ -321,7 +323,7 @@ class MeanAveragePrecision(Metric):
         if iou_type not in allowed_iou_types:
             raise ValueError(f"Expected argument `iou_type` to be one of {allowed_iou_types} but got {iou_type}")
         if iou_type == "segm" and not _PYCOCOTOOLS_AVAILABLE:
-            raise ValueError("When `iou_type` is set to 'segm', pycocotools need to be installed")
+            raise ModuleNotFoundError("When `iou_type` is set to 'segm', pycocotools need to be installed")
         self.iou_type = iou_type
         self.bbox_area_ranges = {
             "all": (0**2, int(1e5**2)),
