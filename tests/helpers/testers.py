@@ -33,9 +33,10 @@ except RuntimeError:
     pass
 
 NUM_PROCESSES = 2
-# Need to be divisible with the number of processes
-NUM_BATCHES = 10 if torch.cuda.is_available() else 4
-BATCH_SIZE = 64 if torch.cuda.is_available() else 32
+NUM_BATCHES = 4  # Need to be divisible with the number of processes
+BATCH_SIZE = 32
+# NUM_BATCHES = 10 if torch.cuda.is_available() else 4
+# BATCH_SIZE = 64 if torch.cuda.is_available() else 32
 NUM_CLASSES = 5
 EXTRA_DIM = 3
 THRESHOLD = 0.5

@@ -97,7 +97,7 @@ jobs:
         phmdoctest README.md --outfile tests/test_readme.py
         # NOTE: run coverage on tests does not propagate failure status for Win,
         # see: https://github.com/nedbat/coveragepy/issues/1003
-        python -m pytest torchmetrics $TEST_DIRS --durations=50 --junitxml=$PYTEST_ARTEFACT
+        python -m pytest torchmetrics $TEST_DIRS --durations=50 --timeout=120 --junitxml=$PYTEST_ARTEFACT
 
     - name: Upload pytest test results
       uses: actions/upload-artifact@master
