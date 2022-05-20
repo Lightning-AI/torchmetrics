@@ -94,7 +94,7 @@ jobs:
         # wget is simpler but does not work on Windows
         python -c "from urllib.request import urlretrieve ; urlretrieve('https://pl-public-data.s3.amazonaws.com/metrics/data.zip', 'data.zip')"
         unzip -o data.zip
-        ls -l data/*
+        ls -l _data/*
 
     - name: Tests
       env:
