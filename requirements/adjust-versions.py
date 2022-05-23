@@ -20,7 +20,7 @@ from typing import Dict, Optional
 from packaging.version import Version
 
 VERSIONS = [
-    dict(torch="1.12.0", torchvision="0.13.0", torchtext="0.13.0"),  # nightly
+    dict(torch="1.12.0", torchvision="0.13.0", torchtext=""),  # nightly
     dict(torch="1.11.0", torchvision="0.12.0", torchtext="0.12.0"),  # stable
     dict(torch="1.10.2", torchvision="0.11.3", torchtext="0.11.2"),
     dict(torch="1.10.1", torchvision="0.11.2", torchtext="0.11.1"),
@@ -67,7 +67,8 @@ def main(path_req: str, torch_version: Optional[str] = None) -> None:
 
     if path_req == "conda":
         # this is a special case when we need to get the remaining lib versions
-        req = " ".join([f"{lib}={ver}" if ver else lib for lib, ver in latest.items() if lib != "torch"])
+        # req = " ".join([f"{lib}={ver}" if ver else lib for lib, ver in latest.items() if lib != "torch"])
+        req = " ".join([f"{lib}={ver}" for lib, ver in latest.items() if lib != "torch" and ver])
         print(req)
         return
 
