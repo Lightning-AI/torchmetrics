@@ -339,7 +339,7 @@ class MetricTester:
     `self.run_metric_test` is called inside.
     """
 
-    atol = 1e-8
+    atol: float = 1e-8
     poolSize: int
     pool: Pool
 
