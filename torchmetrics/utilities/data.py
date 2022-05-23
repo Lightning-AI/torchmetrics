@@ -25,7 +25,8 @@ elif _TORCH_GREATER_EQUAL_1_7:
 elif _TORCH_GREATER_EQUAL_1_6:
     deterministic = torch._is_deterministic
 else:
-    deterministic = lambda: False
+    def deterministic() -> bool:
+        return True
 
 METRIC_EPS = 1e-6
 
