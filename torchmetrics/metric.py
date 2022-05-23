@@ -129,14 +129,14 @@ class Metric(Module, ABC):
 
         if self.full_state_update is None:
             rank_zero_warn(
-                f"""Torchmetrics v0.9 introduced a new argument class property called ``full_state_update`` that has
-                not been set for this class ({self.__class__.__name__}). The property determines if ``update`` by
+                f"""Torchmetrics v0.9 introduced a new argument class property called `full_state_update` that has
+                not been set for this class ({self.__class__.__name__}). The property determines if `update` by
                 default needs access to the full metric state. If this is not the case, significant speedups can be
-                achieved and we recommend setting this to ``False``.
+                achieved and we recommend setting this to `False`.
                 We provide an checking function
-                ``from torchmetrics.utilities import check_forward_no_full_state``
-                that can be used to check if the ``full_state_update=True`` (old and potential slower behaviour,
-                default for now) or if ``full_state_update=False`` can be used safely.
+                `from torchmetrics.utilities import check_forward_no_full_state`
+                that can be used to check if the `full_state_update=True` (old and potential slower behaviour,
+                default for now) or if `full_state_update=False` can be used safely.
                 """,
                 UserWarning,
             )

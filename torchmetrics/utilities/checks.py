@@ -618,8 +618,7 @@ def _allclose_recursive(res1: Any, res2: Any, atol: float = 1e-8) -> bool:
         return all(_allclose_recursive(r1, r2) for r1, r2 in zip(res1, res2))
     elif isinstance(res1, Mapping):
         return all(_allclose_recursive(res1[k], res2[k]) for k in res1.keys())
-    else:
-        return res1 == res2
+    return res1 == res2
 
 
 def check_forward_no_full_state(
