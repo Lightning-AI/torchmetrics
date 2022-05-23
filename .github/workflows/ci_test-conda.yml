@@ -69,7 +69,8 @@ jobs:
         sudo apt install libsndfile1
         conda info
         conda install cpuonly mkl pytorch=${{ matrix.pytorch-version }} packaging
-        conda install cpuonly ffmpeg $(python ./requirements/adjust-versions.py conda)
+        conda install cpuonly $(python ./requirements/adjust-versions.py conda)
+        conda install ffmpeg
         conda list
         pip --version
         python ./requirements/adjust-versions.py requirements.txt
