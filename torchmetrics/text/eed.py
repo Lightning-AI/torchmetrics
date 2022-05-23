@@ -51,9 +51,11 @@ class ExtendedEditDistance(Metric):
         to WMT 2019. `ExtendedEditDistance`_
     """
 
+    higher_is_better: bool = False
+    is_differentiable: bool = False
+    full_state_update: bool = False
+
     sentence_eed: List[Tensor]
-    higher_is_better = False
-    is_differentiable = False
 
     def __init__(
         self,

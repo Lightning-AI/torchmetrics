@@ -99,8 +99,10 @@ class BERTScore(Metric):
         {'f1': [1.0, 0.996], 'precision': [1.0, 0.996], 'recall': [1.0, 0.996]}
     """
 
-    is_differentiable = False
-    higher_is_better = True
+    is_differentiable: bool = False
+    higher_is_better: bool = True
+    full_state_update: bool = False
+
     preds_input_ids: List[Tensor]
     preds_attention_mask: List[Tensor]
     target_input_ids: List[Tensor]
@@ -144,8 +146,8 @@ class BERTScore(Metric):
         self.rescale_with_baseline = rescale_with_baseline
         self.baseline_path = baseline_path
         self.baseline_url = baseline_url
-        self.preds: Dict[str, List[torch.Tensor]] = {"input_ids": [], "attention_mask": []}
-        self.target: Dict[str, List[torch.Tensor]] = {"input_ids": [], "attention_mask": []}
+        self.preds: Dict[str, List[Tensor]] = {"input_ids": [], "attention_mask": []}
+        self.target: Dict[str, List[Tensor]] = {"input_ids": [], "attention_mask": []}
 
         if user_tokenizer:
             self.tokenizer = user_tokenizer

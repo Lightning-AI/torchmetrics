@@ -93,7 +93,7 @@ def _find_best_perm_by_exhaustive_method(
 
 
 def permutation_invariant_training(
-    preds: Tensor, target: torch.Tensor, metric_func: Callable, eval_func: str = "max", **kwargs: Dict[str, Any]
+    preds: Tensor, target: Tensor, metric_func: Callable, eval_func: str = "max", **kwargs: Dict[str, Any]
 ) -> Tuple[Tensor, Tensor]:
     """Permutation invariant training (PIT). The ``permutation_invariant_training`` implements the famous
     Permutation Invariant Training method.

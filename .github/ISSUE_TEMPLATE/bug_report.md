@@ -27,10 +27,9 @@ Minimal means having the shortest code but still preserving the bug. -->
 
 ### Environment
 
-- OS (e.g., Linux):
+- TorchMetrics version (and how you installed TM, e.g. `conda`, `pip`, build from source):
 - Python & PyTorch Version (e.g., 1.0):
-- How you installed PyTorch (`conda`, `pip`, build command if you used source):
-- Any other relevant information:
+- Any other relevant information such as OS (e.g., Linux):
 
 ### Additional context
 

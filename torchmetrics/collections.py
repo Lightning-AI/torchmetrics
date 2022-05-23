@@ -20,7 +20,7 @@ from torch.nn import Module, ModuleDict
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
-from torchmetrics.utilities.data import _flatten_dict
+from torchmetrics.utilities.data import _flatten_dict, allclose
 
 # this is just a bypass for this module name collision with build-in one
 from torchmetrics.utilities.imports import OrderedDict
@@ -231,10 +231,10 @@ class MetricCollection(ModuleDict):
                 return False
 
             if isinstance(state1, Tensor) and isinstance(state2, Tensor):
-                return state1.shape == state2.shape and torch.allclose(state1, state2)
+                return state1.shape == state2.shape and allclose(state1, state2)
 
             if isinstance(state1, list) and isinstance(state2, list):
-                return all(s1.shape == s2.shape and torch.allclose(s1, s2) for s1, s2 in zip(state1, state2))
+                return all(s1.shape == s2.shape and allclose(s1, s2) for s1, s2 in zip(state1, state2))
 
         return True
 
@@ -357,7 +357,7 @@ class MetricCollection(ModuleDict):
             self._groups_checked = True
         else:
             # Initialize all metrics as their own compute group
-            self._groups = {i: [str(k)] for i, k in enumerate(self.keys(keep_base=False))}
+            self._groups = {i: [str(k)] for i, k in enumerate(self.keys(keep_base=True))}
 
     @property
     def compute_groups(self) -> Dict[int, List[str]]:

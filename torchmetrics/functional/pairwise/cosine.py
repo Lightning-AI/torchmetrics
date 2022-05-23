@@ -18,16 +18,7 @@ from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.functional.pairwise.helpers import _check_input, _reduce_distance_matrix
-
-
-def _safe_matmul(x: Tensor, y: Tensor) -> Tensor:
-    """Safe calculation of matrix multiplication.
-
-    If input is float16, will cast to float32 for computation and back again.
-    """
-    if x.dtype == torch.float16 or y.dtype == torch.float16:
-        return (x.float() @ y.T.float()).half()
-    return x @ y.T
+from torchmetrics.utilities.compute import _safe_matmul
 
 
 def _pairwise_cosine_similarity_update(

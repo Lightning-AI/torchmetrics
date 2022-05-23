@@ -62,7 +62,9 @@ class RetrievalRPrecision(RetrievalMetric):
         tensor(0.7500)
     """
 
-    higher_is_better = True
+    is_differentiable: bool = False
+    higher_is_better: bool = True
+    full_state_update: bool = False
 
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
         return retrieval_r_precision(preds, target)

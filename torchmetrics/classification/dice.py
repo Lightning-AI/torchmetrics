@@ -13,23 +13,23 @@
 # limitations under the License.
 from typing import Any, Dict, Optional
 
-import torch
 from torch import Tensor
 
 from torchmetrics.classification.stat_scores import StatScores
-from torchmetrics.functional.classification.specificity import _specificity_compute
+from torchmetrics.functional.classification.dice import _dice_compute
 
 
-class Specificity(StatScores):
-    r"""Computes `Specificity`_:
+class Dice(StatScores):
+    r"""Computes `Dice`_:
 
-    .. math:: \text{Specificity} = \frac{\text{TN}}{\text{TN} + \text{FP}}
+    .. math:: \text{Dice} = \frac{\text{2 * TP}}{\text{2 * TP} + \text{FP} + \text{FN}}
 
-    Where :math:`\text{TN}` and :math:`\text{FP}` represent the number of true negatives and
-    false positives respecitively. With the use of ``top_k`` parameter, this metric can
-    generalize to Specificity@K.
+    Where :math:`\text{TP}` and :math:`\text{FP}` represent the number of true positives and
+    false positives respecitively.
 
-    The reduction method (how the specificity scores are aggregated) is controlled by the
+    It is recommend set `ignore_index` to index of background class.
+
+    The reduction method (how the precision scores are aggregated) is controlled by the
     ``average`` parameter, and additionally by the ``mdmc_average`` parameter in the
     multi-dimensional multi-class case. Accepts all inputs listed in :ref:`pages/classification:input types`.
 
@@ -37,8 +37,10 @@ class Specificity(StatScores):
         num_classes:
             Number of classes. Necessary for ``'macro'``, ``'weighted'`` and ``None`` average methods.
         threshold:
-            Threshold probability value for transforming probability predictions to binary
-            (0,1) predictions, in the case of binary or multi-label inputs.
+            Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
+            of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
+        zero_division:
+            The value to use for the score if denominator equals zero.
         average:
             Defines the reduction that is applied. Should be one of the following:
 
@@ -46,7 +48,7 @@ class Specificity(StatScores):
             - ``'macro'``: Calculate the metric for each class separately, and average the
               metrics across classes (with equal weights for each class).
             - ``'weighted'``: Calculate the metric for each class separately, and average the
-              metrics across classes, weighting each class by its support (``tn + fp``).
+              metrics across classes, weighting each class by its support (``tp + fn``).
             - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
               the metric for every class.
             - ``'samples'``: Calculate the metric for each sample, and average the metrics
@@ -69,9 +71,9 @@ class Specificity(StatScores):
               and computing the metric for the sample based on that.
 
             - ``'global'``: In this case the ``N`` and ``...`` dimensions of the inputs
-              (see :ref:`pages/classification:input types`)
-              are flattened into a new ``N_X`` sample axis, i.e. the inputs are treated as if they
-              were ``(N_X, C)``. From here on the ``average`` parameter applies as usual.
+              (see :ref:`pages/classification:input types`) are flattened into a new ``N_X`` sample axis, i.e.
+              the inputs are treated as if they were ``(N_X, C)``.
+              From here on the ``average`` parameter applies as usual.
 
         ignore_index:
             Integer specifying a target class to ignore. If given, this class index does not contribute
@@ -79,12 +81,10 @@ class Specificity(StatScores):
             or ``'none'``, the score for the ignored class will be returned as ``nan``.
 
         top_k:
-            Number of the highest probability entries for each sample to convert to 1s - relevant
-            only for inputs with probability predictions. If this parameter is set for multi-label
-            inputs, it will take precedence over ``threshold``. For (multi-dim) multi-class inputs,
-            this parameter defaults to 1.
-
-            Should be left unset (``None``) for inputs with label predictions.
+            Number of the highest probability or logit score predictions considered finding the correct label,
+            relevant only for (multi-dimensional) multi-class inputs. The
+            default value (``None``) will be interpreted as 1 for these inputs.
+            Should be left at default (``None``) for all other types of inputs.
 
         multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
@@ -97,17 +97,21 @@ class Specificity(StatScores):
     Raises:
         ValueError:
             If ``average`` is none of ``"micro"``, ``"macro"``, ``"weighted"``, ``"samples"``, ``"none"``, ``None``.
+        ValueError:
+            If ``mdmc_average`` is not one of ``None``, ``"samplewise"``, ``"global"``.
+        ValueError:
+            If ``average`` is set but ``num_classes`` is not provided.
+        ValueError:
+            If ``num_classes`` is set and ``ignore_index`` is not in the range ``[0, num_classes)``.
 
     Example:
-        >>> from torchmetrics import Specificity
+        >>> import torch
+        >>> from torchmetrics import Dice
         >>> preds  = torch.tensor([2, 0, 2, 1])
         >>> target = torch.tensor([1, 1, 2, 0])
-        >>> specificity = Specificity(average='macro', num_classes=3)
-        >>> specificity(preds, target)
-        tensor(0.6111)
-        >>> specificity = Specificity(average='micro')
-        >>> specificity(preds, target)
-        tensor(0.6250)
+        >>> dice = Dice(average='micro')
+        >>> dice(preds, target)
+        tensor(0.2500)
 
     """
     is_differentiable: bool = False
@@ -116,21 +120,22 @@ class Specificity(StatScores):
 
     def __init__(
         self,
+        zero_division: int = 0,
         num_classes: Optional[int] = None,
         threshold: float = 0.5,
         average: str = "micro",
-        mdmc_average: Optional[str] = None,
+        mdmc_average: Optional[str] = "global",
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
         multiclass: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
+        allowed_average = ("micro", "macro", "weighted", "samples", "none", None)
         if average not in allowed_average:
             raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
 
         super().__init__(
-            reduce="macro" if average in ["weighted", "none", None] else average,
+            reduce="macro" if average in ("weighted", "none", None) else average,
             mdmc_reduce=mdmc_average,
             threshold=threshold,
             top_k=top_k,
@@ -141,9 +146,10 @@ class Specificity(StatScores):
         )
 
         self.average = average
+        self.zero_division = zero_division
 
     def compute(self) -> Tensor:
-        """Computes the specificity score based on inputs passed in to ``update`` previously.
+        """Computes the dice score based on inputs passed in to ``update`` previously.
 
         Return:
             The shape of the returned tensor depends on the ``average`` parameter:
@@ -152,5 +158,5 @@ class Specificity(StatScores):
             - If ``average in ['none', None]``, the shape will be ``(C,)``, where ``C`` stands  for the number
               of classes
         """
-        tp, fp, tn, fn = self._get_final_stats()
-        return _specificity_compute(tp, fp, tn, fn, self.average, self.mdmc_reduce)
+        tp, fp, _, fn = self._get_final_stats()
+        return _dice_compute(tp, fp, fn, self.average, self.mdmc_reduce, self.zero_division)

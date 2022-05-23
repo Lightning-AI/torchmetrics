@@ -28,10 +28,10 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-20.04, macOS-10.15, windows-2019]
-        python-version: [3.6, 3.8, 3.9]
+        python-version: [3.7, 3.8, 3.9]
         requires: ['oldest', 'latest']
         exclude:
-          - {python-version: 3.6, requires: 'latest'}
+          - {python-version: 3.7, requires: 'latest'}
           - {python-version: 3.9, requires: 'oldest'}
     env:
       PYTEST_ARTEFACT: test-results-${{ matrix.os }}-py${{ matrix.python-version }}-${{ matrix.requires }}.xml
@@ -76,10 +76,11 @@ jobs:
 
     - name: Freeze Numpy (hotfix)
       if: matrix.requires == 'latest'
-      run: |
-        pip install -q "numpy==1.20.0"  # temp fix for cypesq
-        # import of PILLOW_VERSION which they recently removed in v9.0 in favor of __version__
-        pip install -q "Pillow<9.0"  # It messes with torchvision
+      run: pip install -q "numpy==1.20.0"  # temp fix for cypesq
+
+    - name: Freeze PIL (hotfix)
+      # import of PILLOW_VERSION which they recently removed in v9.0 in favor of __version__
+      run: pip install -q "Pillow<9.0"  # It messes with torchvision
 
     - name: Install all dependencies
       run: |
@@ -89,12 +90,11 @@ jobs:
         pip list
 
     - name: Pull testing data from S3
-      working-directory: ./tests
       run: |
         # wget is simpler but does not work on Windows
         python -c "from urllib.request import urlretrieve ; urlretrieve('https://pl-public-data.s3.amazonaws.com/metrics/data.zip', 'data.zip')"
         unzip -o data.zip
-        ls -l data/*
+        ls -l _data/*
 
     - name: Tests
       env:

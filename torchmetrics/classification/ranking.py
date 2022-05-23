@@ -48,11 +48,12 @@ class CoverageError(Metric):
         knowledge discovery handbook (pp. 667-685). Springer US.
     """
 
+    higher_is_better: bool = False
+    is_differentiable: bool = False
+    full_state_update: bool = False
     coverage: Tensor
     numel: Tensor
     weight: Tensor
-    higher_is_better: bool = False
-    is_differentiable: bool = False
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
@@ -109,6 +110,7 @@ class LabelRankingAveragePrecision(Metric):
     sample_weight: Tensor
     higher_is_better: bool = True
     is_differentiable: bool = False
+    full_state_update: bool = False
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
@@ -164,6 +166,7 @@ class LabelRankingLoss(Metric):
     sample_weight: Tensor
     higher_is_better: bool = False
     is_differentiable: bool = False
+    full_state_update: bool = False
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
