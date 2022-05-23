@@ -69,7 +69,7 @@ class BaseAggregator(Metric):
             x = torch.as_tensor(x, dtype=torch.float32, device=self.device)
 
         nans = torch.isnan(x)
-        if nans.any().item():
+        if nans.any():
             if self.nan_strategy == "error":
                 raise RuntimeError("Encounted `nan` values in tensor")
             if self.nan_strategy == "warn":
