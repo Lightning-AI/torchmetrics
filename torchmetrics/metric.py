@@ -73,7 +73,7 @@ class Metric(Module, ABC):
     __jit_unused_properties__ = ["is_differentiable"]
     is_differentiable: Optional[bool] = None
     higher_is_better: Optional[bool] = None
-    full_state_update: bool = True
+    full_state_update: Optional[bool] = None
 
     def __init__(
         self,
@@ -126,6 +126,20 @@ class Metric(Module, ABC):
         # state management
         self._is_synced = False
         self._cache: Optional[Dict[str, Union[List[Tensor], Tensor]]] = None
+
+        if self.full_state_update is None:
+            rank_zero_warn(
+                f"""Torchmetrics v0.9 introduced a new argument class property called `full_state_update` that has
+                not been set for this class ({self.__class__.__name__}). The property determines if `update` by
+                default needs access to the full metric state. If this is not the case, significant speedups can be
+                achieved and we recommend setting this to `False`.
+                We provide an checking function
+                `from torchmetrics.utilities import check_forward_no_full_state`
+                that can be used to check if the `full_state_update=True` (old and potential slower behaviour,
+                default for now) or if `full_state_update=False` can be used safely.
+                """,
+                UserWarning,
+            )
 
     @property
     def _update_called(self) -> bool:
@@ -216,7 +230,7 @@ class Metric(Module, ABC):
                 "HINT: Did you forget to call ``unsync`` ?."
             )
 
-        if self.full_state_update or self.dist_sync_on_step:
+        if self.full_state_update or self.full_state_update is None or self.dist_sync_on_step:
             self._forward_cache = self._forward_full_state_update(*args, **kwargs)
         else:
             self._forward_cache = self._forward_reduce_state_update(*args, **kwargs)
