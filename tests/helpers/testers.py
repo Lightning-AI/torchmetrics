@@ -214,6 +214,7 @@ def _class_test(
                 _assert_allclose(batch_result, sk_batch_result, atol=atol)
 
     # check that metrics are hashable
+
     assert hash(metric)
 
     # assert that state dict is empty
