@@ -12,16 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from time import perf_counter
-from typing import TYPE_CHECKING, Any, Dict, Mapping, Optional, Sequence, Tuple
+from typing import Any, Dict, Mapping, Optional, Sequence, Tuple, no_type_check
 
 import torch
 from torch import Tensor
 
 from torchmetrics.utilities.data import select_topk, to_onehot
 from torchmetrics.utilities.enums import DataType
-
-if TYPE_CHECKING:
-    from torchmetrics import Metric
 
 
 def _check_for_empty_tensors(preds: Tensor, target: Tensor) -> bool:
@@ -624,8 +621,9 @@ def _allclose_recursive(res1: Any, res2: Any, atol: float = 1e-8) -> bool:
     return res1 == res2
 
 
+@no_type_check
 def check_forward_no_full_state(
-    metric_class: Metric,
+    metric_class,
     init_args: Dict[str, Any] = {},
     input_args: Dict[str, Any] = {},
     num_update_to_compare: Sequence[int] = [10, 100, 1000],
