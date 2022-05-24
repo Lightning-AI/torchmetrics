@@ -571,6 +571,7 @@ class MetricTester:
 
 class DummyMetric(Metric):
     name = "Dummy"
+    full_state_update: Optional[bool] = True
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -585,6 +586,7 @@ class DummyMetric(Metric):
 
 class DummyListMetric(Metric):
     name = "DummyList"
+    full_state_update: Optional[bool] = True
 
     def __init__(self):
         super().__init__()
