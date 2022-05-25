@@ -100,6 +100,28 @@ class TestBinnedRecallAtPrecision(MetricTester):
             },
         )
 
+    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
+    @pytest.mark.parametrize("min_precision", [0.05, 0.1, 0.3, 0.5, 0.8, 0.95])
+    def test_binned_recall_at_precision_default_thresholds(
+        self, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step, min_precision
+    ):
+        # rounding will simulate binning for both implementations
+        preds = Tensor(np.round(preds.numpy(), 2)) + 1e-6
+
+        self.run_class_metric_test(
+            ddp=ddp,
+            preds=preds,
+            target=target,
+            metric_class=BinnedRecallAtFixedPrecision,
+            sk_metric=partial(sk_metric, num_classes=num_classes, min_precision=min_precision),
+            dist_sync_on_step=dist_sync_on_step,
+            metric_args={
+                "num_classes": num_classes,
+                "min_precision": min_precision,
+            },
+        )
+
 
 @pytest.mark.parametrize(
     "preds, target, sk_metric, num_classes",
@@ -111,6 +133,8 @@ class TestBinnedRecallAtPrecision(MetricTester):
     ],
 )
 class TestBinnedAveragePrecision(MetricTester):
+    atol = 0.002
+
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("thresholds", (301, torch.linspace(0.0, 1.0, 101)))
@@ -126,4 +150,22 @@ class TestBinnedAveragePrecision(MetricTester):
             sk_metric=partial(sk_metric, num_classes=num_classes),
             dist_sync_on_step=dist_sync_on_step,
             metric_args={"num_classes": num_classes, "thresholds": thresholds},
+        )
+
+    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
+    def test_binned_average_precision_default_thresholds(
+        self, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step
+    ):
+        # rounding will simulate binning for both implementations
+        preds = Tensor(np.round(preds.numpy(), 2)) + 1e-6
+
+        self.run_class_metric_test(
+            ddp=ddp,
+            preds=preds,
+            target=target,
+            metric_class=BinnedAveragePrecision,
+            sk_metric=partial(sk_metric, num_classes=num_classes),
+            dist_sync_on_step=dist_sync_on_step,
+            metric_args={"num_classes": num_classes},
         )

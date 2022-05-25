@@ -18,7 +18,6 @@ from warnings import warn
 import torch
 from torch import Tensor
 
-from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.imports import _SCIPY_AVAILABLE
 
 # _ps_dict: cache of permutations
@@ -27,23 +26,19 @@ _ps_dict: dict = {}  # _ps_dict[str(spk_num)+str(device)] = permutations
 
 
 def _find_best_perm_by_linear_sum_assignment(
-    metric_mtx: torch.Tensor,
+    metric_mtx: Tensor,
     eval_func: Union[torch.min, torch.max],
 ) -> Tuple[Tensor, Tensor]:
     """Solves the linear sum assignment problem using scipy, and returns the best metric values and the
     corresponding permutations.
 
     Args:
-        metric_mtx:
-            the metric matrix, shape [batch_size, spk_num, spk_num]
-        eval_func:
-            the function to reduce the metric values of different the permutations
+        metric_mtx: the metric matrix, shape [batch_size, spk_num, spk_num]
+        eval_func: the function to reduce the metric values of different the permutations
 
     Returns:
-        best_metric:
-            shape [batch]
-        best_perm:
-            shape [batch, spk]
+        best_metric: shape ``[batch]``
+        best_perm: shape ``[batch, spk]``
     """
     from scipy.optimize import linear_sum_assignment
 
@@ -54,24 +49,20 @@ def _find_best_perm_by_linear_sum_assignment(
     return best_metric, best_perm  # shape [batch], shape [batch, spk]
 
 
-def _find_best_perm_by_exhuastive_method(
-    metric_mtx: torch.Tensor,
+def _find_best_perm_by_exhaustive_method(
+    metric_mtx: Tensor,
     eval_func: Union[torch.min, torch.max],
 ) -> Tuple[Tensor, Tensor]:
-    """Solves the linear sum assignment problem using exhuastive method, i.e. exhuastively calculates the metric
+    """Solves the linear sum assignment problem using exhaustive method, i.e. exhaustively calculates the metric
     values of all possible permutations, and returns the best metric values and the corresponding permutations.
 
     Args:
-        metric_mtx:
-            the metric matrix, shape [batch_size, spk_num, spk_num]
-        eval_func:
-            the function to reduce the metric values of different the permutations
+        metric_mtx: the metric matrix, shape ``[batch_size, spk_num, spk_num]``
+        eval_func: the function to reduce the metric values of different the permutations
 
     Returns:
-        best_metric:
-            shape [batch]
-        best_perm:
-            shape [batch, spk]
+        best_metric: shape ``[batch]``
+        best_perm: shape ``[batch, spk]``
     """
     # create/read/cache the permutations and its indexes
     # reading from cache would be much faster than creating in CPU then moving to GPU
@@ -102,7 +93,7 @@ def _find_best_perm_by_exhuastive_method(
 
 
 def permutation_invariant_training(
-    preds: torch.Tensor, target: torch.Tensor, metric_func: Callable, eval_func: str = "max", **kwargs: Dict[str, Any]
+    preds: Tensor, target: Tensor, metric_func: Callable, eval_func: str = "max", **kwargs: Dict[str, Any]
 ) -> Tuple[Tensor, Tensor]:
     """Permutation invariant training (PIT). The ``permutation_invariant_training`` implements the famous
     Permutation Invariant Training method.
@@ -110,22 +101,17 @@ def permutation_invariant_training(
     [1] in speech separation field in order to calculate audio metrics in a permutation invariant way.
 
     Args:
-        preds:
-            shape [batch, spk, ...]
-        target:
-            shape [batch, spk, ...]
-        metric_func:
-            a metric function accept a batch of target and estimate,
-            i.e. metric_func(preds[:, i, ...], target[:, j, ...]), and returns a batch of metric tensors [batch]
-        eval_func:
-            the function to find the best permutation, can be 'min' or 'max',
+        preds: shape ``[batch, spk, ...]``
+        target: shape ``[batch, spk, ...]``
+        metric_func: a metric function accept a batch of target and estimate,
+            i.e. ``metric_func(preds[:, i, ...], target[:, j, ...])``, and returns a batch of metric tensors ``[batch]``
+        eval_func: the function to find the best permutation, can be ``'min'`` or ``'max'``,
             i.e. the smaller the better or the larger the better.
-        kwargs:
-            additional args for metric_func
+        kwargs: Additional args for metric_func
 
     Returns:
-        best_metric of shape [batch],
-        best_perm of shape [batch]
+        best_metric of shape ``[batch]``
+        best_perm of shape ``[batch]``
 
     Example:
         >>> from torchmetrics.functional.audio import scale_invariant_signal_distortion_ratio
@@ -145,7 +131,10 @@ def permutation_invariant_training(
     Reference:
         [1]	`Permutation Invariant Training of Deep Models`_
     """
-    _check_same_shape(preds, target)
+    if preds.shape[0:2] != target.shape[0:2]:
+        raise RuntimeError(
+            "Predictions and targets are expected to have the same shape at the batch and speaker dimensions"
+        )
     if eval_func not in ["max", "min"]:
         raise ValueError(f'eval_func can only be "max" or "min" but got {eval_func}')
     if target.ndim < 2:
@@ -171,7 +160,7 @@ def permutation_invariant_training(
         if spk_num >= 3 and not _SCIPY_AVAILABLE:
             warn(f"In pit metric for speaker-num {spk_num}>3, we recommend installing scipy for better performance")
 
-        best_metric, best_perm = _find_best_perm_by_exhuastive_method(metric_mtx, op)
+        best_metric, best_perm = _find_best_perm_by_exhaustive_method(metric_mtx, op)
     else:
         best_metric, best_perm = _find_best_perm_by_linear_sum_assignment(metric_mtx, op)
 
@@ -179,7 +168,7 @@ def permutation_invariant_training(
 
 
 def pit_permutate(preds: Tensor, perm: Tensor) -> Tensor:
-    """permutate estimate according to perm.
+    """Permutate estimate according to perm.
 
     Args:
         preds: the estimates you want to permutate, shape [batch, spk, ...]

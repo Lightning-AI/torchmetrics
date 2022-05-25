@@ -299,8 +299,6 @@ class TestFBeta(MetricTester):
                 "ignore_index": ignore_index,
                 "mdmc_average": mdmc_average,
             },
-            check_dist_sync_on_step=True,
-            check_batch=True,
         )
 
     def test_fbeta_f1_functional(

@@ -165,7 +165,6 @@ def test_metrics_reset(tmpdir):
         limit_val_batches=2,
         limit_test_batches=2,
         max_epochs=1,
-        progress_bar_refresh_rate=0,
     )
 
     trainer.fit(model)
@@ -187,10 +186,10 @@ def test_metric_lightning_log(tmpdir):
             super().__init__()
             self.metric_step = SumMetric()
             self.metric_epoch = SumMetric()
-            self.sum = 0.0
+            self.sum = torch.tensor(0.0)
 
         def on_epoch_start(self):
-            self.sum = 0.0
+            self.sum = torch.tensor(0.0)
 
         def training_step(self, batch, batch_idx):
             x = batch
@@ -214,8 +213,8 @@ def test_metric_lightning_log(tmpdir):
     trainer.fit(model)
 
     logged = trainer.logged_metrics
-    assert torch.allclose(tensor(logged["sum_step"]), model.sum)
-    assert torch.allclose(tensor(logged["sum_epoch"]), model.sum)
+    assert torch.allclose(tensor(logged["sum_step"]), model.sum, atol=2e-4)
+    assert torch.allclose(tensor(logged["sum_epoch"]), model.sum, atol=2e-4)
 
 
 def test_metric_collection_lightning_log(tmpdir):
@@ -225,8 +224,8 @@ def test_metric_collection_lightning_log(tmpdir):
         def __init__(self):
             super().__init__()
             self.metric = MetricCollection([SumMetric(), DiffMetric()])
-            self.sum = 0.0
-            self.diff = 0.0
+            self.sum = torch.tensor(0.0)
+            self.diff = torch.tensor(0.0)
 
         def training_step(self, batch, batch_idx):
             x = batch
@@ -253,8 +252,8 @@ def test_metric_collection_lightning_log(tmpdir):
     trainer.fit(model)
 
     logged = trainer.logged_metrics
-    assert torch.allclose(tensor(logged["SumMetric_epoch"]), model.sum)
-    assert torch.allclose(tensor(logged["DiffMetric_epoch"]), model.diff)
+    assert torch.allclose(tensor(logged["SumMetric_epoch"]), model.sum, atol=2e-4)
+    assert torch.allclose(tensor(logged["DiffMetric_epoch"]), model.diff, atol=2e-4)
 
 
 def test_scriptable(tmpdir):
@@ -266,7 +265,7 @@ def test_scriptable(tmpdir):
             # the metric is not used in the module's `forward`
             # so the module should be exportable to TorchScript
             self.metric = SumMetric()
-            self.sum = 0.0
+            self.sum = torch.tensor(0.0)
 
         def training_step(self, batch, batch_idx):
             x = batch

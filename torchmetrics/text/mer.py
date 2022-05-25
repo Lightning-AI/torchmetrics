@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Union
 
 import torch
 from torch import Tensor, tensor
@@ -22,8 +22,8 @@ from torchmetrics.metric import Metric
 
 
 class MatchErrorRate(Metric):
-    r"""
-    Match error rate (MatchErrorRate_) is a common metric of the performance of an automatic speech recognition system.
+    r"""Match Error Rate (MER_) is a common metric of the performance of an automatic speech recognition system.
+
     This value indicates the percentage of words that were incorrectly predicted and inserted.
     The lower the value, the better the performance of the ASR system with a MatchErrorRate of 0 being a perfect score.
     Match error rate can then be computed as:
@@ -32,22 +32,15 @@ class MatchErrorRate(Metric):
         mer = \frac{S + D + I}{N + I} = \frac{S + D + I}{S + D + C + I}
 
     where:
-        - S is the number of substitutions,
-        - D is the number of deletions,
-        - I is the number of insertions,
-        - C is the number of correct words,
-        - N is the number of words in the reference (N=S+D+C).
+        - :math:`S` is the number of substitutions,
+        - :math:`D` is the number of deletions,
+        - :math:`I` is the number of insertions,
+        - :math:`C` is the number of correct words,
+        - :math:`N` is the number of words in the reference (:math:`N=S+D+C`).
 
 
     Args:
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Returns:
         Match error rate score
@@ -59,17 +52,18 @@ class MatchErrorRate(Metric):
         >>> metric(preds, target)
         tensor(0.4444)
     """
-    is_differentiable = False
-    higher_is_better = False
+    is_differentiable: bool = False
+    higher_is_better: bool = False
+    full_state_update: bool = False
+
     error: Tensor
     total: Tensor
 
     def __init__(
         self,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ):
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
         self.add_state("errors", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
         self.add_state("total", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
 

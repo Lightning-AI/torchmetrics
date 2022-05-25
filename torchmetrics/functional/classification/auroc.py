@@ -20,6 +20,7 @@ from torch import Tensor, tensor
 from torchmetrics.functional.classification.auc import _auc_compute_without_check
 from torchmetrics.functional.classification.roc import roc
 from torchmetrics.utilities.checks import _input_format_classification
+from torchmetrics.utilities.data import _bincount
 from torchmetrics.utilities.enums import AverageMethod, DataType
 from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
 
@@ -70,7 +71,7 @@ def _auroc_compute(
             Should be set to ``None`` for binary problems
         average: Defines the reduction that is applied to the output:
         max_fpr: If not ``None``, calculates standardized partial AUC over the
-            range [0, max_fpr]. Should be a float between 0 and 1.
+            range ``[0, max_fpr]``. Should be a float between 0 and 1.
         sample_weights: sample weights for each data point
 
     Example:
@@ -110,9 +111,8 @@ def _auroc_compute(
         # max_fpr parameter is only support for binary
         if mode != DataType.BINARY:
             raise ValueError(
-                f"Partial AUC computation not available in"
-                f" multilabel/multiclass setting, 'max_fpr' must be"
-                f" set to `None`, received `{max_fpr}`."
+                "Partial AUC computation not available in multilabel/multiclass setting,"
+                f" 'max_fpr' must be set to `None`, received `{max_fpr}`."
             )
 
     # calculate fpr, tpr
@@ -166,12 +166,12 @@ def _auroc_compute(
                 if mode == DataType.MULTILABEL:
                     support = torch.sum(target, dim=0)
                 else:
-                    support = torch.bincount(target.flatten(), minlength=num_classes)
+                    support = _bincount(target.flatten(), minlength=num_classes)
                 return torch.sum(torch.stack(auc_scores) * support / support.sum())
 
             allowed_average = (AverageMethod.NONE.value, AverageMethod.MACRO.value, AverageMethod.WEIGHTED.value)
             raise ValueError(
-                f"Argument `average` expected to be one of the following:" f" {allowed_average} but got {average}"
+                f"Argument `average` expected to be one of the following: {allowed_average} but got {average}"
             )
 
         return _auc_compute_without_check(fpr, tpr, 1.0)
@@ -189,7 +189,7 @@ def _auroc_compute(
     partial_auc = _auc_compute_without_check(fpr, tpr, 1.0)
 
     # McClish correction: standardize result to be 0.5 if non-discriminant and 1 if maximal
-    min_area: Tensor = 0.5 * max_area ** 2
+    min_area: Tensor = 0.5 * max_area**2
     return 0.5 * (1 + (partial_auc - min_area) / (max_area - min_area))
 
 
@@ -212,7 +212,7 @@ def auroc(
     .. note::
         If either the positive class or negative class is completly missing in the target tensor,
         the auroc score is meaningless in this case and a score of 0 will be returned together
-        with an warning.
+        with a warning.
 
     Args:
         preds: predictions from model (logits or probabilities)
@@ -224,21 +224,23 @@ def auroc(
             this argument should not be set as we iteratively change it in the
             range [0,num_classes-1]
         average:
+
             - ``'micro'`` computes metric globally. Only works for multilabel problems
             - ``'macro'`` computes metric for each class and uniformly averages them
             - ``'weighted'`` computes metric for each class and does a weighted-average,
               where each class is weighted by their support (accounts for class imbalance)
             - ``None`` computes and returns the metric per class
+
         max_fpr:
             If not ``None``, calculates standardized partial AUC over the
-            range [0, max_fpr]. Should be a float between 0 and 1.
+            range ``[0, max_fpr]``. Should be a float between 0 and 1.
         sample_weights: sample weights for each data point
 
     Raises:
         ValueError:
             If ``max_fpr`` is not a ``float`` in the range ``(0, 1]``.
         RuntimeError:
-            If ``PyTorch version`` is ``below 1.6`` since max_fpr requires `torch.bucketize`
+            If ``PyTorch version`` is below 1.6 since max_fpr requires ``torch.bucketize``
             which is not available below 1.6.
         ValueError:
             If ``max_fpr`` is not set to ``None`` and the mode is ``not binary``

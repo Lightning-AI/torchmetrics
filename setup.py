@@ -30,7 +30,7 @@ long_description = setup_tools._load_readme_description(
 BASE_REQUIREMENTS = setup_tools._load_requirements(path_dir=_PATH_ROOT, file_name="requirements.txt")
 
 
-def _prepare_extras(skip_files: Tuple[str] = ("devel.txt")):
+def _prepare_extras(skip_files: Tuple[str] = ("devel.txt",)):
     # find all extra requirements
     _load_req = partial(setup_tools._load_requirements, path_dir=_PATH_REQUIRE)
     found_req_files = sorted(os.path.basename(p) for p in glob.glob(os.path.join(_PATH_REQUIRE, "*.txt")))
@@ -71,7 +71,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
     keywords=["deep learning", "machine learning", "pytorch", "metrics", "AI"],
-    python_requires=">=3.6",
+    python_requires=">=3.7",
     setup_requires=[],
     install_requires=BASE_REQUIREMENTS,
     extras_require=_prepare_extras(),
@@ -97,7 +97,6 @@ setup(
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",

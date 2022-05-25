@@ -32,17 +32,10 @@ class UniversalImageQualityIndex(Metric):
 
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
-            - ``'none'``: no reduction will be applied
+            - ``'none'`` or ``None``: no reduction will be applied
 
         data_range: Range of the image. If ``None``, it is determined from the image (max - min)
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
 
     Return:
@@ -58,20 +51,22 @@ class UniversalImageQualityIndex(Metric):
         tensor(0.9216)
     """
 
+    is_differentiable: bool = True
+    higher_is_better: bool = True
+    full_state_update: bool = False
+
     preds: List[Tensor]
     target: List[Tensor]
-    higher_is_better: bool = True
 
     def __init__(
         self,
         kernel_size: Sequence[int] = (11, 11),
         sigma: Sequence[float] = (1.5, 1.5),
-        reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
+        reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
         data_range: Optional[float] = None,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
         rank_zero_warn(
             "Metric `UniversalImageQualityIndex` will save all targets and"
             " predictions in buffer. For large datasets this may lead"

@@ -11,7 +11,7 @@ The ``torchmetrics`` is a Metrics API created for easy metric development and us
 PyTorch and PyTorch Lightning. It is rigorously tested for all edge cases and includes a growing list of
 common metric implementations.
 
-The metrics API provides ``update()``, ``compute()``, ``reset()`` functions to the user. The metric :ref:`base class <references/modules:base class>` inherits
+The metrics API provides ``update()``, ``compute()``, ``reset()`` functions to the user. The metric :ref:`base class <references/metric:torchmetrics.Metric>` inherits
 :class:`torch.nn.Module` which allows us to call ``metric(...)`` directly. The ``forward()`` method of the base ``Metric`` class
 serves the dual purpose of calling ``update()`` on its input and simultaneously returning the value of the metric over the
 provided input.
@@ -67,6 +67,12 @@ This metrics API is independent of PyTorch Lightning. Metrics can directly be us
     To change this, after initializing the metric, the method ``.persistent(mode)`` can
     be used to enable (``mode=True``) or disable (``mode=False``) this behaviour.
 
+.. note::
+
+    Due to specialized logic around metric states, we in general do **not** recommend
+    that metrics are initialized inside other metrics (nested metrics), as this can lead
+    to weird behaviour. Instead consider subclassing a metric or use
+    ``torchmetrics.MetricCollection``.
 
 *******************
 Metrics and devices
@@ -90,8 +96,8 @@ be moved to the same device as the input of the metric:
     print(out.device) # cuda:0
 
 However, when **properly defined** inside a :class:`~torch.nn.Module` or
-:class:`~pytorch_lightning.core.lightning.LightningModule` the metric will be be automatically move
-to the same device as the the module when using ``.to(device)``.  Being
+:class:`~pytorch_lightning.core.lightning.LightningModule` the metric will be automatically moved
+to the same device as the module when using ``.to(device)``.  Being
 **properly defined** means that the metric is correctly identified as a child module of the
 model (check ``.children()`` attribute of the model). Therefore, metrics cannot be placed
 in native python ``list`` and ``dict``, as they will not be correctly identified
@@ -175,9 +181,9 @@ the following limitations:
 * Some metrics does not work at all in half precision on CPU. We have explicitly stated this in their docstring,
   but they are also listed below:
 
-  - :ref:`references/modules:PeakSignalNoiseRatio` and :ref:`references/functional:peak_signal_noise_ratio [func]`
-  - :ref:`references/modules:StructuralSimilarityIndexMeasure` and :ref:`references/functional:structural_similarity_index_measure [func]`
-  - :ref:`references/modules:KLDivergence` and :ref:`references/functional:kl_divergence [func]`
+  - :ref:`image/peak_signal_noise_ratio:Peak Signal-to-Noise Ratio (PSNR)`
+  - :ref:`image/structural_similarity:Structural Similarity Index Measure (SSIM)`
+  - :ref:`classification/kl_divergence:KL Divergence`
 
 You can always check the precision/dtype of the metric by checking the `.dtype` property.
 
@@ -241,7 +247,7 @@ MetricCollection
 
 In many cases it is beneficial to evaluate the model output by multiple metrics.
 In this case the ``MetricCollection`` class may come in handy. It accepts a sequence
-of metrics and wraps theses into a single callable metric class, with the same
+of metrics and wraps these into a single callable metric class, with the same
 interface as any other metric.
 
 Example:
@@ -333,8 +339,8 @@ Metrics and differentiability
 *****************************
 
 Metrics support backpropagation, if all computations involved in the metric calculation
-are differentiable. All modular metrics have a property that determines if a metric is
-differentiable or not.
+are differentiable. All modular metric classes have the property ``is_differentiable`` that determines
+if a metric is differentiable or not.
 
 However, note that the cached state is detached from the computational
 graph and cannot be back-propagated. Not doing this would mean storing the computational
@@ -343,17 +349,45 @@ In practise this means that:
 
 .. code-block:: python
 
+    MyMetric.is_differentiable  # returns True if metric is differentiable
     metric = MyMetric()
-    val = metric(pred, target) # this value can be back-propagated
-    val = metric.compute() # this value cannot be back-propagated
+    val = metric(pred, target)  # this value can be back-propagated
+    val = metric.compute()  # this value cannot be back-propagated
 
 A functional metric is differentiable if its corresponding modular metric is differentiable.
 
+***************************************
+Metrics and hyperparameter optimization
+***************************************
+
+If you want to directly optimize a metric it needs to support backpropagation (see section above).
+However, if you are just interested in using a metric for hyperparameter tuning and are not sure
+if the metric should be maximized or minimized, all modular metric classes have the ``higher_is_better``
+property that can be used to determine this:
+
+.. code-block:: python
+
+    # returns True because accuracy is optimal when it is maximized
+    torchmetrics.Accuracy.higher_is_better
+
+    # returns False because the mean squared error is optimal when it is minimized
+    torchmetrics.MeanSquaredError.higher_is_better
+
 .. _Metric kwargs:
 
-*****************************
-Advanced distributed settings
-*****************************
+************************
+Advanced metric settings
+************************
+
+The following is a list of additional arguments that can be given to any metric class (in the ``**kwargs`` argument)
+that will alter how metric states are stored and synced.
+
+If you are running metrics on GPU and are encountering that you are running out of GPU VRAM then the following
+argument can help:
+
+- ``compute_on_cpu`` will automatically move the metric states to cpu after calling ``update``, making sure that
+  GPU memory is not filling up. The consequence will be that the ``compute`` method will be called on CPU instead
+  of GPU. Only applies to metric states that are lists.
 
 If you are running in a distributed environment, ``TorchMetrics`` will automatically take care of the distributed
 synchronization for you. However, the following three keyword arguments can be given to any metric class for

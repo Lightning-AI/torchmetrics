@@ -13,8 +13,8 @@
 # limitations under the License.
 import pickle
 import sys
-from functools import partial
-from typing import Any, Callable, Sequence, Union
+from functools import partial, wraps
+from typing import Any, Callable, Optional, Sequence, Union
 
 import pytest
 import torch
@@ -79,9 +79,7 @@ def _class_test(
         metric_args = {}
 
     # Instanciate metric
-    metric = metric_class(
-        compute_on_step=check_dist_sync_on_step or check_batch, dist_sync_on_step=dist_sync_on_step, **metric_args
-    )
+    metric = metric_class(dist_sync_on_step=dist_sync_on_step, **metric_args)
 
     # check that the metric is scriptable
     if check_scriptable:
@@ -303,6 +301,7 @@ class TextTester(MetricTester):
             check_batch: bool, if true will check if the metric is also correctly
                 calculated across devices for each batch (and not just at the end)
             fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `targets` among processes
+            check_scriptable:
             key: The key passed onto the `_assert_allclose` to compare the respective metric from the Dict output
                 against the sk_metric.
             kwargs_update: Additional keyword arguments that will be passed with preds and
@@ -418,6 +417,7 @@ class TextTester(MetricTester):
             preds: torch tensor with predictions
             targets: torch tensor with targets
             metric_module: the metric module to test
+            metric_functional:
             metric_args: dict with additional arguments used for class initialization
             key: The key passed onto the `_assert_allclose` to compare the respective metric from the Dict output
                 against the sk_metric.
@@ -433,3 +433,25 @@ class TextTester(MetricTester):
         if metric.is_differentiable:
             # check for numerical correctness
             assert torch.autograd.gradcheck(partial(metric_functional, **metric_args), (preds[0], targets[0]))
+
+
+def skip_on_connection_issues(reason: str = "Unable to load checkpoints from HuggingFace `transformers`."):
+    """Wrapper which handles HF-related tests if they fail due to connection issues.
+
+    The tests run normally if no connection issue arises, and they're marked as skipped otherwise.
+    """
+    _error_msg_start = "We couldn't connect to"
+
+    def test_decorator(function: Callable, *args: Any, **kwargs: Any) -> Optional[Callable]:
+        @wraps(function)
+        def run_test(*args: Any, **kwargs: Any) -> Optional[Any]:
+            try:
+                return function(*args, **kwargs)
+            except OSError as ex:
+                if _error_msg_start not in str(ex):
+                    raise ex
+                pytest.skip(reason)
+
+        return run_test
+
+    return test_decorator

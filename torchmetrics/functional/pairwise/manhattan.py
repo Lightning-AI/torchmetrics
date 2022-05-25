@@ -14,6 +14,7 @@
 from typing import Optional
 
 from torch import Tensor
+from typing_extensions import Literal
 
 from torchmetrics.functional.pairwise.helpers import _check_input, _reduce_distance_matrix
 
@@ -37,7 +38,10 @@ def _pairwise_manhattan_distance_update(
 
 
 def pairwise_manhattan_distance(
-    x: Tensor, y: Optional[Tensor] = None, reduction: Optional[str] = None, zero_diagonal: Optional[bool] = None
+    x: Tensor,
+    y: Optional[Tensor] = None,
+    reduction: Literal["mean", "sum", "none", None] = None,
+    zero_diagonal: Optional[bool] = None,
 ) -> Tensor:
     r"""
     Calculates pairwise manhattan distance:
@@ -45,8 +49,9 @@ def pairwise_manhattan_distance(
     .. math::
         d_{man}(x,y) = ||x-y||_1 = \sum_{d=1}^D |x_d - y_d|
 
-    If both `x` and `y` are passed in, the calculation will be performed pairwise between the rows of `x` and `y`.
-    If only `x` is passed in, the calculation will be performed between the rows of `x`.
+    If both :math:`x` and :math:`y` are passed in, the calculation will be performed pairwise between
+    the rows of :math:`x` and :math:`y`.
+    If only :math:`x` is passed in, the calculation will be performed between the rows of :math:`x`.
 
     Args:
         x: Tensor with shape ``[N, d]``

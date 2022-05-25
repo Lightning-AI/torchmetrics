@@ -16,6 +16,7 @@ import pickle
 import pytest
 import torch
 from scipy.linalg import sqrtm as scipy_sqrtm
+from torch.nn import Module
 from torch.utils.data import Dataset
 
 from torchmetrics.image.fid import FrechetInceptionDistance, sqrtm
@@ -44,7 +45,7 @@ def test_matrix_sqrt(matrix_size):
 def test_no_train():
     """Assert that metric never leaves evaluation mode."""
 
-    class MyModel(torch.nn.Module):
+    class MyModel(Module):
         def __init__(self):
             super().__init__()
             self.metric = FrechetInceptionDistance()
@@ -124,21 +125,25 @@ class _ImgDataset(Dataset):
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test is too slow without gpu")
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
-def test_compare_fid(tmpdir, feature=2048):
+@pytest.mark.parametrize("equal_size", [False, True])
+def test_compare_fid(tmpdir, equal_size, feature=2048):
     """check that the hole pipeline give the same result as torch-fidelity."""
     from torch_fidelity import calculate_metrics
 
     metric = FrechetInceptionDistance(feature=feature).cuda()
 
+    n = 100
+    m = 100 if equal_size else 90
+
     # Generate some synthetic data
-    img1 = torch.randint(0, 180, (100, 3, 299, 299), dtype=torch.uint8)
-    img2 = torch.randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)
+    img1 = torch.randint(0, 180, (n, 3, 299, 299), dtype=torch.uint8)
+    img2 = torch.randint(100, 255, (m, 3, 299, 299), dtype=torch.uint8)
 
     batch_size = 10
-    for i in range(img1.shape[0] // batch_size):
+    for i in range(n // batch_size):
         metric.update(img1[batch_size * i : batch_size * (i + 1)].cuda(), real=True)
 
-    for i in range(img2.shape[0] // batch_size):
+    for i in range(m // batch_size):
         metric.update(img2[batch_size * i : batch_size * (i + 1)].cuda(), real=False)
 
     torch_fid = calculate_metrics(
@@ -153,3 +158,28 @@ def test_compare_fid(tmpdir, feature=2048):
     tm_res = metric.compute()
 
     assert torch.allclose(tm_res.cpu(), torch.tensor([torch_fid["frechet_inception_distance"]]), atol=1e-3)
+
+
+@pytest.mark.parametrize("reset_real_features", [True, False])
+def test_reset_real_features_arg(reset_real_features):
+    metric = FrechetInceptionDistance(feature=64, reset_real_features=reset_real_features)
+
+    metric.update(torch.randint(0, 180, (2, 3, 299, 299), dtype=torch.uint8), real=True)
+    metric.update(torch.randint(0, 180, (2, 3, 299, 299), dtype=torch.uint8), real=False)
+
+    assert len(metric.real_features) == 1
+    assert list(metric.real_features[0].shape) == [2, 64]
+
+    assert len(metric.fake_features) == 1
+    assert list(metric.fake_features[0].shape) == [2, 64]
+
+    metric.reset()
+
+    # fake features should always reset
+    assert len(metric.fake_features) == 0
+
+    if reset_real_features:
+        assert len(metric.real_features) == 0
+    else:
+        assert len(metric.real_features) == 1
+        assert list(metric.real_features[0].shape) == [2, 64]

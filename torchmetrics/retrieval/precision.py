@@ -46,15 +46,9 @@ class RetrievalPrecision(RetrievalMetric):
 
         ignore_index:
             Ignore predictions where the target is equal to this number.
-        k: consider only the top k elements for each query (default: `None`, which considers them all)
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        k: consider only the top k elements for each query (default: ``None``, which considers them all)
+        adaptive_k: adjust ``k`` to ``min(k, number of documents)`` for each query
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
@@ -62,7 +56,9 @@ class RetrievalPrecision(RetrievalMetric):
         ValueError:
             If ``ignore_index`` is not `None` or an integer.
         ValueError:
-            If ``k`` parameter is not `None` or an integer larger than 0.
+            If ``k`` is not `None` or an integer larger than 0.
+        ValueError:
+            If ``adaptive_k`` is not boolean.
 
     Example:
         >>> from torchmetrics import RetrievalPrecision
@@ -74,26 +70,30 @@ class RetrievalPrecision(RetrievalMetric):
         tensor(0.5000)
     """
 
-    higher_is_better = True
+    is_differentiable: bool = False
+    higher_is_better: bool = True
+    full_state_update: bool = False
 
     def __init__(
         self,
         empty_target_action: str = "neg",
         ignore_index: Optional[int] = None,
         k: Optional[int] = None,
-        compute_on_step: Optional[bool] = None,
+        adaptive_k: bool = False,
         **kwargs: Dict[str, Any],
     ) -> None:
         super().__init__(
             empty_target_action=empty_target_action,
             ignore_index=ignore_index,
-            compute_on_step=compute_on_step,
             **kwargs,
         )
 
         if (k is not None) and not (isinstance(k, int) and k > 0):
             raise ValueError("`k` has to be a positive integer or None")
+        if not isinstance(adaptive_k, bool):
+            raise ValueError("`adaptive_k` has to be a boolean")
         self.k = k
+        self.adaptive_k = adaptive_k
 
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
-        return retrieval_precision(preds, target, k=self.k)
+        return retrieval_precision(preds, target, k=self.k, adaptive_k=self.adaptive_k)

@@ -49,14 +49,14 @@ def image_gradients(img: Tensor) -> Tuple[Tensor, Tensor]:
     """Computes `Gradient Computation of Image`_ of a given image using finite difference.
 
     Args:
-        img: An ``(N, C, H, W)`` input tensor where C is the number of image channels
+        img: An ``(N, C, H, W)`` input tensor where ``C`` is the number of image channels
 
     Return:
-        Tuple of (dy, dx) with each gradient of shape ``[N, C, H, W]``
+        Tuple of ``(dy, dx)`` with each gradient of shape ``[N, C, H, W]``
 
     Raises:
         TypeError:
-            If ``img`` is not of the type <torch.Tensor>.
+            If ``img`` is not of the type ``torch.Tensor``.
         RuntimeError:
             If ``img`` is not a 4D tensor.
 

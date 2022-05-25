@@ -171,7 +171,10 @@ class TestPIT(MetricTester):
 
 def test_error_on_different_shape() -> None:
     metric = PermutationInvariantTraining(signal_noise_ratio, "max")
-    with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
+    with pytest.raises(
+        RuntimeError,
+        match="Predictions and targets are expected to have the same shape at the batch and speaker dimensions",
+    ):
         metric(torch.randn(3, 3, 10), torch.randn(3, 2, 10))
 
 
@@ -189,7 +192,7 @@ def test_error_on_wrong_shape() -> None:
 
 def test_consistency_of_two_implementations() -> None:
     from torchmetrics.functional.audio.pit import (
-        _find_best_perm_by_exhuastive_method,
+        _find_best_perm_by_exhaustive_method,
         _find_best_perm_by_linear_sum_assignment,
     )
 
@@ -197,6 +200,6 @@ def test_consistency_of_two_implementations() -> None:
     for shp in shapes_test:
         metric_mtx = torch.randn(size=shp)
         bm1, bp1 = _find_best_perm_by_linear_sum_assignment(metric_mtx, torch.max)
-        bm2, bp2 = _find_best_perm_by_exhuastive_method(metric_mtx, torch.max)
+        bm2, bp2 = _find_best_perm_by_exhaustive_method(metric_mtx, torch.max)
         assert torch.allclose(bm1, bm2)
         assert (bp1 == bp2).all()

@@ -1,3 +1,2 @@
-pesq>=0.0.3
+pesq @ git+https://github.com/ludlows/python-pesq
 pystoi
-fast-bss-eval>=0.1.0

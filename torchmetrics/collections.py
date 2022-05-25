@@ -15,17 +15,18 @@ from copy import deepcopy
 from typing import Any, Dict, Hashable, Iterable, List, Optional, Sequence, Tuple, Union
 
 import torch
-from torch import Tensor, nn
+from torch import Tensor
+from torch.nn import Module, ModuleDict
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
-from torchmetrics.utilities.data import _flatten_dict
+from torchmetrics.utilities.data import _flatten_dict, allclose
 
 # this is just a bypass for this module name collision with build-in one
 from torchmetrics.utilities.imports import OrderedDict
 
 
-class MetricCollection(nn.ModuleDict):
+class MetricCollection(ModuleDict):
     """MetricCollection class can be used to chain metrics that have the same call pattern into one single class.
 
     Args:
@@ -52,6 +53,10 @@ class MetricCollection(nn.ModuleDict):
             can all be computed from the true positives/negatives and false positives/negatives. By default,
             this argument is ``True`` which enables this feature. Set this argument to `False` for disabling
             this behaviour. Can also be set to a list of list of metrics for setting the compute groups yourself.
+
+    .. note::
+        Metric collections can be nested at initilization (see last example) but the output of the collection will
+        still be a single flattened dictionary combining the prefix and postfix arguments from the nested collection.
 
     Raises:
         ValueError:
@@ -103,6 +108,23 @@ class MetricCollection(nn.ModuleDict):
         ... )
         >>> pprint(metrics(preds, target))
         {'Accuracy': tensor(0.1250), 'MeanSquaredError': tensor(2.3750), 'Precision': tensor(0.0667)}
+
+    Example (nested metric collections):
+        >>> metrics = MetricCollection([
+        ...     MetricCollection([
+        ...         Accuracy(num_classes=3, average='macro'),
+        ...         Precision(num_classes=3, average='macro')
+        ...     ], postfix='_macro'),
+        ...     MetricCollection([
+        ...         Accuracy(num_classes=3, average='micro'),
+        ...         Precision(num_classes=3, average='micro')
+        ...     ], postfix='_micro'),
+        ... ], prefix='valmetrics/')
+        >>> pprint(metrics(preds, target))  # doctest: +NORMALIZE_WHITESPACE
+        {'valmetrics/Accuracy_macro': tensor(0.1111),
+        'valmetrics/Accuracy_micro': tensor(0.1250),
+        'valmetrics/Precision_macro': tensor(0.0667),
+        'valmetrics/Precision_micro': tensor(0.1250)}
     """
 
     _groups: Dict[int, List[str]]
@@ -191,8 +213,13 @@ class MetricCollection(nn.ModuleDict):
         for idx, values in enumerate(temp.values()):
             self._groups[idx] = values
 
-    def _equal_metric_states(self, metric1: Metric, metric2: Metric) -> bool:
+    @staticmethod
+    def _equal_metric_states(metric1: Metric, metric2: Metric) -> bool:
         """Check if the metric state of two metrics are the same."""
+        # empty state
+        if len(metric1._defaults) == 0 or len(metric2._defaults) == 0:
+            return False
+
         if metric1._defaults.keys() != metric2._defaults.keys():
             return False
 
@@ -204,10 +231,10 @@ class MetricCollection(nn.ModuleDict):
                 return False
 
             if isinstance(state1, Tensor) and isinstance(state2, Tensor):
-                return state1.shape == state2.shape and torch.allclose(state1, state2)
+                return state1.shape == state2.shape and allclose(state1, state2)
 
             if isinstance(state1, list) and isinstance(state2, list):
-                return all(s1.shape == s2.shape and torch.allclose(s1, s2) for s1, s2 in zip(state1, state2))
+                return all(s1.shape == s2.shape and allclose(s1, s2) for s1, s2 in zip(state1, state2))
 
         return True
 
@@ -278,19 +305,31 @@ class MetricCollection(nn.ModuleDict):
             # Make sure that metrics are added in deterministic order
             for name in sorted(metrics.keys()):
                 metric = metrics[name]
-                if not isinstance(metric, Metric):
+                if not isinstance(metric, (Metric, MetricCollection)):
                     raise ValueError(
-                        f"Value {metric} belonging to key {name} is not an instance of `pl.metrics.Metric`"
+                        f"Value {metric} belonging to key {name} is not an instance of"
+                        " `torchmetrics.Metric` or `torchmetrics.MetricCollection`"
                     )
-                self[name] = metric
+                if isinstance(metric, Metric):
+                    self[name] = metric
+                else:
+                    for k, v in metric.items(keep_base=False):
+                        self[f"{name}_{k}"] = v
         elif isinstance(metrics, Sequence):
             for metric in metrics:
-                if not isinstance(metric, Metric):
-                    raise ValueError(f"Input {metric} to `MetricCollection` is not a instance of `pl.metrics.Metric`")
-                name = metric.__class__.__name__
-                if name in self:
-                    raise ValueError(f"Encountered two metrics both named {name}")
-                self[name] = metric
+                if not isinstance(metric, (Metric, MetricCollection)):
+                    raise ValueError(
+                        f"Input {metric} to `MetricCollection` is not a instance of"
+                        " `torchmetrics.Metric` or `torchmetrics.MetricCollection`"
+                    )
+                if isinstance(metric, Metric):
+                    name = metric.__class__.__name__
+                    if name in self:
+                        raise ValueError(f"Encountered two metrics both named {name}")
+                    self[name] = metric
+                else:
+                    for k, v in metric.items(keep_base=False):
+                        self[k] = v
         else:
             raise ValueError("Unknown input to MetricCollection.")
 
@@ -318,7 +357,7 @@ class MetricCollection(nn.ModuleDict):
             self._groups_checked = True
         else:
             # Initialize all metrics as their own compute group
-            self._groups = {i: [str(k)] for i, k in enumerate(self.keys(keep_base=False))}
+            self._groups = {i: [str(k)] for i, k in enumerate(self.keys(keep_base=True))}
 
     @property
     def compute_groups(self) -> Dict[int, List[str]]:
@@ -346,7 +385,7 @@ class MetricCollection(nn.ModuleDict):
             return self._modules.keys()
         return self._to_renamed_ordered_dict().keys()
 
-    def items(self, keep_base: bool = False) -> Iterable[Tuple[str, nn.Module]]:
+    def items(self, keep_base: bool = False) -> Iterable[Tuple[str, Module]]:
         r"""Return an iterable of the ModuleDict key/value pairs.
         Args:
             keep_base: Whether to add prefix/postfix on the items collection.

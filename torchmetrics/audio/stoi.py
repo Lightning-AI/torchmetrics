@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from torch import Tensor, tensor
 
@@ -19,7 +19,7 @@ from torchmetrics.functional.audio.stoi import short_time_objective_intelligibil
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _PYSTOI_AVAILABLE
 
-__doctest_requires__ = {("ShortTimeObjectiveIntelligibility"): ["pystoi"]}
+__doctest_requires__ = {"ShortTimeObjectiveIntelligibility": ["pystoi"]}
 
 
 class ShortTimeObjectiveIntelligibility(Metric):
@@ -27,11 +27,11 @@ class ShortTimeObjectiveIntelligibility(Metric):
     Note that input will be moved to `cpu` to perform the metric calculation.
 
     Intelligibility measure which is highly correlated with the intelligibility of degraded speech signals, e.g., due
-    to additive noise, single/multi-channel noise reduction, binary masking and vocoded speech as in CI simulations.
+    to additive noise, single-/multi-channel noise reduction, binary masking and vocoded speech as in CI simulations.
     The STOI-measure is intrusive, i.e., a function of the clean and degraded speech signals. STOI may be a good
     alternative to the speech intelligibility index (SII) or the speech transmission index (STI), when you are
     interested in the effect of nonlinear processing to noisy speech, e.g., noise reduction, binary masking algorithms,
-    on speech intelligibility. Description taken from [Cees Taal's website](http://www.ceestaal.nl/code/).
+    on speech intelligibility. Description taken from `Cees Taal's website <http://www.ceestaal.nl/code/>`_.
 
     .. note:: using this metrics requires you to have ``pystoi`` install. Either install as ``pip install
         torchmetrics[audio]`` or ``pip install pystoi``
@@ -42,18 +42,10 @@ class ShortTimeObjectiveIntelligibility(Metric):
     - ``target``: ``shape [...,time]``
 
     Args:
-        fs:
-            sampling frequency (Hz)
-        extended:
-            whether to use the extended STOI described in [4]
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
+        fs: sampling frequency (Hz)
+        extended: whether to use the extended STOI described in [4]
 
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Returns:
         average STOI value
@@ -87,17 +79,17 @@ class ShortTimeObjectiveIntelligibility(Metric):
     """
     sum_stoi: Tensor
     total: Tensor
-    is_differentiable = False
-    higher_is_better = True
+    full_state_update: bool = False
+    is_differentiable: bool = False
+    higher_is_better: bool = True
 
     def __init__(
         self,
         fs: int,
         extended: bool = False,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
         if not _PYSTOI_AVAILABLE:
             raise ModuleNotFoundError(
                 "STOI metric requires that `pystoi` is installed."

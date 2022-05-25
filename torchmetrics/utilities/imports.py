@@ -14,6 +14,7 @@
 """Import utilities."""
 import operator
 from collections import OrderedDict  # noqa: F401
+from functools import lru_cache
 from importlib import import_module
 from importlib.util import find_spec
 from typing import Callable, Optional
@@ -22,6 +23,7 @@ from packaging.version import Version
 from pkg_resources import DistributionNotFound, get_distribution
 
 
+@lru_cache()
 def _package_available(package_name: str) -> bool:
     """Check if a package is available in your environment.
 
@@ -40,6 +42,7 @@ def _package_available(package_name: str) -> bool:
         return False
 
 
+@lru_cache()
 def _module_available(module_path: str) -> bool:
     """Check if a module path is available in your environment.
 
@@ -64,6 +67,7 @@ def _module_available(module_path: str) -> bool:
     return True
 
 
+@lru_cache()
 def _compare_version(package: str, op: Callable, version: str) -> Optional[bool]:
     """Compare package version with some requirements.
 
@@ -94,9 +98,11 @@ def _compare_version(package: str, op: Callable, version: str) -> Optional[bool]
 _TORCH_LOWER_1_4: Optional[bool] = _compare_version("torch", operator.lt, "1.4.0")
 _TORCH_LOWER_1_5: Optional[bool] = _compare_version("torch", operator.lt, "1.5.0")
 _TORCH_LOWER_1_6: Optional[bool] = _compare_version("torch", operator.lt, "1.6.0")
+_TORCH_LOWER_1_12_DEV: Optional[bool] = _compare_version("torch", operator.lt, "1.12.0.dev")
 _TORCH_GREATER_EQUAL_1_6: Optional[bool] = _compare_version("torch", operator.ge, "1.6.0")
 _TORCH_GREATER_EQUAL_1_7: Optional[bool] = _compare_version("torch", operator.ge, "1.7.0")
 _TORCH_GREATER_EQUAL_1_8: Optional[bool] = _compare_version("torch", operator.ge, "1.8.0")
+_TORCH_GREATER_EQUAL_1_10: Optional[bool] = _compare_version("torch", operator.ge, "1.10.0")
 
 _JIWER_AVAILABLE: bool = _package_available("jiwer")
 _NLTK_AVAILABLE: bool = _package_available("nltk")

@@ -17,6 +17,10 @@ from torchmetrics.retrieval.fall_out import RetrievalFallOut  # noqa: F401
 from torchmetrics.retrieval.hit_rate import RetrievalHitRate  # noqa: F401
 from torchmetrics.retrieval.ndcg import RetrievalNormalizedDCG  # noqa: F401
 from torchmetrics.retrieval.precision import RetrievalPrecision  # noqa: F401
+from torchmetrics.retrieval.precision_recall_curve import (  # noqa: F401
+    RetrievalPrecisionRecallCurve,
+    RetrievalRecallAtFixedPrecision,
+)
 from torchmetrics.retrieval.r_precision import RetrievalRPrecision  # noqa: F401
 from torchmetrics.retrieval.recall import RetrievalRecall  # noqa: F401
 from torchmetrics.retrieval.reciprocal_rank import RetrievalMRR  # noqa: F401

@@ -3,6 +3,7 @@ from functools import partial
 
 import pytest
 import torch
+from torch import Tensor
 
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES, MetricTester
@@ -27,26 +28,26 @@ class TestingMinMaxMetric(MinMaxMetric):
 
 def compare_fn(preds, target, base_fn):
     """comparing function for minmax wrapper."""
-    min, max = 1e6, -1e6  # pick some very large numbers for comparing
+    v_min, v_max = 1e6, -1e6  # pick some very large numbers for comparing
     for i in range(NUM_BATCHES):
         val = base_fn(preds[: (i + 1) * BATCH_SIZE], target[: (i + 1) * BATCH_SIZE]).cpu().numpy()
-        min = min if min < val else val
-        max = max if max > val else val
+        v_min = v_min if v_min < val else val
+        v_max = v_max if v_max > val else val
     raw = base_fn(preds, target)
-    return [raw.cpu().numpy(), min, max]
+    return [raw.cpu().numpy(), v_min, v_max]
 
 
 def compare_fn_ddp(preds, target, base_fn):
-    min, max = 1e6, -1e6  # pick some very large numbers for comparing
+    v_min, v_max = 1e6, -1e6  # pick some very large numbers for comparing
     for i, j in zip(range(0, NUM_BATCHES, 2), range(1, NUM_BATCHES, 2)):
         p = torch.cat([preds[i * BATCH_SIZE : (i + 1) * BATCH_SIZE], preds[j * BATCH_SIZE : (j + 1) * BATCH_SIZE]])
         t = torch.cat([target[i * BATCH_SIZE : (i + 1) * BATCH_SIZE], target[j * BATCH_SIZE : (j + 1) * BATCH_SIZE]])
         base_fn.update(p, t)
         val = base_fn.compute().cpu().numpy()
-        min = min if min < val else val
-        max = max if max > val else val
+        v_min = v_min if v_min < val else val
+        v_max = v_max if v_max > val else val
     raw = base_fn(preds, target)
-    return [raw.cpu().numpy(), min, max]
+    return [raw.cpu().numpy(), v_min, v_max]
 
 
 @pytest.mark.parametrize(
@@ -97,10 +98,10 @@ def test_basic_example(preds, labels, raws, maxs, mins) -> None:
     """tests that both min and max versions of MinMaxMetric operate correctly after calling compute."""
     acc = Accuracy()
     min_max_acc = MinMaxMetric(acc)
-    labels = torch.Tensor(labels).long()
+    labels = Tensor(labels).long()
 
     for i in range(3):
-        preds_ = torch.Tensor(preds[i])
+        preds_ = Tensor(preds[i])
         min_max_acc(preds_, labels)
         acc = min_max_acc.compute()
         assert acc["raw"] == raws[i]

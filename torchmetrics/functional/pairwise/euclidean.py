@@ -14,6 +14,7 @@
 from typing import Optional
 
 from torch import Tensor
+from typing_extensions import Literal
 
 from torchmetrics.functional.pairwise.helpers import _check_input, _reduce_distance_matrix
 
@@ -38,16 +39,19 @@ def _pairwise_euclidean_distance_update(
 
 
 def pairwise_euclidean_distance(
-    x: Tensor, y: Optional[Tensor] = None, reduction: Optional[str] = None, zero_diagonal: Optional[bool] = None
+    x: Tensor,
+    y: Optional[Tensor] = None,
+    reduction: Literal["mean", "sum", "none", None] = None,
+    zero_diagonal: Optional[bool] = None,
 ) -> Tensor:
-    r"""
-    Calculates pairwise euclidean distances:
+    r"""Calculates pairwise euclidean distances:
 
     .. math::
         d_{euc}(x,y) = ||x - y||_2 = \sqrt{\sum_{d=1}^D (x_d - y_d)^2}
 
-    If both `x` and `y` are passed in, the calculation will be performed pairwise between the rows of `x` and `y`.
-    If only `x` is passed in, the calculation will be performed between the rows of `x`.
+    If both :math:`x` and :math:`y` are passed in, the calculation will be performed pairwise between
+    the rows of :math:`x` and :math:`y`.
+    If only :math:`x` is passed in, the calculation will be performed between the rows of :math:`x`.
 
     Args:
         x: Tensor with shape ``[N, d]``

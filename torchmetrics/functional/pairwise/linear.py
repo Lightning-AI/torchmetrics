@@ -14,8 +14,10 @@
 from typing import Optional
 
 from torch import Tensor
+from typing_extensions import Literal
 
 from torchmetrics.functional.pairwise.helpers import _check_input, _reduce_distance_matrix
+from torchmetrics.utilities.compute import _safe_matmul
 
 
 def _pairwise_linear_similarity_update(
@@ -30,14 +32,17 @@ def _pairwise_linear_similarity_update(
     """
     x, y, zero_diagonal = _check_input(x, y, zero_diagonal)
 
-    distance = x @ y.T
+    distance = _safe_matmul(x, y)
     if zero_diagonal:
         distance.fill_diagonal_(0)
     return distance
 
 
 def pairwise_linear_similarity(
-    x: Tensor, y: Optional[Tensor] = None, reduction: Optional[str] = None, zero_diagonal: Optional[bool] = None
+    x: Tensor,
+    y: Optional[Tensor] = None,
+    reduction: Literal["mean", "sum", "none", None] = None,
+    zero_diagonal: Optional[bool] = None,
 ) -> Tensor:
     r"""
     Calculates pairwise linear similarity:
@@ -45,8 +50,9 @@ def pairwise_linear_similarity(
     .. math::
         s_{lin}(x,y) = <x,y> = \sum_{d=1}^D x_d \cdot y_d
 
-    If both `x` and `y` are passed in, the calculation will be performed pairwise between the rows of `x` and `y`.
-    If only `x` is passed in, the calculation will be performed between the rows of `x`.
+    If both :math:`x` and :math:`y` are passed in, the calculation will be performed pairwise between
+    the rows of :math:`x` and :math:`y`.
+    If only :math:`x` is passed in, the calculation will be performed between the rows of :math:`x`.
 
     Args:
         x: Tensor with shape ``[N, d]``

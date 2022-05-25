@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Tuple
+from time import perf_counter
+from typing import Any, Dict, Mapping, Optional, Sequence, Tuple, no_type_check
 
 import torch
 from torch import Tensor
@@ -20,18 +21,32 @@ from torchmetrics.utilities.data import select_topk, to_onehot
 from torchmetrics.utilities.enums import DataType
 
 
+def _check_for_empty_tensors(preds: Tensor, target: Tensor) -> bool:
+    if preds.numel() == target.numel() == 0:
+        return True
+    return False
+
+
 def _check_same_shape(preds: Tensor, target: Tensor) -> None:
     """Check that predictions and target have the same shape, else raise error."""
     if preds.shape != target.shape:
         raise RuntimeError("Predictions and targets are expected to have the same shape")
 
 
-def _basic_input_validation(preds: Tensor, target: Tensor, threshold: float, multiclass: Optional[bool]) -> None:
+def _basic_input_validation(
+    preds: Tensor, target: Tensor, threshold: float, multiclass: Optional[bool], ignore_index: Optional[int]
+) -> None:
     """Perform basic validation of inputs that does not require deducing any information of the type of inputs."""
+    # Skip all other checks if both preds and target are empty tensors
+    if _check_for_empty_tensors(preds, target):
+        return
 
     if target.is_floating_point():
         raise ValueError("The `target` has to be an integer tensor.")
-    if target.min() < 0:
+
+    if ignore_index is None and target.min() < 0:
+        raise ValueError("The `target` has to be a non-negative tensor.")
+    elif ignore_index is not None and ignore_index >= 0 and target.min() < 0:
         raise ValueError("The `target` has to be a non-negative tensor.")
 
     preds_float = preds.is_floating_point()
@@ -65,7 +80,7 @@ def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> Tuple[Da
                 "The `preds` and `target` should have the same shape,",
                 f" got `preds` with shape={preds.shape} and `target` with shape={target.shape}.",
             )
-        if preds_float and target.max() > 1:
+        if preds_float and target.numel() > 0 and target.max() > 1:
             raise ValueError(
                 "If `preds` and `target` are of shape (N, ...) and `preds` are floats, `target` should be binary."
             )
@@ -79,8 +94,7 @@ def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> Tuple[Da
             case = DataType.MULTILABEL
         else:
             case = DataType.MULTIDIM_MULTICLASS
-
-        implied_classes = preds[0].numel()
+        implied_classes = preds[0].numel() if preds.numel() > 0 else 0
 
     elif preds.ndim == target.ndim + 1:
         if not preds_float:
@@ -91,7 +105,7 @@ def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> Tuple[Da
                 " (N, C, ...), and the shape of `target` should be (N, ...)."
             )
 
-        implied_classes = preds.shape[1]
+        implied_classes = preds.shape[1] if preds.numel() > 0 else 0
 
         if preds.ndim == 2:
             case = DataType.MULTICLASS
@@ -149,14 +163,14 @@ def _check_num_classes_mc(
                 " should be either None or the product of the size of extra dimensions (...)."
                 " See Input Types in Metrics documentation."
             )
-        if num_classes <= target.max():
+        if target.numel() > 0 and num_classes <= target.max():
             raise ValueError("The highest label in `target` should be smaller than `num_classes`.")
         if preds.shape != target.shape and num_classes != implied_classes:
             raise ValueError("The size of C dimension of `preds` does not match `num_classes`.")
 
 
 def _check_num_classes_ml(num_classes: int, multiclass: Optional[bool], implied_classes: int) -> None:
-    """This checks that the consistency of `num_classes` with the data and `multiclass` param for multi-label
+    """This checks that the consistency of ``num_classes`` with the data and ``multiclass`` param for multi-label
     data."""
 
     if multiclass and num_classes != 2:
@@ -194,6 +208,7 @@ def _check_classification_inputs(
     num_classes: Optional[int],
     multiclass: Optional[bool],
     top_k: Optional[int],
+    ignore_index: Optional[int] = None,
 ) -> DataType:
     """Performs error checking on inputs for classification.
 
@@ -202,7 +217,7 @@ def _check_classification_inputs(
     over-rides with ``multiclass`` by checking (for multi-class and multi-dim multi-class
     cases) that there are only up to 2 distinct labels.
 
-    In case where preds are floats (probabilities), it is checked whether they are in [0,1] interval.
+    In case where preds are floats (probabilities), it is checked whether they are in ``[0,1]`` interval.
 
     When ``num_classes`` is given, it is checked that it is consistent with input cases (binary,
     multi-label, ...), and that, if available, the implied number of classes in the ``C``
@@ -212,7 +227,7 @@ def _check_classification_inputs(
     value against ``C`` dimension is checked for (multi-dimensional) multi-class cases.
 
     If ``top_k`` is set (not None) for inputs that do not have probability predictions (and
-    are not binary), an error is raised. Similarly if ``top_k`` is set to a number that
+    are not binary), an error is raised. Similarly, if ``top_k`` is set to a number that
     is higher than or equal to the ``C`` dimension of ``preds``, an error is raised.
 
     Preds and target tensors are expected to be squeezed already - all dimensions should be
@@ -229,7 +244,7 @@ def _check_classification_inputs(
             either from the shape of inputs, or the maximum label in the ``target`` and ``preds``
             tensor, where applicable.
         top_k:
-            Number of highest probability entries for each sample to convert to 1s - relevant
+            Number of the highest probability entries for each sample to convert to 1s - relevant
             only for inputs with probability predictions. The default value (``None``) will be
             interpreted as 1 for these inputs. If this parameter is set for multi-label inputs,
             it will take precedence over threshold.
@@ -248,7 +263,7 @@ def _check_classification_inputs(
     """
 
     # Basic validation (that does not need case/type information)
-    _basic_input_validation(preds, target, threshold, multiclass)
+    _basic_input_validation(preds, target, threshold, multiclass, ignore_index)
 
     # Check that shape/types fall into one of the cases
     case, implied_classes = _check_shape_and_type_consistency(preds, target)
@@ -300,6 +315,7 @@ def _input_format_classification(
     top_k: Optional[int] = None,
     num_classes: Optional[int] = None,
     multiclass: Optional[bool] = None,
+    ignore_index: Optional[int] = None,
 ) -> Tuple[Tensor, Tensor, DataType]:
     """Convert preds and target tensors into common format.
 
@@ -327,7 +343,7 @@ def _input_format_classification(
 
     In binary case, targets are normally returned as ``(N,1)`` tensor, while preds are transformed
     into a binary tensor (elements become 1 if the probability is greater than or equal to
-    ``threshold`` or 0 otherwise). If ``multiclass=True``, then then both targets are preds
+    ``threshold`` or 0 otherwise). If ``multiclass=True``, then both targets are preds
     become ``(N, 2)`` tensors by a one-hot transformation; with the thresholding being applied to
     preds first.
 
@@ -338,7 +354,7 @@ def _input_format_classification(
 
     In multi-label case, normally targets and preds are returned as ``(N, C)`` binary tensors, with
     preds being binarized as in the binary case. Here the ``C`` dimension is obtained by flattening
-    all dimensions after the first one. However if ``multiclass=True``, then both are returned as
+    all dimensions after the first one. However, if ``multiclass=True``, then both are returned as
     ``(N, 2, C)``, by an equivalent transformation as in the binary case.
 
     In multi-dimensional multi-class case, normally both target and preds are returned as
@@ -364,9 +380,9 @@ def _input_format_classification(
             either from the shape of inputs, or the maximum label in the ``target`` and ``preds``
             tensor, where applicable.
         top_k:
-            Number of highest probability entries for each sample to convert to 1s - relevant
+            Number of the highest probability entries for each sample to convert to 1s - relevant
             only for (multi-dimensional) multi-class inputs with probability predictions. The
-            default value (``None``) will be interepreted as 1 for these inputs.
+            default value (``None``) will be interpreted as 1 for these inputs.
 
             Should be left unset (``None``) for all other types of inputs.
         multiclass:
@@ -396,6 +412,7 @@ def _input_format_classification(
         num_classes=num_classes,
         multiclass=multiclass,
         top_k=top_k,
+        ignore_index=ignore_index,
     )
 
     if case in (DataType.BINARY, DataType.MULTILABEL) and not top_k:
@@ -418,12 +435,13 @@ def _input_format_classification(
         if multiclass is False:
             preds, target = preds[:, 1, ...], target[:, 1, ...]
 
-    if (case in (DataType.MULTICLASS, DataType.MULTIDIM_MULTICLASS) and multiclass is not False) or multiclass:
-        target = target.reshape(target.shape[0], target.shape[1], -1)
-        preds = preds.reshape(preds.shape[0], preds.shape[1], -1)
-    else:
-        target = target.reshape(target.shape[0], -1)
-        preds = preds.reshape(preds.shape[0], -1)
+    if not _check_for_empty_tensors(preds, target):
+        if (case in (DataType.MULTICLASS, DataType.MULTIDIM_MULTICLASS) and multiclass is not False) or multiclass:
+            target = target.reshape(target.shape[0], target.shape[1], -1)
+            preds = preds.reshape(preds.shape[0], preds.shape[1], -1)
+        else:
+            target = target.reshape(target.shape[0], -1)
+            preds = preds.reshape(preds.shape[0], -1)
 
     # Some operations above create an extra dimension for MC/binary case - this removes it
     if preds.ndim > 2:
@@ -444,7 +462,7 @@ def _input_format_classification_one_hot(
     Args:
         num_classes: number of classes
         preds: either tensor with labels, tensor with probabilities/logits or multilabel tensor
-        target: tensor with ground true labels
+        target: tensor with ground-true labels
         threshold: float used for thresholding multilabel input
         multilabel: boolean flag indicating if input is multilabel
 
@@ -486,7 +504,7 @@ def _check_retrieval_functional_inputs(
     target: Tensor,
     allow_non_binary_target: bool = False,
 ) -> Tuple[Tensor, Tensor]:
-    """Check ``preds`` and ``target`` tensors are of the same shape and of the correct dtype.
+    """Check ``preds`` and ``target`` tensors are of the same shape and of the correct data type.
 
     Args:
         preds: either tensor with scores/logits
@@ -518,7 +536,7 @@ def _check_retrieval_inputs(
     allow_non_binary_target: bool = False,
     ignore_index: Optional[int] = None,
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    """Check ``indexes``, ``preds`` and ``target`` tensors are of the same shape and of the correct dtype.
+    """Check ``indexes``, ``preds`` and ``target`` tensors are of the same shape and of the correct data type.
 
     Args:
         indexes: tensor with queries indexes
@@ -528,13 +546,12 @@ def _check_retrieval_inputs(
 
     Raises:
         ValueError:
-            If ``preds`` and ``target`` don't have the same shape, if they are empty
-            or not of the correct ``dtypes``.
+            If ``preds`` and ``target`` don't have the same shape, if they are empty or not of the correct ``dtypes``.
 
     Returns:
-        indexes: as torch.long
-        preds: as torch.float32
-        target: as torch.long
+        indexes: as ``torch.long``
+        preds: as ``torch.float32``
+        target: as ``torch.long``
     """
     if indexes.shape != preds.shape or preds.shape != target.shape:
         raise ValueError("`indexes`, `preds` and `target` must be of the same shape")
@@ -564,7 +581,7 @@ def _check_retrieval_target_and_prediction_types(
     target: Tensor,
     allow_non_binary_target: bool = False,
 ) -> Tuple[Tensor, Tensor]:
-    """Check ``preds`` and ``target`` tensors are of the same shape and of the correct dtype.
+    """Check ``preds`` and ``target`` tensors are of the same shape and of the correct data type.
 
     Args:
         preds: either tensor with scores/logits
@@ -573,8 +590,7 @@ def _check_retrieval_target_and_prediction_types(
 
     Raises:
         ValueError:
-            If ``preds`` and ``target`` don't have the same shape, if they are empty
-            or not of the correct ``dtypes``.
+            If ``preds`` and ``target`` don't have the same shape, if they are empty or not of the correct ``dtypes``.
     """
     if target.dtype not in (torch.bool, torch.long, torch.int) and not torch.is_floating_point(target):
         raise ValueError("`target` must be a tensor of booleans, integers or floats")
@@ -589,3 +605,119 @@ def _check_retrieval_target_and_prediction_types(
     preds = preds.float()
 
     return preds.flatten(), target.flatten()
+
+
+def _allclose_recursive(res1: Any, res2: Any, atol: float = 1e-8) -> bool:
+    """Utility function for recursively asserting that two results are within a certain tolerance."""
+    # single output compare
+    if isinstance(res1, Tensor):
+        return torch.allclose(res1, res2, atol=atol)
+    elif isinstance(res1, str):
+        return res1 == res2
+    elif isinstance(res1, Sequence):
+        return all(_allclose_recursive(r1, r2) for r1, r2 in zip(res1, res2))
+    elif isinstance(res1, Mapping):
+        return all(_allclose_recursive(res1[k], res2[k]) for k in res1.keys())
+    return res1 == res2
+
+
+@no_type_check
+def check_forward_no_full_state(
+    metric_class,
+    init_args: Dict[str, Any] = {},
+    input_args: Dict[str, Any] = {},
+    num_update_to_compare: Sequence[int] = [10, 100, 1000],
+    reps: int = 5,
+) -> bool:
+    """Utility function for checking if the new ``full_state_update`` property can safely be set to ``False`` which
+    will for most metrics results in a speedup when using ``forward``.
+
+    Args:
+        metric_class: metric class object that should be checked
+        init_args: dict containing arguments for initializing the metric class
+        input_args: dict containing arguments to pass to ``forward``
+        num_update_to_compare: if we successfully detech that the flag is safe to set to ``False``
+            we will run some speedup test. This arg should be a list of integers for how many
+            steps to compare over.
+        reps: number of repetitions of speedup test
+
+    Example (states in ``update`` are independent, save to set ``full_state_update=False``)
+        >>> from torchmetrics import ConfusionMatrix
+        >>> check_forward_no_full_state(
+        ...     ConfusionMatrix,
+        ...     init_args = {'num_classes': 3},
+        ...     input_args = {'preds': torch.randint(3, (10,)), 'target': torch.randint(3, (10,))},
+        ... )  # doctest: +ELLIPSIS
+        Full state for 10 steps took: ...
+        Partial state for 10 steps took: ...
+        Full state for 100 steps took: ...
+        Partial state for 100 steps took: ...
+        Full state for 1000 steps took: ...
+        Partial state for 1000 steps took: ...
+        True
+
+    Example (states in ``update`` are dependend meaning that ``full_state_update=True``):
+        >>> from torchmetrics import ConfusionMatrix
+        >>> class MyMetric(ConfusionMatrix):
+        ...     def update(self, preds, target):
+        ...         super().update(preds, target)
+        ...         # by construction make future states dependent on prior states
+        ...         if self.confmat.sum() > 20:
+        ...             self.reset()
+        >>> check_forward_no_full_state(
+        ...     MyMetric,
+        ...     init_args = {'num_classes': 3},
+        ...     input_args = {'preds': torch.randint(3, (10,)), 'target': torch.randint(3, (10,))},
+        ... )
+        False
+    """
+
+    class FullState(metric_class):
+        full_state_update = True
+
+    class PartState(metric_class):
+        full_state_update = False
+
+    fullstate = FullState(**init_args)
+    partstate = PartState(**init_args)
+
+    equal = True
+    for _ in range(num_update_to_compare[0]):
+        out1 = fullstate(**input_args)
+        try:  # if it fails, the code most likely need access to the full state
+            out2 = partstate(**input_args)
+        except RuntimeError:
+            equal = False
+            break
+        equal = equal & _allclose_recursive(out1, out2)
+
+    res1 = fullstate.compute()
+    try:  # if it fails, the code most likely need access to the full state
+        res2 = partstate.compute()
+    except RuntimeError:
+        equal = False
+    equal = equal & _allclose_recursive(res1, res2)
+
+    if not equal:  # we can stop early because the results did not match
+        return False
+
+    # Do timings
+    res = torch.zeros(2, len(num_update_to_compare), reps)
+    for i, metric in enumerate([fullstate, partstate]):
+        for j, t in enumerate(num_update_to_compare):
+            for r in range(reps):
+                start = perf_counter()
+                for _ in range(t):
+                    _ = metric(**input_args)
+                end = perf_counter()
+                res[i, j, r] = end - start
+                metric.reset()
+
+    mean = torch.mean(res, -1)
+    std = torch.std(res, -1)
+
+    for t in range(len(num_update_to_compare)):
+        print(f"Full state for {num_update_to_compare[t]} steps took: {mean[0, t]}+-{std[0, t]:0.3f}")
+        print(f"Partial state for {num_update_to_compare[t]} steps took: {mean[1, t]:0.3f}+-{std[1, t]:0.3f}")
+
+    return (mean[1, -1] < mean[0, -1]).item()  # if faster on average, we recommend upgrading

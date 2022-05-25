@@ -21,6 +21,7 @@ from torchmetrics.functional.classification.precision_recall_curve import (
     _precision_recall_curve_compute,
     _precision_recall_curve_update,
 )
+from torchmetrics.utilities.data import _bincount
 
 
 def _average_precision_update(
@@ -30,15 +31,15 @@ def _average_precision_update(
     pos_label: Optional[int] = None,
     average: Optional[str] = "macro",
 ) -> Tuple[Tensor, Tensor, int, Optional[int]]:
-    """Format the predictions and target based on the ``num_classes``, ``pos_label`` and ``average`` parameter
+    """Format the predictions and target based on the ``num_classes``, ``pos_label`` and ``average`` parameter.
+
     Args:
         preds: predictions from model (logits or probabilities)
         target: ground truth values
         num_classes: integer with number of classes.
-        pos_label: integer determining the positive class. Default is ``None``
-            which for binary problem is translate to 1. For multiclass problems
-            this argument should not be set as we iteratively change it in the
-            range [0,num_classes-1]
+        pos_label: integer determining the positive class. Default is ``None`` which for binary problem is translated
+            to 1. For multiclass problems this argument should not be set as we iteratively change it in the
+            range ``[0, num_classes-1]``
         average: reduction method for multi-class or multi-label problems
     """
     preds, target, num_classes, pos_label = _precision_recall_curve_update(preds, target, num_classes, pos_label)
@@ -68,10 +69,9 @@ def _average_precision_compute(
         preds: predictions from model (logits or probabilities)
         target: ground truth values
         num_classes: integer with number of classes.
-        pos_label: integer determining the positive class. Default is ``None``
-            which for binary problem is translate to 1. For multiclass problems
-            this argument should not be set as we iteratively change it in the
-            range [0,num_classes-1]
+        pos_label: integer determining the positive class. Default is ``None`` which for binary problem is translated
+            to 1. For multiclass problems his argument should not be set as we iteratively change it in the
+            range ``[0, num_classes-1]``
         average: reduction method for multi-class or multi-label problems
         sample_weights: sample weights for each data point
 
@@ -102,7 +102,7 @@ def _average_precision_compute(
         if preds.ndim == target.ndim and target.ndim > 1:
             weights = target.sum(dim=0).float()
         else:
-            weights = torch.bincount(target, minlength=num_classes).float()
+            weights = _bincount(target, minlength=num_classes).float()
         weights = weights / torch.sum(weights)
     else:
         weights = None
@@ -192,10 +192,9 @@ def average_precision(
         target: ground truth values
         num_classes: integer with number of classes. Not nessesary to provide
             for binary problems.
-        pos_label: integer determining the positive class. Default is ``None``
-            which for binary problem is translate to 1. For multiclass problems
-            this argument should not be set as we iteratively change it in the
-            range [0,num_classes-1]
+        pos_label: integer determining the positive class. Default is ``None`` which for binary problem is translated
+            to 1. For multiclass problems his argument should not be set as we iteratively change it in the
+            range ``[0, num_classes-1]``
         average:
             defines the reduction that is applied in the case of multiclass and multilabel input.
             Should be one of the following:

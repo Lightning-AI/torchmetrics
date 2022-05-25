@@ -15,14 +15,14 @@ from typing import Any, Dict, Optional
 
 import torch
 from torch import Tensor
+from typing_extensions import Literal
 
 from torchmetrics.classification.confusion_matrix import ConfusionMatrix
 from torchmetrics.functional.classification.jaccard import _jaccard_from_confmat
 
 
 class JaccardIndex(ConfusionMatrix):
-    r"""
-    Computes Intersection over union, or `Jaccard index`_:
+    r"""Computes Intersection over union, or `Jaccard index`_:
 
     .. math:: J(A,B) = \frac{|A\cap B|}{|A\cup B|}
 
@@ -49,25 +49,17 @@ class JaccardIndex(ConfusionMatrix):
             to the returned score, regardless of reduction method. Has no effect if given an int that is not in the
             range [0, num_classes-1]. By default, no index is ignored, and all classes are used.
         absent_score: score to use for an individual class, if no instances of the class index were present in
-            `pred` AND no instances of the class index were present in `target`. For example, if we have 3 classes,
-            [0, 0] for `pred`, and [0, 2] for `target`, then class 1 would be assigned the `absent_score`.
-        threshold:
-            Threshold value for binary or multi-label probabilities.
-        multilabel:
-            determines if data is multilabel or not.
-        reduction: a method to reduce metric score over labels.
+            ``preds`` AND no instances of the class index were present in ``target``. For example, if we have 3 classes,
+            [0, 0] for ``preds``, and [0, 2] for ``target``, then class 1 would be assigned the `absent_score`.
+        threshold: Threshold value for binary or multi-label probabilities.
+        multilabel: determines if data is multilabel or not.
+        reduction: a method to reduce metric score over labels:
 
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
             - ``'none'``: no reduction will be applied
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
 
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
         >>> from torchmetrics import JaccardIndex
@@ -79,8 +71,9 @@ class JaccardIndex(ConfusionMatrix):
         tensor(0.9660)
 
     """
-    is_differentiable = False
-    higher_is_better = True
+    is_differentiable: bool = False
+    higher_is_better: bool = True
+    full_state_update: bool = False
 
     def __init__(
         self,
@@ -89,8 +82,7 @@ class JaccardIndex(ConfusionMatrix):
         absent_score: float = 0.0,
         threshold: float = 0.5,
         multilabel: bool = False,
-        reduction: str = "elementwise_mean",
-        compute_on_step: Optional[bool] = None,
+        reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
         **kwargs: Dict[str, Any],
     ) -> None:
         super().__init__(
@@ -98,7 +90,6 @@ class JaccardIndex(ConfusionMatrix):
             normalize=None,
             threshold=threshold,
             multilabel=multilabel,
-            compute_on_step=compute_on_step,
             **kwargs,
         )
         self.reduction = reduction

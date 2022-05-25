@@ -16,13 +16,14 @@ from typing import Any, List, Optional
 import torch
 import torch.nn.functional as F
 from torch import Tensor
+from typing_extensions import Literal
 
 
-def reduce(to_reduce: Tensor, reduction: str) -> Tensor:
+def reduce(x: Tensor, reduction: Literal["elementwise_mean", "sum", "none", None]) -> Tensor:
     """Reduces a given tensor by a given reduction method.
 
     Args:
-        to_reduce: the tensor, which shall be reduced
+        x: the tensor, which shall be reduced
         reduction:  a string specifying the reduction method ('elementwise_mean', 'none', 'sum')
 
     Return:
@@ -32,17 +33,22 @@ def reduce(to_reduce: Tensor, reduction: str) -> Tensor:
         ValueError if an invalid reduction parameter was given
     """
     if reduction == "elementwise_mean":
-        return torch.mean(to_reduce)
-    if reduction == "none":
-        return to_reduce
+        return torch.mean(x)
+    if reduction == "none" or reduction is None:
+        return x
     if reduction == "sum":
-        return torch.sum(to_reduce)
+        return torch.sum(x)
     raise ValueError("Reduction parameter unknown.")
 
 
-def class_reduce(num: Tensor, denom: Tensor, weights: Tensor, class_reduction: str = "none") -> Tensor:
+def class_reduce(
+    num: Tensor,
+    denom: Tensor,
+    weights: Tensor,
+    class_reduction: Literal["micro", "macro", "weighted", "none", None] = "none",
+) -> Tensor:
     """
-    Function used to reduce classification metrics of the form `num / denom * weights`.
+    Function used to reduce classification metrics of the form ``num / denom * weights``.
     For example for calculating standard accuracy the num would be number of
     true positives per class, denom would be the support per class, and weights
     would be a tensor of 1s
@@ -51,7 +57,7 @@ def class_reduce(num: Tensor, denom: Tensor, weights: Tensor, class_reduction: s
         num: numerator tensor
         denom: denominator tensor
         weights: weights for each class
-        class_reduction: reduction method for multiclass problems
+        class_reduction: reduction method for multiclass problems:
 
             - ``'micro'``: calculate metrics globally (default)
             - ``'macro'``: calculate metrics for each label, and find their unweighted mean.
@@ -104,7 +110,7 @@ def gather_all_tensors(result: Tensor, group: Optional[Any] = None) -> List[Tens
 
     Return:
         gathered_result: list with size equal to the process group where
-            gathered_result[i] corresponds to result tensor from process i
+            ``gathered_result[i]`` corresponds to result tensor from process ``i``
     """
     if group is None:
         group = torch.distributed.group.WORLD

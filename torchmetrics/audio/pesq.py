@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from torch import Tensor, tensor
 
@@ -19,13 +19,13 @@ from torchmetrics.functional.audio.pesq import perceptual_evaluation_speech_qual
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _PESQ_AVAILABLE
 
-__doctest_requires__ = {("PerceptualEvaluationSpeechQuality"): ["pesq"]}
+__doctest_requires__ = {"PerceptualEvaluationSpeechQuality": ["pesq"]}
 
 
 class PerceptualEvaluationSpeechQuality(Metric):
     """Perceptual Evaluation of Speech Quality (PESQ)
 
-    This is a wrapper for the pesq package [1]. . Note that input will be moved to `cpu`
+    This is a wrapper for the pesq package [1]. Note that input will be moved to `cpu`
     to perform the metric calculation.
 
     .. note:: using this metrics requires you to have ``pesq`` install. Either install as ``pip install
@@ -39,20 +39,11 @@ class PerceptualEvaluationSpeechQuality(Metric):
     - ``target``: ``shape [...,time]``
 
     Args:
-        fs:
-            sampling frequency, should be 16000 or 8000 (Hz)
-        mode:
-            'wb' (wide-band) or 'nb' (narrow-band)
-        keep_same_device:
-            whether to move the pesq value to the device of preds
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
+        fs: sampling frequency, should be 16000 or 8000 (Hz)
+        mode: ``'wb'`` (wide-band) or ``'nb'`` (narrow-band)
+        keep_same_device: whether to move the pesq value to the device of preds
 
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ModuleNotFoundError:
@@ -81,17 +72,17 @@ class PerceptualEvaluationSpeechQuality(Metric):
 
     sum_pesq: Tensor
     total: Tensor
-    is_differentiable = False
-    higher_is_better = True
+    full_state_update: bool = False
+    is_differentiable: bool = False
+    higher_is_better: bool = True
 
     def __init__(
         self,
         fs: int,
         mode: str,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
         if not _PESQ_AVAILABLE:
             raise ModuleNotFoundError(
                 "PerceptualEvaluationSpeechQuality metric requires that `pesq` is installed."

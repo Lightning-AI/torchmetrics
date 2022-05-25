@@ -17,7 +17,7 @@ import torch
 from torch import Tensor, tensor
 
 from torchmetrics.utilities.checks import _input_format_classification
-from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
+from torchmetrics.utilities.enums import AverageMethod, DataType, MDMCAverageMethod
 
 
 def _del_column(data: Tensor, idx: int) -> Tensor:
@@ -30,6 +30,41 @@ def _del_rows(data: Tensor, mask: Tensor) -> Tensor:
     return data[torch.logical_not(mask)]
 
 
+def _drop_negative_ignored_indices(
+    preds: Tensor, target: Tensor, ignore_index: int, mode: DataType
+) -> Tuple[Tensor, Tensor]:
+    """Remove negative ignored indices.
+
+    Args:
+        preds: Predicted tensor
+        target: Ground truth tensor
+        ignore_index: Specify a class (label) to ignore. If given, this class index does not contribute
+            to the returned score, regardless of reduction method. If an index is ignored, and
+            ``reduce='macro'``, the class statistics for the ignored class will all be returned
+            as ``-1``.
+        mode: Mode of the input tensors
+
+    Return:
+        Tensors of preds and target without negative ignore target values.
+    """
+    if mode == mode.MULTIDIM_MULTICLASS and preds.dtype == torch.float:
+        # In case or multi-dimensional multi-class with logits
+        n_dims = len(preds.shape)
+        num_classes = preds.shape[1]
+        # move class dim to last so that we can flatten the additional dimensions into N: [N, C, ...] -> [N, ..., C]
+        preds = preds.transpose(1, n_dims - 1)
+
+        # flatten: [N, ..., C] -> [N', C]
+        preds = preds.reshape(-1, num_classes)
+        target = target.reshape(-1)
+
+    if mode in [mode.MULTICLASS, mode.MULTIDIM_MULTICLASS]:
+        preds = preds[target != ignore_index]
+        target = target[target != ignore_index]
+
+    return preds, target
+
+
 def _stat_scores(
     preds: Tensor,
     target: Tensor,
@@ -38,24 +73,23 @@ def _stat_scores(
     """Calculate the number of tp, fp, tn, fn.
 
     Args:
-        preds:
-            An ``(N, C)`` or ``(N, C, X)`` tensor of predictions (0 or 1)
-        target:
-            An ``(N, C)`` or ``(N, C, X)`` tensor of true labels (0 or 1)
-        reduce:
-            One of ``'micro'``, ``'macro'``, ``'samples'``
+        preds: An ``(N, C)`` or ``(N, C, X)`` tensor of predictions (0 or 1)
+        target: An ``(N, C)`` or ``(N, C, X)`` tensor of true labels (0 or 1)
+        reduce: One of ``'micro'``, ``'macro'``, ``'samples'``
 
     Return:
         Returns a list of 4 tensors; tp, fp, tn, fn.
-        The shape of the returned tensors depnds on the shape of the inputs
+        The shape of the returned tensors depends on the shape of the inputs
         and the ``reduce`` parameter:
 
-        If inputs are of the shape ``(N, C)``, then
+        If inputs are of the shape ``(N, C)``, then:
+
         - If ``reduce='micro'``, the returned tensors are 1 element tensors
         - If ``reduce='macro'``, the returned tensors are ``(C,)`` tensors
-        - If ``reduce'samples'``, the returned tensors are ``(N,)`` tensors
+        - If ``reduce='samples'``, the returned tensors are ``(N,)`` tensors
 
-        If inputs are of the shape ``(N, C, X)``, then
+        If inputs are of the shape ``(N, C, X)``, then:
+
         - If ``reduce='micro'``, the returned tensors are ``(N,)`` tensors
         - If ``reduce='macro'``, the returned tensors are ``(N,C)`` tensors
         - If ``reduce='samples'``, the returned tensors are ``(N,X)`` tensors
@@ -88,21 +122,22 @@ def _stat_scores_update(
     threshold: float = 0.5,
     multiclass: Optional[bool] = None,
     ignore_index: Optional[int] = None,
+    mode: DataType = None,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-    """Updates and returns the the number of true positives, false positives, true negatives, false negatives.
-    Raises ValueError if:
+    """Updates and returns the number of true positives, false positives, true negatives, false negatives. Raises
+    ValueError if:
 
         - The `ignore_index` is not valid
         - When `ignore_index` is used with binary data
-        - When inputs are multi-dimensional multi-class, and the `mdmc_reduce` parameter is not set
+        - When inputs are multi-dimensional multi-class, and the ``mdmc_reduce`` parameter is not set
 
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
         reduce: Defines the reduction that is applied
-        mdmc_reduce: Defines how the multi-dimensional multi-class inputs are handeled
+        mdmc_reduce: Defines how the multi-dimensional multi-class inputs are handled
         num_classes: Number of classes. Necessary for (multi-dimensional) multi-class or multi-label data.
-        top_k: Number of highest probability or logit score predictions considered to find the correct label,
+        top_k: Number of the highest probability or logit score predictions considered finding the correct label,
             relevant only for (multi-dimensional) multi-class inputs
         threshold: Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
             of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities
@@ -112,13 +147,26 @@ def _stat_scores_update(
             to the returned score, regardless of reduction method. If an index is ignored, and
             ``reduce='macro'``, the class statistics for the ignored class will all be returned
             as ``-1``.
+        mode: Mode of the input tensors
     """
 
+    _negative_index_dropped = False
+
+    if ignore_index is not None and ignore_index < 0 and mode is not None:
+        preds, target = _drop_negative_ignored_indices(preds, target, ignore_index, mode)
+        _negative_index_dropped = True
+
     preds, target, _ = _input_format_classification(
-        preds, target, threshold=threshold, num_classes=num_classes, multiclass=multiclass, top_k=top_k
+        preds,
+        target,
+        threshold=threshold,
+        num_classes=num_classes,
+        multiclass=multiclass,
+        top_k=top_k,
+        ignore_index=ignore_index,
     )
 
-    if ignore_index is not None and not 0 <= ignore_index < preds.shape[1]:
+    if ignore_index is not None and ignore_index >= preds.shape[1]:
         raise ValueError(f"The `ignore_index` {ignore_index} is not valid for inputs with {preds.shape[1]} classes")
 
     if ignore_index is not None and preds.shape[1] == 1:
@@ -140,14 +188,14 @@ def _stat_scores_update(
         target = _del_rows(target, ignore_mask)
 
     # Delete what is in ignore_index, if applicable (and classes don't matter):
-    if ignore_index is not None and reduce != "macro":
+    if ignore_index is not None and reduce != "macro" and not _negative_index_dropped:
         preds = _del_column(preds, ignore_index)
         target = _del_column(target, ignore_index)
 
     tp, fp, tn, fn = _stat_scores(preds, target, reduce=reduce)
 
     # Take care of ignore_index
-    if ignore_index is not None and reduce == "macro":
+    if ignore_index is not None and reduce == "macro" and not _negative_index_dropped:
         tp[..., ignore_index] = -1
         fp[..., ignore_index] = -1
         tn[..., ignore_index] = -1
@@ -224,9 +272,13 @@ def _reduce_stat_scores(
     else:
         weights = weights.float()
 
-    numerator = torch.where(zero_div_mask, tensor(float(zero_division), device=numerator.device), numerator)
-    denominator = torch.where(zero_div_mask | ignore_mask, tensor(1.0, device=denominator.device), denominator)
-    weights = torch.where(ignore_mask, tensor(0.0, device=weights.device), weights)
+    numerator = torch.where(
+        zero_div_mask, tensor(zero_division, dtype=numerator.dtype, device=numerator.device), numerator
+    )
+    denominator = torch.where(
+        zero_div_mask | ignore_mask, tensor(1.0, dtype=denominator.dtype, device=denominator.device), denominator
+    )
+    weights = torch.where(ignore_mask, tensor(0.0, dtype=weights.dtype, device=weights.device), weights)
 
     if average not in (AverageMethod.MICRO, AverageMethod.NONE, None):
         weights = weights / weights.sum(dim=-1, keepdim=True)
@@ -234,7 +286,7 @@ def _reduce_stat_scores(
     scores = weights * (numerator / denominator)
 
     # This is in case where sum(weights) = 0, which happens if we ignore the only present class with average='weighted'
-    scores = torch.where(torch.isnan(scores), tensor(float(zero_division), device=scores.device), scores)
+    scores = torch.where(torch.isnan(scores), tensor(zero_division, dtype=scores.dtype, device=scores.device), scores)
 
     if mdmc_average == MDMCAverageMethod.SAMPLEWISE:
         scores = scores.mean(dim=0)
@@ -260,12 +312,11 @@ def stat_scores(
     ignore_index: Optional[int] = None,
 ) -> Tensor:
     r"""Computes the number of true positives, false positives, true negatives, false negatives.
-    Related to `Type I and Type II errors`_
-    and the `confusion matrix`_.
+    Related to `Type I and Type II errors`_ and the `confusion matrix`_.
 
     The reduction method (how the statistics are aggregated) is controlled by the
     ``reduce`` parameter, and additionally by the ``mdmc_reduce`` parameter in the
-    multi-dimensional multi-class case. Accepts all inputs listed in :ref:`references/modules:input types`.
+    multi-dimensional multi-class case. Accepts all inputs listed in :ref:`pages/classification:input types`.
 
     Args:
         preds: Predictions from model (probabilities, logits or labels)
@@ -273,14 +324,12 @@ def stat_scores(
         threshold:
             Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
             of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
-
         top_k:
             Number of highest probability or logit score predictions considered to find the correct label,
             relevant only for (multi-dimensional) multi-class inputs. The
             default value (``None``) will be interpreted as 1 for these inputs.
 
             Should be left at default (``None``) for all other types of inputs.
-
         reduce:
             Defines the reduction that is applied. Should be one of the following:
 
@@ -297,19 +346,17 @@ def stat_scores(
 
         num_classes:
             Number of classes. Necessary for (multi-dimensional) multi-class or multi-label data.
-
         ignore_index:
             Specify a class (label) to ignore. If given, this class index does not contribute
             to the returned score, regardless of reduction method. If an index is ignored, and
             ``reduce='macro'``, the class statistics for the ignored class will all be returned
             as ``-1``.
-
         mdmc_reduce:
             Defines how the multi-dimensional multi-class inputs are handeled. Should be
             one of the following:
 
             - ``None`` [default]: Should be left unchanged if your data is not multi-dimensional
-              multi-class (see :ref:`references/modules:input types` for the definition of input types).
+              multi-class (see :ref:`pages/classification:input types` for the definition of input types).
 
             - ``'samplewise'``: In this case, the statistics are computed separately for each
               sample on the ``N`` axis, and then the outputs are concatenated together. In each
@@ -324,7 +371,7 @@ def stat_scores(
         multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
             than what they appear to be. See the parameter's
-            :ref:`documentation section <references/modules:using the multiclass parameter>`
+            :ref:`documentation section <pages/classification:using the multiclass parameter>`
             for a more detailed explanation and examples.
 
     Return:
@@ -336,8 +383,7 @@ def stat_scores(
         - If the data is not multi-dimensional multi-class, then
 
           - If ``reduce='micro'``, the shape will be ``(5, )``
-          - If ``reduce='macro'``, the shape will be ``(C, 5)``,
-            where ``C`` stands for the number of classes
+          - If ``reduce='macro'``, the shape will be ``(C, 5)``, where ``C`` stands for the number of classes
           - If ``reduce='samples'``, the shape will be ``(N, 5)``, where ``N`` stands for
             the number of samples
 
@@ -363,8 +409,7 @@ def stat_scores(
         ValueError:
             If ``reduce`` is set to ``"macro"`` and ``num_classes`` is not provided.
         ValueError:
-            If ``num_classes`` is set
-            and ``ignore_index`` is not in the range ``[0, num_classes)``.
+            If ``num_classes`` is set and ``ignore_index`` is not in the range ``[0, num_classes)``.
         ValueError:
             If ``ignore_index`` is used with ``binary data``.
         ValueError:
