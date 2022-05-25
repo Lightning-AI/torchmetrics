@@ -67,7 +67,7 @@ runs:
     uses: actions/cache@v2
     with:
       path: $TRANSFORMERS_CACHE
-      key: ${{ inputs.os }}-cache-transformers
+      key: ${{ inputs.os }}-py${{ inputs.python-version }}-cache-transformers
 
   - name: Post HF
     run: |
