@@ -22,7 +22,7 @@ from torchmetrics.functional.classification.confusion_matrix import _confusion_m
 def _jaccard_from_confmat(
     confmat: Tensor,
     num_classes: int,
-    average: str = "macro",
+    average: Optional[str] = "macro",
     ignore_index: Optional[int] = None,
     absent_score: float = 0.0,
 ) -> Tensor:
@@ -47,11 +47,6 @@ def _jaccard_from_confmat(
             to the returned score, regardless of reduction method.
         absent_score: score to use for an individual class, if no instances of the class index were present in `pred`
             AND no instances of the class index were present in `target`.
-        reduction: a method to reduce metric score over labels.
-
-            - ``'elementwise_mean'``: takes the mean (default)
-            - ``'sum'``: takes the sum
-            - ``'none'`` or ``None``: no reduction will be applied
     """
     allowed_average = ["micro", "macro", "weighted", "none", None]
     if average not in allowed_average:
@@ -131,10 +126,8 @@ def jaccard_index(
             - ``'weighted'``: Calculate the metric for each class separately, and average the
               metrics across classes, weighting each class by its support (``tp + fn``).
             - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
-              the metric for every class.
-
-            .. note:: If ``'none'`` and a given class doesn't occur in the `preds` or `target`,
-                the value for the class will be ``nan``.
+              the metric for every class. Note that if a given class doesn't occur in the 
+              `preds` or `target`, the value for the class will be ``nan``.
         ignore_index: optional int specifying a target class to ignore. If given,
             this class index does not contribute to the returned score, regardless
             of reduction method. Has no effect if given an int that is not in the
@@ -146,11 +139,6 @@ def jaccard_index(
             [0, 0] for ``preds``, and [0, 2] for ``target``, then class 1 would be
             assigned the `absent_score`.
         threshold: Threshold value for binary or multi-label probabilities.
-        reduction: a method to reduce metric score over labels.
-
-            - ``'elementwise_mean'``: takes the mean (default)
-            - ``'sum'``: takes the sum
-            - ``'none'`` or ``None``: no reduction will be applied
 
     Return:
         The shape of the returned tensor depends on the ``average`` parameter

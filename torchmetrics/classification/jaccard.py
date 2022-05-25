@@ -53,10 +53,8 @@ class JaccardIndex(ConfusionMatrix):
             - ``'weighted'``: Calculate the metric for each class separately, and average the
               metrics across classes, weighting each class by its support (``tp + fn``).
             - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
-              the metric for every class.
-
-            .. note:: If ``'none'`` and a given class doesn't occur in the `preds` or `target`,
-                the value for the class will be ``nan``.
+              the metric for every class. Note that if a given class doesn't occur in the 
+              `preds` or `target`, the value for the class will be ``nan``.
         ignore_index: optional int specifying a target class to ignore. If given, this class index does not contribute
             to the returned score, regardless of reduction method. Has no effect if given an int that is not in the
             range [0, num_classes-1]. By default, no index is ignored, and all classes are used.
@@ -65,12 +63,6 @@ class JaccardIndex(ConfusionMatrix):
             [0, 0] for ``preds``, and [0, 2] for ``target``, then class 1 would be assigned the `absent_score`.
         threshold: Threshold value for binary or multi-label probabilities.
         multilabel: determines if data is multilabel or not.
-        reduction: a method to reduce metric score over labels:
-
-            - ``'elementwise_mean'``: takes the mean (default)
-            - ``'sum'``: takes the sum
-            - ``'none'``: no reduction will be applied
-
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
@@ -95,7 +87,6 @@ class JaccardIndex(ConfusionMatrix):
         absent_score: float = 0.0,
         threshold: float = 0.5,
         multilabel: bool = False,
-        reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
         **kwargs: Dict[str, Any],
     ) -> None:
         super().__init__(
@@ -106,7 +97,6 @@ class JaccardIndex(ConfusionMatrix):
             **kwargs,
         )
         self.average = average
-        # self.reduction = reduction
         self.ignore_index = ignore_index
         self.absent_score = absent_score
 
