@@ -178,7 +178,7 @@ def _accuracy_compute(
         numerator = tp + tn
         denominator = tp + tn + fp + fn
     else:
-        numerator = tp
+        numerator = tp.clone()
         denominator = tp + fn
 
     if mdmc_average != MDMCAverageMethod.SAMPLEWISE:
