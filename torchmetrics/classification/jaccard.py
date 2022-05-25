@@ -15,7 +15,6 @@ from typing import Any, Dict, Optional
 
 import torch
 from torch import Tensor
-from typing_extensions import Literal
 
 from torchmetrics.classification.confusion_matrix import ConfusionMatrix
 from torchmetrics.functional.classification.jaccard import _jaccard_from_confmat
