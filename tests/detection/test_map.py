@@ -12,17 +12,50 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 from collections import namedtuple
 
+import numpy as np
 import pytest
 import torch
+from pycocotools import mask
 from torch import IntTensor, Tensor
 
+from tests.detection import _SAMPLE_DETECTION_SEGMENTATION
 from tests.helpers.testers import MetricTester
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
 from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
 
 Input = namedtuple("Input", ["preds", "target"])
+
+with open(_SAMPLE_DETECTION_SEGMENTATION) as fp:
+    inputs_json = json.load(fp)
+
+_mask_unsqueeze_bool = lambda m: Tensor(mask.decode(m)).unsqueeze(0).bool()
+_masks_stack_bool = lambda ms: Tensor(np.stack([mask.decode(m) for m in ms])).bool()
+
+_inputs_masks = Input(
+    preds=[
+        [
+            dict(masks=_mask_unsqueeze_bool(inputs_json["preds"][0]), scores=Tensor([0.236]), labels=IntTensor([4])),
+            dict(
+                masks=_masks_stack_bool([inputs_json["preds"][1], inputs_json["preds"][2]]),
+                scores=Tensor([0.318, 0.726]),
+                labels=IntTensor([3, 2]),
+            ),  # 73
+        ],
+    ],
+    target=[
+        [
+            dict(masks=_mask_unsqueeze_bool(inputs_json["targets"][0]), labels=IntTensor([4])),  # 42
+            dict(
+                masks=_masks_stack_bool([inputs_json["targets"][1], inputs_json["targets"][2]]),
+                labels=IntTensor([2, 2]),
+            ),  # 73
+        ],
+    ],
+)
+
 
 _inputs = Input(
     preds=[
@@ -139,15 +172,15 @@ _inputs2 = Input(
 _inputs3 = Input(
     preds=[
         [
-            dict(boxes=torch.tensor([]), scores=torch.tensor([]), labels=torch.tensor([])),
+            dict(boxes=Tensor([]), scores=Tensor([]), labels=Tensor([])),
         ],
     ],
     target=[
         [
             dict(
-                boxes=torch.tensor([[1.0, 2.0, 3.0, 4.0]]),
-                scores=torch.tensor([0.8]),
-                labels=torch.tensor([1]),
+                boxes=Tensor([[1.0, 2.0, 3.0, 4.0]]),
+                scores=Tensor([0.8]),
+                labels=Tensor([1]),
             ),
         ],
     ],
@@ -214,6 +247,41 @@ def _compare_fn(preds, target) -> dict:
     }
 
 
+def _compare_fn_segm(preds, target) -> dict:
+    """Comparison function for map implementation for instance segmentation.
+
+    Official pycocotools results calculated from a subset of https://github.com/cocodataset/cocoapi/tree/master/results
+        Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.352
+        Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.752
+        Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.252
+        Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = -1.000
+        Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = -1.000
+        Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.352
+        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.350
+        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.350
+        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.350
+        Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = -1.000
+        Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = -1.000
+        Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.350
+    """
+    return {
+        "map": Tensor([0.352]),
+        "map_50": Tensor([0.742]),
+        "map_75": Tensor([0.252]),
+        "map_small": Tensor([-1]),
+        "map_medium": Tensor([-1]),
+        "map_large": Tensor([0.352]),
+        "mar_1": Tensor([0.35]),
+        "mar_10": Tensor([0.35]),
+        "mar_100": Tensor([0.35]),
+        "mar_small": Tensor([-1]),
+        "mar_medium": Tensor([-1]),
+        "mar_large": Tensor([0.35]),
+        "map_per_class": Tensor([0.4039604, -1.0, 0.3]),
+        "mar_100_per_class": Tensor([0.4, -1.0, 0.3]),
+    }
+
+
 _pytest_condition = not (_TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8)
 
 
@@ -230,7 +298,8 @@ class TestMAP(MetricTester):
     atol = 1e-1
 
     @pytest.mark.parametrize("ddp", [False, True])
-    def test_map(self, compute_on_cpu, ddp):
+    def test_map_bbox(self, compute_on_cpu, ddp):
+
         """Test modular implementation for correctness."""
         self.run_class_metric_test(
             ddp=ddp,
@@ -241,6 +310,21 @@ class TestMAP(MetricTester):
             dist_sync_on_step=False,
             check_batch=False,
             metric_args={"class_metrics": True, "compute_on_cpu": compute_on_cpu},
+        )
+
+    @pytest.mark.parametrize("ddp", [False])
+    def test_map_segm(self, compute_on_cpu, ddp):
+        """Test modular implementation for correctness."""
+
+        self.run_class_metric_test(
+            ddp=ddp,
+            preds=_inputs_masks.preds,
+            target=_inputs_masks.target,
+            metric_class=MeanAveragePrecision,
+            sk_metric=_compare_fn_segm,
+            dist_sync_on_step=False,
+            check_batch=False,
+            metric_args={"class_metrics": True, "compute_on_cpu": compute_on_cpu, "iou_type": "segm"},
         )
 
 
@@ -375,6 +459,27 @@ def test_missing_gt():
     metric.update(preds, gts)
     result = metric.compute()
     assert result["map"] < 1, "MAP cannot be 1, as there is an image with no ground truth, but some predictions."
+
+
+@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
+def test_segm_iou_empty_mask():
+    """Test empty ground truths."""
+    metric = MeanAveragePrecision(iou_type="segm")
+
+    metric.update(
+        [
+            dict(
+                masks=torch.randint(0, 1, (1, 10, 10)).bool(),
+                scores=Tensor([0.5]),
+                labels=IntTensor([4]),
+            ),
+        ],
+        [
+            dict(masks=Tensor([]), labels=IntTensor([])),
+        ],
+    )
+
+    metric.compute()
 
 
 @pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")

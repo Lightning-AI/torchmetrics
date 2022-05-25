@@ -14,3 +14,4 @@
 -r image_test.txt
 -r text_test.txt
 -r audio_test.txt
+-r detection_test.txt
