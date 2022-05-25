@@ -15,10 +15,8 @@ from typing import Optional
 
 import torch
 from torch import Tensor
-from typing_extensions import Literal
 
 from torchmetrics.functional.classification.confusion_matrix import _confusion_matrix_update
-from torchmetrics.utilities.data import get_num_classes
 
 
 def _jaccard_from_confmat(
