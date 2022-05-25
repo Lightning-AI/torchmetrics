@@ -82,7 +82,7 @@ def _jaccard_from_confmat(
         union = torch.sum(torch.sum(confmat, dim=1) + torch.sum(confmat, dim=0) - torch.diag(confmat))
         return intersection.float() / union.float()
     else:
-        weights = torch.sum(confmat, dim=1) / torch.sum(confmat)
+        weights = torch.sum(confmat, dim=1).float() / torch.sum(confmat).float()
         scores = _jaccard_from_confmat(
             confmat, num_classes, average="none", ignore_index=ignore_index, absent_score=absent_score
         )
