@@ -53,7 +53,7 @@ class JaccardIndex(ConfusionMatrix):
             - ``'weighted'``: Calculate the metric for each class separately, and average the
               metrics across classes, weighting each class by its support (``tp + fn``).
             - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
-              the metric for every class. Note that if a given class doesn't occur in the 
+              the metric for every class. Note that if a given class doesn't occur in the
               `preds` or `target`, the value for the class will be ``nan``.
         ignore_index: optional int specifying a target class to ignore. If given, this class index does not contribute
             to the returned score, regardless of reduction method. Has no effect if given an int that is not in the
