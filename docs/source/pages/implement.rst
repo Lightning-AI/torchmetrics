@@ -27,9 +27,8 @@ Example implementation:
     from torchmetrics import Metric
 
     class MyAccuracy(Metric):
-        def __init__(self, dist_sync_on_step=False):
-            super().__init__(dist_sync_on_step=dist_sync_on_step)
-
+        def __init__(self):
+            super().__init__()
             self.add_state("correct", default=torch.tensor(0), dist_reduce_fx="sum")
             self.add_state("total", default=torch.tensor(0), dist_reduce_fx="sum")
 
@@ -119,7 +118,7 @@ both ``True`` and ``False``. If the results are equal, then setting it to ``Fals
 .. autoclass:: torchmetrics.Metric
     :members:
 
-Contributing your metric to Torchmetrics
+Contributing your metric to TorchMetrics
 ----------------------------------------
 
 Wanting to contribute the metric you have implemented? Great, we are always open to adding more metrics to ``torchmetrics``
