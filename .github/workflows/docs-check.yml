@@ -26,8 +26,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -r requirements.txt -U -f https://download.pytorch.org/whl/cpu/torch_stable.html -q --use-feature=2020-resolver
-          pip install -r requirements/docs.txt --use-feature=2020-resolver
+          pip install -r requirements.txt -U -f https://download.pytorch.org/whl/cpu/torch_stable.html -q
+          pip install -r requirements/docs.txt
           python --version ; pip --version ; pip list
         shell: bash
 
@@ -62,8 +62,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -r requirements.txt -U -f https://download.pytorch.org/whl/torch_stable.html -q --use-feature=2020-resolver
-          pip install -r requirements/docs.txt --use-feature=2020-resolver
+          pip install -r requirements.txt -U -f https://download.pytorch.org/whl/torch_stable.html -q
+          pip install -r requirements/docs.txt
           # install Texlive, see https://linuxconfig.org/how-to-install-latex-on-ubuntu-20-04-focal-fossa-linux
           sudo apt-get update
           sudo apt-get install -y texlive-latex-extra dvipng texlive-pictures
