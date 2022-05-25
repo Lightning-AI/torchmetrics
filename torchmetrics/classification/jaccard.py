@@ -46,6 +46,7 @@ class JaccardIndex(ConfusionMatrix):
         num_classes: Number of classes in the dataset.
         average:
             Defines the reduction that is applied. Should be one of the following:
+
             - ``'macro'`` [default]: Calculate the metric for each class separately, and average the
               metrics across classes (with equal weights for each class).
             - ``'micro'``: Calculate the metric globally, across all samples and classes.
@@ -54,6 +55,7 @@ class JaccardIndex(ConfusionMatrix):
             - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
               the metric for every class. Note that if a given class doesn't occur in the
               `preds` or `target`, the value for the class will be ``nan``.
+
         ignore_index: optional int specifying a target class to ignore. If given, this class index does not contribute
             to the returned score, regardless of reduction method. Has no effect if given an int that is not in the
             range [0, num_classes-1]. By default, no index is ignored, and all classes are used.

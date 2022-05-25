@@ -33,16 +33,16 @@ def _jaccard_from_confmat(
         num_classes: Number of classes for a given prediction and target tensor
         average:
             Defines the reduction that is applied. Should be one of the following:
+
             - ``'macro'`` [default]: Calculate the metric for each class separately, and average the
               metrics across classes (with equal weights for each class).
             - ``'micro'``: Calculate the metric globally, across all samples and classes.
             - ``'weighted'``: Calculate the metric for each class separately, and average the
               metrics across classes, weighting each class by its support (``tp + fn``).
             - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
-              the metric for every class.
+              the metric for every class. Note that if a given class doesn't occur in the
+              `preds` or `target`, the value for the class will be ``nan``.
 
-            .. note:: If ``'none'`` and a given class doesn't occur in the `preds` or `target`,
-                the value for the class will be ``nan``.
         ignore_index: optional int specifying a target class to ignore. If given, this class index does not contribute
             to the returned score, regardless of reduction method.
         absent_score: score to use for an individual class, if no instances of the class index were present in `pred`
@@ -120,6 +120,7 @@ def jaccard_index(
         num_classes: Specify the number of classes
         average:
             Defines the reduction that is applied. Should be one of the following:
+
             - ``'macro'`` [default]: Calculate the metric for each class separately, and average the
               metrics across classes (with equal weights for each class).
             - ``'micro'``: Calculate the metric globally, across all samples and classes.
@@ -128,6 +129,7 @@ def jaccard_index(
             - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
               the metric for every class. Note that if a given class doesn't occur in the
               `preds` or `target`, the value for the class will be ``nan``.
+
         ignore_index: optional int specifying a target class to ignore. If given,
             this class index does not contribute to the returned score, regardless
             of reduction method. Has no effect if given an int that is not in the
