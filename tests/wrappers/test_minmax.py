@@ -3,6 +3,7 @@ from functools import partial
 
 import pytest
 import torch
+from torch import Tensor
 
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES, MetricTester
@@ -97,10 +98,10 @@ def test_basic_example(preds, labels, raws, maxs, mins) -> None:
     """tests that both min and max versions of MinMaxMetric operate correctly after calling compute."""
     acc = Accuracy()
     min_max_acc = MinMaxMetric(acc)
-    labels = torch.Tensor(labels).long()
+    labels = Tensor(labels).long()
 
     for i in range(3):
-        preds_ = torch.Tensor(preds[i])
+        preds_ = Tensor(preds[i])
         min_max_acc(preds_, labels)
         acc = min_max_acc.compute()
         assert acc["raw"] == raws[i]

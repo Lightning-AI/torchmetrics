@@ -173,10 +173,12 @@ class TestStatScores(MetricTester):
     # DDP tests temporarily disabled due to hanging issues
     @pytest.mark.parametrize("ddp", [False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
+    @pytest.mark.parametrize("dtype", [torch.float, torch.double])
     def test_stat_scores_class(
         self,
         ddp: bool,
         dist_sync_on_step: bool,
+        dtype: torch.dtype,
         sk_fn: Callable,
         preds: Tensor,
         target: Tensor,
@@ -190,6 +192,11 @@ class TestStatScores(MetricTester):
     ):
         if ignore_index is not None and preds.ndim == 2:
             pytest.skip("Skipping ignore_index test with binary inputs.")
+
+        if preds.is_floating_point():
+            preds = preds.to(dtype)
+        if target.is_floating_point():
+            target = target.to(dtype)
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -216,8 +223,6 @@ class TestStatScores(MetricTester):
                 "ignore_index": ignore_index,
                 "top_k": top_k,
             },
-            check_dist_sync_on_step=True,
-            check_batch=True,
         )
 
     def test_stat_scores_fn(

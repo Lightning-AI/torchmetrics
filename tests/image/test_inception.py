@@ -15,6 +15,7 @@ import pickle
 
 import pytest
 import torch
+from torch.nn import Module
 from torch.utils.data import Dataset
 
 from torchmetrics.image.inception import InceptionScore
@@ -27,7 +28,7 @@ torch.manual_seed(42)
 def test_no_train():
     """Assert that metric never leaves evaluation mode."""
 
-    class MyModel(torch.nn.Module):
+    class MyModel(Module):
         def __init__(self):
             super().__init__()
             self.metric = InceptionScore()
@@ -104,11 +105,12 @@ class _ImgDataset(Dataset):
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test is too slow without gpu")
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
-def test_compare_is(tmpdir):
+@pytest.mark.parametrize("compute_on_cpu", [True, False])
+def test_compare_is(tmpdir, compute_on_cpu):
     """check that the hole pipeline give the same result as torch-fidelity."""
     from torch_fidelity import calculate_metrics
 
-    metric = InceptionScore(splits=1).cuda()
+    metric = InceptionScore(splits=1, compute_on_cpu=compute_on_cpu).cuda()
 
     # Generate some synthetic data
     img1 = torch.randint(0, 255, (100, 3, 299, 299), dtype=torch.uint8)

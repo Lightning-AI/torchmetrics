@@ -28,12 +28,13 @@ class StructuralSimilarityIndexMeasure(Metric):
     Args:
         preds: estimated image
         target: ground truth image
-        gaussian_kernel: If true (default), a gaussian kernel is used, if false a uniform kernel is used
+        gaussian_kernel: If ``True`` (default), a gaussian kernel is used, if ``False`` a uniform kernel is used
         sigma: Standard deviation of the gaussian kernel, anisotropic kernels are possible.
             Ignored if a uniform kernel is used
         kernel_size: the size of the uniform kernel, anisotropic kernels are possible.
             Ignored if a Gaussian kernel is used
         reduction: a method to reduce metric score over labels.
+
             - ``'elementwise_mean'``: takes the mean
             - ``'sum'``: takes the sum
             - ``'none'`` or ``None``: no reduction will be applied
@@ -46,15 +47,7 @@ class StructuralSimilarityIndexMeasure(Metric):
         return_contrast_sensitivity: If true, the constant term is returned as a second argument.
             The luminance term can be obtained with luminance=ssim/contrast
             Mutually exclusive with ``return_full_image``
-
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Return:
         Tensor with SSIM score
@@ -69,9 +62,12 @@ class StructuralSimilarityIndexMeasure(Metric):
         tensor(0.9219)
     """
 
+    higher_is_better: bool = True
+    is_differentiable: bool = True
+    full_state_update: bool = False
+
     preds: List[Tensor]
     target: List[Tensor]
-    higher_is_better = True
 
     def __init__(
         self,
@@ -82,12 +78,11 @@ class StructuralSimilarityIndexMeasure(Metric):
         data_range: Optional[float] = None,
         k1: float = 0.01,
         k2: float = 0.03,
-        compute_on_step: Optional[bool] = None,
         return_full_image: bool = False,
         return_contrast_sensitivity: bool = False,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
         rank_zero_warn(
             "Metric `SSIM` will save all targets and"
             " predictions in buffer. For large datasets this may lead"
@@ -141,10 +136,11 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
     Structural Similarity Index Measure by incorporating image details at different resolution scores.
 
     Args:
-        gaussian_kernel: If true (default), a gaussian kernel is used, if false a uniform kernel is used
+        gaussian_kernel: If ``True`` (default), a gaussian kernel is used, if false a uniform kernel is used
         kernel_size: size of the gaussian kernel
         sigma: Standard deviation of the gaussian kernel
         reduction: a method to reduce metric score over labels.
+
             - ``'elementwise_mean'``: takes the mean
             - ``'sum'``: takes the sum
             - ``'none'`` or ``None``: no reduction will be applied
@@ -157,14 +153,8 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         normalize: When MultiScaleStructuralSimilarityIndexMeasure loss is used for training, it is desirable to use
             normalizes to improve the training stability. This `normalize` argument is out of scope of the original
             implementation [1], and it is adapted from https://github.com/jorge-pessoa/pytorch-msssim instead.
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
     Return:
         Tensor with Multi-Scale SSIM score
 
@@ -186,14 +176,16 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         tensor(0.9558)
 
     References:
-    [1] Multi-Scale Structural Similarity For Image Quality Assessment by Zhou Wang, Eero P. Simoncelli and Alan C.
-    Bovik `MultiScaleSSIM`_
+        [1] Multi-Scale Structural Similarity For Image Quality Assessment by Zhou Wang, Eero P. Simoncelli and Alan C.
+        Bovik `MultiScaleSSIM`_
     """
+
+    higher_is_better: bool = True
+    is_differentiable: bool = True
+    full_state_update: bool = False
 
     preds: List[Tensor]
     target: List[Tensor]
-    higher_is_better = True
-    is_differentiable = True
 
     def __init__(
         self,
@@ -206,10 +198,9 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         k2: float = 0.03,
         betas: Tuple[float, ...] = (0.0448, 0.2856, 0.3001, 0.2363, 0.1333),
         normalize: Literal["relu", "simple", None] = None,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
         rank_zero_warn(
             "Metric `MS_SSIM` will save all targets and"
             " predictions in buffer. For large datasets this may lead"
@@ -219,7 +210,7 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         self.add_state("preds", default=[], dist_reduce_fx="cat")
         self.add_state("target", default=[], dist_reduce_fx="cat")
 
-        if not (isinstance(kernel_size, Sequence) or isinstance(kernel_size, int)):
+        if not (isinstance(kernel_size, (Sequence, int))):
             raise ValueError(
                 f"Argument `kernel_size` expected to be an sequence or an int, or a single int. Got {kernel_size}"
             )
@@ -251,8 +242,8 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         """Update state with predictions and targets.
 
         Args:
-            preds: Predictions from model of shape `[N, C, H, W]`
-            target: Ground truth values of shape `[N, C, H, W]`
+            preds: Predictions from model of shape ``[N, C, H, W]``
+            target: Ground truth values of shape ``[N, C, H, W]``
         """
         preds, target = _ssim_update(preds, target)
         self.preds.append(preds)

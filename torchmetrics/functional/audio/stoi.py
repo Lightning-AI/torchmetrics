@@ -37,22 +37,17 @@ def short_time_objective_intelligibility(
     The STOI-measure is intrusive, i.e., a function of the clean and degraded speech signals. STOI may be a good
     alternative to the speech intelligibility index (SII) or the speech transmission index (STI), when you are
     interested in the effect of nonlinear processing to noisy speech, e.g., noise reduction, binary masking algorithms,
-    on speech intelligibility. Description taken from [Cees Taal's website](http://www.ceestaal.nl/code/).
+    on speech intelligibility. Description taken from `Cees Taal's website <http://www.ceestaal.nl/code/>`_.
 
     .. note:: using this metrics requires you to have ``pystoi`` install. Either install as ``pip install
         torchmetrics[audio]`` or ``pip install pystoi``
 
     Args:
-        preds:
-            shape ``[...,time]``
-        target:
-            shape ``[...,time]``
-        fs:
-            sampling frequency (Hz)
-        extended:
-            whether to use the extended STOI described in [4]
-        keep_same_device:
-            whether to move the stoi value to the device of preds
+        preds: shape ``[..., time]``
+        target: shape ``[..., time]``
+        fs: sampling frequency (Hz)
+        extended: whether to use the extended STOI described in [4]
+        keep_same_device: whether to move the stoi value to the device of preds
 
     Returns:
         stoi value of shape [...]

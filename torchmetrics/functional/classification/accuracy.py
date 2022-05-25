@@ -42,7 +42,7 @@ def _mode(
         target: Ground truth tensor
         threshold: Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the
             case of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
-        top_k: Number of highest probability or logit score predictions considered to find the correct label,
+        top_k: Number of the highest probability or logit score predictions considered finding the correct label,
             relevant only for (multi-dimensional) multi-class inputs.
         num_classes: Number of classes. Necessary for ``'macro'``, ``'weighted'`` and ``None`` average methods.
         multiclass:
@@ -87,18 +87,18 @@ def _accuracy_update(
         preds: Predicted tensor
         target: Ground truth tensor
         reduce: Defines the reduction that is applied.
-        mdmc_reduce: Defines how the multi-dimensional multi-class inputs are handeled.
+        mdmc_reduce: Defines how the multi-dimensional multi-class inputs are handled.
         threshold: Threshold for transforming probability or logit predictions to binary (0,1) predictions, in
             the case of binary or multi-label inputs.
         num_classes: Number of classes. Necessary for ``'macro'``, ``'weighted'`` and ``None`` average methods.
-        top_k: Number of highest probability or logit score predictions considered to find the correct label,
+        top_k: Number of the highest probability or logit score predictions considered finding the correct label,
             relevant only for (multi-dimensional) multi-class inputs.
         multiclass: Used only in certain special cases, where you want to treat inputs as a different type
             than what they appear to be.
         ignore_index: Integer specifying a target class to ignore. If given, this class index does not contribute
             to the returned score, regardless of reduction method. If an index is ignored, and ``average=None``
             or ``'none'``, the score for the ignored class will be returned as ``nan``.
-        mode: Mode of the input tensors
+        mode: Mode of the input tensors.
     """
 
     if mode == DataType.MULTILABEL and top_k:
@@ -215,8 +215,8 @@ def _subset_accuracy_update(
         preds: Predicted tensor
         target: Ground truth tensor
         threshold: Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
-            of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
-        top_k: Number of highest probability or logit score predictions considered to find the correct label,
+            of binary or multi-label inputs. Default value of ``0.5`` corresponds to input being probabilities.
+        top_k: Number of the highest probability or logit score predictions considered finding the correct label,
             relevant only for (multi-dimensional) multi-class inputs.
     """
 
@@ -284,7 +284,7 @@ def accuracy(
     changed to subset accuracy (which requires all labels or sub-samples in the sample to
     be correctly predicted) by setting ``subset_accuracy=True``.
 
-    Accepts all input types listed in :ref:`references/modules:input types`.
+    Accepts all input types listed in :ref:`pages/classification:input types`.
 
     Args:
         preds: Predictions from model (probabilities, logits or labels)
@@ -305,26 +305,26 @@ def accuracy(
             .. note:: What is considered a sample in the multi-dimensional multi-class case
                 depends on the value of ``mdmc_average``.
 
-            .. note:: If ``'none'`` and a given class doesn't occur in the `preds` or `target`,
+            .. note:: If ``'none'`` and a given class doesn't occur in the ``preds`` or ``target``,
                 the value for the class will be ``nan``.
 
         mdmc_average:
             Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
             ``average`` parameter). Should be one of the following:
 
-            - ``None`` [default]: Should be left unchanged if your data is not multi-dimensional
-              multi-class.
+            - ``None`` [default]: Should be left unchanged if your data is not multi-dimensional multi-class.
 
             - ``'samplewise'``: In this case, the statistics are computed separately for each
               sample on the ``N`` axis, and then averaged over samples.
               The computation for each sample is done by treating the flattened extra axes ``...``
-              (see :ref:`references/modules:input types`) as the ``N`` dimension within the sample,
+              (see :ref:`pages/classification:input types`) as the ``N`` dimension within the sample,
               and computing the metric for the sample based on that.
 
             - ``'global'``: In this case the ``N`` and ``...`` dimensions of the inputs
-              (see :ref:`references/modules:input types`)
+              (see :ref:`pages/classification:input types`)
               are flattened into a new ``N_X`` sample axis, i.e. the inputs are treated as if they
               were ``(N_X, C)``. From here on the ``average`` parameter applies as usual.
+
         num_classes:
             Number of classes. Necessary for ``'macro'``, ``'weighted'`` and ``None`` average methods.
 
@@ -332,7 +332,7 @@ def accuracy(
             Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
             of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
         top_k:
-            Number of highest probability or logit score predictions considered to find the correct label,
+            Number of the highest probability or logit score predictions considered finding the correct label,
             relevant only for (multi-dimensional) multi-class inputs. The
             default value (``None``) will be interpreted as 1 for these inputs.
 
@@ -340,7 +340,7 @@ def accuracy(
         multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
             than what they appear to be. See the parameter's
-            :ref:`documentation section <references/modules:using the multiclass parameter>`
+            :ref:`documentation section <pages/classification:using the multiclass parameter>`
             for a more detailed explanation and examples.
         ignore_index:
             Integer specifying a target class to ignore. If given, this class index does not contribute

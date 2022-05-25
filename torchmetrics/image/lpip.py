@@ -11,10 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import torch
 from torch import Tensor
+from torch.nn import Module
 from typing_extensions import Literal
 
 from torchmetrics.metric import Metric
@@ -24,7 +25,7 @@ if _LPIPS_AVAILABLE:
     from lpips import LPIPS as _LPIPS
 else:
 
-    class _LPIPS(torch.nn.Module):  # type: ignore
+    class _LPIPS(Module):  # type: ignore
         pass
 
     __doctest_skip__ = ["LearnedPerceptualImagePatchSimilarity", "LPIPS"]
@@ -44,7 +45,7 @@ def _valid_img(img: Tensor) -> bool:
 class LearnedPerceptualImagePatchSimilarity(Metric):
     """The Learned Perceptual Image Patch Similarity (`LPIPS_`) is used to judge the perceptual similarity between
     two images. LPIPS essentially computes the similarity between the activations of two image patches for some
-    pre-defined network. This measure have been shown to match human perseption well. A low LPIPS score means that
+    pre-defined network. This measure has been shown to match human perseption well. A low LPIPS score means that
     image patches are perceptual similar.
 
     Both input image patches are expected to have shape `[N, 3, H, W]` and be normalized to the [-1,1]
@@ -59,14 +60,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
     Args:
         net_type: str indicating backbone network type to use. Choose between `'alex'`, `'vgg'` or `'squeeze'`
         reduction: str indicating how to reduce over the batch dimension. Choose between `'sum'` or `'mean'`.
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ModuleNotFoundError:
@@ -87,22 +81,23 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
         tensor(0.3566, grad_fn=<SqueezeBackward0>)
     """
 
-    is_differentiable = True
-    higher_is_better = False
+    is_differentiable: bool = True
+    higher_is_better: bool = False
+    full_state_update: bool = False
+
     real_features: List[Tensor]
     fake_features: List[Tensor]
 
-    # due to the use of named tuple in the backbone the net variable cannot be scriptet
+    # due to the use of named tuple in the backbone the net variable cannot be scripted
     __jit_ignored_attributes__ = ["net"]
 
     def __init__(
         self,
         net_type: str = "alex",
         reduction: Literal["sum", "mean"] = "mean",
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
 
         if not _LPIPS_AVAILABLE:
             raise ModuleNotFoundError(
@@ -127,8 +122,8 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
         """Update internal states with lpips score.
 
         Args:
-            img1: tensor with images of shape [N, 3, H, W]
-            img2: tensor with images of shape [N, 3, H, W]
+            img1: tensor with images of shape ``[N, 3, H, W]``
+            img2: tensor with images of shape ``[N, 3, H, W]``
         """
         if not (_valid_img(img1) and _valid_img(img2)):
             raise ValueError(

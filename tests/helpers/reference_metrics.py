@@ -19,6 +19,9 @@ import torch
 import torch.nn.functional as F
 from sklearn.metrics._regression import _check_reg_targets
 from sklearn.utils import assert_all_finite, check_consistent_length, column_or_1d
+from torch import Tensor
+
+from torchmetrics.functional.image.uqi import universal_image_quality_index
 
 
 def _symmetric_mean_absolute_percentage_error(
@@ -202,12 +205,40 @@ def _calibration_error(
     return loss
 
 
+def d_lambda(preds: np.ndarray, target: np.ndarray, p: int = 1) -> float:
+    """A NumPy based implementation of Spectral Distortion Index, which uses UQI of TorchMetrics."""
+    target, preds = torch.from_numpy(target), torch.from_numpy(preds)
+    # Permute to ensure B x C x H x W (Pillow/NumPy stores in B x H x W x C)
+    target = target.permute(0, 3, 1, 2)
+    preds = preds.permute(0, 3, 1, 2)
+
+    length = preds.shape[1]
+    m1 = np.zeros((length, length), dtype=np.float32)
+    m2 = np.zeros((length, length), dtype=np.float32)
+
+    # Convert target and preds to Torch Tensors, pass them to metrics UQI
+    # this is mainly because reference repo (sewar) uses uniform distribution
+    # in their implementation of UQI, and we use gaussian distribution
+    # and they have different default values for some kwargs like window size.
+    for k in range(length):
+        for r in range(k, length):
+            m1[k, r] = m1[r, k] = universal_image_quality_index(target[:, k : k + 1, :, :], target[:, r : r + 1, :, :])
+            m2[k, r] = m2[r, k] = universal_image_quality_index(preds[:, k : k + 1, :, :], preds[:, r : r + 1, :, :])
+    diff = np.abs(m1 - m2) ** p
+
+    # Special case: when number of channels (L) is 1, there will be only one element in M1 and M2. Hence no need to sum.
+    if length == 1:
+        return diff[0][0] ** (1.0 / p)
+    else:
+        return (1.0 / (length * (length - 1)) * np.sum(diff)) ** (1.0 / p)
+
+
 def _sk_ergas(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     ratio: Union[int, float] = 4,
     reduction: str = "elementwise_mean",
-) -> torch.Tensor:
+) -> Tensor:
     """Reference implementation of Erreur Relative Globale Adimensionnelle de Synthèse."""
     reduction_options = ("elementwise_mean", "sum", "none")
     if reduction not in reduction_options:
@@ -234,10 +265,10 @@ def _sk_ergas(
 
 
 def _sk_sam(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     reduction: str = "elementwise_mean",
-) -> torch.Tensor:
+) -> Tensor:
     """Reference implementation of spectral angle mapper."""
     reduction_options = ("elementwise_mean", "sum", "none")
     if reduction not in reduction_options:

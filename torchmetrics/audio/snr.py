@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from torch import Tensor, tensor
 
@@ -35,16 +35,9 @@ class SignalNoiseRatio(Metric):
     - ``target``: ``shape [..., time]``
 
     Args:
-        zero_mean:
-            if to zero mean target and preds or not
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
+        zero_mean: if to zero mean target and preds or not
 
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         TypeError:
@@ -67,18 +60,18 @@ class SignalNoiseRatio(Metric):
         and Signal Processing (ICASSP) 2019.
 
     """
-    is_differentiable = True
-    higher_is_better = True
+    full_state_update: bool = False
+    is_differentiable: bool = True
+    higher_is_better: bool = True
     sum_snr: Tensor
     total: Tensor
 
     def __init__(
         self,
         zero_mean: bool = False,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
         self.zero_mean = zero_mean
 
         self.add_state("sum_snr", default=tensor(0.0), dist_reduce_fx="sum")
@@ -110,14 +103,7 @@ class ScaleInvariantSignalNoiseRatio(Metric):
     - ``target``: ``shape [...,time]``
 
     Args:
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         TypeError:
@@ -148,10 +134,9 @@ class ScaleInvariantSignalNoiseRatio(Metric):
 
     def __init__(
         self,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
 
         self.add_state("sum_si_snr", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")

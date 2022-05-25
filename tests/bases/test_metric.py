@@ -20,7 +20,8 @@ import numpy as np
 import psutil
 import pytest
 import torch
-from torch import Tensor, nn, tensor
+from torch import Tensor, tensor
+from torch.nn import Module
 
 from tests.helpers import seed_all
 from tests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum
@@ -36,6 +37,9 @@ def test_error_on_wrong_input():
 
     with pytest.raises(ValueError, match="Expected keyword argument `dist_sync_fn` to be an callable function.*"):
         DummyMetric(dist_sync_fn=[2, 3])
+
+    with pytest.raises(ValueError, match="Expected keyword argument `compute_on_cpu` to be an `bool` bu.*"):
+        DummyMetric(compute_on_cpu=None)
 
 
 def test_inherit():
@@ -242,7 +246,7 @@ def test_load_state_dict(tmpdir):
 def test_child_metric_state_dict():
     """test that child metric states will be added to parent state dict."""
 
-    class TestModule(nn.Module):
+    class TestModule(Module):
         def __init__(self):
             super().__init__()
             self.metric = DummyMetric()
@@ -343,7 +347,7 @@ def test_forward_and_compute_to_device(metric_class):
 def test_device_if_child_module(metric_class):
     """Test that if a metric is a child module all values gets moved to the correct device."""
 
-    class TestModule(nn.Module):
+    class TestModule(Module):
         def __init__(self):
             super().__init__()
             self.metric = metric_class()
@@ -399,9 +403,23 @@ def test_constant_memory(device, requires_grad):
     # try forward method
     metric = DummyMetricSum().to(device)
     metric(x.sum())
-    base_memory_level = get_memory_usage()
+
+    # we allow for 5% flucturation due to measuring
+    base_memory_level = 1.05 * get_memory_usage()
 
     for _ in range(10):
         metric.update(x.sum())
         memory = get_memory_usage()
         assert base_memory_level >= memory, "memory increased above base level"
+
+
+@pytest.mark.parametrize("metric_class", [DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum])
+def test_warning_on_not_set_full_state_update(metric_class):
+    class UnsetProperty(metric_class):
+        full_state_update = None
+
+    with pytest.warns(
+        UserWarning,
+        match="Torchmetrics v0.9 introduced a new argument class property called.*",
+    ):
+        UnsetProperty()

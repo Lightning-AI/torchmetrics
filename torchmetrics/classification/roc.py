@@ -19,6 +19,7 @@ from torch import Tensor
 from torchmetrics.functional.classification.roc import _roc_compute, _roc_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities.data import dim_zero_cat
 
 
 class ROC(Metric):
@@ -34,24 +35,17 @@ class ROC(Metric):
 
     .. note::
         If either the positive class or negative class is completly missing in the target tensor,
-        the roc values are not well defined in this case and a tensor of zeros will be returned (either fpr
-        or tpr depending on what class is missing) together with an warning.
+        the roc values are not well-defined in this case and a tensor of zeros will be returned (either fpr
+        or tpr depending on what class is missing) together with a warning.
 
     Args:
         num_classes: integer with number of classes for multi-label and multiclass problems.
             Should be set to ``None`` for binary problems
-        pos_label: integer determining the positive class. Default is ``None``
-            which for binary problem is translate to 1. For multiclass problems
-            this argument should not be set as we iteratively change it in the
-            range [0,num_classes-1]
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
+        pos_label: integer determining the positive class. Default is ``None`` which for binary problem is translated
+            to 1. For multiclass problems this argument should not be set as we iteratively change it in the range
+            ``[0,num_classes-1]``
 
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (binary case):
         >>> from torchmetrics import ROC
@@ -106,7 +100,9 @@ class ROC(Metric):
          tensor([1.1837, 0.1837, 0.1338, 0.1183, 0.1138])]
     """
 
-    is_differentiable = False
+    is_differentiable: bool = False
+    higher_is_better: Optional[bool] = None
+    full_state_update: bool = False
     preds: List[Tensor]
     target: List[Tensor]
 
@@ -114,16 +110,15 @@ class ROC(Metric):
         self,
         num_classes: Optional[int] = None,
         pos_label: Optional[int] = None,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
 
         self.num_classes = num_classes
         self.pos_label = pos_label
 
-        self.add_state("preds", default=[], dist_reduce_fx=None)
-        self.add_state("target", default=[], dist_reduce_fx=None)
+        self.add_state("preds", default=[], dist_reduce_fx="cat")
+        self.add_state("target", default=[], dist_reduce_fx="cat")
 
         rank_zero_warn(
             "Metric `ROC` will save all targets and predictions in buffer."
@@ -149,17 +144,15 @@ class ROC(Metric):
         Returns:
             3-element tuple containing
 
-            fpr:
-                tensor with false positive rates.
+            fpr: tensor with false positive rates.
                 If multiclass, this is a list of such tensors, one for each class.
-            tpr:
-                tensor with true positive rates.
+            tpr: tensor with true positive rates.
                 If multiclass, this is a list of such tensors, one for each class.
             thresholds:
-                thresholds used for computing false- and true postive rates
+                thresholds used for computing false- and true-positive rates
         """
-        preds = torch.cat(self.preds, dim=0)
-        target = torch.cat(self.target, dim=0)
+        preds = dim_zero_cat(self.preds)
+        target = dim_zero_cat(self.target)
         if not self.num_classes:
             raise ValueError(f"`num_classes` bas to be positive number, but got {self.num_classes}")
         return _roc_compute(preds, target, self.num_classes, self.pos_label)

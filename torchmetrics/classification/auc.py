@@ -32,26 +32,21 @@ class AUC(Metric):
         reorder: AUC expects its first input to be sorted. If this is not the case,
             setting this argument to ``True`` will use a stable sorting algorithm to
             sort the input in descending order
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
 
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
-        kwargs:
-            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
     """
-    is_differentiable = False
+    is_differentiable: bool = False
+    higher_is_better: Optional[bool] = None
+    full_state_update: bool = False
     x: List[Tensor]
     y: List[Tensor]
 
     def __init__(
         self,
         reorder: bool = False,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
 
         self.reorder = reorder
 
