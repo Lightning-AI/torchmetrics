@@ -403,9 +403,23 @@ def test_constant_memory(device, requires_grad):
     # try forward method
     metric = DummyMetricSum().to(device)
     metric(x.sum())
-    base_memory_level = get_memory_usage()
+
+    # we allow for 5% flucturation due to measuring
+    base_memory_level = 1.05 * get_memory_usage()
 
     for _ in range(10):
         metric.update(x.sum())
         memory = get_memory_usage()
         assert base_memory_level >= memory, "memory increased above base level"
+
+
+@pytest.mark.parametrize("metric_class", [DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum])
+def test_warning_on_not_set_full_state_update(metric_class):
+    class UnsetProperty(metric_class):
+        full_state_update = None
+
+    with pytest.warns(
+        UserWarning,
+        match="Torchmetrics v0.9 introduced a new argument class property called.*",
+    ):
+        UnsetProperty()

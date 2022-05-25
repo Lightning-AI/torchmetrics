@@ -35,6 +35,8 @@ except RuntimeError:
 NUM_PROCESSES = 2
 NUM_BATCHES = 4  # Need to be divisible with the number of processes
 BATCH_SIZE = 32
+# NUM_BATCHES = 10 if torch.cuda.is_available() else 4
+# BATCH_SIZE = 64 if torch.cuda.is_available() else 32
 NUM_CLASSES = 5
 EXTRA_DIM = 3
 THRESHOLD = 0.5
@@ -212,6 +214,7 @@ def _class_test(
                 _assert_allclose(batch_result, sk_batch_result, atol=atol)
 
     # check that metrics are hashable
+
     assert hash(metric)
 
     # assert that state dict is empty
@@ -569,6 +572,7 @@ class MetricTester:
 
 class DummyMetric(Metric):
     name = "Dummy"
+    full_state_update: Optional[bool] = True
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -583,6 +587,7 @@ class DummyMetric(Metric):
 
 class DummyListMetric(Metric):
     name = "DummyList"
+    full_state_update: Optional[bool] = True
 
     def __init__(self):
         super().__init__()

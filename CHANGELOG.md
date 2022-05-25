@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added `Dice` to classification package ([#1021](https://github.com/PyTorchLightning/metrics/pull/1021))
 
+- Added support to segmentation type `segm` as IOU for mean average precision ([#822](https://github.com/PyTorchLightning/metrics/pull/822))
 
 ### Changed
 

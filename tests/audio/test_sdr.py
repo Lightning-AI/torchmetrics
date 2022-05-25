@@ -104,7 +104,6 @@ class TestSDR(MetricTester):
             preds=preds,
             target=target,
             metric_module=SignalDistortionRatio,
-            metric_functional=signal_distortion_ratio,
             metric_args={},
         )
 
