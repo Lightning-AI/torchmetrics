@@ -15,65 +15,90 @@ from typing import Optional
 
 import torch
 from torch import Tensor
-from typing_extensions import Literal
 
 from torchmetrics.functional.classification.confusion_matrix import _confusion_matrix_update
-from torchmetrics.utilities.distributed import reduce
 
 
 def _jaccard_from_confmat(
     confmat: Tensor,
     num_classes: int,
+    average: Optional[str] = "macro",
     ignore_index: Optional[int] = None,
     absent_score: float = 0.0,
-    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
 ) -> Tensor:
     """Computes the intersection over union from confusion matrix.
 
     Args:
         confmat: Confusion matrix without normalization
         num_classes: Number of classes for a given prediction and target tensor
+        average:
+            Defines the reduction that is applied. Should be one of the following:
+
+            - ``'macro'`` [default]: Calculate the metric for each class separately, and average the
+              metrics across classes (with equal weights for each class).
+            - ``'micro'``: Calculate the metric globally, across all samples and classes.
+            - ``'weighted'``: Calculate the metric for each class separately, and average the
+              metrics across classes, weighting each class by its support (``tp + fn``).
+            - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
+              the metric for every class. Note that if a given class doesn't occur in the
+              `preds` or `target`, the value for the class will be ``nan``.
+
         ignore_index: optional int specifying a target class to ignore. If given, this class index does not contribute
             to the returned score, regardless of reduction method.
-        absent_score: score to use for an individual class, if no instances of the class index were present in ``preds``
-            AND no instances of the class index were present in ``target``.
-        reduction: a method to reduce metric score over labels.
-
-            - ``'elementwise_mean'``: takes the mean (default)
-            - ``'sum'``: takes the sum
-            - ``'none'`` or ``None``: no reduction will be applied
+        absent_score: score to use for an individual class, if no instances of the class index were present in `pred`
+            AND no instances of the class index were present in `target`.
     """
+    allowed_average = ["micro", "macro", "weighted", "none", None]
+    if average not in allowed_average:
+        raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
 
     # Remove the ignored class index from the scores.
     if ignore_index is not None and 0 <= ignore_index < num_classes:
         confmat[ignore_index] = 0.0
 
-    intersection = torch.diag(confmat)
-    union = confmat.sum(0) + confmat.sum(1) - intersection
+    if average == "none" or average is None:
+        intersection = torch.diag(confmat)
+        union = confmat.sum(0) + confmat.sum(1) - intersection
 
-    # If this class is absent in both target AND pred (union == 0), then use the absent_score for this class.
-    scores = intersection.float() / union.float()
-    scores[union == 0] = absent_score
+        # If this class is absent in both target AND pred (union == 0), then use the absent_score for this class.
+        scores = intersection.float() / union.float()
+        scores[union == 0] = absent_score
 
-    if ignore_index is not None and 0 <= ignore_index < num_classes:
-        scores = torch.cat(
-            [
-                scores[:ignore_index],
-                scores[ignore_index + 1 :],
-            ]
+        if ignore_index is not None and 0 <= ignore_index < num_classes:
+            scores = torch.cat(
+                [
+                    scores[:ignore_index],
+                    scores[ignore_index + 1 :],
+                ]
+            )
+        return scores
+
+    if average == "macro":
+        scores = _jaccard_from_confmat(
+            confmat, num_classes, average="none", ignore_index=ignore_index, absent_score=absent_score
         )
+        return torch.mean(scores)
 
-    return reduce(scores, reduction=reduction)
+    if average == "micro":
+        intersection = torch.sum(torch.diag(confmat))
+        union = torch.sum(torch.sum(confmat, dim=1) + torch.sum(confmat, dim=0) - torch.diag(confmat))
+        return intersection.float() / union.float()
+
+    weights = torch.sum(confmat, dim=1).float() / torch.sum(confmat).float()
+    scores = _jaccard_from_confmat(
+        confmat, num_classes, average="none", ignore_index=ignore_index, absent_score=absent_score
+    )
+    return torch.sum(weights * scores)
 
 
 def jaccard_index(
     preds: Tensor,
     target: Tensor,
     num_classes: int,
+    average: Optional[str] = "macro",
     ignore_index: Optional[int] = None,
     absent_score: float = 0.0,
     threshold: float = 0.5,
-    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
 ) -> Tensor:
     r"""Computes `Jaccard index`_
 
@@ -95,6 +120,18 @@ def jaccard_index(
         preds: tensor containing predictions from model (probabilities, or labels) with shape ``[N, d1, d2, ...]``
         target: tensor containing ground truth labels with shape ``[N, d1, d2, ...]``
         num_classes: Specify the number of classes
+        average:
+            Defines the reduction that is applied. Should be one of the following:
+
+            - ``'macro'`` [default]: Calculate the metric for each class separately, and average the
+              metrics across classes (with equal weights for each class).
+            - ``'micro'``: Calculate the metric globally, across all samples and classes.
+            - ``'weighted'``: Calculate the metric for each class separately, and average the
+              metrics across classes, weighting each class by its support (``tp + fn``).
+            - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
+              the metric for every class. Note that if a given class doesn't occur in the
+              `preds` or `target`, the value for the class will be ``nan``.
+
         ignore_index: optional int specifying a target class to ignore. If given,
             this class index does not contribute to the returned score, regardless
             of reduction method. Has no effect if given an int that is not in the
@@ -106,15 +143,13 @@ def jaccard_index(
             [0, 0] for ``preds``, and [0, 2] for ``target``, then class 1 would be
             assigned the `absent_score`.
         threshold: Threshold value for binary or multi-label probabilities.
-        reduction: a method to reduce metric score over labels.
-
-            - ``'elementwise_mean'``: takes the mean (default)
-            - ``'sum'``: takes the sum
-            - ``'none'`` or ``None``: no reduction will be applied
 
     Return:
-        IoU score: Tensor containing single value if reduction is
-        'elementwise_mean', or number of classes if reduction is 'none'
+        The shape of the returned tensor depends on the ``average`` parameter
+
+        - If ``average in ['micro', 'macro', 'weighted']``, a one-element tensor will be returned
+        - If ``average in ['none', None]``, the shape will be ``(C,)``, where ``C`` stands  for the number
+          of classes
 
     Example:
         >>> from torchmetrics.functional import jaccard_index
@@ -126,4 +161,4 @@ def jaccard_index(
     """
 
     confmat = _confusion_matrix_update(preds, target, num_classes, threshold)
-    return _jaccard_from_confmat(confmat, num_classes, ignore_index, absent_score, reduction)
+    return _jaccard_from_confmat(confmat, num_classes, average, ignore_index, absent_score)

@@ -32,7 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
--
+- Renamed `reduction` argument to `average` in Jaccard score and added additional options ([#874](https://github.com/PyTorchLightning/metrics/pull/874))
 
 
 ### Deprecated

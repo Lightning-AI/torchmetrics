@@ -15,7 +15,6 @@ from typing import Any, Dict, Optional
 
 import torch
 from torch import Tensor
-from typing_extensions import Literal
 
 from torchmetrics.classification.confusion_matrix import ConfusionMatrix
 from torchmetrics.functional.classification.jaccard import _jaccard_from_confmat
@@ -45,6 +44,18 @@ class JaccardIndex(ConfusionMatrix):
 
     Args:
         num_classes: Number of classes in the dataset.
+        average:
+            Defines the reduction that is applied. Should be one of the following:
+
+            - ``'macro'`` [default]: Calculate the metric for each class separately, and average the
+              metrics across classes (with equal weights for each class).
+            - ``'micro'``: Calculate the metric globally, across all samples and classes.
+            - ``'weighted'``: Calculate the metric for each class separately, and average the
+              metrics across classes, weighting each class by its support (``tp + fn``).
+            - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
+              the metric for every class. Note that if a given class doesn't occur in the
+              `preds` or `target`, the value for the class will be ``nan``.
+
         ignore_index: optional int specifying a target class to ignore. If given, this class index does not contribute
             to the returned score, regardless of reduction method. Has no effect if given an int that is not in the
             range [0, num_classes-1]. By default, no index is ignored, and all classes are used.
@@ -53,12 +64,6 @@ class JaccardIndex(ConfusionMatrix):
             [0, 0] for ``preds``, and [0, 2] for ``target``, then class 1 would be assigned the `absent_score`.
         threshold: Threshold value for binary or multi-label probabilities.
         multilabel: determines if data is multilabel or not.
-        reduction: a method to reduce metric score over labels:
-
-            - ``'elementwise_mean'``: takes the mean (default)
-            - ``'sum'``: takes the sum
-            - ``'none'``: no reduction will be applied
-
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
@@ -78,11 +83,11 @@ class JaccardIndex(ConfusionMatrix):
     def __init__(
         self,
         num_classes: int,
+        average: Optional[str] = "macro",
         ignore_index: Optional[int] = None,
         absent_score: float = 0.0,
         threshold: float = 0.5,
         multilabel: bool = False,
-        reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
         **kwargs: Dict[str, Any],
     ) -> None:
         super().__init__(
@@ -92,12 +97,16 @@ class JaccardIndex(ConfusionMatrix):
             multilabel=multilabel,
             **kwargs,
         )
-        self.reduction = reduction
+        self.average = average
         self.ignore_index = ignore_index
         self.absent_score = absent_score
 
     def compute(self) -> Tensor:
         """Computes intersection over union (IoU)"""
         return _jaccard_from_confmat(
-            self.confmat, self.num_classes, self.ignore_index, self.absent_score, self.reduction
+            self.confmat,
+            self.num_classes,
+            self.average,
+            self.ignore_index,
+            self.absent_score,
         )
