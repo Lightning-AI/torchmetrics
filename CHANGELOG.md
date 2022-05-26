@@ -77,6 +77,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed deterministic for PyTorch<1.8 ([#1035](https://github.com/PyTorchLightning/metrics/pull/1035))
 
 
+- Fixed default value for `mdmc_average` in `Accuracy` ([#1036](https://github.com/PyTorchLightning/metrics/pull/1036))
+
+
 ## [0.8.2] - 2022-05-06
 
 
