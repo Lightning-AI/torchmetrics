@@ -161,7 +161,7 @@ _multidim_multiclass_logits_with_neg_tgt = Input(
 _negmetric_noneavg = {
     "pred1": torch.tensor([[0.0, 1.0, 0.0], [1.0, 0.0, 0.0]]),
     "target1": torch.tensor([0, 1]),
-    "res1": torch.tensor([0.0, 0.0, torch.nan]),
+    "res1": torch.tensor([0.0, 0.0, float('nan')]),
     "pred2": torch.tensor([[0.0, 1.0, 0.0], [1.0, 0.0, 0.0]]),
     "target2": torch.tensor([0, 2]),
     "res2": torch.tensor([0.0, 0.0, 0.0]),
