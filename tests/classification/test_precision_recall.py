@@ -20,6 +20,7 @@ import torch
 from sklearn.metrics import precision_score, recall_score
 from torch import Tensor, tensor
 
+from tests.classification import MetricWrapper
 from tests.classification.inputs import _input_binary, _input_binary_logits, _input_binary_prob
 from tests.classification.inputs import _input_multiclass as _input_mcls
 from tests.classification.inputs import _input_multiclass_logits as _input_mcls_logits
@@ -460,65 +461,10 @@ def test_same_input(metric_class, metric_functional, sk_fn, average):
     assert torch.allclose(func_res, torch.tensor(sk_res).float())
 
 
-@pytest.mark.parametrize(
-    "pred1, target1, res1, pred2, target2, res2",
-    [
-        (
-            _negmetric_noneavg["pred1"],
-            _negmetric_noneavg["target1"],
-            _negmetric_noneavg["res1"],
-            _negmetric_noneavg["pred2"],
-            _negmetric_noneavg["target2"],
-            _negmetric_noneavg["res2"],
-        )
-    ],
-)
-def test_negprecision_noneavg(pred1, target1, res1, pred2, target2, res2):
-    class MetricWrapper(Metric):
-        def __init__(self, metric):
-            super().__init__()
-            self.metric = metric
-
-        def update(self, *args, **kwargs):
-            self.metric.update(*args, **kwargs)
-
-        def compute(self, *args, **kwargs):
-            return self.metric.compute(*args, **kwargs)
-
-    prec = MetricWrapper(Precision(average="none", num_classes=pred1.shape[1]))
-    result1 = prec(pred1, target1)
-    assert torch.allclose(res1, result1, equal_nan=True)
-    result2 = prec(pred2, target2)
-    assert torch.allclose(res2, result2, equal_nan=True)
-
-
-@pytest.mark.parametrize(
-    "pred1, target1, res1, pred2, target2, res2",
-    [
-        (
-            _negmetric_noneavg["pred1"],
-            _negmetric_noneavg["target1"],
-            _negmetric_noneavg["res1"],
-            _negmetric_noneavg["pred2"],
-            _negmetric_noneavg["target2"],
-            _negmetric_noneavg["res2"],
-        )
-    ],
-)
-def test_negrecall_noneavg(pred1, target1, res1, pred2, target2, res2):
-    class MetricWrapper(Metric):
-        def __init__(self, metric):
-            super().__init__()
-            self.metric = metric
-
-        def update(self, *args, **kwargs):
-            self.metric.update(*args, **kwargs)
-
-        def compute(self, *args, **kwargs):
-            return self.metric.compute(*args, **kwargs)
-
-    rec = MetricWrapper(Recall(average="none", num_classes=pred1.shape[1]))
-    result1 = rec(pred1, target1)
-    assert torch.allclose(res1, result1, equal_nan=True)
-    result2 = rec(pred2, target2)
-    assert torch.allclose(res2, result2, equal_nan=True)
+@pytest.mark.parametrize("metric_cls", [Precision, Recall])
+def test_noneavg(metric_cls, noneavg=_negmetric_noneavg):
+    prec = MetricWrapper(metric_cls(average="none", num_classes=noneavg["pred1"].shape[1]))
+    result1 = prec(noneavg["pred1"], noneavg["target1"])
+    assert torch.allclose(noneavg["res1"], result1, equal_nan=True)
+    result2 = prec(noneavg["pred2"], noneavg["target2"])
+    assert torch.allclose(noneavg["res2"], result2, equal_nan=True)

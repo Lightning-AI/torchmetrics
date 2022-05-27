@@ -20,6 +20,7 @@ import torch
 from sklearn.metrics import accuracy_score as sk_accuracy
 from torch import tensor
 
+from tests.classification import MetricWrapper
 from tests.classification.inputs import _input_binary, _input_binary_logits, _input_binary_prob
 from tests.classification.inputs import _input_multiclass as _input_mcls
 from tests.classification.inputs import _input_multiclass_logits as _input_mcls_logits
@@ -35,7 +36,7 @@ from tests.classification.inputs import _input_multilabel_prob as _input_mlb_pro
 from tests.classification.inputs import _negmetric_noneavg
 from tests.helpers import seed_all
 from tests.helpers.testers import NUM_BATCHES, NUM_CLASSES, THRESHOLD, MetricTester
-from torchmetrics import Accuracy, Metric
+from torchmetrics import Accuracy
 from torchmetrics.functional import accuracy
 from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import AverageMethod, DataType
@@ -441,33 +442,9 @@ def test_negative_ignore_index(preds, target, ignore_index, result):
         acc_score = accuracy(preds, target, num_classes=num_classes, ignore_index=ignore_index)
 
 
-@pytest.mark.parametrize(
-    "pred1, target1, res1, pred2, target2, res2",
-    [
-        (
-            _negmetric_noneavg["pred1"],
-            _negmetric_noneavg["target1"],
-            _negmetric_noneavg["res1"],
-            _negmetric_noneavg["pred2"],
-            _negmetric_noneavg["target2"],
-            _negmetric_noneavg["res2"],
-        )
-    ],
-)
-def test_negmetric_noneavg(pred1, target1, res1, pred2, target2, res2):
-    class MetricWrapper(Metric):
-        def __init__(self, metric):
-            super().__init__()
-            self.metric = metric
-
-        def update(self, *args, **kwargs):
-            self.metric.update(*args, **kwargs)
-
-        def compute(self, *args, **kwargs):
-            return self.metric.compute(*args, **kwargs)
-
-    acc = MetricWrapper(Accuracy(average="none", num_classes=pred1.shape[1]))
-    result1 = acc(pred1, target1)
-    assert torch.allclose(res1, result1, equal_nan=True)
-    result2 = acc(pred2, target2)
-    assert torch.allclose(res2, result2, equal_nan=True)
+def test_negmetric_noneavg(noneavg=_negmetric_noneavg):
+    acc = MetricWrapper(Accuracy(average="none", num_classes=noneavg["pred1"].shape[1]))
+    result1 = acc(noneavg["pred1"], noneavg["target1"])
+    assert torch.allclose(noneavg["res1"], result1, equal_nan=True)
+    result2 = acc(noneavg["pred2"], noneavg["target2"])
+    assert torch.allclose(noneavg["res2"], result2, equal_nan=True)
