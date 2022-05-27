@@ -169,6 +169,9 @@ class MetricCollection(ModuleDict):
                 # only update the first member
                 m0 = getattr(self, cg[0])
                 m0.update(*args, **m0._filter_kwargs(**kwargs))
+                for i in range(1, len(cg)):  # copy over the update count
+                    mi = getattr(self, cg[i])
+                    mi._update_count = m0._update_count
         else:  # the first update always do per metric to form compute groups
             for _, m in self.items(keep_base=True):
                 m_kwargs = m._filter_kwargs(**kwargs)

@@ -340,25 +340,35 @@ def test_check_compute_groups(metrics, expected, prefix, postfix):
     assert len(m.compute_groups) == len(m)
     assert m2.compute_groups == {}
 
-    preds = torch.randn(10, 3).softmax(dim=-1)
-    target = torch.randint(3, (10,))
-    m.update(preds, target)
-    m2.update(preds, target)
+    for _ in range(2):  # repeat to emulate effect of multiple epochs
+        preds = torch.randn(10, 3).softmax(dim=-1)
+        target = torch.randint(3, (10,))
+        m.update(preds, target)
+        m2.update(preds, target)
 
-    assert m.compute_groups == expected
-    assert m2.compute_groups == {}
+        for _, member in m.items():
+            assert member._update_called
 
-    preds = torch.randn(10, 3).softmax(dim=-1)
-    target = torch.randint(3, (10,))
-    # compute groups should kick in here
-    m.update(preds, target)
-    m2.update(preds, target)
+        assert m.compute_groups == expected
+        assert m2.compute_groups == {}
 
-    # compare results for correctness
-    res_cg = m.compute()
-    res_without_cg = m2.compute()
-    for key in res_cg.keys():
-        assert torch.allclose(res_cg[key], res_without_cg[key])
+        preds = torch.randn(10, 3).softmax(dim=-1)
+        target = torch.randint(3, (10,))
+        # compute groups should kick in here
+        m.update(preds, target)
+        m2.update(preds, target)
+
+        for _, member in m.items():
+            assert member._update_called
+
+        # compare results for correctness
+        res_cg = m.compute()
+        res_without_cg = m2.compute()
+        for key in res_cg.keys():
+            assert torch.allclose(res_cg[key], res_without_cg[key])
+
+        m.reset()
+        m2.reset()
 
 
 @pytest.mark.parametrize(
