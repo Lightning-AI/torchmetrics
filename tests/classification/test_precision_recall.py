@@ -30,6 +30,7 @@ from tests.classification.inputs import _input_multidim_multiclass_prob as _inpu
 from tests.classification.inputs import _input_multilabel as _input_mlb
 from tests.classification.inputs import _input_multilabel_logits as _input_mlb_logits
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
+from tests.classification.inputs import _negmetric_noneavg
 from tests.helpers import seed_all
 from tests.helpers.testers import NUM_BATCHES, NUM_CLASSES, THRESHOLD, MetricTester
 from torchmetrics import Metric, Precision, Recall
@@ -457,16 +458,6 @@ def test_same_input(metric_class, metric_functional, sk_fn, average):
 
     assert torch.allclose(class_res, torch.tensor(sk_res).float())
     assert torch.allclose(func_res, torch.tensor(sk_res).float())
-
-
-_negmetric_noneavg = {
-    "pred1": torch.tensor([[0.0, 1.0, 0.0], [1.0, 0.0, 0.0]]),
-    "target1": torch.tensor([0, 1]),
-    "res1": torch.tensor([0.0, 0.0, float("nan")]),
-    "pred2": torch.tensor([[0.0, 1.0, 0.0], [1.0, 0.0, 0.0]]),
-    "target2": torch.tensor([0, 2]),
-    "res2": torch.tensor([0.0, 0.0, 0.0]),
-}
 
 
 @pytest.mark.parametrize(

@@ -32,6 +32,7 @@ from tests.classification.inputs import _input_multilabel_logits as _input_mlb_l
 from tests.classification.inputs import _input_multilabel_multidim as _input_mlmd
 from tests.classification.inputs import _input_multilabel_multidim_prob as _input_mlmd_prob
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
+from tests.classification.inputs import _negmetric_noneavg
 from tests.helpers import seed_all
 from tests.helpers.testers import NUM_BATCHES, NUM_CLASSES, THRESHOLD, MetricTester
 from torchmetrics import Accuracy, Metric
@@ -157,15 +158,6 @@ _multidim_multiclass_logits_with_neg_tgt = Input(
     ignore_index=-1,
     result=torch.tensor(0.75),
 )
-
-_negmetric_noneavg = {
-    "pred1": torch.tensor([[0.0, 1.0, 0.0], [1.0, 0.0, 0.0]]),
-    "target1": torch.tensor([0, 1]),
-    "res1": torch.tensor([0.0, 0.0, float("nan")]),
-    "pred2": torch.tensor([[0.0, 1.0, 0.0], [1.0, 0.0, 0.0]]),
-    "target2": torch.tensor([0, 2]),
-    "res2": torch.tensor([0.0, 0.0, 0.0]),
-}
 
 
 # Replace with a proper sk_metric test once sklearn 0.24 hits :)
