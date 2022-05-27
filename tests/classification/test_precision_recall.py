@@ -458,67 +458,75 @@ def test_same_input(metric_class, metric_functional, sk_fn, average):
     assert torch.allclose(class_res, torch.tensor(sk_res).float())
     assert torch.allclose(func_res, torch.tensor(sk_res).float())
 
+
 _negmetric_noneavg = {
-    'pred1': torch.tensor([[0., 1., 0.], [1., 0., 0.]]),
-    'target1': torch.tensor([0, 1]),
-    'res1': torch.tensor([0., 0., torch.nan]),
-    'pred2': torch.tensor([[0., 1., 0.], [1., 0., 0.]]),
-    'target2': torch.tensor([0, 2]),
-    'res2': torch.tensor([0., 0., 0.])}
+    "pred1": torch.tensor([[0.0, 1.0, 0.0], [1.0, 0.0, 0.0]]),
+    "target1": torch.tensor([0, 1]),
+    "res1": torch.tensor([0.0, 0.0, torch.nan]),
+    "pred2": torch.tensor([[0.0, 1.0, 0.0], [1.0, 0.0, 0.0]]),
+    "target2": torch.tensor([0, 2]),
+    "res2": torch.tensor([0.0, 0.0, 0.0]),
+}
+
 
 @pytest.mark.parametrize(
-    'pred1, target1, res1, pred2, target2, res2',
-    [(
-        _negmetric_noneavg['pred1'],
-        _negmetric_noneavg['target1'],
-        _negmetric_noneavg['res1'],
-        _negmetric_noneavg['pred2'],
-        _negmetric_noneavg['target2'],
-        _negmetric_noneavg['res2'],        
-    )]
+    "pred1, target1, res1, pred2, target2, res2",
+    [
+        (
+            _negmetric_noneavg["pred1"],
+            _negmetric_noneavg["target1"],
+            _negmetric_noneavg["res1"],
+            _negmetric_noneavg["pred2"],
+            _negmetric_noneavg["target2"],
+            _negmetric_noneavg["res2"],
+        )
+    ],
 )
 def test_negprecision_noneavg(pred1, target1, res1, pred2, target2, res2):
     class MetricWrapper(Metric):
         def __init__(self, metric):
             super().__init__()
             self.metric = metric
-        
+
         def update(self, *args, **kwargs):
             self.metric.update(*args, **kwargs)
-        
+
         def compute(self, *args, **kwargs):
             return self.metric.compute(*args, **kwargs)
-    
-    prec = MetricWrapper(Precision(average='none', num_classes=pred1.shape[1]))
+
+    prec = MetricWrapper(Precision(average="none", num_classes=pred1.shape[1]))
     result1 = prec(pred1, target1)
     assert torch.allclose(res1, result1, equal_nan=True)
     result2 = prec(pred2, target2)
     assert torch.allclose(res2, result2, equal_nan=True)
 
+
 @pytest.mark.parametrize(
-    'pred1, target1, res1, pred2, target2, res2',
-    [(
-        _negmetric_noneavg['pred1'],
-        _negmetric_noneavg['target1'],
-        _negmetric_noneavg['res1'],
-        _negmetric_noneavg['pred2'],
-        _negmetric_noneavg['target2'],
-        _negmetric_noneavg['res2'],        
-    )]
+    "pred1, target1, res1, pred2, target2, res2",
+    [
+        (
+            _negmetric_noneavg["pred1"],
+            _negmetric_noneavg["target1"],
+            _negmetric_noneavg["res1"],
+            _negmetric_noneavg["pred2"],
+            _negmetric_noneavg["target2"],
+            _negmetric_noneavg["res2"],
+        )
+    ],
 )
 def test_negrecall_noneavg(pred1, target1, res1, pred2, target2, res2):
     class MetricWrapper(Metric):
         def __init__(self, metric):
             super().__init__()
             self.metric = metric
-        
+
         def update(self, *args, **kwargs):
             self.metric.update(*args, **kwargs)
-        
+
         def compute(self, *args, **kwargs):
             return self.metric.compute(*args, **kwargs)
-    
-    rec = MetricWrapper(Recall(average='none', num_classes=pred1.shape[1]))
+
+    rec = MetricWrapper(Recall(average="none", num_classes=pred1.shape[1]))
     result1 = rec(pred1, target1)
     assert torch.allclose(res1, result1, equal_nan=True)
     result2 = rec(pred2, target2)
