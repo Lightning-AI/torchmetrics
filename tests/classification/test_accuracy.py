@@ -34,7 +34,7 @@ from tests.classification.inputs import _input_multilabel_multidim_prob as _inpu
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
 from tests.helpers import seed_all
 from tests.helpers.testers import NUM_BATCHES, NUM_CLASSES, THRESHOLD, MetricTester
-from torchmetrics import Accuracy
+from torchmetrics import Accuracy, Metric
 from torchmetrics.functional import accuracy
 from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import AverageMethod, DataType
@@ -157,6 +157,14 @@ _multidim_multiclass_logits_with_neg_tgt = Input(
     ignore_index=-1,
     result=torch.tensor(0.75),
 )
+
+_negmetric_noneavg = {
+    'pred1': torch.tensor([[0., 1., 0.], [1., 0., 0.]]),
+    'target1': torch.tensor([0, 1]),
+    'res1': torch.tensor([0., 0., torch.nan]),
+    'pred2': torch.tensor([[0., 1., 0.], [1., 0., 0.]]),
+    'target2': torch.tensor([0, 2]),
+    'res2': torch.tensor([0., 0., 0.])}
 
 
 # Replace with a proper sk_metric test once sklearn 0.24 hits :)
@@ -438,3 +446,32 @@ def test_negative_ignore_index(preds, target, ignore_index, result):
     # Test functional
     with pytest.raises(ValueError, match="^[The `target` has to be a non-negative tensor.]"):
         acc_score = accuracy(preds, target, num_classes=num_classes, ignore_index=ignore_index)
+
+@pytest.mark.parametrize(
+    'pred1, target1, res1, pred2, target2, res2',
+    [(
+        _negmetric_noneavg['pred1'],
+        _negmetric_noneavg['target1'],
+        _negmetric_noneavg['res1'],
+        _negmetric_noneavg['pred2'],
+        _negmetric_noneavg['target2'],
+        _negmetric_noneavg['res2'],        
+    )]
+)
+def test_negmetric_noneavg(pred1, target1, res1, pred2, target2, res2):
+    class MetricWrapper(Metric):
+        def __init__(self, metric):
+            super().__init__()
+            self.metric = metric
+        
+        def update(self, *args, **kwargs):
+            self.metric.update(*args, **kwargs)
+        
+        def compute(self, *args, **kwargs):
+            return self.metric.compute(*args, **kwargs)
+    
+    acc = MetricWrapper(Accuracy(average='none', num_classes=pred1.shape[1]))
+    result1 = acc(pred1, target1)
+    assert torch.allclose(res1, result1, equal_nan=True)
+    result2 = acc(pred2, target2)
+    assert torch.allclose(res2, result2, equal_nan=True)
