@@ -51,7 +51,7 @@ def _specificity_compute(
         tensor(0.6250)
     """
 
-    numerator = tn
+    numerator = tn.clone()
     denominator = tn + fp
     if average == AverageMethod.NONE and mdmc_average != MDMCAverageMethod.SAMPLEWISE:
         # a class is not present if there exists no TPs, no FPs, and no FNs
