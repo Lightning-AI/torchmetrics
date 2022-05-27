@@ -20,6 +20,7 @@ import torch
 from sklearn.metrics import accuracy_score as sk_accuracy
 from torch import tensor
 
+from tests.classification import MetricWrapper
 from tests.classification.inputs import _input_binary, _input_binary_logits, _input_binary_prob
 from tests.classification.inputs import _input_multiclass as _input_mcls
 from tests.classification.inputs import _input_multiclass_logits as _input_mcls_logits
@@ -32,6 +33,7 @@ from tests.classification.inputs import _input_multilabel_logits as _input_mlb_l
 from tests.classification.inputs import _input_multilabel_multidim as _input_mlmd
 from tests.classification.inputs import _input_multilabel_multidim_prob as _input_mlmd_prob
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
+from tests.classification.inputs import _negmetric_noneavg
 from tests.helpers import seed_all
 from tests.helpers.testers import NUM_BATCHES, NUM_CLASSES, THRESHOLD, MetricTester
 from torchmetrics import Accuracy
@@ -438,3 +440,11 @@ def test_negative_ignore_index(preds, target, ignore_index, result):
     # Test functional
     with pytest.raises(ValueError, match="^[The `target` has to be a non-negative tensor.]"):
         acc_score = accuracy(preds, target, num_classes=num_classes, ignore_index=ignore_index)
+
+
+def test_negmetric_noneavg(noneavg=_negmetric_noneavg):
+    acc = MetricWrapper(Accuracy(average="none", num_classes=noneavg["pred1"].shape[1]))
+    result1 = acc(noneavg["pred1"], noneavg["target1"])
+    assert torch.allclose(noneavg["res1"], result1, equal_nan=True)
+    result2 = acc(noneavg["pred2"], noneavg["target2"])
+    assert torch.allclose(noneavg["res2"], result2, equal_nan=True)

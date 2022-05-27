@@ -20,6 +20,7 @@ import torch
 from sklearn.metrics import precision_score, recall_score
 from torch import Tensor, tensor
 
+from tests.classification import MetricWrapper
 from tests.classification.inputs import _input_binary, _input_binary_logits, _input_binary_prob
 from tests.classification.inputs import _input_multiclass as _input_mcls
 from tests.classification.inputs import _input_multiclass_logits as _input_mcls_logits
@@ -30,6 +31,7 @@ from tests.classification.inputs import _input_multidim_multiclass_prob as _inpu
 from tests.classification.inputs import _input_multilabel as _input_mlb
 from tests.classification.inputs import _input_multilabel_logits as _input_mlb_logits
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
+from tests.classification.inputs import _negmetric_noneavg
 from tests.helpers import seed_all
 from tests.helpers.testers import NUM_BATCHES, NUM_CLASSES, THRESHOLD, MetricTester
 from torchmetrics import Metric, Precision, Recall
@@ -457,3 +459,12 @@ def test_same_input(metric_class, metric_functional, sk_fn, average):
 
     assert torch.allclose(class_res, torch.tensor(sk_res).float())
     assert torch.allclose(func_res, torch.tensor(sk_res).float())
+
+
+@pytest.mark.parametrize("metric_cls", [Precision, Recall])
+def test_noneavg(metric_cls, noneavg=_negmetric_noneavg):
+    prec = MetricWrapper(metric_cls(average="none", num_classes=noneavg["pred1"].shape[1]))
+    result1 = prec(noneavg["pred1"], noneavg["target1"])
+    assert torch.allclose(noneavg["res1"], result1, equal_nan=True)
+    result2 = prec(noneavg["pred2"], noneavg["target2"])
+    assert torch.allclose(noneavg["res2"], result2, equal_nan=True)
