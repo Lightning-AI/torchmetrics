@@ -54,7 +54,7 @@ Additional requirements may apply case by case.
 API Evolution
 *************
 
-Torchmetrics development is driven by research and best practices in a rapidly developing field of AI and machine
+TorchMetrics development is driven by research and best practices in a rapidly developing field of AI and machine
 learning. Change is inevitable and when it happens, the Torchmetric team is committed to minimizing user friction and
 maximizing ease of transition from one version to the next. We take backward compatibility and reproducibility very
 seriously.

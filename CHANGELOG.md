@@ -17,16 +17,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `RetrievalRecallAtFixedPrecision` to retrieval package ([#951](https://github.com/PyTorchLightning/metrics/pull/951))
 
 
-- Added support for nested metric collections ([#1003](https://github.com/PyTorchLightning/metrics/pull/1003))
-
-
-- Added class property `full_state_update` that determines `forward` should call `update` once or twice ([#984](https://github.com/PyTorchLightning/metrics/pull/984))
+- Added class property `full_state_update` that determines `forward` should call `update` once or twice (
+    [#984](https://github.com/PyTorchLightning/metrics/pull/984),
+    [#1033](https://github.com/PyTorchLightning/metrics/pull/1033))
 
 
 - Added support for nested metric collections ([#1003](https://github.com/PyTorchLightning/metrics/pull/1003))
 
 
 - Added `Dice` to classification package ([#1021](https://github.com/PyTorchLightning/metrics/pull/1021))
+
 
 - Added support to segmentation type `segm` as IOU for mean average precision ([#822](https://github.com/PyTorchLightning/metrics/pull/822))
 
@@ -57,7 +57,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     [#1007](https://github.com/PyTorchLightning/metrics/pull/1007)
 )
 
-
 ### Fixed
 
 - Fixed non-empty state dict for a few metrics ([#1012](https://github.com/PyTorchLightning/metrics/pull/1012))
@@ -73,6 +72,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 - Fixed case where `KLDivergence` could output `Nan` ([#1030](https://github.com/PyTorchLightning/metrics/pull/1030))
+
+
+- Fixed deterministic for PyTorch<1.8 ([#1035](https://github.com/PyTorchLightning/metrics/pull/1035))
 
 
 - Fixed default value for `mdmc_average` in `Accuracy` ([#1036](https://github.com/PyTorchLightning/metrics/pull/1036))
