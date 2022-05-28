@@ -128,7 +128,7 @@ def binary_confusion_matrix(
 ) -> Tensor:
     if validate_args:
         _binary_confusion_matrix_arg_validation(threshold, ignore_index, normalize)
-        _binary_confusion_matrix_tensor_validation(preds, target, threshold, ignore_index)
+        _binary_confusion_matrix_tensor_validation(preds, target, ignore_index)
     preds, target = _binary_confusion_matrix_format(preds, target, threshold, ignore_index)
     confmat = _binary_confusion_matrix_update(preds, target)
     return _binary_confusion_matrix_compute(confmat, normalize)

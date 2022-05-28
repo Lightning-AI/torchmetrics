@@ -30,7 +30,6 @@ class BinaryConfusionMatrix(Metric):
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
-    confmat: Tensor
 
     def __init__(
         self,
