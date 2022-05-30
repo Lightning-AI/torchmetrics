@@ -151,7 +151,8 @@ def _multiclass_confusion_matrix_tensor_validation(preds, target, num_classes, i
             raise ValueError("If `preds` have one dimension more than `target`, `preds` should be a float tensor.")
         if preds.shape[1] != num_classes:
             raise ValueError(
-                "If `preds` have one dimension more than `target`, `preds.shape[1]` should be equal to number of classes"
+                "If `preds` have one dimension more than `target`, `preds.shape[1]` should be"
+                " equal to number of classes."
             )
         if preds.shape[2:] != target.shape[1:]:
             raise ValueError(
@@ -237,7 +238,7 @@ def _multilabel_confusion_matrix_arg_validation(
     num_labels: int, ignore_index: Optional[int] = None, normalize: Optional[str] = None
 ) -> None:
     if not isinstance(num_labels, int) and num_labels < 2:
-        raise ValueError(f"Expected argument `num_labels` to be an integer larger than 1, but got {num_classes}")
+        raise ValueError(f"Expected argument `num_labels` to be an integer larger than 1, but got {num_labels}")
     if ignore_index is not None and not isinstance(ignore_index, int):
         raise ValueError(f"Expected argument `ignore_index` to either be `None` or an integer, but got {ignore_index}")
     allowed_normalize = ("true", "pred", "all", "none", None)

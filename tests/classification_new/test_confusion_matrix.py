@@ -29,7 +29,7 @@ from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester
     ]
 )
 @pytest.mark.parametrize("normalize", ["true", "pred", "all", None])
-class TestConfusionMatrix(MetricTester)
+class TestConfusionMatrix(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
     def test_binary_confusion_matrix(self, preds, target, ddp, normalize):
         self.run_class_metric_test(
@@ -39,7 +39,7 @@ class TestConfusionMatrix(MetricTester)
             metric_class=BinaryConfusionMatrix,
             sk_metric=_sk_confusion_matrix_binary,
             metric_args={
-                "threshold": THRESHOLD
+                "threshold": THRESHOLD,
                 "normalize": normalize
             }
         )
@@ -51,7 +51,7 @@ class TestConfusionMatrix(MetricTester)
             metric_functional=binary_confusion_matrix,
             sk_metric=_sk_confusion_matrix_binary,
             metric_args={
-                "threshold": THRESHOLD
+                "threshold": THRESHOLD,
                 "normalize": normalize
             }
         )
