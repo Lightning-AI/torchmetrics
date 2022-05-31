@@ -27,11 +27,11 @@ jobs:
       - name: Create package
         run: |
           pip install --upgrade setuptools wheel
-          python setup.py sdist
+          python setup.py sdist bdist_wheel
 
       - name: Verify package
         run: |
-          pip install twine==3.2
+          pip install "twine==4.0.*"
           twine check dist/*
           python setup.py clean
 
@@ -52,7 +52,7 @@ jobs:
 
       - name: Prepare env
         run: |
-          pip install check-manifest "twine==3.2" setuptools wheel
+          pip install check-manifest "twine==4.0.*" setuptools wheel
 
       - name: Create package
         run: |
