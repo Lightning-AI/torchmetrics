@@ -28,7 +28,7 @@ def _binary_stat_scores_arg_validation(
     if not isinstance(threshold, float):
         raise ValueError(f"Expected argument `threshold` to be a float, but got {threshold}.")
     allowed_multidim_average = ("global", "samplewise")
-    if not isinstance(multidim_average, str) and multidim_average not in allowed_multidim_average:
+    if multidim_average not in allowed_multidim_average:
         raise ValueError(
             f"Expected argument `multidim_average` to be one of {allowed_multidim_average}, but got {multidim_average}"
         )
@@ -112,7 +112,6 @@ def _binary_stat_scores_compute(
         return torch.cat([tp, fp, tn, fn, tp + fp + tn + fn], dim=0)
     return torch.stack([tp, fp, tn, fn, tp + fp + tn + fn], dim=1)
 
-
 def binary_stat_scores(
     preds: Tensor,
     target: Tensor,
@@ -127,3 +126,85 @@ def binary_stat_scores(
     preds, target = _binary_stat_scores_format(preds, target, threshold, ignore_index)
     tp, fp, tn, fn = _binary_stat_scores_update(preds, target, multidim_average)
     return _binary_stat_scores_compute(tp, fp, tn, fn, multidim_average)
+
+
+def _multiclass_stat_scores_compute(
+    tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor, multidim_average: str = "global"
+) -> Tensor:
+    if multidim_average == "global":
+        return torch.cat([tp, fp, tn, fn, tp + fp + tn + fn], dim=0)
+    return torch.stack([tp, fp, tn, fn, tp + fp + tn + fn], dim=1)
+
+
+def _multiclass_stat_scores_arg_validation(
+    num_classes: int, 
+    top_k: int = 1, 
+    average: str = 'micro', 
+    multidim_average: str = "global", 
+    ignore_index: Optional[int] = None,
+) -> None:
+    if not isinstance(num_classes, int) and num_classes < 2:
+        raise ValueError(f"Expected argument `num_classes` to be an integer larger than 1, but got {num_classes}")
+    if not isinstance(top_k, int) and top_k < 1:
+        raise ValueError(f"Expected argument `top_k` to be an integer larger than or equal to 1, but got {top_k}")
+    allowed_average = ("micro", "macro", "weighted,", "weighted", "samples", "none", None)
+    if average not in allowed_average:
+        raise ValueError(
+            f"Expected argument `average` to be one of {allowed_average}, but got {average}"
+        )
+    allowed_multidim_average = ("global", "samplewise")
+    if multidim_average not in allowed_multidim_average:
+        raise ValueError(
+            f"Expected argument `multidim_average` to be one of {allowed_multidim_average}, but got {multidim_average}"
+        )
+    if ignore_index is not None and not isinstance(ignore_index, int):
+        raise ValueError(f"Expected argument `ignore_index` to either be `None` or an integer, but got {ignore_index}")
+
+
+def _multiclass_stat_scores_tensor_validation(
+    preds: Tensor, 
+    target: Tensor, 
+    num_classes: int,
+    top_k: int = 1,
+    multidim_average: str = 'global',
+    ignore_index: Optional[int] = None,
+) -> None:
+    pass
+
+
+def _multiclass_stat_scores_format():
+    pass
+
+
+def _multiclass_stat_scores_update():
+
+
+
+def multiclass_stat_scores(
+    preds: Tensor,
+    target: Tensor,
+    num_classes: int,
+    top_k: int = 1,
+    average: str = "micro",
+    multidim_average: str = "global",
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
+) -> Tensor:
+    if validate_args:
+        _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index)
+        _multiclass_stat_scores_tensor_validation(preds, target, num_classes, top_k, average, multidim_average, ignore_index)
+    preds, target = _multiclass_stat_scores_format(preds, target, ignore_index)
+    tp, fp, tn, fn = _multiclass_stat_scores_update(preds, target, multidim_average)
+    return _multiclass_stat_scores_compute(tp, fp, tn, fn, multidim_average)
+
+
+
+
+
+def _multilabel_stat_scores_compute(
+    tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor, multidim_average: str = "global"
+) -> Tensor:
+    if multidim_average == "global":
+        return torch.cat([tp, fp, tn, fn, tp + fp + tn + fn], dim=0)
+    return torch.stack([tp, fp, tn, fn, tp + fp + tn + fn], dim=1)
+
