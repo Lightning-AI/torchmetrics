@@ -88,7 +88,7 @@ pip install https://github.com/PyTorchLightning/metrics/archive/master.zip
 
 ______________________________________________________________________
 
-## What is Torchmetrics
+## What is TorchMetrics
 
 TorchMetrics is a collection of 80+ PyTorch metrics implementations and an easy-to-use API to create custom metrics. It offers:
 
@@ -228,12 +228,11 @@ from torchmetrics import Metric
 
 
 class MyAccuracy(Metric):
-    def __init__(self, dist_sync_on_step=False):
+    def __init__(self):
+        super().__init__()
         # call `self.add_state`for every internal state that is needed for the metrics computations
         # dist_reduce_fx indicates the function that should be used to reduce
         # state from multiple processes
-        super().__init__(dist_sync_on_step=dist_sync_on_step)
-
         self.add_state("correct", default=torch.tensor(0), dist_reduce_fx="sum")
         self.add_state("total", default=torch.tensor(0), dist_reduce_fx="sum")
 
@@ -311,11 +310,11 @@ We currently have implemented metrics within the following domains:
   and [many more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#text)
   )
 
-In total torchmetrics contains 80+ metrics!
+In total TorchMetrics contains 80+ metrics!
 
 ## Contribute!
 
-The lightning + torchmetric team is hard at work adding even more metrics.
+The lightning + TorchMetrics team is hard at work adding even more metrics.
 But we're looking for incredible contributors like you to submit new metrics
 and improve existing ones!
 
