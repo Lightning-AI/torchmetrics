@@ -41,7 +41,7 @@ def jit_distributed_available() -> bool:
 
 
 def is_overridden(method: str, instance: object, parent: object) -> bool:
-    """ Check if a method has been overridden by an instance compared to its parent class."
+    """Check if a method has been overridden by an instance compared to its parent class."""
     instance_attr = getattr(instance, method)
     parent_attr = getattr(parent, method)
     return instance_attr.__code__ != parent_attr.__code__
