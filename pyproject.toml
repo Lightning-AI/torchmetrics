@@ -12,6 +12,7 @@ exclude = "(.eggs|.git|.hg|.mypy_cache|.venv|_build|buck-out|build|dist)"
 [tool.isort]
 known_first_party = [
     "torchmetrics",
+    "integrations",
     "unittests",
     "integrations",
 ]

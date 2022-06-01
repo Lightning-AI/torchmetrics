@@ -37,7 +37,7 @@ jobs:
     # Timeout: https://stackoverflow.com/a/59076067/4521646
     timeout-minutes: 75
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - uses: ./.github/actions/caching
       with:
@@ -77,30 +77,33 @@ jobs:
         pip install -q "numpy==1.20.0"  # try to fix cocotools for PT 1.4 & 1.9
         # import of PILLOW_VERSION which they recently removed in v9.0 in favor of __version__
         pip install -q "Pillow<9.0"  # It messes with torchvision
-        pip install --requirement requirements/devel.txt --quiet
+        pip install -e . -r requirements/devel.txt -f https://download.pytorch.org/whl/cpu/torch_stable.html
         pip list
         python -c "from torch import __version__ as ver; assert '.'.join(ver.split('.')[:2]) == '${{ matrix.pytorch-version }}', ver"
 
     - name: Pull testing data from S3
+      working-directory: ./test
       run: |
         # wget is simpler but does not work on Windows
         python -c "from urllib.request import urlretrieve ; urlretrieve('https://pl-public-data.s3.amazonaws.com/metrics/data.zip', 'data.zip')"
         unzip -o data.zip
         ls -l _data/*
 
+    - name: Readme tests
+      run: phmdoctest README.md --outfile test/unittests/test_readme.py
+
     - name: Testing
+      working-directory: ./test
       env:
         TEST_DIRS: "${{ needs.check-diff.outputs.test-dirs }}"
-      run: |
-        phmdoctest README.md --outfile tests/test_readme.py
-        # NOTE: run coverage on tests does not propagate failure status for Win,
-        # see: https://github.com/nedbat/coveragepy/issues/1003
-        python -m pytest torchmetrics $TEST_DIRS --durations=50 --timeout=120 --junitxml=$PYTEST_ARTEFACT
+      # NOTE: run coverage on tests does not propagate failure status for Win,
+      # see: https://github.com/nedbat/coveragepy/issues/1003
+      run: python -m pytest $TEST_DIRS --durations=50 --timeout=120 --junitxml=$PYTEST_ARTEFACT
 
     - name: Upload pytest test results
       uses: actions/upload-artifact@master
       with:
         name: $PYTEST_ARTEFACT
-        path: $PYTEST_ARTEFACT
+        path: test/$PYTEST_ARTEFACT
       # Use always() to always run this step to publish test results when there are test failures
       if: failure()

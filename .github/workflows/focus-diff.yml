@@ -17,7 +17,7 @@ jobs:
     outputs:
       focus: ${{ steps.diff-domains.outputs.focus }}
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - uses: actions/setup-python@v2
       #with:
       #  python-version: 3.8
@@ -29,7 +29,7 @@ jobs:
       run: |
         echo $PR_NUMBER
         pip install fire requests
-        # python actions/assistant.py list_runtimes $PR_NUMBER
-        echo "::set-output name=focus::$(python .github/assistant.py changed_domains $PR_NUMBER 2>&1)"
+        # python actions/assistant.py list-runtimes $PR_NUMBER
+        echo "::set-output name=focus::$(python .github/assistant.py changed-domains $PR_NUMBER 2>&1)"
 
     - run: echo "${{ steps.diff-domains.outputs.focus }}"

@@ -113,50 +113,51 @@ def _prepare_extras(skip_files: Tuple[str] = ("devel.txt",)):
 # what happens and to non-engineers they won't know to look in init ...
 # the goal of the project is simplicity for researchers, don't want to add too much
 # engineer specific practices
-setup(
-    name="torchmetrics",
-    version=ABOUT.__version__,
-    description=ABOUT.__docs__,
-    author=ABOUT.__author__,
-    author_email=ABOUT.__author_email__,
-    url=ABOUT.__homepage__,
-    download_url=os.path.join(ABOUT.__homepage__, "archive", "master.zip"),
-    license=ABOUT.__license__,
-    packages=find_packages(where="src"),
-    package_dir={"": "src"},
-    long_description=LONG_DESCRIPTION,
-    long_description_content_type="text/markdown",
-    include_package_data=True,
-    zip_safe=False,
-    keywords=["deep learning", "machine learning", "pytorch", "metrics", "AI"],
-    python_requires=">=3.7",
-    setup_requires=[],
-    install_requires=BASE_REQUIREMENTS,
-    extras_require=_prepare_extras(),
-    project_urls={
-        "Bug Tracker": os.path.join(ABOUT.__homepage__, "issues"),
-        "Documentation": "https://torchmetrics.rtfd.io/en/latest/",
-        "Source Code": ABOUT.__homepage__,
-    },
-    classifiers=[
-        "Environment :: Console",
-        "Natural Language :: English",
-        # How mature is this project? Common values are
-        #   3 - Alpha, 4 - Beta, 5 - Production/Stable
-        "Development Status :: 5 - Production/Stable",
-        # Indicate who your project is intended for
-        "Intended Audience :: Developers",
-        "Topic :: Scientific/Engineering :: Artificial Intelligence",
-        "Topic :: Scientific/Engineering :: Image Recognition",
-        "Topic :: Scientific/Engineering :: Information Analysis",
-        # Pick your license as you wish
-        "License :: OSI Approved :: Apache Software License",
-        "Operating System :: OS Independent",
-        # Specify the Python versions you support here. In particular, ensure
-        # that you indicate whether you support Python 2, Python 3 or both.
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-    ],
-)
+if __name__ == "__main__":
+    setup(
+        name="torchmetrics",
+        version=ABOUT.__version__,
+        description=ABOUT.__docs__,
+        author=ABOUT.__author__,
+        author_email=ABOUT.__author_email__,
+        url=ABOUT.__homepage__,
+        download_url=os.path.join(ABOUT.__homepage__, "archive", "master.zip"),
+        license=ABOUT.__license__,
+        packages=find_packages(where="src"),
+        package_dir={"": "src"},
+        long_description=LONG_DESCRIPTION,
+        long_description_content_type="text/markdown",
+        include_package_data=True,
+        zip_safe=False,
+        keywords=["deep learning", "machine learning", "pytorch", "metrics", "AI"],
+        python_requires=">=3.7",
+        setup_requires=[],
+        install_requires=BASE_REQUIREMENTS,
+        extras_require=_prepare_extras(),
+        project_urls={
+            "Bug Tracker": os.path.join(ABOUT.__homepage__, "issues"),
+            "Documentation": "https://torchmetrics.rtfd.io/en/latest/",
+            "Source Code": ABOUT.__homepage__,
+        },
+        classifiers=[
+            "Environment :: Console",
+            "Natural Language :: English",
+            # How mature is this project? Common values are
+            #   3 - Alpha, 4 - Beta, 5 - Production/Stable
+            "Development Status :: 5 - Production/Stable",
+            # Indicate who your project is intended for
+            "Intended Audience :: Developers",
+            "Topic :: Scientific/Engineering :: Artificial Intelligence",
+            "Topic :: Scientific/Engineering :: Image Recognition",
+            "Topic :: Scientific/Engineering :: Information Analysis",
+            # Pick your license as you wish
+            "License :: OSI Approved :: Apache Software License",
+            "Operating System :: OS Independent",
+            # Specify the Python versions you support here. In particular, ensure
+            # that you indicate whether you support Python 2, Python 3 or both.
+            "Programming Language :: Python :: 3",
+            "Programming Language :: Python :: 3.7",
+            "Programming Language :: Python :: 3.8",
+            "Programming Language :: Python :: 3.9",
+        ],
+    )

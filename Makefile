@@ -23,11 +23,13 @@ test: clean env data
 	python -m coverage report
 
 docs: clean
+	pip install -e .
 	pip install --quiet -r requirements/docs.txt
 	python -m sphinx -b html -W --keep-going docs/source docs/build
 
 env:
-	pip install -r requirements.txt
+	pip install -e .[all]
+	python ./requirements/adjust-versions.py requirements/image.txt
 	pip install -r requirements/devel.txt
 
 data:

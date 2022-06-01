@@ -21,6 +21,7 @@ __all__ = [
     "__author_email__",
     "__copyright__",
     "__docs__",
+    "__docs_url__",
     "__homepage__",
     "__license__",
     "__version__",

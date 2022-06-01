@@ -42,9 +42,7 @@ exclude Makefile
 prune .devcontainer
 prune .git
 prune .github
-prune .circleci
 prune examples*
-prune notebook*
 prune temp*
 prune test*
 prune SandBox*
