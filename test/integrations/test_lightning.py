@@ -19,8 +19,8 @@ from torch import tensor
 from torch.utils.data import DataLoader
 
 from integrations.lightning.boring_model import BoringModel, RandomDataset
-from tests.helpers.utilities import no_warning_call
 from torchmetrics import Accuracy, AveragePrecision, MetricCollection, SumMetric
+from unittests.helpers.utilities import no_warning_call
 
 
 class DiffMetric(SumMetric):
