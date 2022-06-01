@@ -423,3 +423,18 @@ def test_warning_on_not_set_full_state_update(metric_class):
         match="Torchmetrics v0.9 introduced a new argument class property called.*",
     ):
         UnsetProperty()
+
+
+@pytest.mark.parametrize("metric_class", [DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum])
+def test_no_warning_on_custom_forward(metric_class):
+    """If metric is using custom forward, full_state_update is irrelevant."""
+
+    class UnsetProperty(metric_class):
+        full_state_update = None
+
+        def forward(self, *args, **kwargs):
+            self.update(*args, **kwargs)
+
+    with pytest.warns(None) as record:
+        UnsetProperty()
+    assert len(record) == 0

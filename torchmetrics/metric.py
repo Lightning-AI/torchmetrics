@@ -40,6 +40,13 @@ def jit_distributed_available() -> bool:
     return torch.distributed.is_available() and torch.distributed.is_initialized()
 
 
+def is_overridden(method: str, instance: object, parent: object) -> bool:
+    """ Check if a method has been overridden by an instance compared to its parent class."
+    instance_attr = getattr(instance, method)
+    parent_attr = getattr(parent, method)
+    return instance_attr.__code__ != parent_attr.__code__
+
+
 class Metric(Module, ABC):
     """Base class for all metrics present in the Metrics API.
 
@@ -127,7 +134,7 @@ class Metric(Module, ABC):
         self._is_synced = False
         self._cache: Optional[Dict[str, Union[List[Tensor], Tensor]]] = None
 
-        if self.full_state_update is None:
+        if self.full_state_update is None and not is_overridden("forward", self, Metric):
             rank_zero_warn(
                 f"""Torchmetrics v0.9 introduced a new argument class property called `full_state_update` that has
                 not been set for this class ({self.__class__.__name__}). The property determines if `update` by
