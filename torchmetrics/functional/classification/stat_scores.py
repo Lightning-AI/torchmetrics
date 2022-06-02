@@ -130,14 +130,6 @@ def binary_stat_scores(
     return _binary_stat_scores_compute(tp, fp, tn, fn, multidim_average)
 
 
-def _multiclass_stat_scores_compute(
-    tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor, multidim_average: str = "global"
-) -> Tensor:
-    if multidim_average == "global":
-        return torch.cat([tp, fp, tn, fn, tp + fp + tn + fn], dim=0)
-    return torch.stack([tp, fp, tn, fn, tp + fp + tn + fn], dim=1)
-
-
 def _multiclass_stat_scores_arg_validation(
     num_classes: int,
     top_k: int = 1,
@@ -182,6 +174,14 @@ def _multiclass_stat_scores_update():
     pass
 
 
+def _multiclass_stat_scores_compute(
+    tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor, multidim_average: str = "global"
+) -> Tensor:
+    if multidim_average == "global":
+        return torch.cat([tp, fp, tn, fn, tp + fp + tn + fn], dim=0)
+    return torch.stack([tp, fp, tn, fn, tp + fp + tn + fn], dim=1)
+
+
 def multiclass_stat_scores(
     preds: Tensor,
     target: Tensor,
@@ -199,7 +199,17 @@ def multiclass_stat_scores(
     tp, fp, tn, fn = _multiclass_stat_scores_update(preds, target, multidim_average)
     return _multiclass_stat_scores_compute(tp, fp, tn, fn, multidim_average)
 
+def _multilabel_stat_scores_arg_validation():
+    pass
 
+def _multilabel_stat_scores_tensor_validation():
+    pass
+
+def _multilabel_stat_scores_format():
+    pass
+
+def _multilabel_stat_scores_update():
+    pass
 
 def _multilabel_stat_scores_compute(
     tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor, multidim_average: str = "global"
@@ -209,7 +219,12 @@ def _multilabel_stat_scores_compute(
     return torch.stack([tp, fp, tn, fn, tp + fp + tn + fn], dim=1)
 
 def multilabel_stat_scores():
-    pass
+    if validate_args:
+        _multilabel_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index)
+        _multilabel_stat_scores_tensor_validation(preds, target, num_classes, top_k, average, multidim_average, ignore_index)
+    preds, target = _multilabel_stat_scores_format(preds, target, ignore_index)
+    tp, fp, tn, fn = _multilabel_stat_scores_update(preds, target, multidim_average)
+    return _multilabel_stat_scores_compute(tp, fp, tn, fn, multidim_average)
 
 # -------------------------- Old stuff --------------------------
 

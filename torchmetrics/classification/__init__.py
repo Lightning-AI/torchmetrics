@@ -20,7 +20,11 @@ from torchmetrics.classification.binned_precision_recall import BinnedPrecisionR
 from torchmetrics.classification.binned_precision_recall import BinnedRecallAtFixedPrecision  # noqa: F401
 from torchmetrics.classification.calibration_error import CalibrationError  # noqa: F401
 from torchmetrics.classification.cohen_kappa import CohenKappa  # noqa: F401
-from torchmetrics.classification.confusion_matrix import ConfusionMatrix  # noqa: F401
+from torchmetrics.classification.confusion_matrix import (  # noqa: F401
+    ConfusionMatrix,
+    BinaryConfusionMatrix,
+    MulticlassConfusionMatrix,
+    MultilabelConfusionMatrix
 from torchmetrics.classification.dice import Dice  # noqa: F401
 from torchmetrics.classification.f_beta import F1Score, FBetaScore  # noqa: F401
 from torchmetrics.classification.hamming import HammingDistance  # noqa: F401
@@ -37,4 +41,9 @@ from torchmetrics.classification.ranking import (  # noqa: F401
 )
 from torchmetrics.classification.roc import ROC  # noqa: F401
 from torchmetrics.classification.specificity import Specificity  # noqa: F401
-from torchmetrics.classification.stat_scores import StatScores  # noqa: F401
+from torchmetrics.classification.stat_scores import (  # noqa: F401
+    StatScores,
+    BinaryStatScores,
+    MulticlassStatScores,
+    MultilabelStatScores,
+)

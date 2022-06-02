@@ -16,7 +16,25 @@ from typing import Any, Dict, Optional
 import torch
 from torch import Tensor
 
-from torchmetrics.functional.classification.confusion_matrix import _confusion_matrix_compute, _confusion_matrix_update
+from torchmetrics.functional.classification.confusion_matrix import (
+    _confusion_matrix_compute, 
+    _confusion_matrix_update,
+    _binary_confusion_matrix_arg_validation,
+    _binary_confusion_matrix_compute,
+    _binary_confusion_matrix_format,
+    _binary_confusion_matrix_tensor_validation,
+    _binary_confusion_matrix_update,
+    _multiclass_confusion_matrix_arg_validation,
+    _multiclass_confusion_matrix_compute,
+    _multiclass_confusion_matrix_format,
+    _multiclass_confusion_matrix_tensor_validation,
+    _multiclass_confusion_matrix_update,
+    _multilabel_confusion_matrix_arg_validation,
+    _multilabel_confusion_matrix_compute,
+    _multilabel_confusion_matrix_format,
+    _multilabel_confusion_matrix_tensor_validation,
+    _multilabel_confusion_matrix_update
+)
 from torchmetrics.metric import Metric
 
 
@@ -54,7 +72,7 @@ class BinaryConfusionMatrix(Metric):
         return _binary_confusion_matrix_compute(self.confmat, self.normalize)
 
 
-class MultiClassConfusionMatrix(Metric):
+class MulticlassConfusionMatrix(Metric):
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
@@ -88,7 +106,7 @@ class MultiClassConfusionMatrix(Metric):
         return _multiclass_confusion_matrix_compute(self.confmat, self.normalize)
 
 
-class MultiLabelConfusionMatrix(Metric):
+class MultilabelConfusionMatrix(Metric):
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
