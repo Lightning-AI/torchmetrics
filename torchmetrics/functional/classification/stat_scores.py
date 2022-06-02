@@ -16,8 +16,9 @@ from typing import List, Optional, Tuple, Union
 import torch
 from torch import Tensor, tensor
 
-from torchmetrics.utilities.checks import _input_format_classification
+from torchmetrics.utilities.checks import _input_format_classification, _check_same_shape
 from torchmetrics.utilities.enums import AverageMethod, DataType, MDMCAverageMethod
+from torchmetrics.utilities.prints import rank_zero_warn
 
 
 def _binary_stat_scores_arg_validation(
@@ -178,7 +179,7 @@ def _multiclass_stat_scores_format():
 
 
 def _multiclass_stat_scores_update():
-
+    pass
 
 
 def multiclass_stat_scores(
@@ -200,14 +201,15 @@ def multiclass_stat_scores(
 
 
 
-
-
 def _multilabel_stat_scores_compute(
     tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor, multidim_average: str = "global"
 ) -> Tensor:
     if multidim_average == "global":
         return torch.cat([tp, fp, tn, fn, tp + fp + tn + fn], dim=0)
     return torch.stack([tp, fp, tn, fn, tp + fp + tn + fn], dim=1)
+
+def multilabel_stat_scores():
+    pass
 
 # -------------------------- Old stuff --------------------------
 
@@ -608,6 +610,13 @@ def stat_scores(
         tensor([2, 2, 6, 2, 4])
 
     """
+    rank_zero_warn(
+        "`torchmetrics.functional.stat_scores` have been deprecated in v0.10 in favor of"
+        "`torchmetrics.functional.binary_stat_scores`, `torchmetrics.functional.multiclass_stat_scores`"
+        "and `torchmetrics.functional.multilabel_stat_scores`. Please upgrade to the version that matches"
+        "your problem (API may have changed). This function will be removed v0.11.",
+        DeprecationWarning
+    )
     if reduce not in ["micro", "macro", "samples"]:
         raise ValueError(f"The `reduce` {reduce} is not valid.")
 

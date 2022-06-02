@@ -36,6 +36,47 @@ from torchmetrics.functional.classification.confusion_matrix import confusion_ma
 seed_all(42)
 
 
+@pytest.mark.parametrize(
+    "preds, target",
+    [
+        (_input_binary_int.preds, _input_binary_int.target),
+        (_input_binary_prob.preds, _input_binary_prob.target),
+        (_input_binary_logit.preds, _input_binary_logit.target),
+        (_input_binary_int_multidim.preds, _input_binary_int_multidim.target),
+        (_input_binary_prob_multidim.preds, _input_binary_prob_multidim.target),
+        (_input_binary_logit_multidim.preds, _input_binary_logit_multidim.target),
+    ]
+)
+@pytest.mark.parametrize("normalize", ["true", "pred", "all", None])
+class TestBinaryConfusionMatrix(MetricTester):
+    @pytest.mark.parametrize("ddp", [True, False])
+    def test_binary_confusion_matrix(self, preds, target, ddp, normalize):
+        self.run_class_metric_test(
+            ddp=ddp,
+            preds=preds,
+            target=target,
+            metric_class=BinaryConfusionMatrix,
+            sk_metric=_sk_confusion_matrix_binary,
+            metric_args={
+                "threshold": THRESHOLD,
+                "normalize": normalize
+            }
+        )
+
+    def test_confusion_matrix_functional(self, preds, target, ddp, normalize):
+        self.run_functional_metric_test(
+            preds=preds,
+            target=target,
+            metric_functional=binary_confusion_matrix,
+            sk_metric=_sk_confusion_matrix_binary,
+            metric_args={
+                "threshold": THRESHOLD,
+                "normalize": normalize
+            }
+        )
+
+# -------------------------- Old stuff --------------------------
+
 def _sk_cm_binary_prob(preds, target, normalize=None):
     sk_preds = (preds.view(-1).numpy() >= THRESHOLD).astype(np.uint8)
     sk_target = target.view(-1).numpy()

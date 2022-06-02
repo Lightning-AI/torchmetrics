@@ -16,8 +16,8 @@ from typing import Optional
 import torch
 from torch import Tensor
 
-from torchmetrics.utilities import rank_zero_warn
-from torchmetrics.utilities.checks import _input_format_classification
+from torchmetrics.utilities.prints import rank_zero_warn
+from torchmetrics.utilities.checks import _input_format_classification, _check_same_shape
 from torchmetrics.utilities.data import _bincount
 from torchmetrics.utilities.enums import DataType
 
@@ -464,5 +464,12 @@ def confusion_matrix(
                 [[0, 1], [0, 1]]])
 
     """
+    rank_zero_warn(
+        "`torchmetrics.functional.confusion_matrix` have been deprecated in v0.10 in favor of"
+        "`torchmetrics.functional.binary_confusion_matrix`, `torchmetrics.functional.multiclass_confusion_matrix`"
+        "and `torchmetrics.functional.multilabel_confusion_matrix`. Please upgrade to the version that matches"
+        "your problem (API may have changed). This function will be removed v0.11.",
+        DeprecationWarning
+    )
     confmat = _confusion_matrix_update(preds, target, num_classes, threshold, multilabel)
     return _confusion_matrix_compute(confmat, normalize)
