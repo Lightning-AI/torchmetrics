@@ -20,6 +20,111 @@ from torchmetrics.functional.classification.confusion_matrix import _confusion_m
 from torchmetrics.metric import Metric
 
 
+class BinaryConfusionMatrix(Metric):
+    is_differentiable: bool = False
+    higher_is_better: Optional[bool] = None
+    full_state_update: bool = False
+
+    def __init__(
+        self,
+        threshold: float = 0.5,
+        ignore_index: Optional[int] = None,
+        normalize: Optional[str] = None,
+        validate_args: bool = True,
+        **kwargs: Dict[str, Any],
+    ) -> None:
+        super().__init__(**kwargs)
+        if validate_args:
+            _binary_confusion_matrix_arg_validation(threshold, ignore_index, normalize)
+        self.threshold = threshold
+        self.ignore_index = ignore_index
+        self.normalize = normalize
+        self.validate_args = validate_args
+
+        self.add_state("confmat", torch.zeros(2, 2), dist_reduce_fx="sum")
+
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+        if self.validate_args:
+            _binary_confusion_matrix_tensor_validation(preds, target, self.ignore_index)
+        preds, target = _binary_confusion_matrix_format(preds, target, self.threshold, self.ignore_index)
+        confmat = _binary_confusion_matrix_update(preds, target)
+        self.confmat += confmat
+
+    def compute(self) -> Tensor:
+        return _binary_confusion_matrix_compute(self.confmat, self.normalize)
+
+
+class MultiClassConfusionMatrix(Metric):
+    is_differentiable: bool = False
+    higher_is_better: Optional[bool] = None
+    full_state_update: bool = False
+
+    def __init__(
+        self,
+        num_classes: int,
+        ignore_index: Optional[int] = None,
+        normalize: Optional[str] = None,
+        validate_args: bool = True,
+        **kwargs,
+    ) -> None:
+        super().__init__(**kwargs)
+        if validate_args:
+            _multiclass_confusion_matrix_arg_validation(num_classes, ignore_index, normalize)
+        self.num_classes = num_classes
+        self.ignore_index = ignore_index
+        self.normalize = normalize
+        self.validate_args = validate_args
+
+        self.add_state("confmat", torch.zeros(num_classes, num_classes), dist_reduce_fx="sum")
+
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+        if self.validate_args:
+            _multiclass_confusion_matrix_tensor_validation(preds, target, self.num_classes, self.ignore_index)
+        preds, target = _multiclass_confusion_matrix_format(preds, target, self.ignore_index)
+        confmat = _multiclass_confusion_matrix_update(preds, target, self.num_classes)
+        self.confmat += confmat
+
+    def compute(self) -> Tensor:
+        return _multiclass_confusion_matrix_compute(self.confmat, self.normalize)
+
+
+class MultiLabelConfusionMatrix(Metric):
+    is_differentiable: bool = False
+    higher_is_better: Optional[bool] = None
+    full_state_update: bool = False
+
+    def __init__(
+        self,
+        num_labels: int,
+        ignore_index: Optional[int] = None,
+        normalize: Optional[str] = None,
+        validate_args: bool = True,
+        **kwargs,
+    ) -> None:
+        super().__init__(**kwargs)
+        if validate_args:
+            _multilabel_confusion_matrix_arg_validation(num_labels, ignore_index, normalize)
+        self.num_labels = num_labels
+        self.ignore_index = ignore_index
+        self.normalize = normalize
+        self.validate_args = validate_args
+
+        self.add_state("confmat", torch.zeros(num_labels, 2, 2), dist_reduce_fx="sum")
+
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+        if self.validate_args:
+            _multilabel_confusion_matrix_tensor_validation(preds, target, self.num_labels, self.ignore_index)
+        preds, target = _multilabel_confusion_matrix_format(preds, target, self.ignore_index)
+        confmat = _multilabel_confusion_matrix_update(preds, target, self.num_labels)
+        self.confmat += confmat
+
+    def compute(self) -> Tensor:
+        return _multilabel_confusion_matrix_compute(self.confmat, self.normalize)
+
+
+# -------------------------- Old stuff --------------------------
+
+
 class ConfusionMatrix(Metric):
     r"""Computes the `confusion matrix`_.
 
