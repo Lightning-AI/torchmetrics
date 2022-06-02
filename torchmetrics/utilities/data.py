@@ -241,7 +241,7 @@ def _squeeze_if_scalar(data: Any) -> Any:
     return apply_to_collection(data, Tensor, _squeeze_scalar_element_tensor)
 
 
-def _bincount(x: Tensor, minlength: Optional[int] = None) -> Tensor:
+def _bincount(x: Tensor, minlength: int) -> Tensor:
     """``torch.bincount`` currently does not support deterministic mode on GPU.
 
     This implementation fallback to a for-loop counting occurrences in that case.
@@ -253,15 +253,13 @@ def _bincount(x: Tensor, minlength: Optional[int] = None) -> Tensor:
     Returns:
         Number of occurrences for each unique element in x
     """
-    if x.is_cuda and deterministic():
-        if minlength is None:
-            minlength = len(torch.unique(x))
+    if deterministic():
         output = torch.zeros(minlength, device=x.device, dtype=torch.long)
         for i in range(minlength):
             output[i] = (x == i).sum()
         return output
-    else:
-        return torch.bincount(x, minlength=minlength)
+    z = torch.zeros(minlength, device=x.device, dtype=x.dtype)
+    return z.index_add_(0, x, torch.ones_like(x))
 
 
 def allclose(tensor1: Tensor, tensor2: Tensor) -> bool:

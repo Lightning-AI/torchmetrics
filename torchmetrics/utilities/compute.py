@@ -38,21 +38,3 @@ def _safe_xlogy(x: Tensor, y: Tensor) -> Tensor:
     res = x * torch.log(y)
     res[x == 0] = 0.0
     return res
-
-
-def _bincount(x: Tensor, minlength: int) -> Tensor:
-    """``torch.bincount`` is currently slow on GPU and non-deterministic. This function instead relies on
-    broadcasting and summation which is fast but uses more memory.
-
-    Args:
-        x: tensor to count
-        minlength: minimum length to count
-
-    Returns:
-        Number of occurrences for each unique element in x
-    """
-    if x.is_cuda:
-        labels = torch.arange(minlength, dtype=x.dtype, device=x.device).unsqueeze(1)
-        return (x.unsqueeze(0) == labels).sum(dim=-1)
-    else:
-        return torch.bincount(x, minlength=minlength)
