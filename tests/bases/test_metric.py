@@ -25,6 +25,7 @@ from torch.nn import Module
 
 from tests.helpers import seed_all
 from tests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum
+from tests.helpers.utilities import no_warning_call
 from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
 
 seed_all(42)
@@ -435,6 +436,8 @@ def test_no_warning_on_custom_forward(metric_class):
         def forward(self, *args, **kwargs):
             self.update(*args, **kwargs)
 
-    with pytest.warns(None) as record:
+    with no_warning_call(
+        UserWarning,
+        match="Torchmetrics v0.9 introduced a new argument class property called.*",
+    ):
         UnsetProperty()
-    assert len(record) == 0

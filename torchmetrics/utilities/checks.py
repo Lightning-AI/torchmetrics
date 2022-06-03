@@ -723,3 +723,28 @@ def check_forward_full_state_property(
 
     faster = (mean[1, -1] < mean[0, -1]).item()  # if faster on average, we recommend upgrading
     print(f"Recommended setting `full_state_update={not faster}`")
+
+
+def is_overridden(method: str, instance: object, parent: object) -> bool:
+    """Check if a method has been overridden by an instance compared to its parent class."""
+    instance_attr = getattr(instance, method_name, None)
+    if instance_attr is None:
+        return False
+    # `functools.wraps()` support
+    if hasattr(instance_attr, "__wrapped__"):
+        instance_attr = instance_attr.__wrapped__
+    # `Mock(wraps=...)` support
+    if isinstance(instance_attr, Mock):
+        # access the wrapped function
+        instance_attr = instance_attr._mock_wraps
+    # `partial` support
+    elif isinstance(instance_attr, partial):
+        instance_attr = instance_attr.func
+    if instance_attr is None:
+        return False
+
+    parent_attr = getattr(parent, method_name, None)
+    if parent_attr is None:
+        raise ValueError("The parent should define the method")
+
+    return instance_attr.__code__ != parent_attr.__code__

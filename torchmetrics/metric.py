@@ -32,19 +32,13 @@ from torchmetrics.utilities.data import (
     dim_zero_min,
     dim_zero_sum,
 )
+from torchmetrics.utilities.checks import is_overridden
 from torchmetrics.utilities.distributed import gather_all_tensors
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
 
 
 def jit_distributed_available() -> bool:
     return torch.distributed.is_available() and torch.distributed.is_initialized()
-
-
-def is_overridden(method: str, instance: object, parent: object) -> bool:
-    """Check if a method has been overridden by an instance compared to its parent class."""
-    instance_attr = getattr(instance, method)
-    parent_attr = getattr(parent, method)
-    return instance_attr.__code__ != parent_attr.__code__
 
 
 class Metric(Module, ABC):
