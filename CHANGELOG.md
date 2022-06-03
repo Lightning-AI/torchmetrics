@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
--
+- Added specific runtime error when metric object is on wrong device (#1056(https://github.com/PyTorchLightning/metrics/pull/1056))
 
 -
 

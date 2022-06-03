@@ -13,7 +13,6 @@
 # limitations under the License.
 import functools
 import inspect
-import traceback
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from copy import deepcopy
@@ -382,13 +381,12 @@ class Metric(Module, ABC):
                     update(*args, **kwargs)
                 except RuntimeError as err:
                     if "Expected all tensors to be on" in str(err):
-                        traceback.print_exc()
                         raise RuntimeError(
                             f"{str(err)}. \n"
                             "This could be due to the metric class not being on the same device as input.\n"
                             "Instead of `metric=Metric()` try to do `metric=Metric().to(device)` where"
                             " device corresponds to the device of the input."
-                        )
+                        ) from err
                     raise err
 
             if self.compute_on_cpu:
