@@ -23,6 +23,7 @@ from torch import Tensor
 from torch.nn import Module
 
 from torchmetrics.utilities import apply_to_collection, rank_zero_warn
+from torchmetrics.utilities.checks import is_overridden
 from torchmetrics.utilities.data import (
     _flatten,
     _squeeze_if_scalar,
@@ -32,7 +33,6 @@ from torchmetrics.utilities.data import (
     dim_zero_min,
     dim_zero_sum,
 )
-from torchmetrics.utilities.checks import is_overridden
 from torchmetrics.utilities.distributed import gather_all_tensors
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
 

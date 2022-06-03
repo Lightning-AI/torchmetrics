@@ -17,6 +17,7 @@ from typing import Optional, Type
 
 import pytest
 
+
 @contextmanager
 def no_warning_call(expected_warning: Type[Warning] = UserWarning, match: Optional[str] = None):
     with pytest.warns(None) as record:
