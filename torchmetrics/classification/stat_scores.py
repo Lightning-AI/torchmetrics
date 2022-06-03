@@ -17,8 +17,6 @@ import torch
 from torch import Tensor
 
 from torchmetrics.functional.classification.stat_scores import (
-    _stat_scores_compute, 
-    _stat_scores_update,
     _binary_stat_scores_arg_validation,
     _binary_stat_scores_compute,
     _binary_stat_scores_format,
@@ -33,7 +31,9 @@ from torchmetrics.functional.classification.stat_scores import (
     _multilabel_stat_scores_compute,
     _multilabel_stat_scores_format,
     _multilabel_stat_scores_tensor_validation,
-    _multilabel_stat_scores_update
+    _multilabel_stat_scores_update,
+    _stat_scores_compute,
+    _stat_scores_update,
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
@@ -61,10 +61,10 @@ class BinaryStatScores(Metric):
         self.validate_args = validate_args
 
         if self.multidim_average == "samplewise":
-            default = lambda : [ ]
+            default = lambda: []
             dist_reduce_fx = "cat"
         else:
-            default = lambda : torch.zeros(1)
+            default = lambda: torch.zeros(1)
             dist_reduce_fx = "sum"
         self.add_state("tp", default(), dist_reduce_fx=dist_reduce_fx)
         self.add_state("fp", default(), dist_reduce_fx=dist_reduce_fx)
@@ -117,13 +117,13 @@ class MulticlassStatScores(Metric):
         self.validate_args = validate_args
 
         if self.multidim_average == "samplewise" or self.average == "samples":
-            default = lambda : [ ]
+            default = lambda: []
             dist_reduce_fx = "cat"
         elif self.average != "micro":
-            default = lambda : torch.zeros(num_classes)
+            default = lambda: torch.zeros(num_classes)
             dist_reduce_fx = "sum"
         else:
-            default = lambda : torch.zeros(1)
+            default = lambda: torch.zeros(1)
             dist_reduce_fx = "sum"
         self.add_state("tp", default(), dist_reduce_fx=dist_reduce_fx)
         self.add_state("fp", default(), dist_reduce_fx=dist_reduce_fx)
@@ -176,13 +176,13 @@ class MultilabelStatScores(Metric):
         self.validate_args = validate_args
 
         if self.multidim_average == "samplewise" or self.average == "samples":
-            default = lambda : [ ]
+            default = lambda: []
             dist_reduce_fx = "cat"
         elif self.average != "micro":
-            default = lambda : torch.zeros(num_labels)
+            default = lambda: torch.zeros(num_labels)
             dist_reduce_fx = "sum"
         else:
-            default = lambda : torch.zeros(1)
+            default = lambda: torch.zeros(1)
             dist_reduce_fx = "sum"
         self.add_state("tp", default(), dist_reduce_fx=dist_reduce_fx)
         self.add_state("fp", default(), dist_reduce_fx=dist_reduce_fx)
@@ -207,6 +207,7 @@ class MultilabelStatScores(Metric):
 
     def compute(self) -> Tensor:
         return _multilabel_stat_scores_compute(self.tp, self.fp, self.tn, self.fn, self.multidim_average)
+
 
 # -------------------------- Old stuff --------------------------
 

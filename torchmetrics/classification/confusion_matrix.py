@@ -17,13 +17,13 @@ import torch
 from torch import Tensor
 
 from torchmetrics.functional.classification.confusion_matrix import (
-    _confusion_matrix_compute, 
-    _confusion_matrix_update,
     _binary_confusion_matrix_arg_validation,
     _binary_confusion_matrix_compute,
     _binary_confusion_matrix_format,
     _binary_confusion_matrix_tensor_validation,
     _binary_confusion_matrix_update,
+    _confusion_matrix_compute,
+    _confusion_matrix_update,
     _multiclass_confusion_matrix_arg_validation,
     _multiclass_confusion_matrix_compute,
     _multiclass_confusion_matrix_format,
@@ -33,7 +33,7 @@ from torchmetrics.functional.classification.confusion_matrix import (
     _multilabel_confusion_matrix_compute,
     _multilabel_confusion_matrix_format,
     _multilabel_confusion_matrix_tensor_validation,
-    _multilabel_confusion_matrix_update
+    _multilabel_confusion_matrix_update,
 )
 from torchmetrics.metric import Metric
 
@@ -114,6 +114,7 @@ class MultilabelConfusionMatrix(Metric):
     def __init__(
         self,
         num_labels: int,
+        threshold: float = 0.5,
         ignore_index: Optional[int] = None,
         normalize: Optional[str] = None,
         validate_args: bool = True,
@@ -121,8 +122,9 @@ class MultilabelConfusionMatrix(Metric):
     ) -> None:
         super().__init__(**kwargs)
         if validate_args:
-            _multilabel_confusion_matrix_arg_validation(num_labels, ignore_index, normalize)
+            _multilabel_confusion_matrix_arg_validation(num_labels, threshold, ignore_index, normalize)
         self.num_labels = num_labels
+        self.threshold = threshold
         self.ignore_index = ignore_index
         self.normalize = normalize
         self.validate_args = validate_args
@@ -132,7 +134,9 @@ class MultilabelConfusionMatrix(Metric):
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         if self.validate_args:
             _multilabel_confusion_matrix_tensor_validation(preds, target, self.num_labels, self.ignore_index)
-        preds, target = _multilabel_confusion_matrix_format(preds, target, self.ignore_index)
+        preds, target = _multilabel_confusion_matrix_format(
+            preds, target, self.num_labels, self.threshold, self.ignore_index
+        )
         confmat = _multilabel_confusion_matrix_update(preds, target, self.num_labels)
         self.confmat += confmat
 

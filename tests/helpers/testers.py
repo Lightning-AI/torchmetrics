@@ -402,7 +402,7 @@ class MetricTester:
         target: Union[Tensor, List[Dict]],
         metric_class: Metric,
         sk_metric: Callable,
-        dist_sync_on_step: bool,
+        dist_sync_on_step: bool = False,
         metric_args: dict = None,
         check_dist_sync_on_step: bool = True,
         check_batch: bool = True,

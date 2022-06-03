@@ -11,15 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional
+from typing import Optional, Tuple
 
 import torch
 from torch import Tensor
 
-from torchmetrics.utilities.prints import rank_zero_warn
-from torchmetrics.utilities.checks import _input_format_classification, _check_same_shape
+from torchmetrics.utilities.checks import _check_same_shape, _input_format_classification
 from torchmetrics.utilities.data import _bincount
 from torchmetrics.utilities.enums import DataType
+from torchmetrics.utilities.prints import rank_zero_warn
 
 
 def _confusion_matrix_reduce(confmat: Tensor, normalize: Optional[str] = None, multilabel: bool = False) -> Tensor:
@@ -33,7 +33,7 @@ def _confusion_matrix_reduce(confmat: Tensor, normalize: Optional[str] = None, m
         elif normalize == "pred":
             confmat = confmat / confmat.sum(axis=1 if multilabel else 0, keepdim=True)
         elif normalize == "all":
-            confmat = confmat / confmat.sum(axis=[1, 2] if multilabel else [0, 1])
+            confmat = confmat / confmat.sum(axis=[1, 2] if multilabel else [0, 1], keepdim=True)
 
         nan_elements = confmat[torch.isnan(confmat)].nelement()
         if nan_elements != 0:
@@ -70,8 +70,8 @@ def _binary_confusion_matrix_tensor_validation(
         check = torch.any((unique_values != 0) & (unique_values != 1) & (unique_values != ignore_index))
     if check:
         raise RuntimeError(
-            "Detected the following values in `target`: {unique_values} but expected only"
-            " the following values {[0,1] + [] if ignore_index is None else [ignore_index]}."
+            f"Detected the following values in `target`: {unique_values} but expected only"
+            f" the following values {[0,1] + [] if ignore_index is None else [ignore_index]}."
         )
 
     # If preds is label tensor, also check that it only contains [0,1] values
@@ -79,7 +79,7 @@ def _binary_confusion_matrix_tensor_validation(
         unique_values = torch.unique(preds)
         if torch.any((unique_values != 0) & (unique_values != 1)):
             raise RuntimeError(
-                "Detected the following values in `preds`: {unique_values} but expected only"
+                f"Detected the following values in `preds`: {unique_values} but expected only"
                 " the following values [0,1] since preds is a label tensor."
             )
 
@@ -236,10 +236,12 @@ def multiclass_confusion_matrix(
 
 
 def _multilabel_confusion_matrix_arg_validation(
-    num_labels: int, ignore_index: Optional[int] = None, normalize: Optional[str] = None
+    num_labels: int, threshold: float = 0.5, ignore_index: Optional[int] = None, normalize: Optional[str] = None
 ) -> None:
     if not isinstance(num_labels, int) and num_labels < 2:
         raise ValueError(f"Expected argument `num_labels` to be an integer larger than 1, but got {num_labels}")
+    if not isinstance(threshold, float):
+        raise ValueError(f"Expected argument `threshold` to be a float, but got {threshold}.")
     if ignore_index is not None and not isinstance(ignore_index, int):
         raise ValueError(f"Expected argument `ignore_index` to either be `None` or an integer, but got {ignore_index}")
     allowed_normalize = ("true", "pred", "all", "none", None)
@@ -250,7 +252,30 @@ def _multilabel_confusion_matrix_arg_validation(
 def _multilabel_confusion_matrix_tensor_validation(
     preds: Tensor, target: Tensor, num_labels: int, ignore_index: Optional[int] = None
 ) -> None:
-    pass
+    """Validate tensor input."""
+    # Check that they have same shape
+    _check_same_shape(preds, target)
+
+    # Check that target only contains [0,1] values or value in ignore_index
+    unique_values = torch.unique(target)
+    if ignore_index is None:
+        check = torch.any((unique_values != 0) & (unique_values != 1))
+    else:
+        check = torch.any((unique_values != 0) & (unique_values != 1) & (unique_values != ignore_index))
+    if check:
+        raise RuntimeError(
+            f"Detected the following values in `target`: {unique_values} but expected only"
+            f" the following values {[0,1] + [] if ignore_index is None else [ignore_index]}."
+        )
+
+    # If preds is label tensor, also check that it only contains [0,1] values
+    if not preds.is_floating_point():
+        unique_values = torch.unique(preds)
+        if torch.any((unique_values != 0) & (unique_values != 1)):
+            raise RuntimeError(
+                f"Detected the following values in `preds`: {unique_values} but expected only"
+                " the following values [0,1] since preds is a label tensor."
+            )
 
 
 def _multilabel_confusion_matrix_format(
@@ -260,11 +285,12 @@ def _multilabel_confusion_matrix_format(
         if not ((0 <= preds) * (preds <= 1)).all():
             preds = preds.sigmoid()
         preds = preds > threshold
-
     preds = preds.movedim(1, -1).reshape(-1, num_labels)
     target = target.movedim(1, -1).reshape(-1, num_labels)
 
     if ignore_index is not None:
+        preds = preds.clone()
+        target = target.clone()
         # make sure that when we map, it will always result in a negative number that we can filter away
         idx = target == ignore_index
         preds[idx] = -4 * num_labels
@@ -275,7 +301,7 @@ def _multilabel_confusion_matrix_format(
 
 def _multilabel_confusion_matrix_update(preds: Tensor, target: Tensor, num_labels: int) -> Tensor:
     unique_mapping = ((2 * target + preds) + 4 * torch.arange(num_labels, device=preds.device)).flatten()
-    unique_mapping = unique_mapping[unique_mapping > 0]
+    unique_mapping = unique_mapping[unique_mapping >= 0]
     bins = _bincount(unique_mapping, minlength=4 * num_labels)
     return bins.reshape(num_labels, 2, 2)
 
@@ -469,7 +495,7 @@ def confusion_matrix(
         "`torchmetrics.functional.binary_confusion_matrix`, `torchmetrics.functional.multiclass_confusion_matrix`"
         "and `torchmetrics.functional.multilabel_confusion_matrix`. Please upgrade to the version that matches"
         "your problem (API may have changed). This function will be removed v0.11.",
-        DeprecationWarning
+        DeprecationWarning,
     )
     confmat = _confusion_matrix_update(preds, target, num_classes, threshold, multilabel)
     return _confusion_matrix_compute(confmat, normalize)
