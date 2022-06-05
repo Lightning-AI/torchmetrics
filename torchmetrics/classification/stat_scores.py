@@ -64,7 +64,7 @@ class BinaryStatScores(Metric):
             default = lambda: []
             dist_reduce_fx = "cat"
         else:
-            default = lambda: torch.zeros(1)
+            default = lambda: torch.zeros(1, dtype=torch.long)
             dist_reduce_fx = "sum"
         self.add_state("tp", default(), dist_reduce_fx=dist_reduce_fx)
         self.add_state("fp", default(), dist_reduce_fx=dist_reduce_fx)
@@ -88,7 +88,11 @@ class BinaryStatScores(Metric):
             self.fn += fn
 
     def compute(self) -> Tensor:
-        return _binary_stat_scores_compute(self.tp, self.fp, self.tn, self.fn, self.multidim_average)
+        tp = torch.cat(self.tp) if isinstance(self.tp, list) else self.tp
+        fp = torch.cat(self.fp) if isinstance(self.fp, list) else self.fp
+        tn = torch.cat(self.tn) if isinstance(self.tn, list) else self.tn
+        fn = torch.cat(self.fn) if isinstance(self.fn, list) else self.fn
+        return _binary_stat_scores_compute(tp, fp, tn, fn, self.multidim_average)
 
 
 class MulticlassStatScores(Metric):
@@ -206,6 +210,7 @@ class MultilabelStatScores(Metric):
             self.fn += fn
 
     def compute(self) -> Tensor:
+
         return _multilabel_stat_scores_compute(self.tp, self.fp, self.tn, self.fn, self.multidim_average)
 
 

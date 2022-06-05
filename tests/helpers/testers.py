@@ -14,6 +14,7 @@
 import os
 import pickle
 import sys
+from copy import deepcopy
 from functools import partial
 from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 
@@ -619,3 +620,10 @@ class DummyMetricDiff(DummyMetric):
 class DummyMetricMultiOutput(DummyMetricSum):
     def compute(self):
         return [self.x, self.x]
+
+
+def inject_ignore_index(x: Tensor, ignore_index: int) -> Tensor:
+    idx = torch.randperm(x.numel())
+    x = deepcopy(x)
+    x.view(-1)[idx[::5]] = ignore_index
+    return x

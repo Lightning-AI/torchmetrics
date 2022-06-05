@@ -88,6 +88,7 @@ def _binary_stat_scores_format(
 
     if ignore_index is not None:
         idx = target == ignore_index
+        target = target.clone()
         target[idx] = -1
 
     return preds, target
@@ -99,7 +100,7 @@ def _binary_stat_scores_update(
     multidim_average: str = "global",
 ) -> Tensor:
     """"""
-    sum_dim = 0 if multidim_average == "global" else 1
+    sum_dim = [0, 1] if multidim_average == "global" else 1
     tp = ((target == preds) & (target == 1)).sum(sum_dim).squeeze()
     fn = ((target != preds) & (target == 1)).sum(sum_dim).squeeze()
     fp = ((target != preds) & (target == 0)).sum(sum_dim).squeeze()
@@ -110,9 +111,7 @@ def _binary_stat_scores_update(
 def _binary_stat_scores_compute(
     tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor, multidim_average: str = "global"
 ) -> Tensor:
-    if multidim_average == "global":
-        return torch.cat([tp, fp, tn, fn, tp + fp + tn + fn], dim=0)
-    return torch.stack([tp, fp, tn, fn, tp + fp + tn + fn], dim=1)
+    return torch.stack([tp, fp, tn, fn, tp + fp + tn + fn], dim=0 if multidim_average == "global" else 1).squeeze()
 
 
 def binary_stat_scores(

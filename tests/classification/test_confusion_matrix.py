@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from copy import deepcopy
 from functools import partial
 
 import numpy as np
@@ -19,11 +18,10 @@ import pytest
 import torch
 from scipy.special import expit as sigmoid
 from sklearn.metrics import confusion_matrix as sk_confusion_matrix
-from torch import Tensor
 
 from tests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from tests.helpers import seed_all
-from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester
+from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index
 from torchmetrics.classification.confusion_matrix import (
     BinaryConfusionMatrix,
     MulticlassConfusionMatrix,
@@ -36,13 +34,6 @@ from torchmetrics.functional.classification.confusion_matrix import (
 )
 
 seed_all(42)
-
-
-def _inject_ignore_index(x: Tensor, ignore_index: int) -> Tensor:
-    idx = torch.randperm(x.numel())
-    x = deepcopy(x)
-    x.view(-1)[idx[::5]] = -1
-    return x
 
 
 def _sk_confusion_matrix_binary(preds, target, normalize=None, ignore_index=None):
@@ -67,7 +58,7 @@ class TestBinaryConfusionMatrix(MetricTester):
     def test_binary_confusion_matrix(self, input, ddp, normalize, ignore_index):
         preds, target = input
         if ignore_index is not None:
-            target = _inject_ignore_index(target, ignore_index)
+            target = inject_ignore_index(target, ignore_index)
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -84,7 +75,7 @@ class TestBinaryConfusionMatrix(MetricTester):
     def test_binary_confusion_matrix_functional(self, input, normalize, ignore_index):
         preds, target = input
         if ignore_index is not None:
-            target = _inject_ignore_index(target, ignore_index)
+            target = inject_ignore_index(target, ignore_index)
         self.run_functional_metric_test(
             preds=preds,
             target=target,
@@ -121,7 +112,7 @@ class TestMulticlassConfusionMatrix(MetricTester):
     def test_multiclass_confusion_matrix(self, input, ddp, normalize, ignore_index):
         preds, target = input
         if ignore_index is not None:
-            target = _inject_ignore_index(target, ignore_index)
+            target = inject_ignore_index(target, ignore_index)
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -138,7 +129,7 @@ class TestMulticlassConfusionMatrix(MetricTester):
     def test_multiclass_confusion_matrix_functional(self, input, normalize, ignore_index):
         preds, target = input
         if ignore_index is not None:
-            target = _inject_ignore_index(target, ignore_index)
+            target = inject_ignore_index(target, ignore_index)
         self.run_functional_metric_test(
             preds=preds,
             target=target,
@@ -180,7 +171,7 @@ class TestMultilabelConfusionMatrix(MetricTester):
     def test_multilabel_confusion_matrix(self, input, ddp, normalize, ignore_index):
         preds, target = input
         if ignore_index is not None:
-            target = _inject_ignore_index(target, ignore_index)
+            target = inject_ignore_index(target, ignore_index)
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -197,7 +188,7 @@ class TestMultilabelConfusionMatrix(MetricTester):
     def test_multilabel_confusion_matrix_functional(self, input, normalize, ignore_index):
         preds, target = input
         if ignore_index is not None:
-            target = _inject_ignore_index(target, ignore_index)
+            target = inject_ignore_index(target, ignore_index)
         self.run_functional_metric_test(
             preds=preds,
             target=target,
