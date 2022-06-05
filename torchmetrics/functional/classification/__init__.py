@@ -18,8 +18,8 @@ from torchmetrics.functional.classification.average_precision import average_pre
 from torchmetrics.functional.classification.calibration_error import calibration_error  # noqa: F401
 from torchmetrics.functional.classification.cohen_kappa import cohen_kappa  # noqa: F401
 from torchmetrics.functional.classification.confusion_matrix import (  # noqa: F401
-    confusion_matrix,
     binary_confusion_matrix,
+    confusion_matrix,
     multiclass_confusion_matrix,
     multilabel_confusion_matrix,
 )
@@ -40,8 +40,8 @@ from torchmetrics.functional.classification.ranking import (  # noqa: F401
 from torchmetrics.functional.classification.roc import roc  # noqa: F401
 from torchmetrics.functional.classification.specificity import specificity  # noqa: F401
 from torchmetrics.functional.classification.stat_scores import (  # noqa: F401
-    stat_scores,
     binary_stat_scores,
     multiclass_stat_scores,
     multilabel_stat_scores,
+    stat_scores,
 )

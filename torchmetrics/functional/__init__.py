@@ -21,8 +21,8 @@ from torchmetrics.functional.classification.average_precision import average_pre
 from torchmetrics.functional.classification.calibration_error import calibration_error
 from torchmetrics.functional.classification.cohen_kappa import cohen_kappa
 from torchmetrics.functional.classification.confusion_matrix import (
-    confusion_matrix,
     binary_confusion_matrix,
+    confusion_matrix,
     multiclass_confusion_matrix,
     multilabel_confusion_matrix,
 )
@@ -43,10 +43,10 @@ from torchmetrics.functional.classification.ranking import (
 from torchmetrics.functional.classification.roc import roc
 from torchmetrics.functional.classification.specificity import specificity
 from torchmetrics.functional.classification.stat_scores import (
-    stat_scores,
     binary_stat_scores,
     multiclass_stat_scores,
     multilabel_stat_scores,
+    stat_scores,
 )
 from torchmetrics.functional.image.d_lambda import spectral_distortion_index
 from torchmetrics.functional.image.ergas import error_relative_global_dimensionless_synthesis
