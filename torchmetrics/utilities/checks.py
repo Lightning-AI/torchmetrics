@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from functools import partial
 from time import perf_counter
 from typing import Any, Dict, Mapping, Optional, Sequence, Tuple, no_type_check
+from unittest.mock import Mock
 
 import torch
 from torch import Tensor
@@ -725,7 +727,7 @@ def check_forward_full_state_property(
     print(f"Recommended setting `full_state_update={not faster}`")
 
 
-def is_overridden(method: str, instance: object, parent: object) -> bool:
+def is_overridden(method_name: str, instance: object, parent: object) -> bool:
     """Check if a method has been overridden by an instance compared to its parent class."""
     instance_attr = getattr(instance, method_name, None)
     if instance_attr is None:
