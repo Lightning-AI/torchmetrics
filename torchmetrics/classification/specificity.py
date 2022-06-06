@@ -16,10 +16,9 @@ from typing import Any, Dict, Optional
 import torch
 from torch import Tensor
 
-from torchmetrics.utilities.enums import AverageMethod
-
 from torchmetrics.classification.stat_scores import StatScores
 from torchmetrics.functional.classification.specificity import _specificity_compute
+from torchmetrics.utilities.enums import AverageMethod
 
 
 class Specificity(StatScores):
@@ -135,7 +134,7 @@ class Specificity(StatScores):
             kwargs["reduce"] = "macro" if average in [AverageMethod.WEIGHTED, AverageMethod.NONE, "none"] else average
         if "mdmc_reduce" not in kwargs or kwargs["mdmc_reduce"] is None:
             kwargs["mdmc_reduce"] = mdmc_average
-        
+
         super().__init__(
             threshold=threshold,
             top_k=top_k,

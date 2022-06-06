@@ -92,7 +92,7 @@ class JaccardIndex(ConfusionMatrix):
     ) -> None:
         if "normalize" not in kwargs:
             kwargs["normalize"] = None
-            
+
         super().__init__(
             num_classes=num_classes,
             threshold=threshold,
