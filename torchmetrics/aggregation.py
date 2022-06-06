@@ -345,18 +345,19 @@ class MeanMetric(BaseAggregator):
         value = self._cast_and_nan_check_input(value)
         weight = self._cast_and_nan_check_input(weight)
 
-        if value.numel() != 0:
-            # broadcast weight to values shape
-            if not hasattr(torch, "broadcast_to"):
-                if weight.shape == ():
-                    weight = torch.ones_like(value) * weight
-                if weight.shape != value.shape:
-                    raise ValueError("Broadcasting not supported on PyTorch <1.8")
-            else:
-                weight = torch.broadcast_to(weight, value.shape)
+        if value.numel() == 0:
+            return
+        # broadcast weight to value shape
+        if hasattr(torch, "broadcast_to"):
+            weight = torch.broadcast_to(weight, value.shape)
+        else:
+            if weight.shape == ():
+                weight = torch.ones_like(value) * weight
+            if weight.shape != value.shape:
+                raise ValueError("Broadcasting not supported on PyTorch <1.8")
 
-            self.value += (value * weight).sum()
-            self.weight += weight.sum()
+        self.value += (value * weight).sum()
+        self.weight += weight.sum()
 
     def compute(self) -> Tensor:
         """Compute the aggregated value."""
