@@ -180,7 +180,7 @@ class Accuracy(StatScores):
             kwargs["reduce"] = "macro" if average in [AverageMethod.WEIGHTED, AverageMethod.NONE, "none"] else average
         if "mdmc_reduce" not in kwargs or kwargs["mdmc_reduce"] is None:
             kwargs["mdmc_reduce"] = mdmc_average
-        
+
         super().__init__(
             threshold=threshold,
             top_k=top_k,

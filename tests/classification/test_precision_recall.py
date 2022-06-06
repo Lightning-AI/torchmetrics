@@ -469,10 +469,10 @@ def test_noneavg(metric_cls, noneavg=_negmetric_noneavg):
     result2 = prec(noneavg["pred2"], noneavg["target2"])
     assert torch.allclose(noneavg["res2"], result2, equal_nan=True)
 
+
 def test_provide_superclass_kwargs():
-    """Test instantiating class providing superclass arguments.
-    """
-    precision = Precision(reduce='micro')
-    precision = Precision(mdmc_reduce='global')
-    recall = Recall(reduce='micro')
-    recall = Recall(mdmc_reduce='global')
+    """Test instantiating class providing superclass arguments."""
+    Precision(reduce="micro")
+    Precision(mdmc_reduce="global")
+    Recall(reduce="micro")
+    Recall(mdmc_reduce="global")
