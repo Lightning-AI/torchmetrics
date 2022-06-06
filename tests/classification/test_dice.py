@@ -163,9 +163,3 @@ class TestDiceMulti(MetricTester):
             sk_metric=partial(_sk_dice, ignore_index=ignore_index),
             metric_args={"ignore_index": ignore_index},
         )
-
-
-def test_provide_superclass_kwargs():
-    """Test instantiating class providing superclass arguments."""
-    Dice(reduce="micro")
-    Dice(mdmc_reduce="global")

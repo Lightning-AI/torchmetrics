@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import partial
+from itertools import product
+from typing import Any, Dict
 
 import numpy as np
 import pytest
@@ -30,6 +32,7 @@ from tests.classification.inputs import _input_multilabel_logits as _input_mlb_l
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
 from tests.helpers import seed_all
 from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester
+from torchmetrics import JaccardIndex
 from torchmetrics.classification.confusion_matrix import ConfusionMatrix
 from torchmetrics.functional.classification.confusion_matrix import confusion_matrix
 
@@ -186,3 +189,20 @@ def test_warning_on_nan(tmpdir):
         match=".* nan values found in confusion matrix have been replaced with zeros.",
     ):
         confusion_matrix(preds, target, num_classes=5, normalize="true")
+
+
+kwarg_options = [
+    {"num_classes": 1, "normalize": "true"},
+    {"num_classes": 1, "normalize": "pred"},
+    {"num_classes": 1, "normalize": "all"},
+    {"num_classes": 1, "normalize": "none"},
+    {"num_classes": 1, "normalize": None},
+]
+subclasses = [JaccardIndex]
+params = list(product(subclasses, kwarg_options))
+
+
+@pytest.mark.parametrize("metric_cls, kwargs", params)
+def test_provide_superclass_kwargs(metric_cls: ConfusionMatrix, kwargs: Dict[str, Any]):
+    """Test instantiating subclasses with superclass arguments as kwargs."""
+    metric_cls(**kwargs)

@@ -460,11 +460,3 @@ def test_same_input(metric_class, metric_functional, sk_fn, average, ignore_inde
 
     assert torch.allclose(class_res, torch.tensor(sk_res).float())
     assert torch.allclose(func_res, torch.tensor(sk_res).float())
-
-
-def test_provide_superclass_kwargs():
-    """Test instantiating class providing superclass arguments."""
-    FBetaScore(reduce="micro")
-    FBetaScore(mdmc_reduce="global")
-    F1Score(reduce="micro")
-    F1Score(mdmc_reduce="global")

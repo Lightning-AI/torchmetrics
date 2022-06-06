@@ -448,9 +448,3 @@ def test_negmetric_noneavg(noneavg=_negmetric_noneavg):
     assert torch.allclose(noneavg["res1"], result1, equal_nan=True)
     result2 = acc(noneavg["pred2"], noneavg["target2"])
     assert torch.allclose(noneavg["res2"], result2, equal_nan=True)
-
-
-def test_provide_superclass_kwargs():
-    """Test instantiating class providing superclass arguments."""
-    Accuracy(reduce="micro")
-    Accuracy(mdmc_reduce="global")
