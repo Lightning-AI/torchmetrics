@@ -20,9 +20,9 @@ from sklearn.metrics import confusion_matrix as sk_confusion_matrix
 
 from tests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from tests.helpers import seed_all
-from tests.helpers.testers import THRESHOLD, MetricTester, inject_ignore_index
+from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index
 from torchmetrics.classification.stat_scores import BinaryStatScores
-from torchmetrics.functional.classification.stat_scores import binary_stat_scores
+from torchmetrics.functional.classification.stat_scores import binary_stat_scores, multilabel_stat_scores
 
 seed_all(42)
 
@@ -101,15 +101,63 @@ class TestBinaryStatScores(MetricTester):
 @pytest.mark.parametrize("input", _multiclass_cases)
 @pytest.mark.parametrize("ignore_index", [None, 0, -1])
 @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
+@pytest.mark.parametrize("average", ["micro", "macro", "samples"])
+@pytest.mark.parametrize("top_k", [1, 2])
 class TestMulitclassStatScores(MetricTester):
     pass
+
+
+def _sk_stat_scores_multilabel(preds, target, ignore_index, multidim_average, average):
+    preds = preds.numpy()
+    target = target.numpy()
+    if np.issubdtype(preds.dtype, np.floating):
+        if not ((0 < preds) & (preds < 1)).all():
+            preds = sigmoid(preds)
+        preds = (preds >= THRESHOLD).astype(np.uint8)
+    preds = np.moveaxis(preds, 1, -1).reshape((-1, preds.shape[1]))
+    target = np.moveaxis(target, 1, -1).reshape((-1, target.shape[1]))
+    stat_scores = []
+    for i in range(preds.shape[1]):
+        p, t = preds[:, i], target[:, i]
+        if ignore_index is not None:
+            idx = t == ignore_index
+            t = t[~idx]
+            p = p[~idx]
+        tn, fp, fn, tp = sk_confusion_matrix(t, p, labels=[0, 1]).ravel()
+        stat_scores.append(np.array([tp, fp, tn, fn, tp + fp + tn + fn]))
+    return np.stack(stat_scores, axis=0)
 
 
 @pytest.mark.parametrize("input", _multilabel_cases)
 @pytest.mark.parametrize("ignore_index", [None, 0, -1])
 @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
+@pytest.mark.parametrize("average", ["micro", "macro", "samples"])
 class TestMultilabelyStatScores(MetricTester):
-    pass
+    def test_multilabel_stat_scores_functional(self, input, ignore_index, multidim_average, average):
+        preds, target = input
+        if ignore_index == -1:
+            target = inject_ignore_index(target, ignore_index)
+        if multidim_average == "samplewise" and preds.ndim < 4:
+            pytest.skip("samplewise and non-multidim arrays are not valid")
+
+        self.run_functional_metric_test(
+            preds=preds,
+            target=target,
+            metric_functional=multilabel_stat_scores,
+            sk_metric=partial(
+                _sk_stat_scores_multilabel,
+                ignore_index=ignore_index,
+                multidim_average=multidim_average,
+                average=average,
+            ),
+            metric_args={
+                "num_labels": NUM_CLASSES,
+                "threshold": THRESHOLD,
+                "ignore_index": ignore_index,
+                "multidim_average": multidim_average,
+                "average": average,
+            },
+        )
 
 
 # -------------------------- Old stuff --------------------------

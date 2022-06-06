@@ -190,6 +190,9 @@ def multiclass_stat_scores(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
+    import pdb
+
+    pdb.set_trace()
     if validate_args:
         _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index)
         _multiclass_stat_scores_tensor_validation(
@@ -200,20 +203,97 @@ def multiclass_stat_scores(
     return _multiclass_stat_scores_compute(tp, fp, tn, fn, multidim_average)
 
 
-def _multilabel_stat_scores_arg_validation():
-    pass
+def _multilabel_stat_scores_arg_validation(
+    num_labels: int,
+    threshold: float = 0.5,
+    average: str = "micro",
+    multidim_average: str = "global",
+    ignore_index: Optional[int] = None,
+) -> None:
+    if not isinstance(num_labels, int) and num_labels < 2:
+        raise ValueError(f"Expected argument `num_labels` to be an integer larger than 1, but got {num_labels}")
+    if not isinstance(threshold, float):
+        raise ValueError(f"Expected argument `threshold` to be a float, but got {threshold}.")
+    allowed_average = ("micro", "macro", "samples")
+    if average not in allowed_average:
+        raise ValueError(f"Expected argument `multidim_average` to be one of {allowed_average}, but got {average}")
+    allowed_multidim_average = ("global", "samplewise")
+    if multidim_average not in allowed_multidim_average:
+        raise ValueError(
+            f"Expected argument `multidim_average` to be one of {allowed_multidim_average}, but got {multidim_average}"
+        )
+    if ignore_index is not None and not isinstance(ignore_index, int):
+        raise ValueError(f"Expected argument `ignore_index` to either be `None` or an integer, but got {ignore_index}")
 
 
-def _multilabel_stat_scores_tensor_validation():
-    pass
+def _multilabel_stat_scores_tensor_validation(
+    preds: Tensor,
+    target: Tensor,
+    num_labels: int,
+    multidim_average: str,
+    ignore_index: Optional[int] = None,
+):
+    # Check that they have same shape
+    _check_same_shape(preds, target)
+
+    if preds.shape[1] != num_labels:
+        raise ValueError(
+            "Expected both `target.shape[1]` and `preds.shape[1]` to be equal to the number of labels"
+            f" but got {preds.shape[1]} and expected {num_labels}"
+        )
+
+    # Check that target only contains [0,1] values or value in ignore_index
+    unique_values = torch.unique(target)
+    if ignore_index is None:
+        check = torch.any((unique_values != 0) & (unique_values != 1))
+    else:
+        check = torch.any((unique_values != 0) & (unique_values != 1) & (unique_values != ignore_index))
+    if check:
+        raise RuntimeError(
+            "Detected the following values in `target`: {unique_values} but expected only"
+            " the following values {[0,1] + [] if ignore_index is None else [ignore_index]}."
+        )
+
+    # If preds is label tensor, also check that it only contains [0,1] values
+    if not preds.is_floating_point():
+        unique_values = torch.unique(preds)
+        if torch.any((unique_values != 0) & (unique_values != 1)):
+            raise RuntimeError(
+                "Detected the following values in `preds`: {unique_values} but expected only"
+                " the following values [0,1] since preds is a label tensor."
+            )
+
+    if multidim_average != "global" and preds.ndim < 3:
+        raise ValueError("Expected input to be atleast 3D when multidim_average is set to `samplewise`")
 
 
-def _multilabel_stat_scores_format():
-    pass
+def _multilabel_stat_scores_format(
+    preds: Tensor, target: Tensor, num_labels: int, threshold: float = 0.5, ignore_index: Optional[int] = None
+) -> Tuple[Tensor, Tensor]:
+    if preds.is_floating_point():
+        if not ((0 <= preds) * (preds <= 1)).all():
+            preds = preds.sigmoid()
+        preds = preds > threshold
+    preds = preds.movedim(1, -1).reshape(-1, num_labels)
+    target = target.movedim(1, -1).reshape(-1, num_labels)
+
+    if ignore_index is not None:
+        idx = target == ignore_index
+        target = target.clone()
+        target[idx] = -1
+
+    return preds, target
 
 
-def _multilabel_stat_scores_update():
-    pass
+def _multilabel_stat_scores_update(
+    preds: Tensor, target: Tensor, multidim_average: str = "global"
+) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+    sum_dim = [0, 1] if multidim_average == "global" else 1
+    tp = ((target == preds) & (target == 1)).sum(sum_dim).squeeze()
+    fn = ((target != preds) & (target == 1)).sum(sum_dim).squeeze()
+    fp = ((target != preds) & (target == 0)).sum(sum_dim).squeeze()
+    tn = ((target == preds) & (target == 0)).sum(sum_dim).squeeze()
+    return tp, fp, tn, fn
 
 
 def _multilabel_stat_scores_compute(
@@ -236,8 +316,8 @@ def multilabel_stat_scores(
 ) -> Tensor:
     if validate_args:
         _multilabel_stat_scores_arg_validation(num_labels, threshold, average, multidim_average, ignore_index)
-        _multilabel_stat_scores_tensor_validation(preds, target, num_labels, average, multidim_average, ignore_index)
-    preds, target = _multilabel_stat_scores_format(preds, target, ignore_index)
+        _multilabel_stat_scores_tensor_validation(preds, target, num_labels, multidim_average, ignore_index)
+    preds, target = _multilabel_stat_scores_format(preds, target, num_labels, threshold, ignore_index)
     tp, fp, tn, fn = _multilabel_stat_scores_update(preds, target, multidim_average)
     return _multilabel_stat_scores_compute(tp, fp, tn, fn, multidim_average)
 

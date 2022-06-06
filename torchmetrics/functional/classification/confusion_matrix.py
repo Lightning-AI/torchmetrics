@@ -256,6 +256,12 @@ def _multilabel_confusion_matrix_tensor_validation(
     # Check that they have same shape
     _check_same_shape(preds, target)
 
+    if preds.shape[1] != num_labels:
+        raise ValueError(
+            "Expected both `target.shape[1]` and `preds.shape[1]` to be equal to the number of labels"
+            f" but got {preds.shape[1]} and expected {num_labels}"
+        )
+
     # Check that target only contains [0,1] values or value in ignore_index
     unique_values = torch.unique(target)
     if ignore_index is None:

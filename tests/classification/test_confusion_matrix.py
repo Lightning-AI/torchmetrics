@@ -47,12 +47,12 @@ def _sk_confusion_matrix_binary(preds, target, normalize=None, ignore_index=None
         idx = target == ignore_index
         target = target[~idx]
         preds = preds[~idx]
-    return sk_confusion_matrix(y_true=target, y_pred=preds, normalize=normalize)
+    return sk_confusion_matrix(y_true=target, y_pred=preds, labels=[0, 1], normalize=normalize)
 
 
 @pytest.mark.parametrize("input", _binary_cases)
 @pytest.mark.parametrize("normalize", ["true", "pred", "all", None])
-@pytest.mark.parametrize("ignore_index", [None, -1])
+@pytest.mark.parametrize("ignore_index", [None, -1, 0])
 class TestBinaryConfusionMatrix(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
     def test_binary_confusion_matrix(self, input, ddp, normalize, ignore_index):
@@ -101,12 +101,12 @@ def _sk_confusion_matrix_multiclass(preds, target, normalize=None, ignore_index=
         idx = target == ignore_index
         target = target[~idx]
         preds = preds[~idx]
-    return sk_confusion_matrix(y_true=target, y_pred=preds, normalize=normalize)
+    return sk_confusion_matrix(y_true=target, y_pred=preds, normalize=normalize, labels=list(range(NUM_CLASSES)))
 
 
 @pytest.mark.parametrize("input", _multiclass_cases)
 @pytest.mark.parametrize("normalize", ["true", "pred", "all", None])
-@pytest.mark.parametrize("ignore_index", [None, -1])
+@pytest.mark.parametrize("ignore_index", [None, -1, 0])
 class TestMulticlassConfusionMatrix(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multiclass_confusion_matrix(self, input, ddp, normalize, ignore_index):
@@ -159,13 +159,13 @@ def _sk_confusion_matrix_multilabel(preds, target, normalize=None, ignore_index=
             idx = t == ignore_index
             t = t[~idx]
             p = p[~idx]
-        confmat.append(sk_confusion_matrix(t, p, normalize=normalize))
+        confmat.append(sk_confusion_matrix(t, p, normalize=normalize, labels=[0, 1]))
     return np.stack(confmat, axis=0)
 
 
 @pytest.mark.parametrize("input", _multilabel_cases)
 @pytest.mark.parametrize("normalize", ["true", "pred", "all", None])
-@pytest.mark.parametrize("ignore_index", [None, -1])
+@pytest.mark.parametrize("ignore_index", [None, -1, 0])
 class TestMultilabelConfusionMatrix(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multilabel_confusion_matrix(self, input, ddp, normalize, ignore_index):
