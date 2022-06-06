@@ -29,6 +29,9 @@ class SignalDistortionRatio(Metric):
     - ``preds``: shape ``[..., time]``
     - ``target``: shape ``[..., time]``
 
+    .. note:
+        The metric currently does not seem to work with Pytorch v1.11 and specific GPU hardware.
+
     Args:
         use_cg_iter:
             If provided, conjugate gradient descent is used to solve for the distortion
