@@ -15,6 +15,8 @@ from typing import Any, Dict, Optional
 
 from torch import Tensor
 
+from torchmetrics.utilities.enums import AverageMethod, DataType
+
 from torchmetrics.classification.stat_scores import StatScores
 from torchmetrics.functional.classification.dice import _dice_compute
 
@@ -134,9 +136,12 @@ class Dice(StatScores):
         if average not in allowed_average:
             raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
 
+        if "reduce" not in kwargs or kwargs["reduce"] is None:
+            kwargs["reduce"] = "macro" if average in [AverageMethod.WEIGHTED, AverageMethod.NONE, "none"] else average
+        if "mdmc_reduce" not in kwargs or kwargs["mdmc_reduce"] is None:
+            kwargs["mdmc_reduce"] = mdmc_average
+        
         super().__init__(
-            reduce="macro" if average in ("weighted", "none", None) else average,
-            mdmc_reduce=mdmc_average,
             threshold=threshold,
             top_k=top_k,
             num_classes=num_classes,

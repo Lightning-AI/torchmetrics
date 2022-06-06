@@ -410,3 +410,9 @@ def test_class_not_present(metric_class, metric_fn, ignore_index, expected):
     cl_metric(preds, target)
     result_cl = cl_metric.compute()
     assert torch.allclose(expected, result_cl, equal_nan=True)
+
+def test_provide_superclass_kwargs():
+    """Test instantiating class providing superclass arguments.
+    """
+    specificity = Specificity(reduce='micro')
+    specificity = Specificity(mdmc_reduce='global')
