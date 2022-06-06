@@ -362,7 +362,7 @@ class MeanAveragePrecision(Metric):
                 - ``boxes``: ``torch.FloatTensor`` of shape ``[num_boxes, 4]`` containing ``num_boxes``
                   ground truth boxes of the format specified in the constructor. By default, this method expects
                   ``[xmin, ymin, xmax, ymax]`` in absolute image coordinates.
-                - ``labels``: ``torch.IntTensor`` of shape ``[num_boxes]`` containing 1-indexed ground truth
+                - ``labels``: ``torch.IntTensor`` of shape ``[num_boxes]`` containing 0-indexed ground truth
                    classes for the boxes.
 
         Raises:
