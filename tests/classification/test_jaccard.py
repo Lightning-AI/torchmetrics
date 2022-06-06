@@ -238,7 +238,7 @@ def test_jaccard_ignore_index(pred, target, ignore_index, num_classes, average, 
     )
     assert torch.allclose(jaccard_val, tensor(expected).to(jaccard_val))
 
+
 def test_provide_superclass_kwargs():
-    """Test instantiating class providing superclass arguments.
-    """
-    jaccard = JaccardIndex(num_classes=1, normalize='true')
+    """Test instantiating class providing superclass arguments."""
+    jaccard = JaccardIndex(num_classes=1, normalize="true")
