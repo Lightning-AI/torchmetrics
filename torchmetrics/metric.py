@@ -378,7 +378,20 @@ class Metric(Module, ABC):
             self._computed = None
             self._update_count += 1
             with torch.set_grad_enabled(self._enable_grad):
-                update(*args, **kwargs)
+                try:
+                    update(*args, **kwargs)
+                except RuntimeError as err:
+                    if "Expected all tensors to be on" in str(err):
+                        raise RuntimeError(
+                            "Encountered different devices in metric calculation"
+                            " (see stacktrace for details)."
+                            "This could be due to the metric class not being on the same device as input."
+                            f"Instead of `metric={self.__class__.__name__}(...)` try to do"
+                            f" `metric={self.__class__.__name__}(...).to(device)` where"
+                            " device corresponds to the device of the input."
+                        ) from err
+                    raise err
+
             if self.compute_on_cpu:
                 self._move_list_states_to_cpu()
 
