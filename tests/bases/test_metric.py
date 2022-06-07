@@ -25,8 +25,8 @@ from torch.nn import Module
 
 from tests.helpers import seed_all
 from tests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum
-from torchmetrics import PearsonCorrCoef
 from tests.helpers.utilities import no_warning_call
+from torchmetrics import PearsonCorrCoef
 from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
 
 seed_all(42)
