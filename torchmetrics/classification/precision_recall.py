@@ -128,9 +128,10 @@ class Precision(StatScores):
         if average not in allowed_average:
             raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
 
-        if "reduce" not in kwargs or kwargs["reduce"] is None:
-            kwargs["reduce"] = "macro" if average in [AverageMethod.WEIGHTED, AverageMethod.NONE, "none"] else average
-        if "mdmc_reduce" not in kwargs or kwargs["mdmc_reduce"] is None:
+        _reduce_options = (AverageMethod.WEIGHTED, AverageMethod.NONE, None)
+        if "reduce" not in kwargs:
+            kwargs["reduce"] = AverageMethod.MACRO if average in _reduce_options else average
+        if "mdmc_reduce" not in kwargs:
             kwargs["mdmc_reduce"] = mdmc_average
 
         super().__init__(
@@ -266,9 +267,10 @@ class Recall(StatScores):
         if average not in allowed_average:
             raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
 
-        if "reduce" not in kwargs or kwargs["reduce"] is None:
-            kwargs["reduce"] = "macro" if average in [AverageMethod.WEIGHTED, AverageMethod.NONE, "none"] else average
-        if "mdmc_reduce" not in kwargs or kwargs["mdmc_reduce"] is None:
+        _reduce_options = (AverageMethod.WEIGHTED, AverageMethod.NONE, None)
+        if "reduce" not in kwargs:
+            kwargs["reduce"] = AverageMethod.MACRO if average in _reduce_options else average
+        if "mdmc_reduce" not in kwargs:
             kwargs["mdmc_reduce"] = mdmc_average
 
         super().__init__(

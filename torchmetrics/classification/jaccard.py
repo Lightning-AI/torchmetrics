@@ -90,8 +90,7 @@ class JaccardIndex(ConfusionMatrix):
         multilabel: bool = False,
         **kwargs: Dict[str, Any],
     ) -> None:
-        if "normalize" not in kwargs:
-            kwargs["normalize"] = None
+        kwargs["normalize"] = kwargs.get("normalize")
 
         super().__init__(
             num_classes=num_classes,
