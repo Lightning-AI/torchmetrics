@@ -128,6 +128,7 @@ Or directly from conda
    :caption: User Guide
 
    pages/quickstart
+   metrics
    pages/overview
    pages/implement
    pages/lightning
