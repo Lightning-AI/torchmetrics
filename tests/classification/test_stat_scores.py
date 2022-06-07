@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import partial
-from itertools import product
 from typing import Any, Callable, Dict, Optional
 
 import numpy as np
@@ -329,19 +328,18 @@ def test_top_k(k: int, preds: Tensor, target: Tensor, reduce: str, expected: Ten
     assert torch.equal(stat_scores(preds, target, top_k=k, reduce=reduce, num_classes=3), expected.T)
 
 
-kwarg_options = [
-    {"reduce": "micro"},
-    {"num_classes": 1, "reduce": "macro"},
-    {"reduce": "samples"},
-    {"mdmc_reduce": None},
-    {"mdmc_reduce": "samplewise"},
-    {"mdmc_reduce": "global"},
-]
-subclasses = [Accuracy, Dice, FBetaScore, Precision, Recall, Specificity]
-params = list(product(subclasses, kwarg_options))
-
-
-@pytest.mark.parametrize("metric_cls, kwargs", params)
-def test_provide_superclass_kwargs(metric_cls: StatScores, kwargs: Dict[str, Any]):
+@pytest.mark.parametrize(
+    "metric_args",
+    [
+        {"reduce": "micro"},
+        {"num_classes": 1, "reduce": "macro"},
+        {"reduce": "samples"},
+        {"mdmc_reduce": None},
+        {"mdmc_reduce": "samplewise"},
+        {"mdmc_reduce": "global"},
+    ],
+)
+@pytest.mark.parametrize("metric_cls", [Accuracy, Dice, FBetaScore, Precision, Recall, Specificity])
+def test_provide_superclass_kwargs(metric_cls: StatScores, metric_args: Dict[str, Any]):
     """Test instantiating subclasses with superclass arguments as kwargs."""
-    metric_cls(**kwargs)
+    metric_cls(**metric_args)

@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import partial
-from itertools import product
 from typing import Any, Dict
 
 import numpy as np
@@ -191,18 +190,16 @@ def test_warning_on_nan(tmpdir):
         confusion_matrix(preds, target, num_classes=5, normalize="true")
 
 
-kwarg_options = [
-    {"num_classes": 1, "normalize": "true"},
-    {"num_classes": 1, "normalize": "pred"},
-    {"num_classes": 1, "normalize": "all"},
-    {"num_classes": 1, "normalize": "none"},
-    {"num_classes": 1, "normalize": None},
-]
-subclasses = [JaccardIndex]
-params = list(product(subclasses, kwarg_options))
-
-
-@pytest.mark.parametrize("metric_cls, kwargs", params)
-def test_provide_superclass_kwargs(metric_cls: ConfusionMatrix, kwargs: Dict[str, Any]):
+@pytest.mark.parametrize(
+    "metric_args",
+    [
+        {"num_classes": 1, "normalize": "true"},
+        {"num_classes": 1, "normalize": "pred"},
+        {"num_classes": 1, "normalize": "all"},
+        {"num_classes": 1, "normalize": "none"},
+        {"num_classes": 1, "normalize": None},
+    ],
+)
+def test_provide_superclass_kwargs(metric_args: Dict[str, Any]):
     """Test instantiating subclasses with superclass arguments as kwargs."""
-    metric_cls(**kwargs)
+    JaccardIndex(**metric_args)
