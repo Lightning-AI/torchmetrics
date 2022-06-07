@@ -43,6 +43,7 @@ class BaseAggregator(Metric):
     value: Tensor
     is_differentiable = None
     higher_is_better = None
+    full_state_update = False
 
     def __init__(
         self,
@@ -116,6 +117,8 @@ class MaxMetric(BaseAggregator):
         tensor(3.)
     """
 
+    full_state_update = True
+
     def __init__(
         self,
         nan_strategy: Union[str, float] = "warn",
@@ -136,7 +139,7 @@ class MaxMetric(BaseAggregator):
                 dimensions will be flattened
         """
         value = self._cast_and_nan_check_input(value)
-        if any(value.flatten()):  # make sure tensor not empty
+        if value.numel():  # make sure tensor not empty
             self.value = torch.max(self.value, torch.max(value))
 
 
@@ -165,6 +168,8 @@ class MinMetric(BaseAggregator):
         tensor(1.)
     """
 
+    full_state_update = True
+
     def __init__(
         self,
         nan_strategy: Union[str, float] = "warn",
@@ -185,7 +190,7 @@ class MinMetric(BaseAggregator):
                 dimensions will be flattened
         """
         value = self._cast_and_nan_check_input(value)
-        if any(value.flatten()):  # make sure tensor not empty
+        if value.numel():  # make sure tensor not empty
             self.value = torch.min(self.value, torch.min(value))
 
 
@@ -234,7 +239,8 @@ class SumMetric(BaseAggregator):
                 dimensions will be flattened
         """
         value = self._cast_and_nan_check_input(value)
-        self.value += value.sum()
+        if value.numel():
+            self.value += value.sum()
 
 
 class CatMetric(BaseAggregator):
@@ -277,7 +283,7 @@ class CatMetric(BaseAggregator):
                 dimensions will be flattened
         """
         value = self._cast_and_nan_check_input(value)
-        if any(value.flatten()):
+        if value.numel():
             self.value.append(value)
 
     def compute(self) -> Tensor:
@@ -339,14 +345,16 @@ class MeanMetric(BaseAggregator):
         value = self._cast_and_nan_check_input(value)
         weight = self._cast_and_nan_check_input(weight)
 
-        # broadcast weight to values shape
-        if not hasattr(torch, "broadcast_to"):
+        if value.numel() == 0:
+            return
+        # broadcast weight to value shape
+        if hasattr(torch, "broadcast_to"):
+            weight = torch.broadcast_to(weight, value.shape)
+        else:
             if weight.shape == ():
                 weight = torch.ones_like(value) * weight
             if weight.shape != value.shape:
                 raise ValueError("Broadcasting not supported on PyTorch <1.8")
-        else:
-            weight = torch.broadcast_to(weight, value.shape)
 
         self.value += (value * weight).sum()
         self.weight += weight.sum()
