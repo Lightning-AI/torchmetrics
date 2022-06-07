@@ -139,7 +139,7 @@ class MaxMetric(BaseAggregator):
                 dimensions will be flattened
         """
         value = self._cast_and_nan_check_input(value)
-        if value.numel() != 0:  # make sure tensor not empty
+        if value.numel():  # make sure tensor not empty
             self.value = torch.max(self.value, torch.max(value))
 
 
@@ -190,7 +190,7 @@ class MinMetric(BaseAggregator):
                 dimensions will be flattened
         """
         value = self._cast_and_nan_check_input(value)
-        if value.numel() != 0:  # make sure tensor not empty
+        if value.numel():  # make sure tensor not empty
             self.value = torch.min(self.value, torch.min(value))
 
 
@@ -239,7 +239,7 @@ class SumMetric(BaseAggregator):
                 dimensions will be flattened
         """
         value = self._cast_and_nan_check_input(value)
-        if value.numel() != 0:
+        if value.numel():
             self.value += value.sum()
 
 
@@ -283,7 +283,7 @@ class CatMetric(BaseAggregator):
                 dimensions will be flattened
         """
         value = self._cast_and_nan_check_input(value)
-        if value.numel() != 0:
+        if value.numel():
             self.value.append(value)
 
     def compute(self) -> Tensor:
