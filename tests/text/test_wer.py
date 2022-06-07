@@ -4,15 +4,14 @@ import pytest
 
 from tests.text.helpers import TextTester
 from tests.text.inputs import _inputs_error_rate_batch_size_1, _inputs_error_rate_batch_size_2
+from torchmetrics.functional.text.wer import word_error_rate
+from torchmetrics.text.wer import WordErrorRate
 from torchmetrics.utilities.imports import _JIWER_AVAILABLE
 
 if _JIWER_AVAILABLE:
     from jiwer import compute_measures
 else:
     compute_measures: Callable
-
-from torchmetrics.functional.text.wer import word_error_rate
-from torchmetrics.text.wer import WordErrorRate
 
 
 def _compute_wer_metric_jiwer(preds: Union[str, List[str]], target: Union[str, List[str]]):

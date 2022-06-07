@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import partial
-from typing import Callable, Optional
+from typing import Any, Callable, Dict, Optional
 
 import numpy as np
 import pytest
@@ -30,7 +30,7 @@ from tests.classification.inputs import _input_multilabel_logits as _input_mlb_l
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
 from tests.helpers import seed_all
 from tests.helpers.testers import NUM_CLASSES, MetricTester
-from torchmetrics import StatScores
+from torchmetrics import Accuracy, Dice, FBetaScore, Precision, Recall, Specificity, StatScores
 from torchmetrics.functional import stat_scores
 from torchmetrics.utilities.checks import _input_format_classification
 
@@ -326,3 +326,20 @@ def test_top_k(k: int, preds: Tensor, target: Tensor, reduce: str, expected: Ten
 
     assert torch.equal(class_metric.compute(), expected.T)
     assert torch.equal(stat_scores(preds, target, top_k=k, reduce=reduce, num_classes=3), expected.T)
+
+
+@pytest.mark.parametrize(
+    "metric_args",
+    [
+        {"reduce": "micro"},
+        {"num_classes": 1, "reduce": "macro"},
+        {"reduce": "samples"},
+        {"mdmc_reduce": None},
+        {"mdmc_reduce": "samplewise"},
+        {"mdmc_reduce": "global"},
+    ],
+)
+@pytest.mark.parametrize("metric_cls", [Accuracy, Dice, FBetaScore, Precision, Recall, Specificity])
+def test_provide_superclass_kwargs(metric_cls: StatScores, metric_args: Dict[str, Any]):
+    """Test instantiating subclasses with superclass arguments as kwargs."""
+    metric_cls(**metric_args)

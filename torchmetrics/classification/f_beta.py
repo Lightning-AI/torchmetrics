@@ -130,16 +130,20 @@ class FBetaScore(StatScores):
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
         multiclass: Optional[bool] = None,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         self.beta = beta
         allowed_average = list(AverageMethod)
         if average not in allowed_average:
             raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
 
+        _reduce_options = (AverageMethod.WEIGHTED, AverageMethod.NONE, None)
+        if "reduce" not in kwargs:
+            kwargs["reduce"] = AverageMethod.MACRO if average in _reduce_options else average
+        if "mdmc_reduce" not in kwargs:
+            kwargs["mdmc_reduce"] = mdmc_average
+
         super().__init__(
-            reduce="macro" if average in [AverageMethod.WEIGHTED, AverageMethod.NONE] else average,
-            mdmc_reduce=mdmc_average,
             threshold=threshold,
             top_k=top_k,
             num_classes=num_classes,
