@@ -3,9 +3,9 @@
     import torch
     from pytorch_lightning.core.lightning import LightningModule
 
-########
-Overview
-########
+##################
+Structure Overview
+##################
 
 TorchMetrics is a Metrics API created for easy metric development and usage in
 PyTorch and PyTorch Lightning. It is rigorously tested for all edge cases and includes a growing list of
