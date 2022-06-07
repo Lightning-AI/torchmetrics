@@ -216,6 +216,9 @@ class MetricCollection(ModuleDict):
         for idx, values in enumerate(temp.values()):
             self._groups[idx] = values
 
+        # create reference between states
+        self._compute_groups_create_state_ref()
+
     @staticmethod
     def _equal_metric_states(metric1: Metric, metric2: Metric) -> bool:
         """Check if the metric state of two metrics are the same."""
@@ -241,16 +244,17 @@ class MetricCollection(ModuleDict):
 
         return True
 
+    def _compute_groups_create_state_ref(self) -> None:
+        for _, cg in self._groups.items():
+            m0 = getattr(self, cg[0])
+            for i in range(1, len(cg)):
+                mi = getattr(self, cg[i])
+                for state in m0._defaults:
+                    m0_state = getattr(m0, state)
+                    setattr(mi, state, m0_state)
+
     def compute(self) -> Dict[str, Any]:
         """Compute the result for each metric in the collection."""
-        if self._enable_compute_groups and self._groups_checked:
-            for _, cg in self._groups.items():
-                m0 = getattr(self, cg[0])
-                # copy the state to the remaining metrics in the compute group
-                for i in range(1, len(cg)):
-                    mi = getattr(self, cg[i])
-                    for state in m0._defaults:
-                        setattr(mi, state, getattr(m0, state))
         res = {k: m.compute() for k, m in self.items(keep_base=True)}
         res = _flatten_dict(res)
         return {self._set_name(k): v for k, v in res.items()}
@@ -259,6 +263,9 @@ class MetricCollection(ModuleDict):
         """Iteratively call reset for each metric."""
         for _, m in self.items(keep_base=True):
             m.reset()
+        if self._enable_compute_groups and self._groups_checked:
+            # reset state reference
+            self._compute_groups_create_state_ref()
 
     def clone(self, prefix: Optional[str] = None, postfix: Optional[str] = None) -> "MetricCollection":
         """Make a copy of the metric collection
