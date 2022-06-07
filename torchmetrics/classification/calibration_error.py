@@ -66,7 +66,7 @@ class CalibrationError(Metric):
         self,
         n_bins: int = 15,
         norm: str = "l1",
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ):
 
         super().__init__(**kwargs)

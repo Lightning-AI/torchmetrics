@@ -49,7 +49,7 @@ class MeanSquaredError(Metric):
     def __init__(
         self,
         squared: bool = True,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
 

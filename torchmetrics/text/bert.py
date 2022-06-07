@@ -127,7 +127,7 @@ class BERTScore(Metric):
         rescale_with_baseline: bool = False,
         baseline_path: Optional[str] = None,
         baseline_url: Optional[str] = None,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ):
         super().__init__(**kwargs)
         self.model_name_or_path = model_name_or_path or _DEFAULT_MODEL

@@ -77,7 +77,7 @@ class CohenKappa(Metric):
         num_classes: int,
         weights: Optional[str] = None,
         threshold: float = 0.5,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         self.num_classes = num_classes

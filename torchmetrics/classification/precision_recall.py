@@ -121,7 +121,7 @@ class Precision(StatScores):
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
         multiclass: Optional[bool] = None,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
         if average not in allowed_average:
@@ -256,7 +256,7 @@ class Recall(StatScores):
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
         multiclass: Optional[bool] = None,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
         if average not in allowed_average:

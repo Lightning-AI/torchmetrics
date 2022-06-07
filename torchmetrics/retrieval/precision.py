@@ -80,7 +80,7 @@ class RetrievalPrecision(RetrievalMetric):
         ignore_index: Optional[int] = None,
         k: Optional[int] = None,
         adaptive_k: bool = False,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__(
             empty_target_action=empty_target_action,

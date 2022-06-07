@@ -130,7 +130,7 @@ class FBetaScore(StatScores):
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
         multiclass: Optional[bool] = None,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         self.beta = beta
         allowed_average = list(AverageMethod)
@@ -256,7 +256,7 @@ class F1Score(FBetaScore):
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
         multiclass: Optional[bool] = None,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__(
             num_classes=num_classes,

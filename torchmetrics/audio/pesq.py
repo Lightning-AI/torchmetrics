@@ -80,7 +80,7 @@ class PerceptualEvaluationSpeechQuality(Metric):
         self,
         fs: int,
         mode: str,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         if not _PESQ_AVAILABLE:

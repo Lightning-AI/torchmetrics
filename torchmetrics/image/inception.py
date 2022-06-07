@@ -98,7 +98,7 @@ class InceptionScore(Metric):
         self,
         feature: Union[str, int, Module] = "logits_unbiased",
         splits: int = 10,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
 

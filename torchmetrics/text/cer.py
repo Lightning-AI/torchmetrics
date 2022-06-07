@@ -64,7 +64,7 @@ class CharErrorRate(Metric):
 
     def __init__(
         self,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ):
         super().__init__(**kwargs)
         self.add_state("errors", tensor(0, dtype=torch.float), dist_reduce_fx="sum")

@@ -44,7 +44,7 @@ class AUC(Metric):
     def __init__(
         self,
         reorder: bool = False,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
 

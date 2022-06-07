@@ -97,7 +97,7 @@ class HingeLoss(Metric):
         self,
         squared: bool = False,
         multiclass_mode: Optional[Union[str, MulticlassMode]] = None,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
 

@@ -60,7 +60,7 @@ class CosineSimilarity(Metric):
     def __init__(
         self,
         reduction: Literal["mean", "sum", "none", None] = "sum",
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         allowed_reduction = ("sum", "mean", "none", None)

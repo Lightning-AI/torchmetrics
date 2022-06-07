@@ -85,7 +85,7 @@ class PrecisionRecallCurve(Metric):
         self,
         num_classes: Optional[int] = None,
         pos_label: Optional[int] = None,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
 

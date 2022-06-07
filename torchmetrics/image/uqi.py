@@ -64,7 +64,7 @@ class UniversalImageQualityIndex(Metric):
         sigma: Sequence[float] = (1.5, 1.5),
         reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
         data_range: Optional[float] = None,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         rank_zero_warn(

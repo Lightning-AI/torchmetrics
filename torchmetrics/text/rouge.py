@@ -93,7 +93,7 @@ class ROUGEScore(Metric):
         tokenizer: Callable[[str], Sequence[str]] = None,
         accumulate: Literal["avg", "best"] = "best",
         rouge_keys: Union[str, Tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),  # type: ignore
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ):
         super().__init__(**kwargs)
         if use_stemmer or "rougeLsum" in rouge_keys:

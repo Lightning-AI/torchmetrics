@@ -95,7 +95,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
         self,
         net_type: str = "alex",
         reduction: Literal["sum", "mean"] = "mean",
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
 

@@ -80,7 +80,7 @@ class ExplainedVariance(Metric):
     def __init__(
         self,
         multioutput: str = "uniform_average",
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         allowed_multioutput = ("raw_values", "uniform_average", "variance_weighted")

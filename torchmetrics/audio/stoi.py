@@ -87,7 +87,7 @@ class ShortTimeObjectiveIntelligibility(Metric):
         self,
         fs: int,
         extended: bool = False,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         if not _PYSTOI_AVAILABLE:

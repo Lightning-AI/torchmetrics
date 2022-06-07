@@ -85,7 +85,7 @@ class R2Score(Metric):
         num_outputs: int = 1,
         adjusted: int = 0,
         multioutput: str = "uniform_average",
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
 

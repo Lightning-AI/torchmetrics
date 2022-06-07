@@ -80,7 +80,7 @@ class StructuralSimilarityIndexMeasure(Metric):
         k2: float = 0.03,
         return_full_image: bool = False,
         return_contrast_sensitivity: bool = False,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         rank_zero_warn(
@@ -198,7 +198,7 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         k2: float = 0.03,
         betas: Tuple[float, ...] = (0.0448, 0.2856, 0.3001, 0.2363, 0.1333),
         normalize: Literal["relu", "simple", None] = None,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         rank_zero_warn(

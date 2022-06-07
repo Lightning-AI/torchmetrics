@@ -128,7 +128,7 @@ class StatScores(Metric):
         ignore_index: Optional[int] = None,
         mdmc_reduce: Optional[str] = None,
         multiclass: Optional[bool] = None,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
 

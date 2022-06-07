@@ -63,7 +63,7 @@ class TranslationEditRate(Metric):
         lowercase: bool = True,
         asian_support: bool = False,
         return_sentence_level_score: bool = False,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ):
         super().__init__(**kwargs)
         if not isinstance(normalize, bool):

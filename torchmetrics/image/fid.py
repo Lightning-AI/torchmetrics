@@ -208,7 +208,7 @@ class FrechetInceptionDistance(Metric):
         self,
         feature: Union[int, Module] = 2048,
         reset_real_features: bool = True,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
 

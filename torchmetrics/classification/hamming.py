@@ -65,7 +65,7 @@ class HammingDistance(Metric):
     def __init__(
         self,
         threshold: float = 0.5,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
 

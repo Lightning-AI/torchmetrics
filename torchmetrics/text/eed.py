@@ -65,7 +65,7 @@ class ExtendedEditDistance(Metric):
         rho: float = 0.3,
         deletion: float = 0.2,
         insertion: float = 1.0,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ):
         super().__init__(**kwargs)
 

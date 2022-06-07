@@ -74,7 +74,7 @@ class KLDivergence(Metric):
         self,
         log_prob: bool = False,
         reduction: Literal["mean", "sum", "none", None] = "mean",
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         if not isinstance(log_prob, bool):

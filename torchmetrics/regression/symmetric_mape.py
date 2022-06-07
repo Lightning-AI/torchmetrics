@@ -55,7 +55,7 @@ class SymmetricMeanAbsolutePercentageError(Metric):
 
     def __init__(
         self,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
 

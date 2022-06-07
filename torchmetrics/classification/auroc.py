@@ -109,7 +109,7 @@ class AUROC(Metric):
         pos_label: Optional[int] = None,
         average: Optional[str] = "macro",
         max_fpr: Optional[float] = None,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
 

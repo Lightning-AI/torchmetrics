@@ -84,7 +84,7 @@ class SacreBLEUScore(BLEUScore):
         tokenize: Literal["none", "13a", "zh", "intl", "char"] = "13a",
         lowercase: bool = False,
         weights: Optional[Sequence[float]] = None,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ):
         super().__init__(n_gram=n_gram, smooth=smooth, weights=weights, **kwargs)
         if tokenize not in AVAILABLE_TOKENIZERS:

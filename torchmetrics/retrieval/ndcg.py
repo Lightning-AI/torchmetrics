@@ -76,7 +76,7 @@ class RetrievalNormalizedDCG(RetrievalMetric):
         empty_target_action: str = "neg",
         ignore_index: Optional[int] = None,
         k: Optional[int] = None,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__(
             empty_target_action=empty_target_action,

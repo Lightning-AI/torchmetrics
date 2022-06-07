@@ -74,7 +74,7 @@ class TweedieDevianceScore(Metric):
     def __init__(
         self,
         power: float = 0.0,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         if 0 < power < 1:

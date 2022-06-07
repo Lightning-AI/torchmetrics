@@ -165,7 +165,7 @@ class KernelInceptionDistance(Metric):
         gamma: Optional[float] = None,  # type: ignore
         coef: float = 1.0,
         reset_real_features: bool = True,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
 
