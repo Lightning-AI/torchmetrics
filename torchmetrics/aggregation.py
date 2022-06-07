@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import warnings
-from typing import Any, Callable, Dict, List, Union
+from typing import Any, Callable, List, Union
 
 import torch
 from torch import Tensor

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from itertools import permutations
-from typing import Any, Callable, Dict, Tuple, Union
+from typing import Any, Callable, Tuple, Union
 from warnings import warn
 
 import torch
