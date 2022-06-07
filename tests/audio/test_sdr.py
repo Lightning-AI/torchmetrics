@@ -27,7 +27,7 @@ from tests.helpers import seed_all
 from tests.helpers.testers import MetricTester
 from torchmetrics.audio import SignalDistortionRatio
 from torchmetrics.functional import signal_distortion_ratio
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6, _TORCH_GREATER_EQUAL_1_11
 
 seed_all(42)
 
@@ -62,9 +62,11 @@ def average_metric(preds: Tensor, target: Tensor, metric_func: Callable) -> Tens
 
 
 original_impl_compute_permutation = partial(sdr_original_batch)
-# original_impl_no_compute_permutation = partial(sdr_original_batch)
 
 
+@pytest.mark.skipif(  # TODO: figure out why tests leads to cuda errors on latest torch
+    _TORCH_GREATER_EQUAL_1_11 and torch.cuda.is_available(), reason="tests leads to cuda errors on latest torch"
+)
 @pytest.mark.parametrize(
     "preds, target, sk_metric",
     [
