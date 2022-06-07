@@ -383,9 +383,9 @@ class Metric(Module, ABC):
                 except RuntimeError as err:
                     if "Expected all tensors to be on" in str(err):
                         raise RuntimeError(
-                            f"{str(err)}. \n"
-                            "Encountered different devices in metric calculation.\n"
-                            "This could be due to the metric class not being on the same device as input.\n"
+                            f"{str(err)}."
+                            "Encountered different devices in metric calculation."
+                            "This could be due to the metric class not being on the same device as input."
                             f"Instead of `metric={self.__class__.__name__}(...)` try to do"
                             f" `metric={self.__class__.__name__}(...).to(device)` where"
                             " device corresponds to the device of the input."
