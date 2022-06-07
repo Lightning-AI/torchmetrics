@@ -113,3 +113,22 @@ def test_no_4_gram_class():
     preds = ["My full pytorch-lightning"]
     targets = [["My full pytorch-lightning test", "Completely Different"]]
     assert bleu(preds, targets) == tensor(0.0)
+
+
+def test_no_and_uniform_weights_functional():
+    preds = ["My full pytorch-lightning"]
+    targets = [["My full pytorch-lightning test", "Completely Different"]]
+    no_weights_score = bleu_score(preds, targets, n_gram=2)
+    uniform_weights_score = bleu_score(preds, targets, n_gram=2, weights=[0.5, 0.5])
+    assert no_weights_score == uniform_weights_score
+
+
+def test_no_and_uniform_weights_class():
+    no_weights_bleu = BLEUScore(n_gram=2)
+    uniform_weights_bleu = BLEUScore(n_gram=2, weights=[0.5, 0.5])
+
+    preds = ["My full pytorch-lightning"]
+    targets = [["My full pytorch-lightning test", "Completely Different"]]
+    no_weights_score = no_weights_bleu(preds, targets)
+    uniform_weights_score = uniform_weights_bleu(preds, targets)
+    assert no_weights_score == uniform_weights_score
