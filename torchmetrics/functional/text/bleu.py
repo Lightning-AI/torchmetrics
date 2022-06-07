@@ -17,7 +17,7 @@
 # Date: 2020-07-18
 # Link: https://pytorch.org/text/_modules/torchtext/data/metrics.html#bleu_score
 from collections import Counter
-from typing import Callable, Sequence, Tuple, Union
+from typing import Callable, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor, tensor
@@ -108,8 +108,9 @@ def _bleu_score_compute(
     target_len: Tensor,
     numerator: Tensor,
     denominator: Tensor,
-    n_gram: int = 4,
-    smooth: bool = False,
+    n_gram: int,
+    weights: Sequence[float],
+    smooth: bool,
 ) -> Tensor:
     """Computes the BLEU score.
 
@@ -119,6 +120,7 @@ def _bleu_score_compute(
         numerator: Numerator of precision score (true positives)
         denominator: Denominator of precision score (true positives + false positives)
         n_gram: gram value ranged 1 to 4
+        weights: Weights used for unigrams, bigrams, etc. to calculate BLEU score.
         smooth: Whether to apply smoothing
     """
     device = numerator.device
@@ -134,7 +136,7 @@ def _bleu_score_compute(
     else:
         precision_scores = numerator / denominator
 
-    log_precision_scores = tensor([1.0 / n_gram] * n_gram, device=device) * torch.log(precision_scores)
+    log_precision_scores = tensor(weights, device=device) * torch.log(precision_scores)
     geometric_mean = torch.exp(torch.sum(log_precision_scores))
     brevity_penalty = tensor(1.0, device=device) if preds_len > target_len else torch.exp(1 - (target_len / preds_len))
     bleu = brevity_penalty * geometric_mean
@@ -147,6 +149,7 @@ def bleu_score(
     target: Sequence[Union[str, Sequence[str]]],
     n_gram: int = 4,
     smooth: bool = False,
+    weights: Optional[Sequence[float]] = None,
 ) -> Tensor:
     """Calculate `BLEU score`_ of machine translated text with one or more references.
 
@@ -155,9 +158,16 @@ def bleu_score(
         target: An iterable of iterables of reference corpus
         n_gram: Gram value ranged from 1 to 4
         smooth: Whether to apply smoothing – see [2]
+        weights:
+            Weights used for unigrams, bigrams, etc. to calculate BLEU score.
+            If not provided, uniform weights are used.
 
     Return:
         Tensor with BLEU Score
+
+    Raises:
+        ValueError: If ``preds`` and ``target`` corpus have different lengths.
+        ValueError: If a length of a list of weights is not ``None`` and not equal to ``n_gram``.
 
     Example:
         >>> from torchmetrics.functional import bleu_score
@@ -179,6 +189,11 @@ def bleu_score(
     if len(preds_) != len(target_):
         raise ValueError(f"Corpus has different size {len(preds_)} != {len(target_)}")
 
+    if weights is not None and len(weights) != n_gram:
+        raise ValueError(f"List of weights has different weights than `n_gram`: {len(weights)} != {n_gram}")
+    if weights is None:
+        weights = [1.0 / n_gram] * n_gram
+
     numerator = torch.zeros(n_gram)
     denominator = torch.zeros(n_gram)
     preds_len = tensor(0.0)
@@ -188,4 +203,4 @@ def bleu_score(
         preds_, target_, numerator, denominator, preds_len, target_len, n_gram, _tokenize_fn
     )
 
-    return _bleu_score_compute(preds_len, target_len, numerator, denominator, n_gram, smooth)
+    return _bleu_score_compute(preds_len, target_len, numerator, denominator, n_gram, weights, smooth)
