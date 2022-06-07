@@ -39,7 +39,7 @@
 
 import re
 from functools import partial
-from typing import Sequence
+from typing import Optional, Sequence
 
 import torch
 from torch import Tensor, tensor
@@ -283,6 +283,7 @@ def sacre_bleu_score(
     smooth: bool = False,
     tokenize: Literal["none", "13a", "zh", "intl", "char"] = "13a",
     lowercase: bool = False,
+    weights: Optional[Sequence[float]] = None,
 ) -> Tensor:
     """Calculate `BLEU score`_ [1] of machine translated text with one or more references. This implementation
     follows the behaviour of SacreBLEU [2] implementation from https://github.com/mjpost/sacrebleu.
@@ -295,9 +296,16 @@ def sacre_bleu_score(
         tokenize: Tokenization technique to be used.
             Supported tokenization: ['none', '13a', 'zh', 'intl', 'char']
         lowercase: If ``True``, BLEU score over lowercased text is calculated.
+        weights:
+            Weights used for unigrams, bigrams, etc. to calculate BLEU score.
+            If not provided, uniform weights are used.
 
     Return:
         Tensor with BLEU Score
+
+    Raises:
+        ValueError: If ``preds`` and ``target`` corpus have different lengths.
+        ValueError: If a length of a list of weights is not ``None`` and not equal to ``n_gram``.
 
     Example:
         >>> from torchmetrics.functional import sacre_bleu_score
@@ -331,6 +339,11 @@ def sacre_bleu_score(
             " Use `pip install regex` or `pip install torchmetrics[text]`."
         )
 
+    if weights is not None and len(weights) != n_gram:
+        raise ValueError(f"List of weights has different weights than `n_gram`: {len(weights)} != {n_gram}")
+    if weights is None:
+        weights = [1.0 / n_gram] * n_gram
+
     numerator = torch.zeros(n_gram)
     denominator = torch.zeros(n_gram)
     preds_len = tensor(0.0)
@@ -348,4 +361,4 @@ def sacre_bleu_score(
         tokenize_fn,
     )
 
-    return _bleu_score_compute(preds_len, target_len, numerator, denominator, n_gram, smooth)
+    return _bleu_score_compute(preds_len, target_len, numerator, denominator, n_gram, weights, smooth)

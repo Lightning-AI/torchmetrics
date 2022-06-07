@@ -16,7 +16,7 @@
 # Authors: torchtext authors and @sluks
 # Date: 2020-07-18
 # Link: https://pytorch.org/text/_modules/torchtext/data/metrics.html#bleu_score
-from typing import Any, Dict, Sequence
+from typing import Any, Dict, Optional, Sequence
 
 import torch
 from torch import Tensor, tensor
@@ -32,6 +32,12 @@ class BLEUScore(Metric):
         n_gram: Gram value ranged from 1 to 4
         smooth: Whether or not to apply smoothing, see [2]
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        weights:
+            Weights used for unigrams, bigrams, etc. to calculate BLEU score.
+            If not provided, uniform weights are used.
+
+    Raises:
+        ValueError: If a length of a list of weights is not ``None`` and not equal to ``n_gram``.
 
     Example:
         >>> from torchmetrics import BLEUScore
@@ -62,11 +68,15 @@ class BLEUScore(Metric):
         self,
         n_gram: int = 4,
         smooth: bool = False,
+        weights: Optional[Sequence[float]] = None,
         **kwargs: Dict[str, Any],
     ):
         super().__init__(**kwargs)
         self.n_gram = n_gram
         self.smooth = smooth
+        if weights is not None and len(weights) != n_gram:
+            raise ValueError(f"List of weights has different weights than `n_gram`: {len(weights)} != {n_gram}")
+        self.weights = weights if weights is not None else [1.0 / n_gram] * n_gram
 
         self.add_state("preds_len", tensor(0.0), dist_reduce_fx="sum")
         self.add_state("target_len", tensor(0.0), dist_reduce_fx="sum")
@@ -98,5 +108,5 @@ class BLEUScore(Metric):
             Tensor with BLEU Score
         """
         return _bleu_score_compute(
-            self.preds_len, self.target_len, self.numerator, self.denominator, self.n_gram, self.smooth
+            self.preds_len, self.target_len, self.numerator, self.denominator, self.n_gram, self.weights, self.smooth
         )
