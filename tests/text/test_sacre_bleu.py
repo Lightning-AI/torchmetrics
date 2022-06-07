@@ -85,3 +85,22 @@ class TestSacreBLEUScore(TextTester):
             metric_functional=sacre_bleu_score,
             metric_args=metric_args,
         )
+
+
+def test_no_and_uniform_weights_functional():
+    preds = ["My full pytorch-lightning"]
+    targets = [["My full pytorch-lightning test", "Completely Different"]]
+    no_weights_score = sacre_bleu_score(preds, targets, n_gram=2)
+    uniform_weights_score = sacre_bleu_score(preds, targets, n_gram=2, weights=[0.5, 0.5])
+    assert no_weights_score == uniform_weights_score
+
+
+def test_no_and_uniform_weights_class():
+    no_weights_bleu = SacreBLEUScore(n_gram=2)
+    uniform_weights_bleu = SacreBLEUScore(n_gram=2, weights=[0.5, 0.5])
+
+    preds = ["My full pytorch-lightning"]
+    targets = [["My full pytorch-lightning test", "Completely Different"]]
+    no_weights_score = no_weights_bleu(preds, targets)
+    uniform_weights_score = uniform_weights_bleu(preds, targets)
+    assert no_weights_score == uniform_weights_score
