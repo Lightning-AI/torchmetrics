@@ -1,0 +1,70 @@
+name: Unittesting and coverage
+description: pull data samples -> unittests
+
+inputs:
+  os:
+    description: operation system
+    required: true
+  python-version:
+    description: Python version
+    required: true
+  pytorch-version:
+    description: PyTorch version
+    required: true
+  requires:
+    description: define oldest or latest
+    required: false
+    default: ""
+  dirs:
+    description: Testing folders per domains
+    required: false
+    default: "unittests"
+  test-timeout:
+    description: PyTest timeout
+    required: false
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+
+  - name: Doctest
+    working-directory: src
+    run: python -m pytest . --cov=torchmetrics --durations=50 ${{ inputs.test-timeout }}
+    shell: bash -l {0}
+
+  - run: echo "PYTEST_ARTEFACT=test-results-${{ inputs.os }}-py${{ inputs.python-version }}-pt{{ inputs.pytorch-version }}-${{ inputs.requires }}" >> $GITHUB_ENV
+    shell: bash -l {0}
+
+  - name: Pull testing data from S3
+    working-directory: tests
+    run: |
+      # wget is simpler but does not work on Windows
+      python -c "from urllib.request import urlretrieve ; urlretrieve('https://pl-public-data.s3.amazonaws.com/metrics/data.zip', 'data.zip')"
+      unzip -o data.zip
+      ls -l _data/*
+    shell: bash -l {0}
+
+  - name: Export README tests
+    run: python -m phmdoctest README.md --outfile test/unittests/test_readme.py
+    shell: bash -l {0}
+
+  - name: Unittests
+    working-directory: tests
+    run: python -m pytest ${{ inputs.dirs }} --cov=torchmetrics --junitxml="$PYTEST_ARTEFACT.xml" --durations=50 ${{ inputs.test-timeout }}
+    shell: bash -l {0}
+
+  - name: Upload pytest results
+    uses: actions/upload-artifact@v2
+    with:
+      name: $PYTEST_ARTEFACT
+      path: "test/$PYTEST_ARTEFACT.xml"
+    if: failure()
+
+  - name: Statistics
+    if: success()
+    working-directory: tests
+    run: |
+      coverage xml
+      coverage report
+    shell: bash -l {0}

@@ -91,39 +91,16 @@ jobs:
         pip install --requirement requirements/devel.txt -U --find-links $PYTORCH_URL
         pip list
 
-    - name: Pull testing data from S3
-      working-directory: ./tests
-      run: |
-        # wget is simpler but does not work on Windows
-        python -c "from urllib.request import urlretrieve ; urlretrieve('https://pl-public-data.s3.amazonaws.com/metrics/data.zip', 'data.zip')"
-        unzip -o data.zip
-        ls -l _data/*
-
-    - name: Readme tests
-      run: phmdoctest README.md --outfile tests/unittests/test_readme.py
-
-    - name: Tests
-      working-directory: ./tests
-      env:
-        TEST_DIRS: "${{ needs.check-diff.outputs.test-dirs }}"
-      run: python -m pytest $TEST_DIRS --cov=torchmetrics --junitxml="$PYTEST_ARTEFACT" --durations=50 $PYTEST_TIMEOUT
-
-    - name: Upload pytest test results
-      uses: actions/upload-artifact@v2
-      with:
-        name: $PYTEST_ARTEFACT
-        path: "tests/$PYTEST_ARTEFACT"
-      if: failure()
-
-    - name: Statistics
-      if: success()
-      working-directory: ./tests
-      run: |
-        coverage xml
-        coverage report
-
     - run: echo "::set-output name=TORCH::$(python -c 'import torch ; print(torch.__version__)' 2>&1)"
       id: info
+
+    - uses: ./.github/actions/unittesting
+      with:
+        os: ${{ runner.os }}
+        requires: ${{ matrix.requires }}
+        python-version: ${{ matrix.python-version }}
+        pytorch-version: ${{ steps.info.outputs.TORCH }}
+        dirs: ${{ needs.check-diff.outputs.test-dirs }}
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
