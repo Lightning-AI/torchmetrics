@@ -15,7 +15,9 @@ import pytest
 import torch
 from torch import tensor
 
-from torchmetrics.utilities import rank_zero_debug, rank_zero_info, rank_zero_warn
+from torchmetrics import MeanSquaredError, PearsonCorrCoef
+from torchmetrics.utilities import check_forward_full_state_property, rank_zero_debug, rank_zero_info, rank_zero_warn
+from torchmetrics.utilities.checks import _allclose_recursive
 from torchmetrics.utilities.data import _bincount, _flatten, _flatten_dict, to_categorical, to_onehot
 from torchmetrics.utilities.distributed import class_reduce, reduce
 
@@ -126,3 +128,30 @@ def test_bincount():
     # check for correctness
     assert torch.allclose(res1, res2)
     assert torch.allclose(res1, res3)
+
+
+@pytest.mark.parametrize("metric_class, expected", [(MeanSquaredError, False), (PearsonCorrCoef, True)])
+def test_check_full_state_update_fn(capsys, metric_class, expected):
+    """Test that the check function works as it should."""
+    check_forward_full_state_property(
+        metric_class=metric_class,
+        input_args=dict(preds=torch.randn(100), target=torch.randn(100)),
+    )
+    captured = capsys.readouterr()
+    assert f"Recommended setting `full_state_update={expected}`" in captured.out
+
+
+@pytest.mark.parametrize(
+    "input, expected",
+    [
+        ((torch.ones(2), torch.ones(2)), True),
+        ((torch.rand(2), torch.rand(2)), False),
+        (([torch.ones(2) for _ in range(2)], [torch.ones(2) for _ in range(2)]), True),
+        (([torch.rand(2) for _ in range(2)], [torch.rand(2) for _ in range(2)]), False),
+        (({f"{i}": torch.ones(2) for i in range(2)}, {f"{i}": torch.ones(2) for i in range(2)}), True),
+        (({f"{i}": torch.rand(2) for i in range(2)}, {f"{i}": torch.rand(2) for i in range(2)}), False),
+    ],
+)
+def test_recursive_allclose(input, expected):
+    res = _allclose_recursive(*input)
+    assert res == expected

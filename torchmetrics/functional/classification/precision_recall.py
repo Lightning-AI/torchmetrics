@@ -49,7 +49,7 @@ def _precision_compute(
         tensor(0.2500)
     """
 
-    numerator = tp
+    numerator = tp.clone()
     denominator = tp + fp
 
     if average == AverageMethod.MACRO and mdmc_average != MDMCAverageMethod.SAMPLEWISE:
@@ -241,7 +241,7 @@ def _recall_compute(
         >>> _recall_compute(tp, fp, fn, average='micro', mdmc_average=None)
         tensor(0.2500)
     """
-    numerator = tp
+    numerator = tp.clone()
     denominator = tp + fn
 
     if average == AverageMethod.MACRO and mdmc_average != MDMCAverageMethod.SAMPLEWISE:

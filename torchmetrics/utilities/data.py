@@ -16,6 +16,20 @@ from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Union
 import torch
 from torch import Tensor, tensor
 
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6, _TORCH_GREATER_EQUAL_1_7, _TORCH_GREATER_EQUAL_1_8
+
+if _TORCH_GREATER_EQUAL_1_8:
+    deterministic = torch.are_deterministic_algorithms_enabled
+elif _TORCH_GREATER_EQUAL_1_7:
+    deterministic = torch.is_deterministic
+elif _TORCH_GREATER_EQUAL_1_6:
+    deterministic = torch._is_deterministic
+else:
+
+    def deterministic() -> bool:
+        return True
+
+
 METRIC_EPS = 1e-6
 
 
@@ -239,7 +253,7 @@ def _bincount(x: Tensor, minlength: Optional[int] = None) -> Tensor:
     Returns:
         Number of occurrences for each unique element in x
     """
-    if x.is_cuda and torch.are_deterministic_algorithms_enabled():
+    if x.is_cuda and deterministic():
         if minlength is None:
             minlength = len(torch.unique(x))
         output = torch.zeros(minlength, device=x.device, dtype=torch.long)

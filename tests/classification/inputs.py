@@ -126,3 +126,13 @@ _class_remove, _class_replace = torch.multinomial(torch.ones(NUM_CLASSES), num_s
 _temp[_temp == _class_remove] = _class_replace
 
 _input_multiclass_with_missing_class = Input(_temp.clone(), _temp.clone())
+
+
+_negmetric_noneavg = {
+    "pred1": torch.tensor([[0.0, 1.0, 0.0], [1.0, 0.0, 0.0]]),
+    "target1": torch.tensor([0, 1]),
+    "res1": torch.tensor([0.0, 0.0, float("nan")]),
+    "pred2": torch.tensor([[0.0, 1.0, 0.0], [1.0, 0.0, 0.0]]),
+    "target2": torch.tensor([0, 2]),
+    "res2": torch.tensor([0.0, 0.0, 0.0]),
+}

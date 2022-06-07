@@ -20,6 +20,7 @@ import torch
 from sklearn.metrics import accuracy_score as sk_accuracy
 from torch import tensor
 
+from tests.classification import MetricWrapper
 from tests.classification.inputs import _input_binary, _input_binary_logits, _input_binary_prob
 from tests.classification.inputs import _input_multiclass as _input_mcls
 from tests.classification.inputs import _input_multiclass_logits as _input_mcls_logits
@@ -32,6 +33,7 @@ from tests.classification.inputs import _input_multilabel_logits as _input_mlb_l
 from tests.classification.inputs import _input_multilabel_multidim as _input_mlmd
 from tests.classification.inputs import _input_multilabel_multidim_prob as _input_mlmd_prob
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
+from tests.classification.inputs import _negmetric_noneavg
 from tests.helpers import seed_all
 from tests.helpers.testers import NUM_BATCHES, NUM_CLASSES, THRESHOLD, MetricTester
 from torchmetrics import Accuracy
@@ -58,33 +60,33 @@ def _sk_accuracy(preds, target, subset_accuracy):
 
 
 @pytest.mark.parametrize(
-    "preds, target, subset_accuracy",
+    "preds, target, subset_accuracy, mdmc_average",
     [
-        (_input_binary_logits.preds, _input_binary_logits.target, False),
-        (_input_binary_prob.preds, _input_binary_prob.target, False),
-        (_input_binary.preds, _input_binary.target, False),
-        (_input_mlb_prob.preds, _input_mlb_prob.target, True),
-        (_input_mlb_logits.preds, _input_mlb_logits.target, False),
-        (_input_mlb_prob.preds, _input_mlb_prob.target, False),
-        (_input_mlb.preds, _input_mlb.target, True),
-        (_input_mlb.preds, _input_mlb.target, False),
-        (_input_mcls_prob.preds, _input_mcls_prob.target, False),
-        (_input_mcls_logits.preds, _input_mcls_logits.target, False),
-        (_input_mcls.preds, _input_mcls.target, False),
-        (_input_mdmc_prob.preds, _input_mdmc_prob.target, False),
-        (_input_mdmc_prob.preds, _input_mdmc_prob.target, True),
-        (_input_mdmc.preds, _input_mdmc.target, False),
-        (_input_mdmc.preds, _input_mdmc.target, True),
-        (_input_mlmd_prob.preds, _input_mlmd_prob.target, True),
-        (_input_mlmd_prob.preds, _input_mlmd_prob.target, False),
-        (_input_mlmd.preds, _input_mlmd.target, True),
-        (_input_mlmd.preds, _input_mlmd.target, False),
+        (_input_binary_logits.preds, _input_binary_logits.target, False, None),
+        (_input_binary_prob.preds, _input_binary_prob.target, False, None),
+        (_input_binary.preds, _input_binary.target, False, None),
+        (_input_mlb_prob.preds, _input_mlb_prob.target, True, None),
+        (_input_mlb_logits.preds, _input_mlb_logits.target, False, None),
+        (_input_mlb_prob.preds, _input_mlb_prob.target, False, None),
+        (_input_mlb.preds, _input_mlb.target, True, None),
+        (_input_mlb.preds, _input_mlb.target, False, "global"),
+        (_input_mcls_prob.preds, _input_mcls_prob.target, False, None),
+        (_input_mcls_logits.preds, _input_mcls_logits.target, False, None),
+        (_input_mcls.preds, _input_mcls.target, False, None),
+        (_input_mdmc_prob.preds, _input_mdmc_prob.target, False, "global"),
+        (_input_mdmc_prob.preds, _input_mdmc_prob.target, True, None),
+        (_input_mdmc.preds, _input_mdmc.target, False, "global"),
+        (_input_mdmc.preds, _input_mdmc.target, True, None),
+        (_input_mlmd_prob.preds, _input_mlmd_prob.target, True, None),
+        (_input_mlmd_prob.preds, _input_mlmd_prob.target, False, None),
+        (_input_mlmd.preds, _input_mlmd.target, True, None),
+        (_input_mlmd.preds, _input_mlmd.target, False, "global"),
     ],
 )
 class TestAccuracies(MetricTester):
     @pytest.mark.parametrize("ddp", [False, True])
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_accuracy_class(self, ddp, dist_sync_on_step, preds, target, subset_accuracy):
+    def test_accuracy_class(self, ddp, dist_sync_on_step, preds, target, subset_accuracy, mdmc_average):
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -92,10 +94,10 @@ class TestAccuracies(MetricTester):
             metric_class=Accuracy,
             sk_metric=partial(_sk_accuracy, subset_accuracy=subset_accuracy),
             dist_sync_on_step=dist_sync_on_step,
-            metric_args={"threshold": THRESHOLD, "subset_accuracy": subset_accuracy},
+            metric_args={"threshold": THRESHOLD, "subset_accuracy": subset_accuracy, "mdmc_average": mdmc_average},
         )
 
-    def test_accuracy_fn(self, preds, target, subset_accuracy):
+    def test_accuracy_fn(self, preds, target, subset_accuracy, mdmc_average):
         self.run_functional_metric_test(
             preds,
             target,
@@ -104,13 +106,13 @@ class TestAccuracies(MetricTester):
             metric_args={"threshold": THRESHOLD, "subset_accuracy": subset_accuracy},
         )
 
-    def test_accuracy_differentiability(self, preds, target, subset_accuracy):
+    def test_accuracy_differentiability(self, preds, target, subset_accuracy, mdmc_average):
         self.run_differentiability_test(
             preds=preds,
             target=target,
             metric_module=Accuracy,
             metric_functional=accuracy,
-            metric_args={"threshold": THRESHOLD, "subset_accuracy": subset_accuracy},
+            metric_args={"threshold": THRESHOLD, "subset_accuracy": subset_accuracy, "mdmc_average": mdmc_average},
         )
 
 
@@ -180,7 +182,7 @@ _multidim_multiclass_logits_with_neg_tgt = Input(
     ],
 )
 def test_topk_accuracy(preds, target, exp_result, k, subset_accuracy):
-    topk = Accuracy(top_k=k, subset_accuracy=subset_accuracy)
+    topk = Accuracy(top_k=k, subset_accuracy=subset_accuracy, mdmc_average="global")
 
     for batch in range(preds.shape[0]):
         topk(preds[batch], target[batch])
@@ -438,3 +440,11 @@ def test_negative_ignore_index(preds, target, ignore_index, result):
     # Test functional
     with pytest.raises(ValueError, match="^[The `target` has to be a non-negative tensor.]"):
         acc_score = accuracy(preds, target, num_classes=num_classes, ignore_index=ignore_index)
+
+
+def test_negmetric_noneavg(noneavg=_negmetric_noneavg):
+    acc = MetricWrapper(Accuracy(average="none", num_classes=noneavg["pred1"].shape[1]))
+    result1 = acc(noneavg["pred1"], noneavg["target1"])
+    assert torch.allclose(noneavg["res1"], result1, equal_nan=True)
+    result2 = acc(noneavg["pred2"], noneavg["target2"])
+    assert torch.allclose(noneavg["res2"], result2, equal_nan=True)

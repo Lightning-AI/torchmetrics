@@ -75,7 +75,7 @@ class TestPearsonCorrcoef(MetricTester):
         )
 
     # Pearson half + cpu does not work due to missing support in torch.sqrt
-    @pytest.mark.xfail(reason="PearsonCorrcoef metric does not support cpu + half precision")
+    @pytest.mark.xfail(reason="PearsonCorrCoef metric does not support cpu + half precision")
     def test_pearson_corrcoef_half_cpu(self, preds, target):
         self.run_precision_test_cpu(preds, target, PearsonCorrCoef, pearson_corrcoef)
 
