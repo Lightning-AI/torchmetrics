@@ -125,6 +125,9 @@ def signal_distortion_ratio(
 ) -> Tensor:
     r"""Signal to Distortion Ratio (SDR) [1,2]
 
+    .. note:
+        The metric currently does not seem to work with Pytorch v1.11 and specific GPU hardware.
+
     Args:
         preds: shape ``[..., time]``
         target: shape ``[..., time]``
