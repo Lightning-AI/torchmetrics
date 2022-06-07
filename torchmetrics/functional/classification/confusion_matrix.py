@@ -193,7 +193,9 @@ def _multiclass_confusion_matrix_tensor_validation(preds, target, num_classes, i
             )
 
 
-def _multiclass_confusion_matrix_format(preds, target, ignore_index) -> Tuple[Tensor, Tensor]:
+def _multiclass_confusion_matrix_format(
+    preds: Tensor, target: Tensor, ignore_index: Optional[int] = None
+) -> Tuple[Tensor, Tensor]:
     # Apply argmax if we have one more dimension
     if preds.ndim == target.ndim + 1:
         preds = preds.argmax(dim=1)

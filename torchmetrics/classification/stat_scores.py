@@ -210,7 +210,6 @@ class MultilabelStatScores(Metric):
             self.fn += fn
 
     def compute(self) -> Tensor:
-
         return _multilabel_stat_scores_compute(self.tp, self.fp, self.tn, self.fn, self.multidim_average)
 
 

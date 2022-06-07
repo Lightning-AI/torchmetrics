@@ -17,6 +17,7 @@ import torch
 from torch import Tensor, tensor
 
 from torchmetrics.utilities.checks import _check_same_shape, _input_format_classification
+from torchmetrics.utilities.data import _bincount
 from torchmetrics.utilities.enums import AverageMethod, DataType, MDMCAverageMethod
 from torchmetrics.utilities.prints import rank_zero_warn
 
@@ -141,6 +142,10 @@ def _multiclass_stat_scores_arg_validation(
         raise ValueError(f"Expected argument `num_classes` to be an integer larger than 1, but got {num_classes}")
     if not isinstance(top_k, int) and top_k < 1:
         raise ValueError(f"Expected argument `top_k` to be an integer larger than or equal to 1, but got {top_k}")
+    if top_k > num_classes:
+        raise ValueError(
+            f"Expected argument `top_k` to be smaller or equal to `num_classes` but got {top_k} and {num_classes}"
+        )
     allowed_average = ("micro", "macro", "weighted,", "weighted", "samples", "none", None)
     if average not in allowed_average:
         raise ValueError(f"Expected argument `average` to be one of {allowed_average}, but got {average}")
@@ -157,24 +162,133 @@ def _multiclass_stat_scores_tensor_validation(
     preds: Tensor,
     target: Tensor,
     num_classes: int,
-    top_k: int = 1,
     multidim_average: str = "global",
     ignore_index: Optional[int] = None,
 ) -> None:
-    pass
+    if preds.ndim == target.ndim + 1:
+        if not preds.is_floating_point():
+            raise ValueError("If `preds` have one dimension more than `target`, `preds` should be a float tensor.")
+        if preds.shape[1] != num_classes:
+            raise ValueError(
+                "If `preds` have one dimension more than `target`, `preds.shape[1]` should be"
+                " equal to number of classes."
+            )
+        if preds.shape[2:] != target.shape[1:]:
+            raise ValueError(
+                "If `preds` have one dimension more than `target`, the shape of `preds` should be"
+                " (N, C, ...), and the shape of `target` should be (N, ...)."
+            )
+        if multidim_average != "global" and preds.ndim < 3:
+            raise ValueError(
+                "If `preds` have one dimension more than `target`, the shape of `preds` should "
+                " atleast 3D when multidim_average is set to `samplewise`"
+            )
+
+    elif preds.ndim == target.ndim:
+        if preds.shape != target.shape:
+            raise ValueError(
+                "The `preds` and `target` should have the same shape,",
+                f" got `preds` with shape={preds.shape} and `target` with shape={target.shape}.",
+            )
+        if multidim_average != "global" and preds.ndim < 2:
+            raise ValueError(
+                "When `preds` and `target` have the same shape, the shape of `preds` should "
+                " atleast 2D when multidim_average is set to `samplewise`"
+            )
+    else:
+        raise ValueError(
+            "Either `preds` and `target` both should have the (same) shape (N, ...), or `target` should be (N, ...)"
+            " and `preds` should be (N, C, ...)."
+        )
+
+    unique_values = torch.unique(target)
+    if ignore_index is None:
+        check = len(unique_values) > num_classes
+    else:
+        check = len(unique_values) > num_classes + 1
+    if check:
+        raise RuntimeError(
+            "Detected more unique values in `target` than `num_classes`. Expected only "
+            f"{num_classes if ignore_index is None else num_classes + 1} but found"
+            f"{len(unique_values)} in `target`."
+        )
+
+    if not preds.is_floating_point():
+        unique_values = torch.unique(preds)
+        if len(unique_values) > num_classes:
+            raise RuntimeError(
+                "Detected more unique values in `preds` than `num_classes`. Expected only "
+                f"{num_classes} but found {len(unique_values)} in `preds`."
+            )
 
 
-def _multiclass_stat_scores_format():
-    pass
+def _multiclass_stat_scores_format(
+    preds: Tensor,
+    target: Tensor,
+    top_k: int = 1,
+):
+    # Apply argmax if we have one more dimension
+    if preds.ndim == target.ndim + 1 and top_k == 1:
+        preds = preds.argmax(dim=1)
+    if top_k != 1:
+        preds = preds.reshape(*preds.shape[:2], -1)
+    else:
+        preds = preds.reshape(preds.shape[0], -1)
+    target = target.reshape(target.shape[0], -1)
+    return preds, target
 
 
-def _multiclass_stat_scores_update():
-    pass
+def _multiclass_stat_scores_update(
+    preds: Tensor,
+    target: Tensor,
+    num_classes: int,
+    average: str = "micro",
+    top_k: int = 1,
+    multidim_average: str = "global",
+    ignore_index: Optional[int] = None,
+):
+    if multidim_average == "samplewise":
+        if top_k > 1:
+            _, preds = torch.topk(preds, k=top_k, dim=1)
+
+        preds_oh = torch.nn.functional.one_hot(preds, num_classes)
+        target_oh = torch.nn.functional.one_hot(target, num_classes)
+        sum_dim = [1] if top_k == 1 else [1, 2]
+        tp = ((target_oh == preds_oh) & (target_oh == 1)).sum(sum_dim)
+        fn = ((target_oh != preds_oh) & (target_oh == 1)).sum(sum_dim)
+        fp = ((target_oh != preds_oh) & (target_oh == 0)).sum(sum_dim)
+        tn = ((target_oh == preds_oh) & (target_oh == 0)).sum(sum_dim)
+        return tp, fn, fp, tn
+    else:
+        preds = preds.flatten()
+        target = target.flatten()
+        if ignore_index is not None:
+            idx = target != ignore_index
+            preds = preds[idx]
+            target = target[idx]
+        unique_mapping = (target * num_classes + preds).to(torch.long)
+        bins = _bincount(unique_mapping, minlength=num_classes**2)
+        confmat = bins.reshape(num_classes, num_classes)
+        tp = confmat.diag()
+        fp = confmat.sum(0) - tp
+        fn = confmat.sum(1) - tp
+        tn = confmat.sum() - (fp + fn + tp)
+        return tp, fp, tn, fn
 
 
 def _multiclass_stat_scores_compute(
-    tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor, multidim_average: str = "global"
+    tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor, average: str = "micro", multidim_average: str = "global"
 ) -> Tensor:
+    res = torch.stack([tp, fp, tn, fn, tp + fp + tn + fn], dim=1)
+    if average == "micro":
+        return res.sum(0)
+    elif average == "macro":
+        return res.float().mean(0)
+    elif average == "weighted":
+        w = tp + fn
+        return (res * (w / w.sum()).reshape(-1, 1)).sum(0)
+    elif average is None or average == "none":
+        return res
     if multidim_average == "global":
         return torch.cat([tp, fp, tn, fn, tp + fp + tn + fn], dim=0)
     return torch.stack([tp, fp, tn, fn, tp + fp + tn + fn], dim=1)
@@ -184,23 +298,20 @@ def multiclass_stat_scores(
     preds: Tensor,
     target: Tensor,
     num_classes: int,
-    top_k: int = 1,
     average: str = "micro",
+    top_k: int = 1,
     multidim_average: str = "global",
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    import pdb
-
-    pdb.set_trace()
     if validate_args:
         _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index)
-        _multiclass_stat_scores_tensor_validation(
-            preds, target, num_classes, top_k, average, multidim_average, ignore_index
-        )
-    preds, target = _multiclass_stat_scores_format(preds, target, ignore_index)
-    tp, fp, tn, fn = _multiclass_stat_scores_update(preds, target, multidim_average)
-    return _multiclass_stat_scores_compute(tp, fp, tn, fn, multidim_average)
+        _multiclass_stat_scores_tensor_validation(preds, target, num_classes, multidim_average, ignore_index)
+    preds, target = _multiclass_stat_scores_format(preds, target, top_k)
+    tp, fp, tn, fn = _multiclass_stat_scores_update(
+        preds, target, num_classes, average, top_k, multidim_average, ignore_index
+    )
+    return _multiclass_stat_scores_compute(tp, fp, tn, fn, average, multidim_average)
 
 
 def _multilabel_stat_scores_arg_validation(
