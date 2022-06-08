@@ -373,6 +373,8 @@ class TestComputeGroups:
 
     @pytest.mark.parametrize("method", ["items", "values", "keys"])
     def test_check_compute_groups_items_and_values(self, metrics, expected, method):
+        """Check that whenever user call a methods that give access to the indivitual metric that state are copied
+        instead of just passed by reference."""
         m = MetricCollection(deepcopy(metrics), compute_groups=True)
         m2 = MetricCollection(deepcopy(metrics), compute_groups=False)
 

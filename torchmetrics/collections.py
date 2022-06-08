@@ -245,7 +245,12 @@ class MetricCollection(ModuleDict):
         return True
 
     def _compute_groups_create_state_ref(self, copy: bool = False) -> None:
-        """Create reference between metrics in the same compute group."""
+        """Create reference between metrics in the same compute group.
+
+        Args:
+            copy: If `True` the metric state will between members will be copied instead
+                of just passed by reference
+        """
         if self._groups_checked:
             for _, cg in self._groups.items():
                 m0 = getattr(self, cg[0])
@@ -404,6 +409,8 @@ class MetricCollection(ModuleDict):
         r"""Return an iterable of the ModuleDict key/value pairs.
         Args:
             keep_base: Whether to add prefix/postfix on the items collection.
+            copy_state: If metric states should be copied between metrics in
+                the same compute group or just passed by reference
         """
         if copy_state:
             self._compute_groups_create_state_ref(copy_state)
@@ -412,11 +419,24 @@ class MetricCollection(ModuleDict):
         return self._to_renamed_ordered_dict().items()
 
     def values(self, copy_state: bool = True) -> Iterable[Module]:
+        """Return an iterable of the ModuleDict values.
+
+        Args:
+            copy_state: If metric states should be copied between metrics in
+                the same compute group or just passed by reference
+        """
         if copy_state:
             self._compute_groups_create_state_ref(copy_state)
         return self._modules.values()
 
     def __getitem__(self, key: str, copy_state: bool = True) -> Module:
+        """Retrieve a single metric from the collection.
+
+        Args:
+            key: name of metric to retrieve
+            copy_state: If metric states should be copied between metrics in
+                the same compute group or just passed by reference
+        """
         if copy_state:
             self._compute_groups_create_state_ref(copy_state)
         return self._modules[key]
