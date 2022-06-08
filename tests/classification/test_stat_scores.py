@@ -21,7 +21,7 @@ from sklearn.metrics import confusion_matrix as sk_confusion_matrix
 
 from tests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from tests.helpers import seed_all
-from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index, BATCH_SIZE, NUM_BATCHES
+from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index
 from torchmetrics.classification.stat_scores import BinaryStatScores
 from torchmetrics.functional.classification.stat_scores import (
     binary_stat_scores,
@@ -37,12 +37,12 @@ def _sk_stat_scores_binary(preds, target, ignore_index, multidim_average):
         preds = preds.view(-1).numpy()
         target = target.view(-1).numpy()
     else:
-        #if preds.shape[0] == BATCH_SIZE * NUM_BATCHES:
+        # if preds.shape[0] == BATCH_SIZE * NUM_BATCHES:
         #    preds = torch.chunk(preds, NUM_BATCHES)
         #    preds = torch.cat([*preds[1::2], *preds[::2]], 0).numpy()
         #    target = torch.chunk(target, NUM_BATCHES)
         #    target = torch.cat([*target[1::2], *target[::2]], 0).numpy()
-        #else:
+        # else:
         preds = preds.numpy()
         target = target.numpy()
 
@@ -116,10 +116,10 @@ class TestBinaryStatScores(MetricTester):
 def _sk_stat_scores_multiclass(preds, target, ignore_index, multidim_average, average):
     if preds.ndim == target.ndim + 1:
         preds = torch.argmax(preds, 1)
-    if multidim_average == 'global':
+    if multidim_average == "global":
         preds = preds.numpy().flatten()
         target = target.numpy().flatten()
-    
+
         if ignore_index is not None:
             idx = target == ignore_index
             target = target[~idx]
@@ -140,16 +140,16 @@ def _sk_stat_scores_multiclass(preds, target, ignore_index, multidim_average, av
             return (res * (w / w.sum()).reshape(-1, 1)).sum(0)
         elif average is None or average == "none":
             return res
-    
+
     else:
         preds = preds.numpy()
         target = target.numpy()
-        
-        res = [ ]
+
+        res = []
         for pred, true in zip(preds, target):
             pred = pred.flatten()
             true = true.flatten()
-            
+
             if ignore_index is not None:
                 idx = true == ignore_index
                 true = true[~idx]
@@ -159,19 +159,18 @@ def _sk_stat_scores_multiclass(preds, target, ignore_index, multidim_average, av
             fp = confmat.sum(0) - tp
             fn = confmat.sum(1) - tp
             tn = confmat.sum() - (fp + fn + tp)
-    
+
             if average == "micro":
                 res.append(np.stack([tp, fp, tn, fn, tp + fp + tn + fn], 1).sum(0))
             elif average == "macro":
                 res.append(np.stack([tp, fp, tn, fn, tp + fp + tn + fn], 1).mean(0))
             elif average == "weighted":
                 w = tp + fn
-                res.append(
-                    (np.stack([tp, fp, tn, fn, tp + fp + tn + fn], 1) * (w / w.sum()).reshape(-1, 1)).sum(0)
-                )
+                res.append((np.stack([tp, fp, tn, fn, tp + fp + tn + fn], 1) * (w / w.sum()).reshape(-1, 1)).sum(0))
             elif average is None or average == "none":
                 res.append(np.stack([tp, fp, tn, fn, tp + fp + tn + fn], 1))
         return np.stack(res, 0)
+
 
 @pytest.mark.parametrize("input", _multiclass_cases)
 @pytest.mark.parametrize("ignore_index", [None, 0, -1])

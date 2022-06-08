@@ -256,11 +256,11 @@ def _multiclass_stat_scores_update(
             target[idx] = num_classes
         if top_k > 1:
             _, preds = torch.topk(preds, k=top_k, dim=1)
-        preds_oh = torch.nn.functional.one_hot(preds, num_classes if ignore_index is None else num_classes+1)
-        target_oh = torch.nn.functional.one_hot(target, num_classes if ignore_index is None else num_classes+1)
+        preds_oh = torch.nn.functional.one_hot(preds, num_classes if ignore_index is None else num_classes + 1)
+        target_oh = torch.nn.functional.one_hot(target, num_classes if ignore_index is None else num_classes + 1)
         if ignore_index is not None:
-            preds_oh = preds_oh[...,:-1]
-            target_oh = target_oh[...,:-1]
+            preds_oh = preds_oh[..., :-1]
+            target_oh = target_oh[..., :-1]
         sum_dim = [1] if top_k == 1 else [1, 2]
         tp = ((target_oh == preds_oh) & (target_oh == 1)).sum(sum_dim)
         fn = ((target_oh != preds_oh) & (target_oh == 1)).sum(sum_dim)
@@ -289,7 +289,7 @@ def _multiclass_stat_scores_compute(
 ) -> Tensor:
 
     res = torch.stack([tp, fp, tn, fn, tp + fp + tn + fn], dim=-1)
-    sum_dim = 0 if multidim_average=='global' else 1
+    sum_dim = 0 if multidim_average == "global" else 1
     if average == "micro":
         return res.sum(sum_dim)
     elif average == "macro":
@@ -312,6 +312,7 @@ def multiclass_stat_scores(
     validate_args: bool = True,
 ) -> Tensor:
     import pdb
+
     pdb.set_trace()
     if validate_args:
         _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index)
