@@ -303,7 +303,8 @@ class Metric(Module, ABC):
 
         # reduce batch and global state
         self._update_count = _update_count + 1
-        self._reduce_states(global_state)
+        with torch.no_grad():
+            self._reduce_states(global_state)
 
         # restore context
         self._is_synced = False
