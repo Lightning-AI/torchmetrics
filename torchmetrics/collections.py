@@ -153,7 +153,7 @@ class MetricCollection(ModuleDict):
         Positional arguments (args) will be passed to every metric in the collection, while keyword arguments (kwargs)
         will be filtered based on the signature of the individual metric.
         """
-        res = {k: m(*args, **m._filter_kwargs(**kwargs)) for k, m in self.items(keep_base=True)}
+        res = {k: m(*args, **m._filter_kwargs(**kwargs)) for k, m in self.items(keep_base=True, copy_state=False)}
         res = _flatten_dict(res)
         return {self._set_name(k): v for k, v in res.items()}
 
@@ -173,7 +173,7 @@ class MetricCollection(ModuleDict):
                     mi = getattr(self, cg[i])
                     mi._update_count = m0._update_count
         else:  # the first update always do per metric to form compute groups
-            for _, m in self.items(keep_base=True):
+            for _, m in self.items(keep_base=True, copy_state=False):
                 m_kwargs = m._filter_kwargs(**kwargs)
                 m.update(*args, **m_kwargs)
 
@@ -244,24 +244,29 @@ class MetricCollection(ModuleDict):
 
         return True
 
-    def _compute_groups_create_state_ref(self) -> None:
-        for _, cg in self._groups.items():
-            m0 = getattr(self, cg[0])
-            for i in range(1, len(cg)):
-                mi = getattr(self, cg[i])
-                for state in m0._defaults:
-                    m0_state = getattr(m0, state)
-                    setattr(mi, state, m0_state)
+    def _compute_groups_create_state_ref(self, copy: bool = False) -> None:
+        """Create reference between metrics in the same compute group."""
+        if self._groups_checked:
+            for _, cg in self._groups.items():
+                m0 = getattr(self, cg[0])
+                for i in range(1, len(cg)):
+                    mi = getattr(self, cg[i])
+                    for state in m0._defaults:
+                        m0_state = getattr(m0, state)
+                        # Determine if we just should set a reference or a full copy
+                        setattr(mi, state, deepcopy(m0_state) if copy else m0_state)
+        if copy:
+            self._groups_checked = False
 
     def compute(self) -> Dict[str, Any]:
         """Compute the result for each metric in the collection."""
-        res = {k: m.compute() for k, m in self.items(keep_base=True)}
+        res = {k: m.compute() for k, m in self.items(keep_base=True, copy_state=False)}
         res = _flatten_dict(res)
         return {self._set_name(k): v for k, v in res.items()}
 
     def reset(self) -> None:
         """Iteratively call reset for each metric."""
-        for _, m in self.items(keep_base=True):
+        for _, m in self.items(keep_base=True, copy_state=False):
             m.reset()
         if self._enable_compute_groups and self._groups_checked:
             # reset state reference
@@ -283,7 +288,7 @@ class MetricCollection(ModuleDict):
 
     def persistent(self, mode: bool = True) -> None:
         """Method for post-init to change if metric states should be saved to its state_dict."""
-        for _, m in self.items(keep_base=True):
+        for _, m in self.items(keep_base=True, copy_state=False):
             m.persistent(mode)
 
     def add_metrics(
@@ -395,14 +400,26 @@ class MetricCollection(ModuleDict):
             return self._modules.keys()
         return self._to_renamed_ordered_dict().keys()
 
-    def items(self, keep_base: bool = False) -> Iterable[Tuple[str, Module]]:
+    def items(self, keep_base: bool = False, copy_state: bool = True) -> Iterable[Tuple[str, Module]]:
         r"""Return an iterable of the ModuleDict key/value pairs.
         Args:
             keep_base: Whether to add prefix/postfix on the items collection.
         """
+        if copy_state:
+            self._compute_groups_create_state_ref(copy_state)
         if keep_base:
             return self._modules.items()
         return self._to_renamed_ordered_dict().items()
+    
+    def values(self, copy_state: bool = True) -> Iterable[Module]:
+        if copy_state:
+            self._compute_groups_create_state_ref(copy_state)
+        return self._modules.values()
+
+    def __getitem__(self, key: str, copy_state: bool = True) -> Module:
+        if copy_state:
+            self._compute_groups_create_state_ref(copy_state)
+        return self._modules[key]
 
     @staticmethod
     def _check_arg(arg: Optional[str], name: str) -> Optional[str]:
