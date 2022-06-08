@@ -322,53 +322,87 @@ def test_collection_filtering():
         ),
     ],
 )
-@pytest.mark.parametrize(
-    "prefix, postfix",
-    [
-        [None, None],
-        ["prefix_", None],
-        [None, "_postfix"],
-        ["prefix_", "_postfix"],
-    ],
-)
-def test_check_compute_groups(metrics, expected, prefix, postfix):
-    """Check that compute groups are formed after initialization."""
-    m = MetricCollection(deepcopy(metrics), prefix=prefix, postfix=postfix, compute_groups=True)
-    # Construct without for comparison
-    m2 = MetricCollection(deepcopy(metrics), prefix=prefix, postfix=postfix, compute_groups=False)
+class TestComputeGroups:
+    @pytest.mark.parametrize(
+        "prefix, postfix",
+        [
+            [None, None],
+            ["prefix_", None],
+            [None, "_postfix"],
+            ["prefix_", "_postfix"],
+        ],
+    )
+    def test_check_compute_groups_correctness(self, metrics, expected, prefix, postfix):
+        """Check that compute groups are formed after initialization and that metrics are correctly computed."""
+        m = MetricCollection(deepcopy(metrics), prefix=prefix, postfix=postfix, compute_groups=True)
+        # Construct without for comparison
+        m2 = MetricCollection(deepcopy(metrics), prefix=prefix, postfix=postfix, compute_groups=False)
 
-    assert len(m.compute_groups) == len(m)
-    assert m2.compute_groups == {}
-
-    for _ in range(2):  # repeat to emulate effect of multiple epochs
-        preds = torch.randn(10, 3).softmax(dim=-1)
-        target = torch.randint(3, (10,))
-        m.update(preds, target)
-        m2.update(preds, target)
-
-        for _, member in m.items():
-            assert member._update_called
-
-        assert m.compute_groups == expected
+        assert len(m.compute_groups) == len(m)
         assert m2.compute_groups == {}
 
-        preds = torch.randn(10, 3).softmax(dim=-1)
-        target = torch.randint(3, (10,))
-        # compute groups should kick in here
-        m.update(preds, target)
-        m2.update(preds, target)
+        for _ in range(2):  # repeat to emulate effect of multiple epochs
+            preds = torch.randn(10, 3).softmax(dim=-1)
+            target = torch.randint(3, (10,))
+            m.update(preds, target)
+            m2.update(preds, target)
 
-        for _, member in m.items():
-            assert member._update_called
+            for _, member in m.items():
+                assert member._update_called
 
-        # compare results for correctness
-        res_cg = m.compute()
-        res_without_cg = m2.compute()
-        for key in res_cg.keys():
-            assert torch.allclose(res_cg[key], res_without_cg[key])
+            assert m.compute_groups == expected
+            assert m2.compute_groups == {}
 
-        m.reset()
-        m2.reset()
+            preds = torch.randn(10, 3).softmax(dim=-1)
+            target = torch.randint(3, (10,))
+            # compute groups should kick in here
+            m.update(preds, target)
+            m2.update(preds, target)
+
+            for _, member in m.items():
+                assert member._update_called
+
+            # compare results for correctness
+            res_cg = m.compute()
+            res_without_cg = m2.compute()
+            for key in res_cg.keys():
+                assert torch.allclose(res_cg[key], res_without_cg[key])
+
+            m.reset()
+            m2.reset()
+
+    @pytest.mark.parametrize("method", ["items", "values", "keys"])
+    def test_check_compute_groups_items_and_values(self, metrics, expected, method):
+        """Check that whenever user call a methods that give access to the indivitual metric that state are copied
+        instead of just passed by reference."""
+        m = MetricCollection(deepcopy(metrics), compute_groups=True)
+        m2 = MetricCollection(deepcopy(metrics), compute_groups=False)
+
+        for _ in range(2):  # repeat to emulate effect of multiple epochs
+            for _ in range(2):  # repeat to emulate effect of multiple batches
+                preds = torch.randn(10, 3).softmax(dim=-1)
+                target = torch.randint(3, (10,))
+                m.update(preds, target)
+                m2.update(preds, target)
+
+            def _compare(m1, m2):
+                for state in m1._defaults:
+                    assert torch.allclose(getattr(m1, state), getattr(m2, state))
+                # if states are still by reference the reset will make following metrics fail
+                m1.reset()
+                m2.reset()
+
+            if method == "items":
+                for (name_cg, metric_cg), (name_no_cg, metric_no_cg) in zip(m.items(), m2.items()):
+                    assert name_cg == name_no_cg
+                    _compare(metric_cg, metric_no_cg)
+            if method == "values":
+                for metric_cg, metric_no_cg in zip(m.values(), m2.values()):
+                    _compare(metric_cg, metric_no_cg)
+            if method == "keys":
+                for key in m.keys():
+                    metric_cg, metric_no_cg = m[key], m2[key]
+                    _compare(metric_cg, metric_no_cg)
 
 
 @pytest.mark.parametrize(
