@@ -410,7 +410,7 @@ class MetricCollection(ModuleDict):
         if keep_base:
             return self._modules.items()
         return self._to_renamed_ordered_dict().items()
-    
+
     def values(self, copy_state: bool = True) -> Iterable[Module]:
         if copy_state:
             self._compute_groups_create_state_ref(copy_state)

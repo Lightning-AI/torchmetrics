@@ -333,9 +333,7 @@ class TestComputeGroups:
         ],
     )
     def test_check_compute_groups_correctness(self, metrics, expected, prefix, postfix):
-        """Check that compute groups are formed after initialization and 
-        that metrics are correctly computed.
-        """
+        """Check that compute groups are formed after initialization and that metrics are correctly computed."""
         m = MetricCollection(deepcopy(metrics), prefix=prefix, postfix=postfix, compute_groups=True)
         # Construct without for comparison
         m2 = MetricCollection(deepcopy(metrics), prefix=prefix, postfix=postfix, compute_groups=False)
@@ -373,30 +371,30 @@ class TestComputeGroups:
             m.reset()
             m2.reset()
 
-    @pytest.mark.parametrize("method", ['items', 'values', 'keys'])
+    @pytest.mark.parametrize("method", ["items", "values", "keys"])
     def test_check_compute_groups_items_and_values(self, metrics, expected, method):
         m = MetricCollection(deepcopy(metrics), compute_groups=True)
         m2 = MetricCollection(deepcopy(metrics), compute_groups=False)
-        
+
         for _ in range(2):  # repeat to emulate effect of multiple epochs
             for _ in range(2):  # repeat to emulate effect of multiple batches
                 preds = torch.randn(10, 3).softmax(dim=-1)
                 target = torch.randint(3, (10,))
                 m.update(preds, target)
                 m2.update(preds, target)
-            
+
             def _compare(m1, m2):
                 for state in m1._defaults:
                     assert torch.allclose(getattr(m1, state), getattr(m2, state))
                 # if states are still by reference the reset will make following metrics fail
                 m1.reset()
                 m2.reset()
-            
-            if method == 'items':
+
+            if method == "items":
                 for (name_cg, metric_cg), (name_no_cg, metric_no_cg) in zip(m.items(), m2.items()):
                     assert name_cg == name_no_cg
                     _compare(metric_cg, metric_no_cg)
-            if method == 'values':
+            if method == "values":
                 for metric_cg, metric_no_cg in zip(m.values(), m2.values()):
                     _compare(metric_cg, metric_no_cg)
             if method == "keys":
