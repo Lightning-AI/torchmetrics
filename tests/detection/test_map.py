@@ -462,7 +462,7 @@ def test_missing_gt():
 
 
 @pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
-def test_segm_iou_empty_mask():
+def test_segm_iou_empty_gt_mask():
     """Test empty ground truths."""
     metric = MeanAveragePrecision(iou_type="segm")
 
@@ -476,6 +476,27 @@ def test_segm_iou_empty_mask():
         ],
         [
             dict(masks=Tensor([]), labels=IntTensor([])),
+        ],
+    )
+
+    metric.compute()
+
+
+@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
+def test_segm_iou_empty_pred_mask():
+    """Test empty predictions."""
+    metric = MeanAveragePrecision(iou_type="segm")
+
+    metric.update(
+        [
+            dict(
+                masks=torch.BoolTensor([]),
+                scores=Tensor([]),
+                labels=IntTensor([]),
+            ),
+        ],
+        [
+            dict(masks=torch.randint(0, 1, (1, 10, 10)).bool(), labels=IntTensor([4])),
         ],
     )
 
