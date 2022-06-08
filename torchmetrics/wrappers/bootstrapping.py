@@ -91,7 +91,7 @@ class BootStrapper(Metric):
         quantile: Optional[Union[float, Tensor]] = None,
         raw: bool = False,
         sampling_strategy: str = "poisson",
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         if not isinstance(base_metric, Metric):

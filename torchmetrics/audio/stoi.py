@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict
+from typing import Any
 
 from torch import Tensor, tensor
 
@@ -87,7 +87,7 @@ class ShortTimeObjectiveIntelligibility(Metric):
         self,
         fs: int,
         extended: bool = False,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         if not _PYSTOI_AVAILABLE:

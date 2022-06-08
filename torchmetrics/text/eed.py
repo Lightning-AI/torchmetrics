@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Dict, List, Sequence, Tuple, Union
+from typing import Any, List, Sequence, Tuple, Union
 
 from torch import Tensor, stack
 from typing_extensions import Literal
@@ -65,7 +65,7 @@ class ExtendedEditDistance(Metric):
         rho: float = 0.3,
         deletion: float = 0.2,
         insertion: float = 1.0,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ):
         super().__init__(**kwargs)
 
