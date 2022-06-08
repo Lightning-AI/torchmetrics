@@ -412,8 +412,8 @@ class MetricCollection(ModuleDict):
         r"""Return an iterable of the ModuleDict key/value pairs.
         Args:
             keep_base: Whether to add prefix/postfix on the items collection.
-            copy_state: If metric states should be copied between metrics in
-                the same compute group or just passed by reference
+            copy_state:
+                If metric states should be copied between metrics in the same compute group or just passed by reference
         """
         self._compute_groups_create_state_ref(copy_state)
         if keep_base:
@@ -424,8 +424,8 @@ class MetricCollection(ModuleDict):
         """Return an iterable of the ModuleDict values.
 
         Args:
-            copy_state: If metric states should be copied between metrics in
-                the same compute group or just passed by reference
+            copy_state:
+                If metric states should be copied between metrics in the same compute group or just passed by reference
         """
         self._compute_groups_create_state_ref(copy_state)
         return self._modules.values()
@@ -435,8 +435,8 @@ class MetricCollection(ModuleDict):
 
         Args:
             key: name of metric to retrieve
-            copy_state: If metric states should be copied between metrics in
-                the same compute group or just passed by reference
+            copy_state:
+                If metric states should be copied between metrics in the same compute group or just passed by reference
         """
         self._compute_groups_create_state_ref(copy_state)
         return self._modules[key]
