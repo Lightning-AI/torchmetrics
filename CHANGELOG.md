@@ -7,48 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
 
-## [UnReleased] - 2022-MM-DD
+## [0.9.1] - 2022-06-08
 
 ### Added
 
 - Added specific `RuntimeError` when metric object is on wrong device ([#1056](https://github.com/PyTorchLightning/metrics/pull/1056))
-
-
 - Added an option to specify own n-gram weights for `BLEUScore` and `SacreBLEUScore` instead of using uniform weights only. ([#1075](https://github.com/PyTorchLightning/metrics/pull/1075))
-
-
--
-
-
-### Changed
-
--
-
--
-
-
-### Deprecated
-
--
-
--
-
-
-### Removed
-
--
-
--
-
 
 ### Fixed
 
 - Fixed aggregation metrics when input only contains zero ([#1070](https://github.com/PyTorchLightning/metrics/pull/1070))
-
-
 - Fixed `TypeError` when providing superclass arguments as kwargs ([#1069](https://github.com/PyTorchLightning/metrics/pull/1069))
-
-
 - Fixed bug related to state reference in metric collection when using compute groups ([#1076](https://github.com/PyTorchLightning/metrics/pull/1076))
 
 
