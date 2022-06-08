@@ -76,6 +76,10 @@ jobs:
         pip --version
         pip install -e . --upgrade --find-links $PYTORCH_URL
 
+    - name: DocTests
+      # NOTE: run coverage on tests does not propagate failure status for Win, https://github.com/nedbat/coveragepy/issues/1003
+      run: python -m pytest torchmetrics --cov=torchmetrics
+
     - name: Freeze Numpy (hotfix)
       if: matrix.requires == 'latest'
       run: pip install "numpy==1.20.0"  # temp fix for cypesq

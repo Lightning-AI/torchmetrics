@@ -28,11 +28,6 @@ runs:
   using: "composite"
   steps:
 
-  - name: Doctest
-    working-directory: src
-    run: python -m pytest . --cov=torchmetrics --durations=50 ${{ inputs.test-timeout }}
-    shell: bash -l {0}
-
   - run: echo "PYTEST_ARTEFACT=test-results-${{ inputs.os }}-py${{ inputs.python-version }}-pt{{ inputs.pytorch-version }}-${{ inputs.requires }}" >> $GITHUB_ENV
     shell: bash -l {0}
 
