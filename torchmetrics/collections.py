@@ -52,11 +52,11 @@ class MetricCollection(ModuleDict):
             metric state and are therefore only different in their compute step e.g. accuracy, precision and recall
             can all be computed from the true positives/negatives and false positives/negatives. By default,
             this argument is ``True`` which enables this feature. Set this argument to `False` for disabling
-            this behaviour. Can also be set to a list of list of metrics for setting the compute groups yourself.
+            this behaviour. Can also be set to a list of lists of metrics for setting the compute groups yourself.
 
     .. note::
         Metric collections can be nested at initilization (see last example) but the output of the collection will
-        still be a single flattened dictionary combining the prefix and postfix arguments from the nested collection.
+        still be a single flatten dictionary combining the prefix and postfix arguments from the nested collection.
 
     Raises:
         ValueError:
@@ -410,8 +410,9 @@ class MetricCollection(ModuleDict):
 
     def items(self, keep_base: bool = False, copy_state: bool = True) -> Iterable[Tuple[str, Module]]:
         r"""Return an iterable of the ModuleDict key/value pairs.
+
         Args:
-            keep_base: Whether to add prefix/postfix on the items collection.
+            keep_base: Whether to add prefix/postfix on the collection.
             copy_state:
                 If metric states should be copied between metrics in the same compute group or just passed by reference
         """
