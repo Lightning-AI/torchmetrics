@@ -143,6 +143,7 @@ class MetricCollection(ModuleDict):
         self.postfix = self._check_arg(postfix, "postfix")
         self._enable_compute_groups = compute_groups
         self._groups_checked: bool = False
+        self._state_is_copy: bool = False
 
         self.add_metrics(metrics, *additional_metrics)
 
@@ -172,6 +173,10 @@ class MetricCollection(ModuleDict):
                 for i in range(1, len(cg)):  # copy over the update count
                     mi = getattr(self, cg[i])
                     mi._update_count = m0._update_count
+            if self._state_is_copy:
+                # If we have deep copied state inbetween updates, reestablish link
+                self._compute_groups_create_state_ref()
+                self._state_is_copy = False
         else:  # the first update always do per metric to form compute groups
             for _, m in self.items(keep_base=True, copy_state=False):
                 m_kwargs = m._filter_kwargs(**kwargs)
@@ -179,6 +184,8 @@ class MetricCollection(ModuleDict):
 
             if self._enable_compute_groups:
                 self._merge_compute_groups()
+                # create reference between states
+                self._compute_groups_create_state_ref()
                 self._groups_checked = True
 
     def _merge_compute_groups(self) -> None:
@@ -216,9 +223,6 @@ class MetricCollection(ModuleDict):
         for idx, values in enumerate(temp.values()):
             self._groups[idx] = values
 
-        # create reference between states
-        self._compute_groups_create_state_ref()
-
     @staticmethod
     def _equal_metric_states(metric1: Metric, metric2: Metric) -> bool:
         """Check if the metric state of two metrics are the same."""
@@ -251,7 +255,7 @@ class MetricCollection(ModuleDict):
             copy: If `True` the metric state will between members will be copied instead
                 of just passed by reference
         """
-        if self._groups_checked:
+        if not self._state_is_copy:
             for _, cg in self._groups.items():
                 m0 = getattr(self, cg[0])
                 for i in range(1, len(cg)):
@@ -260,8 +264,7 @@ class MetricCollection(ModuleDict):
                         m0_state = getattr(m0, state)
                         # Determine if we just should set a reference or a full copy
                         setattr(mi, state, deepcopy(m0_state) if copy else m0_state)
-        if copy:
-            self._groups_checked = False
+        self._state_is_copy = copy
 
     def compute(self) -> Dict[str, Any]:
         """Compute the result for each metric in the collection."""
@@ -412,8 +415,7 @@ class MetricCollection(ModuleDict):
             copy_state: If metric states should be copied between metrics in
                 the same compute group or just passed by reference
         """
-        if copy_state:
-            self._compute_groups_create_state_ref(copy_state)
+        self._compute_groups_create_state_ref(copy_state)
         if keep_base:
             return self._modules.items()
         return self._to_renamed_ordered_dict().items()
@@ -425,8 +427,7 @@ class MetricCollection(ModuleDict):
             copy_state: If metric states should be copied between metrics in
                 the same compute group or just passed by reference
         """
-        if copy_state:
-            self._compute_groups_create_state_ref(copy_state)
+        self._compute_groups_create_state_ref(copy_state)
         return self._modules.values()
 
     def __getitem__(self, key: str, copy_state: bool = True) -> Module:
@@ -437,8 +438,7 @@ class MetricCollection(ModuleDict):
             copy_state: If metric states should be copied between metrics in
                 the same compute group or just passed by reference
         """
-        if copy_state:
-            self._compute_groups_create_state_ref(copy_state)
+        self._compute_groups_create_state_ref(copy_state)
         return self._modules[key]
 
     @staticmethod
