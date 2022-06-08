@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import warnings
-from typing import Any, Callable, Dict, List, Union
+from typing import Any, Callable, List, Union
 
 import torch
 from torch import Tensor
@@ -50,7 +50,7 @@ class BaseAggregator(Metric):
         fn: Union[Callable, str],
         default_value: Union[Tensor, List],
         nan_strategy: Union[str, float] = "error",
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ):
         super().__init__(**kwargs)
         allowed_nan_strategy = ("error", "warn", "ignore")
@@ -122,7 +122,7 @@ class MaxMetric(BaseAggregator):
     def __init__(
         self,
         nan_strategy: Union[str, float] = "warn",
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ):
         super().__init__(
             "max",
@@ -173,7 +173,7 @@ class MinMetric(BaseAggregator):
     def __init__(
         self,
         nan_strategy: Union[str, float] = "warn",
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ):
         super().__init__(
             "min",
@@ -222,7 +222,7 @@ class SumMetric(BaseAggregator):
     def __init__(
         self,
         nan_strategy: Union[str, float] = "warn",
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ):
         super().__init__(
             "sum",
@@ -271,7 +271,7 @@ class CatMetric(BaseAggregator):
     def __init__(
         self,
         nan_strategy: Union[str, float] = "warn",
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ):
         super().__init__("cat", [], nan_strategy, **kwargs)
 
@@ -321,7 +321,7 @@ class MeanMetric(BaseAggregator):
     def __init__(
         self,
         nan_strategy: Union[str, float] = "warn",
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ):
         super().__init__(
             "sum",

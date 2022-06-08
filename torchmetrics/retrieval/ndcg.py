@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from torch import Tensor, tensor
 
@@ -76,7 +76,7 @@ class RetrievalNormalizedDCG(RetrievalMetric):
         empty_target_action: str = "neg",
         ignore_index: Optional[int] = None,
         k: Optional[int] = None,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__(
             empty_target_action=empty_target_action,

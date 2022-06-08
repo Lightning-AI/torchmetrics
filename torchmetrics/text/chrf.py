@@ -96,7 +96,7 @@ class CHRFScore(Metric):
         lowercase: bool = False,
         whitespace: bool = False,
         return_sentence_level_score: bool = False,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ):
         super().__init__(**kwargs)
 

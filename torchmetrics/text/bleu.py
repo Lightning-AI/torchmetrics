@@ -16,7 +16,7 @@
 # Authors: torchtext authors and @sluks
 # Date: 2020-07-18
 # Link: https://pytorch.org/text/_modules/torchtext/data/metrics.html#bleu_score
-from typing import Any, Dict, Optional, Sequence
+from typing import Any, Optional, Sequence
 
 import torch
 from torch import Tensor, tensor
@@ -69,7 +69,7 @@ class BLEUScore(Metric):
         n_gram: int = 4,
         smooth: bool = False,
         weights: Optional[Sequence[float]] = None,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ):
         super().__init__(**kwargs)
         self.n_gram = n_gram
