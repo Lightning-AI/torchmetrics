@@ -13,7 +13,9 @@
 # limitations under the License.
 import numpy as np
 import torch
+from torch import Tensor
 
+from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.imports import _PYSTOI_AVAILABLE
 
 if _PYSTOI_AVAILABLE:
@@ -21,9 +23,6 @@ if _PYSTOI_AVAILABLE:
 else:
     stoi_backend = None
     __doctest_skip__ = ["short_time_objective_intelligibility"]
-from torch import Tensor
-
-from torchmetrics.utilities.checks import _check_same_shape
 
 
 def short_time_objective_intelligibility(
