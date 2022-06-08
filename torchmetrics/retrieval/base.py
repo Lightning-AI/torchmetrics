@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional
+from typing import Any, List, Optional
 
 import torch
 from torch import Tensor, tensor
@@ -74,7 +74,7 @@ class RetrievalMetric(Metric, ABC):
         self,
         empty_target_action: str = "neg",
         ignore_index: Optional[int] = None,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         self.allow_non_binary_target = False

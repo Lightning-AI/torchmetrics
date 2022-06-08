@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict
+from typing import Any
 
 import torch
 from torch import Tensor
@@ -72,7 +72,7 @@ class MatthewsCorrCoef(Metric):
         self,
         num_classes: int,
         threshold: float = 0.5,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         self.num_classes = num_classes

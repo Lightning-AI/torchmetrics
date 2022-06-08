@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, List, Optional, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -120,7 +120,7 @@ class BinnedPrecisionRecallCurve(Metric):
         self,
         num_classes: int,
         thresholds: Union[int, Tensor, List[float]] = 100,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
 
@@ -281,7 +281,7 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
         num_classes: int,
         min_precision: float,
         thresholds: Union[int, Tensor, List[float]] = 100,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__(num_classes=num_classes, thresholds=thresholds, **kwargs)
         self.min_precision = min_precision

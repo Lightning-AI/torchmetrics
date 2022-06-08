@@ -70,7 +70,7 @@ class PermutationInvariantTraining(Metric):
         self,
         metric_func: Callable,
         eval_func: str = "max",
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         base_kwargs: Dict[str, Any] = {
             "dist_sync_on_step": kwargs.pop("dist_sync_on_step", False),

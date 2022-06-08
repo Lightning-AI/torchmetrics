@@ -57,7 +57,7 @@ class MinMaxMetric(Metric):
     def __init__(
         self,
         base_metric: Metric,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         if not isinstance(base_metric, Metric):

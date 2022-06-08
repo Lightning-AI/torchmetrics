@@ -301,7 +301,7 @@ class MeanAveragePrecision(Metric):
         rec_thresholds: Optional[List[float]] = None,
         max_detection_thresholds: Optional[List[int]] = None,
         class_metrics: bool = False,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:  # type: ignore
         super().__init__(**kwargs)
 
