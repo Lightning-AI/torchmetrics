@@ -1,4 +1,4 @@
-.PHONY: test clean docs env
+.PHONY: test clean docs env data
 
 # assume you have installed need packages
 export SPHINX_MOCK_REQUIREMENTS=1
@@ -17,8 +17,7 @@ clean:
 	rm -rf dist
 	rm -rf *.egg-info
 
-test: clean env
-
+test: clean env data
 	# run tests with coverage
 	python -m pytest torchmetrics tests -v --cov=torchmetrics
 	python -m coverage report
@@ -30,3 +29,7 @@ docs: clean
 env:
 	pip install -r requirements.txt
 	pip install -r requirements/devel.txt
+
+data:
+	python -c "from urllib.request import urlretrieve ; urlretrieve('https://pl-public-data.s3.amazonaws.com/metrics/data.zip', 'data.zip')"
+	unzip -o data.zip
