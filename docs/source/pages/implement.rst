@@ -158,7 +158,7 @@ and tests gets formatted in the following way:
 5. Testing is key to keeping ``torchmetrics`` trustworthy. This is why we have a very rigid testing protocol. This means
    that we in most cases require the metric to be tested against some other common framework (``sklearn``, ``scipy`` etc).
 
-  1. Create a testing file in ``tests/"domain"/test_"new_metric".py``. Only one file is needed as it is intended to test
+  1. Create a testing file in ``unittests/"domain"/test_"new_metric".py``. Only one file is needed as it is intended to test
      both the functional and module interface.
   2. In that file, start by defining a number of test inputs that your metric should be evaluated on.
   3. Create a testclass ``class NewMetric(MetricTester)`` that inherits from ``tests.helpers.testers.MetricTester``.
@@ -171,7 +171,7 @@ and tests gets formatted in the following way:
   5. (optional) If your metric raises any exception, please add tests that showcase this.
 
   .. note::
-    The `test file for accuracy <https://github.com/PyTorchLightning/metrics/blob/master/tests/classification/test_accuracy.py>`_ metric
+    The `test file for accuracy <https://github.com/PyTorchLightning/metrics/blob/master/test/unittests/classification/test_accuracy.py>`_ metric
     shows how to implement such tests.
 
 If you only can figure out part of the steps, do not fear to send a PR. We will much rather receive working
