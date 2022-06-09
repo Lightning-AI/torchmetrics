@@ -23,6 +23,7 @@ from torch import Tensor
 from torch.nn import Module
 
 from torchmetrics.utilities import apply_to_collection, rank_zero_warn
+from torchmetrics.utilities.checks import is_overridden
 from torchmetrics.utilities.data import (
     _flatten,
     _squeeze_if_scalar,
@@ -127,7 +128,7 @@ class Metric(Module, ABC):
         self._is_synced = False
         self._cache: Optional[Dict[str, Union[List[Tensor], Tensor]]] = None
 
-        if self.full_state_update is None:
+        if self.full_state_update is None and not is_overridden("forward", self, Metric):
             rank_zero_warn(
                 f"""Torchmetrics v0.9 introduced a new argument class property called `full_state_update` that has
                 not been set for this class ({self.__class__.__name__}). The property determines if `update` by
@@ -302,7 +303,8 @@ class Metric(Module, ABC):
 
         # reduce batch and global state
         self._update_count = _update_count + 1
-        self._reduce_states(global_state)
+        with torch.no_grad():
+            self._reduce_states(global_state)
 
         # restore context
         self._is_synced = False
@@ -377,7 +379,20 @@ class Metric(Module, ABC):
             self._computed = None
             self._update_count += 1
             with torch.set_grad_enabled(self._enable_grad):
-                update(*args, **kwargs)
+                try:
+                    update(*args, **kwargs)
+                except RuntimeError as err:
+                    if "Expected all tensors to be on" in str(err):
+                        raise RuntimeError(
+                            "Encountered different devices in metric calculation"
+                            " (see stacktrace for details)."
+                            "This could be due to the metric class not being on the same device as input."
+                            f"Instead of `metric={self.__class__.__name__}(...)` try to do"
+                            f" `metric={self.__class__.__name__}(...).to(device)` where"
+                            " device corresponds to the device of the input."
+                        ) from err
+                    raise err
+
             if self.compute_on_cpu:
                 self._move_list_states_to_cpu()
 

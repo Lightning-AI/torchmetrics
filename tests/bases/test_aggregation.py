@@ -137,6 +137,7 @@ def test_nan_error(value, nan_strategy, metric_class):
         (CatMetric, 2.0, _case1, torch.tensor([2.0, 2.0, 2.0, 2.0, 2.0])),
         (CatMetric, "ignore", _case2, torch.tensor([1.0, 2.0, 4.0, 5.0])),
         (CatMetric, 2.0, _case2, torch.tensor([1.0, 2.0, 2.0, 4.0, 5.0])),
+        (CatMetric, "ignore", torch.zeros(5), torch.zeros(5)),
     ],
 )
 def test_nan_expected(metric_class, nan_strategy, value, expected):

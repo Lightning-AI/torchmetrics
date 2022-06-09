@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from functools import partial
 from time import perf_counter
 from typing import Any, Dict, Mapping, Optional, Sequence, Tuple, no_type_check
+from unittest.mock import Mock
 
 import torch
 from torch import Tensor
@@ -622,7 +624,7 @@ def _allclose_recursive(res1: Any, res2: Any, atol: float = 1e-8) -> bool:
 
 
 @no_type_check
-def check_forward_no_full_state(
+def check_forward_full_state_property(
     metric_class,
     init_args: Dict[str, Any] = {},
     input_args: Dict[str, Any] = {},
@@ -643,7 +645,7 @@ def check_forward_no_full_state(
 
     Example (states in ``update`` are independent, save to set ``full_state_update=False``)
         >>> from torchmetrics import ConfusionMatrix
-        >>> check_forward_no_full_state(
+        >>> check_forward_full_state_property(
         ...     ConfusionMatrix,
         ...     init_args = {'num_classes': 3},
         ...     input_args = {'preds': torch.randint(3, (10,)), 'target': torch.randint(3, (10,))},
@@ -654,7 +656,7 @@ def check_forward_no_full_state(
         Partial state for 100 steps took: ...
         Full state for 1000 steps took: ...
         Partial state for 1000 steps took: ...
-        True
+        Recommended setting `full_state_update=False`
 
     Example (states in ``update`` are dependend meaning that ``full_state_update=True``):
         >>> from torchmetrics import ConfusionMatrix
@@ -664,12 +666,12 @@ def check_forward_no_full_state(
         ...         # by construction make future states dependent on prior states
         ...         if self.confmat.sum() > 20:
         ...             self.reset()
-        >>> check_forward_no_full_state(
+        >>> check_forward_full_state_property(
         ...     MyMetric,
         ...     init_args = {'num_classes': 3},
         ...     input_args = {'preds': torch.randint(3, (10,)), 'target': torch.randint(3, (10,))},
         ... )
-        False
+        Recommended setting `full_state_update=True`
     """
 
     class FullState(metric_class):
@@ -699,7 +701,8 @@ def check_forward_no_full_state(
     equal = equal & _allclose_recursive(res1, res2)
 
     if not equal:  # we can stop early because the results did not match
-        return False
+        print("Recommended setting `full_state_update=True`")
+        return
 
     # Do timings
     res = torch.zeros(2, len(num_update_to_compare), reps)
@@ -720,4 +723,30 @@ def check_forward_no_full_state(
         print(f"Full state for {num_update_to_compare[t]} steps took: {mean[0, t]}+-{std[0, t]:0.3f}")
         print(f"Partial state for {num_update_to_compare[t]} steps took: {mean[1, t]:0.3f}+-{std[1, t]:0.3f}")
 
-    return (mean[1, -1] < mean[0, -1]).item()  # if faster on average, we recommend upgrading
+    faster = (mean[1, -1] < mean[0, -1]).item()  # if faster on average, we recommend upgrading
+    print(f"Recommended setting `full_state_update={not faster}`")
+
+
+def is_overridden(method_name: str, instance: object, parent: object) -> bool:
+    """Check if a method has been overridden by an instance compared to its parent class."""
+    instance_attr = getattr(instance, method_name, None)
+    if instance_attr is None:
+        return False
+    # `functools.wraps()` support
+    if hasattr(instance_attr, "__wrapped__"):
+        instance_attr = instance_attr.__wrapped__
+    # `Mock(wraps=...)` support
+    if isinstance(instance_attr, Mock):
+        # access the wrapped function
+        instance_attr = instance_attr._mock_wraps
+    # `partial` support
+    elif isinstance(instance_attr, partial):
+        instance_attr = instance_attr.func
+    if instance_attr is None:
+        return False
+
+    parent_attr = getattr(parent, method_name, None)
+    if parent_attr is None:
+        raise ValueError("The parent should define the method")
+
+    return instance_attr.__code__ != parent_attr.__code__

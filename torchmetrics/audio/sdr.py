@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from torch import Tensor, tensor
 
@@ -28,6 +28,9 @@ class SignalDistortionRatio(Metric):
 
     - ``preds``: shape ``[..., time]``
     - ``target``: shape ``[..., time]``
+
+    .. note:
+        The metric currently does not seem to work with Pytorch v1.11 and specific GPU hardware.
 
     Args:
         use_cg_iter:
@@ -85,7 +88,7 @@ class SignalDistortionRatio(Metric):
         filter_length: int = 512,
         zero_mean: bool = False,
         load_diag: Optional[float] = None,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
 
@@ -159,7 +162,7 @@ class ScaleInvariantSignalDistortionRatio(Metric):
     def __init__(
         self,
         zero_mean: bool = False,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         self.zero_mean = zero_mean

@@ -7,37 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
 
-## [unReleased] - 2022-MM-DD
+## [UnReleased] - 2022-MM-DD
 
 ### Added
 
-
 -  Added new image metrics `RelativeAverageSpectralError` ([#816](https://github.com/PyTorchLightning/metrics/pull/816))
 
-
-- Added `RetrievalPrecisionRecallCurve` to retrieval package ([#951](https://github.com/PyTorchLightning/metrics/pull/951))
-
-
-- Added `RetrievalRecallAtFixedPrecision` to retrieval package ([#951](https://github.com/PyTorchLightning/metrics/pull/951))
-
-
-- Added `RetrievalRecallAtFixedPrecision` to retrieval package ([#951](https://github.com/PyTorchLightning/metrics/pull/951))
-
-
-- Added support for nested metric collections ([#1003](https://github.com/PyTorchLightning/metrics/pull/1003))
-
-
-- Added class property `full_state_update` that determines `forward` should call `update` once or twice ([#984](https://github.com/PyTorchLightning/metrics/pull/984))
-
-
-- Added support for nested metric collections ([#1003](https://github.com/PyTorchLightning/metrics/pull/1003))
-
-
-- Added `Dice` to classification package ([#1021](https://github.com/PyTorchLightning/metrics/pull/1021))
-
-- Added support to segmentation type `segm` as IOU for mean average precision ([#822](https://github.com/PyTorchLightning/metrics/pull/822))
-
 ### Changed
+
+-
 
 -
 
@@ -46,9 +24,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -
 
+-
+
+
+### Removed
 
 -
 
+-
+
+
+### Fixed
+
+- Fixed mAP calculation for areas with 0 predictions ([#1080](https://github.com/PyTorchLightning/metrics/pull/1080))
+
+
+-
+
+
+## [0.9.1] - 2022-06-08
+
+### Added
+
+- Added specific `RuntimeError` when metric object is on the wrong device ([#1056](https://github.com/PyTorchLightning/metrics/pull/1056))
+- Added an option to specify own n-gram weights for `BLEUScore` and `SacreBLEUScore` instead of using uniform weights only. ([#1075](https://github.com/PyTorchLightning/metrics/pull/1075))
+
+### Fixed
+
+- Fixed aggregation metrics when input only contains zero ([#1070](https://github.com/PyTorchLightning/metrics/pull/1070))
+- Fixed `TypeError` when providing superclass arguments as `kwargs` ([#1069](https://github.com/PyTorchLightning/metrics/pull/1069))
+- Fixed bug related to state reference in metric collection when using compute groups ([#1076](https://github.com/PyTorchLightning/metrics/pull/1076))
+
+
+## [0.9.0] - 2022-05-30
+
+### Added
+
+- Added `RetrievalPrecisionRecallCurve` and `RetrievalRecallAtFixedPrecision` to retrieval package ([#951](https://github.com/PyTorchLightning/metrics/pull/951))
+- Added class property `full_state_update` that determines `forward` should call `update` once or twice (
+    [#984](https://github.com/PyTorchLightning/metrics/pull/984),
+    [#1033](https://github.com/PyTorchLightning/metrics/pull/1033))
+- Added support for nested metric collections ([#1003](https://github.com/PyTorchLightning/metrics/pull/1003))
+- Added `Dice` to classification package ([#1021](https://github.com/PyTorchLightning/metrics/pull/1021))
+- Added support to segmentation type `segm` as IOU for mean average precision ([#822](https://github.com/PyTorchLightning/metrics/pull/822))
+
+### Changed
+
+- Renamed `reduction` argument to `average` in Jaccard score and added additional options ([#874](https://github.com/PyTorchLightning/metrics/pull/874))
 
 ### Removed
 
@@ -64,22 +86,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     [#1007](https://github.com/PyTorchLightning/metrics/pull/1007)
 )
 
-
 ### Fixed
 
 - Fixed non-empty state dict for a few metrics ([#1012](https://github.com/PyTorchLightning/metrics/pull/1012))
-
-
 - Fixed bug when comparing states while finding compute groups ([#1022](https://github.com/PyTorchLightning/metrics/pull/1022))
-
-
 - Fixed `torch.double` support in stat score metrics ([#1023](https://github.com/PyTorchLightning/metrics/pull/1023))
-
-
 - Fixed `FID` calculation for non-equal size real and fake input ([#1028](https://github.com/PyTorchLightning/metrics/pull/1028))
-
-
 - Fixed case where `KLDivergence` could output `Nan` ([#1030](https://github.com/PyTorchLightning/metrics/pull/1030))
+- Fixed deterministic for PyTorch<1.8 ([#1035](https://github.com/PyTorchLightning/metrics/pull/1035))
+- Fixed default value for `mdmc_average` in `Accuracy` ([#1036](https://github.com/PyTorchLightning/metrics/pull/1036))
+- Fixed missing copy of property when using compute groups in `MetricCollection` ([#1052](https://github.com/PyTorchLightning/metrics/pull/1052))
 
 
 ## [0.8.2] - 2022-05-06

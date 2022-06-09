@@ -52,11 +52,11 @@ class MetricCollection(ModuleDict):
             metric state and are therefore only different in their compute step e.g. accuracy, precision and recall
             can all be computed from the true positives/negatives and false positives/negatives. By default,
             this argument is ``True`` which enables this feature. Set this argument to `False` for disabling
-            this behaviour. Can also be set to a list of list of metrics for setting the compute groups yourself.
+            this behaviour. Can also be set to a list of lists of metrics for setting the compute groups yourself.
 
     .. note::
         Metric collections can be nested at initilization (see last example) but the output of the collection will
-        still be a single flattened dictionary combining the prefix and postfix arguments from the nested collection.
+        still be a single flatten dictionary combining the prefix and postfix arguments from the nested collection.
 
     Raises:
         ValueError:
@@ -143,6 +143,7 @@ class MetricCollection(ModuleDict):
         self.postfix = self._check_arg(postfix, "postfix")
         self._enable_compute_groups = compute_groups
         self._groups_checked: bool = False
+        self._state_is_copy: bool = False
 
         self.add_metrics(metrics, *additional_metrics)
 
@@ -153,7 +154,7 @@ class MetricCollection(ModuleDict):
         Positional arguments (args) will be passed to every metric in the collection, while keyword arguments (kwargs)
         will be filtered based on the signature of the individual metric.
         """
-        res = {k: m(*args, **m._filter_kwargs(**kwargs)) for k, m in self.items(keep_base=True)}
+        res = {k: m(*args, **m._filter_kwargs(**kwargs)) for k, m in self.items(keep_base=True, copy_state=False)}
         res = _flatten_dict(res)
         return {self._set_name(k): v for k, v in res.items()}
 
@@ -169,13 +170,22 @@ class MetricCollection(ModuleDict):
                 # only update the first member
                 m0 = getattr(self, cg[0])
                 m0.update(*args, **m0._filter_kwargs(**kwargs))
+                for i in range(1, len(cg)):  # copy over the update count
+                    mi = getattr(self, cg[i])
+                    mi._update_count = m0._update_count
+            if self._state_is_copy:
+                # If we have deep copied state inbetween updates, reestablish link
+                self._compute_groups_create_state_ref()
+                self._state_is_copy = False
         else:  # the first update always do per metric to form compute groups
-            for _, m in self.items(keep_base=True):
+            for _, m in self.items(keep_base=True, copy_state=False):
                 m_kwargs = m._filter_kwargs(**kwargs)
                 m.update(*args, **m_kwargs)
 
             if self._enable_compute_groups:
                 self._merge_compute_groups()
+                # create reference between states
+                self._compute_groups_create_state_ref()
                 self._groups_checked = True
 
     def _merge_compute_groups(self) -> None:
@@ -238,24 +248,37 @@ class MetricCollection(ModuleDict):
 
         return True
 
-    def compute(self) -> Dict[str, Any]:
-        """Compute the result for each metric in the collection."""
-        if self._enable_compute_groups and self._groups_checked:
+    def _compute_groups_create_state_ref(self, copy: bool = False) -> None:
+        """Create reference between metrics in the same compute group.
+
+        Args:
+            copy: If `True` the metric state will between members will be copied instead
+                of just passed by reference
+        """
+        if not self._state_is_copy:
             for _, cg in self._groups.items():
                 m0 = getattr(self, cg[0])
-                # copy the state to the remaining metrics in the compute group
                 for i in range(1, len(cg)):
                     mi = getattr(self, cg[i])
                     for state in m0._defaults:
-                        setattr(mi, state, getattr(m0, state))
-        res = {k: m.compute() for k, m in self.items(keep_base=True)}
+                        m0_state = getattr(m0, state)
+                        # Determine if we just should set a reference or a full copy
+                        setattr(mi, state, deepcopy(m0_state) if copy else m0_state)
+        self._state_is_copy = copy
+
+    def compute(self) -> Dict[str, Any]:
+        """Compute the result for each metric in the collection."""
+        res = {k: m.compute() for k, m in self.items(keep_base=True, copy_state=False)}
         res = _flatten_dict(res)
         return {self._set_name(k): v for k, v in res.items()}
 
     def reset(self) -> None:
         """Iteratively call reset for each metric."""
-        for _, m in self.items(keep_base=True):
+        for _, m in self.items(keep_base=True, copy_state=False):
             m.reset()
+        if self._enable_compute_groups and self._groups_checked:
+            # reset state reference
+            self._compute_groups_create_state_ref()
 
     def clone(self, prefix: Optional[str] = None, postfix: Optional[str] = None) -> "MetricCollection":
         """Make a copy of the metric collection
@@ -273,7 +296,7 @@ class MetricCollection(ModuleDict):
 
     def persistent(self, mode: bool = True) -> None:
         """Method for post-init to change if metric states should be saved to its state_dict."""
-        for _, m in self.items(keep_base=True):
+        for _, m in self.items(keep_base=True, copy_state=False):
             m.persistent(mode)
 
     def add_metrics(
@@ -385,14 +408,39 @@ class MetricCollection(ModuleDict):
             return self._modules.keys()
         return self._to_renamed_ordered_dict().keys()
 
-    def items(self, keep_base: bool = False) -> Iterable[Tuple[str, Module]]:
+    def items(self, keep_base: bool = False, copy_state: bool = True) -> Iterable[Tuple[str, Module]]:
         r"""Return an iterable of the ModuleDict key/value pairs.
+
         Args:
-            keep_base: Whether to add prefix/postfix on the items collection.
+            keep_base: Whether to add prefix/postfix on the collection.
+            copy_state:
+                If metric states should be copied between metrics in the same compute group or just passed by reference
         """
+        self._compute_groups_create_state_ref(copy_state)
         if keep_base:
             return self._modules.items()
         return self._to_renamed_ordered_dict().items()
+
+    def values(self, copy_state: bool = True) -> Iterable[Module]:
+        """Return an iterable of the ModuleDict values.
+
+        Args:
+            copy_state:
+                If metric states should be copied between metrics in the same compute group or just passed by reference
+        """
+        self._compute_groups_create_state_ref(copy_state)
+        return self._modules.values()
+
+    def __getitem__(self, key: str, copy_state: bool = True) -> Module:
+        """Retrieve a single metric from the collection.
+
+        Args:
+            key: name of metric to retrieve
+            copy_state:
+                If metric states should be copied between metrics in the same compute group or just passed by reference
+        """
+        self._compute_groups_create_state_ref(copy_state)
+        return self._modules[key]
 
     @staticmethod
     def _check_arg(arg: Optional[str], name: str) -> Optional[str]:

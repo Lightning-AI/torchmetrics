@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict
+from typing import Any
 
 import torch
 from torch import Tensor, tensor
@@ -85,7 +85,7 @@ class R2Score(Metric):
         num_outputs: int = 1,
         adjusted: int = 0,
         multioutput: str = "uniform_average",
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
 

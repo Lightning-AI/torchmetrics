@@ -301,7 +301,7 @@ class MeanAveragePrecision(Metric):
         rec_thresholds: Optional[List[float]] = None,
         max_detection_thresholds: Optional[List[int]] = None,
         class_metrics: bool = False,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:  # type: ignore
         super().__init__(**kwargs)
 
@@ -362,7 +362,7 @@ class MeanAveragePrecision(Metric):
                 - ``boxes``: ``torch.FloatTensor`` of shape ``[num_boxes, 4]`` containing ``num_boxes``
                   ground truth boxes of the format specified in the constructor. By default, this method expects
                   ``[xmin, ymin, xmax, ymax]`` in absolute image coordinates.
-                - ``labels``: ``torch.IntTensor`` of shape ``[num_boxes]`` containing 1-indexed ground truth
+                - ``labels``: ``torch.IntTensor`` of shape ``[num_boxes]`` containing 0-indexed ground truth
                    classes for the boxes.
 
         Raises:
@@ -482,9 +482,9 @@ class MeanAveragePrecision(Metric):
     ) -> Dict[str, Any]:
         """Some GT but no predictions."""
         # GTs
-        gt = gt[gt_label_mask]
+        gt = [gt[i] for i in gt_label_mask]
         nb_gt = len(gt)
-        areas = box_area(gt)
+        areas = compute_area(gt, iou_type=self.iou_type).to(self.device)
         ignore_area = (areas < area_range[0]) | (areas > area_range[1])
         gt_ignore, _ = torch.sort(ignore_area.to(torch.uint8))
         gt_ignore = gt_ignore.to(torch.bool)

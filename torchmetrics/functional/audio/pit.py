@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from itertools import permutations
-from typing import Any, Callable, Dict, Tuple, Union
+from typing import Any, Callable, Tuple, Union
 from warnings import warn
 
 import torch
@@ -93,7 +93,7 @@ def _find_best_perm_by_exhaustive_method(
 
 
 def permutation_invariant_training(
-    preds: Tensor, target: Tensor, metric_func: Callable, eval_func: str = "max", **kwargs: Dict[str, Any]
+    preds: Tensor, target: Tensor, metric_func: Callable, eval_func: str = "max", **kwargs: Any
 ) -> Tuple[Tensor, Tensor]:
     """Permutation invariant training (PIT). The ``permutation_invariant_training`` implements the famous
     Permutation Invariant Training method.

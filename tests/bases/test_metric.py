@@ -25,6 +25,8 @@ from torch.nn import Module
 
 from tests.helpers import seed_all
 from tests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum
+from tests.helpers.utilities import no_warning_call
+from torchmetrics import PearsonCorrCoef
 from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
 
 seed_all(42)
@@ -419,6 +421,34 @@ def test_warning_on_not_set_full_state_update(metric_class):
         full_state_update = None
 
     with pytest.warns(
+        UserWarning,
+        match="Torchmetrics v0.9 introduced a new argument class property called.*",
+    ):
+        UnsetProperty()
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires gpu")
+def test_specific_error_on_wrong_device():
+    metric = PearsonCorrCoef()
+    preds = torch.tensor(range(10), device="cuda", dtype=torch.float)
+    target = torch.tensor(range(10), device="cuda", dtype=torch.float)
+    with pytest.raises(
+        RuntimeError, match="This could be due to the metric class not being on the same device as input"
+    ):
+        _ = metric(preds, target)
+
+
+@pytest.mark.parametrize("metric_class", [DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum])
+def test_no_warning_on_custom_forward(metric_class):
+    """If metric is using custom forward, full_state_update is irrelevant."""
+
+    class UnsetProperty(metric_class):
+        full_state_update = None
+
+        def forward(self, *args, **kwargs):
+            self.update(*args, **kwargs)
+
+    with no_warning_call(
         UserWarning,
         match="Torchmetrics v0.9 introduced a new argument class property called.*",
     ):

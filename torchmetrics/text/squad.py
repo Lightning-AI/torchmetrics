@@ -56,7 +56,7 @@ class SQuAD(Metric):
 
     def __init__(
         self,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ):
         super().__init__(**kwargs)
 

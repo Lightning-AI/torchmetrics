@@ -55,7 +55,7 @@ jobs:
     - name: Install base dependencies
       run: |
         pip --version
-        pip install --requirement requirements.txt --upgrade --find-links $PYTORCH_URL
+        pip install -r requirements.txt --upgrade --find-links $PYTORCH_URL
 
     - name: Freeze Numpy (hotfix)
       if: matrix.requires == 'latest'
@@ -75,5 +75,7 @@ jobs:
         pip list
 
     - name: Integrations
+      env:
+        PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: 'python'
       run: |
         python -m pytest integrations -v --durations=25

@@ -17,7 +17,7 @@
 # Authors: torchtext authors and @sluks
 # Date: 2020-07-18
 # Link: https://pytorch.org/text/_modules/torchtext/data/metrics.html#bleu_score
-from typing import Any, Dict, Sequence
+from typing import Any, Optional, Sequence
 
 from typing_extensions import Literal
 
@@ -42,12 +42,17 @@ class SacreBLEUScore(BLEUScore):
             Supported tokenization: ``['none', '13a', 'zh', 'intl', 'char']``
         lowercase:  If ``True``, BLEU score over lowercased text is calculated.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        weights:
+            Weights used for unigrams, bigrams, etc. to calculate BLEU score.
+            If not provided, uniform weights are used.
 
      Raises:
         ValueError:
             If ``tokenize`` not one of 'none', '13a', 'zh', 'intl' or 'char'
         ValueError:
             If ``tokenize`` is set to 'intl' and `regex` is not installed
+        ValueError:
+            If a length of a list of weights is not ``None`` and not equal to ``n_gram``.
 
 
     Example:
@@ -78,9 +83,10 @@ class SacreBLEUScore(BLEUScore):
         smooth: bool = False,
         tokenize: Literal["none", "13a", "zh", "intl", "char"] = "13a",
         lowercase: bool = False,
-        **kwargs: Dict[str, Any],
+        weights: Optional[Sequence[float]] = None,
+        **kwargs: Any,
     ):
-        super().__init__(n_gram=n_gram, smooth=smooth, **kwargs)
+        super().__init__(n_gram=n_gram, smooth=smooth, weights=weights, **kwargs)
         if tokenize not in AVAILABLE_TOKENIZERS:
             raise ValueError(f"Argument `tokenize` expected to be one of {AVAILABLE_TOKENIZERS} but got {tokenize}.")
 

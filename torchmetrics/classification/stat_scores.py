@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Dict, Optional, Tuple
+from typing import Any, Callable, Optional, Tuple
 
 import torch
 from torch import Tensor
@@ -128,7 +128,7 @@ class StatScores(Metric):
         ignore_index: Optional[int] = None,
         mdmc_reduce: Optional[str] = None,
         multiclass: Optional[bool] = None,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
 

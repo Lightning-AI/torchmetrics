@@ -19,6 +19,7 @@ from torch import tensor
 from torch.utils.data import DataLoader
 
 from integrations.lightning.boring_model import BoringModel, RandomDataset
+from tests.helpers.utilities import no_warning_call
 from torchmetrics import Accuracy, AveragePrecision, MetricCollection, SumMetric
 
 
@@ -210,7 +211,11 @@ def test_metric_lightning_log(tmpdir):
         max_epochs=2,
         log_every_n_steps=1,
     )
-    trainer.fit(model)
+    with no_warning_call(
+        UserWarning,
+        match="Torchmetrics v0.9 introduced a new argument class property called.*",
+    ):
+        trainer.fit(model)
 
     logged = trainer.logged_metrics
     assert torch.allclose(tensor(logged["sum_step"]), model.sum, atol=2e-4)
@@ -249,7 +254,11 @@ def test_metric_collection_lightning_log(tmpdir):
         log_every_n_steps=1,
         weights_summary=None,
     )
-    trainer.fit(model)
+    with no_warning_call(
+        UserWarning,
+        match="Torchmetrics v0.9 introduced a new argument class property called.*",
+    ):
+        trainer.fit(model)
 
     logged = trainer.logged_metrics
     assert torch.allclose(tensor(logged["SumMetric_epoch"]), model.sum, atol=2e-4)
