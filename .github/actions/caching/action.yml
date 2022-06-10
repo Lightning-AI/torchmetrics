@@ -26,7 +26,10 @@ runs:
   steps:
 
   - name: install assitant's deps
-    run: pip install fire requests packaging
+    run: |
+      python --version
+      pip --version
+      pip install fire requests packaging
     shell: bash
 
   - name: Set min. dependencies
