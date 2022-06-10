@@ -34,6 +34,7 @@ runs:
   - name: Pull testing data from S3
     working-directory: ./tests
     run: |
+      pip install -q "urllib3>1.0"
       # wget is simpler but does not work on Windows
       python -c "from urllib.request import urlretrieve ; urlretrieve('https://pl-public-data.s3.amazonaws.com/metrics/data.zip', 'data.zip')"
       unzip -o data.zip
