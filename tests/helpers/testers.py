@@ -35,7 +35,7 @@ except RuntimeError:
 
 NUM_PROCESSES = 2
 NUM_BATCHES = 4  # Need to be divisible with the number of processes
-BATCH_SIZE = 32
+BATCH_SIZE = 3
 # NUM_BATCHES = 10 if torch.cuda.is_available() else 4
 # BATCH_SIZE = 64 if torch.cuda.is_available() else 32
 NUM_CLASSES = 5
@@ -242,6 +242,9 @@ def _class_test(
         for k, v in kwargs_update.items()
     }
     sk_result = sk_metric(total_preds, total_target, **total_kwargs_update)
+
+    print(sk_result)
+    print(result)
 
     # assert after aggregation
     if isinstance(sk_result, dict):

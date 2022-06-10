@@ -15,6 +15,7 @@ from functools import partial
 
 import numpy as np
 import pytest
+import torch
 from scipy.special import expit as sigmoid
 from sklearn.metrics import confusion_matrix as sk_confusion_matrix
 
@@ -36,12 +37,20 @@ def _sk_stat_scores_binary(preds, target, ignore_index, multidim_average):
         preds = preds.view(-1).numpy()
         target = target.view(-1).numpy()
     else:
+        # if preds.shape[0] == BATCH_SIZE * NUM_BATCHES:
+        #    preds = torch.chunk(preds, NUM_BATCHES)
+        #    preds = torch.cat([*preds[1::2], *preds[::2]], 0).numpy()
+        #    target = torch.chunk(target, NUM_BATCHES)
+        #    target = torch.cat([*target[1::2], *target[::2]], 0).numpy()
+        # else:
         preds = preds.numpy()
         target = target.numpy()
+
     if np.issubdtype(preds.dtype, np.floating):
         if not ((0 < preds) & (preds < 1)).all():
             preds = sigmoid(preds)
         preds = (preds >= THRESHOLD).astype(np.uint8)
+
     if multidim_average == "global":
         if ignore_index is not None:
             idx = target == ignore_index
@@ -52,6 +61,8 @@ def _sk_stat_scores_binary(preds, target, ignore_index, multidim_average):
     else:
         res = []
         for pred, true in zip(preds, target):
+            pred = pred.flatten()
+            true = true.flatten()
             if ignore_index is not None:
                 idx = true == ignore_index
                 true = true[~idx]
@@ -65,7 +76,7 @@ def _sk_stat_scores_binary(preds, target, ignore_index, multidim_average):
 @pytest.mark.parametrize("ignore_index", [None, 0, -1])
 @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
 class TestBinaryStatScores(MetricTester):
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [False, True])
     def test_binary_stat_scores(self, ddp, input, ignore_index, multidim_average):
         preds, target = input
         if ignore_index == -1:
@@ -103,32 +114,62 @@ class TestBinaryStatScores(MetricTester):
 
 
 def _sk_stat_scores_multiclass(preds, target, ignore_index, multidim_average, average):
-    preds = preds.numpy()
-    target = target.numpy()
     if preds.ndim == target.ndim + 1:
-        preds = np.argmax(preds, axis=1)
-    preds = preds.flatten()
-    target = target.flatten()
-    if ignore_index is not None:
-        idx = target == ignore_index
-        target = target[~idx]
-        preds = preds[~idx]
-    confmat = sk_confusion_matrix(y_true=target, y_pred=preds, labels=list(range(NUM_CLASSES)))
-    tp = np.diag(confmat)
-    fp = confmat.sum(0) - tp
-    fn = confmat.sum(1) - tp
-    tn = confmat.sum() - (fp + fn + tp)
+        preds = torch.argmax(preds, 1)
+    if multidim_average == "global":
+        preds = preds.numpy().flatten()
+        target = target.numpy().flatten()
 
-    res = np.stack([tp, fp, tn, fn, tp + fp + tn + fn], 1)
-    if average == "micro":
-        return res.sum(0)
-    elif average == "macro":
-        return res.mean(0)
-    elif average == "weighted":
-        w = tp + fn
-        return res * (w / w.sum()).reshape(-1, 1)
-    elif average is None or average == "none":
-        return res
+        if ignore_index is not None:
+            idx = target == ignore_index
+            target = target[~idx]
+            preds = preds[~idx]
+        confmat = sk_confusion_matrix(y_true=target, y_pred=preds, labels=list(range(NUM_CLASSES)))
+        tp = np.diag(confmat)
+        fp = confmat.sum(0) - tp
+        fn = confmat.sum(1) - tp
+        tn = confmat.sum() - (fp + fn + tp)
+
+        res = np.stack([tp, fp, tn, fn, tp + fp + tn + fn], 1)
+        if average == "micro":
+            return res.sum(0)
+        elif average == "macro":
+            return res.mean(0)
+        elif average == "weighted":
+            w = tp + fn
+            return (res * (w / w.sum()).reshape(-1, 1)).sum(0)
+        elif average is None or average == "none":
+            return res
+
+    else:
+        preds = preds.numpy()
+        target = target.numpy()
+
+        res = []
+        for pred, true in zip(preds, target):
+            pred = pred.flatten()
+            true = true.flatten()
+
+            if ignore_index is not None:
+                idx = true == ignore_index
+                true = true[~idx]
+                pred = pred[~idx]
+            confmat = sk_confusion_matrix(y_true=true, y_pred=pred, labels=list(range(NUM_CLASSES)))
+            tp = np.diag(confmat)
+            fp = confmat.sum(0) - tp
+            fn = confmat.sum(1) - tp
+            tn = confmat.sum() - (fp + fn + tp)
+
+            if average == "micro":
+                res.append(np.stack([tp, fp, tn, fn, tp + fp + tn + fn], 1).sum(0))
+            elif average == "macro":
+                res.append(np.stack([tp, fp, tn, fn, tp + fp + tn + fn], 1).mean(0))
+            elif average == "weighted":
+                w = tp + fn
+                res.append((np.stack([tp, fp, tn, fn, tp + fp + tn + fn], 1) * (w / w.sum()).reshape(-1, 1)).sum(0))
+            elif average is None or average == "none":
+                res.append(np.stack([tp, fp, tn, fn, tp + fp + tn + fn], 1))
+        return np.stack(res, 0)
 
 
 @pytest.mark.parametrize("input", _multiclass_cases)
