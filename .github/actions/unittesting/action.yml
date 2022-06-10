@@ -32,7 +32,7 @@ runs:
     shell: bash -l {0}
 
   - name: Pull testing data from S3
-    working-directory: tests
+    working-directory: ./tests
     run: |
       # wget is simpler but does not work on Windows
       python -c "from urllib.request import urlretrieve ; urlretrieve('https://pl-public-data.s3.amazonaws.com/metrics/data.zip', 'data.zip')"
@@ -45,7 +45,7 @@ runs:
     shell: bash -l {0}
 
   - name: Unittests
-    working-directory: tests
+    working-directory: ./tests
     run: python -m pytest ${{ inputs.dirs }} --cov=torchmetrics --junitxml="$PYTEST_ARTEFACT.xml" --durations=50 ${{ inputs.test-timeout }}
     shell: bash -l {0}
 
@@ -58,7 +58,7 @@ runs:
 
   - name: Statistics
     if: success()
-    working-directory: tests
+    working-directory: ./tests
     run: |
       coverage xml
       coverage report

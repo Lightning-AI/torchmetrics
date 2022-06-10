@@ -82,6 +82,7 @@ jobs:
         python -c "from torch import __version__ as ver; assert '.'.join(ver.split('.')[:2]) == '${{ matrix.pytorch-version }}', ver"
 
     - name: DocTests
+      working-directory: ./src
       # NOTE: run coverage on tests does not propagate failure status for Win, https://github.com/nedbat/coveragepy/issues/1003
       run: python -m pytest torchmetrics --cov=torchmetrics
 
@@ -91,6 +92,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
         pytorch-version: ${{ matrix.pytorch-version }}
         dirs: ${{ needs.check-diff.outputs.test-dirs }}
+        test-timeout: "--timeout=120"
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
