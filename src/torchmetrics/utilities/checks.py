@@ -609,7 +609,7 @@ def _check_retrieval_target_and_prediction_types(
     return preds.flatten(), target.flatten()
 
 
-def _allclose_recursive(res1: Any, res2: Any, atol: float = 1e-8) -> bool:
+def _allclose_recursive(res1: Any, res2: Any, atol: float = 1e-6) -> bool:
     """Utility function for recursively asserting that two results are within a certain tolerance."""
     # single output compare
     if isinstance(res1, Tensor):
