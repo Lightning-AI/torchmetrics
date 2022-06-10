@@ -84,7 +84,7 @@ jobs:
     - name: DocTests
       working-directory: ./src
       # NOTE: run coverage on tests does not propagate failure status for Win, https://github.com/nedbat/coveragepy/issues/1003
-      run: python -m pytest torchmetrics --cov=torchmetrics
+      run: python -m pytest torchmetrics
 
     - uses: ./.github/actions/unittesting
       with:

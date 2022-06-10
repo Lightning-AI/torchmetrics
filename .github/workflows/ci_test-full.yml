@@ -52,12 +52,12 @@ jobs:
     - name: Setup macOS
       if: runner.os == 'macOS'
       run: |
-        python -c "print('PYTEST_TIMEOUT=--timeout=120')" >> $GITHUB_ENV
+        python -c "print('UNITTEST_TIMEOUT=--timeout=120')" >> $GITHUB_ENV
         brew install gcc libomp ffmpeg # https://github.com/pytorch/pytorch/issues/20030
     - name: Setup Linux
       if: runner.os == 'Linux'
       run: |
-        python -c "print('PYTEST_TIMEOUT=--timeout=120')" >> $GITHUB_ENV
+        python -c "print('UNITTEST_TIMEOUT=--timeout=120')" >> $GITHUB_ENV
         sudo apt update --fix-missing
         sudo apt install -y ffmpeg
     - name: Setup Windows
@@ -79,7 +79,7 @@ jobs:
     - name: DocTests
       working-directory: ./src
       # NOTE: run coverage on tests does not propagate failure status for Win, https://github.com/nedbat/coveragepy/issues/1003
-      run: python -m pytest torchmetrics --cov=torchmetrics
+      run: python -m pytest torchmetrics
 
     - name: Freeze Numpy (hotfix)
       if: matrix.requires == 'latest'
@@ -106,7 +106,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
         pytorch-version: ${{ steps.info.outputs.TORCH }}
         dirs: ${{ needs.check-diff.outputs.test-dirs }}
-        test-timeout: ${{ env.PYTEST_TIMEOUT }}
+        test-timeout: ${{ env.UNITTEST_TIMEOUT }}
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
