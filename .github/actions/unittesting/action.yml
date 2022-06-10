@@ -34,7 +34,6 @@ runs:
   - name: Pull testing data from S3
     working-directory: ./tests
     run: |
-      # fixme
       python --version
       pip --version
       pip install -q "urllib3>1.0"
@@ -56,8 +55,8 @@ runs:
   - name: Upload pytest results
     uses: actions/upload-artifact@v2
     with:
-      name: $PYTEST_ARTEFACT
-      path: "test/$PYTEST_ARTEFACT.xml"
+      name: ${{emv.PYTEST_ARTEFACT}}
+      path: "test/${{emv.PYTEST_ARTEFACT}}.xml"
     if: failure()
 
   - name: Statistics

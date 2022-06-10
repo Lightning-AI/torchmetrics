@@ -99,7 +99,7 @@ jobs:
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         file: tests/coverage.xml
-        flags: cpu,conda,unitests,${{ runner.os }},python${{ matrix.python-version }},torch${{ matrix.pytorch-version }}
+        flags: cpu,conda,unittests,${{ runner.os }},python${{ matrix.python-version }},torch${{ matrix.pytorch-version }}
         env_vars: OS,PYTHON
         name: codecov-umbrella
         fail_ci_if_error: false

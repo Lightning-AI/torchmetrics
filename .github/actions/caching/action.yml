@@ -30,16 +30,16 @@ runs:
       python --version
       pip --version
       pip install fire requests packaging
-    shell: bash
+    shell: bash -l {0}
 
   - name: Set min. dependencies
     if: inputs.requires == 'oldest'
     run: python .github/assistant.py set-oldest-versions
-    shell: bash
+    shell: bash -l {0}
 
   - run: python -c "import time ; days = time.time() / 60 / 60 / 24 ; print(f'TIME_PERIOD={int(days / ${{ inputs.interval }})}')" >> $GITHUB_ENV
     if: inputs.requires == 'latest'
-    shell: bash
+    shell: bash -l {0}
 
   # Note: This uses an internal pip API and may not always work
   # https://github.com/actions/cache/blob/master/examples.md#multiple-oss-in-a-workflow
@@ -49,7 +49,7 @@ runs:
     run: |
       python -c "from pip._internal.locations import USER_CACHE_DIR; print('PIP_CACHE_DIR=' + USER_CACHE_DIR)" >> $GITHUB_ENV
       python -c "import os ; print('TRANSFORMERS_CACHE=' + os.path.join('$PWD', 'ci-cache_huggingface'))" >> $GITHUB_ENV
-    shell: bash
+    shell: bash -l {0}
 
   - name: Cache pip
     uses: actions/cache@v3
@@ -77,4 +77,4 @@ runs:
       mkdir -p $TRANSFORMERS_CACHE
       ls -l .
       ls -l $TRANSFORMERS_CACHE
-    shell: bash
+    shell: bash -l {0}
