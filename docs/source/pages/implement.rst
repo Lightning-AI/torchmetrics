@@ -137,7 +137,7 @@ and tests gets formatted in the following way:
      makes up the functional interface for the metric.
 
   .. note::
-     The `functional accuracy <https://github.com/PyTorchLightning/metrics/blob/master/torchmetrics/functional/classification/accuracy.py>`_
+     The `functional accuracy <https://github.com/PyTorchLightning/metrics/blob/master/src/torchmetrics/functional/classification/accuracy.py>`_
      metric is a great example of this division of logic.
 
 3. In a corresponding file placed in ``torchmetrics/"domain"/"new_metric".py`` create the module interface:
@@ -150,7 +150,7 @@ and tests gets formatted in the following way:
      We do this to not have duplicate code to maintain.
 
    .. note::
-     The module `Accuracy <https://github.com/PyTorchLightning/metrics/blob/master/torchmetrics/classification/accuracy.py>`_
+     The module `Accuracy <https://github.com/PyTorchLightning/metrics/blob/master/src/torchmetrics/classification/accuracy.py>`_
      metric that corresponds to the above functional example showcases these steps.
 
 4. Remember to add binding to the different relevant ``__init__`` files.
