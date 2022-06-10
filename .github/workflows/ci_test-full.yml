@@ -74,7 +74,7 @@ jobs:
     - name: Install pkg
       run: |
         pip --version
-        pip install -e . --upgrade --find-links $PYTORCH_URL
+        pip install -e . -r requirements/test.txt --upgrade --find-links $PYTORCH_URL
 
     - name: DocTests
       # NOTE: run coverage on tests does not propagate failure status for Win, https://github.com/nedbat/coveragepy/issues/1003
