@@ -45,12 +45,12 @@ runs:
 
   - name: Export README tests
     run: python -m phmdoctest README.md --outfile test/unittests/test_readme.py
-    shell: bash
+    shell: bash -l {0}
 
   - name: Unittests
     working-directory: ./tests
     run: python -m pytest ${{ inputs.dirs }} --cov=torchmetrics --junitxml="$PYTEST_ARTEFACT.xml" --durations=50 ${{ inputs.test-timeout }}
-    shell: bash
+    shell: bash -l {0}
 
   - name: Upload pytest results
     uses: actions/upload-artifact@v2
@@ -65,4 +65,4 @@ runs:
     run: |
       coverage xml
       coverage report
-    shell: bash
+    shell: bash -l {0}
