@@ -296,7 +296,7 @@ def _multiclass_stat_scores_update(
 def _multiclass_stat_scores_compute(
     tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor, average: str = "micro", multidim_average: str = "global"
 ) -> Tensor:
-    
+
     res = torch.stack([tp, fp, tn, fn, tp + fp + tn + fn], dim=-1)
     sum_dim = 0 if multidim_average == "global" else 1
     if average == "micro":
@@ -427,7 +427,7 @@ def _multilabel_stat_scores_update(
 
 
 def _multilabel_stat_scores_compute(
-    tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor, average: str = 'micro', multidim_average: str = "global"
+    tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor, average: str = "micro", multidim_average: str = "global"
 ) -> Tensor:
     res = torch.stack([tp, fp, tn, fn, tp + fp + tn + fn], dim=-1)
     sum_dim = 0 if multidim_average == "global" else 1

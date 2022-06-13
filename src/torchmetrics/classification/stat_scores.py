@@ -59,7 +59,7 @@ class AbstractStatScores:
         tn = torch.cat(self.tn) if isinstance(self.tn, list) else self.tn
         fn = torch.cat(self.fn) if isinstance(self.fn, list) else self.fn
         return tp, fp, tn, fn
-        
+
 
 class BinaryStatScores(Metric, AbstractStatScores):
     is_differentiable: bool = False
@@ -144,7 +144,9 @@ class MulticlassStatScores(Metric, AbstractStatScores):
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         if self.validate_args:
-            _multiclass_stat_scores_tensor_validation(preds, target, self.num_classes, self.multidim_average, self.ignore_index)
+            _multiclass_stat_scores_tensor_validation(
+                preds, target, self.num_classes, self.multidim_average, self.ignore_index
+            )
         preds, target = _multiclass_stat_scores_format(preds, target, self.top_k)
         tp, fp, tn, fn = _multiclass_stat_scores_update(
             preds, target, self.num_classes, self.average, self.top_k, self.multidim_average, self.ignore_index

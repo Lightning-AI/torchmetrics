@@ -17,7 +17,8 @@ import numpy as np
 import pytest
 import torch
 from scipy.special import expit as sigmoid
-from sklearn.metrics import confusion_matrix as sk_confusion_matrix, multilabel_confusion_matrix as sk_multilabel_confusion_matrix
+from sklearn.metrics import confusion_matrix as sk_confusion_matrix
+from sklearn.metrics import multilabel_confusion_matrix as sk_multilabel_confusion_matrix
 
 from tests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from tests.helpers import seed_all
@@ -239,7 +240,7 @@ def _sk_stat_scores_multilabel(preds, target, ignore_index, multidim_average, av
         preds = (preds >= THRESHOLD).astype(np.uint8)
     preds = preds.reshape(*preds.shape[:2], -1)
     target = target.reshape(*target.shape[:2], -1)
-    if multidim_average == 'global':
+    if multidim_average == "global":
         stat_scores = []
         for i in range(preds.shape[1]):
             p, t = preds[:, i].flatten(), target[:, i].flatten()
@@ -267,8 +268,7 @@ def _sk_stat_scores_multilabel(preds, target, ignore_index, multidim_average, av
                 t = t[~idx]
                 p = p[~idx]
             confmat = sk_multilabel_confusion_matrix(y_true=p.T, target=t.T)
-            tp, fp, fn, tn = confmat[:,0,0], confmat[:,0,1], confmat[:,1,0], confmat[:,1,1]
-            
+            tp, fp, fn, tn = confmat[:, 0, 0], confmat[:, 0, 1], confmat[:, 1, 0], confmat[:, 1, 1]
 
 
 @pytest.mark.parametrize("input", _multilabel_cases)
