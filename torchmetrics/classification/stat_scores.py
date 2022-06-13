@@ -39,7 +39,29 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
 
 
-class BinaryStatScores(Metric):
+class AbstractStatScores:
+    # define common functions
+    def _update_state(self, tp, fp, tn, fn):
+        if self.multidim_average == "samplewise":
+            self.tp.append(tp)
+            self.fp.append(fp)
+            self.tn.append(tn)
+            self.fn.append(fn)
+        else:
+            self.tp += tp
+            self.fp += fp
+            self.tn += tn
+            self.fn += fn
+
+    def _final_state(self):
+        tp = torch.cat(self.tp) if isinstance(self.tp, list) else self.tp
+        fp = torch.cat(self.fp) if isinstance(self.fp, list) else self.fp
+        tn = torch.cat(self.tn) if isinstance(self.tn, list) else self.tn
+        fn = torch.cat(self.fn) if isinstance(self.fn, list) else self.fn
+        return tp, fp, tn, fn
+        
+
+class BinaryStatScores(Metric, AbstractStatScores):
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
@@ -76,26 +98,14 @@ class BinaryStatScores(Metric):
             _binary_stat_scores_tensor_validation(preds, target, self.multidim_average, self.ignore_index)
         preds, target = _binary_stat_scores_format(preds, target, self.threshold, self.ignore_index)
         tp, fp, tn, fn = _binary_stat_scores_update(preds, target, self.multidim_average)
-        if self.multidim_average == "samplewise":
-            self.tp.append(tp)
-            self.fp.append(fp)
-            self.tn.append(tn)
-            self.fn.append(fn)
-        else:
-            self.tp += tp
-            self.fp += fp
-            self.tn += tn
-            self.fn += fn
+        self._update_state(tp, fp, tn, fn)
 
     def compute(self) -> Tensor:
-        tp = torch.cat(self.tp) if isinstance(self.tp, list) else self.tp
-        fp = torch.cat(self.fp) if isinstance(self.fp, list) else self.fp
-        tn = torch.cat(self.tn) if isinstance(self.tn, list) else self.tn
-        fn = torch.cat(self.fn) if isinstance(self.fn, list) else self.fn
+        tp, fp, tn, fn = self._final_state()
         return _binary_stat_scores_compute(tp, fp, tn, fn, self.multidim_average)
 
 
-class MulticlassStatScores(Metric):
+class MulticlassStatScores(Metric, AbstractStatScores):
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
@@ -110,7 +120,7 @@ class MulticlassStatScores(Metric):
         validate_args: bool = True,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super.__init__(**kwargs)
+        super().__init__(**kwargs)
         if validate_args:
             _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index)
         self.num_classes = num_classes
@@ -123,12 +133,10 @@ class MulticlassStatScores(Metric):
         if self.multidim_average == "samplewise" or self.average == "samples":
             default = lambda: []
             dist_reduce_fx = "cat"
-        elif self.average != "micro":
+        else:
             default = lambda: torch.zeros(num_classes)
             dist_reduce_fx = "sum"
-        else:
-            default = lambda: torch.zeros(1)
-            dist_reduce_fx = "sum"
+
         self.add_state("tp", default(), dist_reduce_fx=dist_reduce_fx)
         self.add_state("fp", default(), dist_reduce_fx=dist_reduce_fx)
         self.add_state("tn", default(), dist_reduce_fx=dist_reduce_fx)
@@ -136,25 +144,19 @@ class MulticlassStatScores(Metric):
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         if self.validate_args:
-            _multiclass_stat_scores_tensor_validation(preds, target, self.multidim_average, self.ignore_index)
-        preds, target = _multiclass_stat_scores_format(preds, target, self.threshold, self.ignore_index)
-        tp, fp, tn, fn = _multiclass_stat_scores_update(preds, target, self.multidim_average)
-        if self.multidim_average == "samplewise" or self.average == "samples":
-            self.tp.append(tp)
-            self.fp.append(fp)
-            self.tn.append(tn)
-            self.fn.append(fn)
-        else:
-            self.tp += tp
-            self.fp += fp
-            self.tn += tn
-            self.fn += fn
+            _multiclass_stat_scores_tensor_validation(preds, target, self.num_classes, self.multidim_average, self.ignore_index)
+        preds, target = _multiclass_stat_scores_format(preds, target, self.top_k)
+        tp, fp, tn, fn = _multiclass_stat_scores_update(
+            preds, target, self.num_classes, self.average, self.top_k, self.multidim_average, self.ignore_index
+        )
+        self._update_state(tp, fp, tn, fn)
 
     def compute(self) -> Tensor:
-        return _multiclass_stat_scores_compute(self.tp, self.fp, self.tn, self.fn, self.multidim_average)
+        tp, fp, tn, fn = self._final_state()
+        return _multiclass_stat_scores_compute(tp, fp, tn, fn, self.average, self.multidim_average)
 
 
-class MultilabelStatScores(Metric):
+class MultilabelStatScores(Metric, AbstractStatScores):
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
@@ -169,7 +171,7 @@ class MultilabelStatScores(Metric):
         validate_args: bool = True,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super.__init__(**kwargs)
+        super().__init__(**kwargs)
         if validate_args:
             _multilabel_stat_scores_arg_validation(num_labels, threshold, average, multidim_average, ignore_index)
         self.num_labels = num_labels
@@ -182,12 +184,10 @@ class MultilabelStatScores(Metric):
         if self.multidim_average == "samplewise" or self.average == "samples":
             default = lambda: []
             dist_reduce_fx = "cat"
-        elif self.average != "micro":
+        else:
             default = lambda: torch.zeros(num_labels)
             dist_reduce_fx = "sum"
-        else:
-            default = lambda: torch.zeros(1)
-            dist_reduce_fx = "sum"
+
         self.add_state("tp", default(), dist_reduce_fx=dist_reduce_fx)
         self.add_state("fp", default(), dist_reduce_fx=dist_reduce_fx)
         self.add_state("tn", default(), dist_reduce_fx=dist_reduce_fx)
@@ -195,22 +195,18 @@ class MultilabelStatScores(Metric):
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         if self.validate_args:
-            _multilabel_stat_scores_tensor_validation(preds, target, self.multidim_average, self.ignore_index)
-        preds, target = _multilabel_stat_scores_format(preds, target, self.threshold, self.ignore_index)
+            _multilabel_stat_scores_tensor_validation(
+                preds, target, self.num_labels, self.multidim_average, self.ignore_index
+            )
+        preds, target = _multilabel_stat_scores_format(
+            preds, target, self.num_labels, self.threshold, self.ignore_index
+        )
         tp, fp, tn, fn = _multilabel_stat_scores_update(preds, target, self.multidim_average)
-        if self.multidim_average == "samplewise" or self.average == "samples":
-            self.tp.append(tp)
-            self.fp.append(fp)
-            self.tn.append(tn)
-            self.fn.append(fn)
-        else:
-            self.tp += tp
-            self.fp += fp
-            self.tn += tn
-            self.fn += fn
+        self._update_state(tp, fp, tn, fn)
 
     def compute(self) -> Tensor:
-        return _multilabel_stat_scores_compute(self.tp, self.fp, self.tn, self.fn, self.multidim_average)
+        tp, fp, tn, fn = self._final_state()
+        return _multilabel_stat_scores_compute(tp, fp, tn, fn, self.average, self.multidim_average)
 
 
 # -------------------------- Old stuff --------------------------

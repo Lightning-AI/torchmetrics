@@ -248,7 +248,8 @@ def _multiclass_stat_scores_update(
     ignore_index: Optional[int] = None,
 ):
     if multidim_average == "samplewise":
-        if ignore_index is not None:
+        ignore_in = 0 <= ignore_index <= num_classes - 1 if ignore_index is not None else None
+        if ignore_index is not None and not ignore_in:
             preds = preds.clone()
             target = target.clone()
             idx = target == ignore_index
@@ -256,11 +257,19 @@ def _multiclass_stat_scores_update(
             target[idx] = num_classes
         if top_k > 1:
             _, preds = torch.topk(preds, k=top_k, dim=1)
-        preds_oh = torch.nn.functional.one_hot(preds, num_classes if ignore_index is None else num_classes + 1)
-        target_oh = torch.nn.functional.one_hot(target, num_classes if ignore_index is None else num_classes + 1)
+        preds_oh = torch.nn.functional.one_hot(
+            preds, num_classes + 1 if ignore_index is not None and not ignore_in else num_classes
+        )
+        target_oh = torch.nn.functional.one_hot(
+            target, num_classes + 1 if ignore_index is not None and not ignore_in else num_classes
+        )
         if ignore_index is not None:
-            preds_oh = preds_oh[..., :-1]
-            target_oh = target_oh[..., :-1]
+            if 0 <= ignore_index <= num_classes - 1:
+                target_oh[target == ignore_index, :] = -1
+            else:
+                preds_oh = preds_oh[..., :-1]
+                target_oh = target_oh[..., :-1]
+                target_oh[target == num_classes, :] = -1
         sum_dim = [1] if top_k == 1 else [1, 2]
         tp = ((target_oh == preds_oh) & (target_oh == 1)).sum(sum_dim)
         fn = ((target_oh != preds_oh) & (target_oh == 1)).sum(sum_dim)
@@ -287,7 +296,7 @@ def _multiclass_stat_scores_update(
 def _multiclass_stat_scores_compute(
     tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor, average: str = "micro", multidim_average: str = "global"
 ) -> Tensor:
-
+    
     res = torch.stack([tp, fp, tn, fn, tp + fp + tn + fn], dim=-1)
     sum_dim = 0 if multidim_average == "global" else 1
     if average == "micro":
@@ -295,8 +304,11 @@ def _multiclass_stat_scores_compute(
     elif average == "macro":
         return res.float().mean(sum_dim)
     elif average == "weighted":
-        w = tp + fn
-        return (res * (w / w.sum()).reshape(*w.shape, 1)).sum(sum_dim)
+        weight = tp + fn
+        if multidim_average == "global":
+            return (res * (weight / weight.sum()).reshape(*weight.shape, 1)).sum(sum_dim)
+        else:
+            return (res * (weight / weight.sum(-1, keepdim=True)).reshape(*weight.shape, 1)).sum(sum_dim)
     elif average is None or average == "none":
         return res
 
@@ -311,9 +323,6 @@ def multiclass_stat_scores(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    import pdb
-
-    pdb.set_trace()
     if validate_args:
         _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index)
         _multiclass_stat_scores_tensor_validation(preds, target, num_classes, multidim_average, ignore_index)
@@ -395,8 +404,8 @@ def _multilabel_stat_scores_format(
         if not ((0 <= preds) * (preds <= 1)).all():
             preds = preds.sigmoid()
         preds = preds > threshold
-    preds = preds.movedim(1, -1).reshape(-1, num_labels)
-    target = target.movedim(1, -1).reshape(-1, num_labels)
+    preds = preds.reshape(*preds.shape[:2], -1)
+    target = target.reshape(*target.shape[:2], -1)
 
     if ignore_index is not None:
         idx = target == ignore_index
@@ -409,7 +418,7 @@ def _multilabel_stat_scores_format(
 def _multilabel_stat_scores_update(
     preds: Tensor, target: Tensor, multidim_average: str = "global"
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-    sum_dim = [0, 1] if multidim_average == "global" else 1
+    sum_dim = [0, -1] if multidim_average == "global" else [-1]
     tp = ((target == preds) & (target == 1)).sum(sum_dim).squeeze()
     fn = ((target != preds) & (target == 1)).sum(sum_dim).squeeze()
     fp = ((target != preds) & (target == 0)).sum(sum_dim).squeeze()
@@ -418,11 +427,19 @@ def _multilabel_stat_scores_update(
 
 
 def _multilabel_stat_scores_compute(
-    tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor, multidim_average: str = "global"
+    tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor, average: str = 'micro', multidim_average: str = "global"
 ) -> Tensor:
-    if multidim_average == "global":
-        return torch.cat([tp, fp, tn, fn, tp + fp + tn + fn], dim=0)
-    return torch.stack([tp, fp, tn, fn, tp + fp + tn + fn], dim=1)
+    res = torch.stack([tp, fp, tn, fn, tp + fp + tn + fn], dim=-1)
+    sum_dim = 0 if multidim_average == "global" else 1
+    if average == "micro":
+        return res.sum(sum_dim)
+    elif average == "macro":
+        return res.float().mean(sum_dim)
+    elif average == "weighted":
+        w = tp + fn
+        return (res * (w / w.sum()).reshape(*w.shape, 1)).sum(sum_dim)
+    elif average is None or average == "none":
+        return res
 
 
 def multilabel_stat_scores(
@@ -440,7 +457,7 @@ def multilabel_stat_scores(
         _multilabel_stat_scores_tensor_validation(preds, target, num_labels, multidim_average, ignore_index)
     preds, target = _multilabel_stat_scores_format(preds, target, num_labels, threshold, ignore_index)
     tp, fp, tn, fn = _multilabel_stat_scores_update(preds, target, multidim_average)
-    return _multilabel_stat_scores_compute(tp, fp, tn, fn, multidim_average)
+    return _multilabel_stat_scores_compute(tp, fp, tn, fn, average, multidim_average)
 
 
 # -------------------------- Old stuff --------------------------

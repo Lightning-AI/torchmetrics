@@ -17,7 +17,7 @@ import numpy as np
 import pytest
 import torch
 from scipy.special import expit as sigmoid
-from sklearn.metrics import confusion_matrix as sk_confusion_matrix
+from sklearn.metrics import confusion_matrix as sk_confusion_matrix, multilabel_confusion_matrix as sk_multilabel_confusion_matrix
 
 from tests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from tests.helpers import seed_all
@@ -182,7 +182,7 @@ class TestMulticlassStatScores(MetricTester):
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
-        if multidim_average == "samplewise" and preds.ndim < 3:
+        if multidim_average == "samplewise" and target.ndim < 3:
             pytest.skip("samplewise and non-multidim arrays are not valid")
 
         self.run_class_metric_test(
@@ -237,51 +237,72 @@ def _sk_stat_scores_multilabel(preds, target, ignore_index, multidim_average, av
         if not ((0 < preds) & (preds < 1)).all():
             preds = sigmoid(preds)
         preds = (preds >= THRESHOLD).astype(np.uint8)
-    preds = np.moveaxis(preds, 1, -1).reshape((-1, preds.shape[1]))
-    target = np.moveaxis(target, 1, -1).reshape((-1, target.shape[1]))
-    stat_scores = []
-    for i in range(preds.shape[1]):
-        p, t = preds[:, i], target[:, i]
-        if ignore_index is not None:
-            idx = t == ignore_index
-            t = t[~idx]
-            p = p[~idx]
-        tn, fp, fn, tp = sk_confusion_matrix(t, p, labels=[0, 1]).ravel()
-        stat_scores.append(np.array([tp, fp, tn, fn, tp + fp + tn + fn]))
-    return np.stack(stat_scores, axis=0)
+    preds = preds.reshape(*preds.shape[:2], -1)
+    target = target.reshape(*target.shape[:2], -1)
+    if multidim_average == 'global':
+        stat_scores = []
+        for i in range(preds.shape[1]):
+            p, t = preds[:, i].flatten(), target[:, i].flatten()
+            if ignore_index is not None:
+                idx = t == ignore_index
+                t = t[~idx]
+                p = p[~idx]
+            tn, fp, fn, tp = sk_confusion_matrix(t, p, labels=[0, 1]).ravel()
+            stat_scores.append(np.array([tp, fp, tn, fn, tp + fp + tn + fn]))
+        res = np.stack(stat_scores, axis=0)
+        if average == "micro":
+            return res.sum(0)
+        elif average == "macro":
+            return res.mean(0)
+        elif average == "weighted":
+            w = tp + fn
+            return (res * (w / w.sum()).reshape(-1, 1)).sum(0)
+        elif average is None or average == "none":
+            return res
+    else:
+        stat_scores = []
+        for i in range(preds.shape[0]):
+            p, t = preds[i], target[i]
+            if ignore_index is None:
+                t = t[~idx]
+                p = p[~idx]
+            confmat = sk_multilabel_confusion_matrix(y_true=p.T, target=t.T)
+            tp, fp, fn, tn = confmat[:,0,0], confmat[:,0,1], confmat[:,1,0], confmat[:,1,1]
+            
 
 
 @pytest.mark.parametrize("input", _multilabel_cases)
 @pytest.mark.parametrize("ignore_index", [None, 0, -1])
 @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
 @pytest.mark.parametrize("average", ["micro", "macro", "samples"])
-class TestMultilabelyStatScores(MetricTester):
-    @pytest.mark.parametrize("ddp", [True, False])
-    def test_multilabel_stat_scores(self, ddp, input, ignore_index, multidim_average, average):
-        preds, target = input
-        if ignore_index == -1:
-            target = inject_ignore_index(target, ignore_index)
-        if multidim_average == "samplewise" and preds.ndim < 3:
-            pytest.skip("samplewise and non-multidim arrays are not valid")
+class TestMultilabelStatScores(MetricTester):
+    # @pytest.mark.parametrize("ddp", [True, False])
+    # def test_multilabel_stat_scores(self, ddp, input, ignore_index, multidim_average, average):
+    #     preds, target = input
+    #     if ignore_index == -1:
+    #         target = inject_ignore_index(target, ignore_index)
+    #     if multidim_average == "samplewise" and preds.ndim < 3:
+    #         pytest.skip("samplewise and non-multidim arrays are not valid")
 
-        self.run_class_metric_test(
-            ddp=ddp,
-            preds=preds,
-            target=target,
-            metric_class=MultilabelStatScores,
-            sk_metric=partial(
-                _sk_stat_scores_multiclass,
-                ignore_index=ignore_index,
-                multidim_average=multidim_average,
-                average=average,
-            ),
-            metric_args={
-                "ignore_index": ignore_index,
-                "multidim_average": multidim_average,
-                "average": average,
-                "num_classes": NUM_CLASSES,
-            },
-        )
+    #     self.run_class_metric_test(
+    #         ddp=ddp,
+    #         preds=preds,
+    #         target=target,
+    #         metric_class=MultilabelStatScores,
+    #         sk_metric=partial(
+    #             _sk_stat_scores_multiclass,
+    #             ignore_index=ignore_index,
+    #             multidim_average=multidim_average,
+    #             average=average,
+    #         ),
+    #         metric_args={
+    #             "num_labels": NUM_CLASSES,
+    #             "threshold": THRESHOLD,
+    #             "ignore_index": ignore_index,
+    #             "multidim_average": multidim_average,
+    #             "average": average,
+    #         },
+    #     )
 
     def test_multilabel_stat_scores_functional(self, input, ignore_index, multidim_average, average):
         preds, target = input
