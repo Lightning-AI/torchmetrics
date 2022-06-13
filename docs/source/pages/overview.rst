@@ -3,11 +3,11 @@
     import torch
     from pytorch_lightning.core.lightning import LightningModule
 
-########
-Overview
-########
+##################
+Structure Overview
+##################
 
-The ``torchmetrics`` is a Metrics API created for easy metric development and usage in
+TorchMetrics is a Metrics API created for easy metric development and usage in
 PyTorch and PyTorch Lightning. It is rigorously tested for all edge cases and includes a growing list of
 common metric implementations.
 
@@ -389,7 +389,7 @@ argument can help:
   GPU memory is not filling up. The consequence will be that the ``compute`` method will be called on CPU instead
   of GPU. Only applies to metric states that are lists.
 
-If you are running in a distributed environment, ``TorchMetrics`` will automatically take care of the distributed
+If you are running in a distributed environment, TorchMetrics will automatically take care of the distributed
 synchronization for you. However, the following three keyword arguments can be given to any metric class for
 further control over the distributed aggregation:
 

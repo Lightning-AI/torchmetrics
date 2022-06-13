@@ -16,9 +16,10 @@ import inspect
 import os
 import shutil
 import sys
-from importlib.util import module_from_spec, spec_from_file_location
 
 import pt_lightning_sphinx_theme
+
+import torchmetrics
 
 _PATH_HERE = os.path.abspath(os.path.dirname(__file__))
 _PATH_ROOT = os.path.realpath(os.path.join(_PATH_HERE, "..", ".."))
@@ -27,24 +28,19 @@ sys.path.insert(0, os.path.abspath(_PATH_ROOT))
 FOLDER_GENERATED = "generated"
 SPHINX_MOCK_REQUIREMENTS = int(os.environ.get("SPHINX_MOCK_REQUIREMENTS", True))
 
-# alternative https://stackoverflow.com/a/67692/4521646
-spec = spec_from_file_location("torchmetrics/__about__.py", os.path.join(_PATH_ROOT, "torchmetrics", "__about__.py"))
-about = module_from_spec(spec)
-spec.loader.exec_module(about)
-
 html_favicon = "_static/images/icon.svg"
 
 # -- Project information -----------------------------------------------------
 
 # this name shall match the project name in Github as it is used for linking to code
 project = "PyTorch-Metrics"
-copyright = about.__copyright__
-author = about.__author__
+copyright = torchmetrics.__copyright__
+author = torchmetrics.__author__
 
 # The short X.Y version
-version = about.__version__
+version = torchmetrics.__version__
 # The full version, including alpha/beta/rc tags
-release = about.__version__
+release = torchmetrics.__version__
 
 # Options for the linkcode extension
 # ----------------------------------
@@ -163,7 +159,7 @@ html_theme_path = [pt_lightning_sphinx_theme.get_html_theme_path()]
 
 html_theme_options = {
     "pytorch_project": "https://pytorchlightning.ai",
-    "canonical_url": about.__docs_url__,
+    "canonical_url": torchmetrics.__docs_url__,
     "collapse_navigation": False,
     "display_version": True,
     "logo_only": False,
@@ -219,7 +215,7 @@ texinfo_documents = [
         project + " Documentation",
         author,
         project,
-        about.__docs__,
+        torchmetrics.__docs__,
         "Miscellaneous",
     ),
 ]
@@ -266,7 +262,7 @@ todo_include_todos = True
 
 # packages for which sphinx-apidoc should generate the docs (.rst files)
 PACKAGES = [
-    about.__name__,
+    torchmetrics.__name__,
 ]
 
 

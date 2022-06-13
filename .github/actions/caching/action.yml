@@ -26,7 +26,7 @@ runs:
   steps:
 
   - name: install assitant's deps
-    run: pip install fire requests
+    run: pip install fire requests packaging
     shell: bash
 
   - name: Set min. dependencies
@@ -49,14 +49,14 @@ runs:
     shell: bash
 
   - name: Cache pip
-    uses: actions/cache@v2
+    uses: actions/cache@v3
     with:
       path: $PIP_CACHE_DIR
       key: ${{ inputs.os }}-py${{ inputs.python-version }}-pip-td${TIME_PERIOD}-${{ inputs.offset }}-${{ hashFiles('requirements.txt') }}
       restore-keys: ${{ inputs.os }}-py${{ inputs.python-version }}-pip-td${TIME_PERIOD}-${{ inputs.offset }}-
 
   - name: Cache conda
-    uses: actions/cache@v2
+    uses: actions/cache@v3
     if: inputs.os == 'Linux'
     with:
       path: ~/conda_pkgs_dir
@@ -64,7 +64,7 @@ runs:
       restore-keys: py${{ inputs.python-version }}-conda-td${TIME_PERIOD}-${{ inputs.offset }}
 
   - name: Cache HF
-    uses: actions/cache@v2
+    uses: actions/cache@v3
     with:
       path: $TRANSFORMERS_CACHE
       key: ${{ inputs.os }}-py${{ inputs.python-version }}-cache-transformers

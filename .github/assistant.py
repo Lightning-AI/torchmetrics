@@ -30,9 +30,8 @@ LUT_PYTHON_TORCH = {
     "3.8": "1.4",
     "3.9": "1.7.1",
 }
-REQUIREMENTS_FILES = (os.path.join(_PATH_ROOT, "requirements.txt"),) + tuple(
-    glob.glob(os.path.join(_PATH_ROOT, "requirements", "*.txt"))
-)
+_path = lambda *ds: os.path.join(_PATH_ROOT, *ds)
+REQUIREMENTS_FILES = tuple(glob.glob(_path("requirements", "*.txt")) + [_path("requirements.txt")])
 
 
 def request_url(url: str, auth_token: Optional[str] = None) -> Optional[dict]:
@@ -99,13 +98,13 @@ class AssistantCLI:
     ) -> Union[str, List[str]]:
         """Determine what domains were changed in particular PR."""
         if not pr:
-            return "tests"
+            return "unittests"
         url = f"https://api.github.com/repos/PyTorchLightning/metrics/pulls/{pr}/files"
         logging.debug(url)
         data = request_url(url, auth_token)
         if not data:
             logging.debug("WARNING: No data was received -> test everything.")
-            return "tests"
+            return "unittests"
         files = [d["filename"] for d in data]
 
         # filter only docs files
@@ -115,26 +114,31 @@ class AssistantCLI:
             return ""
 
         # filter only package files and skip inits
-        _filter_pkg = lambda fn: (fn.startswith("torchmetrics") and "__init__.py" not in fn) or fn.startswith("tests")
+        _is_in_test = lambda fn: fn.startswith("test")
+        _filter_pkg = lambda fn: _is_in_test(fn) or (fn.startswith("src/torchmetrics") and "__init__.py" not in fn)
         files_pkg = [fn for fn in files if _filter_pkg(fn)]
         if not files_pkg:
-            return "tests"
+            return "unittests"
 
         # parse domains
-        _crop_path = lambda fn: fn.replace("torchmetrics/", "").replace("tests/", "").replace("functional/", "")
-        files_pkg = [_crop_path(fn) for fn in files_pkg]
+        def _crop_path(fname: str, paths: List[str]):
+            for p in paths:
+                fname = fname.replace(p, "")
+            return fname
+
+        files_pkg = [_crop_path(fn, ["src/torchmetrics/", "test/unittests/", "functional/"]) for fn in files_pkg]
         # filter domain names
         tm_modules = [fn.split("/")[0] for fn in files_pkg if "/" in fn]
         # filter general (used everywhere) sub-packages
         tm_modules = [md for md in tm_modules if md not in general_sub_pkgs]
         if len(files_pkg) > len(tm_modules):
             logging.debug("Some more files was changed -> rather test everything...")
-            return "tests"
+            return "unittests"
         # keep only unique
         tm_modules = set(tm_modules)
         if as_list:
             return list(tm_modules)
-        return " ".join([f"tests/{md}" for md in tm_modules])
+        return " ".join([f"unittests/{md}" for md in tm_modules])
 
 
 if __name__ == "__main__":

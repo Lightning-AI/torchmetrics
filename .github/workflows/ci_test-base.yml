@@ -27,7 +27,7 @@ jobs:
     timeout-minutes: 20
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
@@ -49,24 +49,26 @@ jobs:
       run: |
         python --version
         pip --version
-        pip install --requirement requirements.txt --upgrade --find-links $PYTORCH_URL
+        pip install -e . --upgrade --find-links $PYTORCH_URL
         pip install --requirement requirements/test.txt --upgrade --find-links $PYTORCH_URL
         pip uninstall -y torchmetrics
         pip list
 
     - name: Test Package [only]
+      working-directory: ./src
       run: |
         # NOTE: run coverage on tests does not propagare faler status for Win, https://github.com/nedbat/coveragepy/issues/1003
-        python -m pytest torchmetrics -v --cov=torchmetrics --junitxml="junit/$PYTEST_ARTEFACT"
+        python -m pytest torchmetrics -v --cov=torchmetrics --junitxml=$PYTEST_ARTEFACT
 
     - name: Upload pytest test results
       uses: actions/upload-artifact@v2
       with:
         name: $PYTEST_ARTEFACT
-        path: "junit/$PYTEST_ARTEFACT"
+        path: "test/$PYTEST_ARTEFACT"
       if: failure()
 
     - name: Statistics
+      working-directory: ./src
       if: success()
       run: |
         coverage report
@@ -79,7 +81,7 @@ jobs:
       continue-on-error: true
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-        file: coverage.xml
+        file: src/coverage.xml
         flags: cpu,pytest,${{ runner.os }}
         name: Base-coverage
         fail_ci_if_error: false
