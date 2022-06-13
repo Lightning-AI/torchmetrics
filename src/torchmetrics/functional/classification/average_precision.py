@@ -43,14 +43,8 @@ def _average_precision_update(
         average: reduction method for multi-class or multi-label problems
     """
     preds, target, num_classes, pos_label = _precision_recall_curve_update(preds, target, num_classes, pos_label)
-    if average == "micro":
-        if preds.ndim == target.ndim:
-            # Considering each element of the label indicator matrix as a label
-            preds = preds.flatten()
-            target = target.flatten()
-            num_classes = 1
-        else:
-            raise ValueError("Cannot use `micro` average with multi-class input")
+    if average == "micro" and preds.ndim != target.ndim:
+        raise ValueError("Cannot use `micro` average with multi-class input")
 
     return preds, target, num_classes, pos_label
 
@@ -97,6 +91,11 @@ def _average_precision_compute(
     """
 
     # todo: `sample_weights` is unused
+    if average == "micro" and preds.ndim == target.ndim:
+        preds = preds.flatten()
+        target = target.flatten()
+        num_classes = 1
+
     precision, recall, _ = _precision_recall_curve_compute(preds, target, num_classes, pos_label)
     if average == "weighted":
         if preds.ndim == target.ndim and target.ndim > 1:

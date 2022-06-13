@@ -19,7 +19,9 @@ import pytest
 import torch
 
 from torchmetrics import (
+    AUROC,
     Accuracy,
+    AveragePrecision,
     CohenKappa,
     ConfusionMatrix,
     F1Score,
@@ -29,6 +31,7 @@ from torchmetrics import (
     Precision,
     Recall,
 )
+from torchmetrics.utilities.checks import _allclose_recursive
 from unittests.helpers import seed_all
 from unittests.helpers.testers import DummyMetricDiff, DummyMetricSum
 
@@ -267,6 +270,8 @@ def test_collection_filtering():
     """Test that collections works with the kwargs argument."""
 
     class DummyMetric(Metric):
+        full_state_update = True
+
         def __init__(self):
             super().__init__()
 
@@ -277,6 +282,8 @@ def test_collection_filtering():
             return
 
     class MyAccuracy(Metric):
+        full_state_update = True
+
         def __init__(self):
             super().__init__()
 
@@ -292,21 +299,30 @@ def test_collection_filtering():
     mc2(torch.tensor([0, 1]), torch.tensor([0, 1]), kwarg="kwarg", kwarg2="kwarg2")
 
 
+# function for generating
+_mc_preds = torch.randn(10, 3).softmax(dim=-1)
+_mc_target = torch.randint(3, (10,))
+_ml_preds = torch.rand(10, 3)
+_ml_target = torch.randint(2, (10, 3))
+
+
 @pytest.mark.parametrize(
-    "metrics, expected",
+    "metrics, expected, preds, target",
     [
         # single metric forms its own compute group
-        (Accuracy(3), {0: ["Accuracy"]}),
+        (Accuracy(3), {0: ["Accuracy"]}, _mc_preds, _mc_target),
         # two metrics of same class forms a compute group
-        ({"acc0": Accuracy(3), "acc1": Accuracy(3)}, {0: ["acc0", "acc1"]}),
+        ({"acc0": Accuracy(3), "acc1": Accuracy(3)}, {0: ["acc0", "acc1"]}, _mc_preds, _mc_target),
         # two metrics from registry froms a compute group
-        ([Precision(3), Recall(3)], {0: ["Precision", "Recall"]}),
+        ([Precision(3), Recall(3)], {0: ["Precision", "Recall"]}, _mc_preds, _mc_target),
         # two metrics from different classes gives two compute groups
-        ([ConfusionMatrix(3), Recall(3)], {0: ["ConfusionMatrix"], 1: ["Recall"]}),
+        ([ConfusionMatrix(3), Recall(3)], {0: ["ConfusionMatrix"], 1: ["Recall"]}, _mc_preds, _mc_target),
         # multi group multi metric
         (
             [ConfusionMatrix(3), CohenKappa(3), Recall(3), Precision(3)],
             {0: ["ConfusionMatrix", "CohenKappa"], 1: ["Recall", "Precision"]},
+            _mc_preds,
+            _mc_target,
         ),
         # Complex example
         (
@@ -319,6 +335,33 @@ def test_collection_filtering():
                 "confmat": ConfusionMatrix(3),
             },
             {0: ["acc", "acc2", "f1", "recall"], 1: ["acc3"], 2: ["confmat"]},
+            _mc_preds,
+            _mc_target,
+        ),
+        # With list states
+        (
+            [AUROC(average="macro", num_classes=3), AveragePrecision(average="macro", num_classes=3)],
+            {0: ["AUROC", "AveragePrecision"]},
+            _mc_preds,
+            _mc_target,
+        ),
+        # Nested collections
+        (
+            [
+                MetricCollection(
+                    AUROC(average="micro", num_classes=3),
+                    AveragePrecision(average="micro", num_classes=3),
+                    postfix="_micro",
+                ),
+                MetricCollection(
+                    AUROC(average="macro", num_classes=3),
+                    AveragePrecision(average="macro", num_classes=3),
+                    postfix="_macro",
+                ),
+            ],
+            {0: ["AUROC_micro", "AveragePrecision_micro", "AUROC_macro", "AveragePrecision_macro"]},
+            _ml_preds,
+            _ml_target,
         ),
     ],
 )
@@ -332,8 +375,10 @@ class TestComputeGroups:
             ["prefix_", "_postfix"],
         ],
     )
-    def test_check_compute_groups_correctness(self, metrics, expected, prefix, postfix):
+    def test_check_compute_groups_correctness(self, metrics, expected, preds, target, prefix, postfix):
         """Check that compute groups are formed after initialization and that metrics are correctly computed."""
+        if isinstance(metrics, MetricCollection):
+            prefix, postfix = None, None  # disable for nested collections
         m = MetricCollection(deepcopy(metrics), prefix=prefix, postfix=postfix, compute_groups=True)
         # Construct without for comparison
         m2 = MetricCollection(deepcopy(metrics), prefix=prefix, postfix=postfix, compute_groups=False)
@@ -342,8 +387,6 @@ class TestComputeGroups:
         assert m2.compute_groups == {}
 
         for _ in range(2):  # repeat to emulate effect of multiple epochs
-            preds = torch.randn(10, 3).softmax(dim=-1)
-            target = torch.randint(3, (10,))
             m.update(preds, target)
             m2.update(preds, target)
 
@@ -353,8 +396,6 @@ class TestComputeGroups:
             assert m.compute_groups == expected
             assert m2.compute_groups == {}
 
-            preds = torch.randn(10, 3).softmax(dim=-1)
-            target = torch.randint(3, (10,))
             # compute groups should kick in here
             m.update(preds, target)
             m2.update(preds, target)
@@ -372,7 +413,7 @@ class TestComputeGroups:
             m2.reset()
 
     @pytest.mark.parametrize("method", ["items", "values", "keys"])
-    def test_check_compute_groups_items_and_values(self, metrics, expected, method):
+    def test_check_compute_groups_items_and_values(self, metrics, expected, preds, target, method):
         """Check that whenever user call a methods that give access to the indivitual metric that state are copied
         instead of just passed by reference."""
         m = MetricCollection(deepcopy(metrics), compute_groups=True)
@@ -380,14 +421,12 @@ class TestComputeGroups:
 
         for _ in range(2):  # repeat to emulate effect of multiple epochs
             for _ in range(2):  # repeat to emulate effect of multiple batches
-                preds = torch.randn(10, 3).softmax(dim=-1)
-                target = torch.randint(3, (10,))
                 m.update(preds, target)
                 m2.update(preds, target)
 
             def _compare(m1, m2):
                 for state in m1._defaults:
-                    assert torch.allclose(getattr(m1, state), getattr(m2, state))
+                    assert _allclose_recursive(getattr(m1, state), getattr(m2, state))
                 # if states are still by reference the reset will make following metrics fail
                 m1.reset()
                 m2.reset()
