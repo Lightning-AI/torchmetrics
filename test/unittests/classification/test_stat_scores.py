@@ -19,10 +19,10 @@ import torch
 from scipy.special import expit as sigmoid
 from sklearn.metrics import confusion_matrix as sk_confusion_matrix
 from sklearn.metrics import multilabel_confusion_matrix as sk_multilabel_confusion_matrix
-
 from tests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from tests.helpers import seed_all
 from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index
+
 from torchmetrics.classification.stat_scores import BinaryStatScores, MulticlassStatScores, MultilabelStatScores
 from torchmetrics.functional.classification.stat_scores import (
     binary_stat_scores,
