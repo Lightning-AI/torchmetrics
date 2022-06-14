@@ -49,7 +49,7 @@ class BinaryConfusionMatrix(Metric):
         ignore_index: Optional[int] = None,
         normalize: Optional[str] = None,
         validate_args: bool = True,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         if validate_args:
@@ -83,7 +83,7 @@ class MulticlassConfusionMatrix(Metric):
         ignore_index: Optional[int] = None,
         normalize: Optional[str] = None,
         validate_args: bool = True,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         if validate_args:
@@ -118,7 +118,7 @@ class MultilabelConfusionMatrix(Metric):
         ignore_index: Optional[int] = None,
         normalize: Optional[str] = None,
         validate_args: bool = True,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         if validate_args:

@@ -18,17 +18,16 @@ import pytest
 import torch
 from scipy.special import expit as sigmoid
 from sklearn.metrics import confusion_matrix as sk_confusion_matrix
-from sklearn.metrics import multilabel_confusion_matrix as sk_multilabel_confusion_matrix
 
-from tests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
-from tests.helpers import seed_all
-from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index
 from torchmetrics.classification.stat_scores import BinaryStatScores, MulticlassStatScores, MultilabelStatScores
 from torchmetrics.functional.classification.stat_scores import (
     binary_stat_scores,
     multiclass_stat_scores,
     multilabel_stat_scores,
 )
+from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
+from unittests.helpers import seed_all
+from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index
 
 seed_all(42)
 
@@ -74,9 +73,9 @@ def _sk_stat_scores_binary(preds, target, ignore_index, multidim_average):
 
 
 @pytest.mark.parametrize("input", _binary_cases)
-@pytest.mark.parametrize("ignore_index", [None, 0, -1])
-@pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
 class TestBinaryStatScores(MetricTester):
+    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("ddp", [False, True])
     def test_binary_stat_scores(self, ddp, input, ignore_index, multidim_average):
         preds, target = input
@@ -94,6 +93,8 @@ class TestBinaryStatScores(MetricTester):
             metric_args={"threshold": THRESHOLD, "ignore_index": ignore_index, "multidim_average": multidim_average},
         )
 
+    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     def test_binary_stat_scores_functional(self, input, ignore_index, multidim_average):
         preds, target = input
         if ignore_index == -1:
@@ -111,6 +112,43 @@ class TestBinaryStatScores(MetricTester):
                 "ignore_index": ignore_index,
                 "multidim_average": multidim_average,
             },
+        )
+
+    def test_binary_stat_scores_differentiability(self, input):
+        preds, target = input
+        self.run_differentiability_test(
+            preds=preds,
+            target=target,
+            metric_module=BinaryStatScores,
+            metric_functional=binary_stat_scores,
+            metric_args={"threshold": THRESHOLD},
+        )
+
+    @pytest.mark.parametrize("dtype", [torch.half, torch.double])
+    def test_binary_stat_scores_half_cpu(self, input, dtype):
+        preds, target = input
+        if (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        self.run_precision_test_cpu(
+            preds=preds,
+            target=target,
+            metric_module=BinaryStatScores,
+            metric_functional=binary_stat_scores,
+            metric_args={"threshold": THRESHOLD},
+            dtype=dtype,
+        )
+
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
+    @pytest.mark.parametrize("dtype", [torch.half, torch.double])
+    def test_binary_stat_scores_half_gpu(self, input, dtype):
+        preds, target = input
+        self.run_precision_test_gpu(
+            preds=preds,
+            target=target,
+            metric_module=BinaryStatScores,
+            metric_functional=binary_stat_scores,
+            metric_args={"threshold": THRESHOLD},
+            dtype=dtype,
         )
 
 
@@ -174,10 +212,10 @@ def _sk_stat_scores_multiclass(preds, target, ignore_index, multidim_average, av
 
 
 @pytest.mark.parametrize("input", _multiclass_cases)
-@pytest.mark.parametrize("ignore_index", [None, 0, -1])
-@pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
-@pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
 class TestMulticlassStatScores(MetricTester):
+    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
+    @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multiclass_stat_scores(self, ddp, input, ignore_index, multidim_average, average):
         preds, target = input
@@ -205,6 +243,9 @@ class TestMulticlassStatScores(MetricTester):
             },
         )
 
+    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
+    @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     def test_multiclass_stat_scores_functional(self, input, ignore_index, multidim_average, average):
         preds, target = input
         if ignore_index == -1:
@@ -230,6 +271,43 @@ class TestMulticlassStatScores(MetricTester):
             },
         )
 
+    def test_multiclass_stat_scores_differentiability(self, input):
+        preds, target = input
+        self.run_differentiability_test(
+            preds=preds,
+            target=target,
+            metric_module=MulticlassStatScores,
+            metric_functional=multiclass_stat_scores,
+            metric_args={"num_classes": NUM_CLASSES},
+        )
+
+    @pytest.mark.parametrize("dtype", [torch.half, torch.double])
+    def test_multiclass_stat_scores_half_cpu(self, input, dtype):
+        preds, target = input
+        if (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        self.run_precision_test_cpu(
+            preds=preds,
+            target=target,
+            metric_module=MulticlassStatScores,
+            metric_functional=multiclass_stat_scores,
+            metric_args={"num_classes": NUM_CLASSES},
+            dtype=dtype,
+        )
+
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
+    @pytest.mark.parametrize("dtype", [torch.half, torch.double])
+    def test_multiclass_stat_scores_half_gpu(self, input, dtype):
+        preds, target = input
+        self.run_precision_test_gpu(
+            preds=preds,
+            target=target,
+            metric_module=MulticlassStatScores,
+            metric_functional=multiclass_stat_scores,
+            metric_args={"num_classes": NUM_CLASSES},
+            dtype=dtype,
+        )
+
 
 def _sk_stat_scores_multilabel(preds, target, ignore_index, multidim_average, average):
     preds = preds.numpy()
@@ -251,59 +329,77 @@ def _sk_stat_scores_multilabel(preds, target, ignore_index, multidim_average, av
             tn, fp, fn, tp = sk_confusion_matrix(t, p, labels=[0, 1]).ravel()
             stat_scores.append(np.array([tp, fp, tn, fn, tp + fp + tn + fn]))
         res = np.stack(stat_scores, axis=0)
+
         if average == "micro":
             return res.sum(0)
         elif average == "macro":
             return res.mean(0)
         elif average == "weighted":
-            w = tp + fn
+            w = res[:, 0] + res[:, 3]
             return (res * (w / w.sum()).reshape(-1, 1)).sum(0)
         elif average is None or average == "none":
             return res
     else:
         stat_scores = []
         for i in range(preds.shape[0]):
-            p, t = preds[i], target[i]
-            if ignore_index is None:
-                t = t[~idx]
-                p = p[~idx]
-            confmat = sk_multilabel_confusion_matrix(y_true=p.T, target=t.T)
-            tp, fp, fn, tn = confmat[:, 0, 0], confmat[:, 0, 1], confmat[:, 1, 0], confmat[:, 1, 1]
+            scores = []
+            for j in range(preds.shape[1]):
+                pred, true = preds[i, j], target[i, j]
+                if ignore_index is not None:
+                    idx = true == ignore_index
+                    true = true[~idx]
+                    pred = pred[~idx]
+                tn, fp, fn, tp = sk_confusion_matrix(true, pred, labels=[0, 1]).ravel()
+                scores.append(np.array([tp, fp, tn, fn, tp + fp + tn + fn]))
+            stat_scores.append(np.stack(scores, 1))
+        res = np.stack(stat_scores, 0)
+        if average == "micro":
+            return res.sum(-1)
+        elif average == "macro":
+            return res.mean(-1)
+        elif average == "weighted":
+            w = res[:, 0, :] + res[:, 3, :]
+            return (res * (w / w.sum())[:, np.newaxis]).sum(-1)
+        elif average is None or average == "none":
+            return np.moveaxis(res, 1, -1)
 
 
 @pytest.mark.parametrize("input", _multilabel_cases)
-@pytest.mark.parametrize("ignore_index", [None, 0, -1])
-@pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
-@pytest.mark.parametrize("average", ["micro", "macro", "samples"])
 class TestMultilabelStatScores(MetricTester):
-    # @pytest.mark.parametrize("ddp", [True, False])
-    # def test_multilabel_stat_scores(self, ddp, input, ignore_index, multidim_average, average):
-    #     preds, target = input
-    #     if ignore_index == -1:
-    #         target = inject_ignore_index(target, ignore_index)
-    #     if multidim_average == "samplewise" and preds.ndim < 3:
-    #         pytest.skip("samplewise and non-multidim arrays are not valid")
+    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
+    @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
+    def test_multilabel_stat_scores(self, ddp, input, ignore_index, multidim_average, average):
+        preds, target = input
+        if ignore_index == -1:
+            target = inject_ignore_index(target, ignore_index)
+        if multidim_average == "samplewise" and preds.ndim < 4:
+            pytest.skip("samplewise and non-multidim arrays are not valid")
 
-    #     self.run_class_metric_test(
-    #         ddp=ddp,
-    #         preds=preds,
-    #         target=target,
-    #         metric_class=MultilabelStatScores,
-    #         sk_metric=partial(
-    #             _sk_stat_scores_multiclass,
-    #             ignore_index=ignore_index,
-    #             multidim_average=multidim_average,
-    #             average=average,
-    #         ),
-    #         metric_args={
-    #             "num_labels": NUM_CLASSES,
-    #             "threshold": THRESHOLD,
-    #             "ignore_index": ignore_index,
-    #             "multidim_average": multidim_average,
-    #             "average": average,
-    #         },
-    #     )
+        self.run_class_metric_test(
+            ddp=ddp,
+            preds=preds,
+            target=target,
+            metric_class=MultilabelStatScores,
+            sk_metric=partial(
+                _sk_stat_scores_multilabel,
+                ignore_index=ignore_index,
+                multidim_average=multidim_average,
+                average=average,
+            ),
+            metric_args={
+                "num_labels": NUM_CLASSES,
+                "threshold": THRESHOLD,
+                "ignore_index": ignore_index,
+                "multidim_average": multidim_average,
+                "average": average,
+            },
+        )
 
+    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
+    @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     def test_multilabel_stat_scores_functional(self, input, ignore_index, multidim_average, average):
         preds, target = input
         if ignore_index == -1:
@@ -328,6 +424,43 @@ class TestMultilabelStatScores(MetricTester):
                 "multidim_average": multidim_average,
                 "average": average,
             },
+        )
+
+    def test_multilabel_stat_scores_differentiability(self, input):
+        preds, target = input
+        self.run_differentiability_test(
+            preds=preds,
+            target=target,
+            metric_module=MultilabelStatScores,
+            metric_functional=multilabel_stat_scores,
+            metric_args={"num_labels": NUM_CLASSES, "threshold": THRESHOLD},
+        )
+
+    @pytest.mark.parametrize("dtype", [torch.half, torch.double])
+    def test_multilabel_stat_scores_half_cpu(self, input, dtype):
+        preds, target = input
+        if (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        self.run_precision_test_cpu(
+            preds=preds,
+            target=target,
+            metric_module=MultilabelStatScores,
+            metric_functional=multilabel_stat_scores,
+            metric_args={"num_labels": NUM_CLASSES, "threshold": THRESHOLD},
+            dtype=dtype,
+        )
+
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
+    @pytest.mark.parametrize("dtype", [torch.half, torch.double])
+    def test_multilabel_stat_scores_half_gpu(self, input, dtype):
+        preds, target = input
+        self.run_precision_test_gpu(
+            preds=preds,
+            target=target,
+            metric_module=MultilabelStatScores,
+            metric_functional=multilabel_stat_scores,
+            metric_args={"num_labels": NUM_CLASSES, "threshold": THRESHOLD},
+            dtype=dtype,
         )
 
 

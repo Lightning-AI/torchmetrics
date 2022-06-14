@@ -304,12 +304,13 @@ def _functional_test(
         _assert_allclose(tm_result, sk_result, atol=atol)
 
 
-def _assert_half_support(
+def _assert_dtype_support(
     metric_module: Optional[Metric],
     metric_functional: Optional[Callable],
     preds: Tensor,
     target: Tensor,
     device: str = "cpu",
+    dtype: torch.dtype = torch.half,
     **kwargs_update,
 ):
     """Test if an metric can be used with half precision tensors.
@@ -323,10 +324,10 @@ def _assert_half_support(
         kwargs_update: Additional keyword arguments that will be passed with preds and
                 target when running update on the metric.
     """
-    y_hat = preds[0].half().to(device) if preds[0].is_floating_point() else preds[0].to(device)
-    y = target[0].half().to(device) if target[0].is_floating_point() else target[0].to(device)
+    y_hat = preds[0].to(dtype=dtype, device=device) if preds[0].is_floating_point() else preds[0].to(device)
+    y = target[0].to(dtype=dtype, device=device) if target[0].is_floating_point() else target[0].to(device)
     kwargs_update = {
-        k: (v[0].half() if v.is_floating_point() else v[0]).to(device) if isinstance(v, Tensor) else v
+        k: (v[0].to(dtype=dtype) if v.is_floating_point() else v[0]).to(device) if isinstance(v, Tensor) else v
         for k, v in kwargs_update.items()
     }
     if metric_module is not None:
@@ -486,6 +487,7 @@ class MetricTester:
         metric_module: Optional[Metric] = None,
         metric_functional: Optional[Callable] = None,
         metric_args: Optional[dict] = None,
+        dtype: torch.dtype = torch.half,
         **kwargs_update,
     ):
         """Test if a metric can be used with half precision tensors on cpu
@@ -499,12 +501,13 @@ class MetricTester:
                 target when running update on the metric.
         """
         metric_args = metric_args or {}
-        _assert_half_support(
+        _assert_dtype_support(
             metric_module(**metric_args) if metric_module is not None else None,
-            metric_functional,
+            partial(metric_functional, **metric_args),
             preds,
             target,
             device="cpu",
+            dtype=dtype,
             **kwargs_update,
         )
 
@@ -515,6 +518,7 @@ class MetricTester:
         metric_module: Optional[Metric] = None,
         metric_functional: Optional[Callable] = None,
         metric_args: Optional[dict] = None,
+        dtype: torch.dtype = torch.half,
         **kwargs_update,
     ):
         """Test if a metric can be used with half precision tensors on gpu
@@ -528,12 +532,13 @@ class MetricTester:
                 target when running update on the metric.
         """
         metric_args = metric_args or {}
-        _assert_half_support(
+        _assert_dtype_support(
             metric_module(**metric_args) if metric_module is not None else None,
-            metric_functional,
+            partial(metric_functional, **metric_args),
             preds,
             target,
             device="cuda",
+            dtype=dtype,
             **kwargs_update,
         )
 

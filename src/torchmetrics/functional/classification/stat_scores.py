@@ -146,7 +146,7 @@ def _multiclass_stat_scores_arg_validation(
         raise ValueError(
             f"Expected argument `top_k` to be smaller or equal to `num_classes` but got {top_k} and {num_classes}"
         )
-    allowed_average = ("micro", "macro", "weighted,", "weighted", "samples", "none", None)
+    allowed_average = ("micro", "macro", "weighted", "none", None)
     if average not in allowed_average:
         raise ValueError(f"Expected argument `average` to be one of {allowed_average}, but got {average}")
     allowed_multidim_average = ("global", "samplewise")
@@ -344,9 +344,9 @@ def _multilabel_stat_scores_arg_validation(
         raise ValueError(f"Expected argument `num_labels` to be an integer larger than 1, but got {num_labels}")
     if not isinstance(threshold, float):
         raise ValueError(f"Expected argument `threshold` to be a float, but got {threshold}.")
-    allowed_average = ("micro", "macro", "samples")
+    allowed_average = ("micro", "macro", "weighted", "none", None)
     if average not in allowed_average:
-        raise ValueError(f"Expected argument `multidim_average` to be one of {allowed_average}, but got {average}")
+        raise ValueError(f"Expected argument `average` to be one of {allowed_average}, but got {average}")
     allowed_multidim_average = ("global", "samplewise")
     if multidim_average not in allowed_multidim_average:
         raise ValueError(

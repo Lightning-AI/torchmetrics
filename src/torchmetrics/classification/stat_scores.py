@@ -72,7 +72,7 @@ class BinaryStatScores(Metric, AbstractStatScores):
         multidim_average: str = "global",
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         if validate_args:
@@ -118,7 +118,7 @@ class MulticlassStatScores(Metric, AbstractStatScores):
         multidim_average: str = "global",
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         if validate_args:
@@ -171,7 +171,7 @@ class MultilabelStatScores(Metric, AbstractStatScores):
         multidim_average: str = "global",
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         if validate_args:
