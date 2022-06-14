@@ -149,7 +149,7 @@ class MulticlassStatScores(Metric, AbstractStatScores):
             )
         preds, target = _multiclass_stat_scores_format(preds, target, self.top_k)
         tp, fp, tn, fn = _multiclass_stat_scores_update(
-            preds, target, self.num_classes, self.average, self.top_k, self.multidim_average, self.ignore_index
+            preds, target, self.num_classes, self.top_k, self.multidim_average, self.ignore_index
         )
         self._update_state(tp, fp, tn, fn)
 

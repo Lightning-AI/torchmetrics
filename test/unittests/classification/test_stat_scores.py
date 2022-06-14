@@ -37,12 +37,6 @@ def _sk_stat_scores_binary(preds, target, ignore_index, multidim_average):
         preds = preds.view(-1).numpy()
         target = target.view(-1).numpy()
     else:
-        # if preds.shape[0] == BATCH_SIZE * NUM_BATCHES:
-        #    preds = torch.chunk(preds, NUM_BATCHES)
-        #    preds = torch.cat([*preds[1::2], *preds[::2]], 0).numpy()
-        #    target = torch.chunk(target, NUM_BATCHES)
-        #    target = torch.cat([*target[1::2], *target[::2]], 0).numpy()
-        # else:
         preds = preds.numpy()
         target = target.numpy()
 
@@ -57,7 +51,7 @@ def _sk_stat_scores_binary(preds, target, ignore_index, multidim_average):
             target = target[~idx]
             preds = preds[~idx]
         tn, fp, fn, tp = sk_confusion_matrix(y_true=target, y_pred=preds, labels=[0, 1]).ravel()
-        return np.array([tp, fp, tn, fn, tp + fp + tn + fn])
+        return np.array([tp, fp, tn, fn, tp + fn])
     else:
         res = []
         for pred, true in zip(preds, target):
@@ -68,7 +62,7 @@ def _sk_stat_scores_binary(preds, target, ignore_index, multidim_average):
                 true = true[~idx]
                 pred = pred[~idx]
             tn, fp, fn, tp = sk_confusion_matrix(y_true=true, y_pred=pred, labels=[0, 1]).ravel()
-            res.append(np.array([tp, fp, tn, fn, tp + fp + tn + fn]))
+            res.append(np.array([tp, fp, tn, fn, tp + fn]))
         return np.stack(res)
 
 
@@ -169,7 +163,7 @@ def _sk_stat_scores_multiclass(preds, target, ignore_index, multidim_average, av
         fn = confmat.sum(1) - tp
         tn = confmat.sum() - (fp + fn + tp)
 
-        res = np.stack([tp, fp, tn, fn, tp + fp + tn + fn], 1)
+        res = np.stack([tp, fp, tn, fn, tp + fn], 1)
         if average == "micro":
             return res.sum(0)
         elif average == "macro":
@@ -198,16 +192,16 @@ def _sk_stat_scores_multiclass(preds, target, ignore_index, multidim_average, av
             fp = confmat.sum(0) - tp
             fn = confmat.sum(1) - tp
             tn = confmat.sum() - (fp + fn + tp)
-
+            r = np.stack([tp, fp, tn, fn, tp + fn], 1)
             if average == "micro":
-                res.append(np.stack([tp, fp, tn, fn, tp + fp + tn + fn], 1).sum(0))
+                res.append(r.sum(0))
             elif average == "macro":
-                res.append(np.stack([tp, fp, tn, fn, tp + fp + tn + fn], 1).mean(0))
+                res.append(r.mean(0))
             elif average == "weighted":
                 w = tp + fn
-                res.append((np.stack([tp, fp, tn, fn, tp + fp + tn + fn], 1) * (w / w.sum()).reshape(-1, 1)).sum(0))
+                res.append((r * (w / w.sum()).reshape(-1, 1)).sum(0))
             elif average is None or average == "none":
-                res.append(np.stack([tp, fp, tn, fn, tp + fp + tn + fn], 1))
+                res.append(r)
         return np.stack(res, 0)
 
 
@@ -309,6 +303,30 @@ class TestMulticlassStatScores(MetricTester):
         )
 
 
+_mc_k_target = torch.tensor([0, 1, 2])
+_mc_k_preds = torch.tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]])
+
+
+@pytest.mark.parametrize(
+    "k, preds, target, average, expected",
+    [
+        (1, _mc_k_preds, _mc_k_target, "micro", torch.tensor([2, 1, 5, 1, 3])),
+        (2, _mc_k_preds, _mc_k_target, "micro", torch.tensor([3, 3, 3, 0, 3])),
+        (1, _mc_k_preds, _mc_k_target, None, torch.tensor([[0, 1, 1], [0, 1, 0], [2, 1, 2], [1, 0, 0], [1, 1, 1]])),
+        (2, _mc_k_preds, _mc_k_target, None, torch.tensor([[1, 1, 1], [1, 1, 1], [1, 1, 1], [0, 0, 0], [1, 1, 1]])),
+    ],
+)
+def test_top_k_multiclass(k, preds, target, average, expected):
+    """A simple test to check that top_k works as expected."""
+    class_metric = MulticlassStatScores(top_k=k, average=average, num_classes=3)
+    class_metric.update(preds, target)
+
+    assert torch.allclose(class_metric.compute().long(), expected.T)
+    assert torch.allclose(
+        multiclass_stat_scores(preds, target, top_k=k, average=average, num_classes=3).long(), expected.T
+    )
+
+
 def _sk_stat_scores_multilabel(preds, target, ignore_index, multidim_average, average):
     preds = preds.numpy()
     target = target.numpy()
@@ -327,7 +345,7 @@ def _sk_stat_scores_multilabel(preds, target, ignore_index, multidim_average, av
                 t = t[~idx]
                 p = p[~idx]
             tn, fp, fn, tp = sk_confusion_matrix(t, p, labels=[0, 1]).ravel()
-            stat_scores.append(np.array([tp, fp, tn, fn, tp + fp + tn + fn]))
+            stat_scores.append(np.array([tp, fp, tn, fn, tp + fn]))
         res = np.stack(stat_scores, axis=0)
 
         if average == "micro":
@@ -350,7 +368,7 @@ def _sk_stat_scores_multilabel(preds, target, ignore_index, multidim_average, av
                     true = true[~idx]
                     pred = pred[~idx]
                 tn, fp, fn, tp = sk_confusion_matrix(true, pred, labels=[0, 1]).ravel()
-                scores.append(np.array([tp, fp, tn, fn, tp + fp + tn + fn]))
+                scores.append(np.array([tp, fp, tn, fn, tp + fn]))
             stat_scores.append(np.stack(scores, 1))
         res = np.stack(stat_scores, 0)
         if average == "micro":
