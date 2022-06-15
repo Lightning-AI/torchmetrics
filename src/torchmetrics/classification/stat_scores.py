@@ -50,6 +50,8 @@ class StatScores(Metric):
               Each statistic is represented by a ``(C,)`` tensor. Requires ``num_classes`` to be set.
             - ``'samples'``: Counts the statistics for each sample separately (over all classes).
               Each statistic is represented by a ``(N, )`` 1d tensor.
+            - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
+              the metric for every class.
 
             .. note:: What is considered a sample in the multi-dimensional multi-class case
                 depends on the value of ``mdmc_reduce``.
@@ -87,14 +89,17 @@ class StatScores(Metric):
 
     Raises:
         ValueError:
-            If ``reduce`` is none of ``"micro"``, ``"macro"`` or ``"samples"``.
+            If ``reduce`` is none of ``"micro"``, ``"macro"``, ``"samples"``, ``"none"`` or None.
         ValueError:
             If ``mdmc_reduce`` is none of ``None``, ``"samplewise"``, ``"global"``.
         ValueError:
             If ``reduce`` is set to ``"macro"`` and ``num_classes`` is not provided.
         ValueError:
-            If ``num_classes`` is set
-            and ``ignore_index`` is not in the range ``0`` <= ``ignore_index`` < ``num_classes``.
+            If ``num_classes`` is set and is not larger than ``0``.
+        ValueError:
+            If ``num_classes`` is set and ``ignore_index`` is not in the range ``[0, num_classes)``.
+        ValueError:
+            If ``top_k`` is not an ``integer`` larger than ``0``.
 
     Example:
         >>> from torchmetrics.classification import StatScores
@@ -140,7 +145,7 @@ class StatScores(Metric):
         self.ignore_index = ignore_index
         self.top_k = top_k
 
-        if reduce not in ["micro", "macro", "samples"]:
+        if reduce not in ["micro", "macro", "samples", None]:
             raise ValueError(f"The `reduce` {reduce} is not valid.")
 
         if mdmc_reduce not in [None, "samplewise", "global"]:
@@ -149,8 +154,14 @@ class StatScores(Metric):
         if reduce == "macro" and (not num_classes or num_classes < 1):
             raise ValueError("When you set `reduce` as 'macro', you have to provide the number of classes.")
 
+        if num_classes and num_classes < 1:
+            raise ValueError("Number of classes must be larger than 0.")
+
         if num_classes and ignore_index is not None and (not ignore_index < num_classes or num_classes == 1):
             raise ValueError(f"The `ignore_index` {ignore_index} is not valid for inputs with {num_classes} classes")
+
+        if top_k is not None and (not isinstance(top_k, int) or top_k <= 0):
+            raise ValueError(f"The `top_k` should be an integer larger than 0, got {top_k}")
 
         default: Callable = lambda: []
         reduce_fn: Optional[str] = "cat"

@@ -26,13 +26,28 @@ _input_binary_prob = Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE), target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE))
 )
 
+_input_binary_multidim_prob = Input(
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
+    target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM)),
+)
+
 _input_binary = Input(
-    preds=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
+    preds=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)).float(),
     target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
+)
+
+_input_binary_multidim = Input(
+    preds=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM)).float(),
+    target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM)),
 )
 
 _input_binary_logits = Input(
     preds=torch.randn(NUM_BATCHES, BATCH_SIZE), target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE))
+)
+
+_input_binary_multidim_logits = Input(
+    preds=torch.randn(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
+    target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM)),
 )
 
 _input_multilabel_prob = Input(
@@ -50,8 +65,13 @@ _input_multilabel_logits = Input(
     target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES)),
 )
 
+_input_multilabel_multidim_logits = Input(
+    preds=torch.randn(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, EXTRA_DIM),
+    target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, EXTRA_DIM)),
+)
+
 _input_multilabel = Input(
-    preds=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES)),
+    preds=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES)).float(),
     target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES)),
 )
 
@@ -82,11 +102,16 @@ _input_multiclass = Input(
     target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
 )
 
+__mdmc_logits = 10 * torch.randn(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, EXTRA_DIM)
 __mdmc_prob_preds = torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, EXTRA_DIM)
 __mdmc_prob_preds = __mdmc_prob_preds / __mdmc_prob_preds.sum(dim=2, keepdim=True)
 
 _input_multidim_multiclass_prob = Input(
     preds=__mdmc_prob_preds, target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM))
+)
+
+_input_multidim_multiclass_logits = Input(
+    preds=__mdmc_logits, target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM))
 )
 
 _input_multidim_multiclass = Input(

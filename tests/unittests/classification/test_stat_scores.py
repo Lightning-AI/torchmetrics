@@ -20,7 +20,7 @@ import torch
 from sklearn.metrics import multilabel_confusion_matrix
 from torch import Tensor, tensor
 
-from torchmetrics import Accuracy, Dice, FBetaScore, Precision, Recall, Specificity, StatScores
+from torchmetrics import Accuracy, Dice, FBetaScore, GeneralizedDiceScore, Precision, Recall, Specificity, StatScores
 from torchmetrics.functional import stat_scores
 from torchmetrics.utilities.checks import _input_format_classification
 from unittests.classification.inputs import _input_binary, _input_binary_logits, _input_binary_prob, _input_multiclass
@@ -331,15 +331,17 @@ def test_top_k(k: int, preds: Tensor, target: Tensor, reduce: str, expected: Ten
 @pytest.mark.parametrize(
     "metric_args",
     [
-        {"reduce": "micro"},
+        {"num_classes": 1, "reduce": "micro"},
         {"num_classes": 1, "reduce": "macro"},
-        {"reduce": "samples"},
-        {"mdmc_reduce": None},
-        {"mdmc_reduce": "samplewise"},
-        {"mdmc_reduce": "global"},
+        {"num_classes": 1, "reduce": "samples"},
+        {"num_classes": 1, "mdmc_reduce": None},
+        {"num_classes": 1, "mdmc_reduce": "samplewise"},
+        {"num_classes": 1, "mdmc_reduce": "global"},
     ],
 )
-@pytest.mark.parametrize("metric_cls", [Accuracy, Dice, FBetaScore, Precision, Recall, Specificity])
+@pytest.mark.parametrize(
+    "metric_cls", [Accuracy, Dice, FBetaScore, GeneralizedDiceScore, Precision, Recall, Specificity]
+)
 def test_provide_superclass_kwargs(metric_cls: StatScores, metric_args: Dict[str, Any]):
     """Test instantiating subclasses with superclass arguments as kwargs."""
     metric_cls(**metric_args)

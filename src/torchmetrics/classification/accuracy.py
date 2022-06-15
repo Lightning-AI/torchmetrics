@@ -191,9 +191,6 @@ class Accuracy(StatScores):
             **kwargs,
         )
 
-        if top_k is not None and (not isinstance(top_k, int) or top_k <= 0):
-            raise ValueError(f"The `top_k` should be an integer larger than 0, got {top_k}")
-
         self.average = average
         self.threshold = threshold
         self.top_k = top_k

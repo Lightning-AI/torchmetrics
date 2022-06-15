@@ -63,6 +63,7 @@ def dice_score(
         Tensor containing dice score
 
     Example:
+        >>> import torch
         >>> from torchmetrics.functional import dice_score
         >>> pred = torch.tensor([[0.85, 0.05, 0.05, 0.05],
         ...                      [0.05, 0.85, 0.05, 0.05],
@@ -123,6 +124,7 @@ def _dice_compute(
             ``average`` parameter)
 
     Example:
+        >>> import torch
         >>> from torchmetrics.functional.classification.stat_scores import _stat_scores_update
         >>> from torchmetrics.functional.classification.dice import _dice_compute
         >>> preds  = torch.tensor([2, 0, 2, 1])
@@ -171,8 +173,8 @@ def dice(
 
     .. math:: \text{Dice} = \frac{\text{2 * TP}}{\text{2 * TP} + \text{FP} + \text{FN}}
 
-    Where :math:`\text{TP}` and :math:`\text{FN}` represent the number of true positives and
-    false negatives respecitively.
+    Where :math:`\text{TP}`, :math:`\text{FP}` and :math:`\text{FN}` represent the numbers of
+    true positives, false positives and false negatives, respectively.
 
     It is recommend set `ignore_index` to index of background class.
 
@@ -259,8 +261,11 @@ def dice(
             If ``average`` is set but ``num_classes`` is not provided.
         ValueError:
             If ``num_classes`` is set and ``ignore_index`` is not in the range ``[0, num_classes)``.
+        ValueError:
+            If ``top_k`` is not an integer greater than ``0``.
 
     Example:
+        >>> import torch
         >>> from torchmetrics.functional import dice
         >>> preds = torch.tensor([2, 0, 2, 1])
         >>> target = torch.tensor([1, 1, 2, 0])
@@ -283,7 +288,7 @@ def dice(
         raise ValueError(f"The `ignore_index` {ignore_index} is not valid for inputs with {num_classes} classes")
 
     if top_k is not None and (not isinstance(top_k, int) or top_k <= 0):
-        raise ValueError(f"The `top_k` should be an integer larger than 0, got {top_k}")
+        raise ValueError(f"The `top_k` should be an integer greater than 0, got {top_k}")
 
     preds, target = _input_squeeze(preds, target)
     reduce = "macro" if average in ("weighted", "none", None) else average

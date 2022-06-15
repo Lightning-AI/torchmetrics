@@ -95,6 +95,12 @@ class Precision(StatScores):
     Raises:
         ValueError:
             If ``average`` is none of ``"micro"``, ``"macro"``, ``"weighted"``, ``"samples"``, ``"none"``, ``None``.
+        ValueError:
+            If ``num_classes`` is set and is not larger than ``0``.
+        ValueError:
+            If ``num_classes`` is set and ``ignore_index`` is not in the range ``[0, num_classes)``.
+        ValueError:
+            If ``top_k`` is not an ``integer`` larger than ``0``.
 
     Example:
         >>> import torch
@@ -234,6 +240,12 @@ class Recall(StatScores):
     Raises:
         ValueError:
             If ``average`` is none of ``"micro"``, ``"macro"``, ``"weighted"``, ``"samples"``, ``"none"``, ``None``.
+        ValueError:
+            If ``num_classes`` is set and is not larger than ``0``.
+        ValueError:
+            If ``num_classes`` is set and ``ignore_index`` is not in the range ``[0, num_classes)``.
+        ValueError:
+            If ``top_k`` is not an ``integer`` larger than ``0``.
 
     Example:
         >>> import torch

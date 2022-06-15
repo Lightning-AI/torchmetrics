@@ -177,7 +177,7 @@ def _check_num_classes_ml(num_classes: int, multiclass: Optional[bool], implied_
 
     if multiclass and num_classes != 2:
         raise ValueError(
-            "Your have set `multiclass=True`, but `num_classes` is not equal to 2."
+            "You have set `multiclass=True`, but `num_classes` is not equal to 2."
             " If you are trying to transform multi-label data to 2 class multi-dimensional"
             " multi-class, you should set `num_classes` to either 2 or None."
         )

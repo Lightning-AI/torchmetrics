@@ -23,6 +23,7 @@ from torchmetrics.classification.cohen_kappa import CohenKappa  # noqa: F401
 from torchmetrics.classification.confusion_matrix import ConfusionMatrix  # noqa: F401
 from torchmetrics.classification.dice import Dice  # noqa: F401
 from torchmetrics.classification.f_beta import F1Score, FBetaScore  # noqa: F401
+from torchmetrics.classification.generalized_dice import GeneralizedDiceScore  # noqa: F401
 from torchmetrics.classification.hamming import HammingDistance  # noqa: F401
 from torchmetrics.classification.hinge import HingeLoss  # noqa: F401
 from torchmetrics.classification.jaccard import JaccardIndex  # noqa: F401

@@ -25,12 +25,12 @@ class Dice(StatScores):
 
     .. math:: \text{Dice} = \frac{\text{2 * TP}}{\text{2 * TP} + \text{FP} + \text{FN}}
 
-    Where :math:`\text{TP}` and :math:`\text{FP}` represent the number of true positives and
-    false positives respecitively.
+    Where :math:`\text{TP}`, :math:`\text{FP}` and :math:`\text{FN}` represent the numbers of
+    true positives, false positives and false negatives, respectively.
 
     It is recommend set `ignore_index` to index of background class.
 
-    The reduction method (how the precision scores are aggregated) is controlled by the
+    The reduction method (how the dice scores are aggregated) is controlled by the
     ``average`` parameter, and additionally by the ``mdmc_average`` parameter in the
     multi-dimensional multi-class case. Accepts all inputs listed in :ref:`pages/classification:input types`.
 
@@ -103,7 +103,11 @@ class Dice(StatScores):
         ValueError:
             If ``average`` is set but ``num_classes`` is not provided.
         ValueError:
+            If ``num_classes`` is set and is not larger than ``0``.
+        ValueError:
             If ``num_classes`` is set and ``ignore_index`` is not in the range ``[0, num_classes)``.
+        ValueError:
+            If ``top_k`` is not an ``integer`` larger than ``0``.
 
     Example:
         >>> import torch

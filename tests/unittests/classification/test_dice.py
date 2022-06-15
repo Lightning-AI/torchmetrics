@@ -23,14 +23,25 @@ from torchmetrics.functional import dice, dice_score
 from torchmetrics.functional.classification.stat_scores import _del_column
 from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import DataType
-from unittests.classification.inputs import _input_binary, _input_binary_logits, _input_binary_prob
+from unittests.classification.inputs import (
+    _input_binary,
+    _input_binary_logits,
+    _input_binary_multidim,
+    _input_binary_multidim_logits,
+    _input_binary_multidim_prob,
+    _input_binary_prob,
+)
 from unittests.classification.inputs import _input_multiclass as _input_mcls
 from unittests.classification.inputs import _input_multiclass_logits as _input_mcls_logits
 from unittests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
 from unittests.classification.inputs import _input_multiclass_with_missing_class as _input_miss_class
+from unittests.classification.inputs import _input_multidim_multiclass as _input_mdmc
+from unittests.classification.inputs import _input_multidim_multiclass_logits as _input_mdmc_logits
+from unittests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
 from unittests.classification.inputs import _input_multilabel as _input_mlb
 from unittests.classification.inputs import _input_multilabel_logits as _input_mlb_logits
 from unittests.classification.inputs import _input_multilabel_multidim as _input_mlmd
+from unittests.classification.inputs import _input_multilabel_multidim_logits as _input_mlmd_logits
 from unittests.classification.inputs import _input_multilabel_multidim_prob as _input_mlmd_prob
 from unittests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
 from unittests.helpers import seed_all
@@ -99,6 +110,9 @@ def test_dice(pred, target, expected):
         (_input_binary.preds, _input_binary.target),
         (_input_binary_logits.preds, _input_binary_logits.target),
         (_input_binary_prob.preds, _input_binary_prob.target),
+        (_input_binary_multidim.preds, _input_binary_multidim.target),
+        (_input_binary_multidim_logits.preds, _input_binary_multidim_logits.target),
+        (_input_binary_multidim_prob.preds, _input_binary_multidim_prob.target),
     ],
 )
 @pytest.mark.parametrize("ignore_index", [None])
@@ -132,12 +146,16 @@ class TestDiceBinary(MetricTester):
         (_input_mcls.preds, _input_mcls.target),
         (_input_mcls_logits.preds, _input_mcls_logits.target),
         (_input_mcls_prob.preds, _input_mcls_prob.target),
+        (_input_mdmc.preds, _input_mdmc.target),
+        (_input_mdmc_logits.preds, _input_mdmc_logits.target),
+        (_input_mdmc_prob.preds, _input_mdmc_prob.target),
         (_input_miss_class.preds, _input_miss_class.target),
         (_input_mlb.preds, _input_mlb.target),
         (_input_mlb_logits.preds, _input_mlb_logits.target),
-        (_input_mlmd.preds, _input_mlmd.target),
-        (_input_mlmd_prob.preds, _input_mlmd_prob.target),
         (_input_mlb_prob.preds, _input_mlb_prob.target),
+        (_input_mlmd.preds, _input_mlmd.target),
+        (_input_mlmd_logits.preds, _input_mlmd_logits.target),
+        (_input_mlmd_prob.preds, _input_mlmd_prob.target),
     ],
 )
 @pytest.mark.parametrize("ignore_index", [None, 0])

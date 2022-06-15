@@ -77,6 +77,9 @@ def _stat_scores(
         The shape of the returned tensors depends on the shape of the inputs
         and the ``reduce`` parameter:
 
+        If ``reduce=None`` or ``reduce='none'``. the returned tensors have the same shape
+        as the input.
+
         If inputs are of the shape ``(N, C)``, then:
 
         - If ``reduce='micro'``, the returned tensors are 1 element tensors
@@ -89,7 +92,7 @@ def _stat_scores(
         - If ``reduce='macro'``, the returned tensors are ``(N,C)`` tensors
         - If ``reduce='samples'``, the returned tensors are ``(N,X)`` tensors
     """
-    dim: Union[int, List[int]] = 1  # for "samples"
+    dim: Union[int, List[int]] = 1
     if reduce == "micro":
         dim = [0, 1] if preds.ndim == 2 else [1, 2]
     elif reduce == "macro":
@@ -98,11 +101,17 @@ def _stat_scores(
     true_pred, false_pred = target == preds, target != preds
     pos_pred, neg_pred = preds == 1, preds == 0
 
-    tp = (true_pred * pos_pred).sum(dim=dim)
-    fp = (false_pred * pos_pred).sum(dim=dim)
+    tp = true_pred * pos_pred
+    fp = false_pred * pos_pred
 
-    tn = (true_pred * neg_pred).sum(dim=dim)
-    fn = (false_pred * neg_pred).sum(dim=dim)
+    tn = true_pred * neg_pred
+    fn = false_pred * neg_pred
+
+    if reduce is not None and reduce != "none":
+        tp = tp.sum(dim=dim)
+        fp = fp.sum(dim=dim)
+        tn = tn.sum(dim=dim)
+        fn = fn.sum(dim=dim)
 
     return tp.long(), fp.long(), tn.long(), fn.long()
 
