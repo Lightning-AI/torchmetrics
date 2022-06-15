@@ -9,7 +9,7 @@ clean:
 	rm -rf _ckpt_*
 	rm -rf .mypy_cache
 	rm -rf .pytest_cache
-	rm -rf test/.pytest_cache
+	rm -rf tests/.pytest_cache
 	rm -rf ./docs/build
 	rm -rf ./docs/source/generated
 	rm -rf ./docs/source/*/generated
