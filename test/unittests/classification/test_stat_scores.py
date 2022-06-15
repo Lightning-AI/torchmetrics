@@ -77,6 +77,8 @@ class TestBinaryStatScores(MetricTester):
             target = inject_ignore_index(target, ignore_index)
         if multidim_average == "samplewise" and preds.ndim < 3:
             pytest.skip("samplewise and non-multidim arrays are not valid")
+        if multidim_average == "samplewise" and ddp:
+            pytest.skip("samplewise and ddp give different order than non ddp")
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -217,6 +219,8 @@ class TestMulticlassStatScores(MetricTester):
             target = inject_ignore_index(target, ignore_index)
         if multidim_average == "samplewise" and target.ndim < 3:
             pytest.skip("samplewise and non-multidim arrays are not valid")
+        if multidim_average == "samplewise" and ddp:
+            pytest.skip("samplewise and ddp give different order than non ddp")
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -394,6 +398,8 @@ class TestMultilabelStatScores(MetricTester):
             target = inject_ignore_index(target, ignore_index)
         if multidim_average == "samplewise" and preds.ndim < 4:
             pytest.skip("samplewise and non-multidim arrays are not valid")
+        if multidim_average == "samplewise" and ddp:
+            pytest.skip("samplewise and ddp give different order than non ddp")
 
         self.run_class_metric_test(
             ddp=ddp,
