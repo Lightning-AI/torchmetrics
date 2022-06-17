@@ -82,7 +82,7 @@ jobs:
         python -c "from torch import __version__ as ver; assert '.'.join(ver.split('.')[:2]) == '${{ matrix.pytorch-version }}', ver"
 
     - name: Pull testing data from S3
-      working-directory: ./test
+      working-directory: ./tests
       run: |
         # wget is simpler but does not work on Windows
         python -c "from urllib.request import urlretrieve ; urlretrieve('https://pl-public-data.s3.amazonaws.com/metrics/data.zip', 'data.zip')"
@@ -90,10 +90,10 @@ jobs:
         ls -l _data/*
 
     - name: Readme tests
-      run: phmdoctest README.md --outfile test/unittests/test_readme.py
+      run: phmdoctest README.md --outfile tests/unittests/test_readme.py
 
     - name: Testing
-      working-directory: ./test
+      working-directory: ./tests
       env:
         TEST_DIRS: "${{ needs.check-diff.outputs.test-dirs }}"
       # NOTE: run coverage on tests does not propagate failure status for Win,
@@ -104,6 +104,6 @@ jobs:
       uses: actions/upload-artifact@master
       with:
         name: $PYTEST_ARTEFACT
-        path: test/$PYTEST_ARTEFACT
+        path: tests/$PYTEST_ARTEFACT
       # Use always() to always run this step to publish test results when there are test failures
       if: failure()

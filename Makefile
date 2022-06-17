@@ -9,7 +9,7 @@ clean:
 	rm -rf _ckpt_*
 	rm -rf .mypy_cache
 	rm -rf .pytest_cache
-	rm -rf test/.pytest_cache
+	rm -rf tests/.pytest_cache
 	rm -rf ./docs/build
 	rm -rf ./docs/source/generated
 	rm -rf ./docs/source/*/generated
@@ -22,8 +22,8 @@ clean:
 test: clean env data
 	# run tests with coverage
 	cd src && python -m pytest torchmetrics
-	cd test && python -m pytest unittests -v --cov=torchmetrics
-	cd test && python -m coverage report
+	cd tests && python -m pytest unittests -v --cov=torchmetrics
+	cd tests && python -m coverage report
 
 docs: clean
 	pip install -e .
@@ -37,4 +37,4 @@ env:
 
 data:
 	python -c "from urllib.request import urlretrieve ; urlretrieve('https://pl-public-data.s3.amazonaws.com/metrics/data.zip', 'data.zip')"
-	unzip -o data.zip -d ./test
+	unzip -o data.zip -d ./tests
