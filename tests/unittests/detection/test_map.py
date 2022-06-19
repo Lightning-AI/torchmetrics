@@ -342,12 +342,8 @@ def test_empty_preds():
     metric = MeanAveragePrecision()
 
     metric.update(
-        [
-            dict(boxes=Tensor([]), scores=Tensor([]), labels=IntTensor([])),
-        ],
-        [
-            dict(boxes=Tensor([[214.1500, 41.2900, 562.4100, 285.0700]]), labels=IntTensor([4])),
-        ],
+        [dict(boxes=Tensor([]), scores=Tensor([]), labels=IntTensor([]))],
+        [dict(boxes=Tensor([[214.1500, 41.2900, 562.4100, 285.0700]]), labels=IntTensor([4]))],
     )
     metric.compute()
 
@@ -358,16 +354,8 @@ def test_empty_ground_truths():
     metric = MeanAveragePrecision()
 
     metric.update(
-        [
-            dict(
-                boxes=Tensor([[214.1500, 41.2900, 562.4100, 285.0700]]),
-                scores=Tensor([0.5]),
-                labels=IntTensor([4]),
-            ),
-        ],
-        [
-            dict(boxes=Tensor([]), labels=IntTensor([])),
-        ],
+        [dict(boxes=Tensor([[214.1500, 41.2900, 562.4100, 285.0700]]), scores=Tensor([0.5]), labels=IntTensor([4]))],
+        [dict(boxes=Tensor([]), labels=IntTensor([]))],
     )
     metric.compute()
 
@@ -378,16 +366,8 @@ def test_empty_ground_truths_xywh():
     metric = MeanAveragePrecision(box_format="xywh")
 
     metric.update(
-        [
-            dict(
-                boxes=Tensor([[214.1500, 41.2900, 348.2600, 243.7800]]),
-                scores=Tensor([0.5]),
-                labels=IntTensor([4]),
-            ),
-        ],
-        [
-            dict(boxes=Tensor([]), labels=IntTensor([])),
-        ],
+        [dict(boxes=Tensor([[214.1500, 41.2900, 348.2600, 243.7800]]), scores=Tensor([0.5]), labels=IntTensor([4]))],
+        [dict(boxes=Tensor([]), labels=IntTensor([]))],
     )
     metric.compute()
 
@@ -398,12 +378,8 @@ def test_empty_preds_xywh():
     metric = MeanAveragePrecision(box_format="xywh")
 
     metric.update(
-        [
-            dict(boxes=Tensor([]), scores=Tensor([]), labels=IntTensor([])),
-        ],
-        [
-            dict(boxes=Tensor([[214.1500, 41.2900, 348.2600, 243.7800]]), labels=IntTensor([4])),
-        ],
+        [dict(boxes=Tensor([]), scores=Tensor([]), labels=IntTensor([]))],
+        [dict(boxes=Tensor([[214.1500, 41.2900, 348.2600, 243.7800]]), labels=IntTensor([4]))],
     )
     metric.compute()
 
@@ -414,16 +390,8 @@ def test_empty_ground_truths_cxcywh():
     metric = MeanAveragePrecision(box_format="cxcywh")
 
     metric.update(
-        [
-            dict(
-                boxes=Tensor([[388.2800, 163.1800, 348.2600, 243.7800]]),
-                scores=Tensor([0.5]),
-                labels=IntTensor([4]),
-            ),
-        ],
-        [
-            dict(boxes=Tensor([]), labels=IntTensor([])),
-        ],
+        [dict(boxes=Tensor([[388.2800, 163.1800, 348.2600, 243.7800]]), scores=Tensor([0.5]), labels=IntTensor([4]))],
+        [dict(boxes=Tensor([]), labels=IntTensor([]))],
     )
     metric.compute()
 
@@ -434,12 +402,8 @@ def test_empty_preds_cxcywh():
     metric = MeanAveragePrecision(box_format="cxcywh")
 
     metric.update(
-        [
-            dict(boxes=Tensor([]), scores=Tensor([]), labels=IntTensor([])),
-        ],
-        [
-            dict(boxes=Tensor([[388.2800, 163.1800, 348.2600, 243.7800]]), labels=IntTensor([4])),
-        ],
+        [dict(boxes=Tensor([]), scores=Tensor([]), labels=IntTensor([]))],
+        [dict(boxes=Tensor([[388.2800, 163.1800, 348.2600, 243.7800]]), labels=IntTensor([4]))],
     )
     metric.compute()
 
