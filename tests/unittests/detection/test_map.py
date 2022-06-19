@@ -541,12 +541,12 @@ def test_segm_iou_empty_gt_mask():
             dict(
                 masks=torch.randint(0, 1, (1, 10, 10)).bool(),
                 scores=Tensor([0.5]),
-                labels=IntTensor([4]),
-            ),
+                labels=IntTensor([4])
+            )
         ],
         [
-            dict(masks=Tensor([]), labels=IntTensor([])),
-        ],
+            dict(masks=Tensor([]), labels=IntTensor([]))
+        ]
     )
 
     metric.compute()
@@ -562,12 +562,12 @@ def test_segm_iou_empty_pred_mask():
             dict(
                 masks=torch.BoolTensor([]),
                 scores=Tensor([]),
-                labels=IntTensor([]),
-            ),
+                labels=IntTensor([])
+            )
         ],
         [
-            dict(masks=torch.randint(0, 1, (1, 10, 10)).bool(), labels=IntTensor([4])),
-        ],
+            dict(masks=torch.randint(0, 1, (1, 10, 10)).bool(), labels=IntTensor([4]))
+        ]
     )
 
     metric.compute()
