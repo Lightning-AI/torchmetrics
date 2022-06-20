@@ -48,7 +48,7 @@ runs:
     shell: bash -l {0}
 
   - name: Export README tests
-    run: python -m phmdoctest README.md --outfile test/unittests/test_readme.py
+    run: python -m phmdoctest README.md --outfile tests/unittests/test_readme.py
     shell: bash -l {0}
 
   - name: Unittests
