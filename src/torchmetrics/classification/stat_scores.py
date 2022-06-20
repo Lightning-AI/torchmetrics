@@ -41,7 +41,19 @@ from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
 
 class AbstractStatScores:
     # define common functions
-    def _update_state(self, tp, fp, tn, fn):
+    def _create_state(self, size: int, multidim_average: str) -> None:
+        if multidim_average == "samplewise":
+            default = lambda: []
+            dist_reduce_fx = "cat"
+        else:
+            default = lambda: torch.zeros(size, dtype=torch.long)
+            dist_reduce_fx = "sum"
+        self.add_state("tp", default(), dist_reduce_fx=dist_reduce_fx)
+        self.add_state("fp", default(), dist_reduce_fx=dist_reduce_fx)
+        self.add_state("tn", default(), dist_reduce_fx=dist_reduce_fx)
+        self.add_state("fn", default(), dist_reduce_fx=dist_reduce_fx)
+
+    def _update_state(self, tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor) -> None:
         if self.multidim_average == "samplewise":
             self.tp.append(tp)
             self.fp.append(fp)
@@ -82,16 +94,7 @@ class BinaryStatScores(Metric, AbstractStatScores):
         self.ignore_index = ignore_index
         self.validate_args = validate_args
 
-        if self.multidim_average == "samplewise":
-            default = lambda: []
-            dist_reduce_fx = "cat"
-        else:
-            default = lambda: torch.zeros(1, dtype=torch.long)
-            dist_reduce_fx = "sum"
-        self.add_state("tp", default(), dist_reduce_fx=dist_reduce_fx)
-        self.add_state("fp", default(), dist_reduce_fx=dist_reduce_fx)
-        self.add_state("tn", default(), dist_reduce_fx=dist_reduce_fx)
-        self.add_state("fn", default(), dist_reduce_fx=dist_reduce_fx)
+        self._create_state(1, multidim_average)
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         if self.validate_args:
@@ -130,17 +133,7 @@ class MulticlassStatScores(Metric, AbstractStatScores):
         self.ignore_index = ignore_index
         self.validate_args = validate_args
 
-        if self.multidim_average == "samplewise" or self.average == "samples":
-            default = lambda: []
-            dist_reduce_fx = "cat"
-        else:
-            default = lambda: torch.zeros(num_classes)
-            dist_reduce_fx = "sum"
-
-        self.add_state("tp", default(), dist_reduce_fx=dist_reduce_fx)
-        self.add_state("fp", default(), dist_reduce_fx=dist_reduce_fx)
-        self.add_state("tn", default(), dist_reduce_fx=dist_reduce_fx)
-        self.add_state("fn", default(), dist_reduce_fx=dist_reduce_fx)
+        self._create_state(num_classes, multidim_average)
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         if self.validate_args:
@@ -183,17 +176,7 @@ class MultilabelStatScores(Metric, AbstractStatScores):
         self.ignore_index = ignore_index
         self.validate_args = validate_args
 
-        if self.multidim_average == "samplewise" or self.average == "samples":
-            default = lambda: []
-            dist_reduce_fx = "cat"
-        else:
-            default = lambda: torch.zeros(num_labels)
-            dist_reduce_fx = "sum"
-
-        self.add_state("tp", default(), dist_reduce_fx=dist_reduce_fx)
-        self.add_state("fp", default(), dist_reduce_fx=dist_reduce_fx)
-        self.add_state("tn", default(), dist_reduce_fx=dist_reduce_fx)
-        self.add_state("fn", default(), dist_reduce_fx=dist_reduce_fx)
+        self._create_state(num_labels, multidim_average)
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         if self.validate_args:
