@@ -46,7 +46,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed mAP calculation for areas with 0 predictions ([#1080](https://github.com/PyTorchLightning/metrics/pull/1080))
 
 
--
+- Fixed bug where avg precision state and auroc state was not merge when using MetricCollections ([#1086](https://github.com/PyTorchLightning/metrics/pull/1086))
+
+
+- Skip box conversion if no boxes are present in `MeanAveragePrecision` ([#1097](https://github.com/PyTorchLightning/metrics/pull/1097))
 
 
 ## [0.9.1] - 2022-06-08

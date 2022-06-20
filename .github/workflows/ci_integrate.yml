@@ -76,7 +76,7 @@ jobs:
         pip list
 
     - name: Integrations
-      working-directory: ./test
+      working-directory: ./tests
       env:
         PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: 'python'
       run: python -m pytest integrations -v --durations=25

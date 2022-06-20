@@ -22,6 +22,8 @@ from unittests.helpers import _MARK_TORCH_MIN_1_4, _MARK_TORCH_MIN_1_5, _MARK_TO
 
 
 class DummyMetric(Metric):
+    full_state_update = True
+
     def __init__(self, val_to_return):
         super().__init__()
         self.add_state("_num_updates", tensor(0), dist_reduce_fx="sum")

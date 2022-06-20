@@ -171,7 +171,7 @@ and tests gets formatted in the following way:
   5. (optional) If your metric raises any exception, please add tests that showcase this.
 
   .. note::
-    The `test file for accuracy <https://github.com/PyTorchLightning/metrics/blob/master/test/unittests/classification/test_accuracy.py>`_ metric
+    The `test file for accuracy <https://github.com/PyTorchLightning/metrics/blob/master/tests/unittests/classification/test_accuracy.py>`_ metric
     shows how to implement such tests.
 
 If you only can figure out part of the steps, do not fear to send a PR. We will much rather receive working

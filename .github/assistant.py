@@ -126,7 +126,7 @@ class AssistantCLI:
                 fname = fname.replace(p, "")
             return fname
 
-        files_pkg = [_crop_path(fn, ["src/torchmetrics/", "test/unittests/", "functional/"]) for fn in files_pkg]
+        files_pkg = [_crop_path(fn, ["src/torchmetrics/", "tests/unittests/", "functional/"]) for fn in files_pkg]
         # filter domain names
         tm_modules = [fn.split("/")[0] for fn in files_pkg if "/" in fn]
         # filter general (used everywhere) sub-packages
