@@ -56,7 +56,6 @@ _inputs_masks = Input(
     ],
 )
 
-
 _inputs = Input(
     preds=[
         [
@@ -299,7 +298,6 @@ class TestMAP(MetricTester):
 
     @pytest.mark.parametrize("ddp", [False, True])
     def test_map_bbox(self, compute_on_cpu, ddp):
-
         """Test modular implementation for correctness."""
         self.run_class_metric_test(
             ddp=ddp,
@@ -344,12 +342,8 @@ def test_empty_preds():
     metric = MeanAveragePrecision()
 
     metric.update(
-        [
-            dict(boxes=Tensor([]), scores=Tensor([]), labels=IntTensor([])),
-        ],
-        [
-            dict(boxes=Tensor([[214.1500, 41.2900, 562.4100, 285.0700]]), labels=IntTensor([4])),
-        ],
+        [dict(boxes=Tensor([]), scores=Tensor([]), labels=IntTensor([]))],
+        [dict(boxes=Tensor([[214.1500, 41.2900, 562.4100, 285.0700]]), labels=IntTensor([4]))],
     )
     metric.compute()
 
@@ -360,16 +354,56 @@ def test_empty_ground_truths():
     metric = MeanAveragePrecision()
 
     metric.update(
-        [
-            dict(
-                boxes=Tensor([[214.1500, 41.2900, 562.4100, 285.0700]]),
-                scores=Tensor([0.5]),
-                labels=IntTensor([4]),
-            ),
-        ],
-        [
-            dict(boxes=Tensor([]), labels=IntTensor([])),
-        ],
+        [dict(boxes=Tensor([[214.1500, 41.2900, 562.4100, 285.0700]]), scores=Tensor([0.5]), labels=IntTensor([4]))],
+        [dict(boxes=Tensor([]), labels=IntTensor([]))],
+    )
+    metric.compute()
+
+
+@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
+def test_empty_ground_truths_xywh():
+    """Test empty ground truths in xywh format."""
+    metric = MeanAveragePrecision(box_format="xywh")
+
+    metric.update(
+        [dict(boxes=Tensor([[214.1500, 41.2900, 348.2600, 243.7800]]), scores=Tensor([0.5]), labels=IntTensor([4]))],
+        [dict(boxes=Tensor([]), labels=IntTensor([]))],
+    )
+    metric.compute()
+
+
+@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
+def test_empty_preds_xywh():
+    """Test empty predictions in xywh format."""
+    metric = MeanAveragePrecision(box_format="xywh")
+
+    metric.update(
+        [dict(boxes=Tensor([]), scores=Tensor([]), labels=IntTensor([]))],
+        [dict(boxes=Tensor([[214.1500, 41.2900, 348.2600, 243.7800]]), labels=IntTensor([4]))],
+    )
+    metric.compute()
+
+
+@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
+def test_empty_ground_truths_cxcywh():
+    """Test empty ground truths in cxcywh format."""
+    metric = MeanAveragePrecision(box_format="cxcywh")
+
+    metric.update(
+        [dict(boxes=Tensor([[388.2800, 163.1800, 348.2600, 243.7800]]), scores=Tensor([0.5]), labels=IntTensor([4]))],
+        [dict(boxes=Tensor([]), labels=IntTensor([]))],
+    )
+    metric.compute()
+
+
+@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
+def test_empty_preds_cxcywh():
+    """Test empty predictions in cxcywh format."""
+    metric = MeanAveragePrecision(box_format="cxcywh")
+
+    metric.update(
+        [dict(boxes=Tensor([]), scores=Tensor([]), labels=IntTensor([]))],
+        [dict(boxes=Tensor([[388.2800, 163.1800, 348.2600, 243.7800]]), labels=IntTensor([4]))],
     )
     metric.compute()
 
@@ -467,16 +501,8 @@ def test_segm_iou_empty_gt_mask():
     metric = MeanAveragePrecision(iou_type="segm")
 
     metric.update(
-        [
-            dict(
-                masks=torch.randint(0, 1, (1, 10, 10)).bool(),
-                scores=Tensor([0.5]),
-                labels=IntTensor([4]),
-            ),
-        ],
-        [
-            dict(masks=Tensor([]), labels=IntTensor([])),
-        ],
+        [dict(masks=torch.randint(0, 1, (1, 10, 10)).bool(), scores=Tensor([0.5]), labels=IntTensor([4]))],
+        [dict(masks=Tensor([]), labels=IntTensor([]))],
     )
 
     metric.compute()
@@ -488,16 +514,8 @@ def test_segm_iou_empty_pred_mask():
     metric = MeanAveragePrecision(iou_type="segm")
 
     metric.update(
-        [
-            dict(
-                masks=torch.BoolTensor([]),
-                scores=Tensor([]),
-                labels=IntTensor([]),
-            ),
-        ],
-        [
-            dict(masks=torch.randint(0, 1, (1, 10, 10)).bool(), labels=IntTensor([4])),
-        ],
+        [dict(masks=torch.BoolTensor([]), scores=Tensor([]), labels=IntTensor([]))],
+        [dict(masks=torch.randint(0, 1, (1, 10, 10)).bool(), labels=IntTensor([4]))],
     )
 
     metric.compute()
