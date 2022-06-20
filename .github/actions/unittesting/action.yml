@@ -23,6 +23,10 @@ inputs:
     description: PyTest timeout
     required: false
     default: ""
+  shell-type:
+    description: Define Shell type
+    required: false
+    default: "bash"
 
 runs:
   using: "composite"
@@ -32,7 +36,7 @@ runs:
       python --version
       pip --version
       pip list
-    shell: bash -l {0}
+    shell: ${{ inputs.shell-type }}
 
   - run: echo "PYTEST_ARTEFACT=test-results-${{ inputs.os }}-py${{ inputs.python-version }}-pt{{ inputs.pytorch-version }}-${{ inputs.requires }}" >> $GITHUB_ENV
     shell: bash
@@ -45,16 +49,16 @@ runs:
       python -c "from urllib.request import urlretrieve ; urlretrieve('https://pl-public-data.s3.amazonaws.com/metrics/data.zip', 'data.zip')"
       unzip -o data.zip
       ls -l _data/*
-    shell: bash -l {0}
+    shell: ${{ inputs.shell-type }}
 
   - name: Export README tests
     run: python -m phmdoctest README.md --outfile tests/unittests/test_readme.py
-    shell: bash -l {0}
+    shell: ${{ inputs.shell-type }}
 
   - name: Unittests
     working-directory: ./tests
     run: python -m pytest ${{ inputs.dirs }} --cov=torchmetrics --junitxml="$PYTEST_ARTEFACT.xml" --durations=50 ${{ inputs.test-timeout }}
-    shell: bash -l {0}
+    shell: ${{ inputs.shell-type }}
 
   - name: Upload pytest results
     uses: actions/upload-artifact@v2
@@ -69,4 +73,4 @@ runs:
     run: |
       coverage xml
       coverage report
-    shell: bash -l {0}
+    shell: ${{ inputs.shell-type }}

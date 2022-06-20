@@ -93,6 +93,7 @@ jobs:
         pytorch-version: ${{ matrix.pytorch-version }}
         dirs: ${{ needs.check-diff.outputs.test-dirs }}
         test-timeout: "--timeout=120"
+        shell-type: bash -l {0}
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
