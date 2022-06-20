@@ -52,12 +52,12 @@ jobs:
     - name: Setup macOS
       if: runner.os == 'macOS'
       run: |
-        # python -c "print('PYTEST_TIMEOUT=--timeout=120')" >> $GITHUB_ENV
+        python -c "print('UNITTEST_TIMEOUT=--timeout=120')" >> $GITHUB_ENV
         brew install gcc libomp ffmpeg # https://github.com/pytorch/pytorch/issues/20030
     - name: Setup Linux
       if: runner.os == 'Linux'
       run: |
-        # python -c "print('PYTEST_TIMEOUT=--timeout=120')" >> $GITHUB_ENV
+        python -c "print('UNITTEST_TIMEOUT=--timeout=120')" >> $GITHUB_ENV
         sudo apt update --fix-missing
         sudo apt install -y ffmpeg
     - name: Setup Windows
@@ -74,7 +74,12 @@ jobs:
     - name: Install pkg
       run: |
         pip --version
-        pip install -e . --upgrade --find-links $PYTORCH_URL
+        pip install -e . -r requirements/test.txt --upgrade --find-links $PYTORCH_URL
+
+    - name: DocTests
+      working-directory: ./src
+      # NOTE: run coverage on tests does not propagate failure status for Win, https://github.com/nedbat/coveragepy/issues/1003
+      run: python -m pytest torchmetrics
 
     - name: Freeze Numpy (hotfix)
       if: matrix.requires == 'latest'
@@ -91,46 +96,24 @@ jobs:
         pip install --requirement requirements/devel.txt -U --find-links $PYTORCH_URL
         pip list
 
-    - name: Pull testing data from S3
-      working-directory: ./tests
-      run: |
-        # wget is simpler but does not work on Windows
-        python -c "from urllib.request import urlretrieve ; urlretrieve('https://pl-public-data.s3.amazonaws.com/metrics/data.zip', 'data.zip')"
-        unzip -o data.zip
-        ls -l _data/*
-
-    - name: Readme tests
-      run: phmdoctest README.md --outfile tests/unittests/test_readme.py
-
-    - name: Tests
-      working-directory: ./tests
-      env:
-        TEST_DIRS: "${{ needs.check-diff.outputs.test-dirs }}"
-      run: python -m pytest $TEST_DIRS --cov=torchmetrics --junitxml="$PYTEST_ARTEFACT" --durations=50 $PYTEST_TIMEOUT
-
-    - name: Upload pytest test results
-      uses: actions/upload-artifact@v2
-      with:
-        name: $PYTEST_ARTEFACT
-        path: "tests/$PYTEST_ARTEFACT"
-      if: failure()
-
-    - name: Statistics
-      if: success()
-      working-directory: ./tests
-      run: |
-        coverage xml
-        coverage report
-
     - run: echo "::set-output name=TORCH::$(python -c 'import torch ; print(torch.__version__)' 2>&1)"
       id: info
+
+    - uses: ./.github/actions/unittesting
+      with:
+        os: ${{ runner.os }}
+        requires: ${{ matrix.requires }}
+        python-version: ${{ matrix.python-version }}
+        pytorch-version: ${{ steps.info.outputs.TORCH }}
+        dirs: ${{ needs.check-diff.outputs.test-dirs }}
+        test-timeout: ${{ env.UNITTEST_TIMEOUT }}
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         file: tests/coverage.xml
-        flags: cpu,pytest,${{ runner.os }},python${{ matrix.python-version }},torch${{ steps.info.outputs.TORCH }}
+        flags: cpu,pip,unitests,${{ runner.os }},python${{ matrix.python-version }},torch${{ steps.info.outputs.TORCH }}
         env_vars: OS,PYTHON
         name: codecov-umbrella
         fail_ci_if_error: false
