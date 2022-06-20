@@ -416,7 +416,8 @@ class MeanAveragePrecision(Metric):
 
         if self.iou_type == "bbox":
             boxes = _fix_empty_tensors(item["boxes"])
-            boxes = box_convert(boxes, in_fmt=self.box_format, out_fmt="xyxy")
+            if boxes.numel() > 0:
+                boxes = box_convert(boxes, in_fmt=self.box_format, out_fmt="xyxy")
             return boxes
         elif self.iou_type == "segm":
             masks = []
