@@ -485,7 +485,7 @@ class RetrievalMetricTester(MetricTester):
         metric_module: Metric,
         metric_functional: Callable,
     ):
-        def metric_functional_ignore_indexes(preds, target, indexes):
+        def metric_functional_ignore_indexes(preds, target, indexes, empty_target_action):
             return metric_functional(preds, target)
 
         super().run_precision_test_cpu(
@@ -508,7 +508,7 @@ class RetrievalMetricTester(MetricTester):
         if not torch.cuda.is_available():
             pytest.skip("Test requires GPU")
 
-        def metric_functional_ignore_indexes(preds, target, indexes):
+        def metric_functional_ignore_indexes(preds, target, indexes, empty_target_action):
             return metric_functional(preds, target)
 
         super().run_precision_test_gpu(
