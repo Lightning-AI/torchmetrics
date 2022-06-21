@@ -24,16 +24,16 @@ ______________________________________________________________________
 ![Conda](https://img.shields.io/conda/dn/conda-forge/torchmetrics)
 [![license](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/Lightning-AI/metrics/blob/master/LICENSE)
 
-[![CI testing - base](https://github.com/PyTorchLightning/metrics/actions/workflows/ci_test-base.yml/badge.svg?branch=master&event=push)](https://github.com/PyTorchLightning/metrics/actions/workflows/ci_test-base.yml)
-[![PyTorch & Conda](https://github.com/PyTorchLightning/metrics/actions/workflows/ci_test-conda.yml/badge.svg?branch=master&event=push)](https://github.com/PyTorchLightning/metrics/actions/workflows/ci_test-conda.yml)
-[![Build Status](https://dev.azure.com/Lightning-AI/Metrics/_apis/build/status/PyTorchLightning.metrics?branchName=master)](https://dev.azure.com/Lightning-AI/Metrics/_build/latest?definitionId=3&branchName=master)
-[![codecov](https://codecov.io/gh/PyTorchLightning/metrics/branch/master/graph/badge.svg?token=NER6LPI3HS)](https://codecov.io/gh/PyTorchLightning/metrics)
+[![CI testing - complete](https://github.com/Lightning-AI/metrics/actions/workflows/ci_test-full.yml/badge.svg?event=push)](https://github.com/Lightning-AI/metrics/actions/workflows/ci_test-full.yml)
+[![PyTorch & Conda](https://github.com/Lightning-AI/metrics/actions/workflows/ci_test-conda.yml/badge.svg?branch=master&event=push)](https://github.com/Lightning-AI/metrics/actions/workflows/ci_test-conda.yml)
+[![Build Status](https://dev.azure.com/Lightning-AI/Metrics/_apis/build/status/Lightning-AI.metrics?branchName=master)](https://dev.azure.com/Lightning-AI/Metrics/_build/latest?definitionId=3&branchName=master)
+[![codecov](https://codecov.io/gh/Lightning-AI/metrics/branch/master/graph/badge.svg?token=NER6LPI3HS)](https://codecov.io/gh/Lightning-AI/metrics)
 
 [![Slack](https://img.shields.io/badge/slack-chat-green.svg?logo=slack)](https://www.pytorchlightning.ai/community)
 [![Documentation Status](https://readthedocs.org/projects/torchmetrics/badge/?version=latest)](https://torchmetrics.readthedocs.io/en/latest/?badge=latest)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5844769.svg)](https://doi.org/10.5281/zenodo.5844769)
 [![JOSS status](https://joss.theoj.org/papers/561d9bb59b400158bc8204e2639dca43/status.svg)](https://joss.theoj.org/papers/561d9bb59b400158bc8204e2639dca43)
-[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/PyTorchLightning/metrics/master.svg)](https://results.pre-commit.ci/latest/github/PyTorchLightning/metrics/master)
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/Lightning-AI/metrics/master.svg)](https://results.pre-commit.ci/latest/github/Lightning-AI/metrics/master)
 
 ______________________________________________________________________
 
@@ -66,7 +66,7 @@ pip install git+https://github.com/Lightning-AI/metrics.git@release/latest
 Pip from archive
 
 ```bash
-pip install https://github.com/PyTorchLightning/metrics/archive/refs/heads/release/latest.zip
+pip install https://github.com/Lightning-AI/metrics/archive/refs/heads/release/latest.zip
 ```
 
 Extra dependencies for specialized metrics:
@@ -81,7 +81,7 @@ pip install torchmetrics[all]  # install all of the above
 Install latest developer version
 
 ```bash
-pip install https://github.com/PyTorchLightning/metrics/archive/master.zip
+pip install https://github.com/Lightning-AI/metrics/archive/master.zip
 ```
 
 </details>
@@ -329,7 +329,7 @@ For help or questions, join our huge community on [Slack](https://www.pytorchlig
 We’re excited to continue the strong legacy of open source software and have been inspired
 over the years by Caffe, Theano, Keras, PyTorch, torchbearer, ignite, sklearn and fast.ai.
 
-If you want to cite this framework feel free to use GitHub's built-in citation option to generate a bibtex or APA-Style citation based on [this file](https://github.com/PyTorchLightning/metrics/blob/master/CITATION.cff) (but only if you loved it 😊).
+If you want to cite this framework feel free to use GitHub's built-in citation option to generate a bibtex or APA-Style citation based on [this file](https://github.com/Lightning-AI/metrics/blob/master/CITATION.cff) (but only if you loved it 😊).
 
 ## License
 
