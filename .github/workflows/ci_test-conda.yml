@@ -3,9 +3,9 @@ name: CI testing - PyTorch & Conda
 # see: https://help.github.com/en/actions/reference/events-that-trigger-workflows
 on:  # Trigger the workflow on push or pull request, but only for the master branch
   push:
-    branches: [master, "release/*"]
+    branches: [master, "release/*", "devel/*"]
   pull_request:
-    branches: [master, "release/*"]
+    branches: [master, "release/*", "devel/*"]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-${{ github.head_ref }}
@@ -81,29 +81,26 @@ jobs:
         pip list
         python -c "from torch import __version__ as ver; assert '.'.join(ver.split('.')[:2]) == '${{ matrix.pytorch-version }}', ver"
 
-    - name: Pull testing data from S3
-      working-directory: ./tests
-      run: |
-        # wget is simpler but does not work on Windows
-        python -c "from urllib.request import urlretrieve ; urlretrieve('https://pl-public-data.s3.amazonaws.com/metrics/data.zip', 'data.zip')"
-        unzip -o data.zip
-        ls -l _data/*
+    - name: DocTests
+      working-directory: ./src
+      # NOTE: run coverage on tests does not propagate failure status for Win, https://github.com/nedbat/coveragepy/issues/1003
+      run: python -m pytest torchmetrics
 
-    - name: Readme tests
-      run: phmdoctest README.md --outfile tests/unittests/test_readme.py
-
-    - name: Testing
-      working-directory: ./tests
-      env:
-        TEST_DIRS: "${{ needs.check-diff.outputs.test-dirs }}"
-      # NOTE: run coverage on tests does not propagate failure status for Win,
-      # see: https://github.com/nedbat/coveragepy/issues/1003
-      run: python -m pytest $TEST_DIRS --durations=50 --timeout=120 --junitxml=$PYTEST_ARTEFACT
-
-    - name: Upload pytest test results
-      uses: actions/upload-artifact@master
+    - uses: ./.github/actions/unittesting
       with:
-        name: $PYTEST_ARTEFACT
-        path: tests/$PYTEST_ARTEFACT
-      # Use always() to always run this step to publish test results when there are test failures
-      if: failure()
+        os: ${{ runner.os }}
+        python-version: ${{ matrix.python-version }}
+        pytorch-version: ${{ matrix.pytorch-version }}
+        dirs: ${{ needs.check-diff.outputs.test-dirs }}
+        test-timeout: "--timeout=120"
+        shell-type: bash -l {0}
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        file: tests/coverage.xml
+        flags: cpu,conda,unittests,${{ runner.os }},python${{ matrix.python-version }},torch${{ matrix.pytorch-version }}
+        env_vars: OS,PYTHON
+        name: codecov-umbrella
+        fail_ci_if_error: false
