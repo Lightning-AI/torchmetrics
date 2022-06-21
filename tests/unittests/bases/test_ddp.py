@@ -239,3 +239,21 @@ def test_state_dict_is_synced(tmpdir):
     """This test asserts that metrics are synced while creating the state dict but restored after to continue
     accumulation."""
     torch.multiprocessing.spawn(_test_state_dict_is_synced, args=(2, tmpdir), nprocs=2)
+
+
+def _test_sync_on_compute(rank, worldsize, sync_on_compute):
+    setup_ddp(rank, worldsize)
+    dummy = DummyMetricSum(sync_on_compute=sync_on_compute)
+    dummy.update(tensor(rank + 1))
+    val = dummy.compute()
+    if sync_on_compute:
+        assert val == 3
+    else:
+        assert val == rank + 1
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
+@pytest.mark.parametrize("sync_on_compute", [True, False])
+def test_sync_on_compute(sync_on_compute):
+    """Test that syncronization of states can be enabled and disabled for compute."""
+    torch.multiprocessing.spawn(_test_sync_on_compute, args=(2, sync_on_compute), nprocs=2)
