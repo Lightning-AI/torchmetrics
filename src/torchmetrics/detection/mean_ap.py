@@ -208,7 +208,7 @@ class MeanAveragePrecision(Metric):
     See the :meth:`update` method for more information about the input format to this metric.
 
     For an example on how to use this metric check the `torchmetrics examples
-    <https://github.com/PyTorchLightning/metrics/blob/master/examples/detection_map.py>`_
+    <https://github.com/Lightning-AI/metrics/blob/master/examples/detection_map.py>`_
 
     .. note::
         This metric is following the mAP implementation of
