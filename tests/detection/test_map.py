@@ -132,7 +132,7 @@ _inputs = Input(
     ],
 )
 
-# example from this issue https://github.com/PyTorchLightning/metrics/issues/943
+# example from this issue https://github.com/Lightning-AI/metrics/issues/943
 _inputs2 = Input(
     preds=[
         [
@@ -167,7 +167,7 @@ _inputs2 = Input(
 )
 
 # Test empty preds case, to ensure bool inputs are properly casted to uint8
-# From https://github.com/PyTorchLightning/metrics/issues/981
+# From https://github.com/Lightning-AI/metrics/issues/981
 _inputs3 = Input(
     preds=[
         [
