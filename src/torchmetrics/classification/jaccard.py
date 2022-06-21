@@ -16,8 +16,90 @@ from typing import Any, Optional
 import torch
 from torch import Tensor
 
+from torchmetrics.classification import BinaryConfusionMatrix, MulticlassConfusionMatrix, MultilabelConfusionMatrix
 from torchmetrics.classification.confusion_matrix import ConfusionMatrix
-from torchmetrics.functional.classification.jaccard import _jaccard_from_confmat
+from torchmetrics.functional.classification.jaccard import (
+    _binary_jaccard_index_compute,
+    _binary_jaccard_index_validate_args,
+    _jaccard_from_confmat,
+    _multiclass_jaccard_index_compute,
+    _multilabel_jaccard_index_compute,
+)
+
+
+class BinaryJaccardIndex(BinaryConfusionMatrix):
+    is_differentiable: bool = False
+    higher_is_better: bool = True
+    full_state_update: bool = False
+
+    def __init__(
+        self,
+        threshold: float = 0.5,
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        if validate_args:
+            _binary_jaccard_index_validate_args(threshold, ignore_index)
+        super().__init__(threshold=threshold, ignore_index=ignore_index, normalize=None, validate_args=False, **kwargs)
+
+    def compute(self) -> Tensor:
+        return _binary_jaccard_index_compute(
+            self.confmat,
+        )
+
+
+class MulticlassJaccardIndex(MulticlassConfusionMatrix):
+    is_differentiable: bool = False
+    higher_is_better: bool = True
+    full_state_update: bool = False
+
+    def __init__(
+        self,
+        num_classes: int,
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(
+            num_classes=num_classes, ignore_index=ignore_index, normalize=None, validate_args=validate_args, **kwargs
+        )
+
+    def compute(self) -> Tensor:
+        return _multiclass_jaccard_index_compute(
+            self.confmat,
+        )
+
+
+class MultilabelJaccardIndex(MultilabelConfusionMatrix):
+    is_differentiable: bool = False
+    higher_is_better: bool = True
+    full_state_update: bool = False
+
+    def __init__(
+        self,
+        num_labels: int,
+        threshold: float = 0.5,
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(
+            num_labels=num_labels,
+            threshold=threshold,
+            ignore_index=ignore_index,
+            normalize=None,
+            validate_args=validate_args,
+            **kwargs,
+        )
+
+    def compute(self) -> Tensor:
+        return _multilabel_jaccard_index_compute(
+            self.confmat,
+        )
+
+
+# -------------------------- Old stuff --------------------------
 
 
 class JaccardIndex(ConfusionMatrix):

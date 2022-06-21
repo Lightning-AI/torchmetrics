@@ -16,11 +16,33 @@ from typing import Any
 import torch
 from torch import Tensor
 
+from torchmetrics.classification import BinaryConfusionMatrix, MulticlassConfusionMatrix, MultilabelConfusionMatrix
 from torchmetrics.functional.classification.matthews_corrcoef import (
     _matthews_corrcoef_compute,
     _matthews_corrcoef_update,
 )
 from torchmetrics.metric import Metric
+
+
+class BinaryMatthewsCorrCoef(BinaryConfusionMatrix):
+    is_differentiable: bool = False
+    higher_is_better: bool = True
+    full_state_update: bool = False
+
+
+class MulticlassMatthewsCorrCoef(MulticlassConfusionMatrix):
+    is_differentiable: bool = False
+    higher_is_better: bool = True
+    full_state_update: bool = False
+
+
+class MultilabelMatthewsCorrCoef(MultilabelConfusionMatrix):
+    is_differentiable: bool = False
+    higher_is_better: bool = True
+    full_state_update: bool = False
+
+
+# -------------------------- Old stuff --------------------------
 
 
 class MatthewsCorrCoef(Metric):

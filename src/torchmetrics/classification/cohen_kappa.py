@@ -16,8 +16,30 @@ from typing import Any, Optional
 import torch
 from torch import Tensor
 
+from torchmetrics.classification import BinaryConfusionMatrix, MulticlassConfusionMatrix, MultilabelConfusionMatrix
 from torchmetrics.functional.classification.cohen_kappa import _cohen_kappa_compute, _cohen_kappa_update
 from torchmetrics.metric import Metric
+
+
+class BinaryCohenKappa(BinaryConfusionMatrix):
+    is_differentiable: bool = False
+    higher_is_better: bool = True
+    full_state_update: bool = False
+
+
+class MulticlassCohenKappa(MulticlassConfusionMatrix):
+    is_differentiable: bool = False
+    higher_is_better: bool = True
+    full_state_update: bool = False
+
+
+class MultilabelCohenKappa(MultilabelConfusionMatrix):
+    is_differentiable: bool = False
+    higher_is_better: bool = True
+    full_state_update: bool = False
+
+
+# -------------------------- Old stuff --------------------------
 
 
 class CohenKappa(Metric):
