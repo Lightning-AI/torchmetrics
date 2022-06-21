@@ -43,10 +43,10 @@ class AbstractStatScores(Metric):
     # define common functions
     def _create_state(self, size: int, multidim_average: str) -> None:
         if multidim_average == "samplewise":
-            default = lambda: []
+            default: Callable[[], list] = lambda: []
             dist_reduce_fx = "cat"
         else:
-            default = lambda: torch.zeros(size, dtype=torch.long)
+            default: Callable[[], Tensor] = lambda: torch.zeros(size, dtype=torch.long)
             dist_reduce_fx = "sum"
         self.add_state("tp", default(), dist_reduce_fx=dist_reduce_fx)
         self.add_state("fp", default(), dist_reduce_fx=dist_reduce_fx)
