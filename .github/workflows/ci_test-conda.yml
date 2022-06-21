@@ -3,9 +3,9 @@ name: CI testing - PyTorch & Conda
 # see: https://help.github.com/en/actions/reference/events-that-trigger-workflows
 on:  # Trigger the workflow on push or pull request, but only for the master branch
   push:
-    branches: [master, "release/*"]
+    branches: [master, "release/*", "devel/*"]
   pull_request:
-    branches: [master, "release/*"]
+    branches: [master, "release/*", "devel/*"]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-${{ github.head_ref }}
