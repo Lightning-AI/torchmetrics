@@ -40,7 +40,10 @@ def _binary_stat_scores_arg_validation(
 
 
 def _binary_stat_scores_tensor_validation(
-    preds: Tensor, target: Tensor, multidim_average: str = "global", ignore_index: Optional[int] = bool
+    preds: Tensor,
+    target: Tensor,
+    multidim_average: str = "global",
+    ignore_index: Optional[int] = None,
 ) -> None:
     """Validate tensor input."""
     # Check that they have same shape
@@ -79,7 +82,7 @@ def _binary_stat_scores_format(
 ) -> Tuple[Tensor, Tensor]:
     """Convert all input to label format."""
     if preds.is_floating_point():
-        if not ((0 <= preds) * (preds <= 1)).all():
+        if not torch.all((0 <= preds) * (preds <= 1)):
             # preds is logits, convert with sigmoid
             preds = preds.sigmoid()
         preds = preds > threshold
@@ -226,7 +229,7 @@ def _multiclass_stat_scores_format(
     preds: Tensor,
     target: Tensor,
     top_k: int = 1,
-):
+) -> Tuple[Tensor, Tensor]:
     # Apply argmax if we have one more dimension
     if preds.ndim == target.ndim + 1 and top_k == 1:
         preds = preds.argmax(dim=1)
@@ -245,7 +248,7 @@ def _multiclass_stat_scores_update(
     top_k: int = 1,
     multidim_average: str = "global",
     ignore_index: Optional[int] = None,
-):
+) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
     if multidim_average == "samplewise" or top_k != 1:
         ignore_in = 0 <= ignore_index <= num_classes - 1 if ignore_index is not None else None
         if ignore_index is not None and not ignore_in:
@@ -361,7 +364,7 @@ def _multilabel_stat_scores_tensor_validation(
     num_labels: int,
     multidim_average: str,
     ignore_index: Optional[int] = None,
-):
+) -> None:
     # Check that they have same shape
     _check_same_shape(preds, target)
 
@@ -400,7 +403,7 @@ def _multilabel_stat_scores_format(
     preds: Tensor, target: Tensor, num_labels: int, threshold: float = 0.5, ignore_index: Optional[int] = None
 ) -> Tuple[Tensor, Tensor]:
     if preds.is_floating_point():
-        if not ((0 <= preds) * (preds <= 1)).all():
+        if not torch.all((0 <= preds) * (preds <= 1)):
             preds = preds.sigmoid()
         preds = preds > threshold
     preds = preds.reshape(*preds.shape[:2], -1)

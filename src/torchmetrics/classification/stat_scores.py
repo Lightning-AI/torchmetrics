@@ -39,7 +39,7 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
 
 
-class AbstractStatScores:
+class AbstractStatScores(Metric):
     # define common functions
     def _create_state(self, size: int, multidim_average: str) -> None:
         if multidim_average == "samplewise":
@@ -65,7 +65,7 @@ class AbstractStatScores:
             self.tn += tn
             self.fn += fn
 
-    def _final_state(self):
+    def _final_state(self) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
         tp = torch.cat(self.tp) if isinstance(self.tp, list) else self.tp
         fp = torch.cat(self.fp) if isinstance(self.fp, list) else self.fp
         tn = torch.cat(self.tn) if isinstance(self.tn, list) else self.tn
@@ -73,7 +73,7 @@ class AbstractStatScores:
         return tp, fp, tn, fn
 
 
-class BinaryStatScores(Metric, AbstractStatScores):
+class BinaryStatScores(AbstractStatScores):
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
@@ -108,7 +108,7 @@ class BinaryStatScores(Metric, AbstractStatScores):
         return _binary_stat_scores_compute(tp, fp, tn, fn, self.multidim_average)
 
 
-class MulticlassStatScores(Metric, AbstractStatScores):
+class MulticlassStatScores(AbstractStatScores):
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
@@ -151,7 +151,7 @@ class MulticlassStatScores(Metric, AbstractStatScores):
         return _multiclass_stat_scores_compute(tp, fp, tn, fn, self.average, self.multidim_average)
 
 
-class MultilabelStatScores(Metric, AbstractStatScores):
+class MultilabelStatScores(AbstractStatScores):
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False

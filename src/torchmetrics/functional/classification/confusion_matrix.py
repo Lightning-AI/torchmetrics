@@ -56,7 +56,7 @@ def _binary_confusion_matrix_arg_validation(
 
 
 def _binary_confusion_matrix_tensor_validation(
-    preds: Tensor, target: Tensor, ignore_index: Optional[int] = bool
+    preds: Tensor, target: Tensor, ignore_index: Optional[int] = None
 ) -> None:
     """Validate tensor input."""
     # Check that they have same shape
@@ -99,7 +99,7 @@ def _binary_confusion_matrix_format(
         target = target[idx]
 
     if preds.is_floating_point():
-        if not ((0 <= preds) * (preds <= 1)).all():
+        if not torch.all((0 <= preds) * (preds <= 1)):
             # preds is logits, convert with sigmoid
             preds = preds.sigmoid()
         preds = preds > threshold
@@ -135,7 +135,9 @@ def binary_confusion_matrix(
     return _binary_confusion_matrix_compute(confmat, normalize)
 
 
-def _multiclass_confusion_matrix_arg_validation(num_classes, ignore_index, normalize) -> None:
+def _multiclass_confusion_matrix_arg_validation(
+    num_classes: int, ignore_index: Optional[int] = None, normalize: Optional[str] = None
+) -> None:
     if not isinstance(num_classes, int) and num_classes < 2:
         raise ValueError(f"Expected argument `num_classes` to be an integer larger than 1, but got {num_classes}")
     if ignore_index is not None and not isinstance(ignore_index, int):
@@ -145,7 +147,9 @@ def _multiclass_confusion_matrix_arg_validation(num_classes, ignore_index, norma
         raise ValueError(f"Expected argument `normalize` to be one of {allowed_normalize}, but got {normalize}.")
 
 
-def _multiclass_confusion_matrix_tensor_validation(preds, target, num_classes, ignore_index) -> None:
+def _multiclass_confusion_matrix_tensor_validation(
+    preds: Tensor, target: Tensor, num_classes: int, ignore_index: Optional[int] = None
+) -> None:
     """Validate tensor input."""
     if preds.ndim == target.ndim + 1:
         if not preds.is_floating_point():
@@ -290,7 +294,7 @@ def _multilabel_confusion_matrix_format(
     preds: Tensor, target: Tensor, num_labels: int, threshold: float = 0.5, ignore_index: Optional[int] = None
 ) -> Tuple[Tensor, Tensor]:
     if preds.is_floating_point():
-        if not ((0 <= preds) * (preds <= 1)).all():
+        if not torch.all((0 <= preds) * (preds <= 1)):
             preds = preds.sigmoid()
         preds = preds > threshold
     preds = preds.movedim(1, -1).reshape(-1, num_labels)
