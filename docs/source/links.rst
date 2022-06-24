@@ -91,4 +91,4 @@
 .. _beta divergence: https://www.sciencedirect.com/science/article/pii/S0047259X08000456
 .. _AB divergence: https://pdfs.semanticscholar.org/744b/1166de34cb099100f151f3b1459f141ae25b.pdf
 .. _Rényi divergence: https://static.renyi.hu/renyi_cikkek/1961_on_measures_of_entropy_and_information.pdf
-.. _Fisher-Rao distance: https://www.jstor.org/stable/25050283?seq=1#metadata_info_tab_contents
+.. _Fisher-Rao distance: https://www.jstor.org/stable/25050283
