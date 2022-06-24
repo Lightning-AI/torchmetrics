@@ -23,7 +23,7 @@ from torchmetrics.text.infolm import InfoLM
 
 # Small bert model with 2 layers, 2 attention heads and hidden dim of 128
 MODEL_NAME = "google/bert_uncased_L-2_H-128_A-2"
-MAX_LENGTH = 30  # the model has default max_length = 20
+MAX_LENGTH = 30  # the selected model has default max_length = 20 and we have longer sequences
 
 
 def reference_infolm_score(preds, target, model_name, information_measure, idf, alpha, beta):

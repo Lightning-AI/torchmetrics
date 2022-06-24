@@ -148,7 +148,7 @@ class _InformationMeasure:
         Return:
             Kullback-Leibler divergence between discrete distributions of predicted and reference sentences.
         """
-        return torch.sum(preds_distribution * torch.log(preds_distribution / target_distribution), dim=-1)
+        return torch.sum(target_distribution * torch.log(preds_distribution / target_distribution), dim=-1)
 
     def _calculate_alpha_divergence(self, preds_distribution: Tensor, target_distribution: Tensor) -> Tensor:
         """Calculate alpha divergence between discrete distributions of predicted and reference sentences.
@@ -180,13 +180,14 @@ class _InformationMeasure:
         Return:
             AB divergence between discrete distributions of predicted and reference sentences.
         """
-        x = torch.log(torch.sum(target_distribution ** (self.beta + self.alpha), dim=-1))
-        y = torch.log(torch.sum(preds_distribution ** (self.beta + self.alpha), dim=-1))
-        z = torch.log(torch.sum(target_distribution**self.alpha * preds_distribution**self.beta, dim=-1))
+        a = torch.log(torch.sum(target_distribution ** (self.beta + self.alpha), dim=-1))
+        a /= self.beta * (self.beta + self.alpha)
+        b = torch.log(torch.sum(preds_distribution ** (self.beta + self.alpha), dim=-1))
+        b /= self.alpha * (self.beta + self.alpha)
+        c = torch.log(torch.sum(target_distribution**self.alpha * preds_distribution**self.beta, dim=-1))
+        c /= self.alpha * self.beta
 
-        ab_divergence = (
-            x / (self.beta * (self.beta + self.alpha)) + y / (self.beta + self.alpha) - z / (self.alpha * self.beta)
-        )
+        ab_divergence = a + b - c
         return ab_divergence
 
     def _calculate_beta_divergence(self, preds_distribution: Tensor, target_distribution: Tensor) -> Tensor:
