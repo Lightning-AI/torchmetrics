@@ -15,7 +15,7 @@ from torchmetrics.functional.text.helper_embedding_metric import (
     _load_tokenizer_and_model,
 )
 from torchmetrics.utilities.enums import EnumStr
-from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_8, _TRANSFORMERS_AVAILABLE
 
 if _TRANSFORMERS_AVAILABLE:
     from transformers import PreTrainedModel, PreTrainedTokenizerBase
@@ -35,6 +35,15 @@ _ALLOWED_INFORMATION_MEASURE_LITERAL = Literal[
     "l_infinity_distance",
     "fisher_rao_distance",
 ]
+
+
+def _nan_to_num(x: Tensor) -> Tensor:
+    """Replace ``Replaces NaN`` values with 0.0."""
+    if _TORCH_GREATER_EQUAL_1_8:
+        return torch.nan_to_num(x)
+
+    x[x != x] = 0.0
+    return x
 
 
 @unique
@@ -132,7 +141,7 @@ class _InformationMeasure:
 
     def __call__(self, preds_distribution: Tensor, target_distribtuion: Tensor) -> Tensor:
         information_measure_function = getattr(self, f"_calculate_{self.information_measure}")
-        return torch.nan_to_num(information_measure_function(preds_distribution, target_distribtuion))
+        return _nan_to_num(information_measure_function(preds_distribution, target_distribtuion))
 
     @staticmethod
     def _calculate_kl_divergence(preds_distribution: Tensor, target_distribution: Tensor) -> Tensor:
@@ -594,9 +603,10 @@ def infolm(
 
     Example:
         >>> from torchmetrics.functional.text.infolm import infolm
-        >>> preds = ['the cat is on the mat']
-        >>> target = ['there is a cat on the mat']
-        >>> infolm(preds, target)
+        >>> preds = ['he read the book because he was interested in world history']
+        >>> target = ['he was interested in world history because he read the book']
+        >>> infolm(preds, target, model_name_or_path='google/bert_uncased_L-2_H-128_A-2', idf=False)
+        tensor(-0.1784)
 
     References:
         [1] InfoLM: A New Metric to Evaluate Summarization & Data2Text Generation by Pierre Colombo, Chloé Clavel and

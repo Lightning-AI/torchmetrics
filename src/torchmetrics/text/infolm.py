@@ -84,9 +84,11 @@ class InfoLM(Metric):
 
     Example:
         >>> from torchmetrics.text.infolm import InfoLM
-        >>> preds = ['the cat is on the mat']
-        >>> target = ['there is a cat on the mat']
-        >>> infolm = InfoLM()
+        >>> preds = ['he read the book because he was interested in world history']
+        >>> target = ['he was interested in world history because he read the book']
+        >>> infolm = InfoLM('google/bert_uncased_L-2_H-128_A-2', idf=False)
+        >>> infolm(preds, target)
+        tensor(-0.1784)
 
     References:
         [1] InfoLM: A New Metric to Evaluate Summarization & Data2Text Generation by Pierre Colombo, Chloé Clavel and
