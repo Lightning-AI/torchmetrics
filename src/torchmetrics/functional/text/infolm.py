@@ -326,7 +326,8 @@ def _get_special_tokens_map(tokenizer: PreTrainedTokenizerBase) -> Dict[str, int
 
 
 def _get_token_mask(input_ids: Tensor, pad_token_id: int, sep_token_id: int, cls_token_id: int) -> Tensor:
-    """Generate a token mask for differentiating all special tokens in the input batch.
+    """Generate a token mask for differentiating all special tokens in the input batch. There are 0s for special
+    tokens and 1s otherwise.
 
     Args:
         input_ids:
@@ -344,7 +345,7 @@ def _get_token_mask(input_ids: Tensor, pad_token_id: int, sep_token_id: int, cls
         Tensor mask of 0s and 1s that masks all special tokens in the ``input_ids`` tensor.
     """
     token_mask = input_ids.eq(pad_token_id) | input_ids.eq(sep_token_id) | input_ids.eq(cls_token_id)
-    return token_mask
+    return ~token_mask
 
 
 def _get_batch_distribution(
@@ -376,11 +377,9 @@ def _get_batch_distribution(
         special_tokens_map["sep_token_id"],
         special_tokens_map["cls_token_id"],
     )
-
     for mask_idx in range(seq_len):
         input_ids = batch["input_ids"].clone()
         input_ids[:, mask_idx] = special_tokens_map["mask_token_id"]
-
         logits_distribution = model(input_ids, batch["attention_mask"]).logits
         logits_distribution = logits_distribution[
             :, mask_idx, :
