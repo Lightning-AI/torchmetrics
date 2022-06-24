@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-20.04
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v3
       - uses: actions/setup-python@v2
         with:
           python-version: 3.7
@@ -22,14 +22,13 @@ jobs:
           pip list
         shell: bash
       - name: PEP8
-        run: |
-          flake8 .
+        run: flake8 .
 
   typing-check-mypy:
     runs-on: ubuntu-20.04
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v3
       - uses: actions/setup-python@v2
         with:
           python-version: 3.8
@@ -37,6 +36,5 @@ jobs:
         run: |
           pip install "mypy==0.790"
           pip list
-      - name: mypy
-        run: |
-          mypy --show-error-codes --warn-unused-configs
+      - name: mypy check
+        run: mypy src/ --show-error-codes --warn-unused-configs
