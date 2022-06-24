@@ -26,10 +26,11 @@ MODEL_NAME = "google/bert_uncased_L-2_H-128_A-2"
 MAX_LENGTH = 30  # the selected model has default max_length = 20 and we have longer sequences
 
 
-def reference_infolm_score(preds, target, model_name, information_measure, idf, alpha, beta):
+def reference_infolm_score(preds, target, model_name, information_measure, idf, alpha, beta, functional_test: bool):
     """Currently, a reference package is not available.
 
     We, therefore, are enforced to relied on hard-coded results for now.
+    TODO: Add a link to public repo containing a script for generating reproducible results.
     """
     if model_name != "google/bert_uncased_L-2_H-128_A-2":
         raise ValueError(
@@ -37,16 +38,31 @@ def reference_infolm_score(preds, target, model_name, information_measure, idf, 
             "generation."
         )
     precomputed_result = {
-        "kl_divergence": torch.tensor([-3.4706, -0.1954, -0.1954, -3.6132]),
-        "alpha_divergence": torch.tensor([-1.2893, -0.1262, -0.1262, -1.4035]),
-        "beta_divergence": torch.tensor([0.6163, 0.0773, 0.0773, 0.8453]),
-        "ab_divergence": torch.tensor([5.9565, 0.5222, 0.5222, 7.1950]),
-        "renyi_divergence": torch.tensor([0.4920, 0.0364, 0.0364, 0.4971]),
-        "l1_distance": torch.tensor([0.9591, 0.1877, 0.1877, 1.0823]),
-        "l2_distance": torch.tensor([0.1973, 0.1223, 0.1223, 0.4160]),
-        "linf_distance": torch.tensor([0.0777, 0.0869, 0.0869, 0.2614]),
-        "fisher_rao_distance": torch.tensor([1.6349, 0.5185, 0.5185, 1.7713]),
+        "kl_divergence": torch.tensor([-3.2250, -0.1784, -0.1784, -2.2182]),
+        "beta_divergence": torch.tensor([0.5812, 0.0716, 0.0716, 0.3721]),
+        "renyi_divergence": torch.tensor([0.4357, 0.0333, 0.0333, 0.3615]),
+        "l2_distance": torch.tensor([0.2053, 0.1114, 0.1114, 0.2522]),
+        "fisher_rao_distance": torch.tensor([1.5637, 0.4957, 0.4957, 1.4570]),
     }
+    # Add results for idf=True -> for functional metrics, we calculate idf only over the batch yet
+    if functional_test:
+        precomputed_result.update(
+            {
+                "alpha_divergence": torch.tensor([-1.2851, -0.1262, -0.1262, -1.3096]),
+                "ab_divergence": torch.tensor([5.9517, 0.5222, 0.5222, 7.0017]),
+                "l1_distance": torch.tensor([0.9679, 0.1877, 0.1877, 0.9561]),
+                "l_infinity_distance": torch.tensor([0.0789, 0.0869, 0.0869, 0.2324]),
+            }
+        )
+    else:
+        precomputed_result.update(
+            {
+                "alpha_divergence": torch.tensor([-1.2893, -0.1262, -0.1262, -1.4035]),
+                "ab_divergence": torch.tensor([5.9565, 0.5222, 0.5222, 7.1950]),
+                "l1_distance": torch.tensor([0.9591, 0.1877, 0.1877, 1.0823]),
+                "l_infinity_distance": torch.tensor([0.0777, 0.0869, 0.0869, 0.2614]),
+            }
+        )
 
     res = precomputed_result[information_measure]
     if HYPOTHESIS_A in preds:
@@ -77,6 +93,7 @@ def reference_infolm_score(preds, target, model_name, information_measure, idf, 
     [(_inputs_single_reference.preds, _inputs_single_reference.targets)],
 )
 class TestInfoLM(TextTester):
+    # Set atol = 1e-4 as reference results are rounded
     atol = 1e-4
 
     @pytest.mark.parametrize("ddp", [False, True])
@@ -97,6 +114,7 @@ class TestInfoLM(TextTester):
             idf=idf,
             alpha=alpha,
             beta=beta,
+            functional_test=False,
         )
 
         self.run_class_metric_test(
@@ -125,6 +143,7 @@ class TestInfoLM(TextTester):
             idf=idf,
             alpha=alpha,
             beta=beta,
+            functional_test=True,
         )
 
         self.run_functional_metric_test(

@@ -552,6 +552,8 @@ def infolm(
     string-based metrics thanks to the usage of pre-trained masked language models. This family of metrics is mainly
     designed for summarization and data-to-text tasks.
 
+    If you want to use IDF scaling over the whole dataset, please use the class metric.
+
     The implementation of this metric is fully based HuggingFace `transformers`' package.
 
     Args:

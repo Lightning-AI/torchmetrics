@@ -181,7 +181,7 @@ class BERTScore(Metric):
             preds: An iterable of predicted sentences.
             target: An iterable of reference sentences.
         """
-        preds_dict = _preprocess_text(
+        preds_dict, _ = _preprocess_text(
             preds,
             self.tokenizer,
             self.max_length,
@@ -189,7 +189,7 @@ class BERTScore(Metric):
             sort_according_length=False,
             own_tokenizer=self.user_tokenizer,
         )
-        target_dict = _preprocess_text(
+        target_dict, _ = _preprocess_text(
             target,
             self.tokenizer,
             self.max_length,

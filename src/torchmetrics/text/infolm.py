@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
-from typing import Any, Dict, List, Optional, Sequence, Union
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -157,7 +157,7 @@ class InfoLM(Metric):
         self.target_input_ids.append(target_input_ids)
         self.target_attention_mask.append(target_attention_mask)
 
-    def compute(self) -> Tensor:
+    def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
         """Calculate selected information measure using the pre-trained language model.
 
         Return:
@@ -189,4 +189,7 @@ class InfoLM(Metric):
             self.verbose,
         )
 
-        return info_lm_score
+        if self.return_sentence_level_score:
+            return info_lm_score.mean(), info_lm_score
+
+        return info_lm_score.mean()
