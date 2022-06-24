@@ -26,7 +26,7 @@ MODEL_NAME = "google/bert_uncased_L-2_H-128_A-2"
 MAX_LENGTH = 30  # the selected model has default max_length = 20 and we have longer sequences
 
 
-def reference_infolm_score(preds, target, model_name, information_measure, idf, alpha, beta, functional_test: bool):
+def reference_infolm_score(preds, target, model_name, information_measure, idf, alpha, beta):
     """Currently, a reference package is not available.
 
     We, therefore, are enforced to relied on hard-coded results for now.
@@ -45,7 +45,7 @@ def reference_infolm_score(preds, target, model_name, information_measure, idf, 
         "fisher_rao_distance": torch.tensor([1.5637, 0.4957, 0.4957, 1.4570]),
     }
     # Add results for idf=True -> for functional metrics, we calculate idf only over the batch yet
-    if functional_test:
+    if len(preds) == 2:
         precomputed_result.update(
             {
                 "alpha_divergence": torch.tensor([-1.2851, -0.1262, -0.1262, -1.3096]),
@@ -54,7 +54,7 @@ def reference_infolm_score(preds, target, model_name, information_measure, idf, 
                 "l_infinity_distance": torch.tensor([0.0789, 0.0869, 0.0869, 0.2324]),
             }
         )
-    else:
+    elif len(preds) == 4:
         precomputed_result.update(
             {
                 "alpha_divergence": torch.tensor([-1.2893, -0.1262, -0.1262, -1.4035]),
@@ -63,12 +63,16 @@ def reference_infolm_score(preds, target, model_name, information_measure, idf, 
                 "l_infinity_distance": torch.tensor([0.0777, 0.0869, 0.0869, 0.2614]),
             }
         )
+    else:
+        raise ValueError("Invalid batch provided.")
 
     res = precomputed_result[information_measure]
-    if HYPOTHESIS_A in preds:
+    if HYPOTHESIS_A in preds and HYPOTHESIS_C not in preds:
         res = res[:2]
-    elif HYPOTHESIS_C in preds:
+    elif HYPOTHESIS_A not in preds and HYPOTHESIS_C in preds:
         res = res[2:]
+    elif HYPOTHESIS_A in preds and HYPOTHESIS_C in preds:
+        pass
     else:
         raise ValueError("Invalid example provided.")
     return res.mean()
@@ -114,7 +118,6 @@ class TestInfoLM(TextTester):
             idf=idf,
             alpha=alpha,
             beta=beta,
-            functional_test=False,
         )
 
         self.run_class_metric_test(
@@ -125,6 +128,7 @@ class TestInfoLM(TextTester):
             sk_metric=reference_metric,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
+            check_scriptable=False,  # huggingface transformers are not usually scriptable
         )
 
     def test_infolm_functional(self, preds, targets, information_measure, idf, alpha, beta):
@@ -143,7 +147,6 @@ class TestInfoLM(TextTester):
             idf=idf,
             alpha=alpha,
             beta=beta,
-            functional_test=True,
         )
 
         self.run_functional_metric_test(
