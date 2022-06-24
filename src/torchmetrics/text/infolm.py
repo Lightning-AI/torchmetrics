@@ -80,7 +80,7 @@ class InfoLM(Metric):
         verbose:
             An indication of whether a progress bar to be displayed during the embeddings calculation.
         return_sentence_level_score:
-            An indication whether a sentence-level chrF/chrF++ score to be returned.
+            An indication whether a sentence-level InfoLM score to be returned.
 
     Example:
         >>> from torchmetrics.text.infolm import InfoLM

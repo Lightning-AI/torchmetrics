@@ -15,11 +15,11 @@ from functools import partial
 
 import pytest
 import torch
-from tests.text.helpers import TextTester
-from tests.text.inputs import HYPOTHESIS_A, HYPOTHESIS_C, _inputs_single_reference
 
 from torchmetrics.functional.text.infolm import infolm
 from torchmetrics.text.infolm import InfoLM
+from unittests.text.helpers import TextTester
+from unittests.text.inputs import HYPOTHESIS_A, HYPOTHESIS_C, _inputs_single_reference
 
 # Small bert model with 2 layers, 2 attention heads and hidden dim of 128
 MODEL_NAME = "google/bert_uncased_L-2_H-128_A-2"
@@ -27,7 +27,7 @@ MAX_LENGTH = 30  # the selected model has default max_length = 20 and we have lo
 
 
 def reference_infolm_score(preds, target, model_name, information_measure, idf, alpha, beta):
-    """Currently, a source package is not availabe.
+    """Currently, a reference package is not available.
 
     We, therefore, are enforced to relied on hard-coded results for now.
     """
@@ -37,15 +37,15 @@ def reference_infolm_score(preds, target, model_name, information_measure, idf, 
             "generation."
         )
     precomputed_result = {
-        "kl_divergence": torch.tensor([-2.5192, -0.0989, -0.0989, -2.1052]),
-        "alpha_divergence": torch.tensor([-1.3036, -0.1424, -0.1424, -1.6018]),
-        "beta_divergence": torch.tensor([0.5291, 0.0597, 0.0597, 0.3080]),
+        "kl_divergence": torch.tensor([-3.4706, -0.1954, -0.1954, -3.6132]),
+        "alpha_divergence": torch.tensor([-1.2893, -0.1262, -0.1262, -1.4035]),
+        "beta_divergence": torch.tensor([0.6163, 0.0773, 0.0773, 0.8453]),
         "ab_divergence": torch.tensor([5.9565, 0.5222, 0.5222, 7.1950]),
-        "renyi_divergence": torch.tensor([0.4651, 0.0425, 0.0425, 0.4088]),
+        "renyi_divergence": torch.tensor([0.4920, 0.0364, 0.0364, 0.4971]),
         "l1_distance": torch.tensor([0.9591, 0.1877, 0.1877, 1.0823]),
-        "l2_distance": torch.tensor([0.2053, 0.1114, 0.1114, 0.2522]),
+        "l2_distance": torch.tensor([0.1973, 0.1223, 0.1223, 0.4160]),
         "linf_distance": torch.tensor([0.0777, 0.0869, 0.0869, 0.2614]),
-        "fisher_rao_distance": torch.tensor([1.5637, 0.4957, 0.4957, 1.4570]),
+        "fisher_rao_distance": torch.tensor([1.6349, 0.5185, 0.5185, 1.7713]),
     }
 
     res = precomputed_result[information_measure]

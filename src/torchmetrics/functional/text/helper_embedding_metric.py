@@ -62,12 +62,12 @@ def _output_data_collator(model_output: Tensor, attention_mask: Tensor, target_l
     return model_output, attention_mask
 
 
-def _sort_data_according_length(input_ids: Tensor, attention_mask: Tensor) -> Tuple[Tensor, Tensor]:
+def _sort_data_according_length(input_ids: Tensor, attention_mask: Tensor) -> Tuple[Tensor, Tensor, Tensor]:
     """Sort tokenized sentence from the shortest to the longest one."""
     sorted_indices = attention_mask.sum(1).argsort()
     input_ids = input_ids[sorted_indices]
     attention_mask = attention_mask[sorted_indices]
-    return input_ids, attention_mask
+    return input_ids, attention_mask, sorted_indices
 
 
 def _preprocess_text(
@@ -77,7 +77,7 @@ def _preprocess_text(
     truncation: bool = True,
     sort_according_length: bool = True,
     own_tokenizer: bool = False,
-) -> Dict[str, Tensor]:
+) -> Tuple[Dict[str, Tensor], Optional[Tensor]]:
     """Default text pre-processing function using `transformers` `AutoTokenizer` instance.
 
     Args:
@@ -112,12 +112,16 @@ def _preprocess_text(
         except BaseException as e:
             raise BaseException(f"Tokenization was not successful: {e}")
 
-    input_ids, attention_mask = (
-        _sort_data_according_length(tokenized_data["input_ids"], tokenized_data["attention_mask"])
-        if sort_according_length
-        else (tokenized_data["input_ids"], tokenized_data["attention_mask"])
-    )
-    return {"input_ids": input_ids, "attention_mask": attention_mask}
+    if sort_according_length:
+        input_ids, attention_mask, sorting_indices = _sort_data_according_length(
+            tokenized_data["input_ids"], tokenized_data["attention_mask"]
+        )
+        input_dict = {"input_ids": input_ids, "attention_mask": attention_mask}
+    else:
+        input_dict = {"input_ids": tokenized_data["input_ids"], "attention_mask": tokenized_data["attention_mask"]}
+        sorting_indices = None
+
+    return input_dict, sorting_indices
 
 
 def _get_progress_bar(dataloader: DataLoader, verbose: bool = False) -> Union[DataLoader, "tqdm.auto.tqdm"]:
@@ -167,7 +171,9 @@ class TextDataset(Dataset):
         text: List[str],
         tokenizer: Any,
         max_length: int = 512,
-        preprocess_text_fn: Callable[[List[str], Any, int], Dict[str, Tensor]] = _preprocess_text,
+        preprocess_text_fn: Callable[
+            [List[str], Any, int], Union[Dict[str, Tensor], Tuple[Dict[str, Tensor], Optional[Tensor]]]
+        ] = _preprocess_text,
         idf: bool = False,
         tokens_idf: Optional[Dict[int, float]] = None,
     ) -> None:
@@ -186,7 +192,11 @@ class TextDataset(Dataset):
             tokens_idf:
                 Inverse document frequencies (these should be calculated on reference sentences).
         """
-        self.text = preprocess_text_fn(text, tokenizer, max_length)
+        _text = preprocess_text_fn(text, tokenizer, max_length)
+        if isinstance(_text, tuple):
+            self.text, self.sorting_indices = _text
+        else:
+            self.text = _text
         self.max_length = self.text["input_ids"].shape[1]
         self.num_sentences = len(text)
         self.idf = idf
@@ -253,8 +263,14 @@ class TokenizedDataset(TextDataset):
             tokens_idf:
                 Inverse document frequencies (these should be calculated on reference sentences).
         """
-        self.text = dict(zip(["input_ids", "attention_mask"], _sort_data_according_length(input_ids, attention_mask)))
-        self.text = _input_data_collator(self.text)
+        text = dict(
+            zip(
+                ["input_ids", "attention_mask", "sorting_indices"],
+                _sort_data_according_length(input_ids, attention_mask),
+            )
+        )
+        self.sorting_indices = text.pop("sorting_indices")
+        self.text = _input_data_collator(text)
         self.num_sentences = len(self.text["input_ids"])
         self.max_length = self.text["input_ids"].shape[1]
         self.idf = idf

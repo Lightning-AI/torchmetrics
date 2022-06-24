@@ -132,7 +132,7 @@ class _InformationMeasure:
 
     def __call__(self, preds_distribution: Tensor, target_distribtuion: Tensor) -> Tensor:
         information_measure_function = getattr(self, f"_calculate_{self.information_measure}")
-        return information_measure_function(preds_distribution, target_distribtuion)
+        return torch.nan_to_num(information_measure_function(preds_distribution, target_distribtuion))
 
     @staticmethod
     def _calculate_kl_divergence(preds_distribution: Tensor, target_distribution: Tensor) -> Tensor:
@@ -382,17 +382,22 @@ def _get_batch_distribution(
         input_ids = batch["input_ids"].clone()
         input_ids[:, mask_idx] = special_tokens_map["mask_token_id"]
         logits_distribution = model(input_ids, batch["attention_mask"]).logits
-        logits_distribution = logits_distribution[
-            :, mask_idx, :
-        ]  # [batch_size, seq_len, vocab_size] -> [batch_size, vocab_size]
+        # [batch_size, seq_len, vocab_size] -> [batch_size, vocab_size]
+        logits_distribution = logits_distribution[:, mask_idx, :]
         prob_distribution = F.softmax(logits_distribution / temperature, dim=-1)
+        if idf:
+            prob_distribution *= batch["input_ids_idf"][:, mask_idx].unsqueeze(1)
         prob_distribution_batch_list.append(prob_distribution.unsqueeze(1).cpu())  # [batch_size, 1, vocab_size]
         # Clean from memory
         del input_ids, logits_distribution, prob_distribution
 
     prob_distribution_batch = torch.cat(prob_distribution_batch_list, dim=1)  # [batch_size, seq_len, vocab_size]
     prob_distribution_batch = torch.einsum("bsv, bs -> bsv", prob_distribution_batch, token_mask)
-    prob_distribution_batch = prob_distribution_batch.sum(dim=1) / token_mask.sum(dim=1).unsqueeze(1)
+    if idf:
+        masked_input_ids_idf = token_mask * batch["input_ids_idf"].cpu()
+        prob_distribution_batch = prob_distribution_batch.sum(dim=1) / masked_input_ids_idf.sum(dim=1).unsqueeze(1)
+    else:
+        prob_distribution_batch = prob_distribution_batch.sum(dim=1) / token_mask.sum(dim=1).unsqueeze(1)
 
     return prob_distribution_batch
 
@@ -505,6 +510,10 @@ def _infolm_compute(
     target_distribution = _get_data_distribution(
         model, target_dataloader, temperature, idf, special_tokens_map, verbose
     )
+    # Sort preds and target sentences
+    preds_distribution = preds_distribution[preds_dataloader.dataset.sorting_indices]
+    target_distribution = target_distribution[target_dataloader.dataset.sorting_indices]
+    # Calculate information measure
     infolm_score = information_measure_cls(preds_distribution, target_distribution)
     return infolm_score
 
@@ -524,7 +533,7 @@ def infolm(
     num_threads: int = 4,
     verbose: bool = True,
     return_sentence_level_score: bool = False,
-) -> Tensor:
+) -> Union[Tensor, Tuple[Tensor, Tensor]]:
     """
     Calculate `InfoLM`_ [1] - i.e. calculate a distance/divergence between predicted and reference sentence discrete
     distribution using one of the following information measures:
@@ -575,7 +584,7 @@ def infolm(
         verbose:
             An indication of whether a progress bar to be displayed during the embeddings calculation.
         return_sentence_level_score:
-            An indication whether a sentence-level chrF/chrF++ score to be returned.
+            An indication whether a sentence-level InfoLM score to be returned.
 
     Returns:
         A corpus-level InfoLM score.
@@ -613,4 +622,7 @@ def infolm(
         verbose,
     )
 
-    return info_lm_score
+    if return_sentence_level_score:
+        return info_lm_score.mean(), info_lm_score
+
+    return info_lm_score.mean()
