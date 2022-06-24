@@ -27,6 +27,7 @@ from torchmetrics.functional.text.infolm import (
     _InformationMeasure,
 )
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 
 if not _TRANSFORMERS_AVAILABLE:
@@ -166,15 +167,15 @@ class InfoLM(Metric):
             A corpus-level InfoLM score.
         """
         preds_dataloader = _get_dataloader(
-            input_ids=torch.cat(self.preds_input_ids),
-            attention_mask=torch.cat(self.preds_attention_mask),
+            input_ids=dim_zero_cat(self.preds_input_ids),
+            attention_mask=dim_zero_cat(self.preds_attention_mask),
             idf=self.idf,
             batch_size=self.batch_size,
             num_workers=self.num_threads,
         )
         target_dataloader = _get_dataloader(
-            input_ids=torch.cat(self.target_input_ids),
-            attention_mask=torch.cat(self.target_attention_mask),
+            input_ids=dim_zero_cat(self.target_input_ids),
+            attention_mask=dim_zero_cat(self.target_attention_mask),
             idf=self.idf,
             batch_size=self.batch_size,
             num_workers=self.num_threads,
