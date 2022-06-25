@@ -129,11 +129,11 @@ def perplexity(preds: Tensor, target: Tensor, ignore_index: Optional[int] = None
 
     Examples:
         >>> import torch
-        >>> preds = torch.rand(2, 8, 250, generator=torch.manual_seed(22))
-        >>> target = torch.randint(250, (2, 8), generator=torch.manual_seed(22))
+        >>> preds = torch.rand(2, 8, 5, generator=torch.manual_seed(22))
+        >>> target = torch.randint(5, (2, 8), generator=torch.manual_seed(22))
         >>> target[0, 6:] = -100
         >>> perplexity(preds, target, ignore_index=-100)
-        tensor(2.4475)
+        tensor(5.2545)
     """
     total, count = _perplexity_update(preds, target, ignore_index)
     return _perplexity_compute(total, count)

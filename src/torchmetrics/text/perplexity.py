@@ -37,12 +37,12 @@ class Perplexity(Metric):
 
     Examples:
         >>> import torch
-        >>> preds = torch.rand(2, 8, 250, generator=torch.manual_seed(22))
-        >>> target = torch.randint(250, (2, 8), generator=torch.manual_seed(22))
+        >>> preds = torch.rand(2, 8, 5, generator=torch.manual_seed(22))
+        >>> target = torch.randint(5, (2, 8), generator=torch.manual_seed(22))
         >>> target[0, 6:] = -100
         >>> metric = Perplexity(ignore_index=-100)
         >>> metric(preds, target)
-        tensor(2.4475)
+        tensor(5.2545)
     """
     is_differentiable = True
     higher_is_better = False
