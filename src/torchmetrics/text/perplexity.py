@@ -26,6 +26,9 @@ class Perplexity(Metric):
     per word a model needs to represent the sample.
 
     Args:
+        ignore_index:
+            Integer specifying a target class to ignore. If given, this class index does not contribute
+            to the returned score.
         kwargs:
             Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
@@ -33,40 +36,46 @@ class Perplexity(Metric):
         Perplexity
 
     Examples:
-        >>> probs = tensor([[.2, .04, .8], [.34, .12, .56]])
-        >>> mask = tensor([[True, True, False], [True, True, True]])
-        >>> metric = Perplexity()
-        >>> metric(probs, mask)
-        tensor(7.3522)
+        >>> import torch
+        >>> preds = torch.rand(2, 8, 250, generator=torch.manual_seed(22))
+        >>> target = torch.randint(250, (2, 8), generator=torch.manual_seed(22))
+        >>> target[0, 6:] = -100
+        >>> metric = Perplexity(ignore_index=-100)
+        >>> metric(preds, target)
+        tensor(2.4475)
     """
-    is_differentiable = False
+    is_differentiable = True
     higher_is_better = False
-    total: Tensor
+    total_log_probs: Tensor
     count: Tensor
 
     def __init__(
         self,
+        ignore_index: Optional[int] = None,
         **kwargs: Dict[str, Any],
     ):
         super().__init__(compute_on_step=None, **kwargs)
-        self.add_state("total", default=tensor(0.0), dist_reduce_fx="sum")
+        self.ignore_index = ignore_index
+        self.add_state("total_log_probs", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("count", default=tensor(0.0), dist_reduce_fx="sum")
 
-    def update(self, probs: Tensor, mask: Optional[Tensor] = None) -> None:  # type: ignore
-        """Store references/predictions for computing the perplexity.
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+        """Compute and store intermediate statistics for Perplexity.
 
         Args:
-            probs: Probabilities assigned to each token in a sequence with shape (batch_size, seq_len)
-            mask: Mask for the sequence with dtype bool and shape (batch_size, seq_len)
+            preds:
+                Probabilities assigned to each token in a sequence with shape [batch_size, seq_len, vocab_size].
+            target:
+                Ground truth values with a shape [batch_size, seq_len].
         """
-        total, count = _perplexity_update(probs, mask)
-        self.total += total
+        total_log_probs, count = _perplexity_update(preds, target, self.ignore_index)
+        self.total_log_probs += total_log_probs
         self.count += count
 
     def compute(self) -> Tensor:
-        """Calculate the perplexity.
+        """Compute the Perplexity.
 
         Returns:
            Perplexity
         """
-        return _perplexity_compute(self.total, self.count)
+        return _perplexity_compute(self.total_log_probs, self.count)
