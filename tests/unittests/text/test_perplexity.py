@@ -47,7 +47,7 @@ def _sk_perplexity(preds, target, ignore_index):
     ],
 )
 class TestPerplexity(MetricTester):
-    @pytest.mark.parametrize("ddp", [False])
+    @pytest.mark.parametrize("ddp", [False, True])
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
     def test_perplexity_class(self, ddp, dist_sync_on_step, preds, target, ignore_index):
         self.run_class_metric_test(
