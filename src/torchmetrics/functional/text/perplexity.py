@@ -88,7 +88,7 @@ def _perplexity_update(preds: Tensor, target: Tensor, ignore_index: Optional[int
 
     if ignore_index is not None:
         mask = target.ne(ignore_index)
-        target = target.where(target != ignore_index, torch.tensor(0))
+        target = target.where(target != ignore_index, torch.tensor(0, device=target.device))
     else:
         mask = torch.ones_like(target, dtype=torch.bool)
 
