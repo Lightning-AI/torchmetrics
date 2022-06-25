@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import logging
 import os
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
@@ -33,9 +32,6 @@ from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 
 if not _TRANSFORMERS_AVAILABLE:
     __doctest_skip__ = ["InfoLM"]
-
-
-logger = logging.getLogger(__name__)
 
 
 class InfoLM(Metric):
@@ -133,14 +129,7 @@ class InfoLM(Metric):
         self.beta = beta
         self._device = torch.device(device or "cpu")
         self.batch_size = batch_size
-        if hasattr(kwargs, "dist_sync_on_step") and kwargs["dist_sync_on_step"] and num_threads > 1:
-            self.num_threads = 1
-            logger.info(
-                "Using `num_threads>1` for `dist_sync_on_step=1` is disable as daemonic processes are not allowed to "
-                "have children. Automatically set `dist_sync_on_step=1`."
-            )
-        else:
-            self.num_threads = num_threads
+        self.num_threads = num_threads
         self.verbose = verbose
         self.return_sentence_level_score = return_sentence_level_score
 
