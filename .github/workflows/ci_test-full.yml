@@ -100,7 +100,7 @@ jobs:
       id: info
 
     - uses: ./.github/actions/unittesting
-      if: needs.check-diff.outputs.test-dirs != ""
+      if: ${{ needs.check-diff.outputs.test-dirs != "" }}
       with:
         os: ${{ runner.os }}
         requires: ${{ matrix.requires }}
