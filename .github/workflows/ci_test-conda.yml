@@ -87,7 +87,7 @@ jobs:
       run: python -m pytest torchmetrics
 
     - uses: ./.github/actions/unittesting
-      if: ${{ needs.check-diff.outputs.test-dirs != "" }}
+      if: ${{ needs.check-diff.outputs.test-dirs != '' }}
       with:
         os: ${{ runner.os }}
         python-version: ${{ matrix.python-version }}
