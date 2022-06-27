@@ -3,11 +3,11 @@
     import torch
     from pytorch_lightning.core.lightning import LightningModule
 
-########
-Overview
-########
+##################
+Structure Overview
+##################
 
-The ``torchmetrics`` is a Metrics API created for easy metric development and usage in
+TorchMetrics is a Metrics API created for easy metric development and usage in
 PyTorch and PyTorch Lightning. It is rigorously tested for all edge cases and includes a growing list of
 common metric implementations.
 
@@ -162,7 +162,7 @@ When using metrics in `Distributed Data Parallel (DDP) <https://pytorch.org/docs
 mode, one should be aware that DDP will add additional samples to your dataset if the size of your dataset is
 not equally divisible by ``batch_size * num_processors``. The added samples will always be replicates of datapoints
 already in your dataset. This is done to secure an equal load for all processes. However, this has the consequence
-that the calculated metric value will be sligtly bias towards those replicated samples, leading to a wrong result.
+that the calculated metric value will be slightly biased towards those replicated samples, leading to a wrong result.
 
 During training and/or validation this may not be important, however it is highly recommended when evaluating
 the test dataset to only run on a single gpu or use a `join <https://pytorch.org/docs/stable/_modules/torch/nn/parallel/distributed.html#DistributedDataParallel.join>`_
@@ -389,7 +389,7 @@ argument can help:
   GPU memory is not filling up. The consequence will be that the ``compute`` method will be called on CPU instead
   of GPU. Only applies to metric states that are lists.
 
-If you are running in a distributed environment, ``TorchMetrics`` will automatically take care of the distributed
+If you are running in a distributed environment, TorchMetrics will automatically take care of the distributed
 synchronization for you. However, the following three keyword arguments can be given to any metric class for
 further control over the distributed aggregation:
 

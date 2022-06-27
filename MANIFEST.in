@@ -14,10 +14,7 @@ include LICENSE
 include *.cff
 
 # Include marker file for PEP 561
-include torchmetrics/py.typed
-
-# Include examples
-recursive-include tm_examples *.py
+recursive-include src *.typed
 
 exclude *.sh
 exclude *.toml
@@ -45,9 +42,7 @@ exclude Makefile
 prune .devcontainer
 prune .git
 prune .github
-prune .circleci
-prune notebook*
+prune examples*
 prune temp*
 prune test*
-prune benchmark*
-prune integration*
+prune SandBox*

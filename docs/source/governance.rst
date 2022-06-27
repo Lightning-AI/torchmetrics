@@ -47,14 +47,14 @@ and start tracking the development. It is possible that priorities change over t
 
 Commits to the project are exclusively to be added by pull requests on GitHub and anyone in the community is welcome to review them.
 However, reviews submitted by
-`code owners <https://github.com/PyTorchLightning/metrics/blob/master/.github/CODEOWNERS>`_
+`code owners <https://github.com/Lightning-AI/metrics/blob/master/.github/CODEOWNERS>`_
 have higher weight and it is necessary to get the approval of code owners before a pull request can be merged.
 Additional requirements may apply case by case.
 
 API Evolution
 *************
 
-Torchmetrics development is driven by research and best practices in a rapidly developing field of AI and machine
+TorchMetrics development is driven by research and best practices in a rapidly developing field of AI and machine
 learning. Change is inevitable and when it happens, the Torchmetric team is committed to minimizing user friction and
 maximizing ease of transition from one version to the next. We take backward compatibility and reproducibility very
 seriously.
