@@ -44,18 +44,18 @@ def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> None:
     """
     if len(preds.shape) != 3:
         raise ValueError(
-            "Input tensor `preds` is expected to have 3 dimensions, [batch_size, seq_len, vocab_size], "
-            f"but got {len(preds.shape)}."
+            "Input tensor `preds` is expected to have 3 dimensions, [batch_size, seq_len, vocab_size],"
+            f" but got {len(preds.shape)}."
         )
     if len(target.shape) != 2:
         raise ValueError(
-            "Input tensor `target` is expected to have 2 dimensions, [batch_size, seq_len], "
-            f"but got {len(target.shape)}."
+            "Input tensor `target` is expected to have 2 dimensions, [batch_size, seq_len],"
+            f" but got {len(target.shape)}."
         )
     if preds.shape[:2] != target.shape:
         raise ValueError(
-            "Input tensors `preds` and `target` are expected to have equaling first two dimensions, "
-            f"[batch_size, seq_len], but got {preds.shape[:2]} and {target.shape}."
+            "Input tensors `preds` and `target` are expected to have equaling first two dimensions,"
+            f" [batch_size, seq_len], but got {preds.shape[:2]} and {target.shape}."
         )
     if preds.dtype not in _TORCH_FLOAT_OR_DOUBLE:
         raise TypeError(
