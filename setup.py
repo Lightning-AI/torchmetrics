@@ -46,7 +46,7 @@ def _load_readme_description(path_dir: str, homepage: str, version: str) -> str:
     with open(path_readme, encoding="utf-8") as fp:
         text = fp.read()
 
-    # https://github.com/PyTorchLightning/torchmetrics/raw/master/docs/source/_static/images/lightning_module/pt_to_pl.png
+    # https://github.com/Lightning-AI/torchmetrics/raw/master/docs/source/_static/images/lightning_module/pt_to_pl.png
     github_source_url = os.path.join(homepage, "raw", version)
     # replace relative repository path to absolute link to the release
     #  do not replace all "docs" as in the readme we replace some other sources with particular path to docs

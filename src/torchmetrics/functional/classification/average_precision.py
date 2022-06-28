@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import warnings
-from typing import List, Optional, Sequence, Tuple, Union
+from typing import List, Optional, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -55,7 +55,6 @@ def _average_precision_compute(
     num_classes: int,
     pos_label: Optional[int] = None,
     average: Optional[str] = "macro",
-    sample_weights: Optional[Sequence] = None,
 ) -> Union[List[Tensor], Tensor]:
     """Computes the average precision score.
 
@@ -67,7 +66,6 @@ def _average_precision_compute(
             to 1. For multiclass problems his argument should not be set as we iteratively change it in the
             range ``[0, num_classes-1]``
         average: reduction method for multi-class or multi-label problems
-        sample_weights: sample weights for each data point
 
     Example:
         >>> # binary case
@@ -90,7 +88,6 @@ def _average_precision_compute(
         [tensor(1.), tensor(1.), tensor(0.2500), tensor(0.2500), tensor(nan)]
     """
 
-    # todo: `sample_weights` is unused
     if average == "micro" and preds.ndim == target.ndim:
         preds = preds.flatten()
         target = target.flatten()
@@ -182,7 +179,6 @@ def average_precision(
     num_classes: Optional[int] = None,
     pos_label: Optional[int] = None,
     average: Optional[str] = "macro",
-    sample_weights: Optional[Sequence] = None,
 ) -> Union[List[Tensor], Tensor]:
     """Computes the average precision score.
 
@@ -207,8 +203,6 @@ def average_precision(
             - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
               the metric for every class.
 
-        sample_weights: sample weights for each data point
-
     Returns:
         tensor with average precision. If multiclass will return list
         of such tensors, one for each class
@@ -229,6 +223,5 @@ def average_precision(
         >>> average_precision(pred, target, num_classes=5, average=None)
         [tensor(1.), tensor(1.), tensor(0.2500), tensor(0.2500), tensor(nan)]
     """
-    # fixme: `sample_weights` is unused
     preds, target, num_classes, pos_label = _average_precision_update(preds, target, num_classes, pos_label, average)
-    return _average_precision_compute(preds, target, num_classes, pos_label, average, sample_weights)
+    return _average_precision_compute(preds, target, num_classes, pos_label, average)

@@ -1,4 +1,0 @@
-All TorchMetrics
-================
-
-.. tutoriallist::
