@@ -159,7 +159,7 @@ def dice(
     preds: Tensor,
     target: Tensor,
     zero_division: int = 0,
-    average: str = "micro",
+    average: Optional[str] = "micro",
     mdmc_average: Optional[str] = "global",
     threshold: float = 0.5,
     top_k: Optional[int] = None,

@@ -75,7 +75,7 @@ def _precision_compute(
 def precision(
     preds: Tensor,
     target: Tensor,
-    average: str = "micro",
+    average: Optional[str] = "micro",
     mdmc_average: Optional[str] = None,
     ignore_index: Optional[int] = None,
     num_classes: Optional[int] = None,
@@ -267,7 +267,7 @@ def _recall_compute(
 def recall(
     preds: Tensor,
     target: Tensor,
-    average: str = "micro",
+    average: Optional[str] = "micro",
     mdmc_average: Optional[str] = None,
     ignore_index: Optional[int] = None,
     num_classes: Optional[int] = None,
@@ -409,7 +409,7 @@ def recall(
 def precision_recall(
     preds: Tensor,
     target: Tensor,
-    average: str = "micro",
+    average: Optional[str] = "micro",
     mdmc_average: Optional[str] = None,
     ignore_index: Optional[int] = None,
     num_classes: Optional[int] = None,
