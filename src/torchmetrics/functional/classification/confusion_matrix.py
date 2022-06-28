@@ -236,7 +236,10 @@ def _multiclass_confusion_matrix_update(preds: Tensor, target: Tensor, num_class
 
 
 def _multiclass_confusion_matrix_compute(confmat: Tensor, normalize: Optional[str] = None) -> Tensor:
-    """Reduces the confusion matrix to it's final form. Normalization technique can be chosen by ``normalize``."""
+    """Reduces the confusion matrix to it's final form.
+
+    Normalization technique can be chosen by ``normalize``.
+    """
     return _confusion_matrix_reduce(confmat, normalize, multilabel=False)
 
 
