@@ -49,6 +49,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Skip box conversion if no boxes are present in `MeanAveragePrecision` ([#1097](https://github.com/Lightning-AI/metrics/pull/1097))
 
 
+- Fixed inconsistency in docs and code when setting `average="none"` in `AvaragePrecision` metric ([#1116](https://github.com/Lightning-AI/metrics/pull/1116))
+
+
 ## [0.9.1] - 2022-06-08
 
 ### Added

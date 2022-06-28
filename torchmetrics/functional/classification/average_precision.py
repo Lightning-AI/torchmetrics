@@ -170,9 +170,9 @@ def _average_precision_compute_with_precision_recall(
             return res[~torch.isnan(res)].mean()
         weights = torch.ones_like(res) if weights is None else weights
         return (res * weights)[~torch.isnan(res)].sum()
-    if average is None:
+    if average is None or average == "none":
         return res
-    allowed_average = ("micro", "macro", "weighted", None)
+    allowed_average = ("micro", "macro", "weighted", "none", None)
     raise ValueError(f"Expected argument `average` to be one of {allowed_average}" f" but got {average}")
 
 
