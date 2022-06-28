@@ -23,7 +23,7 @@ from torchmetrics import Metric
 from torchmetrics.utilities.distributed import gather_all_tensors
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
 from unittests.helpers import seed_all
-from unittests.helpers.testers import DummyMetric, DummyMetricSum, setup_ddp
+from unittests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricSum, setup_ddp
 
 seed_all(42)
 
@@ -241,7 +241,7 @@ def test_state_dict_is_synced(tmpdir):
     torch.multiprocessing.spawn(_test_state_dict_is_synced, args=(2, tmpdir), nprocs=2)
 
 
-def _test_sync_on_compute(rank, worldsize, sync_on_compute):
+def _test_sync_on_compute_tensor_state(rank, worldsize, sync_on_compute):
     setup_ddp(rank, worldsize)
     dummy = DummyMetricSum(sync_on_compute=sync_on_compute)
     dummy.update(tensor(rank + 1))
@@ -252,8 +252,20 @@ def _test_sync_on_compute(rank, worldsize, sync_on_compute):
         assert val == rank + 1
 
 
+def _test_sync_on_compute_list_state(rank, worldsize, sync_on_compute):
+    setup_ddp(rank, worldsize)
+    dummy = DummyListMetric(sync_on_compute=sync_on_compute)
+    dummy.x.append(tensor(rank + 1))
+    val = dummy.compute()
+    if sync_on_compute:
+        assert val == [1, 2]
+    else:
+        assert val == [rank + 1]
+
+
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
 @pytest.mark.parametrize("sync_on_compute", [True, False])
-def test_sync_on_compute(sync_on_compute):
+@pytest.mark.parametrize("test_func", [_test_sync_on_compute_list_state, _test_sync_on_compute_tensor_state])
+def test_sync_on_compute(sync_on_compute, test_func):
     """Test that syncronization of states can be enabled and disabled for compute."""
-    torch.multiprocessing.spawn(_test_sync_on_compute, args=(2, sync_on_compute), nprocs=2)
+    torch.multiprocessing.spawn(test_func, args=(2, sync_on_compute), nprocs=2)
