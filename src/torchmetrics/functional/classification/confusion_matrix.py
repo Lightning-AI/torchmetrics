@@ -31,14 +31,14 @@ def _confusion_matrix_reduce(
     if normalize is not None and normalize != "none":
         confmat = confmat.float() if not confmat.is_floating_point() else confmat
         if normalize == "true":
-            confmat = confmat / confmat.sum(axis=2 if multilabel else 1, keepdim=True)
+            confmat = confmat / confmat.sum(axis=-1, keepdim=True)
         elif normalize == "pred":
-            confmat = confmat / confmat.sum(axis=1 if multilabel else 0, keepdim=True)
+            confmat = confmat / confmat.sum(axis=-2, keepdim=True)
         elif normalize == "all":
-            confmat = confmat / confmat.sum(axis=[1, 2] if multilabel else [0, 1], keepdim=True)
+            confmat = confmat / confmat.sum(axis=[-2, -1], keepdim=True)
 
         nan_elements = confmat[torch.isnan(confmat)].nelement()
-        if nan_elements != 0:
+        if nan_elements:
             confmat[torch.isnan(confmat)] = 0
             rank_zero_warn(f"{nan_elements} NaN values found in confusion matrix have been replaced with zeros.")
     return confmat
@@ -47,7 +47,11 @@ def _confusion_matrix_reduce(
 def _binary_confusion_matrix_arg_validation(
     threshold: float = 0.5, ignore_index: Optional[int] = None, normalize: Optional[str] = None
 ) -> None:
-    """Validate non tensor input."""
+    """Validate non tensor input.
+        - ``threshold`` has to be a float
+        - ``ignore_index`` has to be None or int
+        - ``normalize`` has to be "true" | "pred" | "all" | "none" | None
+    """
     if not isinstance(threshold, float):
         raise ValueError(f"Expected argument `threshold` to be a float, but got {threshold}.")
     if ignore_index is not None and not isinstance(ignore_index, int):
@@ -60,11 +64,14 @@ def _binary_confusion_matrix_arg_validation(
 def _binary_confusion_matrix_tensor_validation(
     preds: Tensor, target: Tensor, ignore_index: Optional[int] = None
 ) -> None:
-    """Validate tensor input."""
+    """Validate tensor input.
+        - tensors have to be of same shape
+        - all values that are not ignored have to be {0, 1}
+    """
     # Check that they have same shape
     _check_same_shape(preds, target)
 
-    # Check that target only contains [0,1] values or value in ignore_index
+    # Check that target only contains {0,1} values or value in ignore_index
     unique_values = torch.unique(target)
     if ignore_index is None:
         check = torch.any((unique_values != 0) & (unique_values != 1))
@@ -76,7 +83,7 @@ def _binary_confusion_matrix_tensor_validation(
             f" the following values {[0,1] + [] if ignore_index is None else [ignore_index]}."
         )
 
-    # If preds is label tensor, also check that it only contains [0,1] values
+    # If preds is label tensor, also check that it only contains {0,1} values
     if not preds.is_floating_point():
         unique_values = torch.unique(preds)
         if torch.any((unique_values != 0) & (unique_values != 1)):
@@ -92,7 +99,9 @@ def _binary_confusion_matrix_format(
     threshold: float = 0.5,
     ignore_index: Optional[int] = None,
 ) -> Tuple[Tensor, Tensor]:
-    """Convert all input to label format."""
+    """Convert all input to label format.
+     Specifically for targets the sigmoid is applied and the results are thresholded.
+    """
     preds = preds.flatten()
     target = target.flatten()
     if ignore_index is not None:
