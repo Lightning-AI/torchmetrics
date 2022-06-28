@@ -20,7 +20,8 @@ from typing import Dict, Optional
 from packaging.version import Version
 
 VERSIONS = [
-    dict(torch="1.12.0", torchvision="0.13.0", torchtext=""),  # nightly
+    dict(torch="1.13.0", torchvision="0.14.0", torchtext="0.14.0"),  # nightly
+    dict(torch="1.12.0", torchvision="0.13.0", torchtext="0.13.0"),  # test
     dict(torch="1.11.0", torchvision="0.12.0", torchtext="0.12.0"),  # stable
     dict(torch="1.10.2", torchvision="0.11.3", torchtext="0.11.2"),
     dict(torch="1.10.1", torchvision="0.11.2", torchtext="0.11.1"),
