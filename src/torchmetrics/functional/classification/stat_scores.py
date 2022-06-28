@@ -57,8 +57,8 @@ def _binary_stat_scores_tensor_validation(
         check = torch.any((unique_values != 0) & (unique_values != 1) & (unique_values != ignore_index))
     if check:
         raise RuntimeError(
-            "Detected the following values in `target`: {unique_values} but expected only"
-            " the following values {[0,1] + [] if ignore_index is None else [ignore_index]}."
+            f"Detected the following values in `target`: {unique_values} but expected only"
+            f" the following values {[0,1] + [] if ignore_index is None else [ignore_index]}."
         )
 
     # If preds is label tensor, also check that it only contains [0,1] values
@@ -66,8 +66,8 @@ def _binary_stat_scores_tensor_validation(
         unique_values = torch.unique(preds)
         if torch.any((unique_values != 0) & (unique_values != 1)):
             raise RuntimeError(
-                "Detected the following values in `preds`: {unique_values} but expected only"
-                " the following values [0,1] since preds is a label tensor."
+                f"Detected the following values in `preds`: {unique_values} but expected only"
+                " the following values [0,1] since `preds` is a label tensor."
             )
 
     if multidim_average != "global" and preds.ndim < 2:
@@ -80,7 +80,7 @@ def _binary_stat_scores_format(
     threshold: float = 0.5,
     ignore_index: Optional[int] = None,
 ) -> Tuple[Tensor, Tensor]:
-    """Convert all input to label format."""
+    """"""Brings the prediction and target tensors to a unified format (Flattened and class indices)."""
     if preds.is_floating_point():
         if not torch.all((0 <= preds) * (preds <= 1)):
             # preds is logits, convert with sigmoid
@@ -102,7 +102,7 @@ def _binary_stat_scores_update(
     preds: Tensor,
     target: Tensor,
     multidim_average: str = "global",
-) -> Tensor:
+) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
     """"""
     sum_dim = [0, 1] if multidim_average == "global" else 1
     tp = ((target == preds) & (target == 1)).sum(sum_dim).squeeze()
@@ -122,7 +122,7 @@ def binary_stat_scores(
     preds: Tensor,
     target: Tensor,
     threshold: float = 0.5,
-    multidim_average: str = "global",
+    multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
@@ -204,16 +204,16 @@ def _multiclass_stat_scores_tensor_validation(
             " and `preds` should be (N, C, ...)."
         )
 
-    unique_values = torch.unique(target)
+    num_unique_values = len(torch.unique(target))
     if ignore_index is None:
-        check = len(unique_values) > num_classes
+        check = num_unique_values > num_classes
     else:
-        check = len(unique_values) > num_classes + 1
+        check = num_unique_values > num_classes + 1
     if check:
         raise RuntimeError(
             "Detected more unique values in `target` than `num_classes`. Expected only "
             f"{num_classes if ignore_index is None else num_classes + 1} but found"
-            f"{len(unique_values)} in `target`."
+            f"{num_unique_values} in `target`."
         )
 
     if not preds.is_floating_point():
@@ -321,9 +321,9 @@ def multiclass_stat_scores(
     preds: Tensor,
     target: Tensor,
     num_classes: int,
-    average: str = "micro",
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
     top_k: int = 1,
-    multidim_average: str = "global",
+    multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
@@ -449,8 +449,8 @@ def multilabel_stat_scores(
     target: Tensor,
     num_labels: int,
     threshold: float = 0.5,
-    average: str = "micro",
-    multidim_average: str = "global",
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+    multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
