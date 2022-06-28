@@ -22,7 +22,9 @@ from torchmetrics.utilities.enums import DataType
 from torchmetrics.utilities.prints import rank_zero_warn
 
 
-def _confusion_matrix_reduce(confmat: Tensor, normalize: Optional[Literal["true", "pred", "all", "none"]] = None, multilabel: bool = False) -> Tensor:
+def _confusion_matrix_reduce(
+    confmat: Tensor, normalize: Optional[Literal["true", "pred", "all", "none"]] = None, multilabel: bool = False
+) -> Tensor:
     allowed_normalize = ("true", "pred", "all", "none", None)
     if normalize not in allowed_normalize:
         raise ValueError(f"Argument `normalize` needs to one of the following: {allowed_normalize}")
