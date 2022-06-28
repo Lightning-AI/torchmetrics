@@ -48,9 +48,10 @@ def _binary_confusion_matrix_arg_validation(
     threshold: float = 0.5, ignore_index: Optional[int] = None, normalize: Optional[str] = None
 ) -> None:
     """Validate non tensor input.
-        - ``threshold`` has to be a float
-        - ``ignore_index`` has to be None or int
-        - ``normalize`` has to be "true" | "pred" | "all" | "none" | None
+
+    - ``threshold`` has to be a float
+    - ``ignore_index`` has to be None or int
+    - ``normalize`` has to be "true" | "pred" | "all" | "none" | None
     """
     if not isinstance(threshold, float):
         raise ValueError(f"Expected argument `threshold` to be a float, but got {threshold}.")
@@ -65,8 +66,9 @@ def _binary_confusion_matrix_tensor_validation(
     preds: Tensor, target: Tensor, ignore_index: Optional[int] = None
 ) -> None:
     """Validate tensor input.
-        - tensors have to be of same shape
-        - all values that are not ignored have to be {0, 1}
+
+    - tensors have to be of same shape
+    - all values that are not ignored have to be {0, 1}
     """
     # Check that they have same shape
     _check_same_shape(preds, target)
@@ -100,7 +102,8 @@ def _binary_confusion_matrix_format(
     ignore_index: Optional[int] = None,
 ) -> Tuple[Tensor, Tensor]:
     """Convert all input to label format.
-     Specifically for targets the sigmoid is applied and the results are thresholded.
+
+    Specifically for targets the sigmoid is applied and the results are thresholded.
     """
     preds = preds.flatten()
     target = target.flatten()
