@@ -81,7 +81,7 @@ class MulticlassConfusionMatrix(Metric):
         self,
         num_classes: int,
         ignore_index: Optional[int] = None,
-        normalize: Optional[str] = None,
+        normalize: Optional[Literal["none", "true", "pred", "all"]] = None,
         validate_args: bool = True,
         **kwargs: Any,
     ) -> None:
@@ -116,7 +116,7 @@ class MultilabelConfusionMatrix(Metric):
         num_labels: int,
         threshold: float = 0.5,
         ignore_index: Optional[int] = None,
-        normalize: Optional[str] = None,
+        normalize: Optional[Literal["none", "true", "pred", "all"]] = None,
         validate_args: bool = True,
         **kwargs: Any,
     ) -> None:

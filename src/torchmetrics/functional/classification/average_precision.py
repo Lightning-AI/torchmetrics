@@ -101,7 +101,7 @@ def _average_precision_compute(
         if preds.ndim == target.ndim and target.ndim > 1:
             weights = target.sum(dim=0).float()
         else:
-            weights = _bincount(target, minlength=2 if num_classes == 1 else num_classes).float()
+            weights = _bincount(target, minlength=max(num_classes, 2)).float()
         weights = weights / torch.sum(weights)
     else:
         weights = None
