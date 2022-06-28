@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional, Tuple
+from typing import Any, Callable, Literal, Optional, Tuple
 
 import torch
 from torch import Tensor
@@ -161,7 +161,7 @@ class MultilabelStatScores(AbstractStatScores):
         num_labels: int,
         threshold: float = 0.5,
         average: Literal["micro", "macro", "samples"] = "micro",
-        multidim_average: Literal["global", "samplewise"] = "global",,
+        multidim_average: Literal["global", "samplewise"] = "global",
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,

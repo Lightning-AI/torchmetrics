@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Tuple
+from typing import Literal, Optional, Tuple
 
 import torch
 from torch import Tensor
@@ -23,7 +23,7 @@ from torchmetrics.utilities.prints import rank_zero_warn
 
 
 def _confusion_matrix_reduce(
-    confmat: Tensor, normalize: Optional[Literal["true", "pred", "all", "none"]] = None, multilabel: bool = False
+    confmat: Tensor, normalize: Optional[Literal["true", "pred", "all", "none"]] = None
 ) -> Tensor:
     allowed_normalize = ("true", "pred", "all", "none", None)
     if normalize not in allowed_normalize:
@@ -130,7 +130,7 @@ def _binary_confusion_matrix_update(preds: Tensor, target: Tensor) -> Tensor:
 
 def _binary_confusion_matrix_compute(confmat: Tensor, normalize: Optional[str] = None) -> Tensor:
     """Calculate final confusion matrix."""
-    return _confusion_matrix_reduce(confmat, normalize, multilabel=False)
+    return _confusion_matrix_reduce(confmat, normalize)
 
 
 def binary_confusion_matrix(
@@ -240,7 +240,7 @@ def _multiclass_confusion_matrix_compute(confmat: Tensor, normalize: Optional[st
 
     Normalization technique can be chosen by ``normalize``.
     """
-    return _confusion_matrix_reduce(confmat, normalize, multilabel=False)
+    return _confusion_matrix_reduce(confmat, normalize)
 
 
 def multiclass_confusion_matrix(
@@ -337,7 +337,7 @@ def _multilabel_confusion_matrix_update(preds: Tensor, target: Tensor, num_label
 
 
 def _multilabel_confusion_matrix_compute(confmat: Tensor, normalize: Optional[str] = None) -> Tensor:
-    return _confusion_matrix_reduce(confmat, normalize, multilabel=True)
+    return _confusion_matrix_reduce(confmat, normalize)
 
 
 def multilabel_confusion_matrix(

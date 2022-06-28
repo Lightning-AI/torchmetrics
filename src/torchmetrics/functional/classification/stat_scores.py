@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import List, Optional, Tuple, Union
+from typing import List, Literal, Optional, Tuple, Union
 
 import torch
 from torch import Tensor, tensor
@@ -80,7 +80,7 @@ def _binary_stat_scores_format(
     threshold: float = 0.5,
     ignore_index: Optional[int] = None,
 ) -> Tuple[Tensor, Tensor]:
-    """"""Brings the prediction and target tensors to a unified format (Flattened and class indices)."""
+    """Brings the prediction and target tensors to a unified format (Flattened and class indices)."""
     if preds.is_floating_point():
         if not torch.all((0 <= preds) * (preds <= 1)):
             # preds is logits, convert with sigmoid
