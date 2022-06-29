@@ -15,14 +15,17 @@ from functools import partial
 from typing import Optional
 
 import pytest
-from tests.helpers import seed_all
-from tests.helpers.testers import NUM_CLASSES, MetricTester
 from torch import Tensor, isinf, max, ones_like, reciprocal, tensor, where
 
-# from tests.classification.inputs import _input_multilabel_multidim as _input_mlmd
-# from tests.classification.inputs import _input_multilabel_multidim_logits as _input_mlmd_logits
-# from tests.classification.inputs import _input_multilabel_multidim_prob as _input_mlmd_prob
-from tests.classification.inputs import (  # EXTRA_DIM,
+from torchmetrics import GeneralizedDiceScore
+from torchmetrics.functional import generalized_dice_score
+from torchmetrics.functional.classification.stat_scores import _del_column
+from torchmetrics.utilities.checks import _input_format_classification
+
+# from unittests.classification.inputs import _input_multilabel_multidim as _input_mlmd
+# from unittests.classification.inputs import _input_multilabel_multidim_logits as _input_mlmd_logits
+# from unittests.classification.inputs import _input_multilabel_multidim_prob as _input_mlmd_prob
+from unittests.classification.inputs import (  # EXTRA_DIM,
     _input_binary,
     _input_binary_logits,
     _input_binary_multidim,
@@ -30,20 +33,18 @@ from tests.classification.inputs import (  # EXTRA_DIM,
     _input_binary_multidim_prob,
     _input_binary_prob,
 )
-from tests.classification.inputs import _input_multiclass as _input_mcls
-from tests.classification.inputs import _input_multiclass_logits as _input_mcls_logits
-from tests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
-from tests.classification.inputs import _input_multiclass_with_missing_class as _input_miss_class
-from tests.classification.inputs import _input_multidim_multiclass as _input_mdmc
-from tests.classification.inputs import _input_multidim_multiclass_logits as _input_mdmc_logits
-from tests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
-from tests.classification.inputs import _input_multilabel as _input_mlb
-from tests.classification.inputs import _input_multilabel_logits as _input_mlb_logits
-from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
-from torchmetrics import GeneralizedDiceScore
-from torchmetrics.functional import generalized_dice_score
-from torchmetrics.functional.classification.stat_scores import _del_column
-from torchmetrics.utilities.checks import _input_format_classification
+from unittests.classification.inputs import _input_multiclass as _input_mcls
+from unittests.classification.inputs import _input_multiclass_logits as _input_mcls_logits
+from unittests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
+from unittests.classification.inputs import _input_multiclass_with_missing_class as _input_miss_class
+from unittests.classification.inputs import _input_multidim_multiclass as _input_mdmc
+from unittests.classification.inputs import _input_multidim_multiclass_logits as _input_mdmc_logits
+from unittests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
+from unittests.classification.inputs import _input_multilabel as _input_mlb
+from unittests.classification.inputs import _input_multilabel_logits as _input_mlb_logits
+from unittests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
+from unittests.helpers import seed_all
+from unittests.helpers.testers import NUM_CLASSES, MetricTester
 
 seed_all(42)
 
