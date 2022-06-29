@@ -35,7 +35,6 @@ from torchmetrics import (
 )
 from torchmetrics.utilities.checks import _allclose_recursive
 
-
 seed_all(42)
 
 
