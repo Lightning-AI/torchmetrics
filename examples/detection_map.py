@@ -16,7 +16,7 @@
 python detection_map.py.
 """
 
-from torch import IntTensor, BoolTensor, Tensor
+from torch import BoolTensor, IntTensor, Tensor
 
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
 
@@ -37,7 +37,17 @@ preds = [
         # The masks keyword should contain an [N,H,W] tensor,
         # where H and W are the image height and width, respectively,
         # with boolean masks. This is only required when iou_type is `segm`.
-        masks=BoolTensor([[[0, 0, 0, 0, 0], [0, 0, 1, 1, 0], [0, 0, 1, 1, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0],],]),
+        masks=BoolTensor(
+            [
+                [
+                    [0, 0, 0, 0, 0],
+                    [0, 0, 1, 1, 0],
+                    [0, 0, 1, 1, 0],
+                    [0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0],
+                ],
+            ]
+        ),
     )
 ]
 
@@ -49,7 +59,17 @@ target = [
     dict(
         boxes=Tensor([[214.0, 41.0, 562.0, 285.0]]),
         labels=IntTensor([0]),
-        masks=BoolTensor([[[0, 0, 0, 0, 0], [0, 0, 1, 0, 0], [0, 0, 1, 1, 0], [0, 0, 1, 0, 0], [0, 0, 0, 0, 0],],]),
+        masks=BoolTensor(
+            [
+                [
+                    [0, 0, 0, 0, 0],
+                    [0, 0, 1, 0, 0],
+                    [0, 0, 1, 1, 0],
+                    [0, 0, 1, 0, 0],
+                    [0, 0, 0, 0, 0],
+                ],
+            ]
+        ),
     )
 ]
 
