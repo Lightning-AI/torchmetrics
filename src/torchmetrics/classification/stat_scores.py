@@ -55,7 +55,7 @@ class AbstractStatScores(Metric):
         self.add_state("fn", default(), dist_reduce_fx=dist_reduce_fx)
 
     def _update_state(self, tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor) -> None:
-        """ Update states depending on multidim_average argument."""
+        """Update states depending on multidim_average argument."""
         if self.multidim_average == "samplewise":
             self.tp.append(tp)
             self.fp.append(fp)
@@ -68,7 +68,7 @@ class AbstractStatScores(Metric):
             self.fn += fn
 
     def _final_state(self) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-        """ Final aggregation in case of list states."""
+        """Final aggregation in case of list states."""
         tp = torch.cat(self.tp) if isinstance(self.tp, list) else self.tp
         fp = torch.cat(self.fp) if isinstance(self.fp, list) else self.fp
         tn = torch.cat(self.tn) if isinstance(self.tn, list) else self.tn
@@ -79,7 +79,7 @@ class AbstractStatScores(Metric):
 class BinaryStatScores(AbstractStatScores):
     r"""
     Computes the number of true positives, false positives, true negatives, false negatives and the support
-    for binary tasks. Related to `Type I and Type II errors`_. 
+    for binary tasks. Related to `Type I and Type II errors`_.
 
     Accepts the following input tensors:
     - ``preds`` (int or float tensor): ``(N, ...)``. If preds is a floating point tensor with values outside
@@ -87,7 +87,7 @@ class BinaryStatScores(AbstractStatScores):
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, ...)``
     The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument. 
+    argument.
 
     Args:
         threshold: Threshold for transforming probability to binary {0,1} predictions
@@ -166,17 +166,15 @@ class BinaryStatScores(AbstractStatScores):
         self._update_state(tp, fp, tn, fn)
 
     def compute(self) -> Tensor:
-        """
-        Computes the final statistics.
+        """Computes the final statistics.
 
         Returns:
             The metric returns a tensor of shape ``(..., 5)``, where the last dimension corresponds
             to ``[tp, fp, tn, fn, sup]`` (``sup`` stands for support and equals ``tp + fn``). The shape
             depends on the ``multidim_average`` parameter:
 
-            - If ``multidim_average`` is set to ``global``, the shape will be ``(5,)`` 
+            - If ``multidim_average`` is set to ``global``, the shape will be ``(5,)``
             - If ``multidim_average`` is set to ``samplewise``, the shape will be ``(N, 5)``
-        
         """
         tp, fp, tn, fn = self._final_state()
         return _binary_stat_scores_compute(tp, fp, tn, fn, self.multidim_average)
@@ -185,7 +183,7 @@ class BinaryStatScores(AbstractStatScores):
 class MulticlassStatScores(AbstractStatScores):
     r"""
     Computes the number of true positives, false positives, true negatives, false negatives and the support
-    for multiclass tasks. Related to `Type I and Type II errors`_. 
+    for multiclass tasks. Related to `Type I and Type II errors`_.
 
     Accepts the following input tensors:
     - ``preds``: ``(N, ...)`` (int tensor) or ``(N, C, ..)`` (float tensor). If preds is a floating point
@@ -204,7 +202,7 @@ class MulticlassStatScores(AbstractStatScores):
             - ``macro``: Calculate statistics for each label and average them
             - ``weighted``: Calculates statistics for each label and computes weighted average using their support
             - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
-        top_k: 
+        top_k:
             Number of highest probability or logit score predictions considered to find the correct label.
             Only works when ``preds`` contain probabilities/logits.
         multidim_average:
@@ -306,8 +304,7 @@ class MulticlassStatScores(AbstractStatScores):
         self._update_state(tp, fp, tn, fn)
 
     def compute(self) -> Tensor:
-        """
-        Computes the final statistics.
+        """Computes the final statistics.
 
         Returns:
             The metric returns a tensor of shape ``(..., 5)``, where the last dimension corresponds
@@ -328,7 +325,7 @@ class MulticlassStatScores(AbstractStatScores):
 class MultilabelStatScores(AbstractStatScores):
     r"""
     Computes the number of true positives, false positives, true negatives, false negatives and the support
-    for multilabel tasks. Related to `Type I and Type II errors`_. 
+    for multilabel tasks. Related to `Type I and Type II errors`_.
 
     Accepts the following input tensors:
     - ``preds`` (int or float tensor): ``(N, C, ...)``. If preds is a floating point tensor with values outside
@@ -336,7 +333,7 @@ class MultilabelStatScores(AbstractStatScores):
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, C, ...)``
     The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument. 
+    argument.
 
     Args:
         num_labels: Integer specifing the number of labels
@@ -449,8 +446,7 @@ class MultilabelStatScores(AbstractStatScores):
         self._update_state(tp, fp, tn, fn)
 
     def compute(self) -> Tensor:
-        """
-        Computes the final statistics.
+        """Computes the final statistics.
 
         Returns:
             The metric returns a tensor of shape ``(..., 5)``, where the last dimension corresponds
