@@ -23,12 +23,12 @@ from torchmetrics.detection.mean_ap import MeanAveragePrecision
 # Preds should be a list of elements, where each element is a dict
 # containing 3 keys: boxes, scores, labels
 mask_pred = [
-                    [0, 0, 0, 0, 0],
-                    [0, 0, 1, 1, 0],
-                    [0, 0, 1, 1, 0],
-                    [0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0],
-                ]
+    [0, 0, 0, 0, 0],
+    [0, 0, 1, 1, 0],
+    [0, 0, 1, 1, 0],
+    [0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0],
+]
 preds = [
     dict(
         # The boxes keyword should contain an [N,4] tensor,
@@ -44,7 +44,7 @@ preds = [
         # The masks keyword should contain an [N,H,W] tensor,
         # where H and W are the image height and width, respectively,
         # with boolean masks. This is only required when iou_type is `segm`.
-        masks=BoolTensor([ mask_pred ]),
+        masks=BoolTensor([mask_pred]),
     )
 ]
 
@@ -53,12 +53,12 @@ preds = [
 # Each keyword should be formatted similar to the preds argument.
 # The number of elements in preds and target need to match
 mask_tgt = [
-                    [0, 0, 0, 0, 0],
-                    [0, 0, 1, 0, 0],
-                    [0, 0, 1, 1, 0],
-                    [0, 0, 1, 0, 0],
-                    [0, 0, 0, 0, 0],
-                ]
+    [0, 0, 0, 0, 0],
+    [0, 0, 1, 0, 0],
+    [0, 0, 1, 1, 0],
+    [0, 0, 1, 0, 0],
+    [0, 0, 0, 0, 0],
+]
 target = [
     dict(
         boxes=Tensor([[214.0, 41.0, 562.0, 285.0]]),
