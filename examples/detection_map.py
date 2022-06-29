@@ -16,7 +16,7 @@
 python detection_map.py.
 """
 
-from torch import IntTensor, Tensor
+from torch import IntTensor, BoolTensor, Tensor
 
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
 
@@ -34,23 +34,28 @@ preds = [
         # The labels keyword should contain an [N,] tensor
         # with integers of the predicted classes
         labels=IntTensor([0]),
+        # The masks keyword should contain an [N,H,W] tensor,
+        # where H and W are the image height and width, respectively,
+        # with boolean masks. This is only required when iou_type is `segm`.
+        masks=BoolTensor([[[0, 0, 0, 0, 0], [0, 0, 1, 1, 0], [0, 0, 1, 1, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0],],]),
     )
 ]
 
 # Target should be a list of elements, where each element is a dict
-# containing 2 keys: boxes and labels. Each keyword should be formatted
-# similar to the preds argument. The number of elements in preds and
-# target need to match
+# containing 2 keys: boxes and labels (and masks, if iou_type is `segm`).
+# Each keyword should be formatted similar to the preds argument.
+# The number of elements in preds and target need to match
 target = [
     dict(
         boxes=Tensor([[214.0, 41.0, 562.0, 285.0]]),
         labels=IntTensor([0]),
+        masks=BoolTensor([[[0, 0, 0, 0, 0], [0, 0, 1, 0, 0], [0, 0, 1, 1, 0], [0, 0, 1, 0, 0], [0, 0, 0, 0, 0],],]),
     )
 ]
 
 if __name__ == "__main__":
     # Initialize metric
-    metric = MeanAveragePrecision()
+    metric = MeanAveragePrecision(iou_type="bbox")
 
     # Update metric with predictions and respective ground truth
     metric.update(preds, target)
