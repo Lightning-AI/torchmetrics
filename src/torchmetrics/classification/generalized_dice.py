@@ -46,7 +46,7 @@ class GeneralizedDiceScore(StatScores):
 
         zero_division:
             The value to use for the score if denominator equals zero. If set to None, the score will be 1 if the
-            numerator is also 0, and 0 otherwise. Defaults to None.
+            numerator is also 0, and 0 otherwise.
 
         threshold:
             Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
@@ -69,10 +69,10 @@ class GeneralizedDiceScore(StatScores):
             The default value (``None``) will be interpreted as 1.
 
         multiclass:
-            Determines whether the input is multiclass (if True) or multilabel (if False). Defaults to True.
+            Determines whether the input is multiclass (if True) or multilabel (if False).
 
         multidim:
-            Determines whether the input is multidim or not. Defaults to True.
+            Determines whether the input is multidim or not.
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 

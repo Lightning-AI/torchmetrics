@@ -145,7 +145,7 @@ def generalized_dice_score(
 
         zero_division:
             The value to use for the score if denominator equals zero. If set to None, the score will be 1 if the
-            numerator is also 0, and 0 otherwise. Defaults to None.
+            numerator is also 0, and 0 otherwise.
 
         average:
             Defines the reduction that is applied. Should be one of the following:
@@ -167,10 +167,10 @@ def generalized_dice_score(
             Number of classes.
 
         multiclass:
-            Determines whether the input is multiclass (if True) or multilabel (if False). Defaults to True.
+            Determines whether the input is multiclass (if True) or multilabel (if False).
 
         multidim:
-            Determines whether the input is multidim or not. Defaults to True.
+            Determines whether the input is multidim or not.
 
         ignore_index:
             Integer specifying a target class to ignore. If given, this class index does not contribute
