@@ -47,9 +47,6 @@ make docs
 
 and open `docs/build/html/index.html` in your browser.
 
-When you send a PR the continuous integration will run tests and build the docs. You can access a preview of the html pages in the
-_Artifacts_ tab in CircleCI when you click on the task named _build-Docs_ of _ci-tests_ at the bottom of the PR page.
-
 Notes:
 
 - You need to have LaTeX installed for rendering math equations. You can for example install TeXLive with the appropriate extras by doing one of the following:
