@@ -187,6 +187,9 @@ def binary_confusion_matrix(
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 
+    Returns:
+        A ``[2, 2]`` tensor
+
     Example (preds is int tensor):
         >>> from torchmetrics.functional import binary_confusion_matrix
         >>> target = torch.tensor([1, 1, 0, 0])
@@ -360,6 +363,9 @@ def multiclass_confusion_matrix(
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 
+    Returns:
+        A ``[num_classes, num_classes]`` tensor
+
     Example (pred is integer tensor):
         >>> from torchmetrics.functional import multiclass_confusion_matrix
         >>> target = torch.tensor([2, 1, 0, 0])
@@ -373,10 +379,10 @@ def multiclass_confusion_matrix(
         >>> from torchmetrics.functional import multiclass_confusion_matrix
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([
-        ...   [0.16, 0.26, 0.58]
-        ...   [0.22, 0.61, 0.17]
-        ...   [0.71, 0.09, 0.20]
-        ...   [0.82, 0.05, 0.13]
+        ...   [0.16, 0.26, 0.58],
+        ...   [0.22, 0.61, 0.17],
+        ...   [0.71, 0.09, 0.20],
+        ...   [0.82, 0.05, 0.13],
         ... ])
         >>> multiclass_confusion_matrix(preds, target, num_classes=3)
         tensor([[1, 1, 0],
@@ -535,6 +541,9 @@ def multilabel_confusion_matrix(
             - ``'all'``: normalization over the whole matrix
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+
+    Returns:
+        A ``[num_labels, 2, 2]`` tensor
 
     Example (preds is int tensor):
         >>> from torchmetrics.functional import multilabel_confusion_matrix
