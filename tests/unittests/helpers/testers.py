@@ -589,8 +589,8 @@ class DummyListMetric(Metric):
     name = "DummyList"
     full_state_update: Optional[bool] = True
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.add_state("x", [], dist_reduce_fx="cat")
 
     def update(self):
