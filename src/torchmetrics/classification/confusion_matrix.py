@@ -115,7 +115,10 @@ class BinaryConfusionMatrix(Metric):
         self.confmat += confmat
 
     def compute(self) -> Tensor:
-        """Computes confusion matrix. Returns an [2,2] matrix. """
+        """Computes confusion matrix.
+
+        Returns an [2,2] matrix.
+        """
         return _binary_confusion_matrix_compute(self.confmat, self.normalize)
 
 
@@ -203,7 +206,10 @@ class MulticlassConfusionMatrix(Metric):
         self.confmat += confmat
 
     def compute(self) -> Tensor:
-        """Computes confusion matrix. Returns an [num_classes, num_classes] matrix. """
+        """Computes confusion matrix.
+
+        Returns an [num_classes, num_classes] matrix.
+        """
         return _multiclass_confusion_matrix_compute(self.confmat, self.normalize)
 
 
@@ -291,7 +297,10 @@ class MultilabelConfusionMatrix(Metric):
         self.confmat += confmat
 
     def compute(self) -> Tensor:
-        """Computes confusion matrix. Returns an [num_labels,2,2] matrix. """
+        """Computes confusion matrix.
+
+        Returns an [num_labels,2,2] matrix.
+        """
         return _multilabel_confusion_matrix_compute(self.confmat, self.normalize)
 
 
