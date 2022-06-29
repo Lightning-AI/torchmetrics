@@ -69,7 +69,7 @@ class Metric(Module, ABC):
             - process_group: The process group on which the synchronization is called. Default is the world.
             - dist_sync_fn: function that performs the allgather option on the metric state. Default is an
                 custom implementation that calls ``torch.distributed.all_gather`` internally.
-            - sync_on_compute: If metric state should synchonize when ``compute`` is called. Default is ``True``-
+            - sync_on_compute: If metric state should synchronize when ``compute`` is called. Default is ``True``-
     """
 
     __jit_ignored_attributes__ = ["device"]
@@ -113,7 +113,7 @@ class Metric(Module, ABC):
         self.sync_on_compute = kwargs.pop("sync_on_compute", True)
         if not isinstance(self.sync_on_compute, bool):
             raise ValueError(
-                f"Expected keyword argument `sync_on_compute` to be an `bool` but got {self.sync_on_compute}"
+                f"Expected keyword argument `sync_on_compute` to be a `bool` but got {self.sync_on_compute}"
             )
 
         # initialize
