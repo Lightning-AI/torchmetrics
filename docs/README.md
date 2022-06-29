@@ -39,7 +39,7 @@ def my_func(param_a: int, param_b: Optional[float] = None) -> str:
 
 When updating the docs, make sure to build them first locally and visually inspect the html files in your browser for
 formatting errors. In certain cases, a missing blank line or a wrong indent can lead to a broken layout.
-Run this command:
+Run this command in the root folder:
 
 ```bash
 make docs
