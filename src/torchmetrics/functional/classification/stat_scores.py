@@ -145,7 +145,7 @@ def binary_stat_scores(
 ) -> Tensor:
     r"""
     Computes the number of true positives, false positives, true negatives, false negatives and the support
-    for binary tasks. Related to `Type I and Type II errors`_. 
+    for binary tasks. Related to `Type I and Type II errors`_.
 
     Accepts the following input tensors:
     - ``preds`` (int or float tensor): ``(N, ...)``. If preds is a floating point tensor with values outside
@@ -153,7 +153,7 @@ def binary_stat_scores(
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, ...)``
     The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument. 
+    argument.
 
     Args:
         preds: Tensor with predictions
@@ -176,7 +176,7 @@ def binary_stat_scores(
         to ``[tp, fp, tn, fn, sup]`` (``sup`` stands for support and equals ``tp + fn``). The shape
         depends on the ``multidim_average`` parameter:
 
-        - If ``multidim_average`` is set to ``global``, the shape will be ``(5,)`` 
+        - If ``multidim_average`` is set to ``global``, the shape will be ``(5,)``
         - If ``multidim_average`` is set to ``samplewise``, the shape will be ``(N, 5)``
 
     Example (preds is int tensor):
@@ -417,7 +417,10 @@ def _multiclass_stat_scores_compute(
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
     multidim_average: Literal["global", "samplewise"] = "global",
 ) -> Tensor:
-    """Stack statistics and compute support also. Applies average strategy afterwards."""
+    """Stack statistics and compute support also.
+
+    Applies average strategy afterwards.
+    """
     res = torch.stack([tp, fp, tn, fn, tp + fn], dim=-1)
     sum_dim = 0 if multidim_average == "global" else 1
     if average == "micro":
@@ -446,7 +449,7 @@ def multiclass_stat_scores(
 ) -> Tensor:
     r"""
     Computes the number of true positives, false positives, true negatives, false negatives and the support
-    for multiclass tasks. Related to `Type I and Type II errors`_. 
+    for multiclass tasks. Related to `Type I and Type II errors`_.
 
     Accepts the following input tensors:
     - ``preds``: ``(N, ...)`` (int tensor) or ``(N, C, ..)`` (float tensor). If preds is a floating point
@@ -467,7 +470,7 @@ def multiclass_stat_scores(
             - ``macro``: Calculate statistics for each label and average them
             - ``weighted``: Calculates statistics for each label and computes weighted average using their support
             - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
-        top_k: 
+        top_k:
             Number of highest probability or logit score predictions considered to find the correct label.
             Only works when ``preds`` contain probabilities/logits.
         multidim_average:
@@ -669,7 +672,10 @@ def _multilabel_stat_scores_compute(
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
     multidim_average: Literal["global", "samplewise"] = "global",
 ) -> Tensor:
-    """Stack statistics and compute support also. Applies average strategy afterwards."""
+    """Stack statistics and compute support also.
+
+    Applies average strategy afterwards.
+    """
     res = torch.stack([tp, fp, tn, fn, tp + fn], dim=-1)
     sum_dim = 0 if multidim_average == "global" else 1
     if average == "micro":
@@ -695,7 +701,7 @@ def multilabel_stat_scores(
 ) -> Tensor:
     r"""
     Computes the number of true positives, false positives, true negatives, false negatives and the support
-    for multilabel tasks. Related to `Type I and Type II errors`_. 
+    for multilabel tasks. Related to `Type I and Type II errors`_.
 
     Accepts the following input tensors:
     - ``preds`` (int or float tensor): ``(N, C, ...)``. If preds is a floating point tensor with values outside
@@ -703,7 +709,7 @@ def multilabel_stat_scores(
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, C, ...)``
     The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument. 
+    argument.
 
     Args:
         preds: Tensor with predictions
