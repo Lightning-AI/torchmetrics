@@ -141,7 +141,7 @@ def _multiclass_stat_scores_arg_validation(
     multidim_average: str = "global",
     ignore_index: Optional[int] = None,
 ) -> None:
-    if not isinstance(num_classes, int) and num_classes < 2:
+    if not isinstance(num_classes, int) or num_classes < 2:
         raise ValueError(f"Expected argument `num_classes` to be an integer larger than 1, but got {num_classes}")
     if not isinstance(top_k, int) and top_k < 1:
         raise ValueError(f"Expected argument `top_k` to be an integer larger than or equal to 1, but got {top_k}")
