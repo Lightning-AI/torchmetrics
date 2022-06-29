@@ -356,7 +356,8 @@ class MeanAveragePrecision(Metric):
                 - ``scores``: ``torch.FloatTensor`` of shape ``[num_boxes]`` containing detection scores for the boxes.
                 - ``labels``: ``torch.IntTensor`` of shape ``[num_boxes]`` containing 0-indexed detection classes
                   for the boxes.
-                - ``masks``: ``torch.bool`` of shape ``[num_boxes, image_height, image_width]`` containing boolean masks. Only required when iou_type is `segm`.
+                - ``masks``: ``torch.bool`` of shape ``[num_boxes, image_height, image_width]`` containing boolean
+                  masks. Only required when iou_type is `segm`.
 
             target: A list consisting of dictionaries each containing the key-values
                 (each dictionary corresponds to a single image):
@@ -366,7 +367,8 @@ class MeanAveragePrecision(Metric):
                   ``[xmin, ymin, xmax, ymax]`` in absolute image coordinates.
                 - ``labels``: ``torch.IntTensor`` of shape ``[num_boxes]`` containing 0-indexed ground truth
                    classes for the boxes.
-                - ``masks``: ``torch.bool`` of shape ``[num_boxes, image_height, image_width]`` containing boolean masks. Only required when iou_type is `segm`.
+                - ``masks``: ``torch.bool`` of shape ``[num_boxes, image_height, image_width]`` containing boolean
+                  masks. Only required when iou_type is `segm`.
 
         Raises:
             ValueError:
