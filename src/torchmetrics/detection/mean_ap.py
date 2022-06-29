@@ -226,8 +226,8 @@ class MeanAveragePrecision(Metric):
             Input format of given boxes. Supported formats are ``[`xyxy`, `xywh`, `cxcywh`]``.
         iou_type:
             Type of input (either masks or bounding-boxes) used for computing IOU.
-            Supported IOU types are ``[`bboxes`, `segm`]``.
-            If using `segm`, masks should be provided (see :meth:`update`).
+            Supported IOU types are ``["bboxes", "segm"]``.
+            If using ``"segm"``, masks should be provided (see :meth:`update`).
         iou_thresholds:
             IoU thresholds for evaluation. If set to ``None`` it corresponds to the stepped range ``[0.5,...,0.95]``
             with step ``0.05``. Else provide a list of floats.
@@ -357,7 +357,7 @@ class MeanAveragePrecision(Metric):
                 - ``labels``: ``torch.IntTensor`` of shape ``[num_boxes]`` containing 0-indexed detection classes
                   for the boxes.
                 - ``masks``: ``torch.bool`` of shape ``[num_boxes, image_height, image_width]`` containing boolean
-                  masks. Only required when iou_type is `segm`.
+                  masks. Only required when `iou_type="segm"`.
 
             target: A list consisting of dictionaries each containing the key-values
                 (each dictionary corresponds to a single image):
@@ -368,7 +368,7 @@ class MeanAveragePrecision(Metric):
                 - ``labels``: ``torch.IntTensor`` of shape ``[num_boxes]`` containing 0-indexed ground truth
                    classes for the boxes.
                 - ``masks``: ``torch.bool`` of shape ``[num_boxes, image_height, image_width]`` containing boolean
-                  masks. Only required when iou_type is `segm`.
+                  masks. Only required when `iou_type="segm"`.
 
         Raises:
             ValueError:
