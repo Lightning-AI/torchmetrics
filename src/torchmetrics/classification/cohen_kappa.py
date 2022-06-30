@@ -22,21 +22,54 @@ from torchmetrics.metric import Metric
 
 
 class BinaryCohenKappa(BinaryConfusionMatrix):
+    """"""
+
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
+
+    def __init__(self, **kwargs):
+        pass
+
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+        pass
+
+    def compute(self) -> Tensor:
+        pass
 
 
 class MulticlassCohenKappa(MulticlassConfusionMatrix):
+    """"""
+
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
+
+    def __init__(self, **kwargs):
+        pass
+
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+        pass
+
+    def compute(self) -> Tensor:
+        pass
 
 
 class MultilabelCohenKappa(MultilabelConfusionMatrix):
+    """"""
+
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
+
+    def __init__(self, **kwargs):
+        pass
+
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+        pass
+
+    def compute(self) -> Tensor:
+        pass
 
 
 # -------------------------- Old stuff --------------------------

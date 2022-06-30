@@ -25,21 +25,54 @@ from torchmetrics.metric import Metric
 
 
 class BinaryMatthewsCorrCoef(BinaryConfusionMatrix):
+    """"""
+
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
+
+    def __init__(self, **kwargs):
+        pass
+
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+        pass
+
+    def compute(self) -> Tensor:
+        pass
 
 
 class MulticlassMatthewsCorrCoef(MulticlassConfusionMatrix):
+    """"""
+
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
+
+    def __init__(self, **kwargs):
+        pass
+
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+        pass
+
+    def compute(self) -> Tensor:
+        pass
 
 
 class MultilabelMatthewsCorrCoef(MultilabelConfusionMatrix):
+    """"""
+
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
+
+    def __init__(self, **kwargs):
+        pass
+
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+        pass
+
+    def compute(self) -> Tensor:
+        pass
 
 
 # -------------------------- Old stuff --------------------------

@@ -28,6 +28,8 @@ from torchmetrics.functional.classification.jaccard import (
 
 
 class BinaryJaccardIndex(BinaryConfusionMatrix):
+    """"""
+
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
@@ -50,6 +52,8 @@ class BinaryJaccardIndex(BinaryConfusionMatrix):
 
 
 class MulticlassJaccardIndex(MulticlassConfusionMatrix):
+    """"""
+
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
@@ -72,6 +76,8 @@ class MulticlassJaccardIndex(MulticlassConfusionMatrix):
 
 
 class MultilabelJaccardIndex(MultilabelConfusionMatrix):
+    """"""
+
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
