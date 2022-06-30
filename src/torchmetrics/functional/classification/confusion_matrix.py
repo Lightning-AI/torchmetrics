@@ -18,7 +18,7 @@ from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.utilities.checks import _check_same_shape, _input_format_classification
-from torchmetrics.utilities.data import _bincount
+from torchmetrics.utilities.data import _bincount, _movedim
 from torchmetrics.utilities.enums import DataType
 from torchmetrics.utilities.prints import rank_zero_warn
 
@@ -482,8 +482,8 @@ def _multilabel_confusion_matrix_format(
         if not torch.all((0 <= preds) * (preds <= 1)):
             preds = preds.sigmoid()
         preds = preds > threshold
-    preds = preds.movedim(1, -1).reshape(-1, num_labels)
-    target = target.movedim(1, -1).reshape(-1, num_labels)
+    preds = _movedim(preds, 1, -1).reshape(-1, num_labels)
+    target = _movedim(target, 1, -1).reshape(-1, num_labels)
 
     if ignore_index is not None:
         preds = preds.clone()

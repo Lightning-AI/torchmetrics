@@ -269,3 +269,10 @@ def allclose(tensor1: Tensor, tensor2: Tensor) -> bool:
     if tensor1.dtype != tensor2.dtype:
         tensor2 = tensor2.to(dtype=tensor1.dtype)
     return torch.allclose(tensor1, tensor2)
+
+
+def _movedim(tensor: Tensor, dim1: int, dim2: int) -> tensor:
+    if _TORCH_GREATER_EQUAL_1_7:
+        return torch.movedim(tensor, dim1, dim2)
+    else:
+        return tensor.unsqueeze(dim2).transpose(dim2, dim1).squeeze()
