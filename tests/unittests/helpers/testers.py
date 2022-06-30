@@ -243,9 +243,6 @@ def _class_test(
     }
     sk_result = sk_metric(total_preds, total_target, **total_kwargs_update)
 
-    print(sk_result)
-    print(result)
-
     # assert after aggregation
     if isinstance(sk_result, dict):
         for key in sk_result.keys():

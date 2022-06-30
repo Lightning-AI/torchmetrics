@@ -15,39 +15,61 @@ from typing import Optional, Tuple
 
 import torch
 from torch import Tensor
+from typing_extensions import Literal
 
 from torchmetrics.utilities.checks import _check_same_shape, _input_format_classification
-from torchmetrics.utilities.data import _bincount
+from torchmetrics.utilities.data import _bincount, _movedim
 from torchmetrics.utilities.enums import DataType
 from torchmetrics.utilities.prints import rank_zero_warn
 
 
-def _confusion_matrix_reduce(confmat: Tensor, normalize: Optional[str] = None, multilabel: bool = False) -> Tensor:
+def _confusion_matrix_reduce(
+    confmat: Tensor, normalize: Optional[Literal["true", "pred", "all", "none"]] = None
+) -> Tensor:
+    """Reduce an un-normalized confusion matrix
+    Args:
+        confmat: un-normalized confusion matrix
+        normalize: normalization method.
+            - `"true"` will divide by the sum of the column dimension.
+            - `"pred"` will divide by the sum of the row dimension.
+            - `"all"` will divide by the sum of the full matrix
+            - `"none"` or `None` will apply no reduction
+
+    Returns:
+        Normalized confusion matrix
+    """
     allowed_normalize = ("true", "pred", "all", "none", None)
     if normalize not in allowed_normalize:
         raise ValueError(f"Argument `normalize` needs to one of the following: {allowed_normalize}")
     if normalize is not None and normalize != "none":
         confmat = confmat.float() if not confmat.is_floating_point() else confmat
         if normalize == "true":
-            confmat = confmat / confmat.sum(axis=2 if multilabel else 1, keepdim=True)
+            confmat = confmat / confmat.sum(axis=-1, keepdim=True)
         elif normalize == "pred":
-            confmat = confmat / confmat.sum(axis=1 if multilabel else 0, keepdim=True)
+            confmat = confmat / confmat.sum(axis=-2, keepdim=True)
         elif normalize == "all":
-            confmat = confmat / confmat.sum(axis=[1, 2] if multilabel else [0, 1], keepdim=True)
+            confmat = confmat / confmat.sum(axis=[-2, -1], keepdim=True)
 
         nan_elements = confmat[torch.isnan(confmat)].nelement()
-        if nan_elements != 0:
+        if nan_elements:
             confmat[torch.isnan(confmat)] = 0
             rank_zero_warn(f"{nan_elements} NaN values found in confusion matrix have been replaced with zeros.")
     return confmat
 
 
 def _binary_confusion_matrix_arg_validation(
-    threshold: float = 0.5, ignore_index: Optional[int] = None, normalize: Optional[str] = None
+    threshold: float = 0.5,
+    ignore_index: Optional[int] = None,
+    normalize: Optional[Literal["true", "pred", "all", "none"]] = None,
 ) -> None:
-    """Validate non tensor input."""
-    if not isinstance(threshold, float):
-        raise ValueError(f"Expected argument `threshold` to be a float, but got {threshold}.")
+    """Validate non tensor input.
+
+    - ``threshold`` has to be a float in the [0,1] range
+    - ``ignore_index`` has to be None or int
+    - ``normalize`` has to be "true" | "pred" | "all" | "none" | None
+    """
+    if not isinstance(threshold, float) and not (0 <= threshold <= 1):
+        raise ValueError(f"Expected argument `threshold` to be a float in the [0,1] range, but got {threshold}.")
     if ignore_index is not None and not isinstance(ignore_index, int):
         raise ValueError(f"Expected argument `ignore_index` to either be `None` or an integer, but got {ignore_index}")
     allowed_normalize = ("true", "pred", "all", "none", None)
@@ -56,13 +78,18 @@ def _binary_confusion_matrix_arg_validation(
 
 
 def _binary_confusion_matrix_tensor_validation(
-    preds: Tensor, target: Tensor, ignore_index: Optional[int] = bool
+    preds: Tensor, target: Tensor, ignore_index: Optional[int] = None
 ) -> None:
-    """Validate tensor input."""
+    """Validate tensor input.
+
+    - tensors have to be of same shape
+    - all values in target tensor that are not ignored have to be in {0, 1}
+    - if pred tensor is not floating point, then all values also have to be in {0, 1}
+    """
     # Check that they have same shape
     _check_same_shape(preds, target)
 
-    # Check that target only contains [0,1] values or value in ignore_index
+    # Check that target only contains {0,1} values or value in ignore_index
     unique_values = torch.unique(target)
     if ignore_index is None:
         check = torch.any((unique_values != 0) & (unique_values != 1))
@@ -74,7 +101,7 @@ def _binary_confusion_matrix_tensor_validation(
             f" the following values {[0,1] + [] if ignore_index is None else [ignore_index]}."
         )
 
-    # If preds is label tensor, also check that it only contains [0,1] values
+    # If preds is label tensor, also check that it only contains {0,1} values
     if not preds.is_floating_point():
         unique_values = torch.unique(preds)
         if torch.any((unique_values != 0) & (unique_values != 1)):
@@ -90,7 +117,12 @@ def _binary_confusion_matrix_format(
     threshold: float = 0.5,
     ignore_index: Optional[int] = None,
 ) -> Tuple[Tensor, Tensor]:
-    """Convert all input to label format."""
+    """Convert all input to label format.
+
+    - Remove all datapoints that should be ignored
+    - If preds tensor is floating point, applies sigmoid if pred tensor not in [0,1] range
+    - If preds tensor is floating point, thresholds afterwards
+    """
     preds = preds.flatten()
     target = target.flatten()
     if ignore_index is not None:
@@ -99,7 +131,7 @@ def _binary_confusion_matrix_format(
         target = target[idx]
 
     if preds.is_floating_point():
-        if not ((0 <= preds) * (preds <= 1)).all():
+        if not torch.all((0 <= preds) * (preds <= 1)):
             # preds is logits, convert with sigmoid
             preds = preds.sigmoid()
         preds = preds > threshold
@@ -108,15 +140,20 @@ def _binary_confusion_matrix_format(
 
 
 def _binary_confusion_matrix_update(preds: Tensor, target: Tensor) -> Tensor:
-    """Calculate confusion matrix on current input."""
+    """Computes the bins to update the confusion matrix with."""
     unique_mapping = (target * 2 + preds).to(torch.long)
     bins = _bincount(unique_mapping, minlength=4)
     return bins.reshape(2, 2)
 
 
-def _binary_confusion_matrix_compute(confmat: Tensor, normalize: Optional[str] = None) -> Tensor:
-    """Calculate final confusion matrix."""
-    return _confusion_matrix_reduce(confmat, normalize, multilabel=False)
+def _binary_confusion_matrix_compute(
+    confmat: Tensor, normalize: Optional[Literal["true", "pred", "all", "none"]] = None
+) -> Tensor:
+    """Reduces the confusion matrix to it's final form.
+
+    Normalization technique can be chosen by ``normalize``.
+    """
+    return _confusion_matrix_reduce(confmat, normalize)
 
 
 def binary_confusion_matrix(
@@ -124,9 +161,55 @@ def binary_confusion_matrix(
     target: Tensor,
     threshold: float = 0.5,
     ignore_index: Optional[int] = None,
-    normalize: Optional[str] = None,
+    normalize: Optional[Literal["true", "pred", "all", "none"]] = None,
     validate_args: bool = True,
 ) -> Tensor:
+    r"""
+    Computes the `confusion matrix`_ for binary tasks.
+
+    Accepts the following input tensors:
+
+    - ``preds`` (int or float tensor): ``(N, ...)``. If preds is a floating point tensor with values outside
+      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
+      we convert to int tensor with thresholding using the value in ``threshold``.
+    - ``target`` (int tensor): ``(N, ...)``
+
+    Additional dimension ``...`` will be flattened into the batch dimension.
+
+    Args:
+        preds: Tensor with predictions
+        target: Tensor with true labels
+        threshold: Threshold for transforming probability to binary (0,1) predictions
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
+        normalize: Normalization mode for confusion matrix. Choose from:
+
+            - ``None`` or ``'none'``: no normalization (default)
+            - ``'true'``: normalization over the targets (most commonly used)
+            - ``'pred'``: normalization over the predictions
+            - ``'all'``: normalization over the whole matrix
+        validate_args: bool indicating if input arguments and tensors should be validated for correctness.
+            Set to ``False`` for faster computations.
+
+    Returns:
+        A ``[2, 2]`` tensor
+
+    Example (preds is int tensor):
+        >>> from torchmetrics.functional import binary_confusion_matrix
+        >>> target = torch.tensor([1, 1, 0, 0])
+        >>> preds = torch.tensor([0, 1, 0, 0])
+        >>> binary_confusion_matrix(preds, target)
+        tensor([[2, 0],
+                [1, 1]])
+
+    Example (preds is float tensor):
+        >>> from torchmetrics.functional import binary_confusion_matrix
+        >>> target = torch.tensor([1, 1, 0, 0])
+        >>> preds = torch.tensor([0.35, 0.85, 0.48, 0.01])
+        >>> binary_confusion_matrix(preds, target)
+        tensor([[2, 0],
+                [1, 1]])
+    """
     if validate_args:
         _binary_confusion_matrix_arg_validation(threshold, ignore_index, normalize)
         _binary_confusion_matrix_tensor_validation(preds, target, ignore_index)
@@ -135,8 +218,18 @@ def binary_confusion_matrix(
     return _binary_confusion_matrix_compute(confmat, normalize)
 
 
-def _multiclass_confusion_matrix_arg_validation(num_classes, ignore_index, normalize) -> None:
-    if not isinstance(num_classes, int) and num_classes < 2:
+def _multiclass_confusion_matrix_arg_validation(
+    num_classes: int,
+    ignore_index: Optional[int] = None,
+    normalize: Optional[Literal["true", "pred", "all", "none"]] = None,
+) -> None:
+    """Validate non tensor input.
+
+    - ``num_classes`` has to be a int larger than 1
+    - ``ignore_index`` has to be None or int
+    - ``normalize`` has to be "true" | "pred" | "all" | "none" | None
+    """
+    if not isinstance(num_classes, int) or num_classes < 2:
         raise ValueError(f"Expected argument `num_classes` to be an integer larger than 1, but got {num_classes}")
     if ignore_index is not None and not isinstance(ignore_index, int):
         raise ValueError(f"Expected argument `ignore_index` to either be `None` or an integer, but got {ignore_index}")
@@ -145,8 +238,17 @@ def _multiclass_confusion_matrix_arg_validation(num_classes, ignore_index, norma
         raise ValueError(f"Expected argument `normalize` to be one of {allowed_normalize}, but got {normalize}.")
 
 
-def _multiclass_confusion_matrix_tensor_validation(preds, target, num_classes, ignore_index) -> None:
-    """Validate tensor input."""
+def _multiclass_confusion_matrix_tensor_validation(
+    preds: Tensor, target: Tensor, num_classes: int, ignore_index: Optional[int] = None
+) -> None:
+    """Validate tensor input.
+
+    - if target has one more dimension than preds, then all dimensions except for preds.shape[1] should match
+    exactly. preds.shape[1] should have size equal to number of classes
+    - if preds and target have same number of dims, then all dimensions should match
+    - all values in target tensor that are not ignored have to be {0, ..., num_classes - 1}
+    - if pred tensor is not floating point, then all values also have to be in {0, ..., num_classes - 1}
+    """
     if preds.ndim == target.ndim + 1:
         if not preds.is_floating_point():
             raise ValueError("If `preds` have one dimension more than `target`, `preds` should be a float tensor.")
@@ -172,30 +274,35 @@ def _multiclass_confusion_matrix_tensor_validation(preds, target, num_classes, i
             " and `preds` should be (N, C, ...)."
         )
 
-    unique_values = torch.unique(target)
+    num_unique_values = len(torch.unique(target))
     if ignore_index is None:
-        check = len(unique_values) > num_classes
+        check = num_unique_values > num_classes
     else:
-        check = len(unique_values) > num_classes + 1
+        check = num_unique_values > num_classes + 1
     if check:
         raise RuntimeError(
             "Detected more unique values in `target` than `num_classes`. Expected only "
-            f"{num_classes if ignore_index is None else num_classes + 1} but found"
-            f"{len(unique_values)} in `target`."
+            f"{num_classes if ignore_index is None else num_classes + 1} but found "
+            f"{num_unique_values} in `target`."
         )
 
     if not preds.is_floating_point():
-        unique_values = torch.unique(preds)
-        if len(unique_values) > num_classes:
+        num_unique_values = len(torch.unique(preds))
+        if num_unique_values > num_classes:
             raise RuntimeError(
                 "Detected more unique values in `preds` than `num_classes`. Expected only "
-                f"{num_classes} but found {len(unique_values)} in `preds`."
+                f"{num_classes} but found {num_unique_values} in `preds`."
             )
 
 
 def _multiclass_confusion_matrix_format(
     preds: Tensor, target: Tensor, ignore_index: Optional[int] = None
 ) -> Tuple[Tensor, Tensor]:
+    """ "Convert all input to label format.
+
+    - Applies argmax if preds have one more dimension than target
+    - Remove all datapoints that should be ignored
+    """
     # Apply argmax if we have one more dimension
     if preds.ndim == target.ndim + 1:
         preds = preds.argmax(dim=1)
@@ -212,13 +319,20 @@ def _multiclass_confusion_matrix_format(
 
 
 def _multiclass_confusion_matrix_update(preds: Tensor, target: Tensor, num_classes: int) -> Tensor:
+    """Computes the bins to update the confusion matrix with."""
     unique_mapping = (target * num_classes + preds).to(torch.long)
     bins = _bincount(unique_mapping, minlength=num_classes**2)
     return bins.reshape(num_classes, num_classes)
 
 
-def _multiclass_confusion_matrix_compute(confmat: Tensor, normalize: Optional[str] = None) -> Tensor:
-    return _confusion_matrix_reduce(confmat, normalize, multilabel=False)
+def _multiclass_confusion_matrix_compute(
+    confmat: Tensor, normalize: Optional[Literal["true", "pred", "all", "none"]] = None
+) -> Tensor:
+    """Reduces the confusion matrix to it's final form.
+
+    Normalization technique can be chosen by ``normalize``.
+    """
+    return _confusion_matrix_reduce(confmat, normalize)
 
 
 def multiclass_confusion_matrix(
@@ -226,9 +340,62 @@ def multiclass_confusion_matrix(
     target: Tensor,
     num_classes: int,
     ignore_index: Optional[int] = None,
-    normalize: Optional[str] = None,
+    normalize: Optional[Literal["true", "pred", "all", "none"]] = None,
     validate_args: bool = True,
 ) -> Tensor:
+    r"""
+    Computes the `confusion matrix`_ for multiclass tasks.
+
+    Accepts the following input tensors:
+
+    - ``preds``: ``(N, ...)`` (int tensor) or ``(N, C, ..)`` (float tensor). If preds is a floating point
+      we apply ``torch.argmax`` along the ``C`` dimension to automatically convert probabilities/logits into
+      an int tensor.
+    - ``target`` (int tensor): ``(N, ...)``
+
+    Additional dimension ``...`` will be flattened into the batch dimension.
+
+    Args:
+        preds: Tensor with predictions
+        target: Tensor with true labels
+        num_classes: Integer specifing the number of classes
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
+        normalize: Normalization mode for confusion matrix. Choose from:
+
+            - ``None`` or ``'none'``: no normalization (default)
+            - ``'true'``: normalization over the targets (most commonly used)
+            - ``'pred'``: normalization over the predictions
+            - ``'all'``: normalization over the whole matrix
+        validate_args: bool indicating if input arguments and tensors should be validated for correctness.
+            Set to ``False`` for faster computations.
+
+    Returns:
+        A ``[num_classes, num_classes]`` tensor
+
+    Example (pred is integer tensor):
+        >>> from torchmetrics.functional import multiclass_confusion_matrix
+        >>> target = torch.tensor([2, 1, 0, 0])
+        >>> preds = torch.tensor([2, 1, 0, 1])
+        >>> multiclass_confusion_matrix(preds, target, num_classes=3)
+        tensor([[1, 1, 0],
+                [0, 1, 0],
+                [0, 0, 1]])
+
+    Example (pred is float tensor):
+        >>> from torchmetrics.functional import multiclass_confusion_matrix
+        >>> target = torch.tensor([2, 1, 0, 0])
+        >>> preds = torch.tensor([
+        ...   [0.16, 0.26, 0.58],
+        ...   [0.22, 0.61, 0.17],
+        ...   [0.71, 0.09, 0.20],
+        ...   [0.05, 0.82, 0.13],
+        ... ])
+        >>> multiclass_confusion_matrix(preds, target, num_classes=3)
+        tensor([[1, 1, 0],
+                [0, 1, 0],
+                [0, 0, 1]])
+    """
     if validate_args:
         _multiclass_confusion_matrix_arg_validation(num_classes, ignore_index, normalize)
         _multiclass_confusion_matrix_tensor_validation(preds, target, num_classes, ignore_index)
@@ -238,9 +405,19 @@ def multiclass_confusion_matrix(
 
 
 def _multilabel_confusion_matrix_arg_validation(
-    num_labels: int, threshold: float = 0.5, ignore_index: Optional[int] = None, normalize: Optional[str] = None
+    num_labels: int,
+    threshold: float = 0.5,
+    ignore_index: Optional[int] = None,
+    normalize: Optional[Literal["true", "pred", "all", "none"]] = None,
 ) -> None:
-    if not isinstance(num_labels, int) and num_labels < 2:
+    """Validate non tensor input.
+
+    - ``num_labels`` should be an int larger than 1
+    - ``threshold`` has to be a float in the [0,1] range
+    - ``ignore_index`` has to be None or int
+    - ``normalize`` has to be "true" | "pred" | "all" | "none" | None
+    """
+    if not isinstance(num_labels, int) or num_labels < 2:
         raise ValueError(f"Expected argument `num_labels` to be an integer larger than 1, but got {num_labels}")
     if not isinstance(threshold, float):
         raise ValueError(f"Expected argument `threshold` to be a float, but got {threshold}.")
@@ -254,7 +431,13 @@ def _multilabel_confusion_matrix_arg_validation(
 def _multilabel_confusion_matrix_tensor_validation(
     preds: Tensor, target: Tensor, num_labels: int, ignore_index: Optional[int] = None
 ) -> None:
-    """Validate tensor input."""
+    """Validate tensor input.
+
+    - tensors have to be of same shape
+    - the second dimension of both tensors need to be equal to the number of labels
+    - all values in target tensor that are not ignored have to be in {0, 1}
+    - if pred tensor is not floating point, then all values also have to be in {0, 1}
+    """
     # Check that they have same shape
     _check_same_shape(preds, target)
 
@@ -289,17 +472,24 @@ def _multilabel_confusion_matrix_tensor_validation(
 def _multilabel_confusion_matrix_format(
     preds: Tensor, target: Tensor, num_labels: int, threshold: float = 0.5, ignore_index: Optional[int] = None
 ) -> Tuple[Tensor, Tensor]:
+    """Convert all input to label format.
+
+    - If preds tensor is floating point, applies sigmoid if pred tensor not in [0,1] range
+    - If preds tensor is floating point, thresholds afterwards
+    - Mask all elements that should be ignored with negative numbers for later filtration
+    """
     if preds.is_floating_point():
-        if not ((0 <= preds) * (preds <= 1)).all():
+        if not torch.all((0 <= preds) * (preds <= 1)):
             preds = preds.sigmoid()
         preds = preds > threshold
-    preds = preds.movedim(1, -1).reshape(-1, num_labels)
-    target = target.movedim(1, -1).reshape(-1, num_labels)
+    preds = _movedim(preds, 1, -1).reshape(-1, num_labels)
+    target = _movedim(target, 1, -1).reshape(-1, num_labels)
 
     if ignore_index is not None:
         preds = preds.clone()
         target = target.clone()
-        # make sure that when we map, it will always result in a negative number that we can filter away
+        # Make sure that when we map, it will always result in a negative number that we can filter away
+        # Each label correspond to a 2x2 matrix = 4 elements per label
         idx = target == ignore_index
         preds[idx] = -4 * num_labels
         target[idx] = -4 * num_labels
@@ -308,14 +498,21 @@ def _multilabel_confusion_matrix_format(
 
 
 def _multilabel_confusion_matrix_update(preds: Tensor, target: Tensor, num_labels: int) -> Tensor:
+    """Computes the bins to update the confusion matrix with."""
     unique_mapping = ((2 * target + preds) + 4 * torch.arange(num_labels, device=preds.device)).flatten()
     unique_mapping = unique_mapping[unique_mapping >= 0]
     bins = _bincount(unique_mapping, minlength=4 * num_labels)
     return bins.reshape(num_labels, 2, 2)
 
 
-def _multilabel_confusion_matrix_compute(confmat: Tensor, normalize: Optional[str] = None) -> Tensor:
-    return _confusion_matrix_reduce(confmat, normalize, multilabel=True)
+def _multilabel_confusion_matrix_compute(
+    confmat: Tensor, normalize: Optional[Literal["true", "pred", "all", "none"]] = None
+) -> Tensor:
+    """Reduces the confusion matrix to it's final form.
+
+    Normalization technique can be chosen by ``normalize``.
+    """
+    return _confusion_matrix_reduce(confmat, normalize)
 
 
 def multilabel_confusion_matrix(
@@ -324,9 +521,58 @@ def multilabel_confusion_matrix(
     num_labels: int,
     threshold: float = 0.5,
     ignore_index: Optional[int] = None,
-    normalize: Optional[str] = None,
+    normalize: Optional[Literal["true", "pred", "all", "none"]] = None,
     validate_args: bool = True,
 ) -> Tensor:
+    r"""
+    Computes the `confusion matrix`_ for multilabel tasks.
+
+    Accepts the following input tensors:
+
+    - ``preds`` (int or float tensor): ``(N, C, ...)``. If preds is a floating point tensor with values outside
+      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
+      we convert to int tensor with thresholding using the value in ``threshold``.
+    - ``target`` (int tensor): ``(N, C, ...)``
+
+    Additional dimension ``...`` will be flattened into the batch dimension.
+
+    Args:
+        preds: Tensor with predictions
+        target: Tensor with true labels
+        num_labels: Integer specifing the number of labels
+        threshold: Threshold for transforming probability to binary (0,1) predictions
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
+        normalize: Normalization mode for confusion matrix. Choose from:
+
+            - ``None`` or ``'none'``: no normalization (default)
+            - ``'true'``: normalization over the targets (most commonly used)
+            - ``'pred'``: normalization over the predictions
+            - ``'all'``: normalization over the whole matrix
+        validate_args: bool indicating if input arguments and tensors should be validated for correctness.
+            Set to ``False`` for faster computations.
+
+    Returns:
+        A ``[num_labels, 2, 2]`` tensor
+
+    Example (preds is int tensor):
+        >>> from torchmetrics.functional import multilabel_confusion_matrix
+        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
+        >>> multilabel_confusion_matrix(preds, target, num_labels=3)
+        tensor([[[1, 0], [0, 1]],
+                [[1, 0], [1, 0]],
+                [[0, 1], [0, 1]]])
+
+    Example (preds is float tensor):
+        >>> from torchmetrics.functional import multilabel_confusion_matrix
+        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
+        >>> multilabel_confusion_matrix(preds, target, num_labels=3)
+        tensor([[[1, 0], [0, 1]],
+                [[1, 0], [1, 0]],
+                [[0, 1], [0, 1]]])
+    """
     if validate_args:
         _multilabel_confusion_matrix_arg_validation(num_labels, threshold, ignore_index, normalize)
         _multilabel_confusion_matrix_tensor_validation(preds, target, num_labels, ignore_index)
