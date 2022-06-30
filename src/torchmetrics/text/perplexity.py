@@ -32,9 +32,6 @@ class Perplexity(Metric):
         kwargs:
             Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    Returns:
-        Perplexity
-
     Examples:
         >>> import torch
         >>> preds = torch.rand(2, 8, 5, generator=torch.manual_seed(22))
@@ -46,6 +43,7 @@ class Perplexity(Metric):
     """
     is_differentiable = True
     higher_is_better = False
+    full_state_update = False
     total_log_probs: Tensor
     count: Tensor
 
@@ -54,7 +52,9 @@ class Perplexity(Metric):
         ignore_index: Optional[int] = None,
         **kwargs: Dict[str, Any],
     ):
-        super().__init__(compute_on_step=None, **kwargs)
+        super().__init__(**kwargs)
+        if ignore_index is not None or not isinstance(ignore_index, int):
+            raise ValueError(f"Argument `ignore_index` expected to either be `None` or an `int` but got {ignore_index}")
         self.ignore_index = ignore_index
         self.add_state("total_log_probs", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("count", default=tensor(0.0), dist_reduce_fx="sum")
