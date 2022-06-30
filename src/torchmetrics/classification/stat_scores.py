@@ -39,7 +39,7 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
 
 
-class AbstractStatScores(Metric):
+class _AbstractStatScores(Metric):
     # define common functions
     def _create_state(self, size: int, multidim_average: str) -> None:
         """Initialize the states for the different statistics."""
@@ -76,7 +76,7 @@ class AbstractStatScores(Metric):
         return tp, fp, tn, fn
 
 
-class BinaryStatScores(AbstractStatScores):
+class BinaryStatScores(_AbstractStatScores):
     r"""
     Computes the number of true positives, false positives, true negatives, false negatives and the support
     for binary tasks. Related to `Type I and Type II errors`_.
@@ -180,7 +180,7 @@ class BinaryStatScores(AbstractStatScores):
         return _binary_stat_scores_compute(tp, fp, tn, fn, self.multidim_average)
 
 
-class MulticlassStatScores(AbstractStatScores):
+class MulticlassStatScores(_AbstractStatScores):
     r"""
     Computes the number of true positives, false positives, true negatives, false negatives and the support
     for multiclass tasks. Related to `Type I and Type II errors`_.
@@ -322,7 +322,7 @@ class MulticlassStatScores(AbstractStatScores):
         return _multiclass_stat_scores_compute(tp, fp, tn, fn, self.average, self.multidim_average)
 
 
-class MultilabelStatScores(AbstractStatScores):
+class MultilabelStatScores(_AbstractStatScores):
     r"""
     Computes the number of true positives, false positives, true negatives, false negatives and the support
     for multilabel tasks. Related to `Type I and Type II errors`_.
