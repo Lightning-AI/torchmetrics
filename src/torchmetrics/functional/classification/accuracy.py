@@ -258,7 +258,7 @@ def _subset_accuracy_compute(correct: Tensor, total: Tensor) -> Tensor:
 def accuracy(
     preds: Tensor,
     target: Tensor,
-    average: str = "micro",
+    average: Optional[str] = "micro",
     mdmc_average: Optional[str] = "global",
     threshold: float = 0.5,
     top_k: Optional[int] = None,

@@ -78,6 +78,7 @@ from torchmetrics.functional.text.cer import char_error_rate
 from torchmetrics.functional.text.chrf import chrf_score
 from torchmetrics.functional.text.eed import extended_edit_distance
 from torchmetrics.functional.text.mer import match_error_rate
+from torchmetrics.functional.text.perplexity import perplexity
 from torchmetrics.functional.text.rouge import rouge_score
 from torchmetrics.functional.text.sacre_bleu import sacre_bleu_score
 from torchmetrics.functional.text.squad import squad
@@ -133,6 +134,7 @@ __all__ = [
     "pairwise_manhattan_distance",
     "pearson_corrcoef",
     "permutation_invariant_training",
+    "perplexity",
     "pit_permutate",
     "precision",
     "precision_recall",
