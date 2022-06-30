@@ -13,8 +13,16 @@
 # limitations under the License.
 from collections import namedtuple
 
+import torch
+
+from unittests.helpers import seed_all
+from unittests.helpers.testers import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, NUM_CLASSES
+
+seed_all(1)
+
 Input = namedtuple("Input", ["preds", "targets"])
 SquadInput = namedtuple("SquadInput", ["preds", "targets", "exact_match", "f1"])
+LogitsInput = namedtuple("LogitsInput", ["preds", "target"])
 
 # example taken from
 # https://www.nltk.org/api/nltk.translate.html?highlight=bleu%20score#nltk.translate.bleu_score.corpus_bleu and adjusted
@@ -107,3 +115,20 @@ _inputs_squad_batch_match = SquadInput(
 # single reference
 TUPLE_OF_SINGLE_REFERENCES = ((REFERENCE_1A, REFERENCE_1B), (REFERENCE_1B, REFERENCE_1C))
 _inputs_single_reference = Input(preds=TUPLE_OF_HYPOTHESES, targets=TUPLE_OF_SINGLE_REFERENCES)
+
+# Logits-based inputs for perplexity metrics
+_logits_inputs_fp32 = LogitsInput(
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM, NUM_CLASSES, dtype=torch.float32),
+    target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM)),
+)
+_logits_inputs_fp64 = LogitsInput(
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM, NUM_CLASSES, dtype=torch.float64),
+    target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM)),
+)
+
+MASK_INDEX = -100
+_target_with_mask = _logits_inputs_fp32.target.clone()
+_target_with_mask[:, 0, 1:] = MASK_INDEX
+_target_with_mask[:, BATCH_SIZE - 1, :] = MASK_INDEX
+_logits_inputs_fp32_with_mask = LogitsInput(preds=_logits_inputs_fp32.preds, target=_target_with_mask)
+_logits_inputs_fp64_with_mask = LogitsInput(preds=_logits_inputs_fp64.preds, target=_target_with_mask)

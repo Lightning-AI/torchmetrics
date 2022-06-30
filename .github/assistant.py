@@ -99,7 +99,7 @@ class AssistantCLI:
         """Determine what domains were changed in particular PR."""
         if not pr:
             return "unittests"
-        url = f"https://api.github.com/repos/PyTorchLightning/metrics/pulls/{pr}/files"
+        url = f"https://api.github.com/repos/Lightning-AI/metrics/pulls/{pr}/files"
         logging.debug(url)
         data = request_url(url, auth_token)
         if not data:

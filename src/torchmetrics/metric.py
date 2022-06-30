@@ -65,9 +65,11 @@ class Metric(Module, ABC):
 
             - compute_on_cpu: If metric state should be stored on CPU during computations. Only works
                 for list states.
-            - dist_sync_on_step: If metric state should synchronize on ``forward()``
-            - process_group: The process group on which the synchronization is called
-            - dist_sync_fn: function that performs the allgather option on the metric state
+            - dist_sync_on_step: If metric state should synchronize on ``forward()``. Default is ``False``
+            - process_group: The process group on which the synchronization is called. Default is the world.
+            - dist_sync_fn: function that performs the allgather option on the metric state. Default is an
+                custom implementation that calls ``torch.distributed.all_gather`` internally.
+            - sync_on_compute: If metric state should synchronize when ``compute`` is called. Default is ``True``-
     """
 
     __jit_ignored_attributes__ = ["device"]
@@ -108,6 +110,12 @@ class Metric(Module, ABC):
                 f"Expected keyword argument `dist_sync_fn` to be an callable function but got {self.dist_sync_fn}"
             )
 
+        self.sync_on_compute = kwargs.pop("sync_on_compute", True)
+        if not isinstance(self.sync_on_compute, bool):
+            raise ValueError(
+                f"Expected keyword argument `sync_on_compute` to be a `bool` but got {self.sync_on_compute}"
+            )
+
         # initialize
         self._update_signature = inspect.signature(self.update)
         self.update: Callable = self._wrap_update(self.update)  # type: ignore
@@ -115,7 +123,7 @@ class Metric(Module, ABC):
         self._computed = None
         self._forward_cache = None
         self._update_count = 0
-        self._to_sync = True
+        self._to_sync = self.sync_on_compute
         self._should_unsync = True
         self._enable_grad = False
 
@@ -272,7 +280,7 @@ class Metric(Module, ABC):
         # restore context
         self._is_synced = False
         self._should_unsync = True
-        self._to_sync = True
+        self._to_sync = self.sync_on_compute
         self._computed = None
         self._enable_grad = False
         self.compute_on_cpu = _temp_compute_on_cpu
@@ -309,7 +317,7 @@ class Metric(Module, ABC):
         # restore context
         self._is_synced = False
         self._should_unsync = True
-        self._to_sync = True
+        self._to_sync = self.sync_on_compute
         self._computed = None
         self._enable_grad = False
         self.compute_on_cpu = _temp_compute_on_cpu
