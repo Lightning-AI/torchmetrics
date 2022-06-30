@@ -24,7 +24,7 @@ def _precision_compute(
     tp: Tensor,
     fp: Tensor,
     fn: Tensor,
-    average: str,
+    average: Optional[str],
     mdmc_average: Optional[str],
 ) -> Tensor:
     """Computes precision from the stat scores: true positives, false positives, true negatives, false negatives.
@@ -217,7 +217,7 @@ def _recall_compute(
     tp: Tensor,
     fp: Tensor,
     fn: Tensor,
-    average: str,
+    average: Optional[str],
     mdmc_average: Optional[str],
 ) -> Tensor:
     """Computes precision from the stat scores: true positives, false positives, true negatives, false negatives.

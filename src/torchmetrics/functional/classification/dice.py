@@ -108,7 +108,7 @@ def _dice_compute(
     tp: Tensor,
     fp: Tensor,
     fn: Tensor,
-    average: str,
+    average: Optional[str],
     mdmc_average: Optional[str],
     zero_division: int = 0,
 ) -> Tensor:

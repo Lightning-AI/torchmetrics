@@ -25,7 +25,7 @@ def _specificity_compute(
     fp: Tensor,
     tn: Tensor,
     fn: Tensor,
-    average: str,
+    average: Optional[str],
     mdmc_average: Optional[str],
 ) -> Tensor:
     """Computes specificity from the stat scores: true positives, false positives, true negatives, false negatives.
