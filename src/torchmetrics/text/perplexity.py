@@ -53,7 +53,7 @@ class Perplexity(Metric):
         **kwargs: Dict[str, Any],
     ):
         super().__init__(**kwargs)
-        if ignore_index is not None or not isinstance(ignore_index, int):
+        if ignore_index is not None and not isinstance(ignore_index, int):
             raise ValueError(f"Argument `ignore_index` expected to either be `None` or an `int` but got {ignore_index}")
         self.ignore_index = ignore_index
         self.add_state("total_log_probs", default=tensor(0.0), dist_reduce_fx="sum")
