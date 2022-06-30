@@ -18,6 +18,19 @@ from torch import Tensor
 
 from torchmetrics.functional.classification.confusion_matrix import _confusion_matrix_compute, _confusion_matrix_update
 
+
+def binary_cohen_kappa():
+    pass
+
+def multiclass_cohen_kappa():
+    pass
+
+def multilabel_cohen_kappa():
+    pass
+
+
+# -------------------------- Old stuff --------------------------
+
 _cohen_kappa_update = _confusion_matrix_update
 
 

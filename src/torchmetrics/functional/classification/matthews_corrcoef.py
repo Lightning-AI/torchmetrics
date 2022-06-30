@@ -16,6 +16,18 @@ from torch import Tensor
 
 from torchmetrics.functional.classification.confusion_matrix import _confusion_matrix_update
 
+
+def binary_matthews_corrcoef():
+    pass
+
+def multiclass_matthews_corrcoef():
+    pass
+
+def multilabel_matthews_corrcoef():
+    pass
+
+# -------------------------- Old stuff --------------------------
+
 _matthews_corrcoef_update = _confusion_matrix_update
 
 

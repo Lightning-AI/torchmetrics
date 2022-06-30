@@ -18,6 +18,17 @@ from torch import Tensor
 
 from torchmetrics.functional.classification.confusion_matrix import _confusion_matrix_update
 
+def binary_jaccard_index():
+    pass
+
+def multiclass_jaccard_index():
+    pass
+
+def multilabel_jaccard_index():
+    pass
+
+
+# -------------------------- Old stuff --------------------------
 
 def _jaccard_from_confmat(
     confmat: Tensor,
