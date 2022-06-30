@@ -83,10 +83,12 @@ class BinaryStatScores(_AbstractStatScores):
     for binary tasks. Related to `Type I and Type II errors`_.
 
     Accepts the following input tensors:
+
     - ``preds`` (int or float tensor): ``(N, ...)``. If preds is a floating point tensor with values outside
       [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, ...)``
+
     The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
     argument.
 
@@ -187,10 +189,12 @@ class MulticlassStatScores(_AbstractStatScores):
     for multiclass tasks. Related to `Type I and Type II errors`_.
 
     Accepts the following input tensors:
+
     - ``preds``: ``(N, ...)`` (int tensor) or ``(N, C, ..)`` (float tensor). If preds is a floating point
       we apply ``torch.argmax`` along the ``C`` dimension to automatically convert probabilities/logits into
       an int tensor.
     - ``target`` (int tensor): ``(N, ...)``
+
     The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
     argument.
 
@@ -328,10 +332,12 @@ class MultilabelStatScores(_AbstractStatScores):
     for multilabel tasks. Related to `Type I and Type II errors`_.
 
     Accepts the following input tensors:
+
     - ``preds`` (int or float tensor): ``(N, C, ...)``. If preds is a floating point tensor with values outside
       [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, C, ...)``
+
     The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
     argument.
 

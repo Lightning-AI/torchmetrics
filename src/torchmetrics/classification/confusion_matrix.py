@@ -43,10 +43,12 @@ class BinaryConfusionMatrix(Metric):
     Computes the `confusion matrix`_ for binary tasks.
 
     Accepts the following input tensors:
+
     - ``preds`` (int or float tensor): ``(N, ...)``. If preds is a floating point tensor with values outside
       [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, ...)``
+
     Additional dimension ``...`` will be flattened into the batch dimension.
 
     Args:
@@ -54,6 +56,7 @@ class BinaryConfusionMatrix(Metric):
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
         normalize: Normalization mode for confusion matrix. Choose from:
+
             - ``None`` or ``'none'``: no normalization (default)
             - ``'true'``: normalization over the targets (most commonly used)
             - ``'pred'``: normalization over the predictions
@@ -127,10 +130,12 @@ class MulticlassConfusionMatrix(Metric):
     Computes the `confusion matrix`_ for multiclass tasks.
 
     Accepts the following input tensors:
+
     - ``preds``: ``(N, ...)`` (int tensor) or ``(N, C, ..)`` (float tensor). If preds is a floating point
       we apply ``torch.argmax`` along the ``C`` dimension to automatically convert probabilities/logits into
       an int tensor.
     - ``target`` (int tensor): ``(N, ...)``
+
     Additional dimension ``...`` will be flattened into the batch dimension.
 
     Args:
@@ -138,6 +143,7 @@ class MulticlassConfusionMatrix(Metric):
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
         normalize: Normalization mode for confusion matrix. Choose from:
+
             - ``None`` or ``'none'``: no normalization (default)
             - ``'true'``: normalization over the targets (most commonly used)
             - ``'pred'``: normalization over the predictions
@@ -218,10 +224,12 @@ class MultilabelConfusionMatrix(Metric):
     Computes the `confusion matrix`_ for multilabel tasks.
 
     Accepts the following input tensors:
+
     - ``preds`` (int or float tensor): ``(N, C, ...)``. If preds is a floating point tensor with values outside
       [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, C, ...)``
+
     Additional dimension ``...`` will be flattened into the batch dimension.
 
     Args:
@@ -230,6 +238,7 @@ class MultilabelConfusionMatrix(Metric):
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
         normalize: Normalization mode for confusion matrix. Choose from:
+
             - ``None`` or ``'none'``: no normalization (default)
             - ``'true'``: normalization over the targets (most commonly used)
             - ``'pred'``: normalization over the predictions

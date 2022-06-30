@@ -148,10 +148,12 @@ def binary_stat_scores(
     for binary tasks. Related to `Type I and Type II errors`_.
 
     Accepts the following input tensors:
+
     - ``preds`` (int or float tensor): ``(N, ...)``. If preds is a floating point tensor with values outside
       [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, ...)``
+
     The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
     argument.
 
@@ -452,10 +454,12 @@ def multiclass_stat_scores(
     for multiclass tasks. Related to `Type I and Type II errors`_.
 
     Accepts the following input tensors:
+
     - ``preds``: ``(N, ...)`` (int tensor) or ``(N, C, ..)`` (float tensor). If preds is a floating point
       we apply ``torch.argmax`` along the ``C`` dimension to automatically convert probabilities/logits into
       an int tensor.
     - ``target`` (int tensor): ``(N, ...)``
+
     The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
     argument.
 
@@ -491,8 +495,10 @@ def multiclass_stat_scores(
         depends on ``average`` and ``multidim_average`` parameters:
 
         - If ``multidim_average`` is set to ``global``
+
           - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(5,)``
           - If ``average=None/'none'``, the shape will be ``(C, 5)``
+
         - If ``multidim_average`` is set to ``samplewise``
           - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N, 5)``
           - If ``average=None/'none'``, the shape will be ``(N, C, 5)``
@@ -703,10 +709,12 @@ def multilabel_stat_scores(
     for multilabel tasks. Related to `Type I and Type II errors`_.
 
     Accepts the following input tensors:
+
     - ``preds`` (int or float tensor): ``(N, C, ...)``. If preds is a floating point tensor with values outside
       [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, C, ...)``
+
     The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
     argument.
 
@@ -741,9 +749,12 @@ def multilabel_stat_scores(
         depends on ``average`` and ``multidim_average`` parameters:
 
         - If ``multidim_average`` is set to ``global``
+
           - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(5,)``
           - If ``average=None/'none'``, the shape will be ``(C, 5)``
+
         - If ``multidim_average`` is set to ``samplewise``
+
           - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N, 5)``
           - If ``average=None/'none'``, the shape will be ``(N, C, 5)``
 
