@@ -589,15 +589,15 @@ class DummyListMetric(Metric):
     name = "DummyList"
     full_state_update: Optional[bool] = True
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.add_state("x", [], dist_reduce_fx="cat")
 
-    def update(self):
-        pass
+    def update(self, x=torch.tensor(1)):
+        self.x.append(x)
 
     def compute(self):
-        pass
+        return self.x
 
 
 class DummyMetricSum(DummyMetric):
