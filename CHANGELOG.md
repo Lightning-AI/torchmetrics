@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
 
+## [UnReleased] - 2022-MM-DD
+
+### Added
+
+- Added global option `sync_on_compute` to disable automatic syncronization when `compute` is called ([#1107](https://github.dev/Lightning-AI/metrics/pull/1107))
+
+
+-
+
+
+### Changed
+
+-
+
+-
+
+
+### Deprecated
+
+-
+
+-
+
+
+### Removed
+
+-
+
+-
+
+
 ## [0.9.2] - 2022-06-29
 
 ### Fixed
