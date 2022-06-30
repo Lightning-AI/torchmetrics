@@ -95,7 +95,7 @@ class AveragePrecision(Metric):
 
         self.num_classes = num_classes
         self.pos_label = pos_label
-        allowed_average = ("micro", "macro", "weighted", None)
+        allowed_average = ("micro", "macro", "weighted", "none", None)
         if average not in allowed_average:
             raise ValueError(f"Expected argument `average` to be one of {allowed_average}" f" but got {average}")
         self.average = average
