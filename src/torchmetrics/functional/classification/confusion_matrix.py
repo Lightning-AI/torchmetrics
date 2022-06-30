@@ -382,7 +382,7 @@ def multiclass_confusion_matrix(
         ...   [0.16, 0.26, 0.58],
         ...   [0.22, 0.61, 0.17],
         ...   [0.71, 0.09, 0.20],
-        ...   [0.82, 0.05, 0.13],
+        ...   [0.05, 0.82, 0.13],
         ... ])
         >>> multiclass_confusion_matrix(preds, target, num_classes=3)
         tensor([[1, 1, 0],

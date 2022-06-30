@@ -99,7 +99,7 @@ class BinaryConfusionMatrix(Metric):
         self.normalize = normalize
         self.validate_args = validate_args
 
-        self.add_state("confmat", torch.zeros(2, 2), dist_reduce_fx="sum")
+        self.add_state("confmat", torch.zeros(2, 2, dtype=torch.long), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
@@ -159,10 +159,10 @@ class MulticlassConfusionMatrix(Metric):
         >>> from torchmetrics import MulticlassConfusionMatrix
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([
-        ...   [0.16, 0.26, 0.58]
-        ...   [0.22, 0.61, 0.17]
-        ...   [0.71, 0.09, 0.20]
-        ...   [0.82, 0.05, 0.13]
+        ...   [0.16, 0.26, 0.58],
+        ...   [0.22, 0.61, 0.17],
+        ...   [0.71, 0.09, 0.20],
+        ...   [0.05, 0.82, 0.13],
         ... ])
         >>> metric = MulticlassConfusionMatrix(num_classes=3)
         >>> metric(preds, target)
@@ -190,7 +190,7 @@ class MulticlassConfusionMatrix(Metric):
         self.normalize = normalize
         self.validate_args = validate_args
 
-        self.add_state("confmat", torch.zeros(num_classes, num_classes), dist_reduce_fx="sum")
+        self.add_state("confmat", torch.zeros(num_classes, num_classes, dtype=torch.long), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
@@ -279,7 +279,7 @@ class MultilabelConfusionMatrix(Metric):
         self.normalize = normalize
         self.validate_args = validate_args
 
-        self.add_state("confmat", torch.zeros(num_labels, 2, 2), dist_reduce_fx="sum")
+        self.add_state("confmat", torch.zeros(num_labels, 2, 2, dtype=torch.long), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.

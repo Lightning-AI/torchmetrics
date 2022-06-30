@@ -190,7 +190,7 @@ def binary_stat_scores(
         >>> from torchmetrics.functional import binary_stat_scores
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
-        >>> binary_stat_scores(preds, target, num_labels=3)
+        >>> binary_stat_scores(preds, target)
         tensor([2, 1, 2, 1, 3])
 
     Example (multidim tensors):
@@ -202,7 +202,7 @@ def binary_stat_scores(
         ...         [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]],
         ...     ]
         ... )
-        >>> binary_stat_scores(preds, target, num_labels=3, multidim_average='samplewise')
+        >>> binary_stat_scores(preds, target, multidim_average='samplewise')
         tensor([[2, 3, 0, 1, 3],
                 [0, 2, 1, 3, 3]])
     """
@@ -515,13 +515,13 @@ def multiclass_stat_scores(
         ...   [0.16, 0.26, 0.58],
         ...   [0.22, 0.61, 0.17],
         ...   [0.71, 0.09, 0.20],
-        ...   [0.82, 0.05, 0.13],
+        ...   [0.05, 0.82, 0.13],
         ... ])
         >>> multiclass_stat_scores(preds, target, num_classes=3)
-        tensor([2, 1, 2, 1, 3])
+        tensor([3, 1, 7, 1, 4])
         >>> multiclass_stat_scores(preds, target, num_classes=3, average=None)
-        tensor([[2, 0, 2, 0, 2],
-                [1, 0, 3, 0, 1],
+        tensor([[1, 0, 2, 1, 2],
+                [1, 1, 2, 0, 1],
                 [1, 0, 3, 0, 1]])
 
     Example (multidim tensors):
@@ -530,15 +530,14 @@ def multiclass_stat_scores(
         >>> preds = torch.tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
         >>> multiclass_stat_scores(preds, target, num_classes=3, multidim_average='samplewise')
         tensor([[3, 3, 9, 3, 6],
-            [2, 4, 8, 4, 6]])
+                [2, 4, 8, 4, 6]])
         >>> multiclass_stat_scores(preds, target, num_classes=3, multidim_average='samplewise', average=None)
         tensor([[[2, 1, 3, 0, 2],
-         [0, 1, 3, 2, 2],
-         [1, 1, 3, 1, 2]],
-
-        [[0, 1, 4, 1, 1],
-         [1, 1, 2, 2, 3],
-         [1, 2, 2, 1, 2]]])
+                 [0, 1, 3, 2, 2],
+                 [1, 1, 3, 1, 2]],
+                [[0, 1, 4, 1, 1],
+                 [1, 1, 2, 2, 3],
+                 [1, 2, 2, 1, 2]]])
     """
     if validate_args:
         _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index)
@@ -784,12 +783,11 @@ def multilabel_stat_scores(
                 [0, 2, 1, 3, 3]])
         >>> multilabel_stat_scores(preds, target, num_labels=3, multidim_average='samplewise', average=None)
         tensor([[[1, 1, 0, 0, 1],
-         [1, 1, 0, 0, 1],
-         [0, 1, 0, 1, 1]],
-
-        [[0, 0, 0, 2, 2],
-         [0, 2, 0, 0, 0],
-         [0, 0, 1, 1, 1]]])
+                 [1, 1, 0, 0, 1],
+                 [0, 1, 0, 1, 1]],
+                [[0, 0, 0, 2, 2],
+                 [0, 2, 0, 0, 0],
+                 [0, 0, 1, 1, 1]]])
 
     """
     if validate_args:

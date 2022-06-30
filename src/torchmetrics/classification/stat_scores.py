@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Literal, Optional, Tuple
+from typing import Any, Callable, Literal, Optional, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -43,11 +43,12 @@ class _AbstractStatScores(Metric):
     # define common functions
     def _create_state(self, size: int, multidim_average: str) -> None:
         """Initialize the states for the different statistics."""
+        default: Union[Callable[[], list], Callable[[], Tensor]]
         if multidim_average == "samplewise":
-            default: Callable[[], list] = lambda: []
+            default = lambda: []
             dist_reduce_fx = "cat"
         else:
-            default: Callable[[], Tensor] = lambda: torch.zeros(size, dtype=torch.long)
+            default = lambda: torch.zeros(size, dtype=torch.long)
             dist_reduce_fx = "sum"
         self.add_state("tp", default(), dist_reduce_fx=dist_reduce_fx)
         self.add_state("fp", default(), dist_reduce_fx=dist_reduce_fx)
@@ -114,7 +115,7 @@ class BinaryStatScores(_AbstractStatScores):
         >>> from torchmetrics.functional import binary_stat_scores
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
-        >>> binary_stat_scores(preds, target, num_labels=3)
+        >>> binary_stat_scores(preds, target)
         tensor([2, 1, 2, 1, 3])
 
     Example (multidim tensors):
@@ -126,7 +127,7 @@ class BinaryStatScores(_AbstractStatScores):
         ...         [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]],
         ...     ]
         ... )
-        >>> binary_stat_scores(preds, target, num_labels=3, multidim_average='samplewise')
+        >>> binary_stat_scores(preds, target, multidim_average='samplewise')
         tensor([[2, 3, 0, 1, 3],
                 [0, 2, 1, 3, 3]])
     """
@@ -235,13 +236,13 @@ class MulticlassStatScores(_AbstractStatScores):
         ...   [0.16, 0.26, 0.58],
         ...   [0.22, 0.61, 0.17],
         ...   [0.71, 0.09, 0.20],
-        ...   [0.82, 0.05, 0.13],
+        ...   [0.05, 0.82, 0.13],
         ... ])
         >>> multiclass_stat_scores(preds, target, num_classes=3)
-        tensor([2, 1, 2, 1, 3])
+        tensor([3, 1, 7, 1, 4])
         >>> multiclass_stat_scores(preds, target, num_classes=3, average=None)
-        tensor([[2, 0, 2, 0, 2],
-                [1, 0, 3, 0, 1],
+        tensor([[1, 0, 2, 1, 2],
+                [1, 1, 2, 0, 1],
                 [1, 0, 3, 0, 1]])
 
     Example (multidim tensors):
@@ -250,15 +251,14 @@ class MulticlassStatScores(_AbstractStatScores):
         >>> preds = torch.tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
         >>> multiclass_stat_scores(preds, target, num_classes=3, multidim_average='samplewise')
         tensor([[3, 3, 9, 3, 6],
-            [2, 4, 8, 4, 6]])
+                [2, 4, 8, 4, 6]])
         >>> multiclass_stat_scores(preds, target, num_classes=3, multidim_average='samplewise', average=None)
         tensor([[[2, 1, 3, 0, 2],
-         [0, 1, 3, 2, 2],
-         [1, 1, 3, 1, 2]],
-
-        [[0, 1, 4, 1, 1],
-         [1, 1, 2, 2, 3],
-         [1, 2, 2, 1, 2]]])
+                 [0, 1, 3, 2, 2],
+                 [1, 1, 3, 1, 2]],
+                [[0, 1, 4, 1, 1],
+                 [1, 1, 2, 2, 3],
+                 [1, 2, 2, 1, 2]]])
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -268,7 +268,7 @@ class MulticlassStatScores(_AbstractStatScores):
         self,
         num_classes: int,
         top_k: int = 1,
-        average: Literal["micro", "macro", "samples"] = "micro",
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
         multidim_average: Literal["global", "samplewise"] = "global",
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
@@ -394,12 +394,11 @@ class MultilabelStatScores(_AbstractStatScores):
                 [0, 2, 1, 3, 3]])
         >>> multilabel_stat_scores(preds, target, num_labels=3, multidim_average='samplewise', average=None)
         tensor([[[1, 1, 0, 0, 1],
-         [1, 1, 0, 0, 1],
-         [0, 1, 0, 1, 1]],
-
-        [[0, 0, 0, 2, 2],
-         [0, 2, 0, 0, 0],
-         [0, 0, 1, 1, 1]]])
+                 [1, 1, 0, 0, 1],
+                 [0, 1, 0, 1, 1]],
+                [[0, 0, 0, 2, 2],
+                 [0, 2, 0, 0, 0],
+                 [0, 0, 1, 1, 1]]])
 
     """
     is_differentiable: bool = False
@@ -410,7 +409,7 @@ class MultilabelStatScores(_AbstractStatScores):
         self,
         num_labels: int,
         threshold: float = 0.5,
-        average: Literal["micro", "macro", "samples"] = "micro",
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
         multidim_average: Literal["global", "samplewise"] = "global",
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
