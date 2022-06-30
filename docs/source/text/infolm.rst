@@ -5,9 +5,9 @@
 
 .. include:: ../links.rst
 
-##########
-BERT Score
-##########
+######
+InfoLM
+######
 
 Module Interface
 ________________

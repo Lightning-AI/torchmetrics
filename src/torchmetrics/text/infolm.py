@@ -58,6 +58,7 @@ class InfoLM(Metric):
     Args:
         model_name_or_path:
             A name or a model path used to load `transformers` pretrained model.
+            By default the `"bert-base-uncased"` model is used.
         temperature:
             A temperature for calibrating language modelling. For more information, please reference `InfoLM`_ paper.
         information_measure:
@@ -117,10 +118,9 @@ class InfoLM(Metric):
         num_threads: int = 4,
         verbose: bool = True,
         return_sentence_level_score: bool = False,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ):
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
         self.model_name_or_path = model_name_or_path
         self.temperature = temperature
         self.information_measure = information_measure
