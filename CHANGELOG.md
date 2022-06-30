@@ -11,10 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added `Perplexity` metric ([#922](https://github.com/PyTorchLightning/metrics/pull/922))
+
+
 - Added global option `sync_on_compute` to disable automatic syncronization when `compute` is called ([#1107](https://github.dev/Lightning-AI/metrics/pull/1107))
-
-
--
 
 
 ### Changed
