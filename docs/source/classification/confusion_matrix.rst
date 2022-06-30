@@ -15,8 +15,26 @@ ________________
 .. autoclass:: torchmetrics.ConfusionMatrix
     :noindex:
 
+.. autoclass:: torchmetrics.BinaryConfusionMatrix
+    :noindex:
+
+.. autoclass:: torchmetrics.MulticlassConfusionMatrix
+    :noindex:
+
+.. autoclass:: torchmetrics.MultilabelConfusionMatrix
+    :noindex:
+
 Functional Interface
 ____________________
 
 .. autofunction:: torchmetrics.functional.confusion_matrix
+    :noindex:
+
+.. autofunction:: torchmetrics.functional.binary_confusion_matrix
+    :noindex:
+
+.. autofunction:: torchmetrics.functional.multiclass_confusion_matrix
+    :noindex:
+
+.. autofunction:: torchmetrics.functional.multilabel_confusion_matrix
     :noindex:
