@@ -126,4 +126,3 @@ class JaccardIndex(ConfusionMatrix):
                 self.ignore_index,
                 self.absent_score,
             )
-
