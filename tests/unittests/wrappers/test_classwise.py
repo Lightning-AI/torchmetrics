@@ -15,27 +15,35 @@ def test_raises_error_on_wrong_input():
 
 def test_output_no_labels():
     """Test that wrapper works with no label input."""
+    base = Accuracy(num_classes=3, average=None)
     metric = ClasswiseWrapper(Accuracy(num_classes=3, average=None))
-    preds = torch.randn(10, 3).softmax(dim=-1)
-    target = torch.randint(3, (10,))
-    val = metric(preds, target)
-    assert isinstance(val, dict)
-    assert len(val) == 3
-    for i in range(3):
-        assert f"accuracy_{i}" in val
+    for _ in range(2):
+        preds = torch.randn(10, 3).softmax(dim=-1)
+        target = torch.randint(3, (10,))
+        val = metric(preds, target)
+        val_base = base(preds, target)
+        assert isinstance(val, dict)
+        assert len(val) == 3
+        for i in range(3):
+            assert f"accuracy_{i}" in val
+            assert val[f"accuracy_{i}"] == val_base[i]
 
 
 def test_output_with_labels():
     """Test that wrapper works with label input."""
     labels = ["horse", "fish", "cat"]
+    base = Accuracy(num_classes=3, average=None)
     metric = ClasswiseWrapper(Accuracy(num_classes=3, average=None), labels=labels)
-    preds = torch.randn(10, 3).softmax(dim=-1)
-    target = torch.randint(3, (10,))
-    val = metric(preds, target)
-    assert isinstance(val, dict)
-    assert len(val) == 3
-    for lab in labels:
-        assert f"accuracy_{lab}" in val
+    for _ in range(2):
+        preds = torch.randn(10, 3).softmax(dim=-1)
+        target = torch.randint(3, (10,))
+        val = metric(preds, target)
+        val_base = base(preds, target)
+        assert isinstance(val, dict)
+        assert len(val) == 3
+        for i, lab in enumerate(labels):
+            assert f"accuracy_{lab}" in val
+            assert val[f"accuracy_{lab}"] == val_base[i]
 
 
 @pytest.mark.parametrize("prefix", [None, "pre_"])
