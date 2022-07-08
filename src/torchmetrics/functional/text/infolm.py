@@ -414,7 +414,7 @@ def _get_batch_distribution(
         del input_ids, logits_distribution, prob_distribution
 
     prob_distribution_batch = torch.cat(prob_distribution_batch_list, dim=1)  # [batch_size, seq_len, vocab_size]
-    prob_distribution_batch = torch.einsum("bsv, bs -> bsv", prob_distribution_batch, token_mask)
+    prob_distribution_batch = torch.einsum("bsv, bs -> bsv", prob_distribution_batch.to(token_mask.device), token_mask)
     if idf:
         masked_input_ids_idf = token_mask * batch["input_ids_idf"].cpu()
         prob_distribution_batch = prob_distribution_batch.sum(dim=1) / masked_input_ids_idf.sum(dim=1).unsqueeze(1)
@@ -552,7 +552,7 @@ def infolm(
     device: Optional[Union[str, torch.device]] = None,
     max_length: Optional[int] = None,
     batch_size: int = 64,
-    num_threads: int = 4,
+    num_threads: int = 0,
     verbose: bool = True,
     return_sentence_level_score: bool = False,
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:

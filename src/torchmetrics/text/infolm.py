@@ -115,7 +115,7 @@ class InfoLM(Metric):
         device: Optional[Union[str, torch.device]] = None,
         max_length: Optional[int] = None,
         batch_size: int = 64,
-        num_threads: int = 4,
+        num_threads: int = 0,
         verbose: bool = True,
         return_sentence_level_score: bool = False,
         **kwargs: Dict[str, Any],
