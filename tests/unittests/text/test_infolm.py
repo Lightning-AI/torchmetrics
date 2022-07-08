@@ -18,7 +18,8 @@ import torch
 
 from torchmetrics.functional.text.infolm import infolm
 from torchmetrics.text.infolm import InfoLM
-from unittests.text.helpers import TextTester
+from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
+from unittests.text.helpers import TextTester, skip_on_connection_issues
 from unittests.text.inputs import HYPOTHESIS_A, HYPOTHESIS_C, _inputs_single_reference
 
 # Small bert model with 2 layers, 2 attention heads and hidden dim of 128
@@ -96,12 +97,14 @@ def reference_infolm_score(preds, target, model_name, information_measure, idf, 
     ["preds", "targets"],
     [(_inputs_single_reference.preds, _inputs_single_reference.targets)],
 )
+@pytest.mark.skipif(not _TRANSFORMERS_AVAILABLE, reason="test requires transformers")
 class TestInfoLM(TextTester):
     # Set atol = 1e-4 as reference results are rounded
     atol = 1e-4
 
     @pytest.mark.parametrize("ddp", [False, True])
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
+    @skip_on_connection_issues()
     def test_infolm_class(self, ddp, dist_sync_on_step, preds, targets, information_measure, idf, alpha, beta):
         metric_args = {
             "model_name_or_path": MODEL_NAME,
@@ -131,6 +134,7 @@ class TestInfoLM(TextTester):
             check_scriptable=False,  # huggingface transformers are not usually scriptable
         )
 
+    @skip_on_connection_issues()
     def test_infolm_functional(self, preds, targets, information_measure, idf, alpha, beta):
         metric_args = {
             "model_name_or_path": MODEL_NAME,
@@ -157,6 +161,7 @@ class TestInfoLM(TextTester):
             metric_args=metric_args,
         )
 
+    @skip_on_connection_issues()
     def test_infolm_differentiability(self, preds, targets, information_measure, idf, alpha, beta):
         metric_args = {
             "model_name_or_path": MODEL_NAME,
