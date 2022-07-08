@@ -20,12 +20,10 @@ import torch
 from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
 
-from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_AUTO_AVAILABLE, _TRANSFORMERS_AVAILABLE
+from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_AVAILABLE
 
-if _TRANSFORMERS_AUTO_AVAILABLE:
-    from transformers.models.auto import AutoModelForMaskedLM, AutoTokenizer
 if _TRANSFORMERS_AVAILABLE:
-    from transformers import PreTrainedModel, PreTrainedTokenizerBase
+    from transformers import AutoModelForMaskedLM, AutoTokenizer, PreTrainedModel, PreTrainedTokenizerBase
 else:
     PreTrainedModel = PreTrainedTokenizerBase = None  # type: ignore
 

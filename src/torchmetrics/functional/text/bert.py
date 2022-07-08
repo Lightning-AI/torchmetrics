@@ -30,10 +30,10 @@ from torchmetrics.functional.text.helper_embedding_metric import (
     _output_data_collator,
     _process_attention_mask_for_special_tokens,
 )
-from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_AUTO_AVAILABLE
+from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_AVAILABLE
 
-if _TRANSFORMERS_AUTO_AVAILABLE:
-    from transformers.models.auto import AutoModel, AutoTokenizer
+if _TRANSFORMERS_AVAILABLE:
+    from transformers import AutoModel, AutoTokenizer
 else:
     __doctest_skip__ = ["bert_score"]
 
@@ -333,7 +333,7 @@ def bert_score(
         )
 
     if model is None:
-        if not _TRANSFORMERS_AUTO_AVAILABLE:
+        if not _TRANSFORMERS_AVAILABLE:
             raise ModuleNotFoundError(
                 "`bert_score` metric with default models requires `transformers` package be installed."
                 " Either install with `pip install transformers>=4.0` or `pip install torchmetrics[text]`."

@@ -21,10 +21,10 @@ from torch.nn import Module
 from torchmetrics.functional.text.bert import bert_score
 from torchmetrics.functional.text.helper_embedding_metric import _preprocess_text
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.imports import _TRANSFORMERS_AUTO_AVAILABLE
+from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 
-if _TRANSFORMERS_AUTO_AVAILABLE:
-    from transformers.models.auto import AutoTokenizer
+if _TRANSFORMERS_AVAILABLE:
+    from transformers import AutoTokenizer
 else:
     __doctest_skip__ = ["BERTScore"]
 
@@ -154,7 +154,7 @@ class BERTScore(Metric):
             self.tokenizer = user_tokenizer
             self.user_tokenizer = True
         else:
-            if not _TRANSFORMERS_AUTO_AVAILABLE:
+            if not _TRANSFORMERS_AVAILABLE:
                 raise ModuleNotFoundError(
                     "`BERTScore` metric with default tokenizers requires `transformers` package be installed."
                     " Either install with `pip install transformers>=4.0` or `pip install torchmetrics[text]`."
