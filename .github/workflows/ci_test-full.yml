@@ -81,10 +81,6 @@ jobs:
       # NOTE: run coverage on tests does not propagate failure status for Win, https://github.com/nedbat/coveragepy/issues/1003
       run: python -m pytest torchmetrics
 
-    - name: Freeze Numpy (hotfix)
-      if: matrix.requires == 'latest'
-      run: pip install "numpy==1.20.0"  # temp fix for cypesq
-
     - name: Freeze PIL (hotfix)
       # import of PILLOW_VERSION which they recently removed in v9.0 in favor of __version__
       run: pip install "Pillow<9.0"  # It messes with torchvision
