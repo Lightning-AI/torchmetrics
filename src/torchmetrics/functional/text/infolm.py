@@ -416,7 +416,7 @@ def _get_batch_distribution(
     prob_distribution_batch = torch.cat(prob_distribution_batch_list, dim=1)  # [batch_size, seq_len, vocab_size]
     prob_distribution_batch = torch.einsum("bsv, bs -> bsv", prob_distribution_batch.to(token_mask.device), token_mask)
     if idf:
-        masked_input_ids_idf = token_mask * batch["input_ids_idf"].cpu()
+        masked_input_ids_idf = token_mask * batch["input_ids_idf"].to(token_mask.device)
         prob_distribution_batch = prob_distribution_batch.sum(dim=1) / masked_input_ids_idf.sum(dim=1).unsqueeze(1)
     else:
         prob_distribution_batch = prob_distribution_batch.sum(dim=1) / token_mask.sum(dim=1).unsqueeze(1)
