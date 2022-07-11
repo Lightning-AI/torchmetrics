@@ -125,7 +125,7 @@ class Specificity(StatScores):
         self,
         num_classes: Optional[int] = None,
         threshold: float = 0.5,
-        average: str = "micro",
+        average: Optional[str] = "micro",
         mdmc_average: Optional[str] = None,
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
