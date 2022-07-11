@@ -30,6 +30,7 @@ jobs:
         exclude:
           - {python-version: '3.7', requires: 'latest'}
           - {python-version: '3.10', requires: 'oldest'}
+          - {python-version: '3.10', os: 'windows-2019'}
     env:
       PYTEST_ARTEFACT: test-results-${{ matrix.os }}-py${{ matrix.python-version }}-${{ matrix.requires }}.xml
       PYTORCH_URL: https://download.pytorch.org/whl/cpu/torch_stable.html
