@@ -1,13 +1,10 @@
 coverage>5.2
-codecov>=2.1
 pytest==6.*
 pytest-cov>2.10
 # pytest-flake8
 pytest-doctestplus>=0.9.0
 pytest-timeout
 check-manifest
-twine>=3.2
-mypy>=0.790
 phmdoctest>=1.1.1
 pre-commit>=1.0
 

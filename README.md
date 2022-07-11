@@ -22,18 +22,18 @@ ______________________________________________________________________
 [![PyPI Status](https://pepy.tech/badge/torchmetrics)](https://pepy.tech/project/torchmetrics)
 [![Conda](https://img.shields.io/conda/v/conda-forge/torchmetrics?label=conda&color=success)](https://anaconda.org/conda-forge/torchmetrics)
 ![Conda](https://img.shields.io/conda/dn/conda-forge/torchmetrics)
-[![license](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/PytorchLightning/metrics/blob/master/LICENSE)
+[![license](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/Lightning-AI/metrics/blob/master/LICENSE)
 
-[![CI testing - base](https://github.com/PyTorchLightning/metrics/actions/workflows/ci_test-base.yml/badge.svg?branch=master&event=push)](https://github.com/PyTorchLightning/metrics/actions/workflows/ci_test-base.yml)
-[![PyTorch & Conda](https://github.com/PyTorchLightning/metrics/actions/workflows/ci_test-conda.yml/badge.svg?branch=master&event=push)](https://github.com/PyTorchLightning/metrics/actions/workflows/ci_test-conda.yml)
-[![Build Status](https://dev.azure.com/PytorchLightning/Metrics/_apis/build/status/PyTorchLightning.metrics?branchName=master)](https://dev.azure.com/PytorchLightning/Metrics/_build/latest?definitionId=3&branchName=master)
-[![codecov](https://codecov.io/gh/PyTorchLightning/metrics/branch/master/graph/badge.svg?token=NER6LPI3HS)](https://codecov.io/gh/PyTorchLightning/metrics)
+[![CI testing - complete](https://github.com/Lightning-AI/metrics/actions/workflows/ci_test-full.yml/badge.svg?event=push)](https://github.com/Lightning-AI/metrics/actions/workflows/ci_test-full.yml)
+[![PyTorch & Conda](https://github.com/Lightning-AI/metrics/actions/workflows/ci_test-conda.yml/badge.svg?branch=master&event=push)](https://github.com/Lightning-AI/metrics/actions/workflows/ci_test-conda.yml)
+[![Build Status](https://dev.azure.com/Lightning-AI/Metrics/_apis/build/status/Lightning-AI.metrics?branchName=master)](https://dev.azure.com/Lightning-AI/Metrics/_build/latest?definitionId=3&branchName=master)
+[![codecov](https://codecov.io/gh/Lightning-AI/metrics/branch/master/graph/badge.svg?token=NER6LPI3HS)](https://codecov.io/gh/Lightning-AI/metrics)
 
 [![Slack](https://img.shields.io/badge/slack-chat-green.svg?logo=slack)](https://www.pytorchlightning.ai/community)
 [![Documentation Status](https://readthedocs.org/projects/torchmetrics/badge/?version=latest)](https://torchmetrics.readthedocs.io/en/latest/?badge=latest)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5844769.svg)](https://doi.org/10.5281/zenodo.5844769)
 [![JOSS status](https://joss.theoj.org/papers/561d9bb59b400158bc8204e2639dca43/status.svg)](https://joss.theoj.org/papers/561d9bb59b400158bc8204e2639dca43)
-[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/PyTorchLightning/metrics/master.svg)](https://results.pre-commit.ci/latest/github/PyTorchLightning/metrics/master)
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/Lightning-AI/metrics/master.svg)](https://results.pre-commit.ci/latest/github/Lightning-AI/metrics/master)
 
 ______________________________________________________________________
 
@@ -60,13 +60,13 @@ Pip from source
 
 ```bash
 # with git
-pip install git+https://github.com/PytorchLightning/metrics.git@release/latest
+pip install git+https://github.com/Lightning-AI/metrics.git@release/latest
 ```
 
 Pip from archive
 
 ```bash
-pip install https://github.com/PyTorchLightning/metrics/archive/refs/heads/release/latest.zip
+pip install https://github.com/Lightning-AI/metrics/archive/refs/heads/release/latest.zip
 ```
 
 Extra dependencies for specialized metrics:
@@ -81,14 +81,14 @@ pip install torchmetrics[all]  # install all of the above
 Install latest developer version
 
 ```bash
-pip install https://github.com/PyTorchLightning/metrics/archive/master.zip
+pip install https://github.com/Lightning-AI/metrics/archive/master.zip
 ```
 
 </details>
 
 ______________________________________________________________________
 
-## What is Torchmetrics
+## What is TorchMetrics
 
 TorchMetrics is a collection of 80+ PyTorch metrics implementations and an easy-to-use API to create custom metrics. It offers:
 
@@ -228,12 +228,11 @@ from torchmetrics import Metric
 
 
 class MyAccuracy(Metric):
-    def __init__(self, dist_sync_on_step=False):
+    def __init__(self):
+        super().__init__()
         # call `self.add_state`for every internal state that is needed for the metrics computations
         # dist_reduce_fx indicates the function that should be used to reduce
         # state from multiple processes
-        super().__init__(dist_sync_on_step=dist_sync_on_step)
-
         self.add_state("correct", default=torch.tensor(0), dist_reduce_fx="sum")
         self.add_state("total", default=torch.tensor(0), dist_reduce_fx="sum")
 
@@ -272,50 +271,19 @@ acc = torchmetrics.functional.accuracy(preds, target)
 
 We currently have implemented metrics within the following domains:
 
-- Audio (
-  [ScaleInvariantSignalDistortionRatio](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#ScaleInvariantSignalDistortionRatio),
-  [ScaleInvariantSignalNoiseRatio](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#ScaleInvariantSignalNoiseRatio),
-  [SignalNoiseRatio](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#SignalNoiseRatio)
-  and [few more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#audio-metrics)
-  )
-- Classification (
-  [Accuracy](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#accuracy),
-  [F1Score](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#f1score),
-  [AUROC](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#auroc)
-  and [many more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#classification-metrics)
-  )
-- Detection (
-  [MeanAveragePrecision](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#meanaverageprecision))
-- Information Retrieval (
-  [RetrievalMAP](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#retrievalmap),
-  [RetrievalMRR](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#retrievalmrr),
-  [RetrievalNormalizedDCG](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#retrievalnormalizeddcg)
-  and [few more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#retrieval)
-  )
-- Image (
-  [FrechetInceptionDistance](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#FrechetInceptionDistance),
-  [KernelInceptionDistance](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#KernelInceptionDistance),
-  [StructuralSimilarityIndexMeasure](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#StructuralSimilarityIndexMeasure)
-  and [many more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#image-metrics)
-  )
-- Regression (
-  [ExplainedVariance](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#explainedvariance),
-  [PearsonCorrCoef](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#pearsoncorrcoef),
-  [R2Score](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#r2score)
-  and [many more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#regression-metrics)
-  )
-- Text (
-  [BleuScore](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#bleuscore),
-  [RougeScore](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#rougescore),
-  [WordErrorRate](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#WordErrorRate)
-  and [many more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#text)
-  )
+- Audio
+- Classification
+- Detection
+- Information Retrieval
+- Image
+- Regression
+- Text
 
-In total torchmetrics contains 80+ metrics!
+In total TorchMetrics contains [80+ metrics](https://torchmetrics.readthedocs.io/en/stable/all-metrics.html)!
 
 ## Contribute!
 
-The lightning + torchmetric team is hard at work adding even more metrics.
+The lightning + TorchMetrics team is hard at work adding even more metrics.
 But we're looking for incredible contributors like you to submit new metrics
 and improve existing ones!
 
@@ -330,7 +298,7 @@ For help or questions, join our huge community on [Slack](https://www.pytorchlig
 We’re excited to continue the strong legacy of open source software and have been inspired
 over the years by Caffe, Theano, Keras, PyTorch, torchbearer, ignite, sklearn and fast.ai.
 
-If you want to cite this framework feel free to use GitHub's built-in citation option to generate a bibtex or APA-Style citation based on [this file](https://github.com/PyTorchLightning/metrics/blob/master/CITATION.cff) (but only if you loved it 😊).
+If you want to cite this framework feel free to use GitHub's built-in citation option to generate a bibtex or APA-Style citation based on [this file](https://github.com/Lightning-AI/metrics/blob/master/CITATION.cff) (but only if you loved it 😊).
 
 ## License
 

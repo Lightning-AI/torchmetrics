@@ -29,15 +29,19 @@ jobs:
         python-version: ["3.8"]
         pytorch-version: ["1.4", "1.5", "1.6", "1.7", "1.8", "1.9", "1.10", "1.11"]
         include:
-          - {python-version: 3.7, pytorch-version: '1.3'}
-          - {python-version: 3.9, pytorch-version: '1.12'}
+          - {python-version: '3.7', pytorch-version: '1.3'}
+          - {python-version: '3.9', pytorch-version: '1.12'}
+          - {python-version: '3.9', pytorch-version: '1.13'}
+          - {python-version: '3.10', pytorch-version: '1.11'}
+          - {python-version: '3.10', pytorch-version: '1.12'}
+          - {python-version: '3.10', pytorch-version: '1.13'}
     env:
       PYTEST_ARTEFACT: test-conda-py${{ matrix.python-version }}-pt${{ matrix.pytorch-version }}.xml
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
     timeout-minutes: 75
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - uses: ./.github/actions/caching
       with:
@@ -74,33 +78,33 @@ jobs:
         pip install --requirement requirements/test.txt --quiet
         python ./.github/assistant.py prune-packages requirements/image.txt torchvision
         python ./.github/assistant.py prune-packages requirements/detection.txt torchvision
-        pip install -q "numpy==1.20.0"  # try to fix cocotools for PT 1.4 & 1.9
         # import of PILLOW_VERSION which they recently removed in v9.0 in favor of __version__
         pip install -q "Pillow<9.0"  # It messes with torchvision
-        pip install --requirement requirements/devel.txt --quiet
+        pip install -e . -r requirements/devel.txt -f https://download.pytorch.org/whl/cpu/torch_stable.html
         pip list
         python -c "from torch import __version__ as ver; assert '.'.join(ver.split('.')[:2]) == '${{ matrix.pytorch-version }}', ver"
 
-    - name: Pull testing data from S3
-      run: |
-        # wget is simpler but does not work on Windows
-        python -c "from urllib.request import urlretrieve ; urlretrieve('https://pl-public-data.s3.amazonaws.com/metrics/data.zip', 'data.zip')"
-        unzip -o data.zip
-        ls -l _data/*
+    - name: DocTests
+      working-directory: ./src
+      # NOTE: run coverage on tests does not propagate failure status for Win, https://github.com/nedbat/coveragepy/issues/1003
+      run: python -m pytest torchmetrics
 
-    - name: Testing
-      env:
-        TEST_DIRS: "${{ needs.check-diff.outputs.test-dirs }}"
-      run: |
-        phmdoctest README.md --outfile tests/test_readme.py
-        # NOTE: run coverage on tests does not propagate failure status for Win,
-        # see: https://github.com/nedbat/coveragepy/issues/1003
-        python -m pytest torchmetrics $TEST_DIRS --durations=50 --timeout=120 --junitxml=$PYTEST_ARTEFACT
-
-    - name: Upload pytest test results
-      uses: actions/upload-artifact@master
+    - uses: ./.github/actions/unittesting
+      if: ${{ needs.check-diff.outputs.test-dirs != '' }}
       with:
-        name: $PYTEST_ARTEFACT
-        path: $PYTEST_ARTEFACT
-      # Use always() to always run this step to publish test results when there are test failures
-      if: failure()
+        os: ${{ runner.os }}
+        python-version: ${{ matrix.python-version }}
+        pytorch-version: ${{ matrix.pytorch-version }}
+        dirs: ${{ needs.check-diff.outputs.test-dirs }}
+        test-timeout: "--timeout=120"
+        shell-type: bash -l {0}
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        file: tests/coverage.xml
+        flags: cpu,conda,unittests,${{ runner.os }},python${{ matrix.python-version }},torch${{ matrix.pytorch-version }}
+        env_vars: OS,PYTHON
+        name: codecov-umbrella
+        fail_ci_if_error: false

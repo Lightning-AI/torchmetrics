@@ -12,9 +12,9 @@ exclude = "(.eggs|.git|.hg|.mypy_cache|.venv|_build|buck-out|build|dist)"
 [tool.isort]
 known_first_party = [
     "torchmetrics",
-    "tests",
     "integrations",
-    "tm_examples",
+    "unittests",
+    "integrations",
 ]
 skip_glob = []
 profile = "black"
