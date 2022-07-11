@@ -124,7 +124,7 @@ class Dice(StatScores):
         zero_division: int = 0,
         num_classes: Optional[int] = None,
         threshold: float = 0.5,
-        average: str = "micro",
+        average: Optional[str] = "micro",
         mdmc_average: Optional[str] = "global",
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
