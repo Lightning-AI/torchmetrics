@@ -25,11 +25,13 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-20.04, macOS-10.15, windows-2019]
-        python-version: [3.7, 3.9]
+        python-version: ['3.7', '3.10']
         requires: ['oldest', 'latest']
         exclude:
-          - {python-version: 3.7, requires: 'latest'}
-          - {python-version: 3.9, requires: 'oldest'}
+          - {python-version: '3.7', requires: 'latest'}
+          - {python-version: '3.9', requires: 'oldest'}
+          - {python-version: '3.10', requires: 'oldest'}
+          - {python-version: '3.10', os: 'windows-2019'}  # todo: https://discuss.pytorch.org/t/numpy-is-not-available-error/146192
     env:
       PYTEST_ARTEFACT: test-results-${{ matrix.os }}-py${{ matrix.python-version }}-${{ matrix.requires }}.xml
       PYTORCH_URL: https://download.pytorch.org/whl/cpu/torch_stable.html
@@ -55,10 +57,6 @@ jobs:
     - name: Set min. dependencies
       if: inputs.requires == 'oldest'
       run: python .github/assistant.py set-oldest-versions --req_files=requirements/integrate.txt
-
-    - name: Freeze Numpy (hotfix)
-      if: matrix.requires == 'latest'
-      run: pip install "numpy==1.20.0"  # temp fix for cypesq
 
     - name: Freeze PIL (hotfix)
       # import of PILLOW_VERSION which they recently removed in v9.0 in favor of __version__
