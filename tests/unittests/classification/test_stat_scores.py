@@ -214,7 +214,7 @@ def _sk_stat_scores_multiclass(preds, target, ignore_index, multidim_average, av
 class TestMulticlassStatScores(MetricTester):
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
-    @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
+    @pytest.mark.parametrize("average", ["micro", "macro", None])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multiclass_stat_scores(self, ddp, input, ignore_index, multidim_average, average):
         preds, target = input
@@ -246,7 +246,7 @@ class TestMulticlassStatScores(MetricTester):
 
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
-    @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
+    @pytest.mark.parametrize("average", ["micro", "macro", None])
     def test_multiclass_stat_scores_functional(self, input, ignore_index, multidim_average, average):
         preds, target = input
         if ignore_index == -1:
@@ -396,7 +396,7 @@ class TestMultilabelStatScores(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
-    @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
+    @pytest.mark.parametrize("average", ["micro", "macro", None])
     def test_multilabel_stat_scores(self, ddp, input, ignore_index, multidim_average, average):
         preds, target = input
         if ignore_index == -1:
@@ -428,7 +428,7 @@ class TestMultilabelStatScores(MetricTester):
 
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
-    @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
+    @pytest.mark.parametrize("average", ["micro", "macro", None])
     def test_multilabel_stat_scores_functional(self, input, ignore_index, multidim_average, average):
         preds, target = input
         if ignore_index == -1:
