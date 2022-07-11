@@ -51,6 +51,8 @@ class ClasswiseWrapper(Metric):
         'recall_horse': tensor(0.), 'recall_fish': tensor(0.3333), 'recall_dog': tensor(0.4000)}
     """
 
+    full_state_update: Optional[bool] = True
+
     def __init__(self, metric: Metric, labels: Optional[List[str]] = None) -> None:
         super().__init__()
         if not isinstance(metric, Metric):
@@ -71,3 +73,6 @@ class ClasswiseWrapper(Metric):
 
     def compute(self) -> Dict[str, Tensor]:
         return self._convert(self.metric.compute())
+
+    def reset(self) -> None:
+        self.metric.reset()

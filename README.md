@@ -271,46 +271,15 @@ acc = torchmetrics.functional.accuracy(preds, target)
 
 We currently have implemented metrics within the following domains:
 
-- Audio (
-  [ScaleInvariantSignalDistortionRatio](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#ScaleInvariantSignalDistortionRatio),
-  [ScaleInvariantSignalNoiseRatio](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#ScaleInvariantSignalNoiseRatio),
-  [SignalNoiseRatio](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#SignalNoiseRatio)
-  and [few more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#audio-metrics)
-  )
-- Classification (
-  [Accuracy](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#accuracy),
-  [F1Score](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#f1score),
-  [AUROC](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#auroc)
-  and [many more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#classification-metrics)
-  )
-- Detection (
-  [MeanAveragePrecision](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#meanaverageprecision))
-- Information Retrieval (
-  [RetrievalMAP](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#retrievalmap),
-  [RetrievalMRR](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#retrievalmrr),
-  [RetrievalNormalizedDCG](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#retrievalnormalizeddcg)
-  and [few more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#retrieval)
-  )
-- Image (
-  [FrechetInceptionDistance](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#FrechetInceptionDistance),
-  [KernelInceptionDistance](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#KernelInceptionDistance),
-  [StructuralSimilarityIndexMeasure](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#StructuralSimilarityIndexMeasure)
-  and [many more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#image-metrics)
-  )
-- Regression (
-  [ExplainedVariance](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#explainedvariance),
-  [PearsonCorrCoef](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#pearsoncorrcoef),
-  [R2Score](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#r2score)
-  and [many more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#regression-metrics)
-  )
-- Text (
-  [BleuScore](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#bleuscore),
-  [RougeScore](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#rougescore),
-  [WordErrorRate](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#WordErrorRate)
-  and [many more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#text)
-  )
+- Audio
+- Classification
+- Detection
+- Information Retrieval
+- Image
+- Regression
+- Text
 
-In total TorchMetrics contains 80+ metrics!
+In total TorchMetrics contains [80+ metrics](https://torchmetrics.readthedocs.io/en/stable/all-metrics.html)!
 
 ## Contribute!
 
