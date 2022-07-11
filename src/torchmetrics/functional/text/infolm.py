@@ -408,7 +408,7 @@ def _get_batch_distribution(
         logits_distribution = logits_distribution[:, mask_idx, :]
         prob_distribution = F.softmax(logits_distribution / temperature, dim=-1)
         if idf:
-            prob_distribution *= batch["input_ids_idf"][:, mask_idx].unsqueeze(1)
+            prob_distribution *= batch["input_ids_idf"][:, mask_idx].unsqueeze(1).to(prob_distribution.device)
         prob_distribution_batch_list.append(prob_distribution.unsqueeze(1).cpu())  # [batch_size, 1, vocab_size]
         # Clean from memory
         del input_ids, logits_distribution, prob_distribution
