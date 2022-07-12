@@ -298,7 +298,7 @@ def _multiclass_confusion_matrix_tensor_validation(
 def _multiclass_confusion_matrix_format(
     preds: Tensor, target: Tensor, ignore_index: Optional[int] = None
 ) -> Tuple[Tensor, Tensor]:
-    """ "Convert all input to label format.
+    """Convert all input to label format.
 
     - Applies argmax if preds have one more dimension than target
     - Remove all datapoints that should be ignored
