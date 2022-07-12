@@ -18,12 +18,13 @@ import torch
 from torch import Tensor
 from torch.nn import Module
 
-from torchmetrics.functional.text.bert import _preprocess_text, bert_score
+from torchmetrics.functional.text.bert import bert_score
+from torchmetrics.functional.text.helper_embedding_metric import _preprocess_text
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.imports import _TRANSFORMERS_AUTO_AVAILABLE
+from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 
-if _TRANSFORMERS_AUTO_AVAILABLE:
-    from transformers.models.auto import AutoTokenizer
+if _TRANSFORMERS_AVAILABLE:
+    from transformers import AutoTokenizer
 else:
     __doctest_skip__ = ["BERTScore"]
 
@@ -153,7 +154,7 @@ class BERTScore(Metric):
             self.tokenizer = user_tokenizer
             self.user_tokenizer = True
         else:
-            if not _TRANSFORMERS_AUTO_AVAILABLE:
+            if not _TRANSFORMERS_AVAILABLE:
                 raise ModuleNotFoundError(
                     "`BERTScore` metric with default tokenizers requires `transformers` package be installed."
                     " Either install with `pip install transformers>=4.0` or `pip install torchmetrics[text]`."
@@ -180,7 +181,7 @@ class BERTScore(Metric):
             preds: An iterable of predicted sentences.
             target: An iterable of reference sentences.
         """
-        preds_dict = _preprocess_text(
+        preds_dict, _ = _preprocess_text(
             preds,
             self.tokenizer,
             self.max_length,
@@ -188,7 +189,7 @@ class BERTScore(Metric):
             sort_according_length=False,
             own_tokenizer=self.user_tokenizer,
         )
-        target_dict = _preprocess_text(
+        target_dict, _ = _preprocess_text(
             target,
             self.tokenizer,
             self.max_length,
