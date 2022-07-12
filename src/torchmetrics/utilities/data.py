@@ -275,4 +275,4 @@ def _movedim(tensor: Tensor, dim1: int, dim2: int) -> tensor:
     if _TORCH_GREATER_EQUAL_1_7:
         return torch.movedim(tensor, dim1, dim2)
     else:
-        return tensor.unsqueeze(dim2).transpose(dim2, dim1).squeeze()
+        return tensor.unsqueeze(dim2 + 1).transpose(dim2 + 1, dim1).squeeze()
