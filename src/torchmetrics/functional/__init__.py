@@ -90,7 +90,6 @@ from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 
 if _TRANSFORMERS_AVAILABLE:
     from torchmetrics.functional.text.bert import bert_score  # noqa: F401
-if _TRANSFORMERS_AVAILABLE:
     from torchmetrics.functional.text.infolm import infolm  # noqa: F401
 
 __all__ = [
