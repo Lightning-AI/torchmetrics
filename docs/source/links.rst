@@ -86,3 +86,4 @@
 .. _MER: https://www.isca-speech.org/archive_v0/archive_papers/interspeech_2004/i04_2765.pdf
 .. _WIL: https://www.isca-speech.org/archive_v0/archive_papers/interspeech_2004/i04_2765.pdf
 .. _WIP: https://infoscience.epfl.ch/record/82766
+.. _TV: https://en.wikipedia.org/wiki/Total_variation_denoising

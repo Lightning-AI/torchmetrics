@@ -11,24 +11,58 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Tuple
 
-import torch
+from torch import Tensor
 
 
-def total_variation(img: torch.Tensor) -> torch.Tensor:
+def _total_variation_update(img: Tensor) -> Tuple[Tensor, int]:
+    """Computes total variation statistics on current batch."""
+    if img.ndim != 4:
+        raise RuntimeError(f"Expected input `img` to be an 4D tensor, but got {img.shape}")
+    diff1 = img[..., 1:, :] - img[..., :-1, :]
+    diff2 = img[..., :, 1:] - img[..., :, :-1]
+
+    res1 = diff1.abs().sum([1, 2, 3])
+    res2 = diff2.abs().sum([1, 2, 3])
+    score = (res1 + res2).sum()
+    return score, img.shape[0]
+
+
+def _total_variation_compute(score: Tensor, num_elements: int, reduction: str) -> Tensor:
+    """Compute final total variation score."""
+    return score if reduction == "sum" else score / num_elements
+
+
+def total_variation(img: Tensor, reduction: str = "sum") -> Tensor:
     """Computes total variation loss.
 
-    Adapted from https://github.com/jxgu1016/Total_Variation_Loss.pytorch
+    Adapted from: https://kornia.readthedocs.io/en/latest/_modules/kornia/losses/total_variation.html
+
     Args:
-        img (torch.Tensor): A NCHW image batch.
+        img: A `torch.Tensor` of shape `(N, C, H, W)` consisting of images
+        reduction: a method to reduce metric score over samples.
+            - ``'mean'``: takes the mean (default)
+            - ``'sum'``: takes the sum
 
     Returns:
-        A loss scalar value.
-    """
+        A loss scalar value containing the total variation
 
-    _batchsize, _channels, _height, _width = img.shape[1:]
-    _count_height = _channels * (_height - 1) * _width
-    _count_width = _channels * _height * (_width - 1)
-    _height_tv = torch.pow((img[:, :, 1:, :] - img[:, :, : _height - 1, :]), 2).sum()
-    _width_tv = torch.pow((img[:, :, :, 1:] - img[:, :, :, : _width - 1]), 2).sum()
-    return (2 * (_height_tv / _count_height + _width_tv / _count_width)) / _batchsize
+    Raises:
+        ValueError:
+            If ``reduction`` is not one of ``'sum'`` or ``'mean'``
+        RuntimeError:
+            If ``img`` is not 4D tensor
+
+    Example:
+        >>> import torch
+        >>> from torchmetrics.functional import total_variation
+        >>> _ = torch.manual_seed(42)
+        >>> img = torch.rand(5, 3, 28, 28)
+        >>> total_variation(img)
+        tensor(7546.8018)
+    """
+    if reduction not in ("sum", "mean"):
+        raise ValueError("Expected argument `reduction` to either be 'sum' or 'mean'")
+    score, num_elements = _total_variation_update(img)
+    return _total_variation_compute(score, num_elements, reduction)

@@ -14,51 +14,60 @@
 
 import torch
 
+from torchmetrics.functional.image.tv import _total_variation_compute, _total_variation_update
 from torchmetrics.metric import Metric
 
 
 class TotalVariation(Metric):
-    """Computes Total Variation loss.
+    """Computes Total Variation loss (`TV`_).
 
-    Adapted from: https://github.com/jxgu1016/Total_Variation_Loss.pytorch
+    Adapted from: https://kornia.readthedocs.io/en/latest/_modules/kornia/losses/total_variation.html
+
     Args:
-        dist_sync_on_step: Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step.
-        compute_on_step: Forward only calls ``update()`` and returns None if this is set to
-            False.
+        reduction: a method to reduce metric score over samples.
+            - ``'mean'``: takes the mean (default)
+            - ``'sum'``: takes the sum
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+
+    Raises:
+        ValueError:
+            If ``reduction`` is not one of ``'sum'`` or ``'mean'``
+
+    Example:
+        >>> import torch
+        >>> from torchmetrics import TotalVariation
+        >>> _ = torch.manual_seed(42)
+        >>> tv = TotalVariation()
+        >>> img = torch.rand(5, 3, 28, 28)
+        >>> tv(img)
+        tensor(7546.8018)
     """
 
-    is_differentiable = True
-    higher_is_better = False
+    full_state_update: bool = False
+    is_differentiable: bool = True
+    higher_is_better: bool = False
     current: torch.Tensor
     total: torch.Tensor
 
-    def __init__(self, dist_sync_on_step: bool = False, compute_on_step: bool = True):
-        super().__init__(dist_sync_on_step=dist_sync_on_step, compute_on_step=compute_on_step)
-        self.add_state("current", default=torch.tensor(0, dtype=torch.float), dist_reduce_fx="sum")
-        self.add_state("total", default=torch.tensor(0, dtype=torch.int), dist_reduce_fx="sum")
+    def __init__(self, reduction: str = "sum", **kwargs):
+        super().__init__(**kwargs)
+        if reduction not in ("sum", "mean"):
+            raise ValueError("Expected argument `reduction` to either be 'sum' or 'mean'")
+        self.reduction = reduction
+
+        self.add_state("score", default=torch.tensor(0, dtype=torch.float), dist_reduce_fx="sum")
+        self.add_state("num_elements", default=torch.tensor(0, dtype=torch.int), dist_reduce_fx="sum")
 
     def update(self, img: torch.Tensor) -> None:
-        """Update method for TV Loss.
+        """Update current score with batch of input images.
 
         Args:
-            img (torch.Tensor): A NCHW image batch.
-
-        Returns:
-            A loss scalar value.
+            img: A `torch.Tensor` of shape `(N, C, H, W)` consisting of images
         """
-        _height = img.size()[2]
-        _width = img.size()[3]
-        _count_height = self.tensor_size(img[:, :, 1:, :])
-        _count_width = self.tensor_size(img[:, :, :, 1:])
-        _height_tv = torch.pow((img[:, :, 1:, :] - img[:, :, : _height - 1, :]), 2).sum()
-        _width_tv = torch.pow((img[:, :, :, 1:] - img[:, :, :, : _width - 1]), 2).sum()
-        self.current += 2 * (_height_tv / _count_height + _width_tv / _count_width)
-        self.total += img.numel()
+        score, num_elements = _total_variation_update(img)
+        self.score += score
+        self.num_elements += num_elements
 
     def compute(self):
-        return self.current.float() / self.total
-
-    @staticmethod
-    def tensor_size(t):
-        return t.size()[1] * t.size()[2] * t.size()[3]
+        """Compute final total variation."""
+        return _total_variation_compute(self.score, self.num_elements, self.reduction)
