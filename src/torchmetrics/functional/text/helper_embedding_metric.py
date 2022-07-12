@@ -14,7 +14,7 @@
 import math
 import os
 from collections import Counter, defaultdict
-from typing import Any, Callable, Dict, List, Optional, Set, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Set, Tuple, Union
 
 import torch
 from torch import Tensor

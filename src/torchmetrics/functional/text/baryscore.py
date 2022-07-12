@@ -20,19 +20,19 @@ from torch.utils.data import DataLoader
 
 from torchmetrics.functional.text.helper_embedding_metric import (
     _embedding_metrics_update,
-    _get_progress_bar,
     _get_dataloader,
+    _get_progress_bar,
     _input_data_collator,
     _load_tokenizer_and_model,
 )
-
 from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 
 if _TRANSFORMERS_AVAILABLE:
-    from transformers import PreTrainedModel, PreTrainedTokenizerBase, PretrainedConfig
+    from transformers import PretrainedConfig, PreTrainedModel, PreTrainedTokenizerBase
 else:
     PreTrainedModel = PreTrainedTokenizerBase = None  # type: ignore
     __doctest_skip__ = ["baryscore"]
+
 
 def _check_valid_num_last_layers(config: PretrainedConfig, num_last_layers: int) -> None:
     # Encoder-only or Decoder-only models
@@ -43,14 +43,14 @@ def _check_valid_num_last_layers(config: PretrainedConfig, num_last_layers: int)
         )
     # Encoder-Decoder models
     if config.is_encoder_decoder and num_last_layers > config.encoder_layers + config.decoder_layers:
-            raise ValueError(
+        raise ValueError(
             f"Parameter `num_hidden_layers` is not correctly specified as {num_last_layers=} > "
             f"{config.encoder_layers + config.decoder_layers=}."
         )
 
+
 def _get_free_support_barycenters(measures_locations: Tensor, tokens_weights: Tensor):
-    """
-    """
+    """"""
     MAX_ITERATIONS = 1000
     STOPPING_THRESHOLD = 1e-7
 
@@ -68,7 +68,6 @@ def _get_free_support_barycenters(measures_locations: Tensor, tokens_weights: Te
             transport_cost_sum = torch.zeros(
                 seq_len, model_dim, dtype=measures_locations.dtype, device=measures_locations.device
             )
-
 
 
 def _get_batch_wasserstein_barycenters(
@@ -96,7 +95,7 @@ def _get_batch_wasserstein_barycenters(
         token_weights = batch["input_ids_idf"] / batch["input_ids_idf"].sum(-1).unsqueeze(-1)
     else:
         token_weights = batch["attention_mask"] / batch["attention_mask"].sum(-1).unsqueeze(-1)
-    
+
     wasserstein_barycenters = _get_free_support_barycenters(hidden_states, token_weights.type(hidden_states.dtype))
     return wasserstein_barycenters.cpu()
 
@@ -154,6 +153,7 @@ def _baryscore_update(
     """
     return _embedding_metrics_update(preds, target, tokenizer, max_length)
 
+
 def _baryscore_compute(
     model: PreTrainedModel,
     preds_dataloader: DataLoader,
@@ -182,11 +182,13 @@ def _baryscore_compute(
         A sentence-level BaryScore.
     """
     preds_wasserstein_barycenters = _get_wasserstein_barycenters(model, preds_dataloader, num_last_layers, idf, verbose)
-    target_wasserstein_barycenters = _get_wasserstein_barycenters(model, target_dataloader, num_last_layers, idf, verbose)
+    target_wasserstein_barycenters = _get_wasserstein_barycenters(
+        model, target_dataloader, num_last_layers, idf, verbose
+    )
     # Sort preds and target sentences
     preds_wasserstein_barycenters = preds_wasserstein_barycenters[preds_dataloader.dataset.sorting_indices]
     target_wasserstein_barycenters = target_wasserstein_barycenters[target_dataloader.dataset.sorting_indices]
-    
+
 
 def baryscore(
     preds: Union[str, Sequence[str]],
