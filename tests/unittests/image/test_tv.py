@@ -20,6 +20,7 @@ from kornia.losses import total_variation as kornia_total_variation
 
 from torchmetrics.functional.image.tv import total_variation
 from torchmetrics.image.tv import TotalVariation
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 from unittests.helpers import seed_all
 from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 
@@ -86,6 +87,9 @@ class TestTotalVariation(MetricTester):
             metric_args={"reduction": reduction},
         )
 
+    @pytest.mark.skipif(
+        not _TORCH_GREATER_EQUAL_1_6, reason="half support of core operations on not support before pytorch v1.6"
+    )
     def test_sam_half_cpu(self, preds, target, reduction):
         """Test for half precision on CPU."""
         self.run_precision_test_cpu(
