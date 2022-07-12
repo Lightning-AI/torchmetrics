@@ -20,7 +20,7 @@ from kornia.losses import total_variation as kornia_total_variation
 
 from torchmetrics.functional.image.tv import total_variation
 from torchmetrics.image.tv import TotalVariation
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6, _TORCH_GREATER_EQUAL_1_8
 from unittests.helpers import seed_all
 from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 
@@ -62,6 +62,7 @@ for size, channel, dtype in [
     [(i.preds, i.target) for i in _inputs],
 )
 @pytest.mark.parametrize("reduction", ["sum", "mean"])
+@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_8, reason="Kornia used as reference requires min PT version")
 class TestTotalVariation(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])

@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Any
 
 import torch
+from torch import Tensor
 
 from torchmetrics.functional.image.tv import _total_variation_compute, _total_variation_update
 from torchmetrics.metric import Metric
@@ -46,28 +48,28 @@ class TotalVariation(Metric):
     full_state_update: bool = False
     is_differentiable: bool = True
     higher_is_better: bool = False
-    current: torch.Tensor
-    total: torch.Tensor
+    current: Tensor
+    total: Tensor
 
-    def __init__(self, reduction: str = "sum", **kwargs):
+    def __init__(self, reduction: str = "sum", **kwargs: Any) -> None:
         super().__init__(**kwargs)
         if reduction not in ("sum", "mean"):
             raise ValueError("Expected argument `reduction` to either be 'sum' or 'mean'")
         self.reduction = reduction
 
-        self.add_state("score", default=torch.tensor(0, dtype=torch.float), dist_reduce_fx="sum")
-        self.add_state("num_elements", default=torch.tensor(0, dtype=torch.int), dist_reduce_fx="sum")
+        self.add_state("score", default=Tensor(0, dtype=torch.float), dist_reduce_fx="sum")
+        self.add_state("num_elements", default=Tensor(0, dtype=torch.int), dist_reduce_fx="sum")
 
-    def update(self, img: torch.Tensor) -> None:
+    def update(self, img: Tensor) -> None:  # type: ignore
         """Update current score with batch of input images.
 
         Args:
-            img: A `torch.Tensor` of shape `(N, C, H, W)` consisting of images
+            img: A `Tensor` of shape `(N, C, H, W)` consisting of images
         """
         score, num_elements = _total_variation_update(img)
         self.score += score
         self.num_elements += num_elements
 
-    def compute(self):
+    def compute(self) -> Tensor:
         """Compute final total variation."""
         return _total_variation_compute(self.score, self.num_elements, self.reduction)

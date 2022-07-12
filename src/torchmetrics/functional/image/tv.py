@@ -40,7 +40,7 @@ def total_variation(img: Tensor, reduction: str = "sum") -> Tensor:
     Adapted from: https://kornia.readthedocs.io/en/latest/_modules/kornia/losses/total_variation.html
 
     Args:
-        img: A `torch.Tensor` of shape `(N, C, H, W)` consisting of images
+        img: A `Tensor` of shape `(N, C, H, W)` consisting of images
         reduction: a method to reduce metric score over samples.
             - ``'mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
