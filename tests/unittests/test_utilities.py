@@ -161,9 +161,9 @@ def test_recursive_allclose(input, expected):
 @pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_7, reason="test requires access to `torch.movedim`")
 @pytest.mark.parametrize("dim1, dim2", [(1, 3), (1, -1)])
 def test_movedim(dim1, dim2):
-    x = torch.randn(5, 4, 3, 2)
+    x = torch.randn(5, 4, 3, 2, 1)
     res1 = torch.movedim(x, dim1, dim2)
     if dim2 >= 0:
         dim2 += 1
-    res2 = x.unsqueeze(dim2).transpose(dim2, dim1).squeeze()
+    res2 = x.unsqueeze(dim2).transpose(dim2, dim1).squeeze(dim1)
     assert torch.allclose(res1, res2)

@@ -276,4 +276,4 @@ def _movedim(tensor: Tensor, dim1: int, dim2: int) -> tensor:
         return torch.movedim(tensor, dim1, dim2)
     if dim2 >= 0:
         dim2 += 1
-    return tensor.unsqueeze(dim2).transpose(dim2, dim1).squeeze()
+    return tensor.unsqueeze(dim2).transpose(dim2, dim1).squeeze(dim1)
