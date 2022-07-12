@@ -440,7 +440,7 @@ def skip_on_connection_issues(reason: str = "Unable to load checkpoints from Hug
 
     The tests run normally if no connection issue arises, and they're marked as skipped otherwise.
     """
-    _error_msg_starts = ["We couldn't connect to", "Connection error"]
+    _error_msg_starts = ["We couldn't connect to", "Connection error", "Can't load"]
 
     def test_decorator(function: Callable, *args: Any, **kwargs: Any) -> Optional[Callable]:
         @wraps(function)
