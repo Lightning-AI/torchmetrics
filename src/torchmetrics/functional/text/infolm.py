@@ -22,7 +22,8 @@ from torch.utils.data import DataLoader
 from typing_extensions import Literal
 
 from torchmetrics.functional.text.helper_embedding_metric import (
-    TokenizedDataset,
+    _embedding_metrics_update,
+    _get_dataloader,
     _get_progress_bar,
     _input_data_collator,
     _load_tokenizer_and_model,
@@ -306,29 +307,6 @@ class _InformationMeasure:
         return 2 * torch.acos(torch.clamp(torch.sqrt(preds_distribution * target_distribution).sum(-1), 0, 1))
 
 
-def _get_dataloader(
-    input_ids: Tensor, attention_mask: Tensor, idf: bool, batch_size: int, num_workers: int
-) -> DataLoader:
-    """Prepare dataloader.
-
-    Args:
-        input_ids:
-            Indices of input sequence tokens in the vocabulary.
-        attention_mask:
-            Mask to avoid performing attention on padding token indices.
-        idf:
-            A batch size used for model processing.
-        num_threads:
-            A number of workers to use for a dataloader.
-
-    Return:
-        An instance of ``torch.utils.data.DataLoader`` used for iterating over examples.
-    """
-    dataset = TokenizedDataset(input_ids, attention_mask, idf)
-    dataloader = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers)
-    return dataloader
-
-
 def _get_special_tokens_map(tokenizer: PreTrainedTokenizerBase) -> Dict[str, int]:
     """Build a dictionary of model/tokenizer special tokens.
 
@@ -384,10 +362,10 @@ def _get_batch_distribution(
             An input batch dictionary containing ``input_ids`` and ``attention_mask``.
         temperature:
             A temperature for calibrating language modelling. For more information, please reference `InfoLM`_ paper.
-        max_length:
-            A maximum length of input sequences. Sequences longer than `max_length` are to be trimmed.
         idf:
             An indication of whether normalization using inverse document frequencies should be used.
+        special_tokens_map:
+            A dictionary mapping tokenizer special tokens into the corresponding integer values.
 
     Return:
         A discrete probability distribution.
@@ -441,10 +419,10 @@ def _get_data_distribution(
             An instance of `torch.utils.data.DataLoader` used for iterating over examples.
         temperature:
             A temperature for calibrating language modelling. For more information, please reference `InfoLM`_ paper.
-        max_length:
-            A maximum length of input sequences. Sequences longer than `max_length` are to be trimmed.
         idf:
             An indication of whether normalization using inverse document frequencies should be used.
+        special_tokens_map:
+            A dictionary mapping tokenizer special tokens into the corresponding integer values.
         verbose:
             An indication of whether a progress bar to be displayed during the embeddings calculation.
 
@@ -482,16 +460,7 @@ def _infolm_update(
     Return:
         Tokenizerd ``preds`` and ``target`` sentences represented with ``input_ids`` and ``attention_mask`` tensors.
     """
-    # HuggingFace tokenizer expects an input to be of a type str or List[str]
-    if not isinstance(preds, (str, list)):
-        preds = list(preds)
-    if not isinstance(target, (str, list)):
-        target = list(target)
-
-    preds_input = tokenizer(preds, padding="max_length", max_length=max_length, truncation=True, return_tensors="pt")
-    target_input = tokenizer(target, padding="max_length", max_length=max_length, truncation=True, return_tensors="pt")
-
-    return preds_input.input_ids, preds_input.attention_mask, target_input.input_ids, target_input.attention_mask
+    return _embedding_metrics_update(preds, target, tokenizer, max_length)
 
 
 def _infolm_compute(
@@ -511,7 +480,7 @@ def _infolm_compute(
             Initialized model from HuggingFace's `transformers package.
         preds_dataloader:
             Loader iterating over tokenizer predicted sentences.
-        target_datalaoder:
+        target_dataloader:
             Loader iterating over tokenizer reference sentences.
         temperature:
             A temperature for calibrating language modelling. For more information, please reference `InfoLM`_ paper.
@@ -526,7 +495,7 @@ def _infolm_compute(
             An indication of whether a progress bar to be displayed during the embeddings calculation.
 
     Return:
-        A corpus-level InfoLM score.
+        A sentence-level InfoLM score.
     """
     preds_distribution = _get_data_distribution(model, preds_dataloader, temperature, idf, special_tokens_map, verbose)
     target_distribution = _get_data_distribution(

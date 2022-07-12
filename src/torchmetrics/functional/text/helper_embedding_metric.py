@@ -14,7 +14,7 @@
 import math
 import os
 from collections import Counter, defaultdict
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Set, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -171,6 +171,62 @@ def _load_tokenizer_and_model(
     model.eval()
     model.to(device)
     return tokenizer, model
+
+
+def _get_dataloader(
+    input_ids: Tensor, attention_mask: Tensor, idf: bool, batch_size: int, num_workers: int
+) -> DataLoader:
+    """Prepare dataloader.
+
+    Args:
+        input_ids:
+            Indices of input sequence tokens in the vocabulary.
+        attention_mask:
+            Mask to avoid performing attention on padding token indices.
+        idf:
+            A batch size used for model processing.
+        num_threads:
+            A number of workers to use for a dataloader.
+
+    Return:
+        An instance of ``torch.utils.data.DataLoader`` used for iterating over examples.
+    """
+    dataset = TokenizedDataset(input_ids, attention_mask, idf)
+    dataloader = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers)
+    return dataloader
+
+
+def _embedding_metrics_update(
+    preds: Union[str, Sequence[str]],
+    target: Union[str, Sequence[str]],
+    tokenizer: PreTrainedTokenizerBase,
+    max_length: int,
+) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+    """Update the metric state by a tokenization of ``preds`` and ``target`` sentencens.
+
+    Args:
+        preds:
+            An iterable of hypothesis corpus.
+        target:
+            An iterable of reference corpus.
+        tokenizer:
+            Initialized tokenizer from HuggingFace's `transformers package.
+        max_length:
+            A maximum length of input sequences. Sequences longer than `max_length` are to be trimmed.
+
+    Return:
+        Tokenizerd ``preds`` and ``target`` sentences represented with ``input_ids`` and ``attention_mask`` tensors.
+    """
+    # HuggingFace tokenizer expects an input to be of a type str or List[str]
+    if not isinstance(preds, (str, list)):
+        preds = list(preds)
+    if not isinstance(target, (str, list)):
+        target = list(target)
+
+    preds_input = tokenizer(preds, padding="max_length", max_length=max_length, truncation=True, return_tensors="pt")
+    target_input = tokenizer(target, padding="max_length", max_length=max_length, truncation=True, return_tensors="pt")
+
+    return preds_input.input_ids, preds_input.attention_mask, target_input.input_ids, target_input.attention_mask
 
 
 class TextDataset(Dataset):
