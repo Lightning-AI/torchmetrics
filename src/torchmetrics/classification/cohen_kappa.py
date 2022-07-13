@@ -19,10 +19,10 @@ from typing_extensions import Literal
 
 from torchmetrics.classification import BinaryConfusionMatrix, MulticlassConfusionMatrix
 from torchmetrics.functional.classification.cohen_kappa import (
-    _cohen_kappa_compute,
-    _cohen_kappa_update,
-    _cohen_kappa_reduce,
     _binary_cohen_kappa_arg_validation,
+    _cohen_kappa_compute,
+    _cohen_kappa_reduce,
+    _cohen_kappa_update,
     _multiclass_cohen_kappa_arg_validation,
 )
 from torchmetrics.metric import Metric
