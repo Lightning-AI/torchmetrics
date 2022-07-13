@@ -202,4 +202,12 @@ __all__ = [
     "binary_stat_scores",
     "multiclass_stat_scores",
     "multilabel_stat_scores",
+    "binary_cohen_kappa",
+    "multiclass_cohen_kappa",
+    "binary_jaccard_index",
+    "multiclass_jaccard_index",
+    "multilabel_jaccard_index",
+    "binary_matthews_corrcoef",
+    "multiclass_matthews_corrcoef",
+    "multilabel_matthews_corrcoef",
 ]

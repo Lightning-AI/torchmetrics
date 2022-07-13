@@ -18,16 +18,16 @@ from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.functional.classification.confusion_matrix import (
-    _confusion_matrix_compute, 
-    _confusion_matrix_update, 
     _binary_confusion_matrix_arg_validation,
-    _binary_confusion_matrix_tensor_validation,
     _binary_confusion_matrix_format,
+    _binary_confusion_matrix_tensor_validation,
     _binary_confusion_matrix_update,
+    _confusion_matrix_compute,
+    _confusion_matrix_update,
     _multiclass_confusion_matrix_arg_validation,
-    _multiclass_confusion_matrix_tensor_validation,
     _multiclass_confusion_matrix_format,
-    _multiclass_confusion_matrix_update
+    _multiclass_confusion_matrix_tensor_validation,
+    _multiclass_confusion_matrix_update,
 )
 
 
@@ -83,6 +83,56 @@ def binary_cohen_kappa(
     weights: Optional[Literal["linear", "quadratic", "none"]] = None,
     validate_args: bool = True,
 ) -> Tensor:
+    r"""Calculates `Cohen's kappa score`_ that measures inter-annotator agreement for binary
+    tasks. It is defined as
+
+    .. math::
+        \kappa = (p_o - p_e) / (1 - p_e)
+
+    where :math:`p_o` is the empirical probability of agreement and :math:`p_e` is
+    the expected agreement when both annotators assign labels randomly. Note that
+    :math:`p_e` is estimated using a per-annotator empirical prior over the
+    class labels.
+
+    Accepts the following input tensors:
+
+    - ``preds`` (int or float tensor): ``(N, ...)``. If preds is a floating point tensor with values outside
+      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
+      we convert to int tensor with thresholding using the value in ``threshold``.
+    - ``target`` (int tensor): ``(N, ...)``
+
+    Additional dimension ``...`` will be flattened into the batch dimension.
+
+    Args:
+        preds: Tensor with predictions
+        target: Tensor with true labels
+        threshold: Threshold for transforming probability to binary (0,1) predictions
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
+        weights: Weighting type to calculate the score. Choose from:
+
+            - ``None`` or ``'none'``: no weighting
+            - ``'linear'``: linear weighting
+            - ``'quadratic'``: quadratic weighting
+        validate_args: bool indicating if input arguments and tensors should be validated for correctness.
+            Set to ``False`` for faster computations.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+
+    Example (preds is int tensor):
+        >>> from torchmetrics.functional import binary_cohen_kappa
+        >>> target = torch.tensor([1, 1, 0, 0])
+        >>> preds = torch.tensor([0, 1, 0, 0])
+        >>> binary_cohen_kappa(preds, target)
+        tensor(0.5000)
+
+    Example (preds is float tensor):
+        >>> from torchmetrics.functional import binary_cohen_kappa
+        >>> target = torch.tensor([1, 1, 0, 0])
+        >>> preds = torch.tensor([0.35, 0.85, 0.48, 0.01])
+        >>> binary_cohen_kappa(preds, target)
+        tensor(0.5000)
+
+    """
     if validate_args:
         _binary_cohen_kappa_arg_validation(threshold, ignore_index, weights)
         _binary_confusion_matrix_tensor_validation(preds, target, ignore_index)
@@ -116,6 +166,61 @@ def multiclass_cohen_kappa(
     weights: Optional[Literal["linear", "quadratic", "none"]] = None,
     validate_args: bool = True,
 ) -> Tensor:
+    r"""Calculates `Cohen's kappa score`_ that measures inter-annotator agreement for multiclass
+    tasks. It is defined as
+
+    .. math::
+        \kappa = (p_o - p_e) / (1 - p_e)
+
+    where :math:`p_o` is the empirical probability of agreement and :math:`p_e` is
+    the expected agreement when both annotators assign labels randomly. Note that
+    :math:`p_e` is estimated using a per-annotator empirical prior over the
+    class labels.
+
+    Accepts the following input tensors:
+
+    - ``preds``: ``(N, ...)`` (int tensor) or ``(N, C, ..)`` (float tensor). If preds is a floating point
+      we apply ``torch.argmax`` along the ``C`` dimension to automatically convert probabilities/logits into
+      an int tensor.
+    - ``target`` (int tensor): ``(N, ...)``
+
+    Additional dimension ``...`` will be flattened into the batch dimension.
+
+    Args:
+        preds: Tensor with predictions
+        target: Tensor with true labels
+        num_classes: Integer specifing the number of classes
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
+        weights: Weighting type to calculate the score. Choose from:
+
+            - ``None`` or ``'none'``: no weighting
+            - ``'linear'``: linear weighting
+            - ``'quadratic'``: quadratic weighting
+        validate_args: bool indicating if input arguments and tensors should be validated for correctness.
+            Set to ``False`` for faster computations.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+
+    Example (pred is integer tensor):
+        >>> from torchmetrics.functional import multiclass_cohen_kappa
+        >>> target = torch.tensor([2, 1, 0, 0])
+        >>> preds = torch.tensor([2, 1, 0, 1])
+        >>> multiclass_cohen_kappa(preds, target, num_classes=3)
+        tensor(0.6364)
+
+    Example (pred is float tensor):
+        >>> from torchmetrics.functional import multiclass_cohen_kappa
+        >>> target = torch.tensor([2, 1, 0, 0])
+        >>> preds = torch.tensor([
+        ...   [0.16, 0.26, 0.58],
+        ...   [0.22, 0.61, 0.17],
+        ...   [0.71, 0.09, 0.20],
+        ...   [0.05, 0.82, 0.13],
+        ... ])
+        >>> multiclass_cohen_kappa(preds, target, num_classes=3)
+        tensor(0.6364)
+
+    """
     if validate_args:
         _multiclass_cohen_kappa_arg_validation(num_classes, ignore_index, weights)
         _multiclass_confusion_matrix_tensor_validation(preds, target, num_classes, ignore_index)

@@ -19,7 +19,7 @@ from typing_extensions import Literal
 
 from torchmetrics.classification import BinaryConfusionMatrix, MulticlassConfusionMatrix
 from torchmetrics.functional.classification.cohen_kappa import (
-    _cohen_kappa_compute, 
+    _cohen_kappa_compute,
     _cohen_kappa_update,
     _cohen_kappa_reduce,
     _binary_cohen_kappa_arg_validation,
@@ -68,8 +68,7 @@ class BinaryCohenKappa(BinaryConfusionMatrix):
         >>> preds = torch.tensor([0, 1, 0, 0])
         >>> metric = BinaryCohenKappa()
         >>> metric(preds, target)
-        tensor([[2, 0],
-                [1, 1]])
+        tensor(0.5000)
 
     Example (preds is float tensor):
         >>> from torchmetrics import BinaryCohenKappa
@@ -77,8 +76,7 @@ class BinaryCohenKappa(BinaryConfusionMatrix):
         >>> preds = torch.tensor([0.35, 0.85, 0.48, 0.01])
         >>> metric = BinaryCohenKappa()
         >>> metric(preds, target)
-        tensor([[2, 0],
-                [1, 1]])
+        tensor(0.5000)
 
     """
     is_differentiable: bool = False
@@ -143,9 +141,7 @@ class MulticlassCohenKappa(MulticlassConfusionMatrix):
         >>> preds = torch.tensor([2, 1, 0, 1])
         >>> metric = MulticlassCohenKappa(num_classes=3)
         >>> metric(preds, target)
-        tensor([[1, 1, 0],
-                [0, 1, 0],
-                [0, 0, 1]])
+        tensor(0.6364)
 
     Example (pred is float tensor):
         >>> from torchmetrics import MulticlassCohenKappa
@@ -158,9 +154,7 @@ class MulticlassCohenKappa(MulticlassConfusionMatrix):
         ... ])
         >>> metric = MulticlassCohenKappa(num_classes=3)
         >>> metric(preds, target)
-        tensor([[1, 1, 0],
-                [0, 1, 0],
-                [0, 0, 1]])
+        tensor(0.6364)
 
     """
     is_differentiable: bool = False
