@@ -20,11 +20,14 @@ from torchmetrics.functional.classification.confusion_matrix import _confusion_m
 def binary_matthews_corrcoef():
     pass
 
+
 def multiclass_matthews_corrcoef():
     pass
 
+
 def multilabel_matthews_corrcoef():
     pass
+
 
 # -------------------------- Old stuff --------------------------
 

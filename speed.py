@@ -1,8 +1,10 @@
-from torchmetrics.functional import confusion_matrix, multiclass_confusion_matrix, stat_scores, multiclass_stat_scores
-from time import perf_counter
-import torch
 from functools import partial
 from statistics import mean, stdev
+from time import perf_counter
+
+import torch
+
+from torchmetrics.functional import confusion_matrix, multiclass_confusion_matrix, multiclass_stat_scores, stat_scores
 
 OUTER_REPS = 5
 INNER_REPS = 1000

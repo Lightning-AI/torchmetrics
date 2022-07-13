@@ -22,8 +22,10 @@ from torchmetrics.functional.classification.confusion_matrix import _confusion_m
 def binary_cohen_kappa():
     pass
 
+
 def multiclass_cohen_kappa():
     pass
+
 
 def multilabel_cohen_kappa():
     pass
