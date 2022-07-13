@@ -19,11 +19,7 @@ from torchmetrics.functional.classification.auc import auc
 from torchmetrics.functional.classification.auroc import auroc
 from torchmetrics.functional.classification.average_precision import average_precision
 from torchmetrics.functional.classification.calibration_error import calibration_error
-from torchmetrics.functional.classification.cohen_kappa import (
-    binary_cohen_kappa,
-    cohen_kappa,
-    multiclass_cohen_kappa,
-)
+from torchmetrics.functional.classification.cohen_kappa import binary_cohen_kappa, cohen_kappa, multiclass_cohen_kappa
 from torchmetrics.functional.classification.confusion_matrix import (
     binary_confusion_matrix,
     confusion_matrix,

@@ -18,9 +18,7 @@ from torch import Tensor
 
 from torchmetrics.classification import BinaryConfusionMatrix, MulticlassConfusionMatrix, MultilabelConfusionMatrix
 from torchmetrics.classification.confusion_matrix import ConfusionMatrix
-from torchmetrics.functional.classification.jaccard import (
-    _jaccard_from_confmat,
-)
+from torchmetrics.functional.classification.jaccard import _jaccard_from_confmat
 
 
 class BinaryJaccardIndex(BinaryConfusionMatrix):

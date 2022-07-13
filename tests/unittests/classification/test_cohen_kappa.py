@@ -3,11 +3,12 @@ from functools import partial
 import numpy as np
 import pytest
 import torch
-from sklearn.metrics import cohen_kappa_score as sk_cohen_kappa
 from scipy.special import expit as sigmoid
+from sklearn.metrics import cohen_kappa_score as sk_cohen_kappa
+
+from torchmetrics.classification.cohen_kappa import BinaryCohenKappa, CohenKappa, MulticlassCohenKappa
+from torchmetrics.functional.classification.cohen_kappa import binary_cohen_kappa, cohen_kappa, multiclass_cohen_kappa
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
-from torchmetrics.classification.cohen_kappa import CohenKappa, BinaryCohenKappa, MulticlassCohenKappa
-from torchmetrics.functional.classification.cohen_kappa import cohen_kappa, binary_cohen_kappa, multiclass_cohen_kappa
 from unittests.classification.inputs import _binary_cases, _multiclass_cases
 from unittests.helpers import seed_all
 from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index
