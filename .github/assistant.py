@@ -29,6 +29,7 @@ _PKG_WIDE_SUBPACKAGES = ("utilities", "helpers")
 LUT_PYTHON_TORCH = {
     "3.8": "1.4",
     "3.9": "1.7.1",
+    "3.10": "1.11",
 }
 _path = lambda *ds: os.path.join(_PATH_ROOT, *ds)
 REQUIREMENTS_FILES = tuple(glob.glob(_path("requirements", "*.txt")) + [_path("requirements.txt")])
