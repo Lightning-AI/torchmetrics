@@ -64,6 +64,7 @@ class BinaryConfusionMatrix(Metric):
             - ``'all'``: normalization over the whole matrix
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
         >>> from torchmetrics import BinaryConfusionMatrix
@@ -151,6 +152,7 @@ class MulticlassConfusionMatrix(Metric):
             - ``'all'``: normalization over the whole matrix
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (pred is integer tensor):
         >>> from torchmetrics import MulticlassConfusionMatrix
@@ -246,6 +248,7 @@ class MultilabelConfusionMatrix(Metric):
             - ``'all'``: normalization over the whole matrix
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
         >>> from torchmetrics import MultilabelConfusionMatrix

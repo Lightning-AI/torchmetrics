@@ -106,6 +106,7 @@ class BinaryStatScores(_AbstractStatScores):
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
         >>> from torchmetrics.functional import binary_stat_scores
@@ -222,6 +223,7 @@ class MulticlassStatScores(_AbstractStatScores):
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
         >>> from torchmetrics.functional import multiclass_stat_scores
@@ -364,6 +366,7 @@ class MultilabelStatScores(_AbstractStatScores):
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
         >>> from torchmetrics.functional import multilabel_stat_scores
