@@ -57,7 +57,7 @@ runs:
 
   - name: Unittests
     working-directory: ./tests
-    run: python -m pytest ${{ inputs.dirs }} --cov=torchmetrics --junitxml="$PYTEST_ARTEFACT.xml" --durations=50 ${{ inputs.test-timeout }}
+    run: python -m pytest -v --maxfail=5 ${{ inputs.dirs }} --cov=torchmetrics --junitxml="$PYTEST_ARTEFACT.xml" --durations=50 ${{ inputs.test-timeout }}
     shell: ${{ inputs.shell-type }}
 
   - name: Upload pytest results
