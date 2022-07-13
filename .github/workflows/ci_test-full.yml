@@ -108,7 +108,7 @@ jobs:
         test-timeout: ${{ env.UNITTEST_TIMEOUT }}
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1
+      uses: codecov/codecov-action@v3
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         file: tests/coverage.xml
