@@ -15,18 +15,113 @@ from typing import Optional
 
 import torch
 from torch import Tensor
+from typing_extensions import Literal
 
-from torchmetrics.functional.classification.confusion_matrix import _confusion_matrix_compute, _confusion_matrix_update
+from torchmetrics.functional.classification.confusion_matrix import (
+    _confusion_matrix_compute, 
+    _confusion_matrix_update, 
+    _binary_confusion_matrix_arg_validation,
+    _binary_confusion_matrix_tensor_validation,
+    _binary_confusion_matrix_format,
+    _binary_confusion_matrix_update,
+    _multiclass_confusion_matrix_arg_validation,
+    _multiclass_confusion_matrix_tensor_validation,
+    _multiclass_confusion_matrix_format,
+    _multiclass_confusion_matrix_update
+)
 
 
-def binary_cohen_kappa():
-    pass
+def _cohen_kappa_reduce(confmat: Tensor, weights: Optional[Literal["linear", "quadratic", "none"]] = None) -> Tensor:
+    """Reduce an un-normalized confusion matrix of shape (n_classes, n_classes) into the cohen kappa score."""
+    confmat = confmat.float() if not confmat.is_floating_point() else confmat
+    n_classes = confmat.shape[0]
+    sum0 = confmat.sum(dim=0, keepdim=True)
+    sum1 = confmat.sum(dim=1, keepdim=True)
+    expected = sum1 @ sum0 / sum0.sum()  # outer product
 
-def multiclass_cohen_kappa():
-    pass
+    if weights is None or weights == "none":
+        w_mat = torch.ones_like(confmat).flatten()
+        w_mat[:: n_classes + 1] = 0
+        w_mat = w_mat.reshape(n_classes, n_classes)
+    elif weights in ("linear", "quadratic"):
+        w_mat = torch.zeros_like(confmat)
+        w_mat += torch.arange(n_classes, dtype=w_mat.dtype, device=w_mat.device)
+        if weights == "linear":
+            w_mat = torch.abs(w_mat - w_mat.T)
+        else:
+            w_mat = torch.pow(w_mat - w_mat.T, 2.0)
+    else:
+        raise ValueError(
+            f"Received {weights} for argument ``weights`` but should be either" " None, 'linear' or 'quadratic'"
+        )
+    k = torch.sum(w_mat * confmat) / torch.sum(w_mat * expected)
+    return 1 - k
 
-def multilabel_cohen_kappa():
-    pass
+
+def _binary_cohen_kappa_arg_validation(
+    threshold: float = 0.5,
+    ignore_index: Optional[int] = None,
+    weights: Optional[Literal["linear", "quadratic", "none"]] = None,
+) -> None:
+    """Validate non tensor input.
+
+    - ``threshold`` has to be a float in the [0,1] range
+    - ``ignore_index`` has to be None or int
+    - ``weights`` has to be "linear" | "quadratic" | "none" | None
+    """
+    _binary_confusion_matrix_arg_validation(threshold, ignore_index, normalize=None)
+    allowed_weights = ("linear", "quadratic", "none", None)
+    if weights not in allowed_weights:
+        raise ValueError(f"Expected argument `weight` to be one of {allowed_weights}, but got {weights}.")
+
+
+def binary_cohen_kappa(
+    preds: Tensor,
+    target: Tensor,
+    threshold: float = 0.5,
+    ignore_index: Optional[int] = None,
+    weights: Optional[Literal["linear", "quadratic", "none"]] = None,
+    validate_args: bool = True,
+) -> Tensor:
+    if validate_args:
+        _binary_cohen_kappa_arg_validation(threshold, ignore_index, weights)
+        _binary_confusion_matrix_tensor_validation(preds, target, ignore_index)
+    preds, target = _binary_confusion_matrix_format(preds, target, threshold, ignore_index)
+    confmat = _binary_confusion_matrix_update(preds, target)
+    return _cohen_kappa_reduce(confmat, weights)
+
+
+def _multiclass_cohen_kappa_arg_validation(
+    num_classes: int,
+    ignore_index: Optional[int] = None,
+    weights: Optional[Literal["linear", "quadratic", "none"]] = None,
+) -> None:
+    """Validate non tensor input.
+
+    - ``num_classes`` has to be a int larger than 1
+    - ``ignore_index`` has to be None or int
+    - ``weights`` has to be "linear" | "quadratic" | "none" | None
+    """
+    _multiclass_confusion_matrix_arg_validation(num_classes, ignore_index, normalize=None)
+    allowed_weights = ("linear", "quadratic", "none", None)
+    if weights not in allowed_weights:
+        raise ValueError(f"Expected argument `weight` to be one of {allowed_weights}, but got {weights}.")
+
+
+def multiclass_cohen_kappa(
+    preds: Tensor,
+    target: Tensor,
+    num_classes: int,
+    ignore_index: Optional[int] = None,
+    weights: Optional[Literal["linear", "quadratic", "none"]] = None,
+    validate_args: bool = True,
+) -> Tensor:
+    if validate_args:
+        _multiclass_cohen_kappa_arg_validation(num_classes, ignore_index, weights)
+        _multiclass_confusion_matrix_tensor_validation(preds, target, num_classes, ignore_index)
+    preds, target = _multiclass_confusion_matrix_format(preds, target, ignore_index)
+    confmat = _multiclass_confusion_matrix_update(preds, target, num_classes)
+    return _cohen_kappa_reduce(confmat, weights)
 
 
 # -------------------------- Old stuff --------------------------

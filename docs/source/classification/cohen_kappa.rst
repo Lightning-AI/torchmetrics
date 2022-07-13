@@ -32,14 +32,6 @@ MulticlassCohenKappa
     :noindex:
     :exclude-members: update, compute
 
-MultilabelCohenKappa
-^^^^^^^^^^^^^^^^^^^^
-
-.. autoclass:: torchmetrics.MultilabelCohenKappa
-    :noindex:
-    :exclude-members: update, compute
-
-
 Functional Interface
 ____________________
 
@@ -59,10 +51,4 @@ multiclass_cohen_kappa
 ^^^^^^^^^^^^^^^^^^^^^^
 
 .. autofunction:: torchmetrics.functional.multiclass_cohen_kappa
-    :noindex:
-
-multilabel_cohen_kappa
-^^^^^^^^^^^^^^^^^^^^^^
-
-.. autofunction:: torchmetrics.functional.multilabel_cohen_kappa
     :noindex:

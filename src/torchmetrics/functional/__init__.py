@@ -23,7 +23,6 @@ from torchmetrics.functional.classification.cohen_kappa import (
     binary_cohen_kappa,
     cohen_kappa,
     multiclass_cohen_kappa,
-    multilabel_cohen_kappa,
 )
 from torchmetrics.functional.classification.confusion_matrix import (
     binary_confusion_matrix,
