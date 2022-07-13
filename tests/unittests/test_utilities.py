@@ -20,6 +20,7 @@ from torchmetrics.utilities import check_forward_full_state_property, rank_zero_
 from torchmetrics.utilities.checks import _allclose_recursive
 from torchmetrics.utilities.data import _bincount, _flatten, _flatten_dict, to_categorical, to_onehot
 from torchmetrics.utilities.distributed import class_reduce, reduce
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_7
 
 
 def test_prints():
@@ -113,7 +114,7 @@ def test_bincount():
     """test that bincount works in deterministic setting on GPU."""
     torch.use_deterministic_algorithms(True)
 
-    x = torch.randint(100, size=(100,))
+    x = torch.randint(10, size=(100,))
     # uses custom implementation
     res1 = _bincount(x, minlength=10)
 
@@ -155,3 +156,14 @@ def test_check_full_state_update_fn(capsys, metric_class, expected):
 def test_recursive_allclose(input, expected):
     res = _allclose_recursive(*input)
     assert res == expected
+
+
+@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_7, reason="test requires access to `torch.movedim`")
+@pytest.mark.parametrize("dim1, dim2", [(1, 3), (1, -1)])
+def test_movedim(dim1, dim2):
+    x = torch.randn(5, 4, 3, 2, 1)
+    res1 = torch.movedim(x, dim1, dim2)
+    if dim2 >= 0:
+        dim2 += 1
+    res2 = x.unsqueeze(dim2).transpose(dim2, dim1).squeeze(dim1)
+    assert torch.allclose(res1, res2)

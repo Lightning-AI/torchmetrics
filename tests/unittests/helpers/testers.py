@@ -500,7 +500,7 @@ class MetricTester:
         metric_args = metric_args or {}
         _assert_dtype_support(
             metric_module(**metric_args) if metric_module is not None else None,
-            partial(metric_functional, **metric_args),
+            partial(metric_functional, **metric_args) if metric_functional is not None else None,
             preds,
             target,
             device="cpu",
@@ -531,7 +531,7 @@ class MetricTester:
         metric_args = metric_args or {}
         _assert_dtype_support(
             metric_module(**metric_args) if metric_module is not None else None,
-            partial(metric_functional, **metric_args),
+            partial(metric_functional, **metric_args) if metric_functional is not None else None,
             preds,
             target,
             device="cuda",
