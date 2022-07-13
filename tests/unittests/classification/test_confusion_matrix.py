@@ -12,194 +12,478 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import partial
-from typing import Any, Dict
 
 import numpy as np
 import pytest
 import torch
+from scipy.special import expit as sigmoid
 from sklearn.metrics import confusion_matrix as sk_confusion_matrix
-from sklearn.metrics import multilabel_confusion_matrix as sk_multilabel_confusion_matrix
 
-from torchmetrics import JaccardIndex
-from torchmetrics.classification.confusion_matrix import ConfusionMatrix
-from torchmetrics.functional.classification.confusion_matrix import confusion_matrix
-from unittests.classification.inputs import _input_binary, _input_binary_logits, _input_binary_prob
-from unittests.classification.inputs import _input_multiclass as _input_mcls
-from unittests.classification.inputs import _input_multiclass_logits as _input_mcls_logits
-from unittests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
-from unittests.classification.inputs import _input_multidim_multiclass as _input_mdmc
-from unittests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
-from unittests.classification.inputs import _input_multilabel as _input_mlb
-from unittests.classification.inputs import _input_multilabel_logits as _input_mlb_logits
-from unittests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
+from torchmetrics.classification.confusion_matrix import (
+    BinaryConfusionMatrix,
+    MulticlassConfusionMatrix,
+    MultilabelConfusionMatrix,
+)
+from torchmetrics.functional.classification.confusion_matrix import (
+    binary_confusion_matrix,
+    multiclass_confusion_matrix,
+    multilabel_confusion_matrix,
+)
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
+from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester
+from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index
 
 seed_all(42)
 
 
-def _sk_cm_binary_prob(preds, target, normalize=None):
-    sk_preds = (preds.view(-1).numpy() >= THRESHOLD).astype(np.uint8)
-    sk_target = target.view(-1).numpy()
-
-    return sk_confusion_matrix(y_true=sk_target, y_pred=sk_preds, normalize=normalize)
-
-
-def _sk_cm_binary(preds, target, normalize=None):
-    sk_preds = preds.view(-1).numpy()
-    sk_target = target.view(-1).numpy()
-
-    return sk_confusion_matrix(y_true=sk_target, y_pred=sk_preds, normalize=normalize)
-
-
-def _sk_cm_multilabel_prob(preds, target, normalize=None):
-    sk_preds = (preds.numpy() >= THRESHOLD).astype(np.uint8)
-    sk_target = target.numpy()
-
-    cm = sk_multilabel_confusion_matrix(y_true=sk_target, y_pred=sk_preds)
-    if normalize is not None:
-        if normalize == "true":
-            cm = cm / cm.sum(axis=1, keepdims=True)
-        elif normalize == "pred":
-            cm = cm / cm.sum(axis=0, keepdims=True)
-        elif normalize == "all":
-            cm = cm / cm.sum()
-        cm[np.isnan(cm)] = 0
-    return cm
+def _sk_confusion_matrix_binary(preds, target, normalize=None, ignore_index=None):
+    preds = preds.view(-1).numpy()
+    target = target.view(-1).numpy()
+    if np.issubdtype(preds.dtype, np.floating):
+        if not ((0 < preds) & (preds < 1)).all():
+            preds = sigmoid(preds)
+        preds = (preds >= THRESHOLD).astype(np.uint8)
+    if ignore_index is not None:
+        idx = target == ignore_index
+        target = target[~idx]
+        preds = preds[~idx]
+    return sk_confusion_matrix(y_true=target, y_pred=preds, labels=[0, 1], normalize=normalize)
 
 
-def _sk_cm_multilabel(preds, target, normalize=None):
-    sk_preds = preds.numpy()
-    sk_target = target.numpy()
-
-    cm = sk_multilabel_confusion_matrix(y_true=sk_target, y_pred=sk_preds)
-    if normalize is not None:
-        if normalize == "true":
-            cm = cm / cm.sum(axis=1, keepdims=True)
-        elif normalize == "pred":
-            cm = cm / cm.sum(axis=0, keepdims=True)
-        elif normalize == "all":
-            cm = cm / cm.sum()
-        cm[np.isnan(cm)] = 0
-    return cm
-
-
-def _sk_cm_multiclass_prob(preds, target, normalize=None):
-    sk_preds = torch.argmax(preds, dim=len(preds.shape) - 1).view(-1).numpy()
-    sk_target = target.view(-1).numpy()
-
-    return sk_confusion_matrix(y_true=sk_target, y_pred=sk_preds, normalize=normalize)
-
-
-def _sk_cm_multiclass(preds, target, normalize=None):
-    sk_preds = preds.view(-1).numpy()
-    sk_target = target.view(-1).numpy()
-
-    return sk_confusion_matrix(y_true=sk_target, y_pred=sk_preds, normalize=normalize)
-
-
-def _sk_cm_multidim_multiclass_prob(preds, target, normalize=None):
-    sk_preds = torch.argmax(preds, dim=len(preds.shape) - 2).view(-1).numpy()
-    sk_target = target.view(-1).numpy()
-
-    return sk_confusion_matrix(y_true=sk_target, y_pred=sk_preds, normalize=normalize)
-
-
-def _sk_cm_multidim_multiclass(preds, target, normalize=None):
-    sk_preds = preds.view(-1).numpy()
-    sk_target = target.view(-1).numpy()
-
-    return sk_confusion_matrix(y_true=sk_target, y_pred=sk_preds, normalize=normalize)
-
-
-@pytest.mark.parametrize("normalize", ["true", "pred", "all", None])
-@pytest.mark.parametrize(
-    "preds, target, sk_metric, num_classes, multilabel",
-    [
-        (_input_binary_prob.preds, _input_binary_prob.target, _sk_cm_binary_prob, 2, False),
-        (_input_binary_logits.preds, _input_binary_logits.target, _sk_cm_binary_prob, 2, False),
-        (_input_binary.preds, _input_binary.target, _sk_cm_binary, 2, False),
-        (_input_mlb_prob.preds, _input_mlb_prob.target, _sk_cm_multilabel_prob, NUM_CLASSES, True),
-        (_input_mlb_logits.preds, _input_mlb_logits.target, _sk_cm_multilabel_prob, NUM_CLASSES, True),
-        (_input_mlb.preds, _input_mlb.target, _sk_cm_multilabel, NUM_CLASSES, True),
-        (_input_mcls_prob.preds, _input_mcls_prob.target, _sk_cm_multiclass_prob, NUM_CLASSES, False),
-        (_input_mcls_logits.preds, _input_mcls_logits.target, _sk_cm_multiclass_prob, NUM_CLASSES, False),
-        (_input_mcls.preds, _input_mcls.target, _sk_cm_multiclass, NUM_CLASSES, False),
-        (_input_mdmc_prob.preds, _input_mdmc_prob.target, _sk_cm_multidim_multiclass_prob, NUM_CLASSES, False),
-        (_input_mdmc.preds, _input_mdmc.target, _sk_cm_multidim_multiclass, NUM_CLASSES, False),
-    ],
-)
-class TestConfusionMatrix(MetricTester):
+@pytest.mark.parametrize("input", _binary_cases)
+class TestBinaryConfusionMatrix(MetricTester):
+    @pytest.mark.parametrize("normalize", ["true", "pred", "all", None])
+    @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_confusion_matrix(
-        self, normalize, preds, target, sk_metric, num_classes, multilabel, ddp, dist_sync_on_step
-    ):
+    def test_binary_confusion_matrix(self, input, ddp, normalize, ignore_index):
+        preds, target = input
+        if ignore_index is not None:
+            target = inject_ignore_index(target, ignore_index)
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
             target=target,
-            metric_class=ConfusionMatrix,
-            sk_metric=partial(sk_metric, normalize=normalize),
-            dist_sync_on_step=dist_sync_on_step,
+            metric_class=BinaryConfusionMatrix,
+            sk_metric=partial(_sk_confusion_matrix_binary, normalize=normalize, ignore_index=ignore_index),
             metric_args={
-                "num_classes": num_classes,
                 "threshold": THRESHOLD,
                 "normalize": normalize,
-                "multilabel": multilabel,
+                "ignore_index": ignore_index,
             },
         )
 
-    def test_confusion_matrix_functional(self, normalize, preds, target, sk_metric, num_classes, multilabel):
+    @pytest.mark.parametrize("normalize", ["true", "pred", "all", None])
+    @pytest.mark.parametrize("ignore_index", [None, -1, 0])
+    def test_binary_confusion_matrix_functional(self, input, normalize, ignore_index):
+        preds, target = input
+        if ignore_index is not None:
+            target = inject_ignore_index(target, ignore_index)
         self.run_functional_metric_test(
             preds=preds,
             target=target,
-            metric_functional=confusion_matrix,
-            sk_metric=partial(sk_metric, normalize=normalize),
+            metric_functional=binary_confusion_matrix,
+            sk_metric=partial(_sk_confusion_matrix_binary, normalize=normalize, ignore_index=ignore_index),
             metric_args={
-                "num_classes": num_classes,
                 "threshold": THRESHOLD,
                 "normalize": normalize,
-                "multilabel": multilabel,
+                "ignore_index": ignore_index,
             },
         )
 
-    def test_confusion_matrix_differentiability(self, normalize, preds, target, sk_metric, num_classes, multilabel):
+    def test_binary_confusion_matrix_differentiability(self, input):
+        preds, target = input
         self.run_differentiability_test(
             preds=preds,
             target=target,
-            metric_module=ConfusionMatrix,
-            metric_functional=confusion_matrix,
-            metric_args={
-                "num_classes": num_classes,
-                "threshold": THRESHOLD,
-                "normalize": normalize,
-                "multilabel": multilabel,
-            },
+            metric_module=BinaryConfusionMatrix,
+            metric_functional=binary_confusion_matrix,
+            metric_args={"threshold": THRESHOLD},
+        )
+
+    @pytest.mark.parametrize("dtype", [torch.half, torch.double])
+    def test_binary_confusion_matrix_half_cpu(self, input, dtype):
+        preds, target = input
+        if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_6:
+            pytest.xfail(reason="half support of core ops not support before pytorch v1.6")
+        if (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        self.run_precision_test_cpu(
+            preds=preds,
+            target=target,
+            metric_module=BinaryConfusionMatrix,
+            metric_functional=binary_confusion_matrix,
+            metric_args={"threshold": THRESHOLD},
+            dtype=dtype,
+        )
+
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
+    @pytest.mark.parametrize("dtype", [torch.half, torch.double])
+    def test_binary_confusion_matrix_half_gpu(self, input, dtype):
+        preds, target = input
+        self.run_precision_test_gpu(
+            preds=preds,
+            target=target,
+            metric_module=BinaryConfusionMatrix,
+            metric_functional=binary_confusion_matrix,
+            metric_args={"threshold": THRESHOLD},
+            dtype=dtype,
         )
 
 
-def test_warning_on_nan(tmpdir):
+def _sk_confusion_matrix_multiclass(preds, target, normalize=None, ignore_index=None):
+    preds = preds.numpy()
+    target = target.numpy()
+    if np.issubdtype(preds.dtype, np.floating):
+        preds = np.argmax(preds, axis=1)
+    preds = preds.flatten()
+    target = target.flatten()
+
+    if ignore_index is not None:
+        idx = target == ignore_index
+        target = target[~idx]
+        preds = preds[~idx]
+    return sk_confusion_matrix(y_true=target, y_pred=preds, normalize=normalize, labels=list(range(NUM_CLASSES)))
+
+
+@pytest.mark.parametrize("input", _multiclass_cases)
+class TestMulticlassConfusionMatrix(MetricTester):
+    @pytest.mark.parametrize("normalize", ["true", "pred", "all", None])
+    @pytest.mark.parametrize("ignore_index", [None, -1, 0])
+    @pytest.mark.parametrize("ddp", [True, False])
+    def test_multiclass_confusion_matrix(self, input, ddp, normalize, ignore_index):
+        preds, target = input
+        if ignore_index is not None:
+            target = inject_ignore_index(target, ignore_index)
+        self.run_class_metric_test(
+            ddp=ddp,
+            preds=preds,
+            target=target,
+            metric_class=MulticlassConfusionMatrix,
+            sk_metric=partial(_sk_confusion_matrix_multiclass, normalize=normalize, ignore_index=ignore_index),
+            metric_args={
+                "num_classes": NUM_CLASSES,
+                "normalize": normalize,
+                "ignore_index": ignore_index,
+            },
+        )
+
+    @pytest.mark.parametrize("normalize", ["true", "pred", "all", None])
+    @pytest.mark.parametrize("ignore_index", [None, -1, 0])
+    def test_multiclass_confusion_matrix_functional(self, input, normalize, ignore_index):
+        preds, target = input
+        if ignore_index is not None:
+            target = inject_ignore_index(target, ignore_index)
+        self.run_functional_metric_test(
+            preds=preds,
+            target=target,
+            metric_functional=multiclass_confusion_matrix,
+            sk_metric=partial(_sk_confusion_matrix_multiclass, normalize=normalize, ignore_index=ignore_index),
+            metric_args={
+                "num_classes": NUM_CLASSES,
+                "normalize": normalize,
+                "ignore_index": ignore_index,
+            },
+        )
+
+    def test_multiclass_confusion_matrix_differentiability(self, input):
+        preds, target = input
+        self.run_differentiability_test(
+            preds=preds,
+            target=target,
+            metric_module=MulticlassConfusionMatrix,
+            metric_functional=multiclass_confusion_matrix,
+            metric_args={"num_classes": NUM_CLASSES},
+        )
+
+    @pytest.mark.parametrize("dtype", [torch.half, torch.double])
+    def test_multiclass_confusion_matrix_half_cpu(self, input, dtype):
+        preds, target = input
+        if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_6:
+            pytest.xfail(reason="half support of core ops not support before pytorch v1.6")
+        self.run_precision_test_cpu(
+            preds=preds,
+            target=target,
+            metric_module=MulticlassConfusionMatrix,
+            metric_functional=multiclass_confusion_matrix,
+            metric_args={"num_classes": NUM_CLASSES},
+            dtype=dtype,
+        )
+
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
+    @pytest.mark.parametrize("dtype", [torch.half, torch.double])
+    def test_multiclass_confusion_matrix_half_gpu(self, input, dtype):
+        preds, target = input
+        self.run_precision_test_gpu(
+            preds=preds,
+            target=target,
+            metric_module=MulticlassConfusionMatrix,
+            metric_functional=multiclass_confusion_matrix,
+            metric_args={"num_classes": NUM_CLASSES},
+            dtype=dtype,
+        )
+
+
+def _sk_confusion_matrix_multilabel(preds, target, normalize=None, ignore_index=None):
+    preds = preds.numpy()
+    target = target.numpy()
+    if np.issubdtype(preds.dtype, np.floating):
+        if not ((0 < preds) & (preds < 1)).all():
+            preds = sigmoid(preds)
+        preds = (preds >= THRESHOLD).astype(np.uint8)
+    preds = np.moveaxis(preds, 1, -1).reshape((-1, preds.shape[1]))
+    target = np.moveaxis(target, 1, -1).reshape((-1, target.shape[1]))
+    confmat = []
+    for i in range(preds.shape[1]):
+        p, t = preds[:, i], target[:, i]
+        if ignore_index is not None:
+            idx = t == ignore_index
+            t = t[~idx]
+            p = p[~idx]
+        confmat.append(sk_confusion_matrix(t, p, normalize=normalize, labels=[0, 1]))
+    return np.stack(confmat, axis=0)
+
+
+@pytest.mark.parametrize("input", _multilabel_cases)
+class TestMultilabelConfusionMatrix(MetricTester):
+    @pytest.mark.parametrize("normalize", ["true", "pred", "all", None])
+    @pytest.mark.parametrize("ignore_index", [None, -1, 0])
+    @pytest.mark.parametrize("ddp", [True, False])
+    def test_multilabel_confusion_matrix(self, input, ddp, normalize, ignore_index):
+        preds, target = input
+        if ignore_index is not None:
+            target = inject_ignore_index(target, ignore_index)
+        self.run_class_metric_test(
+            ddp=ddp,
+            preds=preds,
+            target=target,
+            metric_class=MultilabelConfusionMatrix,
+            sk_metric=partial(_sk_confusion_matrix_multilabel, normalize=normalize, ignore_index=ignore_index),
+            metric_args={
+                "num_labels": NUM_CLASSES,
+                "normalize": normalize,
+                "ignore_index": ignore_index,
+            },
+        )
+
+    @pytest.mark.parametrize("normalize", ["true", "pred", "all", None])
+    @pytest.mark.parametrize("ignore_index", [None, -1, 0])
+    def test_multilabel_confusion_matrix_functional(self, input, normalize, ignore_index):
+        preds, target = input
+        if ignore_index is not None:
+            target = inject_ignore_index(target, ignore_index)
+        self.run_functional_metric_test(
+            preds=preds,
+            target=target,
+            metric_functional=multilabel_confusion_matrix,
+            sk_metric=partial(_sk_confusion_matrix_multilabel, normalize=normalize, ignore_index=ignore_index),
+            metric_args={
+                "num_labels": NUM_CLASSES,
+                "normalize": normalize,
+                "ignore_index": ignore_index,
+            },
+        )
+
+    def test_multilabel_confusion_matrix_differentiability(self, input):
+        preds, target = input
+        self.run_differentiability_test(
+            preds=preds,
+            target=target,
+            metric_module=MultilabelConfusionMatrix,
+            metric_functional=multilabel_confusion_matrix,
+            metric_args={"num_labels": NUM_CLASSES, "threshold": THRESHOLD},
+        )
+
+    @pytest.mark.parametrize("dtype", [torch.half, torch.double])
+    def test_multilabel_confusion_matrix_half_cpu(self, input, dtype):
+        preds, target = input
+        if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_6:
+            pytest.xfail(reason="half support of core ops not support before pytorch v1.6")
+        if (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        self.run_precision_test_cpu(
+            preds=preds,
+            target=target,
+            metric_module=MultilabelConfusionMatrix,
+            metric_functional=multilabel_confusion_matrix,
+            metric_args={"num_labels": NUM_CLASSES, "threshold": THRESHOLD},
+            dtype=dtype,
+        )
+
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
+    @pytest.mark.parametrize("dtype", [torch.half, torch.double])
+    def test_multilabel_confusion_matrix_half_gpu(self, input, dtype):
+        preds, target = input
+        self.run_precision_test_gpu(
+            preds=preds,
+            target=target,
+            metric_module=MultilabelConfusionMatrix,
+            metric_functional=multilabel_confusion_matrix,
+            metric_args={"num_labels": NUM_CLASSES, "threshold": THRESHOLD},
+            dtype=dtype,
+        )
+
+
+def test_warning_on_nan():
     preds = torch.randint(3, size=(20,))
     target = torch.randint(3, size=(20,))
 
     with pytest.warns(
         UserWarning,
-        match=".* nan values found in confusion matrix have been replaced with zeros.",
+        match=".* NaN values found in confusion matrix have been replaced with zeros.",
     ):
-        confusion_matrix(preds, target, num_classes=5, normalize="true")
+        multiclass_confusion_matrix(preds, target, num_classes=5, normalize="true")
 
 
-@pytest.mark.parametrize(
-    "metric_args",
-    [
-        {"num_classes": 1, "normalize": "true"},
-        {"num_classes": 1, "normalize": "pred"},
-        {"num_classes": 1, "normalize": "all"},
-        {"num_classes": 1, "normalize": "none"},
-        {"num_classes": 1, "normalize": None},
-    ],
-)
-def test_provide_superclass_kwargs(metric_args: Dict[str, Any]):
-    """Test instantiating subclasses with superclass arguments as kwargs."""
-    JaccardIndex(**metric_args)
+# -------------------------- Old stuff --------------------------
+
+# def _sk_cm_binary_prob(preds, target, normalize=None):
+#     sk_preds = (preds.view(-1).numpy() >= THRESHOLD).astype(np.uint8)
+#     sk_target = target.view(-1).numpy()
+
+#     return sk_confusion_matrix(y_true=sk_target, y_pred=sk_preds, normalize=normalize)
+
+
+# def _sk_cm_binary(preds, target, normalize=None):
+#     sk_preds = preds.view(-1).numpy()
+#     sk_target = target.view(-1).numpy()
+
+#     return sk_confusion_matrix(y_true=sk_target, y_pred=sk_preds, normalize=normalize)
+
+
+# def _sk_cm_multilabel_prob(preds, target, normalize=None):
+#     sk_preds = (preds.numpy() >= THRESHOLD).astype(np.uint8)
+#     sk_target = target.numpy()
+
+#     cm = sk_multilabel_confusion_matrix(y_true=sk_target, y_pred=sk_preds)
+#     if normalize is not None:
+#         if normalize == "true":
+#             cm = cm / cm.sum(axis=1, keepdims=True)
+#         elif normalize == "pred":
+#             cm = cm / cm.sum(axis=0, keepdims=True)
+#         elif normalize == "all":
+#             cm = cm / cm.sum()
+#         cm[np.isnan(cm)] = 0
+#     return cm
+
+
+# def _sk_cm_multilabel(preds, target, normalize=None):
+#     sk_preds = preds.numpy()
+#     sk_target = target.numpy()
+
+#     cm = sk_multilabel_confusion_matrix(y_true=sk_target, y_pred=sk_preds)
+#     if normalize is not None:
+#         if normalize == "true":
+#             cm = cm / cm.sum(axis=1, keepdims=True)
+#         elif normalize == "pred":
+#             cm = cm / cm.sum(axis=0, keepdims=True)
+#         elif normalize == "all":
+#             cm = cm / cm.sum()
+#         cm[np.isnan(cm)] = 0
+#     return cm
+
+
+# def _sk_cm_multiclass_prob(preds, target, normalize=None):
+#     sk_preds = torch.argmax(preds, dim=len(preds.shape) - 1).view(-1).numpy()
+#     sk_target = target.view(-1).numpy()
+
+#     return sk_confusion_matrix(y_true=sk_target, y_pred=sk_preds, normalize=normalize)
+
+
+# def _sk_cm_multiclass(preds, target, normalize=None):
+#     sk_preds = preds.view(-1).numpy()
+#     sk_target = target.view(-1).numpy()
+
+#     return sk_confusion_matrix(y_true=sk_target, y_pred=sk_preds, normalize=normalize)
+
+
+# def _sk_cm_multidim_multiclass_prob(preds, target, normalize=None):
+#     sk_preds = torch.argmax(preds, dim=len(preds.shape) - 2).view(-1).numpy()
+#     sk_target = target.view(-1).numpy()
+
+#     return sk_confusion_matrix(y_true=sk_target, y_pred=sk_preds, normalize=normalize)
+
+
+# def _sk_cm_multidim_multiclass(preds, target, normalize=None):
+#     sk_preds = preds.view(-1).numpy()
+#     sk_target = target.view(-1).numpy()
+
+#     return sk_confusion_matrix(y_true=sk_target, y_pred=sk_preds, normalize=normalize)
+
+
+# @pytest.mark.parametrize("normalize", ["true", "pred", "all", None])
+# @pytest.mark.parametrize(
+#     "preds, target, sk_metric, num_classes, multilabel",
+#     [
+#         (_input_binary_prob.preds, _input_binary_prob.target, _sk_cm_binary_prob, 2, False),
+#         (_input_binary_logits.preds, _input_binary_logits.target, _sk_cm_binary_prob, 2, False),
+#         (_input_binary.preds, _input_binary.target, _sk_cm_binary, 2, False),
+#         (_input_mlb_prob.preds, _input_mlb_prob.target, _sk_cm_multilabel_prob, NUM_CLASSES, True),
+#         (_input_mlb_logits.preds, _input_mlb_logits.target, _sk_cm_multilabel_prob, NUM_CLASSES, True),
+#         (_input_mlb.preds, _input_mlb.target, _sk_cm_multilabel, NUM_CLASSES, True),
+#         (_input_mcls_prob.preds, _input_mcls_prob.target, _sk_cm_multiclass_prob, NUM_CLASSES, False),
+#         (_input_mcls_logits.preds, _input_mcls_logits.target, _sk_cm_multiclass_prob, NUM_CLASSES, False),
+#         (_input_mcls.preds, _input_mcls.target, _sk_cm_multiclass, NUM_CLASSES, False),
+#         (_input_mdmc_prob.preds, _input_mdmc_prob.target, _sk_cm_multidim_multiclass_prob, NUM_CLASSES, False),
+#         (_input_mdmc.preds, _input_mdmc.target, _sk_cm_multidim_multiclass, NUM_CLASSES, False),
+#     ],
+# )
+# class TestConfusionMatrix(MetricTester):
+#     @pytest.mark.parametrize("ddp", [True, False])
+#     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
+#     def test_confusion_matrix(
+#         self, normalize, preds, target, sk_metric, num_classes, multilabel, ddp, dist_sync_on_step
+#     ):
+#         self.run_class_metric_test(
+#             ddp=ddp,
+#             preds=preds,
+#             target=target,
+#             metric_class=ConfusionMatrix,
+#             sk_metric=partial(sk_metric, normalize=normalize),
+#             dist_sync_on_step=dist_sync_on_step,
+#             metric_args={
+#                 "num_classes": num_classes,
+#                 "threshold": THRESHOLD,
+#                 "normalize": normalize,
+#                 "multilabel": multilabel,
+#             },
+#         )
+
+#     def test_confusion_matrix_functional(self, normalize, preds, target, sk_metric, num_classes, multilabel):
+#         self.run_functional_metric_test(
+#             preds=preds,
+#             target=target,
+#             metric_functional=confusion_matrix,
+#             sk_metric=partial(sk_metric, normalize=normalize),
+#             metric_args={
+#                 "num_classes": num_classes,
+#                 "threshold": THRESHOLD,
+#                 "normalize": normalize,
+#                 "multilabel": multilabel,
+#             },
+#         )
+
+#     def test_confusion_matrix_differentiability(self, normalize, preds, target, sk_metric, num_classes, multilabel):
+#         self.run_differentiability_test(
+#             preds=preds,
+#             target=target,
+#             metric_module=ConfusionMatrix,
+#             metric_functional=confusion_matrix,
+#             metric_args={
+#                 "num_classes": num_classes,
+#                 "threshold": THRESHOLD,
+#                 "normalize": normalize,
+#                 "multilabel": multilabel,
+#             },
+#         )
+
+
+# def test_warning_on_nan(tmpdir):
+#     preds = torch.randint(3, size=(20,))
+#     target = torch.randint(3, size=(20,))
+
+#     with pytest.warns(
+#         UserWarning,
+#         match=".* nan values found in confusion matrix have been replaced with zeros.",
+#     ):
+#         confusion_matrix(preds, target, num_classes=5, normalize="true")
