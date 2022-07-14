@@ -34,7 +34,8 @@ from torchmetrics.functional.classification.confusion_matrix import (
 
 
 def _matthews_corrcoef_reduce(confmat: Tensor) -> Tensor:
-    """Reduce an un-normalized confusion matrix of shape (n_classes, n_classes) into the matthews corrcoef score."""
+    """Reduce an un-normalized confusion matrix of shape (n_classes, n_classes) into the matthews corrcoef
+    score."""
     # convert multilabel into binary
     confmat = confmat.sum(0) if confmat.ndim == 3 else confmat
 
