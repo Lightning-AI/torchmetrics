@@ -57,6 +57,7 @@ def _jaccard_index_reduce(
     allowed_average = ["binary", "micro", "macro", "weighted", "none", None]
     if average not in allowed_average:
         raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
+    confmat = confmat.float()
     if average == "binary":
         return confmat[1, 1] / (confmat[0, 1] + confmat[1, 0] + confmat[1, 1])
     else:
