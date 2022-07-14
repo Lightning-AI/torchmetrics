@@ -89,6 +89,50 @@ def binary_jaccard_index(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
+    r"""Calculates the Jaccard index for binary tasks. The `Jaccard index`_ (also known as
+    the intersetion over union or jaccard similarity coefficient) is an statistic that can be
+    used to determine the similarity and diversity of a sample set. It is defined as the size
+    of the intersection divided by the union of the sample sets:
+
+    .. math:: J(A,B) = \frac{|A\cap B|}{|A\cup B|}
+
+    Accepts the following input tensors:
+
+    - ``preds`` (int or float tensor): ``(N, ...)``. If preds is a floating point tensor with values outside
+      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
+      we convert to int tensor with thresholding using the value in ``threshold``.
+    - ``target`` (int tensor): ``(N, ...)``
+
+    Additional dimension ``...`` will be flattened into the batch dimension.
+
+    Args:
+        threshold: Threshold for transforming probability to binary (0,1) predictions
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
+        normalize: Normalization mode for confusion matrix. Choose from:
+
+            - ``None`` or ``'none'``: no normalization (default)
+            - ``'true'``: normalization over the targets (most commonly used)
+            - ``'pred'``: normalization over the predictions
+            - ``'all'``: normalization over the whole matrix
+        validate_args: bool indicating if input arguments and tensors should be validated for correctness.
+            Set to ``False`` for faster computations.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+
+    Example (preds is int tensor):
+        >>> from torchmetrics.functional import binary_jaccard_index
+        >>> target = torch.tensor([1, 1, 0, 0])
+        >>> preds = torch.tensor([0, 1, 0, 0])
+        >>> binary_jaccard_index(preds, target)
+        tensor(0.5000)
+
+    Example (preds is float tensor):
+        >>> from torchmetrics.functional import binary_jaccard_index
+        >>> target = torch.tensor([1, 1, 0, 0])
+        >>> preds = torch.tensor([0.35, 0.85, 0.48, 0.01])
+        >>> binary_jaccard_index(preds, target)
+        tensor(0.5000)
+    """
     if validate_args:
         _binary_confusion_matrix_arg_validation(threshold, ignore_index)
         _binary_confusion_matrix_tensor_validation(preds, target, ignore_index)
@@ -116,6 +160,57 @@ def multiclass_jaccard_index(
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
     validate_args: bool = True,
 ) -> Tensor:
+    r"""Calculates the Jaccard index for multiclass tasks. The `Jaccard index`_ (also known as
+    the intersetion over union or jaccard similarity coefficient) is an statistic that can be
+    used to determine the similarity and diversity of a sample set. It is defined as the size
+    of the intersection divided by the union of the sample sets:
+
+    .. math:: J(A,B) = \frac{|A\cap B|}{|A\cup B|}
+
+    Accepts the following input tensors:
+
+    - ``preds``: ``(N, ...)`` (int tensor) or ``(N, C, ..)`` (float tensor). If preds is a floating point
+      we apply ``torch.argmax`` along the ``C`` dimension to automatically convert probabilities/logits into
+      an int tensor.
+    - ``target`` (int tensor): ``(N, ...)``
+
+    Additional dimension ``...`` will be flattened into the batch dimension.
+
+    Args:
+        num_classes: Integer specifing the number of classes
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
+        average:
+            Defines the reduction that is applied over labels. Should be one of the following:
+
+            - ``micro``: Sum statistics over all labels
+            - ``macro``: Calculate statistics for each label and average them
+            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+
+        validate_args: bool indicating if input arguments and tensors should be validated for correctness.
+            Set to ``False`` for faster computations.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+
+    Example (pred is integer tensor):
+        >>> from torchmetrics.functional import multiclass_jaccard_index
+        >>> target = torch.tensor([2, 1, 0, 0])
+        >>> preds = torch.tensor([2, 1, 0, 1])
+        >>> multiclass_jaccard_index(preds, target, num_classes=3)
+        tensor(0.6667)
+
+    Example (pred is float tensor):
+        >>> from torchmetrics.functional import multiclass_jaccard_index
+        >>> target = torch.tensor([2, 1, 0, 0])
+        >>> preds = torch.tensor([
+        ...   [0.16, 0.26, 0.58],
+        ...   [0.22, 0.61, 0.17],
+        ...   [0.71, 0.09, 0.20],
+        ...   [0.05, 0.82, 0.13],
+        ... ])
+        >>> multiclass_jaccard_index(preds, target, num_classes=3)
+        tensor(0.6667)
+    """
     if validate_args:
         _multiclass_jaccard_index_arg_validation(num_classes, ignore_index, average)
         _multiclass_confusion_matrix_tensor_validation(preds, target, num_classes, ignore_index)
@@ -145,6 +240,54 @@ def multilabel_jaccard_index(
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
     validate_args: bool = True,
 ) -> Tensor:
+    r"""Calculates the Jaccard index for multilabel tasks. The `Jaccard index`_ (also known as
+    the intersetion over union or jaccard similarity coefficient) is an statistic that can be
+    used to determine the similarity and diversity of a sample set. It is defined as the size
+    of the intersection divided by the union of the sample sets:
+
+    .. math:: J(A,B) = \frac{|A\cap B|}{|A\cup B|}
+
+    Accepts the following input tensors:
+
+    - ``preds`` (int or float tensor): ``(N, C, ...)``. If preds is a floating point tensor with values outside
+      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
+      we convert to int tensor with thresholding using the value in ``threshold``.
+    - ``target`` (int tensor): ``(N, C, ...)``
+
+    Additional dimension ``...`` will be flattened into the batch dimension.
+
+    Args:
+        num_classes: Integer specifing the number of labels
+        threshold: Threshold for transforming probability to binary (0,1) predictions
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
+        average:
+            Defines the reduction that is applied over labels. Should be one of the following:
+
+            - ``micro``: Sum statistics over all labels
+            - ``macro``: Calculate statistics for each label and average them
+            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+
+        validate_args: bool indicating if input arguments and tensors should be validated for correctness.
+            Set to ``False`` for faster computations.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+
+    Example (preds is int tensor):
+        >>> from torchmetrics.functional import multilabel_jaccard_index
+        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
+        >>> multilabel_jaccard_index(preds, target, num_labels=3)
+        tensor(0.5000)
+
+    Example (preds is float tensor):
+        >>> from torchmetrics.functional import multilabel_jaccard_index
+        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
+        >>> multilabel_jaccard_index(preds, target, num_labels=3)
+        tensor(0.5000)
+
+    """
     if validate_args:
         _multilabel_jaccard_index_arg_validation(num_labels, threshold, ignore_index)
         _multilabel_confusion_matrix_tensor_validation(preds, target, num_labels, ignore_index)
