@@ -27,7 +27,7 @@ from torchmetrics.functional.classification.jaccard import (
 
 
 class BinaryJaccardIndex(BinaryConfusionMatrix):
-    """ """
+    """"""
 
     is_differentiable: bool = False
     higher_is_better: bool = True

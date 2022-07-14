@@ -39,7 +39,7 @@ def _jaccard_index_reduce(
     confmat: Tensor,
     average: Optional[Literal["micro", "macro", "weighted", "none", "binary"]],
 ) -> Tensor:
-    """Perform reduction of an un-normalized confusion matrix into jaccard score
+    """Perform reduction of an un-normalized confusion matrix into jaccard score.
 
     Args:
         confmat: tensor with un-normalized confusionmatrix
@@ -53,7 +53,6 @@ def _jaccard_index_reduce(
               metrics across classes, weighting each class by its support (``tp + fn``).
             - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
               the metric for every class.
-
     """
     allowed_average = ["binary", "micro", "macro", "weighted", "none", None]
     if average not in allowed_average:
