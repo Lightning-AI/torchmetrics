@@ -15,20 +15,143 @@ from typing import Optional
 
 import torch
 from torch import Tensor
+from typing_extensions import Literal
 
-from torchmetrics.functional.classification.confusion_matrix import _confusion_matrix_update
+from torchmetrics.functional.classification.confusion_matrix import (
+    _binary_confusion_matrix_arg_validation,
+    _binary_confusion_matrix_format,
+    _binary_confusion_matrix_tensor_validation,
+    _binary_confusion_matrix_update,
+    _confusion_matrix_update,
+    _multiclass_confusion_matrix_arg_validation,
+    _multiclass_confusion_matrix_format,
+    _multiclass_confusion_matrix_tensor_validation,
+    _multiclass_confusion_matrix_update,
+    _multilabel_confusion_matrix_arg_validation,
+    _multilabel_confusion_matrix_format,
+    _multilabel_confusion_matrix_tensor_validation,
+    _multilabel_confusion_matrix_update,
+)
+from torchmetrics.utilities.compute import _safe_divide
 
 
-def binary_jaccard_index():
-    pass
+def _jaccard_index_reduce(
+    confmat: Tensor,
+    average: Optional[Literal["micro", "macro", "weighted", "none", "binary"]],
+) -> Tensor:
+    """Perform reduction of an un-normalized confusion matrix into jaccard score
+
+    Args:
+        confmat: tensor with un-normalized confusionmatrix
+        average: reduction method
+
+            - ``'binary'``: binary reduction, expects a 2x2 matrix
+            - ``'macro'``: Calculate the metric for each class separately, and average the
+              metrics across classes (with equal weights for each class).
+            - ``'micro'``: Calculate the metric globally, across all samples and classes.
+            - ``'weighted'``: Calculate the metric for each class separately, and average the
+              metrics across classes, weighting each class by its support (``tp + fn``).
+            - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
+              the metric for every class.
+
+    """
+    allowed_average = ["binary", "micro", "macro", "weighted", "none", None]
+    if average not in allowed_average:
+        raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
+    if average == "binary":
+        return confmat[1, 1] / (confmat[0, 1] + confmat[1, 0] + confmat[1, 1])
+    else:
+        if confmat.ndim == 3:  # multilabel
+            num = confmat[:, 1, 1]
+            denom = confmat[:, 1, 1] + confmat[:, 0, 1] + confmat[:, 1, 0]
+        else:  # multiclass
+            num = torch.diag(confmat)
+            denom = confmat.sum(0) + confmat.sum(1) - num
+
+        if average == "micro":
+            num = num.sum()
+            denom = denom.sum()
+
+        jaccard = _safe_divide(num, denom)
+
+        if average is None or average == "none":
+            return jaccard
+        if average == "weighted":
+            weights = confmat[:, 1, 1] + confmat[:, 1, 0] if confmat.ndim == 3 else confmat.sum(1)
+        else:
+            weights = torch.ones_like(jaccard)
+        return ((weights * jaccard) / weights.sum()).sum()
 
 
-def multiclass_jaccard_index():
-    pass
+def binary_jaccard_index(
+    preds: Tensor,
+    target: Tensor,
+    threshold: float = 0.5,
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
+) -> Tensor:
+    if validate_args:
+        _binary_confusion_matrix_arg_validation(threshold, ignore_index)
+        _binary_confusion_matrix_tensor_validation(preds, target, ignore_index)
+    preds, target = _binary_confusion_matrix_format(preds, target, threshold, ignore_index)
+    confmat = _binary_confusion_matrix_update(preds, target)
+    return _jaccard_index_reduce(confmat, average="binary")
 
 
-def multilabel_jaccard_index():
-    pass
+def _multiclass_jaccard_index_arg_validation(
+    num_classes: int,
+    ignore_index: Optional[int] = None,
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = None,
+) -> None:
+    _multiclass_confusion_matrix_arg_validation(num_classes, ignore_index)
+    allowed_average = ("micro", "macro", "weighted", "none", None)
+    if average not in allowed_average:
+        raise ValueError(f"Expected argument `average` to be one of {allowed_average}, but got {average}.")
+
+
+def multiclass_jaccard_index(
+    preds: Tensor,
+    target: Tensor,
+    num_classes: int,
+    ignore_index: Optional[int] = None,
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
+    validate_args: bool = True,
+) -> Tensor:
+    if validate_args:
+        _multiclass_jaccard_index_arg_validation(num_classes, ignore_index, average)
+        _multiclass_confusion_matrix_tensor_validation(preds, target, num_classes, ignore_index)
+    preds, target = _multiclass_confusion_matrix_format(preds, target, ignore_index)
+    confmat = _multiclass_confusion_matrix_update(preds, target, num_classes)
+    return _jaccard_index_reduce(confmat, average=average)
+
+
+def _multilabel_jaccard_index_arg_validation(
+    num_labels: int,
+    threshold: float = 0.5,
+    ignore_index: Optional[int] = None,
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
+) -> None:
+    _multilabel_confusion_matrix_arg_validation(num_labels, threshold, ignore_index)
+    allowed_average = ("micro", "macro", "weighted", "none", None)
+    if average not in allowed_average:
+        raise ValueError(f"Expected argument `average` to be one of {allowed_average}, but got {average}.")
+
+
+def multilabel_jaccard_index(
+    preds: Tensor,
+    target: Tensor,
+    num_labels: int,
+    threshold: float = 0.5,
+    ignore_index: Optional[int] = None,
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
+    validate_args: bool = True,
+) -> Tensor:
+    if validate_args:
+        _multilabel_jaccard_index_arg_validation(num_labels, threshold, ignore_index)
+        _multilabel_confusion_matrix_tensor_validation(preds, target, num_labels, ignore_index)
+    preds, target = _multilabel_confusion_matrix_format(preds, target, num_labels, threshold, ignore_index)
+    confmat = _multilabel_confusion_matrix_update(preds, target, num_labels)
+    return _jaccard_index_reduce(confmat, average=average)
 
 
 # -------------------------- Old stuff --------------------------

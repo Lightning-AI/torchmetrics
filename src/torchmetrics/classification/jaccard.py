@@ -11,18 +11,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional
+from typing import Any, Literal, Optional
 
 import torch
 from torch import Tensor
 
 from torchmetrics.classification import BinaryConfusionMatrix, MulticlassConfusionMatrix, MultilabelConfusionMatrix
 from torchmetrics.classification.confusion_matrix import ConfusionMatrix
-from torchmetrics.functional.classification.jaccard import _jaccard_from_confmat
+from torchmetrics.functional.classification.jaccard import (
+    _jaccard_from_confmat,
+    _jaccard_index_reduce,
+    _multiclass_jaccard_index_arg_validation,
+    _multilabel_jaccard_index_arg_validation,
+)
 
 
 class BinaryJaccardIndex(BinaryConfusionMatrix):
-    """"""
+    """ """
 
     is_differentiable: bool = False
     higher_is_better: bool = True
@@ -35,14 +40,12 @@ class BinaryJaccardIndex(BinaryConfusionMatrix):
         validate_args: bool = True,
         **kwargs: Any,
     ) -> None:
-        if validate_args:
-            _binary_jaccard_index_validate_args(threshold, ignore_index)
-        super().__init__(threshold=threshold, ignore_index=ignore_index, normalize=None, validate_args=False, **kwargs)
+        super().__init__(
+            threshold=threshold, ignore_index=ignore_index, normalize=None, validate_args=validate_args, **kwargs
+        )
 
     def compute(self) -> Tensor:
-        return _binary_jaccard_index_compute(
-            self.confmat,
-        )
+        return _jaccard_index_reduce(self.confmat, average="binary")
 
 
 class MulticlassJaccardIndex(MulticlassConfusionMatrix):
@@ -56,17 +59,20 @@ class MulticlassJaccardIndex(MulticlassConfusionMatrix):
         self,
         num_classes: int,
         ignore_index: Optional[int] = None,
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
         validate_args: bool = True,
         **kwargs: Any,
     ) -> None:
         super().__init__(
-            num_classes=num_classes, ignore_index=ignore_index, normalize=None, validate_args=validate_args, **kwargs
+            num_classes=num_classes, ignore_index=ignore_index, normalize=None, validate_args=False, **kwargs
         )
+        if validate_args:
+            _multiclass_jaccard_index_arg_validation(num_classes, ignore_index, average)
+        self.validate_args = validate_args
+        self.average = average
 
     def compute(self) -> Tensor:
-        return _multiclass_jaccard_index_compute(
-            self.confmat,
-        )
+        return _jaccard_index_reduce(self.confmat, average=self.average)
 
 
 class MultilabelJaccardIndex(MultilabelConfusionMatrix):
@@ -81,6 +87,7 @@ class MultilabelJaccardIndex(MultilabelConfusionMatrix):
         num_labels: int,
         threshold: float = 0.5,
         ignore_index: Optional[int] = None,
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
         validate_args: bool = True,
         **kwargs: Any,
     ) -> None:
@@ -89,14 +96,16 @@ class MultilabelJaccardIndex(MultilabelConfusionMatrix):
             threshold=threshold,
             ignore_index=ignore_index,
             normalize=None,
-            validate_args=validate_args,
+            validate_args=False,
             **kwargs,
         )
+        if validate_args:
+            _multilabel_jaccard_index_arg_validation(num_labels, threshold, ignore_index, average)
+        self.validate_args = validate_args
+        self.average = average
 
     def compute(self) -> Tensor:
-        return _multilabel_jaccard_index_compute(
-            self.confmat,
-        )
+        return _jaccard_index_reduce(self.confmat, average=self.average)
 
 
 # -------------------------- Old stuff --------------------------

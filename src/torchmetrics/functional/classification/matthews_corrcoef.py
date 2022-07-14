@@ -17,18 +17,18 @@ import torch
 from torch import Tensor
 
 from torchmetrics.functional.classification.confusion_matrix import (
-    _confusion_matrix_update,
     _binary_confusion_matrix_arg_validation,
-    _binary_confusion_matrix_tensor_validation,
     _binary_confusion_matrix_format,
+    _binary_confusion_matrix_tensor_validation,
     _binary_confusion_matrix_update,
+    _confusion_matrix_update,
     _multiclass_confusion_matrix_arg_validation,
-    _multiclass_confusion_matrix_tensor_validation,
     _multiclass_confusion_matrix_format,
+    _multiclass_confusion_matrix_tensor_validation,
     _multiclass_confusion_matrix_update,
     _multilabel_confusion_matrix_arg_validation,
-    _multilabel_confusion_matrix_tensor_validation,
     _multilabel_confusion_matrix_format,
+    _multilabel_confusion_matrix_tensor_validation,
     _multilabel_confusion_matrix_update,
 )
 

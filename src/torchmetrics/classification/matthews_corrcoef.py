@@ -19,8 +19,8 @@ from torch import Tensor
 from torchmetrics.classification import BinaryConfusionMatrix, MulticlassConfusionMatrix, MultilabelConfusionMatrix
 from torchmetrics.functional.classification.matthews_corrcoef import (
     _matthews_corrcoef_compute,
+    _matthews_corrcoef_reduce,
     _matthews_corrcoef_update,
-    _matthews_corrcoef_reduce
 )
 from torchmetrics.metric import Metric
 
