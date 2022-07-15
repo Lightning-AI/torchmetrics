@@ -19,7 +19,7 @@ from torchmetrics.functional.classification.auc import auc
 from torchmetrics.functional.classification.auroc import auroc
 from torchmetrics.functional.classification.average_precision import average_precision
 from torchmetrics.functional.classification.calibration_error import calibration_error
-from torchmetrics.functional.classification.cohen_kappa import cohen_kappa
+from torchmetrics.functional.classification.cohen_kappa import binary_cohen_kappa, cohen_kappa, multiclass_cohen_kappa
 from torchmetrics.functional.classification.confusion_matrix import (
     binary_confusion_matrix,
     confusion_matrix,
@@ -30,9 +30,19 @@ from torchmetrics.functional.classification.dice import dice, dice_score
 from torchmetrics.functional.classification.f_beta import f1_score, fbeta_score
 from torchmetrics.functional.classification.hamming import hamming_distance
 from torchmetrics.functional.classification.hinge import hinge_loss
-from torchmetrics.functional.classification.jaccard import jaccard_index
+from torchmetrics.functional.classification.jaccard import (
+    binary_jaccard_index,
+    jaccard_index,
+    multiclass_jaccard_index,
+    multilabel_jaccard_index,
+)
 from torchmetrics.functional.classification.kl_divergence import kl_divergence
-from torchmetrics.functional.classification.matthews_corrcoef import matthews_corrcoef
+from torchmetrics.functional.classification.matthews_corrcoef import (
+    binary_matthews_corrcoef,
+    matthews_corrcoef,
+    multiclass_matthews_corrcoef,
+    multilabel_matthews_corrcoef,
+)
 from torchmetrics.functional.classification.precision_recall import precision, precision_recall, recall
 from torchmetrics.functional.classification.precision_recall_curve import precision_recall_curve
 from torchmetrics.functional.classification.ranking import (
@@ -188,4 +198,12 @@ __all__ = [
     "binary_stat_scores",
     "multiclass_stat_scores",
     "multilabel_stat_scores",
+    "binary_cohen_kappa",
+    "multiclass_cohen_kappa",
+    "binary_jaccard_index",
+    "multiclass_jaccard_index",
+    "multilabel_jaccard_index",
+    "binary_matthews_corrcoef",
+    "multiclass_matthews_corrcoef",
+    "multilabel_matthews_corrcoef",
 ]
