@@ -34,7 +34,7 @@ def _binary_stat_scores_arg_validation(
     - ``multidim_average`` has to be either "global" or "samplewise"
     - ``ignore_index`` has to be None or int
     """
-    if not isinstance(threshold, float) and not (0 <= threshold <= 1):
+    if not (isinstance(threshold, float) and (0 <= threshold <= 1)):
         raise ValueError(f"Expected argument `threshold` to be a float in the [0,1] range, but got {threshold}.")
     allowed_multidim_average = ("global", "samplewise")
     if multidim_average not in allowed_multidim_average:
@@ -571,7 +571,7 @@ def _multilabel_stat_scores_arg_validation(
     """
     if not isinstance(num_labels, int) or num_labels < 2:
         raise ValueError(f"Expected argument `num_labels` to be an integer larger than 1, but got {num_labels}")
-    if not isinstance(threshold, float):
+    if not (isinstance(threshold, float) and (0 <= threshold <= 1)):
         raise ValueError(f"Expected argument `threshold` to be a float, but got {threshold}.")
     allowed_average = ("micro", "macro", "weighted", "none", None)
     if average not in allowed_average:

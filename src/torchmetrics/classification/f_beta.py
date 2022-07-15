@@ -15,9 +15,47 @@ from typing import Any, Optional
 
 from torch import Tensor
 
-from torchmetrics.classification.stat_scores import StatScores
+from torchmetrics.classification.stat_scores import (
+    BinaryStatScores,
+    MulticlassStatScores,
+    MultilabelStatScores,
+    StatScores,
+)
 from torchmetrics.functional.classification.f_beta import _fbeta_compute
 from torchmetrics.utilities.enums import AverageMethod
+
+
+class BinaryFBetaScore(BinaryStatScores):
+    def __init__(self):
+        pass
+
+
+class MulticlassFBetaScore(MulticlassStatScores):
+    def __init__(self):
+        pass
+
+
+class MultilabelFBetaScore(MultilabelStatScores):
+    def __init__(self):
+        pass
+
+
+class BinaryF1Score(BinaryFBetaScore):
+    def __init__(self):
+        pass
+
+
+class MulticlassF1Score(MulticlassFBetaScore):
+    def __init__(self):
+        pass
+
+
+class MultilabelF1Score(MultilabelFBetaScore):
+    def __init__(self):
+        pass
+
+
+# -------------------------- Old stuff --------------------------
 
 
 class FBetaScore(StatScores):

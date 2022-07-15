@@ -19,6 +19,8 @@ from torch import Tensor
 from torchmetrics.functional.classification.stat_scores import _reduce_stat_scores, _stat_scores_update
 from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
 
+# -------------------------- Old stuff --------------------------
+
 
 def _precision_compute(
     tp: Tensor,

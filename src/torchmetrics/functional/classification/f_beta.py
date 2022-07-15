@@ -15,10 +15,202 @@ from typing import Optional
 
 import torch
 from torch import Tensor
+from typing_extensions import Literal
 
-from torchmetrics.functional.classification.stat_scores import _reduce_stat_scores, _stat_scores_update
+from torchmetrics.functional.classification.stat_scores import (
+    _binary_stat_scores_arg_validation,
+    _binary_stat_scores_format,
+    _binary_stat_scores_tensor_validation,
+    _binary_stat_scores_update,
+    _multiclass_stat_scores_arg_validation,
+    _multiclass_stat_scores_format,
+    _multiclass_stat_scores_tensor_validation,
+    _multiclass_stat_scores_update,
+    _multilabel_stat_scores_arg_validation,
+    _multilabel_stat_scores_format,
+    _multilabel_stat_scores_tensor_validation,
+    _multilabel_stat_scores_update,
+    _reduce_stat_scores,
+    _stat_scores_update,
+)
 from torchmetrics.utilities.enums import AverageMethod as AvgMethod
 from torchmetrics.utilities.enums import MDMCAverageMethod
+
+
+def _fbeta_reduce(
+    tp: Tensor,
+    fp: Tensor,
+    tn: Tensor,
+    fn: Tensor,
+    beta: float,
+    average: Optional[Literal["binary", "micro", "macro", "weighted", "none"]],
+    multidim_average: Literal["global", "samplewise"] = "global",
+) -> Tensor:
+    beta2 = beta**2
+    if average == "binary":
+        return ((1 + beta2) * tp) / ((1 + beta2) * tp + beta2 * fn + fp)
+    elif average == "micro":
+        pass
+
+
+def _binary_fbeta_score_arg_validation(
+    beta: float,
+    threshold: float = 0.5,
+    multidim_average: Literal["global", "samplewise"] = "global",
+    ignore_index: Optional[int] = None,
+) -> None:
+    if not (isinstance(beta, float) and beta > 0):
+        raise ValueError(f"Expected argument `beta` to be a float larger than 0, but got {beta}.")
+    _binary_stat_scores_arg_validation(threshold, multidim_average, ignore_index)
+
+
+def binary_fbeta_score(
+    preds: Tensor,
+    target: Tensor,
+    beta: float,
+    threshold: float = 0.5,
+    multidim_average: Literal["global", "samplewise"] = "global",
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
+) -> Tensor:
+    if validate_args:
+        _binary_stat_scores_arg_validation(beta, threshold, multidim_average, ignore_index)
+        _binary_stat_scores_tensor_validation(preds, target, multidim_average, ignore_index)
+    preds, target = _binary_stat_scores_format(preds, target, threshold, ignore_index)
+    tp, fp, tn, fn = _binary_stat_scores_update(preds, target, multidim_average)
+    return _fbeta_reduce(tp, fp, tn, fn, beta, average="binary", multidim_average=multidim_average)
+
+
+def _multiclass_fbeta_score_arg_validation(
+    beta: float,
+    num_classes: int,
+    top_k: int = 1,
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+    multidim_average: Literal["global", "samplewise"] = "global",
+    ignore_index: Optional[int] = None,
+) -> None:
+    if not (isinstance(beta, float) and beta > 0):
+        raise ValueError(f"Expected argument `beta` to be a float larger than 0, but got {beta}.")
+    _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index)
+
+
+def multiclass_fbeta_score(
+    preds: Tensor,
+    target: Tensor,
+    beta: float,
+    num_classes: int,
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+    top_k: int = 1,
+    multidim_average: Literal["global", "samplewise"] = "global",
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
+) -> Tensor:
+    if validate_args:
+        _multiclass_fbeta_score_arg_validation(beta, num_classes, top_k, average, multidim_average, ignore_index)
+        _multiclass_stat_scores_tensor_validation(preds, target, num_classes, multidim_average, ignore_index)
+    preds, target = _multiclass_stat_scores_format(preds, target, top_k)
+    tp, fp, tn, fn = _multiclass_stat_scores_update(preds, target, num_classes, top_k, multidim_average, ignore_index)
+    return _fbeta_reduce(tp, fp, tn, fn, beta, average=average, multidim_average=multidim_average)
+
+
+def _multilabel_fbeta_arg_validation(
+    beta: float,
+    num_labels: int,
+    threshold: float = 0.5,
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+    multidim_average: Literal["global", "samplewise"] = "global",
+    ignore_index: Optional[int] = None,
+) -> None:
+    if not (isinstance(beta, float) and beta > 0):
+        raise ValueError(f"Expected argument `beta` to be a float larger than 0, but got {beta}.")
+    _multilabel_stat_scores_arg_validation(num_labels, threshold, average, multidim_average, ignore_index)
+
+
+def multilabel_fbeta_score(
+    preds: Tensor,
+    target: Tensor,
+    beta: float,
+    num_labels: int,
+    threshold: float = 0.5,
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+    multidim_average: Literal["global", "samplewise"] = "global",
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
+) -> Tensor:
+    if validate_args:
+        _multilabel_fbeta_arg_validation(beta, num_labels, threshold, average, multidim_average, ignore_index)
+        _multilabel_stat_scores_tensor_validation(preds, target, num_labels, multidim_average, ignore_index)
+    preds, target = _multilabel_stat_scores_format(preds, target, num_labels, threshold, ignore_index)
+    tp, fp, tn, fn = _multilabel_stat_scores_update(preds, target, multidim_average)
+    return _fbeta_reduce(tp, fp, tn, fn, beta, average=average, multidim_average=multidim_average)
+
+
+def binary_f1_score(
+    preds: Tensor,
+    target: Tensor,
+    threshold: float = 0.5,
+    multidim_average: Literal["global", "samplewise"] = "global",
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
+) -> Tensor:
+    return binary_fbeta_score(
+        preds=preds,
+        target=target,
+        beta=1.0,
+        threshold=threshold,
+        multidim_average=multidim_average,
+        ignore_index=ignore_index,
+        validate_args=validate_args,
+    )
+
+
+def multiclass_f1_score(
+    preds: Tensor,
+    target: Tensor,
+    num_classes: int,
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+    top_k: int = 1,
+    multidim_average: Literal["global", "samplewise"] = "global",
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
+) -> Tensor:
+    return binary_fbeta_score(
+        preds=preds,
+        target=target,
+        beta=1.0,
+        num_classes=num_classes,
+        average=average,
+        top_k=top_k,
+        multidim_average=multidim_average,
+        ignore_index=ignore_index,
+        validate_args=validate_args,
+    )
+
+
+def multilabel_f1_score(
+    preds: Tensor,
+    target: Tensor,
+    num_labels: int,
+    threshold: float = 0.5,
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+    multidim_average: Literal["global", "samplewise"] = "global",
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
+) -> Tensor:
+    return binary_fbeta_score(
+        preds=preds,
+        target=target,
+        beta=1.0,
+        num_labels=num_labels,
+        threshold=threshold,
+        average=average,
+        multidim_average=multidim_average,
+        ignore_index=ignore_index,
+        validate_args=validate_args,
+    )
+
+
+# -------------------------- Old stuff --------------------------
 
 
 def _safe_divide(num: Tensor, denom: Tensor) -> Tensor:
