@@ -37,6 +37,12 @@ from torchmetrics.utilities.enums import AverageMethod as AvgMethod
 from torchmetrics.utilities.enums import MDMCAverageMethod
 
 
+def _safe_divide(num: Tensor, denom: Tensor) -> Tensor:
+    """prevent zero division."""
+    denom[denom == 0.0] = 1
+    return num / denom
+
+
 def _fbeta_reduce(
     tp: Tensor,
     fp: Tensor,
@@ -48,9 +54,21 @@ def _fbeta_reduce(
 ) -> Tensor:
     beta2 = beta**2
     if average == "binary":
-        return ((1 + beta2) * tp) / ((1 + beta2) * tp + beta2 * fn + fp)
+        return _safe_divide((1 + beta2) * tp, (1 + beta2) * tp + beta2 * fn + fp)
     elif average == "micro":
-        pass
+        tp = tp.sum(dim=0 if multidim_average == "global" else 1)
+        fn = fn.sum(dim=0 if multidim_average == "global" else 1)
+        fp = fp.sum(dim=0 if multidim_average == "global" else 1)
+        return _safe_divide((1 + beta2) * tp, (1 + beta2) * tp + beta2 * fn + fp)
+    else:
+        fbeta_score = _safe_divide((1 + beta2) * tp, (1 + beta2) * tp + beta2 * fn + fp)
+        if average is None or average == "none":
+            return fbeta_score
+        if average == "weighted":
+            weights = tp + fn
+        else:
+            weights = torch.ones_like(fbeta_score)
+        return ((weights * fbeta_score) / weights.sum(-1, keepdim=True)).sum(-1)
 
 
 def _binary_fbeta_score_arg_validation(
@@ -74,7 +92,7 @@ def binary_fbeta_score(
     validate_args: bool = True,
 ) -> Tensor:
     if validate_args:
-        _binary_stat_scores_arg_validation(beta, threshold, multidim_average, ignore_index)
+        _binary_fbeta_score_arg_validation(beta, threshold, multidim_average, ignore_index)
         _binary_stat_scores_tensor_validation(preds, target, multidim_average, ignore_index)
     preds, target = _binary_stat_scores_format(preds, target, threshold, ignore_index)
     tp, fp, tn, fn = _binary_stat_scores_update(preds, target, multidim_average)
@@ -113,7 +131,7 @@ def multiclass_fbeta_score(
     return _fbeta_reduce(tp, fp, tn, fn, beta, average=average, multidim_average=multidim_average)
 
 
-def _multilabel_fbeta_arg_validation(
+def _multilabel_fbeta_score_arg_validation(
     beta: float,
     num_labels: int,
     threshold: float = 0.5,
@@ -138,7 +156,7 @@ def multilabel_fbeta_score(
     validate_args: bool = True,
 ) -> Tensor:
     if validate_args:
-        _multilabel_fbeta_arg_validation(beta, num_labels, threshold, average, multidim_average, ignore_index)
+        _multilabel_fbeta_score_arg_validation(beta, num_labels, threshold, average, multidim_average, ignore_index)
         _multilabel_stat_scores_tensor_validation(preds, target, num_labels, multidim_average, ignore_index)
     preds, target = _multilabel_stat_scores_format(preds, target, num_labels, threshold, ignore_index)
     tp, fp, tn, fn = _multilabel_stat_scores_update(preds, target, multidim_average)
@@ -174,7 +192,7 @@ def multiclass_f1_score(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    return binary_fbeta_score(
+    return multiclass_fbeta_score(
         preds=preds,
         target=target,
         beta=1.0,
@@ -197,7 +215,7 @@ def multilabel_f1_score(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    return binary_fbeta_score(
+    return multilabel_fbeta_score(
         preds=preds,
         target=target,
         beta=1.0,
@@ -211,12 +229,6 @@ def multilabel_f1_score(
 
 
 # -------------------------- Old stuff --------------------------
-
-
-def _safe_divide(num: Tensor, denom: Tensor) -> Tensor:
-    """prevent zero division."""
-    denom[denom == 0.0] = 1
-    return num / denom
 
 
 def _fbeta_compute(

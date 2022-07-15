@@ -35,7 +35,7 @@ from torchmetrics.functional.classification.f_beta import (
     multiclass_f1_score,
     multiclass_fbeta_score,
     multilabel_f1_score,
-    multilabel_fbata_score,
+    multilabel_fbeta_score,
 )
 from torchmetrics.functional.classification.hamming import hamming_distance
 from torchmetrics.functional.classification.hinge import hinge_loss
@@ -197,4 +197,10 @@ __all__ = [
     "binary_stat_scores",
     "multiclass_stat_scores",
     "multilabel_stat_scores",
+    "binary_f1_score",
+    "binary_fbeta_score",
+    "multiclass_f1_score",
+    "multiclass_fbeta_score",
+    "multilabel_f1_score",
+    "multilabel_fbeta_score",
 ]

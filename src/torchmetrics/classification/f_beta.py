@@ -14,6 +14,7 @@
 from typing import Any, Optional
 
 from torch import Tensor
+from typing_extensions import Literal
 
 from torchmetrics.classification.stat_scores import (
     BinaryStatScores,
@@ -21,38 +22,198 @@ from torchmetrics.classification.stat_scores import (
     MultilabelStatScores,
     StatScores,
 )
-from torchmetrics.functional.classification.f_beta import _fbeta_compute
+from torchmetrics.functional.classification.f_beta import (
+    _fbeta_compute,
+    _binary_fbeta_score_arg_validation,
+    _fbeta_reduce,
+    _multiclass_fbeta_score_arg_validation,
+    _multilabel_fbeta_score_arg_validation,
+)
 from torchmetrics.utilities.enums import AverageMethod
 
 
 class BinaryFBetaScore(BinaryStatScores):
-    def __init__(self):
-        pass
+
+    is_differentiable: bool = False
+    higher_is_better: Optional[bool] = True
+    full_state_update: bool = False
+
+    def __init__(
+        self,
+        beta: float,
+        threshold: float = 0.5,
+        multidim_average: Literal["global", "samplewise"] = "global",
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(
+            threshold=threshold,
+            multidim_average=multidim_average,
+            ignore_index=ignore_index,
+            validate_args=False,
+            **kwargs,
+        )
+        if validate_args:
+            _binary_fbeta_score_arg_validation(beta, threshold, multidim_average, ignore_index)
+        self.validate_args = validate_args
+        self.beta = beta
+
+    def compute(self) -> Tensor:
+        tp, fp, tn, fn = self._final_state()
+        return _fbeta_reduce(tp, fp, tn, fn, self.beta, average="binary", multidim_average=self.multidim_average)
 
 
 class MulticlassFBetaScore(MulticlassStatScores):
-    def __init__(self):
-        pass
+
+    is_differentiable: bool = False
+    higher_is_better: Optional[bool] = True
+    full_state_update: bool = False
+
+    def __init__(
+        self,
+        beta: float,
+        num_classes: int,
+        top_k: int = 1,
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+        multidim_average: Literal["global", "samplewise"] = "global",
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(
+            num_classes=num_classes,
+            top_k=top_k,
+            average=average,
+            multidim_average=multidim_average,
+            ignore_index=ignore_index,
+            validate_args=False,
+            **kwargs,
+        )
+        if validate_args:
+            _multiclass_fbeta_score_arg_validation(beta, num_classes, top_k, average, multidim_average, ignore_index)
+        self.validate_args = validate_args
+        self.beta = beta
+
+    def compute(self) -> Tensor:
+        tp, fp, tn, fn = self._final_state()
+        return _fbeta_reduce(tp, fp, tn, fn, self.beta, average=self.average, multidim_average=self.multidim_average)
 
 
 class MultilabelFBetaScore(MultilabelStatScores):
-    def __init__(self):
-        pass
+
+    is_differentiable: bool = False
+    higher_is_better: Optional[bool] = True
+    full_state_update: bool = False
+
+    def __init__(
+        self,
+        beta: float,
+        num_labels: int,
+        threshold: float = 0.5,
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+        multidim_average: Literal["global", "samplewise"] = "global",
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(
+            num_labels=num_labels,
+            threshold=threshold,
+            average=average,
+            multidim_average=multidim_average,
+            ignore_index=ignore_index,
+            validate_args=False,
+            **kwargs,
+        )
+        if validate_args:
+            _multilabel_fbeta_score_arg_validation(beta, num_labels, threshold, average, multidim_average, ignore_index)
+        self.validate_args = validate_args
+        self.beta = beta
+
+    def compute(self) -> Tensor:
+        tp, fp, tn, fn = self._final_state()
+        return _fbeta_reduce(tp, fp, tn, fn, self.beta, average=self.average, multidim_average=self.multidim_average)
 
 
 class BinaryF1Score(BinaryFBetaScore):
-    def __init__(self):
-        pass
+
+    is_differentiable: bool = False
+    higher_is_better: Optional[bool] = True
+    full_state_update: bool = False
+
+    def __init__(
+        self,
+        threshold: float = 0.5,
+        multidim_average: Literal["global", "samplewise"] = "global",
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(
+            beta=1.0,
+            threshold=threshold,
+            multidim_average=multidim_average,
+            ignore_index=ignore_index,
+            validate_args=validate_args,
+            **kwargs,
+        )
 
 
 class MulticlassF1Score(MulticlassFBetaScore):
-    def __init__(self):
-        pass
+
+    is_differentiable: bool = False
+    higher_is_better: Optional[bool] = True
+    full_state_update: bool = False
+
+    def __init__(
+        self,
+        num_classes: int,
+        top_k: int = 1,
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+        multidim_average: Literal["global", "samplewise"] = "global",
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(
+            beta=1.0,
+            num_classes=num_classes,
+            top_k=top_k,
+            average=average,
+            multidim_average=multidim_average,
+            ignore_index=ignore_index,
+            validate_args=validate_args,
+            **kwargs,
+        )
 
 
 class MultilabelF1Score(MultilabelFBetaScore):
-    def __init__(self):
-        pass
+
+    is_differentiable: bool = False
+    higher_is_better: Optional[bool] = True
+    full_state_update: bool = False
+
+    def __init__(
+        self,
+        num_labels: int,
+        threshold: float = 0.5,
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+        multidim_average: Literal["global", "samplewise"] = "global",
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(
+            beta=1.0,
+            num_labels=num_labels,
+            threshold=threshold,
+            average=average,
+            multidim_average=multidim_average,
+            ignore_index=ignore_index,
+            validate_args=validate_args,
+            **kwargs,
+        )
 
 
 # -------------------------- Old stuff --------------------------
