@@ -16,25 +16,12 @@ from functools import partial
 import numpy as np
 import pytest
 import torch
-from sklearn.metrics import (
-    f1_score as sk_f1_score,
-    fbeta_score as sk_fbeta_score,
-    confusion_matrix as sk_confusion_matrix,
-)
-from torch import Tensor
 from scipy.special import expit as sigmoid
-from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
-from unittests.helpers import seed_all
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
-from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index
-from torchmetrics.functional.classification.f_beta import (
-    binary_f1_score,
-    binary_fbeta_score,
-    multiclass_f1_score,
-    multiclass_fbeta_score,
-    multilabel_f1_score,
-    multilabel_fbeta_score,
-)
+from sklearn.metrics import confusion_matrix as sk_confusion_matrix
+from sklearn.metrics import f1_score as sk_f1_score
+from sklearn.metrics import fbeta_score as sk_fbeta_score
+from torch import Tensor
+
 from torchmetrics.classification.f_beta import (
     BinaryF1Score,
     BinaryFBetaScore,
@@ -43,6 +30,18 @@ from torchmetrics.classification.f_beta import (
     MultilabelF1Score,
     MultilabelFBetaScore,
 )
+from torchmetrics.functional.classification.f_beta import (
+    binary_f1_score,
+    binary_fbeta_score,
+    multiclass_f1_score,
+    multiclass_fbeta_score,
+    multilabel_f1_score,
+    multilabel_fbeta_score,
+)
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
+from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
+from unittests.helpers import seed_all
+from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index
 
 seed_all(42)
 

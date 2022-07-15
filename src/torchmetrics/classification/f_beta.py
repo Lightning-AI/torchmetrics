@@ -23,8 +23,8 @@ from torchmetrics.classification.stat_scores import (
     StatScores,
 )
 from torchmetrics.functional.classification.f_beta import (
-    _fbeta_compute,
     _binary_fbeta_score_arg_validation,
+    _fbeta_compute,
     _fbeta_reduce,
     _multiclass_fbeta_score_arg_validation,
     _multilabel_fbeta_score_arg_validation,
