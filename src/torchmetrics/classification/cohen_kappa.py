@@ -58,6 +58,7 @@ class BinaryCohenKappa(BinaryConfusionMatrix):
             - ``None`` or ``'none'``: no weighting
             - ``'linear'``: linear weighting
             - ``'quadratic'``: quadratic weighting
+
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
@@ -131,6 +132,7 @@ class MulticlassCohenKappa(MulticlassConfusionMatrix):
             - ``None`` or ``'none'``: no weighting
             - ``'linear'``: linear weighting
             - ``'quadratic'``: quadratic weighting
+
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
