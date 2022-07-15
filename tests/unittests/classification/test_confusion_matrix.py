@@ -102,7 +102,7 @@ class TestBinaryConfusionMatrix(MetricTester):
         )
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_binary_confusion_matrix_half_cpu(self, input, dtype):
+    def test_binary_confusion_matrix_dtype_cpu(self, input, dtype):
         preds, target = input
         if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_6:
             pytest.xfail(reason="half support of core ops not support before pytorch v1.6")
@@ -119,7 +119,7 @@ class TestBinaryConfusionMatrix(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_binary_confusion_matrix_half_gpu(self, input, dtype):
+    def test_binary_confusion_matrix_dtype_gpu(self, input, dtype):
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,
@@ -197,7 +197,7 @@ class TestMulticlassConfusionMatrix(MetricTester):
         )
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multiclass_confusion_matrix_half_cpu(self, input, dtype):
+    def test_multiclass_confusion_matrix_dtype_cpu(self, input, dtype):
         preds, target = input
         if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_6:
             pytest.xfail(reason="half support of core ops not support before pytorch v1.6")
@@ -212,7 +212,7 @@ class TestMulticlassConfusionMatrix(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multiclass_confusion_matrix_half_gpu(self, input, dtype):
+    def test_multiclass_confusion_matrix_dtype_gpu(self, input, dtype):
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,
@@ -295,7 +295,7 @@ class TestMultilabelConfusionMatrix(MetricTester):
         )
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multilabel_confusion_matrix_half_cpu(self, input, dtype):
+    def test_multilabel_confusion_matrix_dtype_cpu(self, input, dtype):
         preds, target = input
         if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_6:
             pytest.xfail(reason="half support of core ops not support before pytorch v1.6")
@@ -312,7 +312,7 @@ class TestMultilabelConfusionMatrix(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multilabel_confusion_matrix_half_gpu(self, input, dtype):
+    def test_multilabel_confusion_matrix_dtype_gpu(self, input, dtype):
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,

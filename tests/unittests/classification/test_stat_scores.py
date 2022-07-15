@@ -122,7 +122,7 @@ class TestBinaryStatScores(MetricTester):
         )
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_binary_stat_scores_half_cpu(self, input, dtype):
+    def test_binary_stat_scores_dtype_cpu(self, input, dtype):
         preds, target = input
         if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_6:
             pytest.xfail(reason="half support of core ops not support before pytorch v1.6")
@@ -139,7 +139,7 @@ class TestBinaryStatScores(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_binary_stat_scores_half_gpu(self, input, dtype):
+    def test_binary_stat_scores_dtype_gpu(self, input, dtype):
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,
@@ -283,7 +283,7 @@ class TestMulticlassStatScores(MetricTester):
         )
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multiclass_stat_scores_half_cpu(self, input, dtype):
+    def test_multiclass_stat_scores_dtype_cpu(self, input, dtype):
         preds, target = input
         if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_6:
             pytest.xfail(reason="half support of core ops not support before pytorch v1.6")
@@ -300,7 +300,7 @@ class TestMulticlassStatScores(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multiclass_stat_scores_half_gpu(self, input, dtype):
+    def test_multiclass_stat_scores_dtype_gpu(self, input, dtype):
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,
@@ -466,7 +466,7 @@ class TestMultilabelStatScores(MetricTester):
         )
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multilabel_stat_scores_half_cpu(self, input, dtype):
+    def test_multilabel_stat_scores_dtype_cpu(self, input, dtype):
         preds, target = input
         if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_6:
             pytest.xfail(reason="half support of core ops not support before pytorch v1.6")
@@ -483,7 +483,7 @@ class TestMultilabelStatScores(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multilabel_stat_scores_half_gpu(self, input, dtype):
+    def test_multilabel_stat_scores_dtype_gpu(self, input, dtype):
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,
