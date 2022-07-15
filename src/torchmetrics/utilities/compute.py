@@ -38,3 +38,9 @@ def _safe_xlogy(x: Tensor, y: Tensor) -> Tensor:
     res = x * torch.log(y)
     res[x == 0] = 0.0
     return res
+
+
+def _safe_divide(num: Tensor, denom: Tensor) -> Tensor:
+    """prevent zero division."""
+    denom[denom == 0.0] = 1
+    return num / denom
