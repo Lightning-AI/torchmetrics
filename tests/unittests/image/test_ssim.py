@@ -142,7 +142,6 @@ class TestSSIM(MetricTester):
             dist_sync_on_step=dist_sync_on_step,
         )
 
-
     def test_ssim_functional(self, preds, target, sigma):
         self.run_functional_metric_test(
             preds,
