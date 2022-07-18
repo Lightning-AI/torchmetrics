@@ -42,13 +42,7 @@ from torchmetrics.utilities.compute import _safe_divide
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
-from unittests.helpers.testers import (
-    NUM_CLASSES,
-    THRESHOLD,
-    MetricTester,
-    inject_ignore_index,
-    remove_ignore_index,
-)
+from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index, remove_ignore_index
 
 seed_all(42)
 
