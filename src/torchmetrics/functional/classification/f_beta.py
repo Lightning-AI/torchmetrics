@@ -64,7 +64,7 @@ def _fbeta_reduce(
             weights = tp + fn
         else:
             weights = torch.ones_like(fbeta_score)
-        return ((weights * fbeta_score) / weights.sum(-1, keepdim=True)).sum(-1)
+        return _safe_divide(weights * fbeta_score, weights.sum(-1, keepdim=True)).sum(-1)
 
 
 def _binary_fbeta_score_arg_validation(
