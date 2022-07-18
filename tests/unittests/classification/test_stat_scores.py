@@ -47,7 +47,7 @@ def _sk_stat_scores_binary(preds, target, ignore_index, multidim_average):
         preds = (preds >= THRESHOLD).astype(np.uint8)
 
     if multidim_average == "global":
-        target, preds = remove_ignore_index(target, preds)
+        target, preds = remove_ignore_index(target, preds, ignore_index)
         tn, fp, fn, tp = sk_confusion_matrix(y_true=target, y_pred=preds, labels=[0, 1]).ravel()
         return np.array([tp, fp, tn, fn, tp + fn])
     else:
@@ -55,7 +55,7 @@ def _sk_stat_scores_binary(preds, target, ignore_index, multidim_average):
         for pred, true in zip(preds, target):
             pred = pred.flatten()
             true = true.flatten()
-            true, pred = remove_ignore_index(true, pred)
+            true, pred = remove_ignore_index(true, pred, ignore_index)
             tn, fp, fn, tp = sk_confusion_matrix(y_true=true, y_pred=pred, labels=[0, 1]).ravel()
             res.append(np.array([tp, fp, tn, fn, tp + fn]))
         return np.stack(res)
@@ -151,7 +151,7 @@ def _sk_stat_scores_multiclass(preds, target, ignore_index, multidim_average, av
     if multidim_average == "global":
         preds = preds.numpy().flatten()
         target = target.numpy().flatten()
-        target, preds = remove_ignore_index(target, preds)
+        target, preds = remove_ignore_index(target, preds, ignore_index)
         confmat = sk_confusion_matrix(y_true=target, y_pred=preds, labels=list(range(NUM_CLASSES)))
         tp = np.diag(confmat)
         fp = confmat.sum(0) - tp
@@ -177,7 +177,7 @@ def _sk_stat_scores_multiclass(preds, target, ignore_index, multidim_average, av
         for pred, true in zip(preds, target):
             pred = pred.flatten()
             true = true.flatten()
-            true, pred = remove_ignore_index(true, pred)
+            true, pred = remove_ignore_index(true, pred, ignore_index)
             confmat = sk_confusion_matrix(y_true=true, y_pred=pred, labels=list(range(NUM_CLASSES)))
             tp = np.diag(confmat)
             fp = confmat.sum(0) - tp

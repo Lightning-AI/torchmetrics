@@ -36,12 +36,12 @@ def _sk_cohen_kappa_binary(preds, target, weights=None, ignore_index=None):
         if not ((0 < preds) & (preds < 1)).all():
             preds = sigmoid(preds)
         preds = (preds >= THRESHOLD).astype(np.uint8)
-    target, preds = remove_ignore_index(target, preds)
+    target, preds = remove_ignore_index(target, preds, ignore_index)
     return sk_cohen_kappa(y1=target, y2=preds, weights=weights)
 
 
 @pytest.mark.parametrize("input", _binary_cases)
-class TestBinaryConfusionMatrix(MetricTester):
+class TestBinaryCohenKappa(MetricTester):
     atol = 1e-5
 
     @pytest.mark.parametrize("weights", ["linear", "quadratic", None])
@@ -129,12 +129,12 @@ def _sk_cohen_kappa_multiclass(preds, target, weights, ignore_index=None):
         preds = np.argmax(preds, axis=1)
     preds = preds.flatten()
     target = target.flatten()
-    target, preds = remove_ignore_index(target, preds)
+    target, preds = remove_ignore_index(target, preds, ignore_index)
     return sk_cohen_kappa(y1=target, y2=preds, weights=weights)
 
 
 @pytest.mark.parametrize("input", _multiclass_cases)
-class TestMulticlassConfusionMatrix(MetricTester):
+class TestMulticlassCohenKappa(MetricTester):
     atol = 1e-5
 
     @pytest.mark.parametrize("weights", ["linear", "quadratic", None])

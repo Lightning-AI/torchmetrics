@@ -639,7 +639,7 @@ def inject_ignore_index(x: Tensor, ignore_index: int) -> Tensor:
     return x
 
 
-def remove_ignore_index(target: Tensor, preds: Tensor, ignore_index: Optional[int] = None) -> Tuple[Tensor, Tensor]:
+def remove_ignore_index(target: Tensor, preds: Tensor, ignore_index: Optional[int]) -> Tuple[Tensor, Tensor]:
     """Utility function for removing samples that are equal to the ignore_index in comparison functions."""
     if ignore_index is not None:
         idx = target == ignore_index

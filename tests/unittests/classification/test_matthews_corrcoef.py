@@ -44,7 +44,7 @@ def _sk_matthews_corrcoef_binary(preds, target, ignore_index=None):
         if not ((0 < preds) & (preds < 1)).all():
             preds = sigmoid(preds)
         preds = (preds >= THRESHOLD).astype(np.uint8)
-    target, preds = remove_ignore_index(target, preds)
+    target, preds = remove_ignore_index(target, preds, ignore_index)
     return sk_matthews_corrcoef(y_true=target, y_pred=preds)
 
 
@@ -131,7 +131,7 @@ def _sk_matthews_corrcoef_multiclass(preds, target, ignore_index=None):
         preds = np.argmax(preds, axis=1)
     preds = preds.flatten()
     target = target.flatten()
-    target, preds = remove_ignore_index(target, preds)
+    target, preds = remove_ignore_index(target, preds, ignore_index)
     return sk_matthews_corrcoef(y_true=target, y_pred=preds)
 
 
@@ -216,7 +216,7 @@ def _sk_matthews_corrcoef_multilabel(preds, target, ignore_index=None):
         if not ((0 < preds) & (preds < 1)).all():
             preds = sigmoid(preds)
         preds = (preds >= THRESHOLD).astype(np.uint8)
-    target, preds = remove_ignore_index(target, preds)
+    target, preds = remove_ignore_index(target, preds, ignore_index)
     return sk_matthews_corrcoef(y_true=target, y_pred=preds)
 
 
