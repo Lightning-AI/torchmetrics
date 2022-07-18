@@ -134,7 +134,7 @@ class BinaryStatScores(_AbstractStatScores):
         ...     ]
         ... )
         >>> metric = BinaryStatScores(multidim_average='samplewise')
-        >>> metric(preds, target
+        >>> metric(preds, target)
         tensor([[2, 3, 0, 1, 3],
                 [0, 2, 1, 3, 3]])
     """
