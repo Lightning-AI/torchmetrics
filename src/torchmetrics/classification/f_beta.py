@@ -390,7 +390,7 @@ class MultilabelFBetaScore(MultilabelStatScores):
 
 class BinaryF1Score(BinaryFBetaScore):
     r"""
-    Computes `F-1 score`_ metric for binary tasks:
+    Computes `F-beta score`_ metric with ``beta=1`` for binary tasks:
 
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
@@ -476,7 +476,7 @@ class BinaryF1Score(BinaryFBetaScore):
 
 class MulticlassF1Score(MulticlassFBetaScore):
     r"""
-    Computes `F-1 score`_ metric for multiclass tasks:
+    Computes `F-beta score`_ metric with ``beta=1`` for multiclass tasks:
 
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
@@ -597,7 +597,7 @@ class MulticlassF1Score(MulticlassFBetaScore):
 
 class MultilabelF1Score(MultilabelFBetaScore):
     r"""
-    Computes `F-1 score`_ metric for multilabel tasks:
+    Computes `F-beta score`_ metric with ``beta=1`` for multilabel tasks:
 
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
