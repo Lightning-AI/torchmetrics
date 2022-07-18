@@ -13,6 +13,7 @@
 # limitations under the License.
 from typing import List, Optional, Sequence, Tuple, Union
 
+import math
 import torch
 from torch import Tensor
 from torch.nn import functional as F
