@@ -15,9 +15,158 @@ from typing import Optional, Tuple
 
 import torch
 from torch import Tensor
+from typing_extensions import Literal
 
-from torchmetrics.functional.classification.stat_scores import _reduce_stat_scores, _stat_scores_update
+from torchmetrics.functional.classification.stat_scores import (
+    _binary_stat_scores_arg_validation,
+    _binary_stat_scores_format,
+    _binary_stat_scores_tensor_validation,
+    _binary_stat_scores_update,
+    _multiclass_stat_scores_arg_validation,
+    _multiclass_stat_scores_format,
+    _multiclass_stat_scores_tensor_validation,
+    _multiclass_stat_scores_update,
+    _multilabel_stat_scores_arg_validation,
+    _multilabel_stat_scores_format,
+    _multilabel_stat_scores_tensor_validation,
+    _multilabel_stat_scores_update,
+    _reduce_stat_scores,
+    _stat_scores_update,
+)
 from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
+
+
+def _precision_recall_reduce(
+    stat: Literal["precision", "recall"],
+    tp: Tensor,
+    fp: Tensor,
+    tn: Tensor,
+    fn: Tensor,
+    average: Optional[Literal["binary", "micro", "macro", "weighted", "none"]],
+    multidim_average: Literal["global", "samplewise"] = "global",
+) -> Tensor:
+    different_stat = fp if stat == "precision" else fn  # this is what differs between the two scores
+    if average == "binary":
+        return _safe_divide(tp, tp + different_stat)
+    elif average == "micro":
+        tp = tp.sum(dim=0 if multidim_average == "global" else 1)
+        fn = fn.sum(dim=0 if multidim_average == "global" else 1)
+        fp = fp.sum(dim=0 if multidim_average == "global" else 1)
+        return _safe_divide(tp, tp + different_stat)
+    else:
+        score = _safe_divide(tp, tp + different_stat)
+        if average is None or average == "none":
+            return score
+        if average == "weighted":
+            weights = tp + fn
+        else:
+            weights = torch.ones_like(score)
+        return ((weights * score) / weights.sum(-1, keepdim=True)).sum(-1)
+
+
+def binary_precision_scores(
+    preds: Tensor,
+    target: Tensor,
+    threshold: float = 0.5,
+    multidim_average: Literal["global", "samplewise"] = "global",
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
+) -> Tensor:
+    if validate_args:
+        _binary_stat_scores_arg_validation(threshold, multidim_average, ignore_index)
+        _binary_stat_scores_tensor_validation(preds, target, multidim_average, ignore_index)
+    preds, target = _binary_stat_scores_format(preds, target, threshold, ignore_index)
+    tp, fp, tn, fn = _binary_stat_scores_update(preds, target, multidim_average)
+    return _precision_recall_reduce("precision", tp, fp, tn, fn, average="binary", multidim_average=multidim_average)
+
+
+def multiclass_precision(
+    preds: Tensor,
+    target: Tensor,
+    num_classes: int,
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+    top_k: int = 1,
+    multidim_average: Literal["global", "samplewise"] = "global",
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
+) -> Tensor:
+    if validate_args:
+        _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index)
+        _multiclass_stat_scores_tensor_validation(preds, target, num_classes, multidim_average, ignore_index)
+    preds, target = _multiclass_stat_scores_format(preds, target, top_k)
+    tp, fp, tn, fn = _multiclass_stat_scores_update(preds, target, num_classes, top_k, multidim_average, ignore_index)
+    return _precision_recall_reduce("precision", tp, fp, tn, fn, average=average, multidim_average=multidim_average)
+
+
+def multilabel_precision(
+    preds: Tensor,
+    target: Tensor,
+    num_labels: int,
+    threshold: float = 0.5,
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+    multidim_average: Literal["global", "samplewise"] = "global",
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
+) -> Tensor:
+    if validate_args:
+        _multilabel_stat_scores_arg_validation(num_labels, threshold, average, multidim_average, ignore_index)
+        _multilabel_stat_scores_tensor_validation(preds, target, num_labels, multidim_average, ignore_index)
+    preds, target = _multilabel_stat_scores_format(preds, target, num_labels, threshold, ignore_index)
+    tp, fp, tn, fn = _multilabel_stat_scores_update(preds, target, multidim_average)
+    return _precision_recall_reduce("recall", tp, fp, tn, fn, average=average, multidim_average=multidim_average)
+
+
+def binary_recall_scores(
+    preds: Tensor,
+    target: Tensor,
+    threshold: float = 0.5,
+    multidim_average: Literal["global", "samplewise"] = "global",
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
+) -> Tensor:
+    if validate_args:
+        _binary_stat_scores_arg_validation(threshold, multidim_average, ignore_index)
+        _binary_stat_scores_tensor_validation(preds, target, multidim_average, ignore_index)
+    preds, target = _binary_stat_scores_format(preds, target, threshold, ignore_index)
+    tp, fp, tn, fn = _binary_stat_scores_update(preds, target, multidim_average)
+    return _precision_recall_reduce("recall", tp, fp, tn, fn, average="binary", multidim_average=multidim_average)
+
+
+def multiclass_recall(
+    preds: Tensor,
+    target: Tensor,
+    num_classes: int,
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+    top_k: int = 1,
+    multidim_average: Literal["global", "samplewise"] = "global",
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
+) -> Tensor:
+    if validate_args:
+        _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index)
+        _multiclass_stat_scores_tensor_validation(preds, target, num_classes, multidim_average, ignore_index)
+    preds, target = _multiclass_stat_scores_format(preds, target, top_k)
+    tp, fp, tn, fn = _multiclass_stat_scores_update(preds, target, num_classes, top_k, multidim_average, ignore_index)
+    return _precision_recall_reduce("precision", tp, fp, tn, fn, average=average, multidim_average=multidim_average)
+
+
+def multilabel_recall(
+    preds: Tensor,
+    target: Tensor,
+    num_labels: int,
+    threshold: float = 0.5,
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+    multidim_average: Literal["global", "samplewise"] = "global",
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
+) -> Tensor:
+    if validate_args:
+        _multilabel_stat_scores_arg_validation(num_labels, threshold, average, multidim_average, ignore_index)
+        _multilabel_stat_scores_tensor_validation(preds, target, num_labels, multidim_average, ignore_index)
+    preds, target = _multilabel_stat_scores_format(preds, target, num_labels, threshold, ignore_index)
+    tp, fp, tn, fn = _multilabel_stat_scores_update(preds, target, multidim_average)
+    return _precision_recall_reduce("recall", tp, fp, tn, fn, average=average, multidim_average=multidim_average)
+
 
 # -------------------------- Old stuff --------------------------
 
