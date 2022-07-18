@@ -1,11 +1,11 @@
 .. customcarditem::
-   :header: F1 Score
+   :header: F-1 Score
    :image: https://pl-flash-data.s3.amazonaws.com/assets/thumbnails/tabular_classification.svg
    :tags: Classification
 
-#######
-F1Score
-#######
+#########
+F-1 Score
+#########
 
 Module Interface
 ________________
