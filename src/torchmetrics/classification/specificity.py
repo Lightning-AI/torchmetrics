@@ -16,10 +16,26 @@ from typing import Any, Optional
 import torch
 from torch import Tensor
 
-from torchmetrics.classification.stat_scores import StatScores
+from torchmetrics.classification.stat_scores import (
+    StatScores,
+    BinaryStatScores,
+    MulticlassStatScores,
+    MultilabelStatScores,
+)
 from torchmetrics.functional.classification.specificity import _specificity_compute
 from torchmetrics.utilities.enums import AverageMethod
 
+class BinarySpecificity(BinaryStatScores):
+    pass
+
+class MulticlassSpecificity(MulticlassStatScores):
+    pass
+
+
+class MultilabelSpecificity(MultilabelStatScores):
+    pass
+
+# -------------------------- Old stuff --------------------------
 
 class Specificity(StatScores):
     r"""Computes `Specificity`_:
