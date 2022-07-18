@@ -33,7 +33,6 @@ from torchmetrics.functional.classification.stat_scores import (
     _reduce_stat_scores,
     _stat_scores_update,
 )
-
 from torchmetrics.utilities.compute import _safe_divide
 from torchmetrics.utilities.enums import AverageMethod as AvgMethod
 from torchmetrics.utilities.enums import MDMCAverageMethod
