@@ -32,7 +32,7 @@ from torchmetrics.functional.classification.matthews_corrcoef import (
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index
+from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index, remove_ignore_index
 
 seed_all(42)
 
@@ -44,10 +44,7 @@ def _sk_matthews_corrcoef_binary(preds, target, ignore_index=None):
         if not ((0 < preds) & (preds < 1)).all():
             preds = sigmoid(preds)
         preds = (preds >= THRESHOLD).astype(np.uint8)
-    if ignore_index is not None:
-        idx = target == ignore_index
-        target = target[~idx]
-        preds = preds[~idx]
+    target, preds = remove_ignore_index(target, preds)
     return sk_matthews_corrcoef(y_true=target, y_pred=preds)
 
 
@@ -134,11 +131,7 @@ def _sk_matthews_corrcoef_multiclass(preds, target, ignore_index=None):
         preds = np.argmax(preds, axis=1)
     preds = preds.flatten()
     target = target.flatten()
-
-    if ignore_index is not None:
-        idx = target == ignore_index
-        target = target[~idx]
-        preds = preds[~idx]
+    target, preds = remove_ignore_index(target, preds)
     return sk_matthews_corrcoef(y_true=target, y_pred=preds)
 
 
@@ -223,10 +216,7 @@ def _sk_matthews_corrcoef_multilabel(preds, target, ignore_index=None):
         if not ((0 < preds) & (preds < 1)).all():
             preds = sigmoid(preds)
         preds = (preds >= THRESHOLD).astype(np.uint8)
-    if ignore_index is not None:
-        idx = target == ignore_index
-        target = target[~idx]
-        preds = preds[~idx]
+    target, preds = remove_ignore_index(target, preds)
     return sk_matthews_corrcoef(y_true=target, y_pred=preds)
 
 
