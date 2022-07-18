@@ -87,7 +87,7 @@ def binary_fbeta_score(
     validate_args: bool = True,
 ) -> Tensor:
     r"""
-    Computes `F-beta score`_ metric for binary tasks:
+    Computes `F-score`_ metric for binary tasks:
 
     .. math::
         F_{\beta} = (1 + \beta^2) * \frac{\text{precision} * \text{recall}}
@@ -183,7 +183,7 @@ def multiclass_fbeta_score(
     validate_args: bool = True,
 ) -> Tensor:
     r"""
-    Computes `F-beta score`_ metric for multiclass tasks:
+    Computes `F-score`_ metric for multiclass tasks:
 
     .. math::
         F_{\beta} = (1 + \beta^2) * \frac{\text{precision} * \text{recall}}
@@ -305,7 +305,7 @@ def multilabel_fbeta_score(
     validate_args: bool = True,
 ) -> Tensor:
     r"""
-    Computes `F-beta score`_ metric for multilabel tasks:
+    Computes `F-score`_ metric for multilabel tasks:
 
     .. math::
         F_{\beta} = (1 + \beta^2) * \frac{\text{precision} * \text{recall}}
@@ -411,7 +411,7 @@ def binary_f1_score(
     validate_args: bool = True,
 ) -> Tensor:
     r"""
-    Computes `F-beta score`_ metric with ``beta=1`` for binary tasks:
+    Computes `F-score`_ metric with ``beta=1`` for binary tasks:
 
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
@@ -494,7 +494,7 @@ def multiclass_f1_score(
     validate_args: bool = True,
 ) -> Tensor:
     r"""
-    Computes `F-beta score`_ metric with ``beta=1`` for multiclass tasks:
+    Computes `F-score`_ metric with ``beta=1`` for multiclass tasks:
 
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
@@ -605,7 +605,7 @@ def multilabel_f1_score(
     validate_args: bool = True,
 ) -> Tensor:
     r"""
-    Computes `F-beta score`_ metric with ``beta=1`` for multilabel tasks:
+    Computes `F-score`_ metric with ``beta=1`` for multilabel tasks:
 
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
