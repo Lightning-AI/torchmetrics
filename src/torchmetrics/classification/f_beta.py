@@ -158,6 +158,7 @@ class MulticlassFBetaScore(MulticlassStatScores):
             - ``weighted``: Calculates statistics for each label and computes weighted average using their support
             - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
         top_k:
+
             Number of highest probability or logit score predictions considered to find the correct label.
             Only works when ``preds`` contain probabilities/logits.
         multidim_average:
@@ -175,12 +176,13 @@ class MulticlassFBetaScore(MulticlassStatScores):
     Returns:
         The returned shape depends on the ``average`` and ``multidim_average`` arguments:
 
-        - If ``multidim_average`` is set to ``global``
+        - If ``multidim_average`` is set to ``global``:
 
           - If ``average='micro'/'macro'/'weighted'``, the output will be a scalar tensor
           - If ``average=None/'none'``, the shape will be ``(C,)``
 
-        - If ``multidim_average`` is set to ``samplewise``
+        - If ``multidim_average`` is set to ``samplewise``:
+
           - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
