@@ -59,7 +59,16 @@ from torchmetrics.classification.matthews_corrcoef import (  # noqa: F401
     MulticlassMatthewsCorrCoef,
     MultilabelMatthewsCorrCoef,
 )
-from torchmetrics.classification.precision_recall import Precision, Recall  # noqa: F401
+from torchmetrics.classification.precision_recall import (  # noqa: F401
+    BinaryPrecision,
+    BinaryRecall,
+    MulticlassPrecision,
+    MulticlassRecall,
+    MultilabelPrecision,
+    MultilabelRecall,
+    Precision,
+    Recall,
+)
 from torchmetrics.classification.precision_recall_curve import PrecisionRecallCurve  # noqa: F401
 from torchmetrics.classification.ranking import (  # noqa: F401
     CoverageError,

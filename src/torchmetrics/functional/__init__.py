@@ -52,7 +52,17 @@ from torchmetrics.functional.classification.matthews_corrcoef import (
     multiclass_matthews_corrcoef,
     multilabel_matthews_corrcoef,
 )
-from torchmetrics.functional.classification.precision_recall import precision, precision_recall, recall
+from torchmetrics.functional.classification.precision_recall import (
+    binary_precision,
+    binary_recall,
+    multiclass_precision,
+    multiclass_recall,
+    multilabel_precision,
+    multilabel_recall,
+    precision,
+    precision_recall,
+    recall,
+)
 from torchmetrics.functional.classification.precision_recall_curve import precision_recall_curve
 from torchmetrics.functional.classification.ranking import (
     coverage_error,
@@ -221,4 +231,10 @@ __all__ = [
     "binary_matthews_corrcoef",
     "multiclass_matthews_corrcoef",
     "multilabel_matthews_corrcoef",
+    "binary_precision",
+    "multiclass_precision",
+    "multilabel_precision",
+    "binary_recall",
+    "multiclass_recall",
+    "multilabel_recall",
 ]
