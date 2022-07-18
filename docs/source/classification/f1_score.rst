@@ -3,18 +3,60 @@
    :image: https://pl-flash-data.s3.amazonaws.com/assets/thumbnails/tabular_classification.svg
    :tags: Classification
 
-########
-F1 Score
-########
+#######
+F1Score
+#######
 
 Module Interface
 ________________
 
+F1Score
+^^^^^^^
+
 .. autoclass:: torchmetrics.F1Score
+    :noindex:
+
+BinaryF1Score
+^^^^^^^^^^^^^
+
+.. autoclass:: torchmetrics.BinaryF1Score
+    :noindex:
+
+MulticlassF1Score
+^^^^^^^^^^^^^^^^^
+
+.. autoclass:: torchmetrics.MulticlassF1Score
+    :noindex:
+
+MultilabelF1Score
+^^^^^^^^^^^^^^^^^
+
+.. autoclass:: torchmetrics.MultilabelF1Score
     :noindex:
 
 Functional Interface
 ____________________
 
+f1_score
+^^^^^^^^
+
 .. autofunction:: torchmetrics.functional.f1_score
+    :noindex:
+
+binary_f1_score
+^^^^^^^^^^^^^^^
+
+.. autofunction:: torchmetrics.functional.binary_f1_score
+    :noindex:
+
+multiclass_f1_score
+^^^^^^^^^^^^^^^^^^^
+
+.. autofunction:: torchmetrics.functional.multiclass_f1_score
+    :noindex:
+
+multilabel_f1_score
+^^^^^^^^^^^^^^^^^^^
+
+.. autofunction:: torchmetrics.functional.multilabel_f1_score
     :noindex:
