@@ -304,12 +304,13 @@ class MultilabelFBetaScore(MultilabelStatScores):
     Returns:
         The returned shape depends on the ``average`` and ``multidim_average`` arguments:
 
-        - If ``multidim_average`` is set to ``global``
+        - If ``multidim_average`` is set to ``global``:
 
           - If ``average='micro'/'macro'/'weighted'``, the output will be a scalar tensor
           - If ``average=None/'none'``, the shape will be ``(C,)``
 
-        - If ``multidim_average`` is set to ``samplewise``
+        - If ``multidim_average`` is set to ``samplewise``:
+
           - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
@@ -519,12 +520,13 @@ class MulticlassF1Score(MulticlassFBetaScore):
     Returns:
         The returned shape depends on the ``average`` and ``multidim_average`` arguments:
 
-        - If ``multidim_average`` is set to ``global``
+        - If ``multidim_average`` is set to ``global``:
 
           - If ``average='micro'/'macro'/'weighted'``, the output will be a scalar tensor
           - If ``average=None/'none'``, the shape will be ``(C,)``
 
-        - If ``multidim_average`` is set to ``samplewise``
+        - If ``multidim_average`` is set to ``samplewise``:
+
           - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
@@ -636,14 +638,15 @@ class MultilabelF1Score(MultilabelFBetaScore):
     Returns:
         The returned shape depends on the ``average`` and ``multidim_average`` arguments:
 
-        - If ``multidim_average`` is set to ``global``
+        - If ``multidim_average`` is set to ``global``:
 
           - If ``average='micro'/'macro'/'weighted'``, the output will be a scalar tensor
           - If ``average=None/'none'``, the shape will be ``(C,)``
 
-        - If ``multidim_average`` is set to ``samplewise``
+        - If ``multidim_average`` is set to ``samplewise``:
+
           - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
-          - If ``average=None/'none'``, the shape will be ``(N, C)``
+          - If ``average=None/'none'``, the shape will be ``(N, C)```
 
     Example (preds is int tensor):
         >>> from torchmetrics import MultilabelF1Score

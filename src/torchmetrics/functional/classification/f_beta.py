@@ -229,12 +229,13 @@ def multiclass_fbeta_score(
     Returns:
         The returned shape depends on the ``average`` and ``multidim_average`` arguments:
 
-        - If ``multidim_average`` is set to ``global``
+        - If ``multidim_average`` is set to ``global``:
 
           - If ``average='micro'/'macro'/'weighted'``, the output will be a scalar tensor
           - If ``average=None/'none'``, the shape will be ``(C,)``
 
-        - If ``multidim_average`` is set to ``samplewise``
+        - If ``multidim_average`` is set to ``samplewise``:
+
           - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
@@ -349,12 +350,13 @@ def multilabel_fbeta_score(
     Returns:
         The returned shape depends on the ``average`` and ``multidim_average`` arguments:
 
-        - If ``multidim_average`` is set to ``global``
+        - If ``multidim_average`` is set to ``global``:
 
           - If ``average='micro'/'macro'/'weighted'``, the output will be a scalar tensor
           - If ``average=None/'none'``, the shape will be ``(C,)``
 
-        - If ``multidim_average`` is set to ``samplewise``
+        - If ``multidim_average`` is set to ``samplewise``:
+
           - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
@@ -536,12 +538,13 @@ def multiclass_f1_score(
     Returns:
         The returned shape depends on the ``average`` and ``multidim_average`` arguments:
 
-        - If ``multidim_average`` is set to ``global``
+        - If ``multidim_average`` is set to ``global``:
 
           - If ``average='micro'/'macro'/'weighted'``, the output will be a scalar tensor
           - If ``average=None/'none'``, the shape will be ``(C,)``
 
-        - If ``multidim_average`` is set to ``samplewise``
+        - If ``multidim_average`` is set to ``samplewise``:
+
           - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
@@ -645,12 +648,13 @@ def multilabel_f1_score(
     Returns:
         The returned shape depends on the ``average`` and ``multidim_average`` arguments:
 
-        - If ``multidim_average`` is set to ``global``
+        - If ``multidim_average`` is set to ``global``:
 
           - If ``average='micro'/'macro'/'weighted'``, the output will be a scalar tensor
           - If ``average=None/'none'``, the shape will be ``(C,)``
 
-        - If ``multidim_average`` is set to ``samplewise``
+        - If ``multidim_average`` is set to ``samplewise``:
+
           - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 

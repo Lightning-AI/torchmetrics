@@ -495,12 +495,13 @@ def multiclass_stat_scores(
         to ``[tp, fp, tn, fn, sup]`` (``sup`` stands for support and equals ``tp + fn``). The shape
         depends on ``average`` and ``multidim_average`` parameters:
 
-        - If ``multidim_average`` is set to ``global``
+        - If ``multidim_average`` is set to ``global``:
 
           - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(5,)``
           - If ``average=None/'none'``, the shape will be ``(C, 5)``
 
-        - If ``multidim_average`` is set to ``samplewise``
+        - If ``multidim_average`` is set to ``samplewise``:
+
           - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N, 5)``
           - If ``average=None/'none'``, the shape will be ``(N, C, 5)``
 
@@ -749,12 +750,12 @@ def multilabel_stat_scores(
         to ``[tp, fp, tn, fn, sup]`` (``sup`` stands for support and equals ``tp + fn``). The shape
         depends on ``average`` and ``multidim_average`` parameters:
 
-        - If ``multidim_average`` is set to ``global``
+        - If ``multidim_average`` is set to ``global``:
 
           - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(5,)``
           - If ``average=None/'none'``, the shape will be ``(C, 5)``
 
-        - If ``multidim_average`` is set to ``samplewise``
+        - If ``multidim_average`` is set to ``samplewise``:
 
           - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N, 5)``
           - If ``average=None/'none'``, the shape will be ``(N, C, 5)``
