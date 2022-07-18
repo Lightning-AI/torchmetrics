@@ -150,7 +150,9 @@ def _ssim_compute(
             kernel = _gaussian_kernel_2d(channel, gauss_kernel_size, sigma, dtype, device)
 
     if not gaussian_kernel:
-        kernel = torch.ones((channel, 1, *kernel_size), dtype=dtype, device=device) / torch.prod(torch.tensor(kernel_size, dtype=dtype, device=device))
+        kernel = torch.ones((channel, 1, *kernel_size), dtype=dtype, device=device) / torch.prod(
+            torch.tensor(kernel_size, dtype=dtype, device=device)
+        )
 
     input_list = torch.cat((preds, target, preds * preds, target * target, preds * target))  # (5 * B, C, H, W)
 
