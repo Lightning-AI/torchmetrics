@@ -33,14 +33,10 @@ from torchmetrics.functional.classification.stat_scores import (
     _reduce_stat_scores,
     _stat_scores_update,
 )
+
+from torchmetrics.utilities.compute import _safe_divide
 from torchmetrics.utilities.enums import AverageMethod as AvgMethod
 from torchmetrics.utilities.enums import MDMCAverageMethod
-
-
-def _safe_divide(num: Tensor, denom: Tensor) -> Tensor:
-    """prevent zero division."""
-    denom[denom == 0.0] = 1
-    return num / denom
 
 
 def _fbeta_reduce(
@@ -229,7 +225,6 @@ def multilabel_f1_score(
 
 
 # -------------------------- Old stuff --------------------------
-
 
 def _fbeta_compute(
     tp: Tensor,
