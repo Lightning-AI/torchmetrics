@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import partial
-from typing import Callable, Optional
 
 import numpy as np
 import pytest
@@ -44,7 +43,6 @@ from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
 from unittests.helpers.testers import (
-    NUM_BATCHES,
     NUM_CLASSES,
     THRESHOLD,
     MetricTester,
@@ -930,7 +928,9 @@ class TestMultilabelPrecisionRecall(MetricTester):
 #     num_classes = 2
 
 #     # test functional
-#     result_fn = metric_fn(preds, target, average=AverageMethod.NONE, num_classes=num_classes, ignore_index=ignore_index)
+#     result_fn = metric_fn(
+#       preds, target, average=AverageMethod.NONE, num_classes=num_classes, ignore_index=ignore_index
+#     )
 #     assert torch.allclose(expected, result_fn, equal_nan=True)
 
 #     # test class
@@ -942,7 +942,11 @@ class TestMultilabelPrecisionRecall(MetricTester):
 
 # @pytest.mark.parametrize("average", ["micro", "macro", "weighted"])
 # @pytest.mark.parametrize(
-#     "metric_class, metric_functional, sk_fn", [(Precision, precision, precision_score), (Recall, recall, recall_score)]
+#     "metric_class, metric_functional, sk_fn",
+#       [
+#           (Precision, precision, precision_score),
+#           (Recall, recall, recall_score)
+#       ]
 # )
 # def test_same_input(metric_class, metric_functional, sk_fn, average):
 #     preds = _input_miss_class.preds
