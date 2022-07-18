@@ -11,9 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import math
 from typing import List, Optional, Sequence, Tuple, Union
 
-import math
 import torch
 from torch import Tensor
 from torch.nn import functional as F
