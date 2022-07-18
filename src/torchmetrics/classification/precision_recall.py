@@ -14,10 +14,95 @@
 from typing import Any, Optional
 
 from torch import Tensor
+from typing_extensions import Literal
 
-from torchmetrics.classification.stat_scores import StatScores
-from torchmetrics.functional.classification.precision_recall import _precision_compute, _recall_compute
+from torchmetrics.classification.stat_scores import (
+    StatScores,
+    BinaryStatScores,
+    MulticlassStatScores,
+    MultilabelStatScores,
+)
+from torchmetrics.functional.classification.precision_recall import (
+    _precision_compute,
+    _recall_compute,
+    _precision_recall_reduce,
+)
 from torchmetrics.utilities.enums import AverageMethod
+
+
+class BinaryPrecision(BinaryStatScores):
+    is_differentiable: bool = False
+    higher_is_better: Optional[bool] = True
+    full_state_update: bool = False
+
+    def compute(self) -> Tensor:
+        tp, fp, tn, fn = self._final_state()
+        return _precision_recall_reduce(
+            "precision", tp, fp, tn, fn, average="binary", multidim_average=self.multidim_average
+        )
+
+
+class MulticlassPrecision(MulticlassStatScores):
+    is_differentiable: bool = False
+    higher_is_better: Optional[bool] = True
+    full_state_update: bool = False
+
+    def compute(self) -> Tensor:
+        tp, fp, tn, fn = self._final_state()
+        return _precision_recall_reduce(
+            "precision", tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average
+        )
+
+
+class MultilabelPrecision(MultilabelStatScores):
+    is_differentiable: bool = False
+    higher_is_better: Optional[bool] = True
+    full_state_update: bool = False
+
+    def compute(self) -> Tensor:
+        tp, fp, tn, fn = self._final_state()
+        return _precision_recall_reduce(
+            "precision", tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average
+        )
+
+
+class BinaryRecall(BinaryStatScores):
+    is_differentiable: bool = False
+    higher_is_better: Optional[bool] = True
+    full_state_update: bool = False
+
+    def compute(self) -> Tensor:
+        tp, fp, tn, fn = self._final_state()
+        return _precision_recall_reduce(
+            "recall", tp, fp, tn, fn, average="binary", multidim_average=self.multidim_average
+        )
+
+
+class MulticlassRecall(MulticlassStatScores):
+    is_differentiable: bool = False
+    higher_is_better: Optional[bool] = True
+    full_state_update: bool = False
+
+    def compute(self) -> Tensor:
+        tp, fp, tn, fn = self._final_state()
+        return _precision_recall_reduce(
+            "recall", tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average
+        )
+
+
+class MultilabelRecall(MultilabelStatScores):
+    is_differentiable: bool = False
+    higher_is_better: Optional[bool] = True
+    full_state_update: bool = False
+
+    def compute(self) -> Tensor:
+        tp, fp, tn, fn = self._final_state()
+        return _precision_recall_reduce(
+            "recall", tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average
+        )
+
+
+# -------------------------- Old stuff --------------------------
 
 
 class Precision(StatScores):

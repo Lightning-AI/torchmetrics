@@ -33,6 +33,7 @@ from torchmetrics.functional.classification.stat_scores import (
     _reduce_stat_scores,
     _stat_scores_update,
 )
+from torchmetrics.utilities.compute import _safe_divide
 from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
 
 
@@ -51,7 +52,7 @@ def _precision_recall_reduce(
     elif average == "micro":
         tp = tp.sum(dim=0 if multidim_average == "global" else 1)
         fn = fn.sum(dim=0 if multidim_average == "global" else 1)
-        fp = fp.sum(dim=0 if multidim_average == "global" else 1)
+        different_stat = different_stat.sum(dim=0 if multidim_average == "global" else 1)
         return _safe_divide(tp, tp + different_stat)
     else:
         score = _safe_divide(tp, tp + different_stat)
@@ -61,10 +62,10 @@ def _precision_recall_reduce(
             weights = tp + fn
         else:
             weights = torch.ones_like(score)
-        return ((weights * score) / weights.sum(-1, keepdim=True)).sum(-1)
+        return _safe_divide(weights * score, weights.sum(-1, keepdim=True)).sum(-1)
 
 
-def binary_precision_scores(
+def binary_precision(
     preds: Tensor,
     target: Tensor,
     threshold: float = 0.5,
@@ -113,10 +114,10 @@ def multilabel_precision(
         _multilabel_stat_scores_tensor_validation(preds, target, num_labels, multidim_average, ignore_index)
     preds, target = _multilabel_stat_scores_format(preds, target, num_labels, threshold, ignore_index)
     tp, fp, tn, fn = _multilabel_stat_scores_update(preds, target, multidim_average)
-    return _precision_recall_reduce("recall", tp, fp, tn, fn, average=average, multidim_average=multidim_average)
+    return _precision_recall_reduce("precision", tp, fp, tn, fn, average=average, multidim_average=multidim_average)
 
 
-def binary_recall_scores(
+def binary_recall(
     preds: Tensor,
     target: Tensor,
     threshold: float = 0.5,
@@ -147,7 +148,7 @@ def multiclass_recall(
         _multiclass_stat_scores_tensor_validation(preds, target, num_classes, multidim_average, ignore_index)
     preds, target = _multiclass_stat_scores_format(preds, target, top_k)
     tp, fp, tn, fn = _multiclass_stat_scores_update(preds, target, num_classes, top_k, multidim_average, ignore_index)
-    return _precision_recall_reduce("precision", tp, fp, tn, fn, average=average, multidim_average=multidim_average)
+    return _precision_recall_reduce("recall", tp, fp, tn, fn, average=average, multidim_average=multidim_average)
 
 
 def multilabel_recall(
