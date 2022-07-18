@@ -502,7 +502,7 @@ class MeanAveragePrecision(Metric):
         return {
             "dtMatches": torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool, device=self.device),
             "gtMatches": torch.zeros((nb_iou_thrs, nb_gt), dtype=torch.bool, device=self.device),
-            "dtScores": torch.zeros(nb_det, dtype=torch.bool, device=self.device),
+            "dtScores": torch.zeros(nb_det, dtype=torch.float32, device=self.device),
             "gtIgnore": gt_ignore,
             "dtIgnore": det_ignore,
         }
