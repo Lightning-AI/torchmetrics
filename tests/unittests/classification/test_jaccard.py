@@ -234,7 +234,7 @@ def _sk_jaccard_index_multilabel(preds, target, ignore_index=None, average="macr
             return scores
         elif average == "macro":
             return scores.mean()
-        return ((scores * weights) / weights.sum()).sum()      
+        return ((scores * weights) / weights.sum()).sum()
 
 
 @pytest.mark.parametrize("input", _multilabel_cases)

@@ -645,4 +645,3 @@ def remove_ignore_index(target: Tensor, preds: Tensor, ignore_index: Optional[in
         idx = target == ignore_index
         target, preds = deepcopy(target[~idx]), deepcopy(preds[~idx])
     return target, preds
-        

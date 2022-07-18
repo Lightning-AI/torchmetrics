@@ -17,15 +17,15 @@ from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.classification.stat_scores import (
-    StatScores,
     BinaryStatScores,
     MulticlassStatScores,
     MultilabelStatScores,
+    StatScores,
 )
 from torchmetrics.functional.classification.precision_recall import (
     _precision_compute,
-    _recall_compute,
     _precision_recall_reduce,
+    _recall_compute,
 )
 from torchmetrics.utilities.enums import AverageMethod
 

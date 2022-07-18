@@ -194,7 +194,11 @@ def _sk_fbeta_score_multiclass(preds, target, sk_fn, ignore_index, multidim_aver
     "module, functional, compare",
     [
         (MulticlassF1Score, multiclass_f1_score, sk_f1_score),
-        (partial(MulticlassFBetaScore, beta=2.0), partial(multiclass_fbeta_score, beta=2.0), partial(sk_fbeta_score, beta=2.0)),
+        (
+            partial(MulticlassFBetaScore, beta=2.0),
+            partial(multiclass_fbeta_score, beta=2.0),
+            partial(sk_fbeta_score, beta=2.0),
+        ),
     ],
     ids=["f1", "fbeta"],
 )
@@ -203,7 +207,9 @@ class TestMulticlassFBetaScore(MetricTester):
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_multiclass_fbeta_score(self, ddp, input, module, functional, compare, ignore_index, multidim_average, average):
+    def test_multiclass_fbeta_score(
+        self, ddp, input, module, functional, compare, ignore_index, multidim_average, average
+    ):
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -235,7 +241,9 @@ class TestMulticlassFBetaScore(MetricTester):
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
-    def test_multiclass_fbeta_score_functional(self, input, module, functional, compare, ignore_index, multidim_average, average):
+    def test_multiclass_fbeta_score_functional(
+        self, input, module, functional, compare, ignore_index, multidim_average, average
+    ):
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -329,7 +337,7 @@ def test_top_k(
     expected_fbeta: Tensor,
     expected_f1: Tensor,
 ):
-    """A simple test to check that top_k works as expected. """
+    """A simple test to check that top_k works as expected."""
     class_metric = metric_class(top_k=k, average=average, num_classes=3)
     class_metric.update(preds, target)
 
