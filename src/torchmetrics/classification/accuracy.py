@@ -22,11 +22,43 @@ from torchmetrics.functional.classification.accuracy import (
     _mode,
     _subset_accuracy_compute,
     _subset_accuracy_update,
+    _accuracy_reduce,
 )
 from torchmetrics.utilities.enums import AverageMethod, DataType
 
-from torchmetrics.classification.stat_scores import StatScores  # isort:skip
+from torchmetrics.classification.stat_scores import (  # isort:skip
+    StatScores,
+    BinaryStatScores,
+    MulticlassStatScores,
+    MultilabelStatScores,
+)
 
+class BinaryAccuracy(BinaryStatScores):
+    def compute(self) -> Tensor:
+        tp, fp, tn, fn = self._final_state()
+        return _accuracy_reduce(
+            tp, fp, tn, fn, average="binary", multidim_average=self.multidim_average
+        )
+
+
+class MulticlassAccuracy(MulticlassStatScores):
+    def compute(self) -> Tensor:
+        tp, fp, tn, fn = self._final_state()
+        return _accuracy_reduce(
+            tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average
+        )
+
+
+class MultilabelAccuracy(MultilabelStatScores):
+    def compute(self) -> Tensor:
+        tp, fp, tn, fn = self._final_state()
+        return _accuracy_reduce(
+            tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average
+        )
+
+
+
+# -------------------------- Old stuff --------------------------
 
 class Accuracy(StatScores):
     r"""

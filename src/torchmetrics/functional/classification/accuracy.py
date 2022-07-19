@@ -15,11 +15,106 @@ from typing import Optional, Tuple
 
 import torch
 from torch import Tensor, tensor
+from typing_extensions import Literal
 
-from torchmetrics.functional.classification.stat_scores import _reduce_stat_scores, _stat_scores_update
+from torchmetrics.functional.classification.stat_scores import (
+    _reduce_stat_scores, 
+    _stat_scores_update,
+    _binary_stat_scores_arg_validation,
+    _binary_stat_scores_tensor_validation,
+    _binary_stat_scores_format,
+    _binary_stat_scores_update,
+    _multiclass_stat_scores_arg_validation,
+    _multiclass_stat_scores_tensor_validation,
+    _multiclass_stat_scores_format,
+    _multiclass_stat_scores_update,
+    _multilabel_stat_scores_arg_validation,
+    _multilabel_stat_scores_tensor_validation,
+    _multilabel_stat_scores_format,
+    _multilabel_stat_scores_update,    
+)
 from torchmetrics.utilities.checks import _check_classification_inputs, _input_format_classification, _input_squeeze
 from torchmetrics.utilities.enums import AverageMethod, DataType, MDMCAverageMethod
 
+
+def _accuracy_reduce(
+    tp: Tensor,
+    fp: Tensor,
+    tn: Tensor,
+    fn: Tensor,
+    average: Optional[Literal["binary", "micro", "macro", "weighted", "none"]],
+    multidim_average: Literal["global", "samplewise"] = "global",
+) -> Tensor:
+    if average == "binary":
+        return _safe_divide(tp + tn, tp + tn + fp + fn)
+    elif average == "micro":
+        tp = tp.sum(dim=0 if multidim_average == "global" else 1)
+        fn = fn.sum(dim=0 if multidim_average == "global" else 1)
+        return _safe_divide(tp, tp + fn)
+    else:
+        score = _safe_divide(tp, tp + fn)
+        if average is None or average == "none":
+            return score
+        if average == "weighted":
+            weights = tp + fn
+        else:
+            weights = torch.ones_like(score)
+        return _safe_divide(weights * score, weights.sum(-1, keepdim=True)).sum(-1)
+
+
+def binary_precision(
+    preds: Tensor,
+    target: Tensor,
+    threshold: float = 0.5,
+    multidim_average: Literal["global", "samplewise"] = "global",
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
+) -> Tensor:
+    if validate_args:
+        _binary_stat_scores_arg_validation(threshold, multidim_average, ignore_index)
+        _binary_stat_scores_tensor_validation(preds, target, multidim_average, ignore_index)
+    preds, target = _binary_stat_scores_format(preds, target, threshold, ignore_index)
+    tp, fp, tn, fn = _binary_stat_scores_update(preds, target, multidim_average)
+    return _accuracy_reduce(tp, fp, tn, fn, average="binary", multidim_average=multidim_average)
+
+
+def multiclass_precision(
+    preds: Tensor,
+    target: Tensor,
+    num_classes: int,
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+    top_k: int = 1,
+    multidim_average: Literal["global", "samplewise"] = "global",
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
+) -> Tensor:
+    if validate_args:
+        _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index)
+        _multiclass_stat_scores_tensor_validation(preds, target, num_classes, multidim_average, ignore_index)
+    preds, target = _multiclass_stat_scores_format(preds, target, top_k)
+    tp, fp, tn, fn = _multiclass_stat_scores_update(preds, target, num_classes, top_k, multidim_average, ignore_index)
+    return _accuracy_reduce(tp, fp, tn, fn, average=average, multidim_average=multidim_average)
+
+
+def multilabel_precision(
+    preds: Tensor,
+    target: Tensor,
+    num_labels: int,
+    threshold: float = 0.5,
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+    multidim_average: Literal["global", "samplewise"] = "global",
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
+) -> Tensor:
+    if validate_args:
+        _multilabel_stat_scores_arg_validation(num_labels, threshold, average, multidim_average, ignore_index)
+        _multilabel_stat_scores_tensor_validation(preds, target, num_labels, multidim_average, ignore_index)
+    preds, target = _multilabel_stat_scores_format(preds, target, num_labels, threshold, ignore_index)
+    tp, fp, tn, fn = _multilabel_stat_scores_update(preds, target, multidim_average)
+    return _accuracy_reduce(tp, fp, tn, fn, average=average, multidim_average=multidim_average)
+
+
+# -------------------------- Old stuff --------------------------
 
 def _check_subset_validity(mode: DataType) -> bool:
     """Checks input mode is valid."""
