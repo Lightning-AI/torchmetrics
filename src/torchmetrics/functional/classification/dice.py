@@ -167,7 +167,7 @@ def dice(
     multiclass: Optional[bool] = None,
     ignore_index: Optional[int] = None,
 ) -> Tensor:
-    r"""Computes `Dice`_:
+    r"""Computes `Dice [wiki]`_:
 
     .. math:: \text{Dice} = \frac{\text{2 * TP}}{\text{2 * TP} + \text{FP} + \text{FN}}
 
