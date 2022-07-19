@@ -38,7 +38,12 @@ from torchmetrics.functional.classification.ranking import (  # noqa: F401
     label_ranking_loss,
 )
 from torchmetrics.functional.classification.roc import roc  # noqa: F401
-from torchmetrics.functional.classification.specificity import specificity  # noqa: F401
+from torchmetrics.functional.classification.specificity import (  # noqa: F401
+    binary_specificity,
+    multiclass_specificity,
+    multilabel_specificity,
+    specificity,
+)
 from torchmetrics.functional.classification.stat_scores import (  # noqa: F401
     binary_stat_scores,
     multiclass_stat_scores,

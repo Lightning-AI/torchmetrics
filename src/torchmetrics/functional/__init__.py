@@ -51,7 +51,12 @@ from torchmetrics.functional.classification.ranking import (
     label_ranking_loss,
 )
 from torchmetrics.functional.classification.roc import roc
-from torchmetrics.functional.classification.specificity import specificity
+from torchmetrics.functional.classification.specificity import (
+    binary_specificity,
+    multiclass_specificity,
+    multilabel_specificity,
+    specificity,
+)
 from torchmetrics.functional.classification.stat_scores import (
     binary_stat_scores,
     multiclass_stat_scores,
@@ -206,4 +211,7 @@ __all__ = [
     "binary_matthews_corrcoef",
     "multiclass_matthews_corrcoef",
     "multilabel_matthews_corrcoef",
+    "binary_specificity",
+    "multiclass_specificity",
+    "multilabel_specificity",
 ]
