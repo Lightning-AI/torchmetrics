@@ -73,7 +73,7 @@ def binary_precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes `Precision|wiki`_ for binary tasks:
+    r"""Computes `Precision`_ for binary tasks:
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 
@@ -154,7 +154,7 @@ def multiclass_precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes `Precision|wiki`_ for multiclass tasks
+    r"""Computes `Precision`_ for multiclass tasks
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 
@@ -262,7 +262,7 @@ def multilabel_precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes `Precision|wiki`_ for multilabel tasks
+    r"""Computes `Precision`_ for multilabel tasks
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 
@@ -367,7 +367,7 @@ def binary_recall(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes `Recall|wiki`_ for binary tasks:
+    r"""Computes `Recall`_ for binary tasks:
 
     .. math:: \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
 
@@ -448,7 +448,7 @@ def multiclass_recall(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes `Recall|wiki`_ for multiclass tasks:
+    r"""Computes `Recall`_ for multiclass tasks:
 
     .. math:: \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
 
@@ -556,7 +556,7 @@ def multilabel_recall(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes `Recall|wiki`_ for multilabel tasks:
+    r"""Computes `Recall`_ for multilabel tasks:
 
     .. math:: \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
 
@@ -719,7 +719,7 @@ def precision(
     top_k: Optional[int] = None,
     multiclass: Optional[bool] = None,
 ) -> Tensor:
-    r"""Computes `Precision|wiki`_
+    r"""Computes `Precision`_
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 
@@ -911,7 +911,7 @@ def recall(
     top_k: Optional[int] = None,
     multiclass: Optional[bool] = None,
 ) -> Tensor:
-    r"""Computes `Recall|wiki`_
+    r"""Computes `Recall`_
 
     .. math:: \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
 
@@ -1053,7 +1053,7 @@ def precision_recall(
     top_k: Optional[int] = None,
     multiclass: Optional[bool] = None,
 ) -> Tuple[Tensor, Tensor]:
-    r"""Computes `Precision|wiki`_
+    r"""Computes `Precision`_
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 
