@@ -31,7 +31,7 @@ from torchmetrics.utilities.enums import AverageMethod
 
 
 class BinaryPrecision(BinaryStatScores):
-    r"""Computes `Precision|wiki`_ for binary tasks:
+    r"""Computes `Precision`_ for binary tasks:
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 
@@ -107,7 +107,7 @@ class BinaryPrecision(BinaryStatScores):
 
 
 class MulticlassPrecision(MulticlassStatScores):
-    r"""Computes `Precision|wiki`_ for multiclass tasks
+    r"""Computes `Precision`_ for multiclass tasks
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 
@@ -212,7 +212,7 @@ class MulticlassPrecision(MulticlassStatScores):
 
 
 class MultilabelPrecision(MultilabelStatScores):
-    r"""Computes `Precision|wiki`_ for multilabel tasks
+    r"""Computes `Precision`_ for multilabel tasks
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 
@@ -317,7 +317,7 @@ class MultilabelPrecision(MultilabelStatScores):
 
 
 class BinaryRecall(BinaryStatScores):
-    r"""Computes `Recall|wiki`_ for binary tasks:
+    r"""Computes `Recall`_ for binary tasks:
 
     .. math:: \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
 
@@ -393,7 +393,7 @@ class BinaryRecall(BinaryStatScores):
 
 
 class MulticlassRecall(MulticlassStatScores):
-    r"""Computes `Recall|wiki`_ for multiclass tasks:
+    r"""Computes `Recall`_ for multiclass tasks:
 
     .. math:: \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
 
@@ -498,7 +498,7 @@ class MulticlassRecall(MulticlassStatScores):
 
 
 class MultilabelRecall(MultilabelStatScores):
-    r"""Computes `Recall|wiki`_ for multilabel tasks:
+    r"""Computes `Recall`_ for multilabel tasks:
 
     .. math:: \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
 
@@ -606,7 +606,7 @@ class MultilabelRecall(MultilabelStatScores):
 
 
 class Precision(StatScores):
-    r"""Computes `Precision|wiki`_:
+    r"""Computes `Precision`_:
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 
@@ -745,7 +745,7 @@ class Precision(StatScores):
 
 
 class Recall(StatScores):
-    r"""Computes `Recall|wiki`_:
+    r"""Computes `Recall`_:
 
     .. math:: \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
 

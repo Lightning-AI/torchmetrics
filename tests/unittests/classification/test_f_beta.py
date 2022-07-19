@@ -383,9 +383,10 @@ def _sk_fbeta_score_multilabel(preds, target, sk_fn, ignore_index, multidim_aver
         if average == "macro":
             return res.mean(0)
         elif average == "weighted":
-            weights = np.stack(weights, 0)
-            weights[weights == 0] = 1.0
-            return ((weights * res) / weights.sum(-1, keepdims=True)).sum(-1)
+            weights = np.stack(weights, 0).astype(float)
+            weights_norm = weights.sum(-1, keepdims=True)
+            weights_norm[weights_norm == 0] = 1.0
+            return ((weights * res) / weights_norm).sum(-1)
         elif average is None or average == "none":
             return res
     else:
@@ -413,9 +414,10 @@ def _sk_fbeta_score_multilabel(preds, target, sk_fn, ignore_index, multidim_aver
         if average == "macro":
             return res.mean(-1)
         elif average == "weighted":
-            weights = np.stack(weights, 0)
-            weights[weights == 0] = 1.0
-            return ((weights * res) / weights.sum(-1, keepdims=True)).sum(-1)
+            weights = np.stack(weights, 0).astype(float)
+            weights_norm = weights.sum(-1, keepdims=True)
+            weights_norm[weights_norm == 0] = 1.0
+            return ((weights * res) / weights_norm).sum(-1)
         elif average is None or average == "none":
             return res
 
