@@ -16,41 +16,37 @@ from typing import Any
 import torch
 from torch import Tensor, tensor
 
-from torchmetrics.metric import Metric
+from torchmetrics.classification.stat_scores import BinaryStatScores, MulticlassStatScores, MultilabelStatScores
 from torchmetrics.functional.classification.hamming import (
-    _hamming_distance_compute, 
-    _hamming_distance_update,
+    _hamming_distance_compute,
     _hamming_distance_reduce,
+    _hamming_distance_update,
 )
-from torchmetrics.classification.stat_scores import (
-    BinaryStatScores,
-    MulticlassStatScores,
-    MultilabelStatScores,
-)
+from torchmetrics.metric import Metric
+
 
 class BinaryHammingDistance(BinaryStatScores):
-    """ """
+    """"""
+
     def compute(self) -> Tensor:
         tp, fp, tn, fn = self._final_state()
         return _hamming_distance_reduce(tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average)
 
 
-class MulticlassHammingDistance(BinaryStatScores):
-    """ """
+class MulticlassHammingDistance(MulticlassStatScores):
+    """"""
+
     def compute(self) -> Tensor:
         tp, fp, tn, fn = self._final_state()
         return _hamming_distance_reduce(tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average)
 
 
-class MultilabelHammingDistance(BinaryStatScores):
-    """ """
+class MultilabelHammingDistance(MultilabelStatScores):
+    """"""
+
     def compute(self) -> Tensor:
         tp, fp, tn, fn = self._final_state()
         return _hamming_distance_reduce(tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average)
-
-
-
-
 
 
 # -------------------------- Old stuff --------------------------

@@ -15,12 +15,12 @@ import pytest
 from sklearn.metrics import hamming_loss as sk_hamming_loss
 
 from torchmetrics.classification.hamming_distance import HammingDistance
-from torchmetrics.functional.classification.hamming_distance import (binary_hamming_distance)
-
+from torchmetrics.functional.classification.hamming_distance import binary_hamming_distance
 from unittests.helpers import seed_all
 from unittests.helpers.testers import THRESHOLD, MetricTester
 
 seed_all(42)
+
 
 def _sk_hamming_distance_binary(preds, target, ignore_index, multidim_average):
     if multidim_average == "global":
@@ -75,7 +75,9 @@ class TestBinaryHammingDistance(MetricTester):
             preds=preds,
             target=target,
             metric_class=BinaryHammingDistance,
-            sk_metric=partial(_sk_hamming_distance_binary, ignore_index=ignore_index, multidim_average=multidim_average),
+            sk_metric=partial(
+                _sk_hamming_distance_binary, ignore_index=ignore_index, multidim_average=multidim_average
+            ),
             metric_args={"threshold": THRESHOLD, "ignore_index": ignore_index, "multidim_average": multidim_average},
         )
 
@@ -92,7 +94,9 @@ class TestBinaryHammingDistance(MetricTester):
             preds=preds,
             target=target,
             metric_functional=binary_hamming_distance,
-            sk_metric=partial(_sk_hamming_distance_binary, ignore_index=ignore_index, multidim_average=multidim_average),
+            sk_metric=partial(
+                _sk_hamming_distance_binary, ignore_index=ignore_index, multidim_average=multidim_average
+            ),
             metric_args={
                 "threshold": THRESHOLD,
                 "ignore_index": ignore_index,
@@ -186,7 +190,7 @@ def _sk_hamming_distance_multiclass(preds, target, ignore_index, multidim_averag
             fp = confmat.sum(0) - tp
             fn = confmat.sum(1) - tp
             tn = confmat.sum() - (fp + fn + tp)
-            if average == 'micro':
+            if average == "micro":
                 res.append(_calc_hamming_distance(tn.sum(), fp.sum()))
 
             r = _calc_hamming_distance(tn, fp)
@@ -314,13 +318,13 @@ _mc_k_preds = tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]])
     ],
 )
 def test_top_k(k: int, preds: Tensor, target: Tensor, average: str, expected_spec: Tensor):
-    """A simple test to check that top_k works as expected. """
+    """A simple test to check that top_k works as expected."""
     class_metric = MulticlassHammingDistance(top_k=k, average=average, num_classes=3)
     class_metric.update(preds, target)
 
     assert torch.equal(class_metric.compute(), expected_spec)
-    assert torch.equal(multiclass_hamming_distance(
-        preds, target, top_k=k, average=average, num_classes=3), expected_spec
+    assert torch.equal(
+        multiclass_hamming_distance(preds, target, top_k=k, average=average, num_classes=3), expected_spec
     )
 
 
@@ -334,7 +338,7 @@ def _sk_hamming_distance_multilabel(preds, target, ignore_index, multidim_averag
     preds = preds.reshape(*preds.shape[:2], -1)
     target = target.reshape(*target.shape[:2], -1)
     if multidim_average == "global":
-        tns, fps = [ ], [ ]
+        tns, fps = [], []
         hamming_distance = []
         for i in range(preds.shape[1]):
             p, t = preds[:, i].flatten(), target[:, i].flatten()
@@ -345,10 +349,10 @@ def _sk_hamming_distance_multilabel(preds, target, ignore_index, multidim_averag
             tn, fp, fn, tp = sk_confusion_matrix(t, p, labels=[0, 1]).ravel()
             tns.append(tn)
             fps.append(fp)
-        
+
         tn = np.array(tns)
         fp = np.array(fps)
-        if average == 'micro':
+        if average == "micro":
             return _calc_hamming_distance(tn.sum(), fp.sum())
 
         res = _calc_hamming_distance(tn, fp)
@@ -362,7 +366,7 @@ def _sk_hamming_distance_multilabel(preds, target, ignore_index, multidim_averag
     else:
         hamming_distance = []
         for i in range(preds.shape[0]):
-            tns, fps = [ ], [ ]
+            tns, fps = [], []
             for j in range(preds.shape[1]):
                 pred, true = preds[i, j], target[i, j]
                 if ignore_index is not None:
@@ -374,7 +378,7 @@ def _sk_hamming_distance_multilabel(preds, target, ignore_index, multidim_averag
                 fps.append(fp)
             tn = np.array(tns)
             fp = np.array(fps)
-            if average == 'micro':
+            if average == "micro":
                 hamming_distance.append(_calc_hamming_distance(tn.sum(), fp.sum()))
             else:
                 hamming_distance.append(_calc_hamming_distance(tn, fp))
@@ -493,8 +497,6 @@ class TestMultilabelHammingDistance(MetricTester):
             metric_args={"num_labels": NUM_CLASSES, "threshold": THRESHOLD},
             dtype=dtype,
         )
-
-
 
 
 # -------------------------- Old stuff --------------------------

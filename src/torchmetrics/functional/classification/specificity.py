@@ -18,24 +18,23 @@ from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.functional.classification.stat_scores import (
-    _reduce_stat_scores, 
-    _stat_scores_update,
     _binary_stat_scores_arg_validation,
-    _binary_stat_scores_tensor_validation,
     _binary_stat_scores_format,
+    _binary_stat_scores_tensor_validation,
     _binary_stat_scores_update,
     _multiclass_stat_scores_arg_validation,
-    _multiclass_stat_scores_tensor_validation,
     _multiclass_stat_scores_format,
+    _multiclass_stat_scores_tensor_validation,
     _multiclass_stat_scores_update,
     _multilabel_stat_scores_arg_validation,
-    _multilabel_stat_scores_tensor_validation,
     _multilabel_stat_scores_format,
+    _multilabel_stat_scores_tensor_validation,
     _multilabel_stat_scores_update,
-
+    _reduce_stat_scores,
+    _stat_scores_update,
 )
-from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
 from torchmetrics.utilities.compute import _safe_divide
+from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
 
 
 def _specificity_reduce(
@@ -84,10 +83,10 @@ def binary_specificity(
       [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, ...)``
-    
+
     The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
     argument.
-    
+
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
@@ -103,25 +102,25 @@ def binary_specificity(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
-    
+
     Returns:
         If ``multidim_average`` is set to ``global``, the metric returns a scalar value. If ``multidim_average``
         is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of a scalar value per sample.
-    
+
     Example (preds is int tensor):
         >>> from torchmetrics.functional import binary_specificity
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0, 0, 1, 1, 0, 1])
         >>> binary_specificity(preds, target)
         tensor(0.6667)
-    
+
     Example (preds is float tensor):
         >>> from torchmetrics.functional import binary_specificity
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
         >>> binary_specificity(preds, target)
         tensor(0.6667)
-    
+
     Example (multidim tensors):
         >>> from torchmetrics.functional import binary_specificity
         >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
@@ -348,6 +347,7 @@ def multilabel_specificity(
 
 
 # -------------------------- Old stuff --------------------------
+
 
 def _specificity_compute(
     tp: Tensor,
