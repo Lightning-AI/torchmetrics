@@ -38,7 +38,6 @@ from torchmetrics.functional.classification.f_beta import (
     multilabel_f1_score,
     multilabel_fbeta_score,
 )
-from torchmetrics.utilities.compute import _safe_divide
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
@@ -385,7 +384,8 @@ def _sk_fbeta_score_multilabel(preds, target, sk_fn, ignore_index, multidim_aver
             return res.mean(0)
         elif average == "weighted":
             weights = np.stack(weights, 0)
-            return _safe_divide(weights * res, weights.sum(-1, keepdims=True)).sum(-1)
+            weights[weights == 0] = 1.0
+            return ((weights * res) / weights.sum(-1, keepdims=True)).sum(-1)
         elif average is None or average == "none":
             return res
     else:
@@ -414,7 +414,8 @@ def _sk_fbeta_score_multilabel(preds, target, sk_fn, ignore_index, multidim_aver
             return res.mean(-1)
         elif average == "weighted":
             weights = np.stack(weights, 0)
-            return _safe_divide(weights * res, weights.sum(-1, keepdims=True)).sum(-1)
+            weights[weights == 0] = 1.0
+            return ((weights * res) / weights.sum(-1, keepdims=True)).sum(-1)
         elif average is None or average == "none":
             return res
 
