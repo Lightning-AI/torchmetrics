@@ -17,25 +17,41 @@ import torch
 from torch import Tensor
 
 from torchmetrics.classification.stat_scores import (
-    StatScores,
     BinaryStatScores,
     MulticlassStatScores,
     MultilabelStatScores,
+    StatScores,
 )
-from torchmetrics.functional.classification.specificity import _specificity_compute
+from torchmetrics.functional.classification.specificity import _specificity_compute, _specificity_reduce
 from torchmetrics.utilities.enums import AverageMethod
 
+
 class BinarySpecificity(BinaryStatScores):
-    pass
+    """"""
+
+    def compute(self) -> Tensor:
+        tp, fp, tn, fn = self._final_state()
+        return _specificity_reduce(tp, fp, tn, fn, average="binary", multidim_average=self.multidim_average)
+
 
 class MulticlassSpecificity(MulticlassStatScores):
-    pass
+    """"""
+
+    def compute(self) -> Tensor:
+        tp, fp, tn, fn = self._final_state()
+        return _specificity_reduce(tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average)
 
 
 class MultilabelSpecificity(MultilabelStatScores):
-    pass
+    """"""
+
+    def compute(self) -> Tensor:
+        tp, fp, tn, fn = self._final_state()
+        return _specificity_reduce(tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average)
+
 
 # -------------------------- Old stuff --------------------------
+
 
 class Specificity(StatScores):
     r"""Computes `Specificity`_:

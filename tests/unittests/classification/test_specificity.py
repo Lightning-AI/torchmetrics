@@ -18,20 +18,16 @@ from typing import Callable, Optional
 import numpy as np
 import pytest
 import torch
+from scipy.special import expit as sigmoid
 from sklearn.metrics import confusion_matrix as sk_confusion_matrix
 from torch import Tensor, tensor
-from scipy.special import expit as sigmoid
 
 from torchmetrics import Metric, Specificity
+from torchmetrics.classification.specificity import BinarySpecificity, MulticlassSpecificity, MultilabelSpecificity
 from torchmetrics.functional.classification.specificity import (
     binary_specificity,
     multiclass_specificity,
-    multilabel_specificity
-)
-from torchmetrics.classification.specificity import (
-    BinarySpecificity,
-    MulticlassSpecificity,
-    MultilabelSpecificity
+    multilabel_specificity,
 )
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
@@ -39,6 +35,16 @@ from unittests.helpers import seed_all
 from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index
 
 seed_all(42)
+
+
+def _calc_specificity(tn, fp):
+    """safely calculate specificity."""
+    denom = tn + fp
+    if np.isscalar(tn):
+        denom = 1.0 if denom == 0 else denom
+    else:
+        denom[denom == 0] = 1.0
+    return tn / denom
 
 
 def _sk_specificity_binary(preds, target, ignore_index, multidim_average):
@@ -60,7 +66,7 @@ def _sk_specificity_binary(preds, target, ignore_index, multidim_average):
             target = target[~idx]
             preds = preds[~idx]
         tn, fp, _, _ = sk_confusion_matrix(y_true=target, y_pred=preds, labels=[0, 1]).ravel()
-        return tn / (tn+fp)
+        return _calc_specificity(tn, fp)
     else:
         res = []
         for pred, true in zip(preds, target):
@@ -71,7 +77,7 @@ def _sk_specificity_binary(preds, target, ignore_index, multidim_average):
                 true = true[~idx]
                 pred = pred[~idx]
             tn, fp, _, _ = sk_confusion_matrix(y_true=true, y_pred=pred, labels=[0, 1]).ravel()
-            res.append(tn / (tn + fp))
+            res.append(_calc_specificity(tn, fp))
         return np.stack(res)
 
 
@@ -176,17 +182,17 @@ def _sk_specificity_multiclass(preds, target, ignore_index, multidim_average, av
         fn = confmat.sum(1) - tp
         tn = confmat.sum() - (fp + fn + tp)
 
-        res = tn / (tn + fp)
         if average == "micro":
-            return res.sum(0)
-        elif average == "macro":
+            return _calc_specificity(tn.sum(), fp.sum())
+
+        res = _calc_specificity(tn, fp)
+        if average == "macro":
             return res.mean(0)
         elif average == "weighted":
             w = tp + fn
             return (res * (w / w.sum()).reshape(-1, 1)).sum(0)
         elif average is None or average == "none":
             return res
-
     else:
         preds = preds.numpy()
         target = target.numpy()
@@ -205,10 +211,11 @@ def _sk_specificity_multiclass(preds, target, ignore_index, multidim_average, av
             fp = confmat.sum(0) - tp
             fn = confmat.sum(1) - tp
             tn = confmat.sum() - (fp + fn + tp)
-            r = tn / (tn + fp)
             if average == "micro":
-                res.append(r.sum(0))
-            elif average == "macro":
+                res.append(_calc_specificity(tn.sum(), fp.sum()))
+
+            r = _calc_specificity(tn, fp)
+            if average == "macro":
                 res.append(r.mean(0))
             elif average == "weighted":
                 w = tp + fn
@@ -320,28 +327,24 @@ class TestMulticlassSpecificity(MetricTester):
         )
 
 
-_mc_k_target = torch.tensor([0, 1, 2])
-_mc_k_preds = torch.tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]])
+_mc_k_target = tensor([0, 1, 2])
+_mc_k_preds = tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]])
 
 
 @pytest.mark.parametrize(
-    "k, preds, target, average, expected",
+    "k, preds, target, average, expected_spec",
     [
-        (1, _mc_k_preds, _mc_k_target, "micro", torch.tensor([2, 1, 5, 1, 3])),
-        (2, _mc_k_preds, _mc_k_target, "micro", torch.tensor([3, 3, 3, 0, 3])),
-        (1, _mc_k_preds, _mc_k_target, None, torch.tensor([[0, 1, 1], [0, 1, 0], [2, 1, 2], [1, 0, 0], [1, 1, 1]])),
-        (2, _mc_k_preds, _mc_k_target, None, torch.tensor([[1, 1, 1], [1, 1, 1], [1, 1, 1], [0, 0, 0], [1, 1, 1]])),
+        (1, _mc_k_preds, _mc_k_target, "micro", tensor(5 / 6)),
+        (2, _mc_k_preds, _mc_k_target, "micro", tensor(1 / 2)),
     ],
 )
-def test_top_k_multiclass(k, preds, target, average, expected):
+def test_top_k(k: int, preds: Tensor, target: Tensor, average: str, expected_spec: Tensor):
     """A simple test to check that top_k works as expected."""
     class_metric = MulticlassSpecificity(top_k=k, average=average, num_classes=3)
     class_metric.update(preds, target)
 
-    assert torch.allclose(class_metric.compute().long(), expected.T)
-    assert torch.allclose(
-        multiclass_specificity(preds, target, top_k=k, average=average, num_classes=3).long(), expected.T
-    )
+    assert torch.equal(class_metric.compute(), expected_spec)
+    assert torch.equal(multiclass_specificity(preds, target, top_k=k, average=average, num_classes=3), expected_spec)
 
 
 def _sk_specificity_multilabel(preds, target, ignore_index, multidim_average, average):
@@ -354,6 +357,7 @@ def _sk_specificity_multilabel(preds, target, ignore_index, multidim_average, av
     preds = preds.reshape(*preds.shape[:2], -1)
     target = target.reshape(*target.shape[:2], -1)
     if multidim_average == "global":
+        tns, fps = [], []
         specificity = []
         for i in range(preds.shape[1]):
             p, t = preds[:, i].flatten(), target[:, i].flatten()
@@ -362,12 +366,16 @@ def _sk_specificity_multilabel(preds, target, ignore_index, multidim_average, av
                 t = t[~idx]
                 p = p[~idx]
             tn, fp, fn, tp = sk_confusion_matrix(t, p, labels=[0, 1]).ravel()
-            specificity.append(tn / (tn+fp))
-        res = np.stack(specificity, axis=0)
+            tns.append(tn)
+            fps.append(fp)
 
+        tn = np.array(tns)
+        fp = np.array(fps)
         if average == "micro":
-            return res.sum(0)
-        elif average == "macro":
+            return _calc_specificity(tn.sum(), fp.sum())
+
+        res = _calc_specificity(tn, fp)
+        if average == "macro":
             return res.mean(0)
         elif average == "weighted":
             w = res[:, 0] + res[:, 3]
@@ -377,19 +385,26 @@ def _sk_specificity_multilabel(preds, target, ignore_index, multidim_average, av
     else:
         specificity = []
         for i in range(preds.shape[0]):
-            scores = []
+            tns, fps = [], []
             for j in range(preds.shape[1]):
                 pred, true = preds[i, j], target[i, j]
                 if ignore_index is not None:
                     idx = true == ignore_index
                     true = true[~idx]
                     pred = pred[~idx]
-                tn, fp, fn, tp = sk_confusion_matrix(true, pred, labels=[0, 1]).ravel()
-                scores.append(tn / (tn+fp))
-            specificity.append(np.stack(scores, 1))
+                tn, fp, _, _ = sk_confusion_matrix(true, pred, labels=[0, 1]).ravel()
+                tns.append(tn)
+                fps.append(fp)
+            tn = np.array(tns)
+            fp = np.array(fps)
+            if average == "micro":
+                specificity.append(_calc_specificity(tn.sum(), fp.sum()))
+            else:
+                specificity.append(_calc_specificity(tn, fp))
+
         res = np.stack(specificity, 0)
-        if average == "micro":
-            return res.sum(-1)
+        if average == "micro" or average is None or average == "none":
+            return res
         elif average == "macro":
             return res.mean(-1)
         elif average == "weighted":
@@ -501,8 +516,6 @@ class TestMultilabelSpecificity(MetricTester):
             metric_args={"num_labels": NUM_CLASSES, "threshold": THRESHOLD},
             dtype=dtype,
         )
-
-
 
 
 # -------------------------- Old stuff --------------------------
