@@ -12,9 +12,6 @@ Precision
 Module Interface
 ________________
 
-Precision
-^^^^^^^^^
-
 .. autoclass:: torchmetrics.Precision
     :noindex:
 
@@ -38,9 +35,6 @@ MultilabelPrecision
 
 Functional Interface
 ____________________
-
-precision
-^^^^^^^^^
 
 .. autofunction:: torchmetrics.functional.precision
     :noindex:

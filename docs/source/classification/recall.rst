@@ -10,9 +10,6 @@ Recall
 Module Interface
 ________________
 
-Recall
-^^^^^^
-
 .. autoclass:: torchmetrics.Recall
     :noindex:
 
@@ -36,9 +33,6 @@ MultilabelRecall
 
 Functional Interface
 ____________________
-
-recall
-^^^^^^
 
 .. autofunction:: torchmetrics.functional.recall
     :noindex:
