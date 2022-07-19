@@ -76,7 +76,7 @@ def binary_hamming_distance(
 
 
 def multiclass_hamming_distance(
-        preds: Tensor,
+    preds: Tensor,
     target: Tensor,
     num_classes: int,
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",

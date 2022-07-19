@@ -16,8 +16,43 @@ from typing import Any
 import torch
 from torch import Tensor, tensor
 
-from torchmetrics.functional.classification.hamming import _hamming_distance_compute, _hamming_distance_update
-from torchmetrics.metric import Metric
+from torchmetrics.functional.classification.hamming import (
+    _hamming_distance_compute, 
+    _hamming_distance_update,
+    _hamming_distance_reduce,
+)
+from torchmetrics.classification.stat_scores import (
+    BinaryStatScores,
+    MulticlassStatScores,
+    MultilabelStatScores,
+)
+
+class BinaryHammingDistance(BinaryStatScores):
+    """ """
+    def compute(self) -> Tensor:
+        tp, fp, tn, fn = self._final_state()
+        return _hamming_distance_reduce(tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average)
+
+
+class MulticlassHammingDistance(BinaryStatScores):
+    """ """
+    def compute(self) -> Tensor:
+        tp, fp, tn, fn = self._final_state()
+        return _hamming_distance_reduce(tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average)
+
+
+class MultilabelHammingDistance(BinaryStatScores):
+    """ """
+    def compute(self) -> Tensor:
+        tp, fp, tn, fn = self._final_state()
+        return _hamming_distance_reduce(tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average)
+
+
+
+
+
+
+# -------------------------- Old stuff --------------------------
 
 
 class HammingDistance(Metric):
