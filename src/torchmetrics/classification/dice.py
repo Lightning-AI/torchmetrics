@@ -21,7 +21,7 @@ from torchmetrics.utilities.enums import AverageMethod
 
 
 class Dice(StatScores):
-    r"""Computes `Dice`_:
+    r"""Computes `Dice [wiki]`_:
 
     .. math:: \text{Dice} = \frac{\text{2 * TP}}{\text{2 * TP} + \text{FP} + \text{FN}}
 
