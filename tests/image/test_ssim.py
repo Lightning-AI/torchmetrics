@@ -125,6 +125,23 @@ class TestSSIM(MetricTester):
             dist_sync_on_step=dist_sync_on_step,
         )
 
+    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
+    def test_ssim_without_gaussian_kernel(self, preds, target, sigma, ddp, dist_sync_on_step):
+        self.run_class_metric_test(
+            ddp,
+            preds,
+            target,
+            StructuralSimilarityIndexMeasure,
+            partial(_sk_ssim, data_range=1.0, sigma=sigma, kernel_size=None),
+            metric_args={
+                "gaussian_kernel": False,
+                "data_range": 1.0,
+                "sigma": sigma,
+            },
+            dist_sync_on_step=dist_sync_on_step,
+        )
+
     def test_ssim_functional(self, preds, target, sigma):
         self.run_functional_metric_test(
             preds,
