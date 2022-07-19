@@ -224,7 +224,7 @@ def _sk_jaccard_index_multilabel(preds, target, ignore_index=None, average="macr
         scores, weights = [], []
         for i in range(preds.shape[1]):
             pred, true = preds[:, i], target[:, i]
-            true, pred = remove_ignore_index(true, pred)
+            true, pred = remove_ignore_index(true, pred, ignore_index)
             confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
             scores.append(sk_jaccard_index(true, pred))
             weights.append(confmat[1, 0] + confmat[1, 1])
