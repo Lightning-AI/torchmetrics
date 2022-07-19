@@ -16,6 +16,7 @@ from typing import Any
 import torch
 from torch import Tensor, tensor
 
+from torchmetrics.metric import Metric
 from torchmetrics.functional.classification.hamming import (
     _hamming_distance_compute, 
     _hamming_distance_update,

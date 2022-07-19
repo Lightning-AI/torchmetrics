@@ -132,7 +132,7 @@ def binary_specificity(
         ...     ]
         ... )
         >>> binary_specificity(preds, target, multidim_average='samplewise')
-        tensor([0.5000, 0.0000])
+        tensor([0.0000, 0.3333])
     """
     if validate_args:
         _binary_stat_scores_arg_validation(threshold, multidim_average, ignore_index)
@@ -210,9 +210,9 @@ def multiclass_specificity(
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([2, 1, 0, 1])
         >>> multiclass_specificity(preds, target, num_classes=3)
-        tensor(0.7500)
+        tensor(0.8750)
         >>> multiclass_specificity(preds, target, num_classes=3, average=None)
-        tensor([0.6667, 0.6667, 1.0000])
+        tensor([1.0000, 0.6667, 1.0000])
 
     Example (preds is float tensor):
         >>> from torchmetrics.functional import multiclass_specificity
@@ -224,19 +224,19 @@ def multiclass_specificity(
         ...   [0.05, 0.82, 0.13],
         ... ])
         >>> multiclass_specificity(preds, target, num_classes=3)
-        tensor(0.7500)
+        tensor(0.8750)
         >>> multiclass_specificity(preds, target, num_classes=3, average=None)
-        tensor([0.6667, 0.6667, 1.0000])
+        tensor([1.0000, 0.6667, 1.0000])
 
     Example (multidim tensors):
         >>> from torchmetrics.functional import multiclass_specificity
         >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
         >>> preds = torch.tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
         >>> multiclass_specificity(preds, target, num_classes=3, multidim_average='samplewise')
-        tensor([0.5000, 0.3333])
+        tensor([0.7500, 0.6667])
         >>> multiclass_specificity(preds, target, num_classes=3, multidim_average='samplewise', average=None)
-        tensor([[0.8000, 0.0000, 0.5000],
-                [0.0000, 0.4000, 0.4000]])
+        tensor([[0.7500, 0.7500, 0.7500],
+                [0.8000, 0.6667, 0.5000]])
     """
     if validate_args:
         _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index)
@@ -313,7 +313,7 @@ def multilabel_specificity(
         >>> multilabel_specificity(preds, target, num_labels=3)
         tensor(0.6667)
         >>> multilabel_specificity(preds, target, num_labels=3, average=None)
-        tensor([1.0000, 0.0000, 0.6667])
+        tensor([1., 1., 0.])
 
     Example (preds is float tensor):
         >>> from torchmetrics.functional import multilabel_specificity
