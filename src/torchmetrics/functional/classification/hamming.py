@@ -11,28 +11,28 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple, Union, Optional
+from typing import Optional, Tuple, Union
 
 import torch
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.utilities.checks import _input_format_classification
-from torchmetrics.utilities.compute import _safe_divide
 from torchmetrics.functional.classification.stat_scores import (
     _binary_stat_scores_arg_validation,
-    _binary_stat_scores_tensor_validation,
     _binary_stat_scores_format,
+    _binary_stat_scores_tensor_validation,
     _binary_stat_scores_update,
     _multiclass_stat_scores_arg_validation,
-    _multiclass_stat_scores_tensor_validation,
     _multiclass_stat_scores_format,
+    _multiclass_stat_scores_tensor_validation,
     _multiclass_stat_scores_update,
     _multilabel_stat_scores_arg_validation,
-    _multilabel_stat_scores_tensor_validation,
     _multilabel_stat_scores_format,
-    _multilabel_stat_scores_update
+    _multilabel_stat_scores_tensor_validation,
+    _multilabel_stat_scores_update,
 )
+from torchmetrics.utilities.checks import _input_format_classification
+from torchmetrics.utilities.compute import _safe_divide
 
 
 def _hamming_distance_reduce(
@@ -43,7 +43,7 @@ def _hamming_distance_reduce(
     average: Optional[Literal["binary", "micro", "macro", "weighted", "none"]],
     multidim_average: Literal["global", "samplewise"] = "global",
 ) -> Tensor:
-    if average == "binary" or average is None or average == 'none':
+    if average == "binary" or average is None or average == "none":
         hamming_score = _safe_divide(tn, tn + fp)
     elif average == "micro":
         tn = tn.sum(dim=0 if multidim_average == "global" else 1)
@@ -112,6 +112,7 @@ def multilabel_hamming_distance(
 
 
 # -------------------------- Old stuff --------------------------
+
 
 def _hamming_distance_update(
     preds: Tensor,
