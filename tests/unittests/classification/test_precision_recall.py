@@ -38,7 +38,6 @@ from torchmetrics.functional.classification.precision_recall import (
     multilabel_precision,
     multilabel_recall,
 )
-from torchmetrics.utilities.compute import _safe_divide
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
@@ -379,8 +378,10 @@ def _sk_precision_recall_multilabel(preds, target, sk_fn, ignore_index, multidim
         if average == "macro":
             return res.mean(0)
         elif average == "weighted":
-            weights = np.stack(weights, 0)
-            return _safe_divide(weights * res, weights.sum(-1, keepdims=True)).sum(-1)
+            weights = np.stack(weights, 0).astype(float)
+            weights_norm = weights.sum(-1, keepdims=True)
+            weights_norm[weights_norm == 0] = 1.0
+            return ((weights * res) / weights_norm).sum(-1)
         elif average is None or average == "none":
             return res
     else:
@@ -408,8 +409,10 @@ def _sk_precision_recall_multilabel(preds, target, sk_fn, ignore_index, multidim
         if average == "macro":
             return res.mean(-1)
         elif average == "weighted":
-            weights = np.stack(weights, 0)
-            return _safe_divide(weights * res, weights.sum(-1, keepdims=True)).sum(-1)
+            weights = np.stack(weights, 0).astype(float)
+            weights_norm = weights.sum(-1, keepdims=True)
+            weights_norm[weights_norm == 0] = 1.0
+            return ((weights * res) / weights_norm).sum(-1)
         elif average is None or average == "none":
             return res
 
