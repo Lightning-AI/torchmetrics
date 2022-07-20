@@ -28,7 +28,7 @@ jobs:
         python setup.py sdist bdist_wheel
         ls -lh dist/
 
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: pypi-packages-${{ github.sha }}
         path: dist
@@ -39,7 +39,7 @@ jobs:
     needs: build-package
     steps:
     - uses: actions/checkout@v3
-    - uses: actions/download-artifact@v2
+    - uses: actions/download-artifact@v3
       with:
         name: pypi-packages-${{ github.sha }}
         path: dist
@@ -58,7 +58,7 @@ jobs:
     needs: build-package
     steps:
     - uses: actions/checkout@v3
-    - uses: actions/download-artifact@v2
+    - uses: actions/download-artifact@v3
       with:
         name: pypi-packages-${{ github.sha }}
         path: dist
