@@ -48,8 +48,8 @@ class TotalVariation(Metric):
     full_state_update: bool = False
     is_differentiable: bool = True
     higher_is_better: bool = False
-    current: Tensor
-    total: Tensor
+    score: Tensor
+    num_elements: Tensor
 
     def __init__(self, reduction: str = "sum", **kwargs: Any) -> None:
         super().__init__(**kwargs)
