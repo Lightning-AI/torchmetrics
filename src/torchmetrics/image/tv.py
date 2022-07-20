@@ -14,7 +14,7 @@
 from typing import Any
 
 import torch
-from torch import Tensor
+from torch import Tensor, tensor
 
 from torchmetrics.functional.image.tv import _total_variation_compute, _total_variation_update
 from torchmetrics.metric import Metric
@@ -57,8 +57,8 @@ class TotalVariation(Metric):
             raise ValueError("Expected argument `reduction` to either be 'sum' or 'mean'")
         self.reduction = reduction
 
-        self.add_state("score", default=Tensor(0, dtype=torch.float), dist_reduce_fx="sum")
-        self.add_state("num_elements", default=Tensor(0, dtype=torch.int), dist_reduce_fx="sum")
+        self.add_state("score", default=tensor(0, dtype=torch.float), dist_reduce_fx="sum")
+        self.add_state("num_elements", default=tensor(0, dtype=torch.int), dist_reduce_fx="sum")
 
     def update(self, img: Tensor) -> None:  # type: ignore
         """Update current score with batch of input images.
