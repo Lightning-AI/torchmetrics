@@ -40,10 +40,10 @@ class BinarySpecificity(BinaryStatScores):
       [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, ...)``
-    
+
     The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
     argument.
-    
+
     Args:
         threshold: Threshold for transforming probability to binary {0,1} predictions
         multidim_average:
@@ -57,11 +57,11 @@ class BinarySpecificity(BinaryStatScores):
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
-    
+
     Returns:
         If ``multidim_average`` is set to ``global``, the metric returns a scalar value. If ``multidim_average``
         is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of a scalar value per sample.
-    
+
     Example (preds is int tensor):
         >>> from torchmetrics import BinarySpecificity
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
@@ -69,7 +69,7 @@ class BinarySpecificity(BinaryStatScores):
         >>> metric = BinarySpecificity()
         >>> metric(preds, target)
         tensor(0.6667)
-    
+
     Example (preds is float tensor):
         >>> from torchmetrics import BinarySpecificity
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
@@ -77,7 +77,7 @@ class BinarySpecificity(BinaryStatScores):
         >>> metric = BinarySpecificity()
         >>> metric(preds, target)
         tensor(0.6667)
-    
+
     Example (multidim tensors):
         >>> from torchmetrics import BinarySpecificity
         >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
@@ -91,6 +91,7 @@ class BinarySpecificity(BinaryStatScores):
         >>> metric(preds, target)
         tensor([0.0000, 0.3333])
     """
+
     def compute(self) -> Tensor:
         tp, fp, tn, fn = self._final_state()
         return _specificity_reduce(tp, fp, tn, fn, average="binary", multidim_average=self.multidim_average)
@@ -187,6 +188,7 @@ class MulticlassSpecificity(MulticlassStatScores):
         tensor([[0.7500, 0.7500, 0.7500],
                 [0.8000, 0.6667, 0.5000]])
     """
+
     def compute(self) -> Tensor:
         tp, fp, tn, fn = self._final_state()
         return _specificity_reduce(tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average)
@@ -280,6 +282,7 @@ class MultilabelSpecificity(MultilabelStatScores):
         tensor([[0., 0., 0.],
                 [0., 0., 1.]])
     """
+
     def compute(self) -> Tensor:
         tp, fp, tn, fn = self._final_state()
         return _specificity_reduce(tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average)
