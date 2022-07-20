@@ -11,18 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import pytest
-from sklearn.metrics import hamming_loss as sk_hamming_loss
-import numpy as np
-import torch
 from functools import partial
-from torchmetrics.functional.classification.hamming import binary_hamming_distance
-from unittests.helpers import seed_all
-from torchmetrics.classification.hamming import BinaryHammingDistance
-from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
-from unittests.helpers.testers import THRESHOLD, MetricTester, inject_ignore_index
+
+import numpy as np
+import pytest
+import torch
 from scipy.special import expit as sigmoid
+from sklearn.metrics import hamming_loss as sk_hamming_loss
+
+from torchmetrics.classification.hamming import BinaryHammingDistance
+from torchmetrics.functional.classification.hamming import binary_hamming_distance
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
+from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
+from unittests.helpers import seed_all
+from unittests.helpers.testers import THRESHOLD, MetricTester, inject_ignore_index
 
 seed_all(42)
 
