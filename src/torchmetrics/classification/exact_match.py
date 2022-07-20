@@ -11,13 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torchmetrics.metric import Metric
-
-class MulticlassExactMatch(Metric):
+from torchmetrics.classification.stat_scores import MultilabelStatScores
 
 
-
-
-class MultilabelExactMatch(Metric):
-
-
+class MultilabelExactMatch(MultilabelStatScores):
+    pass
