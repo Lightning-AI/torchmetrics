@@ -16,7 +16,7 @@ import pickle
 import sys
 from copy import deepcopy
 from functools import partial
-from typing import Any, Callable, Dict, List, Optional, Sequence, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Union, Tuple
 
 import numpy as np
 import pytest
@@ -637,3 +637,11 @@ def inject_ignore_index(x: Tensor, ignore_index: int) -> Tensor:
     skip = torch.randint(3, 6, (1,)).item()
     x.view(-1)[idx[::skip]] = ignore_index
     return x
+
+
+def remove_ignore_index(target: Tensor, preds: Tensor, ignore_index: Optional[int]) -> Tuple[Tensor, Tensor]:
+    """Utility function for removing samples that are equal to the ignore_index in comparison functions."""
+    if ignore_index is not None:
+        idx = target == ignore_index
+        target, preds = deepcopy(target[~idx]), deepcopy(preds[~idx])
+    return target, preds

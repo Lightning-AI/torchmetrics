@@ -35,7 +35,7 @@ from torchmetrics.functional.classification.stat_scores import (
 )
 from torchmetrics.utilities.checks import _check_classification_inputs, _input_format_classification, _input_squeeze
 from torchmetrics.utilities.enums import AverageMethod, DataType, MDMCAverageMethod
-
+from torchmetrics.utilities.compute import _safe_divide
 
 def _accuracy_reduce(
     tp: Tensor,
@@ -62,7 +62,7 @@ def _accuracy_reduce(
         return _safe_divide(weights * score, weights.sum(-1, keepdim=True)).sum(-1)
 
 
-def binary_precision(
+def binary_accuracy(
     preds: Tensor,
     target: Tensor,
     threshold: float = 0.5,
@@ -78,7 +78,7 @@ def binary_precision(
     return _accuracy_reduce(tp, fp, tn, fn, average="binary", multidim_average=multidim_average)
 
 
-def multiclass_precision(
+def multiclass_accuracy(
     preds: Tensor,
     target: Tensor,
     num_classes: int,
@@ -96,7 +96,7 @@ def multiclass_precision(
     return _accuracy_reduce(tp, fp, tn, fn, average=average, multidim_average=multidim_average)
 
 
-def multilabel_precision(
+def multilabel_accuracy(
     preds: Tensor,
     target: Tensor,
     num_labels: int,

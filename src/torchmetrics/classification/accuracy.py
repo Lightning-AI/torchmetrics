@@ -33,6 +33,7 @@ from torchmetrics.classification.stat_scores import (  # isort:skip
     MultilabelStatScores,
 )
 
+
 class BinaryAccuracy(BinaryStatScores):
     def compute(self) -> Tensor:
         tp, fp, tn, fn = self._final_state()
