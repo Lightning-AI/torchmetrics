@@ -44,7 +44,7 @@ def _hamming_distance_reduce(
     multidim_average: Literal["global", "samplewise"] = "global",
 ) -> Tensor:
     if average == "binary" or average is None or average == "none":
-        hamming_score = _safe_divide(tn, tn + fp)
+        hamming_score = _safe_divide(tp + tn, tp + fp + tn + fn)
     elif average == "micro":
         tn = tn.sum(dim=0 if multidim_average == "global" else 1)
         fp = fp.sum(dim=0 if multidim_average == "global" else 1)

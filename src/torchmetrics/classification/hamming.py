@@ -30,7 +30,7 @@ class BinaryHammingDistance(BinaryStatScores):
 
     def compute(self) -> Tensor:
         tp, fp, tn, fn = self._final_state()
-        return _hamming_distance_reduce(tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average)
+        return _hamming_distance_reduce(tp, fp, tn, fn, average="binary", multidim_average=self.multidim_average)
 
 
 class MulticlassHammingDistance(MulticlassStatScores):
