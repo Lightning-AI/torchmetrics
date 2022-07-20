@@ -24,7 +24,12 @@ from torchmetrics.classification.stat_scores import (  # noqa: F401 isort:skip
     StatScores,
 )
 
-from torchmetrics.classification.accuracy import Accuracy  # noqa: F401
+from torchmetrics.classification.accuracy import (  # noqa: F401
+    Accuracy,
+    BinaryAccuracy,
+    MulticlassAccuracy,
+    MultilabelAccuracy,
+)
 from torchmetrics.classification.auc import AUC  # noqa: F401
 from torchmetrics.classification.auroc import AUROC  # noqa: F401
 from torchmetrics.classification.avg_precision import AveragePrecision  # noqa: F401

@@ -11,7 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torchmetrics.functional.classification.accuracy import accuracy  # noqa: F401
+from torchmetrics.functional.classification.accuracy import (  # noqa: F401
+    accuracy,
+    binary_accuracy,
+    multiclass_accuracy,
+    multilabel_accuracy,
+)
 from torchmetrics.functional.classification.auc import auc  # noqa: F401
 from torchmetrics.functional.classification.auroc import auroc  # noqa: F401
 from torchmetrics.functional.classification.average_precision import average_precision  # noqa: F401

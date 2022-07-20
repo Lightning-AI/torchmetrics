@@ -14,7 +14,12 @@
 from torchmetrics.functional.audio.pit import permutation_invariant_training, pit_permutate
 from torchmetrics.functional.audio.sdr import scale_invariant_signal_distortion_ratio, signal_distortion_ratio
 from torchmetrics.functional.audio.snr import scale_invariant_signal_noise_ratio, signal_noise_ratio
-from torchmetrics.functional.classification.accuracy import accuracy
+from torchmetrics.functional.classification.accuracy import (
+    accuracy,
+    binary_accuracy,
+    multiclass_accuracy,
+    multilabel_accuracy,
+)
 from torchmetrics.functional.classification.auc import auc
 from torchmetrics.functional.classification.auroc import auroc
 from torchmetrics.functional.classification.average_precision import average_precision
@@ -206,4 +211,7 @@ __all__ = [
     "binary_matthews_corrcoef",
     "multiclass_matthews_corrcoef",
     "multilabel_matthews_corrcoef",
+    "binary_accuracy",
+    "multilabel_accuracy",
+    "multiclass_accuracy",
 ]
