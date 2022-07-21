@@ -16,6 +16,12 @@ from typing import Optional, Tuple
 import torch
 from torch import Tensor
 
+from torchmetrics.functional.classification.stat_scores import (
+    _multilabel_stat_scores_arg_validation,
+    _multilabel_stat_scores_format,
+    _multilabel_stat_scores_tensor_validation,
+)
+
 
 def _rank_data(x: Tensor) -> Tensor:
     """Rank data based on values."""
@@ -24,6 +30,132 @@ def _rank_data(x: Tensor) -> Tensor:
         _, inverse, counts = torch.unique(x, sorted=True, return_inverse=True, return_counts=True)
     ranks = counts.cumsum(dim=0)
     return ranks[inverse]
+
+
+def _ranking_reduce(score: Tensor, n_elements: int) -> Tensor:
+    return score / n_elements
+
+
+def _multilabel_coverage_error_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, int]:
+    """Accumulate state for coverage error
+    Args:
+        preds: tensor with predictions
+        target: tensor with ground truth labels
+        sample_weight: optional tensor with weight for each sample
+
+    """
+    offset = torch.zeros_like(preds)
+    offset[target == 0] = preds.min().abs() + 10  # Any number >1 works
+    preds_mod = preds + offset
+    preds_min = preds_mod.min(dim=1)[0]
+    coverage = (preds >= preds_min[:, None]).sum(dim=1).to(torch.float32)
+    return coverage.sum(), coverage.numel()
+
+
+def multilabel_coverage_error(
+    preds: Tensor,
+    target: Tensor,
+    num_labels: int,
+    threshold: float = 0.5,
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
+) -> Tensor:
+    if validate_args:
+        _multilabel_stat_scores_arg_validation(num_labels, threshold, ignore_index=ignore_index)
+        _multilabel_stat_scores_tensor_validation(preds, target, num_labels, ignore_index=ignore_index)
+    preds, target = _multilabel_stat_scores_format(preds, target, num_labels, threshold, ignore_index)
+    coverage, total = _multilabel_coverage_error_update(preds, target)
+    return _ranking_reduce(coverage, total)
+
+
+def _multilabel_label_ranking_average_precision(preds: Tensor, target: Tensor) -> Tuple[Tensor, int]:
+    """Accumulate state for label ranking average precision.
+
+    Args:
+        preds: tensor with predictions
+        target: tensor with ground truth labels
+        sample_weight: optional tensor with weight for each sample
+    """
+    # Invert so that the highest score receives rank 1
+    neg_preds = -preds
+
+    score = torch.tensor(0.0, device=neg_preds.device)
+    n_preds, n_labels = neg_preds.shape
+    for i in range(n_preds):
+        relevant = target[i] == 1
+        ranking = _rank_data(neg_preds[i][relevant]).float()
+        if len(ranking) > 0 and len(ranking) < n_labels:
+            rank = _rank_data(neg_preds[i])[relevant].float()
+            score_idx = (ranking / rank).mean()
+        else:
+            score_idx = 1.0
+        score += score_idx
+    return score, n_preds
+
+
+def multilabel_label_ranking_average_precision(
+    preds: Tensor,
+    target: Tensor,
+    num_labels: int,
+    threshold: float = 0.5,
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
+) -> Tensor:
+    if validate_args:
+        _multilabel_stat_scores_arg_validation(num_labels, threshold, ignore_index=ignore_index)
+        _multilabel_stat_scores_tensor_validation(preds, target, num_labels, ignore_index=ignore_index)
+    preds, target = _multilabel_stat_scores_format(preds, target, num_labels, threshold, ignore_index)
+    score, n_elements = _multilabel_label_ranking_average_precision(preds, target)
+    return _ranking_reduce(score, n_elements)
+
+
+def _multilabel_label_ranking_loss_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, int, Optional[Tensor]]:
+    """Accumulate state for label ranking loss.
+
+    Args:
+        preds: tensor with predictions
+        target: tensor with ground truth labels
+        sample_weight: optional tensor with weight for each sample
+    """
+    n_preds, n_labels = preds.shape
+    relevant = target == 1
+    n_relevant = relevant.sum(dim=1)
+
+    # Ignore instances where number of true labels is 0 or n_labels
+    mask = (n_relevant > 0) & (n_relevant < n_labels)
+    preds = preds[mask]
+    relevant = relevant[mask]
+    n_relevant = n_relevant[mask]
+
+    # Nothing is relevant
+    if len(preds) == 0:
+        return torch.tensor(0.0, device=preds.device), 1
+
+    inverse = preds.argsort(dim=1).argsort(dim=1)
+    per_label_loss = ((n_labels - inverse) * relevant).to(torch.float32)
+    correction = 0.5 * n_relevant * (n_relevant + 1)
+    denom = n_relevant * (n_labels - n_relevant)
+    loss = (per_label_loss.sum(dim=1) - correction) / denom
+    return loss.sum(), n_preds
+
+
+def multilabel_label_ranking_loss(
+    preds: Tensor,
+    target: Tensor,
+    num_labels: int,
+    threshold: float = 0.5,
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
+) -> Tensor:
+    if validate_args:
+        _multilabel_stat_scores_arg_validation(num_labels, threshold, ignore_index=ignore_index)
+        _multilabel_stat_scores_tensor_validation(preds, target, num_labels, ignore_index=ignore_index)
+    preds, target = _multilabel_stat_scores_format(preds, target, num_labels, threshold, ignore_index)
+    loss, n_elements = _multilabel_label_ranking_loss_update(preds, target)
+    return _ranking_reduce(loss, n_elements)
+
+
+# -------------------------- Old stuff --------------------------
 
 
 def _check_ranking_input(preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None) -> Tensor:
