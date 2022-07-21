@@ -25,7 +25,12 @@ from torchmetrics.functional.classification.confusion_matrix import (  # noqa: F
 )
 from torchmetrics.functional.classification.dice import dice, dice_score  # noqa: F401
 from torchmetrics.functional.classification.f_beta import f1_score, fbeta_score  # noqa: F401
-from torchmetrics.functional.classification.hamming import hamming_distance  # noqa: F401
+from torchmetrics.functional.classification.hamming import (  # noqa: F401
+    binary_hamming_distance,
+    hamming_distance,
+    multiclass_hamming_distance,
+    multilabel_hamming_distance,
+)
 from torchmetrics.functional.classification.hinge import hinge_loss  # noqa: F401
 from torchmetrics.functional.classification.jaccard import jaccard_index  # noqa: F401
 from torchmetrics.functional.classification.kl_divergence import kl_divergence  # noqa: F401

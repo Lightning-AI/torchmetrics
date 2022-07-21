@@ -35,7 +35,12 @@ from torchmetrics.classification.calibration_error import CalibrationError  # no
 from torchmetrics.classification.cohen_kappa import BinaryCohenKappa, CohenKappa, MulticlassCohenKappa  # noqa: F401
 from torchmetrics.classification.dice import Dice  # noqa: F401
 from torchmetrics.classification.f_beta import F1Score, FBetaScore  # noqa: F401
-from torchmetrics.classification.hamming import HammingDistance  # noqa: F401
+from torchmetrics.classification.hamming import (  # noqa: F401
+    BinaryHammingDistance,
+    HammingDistance,
+    MulticlassHammingDistance,
+    MultilabelHammingDistance,
+)
 from torchmetrics.classification.hinge import HingeLoss  # noqa: F401
 from torchmetrics.classification.jaccard import (  # noqa: F401
     BinaryJaccardIndex,

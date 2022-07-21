@@ -28,7 +28,12 @@ from torchmetrics.functional.classification.confusion_matrix import (
 )
 from torchmetrics.functional.classification.dice import dice, dice_score
 from torchmetrics.functional.classification.f_beta import f1_score, fbeta_score
-from torchmetrics.functional.classification.hamming import hamming_distance
+from torchmetrics.functional.classification.hamming import (
+    binary_hamming_distance,
+    hamming_distance,
+    multiclass_hamming_distance,
+    multilabel_hamming_distance,
+)
 from torchmetrics.functional.classification.hinge import hinge_loss
 from torchmetrics.functional.classification.jaccard import (
     binary_jaccard_index,
@@ -214,4 +219,7 @@ __all__ = [
     "binary_specificity",
     "multiclass_specificity",
     "multilabel_specificity",
+    "binary_hamming_distance",
+    "multiclass_hamming_distance",
+    "multilabel_hamming_distance",
 ]
