@@ -28,7 +28,7 @@ from torchmetrics.functional.classification.jaccard import (
 )
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
-from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index
+from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index, remove_ignore_index
 
 
 def _sk_jaccard_index_binary(preds, target, ignore_index=None):
@@ -38,10 +38,7 @@ def _sk_jaccard_index_binary(preds, target, ignore_index=None):
         if not ((0 < preds) & (preds < 1)).all():
             preds = sigmoid(preds)
         preds = (preds >= THRESHOLD).astype(np.uint8)
-    if ignore_index is not None:
-        idx = target == ignore_index
-        target = target[~idx]
-        preds = preds[~idx]
+    target, preds = remove_ignore_index(target, preds, ignore_index)
     return sk_jaccard_index(y_true=target, y_pred=preds)
 
 
@@ -128,11 +125,7 @@ def _sk_jaccard_index_multiclass(preds, target, ignore_index=None, average="macr
         preds = np.argmax(preds, axis=1)
     preds = preds.flatten()
     target = target.flatten()
-
-    if ignore_index is not None:
-        idx = target == ignore_index
-        target = target[~idx]
-        preds = preds[~idx]
+    target, preds = remove_ignore_index(target, preds, ignore_index)
     return sk_jaccard_index(y_true=target, y_pred=preds, average=average)
 
 
@@ -223,18 +216,17 @@ def _sk_jaccard_index_multilabel(preds, target, ignore_index=None, average="macr
         preds = (preds >= THRESHOLD).astype(np.uint8)
     preds = np.moveaxis(preds, 1, -1).reshape((-1, preds.shape[1]))
     target = np.moveaxis(target, 1, -1).reshape((-1, target.shape[1]))
-    if ignore_index is not None:
+    if ignore_index is None:
+        return sk_jaccard_index(y_true=target, y_pred=preds, average=average)
+    else:
         if average == "micro":
             return _sk_jaccard_index_binary(torch.tensor(preds), torch.tensor(target), ignore_index)
         scores, weights = [], []
         for i in range(preds.shape[1]):
-            p, t = preds[:, i], target[:, i]
-            if ignore_index is not None:
-                idx = t == ignore_index
-                t = t[~idx]
-                p = p[~idx]
-            confmat = sk_confusion_matrix(t, p, labels=[0, 1])
-            scores.append(sk_jaccard_index(t, p))
+            pred, true = preds[:, i], target[:, i]
+            true, pred = remove_ignore_index(true, pred, ignore_index)
+            confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
+            scores.append(sk_jaccard_index(true, pred))
             weights.append(confmat[1, 0] + confmat[1, 1])
         scores = np.stack(scores, axis=0)
         weights = np.stack(weights, axis=0)
@@ -243,8 +235,6 @@ def _sk_jaccard_index_multilabel(preds, target, ignore_index=None, average="macr
         elif average == "macro":
             return scores.mean()
         return ((scores * weights) / weights.sum()).sum()
-    else:
-        return sk_jaccard_index(y_true=target, y_pred=preds, average=average)
 
 
 @pytest.mark.parametrize("input", _multilabel_cases)
