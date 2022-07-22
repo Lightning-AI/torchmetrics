@@ -148,7 +148,7 @@ class MulticlassSpecificity(MulticlassStatScores):
           - If ``average=None/'none'``, the shape will be ``(C,)``
 
         - If ``multidim_average`` is set to ``samplewise``:
-        
+
           - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
