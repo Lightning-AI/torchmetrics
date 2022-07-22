@@ -27,7 +27,16 @@ from torchmetrics.functional.classification.confusion_matrix import (
     multilabel_confusion_matrix,
 )
 from torchmetrics.functional.classification.dice import dice, dice_score
-from torchmetrics.functional.classification.f_beta import f1_score, fbeta_score
+from torchmetrics.functional.classification.f_beta import (
+    binary_f1_score,
+    binary_fbeta_score,
+    f1_score,
+    fbeta_score,
+    multiclass_f1_score,
+    multiclass_fbeta_score,
+    multilabel_f1_score,
+    multilabel_fbeta_score,
+)
 from torchmetrics.functional.classification.hamming import hamming_distance
 from torchmetrics.functional.classification.hinge import hinge_loss
 from torchmetrics.functional.classification.jaccard import (
@@ -43,7 +52,17 @@ from torchmetrics.functional.classification.matthews_corrcoef import (
     multiclass_matthews_corrcoef,
     multilabel_matthews_corrcoef,
 )
-from torchmetrics.functional.classification.precision_recall import precision, precision_recall, recall
+from torchmetrics.functional.classification.precision_recall import (
+    binary_precision,
+    binary_recall,
+    multiclass_precision,
+    multiclass_recall,
+    multilabel_precision,
+    multilabel_recall,
+    precision,
+    precision_recall,
+    recall,
+)
 from torchmetrics.functional.classification.precision_recall_curve import precision_recall_curve
 from torchmetrics.functional.classification.ranking import (
     coverage_error,
@@ -198,6 +217,12 @@ __all__ = [
     "binary_stat_scores",
     "multiclass_stat_scores",
     "multilabel_stat_scores",
+    "binary_f1_score",
+    "binary_fbeta_score",
+    "multiclass_f1_score",
+    "multiclass_fbeta_score",
+    "multilabel_f1_score",
+    "multilabel_fbeta_score",
     "binary_cohen_kappa",
     "multiclass_cohen_kappa",
     "binary_jaccard_index",
@@ -206,4 +231,10 @@ __all__ = [
     "binary_matthews_corrcoef",
     "multiclass_matthews_corrcoef",
     "multilabel_matthews_corrcoef",
+    "binary_precision",
+    "multiclass_precision",
+    "multilabel_precision",
+    "binary_recall",
+    "multiclass_recall",
+    "multilabel_recall",
 ]
