@@ -101,6 +101,9 @@ class BinaryAccuracy(BinaryStatScores):
         >>> metric(preds, target)
         tensor([0.3333, 0.1667])
     """
+    is_differentiable = False
+    higher_is_better = True
+    full_state_update: bool = False
 
     def compute(self) -> Tensor:
         tp, fp, tn, fn = self._final_state()
@@ -202,6 +205,9 @@ class MulticlassAccuracy(MulticlassStatScores):
         tensor([[1.0000, 0.0000, 0.5000],
                 [0.0000, 0.3333, 0.5000]])
     """
+    is_differentiable = False
+    higher_is_better = True
+    full_state_update: bool = False
 
     def compute(self) -> Tensor:
         tp, fp, tn, fn = self._final_state()
@@ -303,6 +309,9 @@ class MultilabelAccuracy(MultilabelStatScores):
                 [0.0000, 0.0000, 0.5000]])
 
     """
+    is_differentiable = False
+    higher_is_better = True
+    full_state_update: bool = False
 
     def compute(self) -> Tensor:
         tp, fp, tn, fn = self._final_state()
