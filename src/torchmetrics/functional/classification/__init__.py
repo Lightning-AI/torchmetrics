@@ -24,13 +24,32 @@ from torchmetrics.functional.classification.confusion_matrix import (  # noqa: F
     multilabel_confusion_matrix,
 )
 from torchmetrics.functional.classification.dice import dice, dice_score  # noqa: F401
-from torchmetrics.functional.classification.f_beta import f1_score, fbeta_score  # noqa: F401
+from torchmetrics.functional.classification.f_beta import (  # noqa: F401
+    binary_f1_score,
+    binary_fbeta_score,
+    f1_score,
+    fbeta_score,
+    multiclass_f1_score,
+    multiclass_fbeta_score,
+    multilabel_f1_score,
+    multilabel_fbeta_score,
+)
 from torchmetrics.functional.classification.hamming import hamming_distance  # noqa: F401
 from torchmetrics.functional.classification.hinge import hinge_loss  # noqa: F401
 from torchmetrics.functional.classification.jaccard import jaccard_index  # noqa: F401
 from torchmetrics.functional.classification.kl_divergence import kl_divergence  # noqa: F401
 from torchmetrics.functional.classification.matthews_corrcoef import matthews_corrcoef  # noqa: F401
-from torchmetrics.functional.classification.precision_recall import precision, precision_recall, recall  # noqa: F401
+from torchmetrics.functional.classification.precision_recall import (  # noqa: F401
+    binary_precision,
+    binary_recall,
+    multiclass_precision,
+    multiclass_recall,
+    multilabel_precision,
+    multilabel_recall,
+    precision,
+    precision_recall,
+    recall,
+)
 from torchmetrics.functional.classification.precision_recall_curve import precision_recall_curve  # noqa: F401
 from torchmetrics.functional.classification.ranking import (  # noqa: F401
     coverage_error,

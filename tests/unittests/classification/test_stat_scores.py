@@ -28,7 +28,7 @@ from torchmetrics.functional.classification.stat_scores import (
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index
+from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index, remove_ignore_index
 
 seed_all(42)
 
@@ -47,10 +47,7 @@ def _sk_stat_scores_binary(preds, target, ignore_index, multidim_average):
         preds = (preds >= THRESHOLD).astype(np.uint8)
 
     if multidim_average == "global":
-        if ignore_index is not None:
-            idx = target == ignore_index
-            target = target[~idx]
-            preds = preds[~idx]
+        target, preds = remove_ignore_index(target, preds, ignore_index)
         tn, fp, fn, tp = sk_confusion_matrix(y_true=target, y_pred=preds, labels=[0, 1]).ravel()
         return np.array([tp, fp, tn, fn, tp + fn])
     else:
@@ -58,10 +55,7 @@ def _sk_stat_scores_binary(preds, target, ignore_index, multidim_average):
         for pred, true in zip(preds, target):
             pred = pred.flatten()
             true = true.flatten()
-            if ignore_index is not None:
-                idx = true == ignore_index
-                true = true[~idx]
-                pred = pred[~idx]
+            true, pred = remove_ignore_index(true, pred, ignore_index)
             tn, fp, fn, tp = sk_confusion_matrix(y_true=true, y_pred=pred, labels=[0, 1]).ravel()
             res.append(np.array([tp, fp, tn, fn, tp + fn]))
         return np.stack(res)
@@ -157,11 +151,7 @@ def _sk_stat_scores_multiclass(preds, target, ignore_index, multidim_average, av
     if multidim_average == "global":
         preds = preds.numpy().flatten()
         target = target.numpy().flatten()
-
-        if ignore_index is not None:
-            idx = target == ignore_index
-            target = target[~idx]
-            preds = preds[~idx]
+        target, preds = remove_ignore_index(target, preds, ignore_index)
         confmat = sk_confusion_matrix(y_true=target, y_pred=preds, labels=list(range(NUM_CLASSES)))
         tp = np.diag(confmat)
         fp = confmat.sum(0) - tp
@@ -187,11 +177,7 @@ def _sk_stat_scores_multiclass(preds, target, ignore_index, multidim_average, av
         for pred, true in zip(preds, target):
             pred = pred.flatten()
             true = true.flatten()
-
-            if ignore_index is not None:
-                idx = true == ignore_index
-                true = true[~idx]
-                pred = pred[~idx]
+            true, pred = remove_ignore_index(true, pred, ignore_index)
             confmat = sk_confusion_matrix(y_true=true, y_pred=pred, labels=list(range(NUM_CLASSES)))
             tp = np.diag(confmat)
             fp = confmat.sum(0) - tp
@@ -348,12 +334,9 @@ def _sk_stat_scores_multilabel(preds, target, ignore_index, multidim_average, av
     if multidim_average == "global":
         stat_scores = []
         for i in range(preds.shape[1]):
-            p, t = preds[:, i].flatten(), target[:, i].flatten()
-            if ignore_index is not None:
-                idx = t == ignore_index
-                t = t[~idx]
-                p = p[~idx]
-            tn, fp, fn, tp = sk_confusion_matrix(t, p, labels=[0, 1]).ravel()
+            pred, true = preds[:, i].flatten(), target[:, i].flatten()
+            true, pred = remove_ignore_index(true, pred, ignore_index)
+            tn, fp, fn, tp = sk_confusion_matrix(true, pred, labels=[0, 1]).ravel()
             stat_scores.append(np.array([tp, fp, tn, fn, tp + fn]))
         res = np.stack(stat_scores, axis=0)
 
@@ -372,10 +355,7 @@ def _sk_stat_scores_multilabel(preds, target, ignore_index, multidim_average, av
             scores = []
             for j in range(preds.shape[1]):
                 pred, true = preds[i, j], target[i, j]
-                if ignore_index is not None:
-                    idx = true == ignore_index
-                    true = true[~idx]
-                    pred = pred[~idx]
+                true, pred = remove_ignore_index(true, pred, ignore_index)
                 tn, fp, fn, tp = sk_confusion_matrix(true, pred, labels=[0, 1]).ravel()
                 scores.append(np.array([tp, fp, tn, fn, tp + fn]))
             stat_scores.append(np.stack(scores, 1))
