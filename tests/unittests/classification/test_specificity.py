@@ -222,6 +222,73 @@ def _sk_specificity_multiclass(preds, target, ignore_index, multidim_average, av
         return np.stack(res, 0)
 
 
+def _sk_specificity_multiclass_global(preds, target, ignore_index, average):
+    preds = preds.numpy().flatten()
+    target = target.numpy().flatten()
+
+    if ignore_index is not None:
+        idx = target == ignore_index
+        target = target[~idx]
+        preds = preds[~idx]
+    confmat = sk_confusion_matrix(y_true=target, y_pred=preds, labels=list(range(NUM_CLASSES)))
+    tp = np.diag(confmat)
+    fp = confmat.sum(0) - tp
+    fn = confmat.sum(1) - tp
+    tn = confmat.sum() - (fp + fn + tp)
+
+    if average == "micro":
+        return _calc_specificity(tn.sum(), fp.sum())
+
+    res = _calc_specificity(tn, fp)
+    if average == "macro":
+        return res.mean(0)
+    elif average == "weighted":
+        w = tp + fn
+        return (res * (w / w.sum()).reshape(-1, 1)).sum(0)
+    elif average is None or average == "none":
+        return res
+
+
+def _sk_specificity_multiclass_local(preds, target, ignore_index, average):
+    preds = preds.numpy()
+    target = target.numpy()
+
+    res = []
+    for pred, true in zip(preds, target):
+        pred = pred.flatten()
+        true = true.flatten()
+
+        if ignore_index is not None:
+            idx = true == ignore_index
+            true = true[~idx]
+            pred = pred[~idx]
+        confmat = sk_confusion_matrix(y_true=true, y_pred=pred, labels=list(range(NUM_CLASSES)))
+        tp = np.diag(confmat)
+        fp = confmat.sum(0) - tp
+        fn = confmat.sum(1) - tp
+        tn = confmat.sum() - (fp + fn + tp)
+        if average == "micro":
+            res.append(_calc_specificity(tn.sum(), fp.sum()))
+
+        r = _calc_specificity(tn, fp)
+        if average == "macro":
+            res.append(r.mean(0))
+        elif average == "weighted":
+            w = tp + fn
+            res.append((r * (w / w.sum()).reshape(-1, 1)).sum(0))
+        elif average is None or average == "none":
+            res.append(r)
+    return np.stack(res, 0)
+
+
+def _sk_specificity_multiclass(preds, target, ignore_index, multidim_average, average):
+    if preds.ndim == target.ndim + 1:
+        preds = torch.argmax(preds, 1)
+    if multidim_average == "global":
+        return _sk_specificity_multiclass_global(preds, target, ignore_index, average)
+    return _sk_specificity_multiclass_local(preds, target, ignore_index, average)
+
+
 @pytest.mark.parametrize("input", _multiclass_cases)
 class TestMulticlassSpecificity(MetricTester):
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
@@ -344,6 +411,65 @@ def test_top_k(k: int, preds: Tensor, target: Tensor, average: str, expected_spe
     assert torch.equal(multiclass_specificity(preds, target, top_k=k, average=average, num_classes=3), expected_spec)
 
 
+def _sk_specificity_multilabel_global(preds, target, ignore_index, average):
+    tns, fps = [], []
+    for i in range(preds.shape[1]):
+        p, t = preds[:, i].flatten(), target[:, i].flatten()
+        if ignore_index is not None:
+            idx = t == ignore_index
+            t = t[~idx]
+            p = p[~idx]
+        tn, fp, fn, tp = sk_confusion_matrix(t, p, labels=[0, 1]).ravel()
+        tns.append(tn)
+        fps.append(fp)
+
+    tn = np.array(tns)
+    fp = np.array(fps)
+    if average == "micro":
+        return _calc_specificity(tn.sum(), fp.sum())
+
+    res = _calc_specificity(tn, fp)
+    if average == "macro":
+        return res.mean(0)
+    elif average == "weighted":
+        w = res[:, 0] + res[:, 3]
+        return (res * (w / w.sum()).reshape(-1, 1)).sum(0)
+    elif average is None or average == "none":
+        return res
+
+
+def _sk_specificity_multilabel_local(preds, target, ignore_index, average):
+    specificity = []
+    for i in range(preds.shape[0]):
+        tns, fps = [], []
+        for j in range(preds.shape[1]):
+            pred, true = preds[i, j], target[i, j]
+            if ignore_index is not None:
+                idx = true == ignore_index
+                true = true[~idx]
+                pred = pred[~idx]
+            tn, fp, _, _ = sk_confusion_matrix(true, pred, labels=[0, 1]).ravel()
+            tns.append(tn)
+            fps.append(fp)
+        tn = np.array(tns)
+        fp = np.array(fps)
+        if average == "micro":
+            specificity.append(_calc_specificity(tn.sum(), fp.sum()))
+        else:
+            specificity.append(_calc_specificity(tn, fp))
+
+    res = np.stack(specificity, 0)
+    if average == "micro" or average is None or average == "none":
+        return res
+    elif average == "macro":
+        return res.mean(-1)
+    elif average == "weighted":
+        w = res[:, 0, :] + res[:, 3, :]
+        return (res * (w / w.sum())[:, np.newaxis]).sum(-1)
+    elif average is None or average == "none":
+        return np.moveaxis(res, 1, -1)
+
+
 def _sk_specificity_multilabel(preds, target, ignore_index, multidim_average, average):
     preds = preds.numpy()
     target = target.numpy()
@@ -354,61 +480,8 @@ def _sk_specificity_multilabel(preds, target, ignore_index, multidim_average, av
     preds = preds.reshape(*preds.shape[:2], -1)
     target = target.reshape(*target.shape[:2], -1)
     if multidim_average == "global":
-        tns, fps = [], []
-        specificity = []
-        for i in range(preds.shape[1]):
-            p, t = preds[:, i].flatten(), target[:, i].flatten()
-            if ignore_index is not None:
-                idx = t == ignore_index
-                t = t[~idx]
-                p = p[~idx]
-            tn, fp, fn, tp = sk_confusion_matrix(t, p, labels=[0, 1]).ravel()
-            tns.append(tn)
-            fps.append(fp)
-
-        tn = np.array(tns)
-        fp = np.array(fps)
-        if average == "micro":
-            return _calc_specificity(tn.sum(), fp.sum())
-
-        res = _calc_specificity(tn, fp)
-        if average == "macro":
-            return res.mean(0)
-        elif average == "weighted":
-            w = res[:, 0] + res[:, 3]
-            return (res * (w / w.sum()).reshape(-1, 1)).sum(0)
-        elif average is None or average == "none":
-            return res
-    else:
-        specificity = []
-        for i in range(preds.shape[0]):
-            tns, fps = [], []
-            for j in range(preds.shape[1]):
-                pred, true = preds[i, j], target[i, j]
-                if ignore_index is not None:
-                    idx = true == ignore_index
-                    true = true[~idx]
-                    pred = pred[~idx]
-                tn, fp, _, _ = sk_confusion_matrix(true, pred, labels=[0, 1]).ravel()
-                tns.append(tn)
-                fps.append(fp)
-            tn = np.array(tns)
-            fp = np.array(fps)
-            if average == "micro":
-                specificity.append(_calc_specificity(tn.sum(), fp.sum()))
-            else:
-                specificity.append(_calc_specificity(tn, fp))
-
-        res = np.stack(specificity, 0)
-        if average == "micro" or average is None or average == "none":
-            return res
-        elif average == "macro":
-            return res.mean(-1)
-        elif average == "weighted":
-            w = res[:, 0, :] + res[:, 3, :]
-            return (res * (w / w.sum())[:, np.newaxis]).sum(-1)
-        elif average is None or average == "none":
-            return np.moveaxis(res, 1, -1)
+        return _sk_specificity_multilabel_global(preds, target, ignore_index, average)
+    return _sk_specificity_multilabel_local(preds, target, ignore_index, average)
 
 
 @pytest.mark.parametrize("input", _multilabel_cases)

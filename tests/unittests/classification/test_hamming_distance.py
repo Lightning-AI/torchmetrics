@@ -156,49 +156,53 @@ class TestBinaryHammingDistance(MetricTester):
             dtype=dtype,
         )
 
+def _sk_hamming_distance_multiclass_global(preds, target, ignore_index, average):
+    preds = preds.numpy().flatten()
+    target = target.numpy().flatten()
+    target, preds = remove_ignore_index(target, preds, ignore_index)
+    if average == "micro":
+        return _sk_hamming_loss(target, preds)
+    confmat = sk_confusion_matrix(y_true=target, y_pred=preds, labels=list(range(NUM_CLASSES)))
+    hamming_per_class = 1 - confmat.diagonal() / confmat.sum(axis=1)
+    hamming_per_class[np.isnan(hamming_per_class)] = 1.0
+    if average == "macro":
+        return hamming_per_class.mean()
+    elif average == "weighted":
+        weights = confmat.sum(1)
+        return ((weights * hamming_per_class) / weights.sum()).sum()
+    return hamming_per_class
+
+def _sk_hamming_distance_multiclass_local(preds, target, ignore_index, average):
+    preds = preds.numpy()
+    target = target.numpy()
+    res = []
+    for pred, true in zip(preds, target):
+        pred = pred.flatten()
+        true = true.flatten()
+        true, pred = remove_ignore_index(true, pred, ignore_index)
+        if average == "micro":
+            res.append(_sk_hamming_loss(true, pred))
+        else:
+            confmat = sk_confusion_matrix(true, pred, labels=list(range(NUM_CLASSES)))
+            hamming_per_class = 1 - confmat.diagonal() / confmat.sum(axis=1)
+            hamming_per_class[np.isnan(hamming_per_class)] = 1.0
+            if average == "macro":
+                res.append(hamming_per_class.mean())
+            elif average == "weighted":
+                weights = confmat.sum(1)
+                score = ((weights * hamming_per_class) / weights.sum()).sum()
+                res.append(0.0 if np.isnan(score) else score)
+            else:
+                res.append(hamming_per_class)
+    return np.stack(res, 0)
+
 
 def _sk_hamming_distance_multiclass(preds, target, ignore_index, multidim_average, average):
     if preds.ndim == target.ndim + 1:
         preds = torch.argmax(preds, 1)
     if multidim_average == "global":
-        preds = preds.numpy().flatten()
-        target = target.numpy().flatten()
-        target, preds = remove_ignore_index(target, preds, ignore_index)
-        if average == "micro":
-            return _sk_hamming_loss(target, preds)
-        confmat = sk_confusion_matrix(y_true=target, y_pred=preds, labels=list(range(NUM_CLASSES)))
-        hamming_per_class = 1 - confmat.diagonal() / confmat.sum(axis=1)
-        hamming_per_class[np.isnan(hamming_per_class)] = 1.0
-        if average == "macro":
-            return hamming_per_class.mean()
-        elif average == "weighted":
-            weights = confmat.sum(1)
-            return ((weights * hamming_per_class) / weights.sum()).sum()
-        else:
-            return hamming_per_class
-    else:
-        preds = preds.numpy()
-        target = target.numpy()
-        res = []
-        for pred, true in zip(preds, target):
-            pred = pred.flatten()
-            true = true.flatten()
-            true, pred = remove_ignore_index(true, pred, ignore_index)
-            if average == "micro":
-                res.append(_sk_hamming_loss(true, pred))
-            else:
-                confmat = sk_confusion_matrix(true, pred, labels=list(range(NUM_CLASSES)))
-                hamming_per_class = 1 - confmat.diagonal() / confmat.sum(axis=1)
-                hamming_per_class[np.isnan(hamming_per_class)] = 1.0
-                if average == "macro":
-                    res.append(hamming_per_class.mean())
-                elif average == "weighted":
-                    weights = confmat.sum(1)
-                    score = ((weights * hamming_per_class) / weights.sum()).sum()
-                    res.append(0.0 if np.isnan(score) else score)
-                else:
-                    res.append(hamming_per_class)
-        return np.stack(res, 0)
+        return _sk_hamming_distance_multiclass_global(preds, target, ignore_index, average)
+    return _sk_hamming_distance_multiclass_local(preds, target, ignore_index, average)
 
 
 @pytest.mark.parametrize("input", _multiclass_cases)
@@ -303,6 +307,64 @@ class TestMulticlassHammingDistance(MetricTester):
         )
 
 
+def _sk_hamming_distance_multilabel_global(preds, target, ignore_index, average):
+    if average == "micro":
+        preds = preds.flatten()
+        target = target.flatten()
+        target, preds = remove_ignore_index(target, preds, ignore_index)
+        return _sk_hamming_loss(target, preds)
+
+    hamming, weights = [], []
+    for i in range(preds.shape[1]):
+        pred, true = preds[:, i].flatten(), target[:, i].flatten()
+        true, pred = remove_ignore_index(true, pred, ignore_index)
+        confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
+        hamming.append(_sk_hamming_loss(true, pred))
+        weights.append(confmat[1, 1] + confmat[1, 0])
+    res = np.stack(hamming, axis=0)
+
+    if average == "macro":
+        return res.mean(0)
+    elif average == "weighted":
+        weights = np.stack(weights, 0).astype(float)
+        weights_norm = weights.sum(-1, keepdims=True)
+        weights_norm[weights_norm == 0] = 1.0
+        return ((weights * res) / weights_norm).sum(-1)
+    elif average is None or average == "none":
+        return res
+
+
+def _sk_hamming_distance_multilabel_local(preds, target, ignore_index, average):
+    hamming, weights = [], []
+    for i in range(preds.shape[0]):
+        if average == "micro":
+            pred, true = preds[i].flatten(), target[i].flatten()
+            true, pred = remove_ignore_index(true, pred, ignore_index)
+            hamming.append(_sk_hamming_loss(true, pred))
+        else:
+            scores, w = [], []
+            for j in range(preds.shape[1]):
+                pred, true = preds[i, j], target[i, j]
+                true, pred = remove_ignore_index(true, pred, ignore_index)
+                scores.append(_sk_hamming_loss(true, pred))
+                confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
+                w.append(confmat[1, 1] + confmat[1, 0])
+            hamming.append(np.stack(scores))
+            weights.append(np.stack(w))
+    if average == "micro":
+        return np.array(hamming)
+    res = np.stack(hamming, 0)
+    if average == "macro":
+        return res.mean(-1)
+    elif average == "weighted":
+        weights = np.stack(weights, 0).astype(float)
+        weights_norm = weights.sum(-1, keepdims=True)
+        weights_norm[weights_norm == 0] = 1.0
+        return ((weights * res) / weights_norm).sum(-1)
+    elif average is None or average == "none":
+        return res
+
+
 def _sk_hamming_distance_multilabel(preds, target, ignore_index, multidim_average, average):
     preds = preds.numpy()
     target = target.numpy()
@@ -314,59 +376,9 @@ def _sk_hamming_distance_multilabel(preds, target, ignore_index, multidim_averag
     target = target.reshape(*target.shape[:2], -1)
 
     if multidim_average == "global":
-        if average == "micro":
-            preds = preds.flatten()
-            target = target.flatten()
-            target, preds = remove_ignore_index(target, preds, ignore_index)
-            return _sk_hamming_loss(target, preds)
+        return _sk_hamming_distance_multilabel_global(preds, target, ignore_index, average)
+    return _sk_hamming_distance_multilabel_local(preds, target, ignore_index, average)
 
-        hamming, weights = [], []
-        for i in range(preds.shape[1]):
-            pred, true = preds[:, i].flatten(), target[:, i].flatten()
-            true, pred = remove_ignore_index(true, pred, ignore_index)
-            confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
-            hamming.append(_sk_hamming_loss(true, pred))
-            weights.append(confmat[1, 1] + confmat[1, 0])
-        res = np.stack(hamming, axis=0)
-
-        if average == "macro":
-            return res.mean(0)
-        elif average == "weighted":
-            weights = np.stack(weights, 0).astype(float)
-            weights_norm = weights.sum(-1, keepdims=True)
-            weights_norm[weights_norm == 0] = 1.0
-            return ((weights * res) / weights_norm).sum(-1)
-        elif average is None or average == "none":
-            return res
-    else:
-        hamming, weights = [], []
-        for i in range(preds.shape[0]):
-            if average == "micro":
-                pred, true = preds[i].flatten(), target[i].flatten()
-                true, pred = remove_ignore_index(true, pred, ignore_index)
-                hamming.append(_sk_hamming_loss(true, pred))
-            else:
-                scores, w = [], []
-                for j in range(preds.shape[1]):
-                    pred, true = preds[i, j], target[i, j]
-                    true, pred = remove_ignore_index(true, pred, ignore_index)
-                    scores.append(_sk_hamming_loss(true, pred))
-                    confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
-                    w.append(confmat[1, 1] + confmat[1, 0])
-                hamming.append(np.stack(scores))
-                weights.append(np.stack(w))
-        if average == "micro":
-            return np.array(hamming)
-        res = np.stack(hamming, 0)
-        if average == "macro":
-            return res.mean(-1)
-        elif average == "weighted":
-            weights = np.stack(weights, 0).astype(float)
-            weights_norm = weights.sum(-1, keepdims=True)
-            weights_norm[weights_norm == 0] = 1.0
-            return ((weights * res) / weights_norm).sum(-1)
-        elif average is None or average == "none":
-            return res
 
 
 @pytest.mark.parametrize("input", _multilabel_cases)
