@@ -7,47 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
 
-## [UnReleased] - 2022-MM-DD
+## [0.9.3] - 2022-08-22
 
 ### Added
 
 - Added global option `sync_on_compute` to disable automatic syncronization when `compute` is called ([#1107](https://github.dev/Lightning-AI/metrics/pull/1107))
 
-
--
-
-
-### Changed
-
--
-
--
-
-
-### Deprecated
-
--
-
--
-
-
-### Removed
-
--
-
--
-
-
 ### Fixed
 
 - Fixed missing reset in `ClasswiseWrapper` ([#1129](https://github.com/Lightning-AI/metrics/pull/1129))
-
-
 - Fixed JaccardIndex multi-label compute ([#1125](https://github.com/Lightning-AI/metrics/pull/1125))
-
-
 - Fix SSIM propagate device if `gaussian_kernel` is False, add test ([#1149](https://github.com/Lightning-AI/metrics/pull/1149))
-
 
 
 ## [0.9.2] - 2022-06-29
