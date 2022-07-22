@@ -51,10 +51,12 @@ def _hamming_distance_reduce(
         tn: number of true negatives
         fn: number of false negatives
         normalize: normalization method.
+
             - `"true"` will divide by the sum of the column dimension.
             - `"pred"` will divide by the sum of the row dimension.
             - `"all"` will divide by the sum of the full matrix
             - `"none"` or `None` will apply no reduction
+
         multilabel: bool indicating if reduction is for multilabel tasks
 
     Returns:
