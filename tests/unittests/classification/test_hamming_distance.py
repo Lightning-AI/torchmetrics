@@ -156,6 +156,7 @@ class TestBinaryHammingDistance(MetricTester):
             dtype=dtype,
         )
 
+
 def _sk_hamming_distance_multiclass_global(preds, target, ignore_index, average):
     preds = preds.numpy().flatten()
     target = target.numpy().flatten()
@@ -171,6 +172,7 @@ def _sk_hamming_distance_multiclass_global(preds, target, ignore_index, average)
         weights = confmat.sum(1)
         return ((weights * hamming_per_class) / weights.sum()).sum()
     return hamming_per_class
+
 
 def _sk_hamming_distance_multiclass_local(preds, target, ignore_index, average):
     preds = preds.numpy()
@@ -378,7 +380,6 @@ def _sk_hamming_distance_multilabel(preds, target, ignore_index, multidim_averag
     if multidim_average == "global":
         return _sk_hamming_distance_multilabel_global(preds, target, ignore_index, average)
     return _sk_hamming_distance_multilabel_local(preds, target, ignore_index, average)
-
 
 
 @pytest.mark.parametrize("input", _multilabel_cases)
