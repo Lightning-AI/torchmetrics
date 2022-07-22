@@ -32,6 +32,7 @@ from torchmetrics.functional.classification.confusion_matrix import (
     multilabel_confusion_matrix,
 )
 from torchmetrics.functional.classification.dice import dice, dice_score
+from torchmetrics.functional.classification.exact_match import multilabel_exact_match
 from torchmetrics.functional.classification.f_beta import (
     binary_f1_score,
     binary_fbeta_score,
@@ -245,4 +246,5 @@ __all__ = [
     "binary_recall",
     "multiclass_recall",
     "multilabel_recall",
+    "multilabel_exact_match",
 ]

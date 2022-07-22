@@ -54,8 +54,8 @@ def multilabel_exact_match(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes Exact match for multilabel tasks. Exact Match is a stricter version of accuracy where all
-    labels have to match exactly for the sample to be correctly classified.
+    r"""Computes Exact match (also known as subset accuracy) for multilabel tasks. Exact Match is a stricter
+    version of accuracy where all labels have to match exactly for the sample to be correctly classified.
 
     Accepts the following input tensors:
 

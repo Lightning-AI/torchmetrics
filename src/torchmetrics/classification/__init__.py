@@ -39,6 +39,7 @@ from torchmetrics.classification.binned_precision_recall import BinnedRecallAtFi
 from torchmetrics.classification.calibration_error import CalibrationError  # noqa: F401
 from torchmetrics.classification.cohen_kappa import BinaryCohenKappa, CohenKappa, MulticlassCohenKappa  # noqa: F401
 from torchmetrics.classification.dice import Dice  # noqa: F401
+from torchmetrics.classification.exact_match import MultilabelExactMatch  # noqa: F401
 from torchmetrics.classification.f_beta import (  # noqa: F401
     BinaryF1Score,
     BinaryFBetaScore,
