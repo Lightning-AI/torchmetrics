@@ -34,7 +34,7 @@ def _binary_stat_scores_arg_validation(
     - ``multidim_average`` has to be either "global" or "samplewise"
     - ``ignore_index`` has to be None or int
     """
-    if not isinstance(threshold, float) and not (0 <= threshold <= 1):
+    if not (isinstance(threshold, float) and (0 <= threshold <= 1)):
         raise ValueError(f"Expected argument `threshold` to be a float in the [0,1] range, but got {threshold}.")
     allowed_multidim_average = ("global", "samplewise")
     if multidim_average not in allowed_multidim_average:
@@ -495,12 +495,13 @@ def multiclass_stat_scores(
         to ``[tp, fp, tn, fn, sup]`` (``sup`` stands for support and equals ``tp + fn``). The shape
         depends on ``average`` and ``multidim_average`` parameters:
 
-        - If ``multidim_average`` is set to ``global``
+        - If ``multidim_average`` is set to ``global``:
 
           - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(5,)``
           - If ``average=None/'none'``, the shape will be ``(C, 5)``
 
-        - If ``multidim_average`` is set to ``samplewise``
+        - If ``multidim_average`` is set to ``samplewise``:
+
           - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N, 5)``
           - If ``average=None/'none'``, the shape will be ``(N, C, 5)``
 
@@ -517,8 +518,8 @@ def multiclass_stat_scores(
 
     Example (preds is float tensor):
         >>> from torchmetrics.functional import multiclass_stat_scores
-        >>> target = target = torch.tensor([2, 1, 0, 0])
-        >>> preds = preds = torch.tensor([
+        >>> target = torch.tensor([2, 1, 0, 0])
+        >>> preds = torch.tensor([
         ...   [0.16, 0.26, 0.58],
         ...   [0.22, 0.61, 0.17],
         ...   [0.71, 0.09, 0.20],
@@ -571,7 +572,7 @@ def _multilabel_stat_scores_arg_validation(
     """
     if not isinstance(num_labels, int) or num_labels < 2:
         raise ValueError(f"Expected argument `num_labels` to be an integer larger than 1, but got {num_labels}")
-    if not isinstance(threshold, float):
+    if not (isinstance(threshold, float) and (0 <= threshold <= 1)):
         raise ValueError(f"Expected argument `threshold` to be a float, but got {threshold}.")
     allowed_average = ("micro", "macro", "weighted", "none", None)
     if average not in allowed_average:
@@ -749,12 +750,12 @@ def multilabel_stat_scores(
         to ``[tp, fp, tn, fn, sup]`` (``sup`` stands for support and equals ``tp + fn``). The shape
         depends on ``average`` and ``multidim_average`` parameters:
 
-        - If ``multidim_average`` is set to ``global``
+        - If ``multidim_average`` is set to ``global``:
 
           - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(5,)``
           - If ``average=None/'none'``, the shape will be ``(C, 5)``
 
-        - If ``multidim_average`` is set to ``samplewise``
+        - If ``multidim_average`` is set to ``samplewise``:
 
           - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N, 5)``
           - If ``average=None/'none'``, the shape will be ``(N, C, 5)``
