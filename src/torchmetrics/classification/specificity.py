@@ -47,8 +47,8 @@ class BinarySpecificity(BinaryStatScores):
     Args:
         threshold: Threshold for transforming probability to binary {0,1} predictions
         multidim_average:
-
             Defines how additionally dimensions ``...`` should be handled. Should be one of the following:
+
             - ``global``: Additional dimensions are flatted along the batch dimension
             - ``samplewise``: Statistic will be calculated independently for each sample on the ``N`` axis.
               The statistics in this case are calculated over the additional dimensions.
@@ -129,8 +129,8 @@ class MulticlassSpecificity(MulticlassStatScores):
             Number of highest probability or logit score predictions considered to find the correct label.
             Only works when ``preds`` contain probabilities/logits.
         multidim_average:
-
             Defines how additionally dimensions ``...`` should be handled. Should be one of the following:
+
             - ``global``: Additional dimensions are flatted along the batch dimension
             - ``samplewise``: Statistic will be calculated independently for each sample on the ``N`` axis.
               The statistics in this case are calculated over the additional dimensions.

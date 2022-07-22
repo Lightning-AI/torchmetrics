@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import math
 from functools import partial
-from typing import Callable, Optional
 
 import numpy as np
 import pytest
@@ -22,7 +20,6 @@ from scipy.special import expit as sigmoid
 from sklearn.metrics import confusion_matrix as sk_confusion_matrix
 from torch import Tensor, tensor
 
-from torchmetrics import Metric, Specificity
 from torchmetrics.classification.specificity import BinarySpecificity, MulticlassSpecificity, MultilabelSpecificity
 from torchmetrics.functional.classification.specificity import (
     binary_specificity,
@@ -884,7 +881,9 @@ class TestMultilabelSpecificity(MetricTester):
 #     num_classes = 2
 
 #     # test functional
-#     result_fn = metric_fn(preds, target, average=AverageMethod.NONE, num_classes=num_classes, ignore_index=ignore_index)
+#     result_fn = metric_fn(
+#       preds, target, average=AverageMethod.NONE, num_classes=num_classes, ignore_index=ignore_index
+#     )
 #     assert torch.allclose(expected, result_fn, equal_nan=True)
 
 #     # test class

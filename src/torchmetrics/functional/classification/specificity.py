@@ -92,8 +92,8 @@ def binary_specificity(
         target: Tensor with true labels
         threshold: Threshold for transforming probability to binary {0,1} predictions
         multidim_average:
-
             Defines how additionally dimensions ``...`` should be handled. Should be one of the following:
+
             - ``global``: Additional dimensions are flatted along the batch dimension
             - ``samplewise``: Statistic will be calculated independently for each sample on the ``N`` axis.
               The statistics in this case are calculated over the additional dimensions.
@@ -184,8 +184,8 @@ def multiclass_specificity(
             Number of highest probability or logit score predictions considered to find the correct label.
             Only works when ``preds`` contain probabilities/logits.
         multidim_average:
-
             Defines how additionally dimensions ``...`` should be handled. Should be one of the following:
+
             - ``global``: Additional dimensions are flatted along the batch dimension
             - ``samplewise``: Statistic will be calculated independently for each sample on the ``N`` axis.
               The statistics in this case are calculated over the additional dimensions.
@@ -284,6 +284,7 @@ def multilabel_specificity(
             - ``macro``: Calculate statistics for each label and average them
             - ``weighted``: Calculates statistics for each label and computes weighted average using their support
             - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+
         multidim_average:
             Defines how additionally dimensions ``...`` should be handled. Should be one of the following:
 

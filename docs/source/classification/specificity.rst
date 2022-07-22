@@ -10,9 +10,6 @@ Specificity
 Module Interface
 ________________
 
-Specificity
-^^^^^^^^^^^
-
 .. autoclass:: torchmetrics.Specificity
     :noindex:
 
@@ -37,9 +34,6 @@ MultilabelSpecificity
 
 Functional Interface
 ____________________
-
-specificity
-^^^^^^^^^^^
 
 .. autofunction:: torchmetrics.functional.specificity
     :noindex:
