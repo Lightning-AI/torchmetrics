@@ -42,8 +42,10 @@ def _sk_exact_match_multilabel(preds, target, ignore_index, multidim_average):
         target[target == ignore_index] = -1
 
     if multidim_average == "global":
+        preds = np.moveaxis(preds, 1, -1).reshape(-1, NUM_CLASSES)
+        target = np.moveaxis(target, 1, -1).reshape(-1, NUM_CLASSES)
         correct = ((preds == target).sum(1) == NUM_CLASSES).sum()
-        total = (target != -1)[:, 0, :].sum()
+        total = preds.shape[0]
     else:
         correct = ((preds == target).sum(1) == NUM_CLASSES).sum(1)
         total = preds.shape[2]
@@ -55,8 +57,7 @@ class TestMultilabelExactMatch(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
-    @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
-    def test_multilabel_exact_match(self, ddp, input, ignore_index, multidim_average, average):
+    def test_multilabel_exact_match(self, ddp, input, ignore_index, multidim_average):
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -74,14 +75,12 @@ class TestMultilabelExactMatch(MetricTester):
                 _sk_exact_match_multilabel,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
-                average=average,
             ),
             metric_args={
                 "num_labels": NUM_CLASSES,
                 "threshold": THRESHOLD,
                 "ignore_index": ignore_index,
                 "multidim_average": multidim_average,
-                "average": average,
             },
         )
 
