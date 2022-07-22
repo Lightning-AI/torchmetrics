@@ -32,7 +32,7 @@ from torchmetrics.functional.classification.confusion_matrix import (
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index
+from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index, remove_ignore_index
 
 seed_all(42)
 
@@ -44,10 +44,7 @@ def _sk_confusion_matrix_binary(preds, target, normalize=None, ignore_index=None
         if not ((0 < preds) & (preds < 1)).all():
             preds = sigmoid(preds)
         preds = (preds >= THRESHOLD).astype(np.uint8)
-    if ignore_index is not None:
-        idx = target == ignore_index
-        target = target[~idx]
-        preds = preds[~idx]
+    target, preds = remove_ignore_index(target, preds, ignore_index)
     return sk_confusion_matrix(y_true=target, y_pred=preds, labels=[0, 1], normalize=normalize)
 
 
@@ -138,11 +135,7 @@ def _sk_confusion_matrix_multiclass(preds, target, normalize=None, ignore_index=
         preds = np.argmax(preds, axis=1)
     preds = preds.flatten()
     target = target.flatten()
-
-    if ignore_index is not None:
-        idx = target == ignore_index
-        target = target[~idx]
-        preds = preds[~idx]
+    target, preds = remove_ignore_index(target, preds, ignore_index)
     return sk_confusion_matrix(y_true=target, y_pred=preds, normalize=normalize, labels=list(range(NUM_CLASSES)))
 
 
@@ -235,12 +228,9 @@ def _sk_confusion_matrix_multilabel(preds, target, normalize=None, ignore_index=
     target = np.moveaxis(target, 1, -1).reshape((-1, target.shape[1]))
     confmat = []
     for i in range(preds.shape[1]):
-        p, t = preds[:, i], target[:, i]
-        if ignore_index is not None:
-            idx = t == ignore_index
-            t = t[~idx]
-            p = p[~idx]
-        confmat.append(sk_confusion_matrix(t, p, normalize=normalize, labels=[0, 1]))
+        pred, true = preds[:, i], target[:, i]
+        true, pred = remove_ignore_index(true, pred, ignore_index)
+        confmat.append(sk_confusion_matrix(true, pred, normalize=normalize, labels=[0, 1]))
     return np.stack(confmat, axis=0)
 
 
