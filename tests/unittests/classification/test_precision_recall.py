@@ -344,6 +344,66 @@ def test_top_k(
     assert torch.equal(metric_fn(preds, target, top_k=k, average=average, num_classes=3), result)
 
 
+def _sk_precision_recall_multilabel_global(preds, target, sk_fn, ignore_index, average):
+    if average == "micro":
+        preds = preds.flatten()
+        target = target.flatten()
+        target, preds = remove_ignore_index(target, preds, ignore_index)
+        return sk_fn(target, preds)
+
+    precision_recall, weights = [], []
+    for i in range(preds.shape[1]):
+        pred, true = preds[:, i].flatten(), target[:, i].flatten()
+        true, pred = remove_ignore_index(true, pred, ignore_index)
+        precision_recall.append(sk_fn(true, pred))
+        confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
+        weights.append(confmat[1, 1] + confmat[1, 0])
+    res = np.stack(precision_recall, axis=0)
+
+    if average == "macro":
+        return res.mean(0)
+    elif average == "weighted":
+        weights = np.stack(weights, 0).astype(float)
+        weights_norm = weights.sum(-1, keepdims=True)
+        weights_norm[weights_norm == 0] = 1.0
+        return ((weights * res) / weights_norm).sum(-1)
+    elif average is None or average == "none":
+        return res
+
+
+def _sk_precision_recall_multilabel_local(preds, target, sk_fn, ignore_index, average):
+    precision_recall, weights = [], []
+    for i in range(preds.shape[0]):
+        if average == "micro":
+            pred, true = preds[i].flatten(), target[i].flatten()
+            true, pred = remove_ignore_index(true, pred, ignore_index)
+            precision_recall.append(sk_fn(true, pred))
+            confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
+            weights.append(confmat[1, 1] + confmat[1, 0])
+        else:
+            scores, w = [], []
+            for j in range(preds.shape[1]):
+                pred, true = preds[i, j], target[i, j]
+                true, pred = remove_ignore_index(true, pred, ignore_index)
+                scores.append(sk_fn(true, pred))
+                confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
+                w.append(confmat[1, 1] + confmat[1, 0])
+            precision_recall.append(np.stack(scores))
+            weights.append(np.stack(w))
+    if average == "micro":
+        return np.array(precision_recall)
+    res = np.stack(precision_recall, 0)
+    if average == "macro":
+        return res.mean(-1)
+    elif average == "weighted":
+        weights = np.stack(weights, 0).astype(float)
+        weights_norm = weights.sum(-1, keepdims=True)
+        weights_norm[weights_norm == 0] = 1.0
+        return ((weights * res) / weights_norm).sum(-1)
+    elif average is None or average == "none":
+        return res
+
+
 def _sk_precision_recall_multilabel(preds, target, sk_fn, ignore_index, multidim_average, average):
     preds = preds.numpy()
     target = target.numpy()
@@ -360,61 +420,8 @@ def _sk_precision_recall_multilabel(preds, target, sk_fn, ignore_index, multidim
             average=average,
         )
     elif multidim_average == "global":
-        if average == "micro":
-            preds = preds.flatten()
-            target = target.flatten()
-            target, preds = remove_ignore_index(target, preds, ignore_index)
-            return sk_fn(target, preds)
-
-        precision_recall, weights = [], []
-        for i in range(preds.shape[1]):
-            pred, true = preds[:, i].flatten(), target[:, i].flatten()
-            true, pred = remove_ignore_index(true, pred, ignore_index)
-            precision_recall.append(sk_fn(true, pred))
-            confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
-            weights.append(confmat[1, 1] + confmat[1, 0])
-        res = np.stack(precision_recall, axis=0)
-
-        if average == "macro":
-            return res.mean(0)
-        elif average == "weighted":
-            weights = np.stack(weights, 0).astype(float)
-            weights_norm = weights.sum(-1, keepdims=True)
-            weights_norm[weights_norm == 0] = 1.0
-            return ((weights * res) / weights_norm).sum(-1)
-        elif average is None or average == "none":
-            return res
-    else:
-        precision_recall, weights = [], []
-        for i in range(preds.shape[0]):
-            if average == "micro":
-                pred, true = preds[i].flatten(), target[i].flatten()
-                true, pred = remove_ignore_index(true, pred, ignore_index)
-                precision_recall.append(sk_fn(true, pred))
-                confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
-                weights.append(confmat[1, 1] + confmat[1, 0])
-            else:
-                scores, w = [], []
-                for j in range(preds.shape[1]):
-                    pred, true = preds[i, j], target[i, j]
-                    true, pred = remove_ignore_index(true, pred, ignore_index)
-                    scores.append(sk_fn(true, pred))
-                    confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
-                    w.append(confmat[1, 1] + confmat[1, 0])
-                precision_recall.append(np.stack(scores))
-                weights.append(np.stack(w))
-        if average == "micro":
-            return np.array(precision_recall)
-        res = np.stack(precision_recall, 0)
-        if average == "macro":
-            return res.mean(-1)
-        elif average == "weighted":
-            weights = np.stack(weights, 0).astype(float)
-            weights_norm = weights.sum(-1, keepdims=True)
-            weights_norm[weights_norm == 0] = 1.0
-            return ((weights * res) / weights_norm).sum(-1)
-        elif average is None or average == "none":
-            return res
+        return _sk_precision_recall_multilabel_global(preds, target, sk_fn, ignore_index, average)
+    return _sk_precision_recall_multilabel_local(preds, target, sk_fn, ignore_index, average)
 
 
 @pytest.mark.parametrize("input", _multilabel_cases)

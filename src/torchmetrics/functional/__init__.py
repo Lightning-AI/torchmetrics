@@ -37,7 +37,12 @@ from torchmetrics.functional.classification.f_beta import (
     multilabel_f1_score,
     multilabel_fbeta_score,
 )
-from torchmetrics.functional.classification.hamming import hamming_distance
+from torchmetrics.functional.classification.hamming import (
+    binary_hamming_distance,
+    hamming_distance,
+    multiclass_hamming_distance,
+    multilabel_hamming_distance,
+)
 from torchmetrics.functional.classification.hinge import hinge_loss
 from torchmetrics.functional.classification.jaccard import (
     binary_jaccard_index,
@@ -70,7 +75,12 @@ from torchmetrics.functional.classification.ranking import (
     label_ranking_loss,
 )
 from torchmetrics.functional.classification.roc import roc
-from torchmetrics.functional.classification.specificity import specificity
+from torchmetrics.functional.classification.specificity import (
+    binary_specificity,
+    multiclass_specificity,
+    multilabel_specificity,
+    specificity,
+)
 from torchmetrics.functional.classification.stat_scores import (
     binary_stat_scores,
     multiclass_stat_scores,
@@ -231,6 +241,12 @@ __all__ = [
     "binary_matthews_corrcoef",
     "multiclass_matthews_corrcoef",
     "multilabel_matthews_corrcoef",
+    "binary_specificity",
+    "multiclass_specificity",
+    "multilabel_specificity",
+    "binary_hamming_distance",
+    "multiclass_hamming_distance",
+    "multilabel_hamming_distance",
     "binary_precision",
     "multiclass_precision",
     "multilabel_precision",
