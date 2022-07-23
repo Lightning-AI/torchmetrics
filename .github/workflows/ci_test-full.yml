@@ -28,11 +28,10 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-20.04, macOS-10.15, windows-2019]
-        python-version: ['3.7', '3.8', '3.9', '3.10']
+        python-version: ['3.7', '3.8', '3.10']
         requires: ['oldest', 'latest']
         exclude:
           - {python-version: '3.7', requires: 'latest'}
-          - {python-version: '3.9', requires: 'oldest'}
           - {python-version: '3.10', requires: 'oldest'}
           - {python-version: '3.10', os: 'windows-2019'}  # todo: https://discuss.pytorch.org/t/numpy-is-not-available-error/146192
     env:
@@ -108,7 +107,7 @@ jobs:
         test-timeout: ${{ env.UNITTEST_TIMEOUT }}
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1
+      uses: codecov/codecov-action@v3
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         file: tests/coverage.xml
