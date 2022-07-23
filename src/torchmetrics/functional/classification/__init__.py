@@ -40,7 +40,12 @@ from torchmetrics.functional.classification.f_beta import (  # noqa: F401
     multilabel_f1_score,
     multilabel_fbeta_score,
 )
-from torchmetrics.functional.classification.hamming import hamming_distance  # noqa: F401
+from torchmetrics.functional.classification.hamming import (  # noqa: F401
+    binary_hamming_distance,
+    hamming_distance,
+    multiclass_hamming_distance,
+    multilabel_hamming_distance,
+)
 from torchmetrics.functional.classification.hinge import hinge_loss  # noqa: F401
 from torchmetrics.functional.classification.jaccard import jaccard_index  # noqa: F401
 from torchmetrics.functional.classification.kl_divergence import kl_divergence  # noqa: F401
@@ -63,7 +68,12 @@ from torchmetrics.functional.classification.ranking import (  # noqa: F401
     label_ranking_loss,
 )
 from torchmetrics.functional.classification.roc import roc  # noqa: F401
-from torchmetrics.functional.classification.specificity import specificity  # noqa: F401
+from torchmetrics.functional.classification.specificity import (  # noqa: F401
+    binary_specificity,
+    multiclass_specificity,
+    multilabel_specificity,
+    specificity,
+)
 from torchmetrics.functional.classification.stat_scores import (  # noqa: F401
     binary_stat_scores,
     multiclass_stat_scores,
