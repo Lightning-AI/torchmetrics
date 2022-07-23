@@ -249,8 +249,7 @@ __all__ = [
     "multilabel_matthews_corrcoef",
     "binary_accuracy",
     "multilabel_accuracy",
-    "multiclass_accuracy"
-    "binary_specificity",
+    "multiclass_accuracy" "binary_specificity",
     "multiclass_specificity",
     "multilabel_specificity",
     "binary_hamming_distance",
