@@ -10,9 +10,6 @@ Accuracy
 Module Interface
 ________________
 
-Accuracy
-^^^^^^^^
-
 .. autoclass:: torchmetrics.Accuracy
     :noindex:
 
@@ -36,9 +33,6 @@ MultilabelAccuracy
 
 Functional Interface
 ____________________
-
-accuracy
-^^^^^^^^
 
 .. autofunction:: torchmetrics.functional.accuracy
     :noindex:
