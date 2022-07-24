@@ -38,10 +38,11 @@ def _multilabel_exact_scores_update(
     return correct, total
 
 
-def _multilabel_stat_scores_compute(
+def _multilabel_exact_scores_compute(
     correct: Tensor,
     total: Tensor,
 ) -> Tensor:
+    """Final reduction for exact match."""
     return correct / total
 
 
@@ -130,4 +131,4 @@ def multilabel_exact_match(
         _multilabel_stat_scores_tensor_validation(preds, target, num_labels, multidim_average, ignore_index)
     preds, target = _multilabel_stat_scores_format(preds, target, num_labels, threshold, ignore_index)
     correct, total = _multilabel_exact_scores_update(preds, target, num_labels, multidim_average)
-    return _multilabel_stat_scores_compute(correct, total)
+    return _multilabel_exact_scores_compute(correct, total)

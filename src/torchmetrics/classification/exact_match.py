@@ -18,8 +18,8 @@ from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.functional.classification.exact_match import (
+    _multilabel_exact_scores_compute,
     _multilabel_exact_scores_update,
-    _multilabel_stat_scores_compute,
 )
 from torchmetrics.functional.classification.stat_scores import (
     _multilabel_stat_scores_arg_validation,
@@ -159,6 +159,6 @@ class MultilabelExactMatch(Metric):
             self.correct += correct
             self.total += total
 
-    def compute(self):
+    def compute(self) -> Tensor:
         correct = dim_zero_cat(self.correct)
-        return _multilabel_stat_scores_compute(correct, self.total)
+        return _multilabel_exact_scores_compute(correct, self.total)
