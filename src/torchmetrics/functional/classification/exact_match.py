@@ -22,6 +22,7 @@ from torchmetrics.functional.classification.stat_scores import (
     _multilabel_stat_scores_format,
     _multilabel_stat_scores_tensor_validation,
 )
+from torchmetrics.utilities.compute import _safe_divide
 from torchmetrics.utilities.data import _movedim
 
 
@@ -43,7 +44,7 @@ def _multilabel_exact_scores_compute(
     total: Tensor,
 ) -> Tensor:
     """Final reduction for exact match."""
-    return correct / total
+    return _safe_divide(correct, total)
 
 
 def multilabel_exact_match(
