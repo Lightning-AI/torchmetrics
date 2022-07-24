@@ -39,6 +39,7 @@ def _sk_exact_match_multilabel(preds, target, ignore_index, multidim_average):
     target = target.reshape(*target.shape[:2], -1)
 
     if ignore_index is not None:
+        target = np.copy(target)
         target[target == ignore_index] = -1
 
     if multidim_average == "global":
