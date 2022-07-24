@@ -19,131 +19,9 @@ from torch import Tensor, tensor
 from torch.nn import functional as F
 
 from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities.checks import _check_same_shape
+from torchmetrics.utilities.compute import _safe_divide
 from torchmetrics.utilities.data import _bincount
-
-def _binary_precision_recall_curve_arg_validation(
-    thresholds: Optional[Union[int, List[float], Tensor]] = 100,
-    ignore_index: Optional[int] = None,
-) -> None:
-    """Validate non tensor input.
-
-    - ``threshold`` has to be a float in the [0,1] range
-    - ``multidim_average`` has to be either "global" or "samplewise"
-    - ``ignore_index`` has to be None or int
-    """
-    if thresholds is not None and not isinstance(thresholds, (list, int, Tensor)):
-        raise ValueError()
-    else:
-        if isinstance(thresholds, int) and thresholds < 2:
-            raise ValueError()
-        if isinstance(thresholds, list) and not all(isinstance(e, int) for e in thresholds):
-            raise ValueError()
-        if isinstance(thresholds, Tensor) and not thresholds.ndim == 1:
-            raise ValueError()
-    
-    if ignore_index is not None and not isinstance(ignore_index, int):
-        raise ValueError(f"Expected argument `ignore_index` to either be `None` or an integer, but got {ignore_index}")
-
-
-def _binary_precision_recall_curve_tensor_validation(
-    preds: Tensor, target: Tensor, ignore_index: Optional[int] = None
-) -> None:
-    _check_same_shape(preds, target)
-
-    # Check that target only contains {0,1} values or value in ignore_index
-    unique_values = torch.unique(target)
-    if ignore_index is None:
-        check = torch.any((unique_values != 0) & (unique_values != 1))
-    else:
-        check = torch.any((unique_values != 0) & (unique_values != 1) & (unique_values != ignore_index))
-    if check:
-        raise RuntimeError(
-            f"Detected the following values in `target`: {unique_values} but expected only"
-            f" the following values {[0,1] + [] if ignore_index is None else [ignore_index]}."
-        )
-    
-    if not preds.is_floating_point():
-        raise ValueError()
-
-
-def _binary_precision_recall_curve_format(
-    preds: Tensor,
-    target: Tensor,
-    ignore_index: Optional[int] = None,
-) -> Tuple[Tensor, Tensor]:
-    preds = preds.flatten()
-    target = target.flatten()
-    if ignore_index is not None:
-        idx = target != ignore_index
-        preds = preds[idx]
-        target = target[idx]
-    
-    if not torch.all((0 <= preds) * (preds <= 1)):
-        preds = preds.sigmoid()
-
-    return preds, target
-
-
-def _binary_precision_recall_curve_update(
-    preds: Tensor, 
-    target: Tensor,
-    thresholds: Optional[Union[int, List[float], Tensor]] = 100,
-) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    if thresholds is None:
-        return preds, target
-    elif isinstance(thresholds, int):
-        thresholds = torch.linspace(0, 1, thresholds, device=preds.device)
-    elif isinstance(thresholds, list):
-        thresholds = torch.tensor(thresholds, device=preds.device)
-    len_t = len(thresholds)
-
-    preds_t = (preds.unsqueeze(-1) > thresholds.unsqueeze(0)).long()  # num_samples x num_thresholds
-    unique_mapping = preds_t + 2 * target.unsqueeze(-1) + 4 * torch.arange(len_t)
-    bins = _bincount(unique_mapping.flatten(), minlength=4 * len_t)
-    return bins.reshape(len_t, 2, 2)
-
-
-def _binary_precision_recall_curve_compute(
-    state: Union[Tensor, Tuple[Tensor, Tensor]]
-):
-    if isinstance(state, Tensor):
-        # do something new
-        pass
-    else:
-        # old path
-        pass
-
-
-
-def binary_precision_recall_curve(
-    preds: Tensor,
-    target: Tensor,
-    thresholds: Optional[Union[int, List[float], Tensor]] = 100,
-    ignore_index: Optional[int] = None,
-    validate_args: bool = True
-) -> Tuple[Tensor, Tensor, Tensor]:
-    if validate_args:
-        _binary_precision_recall_curve_arg_validation(thresholds, ignore_index)
-        _binary_precision_recall_curve_tensor_validation(preds, target)
-    preds, target = _binary_precision_recall_curve_format(preds, target, thresholds, ignore_index)
-    state = _binary_precision_recall_curve_update(preds, target, thresholds)
-    return _binary_precision_recall_curve_compute(state)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# -------------------------- Old stuff --------------------------
 
 
 def _binary_clf_curve(
@@ -185,6 +63,139 @@ def _binary_clf_curve(
         fps = 1 + threshold_idxs - tps
 
     return fps, tps, preds[threshold_idxs]
+
+
+def _binary_precision_recall_curve_arg_validation(
+    thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+    ignore_index: Optional[int] = None,
+) -> None:
+    """Validate non tensor input.
+
+    - ``threshold`` has to be a float in the [0,1] range
+    - ``multidim_average`` has to be either "global" or "samplewise"
+    - ``ignore_index`` has to be None or int
+    """
+    if thresholds is not None and not isinstance(thresholds, (list, int, Tensor)):
+        raise ValueError()
+    else:
+        if isinstance(thresholds, int) and thresholds < 2:
+            raise ValueError()
+        if isinstance(thresholds, list) and not all(isinstance(e, int) for e in thresholds):
+            raise ValueError()
+        if isinstance(thresholds, Tensor) and not thresholds.ndim == 1:
+            raise ValueError()
+
+    if ignore_index is not None and not isinstance(ignore_index, int):
+        raise ValueError(f"Expected argument `ignore_index` to either be `None` or an integer, but got {ignore_index}")
+
+
+def _binary_precision_recall_curve_tensor_validation(
+    preds: Tensor, target: Tensor, ignore_index: Optional[int] = None
+) -> None:
+    _check_same_shape(preds, target)
+
+    # Check that target only contains {0,1} values or value in ignore_index
+    unique_values = torch.unique(target)
+    if ignore_index is None:
+        check = torch.any((unique_values != 0) & (unique_values != 1))
+    else:
+        check = torch.any((unique_values != 0) & (unique_values != 1) & (unique_values != ignore_index))
+    if check:
+        raise RuntimeError(
+            f"Detected the following values in `target`: {unique_values} but expected only"
+            f" the following values {[0,1] + [] if ignore_index is None else [ignore_index]}."
+        )
+
+    if not preds.is_floating_point():
+        raise ValueError()
+
+
+def _binary_precision_recall_curve_format(
+    preds: Tensor,
+    target: Tensor,
+    thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+    ignore_index: Optional[int] = None,
+) -> Tuple[Tensor, Tensor, Optional[Tensor]]:
+    preds = preds.flatten()
+    target = target.flatten()
+    if ignore_index is not None:
+        idx = target != ignore_index
+        preds = preds[idx]
+        target = target[idx]
+
+    if not torch.all((0 <= preds) * (preds <= 1)):
+        preds = preds.sigmoid()
+
+    if isinstance(thresholds, int):
+        thresholds = torch.linspace(0, 1, thresholds + 1, device=preds.device)[1:]
+    if isinstance(thresholds, list):
+        thresholds = torch.tensor(thresholds, device=preds.device)
+
+    return preds, target, thresholds
+
+
+def _binary_precision_recall_curve_update(
+    preds: Tensor,
+    target: Tensor,
+    thresholds: Optional[Tensor],
+) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+    if thresholds is None:
+        return preds, target
+    len_t = len(thresholds)
+
+    preds_t = (preds.unsqueeze(-1) > thresholds.unsqueeze(0)).long()  # num_samples x num_thresholds
+    unique_mapping = preds_t + 2 * target.unsqueeze(-1) + 4 * torch.arange(len_t)
+    bins = _bincount(unique_mapping.flatten(), minlength=4 * len_t)
+    return bins.reshape(len_t, 2, 2)
+
+
+def _binary_precision_recall_curve_compute(
+    state: Union[Tensor, Tuple[Tensor, Tensor]],
+    thresholds: Optional[Tensor],
+):
+    if isinstance(state, Tensor):
+        tps = state[:, 1, 1]
+        fps = state[:, 0, 1]
+        fns = state[:, 1, 0]
+        precision = _safe_divide(tps, tps + fps)
+        recall = _safe_divide(tps, tps + fns)
+        precision = torch.cat([precision, torch.ones(1, dtype=precision.dtype, device=precision.device)])
+        recall = torch.cat([recall, torch.zeros(1, dtype=recall.dtype, device=recall.device)])
+        return precision, recall, thresholds
+    else:
+        fps, tps, thresholds = _binary_clf_curve(state[0], state[1], pos_label=1)
+        precision = tps / (tps + fps)
+        recall = tps / tps[-1]
+
+        # stop when full recall attained and reverse the outputs so recall is decreasing
+        last_ind = torch.where(tps == tps[-1])[0][0]
+        sl = slice(0, last_ind.item() + 1)
+
+        # need to call reversed explicitly, since including that to slice would
+        # introduce negative strides that are not yet supported in pytorch
+        precision = torch.cat([reversed(precision[sl]), torch.ones(1, dtype=precision.dtype, device=precision.device)])
+        recall = torch.cat([reversed(recall[sl]), torch.zeros(1, dtype=recall.dtype, device=recall.device)])
+        thresholds = reversed(thresholds[sl]).detach().clone()  # type: ignore
+
+    return precision, recall, thresholds
+
+
+def binary_precision_recall_curve(
+    preds: Tensor,
+    target: Tensor,
+    thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
+) -> Tuple[Tensor, Tensor, Tensor]:
+    if validate_args:
+        _binary_precision_recall_curve_arg_validation(thresholds, ignore_index)
+        _binary_precision_recall_curve_tensor_validation(preds, target, ignore_index)
+    preds, target, thresholds = _binary_precision_recall_curve_format(preds, target, thresholds, ignore_index)
+    state = _binary_precision_recall_curve_update(preds, target, thresholds)
+    return _binary_precision_recall_curve_compute(state, thresholds)
+
+
+# -------------------------- Old stuff --------------------------
 
 
 def _precision_recall_curve_update(
