@@ -10,14 +10,8 @@ Exact Match
 Module Interface
 ________________
 
-MulticlassExactMatch
-^^^^^^^^^^^^^^^^^^
-
-.. autoclass:: torchmetrics.MulticlassExactMatch
-    :noindex:
-
 MultilabelExactMatch
-^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.MultilabelExactMatch
     :noindex:
@@ -25,14 +19,8 @@ MultilabelExactMatch
 Functional Interface
 ____________________
 
-multiclass_exact_match
-^^^^^^^^^^^^^^^^^^^
-
-.. autofunction:: torchmetrics.functional.multiclass_exact_match
-    :noindex:
-
-multilabel_accuracy
-^^^^^^^^^^^^^^^^^^^
+multilabel_exact_match
+^^^^^^^^^^^^^^^^^^^^^^
 
 .. autofunction:: torchmetrics.functional.multilabel_exact_match
     :noindex:
