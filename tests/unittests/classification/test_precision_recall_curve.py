@@ -16,131 +16,219 @@ from functools import partial
 import numpy as np
 import pytest
 import torch
+from scipy.special import expit as sigmoid
 from sklearn.metrics import precision_recall_curve as sk_precision_recall_curve
 from torch import Tensor, tensor
 
-from torchmetrics.classification.precision_recall_curve import PrecisionRecallCurve
-from torchmetrics.functional import precision_recall_curve
-from torchmetrics.functional.classification.precision_recall_curve import _binary_clf_curve
-from unittests.classification.inputs import _input_binary_prob
-from unittests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
-from unittests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_CLASSES, MetricTester
+from unittests.helpers.testers import NUM_CLASSES, MetricTester, inject_ignore_index, remove_ignore_index
 
 seed_all(42)
 
 
-def _sk_precision_recall_curve(y_true, probas_pred, num_classes=1):
-    """Adjusted comparison function that can also handles multiclass."""
-    if num_classes == 1:
-        return sk_precision_recall_curve(y_true, probas_pred)
-
-    precision, recall, thresholds = [], [], []
-    for i in range(num_classes):
-        y_true_temp = np.zeros_like(y_true)
-        y_true_temp[y_true == i] = 1
-        res = sk_precision_recall_curve(y_true_temp, probas_pred[:, i])
-        precision.append(res[0])
-        recall.append(res[1])
-        thresholds.append(res[2])
-    return precision, recall, thresholds
+def _sk_confusion_matrix_binary(preds, target, normalize=None, ignore_index=None):
+    preds = preds.view(-1).numpy()
+    target = target.view(-1).numpy()
+    if np.issubdtype(preds.dtype, np.floating):
+        if not ((0 < preds) & (preds < 1)).all():
+            preds = sigmoid(preds)
+    target, preds = remove_ignore_index(target, preds, ignore_index)
+    return sk_precision_recall_curve(y_true=target, y_pred=preds)
 
 
-def _sk_prec_rc_binary_prob(preds, target, num_classes=1):
-    sk_preds = preds.view(-1).numpy()
-    sk_target = target.view(-1).numpy()
-
-    return _sk_precision_recall_curve(y_true=sk_target, probas_pred=sk_preds, num_classes=num_classes)
-
-
-def _sk_prec_rc_multiclass_prob(preds, target, num_classes=1):
-    sk_preds = preds.reshape(-1, num_classes).numpy()
-    sk_target = target.view(-1).numpy()
-
-    return _sk_precision_recall_curve(y_true=sk_target, probas_pred=sk_preds, num_classes=num_classes)
-
-
-def _sk_prec_rc_multidim_multiclass_prob(preds, target, num_classes=1):
-    sk_preds = preds.transpose(0, 1).reshape(num_classes, -1).transpose(0, 1).numpy()
-    sk_target = target.view(-1).numpy()
-    return _sk_precision_recall_curve(y_true=sk_target, probas_pred=sk_preds, num_classes=num_classes)
-
-
-@pytest.mark.parametrize(
-    "preds, target, sk_metric, num_classes",
-    [
-        (_input_binary_prob.preds, _input_binary_prob.target, _sk_prec_rc_binary_prob, 1),
-        (_input_mcls_prob.preds, _input_mcls_prob.target, _sk_prec_rc_multiclass_prob, NUM_CLASSES),
-        (_input_mdmc_prob.preds, _input_mdmc_prob.target, _sk_prec_rc_multidim_multiclass_prob, NUM_CLASSES),
-    ],
-)
-class TestPrecisionRecallCurve(MetricTester):
+@pytest.mark.parametrize("input", _binary_cases)
+class TestBinaryConfusionMatrix(MetricTester):
+    @pytest.mark.parametrize("normalize", ["true", "pred", "all", None])
+    @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_precision_recall_curve(self, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step):
+    def test_binary_confusion_matrix(self, input, ddp, normalize, ignore_index):
+        preds, target = input
+        if ignore_index is not None:
+            target = inject_ignore_index(target, ignore_index)
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
             target=target,
-            metric_class=PrecisionRecallCurve,
-            sk_metric=partial(sk_metric, num_classes=num_classes),
-            dist_sync_on_step=dist_sync_on_step,
-            metric_args={"num_classes": num_classes},
+            metric_class=BinaryConfusionMatrix,
+            sk_metric=partial(_sk_confusion_matrix_binary, normalize=normalize, ignore_index=ignore_index),
+            metric_args={
+                "threshold": THRESHOLD,
+                "normalize": normalize,
+                "ignore_index": ignore_index,
+            },
         )
 
-    def test_precision_recall_curve_functional(self, preds, target, sk_metric, num_classes):
+    @pytest.mark.parametrize("normalize", ["true", "pred", "all", None])
+    @pytest.mark.parametrize("ignore_index", [None, -1, 0])
+    def test_binary_confusion_matrix_functional(self, input, normalize, ignore_index):
+        preds, target = input
+        if ignore_index is not None:
+            target = inject_ignore_index(target, ignore_index)
         self.run_functional_metric_test(
-            preds,
-            target,
-            metric_functional=precision_recall_curve,
-            sk_metric=partial(sk_metric, num_classes=num_classes),
-            metric_args={"num_classes": num_classes},
+            preds=preds,
+            target=target,
+            metric_functional=binary_confusion_matrix,
+            sk_metric=partial(_sk_confusion_matrix_binary, normalize=normalize, ignore_index=ignore_index),
+            metric_args={
+                "threshold": THRESHOLD,
+                "normalize": normalize,
+                "ignore_index": ignore_index,
+            },
         )
 
-    def test_precision_recall_curve_differentiability(self, preds, target, sk_metric, num_classes):
+    def test_binary_confusion_matrix_differentiability(self, input):
+        preds, target = input
         self.run_differentiability_test(
-            preds,
-            target,
-            metric_module=PrecisionRecallCurve,
-            metric_functional=precision_recall_curve,
-            metric_args={"num_classes": num_classes},
+            preds=preds,
+            target=target,
+            metric_module=BinaryConfusionMatrix,
+            metric_functional=binary_confusion_matrix,
+            metric_args={"threshold": THRESHOLD},
+        )
+
+    @pytest.mark.parametrize("dtype", [torch.half, torch.double])
+    def test_binary_confusion_matrix_dtype_cpu(self, input, dtype):
+        preds, target = input
+        if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_6:
+            pytest.xfail(reason="half support of core ops not support before pytorch v1.6")
+        if (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        self.run_precision_test_cpu(
+            preds=preds,
+            target=target,
+            metric_module=BinaryConfusionMatrix,
+            metric_functional=binary_confusion_matrix,
+            metric_args={"threshold": THRESHOLD},
+            dtype=dtype,
+        )
+
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
+    @pytest.mark.parametrize("dtype", [torch.half, torch.double])
+    def test_binary_confusion_matrix_dtype_gpu(self, input, dtype):
+        preds, target = input
+        self.run_precision_test_gpu(
+            preds=preds,
+            target=target,
+            metric_module=BinaryConfusionMatrix,
+            metric_functional=binary_confusion_matrix,
+            metric_args={"threshold": THRESHOLD},
+            dtype=dtype,
         )
 
 
-@pytest.mark.parametrize(
-    ["pred", "target", "expected_p", "expected_r", "expected_t"],
-    [([1, 2, 3, 4], [1, 0, 0, 1], [0.5, 1 / 3, 0.5, 1.0, 1.0], [1, 0.5, 0.5, 0.5, 0.0], [1, 2, 3, 4])],
-)
-def test_pr_curve(pred, target, expected_p, expected_r, expected_t):
-    p, r, t = precision_recall_curve(tensor(pred), tensor(target))
-    assert p.size() == r.size()
-    assert p.size(0) == t.size(0) + 1
-
-    assert torch.allclose(p, tensor(expected_p).to(p))
-    assert torch.allclose(r, tensor(expected_r).to(r))
-    assert torch.allclose(t, tensor(expected_t).to(t))
+# -------------------------- Old stuff --------------------------
 
 
-@pytest.mark.parametrize(
-    "sample_weight, pos_label, exp_shape",
-    [(1, 1.0, 42), (None, 1.0, 42)],
-)
-def test_binary_clf_curve(sample_weight, pos_label, exp_shape):
-    # TODO: move back the pred and target to test func arguments
-    #  if you fix the array inside the function, you'd also have fix the shape,
-    #  because when the array changes, you also have to fix the shape
-    seed_all(0)
-    pred = torch.randint(low=51, high=99, size=(100,), dtype=torch.float) / 100
-    target = tensor([0, 1] * 50, dtype=torch.int)
-    if sample_weight is not None:
-        sample_weight = torch.ones_like(pred) * sample_weight
+# def _sk_precision_recall_curve(y_true, probas_pred, num_classes=1):
+#     """Adjusted comparison function that can also handles multiclass."""
+#     if num_classes == 1:
+#         return sk_precision_recall_curve(y_true, probas_pred)
 
-    fps, tps, thresh = _binary_clf_curve(preds=pred, target=target, sample_weights=sample_weight, pos_label=pos_label)
+#     precision, recall, thresholds = [], [], []
+#     for i in range(num_classes):
+#         y_true_temp = np.zeros_like(y_true)
+#         y_true_temp[y_true == i] = 1
+#         res = sk_precision_recall_curve(y_true_temp, probas_pred[:, i])
+#         precision.append(res[0])
+#         recall.append(res[1])
+#         thresholds.append(res[2])
+#     return precision, recall, thresholds
 
-    assert isinstance(tps, Tensor)
-    assert isinstance(fps, Tensor)
-    assert isinstance(thresh, Tensor)
-    assert tps.shape == (exp_shape,)
-    assert fps.shape == (exp_shape,)
-    assert thresh.shape == (exp_shape,)
+
+# def _sk_prec_rc_binary_prob(preds, target, num_classes=1):
+#     sk_preds = preds.view(-1).numpy()
+#     sk_target = target.view(-1).numpy()
+
+#     return _sk_precision_recall_curve(y_true=sk_target, probas_pred=sk_preds, num_classes=num_classes)
+
+
+# def _sk_prec_rc_multiclass_prob(preds, target, num_classes=1):
+#     sk_preds = preds.reshape(-1, num_classes).numpy()
+#     sk_target = target.view(-1).numpy()
+
+#     return _sk_precision_recall_curve(y_true=sk_target, probas_pred=sk_preds, num_classes=num_classes)
+
+
+# def _sk_prec_rc_multidim_multiclass_prob(preds, target, num_classes=1):
+#     sk_preds = preds.transpose(0, 1).reshape(num_classes, -1).transpose(0, 1).numpy()
+#     sk_target = target.view(-1).numpy()
+#     return _sk_precision_recall_curve(y_true=sk_target, probas_pred=sk_preds, num_classes=num_classes)
+
+
+# @pytest.mark.parametrize(
+#     "preds, target, sk_metric, num_classes",
+#     [
+#         (_input_binary_prob.preds, _input_binary_prob.target, _sk_prec_rc_binary_prob, 1),
+#         (_input_mcls_prob.preds, _input_mcls_prob.target, _sk_prec_rc_multiclass_prob, NUM_CLASSES),
+#         (_input_mdmc_prob.preds, _input_mdmc_prob.target, _sk_prec_rc_multidim_multiclass_prob, NUM_CLASSES),
+#     ],
+# )
+# class TestPrecisionRecallCurve(MetricTester):
+#     @pytest.mark.parametrize("ddp", [True, False])
+#     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
+#     def test_precision_recall_curve(self, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step):
+#         self.run_class_metric_test(
+#             ddp=ddp,
+#             preds=preds,
+#             target=target,
+#             metric_class=PrecisionRecallCurve,
+#             sk_metric=partial(sk_metric, num_classes=num_classes),
+#             dist_sync_on_step=dist_sync_on_step,
+#             metric_args={"num_classes": num_classes},
+#         )
+
+#     def test_precision_recall_curve_functional(self, preds, target, sk_metric, num_classes):
+#         self.run_functional_metric_test(
+#             preds,
+#             target,
+#             metric_functional=precision_recall_curve,
+#             sk_metric=partial(sk_metric, num_classes=num_classes),
+#             metric_args={"num_classes": num_classes},
+#         )
+
+#     def test_precision_recall_curve_differentiability(self, preds, target, sk_metric, num_classes):
+#         self.run_differentiability_test(
+#             preds,
+#             target,
+#             metric_module=PrecisionRecallCurve,
+#             metric_functional=precision_recall_curve,
+#             metric_args={"num_classes": num_classes},
+#         )
+
+
+# @pytest.mark.parametrize(
+#     ["pred", "target", "expected_p", "expected_r", "expected_t"],
+#     [([1, 2, 3, 4], [1, 0, 0, 1], [0.5, 1 / 3, 0.5, 1.0, 1.0], [1, 0.5, 0.5, 0.5, 0.0], [1, 2, 3, 4])],
+# )
+# def test_pr_curve(pred, target, expected_p, expected_r, expected_t):
+#     p, r, t = precision_recall_curve(tensor(pred), tensor(target))
+#     assert p.size() == r.size()
+#     assert p.size(0) == t.size(0) + 1
+
+#     assert torch.allclose(p, tensor(expected_p).to(p))
+#     assert torch.allclose(r, tensor(expected_r).to(r))
+#     assert torch.allclose(t, tensor(expected_t).to(t))
+
+
+# @pytest.mark.parametrize(
+#     "sample_weight, pos_label, exp_shape",
+#     [(1, 1.0, 42), (None, 1.0, 42)],
+# )
+# def test_binary_clf_curve(sample_weight, pos_label, exp_shape):
+#     # TODO: move back the pred and target to test func arguments
+#     #  if you fix the array inside the function, you'd also have fix the shape,
+#     #  because when the array changes, you also have to fix the shape
+#     seed_all(0)
+#     pred = torch.randint(low=51, high=99, size=(100,), dtype=torch.float) / 100
+#     target = tensor([0, 1] * 50, dtype=torch.int)
+#     if sample_weight is not None:
+#         sample_weight = torch.ones_like(pred) * sample_weight
+
+#     fps, tps, thresh = _binary_clf_curve(preds=pred, target=target, sample_weights=sample_weight, pos_label=pos_label)
+
+#     assert isinstance(tps, Tensor)
+#     assert isinstance(fps, Tensor)
+#     assert isinstance(thresh, Tensor)
+#     assert tps.shape == (exp_shape,)
+#     assert fps.shape == (exp_shape,)
+#     assert thresh.shape == (exp_shape,)
