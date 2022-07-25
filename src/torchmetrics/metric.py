@@ -24,6 +24,7 @@ from torch.nn import Module
 
 from torchmetrics.utilities import apply_to_collection, rank_zero_warn
 from torchmetrics.utilities.checks import is_overridden
+from torchmetrics.utilities.compute import _safe_divide
 from torchmetrics.utilities.data import (
     _flatten,
     _squeeze_if_scalar,
@@ -337,7 +338,7 @@ class Metric(Module, ABC):
             if reduce_fn == dim_zero_sum:
                 reduced = global_state + local_state
             elif reduce_fn == dim_zero_mean:
-                reduced = ((self._update_count - 1) * global_state + local_state) / self._update_count
+                reduced = _safe_divide((self._update_count - 1) * global_state + local_state, self._update_count)
             elif reduce_fn == dim_zero_max:
                 reduced = torch.max(global_state, local_state)
             elif reduce_fn == dim_zero_min:
