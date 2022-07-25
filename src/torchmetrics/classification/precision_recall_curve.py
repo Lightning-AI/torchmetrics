@@ -17,12 +17,128 @@ import torch
 from torch import Tensor
 
 from torchmetrics.functional.classification.precision_recall_curve import (
+    _adjust_threshold_arg,
+    _binary_precision_recall_curve_arg_validation,
+    _binary_precision_recall_curve_compute,
+    _binary_precision_recall_curve_format,
+    _binary_precision_recall_curve_tensor_validation,
+    _binary_precision_recall_curve_update,
+    _multiclass_precision_recall_curve_arg_validation,
+    _multiclass_precision_recall_curve_compute,
+    _multiclass_precision_recall_curve_format,
+    _multiclass_precision_recall_curve_tensor_validation,
+    _multiclass_precision_recall_curve_update,
     _precision_recall_curve_compute,
     _precision_recall_curve_update,
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
+
+
+class BinaryPrecisionRecallCurve(Metric):
+    is_differentiable: bool = False
+    higher_is_better: Optional[bool] = None
+    full_state_update: bool = False
+
+    def __init__(
+        self,
+        thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(**kwargs)
+        if validate_args:
+            _binary_precision_recall_curve_arg_validation(thresholds, ignore_index)
+
+        self.ignore_index = ignore_index
+        self.validate_args = validate_args
+
+        if thresholds is None:
+            self.thresholds = thresholds
+            self.add_state("preds", default=[], dist_reduce_fx="cat")
+            self.add_state("target", default=[], dist_reduce_fx="cat")
+        else:
+            self.register_buffer("thresholds", _adjust_threshold_arg(thresholds))
+            self.add_state("confmat", default=torch.zeros(thresholds, 2, 2, dtype=torch.long), dist_reduce_fx="sum")
+
+    def update(self, preds: Tensor, target: Tensor) -> None:
+        if self.validate_args:
+            _binary_precision_recall_curve_tensor_validation(preds, target, self.ignore_index)
+        preds, target, _ = _binary_precision_recall_curve_format(preds, target, self.thresholds, self.ignore_index)
+        state = _binary_precision_recall_curve_update(preds, target, self.thresholds)
+        if isinstance(state, Tensor):
+            self.confmat += state
+        else:
+            self.preds.append(state[0])
+            self.target.append(state[1])
+
+    def compute(self) -> Tuple[Tensor, Tensor, Tensor]:
+        if self.thresholds is None:
+            state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]
+        else:
+            state = self.confmat
+        return _binary_precision_recall_curve_compute(state, self.thresholds)
+
+
+class MulticlassPrecisionRecallCurve(Metric):
+    is_differentiable: bool = False
+    higher_is_better: Optional[bool] = None
+    full_state_update: bool = False
+
+    def __init__(
+        self,
+        num_classes: int,
+        thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(**kwargs)
+        if validate_args:
+            _multiclass_precision_recall_curve_arg_validation(num_classes, thresholds, ignore_index)
+
+        self.num_classes = num_classes
+        self.ignore_index = ignore_index
+        self.validate_args = validate_args
+
+        if thresholds is None:
+            self.thresholds = thresholds
+            self.add_state("preds", default=[], dist_reduce_fx="cat")
+            self.add_state("target", default=[], dist_reduce_fx="cat")
+        else:
+            self.register_buffer("thresholds", _adjust_threshold_arg(thresholds))
+            self.add_state(
+                "confmat", default=torch.zeros(thresholds, num_classes, 2, 2, dtype=torch.long), dist_reduce_fx="sum"
+            )
+
+    def update(self, preds: Tensor, target: Tensor) -> None:
+        if self.validate_args:
+            _multiclass_precision_recall_curve_tensor_validation(preds, target, self.num_classes, self.ignore_index)
+        preds, target, _ = _multiclass_precision_recall_curve_format(
+            preds, target, self.num_classes, self.thresholds, self.ignore_index
+        )
+        state = _multiclass_precision_recall_curve_update(preds, target, self.num_classes, self.thresholds)
+        if isinstance(state, Tensor):
+            self.confmat += state
+        else:
+            self.preds.append(state[0])
+            self.target.append(state[1])
+
+    def compute(self) -> Tuple[Tensor, Tensor, Tensor]:
+        if self.thresholds is None:
+            state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]
+        else:
+            state = self.confmat
+        return _multiclass_precision_recall_curve_compute(state, self.num_classes, self.thresholds)
+
+
+class MultilabelPrecisionRecallCurve(Metric):
+    pass
+
+
+# -------------------------- Old stuff --------------------------
 
 
 class PrecisionRecallCurve(Metric):
