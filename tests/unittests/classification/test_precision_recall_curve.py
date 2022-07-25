@@ -122,30 +122,17 @@ class TestBinaryPrecisionRecallCurve(MetricTester):
             dtype=dtype,
         )
 
-    def test_binary_precision_recall_curve_threshold_arg(self, input):
+    @pytest.mark.parametrize("threshold_fn", [lambda x: x, lambda x: x.numpy().tolist()], ids=["as tensor", "as list"])
+    def test_binary_precision_recall_curve_threshold_arg(self, input, threshold_fn):
         preds, target = input
 
-        precision, recall, thresholds = binary_precision_recall_curve(
-            preds[0],
-            target[0],
-            thresholds=None,
-        )
-        precision_tensor, recall_tensor, thresholds_tensor = binary_precision_recall_curve(
-            preds[0],
-            target[0],
-            thresholds=thresholds,
-        )
-        precision_list, recall_list, thresholds_list = binary_precision_recall_curve(
-            preds[0],
-            target[0],
-            thresholds=thresholds.numpy().tolist(),
-        )
-        assert torch.allclose(precision_tensor, precision)
-        assert torch.allclose(recall_tensor, recall)
-        assert torch.allclose(thresholds_tensor, thresholds)
-        assert torch.allclose(precision_list, precision)
-        assert torch.allclose(recall_list, recall)
-        assert torch.allclose(thresholds_list, thresholds)
+        for pred, true in zip(preds, target):
+            p1, r1, t1 = binary_precision_recall_curve(pred, true, thresholds=None)
+            p2, r2, t2 = binary_precision_recall_curve(pred, true, thresholds=threshold_fn(t1))
+
+            assert torch.allclose(p1, p2)
+            assert torch.allclose(r1, r2)
+            assert torch.allclose(t1, t2)
 
 
 def _sk_precision_recall_curve_multiclass(preds, target, ignore_index=None):
@@ -245,6 +232,20 @@ class TestMulticlassPrecisionRecallCurve(MetricTester):
             dtype=dtype,
         )
 
+    @pytest.mark.parametrize("threshold_fn", [lambda x: x, lambda x: x.numpy().tolist()], ids=["as tensor", "as list"])
+    def test_multiclass_precision_recall_curve_threshold_arg(self, input, threshold_fn):
+        preds, target = input
+        for pred, true in zip(preds, target):
+            p1, r1, t1 = multiclass_precision_recall_curve(pred, true, num_classes=NUM_CLASSES, thresholds=None)
+            for i, t in enumerate(t1):
+                p2, r2, t2 = multiclass_precision_recall_curve(
+                    pred, true, num_classes=NUM_CLASSES, thresholds=threshold_fn(t)
+                )
+
+                assert torch.allclose(p1[i], p2[i])
+                assert torch.allclose(r1[i], r2[i])
+                assert torch.allclose(t1[i], t2)
+
 
 def _sk_precision_recall_curve_multilabel(preds, target, ignore_index=None):
     precision, recall, thresholds = [], [], []
@@ -334,6 +335,20 @@ class TestMultilabelPrecisionRecallCurve(MetricTester):
     #         metric_args={"thresholds": None, "num_classes": NUM_CLASSES},
     #         dtype=dtype,
     #     )
+
+    @pytest.mark.parametrize("threshold_fn", [lambda x: x, lambda x: x.numpy().tolist()], ids=["as tensor", "as list"])
+    def test_multilabel_precision_recall_curve_threshold_arg(self, input, threshold_fn):
+        preds, target = input
+        for pred, true in zip(preds, target):
+            p1, r1, t1 = multilabel_precision_recall_curve(pred, true, num_labels=NUM_CLASSES, thresholds=None)
+            for i, t in enumerate(t1):
+                p2, r2, t2 = multilabel_precision_recall_curve(
+                    pred, true, num_labels=NUM_CLASSES, thresholds=threshold_fn(t)
+                )
+
+                assert torch.allclose(p1[i], p2[i])
+                assert torch.allclose(r1[i], r2[i])
+                assert torch.allclose(t1[i], t2)
 
 
 # -------------------------- Old stuff --------------------------

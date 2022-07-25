@@ -302,9 +302,9 @@ def _multiclass_precision_recall_curve_compute(
         fns = state[:, :, 1, 0]
         precision = _safe_divide(tps, tps + fps)
         recall = _safe_divide(tps, tps + fns)
-        precision = torch.cat([precision, torch.ones(num_classes, dtype=precision.dtype, device=precision.device)])
-        recall = torch.cat([recall, torch.zeros(num_classes, dtype=recall.dtype, device=recall.device)])
-        return precision, recall, thresholds
+        precision = torch.cat([precision, torch.ones(1, num_classes, dtype=precision.dtype, device=precision.device)])
+        recall = torch.cat([recall, torch.zeros(1, num_classes, dtype=recall.dtype, device=recall.device)])
+        return precision.T, recall.T, thresholds
     else:
         precision, recall, thresholds = [], [], []
         for i in range(num_classes):
@@ -409,9 +409,9 @@ def _multilabel_precision_recall_curve_compute(
         fns = state[:, :, 1, 0]
         precision = _safe_divide(tps, tps + fps)
         recall = _safe_divide(tps, tps + fns)
-        precision = torch.cat([precision, torch.ones(num_labels, dtype=precision.dtype, device=precision.device)])
-        recall = torch.cat([recall, torch.zeros(num_labels, dtype=recall.dtype, device=recall.device)])
-        return precision, recall, thresholds
+        precision = torch.cat([precision, torch.ones(1, num_labels, dtype=precision.dtype, device=precision.device)])
+        recall = torch.cat([recall, torch.zeros(1, num_labels, dtype=recall.dtype, device=recall.device)])
+        return precision.T, recall.T, thresholds
     else:
         precision, recall, thresholds = [], [], []
         for i in range(num_labels):
