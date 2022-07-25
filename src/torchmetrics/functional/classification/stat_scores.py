@@ -618,8 +618,8 @@ def _multilabel_stat_scores_tensor_validation(
         check = torch.any((unique_values != 0) & (unique_values != 1) & (unique_values != ignore_index))
     if check:
         raise RuntimeError(
-            "Detected the following values in `target`: {unique_values} but expected only"
-            " the following values {[0,1] + [] if ignore_index is None else [ignore_index]}."
+            f"Detected the following values in `target`: {unique_values} but expected only"
+            f" the following values {[0,1] + [] if ignore_index is None else [ignore_index]}."
         )
 
     # If preds is label tensor, also check that it only contains [0,1] values
@@ -627,7 +627,7 @@ def _multilabel_stat_scores_tensor_validation(
         unique_values = torch.unique(preds)
         if torch.any((unique_values != 0) & (unique_values != 1)):
             raise RuntimeError(
-                "Detected the following values in `preds`: {unique_values} but expected only"
+                f"Detected the following values in `preds`: {unique_values} but expected only"
                 " the following values [0,1] since preds is a label tensor."
             )
 
