@@ -30,7 +30,20 @@ def _binary_clf_curve(
     sample_weights: Optional[Sequence] = None,
     pos_label: int = 1,
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    """adapted from https://github.com/scikit-learn/scikit- learn/blob/master/sklearn/metrics/_ranking.py."""
+    """Calculates the tps and false positives for all unique thresholds in the preds tensor. Adapted from
+    https://github.com/scikit-learn/scikit-learn/blob/master/sklearn/metrics/_ranking.py.
+
+    Args:
+        preds: 1d tensor with predictions
+        target: 1d tensor with true values
+        sample_weights: a 1d tensor with a weight per sample
+        pos_label: interger determining what the positive class in target tensor is
+
+    Returns:
+        fps: 1d tensor with false positives for different thresholds
+        tps: 1d tensor with true positives for different thresholds
+        thresholds: the unique thresholds use for calculating fps and tps
+    """
     if sample_weights is not None and not isinstance(sample_weights, Tensor):
         sample_weights = tensor(sample_weights, device=preds.device, dtype=torch.float)
 
@@ -65,10 +78,26 @@ def _binary_clf_curve(
     return fps, tps, preds[threshold_idxs]
 
 
+def _adjust_threshold_arg(
+    thresholds: Optional[Union[int, List[float], Tensor]] = 100, device: Optional[torch.device] = None
+) -> Optional[Tensor]:
+    """Utility function for converting the threshold arg for list and int to tensor format."""
+    if isinstance(thresholds, int):
+        thresholds = torch.linspace(0, 1, thresholds, device=device)
+    if isinstance(thresholds, list):
+        thresholds = torch.tensor(thresholds, device=device)
+    return thresholds
+
+
 def _binary_precision_recall_curve_arg_validation(
     thresholds: Optional[Union[int, List[float], Tensor]] = 100,
     ignore_index: Optional[int] = None,
 ) -> None:
+    """Validate non tensor input.
+
+    - ``threshold`` has to be None | a 1d tensor | a list of floats in the [0,1] range | an int
+    - ``ignore_index`` has to be None or int
+    """
     if thresholds is not None and not isinstance(thresholds, (list, int, Tensor)):
         raise ValueError(
             "Expected argument `thresholds` to either be an integer, list of floats or"
@@ -91,19 +120,15 @@ def _binary_precision_recall_curve_arg_validation(
         raise ValueError(f"Expected argument `ignore_index` to either be `None` or an integer, but got {ignore_index}")
 
 
-def _adjust_threshold_arg(
-    thresholds: Optional[Union[int, List[float], Tensor]] = 100, device: Optional[torch.device] = None
-) -> Tensor:
-    if isinstance(thresholds, int):
-        thresholds = torch.linspace(0, 1, thresholds, device=device)
-    if isinstance(thresholds, list):
-        thresholds = torch.tensor(thresholds, device=device)
-    return thresholds
-
-
 def _binary_precision_recall_curve_tensor_validation(
     preds: Tensor, target: Tensor, ignore_index: Optional[int] = None
 ) -> None:
+    """Validate tensor input.
+
+    - tensors have to be of same shape
+    - all values in target tensor that are not ignored have to be in {0, 1}
+    - that the pred tensor is floating point
+    """
     _check_same_shape(preds, target)
 
     if not preds.is_floating_point():
@@ -131,6 +156,13 @@ def _binary_precision_recall_curve_format(
     thresholds: Optional[Union[int, List[float], Tensor]] = 100,
     ignore_index: Optional[int] = None,
 ) -> Tuple[Tensor, Tensor, Optional[Tensor]]:
+    """Convert all input to the right format.
+
+    - flattens additional dimensions
+    - Remove all datapoints that should be ignored
+    - Applies sigmoid if pred tensor not in [0,1] range
+    - Format thresholds arg to be a tensor
+    """
     preds = preds.flatten()
     target = target.flatten()
     if ignore_index is not None:
@@ -150,6 +182,11 @@ def _binary_precision_recall_curve_update(
     target: Tensor,
     thresholds: Optional[Tensor],
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+    """Returns the state to calculate the pr-curve with.
+
+    If thresholds is `None` the direct preds and targets are used. If thresholds is not `None` we compute a multi
+    threshold confusion matrix.
+    """
     if thresholds is None:
         return preds, target
     len_t = len(thresholds)
@@ -163,7 +200,12 @@ def _binary_precision_recall_curve_compute(
     state: Union[Tensor, Tuple[Tensor, Tensor]],
     thresholds: Optional[Tensor],
     pos_label: int = 1,
-):
+) -> Tuple[Tensor, Tensor, Tensor]:
+    """Computes the final pr-curve.
+
+    If state is a single tensor, then we calculate the pr-curve from a multi threshold confusion matrix. If state is
+    original input, then we dynamically compute the binary classification curve.
+    """
     if isinstance(state, Tensor):
         tps = state[:, 1, 1]
         fps = state[:, 0, 1]
@@ -211,6 +253,12 @@ def _multiclass_precision_recall_curve_arg_validation(
     thresholds: Optional[Union[int, List[float], Tensor]] = 100,
     ignore_index: Optional[int] = None,
 ) -> None:
+    """Validate non tensor input.
+
+    - ``num_classes`` has to be an int larger than 1
+    - ``threshold`` has to be None | a 1d tensor | a list of floats in the [0,1] range | an int
+    - ``ignore_index`` has to be None or int
+    """
     if not isinstance(num_classes, int) or num_classes < 2:
         raise ValueError(f"Expected argument `num_classes` to be an integer larger than 1, but got {num_classes}")
     _binary_precision_recall_curve_arg_validation(thresholds, ignore_index)
@@ -219,6 +267,12 @@ def _multiclass_precision_recall_curve_arg_validation(
 def _multiclass_precision_recall_curve_tensor_validation(
     preds: Tensor, target: Tensor, num_classes: int, ignore_index: Optional[int] = None
 ) -> None:
+    """Validate tensor input.
+
+    - target should have one more dimension than preds and all dimensions except for preds.shape[1] should match
+    exactly. preds.shape[1] should have size equal to number of classes
+    - all values in target tensor that are not ignored have to be in {0, 1}
+    """
     if not preds.ndim == target.ndim + 1:
         raise ValueError(
             f"Expected `preds` to have one more dimension than `target` but got {preds.ndim} and {target.ndim}"
@@ -256,6 +310,13 @@ def _multiclass_precision_recall_curve_format(
     thresholds: Optional[Union[int, List[float], Tensor]] = 100,
     ignore_index: Optional[int] = None,
 ) -> Tuple[Tensor, Tensor, Optional[Tensor]]:
+    """Convert all input to the right format.
+
+    - flattens additional dimensions
+    - Remove all datapoints that should be ignored
+    - Applies softmax if pred tensor not in [0,1] range
+    - Format thresholds arg to be a tensor
+    """
     preds = preds.transpose(0, 1).reshape(num_classes, -1).T
     target = target.flatten()
 
@@ -277,6 +338,11 @@ def _multiclass_precision_recall_curve_update(
     num_classes: int,
     thresholds: Optional[Tensor],
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+    """Returns the state to calculate the pr-curve with.
+
+    If thresholds is `None` the direct preds and targets are used. If thresholds is not `None` we compute a multi
+    threshold confusion matrix.
+    """
     if thresholds is None:
         return preds, target
     len_t = len(thresholds)
@@ -295,7 +361,11 @@ def _multiclass_precision_recall_curve_compute(
     num_classes: int,
     thresholds: Optional[Tensor],
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
+    """Computes the final pr-curve.
 
+    If state is a single tensor, then we calculate the pr-curve from a multi threshold confusion matrix. If state is
+    original input, then we dynamically compute the binary classification curve in an iterative way.
+    """
     if isinstance(state, Tensor):
         tps = state[:, :, 1, 1]
         fps = state[:, :, 0, 1]
@@ -338,12 +408,25 @@ def _multilabel_precision_recall_curve_arg_validation(
     thresholds: Optional[Union[int, List[float], Tensor]] = 100,
     ignore_index: Optional[int] = None,
 ) -> None:
+    """Validate non tensor input.
+
+    - ``num_labels`` has to be an int larger than 1
+    - ``threshold`` has to be None | a 1d tensor | a list of floats in the [0,1] range | an int
+    - ``ignore_index`` has to be None or int
+    """
     _multiclass_precision_recall_curve_arg_validation(num_labels, thresholds, ignore_index)
 
 
 def _multilabel_precision_recall_curve_tensor_validation(
     preds: Tensor, target: Tensor, num_labels: int, ignore_index: Optional[int] = None
 ) -> None:
+    """Validate tensor input.
+
+    - tensors have to be of same shape
+    - preds.shape[1] is equal to the number of labels
+    - all values in target tensor that are not ignored have to be in {0, 1}
+    - that the pred tensor is floating point
+    """
     _binary_precision_recall_curve_tensor_validation(preds, target, ignore_index)
     if preds.shape[1] != num_labels:
         raise ValueError(
@@ -359,9 +442,15 @@ def _multilabel_precision_recall_curve_format(
     thresholds: Optional[Union[int, List[float], Tensor]] = 100,
     ignore_index: Optional[int] = None,
 ) -> Tuple[Tensor, Tensor, Optional[Tensor]]:
+    """Convert all input to the right format.
+
+    - flattens additional dimensions
+    - Mask all datapoints that should be ignored with negative values
+    - Applies sigmoid if pred tensor not in [0,1] range
+    - Format thresholds arg to be a tensor
+    """
     preds = preds.transpose(0, 1).reshape(num_labels, -1).T
     target = target.transpose(0, 1).reshape(num_labels, -1).T
-
     if not torch.all((0 <= preds) * (preds <= 1)):
         preds = preds.sigmoid()
 
@@ -383,6 +472,11 @@ def _multilabel_precision_recall_curve_update(
     num_labels: int,
     thresholds: Optional[Tensor],
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+    """Returns the state to calculate the pr-curve with.
+
+    If thresholds is `None` the direct preds and targets are used. If thresholds is not `None` we compute a multi
+    threshold confusion matrix.
+    """
     if thresholds is None:
         return preds, target
     len_t = len(thresholds)
@@ -402,7 +496,11 @@ def _multilabel_precision_recall_curve_compute(
     thresholds: Optional[Tensor],
     ignore_index: Optional[int] = None,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
+    """Computes the final pr-curve.
 
+    If state is a single tensor, then we calculate the pr-curve from a multi threshold confusion matrix. If state is
+    original input, then we dynamically compute the binary classification curve in an iterative way.
+    """
     if isinstance(state, Tensor):
         tps = state[:, :, 1, 1]
         fps = state[:, :, 0, 1]
