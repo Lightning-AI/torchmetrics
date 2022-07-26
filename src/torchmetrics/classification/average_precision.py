@@ -15,14 +15,101 @@ from typing import Any, List, Optional, Union
 
 import torch
 from torch import Tensor
+from typing_extensions import Literal
 
+from torchmetrics.classification.precision_recall_curve import (
+    BinaryPrecisionRecallCurve,
+    MulticlassPrecisionRecallCurve,
+    MultilabelPrecisionRecallCurve,
+)
 from torchmetrics.functional.classification.average_precision import (
     _average_precision_compute,
     _average_precision_update,
+    _binary_average_precision_compute,
+    _multiclass_average_precision_arg_validation,
+    _multiclass_average_precision_compute,
+    _multilabel_average_precision_arg_validation,
+    _multilabel_average_precision_compute,
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
+
+
+class BinaryAveragePrecision(BinaryPrecisionRecallCurve):
+    is_differentiable: bool = False
+    higher_is_better: Optional[bool] = None
+    full_state_update: bool = False
+
+    def compute(self) -> Tensor:
+        if self.thresholds is None:
+            state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]
+        else:
+            state = self.confmat
+        return _binary_average_precision_compute(state, self.thresholds)
+
+
+class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
+    is_differentiable: bool = False
+    higher_is_better: Optional[bool] = None
+    full_state_update: bool = False
+
+    def __init__(
+        self,
+        num_classes: int,
+        average: Optional[Literal["macro", "weighted", "none"]] = "macro",
+        thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(
+            num_classes=num_classes, thresholds=thresholds, ignore_index=ignore_index, validate_args=False, **kwargs
+        )
+        if validate_args:
+            _multiclass_average_precision_arg_validation(num_classes, average, thresholds, ignore_index)
+        self.average = average
+        self.validate_args = validate_args
+
+    def compute(self) -> Tensor:
+        if self.thresholds is None:
+            state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]
+        else:
+            state = self.confmat
+        return _multiclass_average_precision_compute(state, self.num_classes, self.average, self.thresholds)
+
+
+class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
+    is_differentiable: bool = False
+    higher_is_better: Optional[bool] = None
+    full_state_update: bool = False
+
+    def __init__(
+        self,
+        num_labels: int,
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
+        thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(
+            num_labels=num_labels, thresholds=thresholds, ignore_index=ignore_index, validate_args=False, **kwargs
+        )
+        if validate_args:
+            _multilabel_average_precision_arg_validation(num_labels, average, thresholds, ignore_index)
+        self.average = average
+        self.validate_args = validate_args
+
+    def compute(self) -> Tensor:
+        if self.thresholds is None:
+            state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]
+        else:
+            state = self.confmat
+        return _multilabel_average_precision_compute(state, self.num_labels, self.average, self.thresholds)
+
+
+# -------------------------- Old stuff --------------------------
 
 
 class AveragePrecision(Metric):

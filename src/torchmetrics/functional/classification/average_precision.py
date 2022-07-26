@@ -16,12 +16,182 @@ from typing import List, Optional, Tuple, Union
 
 import torch
 from torch import Tensor
+from typing_extensions import Literal
 
 from torchmetrics.functional.classification.precision_recall_curve import (
+    _binary_precision_recall_curve_arg_validation,
+    _binary_precision_recall_curve_compute,
+    _binary_precision_recall_curve_format,
+    _binary_precision_recall_curve_tensor_validation,
+    _binary_precision_recall_curve_update,
+    _multiclass_precision_recall_curve_arg_validation,
+    _multiclass_precision_recall_curve_compute,
+    _multiclass_precision_recall_curve_format,
+    _multiclass_precision_recall_curve_tensor_validation,
+    _multiclass_precision_recall_curve_update,
+    _multilabel_precision_recall_curve_arg_validation,
+    _multilabel_precision_recall_curve_compute,
+    _multilabel_precision_recall_curve_format,
+    _multilabel_precision_recall_curve_tensor_validation,
+    _multilabel_precision_recall_curve_update,
     _precision_recall_curve_compute,
     _precision_recall_curve_update,
 )
 from torchmetrics.utilities.data import _bincount
+from torchmetrics.utilities.prints import rank_zero_warn
+
+
+def _reduce_average_precision(
+    precision: Union[Tensor, List[Tensor]],
+    recall: Union[Tensor, List[Tensor]],
+    average: Optional[Literal["macro", "weighted", "none"]] = "macro",
+    weights: Optional[Tensor] = None,
+) -> Tensor:
+    """Utility function for reducing multiple average precision score into one number."""
+    res = []
+    if isinstance(precision, Tensor):
+        res = -torch.sum((recall[:, 1:] - recall[:, :-1]) * precision[:, :-1], 1)
+    else:
+        for p, r in zip(precision, recall):
+            res.append(-torch.sum((r[1:] - r[:-1]) * p[:-1]))
+        res = torch.stack(res)
+    if average is None or average == "none":
+        return res
+    if torch.isnan(res).any():
+        rank_zero_warn(
+            f"Average precision score for one or more classes was `nan`. Ignoring these classes in {average}-average",
+            UserWarning,
+        )
+    if average == "macro":
+        return res[~torch.isnan(res)].mean()
+
+    weights = weights / weights.sum()
+    return (res * weights)[~torch.isnan(res)].sum()
+
+
+def _binary_average_precision_compute(
+    state: Union[Tensor, Tuple[Tensor, Tensor]],
+    thresholds: Optional[Tensor],
+) -> Tensor:
+    precision, recall, _ = _binary_precision_recall_curve_compute(state, thresholds)
+    return -torch.sum((recall[1:] - recall[:-1]) * precision[:-1])
+
+
+def binary_average_precision(
+    preds: Tensor,
+    target: Tensor,
+    thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
+) -> Tensor:
+    if validate_args:
+        _binary_precision_recall_curve_arg_validation(thresholds, ignore_index)
+        _binary_precision_recall_curve_tensor_validation(preds, target, ignore_index)
+    preds, target, thresholds = _binary_precision_recall_curve_format(preds, target, thresholds, ignore_index)
+    state = _binary_precision_recall_curve_update(preds, target, thresholds)
+    return _binary_average_precision_compute(state, thresholds)
+
+
+def _multiclass_average_precision_arg_validation(
+    num_classes: int,
+    average: Optional[Literal["macro", "weighted", "none"]] = "macro",
+    thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+    ignore_index: Optional[int] = None,
+) -> None:
+    _multiclass_precision_recall_curve_arg_validation(num_classes, thresholds, ignore_index)
+    allowed_average = ("macro", "weighted", "none", None)
+    if average not in allowed_average:
+        raise ValueError(f"Expected argument `average` to be one of {allowed_average} but got {average}")
+
+
+def _multiclass_average_precision_compute(
+    state: Union[Tensor, Tuple[Tensor, Tensor]],
+    num_classes: int,
+    average: Optional[Literal["macro", "weighted", "none"]] = "macro",
+    thresholds: Optional[Tensor] = None,
+) -> Tensor:
+    precision, recall, _ = _multiclass_precision_recall_curve_compute(state, num_classes, thresholds)
+    return _reduce_average_precision(
+        precision,
+        recall,
+        average,
+        weights=_bincount(state[1], minlength=num_classes).float() if thresholds is None else state[0][:, 1, :].sum(-1),
+    )
+
+
+def multiclass_average_precision(
+    preds: Tensor,
+    target: Tensor,
+    num_classes: int,
+    average: Optional[Literal["macro", "weighted", "none"]] = "macro",
+    thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
+) -> Tensor:
+    if validate_args:
+        _multiclass_average_precision_arg_validation(num_classes, average, thresholds, ignore_index)
+        _multiclass_precision_recall_curve_tensor_validation(preds, target, num_classes, ignore_index)
+    preds, target, thresholds = _multiclass_precision_recall_curve_format(
+        preds, target, num_classes, thresholds, ignore_index
+    )
+    state = _multiclass_precision_recall_curve_update(preds, target, num_classes, thresholds)
+    return _multiclass_average_precision_compute(state, num_classes, average, thresholds)
+
+
+def _multilabel_average_precision_arg_validation(
+    num_labels: int,
+    average: Optional[Literal["micro", "macro", "weighted", "none"]],
+    thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+    ignore_index: Optional[int] = None,
+) -> None:
+    _multilabel_precision_recall_curve_arg_validation(num_labels, thresholds, ignore_index)
+    allowed_average = ("micro", "macro", "weighted", "none", None)
+    if average not in allowed_average:
+        raise ValueError(f"Expected argument `average` to be one of {allowed_average} but got {average}")
+
+
+def _multilabel_average_precision_compute(
+    state: Union[Tensor, Tuple[Tensor, Tensor]],
+    num_labels: int,
+    average: Optional[Literal["micro", "macro", "weighted", "none"]],
+    thresholds: Optional[Tensor],
+    ignore_index: Optional[int] = None,
+) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
+    if average == "micro":
+        return _binary_average_precision_compute(
+            [state[0].flatten(), state[1].flatten()] if thresholds is None else state.sum(1),
+            thresholds,
+        )
+    else:
+        precision, recall, _ = _multilabel_precision_recall_curve_compute(state, num_labels, thresholds)
+        return _reduce_average_precision(
+            precision,
+            recall,
+            average,
+            weights=(state[1] == 1).sum(dim=0).float() if thresholds is None else state[0][:, 1, :].sum(-1),
+        )
+
+
+def multilabel_average_precision(
+    preds: Tensor,
+    target: Tensor,
+    num_labels: int,
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
+    thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
+) -> Tensor:
+    if validate_args:
+        _multilabel_average_precision_arg_validation(num_labels, average, thresholds, ignore_index)
+        _multilabel_precision_recall_curve_tensor_validation(preds, target, num_labels, ignore_index)
+    preds, target, thresholds = _multilabel_precision_recall_curve_format(
+        preds, target, num_labels, thresholds, ignore_index
+    )
+    state = _multilabel_precision_recall_curve_update(preds, target, num_labels, thresholds)
+    return _multilabel_average_precision_compute(state, num_labels, average, thresholds, ignore_index)
+
+
+# -------------------------- Old stuff --------------------------
 
 
 def _average_precision_update(
