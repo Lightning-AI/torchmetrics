@@ -20,12 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `Perplexity` metric ([#922](https://github.com/PyTorchLightning/metrics/pull/922))
 
 
-- Added global option `sync_on_compute` to disable automatic synchronization when `compute` is called ([#1107](https://github.dev/Lightning-AI/metrics/pull/1107))
-
-
 ### Changed
 
 -
+
 
 -
 
@@ -34,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -
 
+
 -
 
 
@@ -41,19 +40,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -
 
+
 -
 
 
 ### Fixed
 
+-
+
+
+-
+
+
+## [0.9.3] - 2022-08-22
+
+### Added
+
+- Added global option `sync_on_compute` to disable automatic synchronization when `compute` is called ([#1107](https://github.dev/Lightning-AI/metrics/pull/1107))
+
+### Fixed
+
 - Fixed missing reset in `ClasswiseWrapper` ([#1129](https://github.com/Lightning-AI/metrics/pull/1129))
-
-
-- Fixed JaccardIndex multi-label compute ([#1125](https://github.com/Lightning-AI/metrics/pull/1125))
-
-
+- Fixed `JaccardIndex` multi-label compute ([#1125](https://github.com/Lightning-AI/metrics/pull/1125))
 - Fix SSIM propagate device if `gaussian_kernel` is False, add test ([#1149](https://github.com/Lightning-AI/metrics/pull/1149))
-
 
 
 ## [0.9.2] - 2022-06-29
