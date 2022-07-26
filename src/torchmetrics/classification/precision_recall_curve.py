@@ -28,6 +28,11 @@ from torchmetrics.functional.classification.precision_recall_curve import (
     _multiclass_precision_recall_curve_format,
     _multiclass_precision_recall_curve_tensor_validation,
     _multiclass_precision_recall_curve_update,
+    _multilabel_precision_recall_curve_arg_validation,
+    _multilabel_precision_recall_curve_compute,
+    _multilabel_precision_recall_curve_format,
+    _multilabel_precision_recall_curve_tensor_validation,
+    _multilabel_precision_recall_curve_update,
     _precision_recall_curve_compute,
     _precision_recall_curve_update,
 )
@@ -135,7 +140,55 @@ class MulticlassPrecisionRecallCurve(Metric):
 
 
 class MultilabelPrecisionRecallCurve(Metric):
-    pass
+    is_differentiable: bool = False
+    higher_is_better: Optional[bool] = None
+    full_state_update: bool = False
+
+    def __init__(
+        self,
+        num_labels: int,
+        thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(**kwargs)
+        if validate_args:
+            _multilabel_precision_recall_curve_arg_validation(num_labels, thresholds, ignore_index)
+
+        self.num_labels = num_labels
+        self.ignore_index = ignore_index
+        self.validate_args = validate_args
+
+        if thresholds is None:
+            self.thresholds = thresholds
+            self.add_state("preds", default=[], dist_reduce_fx="cat")
+            self.add_state("target", default=[], dist_reduce_fx="cat")
+        else:
+            self.register_buffer("thresholds", _adjust_threshold_arg(thresholds))
+            self.add_state(
+                "confmat", default=torch.zeros(thresholds, num_labels, 2, 2, dtype=torch.long), dist_reduce_fx="sum"
+            )
+
+    def update(self, preds: Tensor, target: Tensor) -> None:
+        if self.validate_args:
+            _multilabel_precision_recall_curve_tensor_validation(preds, target, self.num_labels, self.ignore_index)
+        preds, target, _ = _multilabel_precision_recall_curve_format(
+            preds, target, self.num_labels, self.thresholds, self.ignore_index
+        )
+        state = _multilabel_precision_recall_curve_update(preds, target, self.num_labels, self.thresholds)
+        if isinstance(state, Tensor):
+            self.confmat += state
+        else:
+            self.preds.append(state[0])
+            self.target.append(state[1])
+
+    def compute(self) -> Tuple[Tensor, Tensor, Tensor]:
+        if self.thresholds is None:
+            state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]
+        else:
+            state = self.confmat
+        return _multilabel_precision_recall_curve_compute(state, self.num_labels, self.thresholds)
 
 
 # -------------------------- Old stuff --------------------------

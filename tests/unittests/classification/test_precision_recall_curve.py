@@ -23,6 +23,7 @@ from sklearn.metrics import precision_recall_curve as sk_precision_recall_curve
 from torchmetrics.classification.precision_recall_curve import (
     BinaryPrecisionRecallCurve,
     MulticlassPrecisionRecallCurve,
+    MultilabelPrecisionRecallCurve,
 )
 from torchmetrics.functional.classification.precision_recall_curve import (
     binary_precision_recall_curve,
@@ -261,24 +262,24 @@ def _sk_precision_recall_curve_multilabel(preds, target, ignore_index=None):
     "input", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5])
 )
 class TestMultilabelPrecisionRecallCurve(MetricTester):
-    # @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    # @pytest.mark.parametrize("ddp", [True, False])
-    # def test_multilabel_precision_recall_curve(self, input, ddp, ignore_index):
-    #     preds, target = input
-    #     if ignore_index is not None:
-    #         target = inject_ignore_index(target, ignore_index)
-    #     self.run_class_metric_test(
-    #         ddp=ddp,
-    #         preds=preds,
-    #         target=target,
-    #         metric_class=MultilabelPrecisionRecallCurve,
-    #         sk_metric=partial(_sk_precision_recall_curve_multilabel, ignore_index=ignore_index),
-    #         metric_args={
-    #             "thresholds": None,
-    #             "num_classes": NUM_CLASSES,
-    #             "ignore_index": ignore_index,
-    #         },
-    #     )
+    @pytest.mark.parametrize("ignore_index", [None, -1, 0])
+    @pytest.mark.parametrize("ddp", [True, False])
+    def test_multilabel_precision_recall_curve(self, input, ddp, ignore_index):
+        preds, target = input
+        if ignore_index is not None:
+            target = inject_ignore_index(target, ignore_index)
+        self.run_class_metric_test(
+            ddp=ddp,
+            preds=preds,
+            target=target,
+            metric_class=MultilabelPrecisionRecallCurve,
+            sk_metric=partial(_sk_precision_recall_curve_multilabel, ignore_index=ignore_index),
+            metric_args={
+                "thresholds": None,
+                "num_labels": NUM_CLASSES,
+                "ignore_index": ignore_index,
+            },
+        )
 
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     def test_multilabel_precision_recall_curve_functional(self, input, ignore_index):
@@ -297,44 +298,44 @@ class TestMultilabelPrecisionRecallCurve(MetricTester):
             },
         )
 
-    # def test_multiclass_precision_recall_curve_differentiability(self, input):
-    #     preds, target = input
-    #     self.run_differentiability_test(
-    #         preds=preds,
-    #         target=target,
-    #         metric_module=MultilabelPrecisionRecallCurve,
-    #         metric_functional=multilabel_precision_recall_curve,
-    #         metric_args={"thresholds": None, "num_labels": NUM_CLASSES},
-    #     )
+    def test_multiclass_precision_recall_curve_differentiability(self, input):
+        preds, target = input
+        self.run_differentiability_test(
+            preds=preds,
+            target=target,
+            metric_module=MultilabelPrecisionRecallCurve,
+            metric_functional=multilabel_precision_recall_curve,
+            metric_args={"thresholds": None, "num_labels": NUM_CLASSES},
+        )
 
-    # @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    # def test_multilabel_precision_recall_curve_dtype_cpu(self, input, dtype):
-    #     preds, target = input
-    #     if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_6:
-    #         pytest.xfail(reason="half support of core ops not support before pytorch v1.6")
-    #     if dtype == torch.half and not ((0 < preds) & (preds < 1)).all():
-    #         pytest.xfail(reason="half support for torch.softmax on cpu not implemented")
-    #     self.run_precision_test_cpu(
-    #         preds=preds,
-    #         target=target,
-    #         metric_module=MultilabelsPrecisionRecallCurve,
-    #         metric_functional=multilabel_precision_recall_curve,
-    #         metric_args={"thresholds": None, "num_labels": NUM_CLASSES},
-    #         dtype=dtype,
-    #     )
+    @pytest.mark.parametrize("dtype", [torch.half, torch.double])
+    def test_multilabel_precision_recall_curve_dtype_cpu(self, input, dtype):
+        preds, target = input
+        if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_6:
+            pytest.xfail(reason="half support of core ops not support before pytorch v1.6")
+        if dtype == torch.half and not ((0 < preds) & (preds < 1)).all():
+            pytest.xfail(reason="half support for torch.softmax on cpu not implemented")
+        self.run_precision_test_cpu(
+            preds=preds,
+            target=target,
+            metric_module=MultilabelPrecisionRecallCurve,
+            metric_functional=multilabel_precision_recall_curve,
+            metric_args={"thresholds": None, "num_labels": NUM_CLASSES},
+            dtype=dtype,
+        )
 
-    # @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-    # @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    # def test_multiclass_precision_recall_curve_dtype_gpu(self, input, dtype):
-    #     preds, target = input
-    #     self.run_precision_test_gpu(
-    #         preds=preds,
-    #         target=target,
-    #         metric_module=MultilabelPrecisionRecallCurve,
-    #         metric_functional=multilabel_precision_recall_curve,
-    #         metric_args={"thresholds": None, "num_classes": NUM_CLASSES},
-    #         dtype=dtype,
-    #     )
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
+    @pytest.mark.parametrize("dtype", [torch.half, torch.double])
+    def test_multiclass_precision_recall_curve_dtype_gpu(self, input, dtype):
+        preds, target = input
+        self.run_precision_test_gpu(
+            preds=preds,
+            target=target,
+            metric_module=MultilabelPrecisionRecallCurve,
+            metric_functional=multilabel_precision_recall_curve,
+            metric_args={"thresholds": None, "num_labels": NUM_CLASSES},
+            dtype=dtype,
+        )
 
     @pytest.mark.parametrize("threshold_fn", [lambda x: x, lambda x: x.numpy().tolist()], ids=["as tensor", "as list"])
     def test_multilabel_precision_recall_curve_threshold_arg(self, input, threshold_fn):
