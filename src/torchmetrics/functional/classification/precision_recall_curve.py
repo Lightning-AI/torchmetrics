@@ -44,38 +44,39 @@ def _binary_clf_curve(
         tps: 1d tensor with true positives for different thresholds
         thresholds: the unique thresholds use for calculating fps and tps
     """
-    if sample_weights is not None and not isinstance(sample_weights, Tensor):
-        sample_weights = tensor(sample_weights, device=preds.device, dtype=torch.float)
+    with torch.no_grad():
+        if sample_weights is not None and not isinstance(sample_weights, Tensor):
+            sample_weights = tensor(sample_weights, device=preds.device, dtype=torch.float)
 
-    # remove class dimension if necessary
-    if preds.ndim > target.ndim:
-        preds = preds[:, 0]
-    desc_score_indices = torch.argsort(preds, descending=True)
+        # remove class dimension if necessary
+        if preds.ndim > target.ndim:
+            preds = preds[:, 0]
+        desc_score_indices = torch.argsort(preds, descending=True)
 
-    preds = preds[desc_score_indices]
-    target = target[desc_score_indices]
+        preds = preds[desc_score_indices]
+        target = target[desc_score_indices]
 
-    if sample_weights is not None:
-        weight = sample_weights[desc_score_indices]
-    else:
-        weight = 1.0
+        if sample_weights is not None:
+            weight = sample_weights[desc_score_indices]
+        else:
+            weight = 1.0
 
-    # pred typically has many tied values. Here we extract
-    # the indices associated with the distinct values. We also
-    # concatenate a value for the end of the curve.
-    distinct_value_indices = torch.where(preds[1:] - preds[:-1])[0]
-    threshold_idxs = F.pad(distinct_value_indices, [0, 1], value=target.size(0) - 1)
-    target = (target == pos_label).to(torch.long)
-    tps = torch.cumsum(target * weight, dim=0)[threshold_idxs]
+        # pred typically has many tied values. Here we extract
+        # the indices associated with the distinct values. We also
+        # concatenate a value for the end of the curve.
+        distinct_value_indices = torch.where(preds[1:] - preds[:-1])[0]
+        threshold_idxs = F.pad(distinct_value_indices, [0, 1], value=target.size(0) - 1)
+        target = (target == pos_label).to(torch.long)
+        tps = torch.cumsum(target * weight, dim=0)[threshold_idxs]
 
-    if sample_weights is not None:
-        # express fps as a cumsum to ensure fps is increasing even in
-        # the presence of floating point errors
-        fps = torch.cumsum((1 - target) * weight, dim=0)[threshold_idxs]
-    else:
-        fps = 1 + threshold_idxs - tps
+        if sample_weights is not None:
+            # express fps as a cumsum to ensure fps is increasing even in
+            # the presence of floating point errors
+            fps = torch.cumsum((1 - target) * weight, dim=0)[threshold_idxs]
+        else:
+            fps = 1 + threshold_idxs - tps
 
-    return fps, tps, preds[threshold_idxs]
+        return fps, tps, preds[threshold_idxs]
 
 
 def _adjust_threshold_arg(
@@ -378,7 +379,7 @@ def _multiclass_precision_recall_curve_compute(
     else:
         precision, recall, thresholds = [], [], []
         for i in range(num_classes):
-            res = _binary_precision_recall_curve_compute([state[0][:, i], state[1]], thresholds, pos_label=i)
+            res = _binary_precision_recall_curve_compute([state[0][:, i], state[1]], thresholds=None, pos_label=i)
             precision.append(res[0])
             recall.append(res[1])
             thresholds.append(res[2])
@@ -392,7 +393,7 @@ def multiclass_precision_recall_curve(
     thresholds: Optional[Union[int, List[float], Tensor]] = 100,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Tuple[Tensor, Tensor, Tensor]:
+) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
     if validate_args:
         _multiclass_precision_recall_curve_arg_validation(num_classes, thresholds, ignore_index)
         _multiclass_precision_recall_curve_tensor_validation(preds, target, num_classes, ignore_index)
@@ -455,7 +456,7 @@ def _multilabel_precision_recall_curve_format(
         preds = preds.sigmoid()
 
     thresholds = _adjust_threshold_arg(thresholds, preds.device)
-    if ignore_index is not None:
+    if ignore_index is not None and thresholds is not None:
         preds = preds.clone()
         target = target.clone()
         # Make sure that when we map, it will always result in a negative number that we can filter away
@@ -519,7 +520,7 @@ def _multilabel_precision_recall_curve_compute(
                 idx = target == ignore_index
                 preds = preds[~idx]
                 target = target[~idx]
-            res = _binary_precision_recall_curve_compute([preds, target], thresholds, pos_label=1)
+            res = _binary_precision_recall_curve_compute([preds, target], thresholds=None, pos_label=1)
             precision.append(res[0])
             recall.append(res[1])
             thresholds.append(res[2])
@@ -533,7 +534,7 @@ def multilabel_precision_recall_curve(
     thresholds: Optional[Union[int, List[float], Tensor]] = 100,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Tuple[Tensor, Tensor, Tensor]:
+) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
     if validate_args:
         _multilabel_precision_recall_curve_arg_validation(num_labels, thresholds, ignore_index)
         _multilabel_precision_recall_curve_tensor_validation(preds, target, num_labels, ignore_index)

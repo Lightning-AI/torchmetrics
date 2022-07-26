@@ -131,7 +131,7 @@ class MulticlassPrecisionRecallCurve(Metric):
             self.preds.append(state[0])
             self.target.append(state[1])
 
-    def compute(self) -> Tuple[Tensor, Tensor, Tensor]:
+    def compute(self) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
         if self.thresholds is None:
             state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]
         else:
@@ -183,12 +183,12 @@ class MultilabelPrecisionRecallCurve(Metric):
             self.preds.append(state[0])
             self.target.append(state[1])
 
-    def compute(self) -> Tuple[Tensor, Tensor, Tensor]:
+    def compute(self) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
         if self.thresholds is None:
             state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]
         else:
             state = self.confmat
-        return _multilabel_precision_recall_curve_compute(state, self.num_labels, self.thresholds)
+        return _multilabel_precision_recall_curve_compute(state, self.num_labels, self.thresholds, self.ignore_index)
 
 
 # -------------------------- Old stuff --------------------------

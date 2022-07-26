@@ -16,10 +16,63 @@ from typing import Any, List, Optional, Tuple, Union
 import torch
 from torch import Tensor
 
-from torchmetrics.functional.classification.roc import _roc_compute, _roc_update
+from torchmetrics.classification.precision_recall_curve import (
+    BinaryPrecisionRecallCurve,
+    MulticlassPrecisionRecallCurve,
+    MultilabelPrecisionRecallCurve,
+)
+from torchmetrics.functional.classification.roc import (
+    _binary_roc_compute,
+    _multiclass_roc_compute,
+    _multilabel_roc_compute,
+    _roc_compute,
+    _roc_update,
+)
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
+
+
+class BinaryROC(BinaryPrecisionRecallCurve):
+    is_differentiable: bool = False
+    higher_is_better: Optional[bool] = None
+    full_state_update: bool = False
+
+    def compute(self) -> Tuple[Tensor, Tensor, Tensor]:
+        if self.thresholds is None:
+            state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]
+        else:
+            state = self.confmat
+        return _binary_roc_compute(state, self.thresholds)
+
+
+class MulticlassROC(MulticlassPrecisionRecallCurve):
+    is_differentiable: bool = False
+    higher_is_better: Optional[bool] = None
+    full_state_update: bool = False
+
+    def compute(self) -> Tuple[Tensor, Tensor, Tensor]:
+        if self.thresholds is None:
+            state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]
+        else:
+            state = self.confmat
+        return _multiclass_roc_compute(state, self.num_classes, self.thresholds)
+
+
+class MultilabelROC(MultilabelPrecisionRecallCurve):
+    is_differentiable: bool = False
+    higher_is_better: Optional[bool] = None
+    full_state_update: bool = False
+
+    def compute(self) -> Tuple[Tensor, Tensor, Tensor]:
+        if self.thresholds is None:
+            state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]
+        else:
+            state = self.confmat
+        return _multilabel_roc_compute(state, self.num_classes, self.thresholds, self.ignore_index)
+
+
+# -------------------------- Old stuff --------------------------
 
 
 class ROC(Metric):

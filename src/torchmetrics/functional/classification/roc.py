@@ -18,9 +18,175 @@ from torch import Tensor
 
 from torchmetrics.functional.classification.precision_recall_curve import (
     _binary_clf_curve,
+    _binary_precision_recall_curve_arg_validation,
+    _binary_precision_recall_curve_format,
+    _binary_precision_recall_curve_tensor_validation,
+    _binary_precision_recall_curve_update,
+    _multiclass_precision_recall_curve_arg_validation,
+    _multiclass_precision_recall_curve_format,
+    _multiclass_precision_recall_curve_tensor_validation,
+    _multiclass_precision_recall_curve_update,
+    _multilabel_precision_recall_curve_arg_validation,
+    _multilabel_precision_recall_curve_format,
+    _multilabel_precision_recall_curve_tensor_validation,
+    _multilabel_precision_recall_curve_update,
     _precision_recall_curve_update,
 )
 from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities.compute import _safe_divide
+
+
+def _binary_roc_compute(
+    state: Union[Tensor, Tuple[Tensor, Tensor]],
+    thresholds: Optional[Tensor],
+    pos_label: int = 1,
+) -> Tuple[Tensor, Tensor, Tensor]:
+    if isinstance(state, Tensor):
+        tps = state[:, 1, 1]
+        fps = state[:, 0, 1]
+        fns = state[:, 1, 0]
+        tns = state[:, 0, 0]
+        tpr = _safe_divide(tps, tps + fns)
+        fpr = _safe_divide(fps, fps + tns)
+        tps = torch.cat([torch.zeros(1, dtype=tps.dtype, device=tps.device), tps])
+        fps = torch.cat([torch.zeros(1, dtype=fps.dtype, device=fps.device), fps])
+    else:
+        fps, tps, thresholds = _binary_clf_curve(preds=state[0], target=state[1], pos_label=pos_label)
+        # Add an extra threshold position to make sure that the curve starts at (0, 0)
+        tps = torch.cat([torch.zeros(1, dtype=tps.dtype, device=tps.device), tps])
+        fps = torch.cat([torch.zeros(1, dtype=fps.dtype, device=fps.device), fps])
+        thresholds = torch.cat([torch.ones(1, dtype=thresholds.dtype, device=thresholds.device), thresholds])
+
+        if fps[-1] <= 0:
+            rank_zero_warn(
+                "No negative samples in targets, false positive value should be meaningless."
+                " Returning zero tensor in false positive score",
+                UserWarning,
+            )
+            fpr = torch.zeros_like(thresholds)
+        else:
+            fpr = fps / fps[-1]
+
+        if tps[-1] <= 0:
+            rank_zero_warn(
+                "No positive samples in targets, true positive value should be meaningless."
+                " Returning zero tensor in true positive score",
+                UserWarning,
+            )
+            tpr = torch.zeros_like(thresholds)
+        else:
+            tpr = tps / tps[-1]
+
+    return fpr, tpr, thresholds
+
+
+def binary_roc(
+    preds: Tensor,
+    target: Tensor,
+    thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
+) -> Tuple[Tensor, Tensor, Tensor]:
+    if validate_args:
+        _binary_precision_recall_curve_arg_validation(thresholds, ignore_index)
+        _binary_precision_recall_curve_tensor_validation(preds, target, ignore_index)
+    preds, target, thresholds = _binary_precision_recall_curve_format(preds, target, thresholds, ignore_index)
+    state = _binary_precision_recall_curve_update(preds, target, thresholds)
+    return _binary_roc_compute(state, thresholds)
+
+
+def _multiclass_roc_compute(
+    state: Union[Tensor, Tuple[Tensor, Tensor]],
+    num_classes: int,
+    thresholds: Optional[Tensor],
+) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
+    if isinstance(state, Tensor):
+        tps = state[:, :, 1, 1]
+        fps = state[:, :, 0, 1]
+        fns = state[:, :, 1, 0]
+        tns = state[:, :, 0, 0]
+        tpr = _safe_divide(tps, tps + fns)
+        fpr = _safe_divide(fps, fps + tns)
+        tps = torch.cat([torch.zeros(1, num_classes, dtype=tps.dtype, device=tps.device), tps]).T
+        fps = torch.cat([torch.zeros(1, num_classes, dtype=fps.dtype, device=fps.device), fps]).T
+    else:
+        fpr, tpr, thresholds = [], [], []
+        for i in range(num_classes):
+            res = _binary_roc_compute([state[0][:, i], state[1]], thresholds=None, pos_label=i)
+            fpr.append(res[0])
+            tpr.append(res[1])
+            thresholds.append(res[2])
+    return fpr, tpr, thresholds
+
+
+def multiclass_roc(
+    preds: Tensor,
+    target: Tensor,
+    num_classes: int,
+    thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
+) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
+    if validate_args:
+        _multiclass_precision_recall_curve_arg_validation(num_classes, thresholds, ignore_index)
+        _multiclass_precision_recall_curve_tensor_validation(preds, target, num_classes, ignore_index)
+    preds, target, thresholds = _multiclass_precision_recall_curve_format(
+        preds, target, num_classes, thresholds, ignore_index
+    )
+    state = _multiclass_precision_recall_curve_update(preds, target, num_classes, thresholds)
+    return _multiclass_roc_compute(state, num_classes, thresholds)
+
+
+def _multilabel_roc_compute(
+    state: Union[Tensor, Tuple[Tensor, Tensor]],
+    num_labels: int,
+    thresholds: Optional[Tensor],
+    ignore_index: Optional[int] = None,
+) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
+    if isinstance(state, Tensor):
+        tps = state[:, :, 1, 1]
+        fps = state[:, :, 0, 1]
+        fns = state[:, :, 1, 0]
+        tns = state[:, :, 0, 0]
+        tpr = _safe_divide(tps, tps + fns)
+        fpr = _safe_divide(fps, fps + tns)
+        tps = torch.cat([torch.zeros(1, num_labels, dtype=tps.dtype, device=tps.device), tps]).T
+        fps = torch.cat([torch.zeros(1, num_labels, dtype=fps.dtype, device=fps.device), fps]).T
+    else:
+        fpr, tpr, thresholds = [], [], []
+        for i in range(num_labels):
+            preds = state[0][:, i]
+            target = state[1][:, i]
+            if ignore_index is not None:
+                idx = target == ignore_index
+                preds = preds[~idx]
+                target = target[~idx]
+            res = _binary_roc_compute([preds, target], thresholds=None, pos_label=1)
+            fpr.append(res[0])
+            tpr.append(res[1])
+            thresholds.append(res[2])
+    return fpr, tpr, thresholds
+
+
+def multilabel_roc(
+    preds: Tensor,
+    target: Tensor,
+    num_labels: int,
+    thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
+) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
+    if validate_args:
+        _multilabel_precision_recall_curve_arg_validation(num_labels, thresholds, ignore_index)
+        _multilabel_precision_recall_curve_tensor_validation(preds, target, num_labels, ignore_index)
+    preds, target, thresholds = _multilabel_precision_recall_curve_format(
+        preds, target, num_labels, thresholds, ignore_index
+    )
+    state = _multilabel_precision_recall_curve_update(preds, target, num_labels, thresholds)
+    return _multilabel_roc_compute(state, num_labels, thresholds, ignore_index)
+
+
+# -------------------------- Old stuff --------------------------
 
 
 def _roc_update(
