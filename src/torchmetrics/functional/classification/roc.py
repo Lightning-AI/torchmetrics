@@ -105,10 +105,8 @@ def _multiclass_roc_compute(
         fps = state[:, :, 0, 1]
         fns = state[:, :, 1, 0]
         tns = state[:, :, 0, 0]
-        tpr = _safe_divide(tps, tps + fns)
-        fpr = _safe_divide(fps, fps + tns)
-        tps = torch.cat([torch.zeros(1, num_classes, dtype=tps.dtype, device=tps.device), tps]).T
-        fps = torch.cat([torch.zeros(1, num_classes, dtype=fps.dtype, device=fps.device), fps]).T
+        tpr = _safe_divide(tps, tps + fns).T
+        fpr = _safe_divide(fps, fps + tns).T
     else:
         fpr, tpr, thresholds = [], [], []
         for i in range(num_classes):
@@ -148,10 +146,8 @@ def _multilabel_roc_compute(
         fps = state[:, :, 0, 1]
         fns = state[:, :, 1, 0]
         tns = state[:, :, 0, 0]
-        tpr = _safe_divide(tps, tps + fns)
-        fpr = _safe_divide(fps, fps + tns)
-        tps = torch.cat([torch.zeros(1, num_labels, dtype=tps.dtype, device=tps.device), tps]).T
-        fps = torch.cat([torch.zeros(1, num_labels, dtype=fps.dtype, device=fps.device), fps]).T
+        tpr = _safe_divide(tps, tps + fns).T
+        fpr = _safe_divide(fps, fps + tns).T
     else:
         fpr, tpr, thresholds = [], [], []
         for i in range(num_labels):

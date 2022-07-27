@@ -69,7 +69,7 @@ class MultilabelROC(MultilabelPrecisionRecallCurve):
             state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]
         else:
             state = self.confmat
-        return _multilabel_roc_compute(state, self.num_classes, self.thresholds, self.ignore_index)
+        return _multilabel_roc_compute(state, self.num_labels, self.thresholds, self.ignore_index)
 
 
 # -------------------------- Old stuff --------------------------

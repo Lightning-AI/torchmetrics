@@ -130,7 +130,6 @@ class TestBinaryROC(MetricTester):
         for pred, true in zip(preds, target):
             p1, r1, t1 = binary_roc(pred, true, thresholds=None)
             p2, r2, t2 = binary_roc(pred, true, thresholds=threshold_fn(t1))
-
             assert torch.allclose(p1, p2)
             assert torch.allclose(r1, r2)
             assert torch.allclose(t1, t2)

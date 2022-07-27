@@ -11,17 +11,121 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Union
 
 import torch
 from torch import Tensor
+from typing_extensions import Literal
 
-from torchmetrics.functional.classification.auroc import _auroc_compute, _auroc_update
+from torchmetrics.classification.precision_recall_curve import (
+    BinaryPrecisionRecallCurve,
+    MulticlassPrecisionRecallCurve,
+    MultilabelPrecisionRecallCurve,
+)
+from torchmetrics.functional.classification.auroc import (
+    _auroc_compute,
+    _auroc_update,
+    _binary_auroc_arg_validation,
+    _binary_auroc_compute,
+    _multiclass_auroc_arg_validation,
+    _multiclass_auroc_compute,
+    _multilabel_auroc_arg_validation,
+    _multilabel_auroc_compute,
+)
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.enums import DataType
 from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
+
+
+class BinaryAUROC(BinaryPrecisionRecallCurve):
+    is_differentiable: bool = False
+    higher_is_better: Optional[bool] = None
+    full_state_update: bool = False
+
+    def __init__(
+        self,
+        max_fpr: Optional[float] = None,
+        thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(thresholds=thresholds, ignore_index=ignore_index, validate_args=False, **kwargs)
+        if validate_args:
+            _binary_auroc_arg_validation(max_fpr, thresholds, ignore_index)
+        self.max_fpr = max_fpr
+
+    def compute(self) -> Tensor:
+        if self.thresholds is None:
+            state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]
+        else:
+            state = self.confmat
+        return _binary_auroc_compute(state, self.thresholds, self.max_fpr)
+
+
+class MulticlassAUROC(MulticlassPrecisionRecallCurve):
+    is_differentiable: bool = False
+    higher_is_better: Optional[bool] = None
+    full_state_update: bool = False
+
+    def __init__(
+        self,
+        num_classes: int,
+        average: Optional[Literal["macro", "weighted", "none"]] = "macro",
+        thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(
+            num_classes=num_classes, thresholds=thresholds, ignore_index=ignore_index, validate_args=False, **kwargs
+        )
+        if validate_args:
+            _multiclass_auroc_arg_validation(num_classes, average, thresholds, ignore_index)
+        self.average = average
+        self.validate_args = validate_args
+
+    def compute(self) -> Tensor:
+        if self.thresholds is None:
+            state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]
+        else:
+            state = self.confmat
+        return _multiclass_auroc_compute(state, self.num_classes, self.average, self.thresholds)
+
+
+class MultilabelAUROC(MultilabelPrecisionRecallCurve):
+    is_differentiable: bool = False
+    higher_is_better: Optional[bool] = None
+    full_state_update: bool = False
+
+    def __init__(
+        self,
+        num_labels: int,
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
+        thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(
+            num_labels=num_labels, thresholds=thresholds, ignore_index=ignore_index, validate_args=False, **kwargs
+        )
+        if validate_args:
+            _multilabel_auroc_arg_validation(num_labels, average, thresholds, ignore_index)
+        self.average = average
+        self.validate_args = validate_args
+
+    def compute(self) -> Tensor:
+        if self.thresholds is None:
+            state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]
+        else:
+            state = self.confmat
+        return _multilabel_auroc_compute(state, self.num_labels, self.average, self.thresholds, self.ignore_index)
+
+
+# -------------------------- Old stuff --------------------------
 
 
 class AUROC(Metric):

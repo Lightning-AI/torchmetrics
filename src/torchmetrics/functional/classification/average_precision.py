@@ -163,7 +163,7 @@ def _multilabel_average_precision_compute(
             thresholds,
         )
     else:
-        precision, recall, _ = _multilabel_precision_recall_curve_compute(state, num_labels, thresholds)
+        precision, recall, _ = _multilabel_precision_recall_curve_compute(state, num_labels, thresholds, ignore_index)
         return _reduce_average_precision(
             precision,
             recall,

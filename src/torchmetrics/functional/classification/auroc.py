@@ -12,17 +12,230 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import warnings
-from typing import Optional, Sequence, Tuple
+from typing import List, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor, tensor
+from typing_extensions import Literal
 
 from torchmetrics.functional.classification.auc import _auc_compute_without_check
-from torchmetrics.functional.classification.roc import roc
+from torchmetrics.functional.classification.precision_recall_curve import (
+    _binary_precision_recall_curve_arg_validation,
+    _binary_precision_recall_curve_format,
+    _binary_precision_recall_curve_tensor_validation,
+    _binary_precision_recall_curve_update,
+    _multiclass_precision_recall_curve_arg_validation,
+    _multiclass_precision_recall_curve_format,
+    _multiclass_precision_recall_curve_tensor_validation,
+    _multiclass_precision_recall_curve_update,
+    _multilabel_precision_recall_curve_arg_validation,
+    _multilabel_precision_recall_curve_format,
+    _multilabel_precision_recall_curve_tensor_validation,
+    _multilabel_precision_recall_curve_update,
+)
+from torchmetrics.functional.classification.roc import (
+    _binary_roc_compute,
+    _multiclass_roc_compute,
+    _multilabel_roc_compute,
+    roc,
+)
 from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.data import _bincount
 from torchmetrics.utilities.enums import AverageMethod, DataType
 from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
+from torchmetrics.utilities.prints import rank_zero_warn
+
+
+def _reduce_auroc(
+    fpr: Union[Tensor, List[Tensor]],
+    tpr: Union[Tensor, List[Tensor]],
+    average: Optional[Literal["macro", "weighted", "none"]] = "macro",
+    weights: Optional[Tensor] = None,
+) -> Tensor:
+    """Utility function for reducing multiple average precision score into one number."""
+    res = []
+    if isinstance(fpr, Tensor):
+        res = _auc_compute_without_check(fpr, tpr, 1.0, axis=1)
+    else:
+        res = [_auc_compute_without_check(x, y, 1.0) for x, y in zip(fpr, tpr)]
+        res = torch.stack(res)
+    if average is None or average == "none":
+        return res
+    if torch.isnan(res).any():
+        rank_zero_warn(
+            f"Average precision score for one or more classes was `nan`. Ignoring these classes in {average}-average",
+            UserWarning,
+        )
+    if average == "macro":
+        return res[~torch.isnan(res)].mean()
+
+    weights = weights / weights.sum()
+    return (res * weights)[~torch.isnan(res)].sum()
+
+
+def _binary_auroc_arg_validation(
+    max_fpr: Optional[float] = None,
+    thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+    ignore_index: Optional[int] = None,
+) -> None:
+    _binary_precision_recall_curve_arg_validation(thresholds, ignore_index)
+    if max_fpr is not None:
+        if not isinstance(max_fpr, float) and 0 < max_fpr <= 1:
+            raise ValueError(f"Arguments `max_fpr` should be a float in range (0, 1], but got: {max_fpr}")
+        if _TORCH_LOWER_1_6:
+            raise RuntimeError(
+                "`max_fpr` argument requires `torch.bucketize` which" " is not available below PyTorch version 1.6"
+            )
+
+
+def _binary_auroc_compute(
+    state: Union[Tensor, Tuple[Tensor, Tensor]],
+    thresholds: Optional[Tensor],
+    max_fpr: Optional[float] = None,
+    pos_label: int = 1,
+) -> Tuple[Tensor, Tensor, Tensor]:
+    fpr, tpr, _ = _binary_roc_compute(state, thresholds, pos_label)
+    if max_fpr is None or max_fpr == 1:
+        return _auc_compute_without_check(fpr, tpr, 1.0)
+
+    _device = fpr.device if isinstance(fpr, Tensor) else fpr[0].device
+    max_area: Tensor = tensor(max_fpr, device=_device)
+    # Add a single point at max_fpr and interpolate its tpr value
+    stop = torch.bucketize(max_area, fpr, out_int32=True, right=True)
+    weight = (max_area - fpr[stop - 1]) / (fpr[stop] - fpr[stop - 1])
+    interp_tpr: Tensor = torch.lerp(tpr[stop - 1], tpr[stop], weight)
+    tpr = torch.cat([tpr[:stop], interp_tpr.view(1)])
+    fpr = torch.cat([fpr[:stop], max_area.view(1)])
+
+    # Compute partial AUC
+    partial_auc = _auc_compute_without_check(fpr, tpr, 1.0)
+
+    # McClish correction: standardize result to be 0.5 if non-discriminant and 1 if maximal
+    min_area: Tensor = 0.5 * max_area**2
+    return 0.5 * (1 + (partial_auc - min_area) / (max_area - min_area))
+
+
+def binary_auroc(
+    preds: Tensor,
+    target: Tensor,
+    max_fpr: Optional[float] = None,
+    thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
+) -> Tuple[Tensor, Tensor, Tensor]:
+    if validate_args:
+        _binary_auroc_arg_validation(max_fpr, thresholds, ignore_index)
+        _binary_precision_recall_curve_tensor_validation(preds, target, ignore_index)
+    preds, target, thresholds = _binary_precision_recall_curve_format(preds, target, thresholds, ignore_index)
+    state = _binary_precision_recall_curve_update(preds, target, thresholds)
+    return _binary_auroc_compute(state, thresholds, max_fpr)
+
+
+def _multiclass_auroc_arg_validation(
+    num_classes: int,
+    average: Optional[Literal["macro", "weighted", "none"]] = "macro",
+    thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+    ignore_index: Optional[int] = None,
+) -> None:
+    _multiclass_precision_recall_curve_arg_validation(num_classes, thresholds, ignore_index)
+    allowed_average = ("macro", "weighted", "none", None)
+    if average not in allowed_average:
+        raise ValueError(f"Expected argument `average` to be one of {allowed_average} but got {average}")
+
+
+def _multiclass_auroc_compute(
+    state: Union[Tensor, Tuple[Tensor, Tensor]],
+    num_classes: int,
+    average: Optional[Literal["macro", "weighted", "none"]] = "macro",
+    thresholds: Optional[Tensor] = None,
+) -> Tensor:
+    fpr, tpr, _ = _multiclass_roc_compute(state, num_classes, thresholds)
+    return _reduce_auroc(
+        fpr,
+        tpr,
+        average,
+        weights=_bincount(state[1], minlength=num_classes).float() if thresholds is None else state[0][:, 1, :].sum(-1),
+    )
+
+
+def multiclass_auroc(
+    preds: Tensor,
+    target: Tensor,
+    num_classes: int,
+    average: Optional[Literal["macro", "weighted", "none"]] = "macro",
+    thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
+) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
+    if validate_args:
+        _multiclass_auroc_arg_validation(num_classes, average, thresholds, ignore_index)
+        _multiclass_precision_recall_curve_tensor_validation(preds, target, num_classes, ignore_index)
+    preds, target, thresholds = _multiclass_precision_recall_curve_format(
+        preds, target, num_classes, thresholds, ignore_index
+    )
+    state = _multiclass_precision_recall_curve_update(preds, target, num_classes, thresholds)
+    return _multiclass_auroc_compute(state, num_classes, average, thresholds)
+
+
+def _multilabel_auroc_arg_validation(
+    num_labels: int,
+    average: Optional[Literal["micro", "macro", "weighted", "none"]],
+    thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+    ignore_index: Optional[int] = None,
+) -> None:
+    _multilabel_precision_recall_curve_arg_validation(num_labels, thresholds, ignore_index)
+    allowed_average = ("micro", "macro", "weighted", "none", None)
+    if average not in allowed_average:
+        raise ValueError(f"Expected argument `average` to be one of {allowed_average} but got {average}")
+
+
+def _multilabel_auroc_compute(
+    state: Union[Tensor, Tuple[Tensor, Tensor]],
+    num_labels: int,
+    average: Optional[Literal["micro", "macro", "weighted", "none"]],
+    thresholds: Optional[Tensor],
+    ignore_index: Optional[int] = None,
+) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
+    if average == "micro":
+        if thresholds is None:
+            preds = state[0].flatten()
+            target = state[1].flatten()
+            if ignore_index is not None:
+                idx = target == ignore_index
+                preds = preds[~idx]
+                target = target[~idx]
+            return _binary_auroc_compute([preds, target], thresholds, max_fpr=None)
+        return _binary_auroc_compute(state.sum(1), thresholds, max_fpr=None)
+    else:
+        fpr, tpr, _ = _multilabel_roc_compute(state, num_labels, thresholds, ignore_index)
+        return _reduce_auroc(
+            fpr,
+            tpr,
+            average,
+            weights=(state[1] == 1).sum(dim=0).float() if thresholds is None else state[0][:, 1, :].sum(-1),
+        )
+
+
+def multilabel_auroc(
+    preds: Tensor,
+    target: Tensor,
+    num_labels: int,
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
+    thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
+) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
+    if validate_args:
+        _multilabel_auroc_arg_validation(num_labels, average, thresholds, ignore_index)
+        _multilabel_precision_recall_curve_tensor_validation(preds, target, num_labels, ignore_index)
+    preds, target, thresholds = _multilabel_precision_recall_curve_format(
+        preds, target, num_labels, thresholds, ignore_index
+    )
+    state = _multilabel_precision_recall_curve_update(preds, target, num_labels, thresholds)
+    return _multilabel_auroc_compute(state, num_labels, average, thresholds, ignore_index)
+
+
+# -------------------------- Old stuff --------------------------
 
 
 def _auroc_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor, DataType]:
