@@ -13,8 +13,44 @@ ________________
 .. autoclass:: torchmetrics.PrecisionRecallCurve
     :noindex:
 
+BinaryPrecisionRecallCurve
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. autoclass:: torchmetrics.BinaryPrecisionRecallCurve
+    :noindex:
+
+MulticlassPrecisionRecallCurve
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. autoclass:: torchmetrics.MulticlassPrecisionRecallCurve
+    :noindex:
+
+MultilabelPrecisionRecallCurve
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. autoclass:: torchmetrics.MultilabelPrecisionRecallCurve
+    :noindex:
+
 Functional Interface
 ____________________
 
 .. autofunction:: torchmetrics.functional.precision_recall_curve
+    :noindex:
+
+binary_precision_recall_curve
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. autofunction:: torchmetrics.functional.binary_precision_recall_curve
+    :noindex:
+
+multiclass_precision_recall_curve
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. autofunction:: torchmetrics.functional.multiclass_precision_recall_curve
+    :noindex:
+
+multilabel_precision_recall_curve
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. autofunction:: torchmetrics.functional.multilabel_precision_recall_curve
     :noindex:
