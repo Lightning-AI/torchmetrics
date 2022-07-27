@@ -17,6 +17,12 @@ from torchmetrics.classification.confusion_matrix import (  # noqa: F401 isort:s
     MulticlassConfusionMatrix,
     MultilabelConfusionMatrix,
 )
+from torchmetrics.classification.precision_recall_curve import (  # noqa: F401 isort:skip
+    PrecisionRecallCurve,
+    BinaryPrecisionRecallCurve,
+    MulticlassPrecisionRecallCurve,
+    MultilabelPrecisionRecallCurve,
+)
 from torchmetrics.classification.stat_scores import (  # noqa: F401 isort:skip
     BinaryStatScores,
     MulticlassStatScores,
@@ -26,8 +32,13 @@ from torchmetrics.classification.stat_scores import (  # noqa: F401 isort:skip
 
 from torchmetrics.classification.accuracy import Accuracy  # noqa: F401
 from torchmetrics.classification.auc import AUC  # noqa: F401
-from torchmetrics.classification.auroc import AUROC  # noqa: F401
-from torchmetrics.classification.average_precision import AveragePrecision  # noqa: F401
+from torchmetrics.classification.auroc import AUROC, BinaryAUROC, MulticlassAUROC, MultilabelAUROC  # noqa: F401
+from torchmetrics.classification.average_precision import (  # noqa: F401
+    AveragePrecision,
+    BinaryAveragePrecision,
+    MulticlassAveragePrecision,
+    MultilabelAveragePrecision,
+)
 from torchmetrics.classification.binned_precision_recall import BinnedAveragePrecision  # noqa: F401
 from torchmetrics.classification.binned_precision_recall import BinnedPrecisionRecallCurve  # noqa: F401
 from torchmetrics.classification.binned_precision_recall import BinnedRecallAtFixedPrecision  # noqa: F401
@@ -69,11 +80,15 @@ from torchmetrics.classification.precision_recall import (  # noqa: F401
     Precision,
     Recall,
 )
-from torchmetrics.classification.precision_recall_curve import PrecisionRecallCurve  # noqa: F401
 from torchmetrics.classification.ranking import (  # noqa: F401
     CoverageError,
     LabelRankingAveragePrecision,
     LabelRankingLoss,
 )
-from torchmetrics.classification.roc import ROC  # noqa: F401
+from torchmetrics.classification.recall_at_fixed_precision import (  # noqa: F401
+    BinaryRecallAtFixedPrecision,
+    MulticlassRecallAtFixedPrecision,
+    MultilabelRecallAtFixedPrecision,
+)
+from torchmetrics.classification.roc import ROC, BinaryROC, MulticlassROC, MultilabelROC  # noqa: F401
 from torchmetrics.classification.specificity import Specificity  # noqa: F401
