@@ -337,7 +337,7 @@ class Metric(Module, ABC):
             if reduce_fn == dim_zero_sum:
                 reduced = global_state + local_state
             elif reduce_fn == dim_zero_mean:
-                reduced = float((self._update_count - 1) * global_state + local_state) / self._update_count
+                reduced = torch.true_divide((self._update_count - 1) * global_state + local_state, self._update_count)
             elif reduce_fn == dim_zero_max:
                 reduced = torch.max(global_state, local_state)
             elif reduce_fn == dim_zero_min:
