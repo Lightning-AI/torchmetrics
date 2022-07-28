@@ -109,13 +109,17 @@ class AssistantCLI:
         files = [d["filename"] for d in data]
 
         # filter only docs files
-        files_docs = [fn for fn in files if fn.startswith("docs")]
-        if len(files) == len(files_docs):
+        files_ = [fn for fn in files if fn.startswith("docs")]
+        if len(files) == len(files_):
             logging.debug("Only docs was changed so not reason for deep testing...")
+            return ""
+        files_ = [fn for fn in files if fn.startswith("tests/integrations")]
+        if len(files) == len(files_):
+            logging.debug("Only integrations was changed so not reason for deep testing...")
             return ""
 
         # filter only package files and skip inits
-        _is_in_test = lambda fn: fn.startswith("test")
+        _is_in_test = lambda fn: fn.startswith("tests")
         _filter_pkg = lambda fn: _is_in_test(fn) or (fn.startswith("src/torchmetrics") and "__init__.py" not in fn)
         files_pkg = [fn for fn in files if _filter_pkg(fn)]
         if not files_pkg:
