@@ -52,5 +52,5 @@ multiclass_roc
 multilabel_roc
 ^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.multilabelroc
+.. autofunction:: torchmetrics.functional.multilabel_roc
     :noindex:

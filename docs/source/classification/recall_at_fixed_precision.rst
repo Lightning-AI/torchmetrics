@@ -10,9 +10,6 @@ Recall At Fixed Precision
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.RecallAtFixedPrecision
-    :noindex:
-
 BinaryRecallAtFixedPrecision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -34,23 +31,20 @@ MultilabelRecallAtFixedPrecision
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.precision_at_fixed_recall
-    :noindex:
-
-binary_precision_at_fixed_recall
+binary_recall_at_fixed_precision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.binary_precision_at_fixed_recall
+.. autofunction:: torchmetrics.functional.binary_recall_at_fixed_precision
     :noindex:
 
-multiclass_precision_at_fixed_recall
+multiclass_recall_at_fixed_precision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.multiclass_precision_at_fixed_recall
+.. autofunction:: torchmetrics.functional.multiclass_recall_at_fixed_precision
     :noindex:
 
-multilabel_precision_at_fixed_recall
+multilabel_recall_at_fixed_precision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.multilabel_precision_at_fixed_recall
+.. autofunction:: torchmetrics.functional.multilabel_recall_at_fixed_precision
     :noindex:

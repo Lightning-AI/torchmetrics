@@ -241,6 +241,63 @@ def binary_precision_recall_curve(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tuple[Tensor, Tensor, Tensor]:
+    r"""
+    Computes the precision-recall curve for binary tasks. The curve consist of multiple pairs of precision and
+    recall values evaluated at different thresholds, such that the tradeoff between the two values can been seen.
+
+    Accepts the following input tensors:
+
+    - ``preds`` (float tensor): ``(N, ...)``. Preds should be a tensor containing probabilities or logits for each
+      observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
+      sigmoid per element.
+    - ``target`` (int tensor): ``(N, ...)``. Target should be a tensor containing ground truth labels, and therefore
+      only contain {0,1} values (except if `ignore_index` is specified).
+
+    Additional dimension ``...`` will be flattened into the batch dimension.
+
+    The implementation both support calculating the metric in a non-binned but accurate version and an binned version
+    that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
+    non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
+    argument to either an integer, list or an 1d tensor will use an binned version that uses memory of
+    size :math:`\mathcal{O}(n_{thresholds})` (constant memory).
+
+    Args:
+        preds: Tensor with predictions
+        target: Tensor with true labels
+        thresholds:
+            Can be one of:
+
+            - If set to `None`, will use a non-binned approach where thresholds are dynamically calculated from
+              all the data. Most accurate but also most memory consuming approach.
+            - If set to an `int` (larger than 1), will use that number of thresholds linearly spaced from
+              0 to 1 as bins for the calculation.
+            - If set to an `list` of floats, will use the indicated thresholds in the list as bins for the calculation
+            - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
+              bins for the calculation.
+
+        validate_args: bool indicating if input arguments and tensors should be validated for correctness.
+            Set to ``False`` for faster computations.
+
+    Returns:
+        (tuple): a tuple of 3 tensors containing:
+
+        - precision: an 1d tensor of size (n_thresholds+1, ) with precision values
+        - recall: an 1d tensor of size (n_thresholds+1, ) with recall values
+        - thresholds: an 1d tensor of size (n_thresholds, ) with increasing threshold values
+
+    Example:
+        >>> from torchmetrics.functional import binary_precision_recall_curve
+        >>> preds = torch.tensor([0, 0.5, 0.7, 0.8])
+        >>> target = torch.tensor([0, 1, 1, 0])
+        >>> binary_precision_recall_curve(preds, target, thresholds=None)  # doctest: +NORMALIZE_WHITESPACE
+        (tensor([0.6667, 0.5000, 0.0000, 1.0000]),
+         tensor([1.0000, 0.5000, 0.0000, 0.0000]),
+         tensor([0.5000, 0.7000, 0.8000]))
+        >>> binary_precision_recall_curve(preds, target, thresholds=5)  # doctest: +NORMALIZE_WHITESPACE
+        (tensor([0.5000, 0.6667, 0.6667, 0.0000, 0.0000, 1.0000]),
+         tensor([1., 1., 1., 0., 0., 0.]),
+         tensor([0.0000, 0.2500, 0.5000, 0.7500, 1.0000]))
+    """
     if validate_args:
         _binary_precision_recall_curve_arg_validation(thresholds, ignore_index)
         _binary_precision_recall_curve_tensor_validation(preds, target, ignore_index)
@@ -394,6 +451,89 @@ def multiclass_precision_recall_curve(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
+    r"""
+    Computes the precision-recall curve for multiclass tasks. The curve consist of multiple pairs of precision and
+    recall values evaluated at different thresholds, such that the tradeoff between the two values can been seen.
+
+    Accepts the following input tensors:
+
+    - ``preds`` (float tensor): ``(N, C, ...)``. Preds should be a tensor containing probabilities or logits for each
+      observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
+      softmax per sample.
+    - ``target`` (int tensor): ``(N, ...)``. Target should be a tensor containing ground truth labels, and therefore
+      only contain values in the [0, n_classes-1] range (except if `ignore_index` is specified).
+
+    Additional dimension ``...`` will be flattened into the batch dimension.
+
+    The implementation both support calculating the metric in a non-binned but accurate version and an binned version
+    that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
+    non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
+    argument to either an integer, list or an 1d tensor will use an binned version that uses memory of
+    size :math:`\mathcal{O}(n_{thresholds})` (constant memory).
+
+    Args:
+        preds: Tensor with predictions
+        target: Tensor with true labels
+        num_classes: Integer specifing the number of classes
+        thresholds:
+            Can be one of:
+
+            - If set to `None`, will use a non-binned approach where thresholds are dynamically calculated from
+              all the data. Most accurate but also most memory consuming approach.
+            - If set to an `int` (larger than 1), will use that number of thresholds linearly spaced from
+              0 to 1 as bins for the calculation.
+            - If set to an `list` of floats, will use the indicated thresholds in the list as bins for the calculation
+            - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
+              bins for the calculation.
+
+        validate_args: bool indicating if input arguments and tensors should be validated for correctness.
+            Set to ``False`` for faster computations.
+
+    Returns:
+        (tuple): a tuple of either 3 tensors or 3 lists containing
+
+        - precision: if `thresholds=None` a list for each class is returned with an 1d tensor of size (n_thresholds+1, )
+          with precision values (length may differ between classes). If `thresholds` is set to something else,
+          then a single 2d tensor of size (n_classes, n_thresholds+1) with precision values is returned.
+        - recall: if `thresholds=None` a list for each class is returned with an 1d tensor of size (n_thresholds+1, )
+          with recall values (length may differ between classes). If `thresholds` is set to something else,
+          then a single 2d tensor of size (n_classes, n_thresholds+1) with recall values is returned.
+        - thresholds: if `thresholds=None` a list for each class is returned with an 1d tensor of size (n_thresholds, )
+          with increasing threshold values (length may differ between classes). If `threshold` is set to something else,
+          then a single 1d tensor of size (n_thresholds, ) is returned with shared threshold values for all classes.
+
+    Example:
+        >>> from torchmetrics.functional import multiclass_precision_recall_curve
+        >>> preds = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
+        ...                       [0.05, 0.75, 0.05, 0.05, 0.05],
+        ...                       [0.05, 0.05, 0.75, 0.05, 0.05],
+        ...                       [0.05, 0.05, 0.05, 0.75, 0.05]])
+        >>> target = torch.tensor([0, 1, 3, 2])
+        >>> precision, recall, thresholds = multiclass_precision_recall_curve(
+        ...    preds, target, num_classes=5, thresholds=None
+        ... )
+        >>> precision  # doctest: +NORMALIZE_WHITESPACE
+        [tensor([1., 1.]), tensor([1., 1.]), tensor([0.2500, 0.0000, 1.0000]),
+         tensor([0.2500, 0.0000, 1.0000]), tensor([0., 1.])]
+        >>> recall
+        [tensor([1., 0.]), tensor([1., 0.]), tensor([1., 0., 0.]), tensor([1., 0., 0.]), tensor([nan, 0.])]
+        >>> thresholds
+        [tensor([0.7500]), tensor([0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500])]
+        >>> multiclass_precision_recall_curve(
+        ...     preds, target, num_classes=5, thresholds=5
+        ... )  # doctest: +NORMALIZE_WHITESPACE
+        (tensor([[0.2500, 1.0000, 1.0000, 1.0000, 0.0000, 1.0000],
+                 [0.2500, 1.0000, 1.0000, 1.0000, 0.0000, 1.0000],
+                 [0.2500, 0.0000, 0.0000, 0.0000, 0.0000, 1.0000],
+                 [0.2500, 0.0000, 0.0000, 0.0000, 0.0000, 1.0000],
+                 [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 1.0000]]),
+         tensor([[1., 1., 1., 1., 0., 0.],
+                 [1., 1., 1., 1., 0., 0.],
+                 [1., 0., 0., 0., 0., 0.],
+                 [1., 0., 0., 0., 0., 0.],
+                 [0., 0., 0., 0., 0., 0.]]),
+         tensor([0.0000, 0.2500, 0.5000, 0.7500, 1.0000]))
+    """
     if validate_args:
         _multiclass_precision_recall_curve_arg_validation(num_classes, thresholds, ignore_index)
         _multiclass_precision_recall_curve_tensor_validation(preds, target, num_classes, ignore_index)
@@ -535,6 +675,90 @@ def multilabel_precision_recall_curve(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
+    r"""
+    Computes the precision-recall curve for multilabel tasks. The curve consist of multiple pairs of precision and
+    recall values evaluated at different thresholds, such that the tradeoff between the two values can been seen.
+
+    Accepts the following input tensors:
+
+    - ``preds`` (float tensor): ``(N, C, ...)``. Preds should be a tensor containing probabilities or logits for each
+      observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
+      sigmoid per element.
+    - ``target`` (int tensor): ``(N, C, ...)``. Target should be a tensor containing ground truth labels, and therefore
+      only contain {0,1} values (except if `ignore_index` is specified).
+
+    Additional dimension ``...`` will be flattened into the batch dimension.
+
+    The implementation both support calculating the metric in a non-binned but accurate version and an binned version
+    that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
+    non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
+    argument to either an integer, list or an 1d tensor will use an binned version that uses memory of
+    size :math:`\mathcal{O}(n_{thresholds})` (constant memory).
+
+    Args:
+        preds: Tensor with predictions
+        target: Tensor with true labels
+        num_labels: Integer specifing the number of labels
+        thresholds:
+            Can be one of:
+
+            - If set to `None`, will use a non-binned approach where thresholds are dynamically calculated from
+              all the data. Most accurate but also most memory consuming approach.
+            - If set to an `int` (larger than 1), will use that number of thresholds linearly spaced from
+              0 to 1 as bins for the calculation.
+            - If set to an `list` of floats, will use the indicated thresholds in the list as bins for the calculation
+            - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
+              bins for the calculation.
+
+        validate_args: bool indicating if input arguments and tensors should be validated for correctness.
+            Set to ``False`` for faster computations.
+
+    Returns:
+        (tuple): a tuple of either 3 tensors or 3 lists containing
+
+        - precision: if `thresholds=None` a list for each label is returned with an 1d tensor of size (n_thresholds+1, )
+          with precision values (length may differ between labels). If `thresholds` is set to something else,
+          then a single 2d tensor of size (n_labels, n_thresholds+1) with precision values is returned.
+        - recall: if `thresholds=None` a list for each label is returned with an 1d tensor of size (n_thresholds+1, )
+          with recall values (length may differ between labels). If `thresholds` is set to something else,
+          then a single 2d tensor of size (n_labels, n_thresholds+1) with recall values is returned.
+        - thresholds: if `thresholds=None` a list for each label is returned with an 1d tensor of size (n_thresholds, )
+          with increasing threshold values (length may differ between labels). If `threshold` is set to something else,
+          then a single 1d tensor of size (n_thresholds, ) is returned with shared threshold values for all labels.
+
+    Example:
+        >>> from torchmetrics.functional import multilabel_precision_recall_curve
+        >>> preds = torch.tensor([[0.75, 0.05, 0.35],
+        ...                       [0.45, 0.75, 0.05],
+        ...                       [0.05, 0.55, 0.75],
+        ...                       [0.05, 0.65, 0.05]])
+        >>> target = torch.tensor([[1, 0, 1],
+        ...                        [0, 0, 0],
+        ...                        [0, 1, 1],
+        ...                        [1, 1, 1]])
+        >>> precision, recall, thresholds = multilabel_precision_recall_curve(
+        ...    preds, target, num_labels=3, thresholds=None
+        ... )
+        >>> precision  # doctest: +NORMALIZE_WHITESPACE
+        [tensor([0.5000, 0.5000, 1.0000, 1.0000]), tensor([0.6667, 0.5000, 0.0000, 1.0000]),
+         tensor([0.7500, 1.0000, 1.0000, 1.0000])]
+        >>> recall  # doctest: +NORMALIZE_WHITESPACE
+        [tensor([1.0000, 0.5000, 0.5000, 0.0000]), tensor([1.0000, 0.5000, 0.0000, 0.0000]),
+         tensor([1.0000, 0.6667, 0.3333, 0.0000])]
+        >>> thresholds  # doctest: +NORMALIZE_WHITESPACE
+        [tensor([0.0500, 0.4500, 0.7500]), tensor([0.5500, 0.6500, 0.7500]),
+         tensor([0.0500, 0.3500, 0.7500])]
+        >>> multilabel_precision_recall_curve(
+        ...     preds, target, num_labels=3, thresholds=5
+        ... )  # doctest: +NORMALIZE_WHITESPACE
+        (tensor([[0.5000, 0.5000, 1.0000, 1.0000, 0.0000, 1.0000],
+                 [0.5000, 0.6667, 0.6667, 0.0000, 0.0000, 1.0000],
+                 [0.7500, 1.0000, 1.0000, 1.0000, 0.0000, 1.0000]]),
+         tensor([[1.0000, 0.5000, 0.5000, 0.5000, 0.0000, 0.0000],
+                 [1.0000, 1.0000, 1.0000, 0.0000, 0.0000, 0.0000],
+                 [1.0000, 0.6667, 0.3333, 0.3333, 0.0000, 0.0000]]),
+         tensor([0.0000, 0.2500, 0.5000, 0.7500, 1.0000]))
+    """
     if validate_args:
         _multilabel_precision_recall_curve_arg_validation(num_labels, thresholds, ignore_index)
         _multilabel_precision_recall_curve_tensor_validation(preds, target, num_labels, ignore_index)
