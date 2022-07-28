@@ -122,7 +122,7 @@ class BERTScore(Metric):
         device: Optional[Union[str, torch.device]] = None,
         max_length: int = 512,
         batch_size: int = 64,
-        num_threads: int = 4,
+        num_threads: int = 0,
         return_hash: bool = False,
         lang: str = "en",
         rescale_with_baseline: bool = False,
@@ -181,6 +181,11 @@ class BERTScore(Metric):
             preds: An iterable of predicted sentences.
             target: An iterable of reference sentences.
         """
+        if not isinstance(preds, list):
+            preds = list(preds)
+        if not isinstance(target, list):
+            target = list(target)
+
         preds_dict, _ = _preprocess_text(
             preds,
             self.tokenizer,
