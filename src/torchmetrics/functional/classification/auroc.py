@@ -197,7 +197,9 @@ def _multilabel_auroc_compute(
     ignore_index: Optional[int] = None,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
     if average == "micro":
-        if thresholds is None:
+        if isinstance(state, Tensor) and thresholds is not None:
+            return _binary_auroc_compute(state.sum(1), thresholds, max_fpr=None)
+        else:
             preds = state[0].flatten()
             target = state[1].flatten()
             if ignore_index is not None:
@@ -205,7 +207,7 @@ def _multilabel_auroc_compute(
                 preds = preds[~idx]
                 target = target[~idx]
             return _binary_auroc_compute([preds, target], thresholds, max_fpr=None)
-        return _binary_auroc_compute(state.sum(1), thresholds, max_fpr=None)
+
     else:
         fpr, tpr, _ = _multilabel_roc_compute(state, num_labels, thresholds, ignore_index)
         return _reduce_auroc(
