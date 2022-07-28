@@ -55,7 +55,12 @@ from torchmetrics.classification.f_beta import (  # noqa: F401
     MultilabelF1Score,
     MultilabelFBetaScore,
 )
-from torchmetrics.classification.hamming import HammingDistance  # noqa: F401
+from torchmetrics.classification.hamming import (  # noqa: F401
+    BinaryHammingDistance,
+    HammingDistance,
+    MulticlassHammingDistance,
+    MultilabelHammingDistance,
+)
 from torchmetrics.classification.hinge import HingeLoss  # noqa: F401
 from torchmetrics.classification.jaccard import (  # noqa: F401
     BinaryJaccardIndex,
@@ -91,4 +96,9 @@ from torchmetrics.classification.recall_at_fixed_precision import (  # noqa: F40
     MultilabelRecallAtFixedPrecision,
 )
 from torchmetrics.classification.roc import ROC, BinaryROC, MulticlassROC, MultilabelROC  # noqa: F401
-from torchmetrics.classification.specificity import Specificity  # noqa: F401
+from torchmetrics.classification.specificity import (  # noqa: F401
+    BinarySpecificity,
+    MulticlassSpecificity,
+    MultilabelSpecificity,
+    Specificity,
+)

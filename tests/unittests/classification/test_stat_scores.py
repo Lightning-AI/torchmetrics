@@ -145,55 +145,61 @@ class TestBinaryStatScores(MetricTester):
         )
 
 
-def _sk_stat_scores_multiclass(preds, target, ignore_index, multidim_average, average):
-    if preds.ndim == target.ndim + 1:
-        preds = torch.argmax(preds, 1)
-    if multidim_average == "global":
-        preds = preds.numpy().flatten()
-        target = target.numpy().flatten()
-        target, preds = remove_ignore_index(target, preds, ignore_index)
-        confmat = sk_confusion_matrix(y_true=target, y_pred=preds, labels=list(range(NUM_CLASSES)))
+def _sk_stat_scores_multiclass_global(preds, target, ignore_index, average):
+    preds = preds.numpy().flatten()
+    target = target.numpy().flatten()
+    target, preds = remove_ignore_index(target, preds, ignore_index)
+    confmat = sk_confusion_matrix(y_true=target, y_pred=preds, labels=list(range(NUM_CLASSES)))
+    tp = np.diag(confmat)
+    fp = confmat.sum(0) - tp
+    fn = confmat.sum(1) - tp
+    tn = confmat.sum() - (fp + fn + tp)
+
+    res = np.stack([tp, fp, tn, fn, tp + fn], 1)
+    if average == "micro":
+        return res.sum(0)
+    elif average == "macro":
+        return res.mean(0)
+    elif average == "weighted":
+        w = tp + fn
+        return (res * (w / w.sum()).reshape(-1, 1)).sum(0)
+    elif average is None or average == "none":
+        return res
+
+
+def _sk_stat_scores_multiclass_local(preds, target, ignore_index, average):
+    preds = preds.numpy()
+    target = target.numpy()
+
+    res = []
+    for pred, true in zip(preds, target):
+        pred = pred.flatten()
+        true = true.flatten()
+        true, pred = remove_ignore_index(true, pred, ignore_index)
+        confmat = sk_confusion_matrix(y_true=true, y_pred=pred, labels=list(range(NUM_CLASSES)))
         tp = np.diag(confmat)
         fp = confmat.sum(0) - tp
         fn = confmat.sum(1) - tp
         tn = confmat.sum() - (fp + fn + tp)
-
-        res = np.stack([tp, fp, tn, fn, tp + fn], 1)
+        r = np.stack([tp, fp, tn, fn, tp + fn], 1)
         if average == "micro":
-            return res.sum(0)
+            res.append(r.sum(0))
         elif average == "macro":
-            return res.mean(0)
+            res.append(r.mean(0))
         elif average == "weighted":
             w = tp + fn
-            return (res * (w / w.sum()).reshape(-1, 1)).sum(0)
+            res.append((r * (w / w.sum()).reshape(-1, 1)).sum(0))
         elif average is None or average == "none":
-            return res
+            res.append(r)
+    return np.stack(res, 0)
 
-    else:
-        preds = preds.numpy()
-        target = target.numpy()
 
-        res = []
-        for pred, true in zip(preds, target):
-            pred = pred.flatten()
-            true = true.flatten()
-            true, pred = remove_ignore_index(true, pred, ignore_index)
-            confmat = sk_confusion_matrix(y_true=true, y_pred=pred, labels=list(range(NUM_CLASSES)))
-            tp = np.diag(confmat)
-            fp = confmat.sum(0) - tp
-            fn = confmat.sum(1) - tp
-            tn = confmat.sum() - (fp + fn + tp)
-            r = np.stack([tp, fp, tn, fn, tp + fn], 1)
-            if average == "micro":
-                res.append(r.sum(0))
-            elif average == "macro":
-                res.append(r.mean(0))
-            elif average == "weighted":
-                w = tp + fn
-                res.append((r * (w / w.sum()).reshape(-1, 1)).sum(0))
-            elif average is None or average == "none":
-                res.append(r)
-        return np.stack(res, 0)
+def _sk_stat_scores_multiclass(preds, target, ignore_index, multidim_average, average):
+    if preds.ndim == target.ndim + 1:
+        preds = torch.argmax(preds, 1)
+    if multidim_average == "global":
+        return _sk_stat_scores_multiclass_global(preds, target, ignore_index, average)
+    return _sk_stat_scores_multiclass_local(preds, target, ignore_index, average)
 
 
 @pytest.mark.parametrize("input", _multiclass_cases)
