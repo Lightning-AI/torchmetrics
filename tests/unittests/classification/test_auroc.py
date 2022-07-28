@@ -130,7 +130,7 @@ class TestBinaryAUROC(MetricTester):
         for pred, true in zip(preds, target):
             _, _, t = binary_roc(pred, true, thresholds=None)
             ap1 = binary_auroc(pred, true, thresholds=None)
-            ap2 = binary_auroc(pred, true, thresholds=threshold_fn(t))
+            ap2 = binary_auroc(pred, true, thresholds=threshold_fn(t.flip(0)))
             assert torch.allclose(ap1, ap2)
 
 
@@ -235,7 +235,7 @@ class TestMulticlassAUROC(MetricTester):
             pred = torch.tensor(np.round(pred.numpy(), 2)) + 1e-6  # rounding will simulate binning
             ap1 = multiclass_auroc(pred, true, num_classes=NUM_CLASSES, average=average, thresholds=None)
             ap2 = multiclass_auroc(
-                pred, true, num_classes=NUM_CLASSES, average=average, thresholds=reversed(torch.linspace(0, 1, 100))
+                pred, true, num_classes=NUM_CLASSES, average=average, thresholds=torch.linspace(0, 1, 100)
             )
             assert torch.allclose(ap1, ap2)
 
@@ -356,7 +356,7 @@ class TestMultilabelAUROC(MetricTester):
             pred = torch.tensor(np.round(pred.numpy(), 1)) + 1e-6  # rounding will simulate binning
             ap1 = multilabel_auroc(pred, true, num_labels=NUM_CLASSES, average=average, thresholds=None)
             ap2 = multilabel_auroc(
-                pred, true, num_labels=NUM_CLASSES, average=average, thresholds=reversed(torch.linspace(0, 1, 100))
+                pred, true, num_labels=NUM_CLASSES, average=average, thresholds=torch.linspace(0, 1, 100)
             )
             assert torch.allclose(ap1, ap2)
 

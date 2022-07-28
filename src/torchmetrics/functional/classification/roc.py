@@ -41,7 +41,7 @@ def _binary_roc_compute(
     thresholds: Optional[Tensor],
     pos_label: int = 1,
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    if isinstance(state, Tensor):
+    if isinstance(state, Tensor) and thresholds is not None:
         tps = state[:, 1, 1]
         fps = state[:, 0, 1]
         fns = state[:, 1, 0]
@@ -160,7 +160,7 @@ def _multiclass_roc_compute(
     num_classes: int,
     thresholds: Optional[Tensor],
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    if isinstance(state, Tensor):
+    if isinstance(state, Tensor) and thresholds is not None:
         tps = state[:, :, 1, 1]
         fps = state[:, :, 0, 1]
         fns = state[:, :, 1, 0]
@@ -290,7 +290,7 @@ def _multilabel_roc_compute(
     thresholds: Optional[Tensor],
     ignore_index: Optional[int] = None,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    if isinstance(state, Tensor):
+    if isinstance(state, Tensor) and thresholds is not None:
         tps = state[:, :, 1, 1]
         fps = state[:, :, 0, 1]
         fns = state[:, :, 1, 0]
