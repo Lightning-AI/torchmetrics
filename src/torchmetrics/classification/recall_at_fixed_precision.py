@@ -106,7 +106,7 @@ class BinaryRecallAtFixedPrecision(BinaryPrecisionRecallCurve):
         self.validate_args = validate_args
         self.min_precision = min_precision
 
-    def compute(self) -> Tuple[Tensor, Tensor]:
+    def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
         if self.thresholds is None:
             state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]
         else:
@@ -195,7 +195,7 @@ class MulticlassRecallAtFixedPrecision(MulticlassPrecisionRecallCurve):
         self.validate_args = validate_args
         self.min_precision = min_precision
 
-    def compute(self) -> Tuple[Tensor, Tensor]:
+    def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
         if self.thresholds is None:
             state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]
         else:
@@ -289,7 +289,7 @@ class MultilabelRecallAtFixedPrecision(MultilabelPrecisionRecallCurve):
         self.validate_args = validate_args
         self.min_precision = min_precision
 
-    def compute(self) -> Tuple[Tensor, Tensor]:
+    def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
         if self.thresholds is None:
             state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]
         else:
