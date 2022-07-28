@@ -108,14 +108,15 @@ class AssistantCLI:
             return "unittests"
         files = [d["filename"] for d in data]
 
+        # filter out all integrations as they run in separate suit
+        files = [fn for fn in files if not fn.startswith("tests/integrations")]
+        if not files:
+            logging.debug("Only integrations was changed so not reason for deep testing...")
+            return ""
         # filter only docs files
         files_ = [fn for fn in files if fn.startswith("docs")]
         if len(files) == len(files_):
             logging.debug("Only docs was changed so not reason for deep testing...")
-            return ""
-        files_ = [fn for fn in files if fn.startswith("tests/integrations")]
-        if len(files) == len(files_):
-            logging.debug("Only integrations was changed so not reason for deep testing...")
             return ""
 
         # filter only package files and skip inits
@@ -140,10 +141,12 @@ class AssistantCLI:
             logging.debug("Some more files was changed -> rather test everything...")
             return "unittests"
         # keep only unique
-        tm_modules = set(tm_modules)
         if as_list:
             return list(tm_modules)
-        return " ".join([f"unittests/{md}" for md in tm_modules])
+        tm_modules = [f"unittests/{md}" for md in set(tm_modules)]
+        not_exists = [p for p in tm_modules if os.path.exists(p)]
+        assert not not_exists, f"Missing following paths: {not_exists}"
+        return " ".join(tm_modules)
 
 
 if __name__ == "__main__":
