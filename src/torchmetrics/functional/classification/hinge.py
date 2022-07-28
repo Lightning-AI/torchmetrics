@@ -11,15 +11,125 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from multiprocessing.sharedctypes import Value
 from typing import Optional, Tuple, Union
+from attr import validate
 
 import torch
 from torch import Tensor, tensor
+from typing_extensions import Literal
 
 from torchmetrics.utilities.checks import _input_squeeze
 from torchmetrics.utilities.data import to_onehot
 from torchmetrics.utilities.enums import DataType, EnumStr
+from torchmetrics.utilities.checks import _check_same_shape
 
+
+def _hinge_loss_compute(measure: Tensor, total: Tensor) -> Tensor:
+    return measure / total
+
+
+def _binary_hinge_loss_arg_validation(squared: bool, ignore_index: Optional[int] = None) -> None:
+    if not isinstance(squared, bool):
+        raise ValueError(f"Expected argument `squared` to be an bool but got {squared}")
+    if ignore_index is not None and not isinstance(ignore_index, int):
+        raise ValueError(f"Expected argument `ignore_index` to either be `None` or an integer, but got {ignore_index}")
+
+
+def _binary_hinge_loss_tensor_validation(
+    preds: Tensor, target: Tensor, ignore_index: Optional[int] = None
+) -> None:
+    # Check that they have same shape
+    _check_same_shape(preds, target)
+
+    # Check that target only contains {0,1} values or value in ignore_index
+    unique_values = torch.unique(target)
+    if ignore_index is None:
+        check = torch.any((unique_values != 0) & (unique_values != 1))
+    else:
+        check = torch.any((unique_values != 0) & (unique_values != 1) & (unique_values != ignore_index))
+    if check:
+        raise RuntimeError(
+            f"Detected the following values in `target`: {unique_values} but expected only"
+            f" the following values {[0,1] + [] if ignore_index is None else [ignore_index]}."
+        )
+    
+    if not preds.is_floating_point():
+        raise ValueError(
+            "Expected argument `preds` to be an floating tensor with probability/logit scores,"
+            f" but got tensor with dtype {preds.dtype}"
+        )
+
+    
+def _binary_hinge_loss_update(
+    preds: Tensor,
+    target: Tensor,
+    squared: bool,
+    ignore_index: Optional[int] = None,
+) -> Tuple[Tensor, Tensor]:
+
+    target = target.bool()
+    margin = torch.zeros_like(preds)
+    margin[target] = preds[target]
+    margin[~target] = -preds[~target]
+
+
+    measures = 1 - margin
+    measures = torch.clamp(measures, 0)
+
+    if squared:
+        measures = measures.pow(2)
+
+    total = tensor(target.shape[0], device=target.device)
+    return measures.sum(dim=0), total
+
+def binary_hinge_loss(
+    preds: Tensor,
+    target: Tensor,
+    squared: bool = False,
+    ignore_index: Optional[int] = None,
+    validate_args: bool = False
+) -> Tensor:
+    if validate_args:
+        _binary_hinge_loss_arg_validation(squared, ignore_index)
+        _binary_hinge_loss_tensor_validation(preds, target, ignore_index)
+    measures, total = _binary_hinge_loss_update(preds, target, squared, ignore_index)
+    return _hinge_loss_compute(measures, total)
+
+
+def _multiclass_hinge_loss_arg_validation(
+    num_classes: int,
+    squared: bool = False,
+    multiclass_mode: Literal["crammer-singer", "one-vs-all"] = "crammer-singer",
+    ignore_index: Optional[int] = None,
+) -> None:
+    _binary_hinge_loss_arg_validation(squared, ignore_index)
+    if not isinstance(num_classes, int) or num_classes < 2:
+        raise ValueError(f"Expected argument `num_classes` to be an integer larger than 1, but got {num_classes}")
+    allowed_mm = ("true", "pred", "all", "none", None)
+    if multiclass_mode not in allowed_mm:
+        raise ValueError(f"Expected argument `multiclass_mode` to be one of {allowed_mm}, but got {multiclass_mode}.")
+
+
+def multiclass_hinge_loss(
+    preds: Tensor,
+    target: Tensor,
+    num_classes: int,
+    squared: bool = False,
+    multiclass_mode: Literal["crammer-singer", "one-vs-all"] = "crammer-singer",
+    ignore_index: Optional[int] = None,
+    validate_args: bool = False
+) -> Tensor:
+    if validate_args:
+        _multiclass_hinge_loss_arg_validation(num_classes, squared, multiclass_mode, ignore_index)
+        _multiclass_hinge_loss_tensor_validation(preds, target, num_classes, ignore_index)
+    measures, total = _multiclass_hinge_loss_update()
+    return _hinge_loss_compute(measures, total)
+
+
+
+
+# -------------------------- Old stuff --------------------------
 
 class MulticlassMode(EnumStr):
     """Enum to represent possible multiclass modes of hinge.
@@ -29,7 +139,7 @@ class MulticlassMode(EnumStr):
     """
 
     CRAMMER_SINGER = "crammer-singer"
-    ONE_VS_ALL = "one-vs-all"
+    ONE_VS_ALL = 
 
 
 def _check_shape_and_type_consistency_hinge(
