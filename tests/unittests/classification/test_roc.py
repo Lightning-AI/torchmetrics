@@ -126,10 +126,9 @@ class TestBinaryROC(MetricTester):
     @pytest.mark.parametrize("threshold_fn", [lambda x: x, lambda x: x.numpy().tolist()], ids=["as tensor", "as list"])
     def test_binary_roc_threshold_arg(self, input, threshold_fn):
         preds, target = input
-
         for pred, true in zip(preds, target):
             p1, r1, t1 = binary_roc(pred, true, thresholds=None)
-            p2, r2, t2 = binary_roc(pred, true, thresholds=threshold_fn(t1))
+            p2, r2, t2 = binary_roc(pred, true, thresholds=threshold_fn(t1.flip(0)))
             assert torch.allclose(p1, p2)
             assert torch.allclose(r1, r2)
             assert torch.allclose(t1, t2)
@@ -240,7 +239,7 @@ class TestMulticlassROC(MetricTester):
         for pred, true in zip(preds, target):
             p1, r1, t1 = multiclass_roc(pred, true, num_classes=NUM_CLASSES, thresholds=None)
             for i, t in enumerate(t1):
-                p2, r2, t2 = multiclass_roc(pred, true, num_classes=NUM_CLASSES, thresholds=threshold_fn(t))
+                p2, r2, t2 = multiclass_roc(pred, true, num_classes=NUM_CLASSES, thresholds=threshold_fn(t.flip(0)))
 
                 assert torch.allclose(p1[i], p2[i])
                 assert torch.allclose(r1[i], r2[i])
@@ -342,7 +341,7 @@ class TestMultilabelROC(MetricTester):
         for pred, true in zip(preds, target):
             p1, r1, t1 = multilabel_roc(pred, true, num_labels=NUM_CLASSES, thresholds=None)
             for i, t in enumerate(t1):
-                p2, r2, t2 = multilabel_roc(pred, true, num_labels=NUM_CLASSES, thresholds=threshold_fn(t))
+                p2, r2, t2 = multilabel_roc(pred, true, num_labels=NUM_CLASSES, thresholds=threshold_fn(t.flip(0)))
 
                 assert torch.allclose(p1[i], p2[i])
                 assert torch.allclose(r1[i], r2[i])

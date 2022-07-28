@@ -125,6 +125,66 @@ def binary_auroc(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tuple[Tensor, Tensor, Tensor]:
+    r"""
+    Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for binary tasks. The AUROC score
+    summarizes the ROC curve into a single number that describes the performance of an model for multiple
+    thresholds at the same time. Noteably, a AUROC score of 1 is an perfert score and an AUROC score of 0.5
+    corresponds to random guessing.
+
+    Computes the average precision (AP) score for binary tasks. The AP score summarizes a precision-recall curve
+    as an weighted mean of precisions at each threshold, with the difference in recall from the previous threshold
+    as weight:
+
+    .. math::
+        AP = \sum{n} (R_n - R_{n-1}) P_n
+
+    where :math:`P_n, R_n` is the respective precision and recall at threshold index :math:`n`.
+
+    Accepts the following input tensors:
+
+    - ``preds`` (float tensor): ``(N, ...)``. Preds should be a tensor containing probabilities or logits for each
+      observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
+      sigmoid per element.
+    - ``target`` (int tensor): ``(N, ...)``. Target should be a tensor containing ground truth labels, and therefore
+      only contain {0,1} values (except if `ignore_index` is specified).
+
+    Additional dimension ``...`` will be flattened into the batch dimension.
+
+    The implementation both support calculating the metric in a non-binned but accurate version and an binned version
+    that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
+    non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
+    argument to either an integer, list or an 1d tensor will use an binned version that uses memory of
+    size :math:`\mathcal{O}(n_{thresholds})` (constant memory).
+
+    Args:
+        preds: Tensor with predictions
+        target: Tensor with true labels
+        thresholds:
+            Can be one of:
+
+            - If set to `None`, will use a non-binned approach where thresholds are dynamically calculated from
+              all the data. Most accurate but also most memory consuming approach.
+            - If set to an `int` (larger than 1), will use that number of thresholds linearly spaced from
+              0 to 1 as bins for the calculation.
+            - If set to an `list` of floats, will use the indicated thresholds in the list as bins for the calculation
+            - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
+              bins for the calculation.
+
+        validate_args: bool indicating if input arguments and tensors should be validated for correctness.
+            Set to ``False`` for faster computations.
+
+    Returns:
+        A single scalar with the average precision score
+
+    Example:
+        >>> from torchmetrics.functional import binary_auroc
+        >>> preds = torch.tensor([0, 0.5, 0.7, 0.8])
+        >>> target = torch.tensor([0, 1, 1, 0])
+        >>> binary_auroc(preds, target, thresholds=None)
+        tensor(0.5833)
+        >>> binary_auroc(preds, target, thresholds=5)
+        tensor(0.6667)
+    """
     if validate_args:
         _binary_auroc_arg_validation(max_fpr, thresholds, ignore_index)
         _binary_precision_recall_curve_tensor_validation(preds, target, ignore_index)
@@ -169,6 +229,73 @@ def multiclass_auroc(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
+    r"""
+    Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for multiclass tasks. The AUROC score
+    summarizes the ROC curve into a single number that describes the performance of an model for multiple
+    thresholds at the same time. Noteably, a AUROC score of 1 is an perfert score and an AUROC score of 0.5
+    corresponds to random guessing.
+
+    Accepts the following input tensors:
+
+    - ``preds`` (float tensor): ``(N, C, ...)``. Preds should be a tensor containing probabilities or logits for each
+      observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
+      softmax per sample.
+    - ``target`` (int tensor): ``(N, ...)``. Target should be a tensor containing ground truth labels, and therefore
+      only contain values in the [0, n_classes-1] range (except if `ignore_index` is specified).
+
+    Additional dimension ``...`` will be flattened into the batch dimension.
+
+    The implementation both support calculating the metric in a non-binned but accurate version and an binned version
+    that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
+    non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
+    argument to either an integer, list or an 1d tensor will use an binned version that uses memory of
+    size :math:`\mathcal{O}(n_{thresholds})` (constant memory).
+
+    Args:
+        preds: Tensor with predictions
+        target: Tensor with true labels
+        num_classes: Integer specifing the number of classes
+        average:
+            Defines the reduction that is applied over classes. Should be one of the following:
+
+            - ``macro``: Calculate score for each class and average them
+            - ``weighted``: Calculates score for each class and computes weighted average using their support
+            - ``"none"`` or ``None``: Calculates score for each class and applies no reduction
+        thresholds:
+            Can be one of:
+
+            - If set to `None`, will use a non-binned approach where thresholds are dynamically calculated from
+              all the data. Most accurate but also most memory consuming approach.
+            - If set to an `int` (larger than 1), will use that number of thresholds linearly spaced from
+              0 to 1 as bins for the calculation.
+            - If set to an `list` of floats, will use the indicated thresholds in the list as bins for the calculation
+            - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
+              bins for the calculation.
+
+        validate_args: bool indicating if input arguments and tensors should be validated for correctness.
+            Set to ``False`` for faster computations.
+
+    Returns:
+        If `average=None|"none"` then a 1d tensor of shape (n_classes, ) will be returned with AP score per class.
+        If `average="macro"|"weighted"` then a single scalar is returned.
+
+    Example:
+        >>> from torchmetrics.functional import multiclass_auroc
+        >>> preds = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
+        ...                       [0.05, 0.75, 0.05, 0.05, 0.05],
+        ...                       [0.05, 0.05, 0.75, 0.05, 0.05],
+        ...                       [0.05, 0.05, 0.05, 0.75, 0.05]])
+        >>> target = torch.tensor([0, 1, 3, 2])
+        >>> multiclass_auroc(preds, target, num_classes=5, average="macro", thresholds=None)
+        tensor(0.6250)
+        >>> multiclass_auroc(preds, target, num_classes=5, average=None, thresholds=None)
+        tensor([1.0000, 1.0000, 0.2500, 0.2500,    nan])
+        >>> multiclass_auroc(preds, target, num_classes=5, average="macro", thresholds=5)
+        tensor(0.5000)
+        >>> multiclass_auroc(preds, target, num_classes=5, average=None, thresholds=5)
+        tensor([1.0000, 1.0000, 0.2500, 0.2500, -0.0000])
+
+    """
     if validate_args:
         _multiclass_auroc_arg_validation(num_classes, average, thresholds, ignore_index)
         _multiclass_precision_recall_curve_tensor_validation(preds, target, num_classes, ignore_index)
@@ -229,6 +356,76 @@ def multilabel_auroc(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
+    r"""
+    Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for multilabel tasks. The AUROC score
+    summarizes the ROC curve into a single number that describes the performance of an model for multiple
+    thresholds at the same time. Noteably, a AUROC score of 1 is an perfert score and an AUROC score of 0.5
+    corresponds to random guessing.
+
+    Accepts the following input tensors:
+
+    - ``preds`` (float tensor): ``(N, C, ...)``. Preds should be a tensor containing probabilities or logits for each
+      observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
+      sigmoid per element.
+    - ``target`` (int tensor): ``(N, C, ...)``. Target should be a tensor containing ground truth labels, and therefore
+      only contain {0,1} values (except if `ignore_index` is specified).
+
+    Additional dimension ``...`` will be flattened into the batch dimension.
+
+    The implementation both support calculating the metric in a non-binned but accurate version and an binned version
+    that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
+    non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
+    argument to either an integer, list or an 1d tensor will use an binned version that uses memory of
+    size :math:`\mathcal{O}(n_{thresholds})` (constant memory).
+
+    Args:
+        preds: Tensor with predictions
+        target: Tensor with true labels
+        num_labels: Integer specifing the number of labels
+        average:
+            Defines the reduction that is applied over labels. Should be one of the following:
+
+            - ``micro``: Sum score over all labels
+            - ``macro``: Calculate score for each label and average them
+            - ``weighted``: Calculates score for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: Calculates score for each label and applies no reduction
+        thresholds:
+            Can be one of:
+
+            - If set to `None`, will use a non-binned approach where thresholds are dynamically calculated from
+              all the data. Most accurate but also most memory consuming approach.
+            - If set to an `int` (larger than 1), will use that number of thresholds linearly spaced from
+              0 to 1 as bins for the calculation.
+            - If set to an `list` of floats, will use the indicated thresholds in the list as bins for the calculation
+            - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
+              bins for the calculation.
+
+        validate_args: bool indicating if input arguments and tensors should be validated for correctness.
+            Set to ``False`` for faster computations.
+
+    Returns:
+        If `average=None|"none"` then a 1d tensor of shape (n_classes, ) will be returned with AP score per class.
+        If `average="micro|macro"|"weighted"` then a single scalar is returned.
+
+    Example:
+        >>> from torchmetrics.functional import multilabel_auroc
+        >>> preds = torch.tensor([[0.75, 0.05, 0.35],
+        ...                       [0.45, 0.75, 0.05],
+        ...                       [0.05, 0.55, 0.75],
+        ...                       [0.05, 0.65, 0.05]])
+        >>> target = torch.tensor([[1, 0, 1],
+        ...                        [0, 0, 0],
+        ...                        [0, 1, 1],
+        ...                        [1, 1, 1]])
+        >>> multilabel_auroc(preds, target, num_labels=3, average="macro", thresholds=None)
+        tensor(0.7500)
+        >>> multilabel_auroc(preds, target, num_labels=3, average=None, thresholds=None)
+        tensor([0.7500, 0.5833, 0.9167])
+        >>> multilabel_auroc(preds, target, num_labels=3, average="macro", thresholds=5)
+        tensor(0.7778)
+        >>> multilabel_auroc(preds, target, num_labels=3, average=None, thresholds=5)
+        tensor([0.7500, 0.6667, 0.9167])
+    """
     if validate_args:
         _multilabel_auroc_arg_validation(num_labels, average, thresholds, ignore_index)
         _multilabel_precision_recall_curve_tensor_validation(preds, target, num_labels, ignore_index)
