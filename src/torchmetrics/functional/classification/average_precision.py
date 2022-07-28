@@ -49,7 +49,7 @@ def _reduce_average_precision(
 ) -> Tensor:
     """Utility function for reducing multiple average precision score into one number."""
     res = []
-    if isinstance(precision, Tensor):
+    if isinstance(precision, Tensor) and isinstance(recall, Tensor):
         res = -torch.sum((recall[:, 1:] - recall[:, :-1]) * precision[:, :-1], 1)
     else:
         for p, r in zip(precision, recall):
