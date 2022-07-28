@@ -68,9 +68,11 @@ def _reduce_auroc(
         )
     if average == "macro":
         return res[~torch.isnan(res)].mean()
-
-    weights = weights / weights.sum()
-    return (res * weights)[~torch.isnan(res)].sum()
+    elif average == "weighted" and weights is not None:
+        weights = weights / weights.sum()
+        return (res * weights)[~torch.isnan(res)].sum()
+    else:
+        raise ValueError("Received an incompatible combinations of inputs to make reduction.")
 
 
 def _binary_auroc_arg_validation(

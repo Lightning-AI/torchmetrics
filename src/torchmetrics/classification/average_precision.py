@@ -37,6 +37,62 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class BinaryAveragePrecision(BinaryPrecisionRecallCurve):
+    r"""
+    Computes the average precision (AP) score for binary tasks. The AP score summarizes a precision-recall curve
+    as an weighted mean of precisions at each threshold, with the difference in recall from the previous threshold
+    as weight:
+
+    .. math::
+        AP = \sum{n} (R_n - R_{n-1}) P_n
+
+    where :math:`P_n, R_n` is the respective precision and recall at threshold index :math:`n`.
+
+    Accepts the following input tensors:
+
+    - ``preds`` (float tensor): ``(N, ...)``. Preds should be a tensor containing probabilities or logits for each
+      observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
+      sigmoid per element.
+    - ``target`` (int tensor): ``(N, ...)``. Target should be a tensor containing ground truth labels, and therefore
+      only contain {0,1} values (except if `ignore_index` is specified).
+
+    Additional dimension ``...`` will be flattened into the batch dimension.
+
+    The implementation both support calculating the metric in a non-binned but accurate version and an binned version
+    that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
+    non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
+    argument to either an integer, list or an 1d tensor will use an binned version that uses memory of
+    size :math:`\mathcal{O}(n_{thresholds})` (constant memory).
+
+    Args:
+        thresholds:
+            Can be one of:
+
+            - If set to `None`, will use a non-binned approach where thresholds are dynamically calculated from
+              all the data. Most accurate but also most memory consuming approach.
+            - If set to an `int` (larger than 1), will use that number of thresholds linearly spaced from
+              0 to 1 as bins for the calculation.
+            - If set to an `list` of floats, will use the indicated thresholds in the list as bins for the calculation
+            - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
+              bins for the calculation.
+
+        validate_args: bool indicating if input arguments and tensors should be validated for correctness.
+            Set to ``False`` for faster computations.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+
+    Returns:
+        A single scalar with the average precision score
+
+    Example:
+        >>> from torchmetrics import BinaryAveragePrecision
+        >>> preds = torch.tensor([0, 0.5, 0.7, 0.8])
+        >>> target = torch.tensor([0, 1, 1, 0])
+        >>> metric = BinaryAveragePrecision(thresholds=None)
+        >>> metric(preds, target)
+        tensor(0.5833)
+        >>> metric = BinaryAveragePrecision(thresholds=5)
+        >>> metric(preds, target)
+        tensor(0.6667)
+    """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
@@ -50,6 +106,81 @@ class BinaryAveragePrecision(BinaryPrecisionRecallCurve):
 
 
 class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
+    r"""
+    Computes the average precision (AP) score for binary tasks. The AP score summarizes a precision-recall curve
+    as an weighted mean of precisions at each threshold, with the difference in recall from the previous threshold
+    as weight:
+
+    .. math::
+        AP = \sum{n} (R_n - R_{n-1}) P_n
+
+    where :math:`P_n, R_n` is the respective precision and recall at threshold index :math:`n`.
+
+    Accepts the following input tensors:
+
+    - ``preds`` (float tensor): ``(N, C, ...)``. Preds should be a tensor containing probabilities or logits for each
+      observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
+      softmax per sample.
+    - ``target`` (int tensor): ``(N, ...)``. Target should be a tensor containing ground truth labels, and therefore
+      only contain values in the [0, n_classes-1] range (except if `ignore_index` is specified).
+
+    Additional dimension ``...`` will be flattened into the batch dimension.
+
+    The implementation both support calculating the metric in a non-binned but accurate version and an binned version
+    that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
+    non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
+    argument to either an integer, list or an 1d tensor will use an binned version that uses memory of
+    size :math:`\mathcal{O}(n_{thresholds})` (constant memory).
+
+    Args:
+        num_classes: Integer specifing the number of classes
+        average:
+            Defines the reduction that is applied over classes. Should be one of the following:
+
+            - ``macro``: Calculate score for each class and average them
+            - ``weighted``: Calculates score for each class and computes weighted average using their support
+            - ``"none"`` or ``None``: Calculates score for each class and applies no reduction
+        thresholds:
+            Can be one of:
+
+            - If set to `None`, will use a non-binned approach where thresholds are dynamically calculated from
+              all the data. Most accurate but also most memory consuming approach.
+            - If set to an `int` (larger than 1), will use that number of thresholds linearly spaced from
+              0 to 1 as bins for the calculation.
+            - If set to an `list` of floats, will use the indicated thresholds in the list as bins for the calculation
+            - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
+              bins for the calculation.
+
+        validate_args: bool indicating if input arguments and tensors should be validated for correctness.
+            Set to ``False`` for faster computations.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+
+    Returns:
+        If `average=None|"none"` then a 1d tensor of shape (n_classes, ) will be returned with AP score per class.
+        If `average="macro"|"weighted"` then a single scalar is returned.
+
+    Example:
+        >>> from torchmetrics import MulticlassAveragePrecision
+        >>> preds = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
+        ...                       [0.05, 0.75, 0.05, 0.05, 0.05],
+        ...                       [0.05, 0.05, 0.75, 0.05, 0.05],
+        ...                       [0.05, 0.05, 0.05, 0.75, 0.05]])
+        >>> target = torch.tensor([0, 1, 3, 2])
+        >>> metric = MulticlassAveragePrecision(num_classes=5, average="macro", thresholds=None)
+        >>> metric(preds, target)
+        tensor(0.6250)
+        >>> metric = MulticlassAveragePrecision(num_classes=5, average=None, thresholds=None)
+        >>> metric(preds, target)
+        tensor([1.0000, 1.0000, 0.2500, 0.2500,    nan])
+        >>> metric = MulticlassAveragePrecision(num_classes=5, average="macro", thresholds=5)
+        >>> metric(preds, target)
+        tensor(0.5000)
+        >>> metric = MulticlassAveragePrecision(num_classes=5, average=None, thresholds=5)
+        >>> metric(preds, target)
+        tensor([1.0000, 1.0000, 0.2500, 0.2500, -0.0000])
+
+    """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
@@ -80,6 +211,83 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
 
 
 class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
+    r"""
+    Computes the average precision (AP) score for binary tasks. The AP score summarizes a precision-recall curve
+    as an weighted mean of precisions at each threshold, with the difference in recall from the previous threshold
+    as weight:
+
+    .. math::
+        AP = \sum{n} (R_n - R_{n-1}) P_n
+
+    where :math:`P_n, R_n` is the respective precision and recall at threshold index :math:`n`.
+
+    Accepts the following input tensors:
+
+    - ``preds`` (float tensor): ``(N, C, ...)``. Preds should be a tensor containing probabilities or logits for each
+      observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
+      sigmoid per element.
+    - ``target`` (int tensor): ``(N, C, ...)``. Target should be a tensor containing ground truth labels, and therefore
+      only contain {0,1} values (except if `ignore_index` is specified).
+
+    Additional dimension ``...`` will be flattened into the batch dimension.
+
+    The implementation both support calculating the metric in a non-binned but accurate version and an binned version
+    that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
+    non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
+    argument to either an integer, list or an 1d tensor will use an binned version that uses memory of
+    size :math:`\mathcal{O}(n_{thresholds})` (constant memory).
+
+    Args:
+        num_labels: Integer specifing the number of labels
+        average:
+            Defines the reduction that is applied over labels. Should be one of the following:
+
+            - ``micro``: Sum score over all labels
+            - ``macro``: Calculate score for each label and average them
+            - ``weighted``: Calculates score for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: Calculates score for each label and applies no reduction
+        thresholds:
+            Can be one of:
+
+            - If set to `None`, will use a non-binned approach where thresholds are dynamically calculated from
+              all the data. Most accurate but also most memory consuming approach.
+            - If set to an `int` (larger than 1), will use that number of thresholds linearly spaced from
+              0 to 1 as bins for the calculation.
+            - If set to an `list` of floats, will use the indicated thresholds in the list as bins for the calculation
+            - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
+              bins for the calculation.
+
+        validate_args: bool indicating if input arguments and tensors should be validated for correctness.
+            Set to ``False`` for faster computations.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+
+    Returns:
+        If `average=None|"none"` then a 1d tensor of shape (n_classes, ) will be returned with AP score per class.
+        If `average="micro|macro"|"weighted"` then a single scalar is returned.
+
+    Example:
+        >>> from torchmetrics import MultilabelAveragePrecision
+        >>> preds = torch.tensor([[0.75, 0.05, 0.35],
+        ...                       [0.45, 0.75, 0.05],
+        ...                       [0.05, 0.55, 0.75],
+        ...                       [0.05, 0.65, 0.05]])
+        >>> target = torch.tensor([[1, 0, 1],
+        ...                        [0, 0, 0],
+        ...                        [0, 1, 1],
+        ...                        [1, 1, 1]])
+        >>> metric = MultilabelAveragePrecision(num_labels=3, average="macro", thresholds=None)
+        >>> metric(preds, target)
+        tensor(0.7500)
+        >>> metric = MultilabelAveragePrecision(num_labels=3, average=None, thresholds=None)
+        >>> metric(preds, target)
+        tensor([0.7500, 0.5833, 0.9167])
+        >>> metric = MultilabelAveragePrecision(num_labels=3, average="macro", thresholds=5)
+        >>> metric(preds, target)
+        tensor(0.7778)
+        >>> metric = MultilabelAveragePrecision(num_labels=3, average=None, thresholds=5)
+        >>> metric(preds, target)
+        tensor([0.7500, 0.6667, 0.9167])
+    """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
