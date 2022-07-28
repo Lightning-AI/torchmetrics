@@ -469,7 +469,7 @@ def multiclass_precision_recall_curve(
     that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
     non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
     argument to either an integer, list or an 1d tensor will use an binned version that uses memory of
-    size :math:`\mathcal{O}(n_{thresholds})` (constant memory).
+    size :math:`\mathcal{O}(n_{thresholds} \times n_{classes})` (constant memory).
 
     Args:
         preds: Tensor with predictions
@@ -693,7 +693,7 @@ def multilabel_precision_recall_curve(
     that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
     non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
     argument to either an integer, list or an 1d tensor will use an binned version that uses memory of
-    size :math:`\mathcal{O}(n_{thresholds})` (constant memory).
+    size :math:`\mathcal{O}(n_{thresholds} \times n_{labels})` (constant memory).
 
     Args:
         preds: Tensor with predictions
