@@ -225,7 +225,8 @@ class MultilabelMatthewsCorrCoef(MultilabelConfusionMatrix):
 
 
 class MatthewsCorrCoef(Metric):
-    r"""Calculates `Matthews correlation coefficient`_ that measures the general correlation or quality of a classification.
+    r"""Calculates `Matthews correlation coefficient`_ that measures the general correlation
+    or quality of a classification.
 
     In the binary case it is defined as:
 

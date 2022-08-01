@@ -131,15 +131,6 @@ def binary_auroc(
     thresholds at the same time. Noteably, a AUROC score of 1 is an perfert score and an AUROC score of 0.5
     corresponds to random guessing.
 
-    Computes the average precision (AP) score for binary tasks. The AP score summarizes a precision-recall curve
-    as an weighted mean of precisions at each threshold, with the difference in recall from the previous threshold
-    as weight:
-
-    .. math::
-        AP = \sum{n} (R_n - R_{n-1}) P_n
-
-    where :math:`P_n, R_n` is the respective precision and recall at threshold index :math:`n`.
-
     Accepts the following input tensors:
 
     - ``preds`` (float tensor): ``(N, ...)``. Preds should be a tensor containing probabilities or logits for each
@@ -159,6 +150,7 @@ def binary_auroc(
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
+        max_fpr: If not ``None``, calculates standardized partial AUC over the range ``[0, max_fpr]``.
         thresholds:
             Can be one of:
 
