@@ -143,7 +143,7 @@ class Metric(Module, ABC):
                 default needs access to the full metric state. If this is not the case, significant speedups can be
                 achieved and we recommend setting this to `False`.
                 We provide an checking function
-                `from torchmetrics.utilities import check_forward_no_full_state`
+                `from torchmetrics.utilities import check_forward_full_state_property`
                 that can be used to check if the `full_state_update=True` (old and potential slower behaviour,
                 default for now) or if `full_state_update=False` can be used safely.
                 """,

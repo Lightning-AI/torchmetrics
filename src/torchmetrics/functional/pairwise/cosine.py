@@ -54,7 +54,7 @@ def pairwise_cosine_similarity(
 
     .. math::
         s_{cos}(x,y) = \frac{<x,y>}{||x|| \cdot ||y||}
-                     = \frac{\sum_{d=1}^D x_d \cdot y_d }{\sqrt{\sum_{d=1}^D x_i^2} \cdot \sqrt{\sum_{d=1}^D x_i^2}}
+                     = \frac{\sum_{d=1}^D x_d \cdot y_d }{\sqrt{\sum_{d=1}^D x_i^2} \cdot \sqrt{\sum_{d=1}^D y_i^2}}
 
     If both :math:`x` and :math:`y` are passed in, the calculation will be performed pairwise
     between the rows of :math:`x` and :math:`y`.
