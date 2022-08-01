@@ -116,6 +116,7 @@ def _binary_confusion_matrix_format(
     target: Tensor,
     threshold: float = 0.5,
     ignore_index: Optional[int] = None,
+    should_threshold: bool = True,
 ) -> Tuple[Tensor, Tensor]:
     """Convert all input to label format.
 
@@ -134,7 +135,8 @@ def _binary_confusion_matrix_format(
         if not torch.all((0 <= preds) * (preds <= 1)):
             # preds is logits, convert with sigmoid
             preds = preds.sigmoid()
-        preds = preds > threshold
+        if should_threshold:
+            preds = preds > threshold
 
     return preds, target
 
@@ -296,7 +298,7 @@ def _multiclass_confusion_matrix_tensor_validation(
 
 
 def _multiclass_confusion_matrix_format(
-    preds: Tensor, target: Tensor, ignore_index: Optional[int] = None
+    preds: Tensor, target: Tensor, ignore_index: Optional[int] = None, should_threshold: bool = True,
 ) -> Tuple[Tensor, Tensor]:
     """Convert all input to label format.
 
@@ -304,10 +306,13 @@ def _multiclass_confusion_matrix_format(
     - Remove all datapoints that should be ignored
     """
     # Apply argmax if we have one more dimension
-    if preds.ndim == target.ndim + 1:
+    if preds.ndim == target.ndim + 1 and should_threshold:
         preds = preds.argmax(dim=1)
 
-    preds = preds.flatten()
+    if should_threshold:
+        preds = preds.flatten()
+    else:
+        preds = _movedim(preds, 1, -1).reshape(-1, preds.shape[1])
     target = target.flatten()
 
     if ignore_index is not None:

@@ -11,14 +11,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple
+from typing import Tuple, Optional
 
 import torch
 from torch import Tensor
+from typing_extensions import Literal
 
 from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import DataType
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_8
+from torchmetrics.functional.classification.confusion_matrix import (
+    _binary_confusion_matrix_tensor_validation,
+    _binary_confusion_matrix_format,
+    _multiclass_confusion_matrix_tensor_validation,
+    _multiclass_confusion_matrix_format,
+)
 
 
 def _binning_with_loop(
@@ -82,7 +89,7 @@ def _binning_bucketize(
 def _ce_compute(
     confidences: Tensor,
     accuracies: Tensor,
-    bin_boundaries: Tensor,
+    bin_boundaries: Union[Tensor, int],
     norm: str = "l1",
     debias: bool = False,
 ) -> Tensor:
@@ -102,6 +109,9 @@ def _ce_compute(
     Returns:
         Tensor: Calibration error scalar.
     """
+    if isinstance(bin_boundaries, int):
+        bin_boundaries = torch.linspace(0, 1, bin_boundaries + 1, dtype=torch.float, device=confidences.device)
+
     if norm not in {"l1", "l2", "max"}:
         raise ValueError(f"Norm {norm} is not supported. Please select from l1, l2, or max. ")
 
@@ -124,6 +134,95 @@ def _ce_compute(
             ce += torch.sum(torch.nan_to_num(debias_bins))  # replace nans with zeros if nothing appeared in a bin
         ce = torch.sqrt(ce) if ce > 0 else torch.tensor(0)
     return ce
+
+
+def _binary_calibration_error_arg_validation(
+    norm: Literal["l1", "l2", "max"] = "l1", ignore_index: Optional[int] = None,
+) -> None:
+    allowed_norm = ("l1", "l2", "max")
+    if norm not in allowed_norm:
+        raise ValueError(f"Expected argument `norm` to be one of {allowed_norm}, but got {norm}.")
+    if ignore_index is not None and not isinstance(ignore_index, int):
+        raise ValueError(f"Expected argument `ignore_index` to either be `None` or an integer, but got {ignore_index}")
+
+
+def _binary_calibration_error_tensor_validation(
+    preds: Tensor, target: Tensor, ignore_index: Optional[int] = None
+) -> None:
+    _binary_confusion_matrix_tensor_validation(preds, target, ignore_index)
+    if not preds.is_floating_point():
+        raise ValueError(
+            "Expected argument `preds` to be floating tensor with probabilities/logits"
+            f" but got tensor with dtype {preds.dtype}"
+        )
+
+
+def _binary_calibration_error_update(preds: Tensor, target: Tensor) -> Tensor:
+    confidences, accuracies = preds, target == preds.round().int()
+    return confidences, accuracies
+
+
+def binary_calibration_error(
+    preds: Tensor, 
+    target: Tensor, 
+    n_bins: int = 15, 
+    norm: Literal["l1", "l2", "max"] = "l1",
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
+) -> Tensor:
+    if validate_args:
+        _binary_calibration_error_arg_validation(norm, ignore_index)
+        _binary_calibration_error_tensor_validation(preds, target, ignore_index)
+    preds, target = _binary_confusion_matrix_format(preds, target, threshold=0.0, ignore_index=ignore_index, should_threshold=False)
+    confidences, accuracies = _binary_calibration_error_update(preds, target)
+    return _ce_compute(confidences, accuracies, n_bins, norm)
+
+
+def _multiclass_calibration_error_arg_validation(
+    num_classes: int, norm: Literal["l1", "l2", "max"] = "l1",, ignore_index: Optional[int] = None,
+) -> None:
+    if not isinstance(num_classes, int) or num_classes < 2:
+        raise ValueError(f"Expected argument `num_classes` to be an integer larger than 1, but got {num_classes}")
+    allowed_norm = ("l1", "l2", "max")
+    if norm not in allowed_norm:
+        raise ValueError(f"Expected argument `norm` to be one of {allowed_norm}, but got {norm}.")
+    if ignore_index is not None and not isinstance(ignore_index, int):
+        raise ValueError(f"Expected argument `ignore_index` to either be `None` or an integer, but got {ignore_index}")
+
+
+def _multiclass_calibration_error_tensor_validation(
+    preds: Tensor, target: Tensor, num_classes: int, ignore_index: Optional[int] = None
+) -> None:
+    _multiclass_confusion_matrix_tensor_validation(preds, target, num_classes, ignore_index)
+    if not preds.is_floating_point():
+        raise ValueError(
+            "Expected argument `preds` to be floating tensor with probabilities/logits"
+            f" but got tensor with dtype {preds.dtype}"
+        )
+
+
+def _multiclass_confusion_matrix_update(
+    preds: Tensor, target: Tensor, num_classes: int
+) -> Tensor:
+
+def multiclass_calibration_error(
+    preds: Tensor, 
+    target: Tensor, 
+    num_classes: int, 
+    n_bins: int = 15, 
+    norm: Literal["l1", "l2", "max"] = "l1",
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
+) -> Tensor:
+    if validate_args:
+        _multiclass_calibration_error_arg_validation(num_classes, norm, ignore_index)
+        _multiclass_calibration_error_tensor_validation(preds, target, num_classes, ignore_index)
+    preds, target = _multiclass_confusion_matrix_format(preds, target, ignore_index, should_threshold=False)
+    confmat = _multiclass_confusion_matrix_update(preds, target, num_classes)
+    return _multiclass_confusion_matrix_compute(confmat, normalize)
+
+# -------------------------- Old stuff --------------------------
+
 
 
 def _ce_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
