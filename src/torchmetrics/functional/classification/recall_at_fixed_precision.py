@@ -58,7 +58,7 @@ def _recall_at_precision(
 
 def _binary_recall_at_fixed_precision_arg_validation(
     min_precision: float,
-    thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+    thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
 ) -> None:
     _binary_precision_recall_curve_arg_validation(thresholds, ignore_index)
@@ -82,7 +82,7 @@ def binary_recall_at_fixed_precision(
     preds: Tensor,
     target: Tensor,
     min_precision: float,
-    thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+    thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tuple[Tensor, Tensor]:
@@ -151,7 +151,7 @@ def binary_recall_at_fixed_precision(
 def _multiclass_recall_at_fixed_precision_arg_validation(
     num_classes: int,
     min_precision: float,
-    thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+    thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
 ) -> None:
     _multiclass_precision_recall_curve_arg_validation(num_classes, thresholds, ignore_index)
@@ -182,7 +182,7 @@ def multiclass_recall_at_fixed_precision(
     target: Tensor,
     num_classes: int,
     min_precision: float,
-    thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+    thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tuple[Tensor, Tensor]:
@@ -257,7 +257,7 @@ def multiclass_recall_at_fixed_precision(
 def _multilabel_recall_at_fixed_precision_arg_validation(
     num_labels: int,
     min_precision: float,
-    thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+    thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
 ) -> None:
     _multilabel_precision_recall_curve_arg_validation(num_labels, thresholds, ignore_index)
@@ -291,7 +291,7 @@ def multilabel_recall_at_fixed_precision(
     target: Tensor,
     num_labels: int,
     min_precision: float,
-    thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+    thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tuple[Tensor, Tensor]:

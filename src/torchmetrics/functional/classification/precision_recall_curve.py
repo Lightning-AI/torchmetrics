@@ -80,7 +80,7 @@ def _binary_clf_curve(
 
 
 def _adjust_threshold_arg(
-    thresholds: Optional[Union[int, List[float], Tensor]] = 100, device: Optional[torch.device] = None
+    thresholds: Optional[Union[int, List[float], Tensor]] = None, device: Optional[torch.device] = None
 ) -> Optional[Tensor]:
     """Utility function for converting the threshold arg for list and int to tensor format."""
     if isinstance(thresholds, int):
@@ -91,7 +91,7 @@ def _adjust_threshold_arg(
 
 
 def _binary_precision_recall_curve_arg_validation(
-    thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+    thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
 ) -> None:
     """Validate non tensor input.
@@ -154,7 +154,7 @@ def _binary_precision_recall_curve_tensor_validation(
 def _binary_precision_recall_curve_format(
     preds: Tensor,
     target: Tensor,
-    thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+    thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
 ) -> Tuple[Tensor, Tensor, Optional[Tensor]]:
     """Convert all input to the right format.
@@ -237,7 +237,7 @@ def _binary_precision_recall_curve_compute(
 def binary_precision_recall_curve(
     preds: Tensor,
     target: Tensor,
-    thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+    thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tuple[Tensor, Tensor, Tensor]:
@@ -308,7 +308,7 @@ def binary_precision_recall_curve(
 
 def _multiclass_precision_recall_curve_arg_validation(
     num_classes: int,
-    thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+    thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
 ) -> None:
     """Validate non tensor input.
@@ -365,7 +365,7 @@ def _multiclass_precision_recall_curve_format(
     preds: Tensor,
     target: Tensor,
     num_classes: int,
-    thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+    thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
 ) -> Tuple[Tensor, Tensor, Optional[Tensor]]:
     """Convert all input to the right format.
@@ -447,7 +447,7 @@ def multiclass_precision_recall_curve(
     preds: Tensor,
     target: Tensor,
     num_classes: int,
-    thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+    thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
@@ -546,7 +546,7 @@ def multiclass_precision_recall_curve(
 
 def _multilabel_precision_recall_curve_arg_validation(
     num_labels: int,
-    thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+    thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
 ) -> None:
     """Validate non tensor input.
@@ -580,7 +580,7 @@ def _multilabel_precision_recall_curve_format(
     preds: Tensor,
     target: Tensor,
     num_labels: int,
-    thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+    thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
 ) -> Tuple[Tensor, Tensor, Optional[Tensor]]:
     """Convert all input to the right format.
@@ -671,7 +671,7 @@ def multilabel_precision_recall_curve(
     preds: Tensor,
     target: Tensor,
     num_labels: int,
-    thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+    thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:

@@ -82,7 +82,7 @@ def _binary_roc_compute(
 def binary_roc(
     preds: Tensor,
     target: Tensor,
-    thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+    thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tuple[Tensor, Tensor, Tensor]:
@@ -182,7 +182,7 @@ def multiclass_roc(
     preds: Tensor,
     target: Tensor,
     num_classes: int,
-    thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+    thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
@@ -318,7 +318,7 @@ def multilabel_roc(
     preds: Tensor,
     target: Tensor,
     num_labels: int,
-    thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+    thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:

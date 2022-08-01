@@ -106,7 +106,7 @@ class BinaryPrecisionRecallCurve(Metric):
 
     def __init__(
         self,
-        thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+        thresholds: Optional[Union[int, List[float], Tensor]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,
@@ -233,7 +233,7 @@ class MulticlassPrecisionRecallCurve(Metric):
     def __init__(
         self,
         num_classes: int,
-        thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+        thresholds: Optional[Union[int, List[float], Tensor]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,
@@ -367,7 +367,7 @@ class MultilabelPrecisionRecallCurve(Metric):
     def __init__(
         self,
         num_labels: int,
-        thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+        thresholds: Optional[Union[int, List[float], Tensor]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,

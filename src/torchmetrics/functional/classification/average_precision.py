@@ -82,7 +82,7 @@ def _binary_average_precision_compute(
 def binary_average_precision(
     preds: Tensor,
     target: Tensor,
-    thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+    thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
@@ -153,7 +153,7 @@ def binary_average_precision(
 def _multiclass_average_precision_arg_validation(
     num_classes: int,
     average: Optional[Literal["macro", "weighted", "none"]] = "macro",
-    thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+    thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
 ) -> None:
     _multiclass_precision_recall_curve_arg_validation(num_classes, thresholds, ignore_index)
@@ -182,7 +182,7 @@ def multiclass_average_precision(
     target: Tensor,
     num_classes: int,
     average: Optional[Literal["macro", "weighted", "none"]] = "macro",
-    thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+    thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
@@ -270,7 +270,7 @@ def multiclass_average_precision(
 def _multilabel_average_precision_arg_validation(
     num_labels: int,
     average: Optional[Literal["micro", "macro", "weighted", "none"]],
-    thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+    thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
 ) -> None:
     _multilabel_precision_recall_curve_arg_validation(num_labels, thresholds, ignore_index)
@@ -307,7 +307,7 @@ def multilabel_average_precision(
     target: Tensor,
     num_labels: int,
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
-    thresholds: Optional[Union[int, List[float], Tensor]] = 100,
+    thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
