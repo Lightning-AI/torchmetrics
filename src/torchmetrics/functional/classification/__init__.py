@@ -36,6 +36,9 @@ from torchmetrics.functional.classification.ranking import (  # noqa: F401
     coverage_error,
     label_ranking_average_precision,
     label_ranking_loss,
+    multilabel_coverage_error,
+    multilabel_ranking_average_precision,
+    multilabel_ranking_loss,
 )
 from torchmetrics.functional.classification.roc import roc  # noqa: F401
 from torchmetrics.functional.classification.specificity import specificity  # noqa: F401
