@@ -470,7 +470,12 @@ def _multilabel_confusion_matrix_tensor_validation(
 
 
 def _multilabel_confusion_matrix_format(
-    preds: Tensor, target: Tensor, num_labels: int, threshold: float = 0.5, ignore_index: Optional[int] = None
+    preds: Tensor,
+    target: Tensor,
+    num_labels: int,
+    threshold: float = 0.5,
+    ignore_index: Optional[int] = None,
+    should_threshold: bool = True,
 ) -> Tuple[Tensor, Tensor]:
     """Convert all input to label format.
 
@@ -481,7 +486,8 @@ def _multilabel_confusion_matrix_format(
     if preds.is_floating_point():
         if not torch.all((0 <= preds) * (preds <= 1)):
             preds = preds.sigmoid()
-        preds = preds > threshold
+        if should_threshold:
+            preds = preds > threshold
     preds = _movedim(preds, 1, -1).reshape(-1, num_labels)
     target = _movedim(target, 1, -1).reshape(-1, num_labels)
 
