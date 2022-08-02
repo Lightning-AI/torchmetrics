@@ -138,6 +138,7 @@ class MulticlassAccuracy(MulticlassStatScores):
             - ``macro``: Calculate statistics for each label and average them
             - ``weighted``: Calculates statistics for each label and computes weighted average using their support
             - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+
         top_k:
             Number of highest probability or logit score predictions considered to find the correct label.
             Only works when ``preds`` contain probabilities/logits.
