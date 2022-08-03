@@ -34,8 +34,22 @@ from torchmetrics.classification.binned_precision_recall import BinnedRecallAtFi
 from torchmetrics.classification.calibration_error import CalibrationError  # noqa: F401
 from torchmetrics.classification.cohen_kappa import BinaryCohenKappa, CohenKappa, MulticlassCohenKappa  # noqa: F401
 from torchmetrics.classification.dice import Dice  # noqa: F401
-from torchmetrics.classification.f_beta import F1Score, FBetaScore  # noqa: F401
-from torchmetrics.classification.hamming import HammingDistance  # noqa: F401
+from torchmetrics.classification.f_beta import (  # noqa: F401
+    BinaryF1Score,
+    BinaryFBetaScore,
+    F1Score,
+    FBetaScore,
+    MulticlassF1Score,
+    MulticlassFBetaScore,
+    MultilabelF1Score,
+    MultilabelFBetaScore,
+)
+from torchmetrics.classification.hamming import (  # noqa: F401
+    BinaryHammingDistance,
+    HammingDistance,
+    MulticlassHammingDistance,
+    MultilabelHammingDistance,
+)
 from torchmetrics.classification.hinge import HingeLoss  # noqa: F401
 from torchmetrics.classification.jaccard import (  # noqa: F401
     BinaryJaccardIndex,
@@ -50,7 +64,16 @@ from torchmetrics.classification.matthews_corrcoef import (  # noqa: F401
     MulticlassMatthewsCorrCoef,
     MultilabelMatthewsCorrCoef,
 )
-from torchmetrics.classification.precision_recall import Precision, Recall  # noqa: F401
+from torchmetrics.classification.precision_recall import (  # noqa: F401
+    BinaryPrecision,
+    BinaryRecall,
+    MulticlassPrecision,
+    MulticlassRecall,
+    MultilabelPrecision,
+    MultilabelRecall,
+    Precision,
+    Recall,
+)
 from torchmetrics.classification.precision_recall_curve import PrecisionRecallCurve  # noqa: F401
 from torchmetrics.classification.ranking import (  # noqa: F401
     CoverageError,
@@ -61,4 +84,9 @@ from torchmetrics.classification.ranking import (  # noqa: F401
     MultilabelRankingLoss,
 )
 from torchmetrics.classification.roc import ROC  # noqa: F401
-from torchmetrics.classification.specificity import Specificity  # noqa: F401
+from torchmetrics.classification.specificity import (  # noqa: F401
+    BinarySpecificity,
+    MulticlassSpecificity,
+    MultilabelSpecificity,
+    Specificity,
+)

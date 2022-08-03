@@ -68,7 +68,7 @@ def _binary_confusion_matrix_arg_validation(
     - ``ignore_index`` has to be None or int
     - ``normalize`` has to be "true" | "pred" | "all" | "none" | None
     """
-    if not isinstance(threshold, float) and not (0 <= threshold <= 1):
+    if not (isinstance(threshold, float) and (0 <= threshold <= 1)):
         raise ValueError(f"Expected argument `threshold` to be a float in the [0,1] range, but got {threshold}.")
     if ignore_index is not None and not isinstance(ignore_index, int):
         raise ValueError(f"Expected argument `ignore_index` to either be `None` or an integer, but got {ignore_index}")
@@ -419,7 +419,7 @@ def _multilabel_confusion_matrix_arg_validation(
     """
     if not isinstance(num_labels, int) or num_labels < 2:
         raise ValueError(f"Expected argument `num_labels` to be an integer larger than 1, but got {num_labels}")
-    if not isinstance(threshold, float):
+    if not (isinstance(threshold, float) and (0 <= threshold <= 1)):
         raise ValueError(f"Expected argument `threshold` to be a float, but got {threshold}.")
     if ignore_index is not None and not isinstance(ignore_index, int):
         raise ValueError(f"Expected argument `ignore_index` to either be `None` or an integer, but got {ignore_index}")

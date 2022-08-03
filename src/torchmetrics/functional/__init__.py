@@ -27,8 +27,22 @@ from torchmetrics.functional.classification.confusion_matrix import (
     multilabel_confusion_matrix,
 )
 from torchmetrics.functional.classification.dice import dice, dice_score
-from torchmetrics.functional.classification.f_beta import f1_score, fbeta_score
-from torchmetrics.functional.classification.hamming import hamming_distance
+from torchmetrics.functional.classification.f_beta import (
+    binary_f1_score,
+    binary_fbeta_score,
+    f1_score,
+    fbeta_score,
+    multiclass_f1_score,
+    multiclass_fbeta_score,
+    multilabel_f1_score,
+    multilabel_fbeta_score,
+)
+from torchmetrics.functional.classification.hamming import (
+    binary_hamming_distance,
+    hamming_distance,
+    multiclass_hamming_distance,
+    multilabel_hamming_distance,
+)
 from torchmetrics.functional.classification.hinge import hinge_loss
 from torchmetrics.functional.classification.jaccard import (
     binary_jaccard_index,
@@ -43,7 +57,17 @@ from torchmetrics.functional.classification.matthews_corrcoef import (
     multiclass_matthews_corrcoef,
     multilabel_matthews_corrcoef,
 )
-from torchmetrics.functional.classification.precision_recall import precision, precision_recall, recall
+from torchmetrics.functional.classification.precision_recall import (
+    binary_precision,
+    binary_recall,
+    multiclass_precision,
+    multiclass_recall,
+    multilabel_precision,
+    multilabel_recall,
+    precision,
+    precision_recall,
+    recall,
+)
 from torchmetrics.functional.classification.precision_recall_curve import precision_recall_curve
 from torchmetrics.functional.classification.ranking import (
     coverage_error,
@@ -54,7 +78,12 @@ from torchmetrics.functional.classification.ranking import (
     multilabel_ranking_loss,
 )
 from torchmetrics.functional.classification.roc import roc
-from torchmetrics.functional.classification.specificity import specificity
+from torchmetrics.functional.classification.specificity import (
+    binary_specificity,
+    multiclass_specificity,
+    multilabel_specificity,
+    specificity,
+)
 from torchmetrics.functional.classification.stat_scores import (
     binary_stat_scores,
     multiclass_stat_scores,
@@ -201,6 +230,12 @@ __all__ = [
     "binary_stat_scores",
     "multiclass_stat_scores",
     "multilabel_stat_scores",
+    "binary_f1_score",
+    "binary_fbeta_score",
+    "multiclass_f1_score",
+    "multiclass_fbeta_score",
+    "multilabel_f1_score",
+    "multilabel_fbeta_score",
     "binary_cohen_kappa",
     "multiclass_cohen_kappa",
     "binary_jaccard_index",
@@ -212,4 +247,16 @@ __all__ = [
     "multilabel_coverage_error",
     "multilabel_ranking_average_precision",
     "multilabel_ranking_loss",
+    "binary_specificity",
+    "multiclass_specificity",
+    "multilabel_specificity",
+    "binary_hamming_distance",
+    "multiclass_hamming_distance",
+    "multilabel_hamming_distance",
+    "binary_precision",
+    "multiclass_precision",
+    "multilabel_precision",
+    "binary_recall",
+    "multiclass_recall",
+    "multilabel_recall",
 ]
