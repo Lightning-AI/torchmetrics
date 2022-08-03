@@ -633,8 +633,8 @@ def inject_ignore_index(x: Tensor, ignore_index: int) -> Tensor:
         return x
     idx = torch.randperm(x.numel())
     x = deepcopy(x)
-    # randomly set either element {3, 4, 5} to the ignore index value
-    skip = torch.randint(3, 6, (1,)).item()
+    # randomly set either element {4, 5} to the ignore index value
+    skip = torch.randint(4, 6, (1,)).item()
     x.view(-1)[idx[::skip]] = ignore_index
     return x
 
