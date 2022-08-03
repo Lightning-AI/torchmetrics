@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Union
 
 import torch
 from torch import Tensor
@@ -158,7 +158,7 @@ def _binary_calibration_error_tensor_validation(
 
 
 def _binary_calibration_error_update(preds: Tensor, target: Tensor) -> Tensor:
-    confidences, accuracies = preds, target == preds.round().int()
+    confidences, accuracies = preds, (target == preds.round().int()).float()
     return confidences, accuracies
 
 
@@ -179,7 +179,7 @@ def binary_calibration_error(
 
 
 def _multiclass_calibration_error_arg_validation(
-    num_classes: int, norm: Literal["l1", "l2", "max"] = "l1",, ignore_index: Optional[int] = None,
+    num_classes: int, norm: Literal["l1", "l2", "max"] = "l1", ignore_index: Optional[int] = None,
 ) -> None:
     if not isinstance(num_classes, int) or num_classes < 2:
         raise ValueError(f"Expected argument `num_classes` to be an integer larger than 1, but got {num_classes}")
@@ -201,9 +201,11 @@ def _multiclass_calibration_error_tensor_validation(
         )
 
 
-def _multiclass_confusion_matrix_update(
+def _multiclass_calibration_error_update(
     preds: Tensor, target: Tensor, num_classes: int
 ) -> Tensor:
+    pass
+
 
 def multiclass_calibration_error(
     preds: Tensor, 
@@ -219,7 +221,7 @@ def multiclass_calibration_error(
         _multiclass_calibration_error_tensor_validation(preds, target, num_classes, ignore_index)
     preds, target = _multiclass_confusion_matrix_format(preds, target, ignore_index, should_threshold=False)
     confmat = _multiclass_confusion_matrix_update(preds, target, num_classes)
-    return _multiclass_confusion_matrix_compute(confmat, normalize)
+    return _ce_compute(confidences, accuracies, n_bins, norm)
 
 # -------------------------- Old stuff --------------------------
 

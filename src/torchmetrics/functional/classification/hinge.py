@@ -139,7 +139,7 @@ class MulticlassMode(EnumStr):
     """
 
     CRAMMER_SINGER = "crammer-singer"
-    ONE_VS_ALL = 
+    ONE_VS_ALL = "one-vs-all"
 
 
 def _check_shape_and_type_consistency_hinge(
