@@ -40,6 +40,7 @@ from torchmetrics.functional.classification.roc import (
     roc,
 )
 from torchmetrics.utilities.checks import _input_format_classification
+from torchmetrics.utilities.compute import _safe_divide
 from torchmetrics.utilities.data import _bincount
 from torchmetrics.utilities.enums import AverageMethod, DataType
 from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
@@ -66,11 +67,12 @@ def _reduce_auroc(
             f"Average precision score for one or more classes was `nan`. Ignoring these classes in {average}-average",
             UserWarning,
         )
+    idx = ~torch.isnan(res)
     if average == "macro":
-        return res[~torch.isnan(res)].mean()
+        return res[idx].mean()
     elif average == "weighted" and weights is not None:
-        weights = weights / weights.sum()
-        return (res * weights)[~torch.isnan(res)].sum()
+        weights = _safe_divide(weights[idx], weights[idx].sum())
+        return (res[idx] * weights).sum()
     else:
         raise ValueError("Received an incompatible combinations of inputs to make reduction.")
 
