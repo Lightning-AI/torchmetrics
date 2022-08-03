@@ -179,43 +179,44 @@ class TestMulticlassCalibrationError(MetricTester):
             },
         )
 
+    def test_multiclass_calibration_error_differentiability(self, input):
+        preds, target = input
+        self.run_differentiability_test(
+            preds=preds,
+            target=target,
+            metric_module=MulticlassCalibrationError,
+            metric_functional=multiclass_calibration_error,
+            metric_args={"num_classes": NUM_CLASSES},
+        )
 
-#     def test_multiclass_calibration_error_differentiability(self, input):
-#         preds, target = input
-#         self.run_differentiability_test(
-#             preds=preds,
-#             target=target,
-#             metric_module=MulticlassCalibrationError,
-#             metric_functional=multiclass_calibration_error,
-#             metric_args={"num_classes": NUM_CLASSES},
-#         )
+    @pytest.mark.parametrize("dtype", [torch.half, torch.double])
+    def test_multiclass_calibration_error_dtype_cpu(self, input, dtype):
+        preds, target = input
+        if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_6:
+            pytest.xfail(reason="half support of core ops not support before pytorch v1.6")
+        if (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.softmax in metric does not support cpu + half precision")
+        self.run_precision_test_cpu(
+            preds=preds,
+            target=target,
+            metric_module=MulticlassCalibrationError,
+            metric_functional=multiclass_calibration_error,
+            metric_args={"num_classes": NUM_CLASSES},
+            dtype=dtype,
+        )
 
-#     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-#     def test_multiclass_calibration_error_dtype_cpu(self, input, dtype):
-#         preds, target = input
-#         if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_6:
-#             pytest.xfail(reason="half support of core ops not support before pytorch v1.6")
-#         self.run_precision_test_cpu(
-#             preds=preds,
-#             target=target,
-#             metric_module=MulticlassCalibrationError,
-#             metric_functional=multiclass_calibration_error,
-#             metric_args={"num_classes": NUM_CLASSES},
-#             dtype=dtype,
-#         )
-
-#     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-#     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-#     def test_multiclass_calibration_error_dtype_gpu(self, input, dtype):
-#         preds, target = input
-#         self.run_precision_test_gpu(
-#             preds=preds,
-#             target=target,
-#             metric_module=MulticlassCalibrationError,
-#             metric_functional=multiclass_calibration_error,
-#             metric_args={"num_classes": NUM_CLASSES},
-#             dtype=dtype,
-#         )
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
+    @pytest.mark.parametrize("dtype", [torch.half, torch.double])
+    def test_multiclass_calibration_error_dtype_gpu(self, input, dtype):
+        preds, target = input
+        self.run_precision_test_gpu(
+            preds=preds,
+            target=target,
+            metric_module=MulticlassCalibrationError,
+            metric_functional=multiclass_calibration_error,
+            metric_args={"num_classes": NUM_CLASSES},
+            dtype=dtype,
+        )
 
 
 # -------------------------- Old stuff --------------------------
