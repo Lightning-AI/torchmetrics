@@ -11,18 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from multiprocessing.sharedctypes import Value
 from typing import Optional, Tuple, Union
-from attr import validate
 
 import torch
 from torch import Tensor, tensor
 from typing_extensions import Literal
 
-from torchmetrics.utilities.checks import _input_squeeze
+from torchmetrics.utilities.checks import _check_same_shape, _input_squeeze
 from torchmetrics.utilities.data import to_onehot
 from torchmetrics.utilities.enums import DataType, EnumStr
-from torchmetrics.utilities.checks import _check_same_shape
 
 
 def _hinge_loss_compute(measure: Tensor, total: Tensor) -> Tensor:
@@ -36,9 +33,7 @@ def _binary_hinge_loss_arg_validation(squared: bool, ignore_index: Optional[int]
         raise ValueError(f"Expected argument `ignore_index` to either be `None` or an integer, but got {ignore_index}")
 
 
-def _binary_hinge_loss_tensor_validation(
-    preds: Tensor, target: Tensor, ignore_index: Optional[int] = None
-) -> None:
+def _binary_hinge_loss_tensor_validation(preds: Tensor, target: Tensor, ignore_index: Optional[int] = None) -> None:
     # Check that they have same shape
     _check_same_shape(preds, target)
 
@@ -53,14 +48,14 @@ def _binary_hinge_loss_tensor_validation(
             f"Detected the following values in `target`: {unique_values} but expected only"
             f" the following values {[0,1] + [] if ignore_index is None else [ignore_index]}."
         )
-    
+
     if not preds.is_floating_point():
         raise ValueError(
             "Expected argument `preds` to be an floating tensor with probability/logit scores,"
             f" but got tensor with dtype {preds.dtype}"
         )
 
-    
+
 def _binary_hinge_loss_update(
     preds: Tensor,
     target: Tensor,
@@ -73,7 +68,6 @@ def _binary_hinge_loss_update(
     margin[target] = preds[target]
     margin[~target] = -preds[~target]
 
-
     measures = 1 - margin
     measures = torch.clamp(measures, 0)
 
@@ -83,12 +77,13 @@ def _binary_hinge_loss_update(
     total = tensor(target.shape[0], device=target.device)
     return measures.sum(dim=0), total
 
+
 def binary_hinge_loss(
     preds: Tensor,
     target: Tensor,
     squared: bool = False,
     ignore_index: Optional[int] = None,
-    validate_args: bool = False
+    validate_args: bool = False,
 ) -> Tensor:
     if validate_args:
         _binary_hinge_loss_arg_validation(squared, ignore_index)
@@ -111,6 +106,14 @@ def _multiclass_hinge_loss_arg_validation(
         raise ValueError(f"Expected argument `multiclass_mode` to be one of {allowed_mm}, but got {multiclass_mode}.")
 
 
+def _multiclass_hinge_loss_tensor_validation():
+    pass
+
+
+def _multiclass_hinge_loss_update():
+    pass
+
+
 def multiclass_hinge_loss(
     preds: Tensor,
     target: Tensor,
@@ -118,7 +121,7 @@ def multiclass_hinge_loss(
     squared: bool = False,
     multiclass_mode: Literal["crammer-singer", "one-vs-all"] = "crammer-singer",
     ignore_index: Optional[int] = None,
-    validate_args: bool = False
+    validate_args: bool = False,
 ) -> Tensor:
     if validate_args:
         _multiclass_hinge_loss_arg_validation(num_classes, squared, multiclass_mode, ignore_index)
@@ -127,9 +130,8 @@ def multiclass_hinge_loss(
     return _hinge_loss_compute(measures, total)
 
 
-
-
 # -------------------------- Old stuff --------------------------
+
 
 class MulticlassMode(EnumStr):
     """Enum to represent possible multiclass modes of hinge.

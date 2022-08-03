@@ -11,21 +11,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple, Optional, Union
+from typing import Optional, Tuple, Union
 
 import torch
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.functional.classification.confusion_matrix import (
+    _binary_confusion_matrix_format,
+    _binary_confusion_matrix_tensor_validation,
+    _multiclass_confusion_matrix_format,
+    _multiclass_confusion_matrix_tensor_validation,
+)
 from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import DataType
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_8
-from torchmetrics.functional.classification.confusion_matrix import (
-    _binary_confusion_matrix_tensor_validation,
-    _binary_confusion_matrix_format,
-    _multiclass_confusion_matrix_tensor_validation,
-    _multiclass_confusion_matrix_format,
-)
 
 
 def _binning_with_loop(
@@ -68,6 +68,7 @@ def _binning_bucketize(
     Returns:
         tuple with binned accuracy, binned confidence and binned probabilities
     """
+    accuracies = accuracies.to(dtype=confidences.dtype)
     acc_bin = torch.zeros(len(bin_boundaries) - 1, device=confidences.device, dtype=confidences.dtype)
     conf_bin = torch.zeros(len(bin_boundaries) - 1, device=confidences.device, dtype=confidences.dtype)
     count_bin = torch.zeros(len(bin_boundaries) - 1, device=confidences.device, dtype=confidences.dtype)
@@ -115,10 +116,11 @@ def _ce_compute(
     if norm not in {"l1", "l2", "max"}:
         raise ValueError(f"Norm {norm} is not supported. Please select from l1, l2, or max. ")
 
-    if _TORCH_GREATER_EQUAL_1_8:
-        acc_bin, conf_bin, prop_bin = _binning_bucketize(confidences, accuracies, bin_boundaries)
-    else:
-        acc_bin, conf_bin, prop_bin = _binning_with_loop(confidences, accuracies, bin_boundaries)
+    with torch.no_grad():
+        if _TORCH_GREATER_EQUAL_1_8:
+            acc_bin, conf_bin, prop_bin = _binning_bucketize(confidences, accuracies, bin_boundaries)
+        else:
+            acc_bin, conf_bin, prop_bin = _binning_with_loop(confidences, accuracies, bin_boundaries)
 
     if norm == "l1":
         ce = torch.sum(torch.abs(acc_bin - conf_bin) * prop_bin)
@@ -137,8 +139,12 @@ def _ce_compute(
 
 
 def _binary_calibration_error_arg_validation(
-    norm: Literal["l1", "l2", "max"] = "l1", ignore_index: Optional[int] = None,
+    n_bins: int,
+    norm: Literal["l1", "l2", "max"] = "l1",
+    ignore_index: Optional[int] = None,
 ) -> None:
+    if not isinstance(n_bins, int) or n_bins < 1:
+        raise ValueError(f"Expected argument `n_bins` to be an integer larger than 0, but got {n_bins}")
     allowed_norm = ("l1", "l2", "max")
     if norm not in allowed_norm:
         raise ValueError(f"Expected argument `norm` to be one of {allowed_norm}, but got {norm}.")
@@ -158,31 +164,38 @@ def _binary_calibration_error_tensor_validation(
 
 
 def _binary_calibration_error_update(preds: Tensor, target: Tensor) -> Tensor:
-    confidences, accuracies = preds, (target == preds.round().int()).float()
+    confidences, accuracies = preds, target
     return confidences, accuracies
 
 
 def binary_calibration_error(
-    preds: Tensor, 
-    target: Tensor, 
-    n_bins: int = 15, 
+    preds: Tensor,
+    target: Tensor,
+    n_bins: int = 15,
     norm: Literal["l1", "l2", "max"] = "l1",
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
     if validate_args:
-        _binary_calibration_error_arg_validation(norm, ignore_index)
+        _binary_calibration_error_arg_validation(n_bins, norm, ignore_index)
         _binary_calibration_error_tensor_validation(preds, target, ignore_index)
-    preds, target = _binary_confusion_matrix_format(preds, target, threshold=0.0, ignore_index=ignore_index, should_threshold=False)
+    preds, target = _binary_confusion_matrix_format(
+        preds, target, threshold=0.0, ignore_index=ignore_index, should_threshold=False
+    )
     confidences, accuracies = _binary_calibration_error_update(preds, target)
     return _ce_compute(confidences, accuracies, n_bins, norm)
 
 
 def _multiclass_calibration_error_arg_validation(
-    num_classes: int, norm: Literal["l1", "l2", "max"] = "l1", ignore_index: Optional[int] = None,
+    num_classes: int,
+    n_bins: int,
+    norm: Literal["l1", "l2", "max"] = "l1",
+    ignore_index: Optional[int] = None,
 ) -> None:
     if not isinstance(num_classes, int) or num_classes < 2:
         raise ValueError(f"Expected argument `num_classes` to be an integer larger than 1, but got {num_classes}")
+    if not isinstance(n_bins, int) or n_bins < 1:
+        raise ValueError(f"Expected argument `n_bins` to be an integer larger than 0, but got {n_bins}")
     allowed_norm = ("l1", "l2", "max")
     if norm not in allowed_norm:
         raise ValueError(f"Expected argument `norm` to be one of {allowed_norm}, but got {norm}.")
@@ -202,29 +215,34 @@ def _multiclass_calibration_error_tensor_validation(
 
 
 def _multiclass_calibration_error_update(
-    preds: Tensor, target: Tensor, num_classes: int
+    preds: Tensor,
+    target: Tensor,
 ) -> Tensor:
-    pass
+    if not torch.all((0 <= preds) * (preds <= 1)):
+        preds = preds.softmax(1)
+    confidences, predictions = preds.max(dim=1)
+    accuracies = predictions.eq(target)
+    return confidences, accuracies
 
 
 def multiclass_calibration_error(
-    preds: Tensor, 
-    target: Tensor, 
-    num_classes: int, 
-    n_bins: int = 15, 
+    preds: Tensor,
+    target: Tensor,
+    num_classes: int,
+    n_bins: int = 15,
     norm: Literal["l1", "l2", "max"] = "l1",
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
     if validate_args:
-        _multiclass_calibration_error_arg_validation(num_classes, norm, ignore_index)
+        _multiclass_calibration_error_arg_validation(num_classes, n_bins, norm, ignore_index)
         _multiclass_calibration_error_tensor_validation(preds, target, num_classes, ignore_index)
     preds, target = _multiclass_confusion_matrix_format(preds, target, ignore_index, should_threshold=False)
-    confmat = _multiclass_confusion_matrix_update(preds, target, num_classes)
+    confidences, accuracies = _multiclass_calibration_error_update(preds, target)
     return _ce_compute(confidences, accuracies, n_bins, norm)
 
-# -------------------------- Old stuff --------------------------
 
+# -------------------------- Old stuff --------------------------
 
 
 def _ce_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:

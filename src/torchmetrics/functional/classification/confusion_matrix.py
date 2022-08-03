@@ -298,7 +298,10 @@ def _multiclass_confusion_matrix_tensor_validation(
 
 
 def _multiclass_confusion_matrix_format(
-    preds: Tensor, target: Tensor, ignore_index: Optional[int] = None, should_threshold: bool = True,
+    preds: Tensor,
+    target: Tensor,
+    ignore_index: Optional[int] = None,
+    should_threshold: bool = True,
 ) -> Tuple[Tensor, Tensor]:
     """Convert all input to label format.
 

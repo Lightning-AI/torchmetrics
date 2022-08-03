@@ -11,14 +11,108 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List
+from typing import Any, List, Optional
 
 import torch
 from torch import Tensor
 
-from torchmetrics.functional.classification.calibration_error import _ce_compute, _ce_update
+from torchmetrics.functional.classification.calibration_error import (
+    _binary_calibration_error_arg_validation,
+    _binary_calibration_error_tensor_validation,
+    _binary_calibration_error_update,
+    _binary_confusion_matrix_format,
+    _ce_compute,
+    _ce_update,
+    _multiclass_calibration_error_arg_validation,
+    _multiclass_calibration_error_tensor_validation,
+    _multiclass_calibration_error_update,
+    _multiclass_confusion_matrix_format,
+)
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
+
+
+class BinaryCalibrationError(Metric):
+    is_differentiable: bool = False
+    higher_is_better: bool = False
+    full_state_update: bool = False
+
+    def __init__(
+        self,
+        n_bins: int = 15,
+        norm: str = "l1",
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(**kwargs)
+        if validate_args:
+            _binary_calibration_error_arg_validation(n_bins, norm, ignore_index)
+        self.validate_args = validate_args
+        self.n_bins = n_bins
+        self.norm = norm
+        self.ignore_index = ignore_index
+        self.add_state("confidences", [], dist_reduce_fx="cat")
+        self.add_state("accuracies", [], dist_reduce_fx="cat")
+
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+        if self.validate_args:
+            _binary_calibration_error_tensor_validation(preds, target, self.ignore_index)
+        preds, target = _binary_confusion_matrix_format(
+            preds, target, threshold=0.0, ignore_index=self.ignore_index, should_threshold=False
+        )
+        confidences, accuracies = _binary_calibration_error_update(preds, target)
+        self.confidences.append(confidences)
+        self.accuracies.append(accuracies)
+
+    def compute(self) -> Tensor:
+        confidences = dim_zero_cat(self.confidences)
+        accuracies = dim_zero_cat(self.accuracies)
+        return _ce_compute(confidences, accuracies, self.n_bins, norm=self.norm)
+
+
+class MulticlassCalibrationError(Metric):
+    is_differentiable: bool = False
+    higher_is_better: bool = False
+    full_state_update: bool = False
+
+    def __init__(
+        self,
+        num_classes: int,
+        n_bins: int = 15,
+        norm: str = "l1",
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(**kwargs)
+        if validate_args:
+            _multiclass_calibration_error_arg_validation(num_classes, n_bins, norm, ignore_index)
+        self.validate_args = validate_args
+        self.num_classes = num_classes
+        self.n_bins = n_bins
+        self.norm = norm
+        self.ignore_index = ignore_index
+        self.add_state("confidences", [], dist_reduce_fx="cat")
+        self.add_state("accuracies", [], dist_reduce_fx="cat")
+
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+        if self.validate_args:
+            _multiclass_calibration_error_tensor_validation(preds, target, self.num_classes, self.ignore_index)
+        preds, target = _multiclass_confusion_matrix_format(
+            preds, target, ignore_index=self.ignore_index, should_threshold=False
+        )
+        confidences, accuracies = _multiclass_calibration_error_update(preds, target)
+        self.confidences.append(confidences)
+        self.accuracies.append(accuracies)
+
+    def compute(self) -> Tensor:
+        confidences = dim_zero_cat(self.confidences)
+        accuracies = dim_zero_cat(self.accuracies)
+        return _ce_compute(confidences, accuracies, self.n_bins, norm=self.norm)
+
+
+# -------------------------- Old stuff --------------------------
 
 
 class CalibrationError(Metric):
