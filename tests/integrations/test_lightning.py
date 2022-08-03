@@ -289,7 +289,6 @@ def test_scriptable(tmpdir):
         max_epochs=1,
         log_every_n_steps=1,
         logger=False,
-        checkpoint_callback=False,
     )
     trainer.fit(model)
     rand_input = torch.randn(10, 32)
