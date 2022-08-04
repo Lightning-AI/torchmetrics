@@ -17,6 +17,10 @@ import torch
 from torch import Tensor, tensor
 from typing_extensions import Literal
 
+from torchmetrics.functional.classification.confusion_matrix import (
+    _binary_confusion_matrix_format,
+    _binary_confusion_matrix_tensor_validation,
+)
 from torchmetrics.utilities.checks import _check_same_shape, _input_squeeze
 from torchmetrics.utilities.data import to_onehot
 from torchmetrics.utilities.enums import DataType, EnumStr
@@ -26,34 +30,15 @@ def _hinge_loss_compute(measure: Tensor, total: Tensor) -> Tensor:
     return measure / total
 
 
-def _binary_hinge_loss_arg_validation(squared: bool, ignore_index: Optional[int] = None) -> None:
+def _binary_hinge_loss_arg_validation(
+    squared: bool, threshold: float = 0.5, ignore_index: Optional[int] = None
+) -> None:
     if not isinstance(squared, bool):
         raise ValueError(f"Expected argument `squared` to be an bool but got {squared}")
+    if not (isinstance(threshold, float) and (0 <= threshold <= 1)):
+        raise ValueError(f"Expected argument `threshold` to be a float in the [0,1] range, but got {threshold}.")
     if ignore_index is not None and not isinstance(ignore_index, int):
         raise ValueError(f"Expected argument `ignore_index` to either be `None` or an integer, but got {ignore_index}")
-
-
-def _binary_hinge_loss_tensor_validation(preds: Tensor, target: Tensor, ignore_index: Optional[int] = None) -> None:
-    # Check that they have same shape
-    _check_same_shape(preds, target)
-
-    # Check that target only contains {0,1} values or value in ignore_index
-    unique_values = torch.unique(target)
-    if ignore_index is None:
-        check = torch.any((unique_values != 0) & (unique_values != 1))
-    else:
-        check = torch.any((unique_values != 0) & (unique_values != 1) & (unique_values != ignore_index))
-    if check:
-        raise RuntimeError(
-            f"Detected the following values in `target`: {unique_values} but expected only"
-            f" the following values {[0,1] + [] if ignore_index is None else [ignore_index]}."
-        )
-
-    if not preds.is_floating_point():
-        raise ValueError(
-            "Expected argument `preds` to be an floating tensor with probability/logit scores,"
-            f" but got tensor with dtype {preds.dtype}"
-        )
 
 
 def _binary_hinge_loss_update(
@@ -62,7 +47,7 @@ def _binary_hinge_loss_update(
     squared: bool,
     ignore_index: Optional[int] = None,
 ) -> Tuple[Tensor, Tensor]:
-
+    preds = preds.float()
     target = target.bool()
     margin = torch.zeros_like(preds)
     margin[target] = preds[target]
@@ -82,12 +67,14 @@ def binary_hinge_loss(
     preds: Tensor,
     target: Tensor,
     squared: bool = False,
+    threshold: float = 0.5,
     ignore_index: Optional[int] = None,
     validate_args: bool = False,
 ) -> Tensor:
     if validate_args:
-        _binary_hinge_loss_arg_validation(squared, ignore_index)
-        _binary_hinge_loss_tensor_validation(preds, target, ignore_index)
+        _binary_hinge_loss_arg_validation(squared, threshold, ignore_index)
+        _binary_confusion_matrix_tensor_validation(preds, target, ignore_index)
+    preds, target = _binary_confusion_matrix_format(preds, target, threshold, ignore_index)
     measures, total = _binary_hinge_loss_update(preds, target, squared, ignore_index)
     return _hinge_loss_compute(measures, total)
 

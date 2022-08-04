@@ -15,8 +15,60 @@ from typing import Any, Optional, Union
 
 from torch import Tensor, tensor
 
-from torchmetrics.functional.classification.hinge import MulticlassMode, _hinge_compute, _hinge_update
+from torchmetrics.functional.classification.hinge import (
+    MulticlassMode,
+    _binary_confusion_matrix_format,
+    _binary_confusion_matrix_tensor_validation,
+    _binary_hinge_loss_arg_validation,
+    _binary_hinge_loss_update,
+    _hinge_compute,
+    _hinge_loss_compute,
+    _hinge_update,
+)
 from torchmetrics.metric import Metric
+
+
+class BinaryHingeLoss(Metric):
+    is_differentiable: bool = True
+    higher_is_better: bool = False
+    full_state_update: bool = False
+
+    def __init__(
+        self,
+        threshold: float = 0.5,
+        squared: bool = False,
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(**kwargs)
+        if validate_args:
+            _binary_hinge_loss_arg_validation(squared, threshold, ignore_index)
+        self.validate_args = validate_args
+        self.squared = squared
+        self.threshold = threshold
+        self.ignore_index = ignore_index
+
+        self.add_state("measures", default=tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
+
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+        if self.validate_args:
+            _binary_confusion_matrix_tensor_validation(preds, target, self.ignore_index)
+        preds, target = _binary_confusion_matrix_format(preds, target, self.threshold, self.ignore_index)
+        measures, total = _binary_hinge_loss_update(preds, target, self.squared, self.ignore_index)
+        self.measures += measures
+        self.total += total
+
+    def compute(self) -> Tensor:
+        return _hinge_loss_compute(self.measures, self.total)
+
+
+class MulticlassHingeLoss(Metric):
+    pass
+
+
+# -------------------------- Old stuff --------------------------
 
 
 class HingeLoss(Metric):
