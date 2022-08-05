@@ -111,7 +111,7 @@ class BinaryCalibrationError(Metric):
         if self.validate_args:
             _binary_calibration_error_tensor_validation(preds, target, self.ignore_index)
         preds, target = _binary_confusion_matrix_format(
-            preds, target, threshold=0.0, ignore_index=self.ignore_index, should_threshold=False
+            preds, target, threshold=0.0, ignore_index=self.ignore_index, convert_to_labels=False
         )
         confidences, accuracies = _binary_calibration_error_update(preds, target)
         self.confidences.append(confidences)
@@ -208,7 +208,7 @@ class MulticlassCalibrationError(Metric):
         if self.validate_args:
             _multiclass_calibration_error_tensor_validation(preds, target, self.num_classes, self.ignore_index)
         preds, target = _multiclass_confusion_matrix_format(
-            preds, target, ignore_index=self.ignore_index, should_threshold=False
+            preds, target, ignore_index=self.ignore_index, convert_to_labels=False
         )
         confidences, accuracies = _multiclass_calibration_error_update(preds, target)
         self.confidences.append(confidences)

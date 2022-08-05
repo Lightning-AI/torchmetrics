@@ -230,7 +230,7 @@ def binary_calibration_error(
         _binary_calibration_error_arg_validation(n_bins, norm, ignore_index)
         _binary_calibration_error_tensor_validation(preds, target, ignore_index)
     preds, target = _binary_confusion_matrix_format(
-        preds, target, threshold=0.0, ignore_index=ignore_index, should_threshold=False
+        preds, target, threshold=0.0, ignore_index=ignore_index, convert_to_labels=False
     )
     confidences, accuracies = _binary_calibration_error_update(preds, target)
     return _ce_compute(confidences, accuracies, n_bins, norm)
@@ -341,7 +341,7 @@ def multiclass_calibration_error(
     if validate_args:
         _multiclass_calibration_error_arg_validation(num_classes, n_bins, norm, ignore_index)
         _multiclass_calibration_error_tensor_validation(preds, target, num_classes, ignore_index)
-    preds, target = _multiclass_confusion_matrix_format(preds, target, ignore_index, should_threshold=False)
+    preds, target = _multiclass_confusion_matrix_format(preds, target, ignore_index, convert_to_labels=False)
     confidences, accuracies = _multiclass_calibration_error_update(preds, target)
     return _ce_compute(confidences, accuracies, n_bins, norm)
 
