@@ -37,6 +37,7 @@ from torchmetrics.functional.classification.stat_scores import (
     _stat_scores_update,
 )
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
 
 
@@ -71,10 +72,10 @@ class _AbstractStatScores(Metric):
 
     def _final_state(self) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
         """Final aggregation in case of list states."""
-        tp = torch.cat(self.tp) if isinstance(self.tp, list) else self.tp
-        fp = torch.cat(self.fp) if isinstance(self.fp, list) else self.fp
-        tn = torch.cat(self.tn) if isinstance(self.tn, list) else self.tn
-        fn = torch.cat(self.fn) if isinstance(self.fn, list) else self.fn
+        tp = dim_zero_cat(self.tp)
+        fp = dim_zero_cat(self.fp)
+        tn = dim_zero_cat(self.tn)
+        fn = dim_zero_cat(self.fn)
         return tp, fp, tn, fn
 
 
