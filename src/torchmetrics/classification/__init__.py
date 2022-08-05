@@ -24,7 +24,12 @@ from torchmetrics.classification.stat_scores import (  # noqa: F401 isort:skip
     StatScores,
 )
 
-from torchmetrics.classification.accuracy import Accuracy  # noqa: F401
+from torchmetrics.classification.accuracy import (  # noqa: F401
+    Accuracy,
+    BinaryAccuracy,
+    MulticlassAccuracy,
+    MultilabelAccuracy,
+)
 from torchmetrics.classification.auc import AUC  # noqa: F401
 from torchmetrics.classification.auroc import AUROC  # noqa: F401
 from torchmetrics.classification.avg_precision import AveragePrecision  # noqa: F401
@@ -34,6 +39,7 @@ from torchmetrics.classification.binned_precision_recall import BinnedRecallAtFi
 from torchmetrics.classification.calibration_error import CalibrationError  # noqa: F401
 from torchmetrics.classification.cohen_kappa import BinaryCohenKappa, CohenKappa, MulticlassCohenKappa  # noqa: F401
 from torchmetrics.classification.dice import Dice  # noqa: F401
+from torchmetrics.classification.exact_match import MultilabelExactMatch  # noqa: F401
 from torchmetrics.classification.f_beta import (  # noqa: F401
     BinaryF1Score,
     BinaryFBetaScore,
