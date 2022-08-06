@@ -11,7 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torchmetrics.functional.classification.accuracy import accuracy  # noqa: F401
+from torchmetrics.functional.classification.accuracy import (  # noqa: F401
+    accuracy,
+    binary_accuracy,
+    multiclass_accuracy,
+    multilabel_accuracy,
+)
 from torchmetrics.functional.classification.auc import auc  # noqa: F401
 from torchmetrics.functional.classification.auroc import auroc  # noqa: F401
 from torchmetrics.functional.classification.average_precision import average_precision  # noqa: F401
@@ -28,6 +33,7 @@ from torchmetrics.functional.classification.confusion_matrix import (  # noqa: F
     multilabel_confusion_matrix,
 )
 from torchmetrics.functional.classification.dice import dice, dice_score  # noqa: F401
+from torchmetrics.functional.classification.exact_match import multilabel_exact_match  # noqa: F401
 from torchmetrics.functional.classification.f_beta import (  # noqa: F401
     binary_f1_score,
     binary_fbeta_score,

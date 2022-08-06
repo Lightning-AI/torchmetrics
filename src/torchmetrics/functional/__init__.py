@@ -14,7 +14,12 @@
 from torchmetrics.functional.audio.pit import permutation_invariant_training, pit_permutate
 from torchmetrics.functional.audio.sdr import scale_invariant_signal_distortion_ratio, signal_distortion_ratio
 from torchmetrics.functional.audio.snr import scale_invariant_signal_noise_ratio, signal_noise_ratio
-from torchmetrics.functional.classification.accuracy import accuracy
+from torchmetrics.functional.classification.accuracy import (
+    accuracy,
+    binary_accuracy,
+    multiclass_accuracy,
+    multilabel_accuracy,
+)
 from torchmetrics.functional.classification.auc import auc
 from torchmetrics.functional.classification.auroc import auroc
 from torchmetrics.functional.classification.average_precision import average_precision
@@ -31,6 +36,7 @@ from torchmetrics.functional.classification.confusion_matrix import (
     multilabel_confusion_matrix,
 )
 from torchmetrics.functional.classification.dice import dice, dice_score
+from torchmetrics.functional.classification.exact_match import multilabel_exact_match
 from torchmetrics.functional.classification.f_beta import (
     binary_f1_score,
     binary_fbeta_score,
@@ -245,6 +251,9 @@ __all__ = [
     "binary_matthews_corrcoef",
     "multiclass_matthews_corrcoef",
     "multilabel_matthews_corrcoef",
+    "binary_accuracy",
+    "multilabel_accuracy",
+    "multiclass_accuracy",
     "binary_specificity",
     "multiclass_specificity",
     "multilabel_specificity",
@@ -257,6 +266,7 @@ __all__ = [
     "binary_recall",
     "multiclass_recall",
     "multilabel_recall",
+    "multilabel_exact_match",
     "binary_calibration_error",
     "multiclass_calibration_error",
     "binary_hinge_loss",

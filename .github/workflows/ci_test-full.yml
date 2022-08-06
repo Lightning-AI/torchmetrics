@@ -27,12 +27,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, macOS-10.15, windows-2019]
-        python-version: ['3.7', '3.8', '3.9', '3.10']
+        os: [ubuntu-20.04, macOS-11, windows-2019]
+        python-version: ['3.7', '3.8', '3.10']
         requires: ['oldest', 'latest']
         exclude:
           - {python-version: '3.7', requires: 'latest'}
-          - {python-version: '3.9', requires: 'oldest'}
           - {python-version: '3.10', requires: 'oldest'}
           - {python-version: '3.10', os: 'windows-2019'}  # todo: https://discuss.pytorch.org/t/numpy-is-not-available-error/146192
     env:
@@ -46,7 +45,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
 
