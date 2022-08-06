@@ -176,7 +176,7 @@ def multilabel_ranking_average_precision(
     return _ranking_reduce(score, n_elements)
 
 
-def _multilabel_ranking_loss_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, int, Optional[Tensor]]:
+def _multilabel_ranking_loss_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, int]:
     """Accumulate state for label ranking loss.
 
     Args:
