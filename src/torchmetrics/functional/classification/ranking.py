@@ -66,7 +66,7 @@ def multilabel_coverage_error(
 
     Accepts the following input tensors:
 
-     ``preds`` (float tensor): ``(N, C, ...)``. Preds should be a tensor containing probabilities or logits for each
+    - ``preds`` (float tensor): ``(N, C, ...)``. Preds should be a tensor containing probabilities or logits for each
       observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
       sigmoid per element.
     - ``target`` (int tensor): ``(N, C, ...)``. Target should be a tensor containing ground truth labels, and therefore
@@ -137,7 +137,7 @@ def multilabel_ranking_average_precision(
 
     Accepts the following input tensors:
 
-     ``preds`` (float tensor): ``(N, C, ...)``. Preds should be a tensor containing probabilities or logits for each
+    - ``preds`` (float tensor): ``(N, C, ...)``. Preds should be a tensor containing probabilities or logits for each
       observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
       sigmoid per element.
     - ``target`` (int tensor): ``(N, C, ...)``. Target should be a tensor containing ground truth labels, and therefore
@@ -219,7 +219,7 @@ def multilabel_ranking_loss(
 
     Accepts the following input tensors:
 
-     ``preds`` (float tensor): ``(N, C, ...)``. Preds should be a tensor containing probabilities or logits for each
+    - ``preds`` (float tensor): ``(N, C, ...)``. Preds should be a tensor containing probabilities or logits for each
       observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
       sigmoid per element.
     - ``target`` (int tensor): ``(N, C, ...)``. Target should be a tensor containing ground truth labels, and therefore
