@@ -40,7 +40,7 @@ binary_calibration_error
     :noindex:
 
 multiclass_calibration_error
-^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autofunction:: torchmetrics.functional.multiclass_calibration_error
     :noindex:
