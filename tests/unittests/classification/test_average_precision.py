@@ -272,9 +272,10 @@ def _sk_average_precision_multilabel(preds, target, average="macro", ignore_inde
     "input", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5])
 )
 class TestMultilabelAveragePrecision(MetricTester):
-    @pytest.mark.parametrize("ignore_index", [None, -1, 0])
+    @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_multilabel_average_precision(self, input, ddp, ignore_index):
+    def test_multilabel_average_precision(self, input, ddp, average, ignore_index):
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -283,16 +284,17 @@ class TestMultilabelAveragePrecision(MetricTester):
             preds=preds,
             target=target,
             metric_class=MultilabelAveragePrecision,
-            sk_metric=partial(_sk_average_precision_multilabel, ignore_index=ignore_index),
+            sk_metric=partial(_sk_average_precision_multilabel, average=average, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_labels": NUM_CLASSES,
+                "average": average,
                 "ignore_index": ignore_index,
             },
         )
 
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
-    @pytest.mark.parametrize("ignore_index", [None, -1, 0])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     def test_multilabel_average_precision_functional(self, input, average, ignore_index):
         preds, target = input
         if ignore_index is not None:

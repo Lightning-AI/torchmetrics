@@ -314,7 +314,9 @@ class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
             state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]
         else:
             state = self.confmat
-        return _multilabel_average_precision_compute(state, self.num_labels, self.average, self.thresholds)
+        return _multilabel_average_precision_compute(
+            state, self.num_labels, self.average, self.thresholds, self.ignore_index
+        )
 
 
 # -------------------------- Old stuff --------------------------

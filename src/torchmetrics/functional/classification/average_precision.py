@@ -37,6 +37,7 @@ from torchmetrics.functional.classification.precision_recall_curve import (
     _precision_recall_curve_compute,
     _precision_recall_curve_update,
 )
+from torchmetrics.utilities.compute import _safe_divide
 from torchmetrics.utilities.data import _bincount
 from torchmetrics.utilities.prints import rank_zero_warn
 
@@ -62,11 +63,12 @@ def _reduce_average_precision(
             f"Average precision score for one or more classes was `nan`. Ignoring these classes in {average}-average",
             UserWarning,
         )
+    idx = ~torch.isnan(res)
     if average == "macro":
-        return res[~torch.isnan(res)].mean()
+        return res[idx].mean()
     elif average == "weighted" and weights is not None:
-        weights = weights / weights.sum()
-        return (res * weights)[~torch.isnan(res)].sum()
+        weights = _safe_divide(weights[idx], weights[idx].sum())
+        return (res[idx] * weights).sum()
     else:
         raise ValueError("Received an incompatible combinations of inputs to make reduction.")
 
@@ -290,7 +292,12 @@ def _multilabel_average_precision_compute(
         if isinstance(state, Tensor) and thresholds is not None:
             state = state.sum(1)
         else:
-            state = [state[0].flatten(), state[1].flatten()]
+            preds, target = state[0].flatten(), state[1].flatten()
+            if ignore_index is not None:
+                idx = target == ignore_index
+                preds = preds[~idx]
+                target = target[~idx]
+            state = [preds, target]
         return _binary_average_precision_compute(state, thresholds)
     else:
         precision, recall, _ = _multilabel_precision_recall_curve_compute(state, num_labels, thresholds, ignore_index)
