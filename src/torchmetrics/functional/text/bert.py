@@ -319,13 +319,13 @@ def bert_score(
         >>> preds = ["hello there", "general kenobi"]
         >>> target = ["hello there", "master kenobi"]
         >>> bert_score(preds, target)
-        {'f1': tensor([1.000, 0.9960], 'precision': [1.0, 0.996], 'recall': [1.0, 0.996]}
+        {'f1': tensor([1.000, 0.9960], 'precision': tensor([1.0000, 0.9960]), 'recall': tensor([1.0000, 0.9960])}
     """
     if len(preds) != len(target):
         raise ValueError("Number of predicted and reference sententes must be the same!")
-    if not isinstance(preds, (str, list)):
+    if not isinstance(preds, (str, list, dict)):  # dict for BERTScore class compute call
         preds = list(preds)
-    if not isinstance(target, (str, list)):
+    if not isinstance(target, (str, list, dict)):  # dict for BERTScore class compute call
         target = list(target)
 
     if verbose and (not _TQDM_AVAILABLE):
@@ -411,10 +411,10 @@ def bert_score(
     precision, recall, f1_score = _get_precision_recall_f1(
         preds_embeddings, target_embeddings, preds_idf_scale, target_idf_scale
     )
-    if _are_valid_lists:
-        precision = precision[preds_loader.dataset.sorting_indices]
-        recall = recall[preds_loader.dataset.sorting_indices]
-        f1_score = f1_score[preds_loader.dataset.sorting_indices]
+    # Sort predictions
+    precision = precision[preds_loader.dataset.sorting_indices]
+    recall = recall[preds_loader.dataset.sorting_indices]
+    f1_score = f1_score[preds_loader.dataset.sorting_indices]
 
     if baseline is not None:
         precision, recall, f1_score = _rescale_metrics_with_baseline(

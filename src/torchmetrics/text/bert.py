@@ -93,11 +93,8 @@ class BERTScore(Metric):
         >>> preds = ["hello there", "general kenobi"]
         >>> target = ["hello there", "master kenobi"]
         >>> bertscore = BERTScore()
-        >>> score = bertscore(preds, target)
-        >>> from pprint import pprint
-        >>> rounded_score = {k: [round(v, 3) for v in vv] for k, vv in score.items()}
-        >>> pprint(rounded_score)
-        {'f1': [1.0, 0.996], 'precision': [1.0, 0.996], 'recall': [1.0, 0.996]}
+        >>> bertscore(preds, target)
+        {'f1': tensor([1.000, 0.9960], 'precision': tensor([1.0000, 0.9960]), 'recall': tensor([1.0000, 0.9960])}
     """
 
     is_differentiable: bool = False
