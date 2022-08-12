@@ -412,9 +412,14 @@ def bert_score(
         preds_embeddings, target_embeddings, preds_idf_scale, target_idf_scale
     )
     # Sort predictions
-    precision = precision[preds_loader.dataset.sorting_indices]
-    recall = recall[preds_loader.dataset.sorting_indices]
-    f1_score = f1_score[preds_loader.dataset.sorting_indices]
+    if len(precision.shape) == 1:  # i.e. when all_layers = False
+        precision = precision[preds_loader.dataset.sorting_indices]
+        recall = recall[preds_loader.dataset.sorting_indices]
+        f1_score = f1_score[preds_loader.dataset.sorting_indices]
+    elif len(precision.shape) == 2:  # i.e. when all_layers = True
+        precision = precision[:, preds_loader.dataset.sorting_indices]
+        recall = recall[:, preds_loader.dataset.sorting_indices]
+        f1_score = f1_score[:, preds_loader.dataset.sorting_indices]
 
     if baseline is not None:
         precision, recall, f1_score = _rescale_metrics_with_baseline(
