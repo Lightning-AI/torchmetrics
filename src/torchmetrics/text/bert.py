@@ -94,7 +94,7 @@ class BERTScore(Metric):
         >>> target = ["hello there", "master kenobi"]
         >>> bertscore = BERTScore()
         >>> bertscore(preds, target)
-        {'precision': tensor([1.0000, 0.9960]), 'recall': tensor([1.0000, 0.9960]), 'f1': tensor([1.000, 0.9960])}
+        {'precision': tensor([1.0000, 0.9961]), 'recall': tensor([1.0000, 0.9961]), 'f1': tensor([1.000, 0.9961])}
     """
 
     is_differentiable: bool = False

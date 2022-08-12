@@ -319,7 +319,7 @@ def bert_score(
         >>> preds = ["hello there", "general kenobi"]
         >>> target = ["hello there", "master kenobi"]
         >>> bert_score(preds, target)
-        {'precision': tensor([1.0000, 0.9960]), 'recall': tensor([1.0000, 0.9960]), 'f1': tensor([1.000, 0.9960])}
+        {'precision': tensor([1.0000, 0.9961]), 'recall': tensor([1.0000, 0.9961]), 'f1': tensor([1.000, 0.9961])}
     """
     if len(preds) != len(target):
         raise ValueError("Number of predicted and reference sententes must be the same!")
