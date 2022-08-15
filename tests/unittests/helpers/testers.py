@@ -642,7 +642,7 @@ def inject_ignore_index(x: Tensor, ignore_index: int) -> Tensor:
         new_classes = torch.unique(batch)
         class_not_in = [c not in new_classes for c in classes]
         if any(class_not_in):
-            missing_class = np.where(class_not_in)[0][0]
+            missing_class = int(np.where(class_not_in)[0][0])
             batch[torch.where(batch == ignore_index)[0][0]] = missing_class
     return x
 
