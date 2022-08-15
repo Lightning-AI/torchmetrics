@@ -31,7 +31,7 @@ def _binary_clf_curve(
     pos_label: int = 1,
 ) -> Tuple[Tensor, Tensor, Tensor]:
     """Calculates the tps and false positives for all unique thresholds in the preds tensor. Adapted from
-    https://github.com/scikit-learn/scikit-learn/blob/master/sklearn/metrics/_ranking.py.
+    https://github.com/scikit-learn/scikit-learn/blob/main/sklearn/metrics/_ranking.py.
 
     Args:
         preds: 1d tensor with predictions
