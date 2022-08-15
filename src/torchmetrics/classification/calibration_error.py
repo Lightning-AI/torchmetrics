@@ -15,6 +15,7 @@ from typing import Any, List, Optional
 
 import torch
 from torch import Tensor
+from typing_extensions import Literal
 
 from torchmetrics.functional.classification.calibration_error import (
     _binary_calibration_error_arg_validation,
@@ -92,7 +93,7 @@ class BinaryCalibrationError(Metric):
     def __init__(
         self,
         n_bins: int = 15,
-        norm: str = "l1",
+        norm: Literal["l1", "l2", "max"] = "l1",
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,
@@ -188,7 +189,7 @@ class MulticlassCalibrationError(Metric):
         self,
         num_classes: int,
         n_bins: int = 15,
-        norm: str = "l1",
+        norm: Literal["l1", "l2", "max"] = "l1",
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,
