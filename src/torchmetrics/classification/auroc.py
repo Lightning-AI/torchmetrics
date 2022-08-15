@@ -42,8 +42,8 @@ from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
 class BinaryAUROC(BinaryPrecisionRecallCurve):
     r"""
     Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for binary tasks. The AUROC score
-    summarizes the ROC curve into a single number that describes the performance of an model for multiple
-    thresholds at the same time. Noteably, a AUROC score of 1 is an perfert score and an AUROC score of 0.5
+    summarizes the ROC curve into an single number that describes the performance of a model for multiple
+    thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
     corresponds to random guessing.
 
     Accepts the following input tensors:
@@ -56,10 +56,10 @@ class BinaryAUROC(BinaryPrecisionRecallCurve):
 
     Additional dimension ``...`` will be flattened into the batch dimension.
 
-    The implementation both support calculating the metric in a non-binned but accurate version and an binned version
+    The implementation both supports calculating the metric in a non-binned but accurate version and a binned version
     that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
     non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
-    argument to either an integer, list or an 1d tensor will use an binned version that uses memory of
+    argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
     size :math:`\mathcal{O}(n_{thresholds})` (constant memory).
 
     Args:
@@ -121,8 +121,8 @@ class BinaryAUROC(BinaryPrecisionRecallCurve):
 class MulticlassAUROC(MulticlassPrecisionRecallCurve):
     r"""
     Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for multiclass tasks. The AUROC score
-    summarizes the ROC curve into a single number that describes the performance of an model for multiple
-    thresholds at the same time. Noteably, a AUROC score of 1 is an perfert score and an AUROC score of 0.5
+    summarizes the ROC curve into an single number that describes the performance of a model for multiple
+    thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
     corresponds to random guessing.
 
     Accepts the following input tensors:
@@ -135,10 +135,10 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
 
     Additional dimension ``...`` will be flattened into the batch dimension.
 
-    The implementation both support calculating the metric in a non-binned but accurate version and an binned version
+    The implementation both supports calculating the metric in a non-binned but accurate version and a binned version
     that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
     non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
-    argument to either an integer, list or an 1d tensor will use an binned version that uses memory of
+    argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
     size :math:`\mathcal{O}(n_{thresholds} \times n_{classes})` (constant memory).
 
     Args:
@@ -222,8 +222,8 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
 class MultilabelAUROC(MultilabelPrecisionRecallCurve):
     r"""
     Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for multilabel tasks. The AUROC score
-    summarizes the ROC curve into a single number that describes the performance of an model for multiple
-    thresholds at the same time. Noteably, a AUROC score of 1 is an perfert score and an AUROC score of 0.5
+    summarizes the ROC curve into an single number that describes the performance of a model for multiple
+    thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
     corresponds to random guessing.
 
     Accepts the following input tensors:
@@ -236,10 +236,10 @@ class MultilabelAUROC(MultilabelPrecisionRecallCurve):
 
     Additional dimension ``...`` will be flattened into the batch dimension.
 
-    The implementation both support calculating the metric in a non-binned but accurate version and an binned version
+    The implementation both supports calculating the metric in a non-binned but accurate version and a binned version
     that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
     non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
-    argument to either an integer, list or an 1d tensor will use an binned version that uses memory of
+    argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
     size :math:`\mathcal{O}(n_{thresholds} \times n_{labels})` (constant memory).
 
     Args:
