@@ -28,7 +28,7 @@ from unittests.classification.inputs import _binary_cases, _multiclass_cases, _m
 from unittests.helpers import seed_all
 from unittests.helpers.testers import NUM_CLASSES, MetricTester, inject_ignore_index, remove_ignore_index
 
-seed_all(40)
+seed_all(42)
 
 
 def _sk_auroc_binary(preds, target, max_fpr=None, ignore_index=None):
@@ -140,7 +140,7 @@ def _sk_auroc_multiclass(preds, target, average="macro", ignore_index=None):
     if not ((0 < preds) & (preds < 1)).all():
         preds = softmax(preds, 1)
     target, preds = remove_ignore_index(target, preds, ignore_index)
-    return sk_roc_auc_score(target, preds, average=average, multi_class="ovr")
+    return sk_roc_auc_score(target, preds, average=average, multi_class="ovr", labels=list(range(NUM_CLASSES)))
 
 
 @pytest.mark.parametrize(
