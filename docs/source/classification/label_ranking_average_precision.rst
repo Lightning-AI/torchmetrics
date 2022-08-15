@@ -13,7 +13,7 @@ ________________
 .. autoclass:: torchmetrics.LabelRankingAveragePrecision
     :noindex:
 
-.. autoclass:: torchmetrics.MultiLabelRankingAveragePrecision
+.. autoclass:: torchmetrics.MultilabelRankingAveragePrecision
     :noindex:
 
 
