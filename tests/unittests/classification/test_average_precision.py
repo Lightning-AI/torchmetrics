@@ -161,7 +161,7 @@ def _sk_average_precision_multiclass(preds, target, average="macro", ignore_inde
 )
 class TestMulticlassAveragePrecision(MetricTester):
     @pytest.mark.parametrize("average", ["macro", "weighted", None])
-    @pytest.mark.parametrize("ignore_index", [None, -1, 0])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multiclass_average_precision(self, input, average, ddp, ignore_index):
         preds, target = input
@@ -182,7 +182,7 @@ class TestMulticlassAveragePrecision(MetricTester):
         )
 
     @pytest.mark.parametrize("average", ["macro", "weighted", None])
-    @pytest.mark.parametrize("ignore_index", [None, -1, 0])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     def test_multiclass_average_precision_functional(self, input, average, ignore_index):
         preds, target = input
         if ignore_index is not None:
