@@ -230,7 +230,7 @@ class TestMulticlassAUROC(MetricTester):
     def test_multiclass_auroc_threshold_arg(self, input, average):
         preds, target = input
         if (preds < 0).any():
-            preds = softmax(preds, -1)
+            preds = preds.softmax(dim=-1)
         for pred, true in zip(preds, target):
             pred = torch.tensor(np.round(pred.numpy(), 2)) + 1e-6  # rounding will simulate binning
             ap1 = multiclass_auroc(pred, true, num_classes=NUM_CLASSES, average=average, thresholds=None)
