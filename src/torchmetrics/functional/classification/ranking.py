@@ -88,7 +88,7 @@ def multilabel_coverage_error(
         >>> _ = torch.manual_seed(42)
         >>> preds = torch.rand(10, 5)
         >>> target = torch.randint(2, (10, 5))
-        >>> multilabel_coverage_error(preds, target)
+        >>> multilabel_coverage_error(preds, target, num_labels=5)
         tensor(3.9000)
 
     References:
@@ -159,7 +159,7 @@ def multilabel_ranking_average_precision(
         >>> _ = torch.manual_seed(42)
         >>> preds = torch.rand(10, 5)
         >>> target = torch.randint(2, (10, 5))
-        >>> multilabel_ranking_average_precision(preds, target)
+        >>> multilabel_ranking_average_precision(preds, target, num_labels=5)
         tensor(0.7744)
 
     References:
@@ -241,7 +241,7 @@ def multilabel_ranking_loss(
         >>> _ = torch.manual_seed(42)
         >>> preds = torch.rand(10, 5)
         >>> target = torch.randint(2, (10, 5))
-        >>> multilabel_ranking_loss(preds, target)
+        >>> multilabel_ranking_loss(preds, target, num_labels=5)
         tensor(0.4167)
 
     References:
