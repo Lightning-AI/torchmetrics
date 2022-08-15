@@ -13,16 +13,13 @@
 # limitations under the License.
 from typing import Any
 
-import torch
-from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.functional.classification.kl_divergence import _kld_compute, _kld_update
-from torchmetrics.metric import Metric
-from torchmetrics.utilities.data import dim_zero_cat
+from torchmetrics.regression.kl_divergence import KLDivergence as _KLDivergence
+from torchmetrics.utilities.prints import rank_zero_warn
 
 
-class KLDivergence(Metric):
+class KLDivergence(_KLDivergence):
     r"""Computes the `KL divergence`_:
 
     .. math::
@@ -46,6 +43,8 @@ class KLDivergence(Metric):
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
+    .. note::
+        This metric have been moved to the regression package in v0.10 and this version will be removed in v0.11.
 
     Raises:
         TypeError:
@@ -65,10 +64,6 @@ class KLDivergence(Metric):
         tensor(0.0853)
 
     """
-    is_differentiable: bool = True
-    higher_is_better: bool = False
-    full_state_update: bool = False
-    total: Tensor
 
     def __init__(
         self,
@@ -76,30 +71,8 @@ class KLDivergence(Metric):
         reduction: Literal["mean", "sum", "none", None] = "mean",
         **kwargs: Any,
     ) -> None:
-        super().__init__(**kwargs)
-        if not isinstance(log_prob, bool):
-            raise TypeError(f"Expected argument `log_prob` to be bool but got {log_prob}")
-        self.log_prob = log_prob
-
-        allowed_reduction = ["mean", "sum", "none", None]
-        if reduction not in allowed_reduction:
-            raise ValueError(f"Expected argument `reduction` to be one of {allowed_reduction} but got {reduction}")
-        self.reduction = reduction
-
-        if self.reduction in ["mean", "sum"]:
-            self.add_state("measures", torch.tensor(0.0), dist_reduce_fx="sum")
-        else:
-            self.add_state("measures", [], dist_reduce_fx="cat")
-        self.add_state("total", torch.tensor(0), dist_reduce_fx="sum")
-
-    def update(self, p: Tensor, q: Tensor) -> None:  # type: ignore
-        measures, total = _kld_update(p, q, self.log_prob)
-        if self.reduction is None or self.reduction == "none":
-            self.measures.append(measures)
-        else:
-            self.measures += measures.sum()
-            self.total += total
-
-    def compute(self) -> Tensor:
-        measures = dim_zero_cat(self.measures) if self.reduction is None or self.reduction == "none" else self.measures
-        return _kld_compute(measures, self.total, self.reduction)
+        super().__init__(log_prob, reduction, **kwargs)
+        rank_zero_warn(
+            "`torchmetrics.classification.KLDivergence` have been moved to `torchmetrics.regression.KLDivergence`"
+            " from v0.10 and this version will be removed in v0.11. Please update import paths."
+        )
