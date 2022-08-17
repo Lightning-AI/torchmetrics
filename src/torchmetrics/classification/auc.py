@@ -15,9 +15,9 @@ from typing import Any, List, Optional
 
 from torch import Tensor
 
-from torchmetrics.functional.classification.auc import _auc_compute, _auc_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities.compute import _auc_compute, _auc_update
 from torchmetrics.utilities.data import dim_zero_cat
 
 
@@ -27,6 +27,9 @@ class AUC(Metric):
 
     Forward accepts two input tensors that should be 1D and have the same number
     of elements
+
+    .. note::
+        This metric has been deprecated in v0.10 and will be removed in v0.11.
 
     Args:
         reorder: AUC expects its first input to be sorted. If this is not the case,
@@ -47,6 +50,11 @@ class AUC(Metric):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
+        rank_zero_warn(
+            "`torchmetrics.classification.AUC` has been deprecated in v0.10 and will be removed in v0.11."
+            "A functional version is still available in `torchmetrics.utilities.compute`",
+            DeprecationWarning,
+        )
 
         self.reorder = reorder
 

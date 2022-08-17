@@ -55,6 +55,7 @@ def kl_divergence(
     rank_zero_warn(
         "`torchmetrics.functional.classification.kl_divergence` have been moved to"
         "`torchmetrics.functional.regression.kl_divergence` from v0.10 and this version will be removed in v0.11."
-        "Please update import paths."
+        "Please update import paths.",
+        DeprecationWarning,
     )
     return _kl_divergence(p, q, log_prob, reduction)

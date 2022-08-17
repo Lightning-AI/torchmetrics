@@ -74,5 +74,6 @@ class KLDivergence(_KLDivergence):
         super().__init__(log_prob, reduction, **kwargs)
         rank_zero_warn(
             "`torchmetrics.classification.KLDivergence` have been moved to `torchmetrics.regression.KLDivergence`"
-            " from v0.10 and this version will be removed in v0.11. Please update import paths."
+            " from v0.10 and this version will be removed in v0.11. Please update import paths.",
+            DeprecationWarning,
         )
