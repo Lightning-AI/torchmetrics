@@ -30,12 +30,6 @@ from unittests.helpers.testers import NUM_CLASSES, MetricTester, inject_ignore_i
 seed_all(42)
 
 
-def _nan_to_zero(args):
-    for a in args:
-        a[np.isnan(a)] = 0
-    return args
-
-
 def _sk_roc_binary(preds, target, ignore_index=None):
     preds = preds.flatten().numpy()
     target = target.flatten().numpy()
@@ -45,7 +39,7 @@ def _sk_roc_binary(preds, target, ignore_index=None):
     target, preds = remove_ignore_index(target, preds, ignore_index)
     fpr, tpr, thresholds = sk_roc_curve(target, preds, drop_intermediate=False)
     thresholds[0] = 1.0
-    return _nan_to_zero([fpr, tpr, thresholds])
+    return [np.nan_to_num(x, nan=0.0) for x in [fpr, tpr, thresholds]]
 
 
 @pytest.mark.parametrize("input", (_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]))
@@ -151,7 +145,7 @@ def _sk_roc_multiclass(preds, target, ignore_index=None):
         fpr.append(res[0])
         tpr.append(res[1])
         thresholds.append(res[2])
-    return _nan_to_zero(fpr), _nan_to_zero(tpr), _nan_to_zero(thresholds)
+    return [np.nan_to_num(x, nan=0.0) for x in [fpr, tpr, thresholds]]
 
 
 @pytest.mark.parametrize(

@@ -151,7 +151,8 @@ def _sk_precision_recall_curve_multiclass(preds, target, ignore_index=None):
         precision.append(res[0])
         recall.append(res[1])
         thresholds.append(res[2])
-    return precision, recall, thresholds
+    # return precision, recall, thresholds
+    return [np.nan_to_num(x, nan=0.0) for x in [precision, recall, thresholds]]
 
 
 @pytest.mark.parametrize(
