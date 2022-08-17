@@ -272,7 +272,7 @@ def _multiclass_calibration_error_update(
         preds = preds.softmax(1)
     confidences, predictions = preds.max(dim=1)
     accuracies = predictions.eq(target)
-    return confidences, accuracies
+    return confidences.float(), accuracies.float()
 
 
 def multiclass_calibration_error(
