@@ -13,8 +13,14 @@ ________________
 .. autoclass:: torchmetrics.CoverageError
     :noindex:
 
+.. autoclass:: torchmetrics.MultilabelCoverageError
+    :noindex:
+
 Functional Interface
 ____________________
 
 .. autofunction:: torchmetrics.functional.coverage_error
+    :noindex:
+
+.. autofunction:: torchmetrics.functional.multilabel_coverage_error
     :noindex:

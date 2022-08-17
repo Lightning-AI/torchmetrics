@@ -89,6 +89,9 @@ from torchmetrics.classification.ranking import (  # noqa: F401
     CoverageError,
     LabelRankingAveragePrecision,
     LabelRankingLoss,
+    MultilabelCoverageError,
+    MultilabelRankingAveragePrecision,
+    MultilabelRankingLoss,
 )
 from torchmetrics.classification.roc import ROC  # noqa: F401
 from torchmetrics.classification.specificity import (  # noqa: F401
