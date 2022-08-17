@@ -137,7 +137,7 @@ def _sk_multiclass_calibration_error(preds, target, n_bins, norm, ignore_index):
     "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
 )
 class TestMulticlassCalibrationError(MetricTester):
-    @pytest.mark.parametrize("n_bins", [10, 15, 20])
+    @pytest.mark.parametrize("n_bins", [15, 20])
     @pytest.mark.parametrize("norm", ["l1", "max"])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
@@ -159,7 +159,7 @@ class TestMulticlassCalibrationError(MetricTester):
             },
         )
 
-    @pytest.mark.parametrize("n_bins", [10, 15, 20])
+    @pytest.mark.parametrize("n_bins", [15, 20])
     @pytest.mark.parametrize("norm", ["l1", "max"])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     def test_multiclass_calibration_error_functional(self, input, n_bins, norm, ignore_index):
