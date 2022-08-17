@@ -265,7 +265,7 @@ class TestMulticlassRecallAtFixedPrecision(MetricTester):
     def test_multiclass_recall_at_fixed_precision_threshold_arg(self, input, min_precision):
         preds, target = input
         if (preds < 0).any():
-            preds = softmax(preds, -1)
+            preds = preds.softmax(dim=-1)
         for pred, true in zip(preds, target):
             pred = torch.tensor(np.round(pred.numpy(), 1)) + 1e-6  # rounding will simulate binning
             r1, _ = multiclass_recall_at_fixed_precision(
