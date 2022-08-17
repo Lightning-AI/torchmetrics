@@ -159,7 +159,7 @@ def _sk_precision_recall_curve_multiclass(preds, target, ignore_index=None):
     "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
 )
 class TestMulticlassPrecisionRecallCurve(MetricTester):
-    @pytest.mark.parametrize("ignore_index", [None, -1, 0])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multiclass_precision_recall_curve(self, input, ddp, ignore_index):
         preds, target = input
@@ -178,7 +178,7 @@ class TestMulticlassPrecisionRecallCurve(MetricTester):
             },
         )
 
-    @pytest.mark.parametrize("ignore_index", [None, -1, 0])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     def test_multiclass_precision_recall_curve_functional(self, input, ignore_index):
         preds, target = input
         if ignore_index is not None:
