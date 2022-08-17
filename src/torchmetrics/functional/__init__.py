@@ -89,6 +89,9 @@ from torchmetrics.functional.classification.ranking import (
     coverage_error,
     label_ranking_average_precision,
     label_ranking_loss,
+    multilabel_coverage_error,
+    multilabel_ranking_average_precision,
+    multilabel_ranking_loss,
 )
 from torchmetrics.functional.classification.recall_at_fixed_precision import (
     binary_recall_at_fixed_precision,
@@ -262,6 +265,9 @@ __all__ = [
     "binary_matthews_corrcoef",
     "multiclass_matthews_corrcoef",
     "multilabel_matthews_corrcoef",
+    "multilabel_coverage_error",
+    "multilabel_ranking_average_precision",
+    "multilabel_ranking_loss",
     "binary_accuracy",
     "multilabel_accuracy",
     "multiclass_accuracy",

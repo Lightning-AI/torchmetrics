@@ -95,6 +95,9 @@ from torchmetrics.classification.ranking import (  # noqa: F401
     CoverageError,
     LabelRankingAveragePrecision,
     LabelRankingLoss,
+    MultilabelCoverageError,
+    MultilabelRankingAveragePrecision,
+    MultilabelRankingLoss,
 )
 from torchmetrics.classification.recall_at_fixed_precision import (  # noqa: F401
     BinaryRecallAtFixedPrecision,
