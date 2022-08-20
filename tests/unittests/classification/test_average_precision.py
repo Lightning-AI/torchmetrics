@@ -99,7 +99,7 @@ class TestBinaryAveragePrecision(MetricTester):
     def test_binary_average_precision_dtype_cpu(self, input, dtype):
         preds, target = input
         if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_8:
-            pytest.xfail(reason="torch.flip not support before pytorch v1.8")
+            pytest.xfail(reason="torch.flip not support before pytorch v1.8 for cpu + half precision")
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
         self.run_precision_test_cpu(
@@ -214,7 +214,7 @@ class TestMulticlassAveragePrecision(MetricTester):
     def test_multiclass_average_precision_dtype_cpu(self, input, dtype):
         preds, target = input
         if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_8:
-            pytest.xfail(reason="torch.flip not support before pytorch v1.8")
+            pytest.xfail(reason="torch.flip not support before pytorch v1.8 for cpu + half precision")
         if dtype == torch.half and not ((0 < preds) & (preds < 1)).all():
             pytest.xfail(reason="half support for torch.softmax on cpu not implemented")
         self.run_precision_test_cpu(
@@ -326,7 +326,7 @@ class TestMultilabelAveragePrecision(MetricTester):
     def test_multilabel_average_precision_dtype_cpu(self, input, dtype):
         preds, target = input
         if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_8:
-            pytest.xfail(reason="torch.flip not support before pytorch v1.8")
+            pytest.xfail(reason="torch.flip not support before pytorch v1.8 for cpu + half precision")
         if dtype == torch.half and not ((0 < preds) & (preds < 1)).all():
             pytest.xfail(reason="half support for torch.softmax on cpu not implemented")
         self.run_precision_test_cpu(
