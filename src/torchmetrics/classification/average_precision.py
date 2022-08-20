@@ -22,29 +22,30 @@ from torchmetrics.classification.precision_recall_curve import (
     MulticlassPrecisionRecallCurve,
     MultilabelPrecisionRecallCurve,
 )
-from torchmetrics.functional.classification.auroc import (
-    _auroc_compute,
-    _auroc_update,
-    _binary_auroc_arg_validation,
-    _binary_auroc_compute,
-    _multiclass_auroc_arg_validation,
-    _multiclass_auroc_compute,
-    _multilabel_auroc_arg_validation,
-    _multilabel_auroc_compute,
+from torchmetrics.functional.classification.average_precision import (
+    _average_precision_compute,
+    _average_precision_update,
+    _binary_average_precision_compute,
+    _multiclass_average_precision_arg_validation,
+    _multiclass_average_precision_compute,
+    _multilabel_average_precision_arg_validation,
+    _multilabel_average_precision_compute,
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
-from torchmetrics.utilities.enums import DataType
-from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
 
 
-class BinaryAUROC(BinaryPrecisionRecallCurve):
+class BinaryAveragePrecision(BinaryPrecisionRecallCurve):
     r"""
-    Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for binary tasks. The AUROC score
-    summarizes the ROC curve into an single number that describes the performance of a model for multiple
-    thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
-    corresponds to random guessing.
+    Computes the average precision (AP) score for binary tasks. The AP score summarizes a precision-recall curve
+    as an weighted mean of precisions at each threshold, with the difference in recall from the previous threshold
+    as weight:
+
+    .. math::
+        AP = \sum{n} (R_n - R_{n-1}) P_n
+
+    where :math:`P_n, R_n` is the respective precision and recall at threshold index :math:`n`.
 
     Accepts the following input tensors:
 
@@ -63,7 +64,6 @@ class BinaryAUROC(BinaryPrecisionRecallCurve):
     size :math:`\mathcal{O}(n_{thresholds})` (constant memory).
 
     Args:
-        max_fpr: If not ``None``, calculates standardized partial AUC over the range ``[0, max_fpr]``.
         thresholds:
             Can be one of:
 
@@ -80,50 +80,41 @@ class BinaryAUROC(BinaryPrecisionRecallCurve):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Returns:
-        A single scalar with the auroc score
+        A single scalar with the average precision score
 
     Example:
-        >>> from torchmetrics import BinaryAUROC
+        >>> from torchmetrics import BinaryAveragePrecision
         >>> preds = torch.tensor([0, 0.5, 0.7, 0.8])
         >>> target = torch.tensor([0, 1, 1, 0])
-        >>> metric = BinaryAUROC(thresholds=None)
+        >>> metric = BinaryAveragePrecision(thresholds=None)
         >>> metric(preds, target)
-        tensor(0.5000)
-        >>> metric = BinaryAUROC(thresholds=5)
+        tensor(0.5833)
+        >>> metric = BinaryAveragePrecision(thresholds=5)
         >>> metric(preds, target)
-        tensor(0.5000)
+        tensor(0.6667)
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
-
-    def __init__(
-        self,
-        max_fpr: Optional[float] = None,
-        thresholds: Optional[Union[int, List[float], Tensor]] = None,
-        ignore_index: Optional[int] = None,
-        validate_args: bool = True,
-        **kwargs: Any,
-    ) -> None:
-        super().__init__(thresholds=thresholds, ignore_index=ignore_index, validate_args=False, **kwargs)
-        if validate_args:
-            _binary_auroc_arg_validation(max_fpr, thresholds, ignore_index)
-        self.max_fpr = max_fpr
 
     def compute(self) -> Tensor:
         if self.thresholds is None:
             state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]
         else:
             state = self.confmat
-        return _binary_auroc_compute(state, self.thresholds, self.max_fpr)
+        return _binary_average_precision_compute(state, self.thresholds)
 
 
-class MulticlassAUROC(MulticlassPrecisionRecallCurve):
+class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
     r"""
-    Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for multiclass tasks. The AUROC score
-    summarizes the ROC curve into an single number that describes the performance of a model for multiple
-    thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
-    corresponds to random guessing.
+    Computes the average precision (AP) score for binary tasks. The AP score summarizes a precision-recall curve
+    as an weighted mean of precisions at each threshold, with the difference in recall from the previous threshold
+    as weight:
+
+    .. math::
+        AP = \sum{n} (R_n - R_{n-1}) P_n
+
+    where :math:`P_n, R_n` is the respective precision and recall at threshold index :math:`n`.
 
     Accepts the following input tensors:
 
@@ -165,28 +156,28 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Returns:
-        If `average=None|"none"` then a 1d tensor of shape (n_classes, ) will be returned with auroc score per class.
+        If `average=None|"none"` then a 1d tensor of shape (n_classes, ) will be returned with AP score per class.
         If `average="macro"|"weighted"` then a single scalar is returned.
 
     Example:
-        >>> from torchmetrics import MulticlassAUROC
+        >>> from torchmetrics import MulticlassAveragePrecision
         >>> preds = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
         ...                       [0.05, 0.75, 0.05, 0.05, 0.05],
         ...                       [0.05, 0.05, 0.75, 0.05, 0.05],
         ...                       [0.05, 0.05, 0.05, 0.75, 0.05]])
         >>> target = torch.tensor([0, 1, 3, 2])
-        >>> metric = MulticlassAUROC(num_classes=5, average="macro", thresholds=None)
+        >>> metric = MulticlassAveragePrecision(num_classes=5, average="macro", thresholds=None)
         >>> metric(preds, target)
-        tensor(0.5333)
-        >>> metric = MulticlassAUROC(num_classes=5, average=None, thresholds=None)
+        tensor(0.6250)
+        >>> metric = MulticlassAveragePrecision(num_classes=5, average=None, thresholds=None)
         >>> metric(preds, target)
-        tensor([1.0000, 1.0000, 0.3333, 0.3333, 0.0000])
-        >>> metric = MulticlassAUROC(num_classes=5, average="macro", thresholds=5)
+        tensor([1.0000, 1.0000, 0.2500, 0.2500,    nan])
+        >>> metric = MulticlassAveragePrecision(num_classes=5, average="macro", thresholds=5)
         >>> metric(preds, target)
-        tensor(0.5333)
-        >>> metric = MulticlassAUROC(num_classes=5, average=None, thresholds=5)
+        tensor(0.5000)
+        >>> metric = MulticlassAveragePrecision(num_classes=5, average=None, thresholds=5)
         >>> metric(preds, target)
-        tensor([1.0000, 1.0000, 0.3333, 0.3333, 0.0000])
+        tensor([1.0000, 1.0000, 0.2500, 0.2500, -0.0000])
 
     """
 
@@ -207,7 +198,7 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
             num_classes=num_classes, thresholds=thresholds, ignore_index=ignore_index, validate_args=False, **kwargs
         )
         if validate_args:
-            _multiclass_auroc_arg_validation(num_classes, average, thresholds, ignore_index)
+            _multiclass_average_precision_arg_validation(num_classes, average, thresholds, ignore_index)
         self.average = average
         self.validate_args = validate_args
 
@@ -216,15 +207,19 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
             state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]
         else:
             state = self.confmat
-        return _multiclass_auroc_compute(state, self.num_classes, self.average, self.thresholds)
+        return _multiclass_average_precision_compute(state, self.num_classes, self.average, self.thresholds)
 
 
-class MultilabelAUROC(MultilabelPrecisionRecallCurve):
+class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
     r"""
-    Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for multilabel tasks. The AUROC score
-    summarizes the ROC curve into an single number that describes the performance of a model for multiple
-    thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
-    corresponds to random guessing.
+    Computes the average precision (AP) score for binary tasks. The AP score summarizes a precision-recall curve
+    as an weighted mean of precisions at each threshold, with the difference in recall from the previous threshold
+    as weight:
+
+    .. math::
+        AP = \sum{n} (R_n - R_{n-1}) P_n
+
+    where :math:`P_n, R_n` is the respective precision and recall at threshold index :math:`n`.
 
     Accepts the following input tensors:
 
@@ -267,11 +262,11 @@ class MultilabelAUROC(MultilabelPrecisionRecallCurve):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Returns:
-        If `average=None|"none"` then a 1d tensor of shape (n_classes, ) will be returned with auroc score per class.
+        If `average=None|"none"` then a 1d tensor of shape (n_classes, ) will be returned with AP score per class.
         If `average="micro|macro"|"weighted"` then a single scalar is returned.
 
     Example:
-        >>> from torchmetrics import MultilabelAUROC
+        >>> from torchmetrics import MultilabelAveragePrecision
         >>> preds = torch.tensor([[0.75, 0.05, 0.35],
         ...                       [0.45, 0.75, 0.05],
         ...                       [0.05, 0.55, 0.75],
@@ -280,18 +275,18 @@ class MultilabelAUROC(MultilabelPrecisionRecallCurve):
         ...                        [0, 0, 0],
         ...                        [0, 1, 1],
         ...                        [1, 1, 1]])
-        >>> metric = MultilabelAUROC(num_labels=3, average="macro", thresholds=None)
+        >>> metric = MultilabelAveragePrecision(num_labels=3, average="macro", thresholds=None)
         >>> metric(preds, target)
-        tensor(0.6528)
-        >>> metric = MultilabelAUROC(num_labels=3, average=None, thresholds=None)
+        tensor(0.7500)
+        >>> metric = MultilabelAveragePrecision(num_labels=3, average=None, thresholds=None)
         >>> metric(preds, target)
-        tensor([0.6250, 0.5000, 0.8333])
-        >>> metric = MultilabelAUROC(num_labels=3, average="macro", thresholds=5)
+        tensor([0.7500, 0.5833, 0.9167])
+        >>> metric = MultilabelAveragePrecision(num_labels=3, average="macro", thresholds=5)
         >>> metric(preds, target)
-        tensor(0.6528)
-        >>> metric = MultilabelAUROC(num_labels=3, average=None, thresholds=5)
+        tensor(0.7778)
+        >>> metric = MultilabelAveragePrecision(num_labels=3, average=None, thresholds=5)
         >>> metric(preds, target)
-        tensor([0.6250, 0.5000, 0.8333])
+        tensor([0.7500, 0.6667, 0.9167])
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -310,7 +305,7 @@ class MultilabelAUROC(MultilabelPrecisionRecallCurve):
             num_labels=num_labels, thresholds=thresholds, ignore_index=ignore_index, validate_args=False, **kwargs
         )
         if validate_args:
-            _multilabel_auroc_arg_validation(num_labels, average, thresholds, ignore_index)
+            _multilabel_average_precision_arg_validation(num_labels, average, thresholds, ignore_index)
         self.average = average
         self.validate_args = validate_args
 
@@ -319,87 +314,69 @@ class MultilabelAUROC(MultilabelPrecisionRecallCurve):
             state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]
         else:
             state = self.confmat
-        return _multilabel_auroc_compute(state, self.num_labels, self.average, self.thresholds, self.ignore_index)
+        return _multilabel_average_precision_compute(
+            state, self.num_labels, self.average, self.thresholds, self.ignore_index
+        )
 
 
 # -------------------------- Old stuff --------------------------
 
 
-class AUROC(Metric):
-    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_).
-    Works for both binary, multilabel and multiclass problems. In the case of
-    multiclass, the values will be calculated based on a one-vs-the-rest approach.
+class AveragePrecision(Metric):
+    """Computes the average precision score, which summarises the precision recall curve into one number. Works for
+    both binary and multiclass problems. In the case of multiclass, the values will be calculated based on a one-
+    vs-the-rest approach.
 
     Forward accepts
 
     - ``preds`` (float tensor): ``(N, ...)`` (binary) or ``(N, C, ...)`` (multiclass) tensor
       with probabilities, where C is the number of classes.
 
-    - ``target`` (long tensor): ``(N, ...)`` or ``(N, C, ...)`` with integer labels
-
-    For non-binary input, if the ``preds`` and ``target`` tensor have the same
-    size the input will be interpretated as multilabel and if ``preds`` have one
-    dimension more than the ``target`` tensor the input will be interpretated as
-    multiclass.
-
-    .. note::
-        If either the positive class or negative class is completly missing in the target tensor,
-        the auroc score is meaningless in this case and a score of 0 will be returned together
-        with an warning.
+    - ``target`` (long tensor): ``(N, ...)`` with integer labels
 
     Args:
-        num_classes: integer with number of classes for multi-label and multiclass problems.
-
-            Should be set to ``None`` for binary problems
+        num_classes: integer with number of classes. Not nessesary to provide
+            for binary problems.
         pos_label: integer determining the positive class. Default is ``None``
             which for binary problem is translated to 1. For multiclass problems
             this argument should not be set as we iteratively change it in the
             range ``[0, num_classes-1]``
         average:
-            - ``'micro'`` computes metric globally. Only works for multilabel problems
-            - ``'macro'`` computes metric for each class and uniformly averages them
-            - ``'weighted'`` computes metric for each class and does a weighted-average,
-              where each class is weighted by their support (accounts for class imbalance)
-            - ``None`` computes and returns the metric per class
-        max_fpr:
-            If not ``None``, calculates standardized partial AUC over the
-            range ``[0, max_fpr]``. Should be a float between 0 and 1.
+            defines the reduction that is applied in the case of multiclass and multilabel input.
+            Should be one of the following:
+
+            - ``'macro'`` [default]: Calculate the metric for each class separately, and average the
+              metrics across classes (with equal weights for each class).
+            - ``'micro'``: Calculate the metric globally, across all samples and classes. Cannot be
+              used with multiclass input.
+            - ``'weighted'``: Calculate the metric for each class separately, and average the
+              metrics across classes, weighting each class by its support.
+            - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
+              the metric for every class.
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    Raises:
-        ValueError:
-            If ``average`` is none of ``None``, ``"macro"`` or ``"weighted"``.
-        ValueError:
-            If ``max_fpr`` is not a ``float`` in the range ``(0, 1]``.
-        RuntimeError:
-            If ``PyTorch version`` is ``below 1.6`` since ``max_fpr`` requires ``torch.bucketize``
-            which is not available below 1.6.
-        ValueError:
-            If the mode of data (binary, multi-label, multi-class) changes between batches.
-
     Example (binary case):
-        >>> from torchmetrics import AUROC
-        >>> preds = torch.tensor([0.13, 0.26, 0.08, 0.19, 0.34])
-        >>> target = torch.tensor([0, 0, 1, 1, 1])
-        >>> auroc = AUROC(pos_label=1)
-        >>> auroc(preds, target)
-        tensor(0.5000)
+        >>> from torchmetrics import AveragePrecision
+        >>> pred = torch.tensor([0, 0.1, 0.8, 0.4])
+        >>> target = torch.tensor([0, 1, 1, 1])
+        >>> average_precision = AveragePrecision(pos_label=1)
+        >>> average_precision(pred, target)
+        tensor(1.)
 
     Example (multiclass case):
-        >>> preds = torch.tensor([[0.90, 0.05, 0.05],
-        ...                       [0.05, 0.90, 0.05],
-        ...                       [0.05, 0.05, 0.90],
-        ...                       [0.85, 0.05, 0.10],
-        ...                       [0.10, 0.10, 0.80]])
-        >>> target = torch.tensor([0, 1, 1, 2, 2])
-        >>> auroc = AUROC(num_classes=3)
-        >>> auroc(preds, target)
-        tensor(0.7778)
-
+        >>> pred = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
+        ...                      [0.05, 0.75, 0.05, 0.05, 0.05],
+        ...                      [0.05, 0.05, 0.75, 0.05, 0.05],
+        ...                      [0.05, 0.05, 0.05, 0.75, 0.05]])
+        >>> target = torch.tensor([0, 1, 3, 2])
+        >>> average_precision = AveragePrecision(num_classes=5, average=None)
+        >>> average_precision(pred, target)
+        [tensor(1.), tensor(1.), tensor(0.2500), tensor(0.2500), tensor(nan)]
     """
+
     is_differentiable: bool = False
-    higher_is_better: bool = True
+    higher_is_better: Optional[bool] = None
     full_state_update: bool = False
     preds: List[Tensor]
     target: List[Tensor]
@@ -409,37 +386,22 @@ class AUROC(Metric):
         num_classes: Optional[int] = None,
         pos_label: Optional[int] = None,
         average: Optional[str] = "macro",
-        max_fpr: Optional[float] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
 
         self.num_classes = num_classes
         self.pos_label = pos_label
+        allowed_average = ("micro", "macro", "weighted", "none", None)
+        if average not in allowed_average:
+            raise ValueError(f"Expected argument `average` to be one of {allowed_average}" f" but got {average}")
         self.average = average
-        self.max_fpr = max_fpr
 
-        allowed_average = (None, "macro", "weighted", "micro")
-        if self.average not in allowed_average:
-            raise ValueError(
-                f"Argument `average` expected to be one of the following: {allowed_average} but got {average}"
-            )
-
-        if self.max_fpr is not None:
-            if not isinstance(max_fpr, float) or not 0 < max_fpr <= 1:
-                raise ValueError(f"`max_fpr` should be a float in range (0, 1], got: {max_fpr}")
-
-            if _TORCH_LOWER_1_6:
-                raise RuntimeError(
-                    "`max_fpr` argument requires `torch.bucketize` which is not available below PyTorch version 1.6"
-                )
-
-        self.mode: DataType = None  # type: ignore
         self.add_state("preds", default=[], dist_reduce_fx="cat")
         self.add_state("target", default=[], dist_reduce_fx="cat")
 
         rank_zero_warn(
-            "Metric `AUROC` will save all targets and predictions in buffer."
+            "Metric `AveragePrecision` will save all targets and predictions in buffer."
             " For large datasets this may lead to large memory footprint."
         )
 
@@ -447,33 +409,25 @@ class AUROC(Metric):
         """Update state with predictions and targets.
 
         Args:
-            preds: Predictions from model (probabilities, or labels)
-            target: Ground truth labels
+            preds: Predictions from model
+            target: Ground truth values
         """
-        preds, target, mode = _auroc_update(preds, target)
-
+        preds, target, num_classes, pos_label = _average_precision_update(
+            preds, target, self.num_classes, self.pos_label, self.average
+        )
         self.preds.append(preds)
         self.target.append(target)
+        self.num_classes = num_classes
+        self.pos_label = pos_label
 
-        if self.mode and self.mode != mode:
-            raise ValueError(
-                "The mode of data (binary, multi-label, multi-class) should be constant, but changed"
-                f" between batches from {self.mode} to {mode}"
-            )
-        self.mode = mode
+    def compute(self) -> Union[Tensor, List[Tensor]]:
+        """Compute the average precision score.
 
-    def compute(self) -> Tensor:
-        """Computes AUROC based on inputs passed in to ``update`` previously."""
-        if not self.mode:
-            raise RuntimeError("You have to have determined mode.")
+        Returns:
+            tensor with average precision. If multiclass return list of such tensors, one for each class
+        """
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
-        return _auroc_compute(
-            preds,
-            target,
-            self.mode,
-            self.num_classes,
-            self.pos_label,
-            self.average,
-            self.max_fpr,
-        )
+        if not self.num_classes:
+            raise ValueError(f"`num_classes` bas to be positive number, but got {self.num_classes}")
+        return _average_precision_compute(preds, target, self.num_classes, self.pos_label, self.average)
