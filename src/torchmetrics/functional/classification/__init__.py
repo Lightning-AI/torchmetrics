@@ -58,7 +58,6 @@ from torchmetrics.functional.classification.hamming import (  # noqa: F401
 )
 from torchmetrics.functional.classification.hinge import hinge_loss  # noqa: F401
 from torchmetrics.functional.classification.jaccard import jaccard_index  # noqa: F401
-from torchmetrics.functional.classification.kl_divergence import kl_divergence  # noqa: F401
 from torchmetrics.functional.classification.matthews_corrcoef import matthews_corrcoef  # noqa: F401
 from torchmetrics.functional.classification.precision_recall import (  # noqa: F401
     binary_precision,

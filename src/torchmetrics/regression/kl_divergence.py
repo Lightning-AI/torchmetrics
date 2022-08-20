@@ -17,7 +17,7 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.functional.classification.kl_divergence import _kld_compute, _kld_update
+from torchmetrics.functional.regression.kl_divergence import _kld_compute, _kld_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
 

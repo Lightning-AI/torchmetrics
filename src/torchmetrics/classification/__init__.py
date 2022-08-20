@@ -74,7 +74,6 @@ from torchmetrics.classification.jaccard import (  # noqa: F401
     MulticlassJaccardIndex,
     MultilabelJaccardIndex,
 )
-from torchmetrics.classification.kl_divergence import KLDivergence  # noqa: F401
 from torchmetrics.classification.matthews_corrcoef import (  # noqa: F401
     BinaryMatthewsCorrCoef,
     MatthewsCorrCoef,
