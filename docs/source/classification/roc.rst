@@ -13,8 +13,44 @@ ________________
 .. autoclass:: torchmetrics.ROC
     :noindex:
 
+BinaryROC
+^^^^^^^^^
+
+.. autoclass:: torchmetrics.BinaryROC
+    :noindex:
+
+MulticlassROC
+^^^^^^^^^^^^^
+
+.. autoclass:: torchmetrics.MulticlassROC
+    :noindex:
+
+MultilabelROC
+^^^^^^^^^^^^^
+
+.. autoclass:: torchmetrics.MultilabelROC
+    :noindex:
+
 Functional Interface
 ____________________
 
 .. autofunction:: torchmetrics.functional.roc
+    :noindex:
+
+binary_roc
+^^^^^^^^^^
+
+.. autofunction:: torchmetrics.functional.binary_roc
+    :noindex:
+
+multiclass_roc
+^^^^^^^^^^^^^^
+
+.. autofunction:: torchmetrics.functional.multiclass_roc
+    :noindex:
+
+multilabel_roc
+^^^^^^^^^^^^^^
+
+.. autofunction:: torchmetrics.functional.multilabel_roc
     :noindex:

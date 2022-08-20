@@ -631,11 +631,19 @@ def inject_ignore_index(x: Tensor, ignore_index: int) -> Tensor:
     """Utility function for injecting the ignore index value into a tensor randomly."""
     if any(x.flatten() == ignore_index):  # ignore index is a class label
         return x
+    classes = torch.unique(x)
     idx = torch.randperm(x.numel())
     x = deepcopy(x)
     # randomly set either element {9, 10} to the ignore index value
     skip = torch.randint(9, 11, (1,)).item()
     x.view(-1)[idx[::skip]] = ignore_index
+    # if we accedently removed a class completly in a batch, reintroduce it again
+    for batch in x:
+        new_classes = torch.unique(batch)
+        class_not_in = [c not in new_classes for c in classes]
+        if any(class_not_in):
+            missing_class = int(np.where(class_not_in)[0][0])
+            batch[torch.where(batch == ignore_index)[0][0]] = missing_class
     return x
 
 
