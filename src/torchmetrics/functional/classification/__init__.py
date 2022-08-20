@@ -18,8 +18,18 @@ from torchmetrics.functional.classification.accuracy import (  # noqa: F401
     multilabel_accuracy,
 )
 from torchmetrics.functional.classification.auc import auc  # noqa: F401
-from torchmetrics.functional.classification.auroc import auroc  # noqa: F401
-from torchmetrics.functional.classification.average_precision import average_precision  # noqa: F401
+from torchmetrics.functional.classification.auroc import (  # noqa: F401
+    auroc,
+    binary_auroc,
+    multiclass_auroc,
+    multilabel_auroc,
+)
+from torchmetrics.functional.classification.average_precision import (  # noqa: F401
+    average_precision,
+    binary_average_precision,
+    multiclass_average_precision,
+    multilabel_average_precision,
+)
 from torchmetrics.functional.classification.calibration_error import (  # noqa: F401
     binary_calibration_error,
     calibration_error,
@@ -69,7 +79,12 @@ from torchmetrics.functional.classification.precision_recall import (  # noqa: F
     precision_recall,
     recall,
 )
-from torchmetrics.functional.classification.precision_recall_curve import precision_recall_curve  # noqa: F401
+from torchmetrics.functional.classification.precision_recall_curve import (  # noqa: F401
+    binary_precision_recall_curve,
+    multiclass_precision_recall_curve,
+    multilabel_precision_recall_curve,
+    precision_recall_curve,
+)
 from torchmetrics.functional.classification.ranking import (  # noqa: F401
     coverage_error,
     label_ranking_average_precision,
@@ -78,7 +93,12 @@ from torchmetrics.functional.classification.ranking import (  # noqa: F401
     multilabel_ranking_average_precision,
     multilabel_ranking_loss,
 )
-from torchmetrics.functional.classification.roc import roc  # noqa: F401
+from torchmetrics.functional.classification.recall_at_fixed_precision import (  # noqa: F401
+    binary_recall_at_fixed_precision,
+    multiclass_recall_at_fixed_precision,
+    multilabel_recall_at_fixed_precision,
+)
+from torchmetrics.functional.classification.roc import binary_roc, multiclass_roc, multilabel_roc, roc  # noqa: F401
 from torchmetrics.functional.classification.specificity import (  # noqa: F401
     binary_specificity,
     multiclass_specificity,

@@ -43,7 +43,7 @@ def _auc_update(x: Tensor, y: Tensor) -> Tuple[Tensor, Tensor]:
     return x, y
 
 
-def _auc_compute_without_check(x: Tensor, y: Tensor, direction: float) -> Tensor:
+def _auc_compute_without_check(x: Tensor, y: Tensor, direction: float, axis: int = -1) -> Tensor:
     """Computes area under the curve using the trapezoidal rule. Assumes increasing or decreasing order of `x`.
 
     Args:
@@ -60,7 +60,7 @@ def _auc_compute_without_check(x: Tensor, y: Tensor, direction: float) -> Tensor
     """
 
     with torch.no_grad():
-        auc_: Tensor = torch.trapz(y, x) * direction
+        auc_: Tensor = torch.trapz(y, x, dim=axis) * direction
     return auc_
 
 

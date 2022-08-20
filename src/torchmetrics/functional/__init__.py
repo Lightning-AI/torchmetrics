@@ -21,8 +21,13 @@ from torchmetrics.functional.classification.accuracy import (
     multilabel_accuracy,
 )
 from torchmetrics.functional.classification.auc import auc
-from torchmetrics.functional.classification.auroc import auroc
-from torchmetrics.functional.classification.average_precision import average_precision
+from torchmetrics.functional.classification.auroc import auroc, binary_auroc, multiclass_auroc, multilabel_auroc
+from torchmetrics.functional.classification.average_precision import (
+    average_precision,
+    binary_average_precision,
+    multiclass_average_precision,
+    multilabel_average_precision,
+)
 from torchmetrics.functional.classification.calibration_error import (
     binary_calibration_error,
     calibration_error,
@@ -78,7 +83,12 @@ from torchmetrics.functional.classification.precision_recall import (
     precision_recall,
     recall,
 )
-from torchmetrics.functional.classification.precision_recall_curve import precision_recall_curve
+from torchmetrics.functional.classification.precision_recall_curve import (
+    binary_precision_recall_curve,
+    multiclass_precision_recall_curve,
+    multilabel_precision_recall_curve,
+    precision_recall_curve,
+)
 from torchmetrics.functional.classification.ranking import (
     coverage_error,
     label_ranking_average_precision,
@@ -87,7 +97,12 @@ from torchmetrics.functional.classification.ranking import (
     multilabel_ranking_average_precision,
     multilabel_ranking_loss,
 )
-from torchmetrics.functional.classification.roc import roc
+from torchmetrics.functional.classification.recall_at_fixed_precision import (
+    binary_recall_at_fixed_precision,
+    multiclass_recall_at_fixed_precision,
+    multilabel_recall_at_fixed_precision,
+)
+from torchmetrics.functional.classification.roc import binary_roc, multiclass_roc, multilabel_roc, roc
 from torchmetrics.functional.classification.specificity import (
     binary_specificity,
     multiclass_specificity,
@@ -273,6 +288,21 @@ __all__ = [
     "multiclass_recall",
     "multilabel_recall",
     "multilabel_exact_match",
+    "binary_auroc",
+    "multiclass_auroc",
+    "multilabel_auroc",
+    "binary_average_precision",
+    "multiclass_average_precision",
+    "multilabel_average_precision",
+    "binary_precision_recall_curve",
+    "multiclass_precision_recall_curve",
+    "multilabel_precision_recall_curve",
+    "binary_recall_at_fixed_precision",
+    "multiclass_recall_at_fixed_precision",
+    "multilabel_recall_at_fixed_precision",
+    "binary_roc",
+    "multiclass_roc",
+    "multilabel_roc",
     "binary_calibration_error",
     "multiclass_calibration_error",
     "binary_hinge_loss",
