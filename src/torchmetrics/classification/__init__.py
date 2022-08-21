@@ -47,7 +47,11 @@ from torchmetrics.classification.average_precision import (  # noqa: F401
 from torchmetrics.classification.binned_precision_recall import BinnedAveragePrecision  # noqa: F401
 from torchmetrics.classification.binned_precision_recall import BinnedPrecisionRecallCurve  # noqa: F401
 from torchmetrics.classification.binned_precision_recall import BinnedRecallAtFixedPrecision  # noqa: F401
-from torchmetrics.classification.calibration_error import CalibrationError  # noqa: F401
+from torchmetrics.classification.calibration_error import (  # noqa: F401
+    BinaryCalibrationError,
+    CalibrationError,
+    MulticlassCalibrationError,
+)
 from torchmetrics.classification.cohen_kappa import BinaryCohenKappa, CohenKappa, MulticlassCohenKappa  # noqa: F401
 from torchmetrics.classification.dice import Dice  # noqa: F401
 from torchmetrics.classification.exact_match import MultilabelExactMatch  # noqa: F401
@@ -67,7 +71,7 @@ from torchmetrics.classification.hamming import (  # noqa: F401
     MulticlassHammingDistance,
     MultilabelHammingDistance,
 )
-from torchmetrics.classification.hinge import HingeLoss  # noqa: F401
+from torchmetrics.classification.hinge import BinaryHingeLoss, HingeLoss, MulticlassHingeLoss  # noqa: F401
 from torchmetrics.classification.jaccard import (  # noqa: F401
     BinaryJaccardIndex,
     JaccardIndex,

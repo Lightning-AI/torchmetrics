@@ -28,7 +28,11 @@ from torchmetrics.functional.classification.average_precision import (
     multiclass_average_precision,
     multilabel_average_precision,
 )
-from torchmetrics.functional.classification.calibration_error import calibration_error
+from torchmetrics.functional.classification.calibration_error import (
+    binary_calibration_error,
+    calibration_error,
+    multiclass_calibration_error,
+)
 from torchmetrics.functional.classification.cohen_kappa import binary_cohen_kappa, cohen_kappa, multiclass_cohen_kappa
 from torchmetrics.functional.classification.confusion_matrix import (
     binary_confusion_matrix,
@@ -54,7 +58,7 @@ from torchmetrics.functional.classification.hamming import (
     multiclass_hamming_distance,
     multilabel_hamming_distance,
 )
-from torchmetrics.functional.classification.hinge import hinge_loss
+from torchmetrics.functional.classification.hinge import binary_hinge_loss, hinge_loss, multiclass_hinge_loss
 from torchmetrics.functional.classification.jaccard import (
     binary_jaccard_index,
     jaccard_index,
@@ -299,4 +303,8 @@ __all__ = [
     "binary_roc",
     "multiclass_roc",
     "multilabel_roc",
+    "binary_calibration_error",
+    "multiclass_calibration_error",
+    "binary_hinge_loss",
+    "multiclass_hinge_loss",
 ]
