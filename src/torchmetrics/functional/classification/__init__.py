@@ -30,7 +30,11 @@ from torchmetrics.functional.classification.average_precision import (  # noqa: 
     multiclass_average_precision,
     multilabel_average_precision,
 )
-from torchmetrics.functional.classification.calibration_error import calibration_error  # noqa: F401
+from torchmetrics.functional.classification.calibration_error import (  # noqa: F401
+    binary_calibration_error,
+    calibration_error,
+    multiclass_calibration_error,
+)
 from torchmetrics.functional.classification.cohen_kappa import cohen_kappa  # noqa: F401
 from torchmetrics.functional.classification.confusion_matrix import (  # noqa: F401
     binary_confusion_matrix,
@@ -56,7 +60,11 @@ from torchmetrics.functional.classification.hamming import (  # noqa: F401
     multiclass_hamming_distance,
     multilabel_hamming_distance,
 )
-from torchmetrics.functional.classification.hinge import hinge_loss  # noqa: F401
+from torchmetrics.functional.classification.hinge import (  # noqa: F401
+    binary_hinge_loss,
+    hinge_loss,
+    multiclass_hinge_loss,
+)
 from torchmetrics.functional.classification.jaccard import jaccard_index  # noqa: F401
 from torchmetrics.functional.classification.matthews_corrcoef import matthews_corrcoef  # noqa: F401
 from torchmetrics.functional.classification.precision_recall import (  # noqa: F401
