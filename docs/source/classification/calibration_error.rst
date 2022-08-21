@@ -15,8 +15,32 @@ ________________
 .. autoclass:: torchmetrics.CalibrationError
     :noindex:
 
+BinaryCalibrationError
+^^^^^^^^^^^^^^^^^^^^^^
+
+.. autoclass:: torchmetrics.BinaryCalibrationError
+    :noindex:
+
+MulticlassCalibrationError
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. autoclass:: torchmetrics.MulticlassCalibrationError
+    :noindex:
+
 Functional Interface
 ____________________
 
 .. autofunction:: torchmetrics.functional.calibration_error
+    :noindex:
+
+binary_calibration_error
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. autofunction:: torchmetrics.functional.binary_calibration_error
+    :noindex:
+
+multiclass_calibration_error
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. autofunction:: torchmetrics.functional.multiclass_calibration_error
     :noindex:
