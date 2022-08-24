@@ -32,8 +32,8 @@ class TweedieDevianceScore(Metric):
         (\hat{y} - y)^2, & \text{for }power=0\\
         2 * (y * log(\frac{y}{\hat{y}}) + \hat{y} - y),  & \text{for }power=1\\
         2 * (log(\frac{\hat{y}}{y}) + \frac{y}{\hat{y}} - 1),  & \text{for }power=2\\
-        2 * (\frac{(max(y,0))^{2 - power}}{(1 - power)(2 - power)} - \frac{y(\hat{y})^{1 - power}}{1 - power} + \frac{(\hat{y})
-            ^{2 - power}}{2 - power}), & \text{otherwise}
+        2 * (\frac{(max(y,0))^{2 - power}}{(1 - power)(2 - power)} - \frac{y(\hat{y})^{1 - power}}{1 - power} + \frac{(
+            \hat{y})^{2 - power}}{2 - power}), & \text{otherwise}
         \end{cases}
 
     where :math:`y` is a tensor of targets values, and :math:`\hat{y}` is a tensor of predictions.
