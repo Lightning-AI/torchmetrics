@@ -114,7 +114,8 @@ def tweedie_deviance_score(preds: Tensor, targets: Tensor, power: float = 0.0) -
             \hat{y})^{2 - p}}{2 - p}), & \text{otherwise}
         \end{cases}
 
-    where :math:`y` is a tensor of targets values, :math:`\hat{y}` is a tensor of predictions, and :math:`p` is the `power`.
+    where :math:`y` is a tensor of targets values, :math:`\hat{y}` is a tensor of predictions, and
+    :math:`p` is the `power`.
 
     Args:
         preds: Predicted tensor with shape ``(N,...)``
