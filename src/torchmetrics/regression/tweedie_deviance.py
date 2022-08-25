@@ -36,7 +36,8 @@ class TweedieDevianceScore(Metric):
             \hat{y})^{2 - p}}{2 - p}), & \text{otherwise}
         \end{cases}
 
-    where :math:`y` is a tensor of targets values, :math:`\hat{y}` is a tensor of predictions, and :math:`p` is the `power`.
+    where :math:`y` is a tensor of targets values, :math:`\hat{y}` is a tensor of predictions, and
+    :math:`p` is the `power`.
 
     Forward accepts
 
