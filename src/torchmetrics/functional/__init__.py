@@ -65,7 +65,6 @@ from torchmetrics.functional.classification.jaccard import (
     multiclass_jaccard_index,
     multilabel_jaccard_index,
 )
-from torchmetrics.functional.classification.kl_divergence import kl_divergence
 from torchmetrics.functional.classification.matthews_corrcoef import (
     binary_matthews_corrcoef,
     matthews_corrcoef,
@@ -131,6 +130,7 @@ from torchmetrics.functional.pairwise.linear import pairwise_linear_similarity
 from torchmetrics.functional.pairwise.manhattan import pairwise_manhattan_distance
 from torchmetrics.functional.regression.cosine_similarity import cosine_similarity
 from torchmetrics.functional.regression.explained_variance import explained_variance
+from torchmetrics.functional.regression.kl_divergence import kl_divergence
 from torchmetrics.functional.regression.log_mse import mean_squared_log_error
 from torchmetrics.functional.regression.mae import mean_absolute_error
 from torchmetrics.functional.regression.mape import mean_absolute_percentage_error

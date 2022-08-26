@@ -220,7 +220,7 @@ def binary_stat_scores(
 def _multiclass_stat_scores_arg_validation(
     num_classes: int,
     top_k: int = 1,
-    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
 ) -> None:
@@ -417,7 +417,7 @@ def _multiclass_stat_scores_compute(
     fp: Tensor,
     tn: Tensor,
     fn: Tensor,
-    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
     multidim_average: Literal["global", "samplewise"] = "global",
 ) -> Tensor:
     """Stack statistics and compute support also.
@@ -444,7 +444,7 @@ def multiclass_stat_scores(
     preds: Tensor,
     target: Tensor,
     num_classes: int,
-    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
     top_k: int = 1,
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
@@ -509,7 +509,7 @@ def multiclass_stat_scores(
         >>> from torchmetrics.functional import multiclass_stat_scores
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([2, 1, 0, 1])
-        >>> multiclass_stat_scores(preds, target, num_classes=3)
+        >>> multiclass_stat_scores(preds, target, num_classes=3, average='micro')
         tensor([3, 1, 7, 1, 4])
         >>> multiclass_stat_scores(preds, target, num_classes=3, average=None)
         tensor([[1, 0, 2, 1, 2],
@@ -525,7 +525,7 @@ def multiclass_stat_scores(
         ...   [0.71, 0.09, 0.20],
         ...   [0.05, 0.82, 0.13],
         ... ])
-        >>> multiclass_stat_scores(preds, target, num_classes=3)
+        >>> multiclass_stat_scores(preds, target, num_classes=3, average='micro')
         tensor([3, 1, 7, 1, 4])
         >>> multiclass_stat_scores(preds, target, num_classes=3, average=None)
         tensor([[1, 0, 2, 1, 2],
@@ -536,7 +536,7 @@ def multiclass_stat_scores(
         >>> from torchmetrics.functional import multiclass_stat_scores
         >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
         >>> preds = torch.tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
-        >>> multiclass_stat_scores(preds, target, num_classes=3, multidim_average='samplewise')
+        >>> multiclass_stat_scores(preds, target, num_classes=3, multidim_average='samplewise', average='micro')
         tensor([[3, 3, 9, 3, 6],
                 [2, 4, 8, 4, 6]])
         >>> multiclass_stat_scores(preds, target, num_classes=3, multidim_average='samplewise', average=None)
@@ -558,7 +558,7 @@ def multiclass_stat_scores(
 def _multilabel_stat_scores_arg_validation(
     num_labels: int,
     threshold: float = 0.5,
-    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
 ) -> None:
@@ -676,7 +676,7 @@ def _multilabel_stat_scores_compute(
     fp: Tensor,
     tn: Tensor,
     fn: Tensor,
-    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
     multidim_average: Literal["global", "samplewise"] = "global",
 ) -> Tensor:
     """Stack statistics and compute support also.
@@ -701,7 +701,7 @@ def multilabel_stat_scores(
     target: Tensor,
     num_labels: int,
     threshold: float = 0.5,
-    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
@@ -764,7 +764,7 @@ def multilabel_stat_scores(
         >>> from torchmetrics.functional import multilabel_stat_scores
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
-        >>> multilabel_stat_scores(preds, target, num_labels=3)
+        >>> multilabel_stat_scores(preds, target, num_labels=3, average='micro')
         tensor([2, 1, 2, 1, 3])
         >>> multilabel_stat_scores(preds, target, num_labels=3, average=None)
         tensor([[1, 0, 1, 0, 1],
@@ -775,7 +775,7 @@ def multilabel_stat_scores(
         >>> from torchmetrics.functional import multilabel_stat_scores
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
-        >>> multilabel_stat_scores(preds, target, num_labels=3)
+        >>> multilabel_stat_scores(preds, target, num_labels=3, average='micro')
         tensor([2, 1, 2, 1, 3])
         >>> multilabel_stat_scores(preds, target, num_labels=3, average=None)
         tensor([[1, 0, 1, 0, 1],
@@ -791,7 +791,7 @@ def multilabel_stat_scores(
         ...         [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]],
         ...     ]
         ... )
-        >>> multilabel_stat_scores(preds, target, num_labels=3, multidim_average='samplewise')
+        >>> multilabel_stat_scores(preds, target, num_labels=3, multidim_average='samplewise', average='micro')
         tensor([[2, 3, 0, 1, 3],
                 [0, 2, 1, 3, 3]])
         >>> multilabel_stat_scores(preds, target, num_labels=3, multidim_average='samplewise', average=None)
