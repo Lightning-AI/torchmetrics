@@ -21,8 +21,8 @@ import torch
 from scipy.stats import entropy
 from torch import Tensor
 
-from torchmetrics.classification import KLDivergence
-from torchmetrics.functional import kl_divergence
+from torchmetrics.functional.regression.kl_divergence import kl_divergence
+from torchmetrics.regression.kl_divergence import KLDivergence
 from unittests.helpers import seed_all
 from unittests.helpers.testers import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, MetricTester
 

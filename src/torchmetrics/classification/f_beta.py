@@ -192,7 +192,7 @@ class MulticlassFBetaScore(MulticlassStatScores):
         >>> preds = torch.tensor([2, 1, 0, 1])
         >>> metric = MulticlassFBetaScore(beta=2.0, num_classes=3)
         >>> metric(preds, target)
-        tensor(0.7500)
+        tensor(0.7963)
         >>> metric = MulticlassFBetaScore(beta=2.0, num_classes=3, average=None)
         >>> metric(preds, target)
         tensor([0.5556, 0.8333, 1.0000])
@@ -208,7 +208,7 @@ class MulticlassFBetaScore(MulticlassStatScores):
         ... ])
         >>> metric = MulticlassFBetaScore(beta=2.0, num_classes=3)
         >>> metric(preds, target)
-        tensor(0.7500)
+        tensor(0.7963)
         >>> metric = MulticlassFBetaScore(beta=2.0, num_classes=3, average=None)
         >>> metric(preds, target)
         tensor([0.5556, 0.8333, 1.0000])
@@ -219,7 +219,7 @@ class MulticlassFBetaScore(MulticlassStatScores):
         >>> preds = torch.tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
         >>> metric = MulticlassFBetaScore(beta=2.0, num_classes=3, multidim_average='samplewise')
         >>> metric(preds, target)
-        tensor([0.5000, 0.3333])
+        tensor([0.4697, 0.2706])
         >>> metric = MulticlassFBetaScore(beta=2.0, num_classes=3, multidim_average='samplewise', average=None)
         >>> metric(preds, target)
         tensor([[0.9091, 0.0000, 0.5000],
@@ -234,7 +234,7 @@ class MulticlassFBetaScore(MulticlassStatScores):
         beta: float,
         num_classes: int,
         top_k: int = 1,
-        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
         multidim_average: Literal["global", "samplewise"] = "global",
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
@@ -320,7 +320,7 @@ class MultilabelFBetaScore(MultilabelStatScores):
         >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
         >>> metric = MultilabelFBetaScore(beta=2.0, num_labels=3)
         >>> metric(preds, target)
-        tensor(0.6667)
+        tensor(0.6111)
         >>> metric = MultilabelFBetaScore(beta=2.0, num_labels=3, average=None)
         >>> metric(preds, target)
         tensor([1.0000, 0.0000, 0.8333])
@@ -331,7 +331,7 @@ class MultilabelFBetaScore(MultilabelStatScores):
         >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> metric = MultilabelFBetaScore(beta=2.0, num_labels=3)
         >>> metric(preds, target)
-        tensor(0.6667)
+        tensor(0.6111)
         >>> metric = MultilabelFBetaScore(beta=2.0, num_labels=3, average=None)
         >>> metric(preds, target)
         tensor([1.0000, 0.0000, 0.8333])
@@ -347,7 +347,7 @@ class MultilabelFBetaScore(MultilabelStatScores):
         ... )
         >>> metric = MultilabelFBetaScore(num_labels=3, beta=2.0, multidim_average='samplewise')
         >>> metric(preds, target)
-        tensor([0.5882, 0.0000])
+        tensor([0.5556, 0.0000])
         >>> metric = MultilabelFBetaScore(num_labels=3, beta=2.0, multidim_average='samplewise', average=None)
         >>> metric(preds, target)
         tensor([[0.8333, 0.8333, 0.0000],
@@ -363,7 +363,7 @@ class MultilabelFBetaScore(MultilabelStatScores):
         beta: float,
         num_labels: int,
         threshold: float = 0.5,
-        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
         multidim_average: Literal["global", "samplewise"] = "global",
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
@@ -536,7 +536,7 @@ class MulticlassF1Score(MulticlassFBetaScore):
         >>> preds = torch.tensor([2, 1, 0, 1])
         >>> metric = MulticlassF1Score(num_classes=3)
         >>> metric(preds, target)
-        tensor(0.7500)
+        tensor(0.7778)
         >>> metric = MulticlassF1Score(num_classes=3, average=None)
         >>> metric(preds, target)
         tensor([0.6667, 0.6667, 1.0000])
@@ -552,7 +552,7 @@ class MulticlassF1Score(MulticlassFBetaScore):
         ... ])
         >>> metric = MulticlassF1Score(num_classes=3)
         >>> metric(preds, target)
-        tensor(0.7500)
+        tensor(0.7778)
         >>> metric = MulticlassF1Score(num_classes=3, average=None)
         >>> metric(preds, target)
         tensor([0.6667, 0.6667, 1.0000])
@@ -563,7 +563,7 @@ class MulticlassF1Score(MulticlassFBetaScore):
         >>> preds = torch.tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
         >>> metric = MulticlassF1Score(num_classes=3, multidim_average='samplewise')
         >>> metric(preds, target)
-        tensor([0.5000, 0.3333])
+        tensor([0.4333, 0.2667])
         >>> metric = MulticlassF1Score(num_classes=3, multidim_average='samplewise', average=None)
         >>> metric(preds, target)
         tensor([[0.8000, 0.0000, 0.5000],
@@ -577,7 +577,7 @@ class MulticlassF1Score(MulticlassFBetaScore):
         self,
         num_classes: int,
         top_k: int = 1,
-        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
         multidim_average: Literal["global", "samplewise"] = "global",
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
@@ -654,7 +654,7 @@ class MultilabelF1Score(MultilabelFBetaScore):
         >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
         >>> metric = MultilabelF1Score(num_labels=3)
         >>> metric(preds, target)
-        tensor(0.6667)
+        tensor(0.5556)
         >>> metric = MultilabelF1Score(num_labels=3, average=None)
         >>> metric(preds, target)
         tensor([1.0000, 0.0000, 0.6667])
@@ -665,7 +665,7 @@ class MultilabelF1Score(MultilabelFBetaScore):
         >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> metric = MultilabelF1Score(num_labels=3)
         >>> metric(preds, target)
-        tensor(0.6667)
+        tensor(0.5556)
         >>> metric = MultilabelF1Score(num_labels=3, average=None)
         >>> metric(preds, target)
         tensor([1.0000, 0.0000, 0.6667])
@@ -681,7 +681,7 @@ class MultilabelF1Score(MultilabelFBetaScore):
         ... )
         >>> metric = MultilabelF1Score(num_labels=3, multidim_average='samplewise')
         >>> metric(preds, target)
-        tensor([0.5000, 0.0000])
+        tensor([0.4444, 0.0000])
         >>> metric = MultilabelF1Score(num_labels=3, multidim_average='samplewise', average=None)
         >>> metric(preds, target)
         tensor([[0.6667, 0.6667, 0.0000],
@@ -696,7 +696,7 @@ class MultilabelF1Score(MultilabelFBetaScore):
         self,
         num_labels: int,
         threshold: float = 0.5,
-        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
         multidim_average: Literal["global", "samplewise"] = "global",
         ignore_index: Optional[int] = None,
         validate_args: bool = True,

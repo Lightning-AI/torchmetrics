@@ -18,7 +18,6 @@ import torch
 from torch import Tensor, tensor
 from typing_extensions import Literal
 
-from torchmetrics.functional.classification.auc import _auc_compute_without_check
 from torchmetrics.functional.classification.precision_recall_curve import (
     _binary_precision_recall_curve_arg_validation,
     _binary_precision_recall_curve_format,
@@ -40,7 +39,7 @@ from torchmetrics.functional.classification.roc import (
     roc,
 )
 from torchmetrics.utilities.checks import _input_format_classification
-from torchmetrics.utilities.compute import _safe_divide
+from torchmetrics.utilities.compute import _auc_compute_without_check, _safe_divide
 from torchmetrics.utilities.data import _bincount
 from torchmetrics.utilities.enums import AverageMethod, DataType
 from torchmetrics.utilities.imports import _TORCH_LOWER_1_6

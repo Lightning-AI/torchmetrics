@@ -162,7 +162,7 @@ def _multiclass_fbeta_score_arg_validation(
     beta: float,
     num_classes: int,
     top_k: int = 1,
-    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
 ) -> None:
@@ -176,7 +176,7 @@ def multiclass_fbeta_score(
     target: Tensor,
     beta: float,
     num_classes: int,
-    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
     top_k: int = 1,
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
@@ -244,7 +244,7 @@ def multiclass_fbeta_score(
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([2, 1, 0, 1])
         >>> multiclass_fbeta_score(preds, target, beta=2.0, num_classes=3)
-        tensor(0.7500)
+        tensor(0.7963)
         >>> multiclass_fbeta_score(preds, target, beta=2.0, num_classes=3, average=None)
         tensor([0.5556, 0.8333, 1.0000])
 
@@ -258,7 +258,7 @@ def multiclass_fbeta_score(
         ...   [0.05, 0.82, 0.13],
         ... ])
         >>> multiclass_fbeta_score(preds, target, beta=2.0, num_classes=3)
-        tensor(0.7500)
+        tensor(0.7963)
         >>> multiclass_fbeta_score(preds, target, beta=2.0, num_classes=3, average=None)
         tensor([0.5556, 0.8333, 1.0000])
 
@@ -267,7 +267,7 @@ def multiclass_fbeta_score(
         >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
         >>> preds = torch.tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
         >>> multiclass_fbeta_score(preds, target, beta=2.0, num_classes=3, multidim_average='samplewise')
-        tensor([0.5000, 0.3333])
+        tensor([0.4697, 0.2706])
         >>> multiclass_fbeta_score(preds, target, beta=2.0, num_classes=3, multidim_average='samplewise', average=None)
         tensor([[0.9091, 0.0000, 0.5000],
                 [0.0000, 0.3571, 0.4545]])
@@ -284,7 +284,7 @@ def _multilabel_fbeta_score_arg_validation(
     beta: float,
     num_labels: int,
     threshold: float = 0.5,
-    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
 ) -> None:
@@ -299,7 +299,7 @@ def multilabel_fbeta_score(
     beta: float,
     num_labels: int,
     threshold: float = 0.5,
-    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
@@ -365,7 +365,7 @@ def multilabel_fbeta_score(
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
         >>> multilabel_fbeta_score(preds, target, beta=2.0, num_labels=3)
-        tensor(0.6667)
+        tensor(0.6111)
         >>> multilabel_fbeta_score(preds, target, beta=2.0, num_labels=3, average=None)
         tensor([1.0000, 0.0000, 0.8333])
 
@@ -374,7 +374,7 @@ def multilabel_fbeta_score(
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> multilabel_fbeta_score(preds, target, beta=2.0, num_labels=3)
-        tensor(0.6667)
+        tensor(0.6111)
         >>> multilabel_fbeta_score(preds, target, beta=2.0, num_labels=3, average=None)
         tensor([1.0000, 0.0000, 0.8333])
 
@@ -388,7 +388,7 @@ def multilabel_fbeta_score(
         ...     ]
         ... )
         >>> multilabel_fbeta_score(preds, target, num_labels=3, beta=2.0, multidim_average='samplewise')
-        tensor([0.5882, 0.0000])
+        tensor([0.5556, 0.0000])
         >>> multilabel_fbeta_score(preds, target, num_labels=3, beta=2.0, multidim_average='samplewise', average=None)
         tensor([[0.8333, 0.8333, 0.0000],
                 [0.0000, 0.0000, 0.0000]])
@@ -487,7 +487,7 @@ def multiclass_f1_score(
     preds: Tensor,
     target: Tensor,
     num_classes: int,
-    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
     top_k: int = 1,
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
@@ -553,7 +553,7 @@ def multiclass_f1_score(
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([2, 1, 0, 1])
         >>> multiclass_f1_score(preds, target, num_classes=3)
-        tensor(0.7500)
+        tensor(0.7778)
         >>> multiclass_f1_score(preds, target, num_classes=3, average=None)
         tensor([0.6667, 0.6667, 1.0000])
 
@@ -567,7 +567,7 @@ def multiclass_f1_score(
         ...   [0.05, 0.82, 0.13],
         ... ])
         >>> multiclass_f1_score(preds, target, num_classes=3)
-        tensor(0.7500)
+        tensor(0.7778)
         >>> multiclass_f1_score(preds, target, num_classes=3, average=None)
         tensor([0.6667, 0.6667, 1.0000])
 
@@ -576,7 +576,7 @@ def multiclass_f1_score(
         >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
         >>> preds = torch.tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
         >>> multiclass_f1_score(preds, target, num_classes=3, multidim_average='samplewise')
-        tensor([0.5000, 0.3333])
+        tensor([0.4333, 0.2667])
         >>> multiclass_f1_score(preds, target, num_classes=3, multidim_average='samplewise', average=None)
         tensor([[0.8000, 0.0000, 0.5000],
                 [0.0000, 0.4000, 0.4000]])
@@ -599,7 +599,7 @@ def multilabel_f1_score(
     target: Tensor,
     num_labels: int,
     threshold: float = 0.5,
-    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
@@ -663,7 +663,7 @@ def multilabel_f1_score(
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
         >>> multilabel_f1_score(preds, target, num_labels=3)
-        tensor(0.6667)
+        tensor(0.5556)
         >>> multilabel_f1_score(preds, target, num_labels=3, average=None)
         tensor([1.0000, 0.0000, 0.6667])
 
@@ -672,7 +672,7 @@ def multilabel_f1_score(
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> multilabel_f1_score(preds, target, num_labels=3)
-        tensor(0.6667)
+        tensor(0.5556)
         >>> multilabel_f1_score(preds, target, num_labels=3, average=None)
         tensor([1.0000, 0.0000, 0.6667])
 
@@ -686,7 +686,7 @@ def multilabel_f1_score(
         ...     ]
         ... )
         >>> multilabel_f1_score(preds, target, num_labels=3, multidim_average='samplewise')
-        tensor([0.5000, 0.0000])
+        tensor([0.4444, 0.0000])
         >>> multilabel_f1_score(preds, target, num_labels=3, multidim_average='samplewise', average=None)
         tensor([[0.6667, 0.6667, 0.0000],
                 [0.0000, 0.0000, 0.0000]])
