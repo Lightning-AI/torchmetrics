@@ -55,7 +55,7 @@ def _safe_divide(num: Tensor, denom: Tensor) -> Tensor:
     return num / denom
 
 
-def _auc_update(x: Tensor, y: Tensor) -> Tuple[Tensor, Tensor]:
+def _auc_format_inputs(x: Tensor, y: Tensor) -> Tuple[Tensor, Tensor]:
     """Checks that auc input is correct."""
     x = x.squeeze() if x.ndim > 1 else x
     y = y.squeeze() if y.ndim > 1 else y
@@ -111,5 +111,5 @@ def auc(x: Tensor, y: Tensor, reorder: bool = False) -> Tensor:
     Return:
         Tensor containing AUC score
     """
-    x, y = _auc_update(x, y)
+    x, y = _auc_format_inputs(x, y)
     return _auc_compute(x, y, reorder=reorder)
