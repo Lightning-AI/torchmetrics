@@ -17,7 +17,7 @@ from torch import Tensor
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
-from torchmetrics.utilities.compute import _auc_compute, _auc_update
+from torchmetrics.utilities.compute import _auc_compute, _auc_format_inputs
 from torchmetrics.utilities.data import dim_zero_cat
 
 
@@ -73,7 +73,7 @@ class AUC(Metric):
             preds: Predictions from model (probabilities, or labels)
             target: Ground truth labels
         """
-        x, y = _auc_update(preds, target)
+        x, y = _auc_format_inputs(preds, target)
 
         self.x.append(x)
         self.y.append(y)

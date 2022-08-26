@@ -213,7 +213,7 @@ def multiclass_specificity(
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([2, 1, 0, 1])
         >>> multiclass_specificity(preds, target, num_classes=3)
-        tensor(0.8750)
+        tensor(0.8889)
         >>> multiclass_specificity(preds, target, num_classes=3, average=None)
         tensor([1.0000, 0.6667, 1.0000])
 
@@ -227,7 +227,7 @@ def multiclass_specificity(
         ...   [0.05, 0.82, 0.13],
         ... ])
         >>> multiclass_specificity(preds, target, num_classes=3)
-        tensor(0.8750)
+        tensor(0.8889)
         >>> multiclass_specificity(preds, target, num_classes=3, average=None)
         tensor([1.0000, 0.6667, 1.0000])
 
@@ -236,7 +236,7 @@ def multiclass_specificity(
         >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
         >>> preds = torch.tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
         >>> multiclass_specificity(preds, target, num_classes=3, multidim_average='samplewise')
-        tensor([0.7500, 0.6667])
+        tensor([0.7500, 0.6556])
         >>> multiclass_specificity(preds, target, num_classes=3, multidim_average='samplewise', average=None)
         tensor([[0.7500, 0.7500, 0.7500],
                 [0.8000, 0.6667, 0.5000]])
