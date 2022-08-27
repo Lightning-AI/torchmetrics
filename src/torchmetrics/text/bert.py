@@ -33,9 +33,18 @@ else:
 _DEFAULT_MODEL = "roberta-large"
 
 
-def _get_input_dict(input_ids: List[Tensor], attention_mask: List[Tensor]) -> Dict[str, Tensor]:
-    """Create an input dictionary of ``input_ids`` and ``attention_mask`` for BERTScore calculation."""
-    output_dict = {"input_ids": torch.cat(input_ids), "attention_mask": torch.cat(attention_mask)}
+def _get_input_dict(
+    input_ids: Union[Tensor, List[Tensor]], attention_mask: Union[Tensor, List[Tensor]]
+) -> Dict[str, Tensor]:
+    """Create an input dictionary of ``input_ids`` and ``attention_mask`` for BERTScore calculation.
+
+    When ``dist_sync_on_step=True``, ``input_ids`` and ``attention_mask`` might be ``Tensor`` instead of
+    ``List[Tensor]``.
+    """
+    if isinstance(input_ids, Tensor):
+        output_dict = {"input_ids": input_ids, "attention_mask": attention_mask}
+    else:
+        output_dict = {"input_ids": torch.cat(input_ids), "attention_mask": torch.cat(attention_mask)}
     return output_dict
 
 
@@ -89,12 +98,13 @@ class BERTScore(Metric):
         Python dictionary containing the keys `precision`, `recall` and `f1` with corresponding values.
 
     Example:
+        >>> from pprint import pprint
         >>> from torchmetrics.text.bert import BERTScore
         >>> preds = ["hello there", "general kenobi"]
         >>> target = ["hello there", "master kenobi"]
         >>> bertscore = BERTScore()
-        >>> bertscore(preds, target)
-        {'precision': tensor([1.0000, 0.9961]), 'recall': tensor([1.0000, 0.9961]), 'f1': tensor([1.0000, 0.9961])}
+        >>> pprint(bertscore(preds, target))
+        {'f1': tensor([1.0000, 0.9961]), 'precision': tensor([1.0000, 0.9961]), 'recall': tensor([1.0000, 0.9961])}
     """
 
     is_differentiable: bool = False

@@ -77,7 +77,7 @@ def _reference_bert_score(
         (12, True, True, True),
     ],
 )
-@pytest.mark.parametrize(["metric_key"], [(key,) for key in _METRIC_KEY_TO_IDX.keys()][:1])
+@pytest.mark.parametrize(["metric_key"], [(key,) for key in _METRIC_KEY_TO_IDX.keys()])
 @pytest.mark.parametrize(
     ["preds", "targets"],
     [(_inputs_single_reference.preds, _inputs_single_reference.targets)],
