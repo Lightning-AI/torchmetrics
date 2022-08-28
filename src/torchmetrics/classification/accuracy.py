@@ -15,6 +15,7 @@ from typing import Any, Optional
 
 import torch
 from torch import Tensor, tensor
+from typing_extensions import Literal
 
 from torchmetrics.functional.classification.accuracy import (
     _accuracy_compute,
@@ -26,6 +27,7 @@ from torchmetrics.functional.classification.accuracy import (
     _subset_accuracy_update,
 )
 from torchmetrics.utilities.enums import AverageMethod, DataType
+from torchmetrics.utilities.prints import rank_zero_warn
 
 from torchmetrics.classification.stat_scores import (  # isort:skip
     StatScores,
@@ -324,7 +326,7 @@ class MultilabelAccuracy(MultilabelStatScores):
 # -------------------------- Old stuff --------------------------
 
 
-class Accuracy(StatScores):
+class Accuracy(StatScores, BinaryAccuracy):
     r"""
     Computes Accuracy_:
 
@@ -466,41 +468,70 @@ class Accuracy(StatScores):
         top_k: Optional[int] = None,
         multiclass: Optional[bool] = None,
         subset_accuracy: bool = False,
+        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+        num_labels: Optional[int] = None,
+        multidim_average: Optional[Literal["global", "samplewise"]] = "global",
+        validate_args: bool = True,
         **kwargs: Any,
     ) -> None:
-        allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
-        if average not in allowed_average:
-            raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
+        if task is not None:
+            if task == "binary":
+                BinaryAccuracy.__init__(self, threshold, multidim_average, ignore_index, validate_args, **kwargs)
+            elif task == "multiclass":
+                MulticlassAccuracy.__init__(
+                    self, num_classes, top_k, average, multidim_average, ignore_index, validate_args, **kwargs
+                )
+            elif task == "multilabel":
+                MultilabelAccuracy.__init__(
+                    self, num_labels, threshold, average, multidim_average, ignore_index, validate_args, **kwargs
+                )
+            else:
+                raise ValueError(
+                    f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+                )
+        else:
+            rank_zero_warn(
+                "From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification"
+                " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
+                " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
+                " and the general order of arguments may change, such that this metric will just function as an single"
+                " entrypoint to calling the three specialized versions.",
+                DeprecationWarning,
+            )
 
-        _reduce_options = (AverageMethod.WEIGHTED, AverageMethod.NONE, None)
-        if "reduce" not in kwargs:
-            kwargs["reduce"] = AverageMethod.MACRO if average in _reduce_options else average
-        if "mdmc_reduce" not in kwargs:
-            kwargs["mdmc_reduce"] = mdmc_average
+            allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
+            if average not in allowed_average:
+                raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
 
-        super().__init__(
-            threshold=threshold,
-            top_k=top_k,
-            num_classes=num_classes,
-            multiclass=multiclass,
-            ignore_index=ignore_index,
-            **kwargs,
-        )
+            _reduce_options = (AverageMethod.WEIGHTED, AverageMethod.NONE, None)
+            if "reduce" not in kwargs:
+                kwargs["reduce"] = AverageMethod.MACRO if average in _reduce_options else average
+            if "mdmc_reduce" not in kwargs:
+                kwargs["mdmc_reduce"] = mdmc_average
 
-        if top_k is not None and (not isinstance(top_k, int) or top_k <= 0):
-            raise ValueError(f"The `top_k` should be an integer larger than 0, got {top_k}")
+            super().__init__(
+                threshold=threshold,
+                top_k=top_k,
+                num_classes=num_classes,
+                multiclass=multiclass,
+                ignore_index=ignore_index,
+                **kwargs,
+            )
 
-        self.average = average
-        self.threshold = threshold
-        self.top_k = top_k
-        self.subset_accuracy = subset_accuracy
-        self.mode: DataType = None  # type: ignore
-        self.multiclass = multiclass
-        self.ignore_index = ignore_index
+            if top_k is not None and (not isinstance(top_k, int) or top_k <= 0):
+                raise ValueError(f"The `top_k` should be an integer larger than 0, got {top_k}")
 
-        if self.subset_accuracy:
-            self.add_state("correct", default=tensor(0), dist_reduce_fx="sum")
-            self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
+            self.average = average
+            self.threshold = threshold
+            self.top_k = top_k
+            self.subset_accuracy = subset_accuracy
+            self.mode: DataType = None  # type: ignore
+            self.multiclass = multiclass
+            self.ignore_index = ignore_index
+
+            if self.subset_accuracy:
+                self.add_state("correct", default=tensor(0), dist_reduce_fx="sum")
+                self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets. See
@@ -512,55 +543,73 @@ class Accuracy(StatScores):
             target: Ground truth labels
         """
         """ returns the mode of the data (binary, multi label, multi class, multi-dim multi class) """
-        mode = _mode(preds, target, self.threshold, self.top_k, self.num_classes, self.multiclass, self.ignore_index)
-
-        if not self.mode:
-            self.mode = mode
-        elif self.mode != mode:
-            raise ValueError(f"You can not use {mode} inputs with {self.mode} inputs.")
-
-        if self.subset_accuracy and not _check_subset_validity(self.mode):
-            self.subset_accuracy = False
-
-        if self.subset_accuracy:
-            correct, total = _subset_accuracy_update(
-                preds, target, threshold=self.threshold, top_k=self.top_k, ignore_index=self.ignore_index
-            )
-            self.correct += correct
-            self.total += total
+        if self.task is not None:
+            if self.task == "binary":
+                BinaryAccuracy.update(self, preds, target)
+            elif self.task == "multiclass":
+                MulticlassAccuracy.update(self, preds, target)
+            elif self.task == "multilabel":
+                MultilabelAccuracy.update(self, preds, target)
         else:
-            if not self.mode:
-                raise RuntimeError("You have to have determined mode.")
-            tp, fp, tn, fn = _accuracy_update(
-                preds,
-                target,
-                reduce=self.reduce,
-                mdmc_reduce=self.mdmc_reduce,
-                threshold=self.threshold,
-                num_classes=self.num_classes,
-                top_k=self.top_k,
-                multiclass=self.multiclass,
-                ignore_index=self.ignore_index,
-                mode=self.mode,
+            mode = _mode(
+                preds, target, self.threshold, self.top_k, self.num_classes, self.multiclass, self.ignore_index
             )
 
-            # Update states
-            if self.reduce != "samples" and self.mdmc_reduce != "samplewise":
-                self.tp += tp
-                self.fp += fp
-                self.tn += tn
-                self.fn += fn
+            if not self.mode:
+                self.mode = mode
+            elif self.mode != mode:
+                raise ValueError(f"You can not use {mode} inputs with {self.mode} inputs.")
+
+            if self.subset_accuracy and not _check_subset_validity(self.mode):
+                self.subset_accuracy = False
+
+            if self.subset_accuracy:
+                correct, total = _subset_accuracy_update(
+                    preds, target, threshold=self.threshold, top_k=self.top_k, ignore_index=self.ignore_index
+                )
+                self.correct += correct
+                self.total += total
             else:
-                self.tp.append(tp)
-                self.fp.append(fp)
-                self.tn.append(tn)
-                self.fn.append(fn)
+                if not self.mode:
+                    raise RuntimeError("You have to have determined mode.")
+                tp, fp, tn, fn = _accuracy_update(
+                    preds,
+                    target,
+                    reduce=self.reduce,
+                    mdmc_reduce=self.mdmc_reduce,
+                    threshold=self.threshold,
+                    num_classes=self.num_classes,
+                    top_k=self.top_k,
+                    multiclass=self.multiclass,
+                    ignore_index=self.ignore_index,
+                    mode=self.mode,
+                )
+
+                # Update states
+                if self.reduce != "samples" and self.mdmc_reduce != "samplewise":
+                    self.tp += tp
+                    self.fp += fp
+                    self.tn += tn
+                    self.fn += fn
+                else:
+                    self.tp.append(tp)
+                    self.fp.append(fp)
+                    self.tn.append(tn)
+                    self.fn.append(fn)
 
     def compute(self) -> Tensor:
         """Computes accuracy based on inputs passed in to ``update`` previously."""
-        if not self.mode:
-            raise RuntimeError("You have to have determined mode.")
-        if self.subset_accuracy:
-            return _subset_accuracy_compute(self.correct, self.total)
-        tp, fp, tn, fn = self._get_final_stats()
-        return _accuracy_compute(tp, fp, tn, fn, self.average, self.mdmc_reduce, self.mode)
+        if self.task is not None:
+            if self.task == "binary":
+                return BinaryAccuracy.compute(self)
+            elif self.task == "multiclass":
+                return MulticlassAccuracy.compute(self)
+            elif self.task == "multilabel":
+                return MultilabelAccuracy.compute(self)
+        else:
+            if not self.mode:
+                raise RuntimeError("You have to have determined mode.")
+            if self.subset_accuracy:
+                return _subset_accuracy_compute(self.correct, self.total)
+            tp, fp, tn, fn = self._get_final_stats()
+            return _accuracy_compute(tp, fp, tn, fn, self.average, self.mdmc_reduce, self.mode)
