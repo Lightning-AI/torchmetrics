@@ -39,6 +39,7 @@ from torchmetrics.functional.classification.stat_scores import (
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
+from torchmetrics.utilities.prints import rank_zero_warn
 
 
 class _AbstractStatScores(Metric):
@@ -151,7 +152,7 @@ class BinaryStatScores(_AbstractStatScores):
         validate_args: bool = True,
         **kwargs: Any,
     ) -> None:
-        super().__init__(**kwargs)
+        super(_AbstractStatScores, self).__init__(**kwargs)
         if validate_args:
             _binary_stat_scores_arg_validation(threshold, multidim_average, ignore_index)
         self.threshold = threshold
@@ -291,7 +292,7 @@ class MulticlassStatScores(_AbstractStatScores):
         validate_args: bool = True,
         **kwargs: Any,
     ) -> None:
-        super().__init__(**kwargs)
+        super(_AbstractStatScores, self).__init__(**kwargs)
         if validate_args:
             _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index)
         self.num_classes = num_classes
@@ -441,7 +442,7 @@ class MultilabelStatScores(_AbstractStatScores):
         validate_args: bool = True,
         **kwargs: Any,
     ) -> None:
-        super().__init__(**kwargs)
+        super(_AbstractStatScores, self).__init__(**kwargs)
         if validate_args:
             _multilabel_stat_scores_arg_validation(num_labels, threshold, average, multidim_average, ignore_index)
         self.num_labels = num_labels
@@ -489,10 +490,7 @@ class MultilabelStatScores(_AbstractStatScores):
         return _multilabel_stat_scores_compute(tp, fp, tn, fn, self.average, self.multidim_average)
 
 
-# -------------------------- Old stuff --------------------------
-
-
-class StatScores(Metric):
+class StatScores(BinaryStatScores, MulticlassStatScores, MultilabelStatScores):
     r"""Computes the number of true positives, false positives, true negatives, false negatives.
     Related to `Type I and Type II errors`_ and the `confusion matrix`_.
 
@@ -599,9 +597,41 @@ class StatScores(Metric):
         ignore_index: Optional[int] = None,
         mdmc_reduce: Optional[str] = None,
         multiclass: Optional[bool] = None,
+        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
+        num_labels: Optional[int] = None,
+        multidim_average: Optional[Literal["global", "samplewise"]] = "global",
+        validate_args: bool = True,
         **kwargs: Any,
     ) -> None:
-        super().__init__(**kwargs)
+        self.task = task
+        if self.task is not None:
+            if task == "binary":
+                BinaryStatScores.__init__(self, threshold, multidim_average, ignore_index, validate_args, **kwargs)
+            elif task == "multiclass":
+                MulticlassStatScores.__init__(
+                    self, num_classes, top_k, average, multidim_average, ignore_index, validate_args, **kwargs
+                )
+            elif task == "multilabel":
+                MultilabelStatScores.__init__(
+                    self, num_labels, threshold, average, multidim_average, ignore_index, validate_args, **kwargs
+                )
+            else:
+                raise ValueError(
+                    f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+                )
+            return
+        else:
+            rank_zero_warn(
+                "From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification"
+                " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
+                " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
+                " and the general order of arguments may change, such that this metric will just function as an single"
+                " entrypoint to calling the three specialized versions.",
+                DeprecationWarning,
+            )
+
+        Metric.__init__(self, **kwargs)
 
         self.reduce = reduce
         self.mdmc_reduce = mdmc_reduce
@@ -647,6 +677,14 @@ class StatScores(Metric):
             preds: Predictions from model (probabilities, logits or labels)
             target: Ground truth values
         """
+        if self.task is not None:
+            if self.task == "binary":
+                BinaryStatScores.update(self, preds, target)
+            elif self.task == "multiclass":
+                MulticlassStatScores.update(self, preds, target)
+            elif self.task == "multilabel":
+                MultilabelStatScores.update(self, preds, target)
+            return
 
         tp, fp, tn, fn = _stat_scores_update(
             preds,
@@ -711,5 +749,12 @@ class StatScores(Metric):
               - If ``reduce='macro'``, the shape will be ``(N, C, 5)``
               - If ``reduce='samples'``, the shape will be ``(N, X, 5)``
         """
+        if self.task is not None:
+            if self.task == "binary":
+                return BinaryStatScores.compute(self)
+            elif self.task == "multiclass":
+                return MulticlassStatScores.compute(self)
+            elif self.task == "multilabel":
+                return MultilabelStatScores.compute(self)
         tp, fp, tn, fn = self._get_final_stats()
         return _stat_scores_compute(tp, fp, tn, fn)
