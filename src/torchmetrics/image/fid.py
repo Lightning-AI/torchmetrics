@@ -21,7 +21,6 @@ from torch.nn import Module
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_info, rank_zero_warn
-from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _SCIPY_AVAILABLE, _TORCH_FIDELITY_AVAILABLE
 
 if _TORCH_FIDELITY_AVAILABLE:
@@ -201,8 +200,13 @@ class FrechetInceptionDistance(Metric):
     is_differentiable: bool = False
     full_state_update: bool = False
 
-    real_features: List[Tensor]
-    fake_features: List[Tensor]
+    real_features_sum: List[Tensor]
+    real_features_cov_sum: List[Tensor]
+    real_features_num_samples: int
+
+    fake_features_sum: List[Tensor]
+    fake_features_cov_sum: List[Tensor]
+    fake_features_num_samples: int
 
     def __init__(
         self,
@@ -240,8 +244,13 @@ class FrechetInceptionDistance(Metric):
             raise ValueError("Argument `reset_real_features` expected to be a bool")
         self.reset_real_features = reset_real_features
 
-        self.add_state("real_features", [], dist_reduce_fx=None)
-        self.add_state("fake_features", [], dist_reduce_fx=None)
+        self.add_state("real_features_sum", [], dist_reduce_fx=None)
+        self.add_state("real_features_cov_sum", [], dist_reduce_fx=None)
+        self.add_state("real_features_num_samples", torch.tensor(0).long(), dist_reduce_fx="sum")
+
+        self.add_state("fake_features_sum", [], dist_reduce_fx=None)
+        self.add_state("fake_features_cov_sum", [], dist_reduce_fx=None)
+        self.add_state("fake_features_num_samples", torch.tensor(0).long(), dist_reduce_fx="sum")
 
     def update(self, imgs: Tensor, real: bool) -> None:  # type: ignore
         """Update the state with extracted features.
@@ -250,40 +259,40 @@ class FrechetInceptionDistance(Metric):
             imgs: tensor with images feed to the feature extractor
             real: bool indicating if ``imgs`` belong to the real or the fake distribution
         """
-        features = self.inception(imgs)
+        features = self.inception(imgs).double()
+        self.orig_dtype = features.dtype
 
         if real:
-            self.real_features.append(features)
+            self.real_features_sum += features.sum(dim=0)
+            self.real_features_cov_sum += features.t().mm(features)
+            self.real_features_num_samples += imgs.shape[0]
         else:
-            self.fake_features.append(features)
+            self.fake_features_sum += features.sum(dim=0)
+            self.fake_features_cov_sum += features.t().mm(features)
+            self.fake_features_num_samples += imgs.shape[0]
 
     def compute(self) -> Tensor:
         """Calculate FID score based on accumulated extracted features from the two distributions."""
-        real_features = dim_zero_cat(self.real_features)
-        fake_features = dim_zero_cat(self.fake_features)
-        # computation is extremely sensitive so it needs to happen in double precision
-        orig_dtype = real_features.dtype
-        real_features = real_features.double()
-        fake_features = fake_features.double()
+        mean_real = (self.real_features_sum / self.real_features_num_samples).unsqueeze(0)
+        mean_fake = (self.fake_features_sum / self.fake_features_num_samples).unsqueeze(dim=0)
 
-        # calculate mean and covariance
-        n = real_features.shape[0]
-        m = fake_features.shape[0]
-        mean1 = real_features.mean(dim=0)
-        mean2 = fake_features.mean(dim=0)
-        diff1 = real_features - mean1
-        diff2 = fake_features - mean2
-        cov1 = 1.0 / (n - 1) * diff1.t().mm(diff1)
-        cov2 = 1.0 / (m - 1) * diff2.t().mm(diff2)
-
-        # compute fid
-        return _compute_fid(mean1, cov1, mean2, cov2).to(orig_dtype)
+        cov_real = (self.real_features_cov_sum / self.real_features_num_samples - mean_real.t().mm(mean_real)) / (
+            self.real_features_num_samples - 1
+        )
+        cov_fake = (self.fake_features_cov_sum - self.fake_features_num_samples * mean_fake.t().mm(mean_fake)) / (
+            self.fake_features_num_samples - 1
+        )
+        return _compute_fid(mean_real, cov_real, mean_fake, cov_fake).to(self.orig_dtype)
 
     def reset(self) -> None:
         if not self.reset_real_features:
             # remove temporarily to avoid resetting
-            value = self._defaults.pop("real_features")
+            real_features_sum = self._defaults.pop("real_features_sum")
+            real_features_cov_sum = self._defaults.pop("real_features_cov_sum")
+            real_features_num_samples = self._defaults.pop("real_features_num_samples")
             super().reset()
-            self._defaults["real_features"] = value
+            self._defaults["real_features_sum"] = real_features_sum
+            self._defaults["real_features_cov_sum"] = real_features_cov_sum
+            self._defaults["real_features_num_samples"] = real_features_num_samples
         else:
             super().reset()
