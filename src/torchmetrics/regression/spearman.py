@@ -52,6 +52,7 @@ class SpearmanCorrCoef(Metric):
 
     def __init__(
         self,
+        num_outputs: int = 1,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -59,6 +60,9 @@ class SpearmanCorrCoef(Metric):
             "Metric `SpearmanCorrcoef` will save all targets and predictions in the buffer."
             " For large datasets, this may lead to large memory footprint."
         )
+        if not isinstance(num_outputs, int) and num_outputs < 1:
+            raise ValueError("Expected argument `num_outputs` to be an int larger than 0, but got {num_outputs}")
+        self.num_outputs = num_outputs
 
         self.add_state("preds", default=[], dist_reduce_fx="cat")
         self.add_state("target", default=[], dist_reduce_fx="cat")

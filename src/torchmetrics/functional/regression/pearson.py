@@ -43,18 +43,19 @@ def _pearson_corrcoef_update(
     """
     # Data checking
     _check_same_shape(preds, target)
-    preds = preds.squeeze()
-    target = target.squeeze()
-    if preds.ndim > 1 or target.ndim > 1:
-        raise ValueError("Expected both predictions and target to be 1 dimensional tensors.")
+    if preds.ndim > 2 or target.ndim > 2:
+        raise ValueError(
+            "Expected both predictions and target to be either 1 or 2 dimensional tensors,"
+            " but get{target.ndim} and {preds.ndim}."
+        )
 
     n_obs = preds.numel()
-    mx_new = (n_prior * mean_x + preds.mean() * n_obs) / (n_prior + n_obs)
-    my_new = (n_prior * mean_y + target.mean() * n_obs) / (n_prior + n_obs)
+    mx_new = (n_prior * mean_x + preds.mean(0) * n_obs) / (n_prior + n_obs)
+    my_new = (n_prior * mean_y + target.mean(0) * n_obs) / (n_prior + n_obs)
     n_prior += n_obs
-    var_x += ((preds - mx_new) * (preds - mean_x)).sum()
-    var_y += ((target - my_new) * (target - mean_y)).sum()
-    corr_xy += ((preds - mx_new) * (target - mean_y)).sum()
+    var_x += ((preds - mx_new) * (preds - mean_x)).sum(0)
+    var_y += ((target - my_new) * (target - mean_y)).sum(0)
+    corr_xy += ((preds - mx_new) * (target - mean_y)).sum(0)
     mean_x = mx_new
     mean_y = my_new
 
@@ -96,7 +97,8 @@ def pearson_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
         >>> pearson_corrcoef(preds, target)
         tensor(0.9849)
     """
-    _temp = torch.zeros(1, dtype=preds.dtype, device=preds.device)
+    d = preds.shape[1] if preds.ndim == 2 else 1
+    _temp = torch.zeros(d, dtype=preds.dtype, device=preds.device)
     mean_x, mean_y, var_x = _temp.clone(), _temp.clone(), _temp.clone()
     var_y, corr_xy, nb = _temp.clone(), _temp.clone(), _temp.clone()
     _, _, var_x, var_y, corr_xy, nb = _pearson_corrcoef_update(preds, target, mean_x, mean_y, var_x, var_y, corr_xy, nb)

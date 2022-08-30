@@ -68,10 +68,11 @@ def _spearman_corrcoef_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Te
             f" Got preds: {preds.dtype} and target: {target.dtype}."
         )
     _check_same_shape(preds, target)
-    preds = preds.squeeze()
-    target = target.squeeze()
-    if preds.ndim > 1 or target.ndim > 1:
-        raise ValueError("Expected both predictions and target to be 1 dimensional tensors.")
+    if preds.ndim > 2 or target.ndim > 2:
+        raise ValueError(
+            "Expected both predictions and target to be either 1 or 2 dimensional tensors,"
+            " but get{target.ndim} and {preds.ndim}."
+        )
     return preds, target
 
 
@@ -90,16 +91,19 @@ def _spearman_corrcoef_compute(preds: Tensor, target: Tensor, eps: float = 1e-6)
         >>> _spearman_corrcoef_compute(preds, target)
         tensor(1.0000)
     """
+    if preds.ndim == 1:
+        preds = _rank_data(preds)
+        target = _rank_data(target)
+    else:
+        preds = torch.stack([_rank_data(p) for p in preds.T]).T
+        target = torch.stack([_rank_data(t) for t in target.T]).T
 
-    preds = _rank_data(preds)
-    target = _rank_data(target)
+    preds_diff = preds - preds.mean(0)
+    target_diff = target - target.mean(0)
 
-    preds_diff = preds - preds.mean()
-    target_diff = target - target.mean()
-
-    cov = (preds_diff * target_diff).mean()
-    preds_std = torch.sqrt((preds_diff * preds_diff).mean())
-    target_std = torch.sqrt((target_diff * target_diff).mean())
+    cov = (preds_diff * target_diff).mean(0)
+    preds_std = torch.sqrt((preds_diff * preds_diff).mean(0))
+    target_std = torch.sqrt((target_diff * target_diff).mean(0))
 
     corrcoef = cov / (preds_std * target_std + eps)
     return torch.clamp(corrcoef, -1.0, 1.0)
