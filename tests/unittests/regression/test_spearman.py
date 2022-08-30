@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections import namedtuple
+from functools import partial
 
 import pytest
 import torch
@@ -20,7 +21,7 @@ from scipy.stats import rankdata, spearmanr
 from torchmetrics.functional.regression.spearman import _rank_data, spearman_corrcoef
 from torchmetrics.regression.spearman import SpearmanCorrCoef
 from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from unittests.helpers.testers import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, MetricTester
 
 seed_all(42)
 
@@ -34,6 +35,16 @@ _single_target_inputs1 = Input(
 _single_target_inputs2 = Input(
     preds=torch.randn(NUM_BATCHES, BATCH_SIZE),
     target=torch.randn(NUM_BATCHES, BATCH_SIZE),
+)
+
+_multi_target_inputs1 = Input(
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
+    target=torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
+)
+
+_multi_target_inputs2 = Input(
+    preds=torch.randn(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
+    target=torch.randn(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
 )
 
 _specific_input = Input(
@@ -60,9 +71,10 @@ def test_ranking(preds, target):
 
 
 def _sk_metric(preds, target):
-    sk_preds = preds.view(-1).numpy()
-    sk_target = target.view(-1).numpy()
-    return spearmanr(sk_target, sk_preds)[0]
+    if preds.ndim == 2:
+        return [spearmanr(t.numpy(), p.numpy())[0] for t, p in zip(target.T, preds.T)]
+    else:
+        return spearmanr(target.numpy(), preds.numpy())[0]
 
 
 @pytest.mark.parametrize(
@@ -70,6 +82,8 @@ def _sk_metric(preds, target):
     [
         (_single_target_inputs1.preds, _single_target_inputs1.target),
         (_single_target_inputs2.preds, _single_target_inputs2.target),
+        (_multi_target_inputs1.preds, _multi_target_inputs1.target),
+        (_multi_target_inputs2.preds, _multi_target_inputs2.target),
         (_specific_input.preds, _specific_input.target),
     ],
 )
@@ -79,6 +93,7 @@ class TestSpearmanCorrCoef(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_spearman_corrcoef(self, preds, target, ddp, dist_sync_on_step):
+        num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_class_metric_test(
             ddp,
             preds,
@@ -86,14 +101,19 @@ class TestSpearmanCorrCoef(MetricTester):
             SpearmanCorrCoef,
             _sk_metric,
             dist_sync_on_step,
+            metric_args={"num_outputs": num_outputs},
         )
 
     def test_spearman_corrcoef_functional(self, preds, target):
         self.run_functional_metric_test(preds, target, spearman_corrcoef, _sk_metric)
 
     def test_spearman_corrcoef_differentiability(self, preds, target):
+        num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_differentiability_test(
-            preds=preds, target=target, metric_module=SpearmanCorrCoef, metric_functional=spearman_corrcoef
+            preds=preds,
+            target=target,
+            metric_module=partial(SpearmanCorrCoef, num_outputs=num_outputs),
+            metric_functional=spearman_corrcoef,
         )
 
     # Spearman half + cpu does not work due to missing support in torch.arange
@@ -111,5 +131,5 @@ def test_error_on_different_shape():
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(100), torch.randn(50))
 
-    with pytest.raises(ValueError, match="Expected both predictions and target to be 1 dimensional tensors."):
-        metric(torch.randn(100, 2), torch.randn(100, 2))
+    with pytest.raises(ValueError, match="Expected both predictions and target to be either 1 or 2.*"):
+        metric(torch.randn(100, 2, 5), torch.randn(100, 2, 5))
