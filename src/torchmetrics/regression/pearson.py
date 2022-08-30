@@ -60,7 +60,7 @@ def _final_aggregation(
         corr_xy = cxy1 + cxy2
 
         mx1, my1, vx1, vy1, cxy1, n1 = mean_x, mean_y, var_x, var_y, corr_xy, nb
-    return var_x, var_y, corr_xy, nb
+    return mean_x, mean_y, var_x, var_y, corr_xy, nb
 
 
 class PearsonCorrCoef(Metric):
@@ -127,7 +127,7 @@ class PearsonCorrCoef(Metric):
     def compute(self) -> Tensor:
         """Computes pearson correlation coefficient over state."""
         if self.mean_x.numel() > 1:  # multiple devices, need further reduction
-            var_x, var_y, corr_xy, n_total = _final_aggregation(
+            _, _, var_x, var_y, corr_xy, n_total = _final_aggregation(
                 self.mean_x, self.mean_y, self.var_x, self.var_y, self.corr_xy, self.n_total
             )
         else:
