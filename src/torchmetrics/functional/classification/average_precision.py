@@ -96,7 +96,8 @@ def binary_average_precision(
     .. math::
         AP = \sum{n} (R_n - R_{n-1}) P_n
 
-    where :math:`P_n, R_n` is the respective precision and recall at threshold index :math:`n`.
+    where :math:`P_n, R_n` is the respective precision and recall at threshold index :math:`n`. This value is
+    equivalent to the area under the precision-recall curve (AUPRC).
 
     Accepts the following input tensors:
 
@@ -196,7 +197,8 @@ def multiclass_average_precision(
     .. math::
         AP = \sum{n} (R_n - R_{n-1}) P_n
 
-    where :math:`P_n, R_n` is the respective precision and recall at threshold index :math:`n`.
+    where :math:`P_n, R_n` is the respective precision and recall at threshold index :math:`n`. This value is
+    equivalent to the area under the precision-recall curve (AUPRC).
 
     Accepts the following input tensors:
 
@@ -326,7 +328,8 @@ def multilabel_average_precision(
     .. math::
         AP = \sum{n} (R_n - R_{n-1}) P_n
 
-    where :math:`P_n, R_n` is the respective precision and recall at threshold index :math:`n`.
+    where :math:`P_n, R_n` is the respective precision and recall at threshold index :math:`n`. This value is
+    equivalent to the area under the precision-recall curve (AUPRC).
 
     Accepts the following input tensors:
 
