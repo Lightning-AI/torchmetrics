@@ -32,7 +32,13 @@ class SpearmanCorrCoef(Metric):
     Spearmans correlations coefficient corresponds to the standard pearsons correlation coefficient calculated
     on the rank variables.
 
+    Forward accepts
+
+    - ``preds`` (float tensor): ``(N,d)``
+    - ``target``(float tensor): ``(N,d)``
+
     Args:
+        num_outputs: Number of outputs in multioutput setting
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:

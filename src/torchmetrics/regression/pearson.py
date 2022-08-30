@@ -73,10 +73,11 @@ class PearsonCorrCoef(Metric):
 
     Forward accepts
 
-    - ``preds`` (float tensor): ``(N,)``
-    - ``target``(float tensor): ``(N,)``
+    - ``preds`` (float tensor): ``(N,d)``
+    - ``target``(float tensor): ``(N,d)``
 
     Args:
+        num_outputs: Number of outputs in multioutput setting
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
