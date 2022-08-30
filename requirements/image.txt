@@ -1,4 +1,4 @@
 scipy
-torchvision  # this is needed to internally set TV version according installed PT
+torchvision==0.13.1
 torch-fidelity
 lpips

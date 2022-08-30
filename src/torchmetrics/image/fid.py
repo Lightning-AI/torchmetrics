@@ -200,13 +200,13 @@ class FrechetInceptionDistance(Metric):
     is_differentiable: bool = False
     full_state_update: bool = False
 
-    real_features_sum: List[Tensor]
-    real_features_cov_sum: List[Tensor]
-    real_features_num_samples: int
+    real_features_sum: Tensor
+    real_features_cov_sum: Tensor
+    real_features_num_samples: Tensor
 
-    fake_features_sum: List[Tensor]
-    fake_features_cov_sum: List[Tensor]
-    fake_features_num_samples: int
+    fake_features_sum: Tensor
+    fake_features_cov_sum: Tensor
+    fake_features_num_samples: Tensor
 
     def __init__(
         self,
@@ -223,6 +223,7 @@ class FrechetInceptionDistance(Metric):
         )
 
         if isinstance(feature, int):
+            num_features = int(feature)
             if not _TORCH_FIDELITY_AVAILABLE:
                 raise ModuleNotFoundError(
                     "FrechetInceptionDistance metric requires that `Torch-fidelity` is installed."
@@ -235,8 +236,11 @@ class FrechetInceptionDistance(Metric):
                 )
 
             self.inception = NoTrainInceptionV3(name="inception-v3-compat", features_list=[str(feature)])
+
         elif isinstance(feature, Module):
             self.inception = feature
+            dummy_image = torch.randint(0, 255, (1, 3, 299, 299), dtype=torch.uint8)
+            num_features = self.inception(dummy_image).shape[-1]
         else:
             raise TypeError("Got unknown input to argument `feature`")
 
@@ -244,12 +248,16 @@ class FrechetInceptionDistance(Metric):
             raise ValueError("Argument `reset_real_features` expected to be a bool")
         self.reset_real_features = reset_real_features
 
-        self.add_state("real_features_sum", [], dist_reduce_fx=None)
-        self.add_state("real_features_cov_sum", [], dist_reduce_fx=None)
+        self.add_state("real_features_sum", torch.zeros(num_features).double(), dist_reduce_fx="sum")
+        self.add_state(
+            "real_features_cov_sum", torch.zeros((num_features, num_features)).double(), dist_reduce_fx="sum"
+        )
         self.add_state("real_features_num_samples", torch.tensor(0).long(), dist_reduce_fx="sum")
 
-        self.add_state("fake_features_sum", [], dist_reduce_fx=None)
-        self.add_state("fake_features_cov_sum", [], dist_reduce_fx=None)
+        self.add_state("fake_features_sum", torch.zeros(num_features).double(), dist_reduce_fx="sum")
+        self.add_state(
+            "fake_features_cov_sum", torch.zeros((num_features, num_features)).double(), dist_reduce_fx="sum"
+        )
         self.add_state("fake_features_num_samples", torch.tensor(0).long(), dist_reduce_fx="sum")
 
     def update(self, imgs: Tensor, real: bool) -> None:  # type: ignore
@@ -262,6 +270,8 @@ class FrechetInceptionDistance(Metric):
         features = self.inception(imgs).double()
         self.orig_dtype = features.dtype
 
+        if features.dim() == 1:
+            features = features.unsqueeze(0)
         if real:
             self.real_features_sum += features.sum(dim=0)
             self.real_features_cov_sum += features.t().mm(features)
@@ -274,15 +284,15 @@ class FrechetInceptionDistance(Metric):
     def compute(self) -> Tensor:
         """Calculate FID score based on accumulated extracted features from the two distributions."""
         mean_real = (self.real_features_sum / self.real_features_num_samples).unsqueeze(0)
-        mean_fake = (self.fake_features_sum / self.fake_features_num_samples).unsqueeze(dim=0)
+        mean_fake = (self.fake_features_sum / self.fake_features_num_samples).unsqueeze(0)
 
-        cov_real = (self.real_features_cov_sum / self.real_features_num_samples - mean_real.t().mm(mean_real)) / (
+        cov_real = (self.real_features_cov_sum - self.real_features_num_samples * mean_real.t().mm(mean_real)) / (
             self.real_features_num_samples - 1
         )
         cov_fake = (self.fake_features_cov_sum - self.fake_features_num_samples * mean_fake.t().mm(mean_fake)) / (
             self.fake_features_num_samples - 1
         )
-        return _compute_fid(mean_real, cov_real, mean_fake, cov_fake).to(self.orig_dtype)
+        return _compute_fid(mean_real.squeeze(0), cov_real, mean_fake.squeeze(0), cov_fake).to(self.orig_dtype)
 
     def reset(self) -> None:
         if not self.reset_real_features:
