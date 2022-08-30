@@ -26,7 +26,7 @@ def _binary_clf_curve(
     sample_weights: Optional[Sequence] = None,
     pos_label: int = 1,
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    """adapted from https://github.com/scikit-learn/scikit- learn/blob/master/sklearn/metrics/_ranking.py."""
+    """adapted from https://github.com/scikit-learn/scikit-learn/blob/master/sklearn/metrics/_ranking.py."""
     if sample_weights is not None and not isinstance(sample_weights, Tensor):
         sample_weights = tensor(sample_weights, device=preds.device, dtype=torch.float)
 
@@ -70,14 +70,14 @@ def _precision_recall_curve_update(
     """Updates and returns variables required to compute the precision-recall pairs for different thresholds.
 
     Args:
-        preds: Predicted tensor
-        target: Ground truth tensor
+        preds: Predicted tensor.
+        target: Ground truth tensor.
         num_classes: integer with number of classes for multi-label and multiclass problems.
             Should be set to ``None`` for binary problems.
         pos_label: integer determining the positive class. Default is ``None``
-            which for binary problem is translated to 1. For multiclass problems
+            which for binary problems is translated to 1. For multiclass problems
             this argument should not be set as we iteratively change it in the
-            range [0,num_classes-1]
+            range [0,num_classes-1].
     """
 
     if len(preds.shape) == len(target.shape):
@@ -130,10 +130,10 @@ def _precision_recall_curve_compute_single_class(
     """Computes precision-recall pairs for single class inputs.
 
     Args:
-        preds: Predicted tensor
-        target: Ground truth tensor
+        preds: Predicted tensor.
+        target: Ground truth tensor.
         pos_label: integer determining the positive class.
-        sample_weights: sample weights for each data point
+        sample_weights: sample weights for each data point.
     """
 
     fps, tps, thresholds = _binary_clf_curve(
@@ -163,14 +163,14 @@ def _precision_recall_curve_compute_multi_class(
     num_classes: int,
     sample_weights: Optional[Sequence] = None,
 ) -> Tuple[List[Tensor], List[Tensor], List[Tensor]]:
-    """Computes precision-recall pairs for multi class inputs.
+    """Computes precision-recall pairs for multiclass inputs.
 
     Args:
-        preds: Predicted tensor
-        target: Ground truth tensor
+        preds: Predicted tensor.
+        target: Ground truth tensor.
         num_classes: integer with number of classes for multi-label and multiclass problems.
             Should be set to ``None`` for binary problems.
-        sample_weights: sample weights for each data point
+        sample_weights: sample weights for each data point.
     """
 
     # Recursively call per class
@@ -210,15 +210,15 @@ def _precision_recall_curve_compute(
     """Computes precision-recall pairs based on the number of classes.
 
     Args:
-        preds: Predicted tensor
-        target: Ground truth tensor
+        preds: Predicted tensor.
+        target: Ground truth tensor.
         num_classes: integer with number of classes for multi-label and multiclass problems.
             Should be set to ``None`` for binary problems.
         pos_label: integer determining the positive class. Default is ``None``
-            which for binary problem is translated to 1. For multiclass problems
+            which for binary problems is translated to 1. For multiclass problems
             this argument should not be set as we iteratively change it in the
-            range ``[0,num_classes-1]``
-        sample_weights: sample weights for each data point
+            range ``[0,num_classes-1]``.
+        sample_weights: sample weights for each data point.
 
     Example:
         >>> # binary case
@@ -270,14 +270,14 @@ def precision_recall_curve(
     """Computes precision-recall pairs for different thresholds.
 
     Args:
-        preds: predictions from model (probabilities)
-        target: ground truth labels
+        preds: predictions from model (probabilities).
+        target: ground truth labels.
         num_classes: integer with number of classes for multi-label and multiclass problems.
             Should be set to ``None`` for binary problems.
         pos_label: integer determining the positive class. Default is ``None`` which for binary problem is translated
             to 1. For multiclass problems this argument should not be set as we iteratively change it in the
-            range ``[0, num_classes-1]``
-        sample_weights: sample weights for each data point
+            range ``[0, num_classes-1]``.
+        sample_weights: sample weights for each data point.
 
     Returns:
         3-element tuple containing
@@ -291,7 +291,7 @@ def precision_recall_curve(
             ``score >= thresholds[i]`` and the last element is 0.
             If multiclass, this is a list of such tensors, one for each class.
         thresholds:
-            Thresholds used for computing precision/recall scores
+            Thresholds used for computing precision/recall scores.
 
     Raises:
         ValueError:
