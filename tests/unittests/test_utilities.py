@@ -135,7 +135,9 @@ def test_check_full_state_update_fn(capsys, metric_class, expected):
     """Test that the check function works as it should."""
     check_forward_full_state_property(
         metric_class=metric_class,
-        input_args=dict(preds=torch.randn(100), target=torch.randn(100)),
+        input_args=dict(preds=torch.randn(1000), target=torch.randn(1000)),
+        num_update_to_compare=[10000],
+        reps=5,
     )
     captured = capsys.readouterr()
     assert f"Recommended setting `full_state_update={expected}`" in captured.out
