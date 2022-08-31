@@ -19,6 +19,7 @@ from torch import Tensor
 from torchmetrics.functional.classification.average_precision import _average_precision_compute_with_precision_recall
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import METRIC_EPS, to_onehot
+from torchmetrics.utilities.prints import rank_zero_warn
 
 
 def _recall_at_precision(
@@ -48,6 +49,10 @@ class BinnedPrecisionRecallCurve(Metric):
 
     Computation is performed in constant-memory by computing precision and recall
     for ``thresholds`` buckets/thresholds (evenly distributed between 0 and 1).
+
+    .. warn:
+        This metric has been deprecated in v0.10 and will be removed in v0.11.
+        Instead use `PrecisionRecallCurve` metric with the `thresholds` argument set accordingly.
 
     Forward accepts
 
@@ -122,6 +127,11 @@ class BinnedPrecisionRecallCurve(Metric):
         thresholds: Union[int, Tensor, List[float]] = 100,
         **kwargs: Any,
     ) -> None:
+        rank_zero_warn(
+            "Metric `BinnedPrecisionRecallCurve` has been deprecated in v0.10 and will be completly removed in v0.11."
+            "Instead use the refactored version of `PrecisionRecallCurve` by specifying the `thresholds` argument.",
+            DeprecationWarning,
+        )
         super().__init__(**kwargs)
 
         self.num_classes = num_classes
@@ -187,6 +197,10 @@ class BinnedAveragePrecision(BinnedPrecisionRecallCurve):
     Computation is performed in constant-memory by computing precision and recall
     for ``thresholds`` buckets/thresholds (evenly distributed between 0 and 1).
 
+    .. warn:
+        This metric has been deprecated in v0.10 and will be removed in v0.11.
+        Instead use `AveragePrecision` metric with the `thresholds` argument set accordingly.
+
     Forward accepts
 
     - ``preds`` (float tensor): ``(N, ...)`` (binary) or ``(N, C, ...)`` (multiclass) tensor
@@ -225,6 +239,19 @@ class BinnedAveragePrecision(BinnedPrecisionRecallCurve):
         [tensor(1.0000), tensor(1.0000), tensor(0.2500), tensor(0.2500), tensor(-0.)]
     """
 
+    def __init__(
+        self,
+        num_classes: int,
+        thresholds: Union[int, Tensor, List[float]] = 100,
+        **kwargs: Any,
+    ) -> None:
+        rank_zero_warn(
+            "Metric `BinnedAveragePrecision` has been deprecated in v0.10 and will be completly removed in v0.11."
+            "Instead use the refactored version of `AveragePrecision` by specifying the `thresholds` argument.",
+            DeprecationWarning,
+        )
+        super().__init__(num_classes=num_classes, thresholds=thresholds, **kwargs)
+
     def compute(self) -> Union[List[Tensor], Tensor]:  # type: ignore
         precisions, recalls, _ = super().compute()
         return _average_precision_compute_with_precision_recall(precisions, recalls, self.num_classes, average=None)
@@ -235,6 +262,10 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
 
     Computation is performed in constant-memory by computing precision and recall
     for ``thresholds`` buckets/thresholds (evenly distributed between 0 and 1).
+
+    .. warn:
+        This metric has been deprecated in v0.10 and will be removed in v0.11.
+        Instead use `RecallAtFixedPrecision` metric with the `thresholds` argument set accordingly.
 
     Forward accepts
 
@@ -283,6 +314,11 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
         thresholds: Union[int, Tensor, List[float]] = 100,
         **kwargs: Any,
     ) -> None:
+        rank_zero_warn(
+            "Metric `BinnedRecallAtFixedPrecision` has been deprecated in v0.10 and will be completly removed in v0.11."
+            "Instead use the refactored version of `RecallAtFixedPrecision` by specifying the `thresholds` argument.",
+            DeprecationWarning,
+        )
         super().__init__(num_classes=num_classes, thresholds=thresholds, **kwargs)
         self.min_precision = min_precision
 
