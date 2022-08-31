@@ -297,9 +297,9 @@ class FrechetInceptionDistance(Metric):
     def reset(self) -> None:
         if not self.reset_real_features:
             # remove temporarily to avoid resetting
-            real_features_sum = self._defaults.pop("real_features_sum")
-            real_features_cov_sum = self._defaults.pop("real_features_cov_sum")
-            real_features_num_samples = self._defaults.pop("real_features_num_samples")
+            real_features_sum = deepcopy(self.real_features_sum)
+            real_features_cov_sum = deepcopy(self.real_features_cov_sum)
+            real_features_num_samples = deepcopy(self.real_features_num_samples)
             super().reset()
             self._defaults["real_features_sum"] = real_features_sum
             self._defaults["real_features_cov_sum"] = real_features_cov_sum
