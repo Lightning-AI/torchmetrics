@@ -223,7 +223,7 @@ class FrechetInceptionDistance(Metric):
         )
 
         if isinstance(feature, int):
-            num_features = int(feature)
+            num_features = feature
             if not _TORCH_FIDELITY_AVAILABLE:
                 raise ModuleNotFoundError(
                     "FrechetInceptionDistance metric requires that `Torch-fidelity` is installed."
