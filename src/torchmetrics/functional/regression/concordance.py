@@ -39,7 +39,7 @@ def _concordance_corrcoef_compute(
     return 2.0 * pearson * var_x.sqrt() * var_y.sqrt() / (var_x + var_y + (mean_x - mean_y) ** 2)
 
 
-def pearson_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
+def concordance_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
     """Computes pearson correlation coefficient.
 
     Args:
