@@ -61,6 +61,7 @@ from torchmetrics.image import (  # noqa: E402
 )
 from torchmetrics.metric import Metric  # noqa: E402
 from torchmetrics.regression import (  # noqa: E402
+    ConcordanceCorrCoef,
     CosineSimilarity,
     ExplainedVariance,
     MeanAbsoluteError,
@@ -124,6 +125,7 @@ __all__ = [
     "ClasswiseWrapper",
     "CharErrorRate",
     "CHRFScore",
+    "ConcordanceCorrCoef",
     "CohenKappa",
     "ConfusionMatrix",
     "CosineSimilarity",
