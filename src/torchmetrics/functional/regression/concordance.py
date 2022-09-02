@@ -25,36 +25,43 @@ def _concordance_corrcoef_compute(
     corr_xy: Tensor,
     nb: Tensor,
 ) -> Tensor:
-    """Computes the final pearson correlation based on accumulated statistics.
-
-    Args:
-        mean_x: current mean estimate of x tensor
-        mean_y: current mean estimate of y tensor
-        var_x: variance estimate of x tensor
-        var_y: variance estimate of y tensor
-        corr_xy: covariance estimate between x and y tensor
-        nb: number of observations
-    """
+    """Computes the final concordance correlation coefficient based on accumulated statistics."""
     pearson = _pearson_corrcoef_compute(var_x, var_y, corr_xy, nb)
     return 2.0 * pearson * var_x.sqrt() * var_y.sqrt() / (var_x + var_y + (mean_x - mean_y) ** 2)
 
 
 def concordance_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
-    """Computes pearson correlation coefficient.
+    r"""Computes concordance correlation coefficient that measures the agreement between two variables.
+    It is defined as
+
+    .. math::
+        \rho_c = \frac{2 \rho \sigma_x \sigma_y}{\sigma_x^2 + \sigma_y^2 + (\mu_x - \mu_y)^2}
+
+    where :math:`\mu_x, \mu_y` is the means for the two variables, :math:`\sigma_x^2, \sigma_y^2` are the corresponding
+    variances and \rho is the pearson correlation coefficient between the two variables.
 
     Args:
         preds: estimated scores
         target: ground truth scores
 
-    Example:
-        >>> from torchmetrics.functional import pearson_corrcoef
+    Example (single output regression):
+        >>> from torchmetrics.functional import concordance_corrcoef
         >>> target = torch.tensor([3, -0.5, 2, 7])
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])
-        >>> pearson_corrcoef(preds, target)
+        >>> concordance_corrcoef(preds, target)
         tensor(0.9849)
+
+    Example (multi output regression):
+        >>> from torchmetrics.functional import concordance_corrcoef
+        >>> target = torch.tensor([[3, -0.5], [2, 7]])
+        >>> preds = torch.tensor([[2.5, 0.0], [2, 8]])
+        >>> concordance_corrcoef(preds, target)
+        tensor([1., 1.])
     """
     _temp = torch.zeros(1, dtype=preds.dtype, device=preds.device)
     mean_x, mean_y, var_x = _temp.clone(), _temp.clone(), _temp.clone()
     var_y, corr_xy, nb = _temp.clone(), _temp.clone(), _temp.clone()
-    _, _, var_x, var_y, corr_xy, nb = _pearson_corrcoef_update(preds, target, mean_x, mean_y, var_x, var_y, corr_xy, nb)
+    mean_x, mean_y, var_x, var_y, corr_xy, nb = _pearson_corrcoef_update(
+        preds, target, mean_x, mean_y, var_x, var_y, corr_xy, nb, n_out=1 if preds.ndim == 1 else preds.shape[-1]
+    )
     return _concordance_corrcoef_compute(mean_x, mean_y, var_x, var_y, corr_xy, nb)
