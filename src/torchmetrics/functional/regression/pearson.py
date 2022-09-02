@@ -28,6 +28,7 @@ def _pearson_corrcoef_update(
     var_y: Tensor,
     corr_xy: Tensor,
     n_prior: Tensor,
+    n_out: int,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor, Tensor, Tensor]:
     """Updates and returns variables required to compute Pearson Correlation Coefficient.
 
@@ -47,6 +48,11 @@ def _pearson_corrcoef_update(
         raise ValueError(
             "Expected both predictions and target to be either 1 or 2 dimensional tensors,"
             " but get{target.ndim} and {preds.ndim}."
+        )
+    if (n_out == 1 and preds.ndim != 1) or (n_out > 1 and n_out != preds.shape[-1]):
+        raise ValueError(
+            "Expected argument `num_outputs` to match the second dimension of input, but got {self.n_out}"
+            " and {preds.ndim}."
         )
 
     n_obs = preds.numel()
@@ -101,5 +107,7 @@ def pearson_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
     _temp = torch.zeros(d, dtype=preds.dtype, device=preds.device)
     mean_x, mean_y, var_x = _temp.clone(), _temp.clone(), _temp.clone()
     var_y, corr_xy, nb = _temp.clone(), _temp.clone(), _temp.clone()
-    _, _, var_x, var_y, corr_xy, nb = _pearson_corrcoef_update(preds, target, mean_x, mean_y, var_x, var_y, corr_xy, nb)
+    _, _, var_x, var_y, corr_xy, nb = _pearson_corrcoef_update(
+        preds, target, mean_x, mean_y, var_x, var_y, corr_xy, nb, n_out=1 if preds.ndim == 1 else preds.shape[-1]
+    )
     return _pearson_corrcoef_compute(var_x, var_y, corr_xy, nb)

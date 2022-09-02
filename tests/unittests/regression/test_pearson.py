@@ -66,6 +66,8 @@ def _sk_pearsonr(preds, target):
     ],
 )
 class TestPearsonCorrcoef(MetricTester):
+    atol = 1e-3
+
     @pytest.mark.parametrize("compute_on_cpu", [True, False])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_pearson_corrcoef(self, preds, target, compute_on_cpu, ddp):
@@ -107,9 +109,14 @@ class TestPearsonCorrcoef(MetricTester):
 
 
 def test_error_on_different_shape():
-    metric = PearsonCorrCoef()
+    metric = PearsonCorrCoef(num_outputs=1)
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(100), torch.randn(50))
 
+    metric = PearsonCorrCoef(num_outputs=5)
     with pytest.raises(ValueError, match="Expected both predictions and target to be either 1 or 2.*"):
         metric(torch.randn(100, 2, 5), torch.randn(100, 2, 5))
+
+    metric = PearsonCorrCoef(num_outputs=2)
+    with pytest.raises(ValueError, match="Expected argument `num_outputs` to match the second dimension of input.*"):
+        metric(torch.randn(100, 5), torch.randn(100, 5))

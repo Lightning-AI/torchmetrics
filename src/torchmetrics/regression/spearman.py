@@ -68,7 +68,7 @@ class SpearmanCorrCoef(Metric):
         )
         if not isinstance(num_outputs, int) and num_outputs < 1:
             raise ValueError("Expected argument `num_outputs` to be an int larger than 0, but got {num_outputs}")
-        self.num_outputs = num_outputs
+        self.n_out = num_outputs
 
         self.add_state("preds", default=[], dist_reduce_fx="cat")
         self.add_state("target", default=[], dist_reduce_fx="cat")
@@ -80,7 +80,7 @@ class SpearmanCorrCoef(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        preds, target = _spearman_corrcoef_update(preds, target)
+        preds, target = _spearman_corrcoef_update(preds, target, n_out=self.n_out)
         self.preds.append(preds)
         self.target.append(target)
 
