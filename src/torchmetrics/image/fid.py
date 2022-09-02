@@ -262,8 +262,9 @@ class FrechetInceptionDistance(Metric):
             imgs: tensor with images feed to the feature extractor
             real: bool indicating if ``imgs`` belong to the real or the fake distribution
         """
-        features = self.inception(imgs).double()
+        features = self.inception(imgs)
         self.orig_dtype = features.dtype
+        features = features.double()
 
         if features.dim() == 1:
             features = features.unsqueeze(0)
