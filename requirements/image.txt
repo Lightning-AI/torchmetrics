@@ -1,4 +1,4 @@
 scipy
-torchvision==0.13.1
+torchvision
 torch-fidelity
 lpips
