@@ -102,6 +102,13 @@ def pearson_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])
         >>> pearson_corrcoef(preds, target)
         tensor(0.9849)
+
+    Example (multi output regression):
+        >>> from torchmetrics.functional import pearson_corrcoef
+        >>> target = torch.tensor([[3, -0.5], [2, 7]])
+        >>> preds = torch.tensor([[2.5, 0.0], [2, 8]])
+        >>> pearson_corrcoef(preds, target)
+        tensor([1., 1.])
     """
     d = preds.shape[1] if preds.ndim == 2 else 1
     _temp = torch.zeros(d, dtype=preds.dtype, device=preds.device)

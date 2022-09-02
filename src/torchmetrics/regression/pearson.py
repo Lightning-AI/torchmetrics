@@ -80,13 +80,21 @@ class PearsonCorrCoef(Metric):
         num_outputs: Number of outputs in multioutput setting
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    Example:
+    Example (single output regression):
         >>> from torchmetrics import PearsonCorrCoef
         >>> target = torch.tensor([3, -0.5, 2, 7])
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])
         >>> pearson = PearsonCorrCoef()
         >>> pearson(preds, target)
         tensor(0.9849)
+
+    Example (multi output regression):
+        >>> from torchmetrics import PearsonCorrCoef
+        >>> target = torch.tensor([[3, -0.5], [2, 7]])
+        >>> preds = torch.tensor([[2.5, 0.0], [2, 8]])
+        >>> pearson = PearsonCorrCoef(num_outputs=2)
+        >>> pearson(preds, target)
+        tensor([1., 1.])
 
     """
     is_differentiable = True
