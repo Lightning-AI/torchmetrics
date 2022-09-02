@@ -72,13 +72,6 @@ def test_fid_pickle():
 
 def test_fid_raises_errors_and_warnings():
     """Test that expected warnings and errors are raised."""
-    with pytest.warns(
-        UserWarning,
-        match="Metric `FrechetInceptionDistance` will save all extracted features in buffer."
-        " For large datasets this may lead to large memory footprint.",
-    ):
-        _ = FrechetInceptionDistance()
-
     if _TORCH_FIDELITY_AVAILABLE:
         with pytest.raises(ValueError, match="Integer input to argument `feature` must be one of .*"):
             _ = FrechetInceptionDistance(feature=2)

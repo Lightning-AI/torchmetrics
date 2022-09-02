@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from copy import deepcopy
 from typing import Any, List, Optional, Union
 
 import numpy as np
@@ -20,7 +21,7 @@ from torch.autograd import Function
 from torch.nn import Module
 
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import rank_zero_info, rank_zero_warn
+from torchmetrics.utilities import rank_zero_info
 from torchmetrics.utilities.imports import _SCIPY_AVAILABLE, _TORCH_FIDELITY_AVAILABLE
 
 if _TORCH_FIDELITY_AVAILABLE:
@@ -216,12 +217,6 @@ class FrechetInceptionDistance(Metric):
     ) -> None:
         super().__init__(**kwargs)
 
-        rank_zero_warn(
-            "Metric `FrechetInceptionDistance` will save all extracted features in buffer."
-            " For large datasets this may lead to large memory footprint.",
-            UserWarning,
-        )
-
         if isinstance(feature, int):
             num_features = feature
             if not _TORCH_FIDELITY_AVAILABLE:
@@ -296,7 +291,6 @@ class FrechetInceptionDistance(Metric):
 
     def reset(self) -> None:
         if not self.reset_real_features:
-            # remove temporarily to avoid resetting
             real_features_sum = deepcopy(self.real_features_sum)
             real_features_cov_sum = deepcopy(self.real_features_cov_sum)
             real_features_num_samples = deepcopy(self.real_features_num_samples)
