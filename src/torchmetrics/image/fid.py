@@ -243,16 +243,13 @@ class FrechetInceptionDistance(Metric):
             raise ValueError("Argument `reset_real_features` expected to be a bool")
         self.reset_real_features = reset_real_features
 
+        mx_nb_feets = (num_features, num_features)
         self.add_state("real_features_sum", torch.zeros(num_features).double(), dist_reduce_fx="sum")
-        self.add_state(
-            "real_features_cov_sum", torch.zeros((num_features, num_features)).double(), dist_reduce_fx="sum"
-        )
+        self.add_state("real_features_cov_sum", torch.zeros(mx_nb_feets).double(), dist_reduce_fx="sum")
         self.add_state("real_features_num_samples", torch.tensor(0).long(), dist_reduce_fx="sum")
 
         self.add_state("fake_features_sum", torch.zeros(num_features).double(), dist_reduce_fx="sum")
-        self.add_state(
-            "fake_features_cov_sum", torch.zeros((num_features, num_features)).double(), dist_reduce_fx="sum"
-        )
+        self.add_state("fake_features_cov_sum", torch.zeros(mx_nb_feets).double(), dist_reduce_fx="sum")
         self.add_state("fake_features_num_samples", torch.tensor(0).long(), dist_reduce_fx="sum")
 
     def update(self, imgs: Tensor, real: bool) -> None:  # type: ignore
@@ -282,12 +279,10 @@ class FrechetInceptionDistance(Metric):
         mean_real = (self.real_features_sum / self.real_features_num_samples).unsqueeze(0)
         mean_fake = (self.fake_features_sum / self.fake_features_num_samples).unsqueeze(0)
 
-        cov_real = (self.real_features_cov_sum - self.real_features_num_samples * mean_real.t().mm(mean_real)) / (
-            self.real_features_num_samples - 1
-        )
-        cov_fake = (self.fake_features_cov_sum - self.fake_features_num_samples * mean_fake.t().mm(mean_fake)) / (
-            self.fake_features_num_samples - 1
-        )
+        cov_real_num = self.real_features_cov_sum - self.real_features_num_samples * mean_real.t().mm(mean_real)
+        cov_real = cov_real_num / (self.real_features_num_samples - 1)
+        cov_fake_num = self.fake_features_cov_sum - self.fake_features_num_samples * mean_fake.t().mm(mean_fake)
+        cov_fake = cov_fake_num / (self.fake_features_num_samples - 1)
         return _compute_fid(mean_real.squeeze(0), cov_real, mean_fake.squeeze(0), cov_fake).to(self.orig_dtype)
 
     def reset(self) -> None:
