@@ -69,7 +69,7 @@ def _ssim_compute(
             Ignored if a uniform kernel is used
         kernel_size: the size of the uniform kernel, anisotropic kernels are possible.
             Ignored if a Gaussian kernel is used
-        reduction: a method to reduce metric score over labels.
+        reduction: a method to reduce metric score over individual batch scores
 
             - ``'elementwise_mean'``: takes the mean
             - ``'sum'``: takes the sum
@@ -116,6 +116,9 @@ def _ssim_compute(
         raise ValueError(
             f"Expected `kernel_size` dimension to be 2 or 3. `kernel_size` dimensionality: {len(kernel_size)}"
         )
+
+    if return_full_image and return_contrast_sensitivity:
+        raise ValueError("Arguments `return_full_image` and `return_contrast_sensitivity` are mutually exclusive.")
 
     if any(x % 2 == 0 or x <= 0 for x in kernel_size):
         raise ValueError(f"Expected `kernel_size` to have odd positive number. Got {kernel_size}.")
@@ -189,9 +192,7 @@ def _ssim_compute(
         )
 
     elif return_full_image:
-        return reduce(ssim_idx.reshape(ssim_idx.shape[0], -1).mean(-1), reduction), reduce(
-            ssim_idx_full_image, reduction
-        )
+        return reduce(ssim_idx.reshape(ssim_idx.shape[0], -1).mean(-1), reduction), ssim_idx_full_image
 
     return reduce(ssim_idx.reshape(ssim_idx.shape[0], -1).mean(-1), reduction)
 

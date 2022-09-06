@@ -33,7 +33,7 @@ class StructuralSimilarityIndexMeasure(Metric):
             Ignored if a uniform kernel is used
         kernel_size: the size of the uniform kernel, anisotropic kernels are possible.
             Ignored if a Gaussian kernel is used
-        reduction: a method to reduce metric score over labels.
+        reduction: a method to reduce metric score over individual batch scores
 
             - ``'elementwise_mean'``: takes the mean
             - ``'sum'``: takes the sum

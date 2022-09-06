@@ -18,6 +18,7 @@ import numpy as np
 import pytest
 import torch
 from skimage.metrics import structural_similarity
+from torch import Tensor
 
 from torchmetrics.functional import structural_similarity_index_measure
 from torchmetrics.image import StructuralSimilarityIndexMeasure
@@ -52,7 +53,16 @@ for size, channel, coef, dtype in [
     )
 
 
-def _sk_ssim(preds, target, data_range, sigma, kernel_size=None, return_ssim_image=False, gaussian_weights=True):
+def _sk_ssim(
+    preds,
+    target,
+    data_range,
+    sigma,
+    kernel_size=None,
+    return_ssim_image=False,
+    gaussian_weights=True,
+    reduction_arg="elementwise_mean",
+):
     if len(preds.shape) == 4:
         c, h, w = preds.shape[-3:]
         sk_preds = preds.view(-1, c, h, w).permute(0, 2, 3, 1).numpy()
@@ -77,7 +87,7 @@ def _sk_ssim(preds, target, data_range, sigma, kernel_size=None, return_ssim_ima
                 full=return_ssim_image,
             )
             results[i] = torch.from_numpy(np.asarray(res)).type(preds.dtype)
-        return results
+        return results if reduction_arg != "sum" else results.sum()
     else:
         fullimages = torch.zeros(target.shape, dtype=target.dtype)
         for i in range(sk_preds.shape[0]):
@@ -142,13 +152,14 @@ class TestSSIM(MetricTester):
             dist_sync_on_step=dist_sync_on_step,
         )
 
-    def test_ssim_functional(self, preds, target, sigma):
+    @pytest.mark.parametrize("reduction_arg", ["sum", "elementwise_mean", None])
+    def test_ssim_functional(self, preds, target, sigma, reduction_arg):
         self.run_functional_metric_test(
             preds,
             target,
             structural_similarity_index_measure,
-            partial(_sk_ssim, data_range=1.0, sigma=sigma, kernel_size=None),
-            metric_args={"data_range": 1.0, "sigma": sigma},
+            partial(_sk_ssim, data_range=1.0, sigma=sigma, kernel_size=None, reduction_arg=reduction_arg),
+            metric_args={"data_range": 1.0, "sigma": sigma, "reduction": reduction_arg},
         )
 
     # SSIM half + cpu does not work due to missing support in torch.log
@@ -241,3 +252,19 @@ def test_ssim_unequal_kernel_size():
         structural_similarity_index_measure(preds, target, gaussian_kernel=False, kernel_size=(5, 3)),
         torch.tensor(0.05131844),
     )
+
+
+@pytest.mark.parametrize(
+    "preds, target",
+    [(i.preds, i.target) for i in _inputs],
+)
+def test_full_image_output(preds, target):
+    out = structural_similarity_index_measure(preds[0], target[0])
+    assert isinstance(out, Tensor)
+    assert out.numel() == 1
+
+    out = structural_similarity_index_measure(preds[0], target[0], return_full_image=True)
+    assert isinstance(out, tuple)
+    assert len(out) == 2
+    assert out[0].numel() == 1
+    assert out[1].shape == preds[0].shape
