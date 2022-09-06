@@ -104,6 +104,7 @@ _TORCH_GREATER_EQUAL_1_7: Optional[bool] = _compare_version("torch", operator.ge
 _TORCH_GREATER_EQUAL_1_8: Optional[bool] = _compare_version("torch", operator.ge, "1.8.0")
 _TORCH_GREATER_EQUAL_1_10: Optional[bool] = _compare_version("torch", operator.ge, "1.10.0")
 _TORCH_GREATER_EQUAL_1_11: Optional[bool] = _compare_version("torch", operator.ge, "1.11.0")
+_TORCH_GREATER_EQUAL_1_12: Optional[bool] = _compare_version("torch", operator.ge, "1.12.0")
 
 _JIWER_AVAILABLE: bool = _package_available("jiwer")
 _NLTK_AVAILABLE: bool = _package_available("nltk")
