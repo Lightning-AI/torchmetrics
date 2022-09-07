@@ -638,7 +638,15 @@ def accuracy(
     multidim_average: Optional[Literal["global", "samplewise"]] = "global",
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes `Accuracy`_
+    r"""
+    .. note::
+        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        metric. Moving forward we recommend using these versions. This base metric will still work as it did
+        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
+        and the general order of arguments may change, such that this metric will just function as an single
+        entrypoint to calling the three specialized versions.
+
+    Computes `Accuracy`_
 
     .. math::
         \text{Accuracy} = \frac{1}{N}\sum_i^N 1(y_i = \hat{y}_i)

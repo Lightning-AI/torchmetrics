@@ -33,6 +33,7 @@ from torchmetrics.functional.classification.confusion_matrix import (
     _multilabel_confusion_matrix_update,
 )
 from torchmetrics.utilities.compute import _safe_divide
+from torchmetrics.utilities.prints import rank_zero_warn
 
 
 def _jaccard_index_reduce(
@@ -158,8 +159,8 @@ def multiclass_jaccard_index(
     preds: Tensor,
     target: Tensor,
     num_classes: int,
-    ignore_index: Optional[int] = None,
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
+    ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
     r"""Calculates the Jaccard index for multiclass tasks. The `Jaccard index`_ (also known as
@@ -180,8 +181,6 @@ def multiclass_jaccard_index(
 
     Args:
         num_classes: Integer specifing the number of classes
-        ignore_index:
-            Specifies a target value that is ignored and does not contribute to the metric calculation
         average:
             Defines the reduction that is applied over labels. Should be one of the following:
 
@@ -190,6 +189,8 @@ def multiclass_jaccard_index(
             - ``weighted``: Calculates statistics for each label and computes weighted average using their support
             - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
 
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
@@ -238,8 +239,8 @@ def multilabel_jaccard_index(
     target: Tensor,
     num_labels: int,
     threshold: float = 0.5,
-    ignore_index: Optional[int] = None,
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
+    ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
     r"""Calculates the Jaccard index for multilabel tasks. The `Jaccard index`_ (also known as
@@ -261,8 +262,6 @@ def multilabel_jaccard_index(
     Args:
         num_classes: Integer specifing the number of labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
-        ignore_index:
-            Specifies a target value that is ignored and does not contribute to the metric calculation
         average:
             Defines the reduction that is applied over labels. Should be one of the following:
 
@@ -271,6 +270,8 @@ def multilabel_jaccard_index(
             - ``weighted``: Calculates statistics for each label and computes weighted average using their support
             - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
 
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
@@ -381,8 +382,19 @@ def jaccard_index(
     ignore_index: Optional[int] = None,
     absent_score: float = 0.0,
     threshold: float = 0.5,
+    task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+    num_labels: Optional[int] = None,
+    validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes `Jaccard index`_
+    r"""
+    .. note::
+        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        metric. Moving forward we recommend using these versions. This base metric will still work as it did
+        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
+        and the general order of arguments may change, such that this metric will just function as an single
+        entrypoint to calling the three specialized versions.
+
+    Computes `Jaccard index`_
 
     .. math:: J(A,B) = \frac{|A\cap B|}{|A\cup B|}
 
@@ -441,6 +453,25 @@ def jaccard_index(
         >>> jaccard_index(pred, target, num_classes=2)
         tensor(0.9660)
     """
-
+    if task is not None:
+        if task == "binary":
+            return binary_jaccard_index(preds, target, threshold, ignore_index, validate_args)
+        elif task == "multiclass":
+            return multiclass_jaccard_index(preds, target, num_classes, average, ignore_index, validate_args)
+        elif task == "multilabel":
+            return multilabel_jaccard_index(preds, target, num_labels, threshold, average, ignore_index, validate_args)
+        else:
+            raise ValueError(
+                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+            )
+    else:
+        rank_zero_warn(
+            "From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification"
+            " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
+            " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
+            " and the general order of arguments may change, such that this metric will just function as an single"
+            " entrypoint to calling the three specialized versions.",
+            DeprecationWarning,
+        )
     confmat = _confusion_matrix_update(preds, target, num_classes, threshold)
     return _jaccard_from_confmat(confmat, num_classes, average, ignore_index, absent_score)

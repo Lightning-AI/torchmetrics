@@ -36,6 +36,7 @@ from torchmetrics.functional.classification.stat_scores import (
 from torchmetrics.utilities.compute import _safe_divide
 from torchmetrics.utilities.enums import AverageMethod as AvgMethod
 from torchmetrics.utilities.enums import MDMCAverageMethod
+from torchmetrics.utilities.prints import rank_zero_warn
 
 
 def _fbeta_reduce(
@@ -800,8 +801,20 @@ def fbeta_score(
     threshold: float = 0.5,
     top_k: Optional[int] = None,
     multiclass: Optional[bool] = None,
+    task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+    num_labels: Optional[int] = None,
+    multidim_average: Optional[Literal["global", "samplewise"]] = "global",
+    validate_args: bool = True,
 ) -> Tensor:
     r"""
+    .. note::
+        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        metric. Moving forward we recommend using these versions. This base metric will still work as it did
+        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
+        and the general order of arguments may change, such that this metric will just function as an single
+        entrypoint to calling the three specialized versions.
+
+
     Computes f_beta metric.
 
     .. math::
@@ -896,6 +909,30 @@ def fbeta_score(
         tensor(0.3333)
 
     """
+    if task is not None:
+        if task == "binary":
+            return binary_fbeta_score(preds, target, threshold, multidim_average, ignore_index, validate_args)
+        elif task == "multiclass":
+            return multiclass_fbeta_score(
+                preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args
+            )
+        elif task == "multilabel":
+            return multilabel_fbeta_score(
+                preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
+            )
+        else:
+            raise ValueError(
+                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+            )
+    else:
+        rank_zero_warn(
+            "From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification"
+            " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
+            " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
+            " and the general order of arguments may change, such that this metric will just function as an single"
+            " entrypoint to calling the three specialized versions.",
+            DeprecationWarning,
+        )
     allowed_average = list(AvgMethod)
     if average not in allowed_average:
         raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
@@ -936,8 +973,20 @@ def f1_score(
     threshold: float = 0.5,
     top_k: Optional[int] = None,
     multiclass: Optional[bool] = None,
+    task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+    num_labels: Optional[int] = None,
+    multidim_average: Optional[Literal["global", "samplewise"]] = "global",
+    validate_args: bool = True,
 ) -> Tensor:
-    """Computes F1 metric. F1 metrics correspond to a equally weighted average of the precision and recall scores.
+    r"""
+    .. note::
+        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        metric. Moving forward we recommend using these versions. This base metric will still work as it did
+        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
+        and the general order of arguments may change, such that this metric will just function as an single
+        entrypoint to calling the three specialized versions.
+
+    Computes F1 metric. F1 metrics correspond to a equally weighted average of the precision and recall scores.
 
     Works with binary, multiclass, and multilabel data.
     Accepts probabilities or logits from a model output or integer class values in prediction.
@@ -1030,6 +1079,30 @@ def f1_score(
         >>> f1_score(preds, target, num_classes=3)
         tensor(0.3333)
     """
+    if task is not None:
+        if task == "binary":
+            return binary_f1_score(preds, target, threshold, multidim_average, ignore_index, validate_args)
+        elif task == "multiclass":
+            return multiclass_f1_score(
+                preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args
+            )
+        elif task == "multilabel":
+            return multilabel_f1_score(
+                preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
+            )
+        else:
+            raise ValueError(
+                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+            )
+    else:
+        rank_zero_warn(
+            "From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification"
+            " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
+            " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
+            " and the general order of arguments may change, such that this metric will just function as an single"
+            " entrypoint to calling the three specialized versions.",
+            DeprecationWarning,
+        )
     return fbeta_score(
         preds, target, 1.0, average, mdmc_average, ignore_index, num_classes, threshold, top_k, multiclass
     )

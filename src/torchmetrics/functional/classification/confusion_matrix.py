@@ -162,8 +162,8 @@ def binary_confusion_matrix(
     preds: Tensor,
     target: Tensor,
     threshold: float = 0.5,
-    ignore_index: Optional[int] = None,
     normalize: Optional[Literal["true", "pred", "all", "none"]] = None,
+    ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
     r"""
@@ -182,14 +182,14 @@ def binary_confusion_matrix(
         preds: Tensor with predictions
         target: Tensor with true labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
-        ignore_index:
-            Specifies a target value that is ignored and does not contribute to the metric calculation
         normalize: Normalization mode for confusion matrix. Choose from:
 
             - ``None`` or ``'none'``: no normalization (default)
             - ``'true'``: normalization over the targets (most commonly used)
             - ``'pred'``: normalization over the predictions
             - ``'all'``: normalization over the whole matrix
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 
@@ -347,8 +347,8 @@ def multiclass_confusion_matrix(
     preds: Tensor,
     target: Tensor,
     num_classes: int,
-    ignore_index: Optional[int] = None,
     normalize: Optional[Literal["true", "pred", "all", "none"]] = None,
+    ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
     r"""
@@ -367,14 +367,14 @@ def multiclass_confusion_matrix(
         preds: Tensor with predictions
         target: Tensor with true labels
         num_classes: Integer specifing the number of classes
-        ignore_index:
-            Specifies a target value that is ignored and does not contribute to the metric calculation
         normalize: Normalization mode for confusion matrix. Choose from:
 
             - ``None`` or ``'none'``: no normalization (default)
             - ``'true'``: normalization over the targets (most commonly used)
             - ``'pred'``: normalization over the predictions
             - ``'all'``: normalization over the whole matrix
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 
@@ -534,8 +534,8 @@ def multilabel_confusion_matrix(
     target: Tensor,
     num_labels: int,
     threshold: float = 0.5,
-    ignore_index: Optional[int] = None,
     normalize: Optional[Literal["true", "pred", "all", "none"]] = None,
+    ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
     r"""
@@ -555,14 +555,14 @@ def multilabel_confusion_matrix(
         target: Tensor with true labels
         num_labels: Integer specifing the number of labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
-        ignore_index:
-            Specifies a target value that is ignored and does not contribute to the metric calculation
         normalize: Normalization mode for confusion matrix. Choose from:
 
             - ``None`` or ``'none'``: no normalization (default)
             - ``'true'``: normalization over the targets (most commonly used)
             - ``'pred'``: normalization over the predictions
             - ``'all'``: normalization over the whole matrix
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 
@@ -696,8 +696,20 @@ def confusion_matrix(
     normalize: Optional[str] = None,
     threshold: float = 0.5,
     multilabel: bool = False,
+    task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+    num_labels: Optional[int] = None,
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
 ) -> Tensor:
     r"""
+    .. note::
+        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        metric. Moving forward we recommend using these versions. This base metric will still work as it did
+        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
+        and the general order of arguments may change, such that this metric will just function as an single
+        entrypoint to calling the three specialized versions.
+
+
     Computes the `confusion matrix`_.  Works with binary,
     multiclass, and multilabel data.  Accepts probabilities or logits from a model output or integer class
     values in prediction. Works with multi-dimensional preds and target, but it should be noted that
@@ -758,12 +770,27 @@ def confusion_matrix(
                 [[0, 1], [0, 1]]])
 
     """
-    rank_zero_warn(
-        "`torchmetrics.functional.confusion_matrix` have been deprecated in v0.10 in favor of"
-        "`torchmetrics.functional.binary_confusion_matrix`, `torchmetrics.functional.multiclass_confusion_matrix`"
-        "and `torchmetrics.functional.multilabel_confusion_matrix`. Please upgrade to the version that matches"
-        "your problem (API may have changed). This function will be removed v0.11.",
-        DeprecationWarning,
-    )
+    if task is not None:
+        if task == "binary":
+            return binary_confusion_matrix(preds, target, threshold, normalize, ignore_index, validate_args)
+        elif task == "multiclass":
+            return multiclass_confusion_matrix(preds, target, num_classes, normalize, ignore_index, validate_args)
+        elif task == "multilabel":
+            return multilabel_confusion_matrix(
+                preds, target, num_labels, threshold, normalize, ignore_index, validate_args
+            )
+        else:
+            raise ValueError(
+                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+            )
+    else:
+        rank_zero_warn(
+            "From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification"
+            " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
+            " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
+            " and the general order of arguments may change, such that this metric will just function as an single"
+            " entrypoint to calling the three specialized versions.",
+            DeprecationWarning,
+        )
     confmat = _confusion_matrix_update(preds, target, num_classes, threshold, multilabel)
     return _confusion_matrix_compute(confmat, normalize)

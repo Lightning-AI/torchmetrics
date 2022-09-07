@@ -26,6 +26,7 @@ from torchmetrics.functional.classification.confusion_matrix import (
 from torchmetrics.utilities.checks import _input_squeeze
 from torchmetrics.utilities.data import to_onehot
 from torchmetrics.utilities.enums import DataType, EnumStr
+from torchmetrics.utilities.prints import rank_zero_warn
 
 
 def _hinge_loss_compute(measure: Tensor, total: Tensor) -> Tensor:
@@ -383,8 +384,19 @@ def hinge_loss(
     target: Tensor,
     squared: bool = False,
     multiclass_mode: Optional[Union[str, MulticlassMode]] = None,
+    task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+    num_classes: Optional[int] = None,
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
 ) -> Tensor:
     r"""
+    .. note::
+        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        metric. Moving forward we recommend using these versions. This base metric will still work as it did
+        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
+        and the general order of arguments may change, such that this metric will just function as an single
+        entrypoint to calling the three specialized versions.
+
     Computes the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs).
 
      In the binary case it is defined as:
@@ -451,5 +463,25 @@ def hinge_loss(
         >>> hinge_loss(preds, target, multiclass_mode="one-vs-all")
         tensor([2.2333, 1.5000, 1.2333])
     """
+    if task is not None:
+        if task == "binary":
+            return binary_hinge_loss(preds, target, squared, ignore_index, validate_args)
+        elif task == "multiclass":
+            return multiclass_hinge_loss(
+                preds, target, num_classes, squared, multiclass_mode, ignore_index, validate_args
+            )
+        else:
+            raise ValueError(
+                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+            )
+    else:
+        rank_zero_warn(
+            "From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification"
+            " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
+            " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
+            " and the general order of arguments may change, such that this metric will just function as an single"
+            " entrypoint to calling the three specialized versions.",
+            DeprecationWarning,
+        )
     measure, total = _hinge_update(preds, target, squared=squared, multiclass_mode=multiclass_mode)
     return _hinge_compute(measure, total)
