@@ -21,23 +21,20 @@ ConfusionMatrix
 BinaryConfusionMatrix
 ^^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.BinaryConfusionMatrix
+.. autoclass:: torchmetrics.classification.BinaryConfusionMatrix
     :noindex:
-    :exclude-members: update, compute
 
 MulticlassConfusionMatrix
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.MulticlassConfusionMatrix
+.. autoclass:: torchmetrics.classification.MulticlassConfusionMatrix
     :noindex:
-    :exclude-members: update, compute
 
 MultilabelConfusionMatrix
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.MultilabelConfusionMatrix
+.. autoclass:: torchmetrics.classification.MultilabelConfusionMatrix
     :noindex:
-    :exclude-members: update, compute
 
 Functional Interface
 ____________________
@@ -51,17 +48,17 @@ confusion_matrix
 binary_confusion_matrix
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.binary_confusion_matrix
+.. autofunction:: torchmetrics.functional.classification.binary_confusion_matrix
     :noindex:
 
 multiclass_confusion_matrix
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.multiclass_confusion_matrix
+.. autofunction:: torchmetrics.functional.classification.multiclass_confusion_matrix
     :noindex:
 
 multilabel_confusion_matrix
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.multilabel_confusion_matrix
+.. autofunction:: torchmetrics.functional.classification.multilabel_confusion_matrix
     :noindex:

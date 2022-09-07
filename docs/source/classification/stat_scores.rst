@@ -21,21 +21,21 @@ StatScores
 BinaryStatScores
 ^^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.BinaryStatScores
+.. autoclass:: torchmetrics.classification.BinaryStatScores
     :noindex:
     :exclude-members: update, compute
 
 MulticlassStatScores
 ^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.MulticlassStatScores
+.. autoclass:: torchmetrics.classification.MulticlassStatScores
     :noindex:
     :exclude-members: update, compute
 
 MultilabelStatScores
 ^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.MultilabelStatScores
+.. autoclass:: torchmetrics.classification.MultilabelStatScores
     :noindex:
     :exclude-members: update, compute
 
@@ -51,17 +51,17 @@ stat_scores
 binary_stat_scores
 ^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.binary_stat_scores
+.. autofunction:: torchmetrics.functional.classification.binary_stat_scores
     :noindex:
 
 multiclass_stat_scores
 ^^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.multiclass_stat_scores
+.. autofunction:: torchmetrics.functional.classification.multiclass_stat_scores
     :noindex:
 
 multilabel_stat_scores
 ^^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.multilabel_stat_scores
+.. autofunction:: torchmetrics.functional.classification.multilabel_stat_scores
     :noindex:

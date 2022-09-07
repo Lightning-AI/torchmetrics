@@ -18,13 +18,13 @@ ________________
 BinaryCalibrationError
 ^^^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.BinaryCalibrationError
+.. autoclass:: torchmetrics.classification.BinaryCalibrationError
     :noindex:
 
 MulticlassCalibrationError
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.MulticlassCalibrationError
+.. autoclass:: torchmetrics.classification.MulticlassCalibrationError
     :noindex:
 
 Functional Interface
@@ -36,11 +36,11 @@ ____________________
 binary_calibration_error
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.binary_calibration_error
+.. autofunction:: torchmetrics.functional.classification.binary_calibration_error
     :noindex:
 
 multiclass_calibration_error
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.multiclass_calibration_error
+.. autofunction:: torchmetrics.functional.classification.multiclass_calibration_error
     :noindex:

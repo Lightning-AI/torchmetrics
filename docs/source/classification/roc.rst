@@ -16,19 +16,19 @@ ________________
 BinaryROC
 ^^^^^^^^^
 
-.. autoclass:: torchmetrics.BinaryROC
+.. autoclass:: torchmetrics.classification.BinaryROC
     :noindex:
 
 MulticlassROC
 ^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.MulticlassROC
+.. autoclass:: torchmetrics.classification.MulticlassROC
     :noindex:
 
 MultilabelROC
 ^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.MultilabelROC
+.. autoclass:: torchmetrics.classification.MultilabelROC
     :noindex:
 
 Functional Interface
@@ -40,17 +40,17 @@ ____________________
 binary_roc
 ^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.binary_roc
+.. autofunction:: torchmetrics.functional.classification.binary_roc
     :noindex:
 
 multiclass_roc
 ^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.multiclass_roc
+.. autofunction:: torchmetrics.functional.classification.multiclass_roc
     :noindex:
 
 multilabel_roc
 ^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.multilabel_roc
+.. autofunction:: torchmetrics.functional.classification.multilabel_roc
     :noindex:
