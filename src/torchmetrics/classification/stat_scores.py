@@ -588,6 +588,38 @@ class StatScores(BinaryStatScores, MulticlassStatScores, MultilabelStatScores):
     # tn: Union[Tensor, List[Tensor]]
     # fn: Union[Tensor, List[Tensor]]
 
+    def __new__(
+        cls,
+        num_classes: Optional[int] = None,
+        threshold: float = 0.5,
+        average: Optional[str] = "micro",
+        mdmc_average: Optional[str] = None,
+        ignore_index: Optional[int] = None,
+        top_k: Optional[int] = None,
+        multiclass: Optional[bool] = None,
+        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+        num_labels: Optional[int] = None,
+        multidim_average: Optional[Literal["global", "samplewise"]] = "global",
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        if task is not None:
+            if task == "binary":
+                return BinaryStatScores(threshold, multidim_average, ignore_index, validate_args, **kwargs)
+            elif task == "multiclass":
+                return MulticlassStatScores(
+                    num_classes, average, top_k, multidim_average, ignore_index, validate_args, **kwargs
+                )
+            elif task == "multilabel":
+                return MultilabelStatScores(
+                    num_labels, threshold, average, multidim_average, ignore_index, validate_args, **kwargs
+                )
+            else:
+                raise ValueError(
+                    f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+                )
+        return super().__new__(cls)
+
     def __init__(
         self,
         threshold: float = 0.5,

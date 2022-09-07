@@ -15,6 +15,7 @@ from typing import Any, List, Optional, Tuple, Union
 
 import torch
 from torch import Tensor
+from typing_extensions import Literal
 
 from torchmetrics.classification.precision_recall_curve import (
     BinaryPrecisionRecallCurve,
@@ -393,6 +394,30 @@ class ROC(Metric):
     full_state_update: bool = False
     preds: List[Tensor]
     target: List[Tensor]
+
+    def __new__(
+        cls,
+        num_classes: Optional[int] = None,
+        pos_label: Optional[int] = None,
+        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+        thresholds: Optional[Union[int, List[float], Tensor]] = None,
+        num_labels: Optional[int] = None,
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        if task is not None:
+            if task == "binary":
+                return BinaryROC(thresholds, ignore_index, validate_args, **kwargs)
+            elif task == "multiclass":
+                return MulticlassROC(num_classes, thresholds, ignore_index, validate_args, **kwargs)
+            elif task == "multilabel":
+                return MultilabelROC(num_labels, thresholds, ignore_index, validate_args, **kwargs)
+            else:
+                raise ValueError(
+                    f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+                )
+        return super().__new__(cls)
 
     def __init__(
         self,

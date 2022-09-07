@@ -265,6 +265,27 @@ class CalibrationError(Metric):
     confidences: List[Tensor]
     accuracies: List[Tensor]
 
+    def __new__(
+        cls,
+        n_bins: int = 15,
+        norm: str = "l1",
+        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+        num_classes: Optional[int] = None,
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        if task is not None:
+            if task == "binary":
+                return BinaryCalibrationError(n_bins, norm, ignore_index, validate_args, **kwargs)
+            elif task == "multiclass":
+                return MulticlassCalibrationError(num_classes, n_bins, norm, ignore_index, validate_args, **kwargs)
+            else:
+                raise ValueError(
+                    f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+                )
+        return super().__new__(cls)
+
     def __init__(
         self,
         n_bins: int = 15,

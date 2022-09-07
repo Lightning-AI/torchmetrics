@@ -11,10 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any
+from typing import Any, Optional
 
 import torch
 from torch import Tensor, tensor
+from typing_extensions import Literal
 
 from torchmetrics.classification.stat_scores import BinaryStatScores, MulticlassStatScores, MultilabelStatScores
 from torchmetrics.functional.classification.hamming import (
@@ -360,6 +361,36 @@ class HammingDistance(Metric):
     full_state_update: bool = False
     correct: Tensor
     total: Tensor
+
+    def __new__(
+        cls,
+        threshold: float = 0.5,
+        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+        num_classes: Optional[int] = None,
+        num_labels: Optional[int] = None,
+        average: Optional[str] = "micro",
+        multidim_average: Optional[Literal["global", "samplewise"]] = "global",
+        top_k: Optional[int] = None,
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        if task is not None:
+            if task == "binary":
+                return BinaryHammingDistance(threshold, multidim_average, ignore_index, validate_args, **kwargs)
+            elif task == "multiclass":
+                return MulticlassHammingDistance(
+                    num_classes, average, top_k, multidim_average, ignore_index, validate_args, **kwargs
+                )
+            elif task == "multilabel":
+                return MultilabelHammingDistance(
+                    num_labels, threshold, average, multidim_average, ignore_index, validate_args, **kwargs
+                )
+            else:
+                raise ValueError(
+                    f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+                )
+        return super().__new__(cls)
 
     def __init__(
         self,

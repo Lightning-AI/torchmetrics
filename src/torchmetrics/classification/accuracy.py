@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional
+from typing import Any, Literal, Optional
 
 import torch
 from torch import Tensor, tensor
@@ -456,6 +456,39 @@ class Accuracy(StatScores):
     correct: Tensor
     total: Tensor
 
+    def __new__(
+        cls,
+        threshold: float = 0.5,
+        num_classes: Optional[int] = None,
+        average: Optional[str] = "micro",
+        mdmc_average: Optional[str] = None,
+        ignore_index: Optional[int] = None,
+        top_k: Optional[int] = None,
+        multiclass: Optional[bool] = None,
+        subset_accuracy: bool = False,
+        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+        num_labels: Optional[int] = None,
+        multidim_average: Optional[Literal["global", "samplewise"]] = "global",
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        if task is not None:
+            if task == "binary":
+                return BinaryAccuracy(threshold, multidim_average, ignore_index, validate_args, **kwargs)
+            elif task == "multiclass":
+                return MulticlassAccuracy(
+                    num_classes, average, top_k, multidim_average, ignore_index, validate_args, **kwargs
+                )
+            elif task == "multilabel":
+                return MultilabelAccuracy(
+                    num_labels, threshold, average, multidim_average, ignore_index, validate_args, **kwargs
+                )
+            else:
+                raise ValueError(
+                    f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+                )
+        return super().__new__(cls)
+
     def __init__(
         self,
         threshold: float = 0.5,
@@ -466,6 +499,10 @@ class Accuracy(StatScores):
         top_k: Optional[int] = None,
         multiclass: Optional[bool] = None,
         subset_accuracy: bool = False,
+        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+        num_labels: Optional[int] = None,
+        multidim_average: Optional[Literal["global", "samplewise"]] = "global",
+        validate_args: bool = True,
         **kwargs: Any,
     ) -> None:
         allowed_average = ["micro", "macro", "weighted", "samples", "none", None]

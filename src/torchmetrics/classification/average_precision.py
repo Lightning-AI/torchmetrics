@@ -384,11 +384,45 @@ class AveragePrecision(Metric):
     preds: List[Tensor]
     target: List[Tensor]
 
+    def __new__(
+        cls,
+        num_classes: Optional[int] = None,
+        pos_label: Optional[int] = None,
+        average: Optional[str] = "macro",
+        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+        thresholds: Optional[Union[int, List[float], Tensor]] = None,
+        num_labels: Optional[int] = None,
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        if task is not None:
+            if task == "binary":
+                return BinaryAveragePrecision(thresholds, ignore_index, validate_args, **kwargs)
+            elif task == "multiclass":
+                return MulticlassAveragePrecision(
+                    num_classes, average, thresholds, ignore_index, validate_args, **kwargs
+                )
+            elif task == "multilabel":
+                return MultilabelAveragePrecision(
+                    num_labels, average, thresholds, ignore_index, validate_args, **kwargs
+                )
+            else:
+                raise ValueError(
+                    f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+                )
+        return super().__new__(cls)
+
     def __init__(
         self,
         num_classes: Optional[int] = None,
         pos_label: Optional[int] = None,
         average: Optional[str] = "macro",
+        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+        thresholds: Optional[Union[int, List[float], Tensor]] = None,
+        num_labels: Optional[int] = None,
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)

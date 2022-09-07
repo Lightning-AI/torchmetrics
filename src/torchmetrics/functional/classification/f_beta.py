@@ -911,14 +911,14 @@ def fbeta_score(
     """
     if task is not None:
         if task == "binary":
-            return binary_fbeta_score(preds, target, threshold, multidim_average, ignore_index, validate_args)
+            return binary_fbeta_score(preds, target, beta, threshold, multidim_average, ignore_index, validate_args)
         elif task == "multiclass":
             return multiclass_fbeta_score(
-                preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args
+                preds, target, beta, num_classes, average, top_k, multidim_average, ignore_index, validate_args
             )
         elif task == "multilabel":
             return multilabel_fbeta_score(
-                preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
+                preds, target, beta, num_labels, threshold, average, multidim_average, ignore_index, validate_args
             )
         else:
             raise ValueError(

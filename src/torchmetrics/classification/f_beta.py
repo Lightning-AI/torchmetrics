@@ -817,6 +817,40 @@ class FBetaScore(StatScores):
     """
     full_state_update: bool = False
 
+    def __new__(
+        cls,
+        self,
+        num_classes: Optional[int] = None,
+        beta: float = 1.0,
+        threshold: float = 0.5,
+        average: Optional[str] = "micro",
+        mdmc_average: Optional[str] = None,
+        ignore_index: Optional[int] = None,
+        top_k: Optional[int] = None,
+        multiclass: Optional[bool] = None,
+        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+        num_labels: Optional[int] = None,
+        multidim_average: Optional[Literal["global", "samplewise"]] = "global",
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        if task is not None:
+            if task == "binary":
+                return BinaryFBetaScore(beta, threshold, multidim_average, ignore_index, validate_args, **kwargs)
+            elif task == "multiclass":
+                return MulticlassFBetaScore(
+                    beta, num_classes, average, top_k, multidim_average, ignore_index, validate_args, **kwargs
+                )
+            elif task == "multilabel":
+                return MultilabelFBetaScore(
+                    beta, num_labels, threshold, average, multidim_average, ignore_index, validate_args, **kwargs
+                )
+            else:
+                raise ValueError(
+                    f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+                )
+        return super().__new__(cls)
+
     def __init__(
         self,
         num_classes: Optional[int] = None,
@@ -947,6 +981,39 @@ class F1Score(FBetaScore):
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
+
+    def __new__(
+        cls,
+        self,
+        num_classes: Optional[int] = None,
+        threshold: float = 0.5,
+        average: Optional[str] = "micro",
+        mdmc_average: Optional[str] = None,
+        ignore_index: Optional[int] = None,
+        top_k: Optional[int] = None,
+        multiclass: Optional[bool] = None,
+        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+        num_labels: Optional[int] = None,
+        multidim_average: Optional[Literal["global", "samplewise"]] = "global",
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        if task is not None:
+            if task == "binary":
+                return BinaryF1Score(threshold, multidim_average, ignore_index, validate_args, **kwargs)
+            elif task == "multiclass":
+                return MulticlassF1Score(
+                    num_classes, average, top_k, multidim_average, ignore_index, validate_args, **kwargs
+                )
+            elif task == "multilabel":
+                return MultilabelF1Score(
+                    num_labels, threshold, average, multidim_average, ignore_index, validate_args, **kwargs
+                )
+            else:
+                raise ValueError(
+                    f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+                )
+        return super().__new__(cls)
 
     def __init__(
         self,

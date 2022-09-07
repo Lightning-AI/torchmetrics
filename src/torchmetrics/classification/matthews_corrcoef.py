@@ -15,6 +15,7 @@ from typing import Any, Optional
 
 import torch
 from torch import Tensor
+from typing_extensions import Literal
 
 from torchmetrics.classification import BinaryConfusionMatrix, MulticlassConfusionMatrix, MultilabelConfusionMatrix
 from torchmetrics.functional.classification.matthews_corrcoef import (
@@ -269,6 +270,29 @@ class MatthewsCorrCoef(Metric):
     higher_is_better: bool = True
     full_state_update: bool = False
     confmat: Tensor
+
+    def __new__(
+        cls,
+        num_classes: int,
+        threshold: float = 0.5,
+        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+        num_labels: Optional[int] = None,
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        if task is not None:
+            if task == "binary":
+                return BinaryMatthewsCorrCoef(threshold, ignore_index, validate_args, **kwargs)
+            elif task == "multiclass":
+                return MulticlassMatthewsCorrCoef(num_classes, ignore_index, validate_args, **kwargs)
+            elif task == "multilabel":
+                return MultilabelMatthewsCorrCoef(num_labels, threshold, ignore_index, validate_args, **kwargs)
+            else:
+                raise ValueError(
+                    f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+                )
+        return super().__new__(cls)
 
     def __init__(
         self,
