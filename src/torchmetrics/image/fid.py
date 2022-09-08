@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from copy import deepcopy
 from typing import Any, List, Optional, Union
 
 import numpy as np
@@ -20,8 +21,7 @@ from torch.autograd import Function
 from torch.nn import Module
 
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import rank_zero_info, rank_zero_warn
-from torchmetrics.utilities.data import dim_zero_cat
+from torchmetrics.utilities import rank_zero_info
 from torchmetrics.utilities.imports import _SCIPY_AVAILABLE, _TORCH_FIDELITY_AVAILABLE
 
 if _TORCH_FIDELITY_AVAILABLE:
@@ -201,8 +201,13 @@ class FrechetInceptionDistance(Metric):
     is_differentiable: bool = False
     full_state_update: bool = False
 
-    real_features: List[Tensor]
-    fake_features: List[Tensor]
+    real_features_sum: Tensor
+    real_features_cov_sum: Tensor
+    real_features_num_samples: Tensor
+
+    fake_features_sum: Tensor
+    fake_features_cov_sum: Tensor
+    fake_features_num_samples: Tensor
 
     def __init__(
         self,
@@ -212,13 +217,8 @@ class FrechetInceptionDistance(Metric):
     ) -> None:
         super().__init__(**kwargs)
 
-        rank_zero_warn(
-            "Metric `FrechetInceptionDistance` will save all extracted features in buffer."
-            " For large datasets this may lead to large memory footprint.",
-            UserWarning,
-        )
-
         if isinstance(feature, int):
+            num_features = feature
             if not _TORCH_FIDELITY_AVAILABLE:
                 raise ModuleNotFoundError(
                     "FrechetInceptionDistance metric requires that `Torch-fidelity` is installed."
@@ -231,8 +231,11 @@ class FrechetInceptionDistance(Metric):
                 )
 
             self.inception = NoTrainInceptionV3(name="inception-v3-compat", features_list=[str(feature)])
+
         elif isinstance(feature, Module):
             self.inception = feature
+            dummy_image = torch.randint(0, 255, (1, 3, 299, 299), dtype=torch.uint8)
+            num_features = self.inception(dummy_image).shape[-1]
         else:
             raise TypeError("Got unknown input to argument `feature`")
 
@@ -240,8 +243,14 @@ class FrechetInceptionDistance(Metric):
             raise ValueError("Argument `reset_real_features` expected to be a bool")
         self.reset_real_features = reset_real_features
 
-        self.add_state("real_features", [], dist_reduce_fx=None)
-        self.add_state("fake_features", [], dist_reduce_fx=None)
+        mx_nb_feets = (num_features, num_features)
+        self.add_state("real_features_sum", torch.zeros(num_features).double(), dist_reduce_fx="sum")
+        self.add_state("real_features_cov_sum", torch.zeros(mx_nb_feets).double(), dist_reduce_fx="sum")
+        self.add_state("real_features_num_samples", torch.tensor(0).long(), dist_reduce_fx="sum")
+
+        self.add_state("fake_features_sum", torch.zeros(num_features).double(), dist_reduce_fx="sum")
+        self.add_state("fake_features_cov_sum", torch.zeros(mx_nb_feets).double(), dist_reduce_fx="sum")
+        self.add_state("fake_features_num_samples", torch.tensor(0).long(), dist_reduce_fx="sum")
 
     def update(self, imgs: Tensor, real: bool) -> None:  # type: ignore
         """Update the state with extracted features.
@@ -251,39 +260,39 @@ class FrechetInceptionDistance(Metric):
             real: bool indicating if ``imgs`` belong to the real or the fake distribution
         """
         features = self.inception(imgs)
+        self.orig_dtype = features.dtype
+        features = features.double()
 
+        if features.dim() == 1:
+            features = features.unsqueeze(0)
         if real:
-            self.real_features.append(features)
+            self.real_features_sum += features.sum(dim=0)
+            self.real_features_cov_sum += features.t().mm(features)
+            self.real_features_num_samples += imgs.shape[0]
         else:
-            self.fake_features.append(features)
+            self.fake_features_sum += features.sum(dim=0)
+            self.fake_features_cov_sum += features.t().mm(features)
+            self.fake_features_num_samples += imgs.shape[0]
 
     def compute(self) -> Tensor:
         """Calculate FID score based on accumulated extracted features from the two distributions."""
-        real_features = dim_zero_cat(self.real_features)
-        fake_features = dim_zero_cat(self.fake_features)
-        # computation is extremely sensitive so it needs to happen in double precision
-        orig_dtype = real_features.dtype
-        real_features = real_features.double()
-        fake_features = fake_features.double()
+        mean_real = (self.real_features_sum / self.real_features_num_samples).unsqueeze(0)
+        mean_fake = (self.fake_features_sum / self.fake_features_num_samples).unsqueeze(0)
 
-        # calculate mean and covariance
-        n = real_features.shape[0]
-        m = fake_features.shape[0]
-        mean1 = real_features.mean(dim=0)
-        mean2 = fake_features.mean(dim=0)
-        diff1 = real_features - mean1
-        diff2 = fake_features - mean2
-        cov1 = 1.0 / (n - 1) * diff1.t().mm(diff1)
-        cov2 = 1.0 / (m - 1) * diff2.t().mm(diff2)
-
-        # compute fid
-        return _compute_fid(mean1, cov1, mean2, cov2).to(orig_dtype)
+        cov_real_num = self.real_features_cov_sum - self.real_features_num_samples * mean_real.t().mm(mean_real)
+        cov_real = cov_real_num / (self.real_features_num_samples - 1)
+        cov_fake_num = self.fake_features_cov_sum - self.fake_features_num_samples * mean_fake.t().mm(mean_fake)
+        cov_fake = cov_fake_num / (self.fake_features_num_samples - 1)
+        return _compute_fid(mean_real.squeeze(0), cov_real, mean_fake.squeeze(0), cov_fake).to(self.orig_dtype)
 
     def reset(self) -> None:
         if not self.reset_real_features:
-            # remove temporarily to avoid resetting
-            value = self._defaults.pop("real_features")
+            real_features_sum = deepcopy(self.real_features_sum)
+            real_features_cov_sum = deepcopy(self.real_features_cov_sum)
+            real_features_num_samples = deepcopy(self.real_features_num_samples)
             super().reset()
-            self._defaults["real_features"] = value
+            self.real_features_sum = real_features_sum
+            self.real_features_cov_sum = real_features_cov_sum
+            self.real_features_num_samples = real_features_num_samples
         else:
             super().reset()
