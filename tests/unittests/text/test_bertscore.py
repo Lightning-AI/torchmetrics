@@ -84,8 +84,8 @@ def _reference_bert_score(
 @pytest.mark.skipif(not _TRANSFORMERS_AVAILABLE, reason="test requires transformers")
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
 class TestBERTScore(TextTester):
-    @pytest.mark.parametrize("ddp", [False])
-    @pytest.mark.parametrize("dist_sync_on_step", [False])
+    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
     @skip_on_connection_issues()
     def test_bertscore_class(
         self, ddp, dist_sync_on_step, preds, targets, num_layers, all_layers, idf, rescale_with_baseline, metric_key
