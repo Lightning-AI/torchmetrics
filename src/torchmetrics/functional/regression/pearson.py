@@ -55,7 +55,7 @@ def _pearson_corrcoef_update(
             " and {preds.ndim}."
         )
 
-    n_obs = preds.numel()
+    n_obs = preds.shape[0]
     mx_new = (n_prior * mean_x + preds.mean(0) * n_obs) / (n_prior + n_obs)
     my_new = (n_prior * mean_y + target.mean(0) * n_obs) / (n_prior + n_obs)
     n_prior += n_obs
