@@ -392,7 +392,7 @@ class ConfusionMatrix(Metric):
 
     def __new__(
         cls,
-        num_classes: int,
+        num_classes: Optional[int] = None,
         normalize: Optional[str] = None,
         threshold: float = 0.5,
         multilabel: bool = False,

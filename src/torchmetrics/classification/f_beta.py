@@ -819,7 +819,6 @@ class FBetaScore(StatScores):
 
     def __new__(
         cls,
-        self,
         num_classes: Optional[int] = None,
         beta: float = 1.0,
         threshold: float = 0.5,
@@ -984,7 +983,6 @@ class F1Score(FBetaScore):
 
     def __new__(
         cls,
-        self,
         num_classes: Optional[int] = None,
         threshold: float = 0.5,
         average: Optional[str] = "micro",
