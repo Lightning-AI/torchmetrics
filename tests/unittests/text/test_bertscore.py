@@ -65,19 +65,18 @@ def _reference_bert_score(
 
 
 @pytest.mark.parametrize(
-    ["num_layers", "all_layers", "idf", "rescale_with_baseline"],
+    ["num_layers", "all_layers", "idf", "rescale_with_baseline", "metric_key"],
     [
-        (8, False, False, False),
-        (12, True, False, False),
-        (12, False, True, False),
-        (8, False, False, True),
-        (12, True, True, False),
-        (12, True, False, True),
-        (8, False, True, True),
-        (12, True, True, True),
+        (8, False, False, False, "precision"),
+        (12, True, False, False, "recall"),
+        (12, False, True, False, "f1"),
+        (8, False, False, True, "precision"),
+        (12, True, True, False, "recall"),
+        (12, True, False, True, "f1"),
+        (8, False, True, True, "precision"),
+        (12, True, True, True, "f1"),
     ],
 )
-@pytest.mark.parametrize(["metric_key"], [(key,) for key in _METRIC_KEY_TO_IDX.keys()])
 @pytest.mark.parametrize(
     ["preds", "targets"],
     [(_inputs_single_reference.preds, _inputs_single_reference.targets)],
@@ -85,8 +84,8 @@ def _reference_bert_score(
 @pytest.mark.skipif(not _TRANSFORMERS_AVAILABLE, reason="test requires transformers")
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
 class TestBERTScore(TextTester):
-    @pytest.mark.parametrize("ddp", [False, True])
-    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
+    @pytest.mark.parametrize("ddp", [False])
+    @pytest.mark.parametrize("dist_sync_on_step", [False])
     @skip_on_connection_issues()
     def test_bertscore_class(
         self, ddp, dist_sync_on_step, preds, targets, num_layers, all_layers, idf, rescale_with_baseline, metric_key

@@ -13,7 +13,7 @@
 # limitations under the License.
 import csv
 import urllib
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 from warnings import warn
 
 import torch
@@ -232,8 +232,8 @@ def _rescale_metrics_with_baseline(
 
 
 def bert_score(
-    preds: Union[List[str], Dict[str, Tensor]],
-    target: Union[List[str], Dict[str, Tensor]],
+    preds: Union[str, Sequence[str], Dict[str, Tensor]],
+    target: Union[str, Sequence[str], Dict[str, Tensor]],
     model_name_or_path: Optional[str] = None,
     num_layers: Optional[int] = None,
     all_layers: bool = False,
