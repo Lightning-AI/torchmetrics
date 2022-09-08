@@ -21,6 +21,7 @@ from torch.nn import Module
 from torchmetrics.functional.text.bert import bert_score
 from torchmetrics.functional.text.helper_embedding_metric import _preprocess_text
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 
 if _TRANSFORMERS_AVAILABLE:
@@ -31,21 +32,6 @@ else:
 
 # Default model recommended in the original implementation.
 _DEFAULT_MODEL = "roberta-large"
-
-
-def _get_input_dict(
-    input_ids: Union[Tensor, List[Tensor]], attention_mask: Union[Tensor, List[Tensor]]
-) -> Dict[str, Tensor]:
-    """Create an input dictionary of ``input_ids`` and ``attention_mask`` for BERTScore calculation.
-
-    When ``dist_sync_on_step=True``, ``input_ids`` and ``attention_mask`` might be ``Tensor`` instead of
-    ``List[Tensor]``.
-    """
-    if isinstance(input_ids, Tensor):
-        output_dict = {"input_ids": input_ids, "attention_mask": attention_mask}
-    else:
-        output_dict = {"input_ids": torch.cat(input_ids), "attention_mask": torch.cat(attention_mask)}
-    return output_dict
 
 
 class BERTScore(Metric):
@@ -110,7 +96,6 @@ class BERTScore(Metric):
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
-
     preds_input_ids: List[Tensor]
     preds_attention_mask: List[Tensor]
     target_input_ids: List[Tensor]
@@ -154,8 +139,6 @@ class BERTScore(Metric):
         self.rescale_with_baseline = rescale_with_baseline
         self.baseline_path = baseline_path
         self.baseline_url = baseline_url
-        self.preds: Dict[str, List[Tensor]] = {"input_ids": [], "attention_mask": []}
-        self.target: Dict[str, List[Tensor]] = {"input_ids": [], "attention_mask": []}
 
         if user_tokenizer:
             self.tokenizer = user_tokenizer
@@ -221,9 +204,17 @@ class BERTScore(Metric):
         Return:
             Python dictionary containing the keys `precision`, `recall` and `f1` with corresponding values.
         """
+        preds = {
+            "input_ids": dim_zero_cat(self.preds_input_ids),
+            "attention_mask": dim_zero_cat(self.preds_attention_mask),
+        }
+        target = {
+            "input_ids": dim_zero_cat(self.target_input_ids),
+            "attention_mask": dim_zero_cat(self.target_attention_mask),
+        }
         return bert_score(
-            preds=_get_input_dict(self.preds_input_ids, self.preds_attention_mask),
-            target=_get_input_dict(self.target_input_ids, self.target_attention_mask),
+            preds=preds,
+            target=target,
             model_name_or_path=self.model_name_or_path,
             num_layers=self.num_layers,
             all_layers=self.all_layers,
