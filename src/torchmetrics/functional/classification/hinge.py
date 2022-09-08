@@ -106,7 +106,7 @@ def binary_hinge_loss(
             Set to ``False`` for faster computations.
 
     Example:
-        >>> from torchmetrics.functional import binary_hinge_loss
+        >>> from torchmetrics.functional.classification import binary_hinge_loss
         >>> preds = torch.tensor([0.25, 0.25, 0.55, 0.75, 0.75])
         >>> target = torch.tensor([0, 0, 1, 1, 1])
         >>> binary_hinge_loss(preds, target)
@@ -222,7 +222,7 @@ def multiclass_hinge_loss(
             Set to ``False`` for faster computations.
 
     Example:
-        >>> from torchmetrics.functional import multiclass_hinge_loss
+        >>> from torchmetrics.functional.classification import multiclass_hinge_loss
         >>> preds = torch.tensor([[0.25, 0.20, 0.55],
         ...                       [0.55, 0.05, 0.40],
         ...                       [0.10, 0.30, 0.60],

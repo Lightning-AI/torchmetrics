@@ -287,7 +287,7 @@ def binary_precision_recall_curve(
         - thresholds: an 1d tensor of size (n_thresholds, ) with increasing threshold values
 
     Example:
-        >>> from torchmetrics.functional import binary_precision_recall_curve
+        >>> from torchmetrics.functional.classification import binary_precision_recall_curve
         >>> preds = torch.tensor([0, 0.5, 0.7, 0.8])
         >>> target = torch.tensor([0, 1, 1, 0])
         >>> binary_precision_recall_curve(preds, target, thresholds=None)  # doctest: +NORMALIZE_WHITESPACE
@@ -504,7 +504,7 @@ def multiclass_precision_recall_curve(
           then a single 1d tensor of size (n_thresholds, ) is returned with shared threshold values for all classes.
 
     Example:
-        >>> from torchmetrics.functional import multiclass_precision_recall_curve
+        >>> from torchmetrics.functional.classification import multiclass_precision_recall_curve
         >>> preds = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
         ...                       [0.05, 0.75, 0.05, 0.05, 0.05],
         ...                       [0.05, 0.05, 0.75, 0.05, 0.05],
@@ -728,7 +728,7 @@ def multilabel_precision_recall_curve(
           then a single 1d tensor of size (n_thresholds, ) is returned with shared threshold values for all labels.
 
     Example:
-        >>> from torchmetrics.functional import multilabel_precision_recall_curve
+        >>> from torchmetrics.functional.classification import multilabel_precision_recall_curve
         >>> preds = torch.tensor([[0.75, 0.05, 0.35],
         ...                       [0.45, 0.75, 0.05],
         ...                       [0.05, 0.55, 0.75],

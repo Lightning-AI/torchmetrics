@@ -73,7 +73,7 @@ class BinaryCalibrationError(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
-        >>> from torchmetrics import BinaryCalibrationError
+        >>> from torchmetrics.classification import BinaryCalibrationError
         >>> preds = torch.tensor([0.25, 0.25, 0.55, 0.75, 0.75])
         >>> target = torch.tensor([0, 0, 1, 1, 1])
         >>> metric = BinaryCalibrationError(n_bins=2, norm='l1')
@@ -165,7 +165,7 @@ class MulticlassCalibrationError(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
-        >>> from torchmetrics import MulticlassCalibrationError
+        >>> from torchmetrics.classification import MulticlassCalibrationError
         >>> preds = torch.tensor([[0.25, 0.20, 0.55],
         ...                       [0.55, 0.05, 0.40],
         ...                       [0.10, 0.30, 0.60],

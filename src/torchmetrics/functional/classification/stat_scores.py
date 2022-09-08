@@ -183,21 +183,21 @@ def binary_stat_scores(
         - If ``multidim_average`` is set to ``samplewise``, the shape will be ``(N, 5)``
 
     Example (preds is int tensor):
-        >>> from torchmetrics.functional import binary_stat_scores
+        >>> from torchmetrics.functional.classification import binary_stat_scores
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0, 0, 1, 1, 0, 1])
         >>> binary_stat_scores(preds, target)
         tensor([2, 1, 2, 1, 3])
 
     Example (preds is float tensor):
-        >>> from torchmetrics.functional import binary_stat_scores
+        >>> from torchmetrics.functional.classification import binary_stat_scores
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
         >>> binary_stat_scores(preds, target)
         tensor([2, 1, 2, 1, 3])
 
     Example (multidim tensors):
-        >>> from torchmetrics.functional import binary_stat_scores
+        >>> from torchmetrics.functional.classification import binary_stat_scores
         >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
         >>> preds = torch.tensor(
         ...     [
@@ -506,7 +506,7 @@ def multiclass_stat_scores(
           - If ``average=None/'none'``, the shape will be ``(N, C, 5)``
 
     Example (preds is int tensor):
-        >>> from torchmetrics.functional import multiclass_stat_scores
+        >>> from torchmetrics.functional.classification import multiclass_stat_scores
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([2, 1, 0, 1])
         >>> multiclass_stat_scores(preds, target, num_classes=3, average='micro')
@@ -517,7 +517,7 @@ def multiclass_stat_scores(
                 [1, 0, 3, 0, 1]])
 
     Example (preds is float tensor):
-        >>> from torchmetrics.functional import multiclass_stat_scores
+        >>> from torchmetrics.functional.classification import multiclass_stat_scores
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([
         ...   [0.16, 0.26, 0.58],
@@ -533,7 +533,7 @@ def multiclass_stat_scores(
                 [1, 0, 3, 0, 1]])
 
     Example (multidim tensors):
-        >>> from torchmetrics.functional import multiclass_stat_scores
+        >>> from torchmetrics.functional.classification import multiclass_stat_scores
         >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
         >>> preds = torch.tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
         >>> multiclass_stat_scores(preds, target, num_classes=3, multidim_average='samplewise', average='micro')
@@ -761,7 +761,7 @@ def multilabel_stat_scores(
           - If ``average=None/'none'``, the shape will be ``(N, C, 5)``
 
     Example (preds is int tensor):
-        >>> from torchmetrics.functional import multilabel_stat_scores
+        >>> from torchmetrics.functional.classification import multilabel_stat_scores
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
         >>> multilabel_stat_scores(preds, target, num_labels=3, average='micro')
@@ -772,7 +772,7 @@ def multilabel_stat_scores(
                 [1, 1, 0, 0, 1]])
 
     Example (preds is float tensor):
-        >>> from torchmetrics.functional import multilabel_stat_scores
+        >>> from torchmetrics.functional.classification import multilabel_stat_scores
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> multilabel_stat_scores(preds, target, num_labels=3, average='micro')
@@ -783,7 +783,7 @@ def multilabel_stat_scores(
                 [1, 1, 0, 0, 1]])
 
     Example (multidim tensors):
-        >>> from torchmetrics.functional import multilabel_stat_scores
+        >>> from torchmetrics.functional.classification import multilabel_stat_scores
         >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
         >>> preds = torch.tensor(
         ...     [

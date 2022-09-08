@@ -84,7 +84,7 @@ class BinaryAveragePrecision(BinaryPrecisionRecallCurve):
         A single scalar with the average precision score
 
     Example:
-        >>> from torchmetrics import BinaryAveragePrecision
+        >>> from torchmetrics.classification import BinaryAveragePrecision
         >>> preds = torch.tensor([0, 0.5, 0.7, 0.8])
         >>> target = torch.tensor([0, 1, 1, 0])
         >>> metric = BinaryAveragePrecision(thresholds=None)
@@ -162,7 +162,7 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
         If `average="macro"|"weighted"` then a single scalar is returned.
 
     Example:
-        >>> from torchmetrics import MulticlassAveragePrecision
+        >>> from torchmetrics.classification import MulticlassAveragePrecision
         >>> preds = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
         ...                       [0.05, 0.75, 0.05, 0.05, 0.05],
         ...                       [0.05, 0.05, 0.75, 0.05, 0.05],
@@ -269,7 +269,7 @@ class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
         If `average="micro|macro"|"weighted"` then a single scalar is returned.
 
     Example:
-        >>> from torchmetrics import MultilabelAveragePrecision
+        >>> from torchmetrics.classification import MultilabelAveragePrecision
         >>> preds = torch.tensor([[0.75, 0.05, 0.35],
         ...                       [0.45, 0.75, 0.05],
         ...                       [0.05, 0.55, 0.75],

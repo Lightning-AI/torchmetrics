@@ -136,7 +136,7 @@ def binary_roc(
         - thresholds: an 1d tensor of size (n_thresholds, ) with decreasing threshold values
 
     Example:
-        >>> from torchmetrics.functional import binary_roc
+        >>> from torchmetrics.functional.classification import binary_roc
         >>> preds = torch.tensor([0, 0.5, 0.7, 0.8])
         >>> target = torch.tensor([0, 1, 1, 0])
         >>> binary_roc(preds, target, thresholds=None)  # doctest: +NORMALIZE_WHITESPACE
@@ -243,7 +243,7 @@ def multiclass_roc(
           then a single 1d tensor of size (n_thresholds, ) is returned with shared threshold values for all classes.
 
     Example:
-        >>> from torchmetrics.functional import multiclass_roc
+        >>> from torchmetrics.functional.classification import multiclass_roc
         >>> preds = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
         ...                       [0.05, 0.75, 0.05, 0.05, 0.05],
         ...                       [0.05, 0.05, 0.75, 0.05, 0.05],
@@ -379,7 +379,7 @@ def multilabel_roc(
           then a single 1d tensor of size (n_thresholds, ) is returned with shared threshold values for all labels.
 
     Example:
-        >>> from torchmetrics.functional import multilabel_roc
+        >>> from torchmetrics.functional.classification import multilabel_roc
         >>> preds = torch.tensor([[0.75, 0.05, 0.35],
         ...                       [0.45, 0.75, 0.05],
         ...                       [0.05, 0.55, 0.75],

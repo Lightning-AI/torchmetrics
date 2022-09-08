@@ -109,21 +109,21 @@ def binary_specificity(
         is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of a scalar value per sample.
 
     Example (preds is int tensor):
-        >>> from torchmetrics.functional import binary_specificity
+        >>> from torchmetrics.functional.classification import binary_specificity
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0, 0, 1, 1, 0, 1])
         >>> binary_specificity(preds, target)
         tensor(0.6667)
 
     Example (preds is float tensor):
-        >>> from torchmetrics.functional import binary_specificity
+        >>> from torchmetrics.functional.classification import binary_specificity
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
         >>> binary_specificity(preds, target)
         tensor(0.6667)
 
     Example (multidim tensors):
-        >>> from torchmetrics.functional import binary_specificity
+        >>> from torchmetrics.functional.classification import binary_specificity
         >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
         >>> preds = torch.tensor(
         ...     [
@@ -210,7 +210,7 @@ def multiclass_specificity(
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Example (preds is int tensor):
-        >>> from torchmetrics.functional import multiclass_specificity
+        >>> from torchmetrics.functional.classification import multiclass_specificity
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([2, 1, 0, 1])
         >>> multiclass_specificity(preds, target, num_classes=3)
@@ -219,7 +219,7 @@ def multiclass_specificity(
         tensor([1.0000, 0.6667, 1.0000])
 
     Example (preds is float tensor):
-        >>> from torchmetrics.functional import multiclass_specificity
+        >>> from torchmetrics.functional.classification import multiclass_specificity
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([
         ...   [0.16, 0.26, 0.58],
@@ -233,7 +233,7 @@ def multiclass_specificity(
         tensor([1.0000, 0.6667, 1.0000])
 
     Example (multidim tensors):
-        >>> from torchmetrics.functional import multiclass_specificity
+        >>> from torchmetrics.functional.classification import multiclass_specificity
         >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
         >>> preds = torch.tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
         >>> multiclass_specificity(preds, target, num_classes=3, multidim_average='samplewise')
@@ -316,7 +316,7 @@ def multilabel_specificity(
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Example (preds is int tensor):
-        >>> from torchmetrics.functional import multilabel_specificity
+        >>> from torchmetrics.functional.classification import multilabel_specificity
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
         >>> multilabel_specificity(preds, target, num_labels=3)
@@ -325,7 +325,7 @@ def multilabel_specificity(
         tensor([1., 1., 0.])
 
     Example (preds is float tensor):
-        >>> from torchmetrics.functional import multilabel_specificity
+        >>> from torchmetrics.functional.classification import multilabel_specificity
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> multilabel_specificity(preds, target, num_labels=3)
@@ -334,7 +334,7 @@ def multilabel_specificity(
         tensor([1., 1., 0.])
 
     Example (multidim tensors):
-        >>> from torchmetrics.functional import multilabel_specificity
+        >>> from torchmetrics.functional.classification import multilabel_specificity
         >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
         >>> preds = torch.tensor(
         ...     [

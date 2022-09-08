@@ -73,7 +73,7 @@ class MultilabelExactMatch(Metric):
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Example (preds is int tensor):
-        >>> from torchmetrics import MultilabelExactMatch
+        >>> from torchmetrics.classification import MultilabelExactMatch
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
         >>> metric = MultilabelExactMatch(num_labels=3)
@@ -81,7 +81,7 @@ class MultilabelExactMatch(Metric):
         tensor(0.5000)
 
     Example (preds is float tensor):
-        >>> from torchmetrics import MultilabelExactMatch
+        >>> from torchmetrics.classification import MultilabelExactMatch
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> metric = MultilabelExactMatch(num_labels=3)
@@ -89,7 +89,7 @@ class MultilabelExactMatch(Metric):
         tensor(0.5000)
 
     Example (multidim tensors):
-        >>> from torchmetrics import MultilabelExactMatch
+        >>> from torchmetrics.classification import MultilabelExactMatch
         >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
         >>> preds = torch.tensor(
         ...     [

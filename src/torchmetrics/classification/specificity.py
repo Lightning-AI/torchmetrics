@@ -64,7 +64,7 @@ class BinarySpecificity(BinaryStatScores):
         is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of a scalar value per sample.
 
     Example (preds is int tensor):
-        >>> from torchmetrics import BinarySpecificity
+        >>> from torchmetrics.classification import BinarySpecificity
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0, 0, 1, 1, 0, 1])
         >>> metric = BinarySpecificity()
@@ -72,7 +72,7 @@ class BinarySpecificity(BinaryStatScores):
         tensor(0.6667)
 
     Example (preds is float tensor):
-        >>> from torchmetrics import BinarySpecificity
+        >>> from torchmetrics.classification import BinarySpecificity
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
         >>> metric = BinarySpecificity()
@@ -80,7 +80,7 @@ class BinarySpecificity(BinaryStatScores):
         tensor(0.6667)
 
     Example (multidim tensors):
-        >>> from torchmetrics import BinarySpecificity
+        >>> from torchmetrics.classification import BinarySpecificity
         >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
         >>> preds = torch.tensor(
         ...     [
@@ -154,7 +154,7 @@ class MulticlassSpecificity(MulticlassStatScores):
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Example (preds is int tensor):
-        >>> from torchmetrics import MulticlassSpecificity
+        >>> from torchmetrics.classification import MulticlassSpecificity
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([2, 1, 0, 1])
         >>> metric = MulticlassSpecificity(num_classes=3)
@@ -165,7 +165,7 @@ class MulticlassSpecificity(MulticlassStatScores):
         tensor([1.0000, 0.6667, 1.0000])
 
     Example (preds is float tensor):
-        >>> from torchmetrics import MulticlassSpecificity
+        >>> from torchmetrics.classification import MulticlassSpecificity
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([
         ...   [0.16, 0.26, 0.58],
@@ -181,7 +181,7 @@ class MulticlassSpecificity(MulticlassStatScores):
         tensor([1.0000, 0.6667, 1.0000])
 
     Example (multidim tensors):
-        >>> from torchmetrics import MulticlassSpecificity
+        >>> from torchmetrics.classification import MulticlassSpecificity
         >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
         >>> preds = torch.tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
         >>> metric = MulticlassSpecificity(num_classes=3, multidim_average='samplewise')
@@ -248,7 +248,7 @@ class MultilabelSpecificity(MultilabelStatScores):
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Example (preds is int tensor):
-        >>> from torchmetrics import MultilabelSpecificity
+        >>> from torchmetrics.classification import MultilabelSpecificity
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
         >>> metric = MultilabelSpecificity(num_labels=3)
@@ -259,7 +259,7 @@ class MultilabelSpecificity(MultilabelStatScores):
         tensor([1., 1., 0.])
 
     Example (preds is float tensor):
-        >>> from torchmetrics import MultilabelSpecificity
+        >>> from torchmetrics.classification import MultilabelSpecificity
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> metric = MultilabelSpecificity(num_labels=3)
@@ -270,7 +270,7 @@ class MultilabelSpecificity(MultilabelStatScores):
         tensor([1., 1., 0.])
 
     Example (multidim tensors):
-        >>> from torchmetrics import MultilabelSpecificity
+        >>> from torchmetrics.classification import MultilabelSpecificity
         >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
         >>> preds = torch.tensor(
         ...     [

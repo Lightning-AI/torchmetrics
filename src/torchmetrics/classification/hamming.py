@@ -65,7 +65,7 @@ class BinaryHammingDistance(BinaryStatScores):
         is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of a scalar value per sample.
 
     Example (preds is int tensor):
-        >>> from torchmetrics import BinaryHammingDistance
+        >>> from torchmetrics.classification import BinaryHammingDistance
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0, 0, 1, 1, 0, 1])
         >>> metric = BinaryHammingDistance()
@@ -73,7 +73,7 @@ class BinaryHammingDistance(BinaryStatScores):
         tensor(0.3333)
 
     Example (preds is float tensor):
-        >>> from torchmetrics import BinaryHammingDistance
+        >>> from torchmetrics.classification import BinaryHammingDistance
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
         >>> metric = BinaryHammingDistance()
@@ -81,7 +81,7 @@ class BinaryHammingDistance(BinaryStatScores):
         tensor(0.3333)
 
     Example (multidim tensors):
-        >>> from torchmetrics import BinaryHammingDistance
+        >>> from torchmetrics.classification import BinaryHammingDistance
         >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
         >>> preds = torch.tensor(
         ...     [
@@ -161,7 +161,7 @@ class MulticlassHammingDistance(MulticlassStatScores):
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Example (preds is int tensor):
-        >>> from torchmetrics import MulticlassHammingDistance
+        >>> from torchmetrics.classification import MulticlassHammingDistance
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([2, 1, 0, 1])
         >>> metric = MulticlassHammingDistance(num_classes=3)
@@ -172,7 +172,7 @@ class MulticlassHammingDistance(MulticlassStatScores):
         tensor([0.5000, 0.0000, 0.0000])
 
     Example (preds is float tensor):
-        >>> from torchmetrics import MulticlassHammingDistance
+        >>> from torchmetrics.classification import MulticlassHammingDistance
         >>> target = target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([
         ...   [0.16, 0.26, 0.58],
@@ -188,7 +188,7 @@ class MulticlassHammingDistance(MulticlassStatScores):
         tensor([0.5000, 0.0000, 0.0000])
 
     Example (multidim tensors):
-        >>> from torchmetrics import MulticlassHammingDistance
+        >>> from torchmetrics.classification import MulticlassHammingDistance
         >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
         >>> preds = torch.tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
         >>> metric = MulticlassHammingDistance(num_classes=3, multidim_average='samplewise')
@@ -266,7 +266,7 @@ class MultilabelHammingDistance(MultilabelStatScores):
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Example (preds is int tensor):
-        >>> from torchmetrics import MultilabelHammingDistance
+        >>> from torchmetrics.classification import MultilabelHammingDistance
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
         >>> metric = MultilabelHammingDistance(num_labels=3)
@@ -277,7 +277,7 @@ class MultilabelHammingDistance(MultilabelStatScores):
         tensor([0.0000, 0.5000, 0.5000])
 
     Example (preds is float tensor):
-        >>> from torchmetrics import MultilabelHammingDistance
+        >>> from torchmetrics.classification import MultilabelHammingDistance
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> metric = MultilabelHammingDistance(num_labels=3)
@@ -288,7 +288,7 @@ class MultilabelHammingDistance(MultilabelStatScores):
         tensor([0.0000, 0.5000, 0.5000])
 
     Example (multidim tensors):
-        >>> from torchmetrics import MultilabelHammingDistance
+        >>> from torchmetrics.classification import MultilabelHammingDistance
         >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
         >>> preds = torch.tensor(
         ...     [

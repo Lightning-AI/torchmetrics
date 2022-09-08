@@ -64,7 +64,7 @@ class BinaryCohenKappa(BinaryConfusionMatrix):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
-        >>> from torchmetrics import BinaryCohenKappa
+        >>> from torchmetrics.classification import BinaryCohenKappa
         >>> target = torch.tensor([1, 1, 0, 0])
         >>> preds = torch.tensor([0, 1, 0, 0])
         >>> metric = BinaryCohenKappa()
@@ -72,7 +72,7 @@ class BinaryCohenKappa(BinaryConfusionMatrix):
         tensor(0.5000)
 
     Example (preds is float tensor):
-        >>> from torchmetrics import BinaryCohenKappa
+        >>> from torchmetrics.classification import BinaryCohenKappa
         >>> target = torch.tensor([1, 1, 0, 0])
         >>> preds = torch.tensor([0.35, 0.85, 0.48, 0.01])
         >>> metric = BinaryCohenKappa()
@@ -138,7 +138,7 @@ class MulticlassCohenKappa(MulticlassConfusionMatrix):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (pred is integer tensor):
-        >>> from torchmetrics import MulticlassCohenKappa
+        >>> from torchmetrics.classification import MulticlassCohenKappa
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([2, 1, 0, 1])
         >>> metric = MulticlassCohenKappa(num_classes=3)
@@ -146,7 +146,7 @@ class MulticlassCohenKappa(MulticlassConfusionMatrix):
         tensor(0.6364)
 
     Example (pred is float tensor):
-        >>> from torchmetrics import MulticlassCohenKappa
+        >>> from torchmetrics.classification import MulticlassCohenKappa
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([
         ...   [0.16, 0.26, 0.58],

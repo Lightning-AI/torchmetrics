@@ -67,7 +67,7 @@ class BinaryConfusionMatrix(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
-        >>> from torchmetrics import BinaryConfusionMatrix
+        >>> from torchmetrics.classification import BinaryConfusionMatrix
         >>> target = torch.tensor([1, 1, 0, 0])
         >>> preds = torch.tensor([0, 1, 0, 0])
         >>> metric = BinaryConfusionMatrix()
@@ -76,7 +76,7 @@ class BinaryConfusionMatrix(Metric):
                 [1, 1]])
 
     Example (preds is float tensor):
-        >>> from torchmetrics import BinaryConfusionMatrix
+        >>> from torchmetrics.classification import BinaryConfusionMatrix
         >>> target = torch.tensor([1, 1, 0, 0])
         >>> preds = torch.tensor([0.35, 0.85, 0.48, 0.01])
         >>> metric = BinaryConfusionMatrix()
@@ -155,7 +155,7 @@ class MulticlassConfusionMatrix(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (pred is integer tensor):
-        >>> from torchmetrics import MulticlassConfusionMatrix
+        >>> from torchmetrics.classification import MulticlassConfusionMatrix
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([2, 1, 0, 1])
         >>> metric = MulticlassConfusionMatrix(num_classes=3)
@@ -165,7 +165,7 @@ class MulticlassConfusionMatrix(Metric):
                 [0, 0, 1]])
 
     Example (pred is float tensor):
-        >>> from torchmetrics import MulticlassConfusionMatrix
+        >>> from torchmetrics.classification import MulticlassConfusionMatrix
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([
         ...   [0.16, 0.26, 0.58],
@@ -251,7 +251,7 @@ class MultilabelConfusionMatrix(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
-        >>> from torchmetrics import MultilabelConfusionMatrix
+        >>> from torchmetrics.classification import MultilabelConfusionMatrix
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
         >>> metric = MultilabelConfusionMatrix(num_labels=3)
@@ -261,7 +261,7 @@ class MultilabelConfusionMatrix(Metric):
                 [[0, 1], [0, 1]]])
 
     Example (preds is float tensor):
-        >>> from torchmetrics import MultilabelConfusionMatrix
+        >>> from torchmetrics.classification import MultilabelConfusionMatrix
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> metric = MultilabelConfusionMatrix(num_labels=3)

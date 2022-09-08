@@ -87,7 +87,7 @@ class BinaryPrecisionRecallCurve(Metric):
         - thresholds: an 1d tensor of size (n_thresholds, ) with increasing threshold values
 
     Example:
-        >>> from torchmetrics import BinaryPrecisionRecallCurve
+        >>> from torchmetrics.classification import BinaryPrecisionRecallCurve
         >>> preds = torch.tensor([0, 0.5, 0.7, 0.8])
         >>> target = torch.tensor([0, 1, 1, 0])
         >>> metric = BinaryPrecisionRecallCurve(thresholds=None)
@@ -198,7 +198,7 @@ class MulticlassPrecisionRecallCurve(Metric):
           then a single 1d tensor of size (n_thresholds, ) is returned with shared threshold values for all classes.
 
     Example:
-        >>> from torchmetrics import MulticlassPrecisionRecallCurve
+        >>> from torchmetrics.classification import MulticlassPrecisionRecallCurve
         >>> preds = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
         ...                       [0.05, 0.75, 0.05, 0.05, 0.05],
         ...                       [0.05, 0.05, 0.75, 0.05, 0.05],
@@ -331,7 +331,7 @@ class MultilabelPrecisionRecallCurve(Metric):
           then a single 1d tensor of size (n_thresholds, ) is returned with shared threshold values for all labels.
 
     Example:
-        >>> from torchmetrics import MultilabelPrecisionRecallCurve
+        >>> from torchmetrics.classification import MultilabelPrecisionRecallCurve
         >>> preds = torch.tensor([[0.75, 0.05, 0.35],
         ...                       [0.45, 0.75, 0.05],
         ...                       [0.05, 0.55, 0.75],

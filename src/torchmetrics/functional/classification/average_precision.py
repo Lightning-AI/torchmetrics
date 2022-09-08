@@ -136,7 +136,7 @@ def binary_average_precision(
         A single scalar with the average precision score
 
     Example:
-        >>> from torchmetrics.functional import binary_average_precision
+        >>> from torchmetrics.functional.classification import binary_average_precision
         >>> preds = torch.tensor([0, 0.5, 0.7, 0.8])
         >>> target = torch.tensor([0, 1, 1, 0])
         >>> binary_average_precision(preds, target, thresholds=None)
@@ -245,7 +245,7 @@ def multiclass_average_precision(
         If `average="macro"|"weighted"` then a single scalar is returned.
 
     Example:
-        >>> from torchmetrics.functional import multiclass_average_precision
+        >>> from torchmetrics.functional.classification import multiclass_average_precision
         >>> preds = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
         ...                       [0.05, 0.75, 0.05, 0.05, 0.05],
         ...                       [0.05, 0.05, 0.75, 0.05, 0.05],
@@ -377,7 +377,7 @@ def multilabel_average_precision(
         If `average="micro|macro"|"weighted"` then a single scalar is returned.
 
     Example:
-        >>> from torchmetrics.functional import multilabel_average_precision
+        >>> from torchmetrics.functional.classification import multilabel_average_precision
         >>> preds = torch.tensor([[0.75, 0.05, 0.35],
         ...                       [0.45, 0.75, 0.05],
         ...                       [0.05, 0.55, 0.75],

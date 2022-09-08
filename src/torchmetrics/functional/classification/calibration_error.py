@@ -217,7 +217,7 @@ def binary_calibration_error(
             Set to ``False`` for faster computations.
 
     Example:
-        >>> from torchmetrics.functional import binary_calibration_error
+        >>> from torchmetrics.functional.classification import binary_calibration_error
         >>> preds = torch.tensor([0.25, 0.25, 0.55, 0.75, 0.75])
         >>> target = torch.tensor([0, 0, 1, 1, 1])
         >>> binary_calibration_error(preds, target, n_bins=2, norm='l1')
@@ -326,7 +326,7 @@ def multiclass_calibration_error(
             Set to ``False`` for faster computations.
 
     Example:
-        >>> from torchmetrics.functional import multiclass_calibration_error
+        >>> from torchmetrics.functional.classification import multiclass_calibration_error
         >>> preds = torch.tensor([[0.25, 0.20, 0.55],
         ...                       [0.55, 0.05, 0.40],
         ...                       [0.10, 0.30, 0.60],

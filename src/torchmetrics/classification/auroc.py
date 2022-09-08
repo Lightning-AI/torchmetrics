@@ -83,7 +83,7 @@ class BinaryAUROC(BinaryPrecisionRecallCurve):
         A single scalar with the auroc score
 
     Example:
-        >>> from torchmetrics import BinaryAUROC
+        >>> from torchmetrics.classification import BinaryAUROC
         >>> preds = torch.tensor([0, 0.5, 0.7, 0.8])
         >>> target = torch.tensor([0, 1, 1, 0])
         >>> metric = BinaryAUROC(thresholds=None)
@@ -169,7 +169,7 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
         If `average="macro"|"weighted"` then a single scalar is returned.
 
     Example:
-        >>> from torchmetrics import MulticlassAUROC
+        >>> from torchmetrics.classification import MulticlassAUROC
         >>> preds = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
         ...                       [0.05, 0.75, 0.05, 0.05, 0.05],
         ...                       [0.05, 0.05, 0.75, 0.05, 0.05],
@@ -271,7 +271,7 @@ class MultilabelAUROC(MultilabelPrecisionRecallCurve):
         If `average="micro|macro"|"weighted"` then a single scalar is returned.
 
     Example:
-        >>> from torchmetrics import MultilabelAUROC
+        >>> from torchmetrics.classification import MultilabelAUROC
         >>> preds = torch.tensor([[0.75, 0.05, 0.35],
         ...                       [0.45, 0.75, 0.05],
         ...                       [0.05, 0.55, 0.75],

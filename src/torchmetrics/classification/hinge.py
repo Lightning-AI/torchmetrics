@@ -63,7 +63,7 @@ class BinaryHingeLoss(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
-        >>> from torchmetrics import BinaryHingeLoss
+        >>> from torchmetrics.classification import BinaryHingeLoss
         >>> preds = torch.tensor([0.25, 0.25, 0.55, 0.75, 0.75])
         >>> target = torch.tensor([0, 0, 1, 1, 1])
         >>> metric = BinaryHingeLoss()
@@ -143,7 +143,7 @@ class MulticlassHingeLoss(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
-        >>> from torchmetrics import MulticlassHingeLoss
+        >>> from torchmetrics.classification import MulticlassHingeLoss
         >>> preds = torch.tensor([[0.25, 0.20, 0.55],
         ...                       [0.55, 0.05, 0.40],
         ...                       [0.10, 0.30, 0.60],

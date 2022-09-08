@@ -92,14 +92,14 @@ def binary_matthews_corrcoef(
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
-        >>> from torchmetrics.functional import binary_matthews_corrcoef
+        >>> from torchmetrics.functional.classification import binary_matthews_corrcoef
         >>> target = torch.tensor([1, 1, 0, 0])
         >>> preds = torch.tensor([0, 1, 0, 0])
         >>> binary_matthews_corrcoef(preds, target)
         tensor(0.5774)
 
     Example (preds is float tensor):
-        >>> from torchmetrics.functional import binary_matthews_corrcoef
+        >>> from torchmetrics.functional.classification import binary_matthews_corrcoef
         >>> target = torch.tensor([1, 1, 0, 0])
         >>> preds = torch.tensor([0.35, 0.85, 0.48, 0.01])
         >>> binary_matthews_corrcoef(preds, target)
@@ -149,14 +149,14 @@ def multiclass_matthews_corrcoef(
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (pred is integer tensor):
-        >>> from torchmetrics.functional import multiclass_matthews_corrcoef
+        >>> from torchmetrics.functional.classification import multiclass_matthews_corrcoef
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([2, 1, 0, 1])
         >>> multiclass_matthews_corrcoef(preds, target, num_classes=3)
         tensor(0.7000)
 
     Example (pred is float tensor):
-        >>> from torchmetrics.functional import multiclass_matthews_corrcoef
+        >>> from torchmetrics.functional.classification import multiclass_matthews_corrcoef
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([
         ...   [0.16, 0.26, 0.58],
@@ -213,14 +213,14 @@ def multilabel_matthews_corrcoef(
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
-        >>> from torchmetrics.functional import multilabel_matthews_corrcoef
+        >>> from torchmetrics.functional.classification import multilabel_matthews_corrcoef
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
         >>> multilabel_matthews_corrcoef(preds, target, num_labels=3)
         tensor(0.3333)
 
     Example (preds is float tensor):
-        >>> from torchmetrics.functional import multilabel_matthews_corrcoef
+        >>> from torchmetrics.functional.classification import multilabel_matthews_corrcoef
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> multilabel_matthews_corrcoef(preds, target, num_labels=3)

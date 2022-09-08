@@ -170,7 +170,7 @@ def binary_auroc(
         A single scalar with the auroc score
 
     Example:
-        >>> from torchmetrics.functional import binary_auroc
+        >>> from torchmetrics.functional.classification import binary_auroc
         >>> preds = torch.tensor([0, 0.5, 0.7, 0.8])
         >>> target = torch.tensor([0, 1, 1, 0])
         >>> binary_auroc(preds, target, thresholds=None)
@@ -273,7 +273,7 @@ def multiclass_auroc(
         If `average="macro"|"weighted"` then a single scalar is returned.
 
     Example:
-        >>> from torchmetrics.functional import multiclass_auroc
+        >>> from torchmetrics.functional.classification import multiclass_auroc
         >>> preds = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
         ...                       [0.05, 0.75, 0.05, 0.05, 0.05],
         ...                       [0.05, 0.05, 0.75, 0.05, 0.05],
@@ -401,7 +401,7 @@ def multilabel_auroc(
         If `average="micro|macro"|"weighted"` then a single scalar is returned.
 
     Example:
-        >>> from torchmetrics.functional import multilabel_auroc
+        >>> from torchmetrics.functional.classification import multilabel_auroc
         >>> preds = torch.tensor([[0.75, 0.05, 0.35],
         ...                       [0.45, 0.75, 0.05],
         ...                       [0.05, 0.55, 0.75],

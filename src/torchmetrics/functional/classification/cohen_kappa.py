@@ -120,14 +120,14 @@ def binary_cohen_kappa(
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
-        >>> from torchmetrics.functional import binary_cohen_kappa
+        >>> from torchmetrics.functional.classification import binary_cohen_kappa
         >>> target = torch.tensor([1, 1, 0, 0])
         >>> preds = torch.tensor([0, 1, 0, 0])
         >>> binary_cohen_kappa(preds, target)
         tensor(0.5000)
 
     Example (preds is float tensor):
-        >>> from torchmetrics.functional import binary_cohen_kappa
+        >>> from torchmetrics.functional.classification import binary_cohen_kappa
         >>> target = torch.tensor([1, 1, 0, 0])
         >>> preds = torch.tensor([0.35, 0.85, 0.48, 0.01])
         >>> binary_cohen_kappa(preds, target)
@@ -205,14 +205,14 @@ def multiclass_cohen_kappa(
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (pred is integer tensor):
-        >>> from torchmetrics.functional import multiclass_cohen_kappa
+        >>> from torchmetrics.functional.classification import multiclass_cohen_kappa
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([2, 1, 0, 1])
         >>> multiclass_cohen_kappa(preds, target, num_classes=3)
         tensor(0.6364)
 
     Example (pred is float tensor):
-        >>> from torchmetrics.functional import multiclass_cohen_kappa
+        >>> from torchmetrics.functional.classification import multiclass_cohen_kappa
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([
         ...   [0.16, 0.26, 0.58],

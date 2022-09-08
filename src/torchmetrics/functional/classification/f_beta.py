@@ -126,21 +126,21 @@ def binary_fbeta_score(
         is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of a scalar value per sample.
 
     Example (preds is int tensor):
-        >>> from torchmetrics.functional import binary_fbeta_score
+        >>> from torchmetrics.functional.classification import binary_fbeta_score
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0, 0, 1, 1, 0, 1])
         >>> binary_fbeta_score(preds, target, beta=2.0)
         tensor(0.6667)
 
     Example (preds is float tensor):
-        >>> from torchmetrics.functional import binary_fbeta_score
+        >>> from torchmetrics.functional.classification import binary_fbeta_score
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
         >>> binary_fbeta_score(preds, target, beta=2.0)
         tensor(0.6667)
 
     Example (multidim tensors):
-        >>> from torchmetrics.functional import binary_fbeta_score
+        >>> from torchmetrics.functional.classification import binary_fbeta_score
         >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
         >>> preds = torch.tensor(
         ...     [
@@ -241,7 +241,7 @@ def multiclass_fbeta_score(
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Example (preds is int tensor):
-        >>> from torchmetrics.functional import multiclass_fbeta_score
+        >>> from torchmetrics.functional.classification import multiclass_fbeta_score
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([2, 1, 0, 1])
         >>> multiclass_fbeta_score(preds, target, beta=2.0, num_classes=3)
@@ -250,7 +250,7 @@ def multiclass_fbeta_score(
         tensor([0.5556, 0.8333, 1.0000])
 
     Example (preds is float tensor):
-        >>> from torchmetrics.functional import multiclass_fbeta_score
+        >>> from torchmetrics.functional.classification import multiclass_fbeta_score
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([
         ...   [0.16, 0.26, 0.58],
@@ -264,7 +264,7 @@ def multiclass_fbeta_score(
         tensor([0.5556, 0.8333, 1.0000])
 
     Example (multidim tensors):
-        >>> from torchmetrics.functional import multiclass_fbeta_score
+        >>> from torchmetrics.functional.classification import multiclass_fbeta_score
         >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
         >>> preds = torch.tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
         >>> multiclass_fbeta_score(preds, target, beta=2.0, num_classes=3, multidim_average='samplewise')
@@ -362,7 +362,7 @@ def multilabel_fbeta_score(
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Example (preds is int tensor):
-        >>> from torchmetrics.functional import multilabel_fbeta_score
+        >>> from torchmetrics.functional.classification import multilabel_fbeta_score
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
         >>> multilabel_fbeta_score(preds, target, beta=2.0, num_labels=3)
@@ -371,7 +371,7 @@ def multilabel_fbeta_score(
         tensor([1.0000, 0.0000, 0.8333])
 
     Example (preds is float tensor):
-        >>> from torchmetrics.functional import multilabel_fbeta_score
+        >>> from torchmetrics.functional.classification import multilabel_fbeta_score
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> multilabel_fbeta_score(preds, target, beta=2.0, num_labels=3)
@@ -380,7 +380,7 @@ def multilabel_fbeta_score(
         tensor([1.0000, 0.0000, 0.8333])
 
     Example (multidim tensors):
-        >>> from torchmetrics.functional import multilabel_fbeta_score
+        >>> from torchmetrics.functional.classification import multilabel_fbeta_score
         >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
         >>> preds = torch.tensor(
         ...     [
@@ -448,21 +448,21 @@ def binary_f1_score(
         is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of a scalar value per sample.
 
     Example (preds is int tensor):
-        >>> from torchmetrics.functional import binary_f1_score
+        >>> from torchmetrics.functional.classification import binary_f1_score
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0, 0, 1, 1, 0, 1])
         >>> binary_f1_score(preds, target)
         tensor(0.6667)
 
     Example (preds is float tensor):
-        >>> from torchmetrics.functional import binary_f1_score
+        >>> from torchmetrics.functional.classification import binary_f1_score
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
         >>> binary_f1_score(preds, target)
         tensor(0.6667)
 
     Example (multidim tensors):
-        >>> from torchmetrics.functional import binary_f1_score
+        >>> from torchmetrics.functional.classification import binary_f1_score
         >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
         >>> preds = torch.tensor(
         ...     [
@@ -550,7 +550,7 @@ def multiclass_f1_score(
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Example (preds is int tensor):
-        >>> from torchmetrics.functional import multiclass_f1_score
+        >>> from torchmetrics.functional.classification import multiclass_f1_score
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([2, 1, 0, 1])
         >>> multiclass_f1_score(preds, target, num_classes=3)
@@ -559,7 +559,7 @@ def multiclass_f1_score(
         tensor([0.6667, 0.6667, 1.0000])
 
     Example (preds is float tensor):
-        >>> from torchmetrics.functional import multiclass_f1_score
+        >>> from torchmetrics.functional.classification import multiclass_f1_score
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([
         ...   [0.16, 0.26, 0.58],
@@ -573,7 +573,7 @@ def multiclass_f1_score(
         tensor([0.6667, 0.6667, 1.0000])
 
     Example (multidim tensors):
-        >>> from torchmetrics.functional import multiclass_f1_score
+        >>> from torchmetrics.functional.classification import multiclass_f1_score
         >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
         >>> preds = torch.tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
         >>> multiclass_f1_score(preds, target, num_classes=3, multidim_average='samplewise')
@@ -660,7 +660,7 @@ def multilabel_f1_score(
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Example (preds is int tensor):
-        >>> from torchmetrics.functional import multilabel_f1_score
+        >>> from torchmetrics.functional.classification import multilabel_f1_score
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
         >>> multilabel_f1_score(preds, target, num_labels=3)
@@ -669,7 +669,7 @@ def multilabel_f1_score(
         tensor([1.0000, 0.0000, 0.6667])
 
     Example (preds is float tensor):
-        >>> from torchmetrics.functional import multilabel_f1_score
+        >>> from torchmetrics.functional.classification import multilabel_f1_score
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> multilabel_f1_score(preds, target, num_labels=3)
@@ -678,7 +678,7 @@ def multilabel_f1_score(
         tensor([1.0000, 0.0000, 0.6667])
 
     Example (multidim tensors):
-        >>> from torchmetrics.functional import multilabel_f1_score
+        >>> from torchmetrics.functional.classification import multilabel_f1_score
         >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
         >>> preds = torch.tensor(
         ...     [
