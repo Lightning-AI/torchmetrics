@@ -606,18 +606,17 @@ class StatScores(Metric):
         if task is not None:
             if task == "binary":
                 return BinaryStatScores(threshold, multidim_average, ignore_index, validate_args, **kwargs)
-            elif task == "multiclass":
+            if task == "multiclass":
                 return MulticlassStatScores(
                     num_classes, average, top_k, multidim_average, ignore_index, validate_args, **kwargs
                 )
-            elif task == "multilabel":
+            if task == "multilabel":
                 return MultilabelStatScores(
                     num_labels, threshold, average, multidim_average, ignore_index, validate_args, **kwargs
                 )
-            else:
-                raise ValueError(
-                    f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-                )
+            raise ValueError(
+                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+            )
         return super().__new__(cls)
 
     def __init__(
@@ -640,19 +639,17 @@ class StatScores(Metric):
         if self.task is not None:
             if task == "binary":
                 BinaryStatScores.__init__(self, threshold, multidim_average, ignore_index, validate_args, **kwargs)
-            elif task == "multiclass":
+            if task == "multiclass":
                 MulticlassStatScores.__init__(
                     self, num_classes, top_k, average, multidim_average, ignore_index, validate_args, **kwargs
                 )
-            elif task == "multilabel":
+            if task == "multilabel":
                 MultilabelStatScores.__init__(
                     self, num_labels, threshold, average, multidim_average, ignore_index, validate_args, **kwargs
                 )
-            else:
-                raise ValueError(
-                    f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-                )
-            return
+            raise ValueError(
+                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+            )
         else:
             rank_zero_warn(
                 "From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification"

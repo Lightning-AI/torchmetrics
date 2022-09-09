@@ -378,18 +378,17 @@ class HammingDistance(Metric):
         if task is not None:
             if task == "binary":
                 return BinaryHammingDistance(threshold, multidim_average, ignore_index, validate_args, **kwargs)
-            elif task == "multiclass":
+            if task == "multiclass":
                 return MulticlassHammingDistance(
                     num_classes, average, top_k, multidim_average, ignore_index, validate_args, **kwargs
                 )
-            elif task == "multilabel":
+            if task == "multilabel":
                 return MultilabelHammingDistance(
                     num_labels, threshold, average, multidim_average, ignore_index, validate_args, **kwargs
                 )
-            else:
-                raise ValueError(
-                    f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-                )
+            raise ValueError(
+                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+            )
         return super().__new__(cls)
 
     def __init__(

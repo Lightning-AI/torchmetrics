@@ -407,18 +407,17 @@ class Specificity(StatScores):
         if task is not None:
             if task == "binary":
                 return BinarySpecificity(threshold, multidim_average, ignore_index, validate_args, **kwargs)
-            elif task == "multiclass":
+            if task == "multiclass":
                 return MulticlassSpecificity(
                     num_classes, average, top_k, multidim_average, ignore_index, validate_args, **kwargs
                 )
-            elif task == "multilabel":
+            if task == "multilabel":
                 return MultilabelSpecificity(
                     num_labels, threshold, average, multidim_average, ignore_index, validate_args, **kwargs
                 )
-            else:
-                raise ValueError(
-                    f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-                )
+            raise ValueError(
+                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+            )
         return super().__new__(cls)
 
     def __init__(

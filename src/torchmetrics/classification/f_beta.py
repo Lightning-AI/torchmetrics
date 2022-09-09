@@ -836,18 +836,17 @@ class FBetaScore(StatScores):
         if task is not None:
             if task == "binary":
                 return BinaryFBetaScore(beta, threshold, multidim_average, ignore_index, validate_args, **kwargs)
-            elif task == "multiclass":
+            if task == "multiclass":
                 return MulticlassFBetaScore(
                     beta, num_classes, average, top_k, multidim_average, ignore_index, validate_args, **kwargs
                 )
-            elif task == "multilabel":
+            if task == "multilabel":
                 return MultilabelFBetaScore(
                     beta, num_labels, threshold, average, multidim_average, ignore_index, validate_args, **kwargs
                 )
-            else:
-                raise ValueError(
-                    f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-                )
+            raise ValueError(
+                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+            )
         return super().__new__(cls)
 
     def __init__(
@@ -999,18 +998,17 @@ class F1Score(FBetaScore):
         if task is not None:
             if task == "binary":
                 return BinaryF1Score(threshold, multidim_average, ignore_index, validate_args, **kwargs)
-            elif task == "multiclass":
+            if task == "multiclass":
                 return MulticlassF1Score(
                     num_classes, average, top_k, multidim_average, ignore_index, validate_args, **kwargs
                 )
-            elif task == "multilabel":
+            if task == "multilabel":
                 return MultilabelF1Score(
                     num_labels, threshold, average, multidim_average, ignore_index, validate_args, **kwargs
                 )
-            else:
-                raise ValueError(
-                    f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-                )
+            raise ValueError(
+                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+            )
         return super().__new__(cls)
 
     def __init__(

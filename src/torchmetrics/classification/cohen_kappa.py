@@ -249,12 +249,11 @@ class CohenKappa(Metric):
         if task is not None:
             if task == "binary":
                 return BinaryCohenKappa(threshold, weights, ignore_index, validate_args, **kwargs)
-            elif task == "multiclass":
+            if task == "multiclass":
                 return MulticlassCohenKappa(num_classes, weights, ignore_index, validate_args, **kwargs)
-            else:
-                raise ValueError(
-                    f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-                )
+            raise ValueError(
+                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+            )
         return super().__new__(cls)
 
     def __init__(
