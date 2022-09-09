@@ -407,12 +407,13 @@ class ROC(Metric):
         **kwargs: Any,
     ) -> None:
         if task is not None:
+            kwargs.update(dict(thresholds=thresholds, ignore_index=ignore_index, validate_args=validate_args))
             if task == "binary":
-                return BinaryROC(thresholds, ignore_index, validate_args, **kwargs)
+                return BinaryROC(**kwargs)
             if task == "multiclass":
-                return MulticlassROC(num_classes, thresholds, ignore_index, validate_args, **kwargs)
+                return MulticlassROC(num_classes, **kwargs)
             if task == "multilabel":
-                return MultilabelROC(num_labels, thresholds, ignore_index, validate_args, **kwargs)
+                return MultilabelROC(num_labels, **kwargs)
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
             )

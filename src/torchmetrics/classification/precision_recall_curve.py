@@ -483,12 +483,13 @@ class PrecisionRecallCurve(Metric):
         **kwargs: Any,
     ) -> None:
         if task is not None:
+            kwargs.update(dict(thresholds=thresholds, ignore_index=ignore_index, validate_args=validate_args))
             if task == "binary":
-                return BinaryPrecisionRecallCurve(thresholds, ignore_index, validate_args, **kwargs)
+                return BinaryPrecisionRecallCurve( **kwargs)
             if task == "multiclass":
-                return MulticlassPrecisionRecallCurve(num_classes, thresholds, ignore_index, validate_args, **kwargs)
+                return MulticlassPrecisionRecallCurve(num_classes, **kwargs)
             if task == "multilabel":
-                return MultilabelPrecisionRecallCurve(num_labels, thresholds, ignore_index, validate_args, **kwargs)
+                return MultilabelPrecisionRecallCurve(num_labels, **kwargs)
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
             )

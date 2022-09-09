@@ -331,12 +331,13 @@ class JaccardIndex(ConfusionMatrix):
         **kwargs: Any,
     ) -> None:
         if task is not None:
+            kwargs.update(dict(ignore_index=ignore_index, validate_args=validate_args))
             if task == "binary":
-                return BinaryJaccardIndex(threshold, ignore_index, validate_args, **kwargs)
+                return BinaryJaccardIndex(threshold, **kwargs)
             if task == "multiclass":
-                return MulticlassJaccardIndex(num_classes, average, ignore_index, validate_args, **kwargs)
+                return MulticlassJaccardIndex(num_classes, average, **kwargs)
             if task == "multilabel":
-                return MultilabelJaccardIndex(num_labels, threshold, average, ignore_index, validate_args, **kwargs)
+                return MultilabelJaccardIndex(num_labels, threshold, average, **kwargs)
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
             )

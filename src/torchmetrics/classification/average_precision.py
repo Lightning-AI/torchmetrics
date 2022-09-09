@@ -397,15 +397,16 @@ class AveragePrecision(Metric):
         **kwargs: Any,
     ) -> None:
         if task is not None:
+            kwargs.update(dict(thresholds=thresholds, ignore_index=ignore_index, validate_args=validate_args))
             if task == "binary":
-                return BinaryAveragePrecision(thresholds, ignore_index, validate_args, **kwargs)
+                return BinaryAveragePrecision(**kwargs)
             if task == "multiclass":
                 return MulticlassAveragePrecision(
-                    num_classes, average, thresholds, ignore_index, validate_args, **kwargs
+                    num_classes, average, **kwargs
                 )
             if task == "multilabel":
                 return MultilabelAveragePrecision(
-                    num_labels, average, thresholds, ignore_index, validate_args, **kwargs
+                    num_labels, average, **kwargs
                 )
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"

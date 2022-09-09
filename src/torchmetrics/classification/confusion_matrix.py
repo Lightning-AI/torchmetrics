@@ -403,13 +403,14 @@ class ConfusionMatrix(Metric):
         **kwargs: Any,
     ) -> None:
         if task is not None:
+            kwargs.update(dict(normalize=normalize, ignore_index=ignore_index, validate_args=validate_args))
             if task == "binary":
-                return BinaryConfusionMatrix(threshold, normalize, ignore_index, validate_args, **kwargs)
+                return BinaryConfusionMatrix(threshold, **kwargs)
             if task == "multiclass":
-                return MulticlassConfusionMatrix(num_classes, normalize, ignore_index, validate_args, **kwargs)
+                return MulticlassConfusionMatrix(num_classes, **kwargs)
             if task == "multilabel":
                 return MultilabelConfusionMatrix(
-                    num_labels, threshold, normalize, ignore_index, validate_args, **kwargs
+                    num_labels, threshold, **kwargs
                 )
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"

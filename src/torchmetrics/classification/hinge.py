@@ -292,10 +292,11 @@ class HingeLoss(Metric):
         **kwargs: Any,
     ) -> None:
         if task is not None:
+            kwargs.update(dict(ignore_index=ignore_index, validate_args=validate_args))
             if task == "binary":
-                return BinaryHingeLoss(squared, ignore_index, validate_args, **kwargs)
+                return BinaryHingeLoss(squared, **kwargs)
             if task == "multiclass":
-                return MulticlassHingeLoss(num_classes, squared, multiclass_mode, ignore_index, validate_args, **kwargs)
+                return MulticlassHingeLoss(num_classes, squared, multiclass_mode, **kwargs)
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
             )

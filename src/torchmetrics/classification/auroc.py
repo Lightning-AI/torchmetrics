@@ -418,12 +418,13 @@ class AUROC(Metric):
         **kwargs: Any,
     ) -> None:
         if task is not None:
+            kwargs.update(dict(thresholds=thresholds, ignore_index=ignore_index, validate_args=validate_args))
             if task == "binary":
-                return BinaryAUROC(max_fpr, thresholds, ignore_index, validate_args, **kwargs)
+                return BinaryAUROC(max_fpr, **kwargs)
             if task == "multiclass":
-                return MulticlassAUROC(num_classes, average, thresholds, ignore_index, validate_args, **kwargs)
+                return MulticlassAUROC(num_classes, average, **kwargs)
             if task == "multilabel":
-                return MultilabelAUROC(num_labels, average, thresholds, ignore_index, validate_args, **kwargs)
+                return MultilabelAUROC(num_labels, average, **kwargs)
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
             )

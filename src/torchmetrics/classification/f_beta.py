@@ -834,15 +834,16 @@ class FBetaScore(StatScores):
         **kwargs: Any,
     ) -> None:
         if task is not None:
+            kwargs.update(dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args))
             if task == "binary":
-                return BinaryFBetaScore(beta, threshold, multidim_average, ignore_index, validate_args, **kwargs)
+                return BinaryFBetaScore(beta, threshold, **kwargs)
             if task == "multiclass":
                 return MulticlassFBetaScore(
-                    beta, num_classes, average, top_k, multidim_average, ignore_index, validate_args, **kwargs
+                    beta, num_classes, average, top_k, **kwargs
                 )
             if task == "multilabel":
                 return MultilabelFBetaScore(
-                    beta, num_labels, threshold, average, multidim_average, ignore_index, validate_args, **kwargs
+                    beta, num_labels, threshold, average, **kwargs
                 )
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
@@ -996,15 +997,16 @@ class F1Score(FBetaScore):
         **kwargs: Any,
     ) -> None:
         if task is not None:
+            kwargs.update(dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args))
             if task == "binary":
-                return BinaryF1Score(threshold, multidim_average, ignore_index, validate_args, **kwargs)
+                return BinaryF1Score(threshold, **kwargs)
             if task == "multiclass":
                 return MulticlassF1Score(
-                    num_classes, average, top_k, multidim_average, ignore_index, validate_args, **kwargs
+                    num_classes, average, top_k, **kwargs
                 )
             if task == "multilabel":
                 return MultilabelF1Score(
-                    num_labels, threshold, average, multidim_average, ignore_index, validate_args, **kwargs
+                    num_labels, threshold, average, **kwargs
                 )
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"

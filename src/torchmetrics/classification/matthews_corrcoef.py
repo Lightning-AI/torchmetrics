@@ -282,12 +282,13 @@ class MatthewsCorrCoef(Metric):
         **kwargs: Any,
     ) -> None:
         if task is not None:
+            kwargs.update(dict(ignore_index=ignore_index, validate_args=validate_args))
             if task == "binary":
-                return BinaryMatthewsCorrCoef(threshold, ignore_index, validate_args, **kwargs)
+                return BinaryMatthewsCorrCoef(threshold, **kwargs)
             if task == "multiclass":
-                return MulticlassMatthewsCorrCoef(num_classes, ignore_index, validate_args, **kwargs)
+                return MulticlassMatthewsCorrCoef(num_classes, **kwargs)
             if task == "multilabel":
-                return MultilabelMatthewsCorrCoef(num_labels, threshold, ignore_index, validate_args, **kwargs)
+                return MultilabelMatthewsCorrCoef(num_labels, threshold, **kwargs)
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
             )
