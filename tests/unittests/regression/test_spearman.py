@@ -120,12 +120,16 @@ class TestSpearmanCorrCoef(MetricTester):
     @pytest.mark.xfail(reason="Spearman metric does not support cpu + half precision")
     def test_spearman_corrcoef_half_cpu(self, preds, target):
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
-        self.run_precision_test_cpu(preds, target, partial(SpearmanCorrCoef, num_outputs=num_outputs), spearman_corrcoef)
+        self.run_precision_test_cpu(
+            preds, target, partial(SpearmanCorrCoef, num_outputs=num_outputs), spearman_corrcoef
+        )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_spearman_corrcoef_half_gpu(self, preds, target):
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
-        self.run_precision_test_gpu(preds, target, partial(SpearmanCorrCoef, num_outputs=num_outputs), spearman_corrcoef)
+        self.run_precision_test_gpu(
+            preds, target, partial(SpearmanCorrCoef, num_outputs=num_outputs), spearman_corrcoef
+        )
 
 
 def test_error_on_different_shape():
