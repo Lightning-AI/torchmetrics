@@ -238,7 +238,7 @@ class CohenKappa(Metric):
 
     def __new__(
         cls,
-        num_classes: int,
+        num_classes: Optional[int] = None,
         weights: Optional[str] = None,
         threshold: float = 0.5,
         task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
