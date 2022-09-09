@@ -129,7 +129,7 @@ class BinnedPrecisionRecallCurve(Metric):
     ) -> None:
         rank_zero_warn(
             "Metric `BinnedPrecisionRecallCurve` has been deprecated in v0.10 and will be completly removed in v0.11."
-            " Instead use the refactored version of `PrecisionRecallCurve` by specifying the `thresholds` argument.",
+            " Instead, use the refactored version of `PrecisionRecallCurve` by specifying the `thresholds` argument.",
             DeprecationWarning,
         )
         super().__init__(**kwargs)
