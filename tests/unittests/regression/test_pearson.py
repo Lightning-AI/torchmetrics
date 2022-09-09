@@ -66,6 +66,8 @@ def _sk_pearsonr(preds, target):
     ],
 )
 class TestPearsonCorrcoef(MetricTester):
+    atol = 1e-3
+
     @pytest.mark.parametrize("compute_on_cpu", [True, False])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_pearson_corrcoef(self, preds, target, compute_on_cpu, ddp):
