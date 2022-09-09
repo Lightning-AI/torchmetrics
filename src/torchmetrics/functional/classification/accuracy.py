@@ -770,20 +770,20 @@ def accuracy(
         tensor(0.6667)
     """
     if task is not None:
+        kwargs = dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
         if task == "binary":
-            return binary_accuracy(preds, target, threshold, multidim_average, ignore_index, validate_args)
-        elif task == "multiclass":
+            return binary_accuracy(preds, target, threshold, **kwargs)
+        if task == "multiclass":
             return multiclass_accuracy(
-                preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args
+                preds, target, num_classes, average, top_k, **kwargs
             )
-        elif task == "multilabel":
+        if task == "multilabel":
             return multilabel_accuracy(
-                preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
+                preds, target, num_labels, threshold, average, **kwargs
             )
-        else:
-            raise ValueError(
-                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-            )
+        raise ValueError(
+            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+        )
     else:
         rank_zero_warn(
             "From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification"

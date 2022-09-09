@@ -335,14 +335,14 @@ def cohen_kappa(
         tensor(0.5000)
     """
     if task is not None:
+        kwargs = dict(weights=weights, ignore_index=ignore_index, validate_args=validate_args)
         if task == "binary":
-            return binary_cohen_kappa(preds, target, threshold, weights, ignore_index, validate_args)
-        elif task == "multiclass":
-            return multiclass_cohen_kappa(preds, target, num_classes, weights, ignore_index, validate_args)
-        else:
-            raise ValueError(
-                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-            )
+            return binary_cohen_kappa(preds, target, threshold, **kwargs)
+        if task == "multiclass":
+            return multiclass_cohen_kappa(preds, target, num_classes, **kwargs)
+        raise ValueError(
+            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+        )
     else:
         rank_zero_warn(
             "From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification"

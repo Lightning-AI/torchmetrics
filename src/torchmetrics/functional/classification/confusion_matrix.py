@@ -771,18 +771,18 @@ def confusion_matrix(
 
     """
     if task is not None:
+        kwargs = dict(normalize=normalize, ignore_index=ignore_index, validate_args=validate_args)
         if task == "binary":
-            return binary_confusion_matrix(preds, target, threshold, normalize, ignore_index, validate_args)
-        elif task == "multiclass":
-            return multiclass_confusion_matrix(preds, target, num_classes, normalize, ignore_index, validate_args)
-        elif task == "multilabel":
+            return binary_confusion_matrix(preds, target, threshold, **kwargs)
+        if task == "multiclass":
+            return multiclass_confusion_matrix(preds, target, num_classes, **kwargs)
+        if task == "multilabel":
             return multilabel_confusion_matrix(
-                preds, target, num_labels, threshold, normalize, ignore_index, validate_args
+                preds, target, num_labels, threshold, **kwargs
             )
-        else:
-            raise ValueError(
-                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-            )
+        raise ValueError(
+            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+        )
     else:
         rank_zero_warn(
             "From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification"

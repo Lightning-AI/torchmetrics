@@ -454,16 +454,16 @@ def jaccard_index(
         tensor(0.9660)
     """
     if task is not None:
+        kwargs = dict(ignore_index=ignore_index, validate_args=validate_args)
         if task == "binary":
-            return binary_jaccard_index(preds, target, threshold, ignore_index, validate_args)
-        elif task == "multiclass":
-            return multiclass_jaccard_index(preds, target, num_classes, average, ignore_index, validate_args)
-        elif task == "multilabel":
-            return multilabel_jaccard_index(preds, target, num_labels, threshold, average, ignore_index, validate_args)
-        else:
-            raise ValueError(
-                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-            )
+            return binary_jaccard_index(preds, target, threshold, **kwargs)
+        if task == "multiclass":
+            return multiclass_jaccard_index(preds, target, num_classes, average, **kwargs)
+        if task == "multilabel":
+            return multilabel_jaccard_index(preds, target, num_labels, threshold, average, **kwargs)
+        raise ValueError(
+            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+        )
     else:
         rank_zero_warn(
             "From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification"

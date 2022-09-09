@@ -441,12 +441,12 @@ def calibration_error(
             Defaults to "l1", or Expected Calibration Error.
     """
     if task is not None:
+        kwargs = dict(norm=norm, ignore_index=ignore_index, validate_args=validate_args)
         if task == "binary":
-            return binary_calibration_error(preds, target, n_bins, norm, ignore_index, validate_args)
-        elif task == "multiclass":
-            return multiclass_calibration_error(preds, target, num_classes, n_bins, norm, ignore_index, validate_args)
-        else:
-            raise ValueError(f"Expected argument `task` to either be `'binary'`, `'multiclass'` but got {task}")
+            return binary_calibration_error(preds, target, n_bins, **kwargs)
+        if task == "multiclass":
+            return multiclass_calibration_error(preds, target, num_classes, n_bins, **kwargs)
+        raise ValueError(f"Expected argument `task` to either be `'binary'`, `'multiclass'` but got {task}")
     else:
         rank_zero_warn(
             "From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification"

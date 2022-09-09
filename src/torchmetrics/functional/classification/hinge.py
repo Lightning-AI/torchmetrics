@@ -464,16 +464,16 @@ def hinge_loss(
         tensor([2.2333, 1.5000, 1.2333])
     """
     if task is not None:
+        kwargs = dict(ignore_index=ignore_index, validate_args=validate_args)
         if task == "binary":
-            return binary_hinge_loss(preds, target, squared, ignore_index, validate_args)
-        elif task == "multiclass":
+            return binary_hinge_loss(preds, target, squared, **kwargs)
+        if task == "multiclass":
             return multiclass_hinge_loss(
-                preds, target, num_classes, squared, multiclass_mode, ignore_index, validate_args
+                preds, target, num_classes, squared, multiclass_mode, **kwargs
             )
-        else:
-            raise ValueError(
-                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-            )
+        raise ValueError(
+            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+        )
     else:
         rank_zero_warn(
             "From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification"

@@ -315,16 +315,16 @@ def matthews_corrcoef(
 
     """
     if task is not None:
+        kwargs = dict(ignore_index=ignore_index, validate_args=validate_args)
         if task == "binary":
-            return binary_matthews_corrcoef(preds, target, threshold, ignore_index, validate_args)
-        elif task == "multiclass":
-            return multiclass_matthews_corrcoef(preds, target, num_classes, ignore_index, validate_args)
-        elif task == "multilabel":
-            return multilabel_matthews_corrcoef(preds, target, num_labels, threshold, ignore_index, validate_args)
-        else:
-            raise ValueError(
-                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-            )
+            return binary_matthews_corrcoef(preds, target, threshold, **kwargs)
+        if task == "multiclass":
+            return multiclass_matthews_corrcoef(preds, target, num_classes, **kwargs)
+        if task == "multilabel":
+            return multilabel_matthews_corrcoef(preds, target, num_labels, threshold, **kwargs)
+        raise ValueError(
+            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+        )
     else:
         rank_zero_warn(
             "From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification"

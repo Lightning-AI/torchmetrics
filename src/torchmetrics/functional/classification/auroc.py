@@ -686,16 +686,16 @@ def auroc(
         tensor(0.7778)
     """
     if task is not None:
+        kwargs = dict(thresholds=thresholds, ignore_index=ignore_index, validate_args=validate_args)
         if task == "binary":
-            return binary_auroc(preds, target, max_fpr, thresholds, ignore_index, validate_args)
-        elif task == "multiclass":
-            return multiclass_auroc(preds, target, num_classes, average, thresholds, ignore_index, validate_args)
-        elif task == "multilabel":
-            return multilabel_auroc(preds, target, num_labels, average, thresholds, ignore_index, validate_args)
-        else:
-            raise ValueError(
-                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-            )
+            return binary_auroc(preds, target, max_fpr, **kwargs)
+        if task == "multiclass":
+            return multiclass_auroc(preds, target, num_classes, average, **kwargs)
+        if task == "multilabel":
+            return multilabel_auroc(preds, target, num_labels, average, **kwargs)
+        raise ValueError(
+            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+        )
     else:
         rank_zero_warn(
             "From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification"
