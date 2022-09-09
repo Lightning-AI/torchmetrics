@@ -1057,9 +1057,7 @@ def precision_recall_curve(
         if task == "binary":
             return binary_precision_recall_curve(preds, target, **kwargs)
         if task == "multiclass":
-            return multiclass_precision_recall_curve(
-                preds, target, num_classes, **kwargs
-            )
+            return multiclass_precision_recall_curve(preds, target, num_classes, **kwargs)
         if task == "multilabel":
             return multilabel_precision_recall_curve(preds, target, num_labels, **kwargs)
         raise ValueError(

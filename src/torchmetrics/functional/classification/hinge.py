@@ -468,9 +468,7 @@ def hinge_loss(
         if task == "binary":
             return binary_hinge_loss(preds, target, squared, **kwargs)
         if task == "multiclass":
-            return multiclass_hinge_loss(
-                preds, target, num_classes, squared, multiclass_mode, **kwargs
-            )
+            return multiclass_hinge_loss(preds, target, num_classes, squared, multiclass_mode, **kwargs)
         raise ValueError(
             f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
         )

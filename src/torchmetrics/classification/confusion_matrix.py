@@ -409,9 +409,7 @@ class ConfusionMatrix(Metric):
             if task == "multiclass":
                 return MulticlassConfusionMatrix(num_classes, **kwargs)
             if task == "multilabel":
-                return MultilabelConfusionMatrix(
-                    num_labels, threshold, **kwargs
-                )
+                return MultilabelConfusionMatrix(num_labels, threshold, **kwargs)
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
             )

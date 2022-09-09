@@ -474,17 +474,15 @@ class Accuracy(StatScores):
         **kwargs: Any,
     ) -> None:
         if task is not None:
-            kwargs.update(dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args))
+            kwargs.update(
+                dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
+            )
             if task == "binary":
                 return BinaryAccuracy(threshold, **kwargs)
             if task == "multiclass":
-                return MulticlassAccuracy(
-                    num_classes, average, top_k, **kwargs
-                )
+                return MulticlassAccuracy(num_classes, average, top_k, **kwargs)
             if task == "multilabel":
-                return MultilabelAccuracy(
-                    num_labels, threshold, average, **kwargs
-                )
+                return MultilabelAccuracy(num_labels, threshold, average, **kwargs)
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
             )

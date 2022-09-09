@@ -777,9 +777,7 @@ def confusion_matrix(
         if task == "multiclass":
             return multiclass_confusion_matrix(preds, target, num_classes, **kwargs)
         if task == "multilabel":
-            return multilabel_confusion_matrix(
-                preds, target, num_labels, threshold, **kwargs
-            )
+            return multilabel_confusion_matrix(preds, target, num_labels, threshold, **kwargs)
         raise ValueError(
             f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
         )

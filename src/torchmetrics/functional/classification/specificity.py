@@ -533,13 +533,9 @@ def specificity(
         if task == "binary":
             return binary_specificity(preds, target, threshold, **kwargs)
         if task == "multiclass":
-            return multiclass_specificity(
-                preds, target, num_classes, average, top_k, **kwargs
-            )
+            return multiclass_specificity(preds, target, num_classes, average, top_k, **kwargs)
         if task == "multilabel":
-            return multilabel_specificity(
-                preds, target, num_labels, threshold, average, **kwargs
-            )
+            return multilabel_specificity(preds, target, num_labels, threshold, average, **kwargs)
         raise ValueError(
             f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
         )

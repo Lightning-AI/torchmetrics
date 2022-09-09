@@ -401,13 +401,9 @@ class AveragePrecision(Metric):
             if task == "binary":
                 return BinaryAveragePrecision(**kwargs)
             if task == "multiclass":
-                return MulticlassAveragePrecision(
-                    num_classes, average, **kwargs
-                )
+                return MulticlassAveragePrecision(num_classes, average, **kwargs)
             if task == "multilabel":
-                return MultilabelAveragePrecision(
-                    num_labels, average, **kwargs
-                )
+                return MultilabelAveragePrecision(num_labels, average, **kwargs)
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
             )

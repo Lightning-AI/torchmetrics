@@ -625,9 +625,7 @@ def average_precision(
         if task == "binary":
             return binary_average_precision(preds, target, **kwargs)
         if task == "multiclass":
-            return multiclass_average_precision(
-                preds, target, num_classes, average, **kwargs
-            )
+            return multiclass_average_precision(preds, target, num_classes, average, **kwargs)
         if task == "multilabel":
             return multilabel_average_precision(preds, target, num_labels, **kwargs)
         raise ValueError(

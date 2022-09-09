@@ -604,17 +604,15 @@ class StatScores(Metric):
         **kwargs: Any,
     ) -> None:
         if task is not None:
-            kwargs.update(dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args))
+            kwargs.update(
+                dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
+            )
             if task == "binary":
                 return BinaryStatScores(threshold, **kwargs)
             if task == "multiclass":
-                return MulticlassStatScores(
-                    num_classes, average, top_k, **kwargs
-                )
+                return MulticlassStatScores(num_classes, average, top_k, **kwargs)
             if task == "multilabel":
-                return MultilabelStatScores(
-                    num_labels, threshold, average, **kwargs
-                )
+                return MultilabelStatScores(num_labels, threshold, average, **kwargs)
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
             )
@@ -638,17 +636,15 @@ class StatScores(Metric):
     ) -> None:
         self.task = task
         if self.task is not None:
-            kwargs.update(dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args))
+            kwargs.update(
+                dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
+            )
             if task == "binary":
                 BinaryStatScores.__init__(self, threshold, **kwargs)
             if task == "multiclass":
-                MulticlassStatScores.__init__(
-                    self, num_classes, top_k, average, **kwargs
-                )
+                MulticlassStatScores.__init__(self, num_classes, top_k, average, **kwargs)
             if task == "multilabel":
-                MultilabelStatScores.__init__(
-                    self, num_labels, threshold, average, **kwargs
-                )
+                MultilabelStatScores.__init__(self, num_labels, threshold, average, **kwargs)
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
             )

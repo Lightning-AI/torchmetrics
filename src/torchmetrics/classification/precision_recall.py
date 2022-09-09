@@ -715,17 +715,15 @@ class Precision(StatScores):
         **kwargs: Any,
     ) -> None:
         if task is not None:
-            kwargs.update(dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args))
+            kwargs.update(
+                dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
+            )
             if task == "binary":
                 return BinaryPrecision(threshold, **kwargs)
             if task == "multiclass":
-                return MulticlassPrecision(
-                    num_classes, top_k, average, **kwargs
-                )
+                return MulticlassPrecision(num_classes, top_k, average, **kwargs)
             if task == "multilabel":
-                return MultilabelPrecision(
-                    num_labels, threshold, average, **kwargs
-                )
+                return MultilabelPrecision(num_labels, threshold, average, **kwargs)
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
             )
@@ -886,17 +884,15 @@ class Recall(StatScores):
         **kwargs: Any,
     ) -> None:
         if task is not None:
-            kwargs.update(dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args))
+            kwargs.update(
+                dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
+            )
             if task == "binary":
                 return BinaryRecall(threshold, **kwargs)
             if task == "multiclass":
-                return MulticlassRecall(
-                    num_classes, top_k, average, **kwargs
-                )
+                return MulticlassRecall(num_classes, top_k, average, **kwargs)
             if task == "multilabel":
-                return MultilabelRecall(
-                    num_labels, threshold, average, **kwargs
-                )
+                return MultilabelRecall(num_labels, threshold, average, **kwargs)
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
             )
