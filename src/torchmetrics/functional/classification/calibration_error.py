@@ -393,7 +393,7 @@ def calibration_error(
     preds: Tensor,
     target: Tensor,
     n_bins: int = 15,
-    norm: str = "l1",
+    norm: Literal["l1", "l2", "max"] = "l1",
     task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
     num_classes: Optional[int] = None,
     ignore_index: Optional[int] = None,
@@ -441,11 +441,12 @@ def calibration_error(
             Defaults to "l1", or Expected Calibration Error.
     """
     if task is not None:
-        kwargs = dict(norm=norm, ignore_index=ignore_index, validate_args=validate_args)
+        assert norm is not None
         if task == "binary":
-            return binary_calibration_error(preds, target, n_bins, **kwargs)
+            return binary_calibration_error(preds, target, n_bins, norm, ignore_index, validate_args)
         if task == "multiclass":
-            return multiclass_calibration_error(preds, target, num_classes, n_bins, **kwargs)
+            assert isinstance(num_classes, int)
+            return multiclass_calibration_error(preds, target, num_classes, n_bins, norm, ignore_index, validate_args)
         raise ValueError(f"Expected argument `task` to either be `'binary'`, `'multiclass'` but got {task}")
     else:
         rank_zero_warn(
