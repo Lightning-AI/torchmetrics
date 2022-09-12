@@ -17,6 +17,7 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics import Metric
 from torchmetrics.classification.stat_scores import (
     BinaryStatScores,
     MulticlassStatScores,
@@ -713,7 +714,7 @@ class Precision(StatScores):
         multidim_average: Optional[Literal["global", "samplewise"]] = "global",
         validate_args: bool = True,
         **kwargs: Any,
-    ) -> None:
+    ) -> Metric:
         if task is not None:
             kwargs.update(
                 dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
@@ -882,7 +883,7 @@ class Recall(StatScores):
         multidim_average: Optional[Literal["global", "samplewise"]] = "global",
         validate_args: bool = True,
         **kwargs: Any,
-    ) -> None:
+    ) -> Metric:
         if task is not None:
             kwargs.update(
                 dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)

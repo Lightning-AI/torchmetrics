@@ -11,12 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Union
+from typing import Any, Optional
 
 import torch
 from torch import Tensor, tensor
 from typing_extensions import Literal
 
+from torchmetrics import Metric
 from torchmetrics.functional.classification.accuracy import (
     _accuracy_compute,
     _accuracy_reduce,
@@ -472,7 +473,7 @@ class Accuracy(StatScores):
         multidim_average: Optional[Literal["global", "samplewise"]] = "global",
         validate_args: bool = True,
         **kwargs: Any,
-    ) -> Union[None, BinaryAccuracy, MulticlassAccuracy, MultilabelAccuracy]:
+    ) -> Metric:
         if task is not None:
             kwargs.update(
                 dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
