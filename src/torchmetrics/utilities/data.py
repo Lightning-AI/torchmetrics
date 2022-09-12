@@ -16,7 +16,12 @@ from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Union
 import torch
 from torch import Tensor, tensor
 
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6, _TORCH_GREATER_EQUAL_1_7, _TORCH_GREATER_EQUAL_1_8
+from torchmetrics.utilities.imports import (
+    _TORCH_GREATER_EQUAL_1_6,
+    _TORCH_GREATER_EQUAL_1_7,
+    _TORCH_GREATER_EQUAL_1_8,
+    _TORCH_GREATER_EQUAL_1_12,
+)
 
 if _TORCH_GREATER_EQUAL_1_8:
     deterministic = torch.are_deterministic_algorithms_enabled
@@ -242,7 +247,10 @@ def _squeeze_if_scalar(data: Any) -> Any:
 
 
 def _bincount(x: Tensor, minlength: Optional[int] = None) -> Tensor:
-    """``torch.bincount`` currently does not support deterministic mode on GPU.
+    """PyTorch currently does not support``torch.bincount`` for:
+
+        - deterministic mode on GPU.
+        - MPS devices
 
     This implementation fallback to a for-loop counting occurrences in that case.
 
@@ -253,7 +261,7 @@ def _bincount(x: Tensor, minlength: Optional[int] = None) -> Tensor:
     Returns:
         Number of occurrences for each unique element in x
     """
-    if x.is_cuda and deterministic():
+    if x.is_cuda and deterministic() or _TORCH_GREATER_EQUAL_1_12 and x.is_mps:
         if minlength is None:
             minlength = len(torch.unique(x))
         output = torch.zeros(minlength, device=x.device, dtype=torch.long)

@@ -62,7 +62,7 @@ def _jaccard_from_confmat(
 
         # If this class is absent in both target AND pred (union == 0), then use the absent_score for this class.
         scores = intersection.float() / union.float()
-        scores[union == 0] = absent_score
+        scores = scores.where(union != 0, torch.tensor(absent_score, dtype=scores.dtype, device=scores.device))
 
         if ignore_index is not None and 0 <= ignore_index < num_classes:
             scores = torch.cat(
