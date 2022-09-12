@@ -378,7 +378,7 @@ def jaccard_index(
     preds: Tensor,
     target: Tensor,
     num_classes: int,
-    average: Optional[str] = "macro",
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
     ignore_index: Optional[int] = None,
     absent_score: float = 0.0,
     threshold: float = 0.5,

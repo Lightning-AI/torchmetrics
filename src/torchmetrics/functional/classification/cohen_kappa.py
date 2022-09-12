@@ -287,7 +287,7 @@ def cohen_kappa(
     preds: Tensor,
     target: Tensor,
     num_classes: int,
-    weights: Optional[str] = None,
+    weights: Optional[Literal["linear", "quadratic", "none"]] = None,
     threshold: float = 0.5,
     task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
     ignore_index: Optional[int] = None,
@@ -335,11 +335,10 @@ def cohen_kappa(
         tensor(0.5000)
     """
     if task is not None:
-        kwargs = dict(weights=weights, ignore_index=ignore_index, validate_args=validate_args)
         if task == "binary":
-            return binary_cohen_kappa(preds, target, threshold, **kwargs)
+            return binary_cohen_kappa(preds, target, threshold, weights, ignore_index, validate_args)
         if task == "multiclass":
-            return multiclass_cohen_kappa(preds, target, num_classes, **kwargs)
+            return multiclass_cohen_kappa(preds, target, num_classes, weights, ignore_index, validate_args)
         raise ValueError(
             f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
         )

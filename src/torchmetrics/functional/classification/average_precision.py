@@ -562,7 +562,7 @@ def average_precision(
     target: Tensor,
     num_classes: Optional[int] = None,
     pos_label: Optional[int] = None,
-    average: Optional[str] = "macro",
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
     task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     num_labels: Optional[int] = None,
