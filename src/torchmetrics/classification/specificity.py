@@ -412,7 +412,7 @@ class Specificity(StatScores):
             if task == "binary":
                 return BinarySpecificity(threshold, **kwargs)
             if task == "multiclass":
-                return MulticlassSpecificity(num_classes, average, top_k, **kwargs)
+                return MulticlassSpecificity(num_classes, top_k, average, **kwargs)
             if task == "multilabel":
                 return MultilabelSpecificity(num_labels, threshold, average, **kwargs)
             raise ValueError(

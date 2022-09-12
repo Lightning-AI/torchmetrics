@@ -382,7 +382,7 @@ class HammingDistance(Metric):
             if task == "binary":
                 return BinaryHammingDistance(threshold, **kwargs)
             if task == "multiclass":
-                return MulticlassHammingDistance(num_classes, average, top_k, **kwargs)
+                return MulticlassHammingDistance(num_classes, top_k, average, **kwargs)
             if task == "multilabel":
                 return MultilabelHammingDistance(num_labels, threshold, average, **kwargs)
             raise ValueError(

@@ -284,7 +284,7 @@ class HingeLoss(Metric):
     def __new__(
         cls,
         squared: bool = False,
-        multiclass_mode: Optional[Union[str, MulticlassMode]] = None,
+        multiclass_mode: Literal["crammer-singer", "one-vs-all"] = None,
         task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
         num_classes: Optional[int] = None,
         ignore_index: Optional[int] = None,

@@ -610,7 +610,7 @@ class StatScores(Metric):
             if task == "binary":
                 return BinaryStatScores(threshold, **kwargs)
             if task == "multiclass":
-                return MulticlassStatScores(num_classes, average, top_k, **kwargs)
+                return MulticlassStatScores(num_classes, top_k, average, **kwargs)
             if task == "multilabel":
                 return MultilabelStatScores(num_labels, threshold, average, **kwargs)
             raise ValueError(

@@ -481,7 +481,7 @@ class Accuracy(StatScores):
             if task == "binary":
                 return BinaryAccuracy(threshold, **kwargs)
             if task == "multiclass":
-                return MulticlassAccuracy(num_classes, average, top_k, **kwargs)
+                return MulticlassAccuracy(num_classes, top_k, average, **kwargs)
             if task == "multilabel":
                 return MultilabelAccuracy(num_labels, threshold, average, **kwargs)
             raise ValueError(

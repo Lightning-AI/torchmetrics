@@ -841,7 +841,7 @@ class FBetaScore(StatScores):
             if task == "binary":
                 return BinaryFBetaScore(beta, threshold, **kwargs)
             if task == "multiclass":
-                return MulticlassFBetaScore(beta, num_classes, average, top_k, **kwargs)
+                return MulticlassFBetaScore(beta, num_classes, top_k, average, **kwargs)
             if task == "multilabel":
                 return MultilabelFBetaScore(beta, num_labels, threshold, average, **kwargs)
             raise ValueError(
@@ -1002,7 +1002,7 @@ class F1Score(FBetaScore):
             if task == "binary":
                 return BinaryF1Score(threshold, **kwargs)
             if task == "multiclass":
-                return MulticlassF1Score(num_classes, average, top_k, **kwargs)
+                return MulticlassF1Score(num_classes, top_k, average, **kwargs)
             if task == "multilabel":
                 return MultilabelF1Score(num_labels, threshold, average, **kwargs)
             raise ValueError(
