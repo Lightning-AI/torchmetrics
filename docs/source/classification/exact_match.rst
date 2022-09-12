@@ -13,7 +13,7 @@ ________________
 MultilabelExactMatch
 ^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.MultilabelExactMatch
+.. autoclass:: torchmetrics.classification.MultilabelExactMatch
     :noindex:
 
 Functional Interface
@@ -22,5 +22,5 @@ ____________________
 multilabel_exact_match
 ^^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.multilabel_exact_match
+.. autofunction:: torchmetrics.functional.classification.multilabel_exact_match
     :noindex:

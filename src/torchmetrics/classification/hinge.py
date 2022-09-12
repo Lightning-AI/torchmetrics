@@ -63,7 +63,7 @@ class BinaryHingeLoss(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
-        >>> from torchmetrics import BinaryHingeLoss
+        >>> from torchmetrics.classification import BinaryHingeLoss
         >>> preds = torch.tensor([0.25, 0.25, 0.55, 0.75, 0.75])
         >>> target = torch.tensor([0, 0, 1, 1, 1])
         >>> metric = BinaryHingeLoss()
@@ -143,7 +143,7 @@ class MulticlassHingeLoss(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
-        >>> from torchmetrics import MulticlassHingeLoss
+        >>> from torchmetrics.classification import MulticlassHingeLoss
         >>> preds = torch.tensor([[0.25, 0.20, 0.55],
         ...                       [0.55, 0.05, 0.40],
         ...                       [0.10, 0.30, 0.60],
@@ -280,6 +280,27 @@ class HingeLoss(Metric):
     full_state_update: bool = False
     measure: Tensor
     total: Tensor
+
+    def __new__(
+        cls,
+        squared: bool = False,
+        multiclass_mode: Optional[Union[str, MulticlassMode]] = None,
+        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+        num_classes: Optional[int] = None,
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        if task is not None:
+            kwargs.update(dict(ignore_index=ignore_index, validate_args=validate_args))
+            if task == "binary":
+                return BinaryHingeLoss(squared, **kwargs)
+            if task == "multiclass":
+                return MulticlassHingeLoss(num_classes, squared, multiclass_mode, **kwargs)
+            raise ValueError(
+                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+            )
+        return super().__new__(cls)
 
     def __init__(
         self,

@@ -39,6 +39,7 @@ from torchmetrics.functional.classification.stat_scores import (
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
+from torchmetrics.utilities.prints import rank_zero_warn
 
 
 class _AbstractStatScores(Metric):
@@ -110,7 +111,7 @@ class BinaryStatScores(_AbstractStatScores):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
-        >>> from torchmetrics import BinaryStatScores
+        >>> from torchmetrics.classification import BinaryStatScores
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0, 0, 1, 1, 0, 1])
         >>> metric = BinaryStatScores()
@@ -118,7 +119,7 @@ class BinaryStatScores(_AbstractStatScores):
         tensor([2, 1, 2, 1, 3])
 
     Example (preds is float tensor):
-        >>> from torchmetrics import BinaryStatScores
+        >>> from torchmetrics.classification import BinaryStatScores
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
         >>> metric = BinaryStatScores()
@@ -126,7 +127,7 @@ class BinaryStatScores(_AbstractStatScores):
         tensor([2, 1, 2, 1, 3])
 
     Example (multidim tensors):
-        >>> from torchmetrics import BinaryStatScores
+        >>> from torchmetrics.classification import BinaryStatScores
         >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
         >>> preds = torch.tensor(
         ...     [
@@ -151,7 +152,7 @@ class BinaryStatScores(_AbstractStatScores):
         validate_args: bool = True,
         **kwargs: Any,
     ) -> None:
-        super().__init__(**kwargs)
+        super(_AbstractStatScores, self).__init__(**kwargs)
         if validate_args:
             _binary_stat_scores_arg_validation(threshold, multidim_average, ignore_index)
         self.threshold = threshold
@@ -230,7 +231,7 @@ class MulticlassStatScores(_AbstractStatScores):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
-        >>> from torchmetrics import MulticlassStatScores
+        >>> from torchmetrics.classification import MulticlassStatScores
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([2, 1, 0, 1])
         >>> metric = MulticlassStatScores(num_classes=3, average='micro')
@@ -243,7 +244,7 @@ class MulticlassStatScores(_AbstractStatScores):
                 [1, 0, 3, 0, 1]])
 
     Example (preds is float tensor):
-        >>> from torchmetrics import MulticlassStatScores
+        >>> from torchmetrics.classification import MulticlassStatScores
         >>> target = target = torch.tensor([2, 1, 0, 0])
         >>> preds = preds = torch.tensor([
         ...   [0.16, 0.26, 0.58],
@@ -261,7 +262,7 @@ class MulticlassStatScores(_AbstractStatScores):
                 [1, 0, 3, 0, 1]])
 
     Example (multidim tensors):
-        >>> from torchmetrics import MulticlassStatScores
+        >>> from torchmetrics.classification import MulticlassStatScores
         >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
         >>> preds = torch.tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
         >>> metric = MulticlassStatScores(num_classes=3, multidim_average="samplewise", average='micro')
@@ -291,7 +292,7 @@ class MulticlassStatScores(_AbstractStatScores):
         validate_args: bool = True,
         **kwargs: Any,
     ) -> None:
-        super().__init__(**kwargs)
+        super(_AbstractStatScores, self).__init__(**kwargs)
         if validate_args:
             _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index)
         self.num_classes = num_classes
@@ -379,7 +380,7 @@ class MultilabelStatScores(_AbstractStatScores):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
-        >>> from torchmetrics import MultilabelStatScores
+        >>> from torchmetrics.classification import MultilabelStatScores
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
         >>> metric = MultilabelStatScores(num_labels=3, average='micro')
@@ -392,7 +393,7 @@ class MultilabelStatScores(_AbstractStatScores):
                 [1, 1, 0, 0, 1]])
 
     Example (preds is float tensor):
-        >>> from torchmetrics import MultilabelStatScores
+        >>> from torchmetrics.classification import MultilabelStatScores
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> metric = MultilabelStatScores(num_labels=3, average='micro')
@@ -405,7 +406,7 @@ class MultilabelStatScores(_AbstractStatScores):
                 [1, 1, 0, 0, 1]])
 
     Example (multidim tensors):
-        >>> from torchmetrics import MultilabelStatScores
+        >>> from torchmetrics.classification import MultilabelStatScores
         >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
         >>> preds = torch.tensor(
         ...     [
@@ -441,7 +442,7 @@ class MultilabelStatScores(_AbstractStatScores):
         validate_args: bool = True,
         **kwargs: Any,
     ) -> None:
-        super().__init__(**kwargs)
+        super(_AbstractStatScores, self).__init__(**kwargs)
         if validate_args:
             _multilabel_stat_scores_arg_validation(num_labels, threshold, average, multidim_average, ignore_index)
         self.num_labels = num_labels
@@ -487,9 +488,6 @@ class MultilabelStatScores(_AbstractStatScores):
         """
         tp, fp, tn, fn = self._final_state()
         return _multilabel_stat_scores_compute(tp, fp, tn, fn, self.average, self.multidim_average)
-
-
-# -------------------------- Old stuff --------------------------
 
 
 class StatScores(Metric):
@@ -590,6 +588,36 @@ class StatScores(Metric):
     # tn: Union[Tensor, List[Tensor]]
     # fn: Union[Tensor, List[Tensor]]
 
+    def __new__(
+        cls,
+        num_classes: Optional[int] = None,
+        threshold: float = 0.5,
+        average: Optional[str] = "micro",
+        mdmc_average: Optional[str] = None,
+        ignore_index: Optional[int] = None,
+        top_k: Optional[int] = None,
+        multiclass: Optional[bool] = None,
+        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+        num_labels: Optional[int] = None,
+        multidim_average: Optional[Literal["global", "samplewise"]] = "global",
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        if task is not None:
+            kwargs.update(
+                dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
+            )
+            if task == "binary":
+                return BinaryStatScores(threshold, **kwargs)
+            if task == "multiclass":
+                return MulticlassStatScores(num_classes, average, top_k, **kwargs)
+            if task == "multilabel":
+                return MultilabelStatScores(num_labels, threshold, average, **kwargs)
+            raise ValueError(
+                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+            )
+        return super().__new__(cls)
+
     def __init__(
         self,
         threshold: float = 0.5,
@@ -599,9 +627,38 @@ class StatScores(Metric):
         ignore_index: Optional[int] = None,
         mdmc_reduce: Optional[str] = None,
         multiclass: Optional[bool] = None,
+        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
+        num_labels: Optional[int] = None,
+        multidim_average: Optional[Literal["global", "samplewise"]] = "global",
+        validate_args: bool = True,
         **kwargs: Any,
     ) -> None:
-        super().__init__(**kwargs)
+        self.task = task
+        if self.task is not None:
+            kwargs.update(
+                dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
+            )
+            if task == "binary":
+                BinaryStatScores.__init__(self, threshold, **kwargs)
+            if task == "multiclass":
+                MulticlassStatScores.__init__(self, num_classes, top_k, average, **kwargs)
+            if task == "multilabel":
+                MultilabelStatScores.__init__(self, num_labels, threshold, average, **kwargs)
+            raise ValueError(
+                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+            )
+        else:
+            rank_zero_warn(
+                "From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification"
+                " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
+                " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
+                " and the general order of arguments may change, such that this metric will just function as an single"
+                " entrypoint to calling the three specialized versions.",
+                DeprecationWarning,
+            )
+
+        Metric.__init__(self, **kwargs)
 
         self.reduce = reduce
         self.mdmc_reduce = mdmc_reduce
@@ -647,6 +704,14 @@ class StatScores(Metric):
             preds: Predictions from model (probabilities, logits or labels)
             target: Ground truth values
         """
+        if self.task is not None:
+            if self.task == "binary":
+                BinaryStatScores.update(self, preds, target)
+            elif self.task == "multiclass":
+                MulticlassStatScores.update(self, preds, target)
+            elif self.task == "multilabel":
+                MultilabelStatScores.update(self, preds, target)
+            return
 
         tp, fp, tn, fn = _stat_scores_update(
             preds,
@@ -711,5 +776,12 @@ class StatScores(Metric):
               - If ``reduce='macro'``, the shape will be ``(N, C, 5)``
               - If ``reduce='samples'``, the shape will be ``(N, X, 5)``
         """
+        if self.task is not None:
+            if self.task == "binary":
+                return BinaryStatScores.compute(self)
+            elif self.task == "multiclass":
+                return MulticlassStatScores.compute(self)
+            elif self.task == "multilabel":
+                return MultilabelStatScores.compute(self)
         tp, fp, tn, fn = self._get_final_stats()
         return _stat_scores_compute(tp, fp, tn, fn)

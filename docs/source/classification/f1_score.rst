@@ -19,19 +19,19 @@ F1Score
 BinaryF1Score
 ^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.BinaryF1Score
+.. autoclass:: torchmetrics.classification.BinaryF1Score
     :noindex:
 
 MulticlassF1Score
 ^^^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.MulticlassF1Score
+.. autoclass:: torchmetrics.classification.MulticlassF1Score
     :noindex:
 
 MultilabelF1Score
 ^^^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.MultilabelF1Score
+.. autoclass:: torchmetrics.classification.MultilabelF1Score
     :noindex:
 
 Functional Interface
@@ -46,17 +46,17 @@ f1_score
 binary_f1_score
 ^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.binary_f1_score
+.. autofunction:: torchmetrics.functional.classification.binary_f1_score
     :noindex:
 
 multiclass_f1_score
 ^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.multiclass_f1_score
+.. autofunction:: torchmetrics.functional.classification.multiclass_f1_score
     :noindex:
 
 multilabel_f1_score
 ^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.multilabel_f1_score
+.. autofunction:: torchmetrics.functional.classification.multilabel_f1_score
     :noindex:

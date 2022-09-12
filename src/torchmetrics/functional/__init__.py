@@ -14,106 +14,29 @@
 from torchmetrics.functional.audio.pit import permutation_invariant_training, pit_permutate
 from torchmetrics.functional.audio.sdr import scale_invariant_signal_distortion_ratio, signal_distortion_ratio
 from torchmetrics.functional.audio.snr import scale_invariant_signal_noise_ratio, signal_noise_ratio
-from torchmetrics.functional.classification.accuracy import (
-    accuracy,
-    binary_accuracy,
-    multiclass_accuracy,
-    multilabel_accuracy,
-)
+from torchmetrics.functional.classification.accuracy import accuracy
 from torchmetrics.functional.classification.auc import auc
-from torchmetrics.functional.classification.auroc import auroc, binary_auroc, multiclass_auroc, multilabel_auroc
-from torchmetrics.functional.classification.average_precision import (
-    average_precision,
-    binary_average_precision,
-    multiclass_average_precision,
-    multilabel_average_precision,
-)
-from torchmetrics.functional.classification.calibration_error import (
-    binary_calibration_error,
-    calibration_error,
-    multiclass_calibration_error,
-)
-from torchmetrics.functional.classification.cohen_kappa import binary_cohen_kappa, cohen_kappa, multiclass_cohen_kappa
-from torchmetrics.functional.classification.confusion_matrix import (
-    binary_confusion_matrix,
-    confusion_matrix,
-    multiclass_confusion_matrix,
-    multilabel_confusion_matrix,
-)
+from torchmetrics.functional.classification.auroc import auroc
+from torchmetrics.functional.classification.average_precision import average_precision
+from torchmetrics.functional.classification.calibration_error import calibration_error
+from torchmetrics.functional.classification.cohen_kappa import cohen_kappa
+from torchmetrics.functional.classification.confusion_matrix import confusion_matrix
 from torchmetrics.functional.classification.dice import dice, dice_score
-from torchmetrics.functional.classification.exact_match import multilabel_exact_match
-from torchmetrics.functional.classification.f_beta import (
-    binary_f1_score,
-    binary_fbeta_score,
-    f1_score,
-    fbeta_score,
-    multiclass_f1_score,
-    multiclass_fbeta_score,
-    multilabel_f1_score,
-    multilabel_fbeta_score,
-)
-from torchmetrics.functional.classification.hamming import (
-    binary_hamming_distance,
-    hamming_distance,
-    multiclass_hamming_distance,
-    multilabel_hamming_distance,
-)
-from torchmetrics.functional.classification.hinge import binary_hinge_loss, hinge_loss, multiclass_hinge_loss
-from torchmetrics.functional.classification.jaccard import (
-    binary_jaccard_index,
-    jaccard_index,
-    multiclass_jaccard_index,
-    multilabel_jaccard_index,
-)
-from torchmetrics.functional.classification.matthews_corrcoef import (
-    binary_matthews_corrcoef,
-    matthews_corrcoef,
-    multiclass_matthews_corrcoef,
-    multilabel_matthews_corrcoef,
-)
-from torchmetrics.functional.classification.precision_recall import (
-    binary_precision,
-    binary_recall,
-    multiclass_precision,
-    multiclass_recall,
-    multilabel_precision,
-    multilabel_recall,
-    precision,
-    precision_recall,
-    recall,
-)
-from torchmetrics.functional.classification.precision_recall_curve import (
-    binary_precision_recall_curve,
-    multiclass_precision_recall_curve,
-    multilabel_precision_recall_curve,
-    precision_recall_curve,
-)
+from torchmetrics.functional.classification.f_beta import f1_score, fbeta_score
+from torchmetrics.functional.classification.hamming import hamming_distance
+from torchmetrics.functional.classification.hinge import hinge_loss
+from torchmetrics.functional.classification.jaccard import jaccard_index
+from torchmetrics.functional.classification.matthews_corrcoef import matthews_corrcoef
+from torchmetrics.functional.classification.precision_recall import precision, precision_recall, recall
+from torchmetrics.functional.classification.precision_recall_curve import precision_recall_curve
 from torchmetrics.functional.classification.ranking import (
     coverage_error,
     label_ranking_average_precision,
     label_ranking_loss,
-    multilabel_coverage_error,
-    multilabel_ranking_average_precision,
-    multilabel_ranking_loss,
 )
-from torchmetrics.functional.classification.recall_at_fixed_precision import (
-    binary_recall_at_fixed_precision,
-    multiclass_recall_at_fixed_precision,
-    multilabel_recall_at_fixed_precision,
-)
-from torchmetrics.functional.classification.roc import binary_roc, multiclass_roc, multilabel_roc, roc
-from torchmetrics.functional.classification.specificity import (
-    binary_specificity,
-    multiclass_specificity,
-    multilabel_specificity,
-    specificity,
-)
-from torchmetrics.functional.classification.stat_scores import (
-    binary_stat_scores,
-    multiclass_stat_scores,
-    multilabel_stat_scores,
-    stat_scores,
-)
+from torchmetrics.functional.classification.roc import roc
+from torchmetrics.functional.classification.specificity import specificity
+from torchmetrics.functional.classification.stat_scores import stat_scores
 from torchmetrics.functional.image.d_lambda import spectral_distortion_index
 from torchmetrics.functional.image.ergas import error_relative_global_dimensionless_synthesis
 from torchmetrics.functional.image.gradients import image_gradients
@@ -248,63 +171,4 @@ __all__ = [
     "word_error_rate",
     "word_information_lost",
     "word_information_preserved",
-] + [
-    "binary_confusion_matrix",
-    "multiclass_confusion_matrix",
-    "multilabel_confusion_matrix",
-    "binary_stat_scores",
-    "multiclass_stat_scores",
-    "multilabel_stat_scores",
-    "binary_f1_score",
-    "binary_fbeta_score",
-    "multiclass_f1_score",
-    "multiclass_fbeta_score",
-    "multilabel_f1_score",
-    "multilabel_fbeta_score",
-    "binary_cohen_kappa",
-    "multiclass_cohen_kappa",
-    "binary_jaccard_index",
-    "multiclass_jaccard_index",
-    "multilabel_jaccard_index",
-    "binary_matthews_corrcoef",
-    "multiclass_matthews_corrcoef",
-    "multilabel_matthews_corrcoef",
-    "multilabel_coverage_error",
-    "multilabel_ranking_average_precision",
-    "multilabel_ranking_loss",
-    "binary_accuracy",
-    "multilabel_accuracy",
-    "multiclass_accuracy",
-    "binary_specificity",
-    "multiclass_specificity",
-    "multilabel_specificity",
-    "binary_hamming_distance",
-    "multiclass_hamming_distance",
-    "multilabel_hamming_distance",
-    "binary_precision",
-    "multiclass_precision",
-    "multilabel_precision",
-    "binary_recall",
-    "multiclass_recall",
-    "multilabel_recall",
-    "multilabel_exact_match",
-    "binary_auroc",
-    "multiclass_auroc",
-    "multilabel_auroc",
-    "binary_average_precision",
-    "multiclass_average_precision",
-    "multilabel_average_precision",
-    "binary_precision_recall_curve",
-    "multiclass_precision_recall_curve",
-    "multilabel_precision_recall_curve",
-    "binary_recall_at_fixed_precision",
-    "multiclass_recall_at_fixed_precision",
-    "multilabel_recall_at_fixed_precision",
-    "binary_roc",
-    "multiclass_roc",
-    "multilabel_roc",
-    "binary_calibration_error",
-    "multiclass_calibration_error",
-    "binary_hinge_loss",
-    "multiclass_hinge_loss",
 ]

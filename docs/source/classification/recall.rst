@@ -16,19 +16,19 @@ ________________
 BinaryRecall
 ^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.BinaryRecall
+.. autoclass:: torchmetrics.classification.BinaryRecall
     :noindex:
 
 MulticlassRecall
 ^^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.MulticlassRecall
+.. autoclass:: torchmetrics.classification.MulticlassRecall
     :noindex:
 
 MultilabelRecall
 ^^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.MultilabelRecall
+.. autoclass:: torchmetrics.classification.MultilabelRecall
     :noindex:
 
 Functional Interface
@@ -40,17 +40,17 @@ ____________________
 binary_recall
 ^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.binary_recall
+.. autofunction:: torchmetrics.functional.classification.binary_recall
     :noindex:
 
 multiclass_recall
 ^^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.multiclass_recall
+.. autofunction:: torchmetrics.functional.classification.multiclass_recall
     :noindex:
 
 multilabel_recall
 ^^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.multilabel_recall
+.. autofunction:: torchmetrics.functional.classification.multilabel_recall
     :noindex:

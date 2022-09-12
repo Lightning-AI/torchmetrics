@@ -59,7 +59,7 @@ class BinaryJaccardIndex(BinaryConfusionMatrix):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
-        >>> from torchmetrics import BinaryJaccardIndex
+        >>> from torchmetrics.classification import BinaryJaccardIndex
         >>> target = torch.tensor([1, 1, 0, 0])
         >>> preds = torch.tensor([0, 1, 0, 0])
         >>> metric = BinaryJaccardIndex()
@@ -67,7 +67,7 @@ class BinaryJaccardIndex(BinaryConfusionMatrix):
         tensor(0.5000)
 
     Example (preds is float tensor):
-        >>> from torchmetrics import BinaryJaccardIndex
+        >>> from torchmetrics.classification import BinaryJaccardIndex
         >>> target = torch.tensor([1, 1, 0, 0])
         >>> preds = torch.tensor([0.35, 0.85, 0.48, 0.01])
         >>> metric = BinaryJaccardIndex()
@@ -127,7 +127,7 @@ class MulticlassJaccardIndex(MulticlassConfusionMatrix):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (pred is integer tensor):
-        >>> from torchmetrics import MulticlassJaccardIndex
+        >>> from torchmetrics.classification import MulticlassJaccardIndex
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([2, 1, 0, 1])
         >>> metric = MulticlassJaccardIndex(num_classes=3)
@@ -135,7 +135,7 @@ class MulticlassJaccardIndex(MulticlassConfusionMatrix):
         tensor(0.6667)
 
     Example (pred is float tensor):
-        >>> from torchmetrics import MulticlassJaccardIndex
+        >>> from torchmetrics.classification import MulticlassJaccardIndex
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([
         ...   [0.16, 0.26, 0.58],
@@ -207,7 +207,7 @@ class MultilabelJaccardIndex(MultilabelConfusionMatrix):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
-        >>> from torchmetrics import MultilabelJaccardIndex
+        >>> from torchmetrics.classification import MultilabelJaccardIndex
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
         >>> metric = MultilabelJaccardIndex(num_labels=3)
@@ -215,7 +215,7 @@ class MultilabelJaccardIndex(MultilabelConfusionMatrix):
         tensor(0.5000)
 
     Example (preds is float tensor):
-        >>> from torchmetrics import MultilabelJaccardIndex
+        >>> from torchmetrics.classification import MultilabelJaccardIndex
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> metric = MultilabelJaccardIndex(num_labels=3)
@@ -316,6 +316,32 @@ class JaccardIndex(ConfusionMatrix):
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
+
+    def __new__(
+        cls,
+        num_classes: int,
+        average: Optional[str] = "macro",
+        ignore_index: Optional[int] = None,
+        absent_score: float = 0.0,
+        threshold: float = 0.5,
+        multilabel: bool = False,
+        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+        num_labels: Optional[int] = None,
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        if task is not None:
+            kwargs.update(dict(ignore_index=ignore_index, validate_args=validate_args))
+            if task == "binary":
+                return BinaryJaccardIndex(threshold, **kwargs)
+            if task == "multiclass":
+                return MulticlassJaccardIndex(num_classes, average, **kwargs)
+            if task == "multilabel":
+                return MultilabelJaccardIndex(num_labels, threshold, average, **kwargs)
+            raise ValueError(
+                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+            )
+        return super().__new__(cls)
 
     def __init__(
         self,

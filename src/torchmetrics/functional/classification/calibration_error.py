@@ -26,6 +26,7 @@ from torchmetrics.functional.classification.confusion_matrix import (
 from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import DataType
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_8
+from torchmetrics.utilities.prints import rank_zero_warn
 
 
 def _binning_with_loop(
@@ -216,7 +217,7 @@ def binary_calibration_error(
             Set to ``False`` for faster computations.
 
     Example:
-        >>> from torchmetrics.functional import binary_calibration_error
+        >>> from torchmetrics.functional.classification import binary_calibration_error
         >>> preds = torch.tensor([0.25, 0.25, 0.55, 0.75, 0.75])
         >>> target = torch.tensor([0, 0, 1, 1, 1])
         >>> binary_calibration_error(preds, target, n_bins=2, norm='l1')
@@ -325,7 +326,7 @@ def multiclass_calibration_error(
             Set to ``False`` for faster computations.
 
     Example:
-        >>> from torchmetrics.functional import multiclass_calibration_error
+        >>> from torchmetrics.functional.classification import multiclass_calibration_error
         >>> preds = torch.tensor([[0.25, 0.20, 0.55],
         ...                       [0.55, 0.05, 0.40],
         ...                       [0.10, 0.30, 0.60],
@@ -388,8 +389,25 @@ def _ce_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
     return confidences.float(), accuracies.float()
 
 
-def calibration_error(preds: Tensor, target: Tensor, n_bins: int = 15, norm: str = "l1") -> Tensor:
-    r"""`Computes the Top-label Calibration Error`_
+def calibration_error(
+    preds: Tensor,
+    target: Tensor,
+    n_bins: int = 15,
+    norm: str = "l1",
+    task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+    num_classes: Optional[int] = None,
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
+) -> Tensor:
+    r"""
+    .. note::
+        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        metric. Moving forward we recommend using these versions. This base metric will still work as it did
+        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
+        and the general order of arguments may change, such that this metric will just function as an single
+        entrypoint to calling the three specialized versions.
+
+    `Computes the Top-label Calibration Error`_
 
     Three different norms are implemented, each corresponding to variations on the calibration error metric.
 
@@ -422,6 +440,23 @@ def calibration_error(preds: Tensor, target: Tensor, n_bins: int = 15, norm: str
         norm: Norm used to compare empirical and expected probability bins.
             Defaults to "l1", or Expected Calibration Error.
     """
+    if task is not None:
+        kwargs = dict(norm=norm, ignore_index=ignore_index, validate_args=validate_args)
+        if task == "binary":
+            return binary_calibration_error(preds, target, n_bins, **kwargs)
+        if task == "multiclass":
+            return multiclass_calibration_error(preds, target, num_classes, n_bins, **kwargs)
+        raise ValueError(f"Expected argument `task` to either be `'binary'`, `'multiclass'` but got {task}")
+    else:
+        rank_zero_warn(
+            "From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification"
+            " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
+            " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
+            " and the general order of arguments may change, such that this metric will just function as an single"
+            " entrypoint to calling the three specialized versions.",
+            DeprecationWarning,
+        )
+
     if norm not in ("l1", "l2", "max"):
         raise ValueError(f"Norm {norm} is not supported. Please select from l1, l2, or max. ")
 

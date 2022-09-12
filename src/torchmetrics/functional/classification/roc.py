@@ -15,6 +15,7 @@ from typing import List, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor
+from typing_extensions import Literal
 
 from torchmetrics.functional.classification.precision_recall_curve import (
     _binary_clf_curve,
@@ -135,7 +136,7 @@ def binary_roc(
         - thresholds: an 1d tensor of size (n_thresholds, ) with decreasing threshold values
 
     Example:
-        >>> from torchmetrics.functional import binary_roc
+        >>> from torchmetrics.functional.classification import binary_roc
         >>> preds = torch.tensor([0, 0.5, 0.7, 0.8])
         >>> target = torch.tensor([0, 1, 1, 0])
         >>> binary_roc(preds, target, thresholds=None)  # doctest: +NORMALIZE_WHITESPACE
@@ -242,7 +243,7 @@ def multiclass_roc(
           then a single 1d tensor of size (n_thresholds, ) is returned with shared threshold values for all classes.
 
     Example:
-        >>> from torchmetrics.functional import multiclass_roc
+        >>> from torchmetrics.functional.classification import multiclass_roc
         >>> preds = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
         ...                       [0.05, 0.75, 0.05, 0.05, 0.05],
         ...                       [0.05, 0.05, 0.75, 0.05, 0.05],
@@ -378,7 +379,7 @@ def multilabel_roc(
           then a single 1d tensor of size (n_thresholds, ) is returned with shared threshold values for all labels.
 
     Example:
-        >>> from torchmetrics.functional import multilabel_roc
+        >>> from torchmetrics.functional.classification import multilabel_roc
         >>> preds = torch.tensor([[0.75, 0.05, 0.35],
         ...                       [0.45, 0.75, 0.05],
         ...                       [0.05, 0.55, 0.75],
@@ -603,8 +604,21 @@ def roc(
     num_classes: Optional[int] = None,
     pos_label: Optional[int] = None,
     sample_weights: Optional[Sequence] = None,
+    task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    num_labels: Optional[int] = None,
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    """Computes the Receiver Operating Characteristic (ROC). Works with both binary, multiclass and multilabel
+    r"""
+    .. note::
+        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        metric. Moving forward we recommend using these versions. This base metric will still work as it did
+        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
+        and the general order of arguments may change, such that this metric will just function as an single
+        entrypoint to calling the three specialized versions.
+
+    Computes the Receiver Operating Characteristic (ROC). Works with both binary, multiclass and multilabel
     input.
 
     .. note::
@@ -681,5 +695,25 @@ def roc(
          tensor([1.7576, 0.7576, 0.3680, 0.3468, 0.0745]),
          tensor([1.1837, 0.1837, 0.1338, 0.1183, 0.1138])]
     """
+    if task is not None:
+        kwargs = dict(thresholds=thresholds, ignore_index=ignore_index, validate_args=validate_args)
+        if task == "binary":
+            return binary_roc(preds, target, **kwargs)
+        if task == "multiclass":
+            return multiclass_roc(preds, target, num_classes, **kwargs)
+        if task == "multilabel":
+            return multilabel_roc(preds, target, num_labels, **kwargs)
+        raise ValueError(
+            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+        )
+    else:
+        rank_zero_warn(
+            "From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification"
+            " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
+            " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
+            " and the general order of arguments may change, such that this metric will just function as an single"
+            " entrypoint to calling the three specialized versions.",
+            DeprecationWarning,
+        )
     preds, target, num_classes, pos_label = _roc_update(preds, target, num_classes, pos_label)
     return _roc_compute(preds, target, num_classes, pos_label, sample_weights)

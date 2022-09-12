@@ -132,7 +132,7 @@ def binary_recall_at_fixed_precision(
         - threshold: an scalar tensor with the corresponding threshold level
 
     Example:
-        >>> from torchmetrics.functional import binary_recall_at_fixed_precision
+        >>> from torchmetrics.functional.classification import binary_recall_at_fixed_precision
         >>> preds = torch.tensor([0, 0.5, 0.7, 0.8])
         >>> target = torch.tensor([0, 1, 1, 0])
         >>> binary_recall_at_fixed_precision(preds, target, min_precision=0.5, thresholds=None)
@@ -233,7 +233,7 @@ def multiclass_recall_at_fixed_precision(
         - thresholds: an 1d tensor of size (n_classes, ) with the corresponding threshold level per class
 
     Example:
-        >>> from torchmetrics.functional import multiclass_recall_at_fixed_precision
+        >>> from torchmetrics.functional.classification import multiclass_recall_at_fixed_precision
         >>> preds = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
         ...                       [0.05, 0.75, 0.05, 0.05, 0.05],
         ...                       [0.05, 0.05, 0.75, 0.05, 0.05],
@@ -342,7 +342,7 @@ def multilabel_recall_at_fixed_precision(
         - thresholds: an 1d tensor of size (n_classes, ) with the corresponding threshold level per class
 
     Example:
-        >>> from torchmetrics.functional import multilabel_recall_at_fixed_precision
+        >>> from torchmetrics.functional.classification import multilabel_recall_at_fixed_precision
         >>> preds = torch.tensor([[0.75, 0.05, 0.35],
         ...                       [0.45, 0.75, 0.05],
         ...                       [0.05, 0.55, 0.75],

@@ -19,21 +19,21 @@ CohenKappa
 BinaryJaccardIndex
 ^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.BinaryJaccardIndex
+.. autoclass:: torchmetrics.classification.BinaryJaccardIndex
     :noindex:
     :exclude-members: update, compute
 
 MulticlassJaccardIndex
 ^^^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.MulticlassJaccardIndex
+.. autoclass:: torchmetrics.classification.MulticlassJaccardIndex
     :noindex:
     :exclude-members: update, compute
 
 MultilabelJaccardIndex
 ^^^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.MultilabelJaccardIndex
+.. autoclass:: torchmetrics.classification.MultilabelJaccardIndex
     :noindex:
     :exclude-members: update, compute
 
@@ -50,17 +50,17 @@ jaccard_index
 binary_jaccard_index
 ^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.binary_jaccard_index
+.. autofunction:: torchmetrics.functional.classification.binary_jaccard_index
     :noindex:
 
 multiclass_jaccard_index
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.multiclass_jaccard_index
+.. autofunction:: torchmetrics.functional.classification.multiclass_jaccard_index
     :noindex:
 
 multilabel_jaccard_index
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.multilabel_jaccard_index
+.. autofunction:: torchmetrics.functional.classification.multilabel_jaccard_index
     :noindex:

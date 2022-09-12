@@ -64,7 +64,7 @@ class BinaryCohenKappa(BinaryConfusionMatrix):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
-        >>> from torchmetrics import BinaryCohenKappa
+        >>> from torchmetrics.classification import BinaryCohenKappa
         >>> target = torch.tensor([1, 1, 0, 0])
         >>> preds = torch.tensor([0, 1, 0, 0])
         >>> metric = BinaryCohenKappa()
@@ -72,7 +72,7 @@ class BinaryCohenKappa(BinaryConfusionMatrix):
         tensor(0.5000)
 
     Example (preds is float tensor):
-        >>> from torchmetrics import BinaryCohenKappa
+        >>> from torchmetrics.classification import BinaryCohenKappa
         >>> target = torch.tensor([1, 1, 0, 0])
         >>> preds = torch.tensor([0.35, 0.85, 0.48, 0.01])
         >>> metric = BinaryCohenKappa()
@@ -138,7 +138,7 @@ class MulticlassCohenKappa(MulticlassConfusionMatrix):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (pred is integer tensor):
-        >>> from torchmetrics import MulticlassCohenKappa
+        >>> from torchmetrics.classification import MulticlassCohenKappa
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([2, 1, 0, 1])
         >>> metric = MulticlassCohenKappa(num_classes=3)
@@ -146,7 +146,7 @@ class MulticlassCohenKappa(MulticlassConfusionMatrix):
         tensor(0.6364)
 
     Example (pred is float tensor):
-        >>> from torchmetrics import MulticlassCohenKappa
+        >>> from torchmetrics.classification import MulticlassCohenKappa
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([
         ...   [0.16, 0.26, 0.58],
@@ -235,6 +235,27 @@ class CohenKappa(Metric):
     higher_is_better: bool = True
     full_state_update: bool = False
     confmat: Tensor
+
+    def __new__(
+        cls,
+        num_classes: Optional[int] = None,
+        weights: Optional[str] = None,
+        threshold: float = 0.5,
+        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        if task is not None:
+            kwargs.update(dict(weights=weights, ignore_index=ignore_index, validate_args=validate_args))
+            if task == "binary":
+                return BinaryCohenKappa(threshold, **kwargs)
+            if task == "multiclass":
+                return MulticlassCohenKappa(num_classes, **kwargs)
+            raise ValueError(
+                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+            )
+        return super().__new__(cls)
 
     def __init__(
         self,

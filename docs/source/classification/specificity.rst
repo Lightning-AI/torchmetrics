@@ -16,19 +16,19 @@ ________________
 BinarySpecificity
 ^^^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.BinarySpecificity
+.. autoclass:: torchmetrics.classification.BinarySpecificity
     :noindex:
 
 MulticlassSpecificity
 ^^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.MulticlassSpecificity
+.. autoclass:: torchmetrics.classification.MulticlassSpecificity
     :noindex:
 
 MultilabelSpecificity
 ^^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.MultilabelSpecificity
+.. autoclass:: torchmetrics.classification.MultilabelSpecificity
     :noindex:
 
 
@@ -41,17 +41,17 @@ ____________________
 binary_specificity
 ^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.binary_specificity
+.. autofunction:: torchmetrics.functional.classification.binary_specificity
     :noindex:
 
 multiclass_specificity
 ^^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.multiclass_specificity
+.. autofunction:: torchmetrics.functional.classification.multiclass_specificity
     :noindex:
 
 multilabel_specificity
 ^^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.multilabel_specificity
+.. autofunction:: torchmetrics.functional.classification.multilabel_specificity
     :noindex:

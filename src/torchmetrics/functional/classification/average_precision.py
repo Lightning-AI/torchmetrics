@@ -136,7 +136,7 @@ def binary_average_precision(
         A single scalar with the average precision score
 
     Example:
-        >>> from torchmetrics.functional import binary_average_precision
+        >>> from torchmetrics.functional.classification import binary_average_precision
         >>> preds = torch.tensor([0, 0.5, 0.7, 0.8])
         >>> target = torch.tensor([0, 1, 1, 0])
         >>> binary_average_precision(preds, target, thresholds=None)
@@ -245,7 +245,7 @@ def multiclass_average_precision(
         If `average="macro"|"weighted"` then a single scalar is returned.
 
     Example:
-        >>> from torchmetrics.functional import multiclass_average_precision
+        >>> from torchmetrics.functional.classification import multiclass_average_precision
         >>> preds = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
         ...                       [0.05, 0.75, 0.05, 0.05, 0.05],
         ...                       [0.05, 0.05, 0.75, 0.05, 0.05],
@@ -377,7 +377,7 @@ def multilabel_average_precision(
         If `average="micro|macro"|"weighted"` then a single scalar is returned.
 
     Example:
-        >>> from torchmetrics.functional import multilabel_average_precision
+        >>> from torchmetrics.functional.classification import multilabel_average_precision
         >>> preds = torch.tensor([[0.75, 0.05, 0.35],
         ...                       [0.45, 0.75, 0.05],
         ...                       [0.05, 0.55, 0.75],
@@ -563,8 +563,21 @@ def average_precision(
     num_classes: Optional[int] = None,
     pos_label: Optional[int] = None,
     average: Optional[str] = "macro",
+    task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    num_labels: Optional[int] = None,
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
 ) -> Union[List[Tensor], Tensor]:
-    """Computes the average precision score.
+    r"""
+    .. note::
+        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        metric. Moving forward we recommend using these versions. This base metric will still work as it did
+        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
+        and the general order of arguments may change, such that this metric will just function as an single
+        entrypoint to calling the three specialized versions.
+
+    Computes the average precision score.
 
     Args:
         preds: predictions from model (logits or probabilities)
@@ -607,5 +620,25 @@ def average_precision(
         >>> average_precision(pred, target, num_classes=5, average=None)
         [tensor(1.), tensor(1.), tensor(0.2500), tensor(0.2500), tensor(nan)]
     """
+    if task is not None:
+        kwargs = dict(thresholds=thresholds, ignore_index=ignore_index, validate_args=validate_args)
+        if task == "binary":
+            return binary_average_precision(preds, target, **kwargs)
+        if task == "multiclass":
+            return multiclass_average_precision(preds, target, num_classes, average, **kwargs)
+        if task == "multilabel":
+            return multilabel_average_precision(preds, target, num_labels, **kwargs)
+        raise ValueError(
+            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+        )
+    else:
+        rank_zero_warn(
+            "From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification"
+            " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
+            " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
+            " and the general order of arguments may change, such that this metric will just function as an single"
+            " entrypoint to calling the three specialized versions.",
+            DeprecationWarning,
+        )
     preds, target, num_classes, pos_label = _average_precision_update(preds, target, num_classes, pos_label, average)
     return _average_precision_compute(preds, target, num_classes, pos_label, average)
