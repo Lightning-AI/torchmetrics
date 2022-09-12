@@ -21,14 +21,14 @@ CohenKappa
 BinaryCohenKappa
 ^^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.BinaryCohenKappa
+.. autoclass:: torchmetrics.classification.BinaryCohenKappa
     :noindex:
     :exclude-members: update, compute
 
 MulticlassCohenKappa
 ^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.MulticlassCohenKappa
+.. autoclass:: torchmetrics.classification.MulticlassCohenKappa
     :noindex:
     :exclude-members: update, compute
 
@@ -44,11 +44,11 @@ cohen_kappa
 binary_cohen_kappa
 ^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.binary_cohen_kappa
+.. autofunction:: torchmetrics.functional.classification.binary_cohen_kappa
     :noindex:
 
 multiclass_cohen_kappa
 ^^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.multiclass_cohen_kappa
+.. autofunction:: torchmetrics.functional.classification.multiclass_cohen_kappa
     :noindex:

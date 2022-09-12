@@ -18,19 +18,19 @@ ________________
 BinaryPrecision
 ^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.BinaryPrecision
+.. autoclass:: torchmetrics.classification.BinaryPrecision
     :noindex:
 
 MulticlassPrecision
 ^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.MulticlassPrecision
+.. autoclass:: torchmetrics.classification.MulticlassPrecision
     :noindex:
 
 MultilabelPrecision
 ^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.MultilabelPrecision
+.. autoclass:: torchmetrics.classification.MultilabelPrecision
     :noindex:
 
 Functional Interface
@@ -42,17 +42,17 @@ ____________________
 binary_precision
 ^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.binary_precision
+.. autofunction:: torchmetrics.functional.classification.binary_precision
     :noindex:
 
 multiclass_precision
 ^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.multiclass_precision
+.. autofunction:: torchmetrics.functional.classification.multiclass_precision
     :noindex:
 
 multilabel_precision
 ^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.multilabel_precision
+.. autofunction:: torchmetrics.functional.classification.multilabel_precision
     :noindex:

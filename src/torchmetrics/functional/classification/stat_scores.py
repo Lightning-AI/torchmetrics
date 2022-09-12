@@ -183,21 +183,21 @@ def binary_stat_scores(
         - If ``multidim_average`` is set to ``samplewise``, the shape will be ``(N, 5)``
 
     Example (preds is int tensor):
-        >>> from torchmetrics.functional import binary_stat_scores
+        >>> from torchmetrics.functional.classification import binary_stat_scores
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0, 0, 1, 1, 0, 1])
         >>> binary_stat_scores(preds, target)
         tensor([2, 1, 2, 1, 3])
 
     Example (preds is float tensor):
-        >>> from torchmetrics.functional import binary_stat_scores
+        >>> from torchmetrics.functional.classification import binary_stat_scores
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
         >>> binary_stat_scores(preds, target)
         tensor([2, 1, 2, 1, 3])
 
     Example (multidim tensors):
-        >>> from torchmetrics.functional import binary_stat_scores
+        >>> from torchmetrics.functional.classification import binary_stat_scores
         >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
         >>> preds = torch.tensor(
         ...     [
@@ -506,7 +506,7 @@ def multiclass_stat_scores(
           - If ``average=None/'none'``, the shape will be ``(N, C, 5)``
 
     Example (preds is int tensor):
-        >>> from torchmetrics.functional import multiclass_stat_scores
+        >>> from torchmetrics.functional.classification import multiclass_stat_scores
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([2, 1, 0, 1])
         >>> multiclass_stat_scores(preds, target, num_classes=3, average='micro')
@@ -517,7 +517,7 @@ def multiclass_stat_scores(
                 [1, 0, 3, 0, 1]])
 
     Example (preds is float tensor):
-        >>> from torchmetrics.functional import multiclass_stat_scores
+        >>> from torchmetrics.functional.classification import multiclass_stat_scores
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([
         ...   [0.16, 0.26, 0.58],
@@ -533,7 +533,7 @@ def multiclass_stat_scores(
                 [1, 0, 3, 0, 1]])
 
     Example (multidim tensors):
-        >>> from torchmetrics.functional import multiclass_stat_scores
+        >>> from torchmetrics.functional.classification import multiclass_stat_scores
         >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
         >>> preds = torch.tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
         >>> multiclass_stat_scores(preds, target, num_classes=3, multidim_average='samplewise', average='micro')
@@ -761,7 +761,7 @@ def multilabel_stat_scores(
           - If ``average=None/'none'``, the shape will be ``(N, C, 5)``
 
     Example (preds is int tensor):
-        >>> from torchmetrics.functional import multilabel_stat_scores
+        >>> from torchmetrics.functional.classification import multilabel_stat_scores
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
         >>> multilabel_stat_scores(preds, target, num_labels=3, average='micro')
@@ -772,7 +772,7 @@ def multilabel_stat_scores(
                 [1, 1, 0, 0, 1]])
 
     Example (preds is float tensor):
-        >>> from torchmetrics.functional import multilabel_stat_scores
+        >>> from torchmetrics.functional.classification import multilabel_stat_scores
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> multilabel_stat_scores(preds, target, num_labels=3, average='micro')
@@ -783,7 +783,7 @@ def multilabel_stat_scores(
                 [1, 1, 0, 0, 1]])
 
     Example (multidim tensors):
-        >>> from torchmetrics.functional import multilabel_stat_scores
+        >>> from torchmetrics.functional.classification import multilabel_stat_scores
         >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
         >>> preds = torch.tensor(
         ...     [
@@ -1093,8 +1093,22 @@ def stat_scores(
     threshold: float = 0.5,
     multiclass: Optional[bool] = None,
     ignore_index: Optional[int] = None,
+    task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+    num_labels: Optional[int] = None,
+    average: Optional[str] = "micro",
+    multidim_average: Optional[Literal["global", "samplewise"]] = "global",
+    validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes the number of true positives, false positives, true negatives, false negatives.
+    r"""
+    .. note::
+        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        metric. Moving forward we recommend using these versions. This base metric will still work as it did
+        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
+        and the general order of arguments may change, such that this metric will just function as an single
+        entrypoint to calling the three specialized versions.
+
+
+    Computes the number of true positives, false positives, true negatives, false negatives.
     Related to `Type I and Type II errors`_ and the `confusion matrix`_.
 
     The reduction method (how the statistics are aggregated) is controlled by the
@@ -1210,13 +1224,26 @@ def stat_scores(
         tensor([2, 2, 6, 2, 4])
 
     """
-    rank_zero_warn(
-        "`torchmetrics.functional.stat_scores` have been deprecated in v0.10 in favor of"
-        "`torchmetrics.functional.binary_stat_scores`, `torchmetrics.functional.multiclass_stat_scores`"
-        "and `torchmetrics.functional.multilabel_stat_scores`. Please upgrade to the version that matches"
-        "your problem (API may have changed). This function will be removed v0.11.",
-        DeprecationWarning,
-    )
+    if task is not None:
+        kwargs = dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
+        if task == "binary":
+            return binary_stat_scores(preds, target, threshold, **kwargs)
+        if task == "multiclass":
+            return multiclass_stat_scores(preds, target, num_classes, average, top_k, **kwargs)
+        if task == "multilabel":
+            return multilabel_stat_scores(preds, target, num_labels, threshold, average, **kwargs)
+        raise ValueError(
+            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+        )
+    else:
+        rank_zero_warn(
+            "From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification"
+            " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
+            " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
+            " and the general order of arguments may change, such that this metric will just function as an single"
+            " entrypoint to calling the three specialized versions.",
+            DeprecationWarning,
+        )
     if reduce not in ["micro", "macro", "samples"]:
         raise ValueError(f"The `reduce` {reduce} is not valid.")
 

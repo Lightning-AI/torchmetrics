@@ -14,7 +14,7 @@ ________________
     :noindex:
 
 
-.. autoclass:: torchmetrics.MultilabelRankingLoss
+.. autoclass:: torchmetrics.classification.MultilabelRankingLoss
     :noindex:
 
 Functional Interface
@@ -23,5 +23,5 @@ ____________________
 .. autofunction:: torchmetrics.functional.label_ranking_loss
     :noindex:
 
-.. autofunction:: torchmetrics.functional.multilabel_ranking_loss
+.. autofunction:: torchmetrics.functional.classification.multilabel_ranking_loss
     :noindex:

@@ -15,6 +15,7 @@ from typing import Any, List, Optional, Tuple, Union
 
 import torch
 from torch import Tensor
+from typing_extensions import Literal
 
 from torchmetrics.classification.precision_recall_curve import (
     BinaryPrecisionRecallCurve,
@@ -82,7 +83,7 @@ class BinaryROC(BinaryPrecisionRecallCurve):
         - thresholds: an 1d tensor of size (n_thresholds, ) with decreasing threshold values
 
     Example:
-        >>> from torchmetrics import BinaryROC
+        >>> from torchmetrics.classification import BinaryROC
         >>> preds = torch.tensor([0, 0.5, 0.7, 0.8])
         >>> target = torch.tensor([0, 1, 1, 0])
         >>> metric = BinaryROC(thresholds=None)
@@ -164,7 +165,7 @@ class MulticlassROC(MulticlassPrecisionRecallCurve):
           then a single 1d tensor of size (n_thresholds, ) is returned with shared threshold values for all classes.
 
     Example:
-        >>> from torchmetrics import MulticlassROC
+        >>> from torchmetrics.classification import MulticlassROC
         >>> preds = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
         ...                       [0.05, 0.75, 0.05, 0.05, 0.05],
         ...                       [0.05, 0.05, 0.75, 0.05, 0.05],
@@ -262,7 +263,7 @@ class MultilabelROC(MultilabelPrecisionRecallCurve):
           then a single 1d tensor of size (n_thresholds, ) is returned with shared threshold values for all labels.
 
     Example:
-        >>> from torchmetrics import MultilabelROC
+        >>> from torchmetrics.classification import MultilabelROC
         >>> preds = torch.tensor([[0.75, 0.05, 0.35],
         ...                       [0.45, 0.75, 0.05],
         ...                       [0.05, 0.55, 0.75],
@@ -393,6 +394,30 @@ class ROC(Metric):
     full_state_update: bool = False
     preds: List[Tensor]
     target: List[Tensor]
+
+    def __new__(
+        cls,
+        num_classes: Optional[int] = None,
+        pos_label: Optional[int] = None,
+        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+        thresholds: Optional[Union[int, List[float], Tensor]] = None,
+        num_labels: Optional[int] = None,
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        if task is not None:
+            kwargs.update(dict(thresholds=thresholds, ignore_index=ignore_index, validate_args=validate_args))
+            if task == "binary":
+                return BinaryROC(**kwargs)
+            if task == "multiclass":
+                return MulticlassROC(num_classes, **kwargs)
+            if task == "multilabel":
+                return MultilabelROC(num_labels, **kwargs)
+            raise ValueError(
+                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+            )
+        return super().__new__(cls)
 
     def __init__(
         self,

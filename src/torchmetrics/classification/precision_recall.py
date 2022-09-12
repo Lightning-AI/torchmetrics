@@ -15,6 +15,7 @@ from typing import Any, Optional
 
 import torch
 from torch import Tensor
+from typing_extensions import Literal
 
 from torchmetrics.classification.stat_scores import (
     BinaryStatScores,
@@ -67,7 +68,7 @@ class BinaryPrecision(BinaryStatScores):
         is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of a scalar value per sample.
 
     Example (preds is int tensor):
-        >>> from torchmetrics import BinaryPrecision
+        >>> from torchmetrics.classification import BinaryPrecision
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0, 0, 1, 1, 0, 1])
         >>> metric = BinaryPrecision()
@@ -75,7 +76,7 @@ class BinaryPrecision(BinaryStatScores):
         tensor(0.6667)
 
     Example (preds is float tensor):
-        >>> from torchmetrics import BinaryPrecision
+        >>> from torchmetrics.classification import BinaryPrecision
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
         >>> metric = BinaryPrecision()
@@ -83,7 +84,7 @@ class BinaryPrecision(BinaryStatScores):
         tensor(0.6667)
 
     Example (multidim tensors):
-        >>> from torchmetrics import BinaryPrecision
+        >>> from torchmetrics.classification import BinaryPrecision
         >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
         >>> preds = torch.tensor(
         ...     [
@@ -162,7 +163,7 @@ class MulticlassPrecision(MulticlassStatScores):
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Example (preds is int tensor):
-        >>> from torchmetrics import MulticlassPrecision
+        >>> from torchmetrics.classification import MulticlassPrecision
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([2, 1, 0, 1])
         >>> metric = MulticlassPrecision(num_classes=3)
@@ -173,7 +174,7 @@ class MulticlassPrecision(MulticlassStatScores):
         tensor([1.0000, 0.5000, 1.0000])
 
     Example (preds is float tensor):
-        >>> from torchmetrics import MulticlassPrecision
+        >>> from torchmetrics.classification import MulticlassPrecision
         >>> target = target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([
         ...   [0.16, 0.26, 0.58],
@@ -189,7 +190,7 @@ class MulticlassPrecision(MulticlassStatScores):
         tensor([1.0000, 0.5000, 1.0000])
 
     Example (multidim tensors):
-        >>> from torchmetrics import MulticlassPrecision
+        >>> from torchmetrics.classification import MulticlassPrecision
         >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
         >>> preds = torch.tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
         >>> metric = MulticlassPrecision(num_classes=3, multidim_average='samplewise')
@@ -266,7 +267,7 @@ class MultilabelPrecision(MultilabelStatScores):
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Example (preds is int tensor):
-        >>> from torchmetrics import MultilabelPrecision
+        >>> from torchmetrics.classification import MultilabelPrecision
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
         >>> metric = MultilabelPrecision(num_labels=3)
@@ -277,7 +278,7 @@ class MultilabelPrecision(MultilabelStatScores):
         tensor([1.0000, 0.0000, 0.5000])
 
     Example (preds is float tensor):
-        >>> from torchmetrics import MultilabelPrecision
+        >>> from torchmetrics.classification import MultilabelPrecision
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> metric = MultilabelPrecision(num_labels=3)
@@ -288,7 +289,7 @@ class MultilabelPrecision(MultilabelStatScores):
         tensor([1.0000, 0.0000, 0.5000])
 
     Example (multidim tensors):
-        >>> from torchmetrics import MultilabelPrecision
+        >>> from torchmetrics.classification import MultilabelPrecision
         >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
         >>> preds = torch.tensor(
         ...     [
@@ -353,7 +354,7 @@ class BinaryRecall(BinaryStatScores):
         is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of a scalar value per sample.
 
     Example (preds is int tensor):
-        >>> from torchmetrics import BinaryRecall
+        >>> from torchmetrics.classification import BinaryRecall
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0, 0, 1, 1, 0, 1])
         >>> metric = BinaryRecall()
@@ -361,7 +362,7 @@ class BinaryRecall(BinaryStatScores):
         tensor(0.6667)
 
     Example (preds is float tensor):
-        >>> from torchmetrics import BinaryRecall
+        >>> from torchmetrics.classification import BinaryRecall
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
         >>> metric = BinaryRecall()
@@ -369,7 +370,7 @@ class BinaryRecall(BinaryStatScores):
         tensor(0.6667)
 
     Example (multidim tensors):
-        >>> from torchmetrics import BinaryRecall
+        >>> from torchmetrics.classification import BinaryRecall
         >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
         >>> preds = torch.tensor(
         ...     [
@@ -448,7 +449,7 @@ class MulticlassRecall(MulticlassStatScores):
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Example (preds is int tensor):
-        >>> from torchmetrics import MulticlassRecall
+        >>> from torchmetrics.classification import MulticlassRecall
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([2, 1, 0, 1])
         >>> metric = MulticlassRecall(num_classes=3)
@@ -459,7 +460,7 @@ class MulticlassRecall(MulticlassStatScores):
         tensor([0.5000, 1.0000, 1.0000])
 
     Example (preds is float tensor):
-        >>> from torchmetrics import MulticlassRecall
+        >>> from torchmetrics.classification import MulticlassRecall
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([
         ...   [0.16, 0.26, 0.58],
@@ -475,7 +476,7 @@ class MulticlassRecall(MulticlassStatScores):
         tensor([0.5000, 1.0000, 1.0000])
 
     Example (multidim tensors):
-        >>> from torchmetrics import MulticlassRecall
+        >>> from torchmetrics.classification import MulticlassRecall
         >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
         >>> preds = torch.tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
         >>> metric = MulticlassRecall(num_classes=3, multidim_average='samplewise')
@@ -552,7 +553,7 @@ class MultilabelRecall(MultilabelStatScores):
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Example (preds is int tensor):
-        >>> from torchmetrics import MultilabelRecall
+        >>> from torchmetrics.classification import MultilabelRecall
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
         >>> metric = MultilabelRecall(num_labels=3)
@@ -563,7 +564,7 @@ class MultilabelRecall(MultilabelStatScores):
         tensor([1., 0., 1.])
 
     Example (preds is float tensor):
-        >>> from torchmetrics import MultilabelRecall
+        >>> from torchmetrics.classification import MultilabelRecall
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> metric = MultilabelRecall(num_labels=3)
@@ -574,7 +575,7 @@ class MultilabelRecall(MultilabelStatScores):
         tensor([1., 0., 1.])
 
     Example (multidim tensors):
-        >>> from torchmetrics import MultilabelRecall
+        >>> from torchmetrics.classification import MultilabelRecall
         >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
         >>> preds = torch.tensor(
         ...     [
@@ -697,6 +698,36 @@ class Precision(StatScores):
     is_differentiable = False
     higher_is_better = True
     full_state_update: bool = False
+
+    def __new__(
+        cls,
+        threshold: float = 0.5,
+        num_classes: Optional[int] = None,
+        average: Optional[str] = "micro",
+        mdmc_average: Optional[str] = None,
+        ignore_index: Optional[int] = None,
+        top_k: Optional[int] = None,
+        multiclass: Optional[bool] = None,
+        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+        num_labels: Optional[int] = None,
+        multidim_average: Optional[Literal["global", "samplewise"]] = "global",
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        if task is not None:
+            kwargs.update(
+                dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
+            )
+            if task == "binary":
+                return BinaryPrecision(threshold, **kwargs)
+            if task == "multiclass":
+                return MulticlassPrecision(num_classes, top_k, average, **kwargs)
+            if task == "multilabel":
+                return MultilabelPrecision(num_labels, threshold, average, **kwargs)
+            raise ValueError(
+                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+            )
+        return super().__new__(cls)
 
     def __init__(
         self,
@@ -836,6 +867,36 @@ class Recall(StatScores):
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
+
+    def __new__(
+        cls,
+        threshold: float = 0.5,
+        num_classes: Optional[int] = None,
+        average: Optional[str] = "micro",
+        mdmc_average: Optional[str] = None,
+        ignore_index: Optional[int] = None,
+        top_k: Optional[int] = None,
+        multiclass: Optional[bool] = None,
+        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+        num_labels: Optional[int] = None,
+        multidim_average: Optional[Literal["global", "samplewise"]] = "global",
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        if task is not None:
+            kwargs.update(
+                dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
+            )
+            if task == "binary":
+                return BinaryRecall(threshold, **kwargs)
+            if task == "multiclass":
+                return MulticlassRecall(num_classes, top_k, average, **kwargs)
+            if task == "multilabel":
+                return MultilabelRecall(num_labels, threshold, average, **kwargs)
+            raise ValueError(
+                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+            )
+        return super().__new__(cls)
 
     def __init__(
         self,

@@ -73,7 +73,7 @@ class BinaryCalibrationError(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
-        >>> from torchmetrics import BinaryCalibrationError
+        >>> from torchmetrics.classification import BinaryCalibrationError
         >>> preds = torch.tensor([0.25, 0.25, 0.55, 0.75, 0.75])
         >>> target = torch.tensor([0, 0, 1, 1, 1])
         >>> metric = BinaryCalibrationError(n_bins=2, norm='l1')
@@ -165,7 +165,7 @@ class MulticlassCalibrationError(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
-        >>> from torchmetrics import MulticlassCalibrationError
+        >>> from torchmetrics.classification import MulticlassCalibrationError
         >>> preds = torch.tensor([[0.25, 0.20, 0.55],
         ...                       [0.55, 0.05, 0.40],
         ...                       [0.10, 0.30, 0.60],
@@ -264,6 +264,27 @@ class CalibrationError(Metric):
     DISTANCES = {"l1", "l2", "max"}
     confidences: List[Tensor]
     accuracies: List[Tensor]
+
+    def __new__(
+        cls,
+        n_bins: int = 15,
+        norm: str = "l1",
+        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+        num_classes: Optional[int] = None,
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        if task is not None:
+            kwargs.update(dict(n_bins=n_bins, norm=norm, ignore_index=ignore_index, validate_args=validate_args))
+            if task == "binary":
+                return BinaryCalibrationError(**kwargs)
+            if task == "multiclass":
+                return MulticlassCalibrationError(num_classes, **kwargs)
+            raise ValueError(
+                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+            )
+        return super().__new__(cls)
 
     def __init__(
         self,

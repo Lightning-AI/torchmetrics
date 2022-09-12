@@ -21,19 +21,19 @@ FBetaScore
 BinaryFBetaScore
 ^^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.BinaryFBetaScore
+.. autoclass:: torchmetrics.classification.BinaryFBetaScore
     :noindex:
 
 MulticlassFBetaScore
 ^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.MulticlassFBetaScore
+.. autoclass:: torchmetrics.classification.MulticlassFBetaScore
     :noindex:
 
 MultilabelFBetaScore
 ^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.MultilabelFBetaScore
+.. autoclass:: torchmetrics.classification.MultilabelFBetaScore
     :noindex:
 
 Functional Interface
@@ -48,17 +48,17 @@ fbeta_score
 binary_fbeta_score
 ^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.binary_fbeta_score
+.. autofunction:: torchmetrics.functional.classification.binary_fbeta_score
     :noindex:
 
 multiclass_fbeta_score
 ^^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.multiclass_fbeta_score
+.. autofunction:: torchmetrics.functional.classification.multiclass_fbeta_score
     :noindex:
 
 multilabel_fbeta_score
 ^^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.multilabel_fbeta_score
+.. autofunction:: torchmetrics.functional.classification.multilabel_fbeta_score
     :noindex:

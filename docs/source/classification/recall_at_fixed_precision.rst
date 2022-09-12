@@ -13,19 +13,19 @@ ________________
 BinaryRecallAtFixedPrecision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.BinaryRecallAtFixedPrecision
+.. autoclass:: torchmetrics.classification.BinaryRecallAtFixedPrecision
     :noindex:
 
 MulticlassRecallAtFixedPrecision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.MulticlassRecallAtFixedPrecision
+.. autoclass:: torchmetrics.classification.MulticlassRecallAtFixedPrecision
     :noindex:
 
 MultilabelRecallAtFixedPrecision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.MultilabelRecallAtFixedPrecision
+.. autoclass:: torchmetrics.classification.MultilabelRecallAtFixedPrecision
     :noindex:
 
 Functional Interface
@@ -34,17 +34,17 @@ ____________________
 binary_recall_at_fixed_precision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.binary_recall_at_fixed_precision
+.. autofunction:: torchmetrics.functional.classification.binary_recall_at_fixed_precision
     :noindex:
 
 multiclass_recall_at_fixed_precision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.multiclass_recall_at_fixed_precision
+.. autofunction:: torchmetrics.functional.classification.multiclass_recall_at_fixed_precision
     :noindex:
 
 multilabel_recall_at_fixed_precision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.multilabel_recall_at_fixed_precision
+.. autofunction:: torchmetrics.functional.classification.multilabel_recall_at_fixed_precision
     :noindex:

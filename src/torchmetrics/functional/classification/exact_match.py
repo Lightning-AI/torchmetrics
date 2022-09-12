@@ -100,21 +100,21 @@ def multilabel_exact_match(
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Example (preds is int tensor):
-        >>> from torchmetrics.functional import multilabel_exact_match
+        >>> from torchmetrics.functional.classification import multilabel_exact_match
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
         >>> multilabel_exact_match(preds, target, num_labels=3)
         tensor(0.5000)
 
     Example (preds is float tensor):
-        >>> from torchmetrics.functional import multilabel_exact_match
+        >>> from torchmetrics.functional.classification import multilabel_exact_match
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> multilabel_exact_match(preds, target, num_labels=3)
         tensor(0.5000)
 
     Example (multidim tensors):
-        >>> from torchmetrics.functional import multilabel_exact_match
+        >>> from torchmetrics.functional.classification import multilabel_exact_match
         >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
         >>> preds = torch.tensor(
         ...     [

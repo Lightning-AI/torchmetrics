@@ -19,19 +19,19 @@ HammingDistance
 BinaryHammingDistance
 ^^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.BinaryHammingDistance
+.. autoclass:: torchmetrics.classification.BinaryHammingDistance
     :noindex:
 
 MulticlassHammingDistance
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.MulticlassHammingDistance
+.. autoclass:: torchmetrics.classification.MulticlassHammingDistance
     :noindex:
 
 MultilabelHammingDistance
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.MultilabelHammingDistance
+.. autoclass:: torchmetrics.classification.MultilabelHammingDistance
     :noindex:
 
 Functional Interface
@@ -46,17 +46,17 @@ hamming_distance
 binary_hamming_distance
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.binary_hamming_distance
+.. autofunction:: torchmetrics.functional.classification.binary_hamming_distance
     :noindex:
 
 multiclass_hamming_distance
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.multiclass_hamming_distance
+.. autofunction:: torchmetrics.functional.classification.multiclass_hamming_distance
     :noindex:
 
 multilabel_hamming_distance
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.multilabel_hamming_distance
+.. autofunction:: torchmetrics.functional.classification.multilabel_hamming_distance
     :noindex:

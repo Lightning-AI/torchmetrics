@@ -15,6 +15,7 @@ from typing import Any, Optional
 
 import torch
 from torch import Tensor
+from typing_extensions import Literal
 
 from torchmetrics.classification import BinaryConfusionMatrix, MulticlassConfusionMatrix, MultilabelConfusionMatrix
 from torchmetrics.functional.classification.matthews_corrcoef import (
@@ -54,7 +55,7 @@ class BinaryMatthewsCorrCoef(BinaryConfusionMatrix):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
-        >>> from torchmetrics import BinaryMatthewsCorrCoef
+        >>> from torchmetrics.classification import BinaryMatthewsCorrCoef
         >>> target = torch.tensor([1, 1, 0, 0])
         >>> preds = torch.tensor([0, 1, 0, 0])
         >>> metric = BinaryMatthewsCorrCoef()
@@ -62,7 +63,7 @@ class BinaryMatthewsCorrCoef(BinaryConfusionMatrix):
         tensor(0.5774)
 
     Example (preds is float tensor):
-        >>> from torchmetrics import BinaryMatthewsCorrCoef
+        >>> from torchmetrics.classification import BinaryMatthewsCorrCoef
         >>> target = torch.tensor([1, 1, 0, 0])
         >>> preds = torch.tensor([0.35, 0.85, 0.48, 0.01])
         >>> metric = BinaryMatthewsCorrCoef()
@@ -117,7 +118,7 @@ class MulticlassMatthewsCorrCoef(MulticlassConfusionMatrix):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (pred is integer tensor):
-        >>> from torchmetrics import MulticlassMatthewsCorrCoef
+        >>> from torchmetrics.classification import MulticlassMatthewsCorrCoef
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([2, 1, 0, 1])
         >>> metric = MulticlassMatthewsCorrCoef(num_classes=3)
@@ -125,7 +126,7 @@ class MulticlassMatthewsCorrCoef(MulticlassConfusionMatrix):
         tensor(0.7000)
 
     Example (pred is float tensor):
-        >>> from torchmetrics import MulticlassMatthewsCorrCoef
+        >>> from torchmetrics.classification import MulticlassMatthewsCorrCoef
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([
         ...   [0.16, 0.26, 0.58],
@@ -186,7 +187,7 @@ class MultilabelMatthewsCorrCoef(MultilabelConfusionMatrix):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
-        >>> from torchmetrics import MultilabelMatthewsCorrCoef
+        >>> from torchmetrics.classification import MultilabelMatthewsCorrCoef
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
         >>> metric = MultilabelMatthewsCorrCoef(num_labels=3)
@@ -194,7 +195,7 @@ class MultilabelMatthewsCorrCoef(MultilabelConfusionMatrix):
         tensor(0.3333)
 
     Example (preds is float tensor):
-        >>> from torchmetrics import MultilabelMatthewsCorrCoef
+        >>> from torchmetrics.classification import MultilabelMatthewsCorrCoef
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> metric = MultilabelMatthewsCorrCoef(num_labels=3)
@@ -269,6 +270,29 @@ class MatthewsCorrCoef(Metric):
     higher_is_better: bool = True
     full_state_update: bool = False
     confmat: Tensor
+
+    def __new__(
+        cls,
+        num_classes: int,
+        threshold: float = 0.5,
+        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+        num_labels: Optional[int] = None,
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        if task is not None:
+            kwargs.update(dict(ignore_index=ignore_index, validate_args=validate_args))
+            if task == "binary":
+                return BinaryMatthewsCorrCoef(threshold, **kwargs)
+            if task == "multiclass":
+                return MulticlassMatthewsCorrCoef(num_classes, **kwargs)
+            if task == "multilabel":
+                return MultilabelMatthewsCorrCoef(num_labels, threshold, **kwargs)
+            raise ValueError(
+                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+            )
+        return super().__new__(cls)
 
     def __init__(
         self,

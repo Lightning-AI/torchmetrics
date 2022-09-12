@@ -33,6 +33,7 @@ from torchmetrics.functional.classification.stat_scores import (
 )
 from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.compute import _safe_divide
+from torchmetrics.utilities.prints import rank_zero_warn
 
 
 def _hamming_distance_reduce(
@@ -134,21 +135,21 @@ def binary_hamming_distance(
         is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of a scalar value per sample.
 
     Example (preds is int tensor):
-        >>> from torchmetrics.functional import binary_hamming_distance
+        >>> from torchmetrics.functional.classification import binary_hamming_distance
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0, 0, 1, 1, 0, 1])
         >>> binary_hamming_distance(preds, target)
         tensor(0.3333)
 
     Example (preds is float tensor):
-        >>> from torchmetrics.functional import binary_hamming_distance
+        >>> from torchmetrics.functional.classification import binary_hamming_distance
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
         >>> binary_hamming_distance(preds, target)
         tensor(0.3333)
 
     Example (multidim tensors):
-        >>> from torchmetrics.functional import binary_hamming_distance
+        >>> from torchmetrics.functional.classification import binary_hamming_distance
         >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
         >>> preds = torch.tensor(
         ...     [
@@ -237,7 +238,7 @@ def multiclass_hamming_distance(
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Example (preds is int tensor):
-        >>> from torchmetrics.functional import multiclass_hamming_distance
+        >>> from torchmetrics.functional.classification import multiclass_hamming_distance
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([2, 1, 0, 1])
         >>> multiclass_hamming_distance(preds, target, num_classes=3)
@@ -246,7 +247,7 @@ def multiclass_hamming_distance(
         tensor([0.5000, 0.0000, 0.0000])
 
     Example (preds is float tensor):
-        >>> from torchmetrics.functional import multiclass_hamming_distance
+        >>> from torchmetrics.functional.classification import multiclass_hamming_distance
         >>> target = target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([
         ...   [0.16, 0.26, 0.58],
@@ -260,7 +261,7 @@ def multiclass_hamming_distance(
         tensor([0.5000, 0.0000, 0.0000])
 
     Example (multidim tensors):
-        >>> from torchmetrics.functional import multiclass_hamming_distance
+        >>> from torchmetrics.functional.classification import multiclass_hamming_distance
         >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
         >>> preds = torch.tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
         >>> multiclass_hamming_distance(preds, target, num_classes=3, multidim_average='samplewise')
@@ -345,7 +346,7 @@ def multilabel_hamming_distance(
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Example (preds is int tensor):
-        >>> from torchmetrics.functional import multilabel_hamming_distance
+        >>> from torchmetrics.functional.classification import multilabel_hamming_distance
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
         >>> multilabel_hamming_distance(preds, target, num_labels=3)
@@ -354,7 +355,7 @@ def multilabel_hamming_distance(
         tensor([0.0000, 0.5000, 0.5000])
 
     Example (preds is float tensor):
-        >>> from torchmetrics.functional import multilabel_hamming_distance
+        >>> from torchmetrics.functional.classification import multilabel_hamming_distance
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> multilabel_hamming_distance(preds, target, num_labels=3)
@@ -363,7 +364,7 @@ def multilabel_hamming_distance(
         tensor([0.0000, 0.5000, 0.5000])
 
     Example (multidim tensors):
-        >>> from torchmetrics.functional import multilabel_hamming_distance
+        >>> from torchmetrics.functional.classification import multilabel_hamming_distance
         >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
         >>> preds = torch.tensor(
         ...     [
@@ -429,8 +430,27 @@ def _hamming_distance_compute(correct: Tensor, total: Union[int, Tensor]) -> Ten
     return 1 - correct.float() / total
 
 
-def hamming_distance(preds: Tensor, target: Tensor, threshold: float = 0.5) -> Tensor:
+def hamming_distance(
+    preds: Tensor,
+    target: Tensor,
+    threshold: float = 0.5,
+    task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+    num_classes: Optional[int] = None,
+    num_labels: Optional[int] = None,
+    average: Optional[str] = "macro",
+    top_k: int = 1,
+    multidim_average: Optional[Literal["global", "samplewise"]] = "global",
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
+) -> Tensor:
     r"""
+    .. note::
+        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        metric. Moving forward we recommend using these versions. This base metric will still work as it did
+        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
+        and the general order of arguments may change, such that this metric will just function as an single
+        entrypoint to calling the three specialized versions.
+
     Computes the average `Hamming distance`_ (also
     known as Hamming loss) between targets and predictions:
 
@@ -461,6 +481,26 @@ def hamming_distance(preds: Tensor, target: Tensor, threshold: float = 0.5) -> T
         >>> hamming_distance(preds, target)
         tensor(0.2500)
     """
+    if task is not None:
+        kwargs = dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
+        if task == "binary":
+            return binary_hamming_distance(preds, target, threshold, **kwargs)
+        if task == "multiclass":
+            return multiclass_hamming_distance(preds, target, num_classes, average, top_k, **kwargs)
+        if task == "multilabel":
+            return multilabel_hamming_distance(preds, target, num_labels, threshold, average, **kwargs)
+        raise ValueError(
+            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+        )
+    else:
+        rank_zero_warn(
+            "From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification"
+            " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
+            " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
+            " and the general order of arguments may change, such that this metric will just function as an single"
+            " entrypoint to calling the three specialized versions.",
+            DeprecationWarning,
+        )
 
     correct, total = _hamming_distance_update(preds, target, threshold)
     return _hamming_distance_compute(correct, total)

@@ -83,7 +83,7 @@ class BinaryAUROC(BinaryPrecisionRecallCurve):
         A single scalar with the auroc score
 
     Example:
-        >>> from torchmetrics import BinaryAUROC
+        >>> from torchmetrics.classification import BinaryAUROC
         >>> preds = torch.tensor([0, 0.5, 0.7, 0.8])
         >>> target = torch.tensor([0, 1, 1, 0])
         >>> metric = BinaryAUROC(thresholds=None)
@@ -169,7 +169,7 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
         If `average="macro"|"weighted"` then a single scalar is returned.
 
     Example:
-        >>> from torchmetrics import MulticlassAUROC
+        >>> from torchmetrics.classification import MulticlassAUROC
         >>> preds = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
         ...                       [0.05, 0.75, 0.05, 0.05, 0.05],
         ...                       [0.05, 0.05, 0.75, 0.05, 0.05],
@@ -271,7 +271,7 @@ class MultilabelAUROC(MultilabelPrecisionRecallCurve):
         If `average="micro|macro"|"weighted"` then a single scalar is returned.
 
     Example:
-        >>> from torchmetrics import MultilabelAUROC
+        >>> from torchmetrics.classification import MultilabelAUROC
         >>> preds = torch.tensor([[0.75, 0.05, 0.35],
         ...                       [0.45, 0.75, 0.05],
         ...                       [0.05, 0.55, 0.75],
@@ -404,12 +404,43 @@ class AUROC(Metric):
     preds: List[Tensor]
     target: List[Tensor]
 
+    def __new__(
+        cls,
+        num_classes: Optional[int] = None,
+        pos_label: Optional[int] = None,
+        average: Optional[str] = "macro",
+        max_fpr: Optional[float] = None,
+        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+        thresholds: Optional[Union[int, List[float], Tensor]] = None,
+        num_labels: Optional[int] = None,
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        if task is not None:
+            kwargs.update(dict(thresholds=thresholds, ignore_index=ignore_index, validate_args=validate_args))
+            if task == "binary":
+                return BinaryAUROC(max_fpr, **kwargs)
+            if task == "multiclass":
+                return MulticlassAUROC(num_classes, average, **kwargs)
+            if task == "multilabel":
+                return MultilabelAUROC(num_labels, average, **kwargs)
+            raise ValueError(
+                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+            )
+        return super().__new__(cls)
+
     def __init__(
         self,
         num_classes: Optional[int] = None,
         pos_label: Optional[int] = None,
         average: Optional[str] = "macro",
         max_fpr: Optional[float] = None,
+        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+        thresholds: Optional[Union[int, List[float], Tensor]] = None,
+        num_labels: Optional[int] = None,
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)

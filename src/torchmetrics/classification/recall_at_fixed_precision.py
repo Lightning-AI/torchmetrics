@@ -78,7 +78,7 @@ class BinaryRecallAtFixedPrecision(BinaryPrecisionRecallCurve):
         - threshold: an scalar tensor with the corresponding threshold level
 
     Example:
-        >>> from torchmetrics import BinaryRecallAtFixedPrecision
+        >>> from torchmetrics.classification import BinaryRecallAtFixedPrecision
         >>> preds = torch.tensor([0, 0.5, 0.7, 0.8])
         >>> target = torch.tensor([0, 1, 1, 0])
         >>> metric = BinaryRecallAtFixedPrecision(min_precision=0.5, thresholds=None)
@@ -161,7 +161,7 @@ class MulticlassRecallAtFixedPrecision(MulticlassPrecisionRecallCurve):
         - thresholds: an 1d tensor of size (n_classes, ) with the corresponding threshold level per class
 
     Example:
-        >>> from torchmetrics import MulticlassRecallAtFixedPrecision
+        >>> from torchmetrics.classification import MulticlassRecallAtFixedPrecision
         >>> preds = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
         ...                       [0.05, 0.75, 0.05, 0.05, 0.05],
         ...                       [0.05, 0.05, 0.75, 0.05, 0.05],
@@ -252,7 +252,7 @@ class MultilabelRecallAtFixedPrecision(MultilabelPrecisionRecallCurve):
         - thresholds: an 1d tensor of size (n_classes, ) with the corresponding threshold level per class
 
     Example:
-        >>> from torchmetrics import MultilabelRecallAtFixedPrecision
+        >>> from torchmetrics.classification import MultilabelRecallAtFixedPrecision
         >>> preds = torch.tensor([[0.75, 0.05, 0.35],
         ...                       [0.45, 0.75, 0.05],
         ...                       [0.05, 0.55, 0.75],

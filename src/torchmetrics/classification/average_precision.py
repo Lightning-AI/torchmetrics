@@ -84,7 +84,7 @@ class BinaryAveragePrecision(BinaryPrecisionRecallCurve):
         A single scalar with the average precision score
 
     Example:
-        >>> from torchmetrics import BinaryAveragePrecision
+        >>> from torchmetrics.classification import BinaryAveragePrecision
         >>> preds = torch.tensor([0, 0.5, 0.7, 0.8])
         >>> target = torch.tensor([0, 1, 1, 0])
         >>> metric = BinaryAveragePrecision(thresholds=None)
@@ -162,7 +162,7 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
         If `average="macro"|"weighted"` then a single scalar is returned.
 
     Example:
-        >>> from torchmetrics import MulticlassAveragePrecision
+        >>> from torchmetrics.classification import MulticlassAveragePrecision
         >>> preds = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
         ...                       [0.05, 0.75, 0.05, 0.05, 0.05],
         ...                       [0.05, 0.05, 0.75, 0.05, 0.05],
@@ -269,7 +269,7 @@ class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
         If `average="micro|macro"|"weighted"` then a single scalar is returned.
 
     Example:
-        >>> from torchmetrics import MultilabelAveragePrecision
+        >>> from torchmetrics.classification import MultilabelAveragePrecision
         >>> preds = torch.tensor([[0.75, 0.05, 0.35],
         ...                       [0.45, 0.75, 0.05],
         ...                       [0.05, 0.55, 0.75],
@@ -384,11 +384,41 @@ class AveragePrecision(Metric):
     preds: List[Tensor]
     target: List[Tensor]
 
+    def __new__(
+        cls,
+        num_classes: Optional[int] = None,
+        pos_label: Optional[int] = None,
+        average: Optional[str] = "macro",
+        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+        thresholds: Optional[Union[int, List[float], Tensor]] = None,
+        num_labels: Optional[int] = None,
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        if task is not None:
+            kwargs.update(dict(thresholds=thresholds, ignore_index=ignore_index, validate_args=validate_args))
+            if task == "binary":
+                return BinaryAveragePrecision(**kwargs)
+            if task == "multiclass":
+                return MulticlassAveragePrecision(num_classes, average, **kwargs)
+            if task == "multilabel":
+                return MultilabelAveragePrecision(num_labels, average, **kwargs)
+            raise ValueError(
+                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+            )
+        return super().__new__(cls)
+
     def __init__(
         self,
         num_classes: Optional[int] = None,
         pos_label: Optional[int] = None,
         average: Optional[str] = "macro",
+        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+        thresholds: Optional[Union[int, List[float], Tensor]] = None,
+        num_labels: Optional[int] = None,
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)

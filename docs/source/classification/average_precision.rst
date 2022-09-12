@@ -16,19 +16,19 @@ ________________
 BinaryAveragePrecision
 ^^^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.BinaryAveragePrecision
+.. autoclass:: torchmetrics.classification.BinaryAveragePrecision
     :noindex:
 
 MulticlassAveragePrecision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.MulticlassAveragePrecision
+.. autoclass:: torchmetrics.classification.MulticlassAveragePrecision
     :noindex:
 
 MultilabelAveragePrecision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.MultilabelAveragePrecision
+.. autoclass:: torchmetrics.classification.MultilabelAveragePrecision
     :noindex:
 
 Functional Interface
@@ -40,17 +40,17 @@ ____________________
 binary_average_precision
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.binary_average_precision
+.. autofunction:: torchmetrics.functional.classification.binary_average_precision
     :noindex:
 
 multiclass_average_precision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.multiclass_average_precision
+.. autofunction:: torchmetrics.functional.classification.multiclass_average_precision
     :noindex:
 
 multilabel_average_precision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.multilabel_average_precision
+.. autofunction:: torchmetrics.functional.classification.multilabel_average_precision
     :noindex:

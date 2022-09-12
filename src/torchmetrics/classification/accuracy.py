@@ -15,6 +15,7 @@ from typing import Any, Optional
 
 import torch
 from torch import Tensor, tensor
+from typing_extensions import Literal
 
 from torchmetrics.functional.classification.accuracy import (
     _accuracy_compute,
@@ -73,7 +74,7 @@ class BinaryAccuracy(BinaryStatScores):
         is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of a scalar value per sample.
 
     Example (preds is int tensor):
-        >>> from torchmetrics import BinaryAccuracy
+        >>> from torchmetrics.classification import BinaryAccuracy
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0, 0, 1, 1, 0, 1])
         >>> metric = BinaryAccuracy()
@@ -81,7 +82,7 @@ class BinaryAccuracy(BinaryStatScores):
         tensor(0.6667)
 
     Example (preds is float tensor):
-        >>> from torchmetrics import BinaryAccuracy
+        >>> from torchmetrics.classification import BinaryAccuracy
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
         >>> metric = BinaryAccuracy()
@@ -89,7 +90,7 @@ class BinaryAccuracy(BinaryStatScores):
         tensor(0.6667)
 
     Example (multidim tensors):
-        >>> from torchmetrics import BinaryAccuracy
+        >>> from torchmetrics.classification import BinaryAccuracy
         >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
         >>> preds = torch.tensor(
         ...     [
@@ -168,7 +169,7 @@ class MulticlassAccuracy(MulticlassStatScores):
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Example (preds is int tensor):
-        >>> from torchmetrics import MulticlassAccuracy
+        >>> from torchmetrics.classification import MulticlassAccuracy
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([2, 1, 0, 1])
         >>> metric = MulticlassAccuracy(num_classes=3)
@@ -179,7 +180,7 @@ class MulticlassAccuracy(MulticlassStatScores):
         tensor([0.5000, 1.0000, 1.0000])
 
     Example (preds is float tensor):
-        >>> from torchmetrics import MulticlassAccuracy
+        >>> from torchmetrics.classification import MulticlassAccuracy
         >>> target = target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([
         ...   [0.16, 0.26, 0.58],
@@ -195,7 +196,7 @@ class MulticlassAccuracy(MulticlassStatScores):
         tensor([0.5000, 1.0000, 1.0000])
 
     Example (multidim tensors):
-        >>> from torchmetrics import MulticlassAccuracy
+        >>> from torchmetrics.classification import MulticlassAccuracy
         >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
         >>> preds = torch.tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
         >>> metric = MulticlassAccuracy(num_classes=3, multidim_average='samplewise')
@@ -271,7 +272,7 @@ class MultilabelAccuracy(MultilabelStatScores):
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Example (preds is int tensor):
-        >>> from torchmetrics import MultilabelAccuracy
+        >>> from torchmetrics.classification import MultilabelAccuracy
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
         >>> metric = MultilabelAccuracy(num_labels=3)
@@ -282,7 +283,7 @@ class MultilabelAccuracy(MultilabelStatScores):
         tensor([1.0000, 0.5000, 0.5000])
 
     Example (preds is float tensor):
-        >>> from torchmetrics import MultilabelAccuracy
+        >>> from torchmetrics.classification import MultilabelAccuracy
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> metric = MultilabelAccuracy(num_labels=3)
@@ -293,7 +294,7 @@ class MultilabelAccuracy(MultilabelStatScores):
         tensor([1.0000, 0.5000, 0.5000])
 
     Example (multidim tensors):
-        >>> from torchmetrics import MultilabelAccuracy
+        >>> from torchmetrics.classification import MultilabelAccuracy
         >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
         >>> preds = torch.tensor(
         ...     [
@@ -456,6 +457,37 @@ class Accuracy(StatScores):
     correct: Tensor
     total: Tensor
 
+    def __new__(
+        cls,
+        threshold: float = 0.5,
+        num_classes: Optional[int] = None,
+        average: Optional[str] = "micro",
+        mdmc_average: Optional[str] = None,
+        ignore_index: Optional[int] = None,
+        top_k: Optional[int] = None,
+        multiclass: Optional[bool] = None,
+        subset_accuracy: bool = False,
+        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+        num_labels: Optional[int] = None,
+        multidim_average: Optional[Literal["global", "samplewise"]] = "global",
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        if task is not None:
+            kwargs.update(
+                dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
+            )
+            if task == "binary":
+                return BinaryAccuracy(threshold, **kwargs)
+            if task == "multiclass":
+                return MulticlassAccuracy(num_classes, average, top_k, **kwargs)
+            if task == "multilabel":
+                return MultilabelAccuracy(num_labels, threshold, average, **kwargs)
+            raise ValueError(
+                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+            )
+        return super().__new__(cls)
+
     def __init__(
         self,
         threshold: float = 0.5,
@@ -466,6 +498,10 @@ class Accuracy(StatScores):
         top_k: Optional[int] = None,
         multiclass: Optional[bool] = None,
         subset_accuracy: bool = False,
+        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+        num_labels: Optional[int] = None,
+        multidim_average: Optional[Literal["global", "samplewise"]] = "global",
+        validate_args: bool = True,
         **kwargs: Any,
     ) -> None:
         allowed_average = ["micro", "macro", "weighted", "samples", "none", None]

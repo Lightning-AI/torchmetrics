@@ -21,21 +21,21 @@ MatthewsCorrCoef
 BinaryMatthewsCorrCoef
 ^^^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.BinaryMatthewsCorrCoef
+.. autoclass:: torchmetrics.classification.BinaryMatthewsCorrCoef
     :noindex:
     :exclude-members: update, compute
 
 MulticlassMatthewsCorrCoef
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.MulticlassMatthewsCorrCoef
+.. autoclass:: torchmetrics.classification.MulticlassMatthewsCorrCoef
     :noindex:
     :exclude-members: update, compute
 
 MultilabelMatthewsCorrCoef
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.MultilabelMatthewsCorrCoef
+.. autoclass:: torchmetrics.classification.MultilabelMatthewsCorrCoef
     :noindex:
     :exclude-members: update, compute
 
@@ -52,17 +52,17 @@ matthews_corrcoef
 binary_matthews_corrcoef
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.binary_matthews_corrcoef
+.. autofunction:: torchmetrics.functional.classification.binary_matthews_corrcoef
     :noindex:
 
 multiclass_matthews_corrcoef
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.multiclass_matthews_corrcoef
+.. autofunction:: torchmetrics.functional.classification.multiclass_matthews_corrcoef
     :noindex:
 
 multilabel_matthews_corrcoef
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.multilabel_matthews_corrcoef
+.. autofunction:: torchmetrics.functional.classification.multilabel_matthews_corrcoef
     :noindex:

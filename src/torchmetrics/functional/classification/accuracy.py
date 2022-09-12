@@ -36,6 +36,7 @@ from torchmetrics.functional.classification.stat_scores import (
 from torchmetrics.utilities.checks import _check_classification_inputs, _input_format_classification, _input_squeeze
 from torchmetrics.utilities.compute import _safe_divide
 from torchmetrics.utilities.enums import AverageMethod, DataType, MDMCAverageMethod
+from torchmetrics.utilities.prints import rank_zero_warn
 
 
 def _accuracy_reduce(
@@ -134,21 +135,21 @@ def binary_accuracy(
         is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of a scalar value per sample.
 
     Example (preds is int tensor):
-        >>> from torchmetrics.functional import binary_accuracy
+        >>> from torchmetrics.functional.classification import binary_accuracy
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0, 0, 1, 1, 0, 1])
         >>> binary_accuracy(preds, target)
         tensor(0.6667)
 
     Example (preds is float tensor):
-        >>> from torchmetrics.functional import binary_accuracy
+        >>> from torchmetrics.functional.classification import binary_accuracy
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
         >>> binary_accuracy(preds, target)
         tensor(0.6667)
 
     Example (multidim tensors):
-        >>> from torchmetrics.functional import binary_accuracy
+        >>> from torchmetrics.functional.classification import binary_accuracy
         >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
         >>> preds = torch.tensor(
         ...     [
@@ -236,7 +237,7 @@ def multiclass_accuracy(
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Example (preds is int tensor):
-        >>> from torchmetrics.functional import multiclass_accuracy
+        >>> from torchmetrics.functional.classification import multiclass_accuracy
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([2, 1, 0, 1])
         >>> multiclass_accuracy(preds, target, num_classes=3)
@@ -245,7 +246,7 @@ def multiclass_accuracy(
         tensor([0.5000, 1.0000, 1.0000])
 
     Example (preds is float tensor):
-        >>> from torchmetrics.functional import multiclass_accuracy
+        >>> from torchmetrics.functional.classification import multiclass_accuracy
         >>> target = target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([
         ...   [0.16, 0.26, 0.58],
@@ -259,7 +260,7 @@ def multiclass_accuracy(
         tensor([0.5000, 1.0000, 1.0000])
 
     Example (multidim tensors):
-        >>> from torchmetrics.functional import multiclass_accuracy
+        >>> from torchmetrics.functional.classification import multiclass_accuracy
         >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
         >>> preds = torch.tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
         >>> multiclass_accuracy(preds, target, num_classes=3, multidim_average='samplewise')
@@ -343,7 +344,7 @@ def multilabel_accuracy(
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Example (preds is int tensor):
-        >>> from torchmetrics.functional import multilabel_accuracy
+        >>> from torchmetrics.functional.classification import multilabel_accuracy
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
         >>> multilabel_accuracy(preds, target, num_labels=3)
@@ -352,7 +353,7 @@ def multilabel_accuracy(
         tensor([1.0000, 0.5000, 0.5000])
 
     Example (preds is float tensor):
-        >>> from torchmetrics.functional import multilabel_accuracy
+        >>> from torchmetrics.functional.classification import multilabel_accuracy
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> multilabel_accuracy(preds, target, num_labels=3)
@@ -361,7 +362,7 @@ def multilabel_accuracy(
         tensor([1.0000, 0.5000, 0.5000])
 
     Example (multidim tensors):
-        >>> from torchmetrics.functional import multilabel_accuracy
+        >>> from torchmetrics.functional.classification import multilabel_accuracy
         >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
         >>> preds = torch.tensor(
         ...     [
@@ -632,8 +633,20 @@ def accuracy(
     num_classes: Optional[int] = None,
     multiclass: Optional[bool] = None,
     ignore_index: Optional[int] = None,
+    task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+    num_labels: Optional[int] = None,
+    multidim_average: Optional[Literal["global", "samplewise"]] = "global",
+    validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes `Accuracy`_
+    r"""
+    .. note::
+        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        metric. Moving forward we recommend using these versions. This base metric will still work as it did
+        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
+        and the general order of arguments may change, such that this metric will just function as an single
+        entrypoint to calling the three specialized versions.
+
+    Computes `Accuracy`_
 
     .. math::
         \text{Accuracy} = \frac{1}{N}\sum_i^N 1(y_i = \hat{y}_i)
@@ -756,6 +769,27 @@ def accuracy(
         >>> accuracy(preds, target, top_k=2)
         tensor(0.6667)
     """
+    if task is not None:
+        kwargs = dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
+        if task == "binary":
+            return binary_accuracy(preds, target, threshold, **kwargs)
+        if task == "multiclass":
+            return multiclass_accuracy(preds, target, num_classes, average, top_k, **kwargs)
+        if task == "multilabel":
+            return multilabel_accuracy(preds, target, num_labels, threshold, average, **kwargs)
+        raise ValueError(
+            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+        )
+    else:
+        rank_zero_warn(
+            "From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification"
+            " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
+            " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
+            " and the general order of arguments may change, such that this metric will just function as an single"
+            " entrypoint to calling the three specialized versions.",
+            DeprecationWarning,
+        )
+
     allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
     if average not in allowed_average:
         raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")

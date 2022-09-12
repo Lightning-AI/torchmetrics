@@ -84,7 +84,7 @@ def multilabel_coverage_error(
             Set to ``False`` for faster computations.
 
     Example:
-        >>> from torchmetrics.functional import multilabel_coverage_error
+        >>> from torchmetrics.functional.classification import multilabel_coverage_error
         >>> _ = torch.manual_seed(42)
         >>> preds = torch.rand(10, 5)
         >>> target = torch.randint(2, (10, 5))
@@ -155,7 +155,7 @@ def multilabel_ranking_average_precision(
             Set to ``False`` for faster computations.
 
     Example:
-        >>> from torchmetrics.functional import multilabel_ranking_average_precision
+        >>> from torchmetrics.functional.classification import multilabel_ranking_average_precision
         >>> _ = torch.manual_seed(42)
         >>> preds = torch.rand(10, 5)
         >>> target = torch.randint(2, (10, 5))
@@ -237,7 +237,7 @@ def multilabel_ranking_loss(
             Set to ``False`` for faster computations.
 
     Example:
-        >>> from torchmetrics.functional import multilabel_ranking_loss
+        >>> from torchmetrics.functional.classification import multilabel_ranking_loss
         >>> _ = torch.manual_seed(42)
         >>> preds = torch.rand(10, 5)
         >>> target = torch.randint(2, (10, 5))

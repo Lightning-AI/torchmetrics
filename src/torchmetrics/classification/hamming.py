@@ -11,10 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any
+from typing import Any, Optional
 
 import torch
 from torch import Tensor, tensor
+from typing_extensions import Literal
 
 from torchmetrics.classification.stat_scores import BinaryStatScores, MulticlassStatScores, MultilabelStatScores
 from torchmetrics.functional.classification.hamming import (
@@ -64,7 +65,7 @@ class BinaryHammingDistance(BinaryStatScores):
         is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of a scalar value per sample.
 
     Example (preds is int tensor):
-        >>> from torchmetrics import BinaryHammingDistance
+        >>> from torchmetrics.classification import BinaryHammingDistance
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0, 0, 1, 1, 0, 1])
         >>> metric = BinaryHammingDistance()
@@ -72,7 +73,7 @@ class BinaryHammingDistance(BinaryStatScores):
         tensor(0.3333)
 
     Example (preds is float tensor):
-        >>> from torchmetrics import BinaryHammingDistance
+        >>> from torchmetrics.classification import BinaryHammingDistance
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
         >>> metric = BinaryHammingDistance()
@@ -80,7 +81,7 @@ class BinaryHammingDistance(BinaryStatScores):
         tensor(0.3333)
 
     Example (multidim tensors):
-        >>> from torchmetrics import BinaryHammingDistance
+        >>> from torchmetrics.classification import BinaryHammingDistance
         >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
         >>> preds = torch.tensor(
         ...     [
@@ -160,7 +161,7 @@ class MulticlassHammingDistance(MulticlassStatScores):
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Example (preds is int tensor):
-        >>> from torchmetrics import MulticlassHammingDistance
+        >>> from torchmetrics.classification import MulticlassHammingDistance
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([2, 1, 0, 1])
         >>> metric = MulticlassHammingDistance(num_classes=3)
@@ -171,7 +172,7 @@ class MulticlassHammingDistance(MulticlassStatScores):
         tensor([0.5000, 0.0000, 0.0000])
 
     Example (preds is float tensor):
-        >>> from torchmetrics import MulticlassHammingDistance
+        >>> from torchmetrics.classification import MulticlassHammingDistance
         >>> target = target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([
         ...   [0.16, 0.26, 0.58],
@@ -187,7 +188,7 @@ class MulticlassHammingDistance(MulticlassStatScores):
         tensor([0.5000, 0.0000, 0.0000])
 
     Example (multidim tensors):
-        >>> from torchmetrics import MulticlassHammingDistance
+        >>> from torchmetrics.classification import MulticlassHammingDistance
         >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
         >>> preds = torch.tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
         >>> metric = MulticlassHammingDistance(num_classes=3, multidim_average='samplewise')
@@ -265,7 +266,7 @@ class MultilabelHammingDistance(MultilabelStatScores):
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Example (preds is int tensor):
-        >>> from torchmetrics import MultilabelHammingDistance
+        >>> from torchmetrics.classification import MultilabelHammingDistance
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
         >>> metric = MultilabelHammingDistance(num_labels=3)
@@ -276,7 +277,7 @@ class MultilabelHammingDistance(MultilabelStatScores):
         tensor([0.0000, 0.5000, 0.5000])
 
     Example (preds is float tensor):
-        >>> from torchmetrics import MultilabelHammingDistance
+        >>> from torchmetrics.classification import MultilabelHammingDistance
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> metric = MultilabelHammingDistance(num_labels=3)
@@ -287,7 +288,7 @@ class MultilabelHammingDistance(MultilabelStatScores):
         tensor([0.0000, 0.5000, 0.5000])
 
     Example (multidim tensors):
-        >>> from torchmetrics import MultilabelHammingDistance
+        >>> from torchmetrics.classification import MultilabelHammingDistance
         >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
         >>> preds = torch.tensor(
         ...     [
@@ -360,6 +361,34 @@ class HammingDistance(Metric):
     full_state_update: bool = False
     correct: Tensor
     total: Tensor
+
+    def __new__(
+        cls,
+        threshold: float = 0.5,
+        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+        num_classes: Optional[int] = None,
+        num_labels: Optional[int] = None,
+        average: Optional[str] = "micro",
+        multidim_average: Optional[Literal["global", "samplewise"]] = "global",
+        top_k: Optional[int] = None,
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        if task is not None:
+            kwargs.update(
+                dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
+            )
+            if task == "binary":
+                return BinaryHammingDistance(threshold, **kwargs)
+            if task == "multiclass":
+                return MulticlassHammingDistance(num_classes, average, top_k, **kwargs)
+            if task == "multilabel":
+                return MultilabelHammingDistance(num_labels, threshold, average, **kwargs)
+            raise ValueError(
+                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+            )
+        return super().__new__(cls)
 
     def __init__(
         self,

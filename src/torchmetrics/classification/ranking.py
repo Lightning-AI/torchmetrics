@@ -56,7 +56,7 @@ class MultilabelCoverageError(Metric):
             Set to ``False`` for faster computations.
 
     Example:
-        >>> from torchmetrics import MultilabelCoverageError
+        >>> from torchmetrics.classification import MultilabelCoverageError
         >>> _ = torch.manual_seed(42)
         >>> preds = torch.rand(10, 5)
         >>> target = torch.randint(2, (10, 5))
@@ -126,7 +126,7 @@ class MultilabelRankingAveragePrecision(Metric):
             Set to ``False`` for faster computations.
 
     Example:
-        >>> from torchmetrics import MultilabelRankingAveragePrecision
+        >>> from torchmetrics.classification import MultilabelRankingAveragePrecision
         >>> _ = torch.manual_seed(42)
         >>> preds = torch.rand(10, 5)
         >>> target = torch.randint(2, (10, 5))
@@ -198,7 +198,7 @@ class MultilabelRankingLoss(Metric):
             Set to ``False`` for faster computations.
 
     Example:
-        >>> from torchmetrics import MultilabelRankingLoss
+        >>> from torchmetrics.classification import MultilabelRankingLoss
         >>> _ = torch.manual_seed(42)
         >>> preds = torch.rand(10, 5)
         >>> target = torch.randint(2, (10, 5))

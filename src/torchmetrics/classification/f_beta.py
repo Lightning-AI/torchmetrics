@@ -71,7 +71,7 @@ class BinaryFBetaScore(BinaryStatScores):
         is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of a scalar value per sample.
 
     Example (preds is int tensor):
-        >>> from torchmetrics import BinaryFBetaScore
+        >>> from torchmetrics.classification import BinaryFBetaScore
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0, 0, 1, 1, 0, 1])
         >>> metric = BinaryFBetaScore(beta=2.0)
@@ -79,7 +79,7 @@ class BinaryFBetaScore(BinaryStatScores):
         tensor(0.6667)
 
     Example (preds is float tensor):
-        >>> from torchmetrics import BinaryFBetaScore
+        >>> from torchmetrics.classification import BinaryFBetaScore
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
         >>> metric = BinaryFBetaScore(beta=2.0)
@@ -87,7 +87,7 @@ class BinaryFBetaScore(BinaryStatScores):
         tensor(0.6667)
 
     Example (multidim tensors):
-        >>> from torchmetrics import BinaryFBetaScore
+        >>> from torchmetrics.classification import BinaryFBetaScore
         >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
         >>> preds = torch.tensor(
         ...     [
@@ -187,7 +187,7 @@ class MulticlassFBetaScore(MulticlassStatScores):
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Example (preds is int tensor):
-        >>> from torchmetrics import MulticlassFBetaScore
+        >>> from torchmetrics.classification import MulticlassFBetaScore
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([2, 1, 0, 1])
         >>> metric = MulticlassFBetaScore(beta=2.0, num_classes=3)
@@ -198,7 +198,7 @@ class MulticlassFBetaScore(MulticlassStatScores):
         tensor([0.5556, 0.8333, 1.0000])
 
     Example (preds is float tensor):
-        >>> from torchmetrics import MulticlassFBetaScore
+        >>> from torchmetrics.classification import MulticlassFBetaScore
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([
         ...   [0.16, 0.26, 0.58],
@@ -214,7 +214,7 @@ class MulticlassFBetaScore(MulticlassStatScores):
         tensor([0.5556, 0.8333, 1.0000])
 
     Example (multidim tensors):
-        >>> from torchmetrics import MulticlassFBetaScore
+        >>> from torchmetrics.classification import MulticlassFBetaScore
         >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
         >>> preds = torch.tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
         >>> metric = MulticlassFBetaScore(beta=2.0, num_classes=3, multidim_average='samplewise')
@@ -315,7 +315,7 @@ class MultilabelFBetaScore(MultilabelStatScores):
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Example (preds is int tensor):
-        >>> from torchmetrics import MultilabelFBetaScore
+        >>> from torchmetrics.classification import MultilabelFBetaScore
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
         >>> metric = MultilabelFBetaScore(beta=2.0, num_labels=3)
@@ -326,7 +326,7 @@ class MultilabelFBetaScore(MultilabelStatScores):
         tensor([1.0000, 0.0000, 0.8333])
 
     Example (preds is float tensor):
-        >>> from torchmetrics import MultilabelFBetaScore
+        >>> from torchmetrics.classification import MultilabelFBetaScore
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> metric = MultilabelFBetaScore(beta=2.0, num_labels=3)
@@ -337,7 +337,7 @@ class MultilabelFBetaScore(MultilabelStatScores):
         tensor([1.0000, 0.0000, 0.8333])
 
     Example (multidim tensors):
-        >>> from torchmetrics import MultilabelFBetaScore
+        >>> from torchmetrics.classification import MultilabelFBetaScore
         >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
         >>> preds = torch.tensor(
         ...     [
@@ -424,7 +424,7 @@ class BinaryF1Score(BinaryFBetaScore):
         is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of a scalar value per sample.
 
     Example (preds is int tensor):
-        >>> from torchmetrics import BinaryF1Score
+        >>> from torchmetrics.classification import BinaryF1Score
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0, 0, 1, 1, 0, 1])
         >>> metric = BinaryF1Score()
@@ -432,7 +432,7 @@ class BinaryF1Score(BinaryFBetaScore):
         tensor(0.6667)
 
     Example (preds is float tensor):
-        >>> from torchmetrics import BinaryF1Score
+        >>> from torchmetrics.classification import BinaryF1Score
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
         >>> metric = BinaryF1Score()
@@ -440,7 +440,7 @@ class BinaryF1Score(BinaryFBetaScore):
         tensor(0.6667)
 
     Example (multidim tensors):
-        >>> from torchmetrics import BinaryF1Score
+        >>> from torchmetrics.classification import BinaryF1Score
         >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
         >>> preds = torch.tensor(
         ...     [
@@ -531,7 +531,7 @@ class MulticlassF1Score(MulticlassFBetaScore):
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Example (preds is int tensor):
-        >>> from torchmetrics import MulticlassF1Score
+        >>> from torchmetrics.classification import MulticlassF1Score
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([2, 1, 0, 1])
         >>> metric = MulticlassF1Score(num_classes=3)
@@ -542,7 +542,7 @@ class MulticlassF1Score(MulticlassFBetaScore):
         tensor([0.6667, 0.6667, 1.0000])
 
     Example (preds is float tensor):
-        >>> from torchmetrics import MulticlassF1Score
+        >>> from torchmetrics.classification import MulticlassF1Score
         >>> target = target = torch.tensor([2, 1, 0, 0])
         >>> preds = preds = torch.tensor([
         ...   [0.16, 0.26, 0.58],
@@ -558,7 +558,7 @@ class MulticlassF1Score(MulticlassFBetaScore):
         tensor([0.6667, 0.6667, 1.0000])
 
     Example (multidim tensors):
-        >>> from torchmetrics import MulticlassF1Score
+        >>> from torchmetrics.classification import MulticlassF1Score
         >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
         >>> preds = torch.tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
         >>> metric = MulticlassF1Score(num_classes=3, multidim_average='samplewise')
@@ -649,7 +649,7 @@ class MultilabelF1Score(MultilabelFBetaScore):
           - If ``average=None/'none'``, the shape will be ``(N, C)```
 
     Example (preds is int tensor):
-        >>> from torchmetrics import MultilabelF1Score
+        >>> from torchmetrics.classification import MultilabelF1Score
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
         >>> metric = MultilabelF1Score(num_labels=3)
@@ -660,7 +660,7 @@ class MultilabelF1Score(MultilabelFBetaScore):
         tensor([1.0000, 0.0000, 0.6667])
 
     Example (preds is float tensor):
-        >>> from torchmetrics import MultilabelF1Score
+        >>> from torchmetrics.classification import MultilabelF1Score
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> metric = MultilabelF1Score(num_labels=3)
@@ -671,7 +671,7 @@ class MultilabelF1Score(MultilabelFBetaScore):
         tensor([1.0000, 0.0000, 0.6667])
 
     Example (multidim tensors):
-        >>> from torchmetrics import MultilabelF1Score
+        >>> from torchmetrics.classification import MultilabelF1Score
         >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
         >>> preds = torch.tensor(
         ...     [
@@ -817,6 +817,37 @@ class FBetaScore(StatScores):
     """
     full_state_update: bool = False
 
+    def __new__(
+        cls,
+        num_classes: Optional[int] = None,
+        beta: float = 1.0,
+        threshold: float = 0.5,
+        average: Optional[str] = "micro",
+        mdmc_average: Optional[str] = None,
+        ignore_index: Optional[int] = None,
+        top_k: Optional[int] = None,
+        multiclass: Optional[bool] = None,
+        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+        num_labels: Optional[int] = None,
+        multidim_average: Optional[Literal["global", "samplewise"]] = "global",
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        if task is not None:
+            kwargs.update(
+                dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
+            )
+            if task == "binary":
+                return BinaryFBetaScore(beta, threshold, **kwargs)
+            if task == "multiclass":
+                return MulticlassFBetaScore(beta, num_classes, average, top_k, **kwargs)
+            if task == "multilabel":
+                return MultilabelFBetaScore(beta, num_labels, threshold, average, **kwargs)
+            raise ValueError(
+                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+            )
+        return super().__new__(cls)
+
     def __init__(
         self,
         num_classes: Optional[int] = None,
@@ -947,6 +978,36 @@ class F1Score(FBetaScore):
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
+
+    def __new__(
+        cls,
+        num_classes: Optional[int] = None,
+        threshold: float = 0.5,
+        average: Optional[str] = "micro",
+        mdmc_average: Optional[str] = None,
+        ignore_index: Optional[int] = None,
+        top_k: Optional[int] = None,
+        multiclass: Optional[bool] = None,
+        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+        num_labels: Optional[int] = None,
+        multidim_average: Optional[Literal["global", "samplewise"]] = "global",
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        if task is not None:
+            kwargs.update(
+                dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
+            )
+            if task == "binary":
+                return BinaryF1Score(threshold, **kwargs)
+            if task == "multiclass":
+                return MulticlassF1Score(num_classes, average, top_k, **kwargs)
+            if task == "multilabel":
+                return MultilabelF1Score(num_labels, threshold, average, **kwargs)
+            raise ValueError(
+                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+            )
+        return super().__new__(cls)
 
     def __init__(
         self,

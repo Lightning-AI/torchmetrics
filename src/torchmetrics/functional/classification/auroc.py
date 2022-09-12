@@ -170,7 +170,7 @@ def binary_auroc(
         A single scalar with the auroc score
 
     Example:
-        >>> from torchmetrics.functional import binary_auroc
+        >>> from torchmetrics.functional.classification import binary_auroc
         >>> preds = torch.tensor([0, 0.5, 0.7, 0.8])
         >>> target = torch.tensor([0, 1, 1, 0])
         >>> binary_auroc(preds, target, thresholds=None)
@@ -273,7 +273,7 @@ def multiclass_auroc(
         If `average="macro"|"weighted"` then a single scalar is returned.
 
     Example:
-        >>> from torchmetrics.functional import multiclass_auroc
+        >>> from torchmetrics.functional.classification import multiclass_auroc
         >>> preds = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
         ...                       [0.05, 0.75, 0.05, 0.05, 0.05],
         ...                       [0.05, 0.05, 0.75, 0.05, 0.05],
@@ -401,7 +401,7 @@ def multilabel_auroc(
         If `average="micro|macro"|"weighted"` then a single scalar is returned.
 
     Example:
-        >>> from torchmetrics.functional import multilabel_auroc
+        >>> from torchmetrics.functional.classification import multilabel_auroc
         >>> preds = torch.tensor([[0.75, 0.05, 0.35],
         ...                       [0.45, 0.75, 0.05],
         ...                       [0.05, 0.55, 0.75],
@@ -608,8 +608,21 @@ def auroc(
     average: Optional[str] = "macro",
     max_fpr: Optional[float] = None,
     sample_weights: Optional[Sequence] = None,
+    task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    num_labels: Optional[int] = None,
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
 ) -> Tensor:
-    """Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_)
+    r"""
+    .. note::
+        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        metric. Moving forward we recommend using these versions. This base metric will still work as it did
+        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
+        and the general order of arguments may change, such that this metric will just function as an single
+        entrypoint to calling the three specialized versions.
+
+    Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_)
 
     For non-binary input, if the ``preds`` and ``target`` tensor have the same
     size the input will be interpretated as multilabel and if ``preds`` have one
@@ -672,5 +685,26 @@ def auroc(
         >>> auroc(preds, target, num_classes=3)
         tensor(0.7778)
     """
+    if task is not None:
+        kwargs = dict(thresholds=thresholds, ignore_index=ignore_index, validate_args=validate_args)
+        if task == "binary":
+            return binary_auroc(preds, target, max_fpr, **kwargs)
+        if task == "multiclass":
+            return multiclass_auroc(preds, target, num_classes, average, **kwargs)
+        if task == "multilabel":
+            return multilabel_auroc(preds, target, num_labels, average, **kwargs)
+        raise ValueError(
+            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+        )
+    else:
+        rank_zero_warn(
+            "From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification"
+            " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
+            " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
+            " and the general order of arguments may change, such that this metric will just function as an single"
+            " entrypoint to calling the three specialized versions.",
+            DeprecationWarning,
+        )
+
     preds, target, mode = _auroc_update(preds, target)
     return _auroc_compute(preds, target, mode, num_classes, pos_label, average, max_fpr, sample_weights)

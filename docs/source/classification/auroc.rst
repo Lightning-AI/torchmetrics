@@ -18,19 +18,19 @@ ________________
 BinaryAUROC
 ^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.BinaryAUROC
+.. autoclass:: torchmetrics.classification.BinaryAUROC
     :noindex:
 
 MulticlassAUROC
 ^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.MulticlassAUROC
+.. autoclass:: torchmetrics.classification.MulticlassAUROC
     :noindex:
 
 MultilabelAUROC
 ^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.MultilabelAUROC
+.. autoclass:: torchmetrics.classification.MultilabelAUROC
     :noindex:
 
 Functional Interface
@@ -42,17 +42,17 @@ ____________________
 binary_auroc
 ^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.binary_auroc
+.. autofunction:: torchmetrics.functional.classification.binary_auroc
     :noindex:
 
 multiclass_auroc
 ^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.multiclass_auroc
+.. autofunction:: torchmetrics.functional.classification.multiclass_auroc
     :noindex:
 
 multilabel_auroc
 ^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.multilabel_auroc
+.. autofunction:: torchmetrics.functional.classification.multilabel_auroc
     :noindex:

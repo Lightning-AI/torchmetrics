@@ -13,7 +13,7 @@ ________________
 .. autoclass:: torchmetrics.LabelRankingAveragePrecision
     :noindex:
 
-.. autoclass:: torchmetrics.MultilabelRankingAveragePrecision
+.. autoclass:: torchmetrics.classification.MultilabelRankingAveragePrecision
     :noindex:
 
 
@@ -23,5 +23,5 @@ ____________________
 .. autofunction:: torchmetrics.functional.label_ranking_average_precision
     :noindex:
 
-.. autofunction:: torchmetrics.functional.multilabel_ranking_average_precision
+.. autofunction:: torchmetrics.functional.classification.multilabel_ranking_average_precision
     :noindex:

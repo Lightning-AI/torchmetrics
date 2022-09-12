@@ -16,13 +16,13 @@ ________________
 BinaryHingeLoss
 ^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.BinaryHingeLoss
+.. autoclass:: torchmetrics.classification.BinaryHingeLoss
     :noindex:
 
 MulticlassHingeLoss
 ^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.MulticlassHingeLoss
+.. autoclass:: torchmetrics.classification.MulticlassHingeLoss
     :noindex:
 
 Functional Interface
@@ -34,11 +34,11 @@ ____________________
 binary_hinge_loss
 ^^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.binary_hinge_loss
+.. autofunction:: torchmetrics.functional.classification.binary_hinge_loss
     :noindex:
 
 multiclass_hinge_loss
 ^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.multiclass_hinge_loss
+.. autofunction:: torchmetrics.functional.classification.multiclass_hinge_loss
     :noindex:

@@ -15,6 +15,7 @@ from typing import Any, List, Optional, Tuple, Union
 
 import torch
 from torch import Tensor
+from typing_extensions import Literal
 
 from torchmetrics.functional.classification.precision_recall_curve import (
     _adjust_threshold_arg,
@@ -86,7 +87,7 @@ class BinaryPrecisionRecallCurve(Metric):
         - thresholds: an 1d tensor of size (n_thresholds, ) with increasing threshold values
 
     Example:
-        >>> from torchmetrics import BinaryPrecisionRecallCurve
+        >>> from torchmetrics.classification import BinaryPrecisionRecallCurve
         >>> preds = torch.tensor([0, 0.5, 0.7, 0.8])
         >>> target = torch.tensor([0, 1, 1, 0])
         >>> metric = BinaryPrecisionRecallCurve(thresholds=None)
@@ -197,7 +198,7 @@ class MulticlassPrecisionRecallCurve(Metric):
           then a single 1d tensor of size (n_thresholds, ) is returned with shared threshold values for all classes.
 
     Example:
-        >>> from torchmetrics import MulticlassPrecisionRecallCurve
+        >>> from torchmetrics.classification import MulticlassPrecisionRecallCurve
         >>> preds = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
         ...                       [0.05, 0.75, 0.05, 0.05, 0.05],
         ...                       [0.05, 0.05, 0.75, 0.05, 0.05],
@@ -330,7 +331,7 @@ class MultilabelPrecisionRecallCurve(Metric):
           then a single 1d tensor of size (n_thresholds, ) is returned with shared threshold values for all labels.
 
     Example:
-        >>> from torchmetrics import MultilabelPrecisionRecallCurve
+        >>> from torchmetrics.classification import MultilabelPrecisionRecallCurve
         >>> preds = torch.tensor([[0.75, 0.05, 0.35],
         ...                       [0.45, 0.75, 0.05],
         ...                       [0.05, 0.55, 0.75],
@@ -469,6 +470,30 @@ class PrecisionRecallCurve(Metric):
     full_state_update: bool = False
     preds: List[Tensor]
     target: List[Tensor]
+
+    def __new__(
+        cls,
+        num_classes: Optional[int] = None,
+        pos_label: Optional[int] = None,
+        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+        thresholds: Optional[Union[int, List[float], Tensor]] = None,
+        num_labels: Optional[int] = None,
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        if task is not None:
+            kwargs.update(dict(thresholds=thresholds, ignore_index=ignore_index, validate_args=validate_args))
+            if task == "binary":
+                return BinaryPrecisionRecallCurve(**kwargs)
+            if task == "multiclass":
+                return MulticlassPrecisionRecallCurve(num_classes, **kwargs)
+            if task == "multilabel":
+                return MultilabelPrecisionRecallCurve(num_labels, **kwargs)
+            raise ValueError(
+                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+            )
+        return super().__new__(cls)
 
     def __init__(
         self,
