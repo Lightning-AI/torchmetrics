@@ -53,7 +53,6 @@ def _reduce_auroc(
     weights: Optional[Tensor] = None,
 ) -> Tensor:
     """Utility function for reducing multiple average precision score into one number."""
-    res = []
     if isinstance(fpr, Tensor):
         res = _auc_compute_without_check(fpr, tpr, 1.0, axis=1)
     else:
@@ -96,7 +95,7 @@ def _binary_auroc_compute(
     thresholds: Optional[Tensor],
     max_fpr: Optional[float] = None,
     pos_label: int = 1,
-) -> Tuple[Tensor, Tensor, Tensor]:
+) -> Union[Tensor, Tuple[Tensor, Tensor, Tensor]]:
     fpr, tpr, _ = _binary_roc_compute(state, thresholds, pos_label)
     if max_fpr is None or max_fpr == 1:
         return _auc_compute_without_check(fpr, tpr, 1.0)
@@ -221,7 +220,7 @@ def multiclass_auroc(
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
+) -> Tensor:
     r"""
     Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for multiclass tasks. The AUROC score
     summarizes the ROC curve into an single number that describes the performance of a model for multiple
@@ -317,7 +316,7 @@ def _multilabel_auroc_compute(
     average: Optional[Literal["micro", "macro", "weighted", "none"]],
     thresholds: Optional[Tensor],
     ignore_index: Optional[int] = None,
-) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
+) -> Union[Tuple[Tensor, Tensor, Tensor], Tensor]:
     if average == "micro":
         if isinstance(state, Tensor) and thresholds is not None:
             return _binary_auroc_compute(state.sum(1), thresholds, max_fpr=None)
@@ -328,7 +327,7 @@ def _multilabel_auroc_compute(
                 idx = target == ignore_index
                 preds = preds[~idx]
                 target = target[~idx]
-            return _binary_auroc_compute([preds, target], thresholds, max_fpr=None)
+            return _binary_auroc_compute((preds, target), thresholds, max_fpr=None)
 
     else:
         fpr, tpr, _ = _multilabel_roc_compute(state, num_labels, thresholds, ignore_index)
@@ -605,7 +604,7 @@ def auroc(
     target: Tensor,
     num_classes: Optional[int] = None,
     pos_label: Optional[int] = None,
-    average: Optional[str] = "macro",
+    average: Optional[Literal["macro", "weighted", "none"]] = "macro",
     max_fpr: Optional[float] = None,
     sample_weights: Optional[Sequence] = None,
     task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
@@ -613,7 +612,7 @@ def auroc(
     num_labels: Optional[int] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Tensor:
+) -> Union[Tensor, Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
     r"""
     .. note::
         From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
@@ -645,7 +644,6 @@ def auroc(
             range [0,num_classes-1]
         average:
 
-            - ``'micro'`` computes metric globally. Only works for multilabel problems
             - ``'macro'`` computes metric for each class and uniformly averages them
             - ``'weighted'`` computes metric for each class and does a weighted-average,
               where each class is weighted by their support (accounts for class imbalance)
@@ -686,13 +684,14 @@ def auroc(
         tensor(0.7778)
     """
     if task is not None:
-        kwargs = dict(thresholds=thresholds, ignore_index=ignore_index, validate_args=validate_args)
         if task == "binary":
-            return binary_auroc(preds, target, max_fpr, **kwargs)
+            return binary_auroc(preds, target, max_fpr, thresholds, ignore_index, validate_args)
         if task == "multiclass":
-            return multiclass_auroc(preds, target, num_classes, average, **kwargs)
+            assert isinstance(num_classes, int)
+            return multiclass_auroc(preds, target, num_classes, average, thresholds, ignore_index, validate_args)
         if task == "multilabel":
-            return multilabel_auroc(preds, target, num_labels, average, **kwargs)
+            assert isinstance(num_labels, int)
+            return multilabel_auroc(preds, target, num_labels, average, thresholds, ignore_index, validate_args)
         raise ValueError(
             f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
         )

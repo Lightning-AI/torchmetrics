@@ -368,22 +368,26 @@ class HammingDistance(Metric):
         task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
         num_classes: Optional[int] = None,
         num_labels: Optional[int] = None,
-        average: Optional[str] = "micro",
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
         multidim_average: Optional[Literal["global", "samplewise"]] = "global",
         top_k: Optional[int] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,
-    ) -> None:
+    ) -> Metric:
         if task is not None:
+            assert multidim_average is not None
             kwargs.update(
                 dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
             )
             if task == "binary":
                 return BinaryHammingDistance(threshold, **kwargs)
             if task == "multiclass":
-                return MulticlassHammingDistance(num_classes, average, top_k, **kwargs)
+                assert isinstance(num_classes, int)
+                assert isinstance(top_k, int)
+                return MulticlassHammingDistance(num_classes, top_k, average, **kwargs)
             if task == "multilabel":
+                assert isinstance(num_labels, int)
                 return MultilabelHammingDistance(num_labels, threshold, average, **kwargs)
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"

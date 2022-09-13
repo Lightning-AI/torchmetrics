@@ -284,18 +284,20 @@ class HingeLoss(Metric):
     def __new__(
         cls,
         squared: bool = False,
-        multiclass_mode: Optional[Union[str, MulticlassMode]] = None,
+        multiclass_mode: Literal["crammer-singer", "one-vs-all"] = None,
         task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
         num_classes: Optional[int] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,
-    ) -> None:
+    ) -> Metric:
         if task is not None:
             kwargs.update(dict(ignore_index=ignore_index, validate_args=validate_args))
             if task == "binary":
                 return BinaryHingeLoss(squared, **kwargs)
             if task == "multiclass":
+                assert isinstance(num_classes, int)
+                assert multiclass_mode is not None
                 return MulticlassHingeLoss(num_classes, squared, multiclass_mode, **kwargs)
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"

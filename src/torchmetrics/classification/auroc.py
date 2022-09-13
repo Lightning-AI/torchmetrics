@@ -149,6 +149,7 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
             - ``macro``: Calculate score for each class and average them
             - ``weighted``: Calculates score for each class and computes weighted average using their support
             - ``"none"`` or ``None``: Calculates score for each class and applies no reduction
+
         thresholds:
             Can be one of:
 
@@ -408,7 +409,7 @@ class AUROC(Metric):
         cls,
         num_classes: Optional[int] = None,
         pos_label: Optional[int] = None,
-        average: Optional[str] = "macro",
+        average: Optional[Literal["macro", "weighted", "none"]] = "macro",
         max_fpr: Optional[float] = None,
         task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
         thresholds: Optional[Union[int, List[float], Tensor]] = None,
@@ -416,14 +417,16 @@ class AUROC(Metric):
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,
-    ) -> None:
+    ) -> Metric:
         if task is not None:
             kwargs.update(dict(thresholds=thresholds, ignore_index=ignore_index, validate_args=validate_args))
             if task == "binary":
                 return BinaryAUROC(max_fpr, **kwargs)
             if task == "multiclass":
+                assert isinstance(num_classes, int)
                 return MulticlassAUROC(num_classes, average, **kwargs)
             if task == "multilabel":
+                assert isinstance(num_labels, int)
                 return MultilabelAUROC(num_labels, average, **kwargs)
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
@@ -434,7 +437,7 @@ class AUROC(Metric):
         self,
         num_classes: Optional[int] = None,
         pos_label: Optional[int] = None,
-        average: Optional[str] = "macro",
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
         max_fpr: Optional[float] = None,
         task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
         thresholds: Optional[Union[int, List[float], Tensor]] = None,

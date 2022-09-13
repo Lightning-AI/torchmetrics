@@ -378,7 +378,7 @@ def jaccard_index(
     preds: Tensor,
     target: Tensor,
     num_classes: int,
-    average: Optional[str] = "macro",
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
     ignore_index: Optional[int] = None,
     absent_score: float = 0.0,
     threshold: float = 0.5,
@@ -454,13 +454,14 @@ def jaccard_index(
         tensor(0.9660)
     """
     if task is not None:
-        kwargs = dict(ignore_index=ignore_index, validate_args=validate_args)
         if task == "binary":
-            return binary_jaccard_index(preds, target, threshold, **kwargs)
+            return binary_jaccard_index(preds, target, threshold, ignore_index, validate_args)
         if task == "multiclass":
-            return multiclass_jaccard_index(preds, target, num_classes, average, **kwargs)
+            assert isinstance(num_classes, int)
+            return multiclass_jaccard_index(preds, target, num_classes, average, ignore_index, validate_args)
         if task == "multilabel":
-            return multilabel_jaccard_index(preds, target, num_labels, threshold, average, **kwargs)
+            assert isinstance(num_labels, int)
+            return multilabel_jaccard_index(preds, target, num_labels, threshold, average, ignore_index, validate_args)
         raise ValueError(
             f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
         )

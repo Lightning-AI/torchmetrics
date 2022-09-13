@@ -25,6 +25,7 @@ from torchmetrics.functional.classification.jaccard import (
     _multiclass_jaccard_index_arg_validation,
     _multilabel_jaccard_index_arg_validation,
 )
+from torchmetrics.metric import Metric
 
 
 class BinaryJaccardIndex(BinaryConfusionMatrix):
@@ -155,8 +156,8 @@ class MulticlassJaccardIndex(MulticlassConfusionMatrix):
     def __init__(
         self,
         num_classes: int,
-        ignore_index: Optional[int] = None,
         average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
+        ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,
     ) -> None:
@@ -232,8 +233,8 @@ class MultilabelJaccardIndex(MultilabelConfusionMatrix):
         self,
         num_labels: int,
         threshold: float = 0.5,
-        ignore_index: Optional[int] = None,
         average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
+        ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,
     ) -> None:
@@ -320,7 +321,7 @@ class JaccardIndex(ConfusionMatrix):
     def __new__(
         cls,
         num_classes: int,
-        average: Optional[str] = "macro",
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
         ignore_index: Optional[int] = None,
         absent_score: float = 0.0,
         threshold: float = 0.5,
@@ -329,14 +330,16 @@ class JaccardIndex(ConfusionMatrix):
         num_labels: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,
-    ) -> None:
+    ) -> Metric:
         if task is not None:
             kwargs.update(dict(ignore_index=ignore_index, validate_args=validate_args))
             if task == "binary":
                 return BinaryJaccardIndex(threshold, **kwargs)
             if task == "multiclass":
+                assert isinstance(num_classes, int)
                 return MulticlassJaccardIndex(num_classes, average, **kwargs)
             if task == "multilabel":
+                assert isinstance(num_labels, int)
                 return MultilabelJaccardIndex(num_labels, threshold, average, **kwargs)
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
@@ -346,7 +349,7 @@ class JaccardIndex(ConfusionMatrix):
     def __init__(
         self,
         num_classes: int,
-        average: Optional[str] = "macro",
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
         ignore_index: Optional[int] = None,
         absent_score: float = 0.0,
         threshold: float = 0.5,

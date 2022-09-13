@@ -383,7 +383,7 @@ def hinge_loss(
     preds: Tensor,
     target: Tensor,
     squared: bool = False,
-    multiclass_mode: Optional[Union[str, MulticlassMode]] = None,
+    multiclass_mode: Optional[Literal["crammer-singer", "one-vs-all"]] = None,
     task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
     num_classes: Optional[int] = None,
     ignore_index: Optional[int] = None,
@@ -464,11 +464,14 @@ def hinge_loss(
         tensor([2.2333, 1.5000, 1.2333])
     """
     if task is not None:
-        kwargs = dict(ignore_index=ignore_index, validate_args=validate_args)
         if task == "binary":
-            return binary_hinge_loss(preds, target, squared, **kwargs)
+            return binary_hinge_loss(preds, target, squared, ignore_index, validate_args)
         if task == "multiclass":
-            return multiclass_hinge_loss(preds, target, num_classes, squared, multiclass_mode, **kwargs)
+            assert isinstance(num_classes, int)
+            assert multiclass_mode is not None
+            return multiclass_hinge_loss(
+                preds, target, num_classes, squared, multiclass_mode, ignore_index, validate_args
+            )
         raise ValueError(
             f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
         )
