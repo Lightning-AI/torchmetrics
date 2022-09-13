@@ -337,7 +337,7 @@ class Metric(Module, ABC):
             if reduce_fn == dim_zero_sum:
                 reduced = global_state + local_state
             elif reduce_fn == dim_zero_mean:
-                reduced = ((self._update_count - 1) * global_state + local_state) / self._update_count
+                reduced = ((self._update_count - 1) * global_state + local_state).float() / self._update_count
             elif reduce_fn == dim_zero_max:
                 reduced = torch.max(global_state, local_state)
             elif reduce_fn == dim_zero_min:
@@ -392,10 +392,9 @@ class Metric(Module, ABC):
                 except RuntimeError as err:
                     if "Expected all tensors to be on" in str(err):
                         raise RuntimeError(
-                            "Encountered different devices in metric calculation"
-                            " (see stacktrace for details)."
-                            "This could be due to the metric class not being on the same device as input."
-                            f"Instead of `metric={self.__class__.__name__}(...)` try to do"
+                            "Encountered different devices in metric calculation (see stacktrace for details)."
+                            " This could be due to the metric class not being on the same device as input."
+                            f" Instead of `metric={self.__class__.__name__}(...)` try to do"
                             f" `metric={self.__class__.__name__}(...).to(device)` where"
                             " device corresponds to the device of the input."
                         ) from err
