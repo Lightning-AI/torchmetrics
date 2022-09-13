@@ -26,7 +26,6 @@ from torchmetrics.functional.classification.f_beta import f1_score, fbeta_score
 from torchmetrics.functional.classification.hamming import hamming_distance
 from torchmetrics.functional.classification.hinge import hinge_loss
 from torchmetrics.functional.classification.jaccard import jaccard_index
-from torchmetrics.functional.classification.kl_divergence import kl_divergence
 from torchmetrics.functional.classification.matthews_corrcoef import matthews_corrcoef
 from torchmetrics.functional.classification.precision_recall import precision, precision_recall, recall
 from torchmetrics.functional.classification.precision_recall_curve import precision_recall_curve
@@ -55,6 +54,7 @@ from torchmetrics.functional.pairwise.manhattan import pairwise_manhattan_distan
 from torchmetrics.functional.regression.concordance import concordance_corrcoef
 from torchmetrics.functional.regression.cosine_similarity import cosine_similarity
 from torchmetrics.functional.regression.explained_variance import explained_variance
+from torchmetrics.functional.regression.kl_divergence import kl_divergence
 from torchmetrics.functional.regression.log_mse import mean_squared_log_error
 from torchmetrics.functional.regression.mae import mean_absolute_error
 from torchmetrics.functional.regression.mape import mean_absolute_percentage_error

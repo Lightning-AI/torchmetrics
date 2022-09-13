@@ -13,12 +13,23 @@
 # limitations under the License.
 from collections import namedtuple
 
+import pytest
 import torch
+from torch import Tensor
 
 from unittests.helpers import seed_all
 from unittests.helpers.testers import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, NUM_CLASSES
 
 seed_all(1)
+
+
+def _inv_sigmoid(x: Tensor) -> Tensor:
+    return (x / (1 - x)).log()
+
+
+def _logsoftmax(x: Tensor, dim: int = -1) -> Tensor:
+    return torch.nn.functional.log_softmax(x, dim)
+
 
 Input = namedtuple("Input", ["preds", "target"])
 
@@ -58,6 +69,140 @@ _input_multilabel = Input(
 _input_multilabel_multidim = Input(
     preds=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, EXTRA_DIM)),
     target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, EXTRA_DIM)),
+)
+
+_binary_cases = (
+    pytest.param(
+        Input(
+            preds=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
+            target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
+        ),
+        id="input[single dim-labels]",
+    ),
+    pytest.param(
+        Input(preds=torch.rand(NUM_BATCHES, BATCH_SIZE), target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE))),
+        id="input[single dim-probs]",
+    ),
+    pytest.param(
+        Input(
+            preds=_inv_sigmoid(torch.rand(NUM_BATCHES, BATCH_SIZE)),
+            target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
+        ),
+        id="input[single dim-logits]",
+    ),
+    pytest.param(
+        Input(
+            preds=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM)),
+            target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM)),
+        ),
+        id="input[multi dim-labels]",
+    ),
+    pytest.param(
+        Input(
+            preds=torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
+            target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM)),
+        ),
+        id="input[multi dim-probs]",
+    ),
+    pytest.param(
+        Input(
+            preds=_inv_sigmoid(torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM)),
+            target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM)),
+        ),
+        id="input[multi dim-logits]",
+    ),
+)
+
+
+_multiclass_cases = (
+    pytest.param(
+        Input(
+            preds=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
+            target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
+        ),
+        id="input[single dim-labels]",
+    ),
+    pytest.param(
+        Input(
+            preds=torch.randn(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES).softmax(-1),
+            target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
+        ),
+        id="input[single dim-probs]",
+    ),
+    pytest.param(
+        Input(
+            preds=_logsoftmax(torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES), -1),
+            target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
+        ),
+        id="input[single dim-logits]",
+    ),
+    pytest.param(
+        Input(
+            preds=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM)),
+            target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM)),
+        ),
+        id="input[multi dim-labels]",
+    ),
+    pytest.param(
+        Input(
+            preds=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, EXTRA_DIM).softmax(-2),
+            target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM)),
+        ),
+        id="input[multi dim-probs]",
+    ),
+    pytest.param(
+        Input(
+            preds=_logsoftmax(torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, EXTRA_DIM), -2),
+            target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM)),
+        ),
+        id="input[multi dim-logits]",
+    ),
+)
+
+
+_multilabel_cases = (
+    pytest.param(
+        Input(
+            preds=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES)),
+            target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES)),
+        ),
+        id="input[single dim-labels]",
+    ),
+    pytest.param(
+        Input(
+            preds=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES),
+            target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES)),
+        ),
+        id="input[single dim-probs]",
+    ),
+    pytest.param(
+        Input(
+            preds=_inv_sigmoid(torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES)),
+            target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES)),
+        ),
+        id="input[single dim-logits]",
+    ),
+    pytest.param(
+        Input(
+            preds=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, EXTRA_DIM)),
+            target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, EXTRA_DIM)),
+        ),
+        id="input[multi dim-labels]",
+    ),
+    pytest.param(
+        Input(
+            preds=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, EXTRA_DIM),
+            target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, EXTRA_DIM)),
+        ),
+        id="input[multi dim-probs]",
+    ),
+    pytest.param(
+        Input(
+            preds=_inv_sigmoid(torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, EXTRA_DIM)),
+            target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, EXTRA_DIM)),
+        ),
+        id="input[multi dim-logits]",
+    ),
 )
 
 # Generate edge multilabel edge case, where nothing matches (scores are undefined)

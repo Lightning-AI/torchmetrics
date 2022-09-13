@@ -13,8 +13,15 @@ ________________
 .. autoclass:: torchmetrics.LabelRankingLoss
     :noindex:
 
+
+.. autoclass:: torchmetrics.classification.MultilabelRankingLoss
+    :noindex:
+
 Functional Interface
 ____________________
 
 .. autofunction:: torchmetrics.functional.label_ranking_loss
+    :noindex:
+
+.. autofunction:: torchmetrics.functional.classification.multilabel_ranking_loss
     :noindex:
