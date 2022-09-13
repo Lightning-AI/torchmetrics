@@ -356,9 +356,6 @@ def multilabel_specificity(
     return _specificity_reduce(tp, fp, tn, fn, average=average, multidim_average=multidim_average)
 
 
-# -------------------------- Old stuff --------------------------
-
-
 def _specificity_compute(
     tp: Tensor,
     fp: Tensor,

@@ -221,9 +221,6 @@ class MulticlassCalibrationError(Metric):
         return _ce_compute(confidences, accuracies, self.n_bins, norm=self.norm)
 
 
-# -------------------------- Old stuff --------------------------
-
-
 class CalibrationError(Metric):
     r"""`Computes the Top-label Calibration Error`_
     Three different norms are implemented, each corresponding to variations on the calibration error metric.

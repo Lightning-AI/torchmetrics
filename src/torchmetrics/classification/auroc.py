@@ -323,9 +323,6 @@ class MultilabelAUROC(MultilabelPrecisionRecallCurve):
         return _multilabel_auroc_compute(state, self.num_labels, self.average, self.thresholds, self.ignore_index)
 
 
-# -------------------------- Old stuff --------------------------
-
-
 class AUROC(Metric):
     r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_).
     Works for both binary, multilabel and multiclass problems. In the case of

@@ -299,9 +299,6 @@ def multilabel_jaccard_index(
     return _jaccard_index_reduce(confmat, average=average)
 
 
-# -------------------------- Old stuff --------------------------
-
-
 def _jaccard_from_confmat(
     confmat: Tensor,
     num_classes: int,

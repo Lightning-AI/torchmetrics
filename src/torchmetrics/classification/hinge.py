@@ -204,9 +204,6 @@ class MulticlassHingeLoss(Metric):
         return _hinge_loss_compute(self.measures, self.total)
 
 
-# -------------------------- Old stuff --------------------------
-
-
 class HingeLoss(Metric):
     r"""Computes the mean `Hinge loss`_, typically used for Support Vector Machines (SVMs).
 

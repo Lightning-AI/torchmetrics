@@ -308,9 +308,6 @@ class MultilabelROC(MultilabelPrecisionRecallCurve):
         return _multilabel_roc_compute(state, self.num_labels, self.thresholds, self.ignore_index)
 
 
-# -------------------------- Old stuff --------------------------
-
-
 class ROC(Metric):
     """Computes the Receiver Operating Characteristic (ROC). Works for both binary, multiclass and multilabel
     problems. In the case of multiclass, the values will be calculated based on a one-vs-the-rest approach.

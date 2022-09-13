@@ -654,9 +654,6 @@ def multilabel_recall(
     return _precision_recall_reduce("recall", tp, fp, tn, fn, average=average, multidim_average=multidim_average)
 
 
-# -------------------------- Old stuff --------------------------
-
-
 def _precision_compute(
     tp: Tensor,
     fp: Tensor,

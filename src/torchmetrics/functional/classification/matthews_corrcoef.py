@@ -235,8 +235,6 @@ def multilabel_matthews_corrcoef(
     return _matthews_corrcoef_reduce(confmat)
 
 
-# -------------------------- Old stuff --------------------------
-
 _matthews_corrcoef_update = _confusion_matrix_update
 
 

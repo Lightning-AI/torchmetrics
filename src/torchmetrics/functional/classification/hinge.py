@@ -243,9 +243,6 @@ def multiclass_hinge_loss(
     return _hinge_loss_compute(measures, total)
 
 
-# -------------------------- Old stuff --------------------------
-
-
 class MulticlassMode(EnumStr):
     """Enum to represent possible multiclass modes of hinge.
 

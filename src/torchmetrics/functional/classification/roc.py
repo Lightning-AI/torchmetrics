@@ -424,9 +424,6 @@ def multilabel_roc(
     return _multilabel_roc_compute(state, num_labels, thresholds, ignore_index)
 
 
-# -------------------------- Old stuff --------------------------
-
-
 def _roc_update(
     preds: Tensor,
     target: Tensor,

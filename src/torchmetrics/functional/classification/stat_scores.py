@@ -811,9 +811,6 @@ def multilabel_stat_scores(
     return _multilabel_stat_scores_compute(tp, fp, tn, fn, average, multidim_average)
 
 
-# -------------------------- Old stuff --------------------------
-
-
 def _del_column(data: Tensor, idx: int) -> Tensor:
     """Delete the column at index."""
     return torch.cat([data[:, :idx], data[:, (idx + 1) :]], 1)
