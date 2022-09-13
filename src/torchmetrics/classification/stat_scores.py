@@ -700,15 +700,6 @@ class StatScores(Metric):
             preds: Predictions from model (probabilities, logits or labels)
             target: Ground truth values
         """
-        if self.task is not None:
-            if self.task == "binary":
-                BinaryStatScores.update(self, preds, target)
-            elif self.task == "multiclass":
-                MulticlassStatScores.update(self, preds, target)
-            elif self.task == "multilabel":
-                MultilabelStatScores.update(self, preds, target)
-            return
-
         tp, fp, tn, fn = _stat_scores_update(
             preds,
             target,
@@ -772,12 +763,5 @@ class StatScores(Metric):
               - If ``reduce='macro'``, the shape will be ``(N, C, 5)``
               - If ``reduce='samples'``, the shape will be ``(N, X, 5)``
         """
-        if self.task is not None:
-            if self.task == "binary":
-                return BinaryStatScores.compute(self)
-            elif self.task == "multiclass":
-                return MulticlassStatScores.compute(self)
-            elif self.task == "multilabel":
-                return MultilabelStatScores.compute(self)
         tp, fp, tn, fn = self._get_final_stats()
         return _stat_scores_compute(tp, fp, tn, fn)
