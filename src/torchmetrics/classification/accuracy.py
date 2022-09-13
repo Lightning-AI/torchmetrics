@@ -462,7 +462,7 @@ class Accuracy(StatScores):
         cls,
         threshold: float = 0.5,
         num_classes: Optional[int] = None,
-        average: Optional[str] = "micro",
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
         mdmc_average: Optional[str] = None,
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
@@ -475,6 +475,7 @@ class Accuracy(StatScores):
         **kwargs: Any,
     ) -> Metric:
         if task is not None:
+            assert multidim_average is not None
             kwargs.update(
                 dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
             )
@@ -496,7 +497,7 @@ class Accuracy(StatScores):
         self,
         threshold: float = 0.5,
         num_classes: Optional[int] = None,
-        average: Optional[str] = "micro",
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
         mdmc_average: Optional[str] = None,
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,

@@ -321,7 +321,7 @@ class JaccardIndex(ConfusionMatrix):
     def __new__(
         cls,
         num_classes: int,
-        average: Optional[str] = "macro",
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
         ignore_index: Optional[int] = None,
         absent_score: float = 0.0,
         threshold: float = 0.5,
@@ -349,7 +349,7 @@ class JaccardIndex(ConfusionMatrix):
     def __init__(
         self,
         num_classes: int,
-        average: Optional[str] = "macro",
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
         ignore_index: Optional[int] = None,
         absent_score: float = 0.0,
         threshold: float = 0.5,
