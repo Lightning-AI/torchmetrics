@@ -64,7 +64,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed a bug in `ssim` when `return_full_image=True` where the score was still reduced ([#1204](https://github.com/Lightning-AI/metrics/pull/1204))
 
 
-- Fixed mps support in jaccard index ([#1205](https://github.com/Lightning-AI/metrics/pull/1205))
+- Fixed MPS support for:
+  * MAE metric ([#1210](https://github.com/Lightning-AI/metrics/pull/1210))
+  * Jaccard index ([#1205](https://github.com/Lightning-AI/metrics/pull/1205))
 
 
 ## [0.9.3] - 2022-08-22
