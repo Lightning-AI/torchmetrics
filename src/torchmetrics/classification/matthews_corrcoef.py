@@ -24,10 +24,12 @@ from torchmetrics.functional.classification.matthews_corrcoef import (
     _matthews_corrcoef_update,
 )
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.prints import rank_zero_warn
 
 
 class BinaryMatthewsCorrCoef(BinaryConfusionMatrix):
-    r"""Calculates `Matthews correlation coefficient`_ for binary tasks. This metric measures
+    r"""
+    Calculates `Matthews correlation coefficient`_ for binary tasks. This metric measures
     the general correlation or quality of a classification.
 
     Accepts the following input tensors:
@@ -223,7 +225,15 @@ class MultilabelMatthewsCorrCoef(MultilabelConfusionMatrix):
 
 
 class MatthewsCorrCoef(Metric):
-    r"""Calculates `Matthews correlation coefficient`_ that measures the general correlation
+    r"""
+    .. note::
+        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        metric. Moving forward we recommend using these versions. This base metric will still work as it did
+        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
+        and the general order of arguments may change, such that this metric will just function as an single
+        entrypoint to calling the three specialized versions.
+
+    Calculates `Matthews correlation coefficient`_ that measures the general correlation
     or quality of a classification.
 
     In the binary case it is defined as:
@@ -290,6 +300,15 @@ class MatthewsCorrCoef(Metric):
                 return MultilabelMatthewsCorrCoef(num_labels, threshold, **kwargs)
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+            )
+        else:
+            rank_zero_warn(
+                "From v0.10 an `'Binary*'`, `'Multiclass*', `'Multilabel*'` version now exist of each classification"
+                " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
+                " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
+                " and the general order of arguments may change, such that this metric will just function as an single"
+                " entrypoint to calling the three specialized versions.",
+                DeprecationWarning,
             )
         return super().__new__(cls)
 

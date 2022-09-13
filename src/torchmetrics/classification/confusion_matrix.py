@@ -37,6 +37,7 @@ from torchmetrics.functional.classification.confusion_matrix import (
     _multilabel_confusion_matrix_update,
 )
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.prints import rank_zero_warn
 
 
 class BinaryConfusionMatrix(Metric):
@@ -318,7 +319,15 @@ class MultilabelConfusionMatrix(Metric):
 
 
 class ConfusionMatrix(Metric):
-    r"""Computes the `confusion matrix`_.
+    r"""
+    .. note::
+        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        metric. Moving forward we recommend using these versions. This base metric will still work as it did
+        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
+        and the general order of arguments may change, such that this metric will just function as an single
+        entrypoint to calling the three specialized versions.
+
+    Computes the `confusion matrix`_.
 
     Works with binary, multiclass, and multilabel data. Accepts probabilities or logits from a model output
     or integer class values in prediction. Works with multi-dimensional preds and target, but it should be noted that
@@ -411,6 +420,15 @@ class ConfusionMatrix(Metric):
                 return MultilabelConfusionMatrix(num_labels, threshold, **kwargs)
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+            )
+        else:
+            rank_zero_warn(
+                "From v0.10 an `'Binary*'`, `'Multiclass*', `'Multilabel*'` version now exist of each classification"
+                " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
+                " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
+                " and the general order of arguments may change, such that this metric will just function as an single"
+                " entrypoint to calling the three specialized versions.",
+                DeprecationWarning,
             )
         return super().__new__(cls)
 

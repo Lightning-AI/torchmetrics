@@ -413,7 +413,15 @@ class MultilabelPrecisionRecallCurve(Metric):
 
 
 class PrecisionRecallCurve(Metric):
-    """Computes precision-recall pairs for different thresholds. Works for both binary and multiclass problems. In
+    r"""
+    .. note::
+        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        metric. Moving forward we recommend using these versions. This base metric will still work as it did
+        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
+        and the general order of arguments may change, such that this metric will just function as an single
+        entrypoint to calling the three specialized versions.
+
+    Computes precision-recall pairs for different thresholds. Works for both binary and multiclass problems. In
     the case of multiclass, the values will be calculated based on a one-vs-the-rest approach.
 
     Forward accepts
@@ -491,6 +499,15 @@ class PrecisionRecallCurve(Metric):
                 return MultilabelPrecisionRecallCurve(num_labels, **kwargs)
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+            )
+        else:
+            rank_zero_warn(
+                "From v0.10 an `'Binary*'`, `'Multiclass*', `'Multilabel*'` version now exist of each classification"
+                " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
+                " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
+                " and the general order of arguments may change, such that this metric will just function as an single"
+                " entrypoint to calling the three specialized versions.",
+                DeprecationWarning,
             )
         return super().__new__(cls)
 

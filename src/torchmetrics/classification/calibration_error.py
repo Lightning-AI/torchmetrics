@@ -31,6 +31,7 @@ from torchmetrics.functional.classification.calibration_error import (
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
+from torchmetrics.utilities.prints import rank_zero_warn
 
 
 class BinaryCalibrationError(Metric):
@@ -222,7 +223,15 @@ class MulticlassCalibrationError(Metric):
 
 
 class CalibrationError(Metric):
-    r"""`Computes the Top-label Calibration Error`_
+    r"""
+    .. note::
+        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        metric. Moving forward we recommend using these versions. This base metric will still work as it did
+        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
+        and the general order of arguments may change, such that this metric will just function as an single
+        entrypoint to calling the three specialized versions.
+
+    `Computes the Top-label Calibration Error`_
     Three different norms are implemented, each corresponding to variations on the calibration error metric.
 
     L1 norm (Expected Calibration Error)
@@ -281,6 +290,15 @@ class CalibrationError(Metric):
                 return MulticlassCalibrationError(num_classes, **kwargs)
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+            )
+        else:
+            rank_zero_warn(
+                "From v0.10 an `'Binary*'`, `'Multiclass*', `'Multilabel*'` version now exist of each classification"
+                " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
+                " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
+                " and the general order of arguments may change, such that this metric will just function as an single"
+                " entrypoint to calling the three specialized versions.",
+                DeprecationWarning,
             )
         return super().__new__(cls)
 

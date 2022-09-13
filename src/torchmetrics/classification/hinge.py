@@ -32,6 +32,7 @@ from torchmetrics.functional.classification.hinge import (
     _multiclass_hinge_loss_update,
 )
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.prints import rank_zero_warn
 
 
 class BinaryHingeLoss(Metric):
@@ -205,7 +206,15 @@ class MulticlassHingeLoss(Metric):
 
 
 class HingeLoss(Metric):
-    r"""Computes the mean `Hinge loss`_, typically used for Support Vector Machines (SVMs).
+    r"""
+    .. note::
+        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        metric. Moving forward we recommend using these versions. This base metric will still work as it did
+        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
+        and the general order of arguments may change, such that this metric will just function as an single
+        entrypoint to calling the three specialized versions.
+
+    Computes the mean `Hinge loss`_, typically used for Support Vector Machines (SVMs).
 
     In the binary case it is defined as:
 
@@ -298,6 +307,15 @@ class HingeLoss(Metric):
                 return MulticlassHingeLoss(num_classes, squared, multiclass_mode, **kwargs)
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+            )
+        else:
+            rank_zero_warn(
+                "From v0.10 an `'Binary*'`, `'Multiclass*', `'Multilabel*'` version now exist of each classification"
+                " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
+                " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
+                " and the general order of arguments may change, such that this metric will just function as an single"
+                " entrypoint to calling the three specialized versions.",
+                DeprecationWarning,
             )
         return super().__new__(cls)
 
