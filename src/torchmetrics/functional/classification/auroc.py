@@ -428,9 +428,6 @@ def multilabel_auroc(
     return _multilabel_auroc_compute(state, num_labels, average, thresholds, ignore_index)
 
 
-# -------------------------- Old stuff --------------------------
-
-
 def _auroc_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor, DataType]:
     """Updates and returns variables required to compute Area Under the Receiver Operating Characteristic Curve.
     Validates the inputs and returns the mode of the inputs.

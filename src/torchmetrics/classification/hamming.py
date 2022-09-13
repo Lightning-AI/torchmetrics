@@ -317,9 +317,6 @@ class MultilabelHammingDistance(MultilabelStatScores):
         )
 
 
-# -------------------------- Old stuff --------------------------
-
-
 class HammingDistance(Metric):
     r"""Computes the average `Hamming distance`_ (also known as Hamming loss) between targets and predictions:
 

@@ -347,9 +347,6 @@ def multiclass_calibration_error(
     return _ce_compute(confidences, accuracies, n_bins, norm)
 
 
-# -------------------------- Old stuff --------------------------
-
-
 def _ce_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
     """Given a predictions and targets tensor, computes the confidences of the top-1 prediction and records their
     correctness.

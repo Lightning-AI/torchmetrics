@@ -245,9 +245,6 @@ class MultilabelRankingLoss(Metric):
         return _ranking_reduce(self.measure, self.total)
 
 
-# -------------------------- Old stuff --------------------------
-
-
 class CoverageError(Metric):
     """Computes multilabel coverage error [1]. The score measure how far we need to go through the ranked scores to
     cover all true labels. The best value is equal to the average number of labels in the target tensor per sample.

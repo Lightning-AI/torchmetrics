@@ -222,9 +222,6 @@ class MultilabelMatthewsCorrCoef(MultilabelConfusionMatrix):
         return _matthews_corrcoef_reduce(self.confmat)
 
 
-# -------------------------- Old stuff --------------------------
-
-
 class MatthewsCorrCoef(Metric):
     r"""Calculates `Matthews correlation coefficient`_ that measures the general correlation
     or quality of a classification.

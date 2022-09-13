@@ -258,9 +258,6 @@ def multilabel_ranking_loss(
     return _ranking_reduce(loss, n_elements)
 
 
-# -------------------------- Old stuff --------------------------
-
-
 def _check_ranking_input(preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None) -> Tensor:
     """Check that ranking input have the correct dimensions."""
     if preds.ndim != 2 or target.ndim != 2:

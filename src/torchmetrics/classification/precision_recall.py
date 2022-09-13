@@ -604,9 +604,6 @@ class MultilabelRecall(MultilabelStatScores):
         )
 
 
-# -------------------------- Old stuff --------------------------
-
-
 class Precision(StatScores):
     r"""Computes `Precision`_:
 

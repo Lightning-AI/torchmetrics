@@ -255,9 +255,6 @@ class MultilabelJaccardIndex(MultilabelConfusionMatrix):
         return _jaccard_index_reduce(self.confmat, average=self.average)
 
 
-# -------------------------- Old stuff --------------------------
-
-
 class JaccardIndex(ConfusionMatrix):
     r"""Computes Intersection over union, or `Jaccard index`_:
 

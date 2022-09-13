@@ -715,9 +715,6 @@ class MultilabelF1Score(MultilabelFBetaScore):
         )
 
 
-# -------------------------- Old stuff --------------------------
-
-
 class FBetaScore(StatScores):
     r"""Computes `F-score`_, specifically:
 

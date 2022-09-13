@@ -405,9 +405,6 @@ def multilabel_average_precision(
     return _multilabel_average_precision_compute(state, num_labels, average, thresholds, ignore_index)
 
 
-# -------------------------- Old stuff --------------------------
-
-
 def _average_precision_update(
     preds: Tensor,
     target: Tensor,

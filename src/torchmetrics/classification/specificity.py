@@ -293,9 +293,6 @@ class MultilabelSpecificity(MultilabelStatScores):
         return _specificity_reduce(tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average)
 
 
-# -------------------------- Old stuff --------------------------
-
-
 class Specificity(StatScores):
     r"""Computes `Specificity`_:
 

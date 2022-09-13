@@ -317,9 +317,6 @@ class MultilabelConfusionMatrix(Metric):
         return _multilabel_confusion_matrix_compute(self.confmat, self.normalize)
 
 
-# -------------------------- Old stuff --------------------------
-
-
 class ConfusionMatrix(Metric):
     r"""Computes the `confusion matrix`_.
 

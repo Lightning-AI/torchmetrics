@@ -595,9 +595,6 @@ def multilabel_confusion_matrix(
     return _multilabel_confusion_matrix_compute(confmat, normalize)
 
 
-# -------------------------- Old stuff --------------------------
-
-
 def _confusion_matrix_update(
     preds: Tensor, target: Tensor, num_classes: int, threshold: float = 0.5, multilabel: bool = False
 ) -> Tensor:

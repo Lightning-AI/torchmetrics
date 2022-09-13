@@ -232,8 +232,6 @@ def multiclass_cohen_kappa(
     return _cohen_kappa_reduce(confmat, weights)
 
 
-# -------------------------- Old stuff --------------------------
-
 _cohen_kappa_update = _confusion_matrix_update
 
 

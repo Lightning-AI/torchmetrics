@@ -323,9 +323,6 @@ class MultilabelAccuracy(MultilabelStatScores):
         )
 
 
-# -------------------------- Old stuff --------------------------
-
-
 class Accuracy(StatScores):
     r"""
     Computes Accuracy_:

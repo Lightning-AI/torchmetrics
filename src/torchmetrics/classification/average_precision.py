@@ -322,9 +322,6 @@ class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
         )
 
 
-# -------------------------- Old stuff --------------------------
-
-
 class AveragePrecision(Metric):
     """Computes the average precision score, which summarises the precision recall curve into one number. Works for
     both binary and multiclass problems. In the case of multiclass, the values will be calculated based on a one-

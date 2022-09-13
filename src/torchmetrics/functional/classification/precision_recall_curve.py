@@ -770,9 +770,6 @@ def multilabel_precision_recall_curve(
     return _multilabel_precision_recall_curve_compute(state, num_labels, thresholds, ignore_index)
 
 
-# -------------------------- Old stuff --------------------------
-
-
 def _precision_recall_curve_update(
     preds: Tensor,
     target: Tensor,

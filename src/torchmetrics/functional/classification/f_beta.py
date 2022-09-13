@@ -706,9 +706,6 @@ def multilabel_f1_score(
     )
 
 
-# -------------------------- Old stuff --------------------------
-
-
 def _fbeta_compute(
     tp: Tensor,
     fp: Tensor,

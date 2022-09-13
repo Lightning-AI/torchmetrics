@@ -387,9 +387,6 @@ def multilabel_hamming_distance(
     return _hamming_distance_reduce(tp, fp, tn, fn, average=average, multidim_average=multidim_average, multilabel=True)
 
 
-# -------------------------- Old stuff --------------------------
-
-
 def _hamming_distance_update(
     preds: Tensor,
     target: Tensor,

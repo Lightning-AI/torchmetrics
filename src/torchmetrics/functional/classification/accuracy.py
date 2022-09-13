@@ -385,9 +385,6 @@ def multilabel_accuracy(
     return _accuracy_reduce(tp, fp, tn, fn, average=average, multidim_average=multidim_average, multilabel=True)
 
 
-# -------------------------- Old stuff --------------------------
-
-
 def _check_subset_validity(mode: DataType) -> bool:
     """Checks input mode is valid."""
     return mode in (DataType.MULTILABEL, DataType.MULTIDIM_MULTICLASS)

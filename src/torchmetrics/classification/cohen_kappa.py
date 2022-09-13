@@ -181,9 +181,6 @@ class MulticlassCohenKappa(MulticlassConfusionMatrix):
         return _cohen_kappa_reduce(self.confmat, self.weights)
 
 
-# -------------------------- Old stuff --------------------------
-
-
 class CohenKappa(Metric):
     r"""Calculates `Cohen's kappa score`_ that measures inter-annotator agreement. It is defined as
 
