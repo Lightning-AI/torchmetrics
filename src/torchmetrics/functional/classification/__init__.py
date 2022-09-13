@@ -11,27 +11,116 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torchmetrics.functional.classification.accuracy import accuracy  # noqa: F401
+from torchmetrics.functional.classification.accuracy import (  # noqa: F401
+    accuracy,
+    binary_accuracy,
+    multiclass_accuracy,
+    multilabel_accuracy,
+)
 from torchmetrics.functional.classification.auc import auc  # noqa: F401
-from torchmetrics.functional.classification.auroc import auroc  # noqa: F401
-from torchmetrics.functional.classification.average_precision import average_precision  # noqa: F401
-from torchmetrics.functional.classification.calibration_error import calibration_error  # noqa: F401
-from torchmetrics.functional.classification.cohen_kappa import cohen_kappa  # noqa: F401
-from torchmetrics.functional.classification.confusion_matrix import confusion_matrix  # noqa: F401
+from torchmetrics.functional.classification.auroc import (  # noqa: F401
+    auroc,
+    binary_auroc,
+    multiclass_auroc,
+    multilabel_auroc,
+)
+from torchmetrics.functional.classification.average_precision import (  # noqa: F401
+    average_precision,
+    binary_average_precision,
+    multiclass_average_precision,
+    multilabel_average_precision,
+)
+from torchmetrics.functional.classification.calibration_error import (  # noqa: F401
+    binary_calibration_error,
+    calibration_error,
+    multiclass_calibration_error,
+)
+from torchmetrics.functional.classification.cohen_kappa import (  # noqa: F401
+    binary_cohen_kappa,
+    cohen_kappa,
+    multiclass_cohen_kappa,
+)
+from torchmetrics.functional.classification.confusion_matrix import (  # noqa: F401
+    binary_confusion_matrix,
+    confusion_matrix,
+    multiclass_confusion_matrix,
+    multilabel_confusion_matrix,
+)
 from torchmetrics.functional.classification.dice import dice, dice_score  # noqa: F401
-from torchmetrics.functional.classification.f_beta import f1_score, fbeta_score  # noqa: F401
-from torchmetrics.functional.classification.hamming import hamming_distance  # noqa: F401
-from torchmetrics.functional.classification.hinge import hinge_loss  # noqa: F401
-from torchmetrics.functional.classification.jaccard import jaccard_index  # noqa: F401
-from torchmetrics.functional.classification.kl_divergence import kl_divergence  # noqa: F401
-from torchmetrics.functional.classification.matthews_corrcoef import matthews_corrcoef  # noqa: F401
-from torchmetrics.functional.classification.precision_recall import precision, precision_recall, recall  # noqa: F401
-from torchmetrics.functional.classification.precision_recall_curve import precision_recall_curve  # noqa: F401
+from torchmetrics.functional.classification.exact_match import multilabel_exact_match  # noqa: F401
+from torchmetrics.functional.classification.f_beta import (  # noqa: F401
+    binary_f1_score,
+    binary_fbeta_score,
+    f1_score,
+    fbeta_score,
+    multiclass_f1_score,
+    multiclass_fbeta_score,
+    multilabel_f1_score,
+    multilabel_fbeta_score,
+)
+from torchmetrics.functional.classification.hamming import (  # noqa: F401
+    binary_hamming_distance,
+    hamming_distance,
+    multiclass_hamming_distance,
+    multilabel_hamming_distance,
+)
+from torchmetrics.functional.classification.hinge import (  # noqa: F401
+    binary_hinge_loss,
+    hinge_loss,
+    multiclass_hinge_loss,
+)
+from torchmetrics.functional.classification.jaccard import (  # noqa: F401
+    binary_jaccard_index,
+    jaccard_index,
+    multiclass_jaccard_index,
+    multilabel_jaccard_index,
+)
+from torchmetrics.functional.classification.matthews_corrcoef import (  # noqa: F401
+    binary_matthews_corrcoef,
+    matthews_corrcoef,
+    multiclass_matthews_corrcoef,
+    multilabel_matthews_corrcoef,
+)
+from torchmetrics.functional.classification.precision_recall import (  # noqa: F401
+    binary_precision,
+    binary_recall,
+    multiclass_precision,
+    multiclass_recall,
+    multilabel_precision,
+    multilabel_recall,
+    precision,
+    precision_recall,
+    recall,
+)
+from torchmetrics.functional.classification.precision_recall_curve import (  # noqa: F401
+    binary_precision_recall_curve,
+    multiclass_precision_recall_curve,
+    multilabel_precision_recall_curve,
+    precision_recall_curve,
+)
 from torchmetrics.functional.classification.ranking import (  # noqa: F401
     coverage_error,
     label_ranking_average_precision,
     label_ranking_loss,
+    multilabel_coverage_error,
+    multilabel_ranking_average_precision,
+    multilabel_ranking_loss,
 )
-from torchmetrics.functional.classification.roc import roc  # noqa: F401
-from torchmetrics.functional.classification.specificity import specificity  # noqa: F401
-from torchmetrics.functional.classification.stat_scores import stat_scores  # noqa: F401
+from torchmetrics.functional.classification.recall_at_fixed_precision import (  # noqa: F401
+    binary_recall_at_fixed_precision,
+    multiclass_recall_at_fixed_precision,
+    multilabel_recall_at_fixed_precision,
+)
+from torchmetrics.functional.classification.roc import binary_roc, multiclass_roc, multilabel_roc, roc  # noqa: F401
+from torchmetrics.functional.classification.specificity import (  # noqa: F401
+    binary_specificity,
+    multiclass_specificity,
+    multilabel_specificity,
+    specificity,
+)
+from torchmetrics.functional.classification.stat_scores import (  # noqa: F401
+    binary_stat_scores,
+    multiclass_stat_scores,
+    multilabel_stat_scores,
+    stat_scores,
+)

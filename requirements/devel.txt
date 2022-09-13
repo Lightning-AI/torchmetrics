@@ -15,3 +15,4 @@
 -r text_test.txt
 -r audio_test.txt
 -r detection_test.txt
+-r classification_test.txt
