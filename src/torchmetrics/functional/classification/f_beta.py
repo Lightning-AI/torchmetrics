@@ -794,7 +794,7 @@ def fbeta_score(
     preds: Tensor,
     target: Tensor,
     beta: float = 1.0,
-    average: Optional[str] = "micro",
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
     mdmc_average: Optional[str] = None,
     ignore_index: Optional[int] = None,
     num_classes: Optional[int] = None,
@@ -910,13 +910,20 @@ def fbeta_score(
 
     """
     if task is not None:
-        kwargs = dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
+        assert multidim_average is not None
         if task == "binary":
-            return binary_fbeta_score(preds, target, beta, threshold, **kwargs)
+            return binary_fbeta_score(preds, target, beta, threshold, multidim_average, ignore_index, validate_args)
         if task == "multiclass":
-            return multiclass_fbeta_score(preds, target, beta, num_classes, average, top_k, **kwargs)
+            assert isinstance(num_classes, int)
+            assert isinstance(top_k, int)
+            return multiclass_fbeta_score(
+                preds, target, beta, num_classes, average, top_k, multidim_average, ignore_index, validate_args
+            )
         if task == "multilabel":
-            return multilabel_fbeta_score(preds, target, beta, num_labels, threshold, average, **kwargs)
+            assert isinstance(num_labels, int)
+            return multilabel_fbeta_score(
+                preds, target, beta, num_labels, threshold, average, multidim_average, ignore_index, validate_args
+            )
         raise ValueError(
             f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
         )
@@ -962,7 +969,7 @@ def f1_score(
     preds: Tensor,
     target: Tensor,
     beta: float = 1.0,
-    average: Optional[str] = "micro",
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
     mdmc_average: Optional[str] = None,
     ignore_index: Optional[int] = None,
     num_classes: Optional[int] = None,
@@ -1076,13 +1083,20 @@ def f1_score(
         tensor(0.3333)
     """
     if task is not None:
-        kwargs = dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
+        assert multidim_average is not None
         if task == "binary":
-            return binary_f1_score(preds, target, threshold, **kwargs)
+            return binary_f1_score(preds, target, threshold, multidim_average, ignore_index, validate_args)
         if task == "multiclass":
-            return multiclass_f1_score(preds, target, num_classes, average, top_k, **kwargs)
+            assert isinstance(num_classes, int)
+            assert isinstance(top_k, int)
+            return multiclass_f1_score(
+                preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args
+            )
         if task == "multilabel":
-            return multilabel_f1_score(preds, target, num_labels, threshold, average, **kwargs)
+            assert isinstance(num_labels, int)
+            return multilabel_f1_score(
+                preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
+            )
         raise ValueError(
             f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
         )

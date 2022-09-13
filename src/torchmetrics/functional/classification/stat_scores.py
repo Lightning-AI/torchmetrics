@@ -1095,7 +1095,7 @@ def stat_scores(
     ignore_index: Optional[int] = None,
     task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
     num_labels: Optional[int] = None,
-    average: Optional[str] = "micro",
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
     multidim_average: Optional[Literal["global", "samplewise"]] = "global",
     validate_args: bool = True,
 ) -> Tensor:
@@ -1225,13 +1225,20 @@ def stat_scores(
 
     """
     if task is not None:
-        kwargs = dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
+        assert multidim_average is not None
         if task == "binary":
-            return binary_stat_scores(preds, target, threshold, **kwargs)
+            return binary_stat_scores(preds, target, threshold, multidim_average, ignore_index, validate_args)
         if task == "multiclass":
-            return multiclass_stat_scores(preds, target, num_classes, average, top_k, **kwargs)
+            assert isinstance(num_classes, int)
+            assert isinstance(top_k, int)
+            return multiclass_stat_scores(
+                preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args
+            )
         if task == "multilabel":
-            return multilabel_stat_scores(preds, target, num_labels, threshold, average, **kwargs)
+            assert isinstance(num_labels, int)
+            return multilabel_stat_scores(
+                preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
+            )
         raise ValueError(
             f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
         )

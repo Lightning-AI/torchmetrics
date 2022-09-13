@@ -245,12 +245,13 @@ class CohenKappa(Metric):
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,
-    ) -> None:
+    ) -> Metric:
         if task is not None:
             kwargs.update(dict(weights=weights, ignore_index=ignore_index, validate_args=validate_args))
             if task == "binary":
                 return BinaryCohenKappa(threshold, **kwargs)
             if task == "multiclass":
+                assert isinstance(num_classes, int)
                 return MulticlassCohenKappa(num_classes, **kwargs)
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"

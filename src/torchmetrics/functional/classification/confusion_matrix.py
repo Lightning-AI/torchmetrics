@@ -693,7 +693,7 @@ def confusion_matrix(
     preds: Tensor,
     target: Tensor,
     num_classes: int,
-    normalize: Optional[str] = None,
+    normalize: Optional[Literal["true", "pred", "all", "none"]] = None,
     threshold: float = 0.5,
     multilabel: bool = False,
     task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
@@ -771,13 +771,16 @@ def confusion_matrix(
 
     """
     if task is not None:
-        kwargs = dict(normalize=normalize, ignore_index=ignore_index, validate_args=validate_args)
         if task == "binary":
-            return binary_confusion_matrix(preds, target, threshold, **kwargs)
+            return binary_confusion_matrix(preds, target, threshold, normalize, ignore_index, validate_args)
         if task == "multiclass":
-            return multiclass_confusion_matrix(preds, target, num_classes, **kwargs)
+            assert isinstance(num_classes, int)
+            return multiclass_confusion_matrix(preds, target, num_classes, normalize, ignore_index, validate_args)
         if task == "multilabel":
-            return multilabel_confusion_matrix(preds, target, num_labels, threshold, **kwargs)
+            assert isinstance(num_labels, int)
+            return multilabel_confusion_matrix(
+                preds, target, num_labels, threshold, normalize, ignore_index, validate_args
+            )
         raise ValueError(
             f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
         )

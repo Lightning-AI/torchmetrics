@@ -28,6 +28,7 @@ from torchmetrics.functional.classification.precision_recall import (
     _precision_recall_reduce,
     _recall_compute,
 )
+from torchmetrics.metric import Metric
 from torchmetrics.utilities.enums import AverageMethod
 
 
@@ -703,7 +704,7 @@ class Precision(StatScores):
         cls,
         threshold: float = 0.5,
         num_classes: Optional[int] = None,
-        average: Optional[str] = "micro",
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
         mdmc_average: Optional[str] = None,
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
@@ -713,16 +714,20 @@ class Precision(StatScores):
         multidim_average: Optional[Literal["global", "samplewise"]] = "global",
         validate_args: bool = True,
         **kwargs: Any,
-    ) -> None:
+    ) -> Metric:
         if task is not None:
+            assert multidim_average is not None
             kwargs.update(
                 dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
             )
             if task == "binary":
                 return BinaryPrecision(threshold, **kwargs)
             if task == "multiclass":
+                assert isinstance(num_classes, int)
+                assert isinstance(top_k, int)
                 return MulticlassPrecision(num_classes, top_k, average, **kwargs)
             if task == "multilabel":
+                assert isinstance(num_labels, int)
                 return MultilabelPrecision(num_labels, threshold, average, **kwargs)
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
@@ -733,7 +738,7 @@ class Precision(StatScores):
         self,
         num_classes: Optional[int] = None,
         threshold: float = 0.5,
-        average: Optional[str] = "micro",
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
         mdmc_average: Optional[str] = None,
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
@@ -872,7 +877,7 @@ class Recall(StatScores):
         cls,
         threshold: float = 0.5,
         num_classes: Optional[int] = None,
-        average: Optional[str] = "micro",
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
         mdmc_average: Optional[str] = None,
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
@@ -882,16 +887,20 @@ class Recall(StatScores):
         multidim_average: Optional[Literal["global", "samplewise"]] = "global",
         validate_args: bool = True,
         **kwargs: Any,
-    ) -> None:
+    ) -> Metric:
         if task is not None:
+            assert multidim_average is not None
             kwargs.update(
                 dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
             )
             if task == "binary":
                 return BinaryRecall(threshold, **kwargs)
             if task == "multiclass":
+                assert isinstance(num_classes, int)
+                assert isinstance(top_k, int)
                 return MulticlassRecall(num_classes, top_k, average, **kwargs)
             if task == "multilabel":
+                assert isinstance(num_labels, int)
                 return MultilabelRecall(num_labels, threshold, average, **kwargs)
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
@@ -902,7 +911,7 @@ class Recall(StatScores):
         self,
         num_classes: Optional[int] = None,
         threshold: float = 0.5,
-        average: Optional[str] = "micro",
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
         mdmc_average: Optional[str] = None,
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,

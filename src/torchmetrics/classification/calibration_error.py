@@ -274,12 +274,13 @@ class CalibrationError(Metric):
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,
-    ) -> None:
+    ) -> Metric:
         if task is not None:
             kwargs.update(dict(n_bins=n_bins, norm=norm, ignore_index=ignore_index, validate_args=validate_args))
             if task == "binary":
                 return BinaryCalibrationError(**kwargs)
             if task == "multiclass":
+                assert isinstance(num_classes, int)
                 return MulticlassCalibrationError(num_classes, **kwargs)
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"

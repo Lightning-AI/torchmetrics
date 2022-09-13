@@ -26,6 +26,7 @@ from torchmetrics.functional.classification.accuracy import (
     _subset_accuracy_compute,
     _subset_accuracy_update,
 )
+from torchmetrics.metric import Metric
 from torchmetrics.utilities.enums import AverageMethod, DataType
 
 from torchmetrics.classification.stat_scores import (  # isort:skip
@@ -461,7 +462,7 @@ class Accuracy(StatScores):
         cls,
         threshold: float = 0.5,
         num_classes: Optional[int] = None,
-        average: Optional[str] = "micro",
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
         mdmc_average: Optional[str] = None,
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
@@ -472,16 +473,20 @@ class Accuracy(StatScores):
         multidim_average: Optional[Literal["global", "samplewise"]] = "global",
         validate_args: bool = True,
         **kwargs: Any,
-    ) -> None:
+    ) -> Metric:
         if task is not None:
+            assert multidim_average is not None
             kwargs.update(
                 dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
             )
             if task == "binary":
                 return BinaryAccuracy(threshold, **kwargs)
             if task == "multiclass":
-                return MulticlassAccuracy(num_classes, average, top_k, **kwargs)
+                assert isinstance(num_classes, int)
+                assert isinstance(top_k, int)
+                return MulticlassAccuracy(num_classes, top_k, average, **kwargs)
             if task == "multilabel":
+                assert isinstance(num_labels, int)
                 return MultilabelAccuracy(num_labels, threshold, average, **kwargs)
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
@@ -492,7 +497,7 @@ class Accuracy(StatScores):
         self,
         threshold: float = 0.5,
         num_classes: Optional[int] = None,
-        average: Optional[str] = "micro",
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
         mdmc_average: Optional[str] = None,
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,

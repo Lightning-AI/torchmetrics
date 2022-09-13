@@ -696,13 +696,14 @@ def roc(
          tensor([1.1837, 0.1837, 0.1338, 0.1183, 0.1138])]
     """
     if task is not None:
-        kwargs = dict(thresholds=thresholds, ignore_index=ignore_index, validate_args=validate_args)
         if task == "binary":
-            return binary_roc(preds, target, **kwargs)
+            return binary_roc(preds, target, thresholds, ignore_index, validate_args)
         if task == "multiclass":
-            return multiclass_roc(preds, target, num_classes, **kwargs)
+            assert isinstance(num_classes, int)
+            return multiclass_roc(preds, target, num_classes, thresholds, ignore_index, validate_args)
         if task == "multilabel":
-            return multilabel_roc(preds, target, num_labels, **kwargs)
+            assert isinstance(num_labels, int)
+            return multilabel_roc(preds, target, num_labels, thresholds, ignore_index, validate_args)
         raise ValueError(
             f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
         )

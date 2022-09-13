@@ -388,21 +388,23 @@ class AveragePrecision(Metric):
         cls,
         num_classes: Optional[int] = None,
         pos_label: Optional[int] = None,
-        average: Optional[str] = "macro",
+        average: Optional[Literal["macro", "weighted", "none"]] = "macro",
         task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
         thresholds: Optional[Union[int, List[float], Tensor]] = None,
         num_labels: Optional[int] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,
-    ) -> None:
+    ) -> Metric:
         if task is not None:
             kwargs.update(dict(thresholds=thresholds, ignore_index=ignore_index, validate_args=validate_args))
             if task == "binary":
                 return BinaryAveragePrecision(**kwargs)
             if task == "multiclass":
+                assert isinstance(num_classes, int)
                 return MulticlassAveragePrecision(num_classes, average, **kwargs)
             if task == "multilabel":
+                assert isinstance(num_labels, int)
                 return MultilabelAveragePrecision(num_labels, average, **kwargs)
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
@@ -413,7 +415,7 @@ class AveragePrecision(Metric):
         self,
         num_classes: Optional[int] = None,
         pos_label: Optional[int] = None,
-        average: Optional[str] = "macro",
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
         task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
         thresholds: Optional[Union[int, List[float], Tensor]] = None,
         num_labels: Optional[int] = None,

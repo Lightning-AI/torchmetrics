@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional
+from typing import Any, Literal, Optional
 
 from torch import Tensor
 
@@ -124,7 +124,7 @@ class Dice(StatScores):
         zero_division: int = 0,
         num_classes: Optional[int] = None,
         threshold: float = 0.5,
-        average: Optional[str] = "micro",
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
         mdmc_average: Optional[str] = "global",
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,

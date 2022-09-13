@@ -30,6 +30,7 @@ from torchmetrics.functional.classification.f_beta import (
     _multiclass_fbeta_score_arg_validation,
     _multilabel_fbeta_score_arg_validation,
 )
+from torchmetrics.metric import Metric
 from torchmetrics.utilities.enums import AverageMethod
 
 
@@ -822,7 +823,7 @@ class FBetaScore(StatScores):
         num_classes: Optional[int] = None,
         beta: float = 1.0,
         threshold: float = 0.5,
-        average: Optional[str] = "micro",
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
         mdmc_average: Optional[str] = None,
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
@@ -832,16 +833,20 @@ class FBetaScore(StatScores):
         multidim_average: Optional[Literal["global", "samplewise"]] = "global",
         validate_args: bool = True,
         **kwargs: Any,
-    ) -> None:
+    ) -> Metric:
         if task is not None:
+            assert multidim_average is not None
             kwargs.update(
                 dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
             )
             if task == "binary":
                 return BinaryFBetaScore(beta, threshold, **kwargs)
             if task == "multiclass":
-                return MulticlassFBetaScore(beta, num_classes, average, top_k, **kwargs)
+                assert isinstance(num_classes, int)
+                assert isinstance(top_k, int)
+                return MulticlassFBetaScore(beta, num_classes, top_k, average, **kwargs)
             if task == "multilabel":
+                assert isinstance(num_labels, int)
                 return MultilabelFBetaScore(beta, num_labels, threshold, average, **kwargs)
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
@@ -853,7 +858,7 @@ class FBetaScore(StatScores):
         num_classes: Optional[int] = None,
         beta: float = 1.0,
         threshold: float = 0.5,
-        average: Optional[str] = "micro",
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
         mdmc_average: Optional[str] = None,
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
@@ -983,7 +988,7 @@ class F1Score(FBetaScore):
         cls,
         num_classes: Optional[int] = None,
         threshold: float = 0.5,
-        average: Optional[str] = "micro",
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
         mdmc_average: Optional[str] = None,
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
@@ -993,16 +998,20 @@ class F1Score(FBetaScore):
         multidim_average: Optional[Literal["global", "samplewise"]] = "global",
         validate_args: bool = True,
         **kwargs: Any,
-    ) -> None:
+    ) -> Metric:
         if task is not None:
+            assert multidim_average is not None
             kwargs.update(
                 dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
             )
             if task == "binary":
                 return BinaryF1Score(threshold, **kwargs)
             if task == "multiclass":
-                return MulticlassF1Score(num_classes, average, top_k, **kwargs)
+                assert isinstance(num_classes, int)
+                assert isinstance(top_k, int)
+                return MulticlassF1Score(num_classes, top_k, average, **kwargs)
             if task == "multilabel":
+                assert isinstance(num_labels, int)
                 return MultilabelF1Score(num_labels, threshold, average, **kwargs)
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
@@ -1013,7 +1022,7 @@ class F1Score(FBetaScore):
         self,
         num_classes: Optional[int] = None,
         threshold: float = 0.5,
-        average: Optional[str] = "micro",
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
         mdmc_average: Optional[str] = None,
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
