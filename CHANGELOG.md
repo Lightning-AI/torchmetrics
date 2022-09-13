@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     [#1175](https://github.com/Lightning-AI/metrics/pull/1175),
     [#1189](https://github.com/Lightning-AI/metrics/pull/1189),
     [#1197](https://github.com/Lightning-AI/metrics/pull/1197),
+    [#1215](https://github.com/Lightning-AI/metrics/pull/1215),
     [#1195](https://github.com/Lightning-AI/metrics/pull/1195)
 )
 
