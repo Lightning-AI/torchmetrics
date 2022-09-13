@@ -17,7 +17,6 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics import Metric
 from torchmetrics.classification.stat_scores import (
     BinaryStatScores,
     MulticlassStatScores,
@@ -25,6 +24,7 @@ from torchmetrics.classification.stat_scores import (
     StatScores,
 )
 from torchmetrics.functional.classification.specificity import _specificity_compute, _specificity_reduce
+from torchmetrics.metric import Metric
 from torchmetrics.utilities.enums import AverageMethod
 
 

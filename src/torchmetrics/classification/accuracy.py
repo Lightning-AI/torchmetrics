@@ -17,7 +17,6 @@ import torch
 from torch import Tensor, tensor
 from typing_extensions import Literal
 
-from torchmetrics import Metric
 from torchmetrics.functional.classification.accuracy import (
     _accuracy_compute,
     _accuracy_reduce,
@@ -27,6 +26,7 @@ from torchmetrics.functional.classification.accuracy import (
     _subset_accuracy_compute,
     _subset_accuracy_update,
 )
+from torchmetrics.metric import Metric
 from torchmetrics.utilities.enums import AverageMethod, DataType
 
 from torchmetrics.classification.stat_scores import (  # isort:skip
