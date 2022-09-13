@@ -491,7 +491,15 @@ class MultilabelStatScores(_AbstractStatScores):
 
 
 class StatScores(Metric):
-    r"""Computes the number of true positives, false positives, true negatives, false negatives.
+    r"""
+    .. note::
+        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        metric. Moving forward we recommend using these versions. This base metric will still work as it did
+        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
+        and the general order of arguments may change, such that this metric will just function as an single
+        entrypoint to calling the three specialized versions.
+
+    Computes the number of true positives, false positives, true negatives, false negatives.
     Related to `Type I and Type II errors`_ and the `confusion matrix`_.
 
     The reduction method (how the statistics are aggregated) is controlled by the
@@ -620,6 +628,15 @@ class StatScores(Metric):
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
             )
+        else:
+            rank_zero_warn(
+                "From v0.10 an `'Binary*'`, `'Multiclass*', `'Multilabel*'` version now exist of each classification"
+                " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
+                " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
+                " and the general order of arguments may change, such that this metric will just function as an single"
+                " entrypoint to calling the three specialized versions.",
+                DeprecationWarning,
+            )
         return super().__new__(cls)
 
     def __init__(
@@ -638,36 +655,7 @@ class StatScores(Metric):
         validate_args: bool = True,
         **kwargs: Any,
     ) -> None:
-        self.task = task
-        if self.task is not None:
-            assert multidim_average is not None
-            kwargs.update(
-                dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
-            )
-            if task == "binary":
-                BinaryStatScores.__init__(self, threshold, **kwargs)
-            if task == "multiclass":
-                assert isinstance(num_classes, int)
-                assert isinstance(top_k, int)
-                MulticlassStatScores.__init__(self, num_classes, top_k, average, **kwargs)
-            if task == "multilabel":
-                assert isinstance(num_labels, int)
-                MultilabelStatScores.__init__(self, num_labels, threshold, average, **kwargs)
-            raise ValueError(
-                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-            )
-        else:
-            rank_zero_warn(
-                "From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification"
-                " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
-                " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
-                " and the general order of arguments may change, such that this metric will just function as an single"
-                " entrypoint to calling the three specialized versions.",
-                DeprecationWarning,
-            )
-
-        Metric.__init__(self, **kwargs)
-
+        super().__init__(**kwargs)
         self.reduce = reduce
         self.mdmc_reduce = mdmc_reduce
         self.num_classes = num_classes

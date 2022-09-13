@@ -32,6 +32,7 @@ from torchmetrics.functional.classification.f_beta import (
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.enums import AverageMethod
+from torchmetrics.utilities.prints import rank_zero_warn
 
 
 class BinaryFBetaScore(BinaryStatScores):
@@ -716,7 +717,15 @@ class MultilabelF1Score(MultilabelFBetaScore):
 
 
 class FBetaScore(StatScores):
-    r"""Computes `F-score`_, specifically:
+    r"""
+    .. note::
+        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        metric. Moving forward we recommend using these versions. This base metric will still work as it did
+        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
+        and the general order of arguments may change, such that this metric will just function as an single
+        entrypoint to calling the three specialized versions.
+
+    Computes `F-score`_, specifically:
 
     .. math::
         F_\beta = (1 + \beta^2) * \frac{\text{precision} * \text{recall}}
@@ -848,6 +857,15 @@ class FBetaScore(StatScores):
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
             )
+        else:
+            rank_zero_warn(
+                "From v0.10 an `'Binary*'`, `'Multiclass*', `'Multilabel*'` version now exist of each classification"
+                " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
+                " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
+                " and the general order of arguments may change, such that this metric will just function as an single"
+                " entrypoint to calling the three specialized versions.",
+                DeprecationWarning,
+            )
         return super().__new__(cls)
 
     def __init__(
@@ -891,7 +909,15 @@ class FBetaScore(StatScores):
 
 
 class F1Score(FBetaScore):
-    """Computes F1 metric.
+    r"""
+    .. note::
+        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        metric. Moving forward we recommend using these versions. This base metric will still work as it did
+        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
+        and the general order of arguments may change, such that this metric will just function as an single
+        entrypoint to calling the three specialized versions.
+
+    Computes F1 metric.
 
     F1 metrics correspond to a harmonic mean of the precision and recall scores.
     Works with binary, multiclass, and multilabel data. Accepts logits or probabilities from a model
@@ -1012,6 +1038,15 @@ class F1Score(FBetaScore):
                 return MultilabelF1Score(num_labels, threshold, average, **kwargs)
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+            )
+        else:
+            rank_zero_warn(
+                "From v0.10 an `'Binary*'`, `'Multiclass*', `'Multilabel*'` version now exist of each classification"
+                " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
+                " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
+                " and the general order of arguments may change, such that this metric will just function as an single"
+                " entrypoint to calling the three specialized versions.",
+                DeprecationWarning,
             )
         return super().__new__(cls)
 
