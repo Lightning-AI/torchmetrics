@@ -183,7 +183,7 @@ the following limitations:
 
   - :ref:`image/peak_signal_noise_ratio:Peak Signal-to-Noise Ratio (PSNR)`
   - :ref:`image/structural_similarity:Structural Similarity Index Measure (SSIM)`
-  - :ref:`classification/kl_divergence:KL Divergence`
+  - :ref:`regression/kl_divergence:KL Divergence`
 
 You can always check the precision/dtype of the metric by checking the `.dtype` property.
 

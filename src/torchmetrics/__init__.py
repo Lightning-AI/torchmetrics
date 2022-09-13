@@ -39,7 +39,6 @@ from torchmetrics.classification import (  # noqa: E402
     HammingDistance,
     HingeLoss,
     JaccardIndex,
-    KLDivergence,
     LabelRankingAveragePrecision,
     LabelRankingLoss,
     MatthewsCorrCoef,
@@ -63,6 +62,7 @@ from torchmetrics.metric import Metric  # noqa: E402
 from torchmetrics.regression import (  # noqa: E402
     CosineSimilarity,
     ExplainedVariance,
+    KLDivergence,
     MeanAbsoluteError,
     MeanAbsolutePercentageError,
     MeanSquaredError,

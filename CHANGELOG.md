@@ -17,7 +17,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `Perplexity` metric ([#922](https://github.com/PyTorchLightning/metrics/pull/922))
 
 
+- Added argument `normalize` to `LPIPS` metric ([#1216](https://github.com/Lightning-AI/metrics/pull/1216))
+
+
 ### Changed
+
+- Classification refactor (
+    [#1054](https://github.com/Lightning-AI/metrics/pull/1054),
+    [#1143](https://github.com/Lightning-AI/metrics/pull/1143),
+    [#1145](https://github.com/Lightning-AI/metrics/pull/1145),
+    [#1151](https://github.com/Lightning-AI/metrics/pull/1151),
+    [#1159](https://github.com/Lightning-AI/metrics/pull/1159),
+    [#1163](https://github.com/Lightning-AI/metrics/pull/1163),
+    [#1167](https://github.com/Lightning-AI/metrics/pull/1167),
+    [#1175](https://github.com/Lightning-AI/metrics/pull/1175),
+    [#1189](https://github.com/Lightning-AI/metrics/pull/1189),
+    [#1197](https://github.com/Lightning-AI/metrics/pull/1197),
+    [#1215](https://github.com/Lightning-AI/metrics/pull/1215),
+    [#1195](https://github.com/Lightning-AI/metrics/pull/1195)
+)
 
 - Changed update in `FID` metric to be done in a online fashion to save memory ([#1199](https://github.com/PyTorchLightning/metrics/pull/1199))
 
@@ -46,7 +64,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed a bug in `ssim` when `return_full_image=True` where the score was still reduced ([#1204](https://github.com/Lightning-AI/metrics/pull/1204))
 
 
--
+- Fixed MPS support for:
+  * MAE metric ([#1210](https://github.com/Lightning-AI/metrics/pull/1210))
+  * Jaccard index ([#1205](https://github.com/Lightning-AI/metrics/pull/1205))
 
 
 ## [0.9.3] - 2022-08-22
