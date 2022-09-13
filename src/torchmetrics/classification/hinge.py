@@ -297,6 +297,7 @@ class HingeLoss(Metric):
                 return BinaryHingeLoss(squared, **kwargs)
             if task == "multiclass":
                 assert isinstance(num_classes, int)
+                assert multiclass_mode is not None
                 return MulticlassHingeLoss(num_classes, squared, multiclass_mode, **kwargs)
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"

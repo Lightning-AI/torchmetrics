@@ -149,6 +149,7 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
             - ``macro``: Calculate score for each class and average them
             - ``weighted``: Calculates score for each class and computes weighted average using their support
             - ``"none"`` or ``None``: Calculates score for each class and applies no reduction
+
         thresholds:
             Can be one of:
 
@@ -408,7 +409,7 @@ class AUROC(Metric):
         cls,
         num_classes: Optional[int] = None,
         pos_label: Optional[int] = None,
-        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
+        average: Optional[Literal["macro", "weighted", "none"]] = "macro",
         max_fpr: Optional[float] = None,
         task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
         thresholds: Optional[Union[int, List[float], Tensor]] = None,

@@ -156,8 +156,8 @@ class MulticlassJaccardIndex(MulticlassConfusionMatrix):
     def __init__(
         self,
         num_classes: int,
-        ignore_index: Optional[int] = None,
         average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
+        ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,
     ) -> None:
@@ -233,8 +233,8 @@ class MultilabelJaccardIndex(MultilabelConfusionMatrix):
         self,
         num_labels: int,
         threshold: float = 0.5,
-        ignore_index: Optional[int] = None,
         average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
+        ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,
     ) -> None:

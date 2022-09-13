@@ -562,7 +562,7 @@ def average_precision(
     target: Tensor,
     num_classes: Optional[int] = None,
     pos_label: Optional[int] = None,
-    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
+    average: Optional[Literal["macro", "weighted", "none"]] = "macro",
     task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     num_labels: Optional[int] = None,
@@ -593,8 +593,6 @@ def average_precision(
 
             - ``'macro'`` [default]: Calculate the metric for each class separately, and average the
               metrics across classes (with equal weights for each class).
-            - ``'micro'``: Calculate the metric globally, across all samples and classes. Cannot be
-              used with multiclass input.
             - ``'weighted'``: Calculate the metric for each class separately, and average the
               metrics across classes, weighting each class by its support.
             - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
