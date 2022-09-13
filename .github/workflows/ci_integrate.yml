@@ -29,9 +29,11 @@ jobs:
         requires: ['oldest', 'latest']
         exclude:
           - {python-version: '3.7', requires: 'latest'}
-          - {python-version: '3.9', requires: 'oldest'}
           - {python-version: '3.10', requires: 'oldest'}
-          - {python-version: '3.10', os: 'windows-2022'}  # todo: https://discuss.pytorch.org/t/numpy-is-not-available-error/146192
+          - {python-version: '3.10', os: 'windows'}  # todo: https://discuss.pytorch.org/t/numpy-is-not-available-error/146192
+        include:
+          - {python-version: '3.10', requires: 'latest', os: 'ubuntu-22.04'}
+          - {python-version: '3.10', requires: 'latest', os: 'macOS-12'}
     env:
       PYTEST_ARTEFACT: test-results-${{ matrix.os }}-py${{ matrix.python-version }}-${{ matrix.requires }}.xml
       PYTORCH_URL: https://download.pytorch.org/whl/cpu/torch_stable.html
