@@ -412,8 +412,11 @@ class Specificity(StatScores):
             if task == "binary":
                 return BinarySpecificity(threshold, **kwargs)
             if task == "multiclass":
+                assert isinstance(num_classes, int)
+                assert isinstance(top_k, int)
                 return MulticlassSpecificity(num_classes, top_k, average, **kwargs)
             if task == "multilabel":
+                assert isinstance(num_labels, int)
                 return MultilabelSpecificity(num_labels, threshold, average, **kwargs)
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"

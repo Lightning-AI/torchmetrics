@@ -286,8 +286,10 @@ class MatthewsCorrCoef(Metric):
             if task == "binary":
                 return BinaryMatthewsCorrCoef(threshold, **kwargs)
             if task == "multiclass":
+                assert isinstance(num_classes, int)
                 return MulticlassMatthewsCorrCoef(num_classes, **kwargs)
             if task == "multilabel":
+                assert isinstance(num_labels, int)
                 return MultilabelMatthewsCorrCoef(num_labels, threshold, **kwargs)
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"

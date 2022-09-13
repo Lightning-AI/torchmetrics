@@ -336,8 +336,10 @@ class JaccardIndex(ConfusionMatrix):
             if task == "binary":
                 return BinaryJaccardIndex(threshold, **kwargs)
             if task == "multiclass":
+                assert isinstance(num_classes, int)
                 return MulticlassJaccardIndex(num_classes, average, **kwargs)
             if task == "multilabel":
+                assert isinstance(num_labels, int)
                 return MultilabelJaccardIndex(num_labels, threshold, average, **kwargs)
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"

@@ -610,8 +610,11 @@ class StatScores(Metric):
             if task == "binary":
                 return BinaryStatScores(threshold, **kwargs)
             if task == "multiclass":
+                assert isinstance(num_classes, int)
+                assert isinstance(top_k, int)
                 return MulticlassStatScores(num_classes, top_k, average, **kwargs)
             if task == "multilabel":
+                assert isinstance(num_labels, int)
                 return MultilabelStatScores(num_labels, threshold, average, **kwargs)
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"

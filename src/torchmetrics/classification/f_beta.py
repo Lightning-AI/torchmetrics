@@ -841,8 +841,11 @@ class FBetaScore(StatScores):
             if task == "binary":
                 return BinaryFBetaScore(beta, threshold, **kwargs)
             if task == "multiclass":
+                assert isinstance(num_classes, int)
+                assert isinstance(top_k, int)
                 return MulticlassFBetaScore(beta, num_classes, top_k, average, **kwargs)
             if task == "multilabel":
+                assert isinstance(num_labels, int)
                 return MultilabelFBetaScore(beta, num_labels, threshold, average, **kwargs)
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
@@ -1002,8 +1005,11 @@ class F1Score(FBetaScore):
             if task == "binary":
                 return BinaryF1Score(threshold, **kwargs)
             if task == "multiclass":
+                assert isinstance(num_classes, int)
+                assert isinstance(top_k, int)
                 return MulticlassF1Score(num_classes, top_k, average, **kwargs)
             if task == "multilabel":
+                assert isinstance(num_labels, int)
                 return MultilabelF1Score(num_labels, threshold, average, **kwargs)
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"

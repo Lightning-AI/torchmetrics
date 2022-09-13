@@ -722,8 +722,11 @@ class Precision(StatScores):
             if task == "binary":
                 return BinaryPrecision(threshold, **kwargs)
             if task == "multiclass":
+                assert isinstance(num_classes, int)
+                assert isinstance(top_k, int)
                 return MulticlassPrecision(num_classes, top_k, average, **kwargs)
             if task == "multilabel":
+                assert isinstance(num_labels, int)
                 return MultilabelPrecision(num_labels, threshold, average, **kwargs)
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"

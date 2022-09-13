@@ -422,8 +422,10 @@ class AUROC(Metric):
             if task == "binary":
                 return BinaryAUROC(max_fpr, **kwargs)
             if task == "multiclass":
+                assert isinstance(num_classes, int)
                 return MulticlassAUROC(num_classes, average, **kwargs)
             if task == "multilabel":
+                assert isinstance(num_labels, int)
                 return MultilabelAUROC(num_labels, average, **kwargs)
             raise ValueError(
                 f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
