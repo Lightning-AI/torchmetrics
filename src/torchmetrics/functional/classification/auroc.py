@@ -604,7 +604,7 @@ def auroc(
     target: Tensor,
     num_classes: Optional[int] = None,
     pos_label: Optional[int] = None,
-    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
+    average: Optional[Literal["macro", "weighted", "none"]] = "macro",
     max_fpr: Optional[float] = None,
     sample_weights: Optional[Sequence] = None,
     task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
@@ -644,7 +644,6 @@ def auroc(
             range [0,num_classes-1]
         average:
 
-            - ``'micro'`` computes metric globally. Only works for multilabel problems
             - ``'macro'`` computes metric for each class and uniformly averages them
             - ``'weighted'`` computes metric for each class and does a weighted-average,
               where each class is weighted by their support (accounts for class imbalance)

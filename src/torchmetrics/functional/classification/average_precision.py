@@ -628,7 +628,9 @@ def average_precision(
             )
         if task == "multilabel":
             assert isinstance(num_labels, int)
-            return multilabel_average_precision(preds, target, num_labels, thresholds, ignore_index, validate_args)
+            return multilabel_average_precision(
+                preds, target, num_labels, average, thresholds, ignore_index, validate_args
+            )
         raise ValueError(
             f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
         )
