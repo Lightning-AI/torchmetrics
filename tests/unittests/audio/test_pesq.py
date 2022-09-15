@@ -81,6 +81,8 @@ class TestPESQ(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_pesq(self, preds, target, sk_metric, fs, mode, n_processes, ddp, dist_sync_on_step):
+        if n_processes != 1 and ddp:
+            pytest.skip("Multiprocessing and ddp does not work together")
         self.run_class_metric_test(
             ddp,
             preds,
