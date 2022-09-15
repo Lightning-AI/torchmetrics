@@ -37,9 +37,10 @@ class NoTrainLpips(_LPIPS):
         return super().train(False)
 
 
-def _valid_img(img: Tensor) -> bool:
+def _valid_img(img: Tensor, normalize: bool) -> bool:
     """check that input is a valid image to the network."""
-    return img.ndim == 4 and img.shape[1] == 3 and img.min() >= -1.0 and img.max() <= 1.0
+    value_check = img.max() <= 1.0 and img.min() >= 0.0 if normalize else img.min() >= -1
+    return img.ndim == 4 and img.shape[1] == 3 and value_check
 
 
 class LearnedPerceptualImagePatchSimilarity(Metric):
@@ -48,8 +49,8 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
     pre-defined network. This measure has been shown to match human perseption well. A low LPIPS score means that
     image patches are perceptual similar.
 
-    Both input image patches are expected to have shape `[N, 3, H, W]` and be normalized to the [-1,1]
-    range. The minimum size of `H, W` depends on the chosen backbone (see `net_type` arg).
+    Both input image patches are expected to have shape `[N, 3, H, W]`.
+    The minimum size of `H, W` depends on the chosen backbone (see `net_type` arg).
 
     .. note:: using this metrics requires you to have ``lpips`` package installed. Either install
         as ``pip install torchmetrics[image]`` or ``pip install lpips``
@@ -60,6 +61,8 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
     Args:
         net_type: str indicating backbone network type to use. Choose between `'alex'`, `'vgg'` or `'squeeze'`
         reduction: str indicating how to reduce over the batch dimension. Choose between `'sum'` or `'mean'`.
+        normalize: by default this is ``False`` meaning that the input is expected to be in the [-1,1] range. If set
+            to ``True`` will instead expect input to be in the ``[0,1]`` range.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -95,6 +98,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
         self,
         net_type: str = "alex",
         reduction: Literal["sum", "mean"] = "mean",
+        normalize: bool = False,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -115,6 +119,10 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
             raise ValueError(f"Argument `reduction` must be one of {valid_reduction}, but got {reduction}")
         self.reduction = reduction
 
+        if not isinstance(normalize, bool):
+            raise ValueError(f"Argument `normalize` should be an bool but got {normalize}")
+        self.normalize = normalize
+
         self.add_state("sum_scores", torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", torch.tensor(0.0), dist_reduce_fx="sum")
 
@@ -125,15 +133,14 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
             img1: tensor with images of shape ``[N, 3, H, W]``
             img2: tensor with images of shape ``[N, 3, H, W]``
         """
-        if not (_valid_img(img1) and _valid_img(img2)):
+        if not (_valid_img(img1, self.normalize) and _valid_img(img2, self.normalize)):
             raise ValueError(
-                "Expected both input arguments to be normalized tensors (all values in range [-1,1])"
-                f" and to have shape [N, 3, H, W] but `img1` have shape {img1.shape} with values in"
-                f" range {[img1.min(), img1.max()]} and `img2` have shape {img2.shape} with value"
-                f" in range {[img2.min(), img2.max()]}"
+                "Expected both input arguments to be normalized tensors with shape [N, 3, H, W]."
+                f" Got input with shape {img1.shape} and {img2.shape} and values in range"
+                f" {[img1.min(), img1.max()]} and {[img2.min(), img2.max()]} when all values are"
+                f"expected to be in the {[0,1] if self.normalize else [-1,1]} range."
             )
-
-        loss = self.net(img1, img2).squeeze()
+        loss = self.net(img1, img2, normalize=self.normalize).squeeze()
         self.sum_scores += loss.sum()
         self.total += img1.shape[0]
 
