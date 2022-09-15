@@ -1,4 +1,5 @@
-from typing import Any, Dict, List, Optional
+import functools
+from typing import Any, Callable, Dict, List, Optional
 
 from torch import Tensor
 
@@ -51,8 +52,6 @@ class ClasswiseWrapper(Metric):
         'recall_horse': tensor(0.), 'recall_fish': tensor(0.3333), 'recall_dog': tensor(0.4000)}
     """
 
-    full_state_update: Optional[bool] = True
-
     def __init__(self, metric: Metric, labels: Optional[List[str]] = None) -> None:
         super().__init__()
         if not isinstance(metric, Metric):
@@ -61,12 +60,16 @@ class ClasswiseWrapper(Metric):
             raise ValueError(f"Expected argument `labels` to either be `None` or a list of strings but got {labels}")
         self.metric = metric
         self.labels = labels
+        self._update_count = 1
 
     def _convert(self, x: Tensor) -> Dict[str, Any]:
         name = self.metric.__class__.__name__.lower()
         if self.labels is None:
             return {f"{name}_{i}": val for i, val in enumerate(x)}
         return {f"{name}_{lab}": val for lab, val in zip(self.labels, x)}
+
+    def forward(self, *args, **kwargs):
+        return self.metric(*args, **kwargs)
 
     def update(self, *args: Any, **kwargs: Any) -> None:
         self.metric.update(*args, **kwargs)
@@ -76,3 +79,21 @@ class ClasswiseWrapper(Metric):
 
     def reset(self) -> None:
         self.metric.reset()
+
+    def _wrap_update(self, update: Callable) -> Callable:
+        """Overwrite to do nothing."""
+
+        @functools.wraps(update)
+        def wrapped_func(*args: Any, **kwargs: Any) -> None:
+            update(*args, **kwargs)
+
+        return wrapped_func
+
+    def _wrap_compute(self, compute: Callable) -> Callable:
+        """Overwrite to do nothing."""
+
+        @functools.wraps(compute)
+        def wrapped_func(*args: Any, **kwargs: Any) -> Any:
+            return compute(*args, **kwargs)
+
+        return wrapped_func
