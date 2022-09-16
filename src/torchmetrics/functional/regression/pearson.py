@@ -46,8 +46,8 @@ def _pearson_corrcoef_update(
     _check_same_shape(preds, target)
     if preds.ndim > 2 or target.ndim > 2:
         raise ValueError(
-            "Expected both predictions and target to be either 1 or 2 dimensional tensors,"
-            " but get{target.ndim} and {preds.ndim}."
+            f"Expected both predictions and target to be either 1- or 2-dimensional tensors,"
+            f" but get{target.ndim} and {preds.ndim}."
         )
     if (n_out == 1 and preds.ndim != 1) or (n_out > 1 and n_out != preds.shape[-1]):
         raise ValueError(
