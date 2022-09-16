@@ -1,4 +1,16 @@
-import functools
+# Copyright The PyTorch Lightning team.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 from typing import Any, Callable, Dict, List, Optional
 
 from torch import Tensor
@@ -82,18 +94,8 @@ class ClasswiseWrapper(Metric):
 
     def _wrap_update(self, update: Callable) -> Callable:
         """Overwrite to do nothing."""
-
-        @functools.wraps(update)
-        def wrapped_func(*args: Any, **kwargs: Any) -> None:
-            update(*args, **kwargs)
-
-        return wrapped_func
+        return update
 
     def _wrap_compute(self, compute: Callable) -> Callable:
         """Overwrite to do nothing."""
-
-        @functools.wraps(compute)
-        def wrapped_func(*args: Any, **kwargs: Any) -> Any:
-            return compute(*args, **kwargs)
-
-        return wrapped_func
+        return compute
