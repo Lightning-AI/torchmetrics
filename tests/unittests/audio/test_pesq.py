@@ -77,9 +77,12 @@ pesq_original_batch_16k_wb = partial(pesq_original_batch, fs=16000, mode="wb")
 class TestPESQ(MetricTester):
     atol = 1e-2
 
+    @pytest.mark.parametrize("n_processes", [1, 2])
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_pesq(self, preds, target, sk_metric, fs, mode, ddp, dist_sync_on_step):
+    def test_pesq(self, preds, target, sk_metric, fs, mode, n_processes, ddp, dist_sync_on_step):
+        if n_processes != 1 and ddp:
+            pytest.skip("Multiprocessing and ddp does not work together")
         self.run_class_metric_test(
             ddp,
             preds,
@@ -87,16 +90,17 @@ class TestPESQ(MetricTester):
             PerceptualEvaluationSpeechQuality,
             sk_metric=partial(average_metric, metric_func=sk_metric),
             dist_sync_on_step=dist_sync_on_step,
-            metric_args=dict(fs=fs, mode=mode),
+            metric_args=dict(fs=fs, mode=mode, n_processes=n_processes),
         )
 
-    def test_pesq_functional(self, preds, target, sk_metric, fs, mode):
+    @pytest.mark.parametrize("n_processes", [1, 2])
+    def test_pesq_functional(self, preds, target, sk_metric, fs, mode, n_processes):
         self.run_functional_metric_test(
             preds,
             target,
             perceptual_evaluation_speech_quality,
             sk_metric,
-            metric_args=dict(fs=fs, mode=mode),
+            metric_args=dict(fs=fs, mode=mode, n_processes=n_processes),
         )
 
     def test_pesq_differentiability(self, preds, target, sk_metric, fs, mode):
