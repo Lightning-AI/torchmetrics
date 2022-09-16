@@ -114,7 +114,7 @@ def test_error_on_different_shape():
         metric(torch.randn(100), torch.randn(50))
 
     metric = PearsonCorrCoef(num_outputs=5)
-    with pytest.raises(ValueError, match="Expected both predictions and target to be either 1 or 2.*"):
+    with pytest.raises(ValueError, match="Expected both predictions and target to be either 1- or 2-.*"):
         metric(torch.randn(100, 2, 5), torch.randn(100, 2, 5))
 
     metric = PearsonCorrCoef(num_outputs=2)

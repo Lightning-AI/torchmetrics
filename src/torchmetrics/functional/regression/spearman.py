@@ -71,7 +71,7 @@ def _spearman_corrcoef_update(preds: Tensor, target: Tensor, n_out: int) -> Tupl
     if preds.ndim > 2 or target.ndim > 2:
         raise ValueError(
             f"Expected both predictions and target to be either 1- or 2-dimensional tensors,"
-            f" but get{target.ndim} and {preds.ndim}."
+            f" but got {target.ndim} and {preds.ndim}."
         )
     if (n_out == 1 and preds.ndim != 1) or (n_out > 1 and n_out != preds.shape[-1]):
         raise ValueError(
