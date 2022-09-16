@@ -52,7 +52,7 @@ def perceptual_evaluation_speech_quality(
         mode: ``'wb'`` (wide-band) or ``'nb'`` (narrow-band)
         keep_same_device: whether to move the pesq value to the device of preds
         n_processes: integer specifiying the number of processes to run in parallel for the metric calculation.
-            Only applies to batches of data and if `multiprocessing` package is installed.
+            Only applies to batches of data and if ``multiprocessing`` package is installed.
 
     Returns:
         pesq value of shape [...]
