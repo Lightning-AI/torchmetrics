@@ -71,6 +71,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   * Jaccard index ([#1205](https://github.com/Lightning-AI/metrics/pull/1205))
 
 
+- Fixed bug in `ClasswiseWrapper` such that `compute` gave wrong result ([#1225](https://github.com/Lightning-AI/metrics/pull/1225))
+
+
 - Fixed synchronization of empty list states ([#1219](https://github.com/Lightning-AI/metrics/pull/1219))
 
 
