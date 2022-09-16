@@ -51,7 +51,7 @@ def _pearson_corrcoef_update(
         )
     if (n_out == 1 and preds.ndim != 1) or (n_out > 1 and n_out != preds.shape[-1]):
         raise ValueError(
-            f"Expected argument `num_outputs` to match the second dimension of input, but got {self.n_out}"
+            f"Expected argument `num_outputs` to match the second dimension of input, but got {n_out}"
             f" and {preds.ndim}."
         )
 
