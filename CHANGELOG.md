@@ -20,6 +20,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `ConcordanceCorrCoef` metric to regression package ([#1201](https://github.com/Lightning-AI/metrics/pull/1201))
 
 
+- Added argument `normalize` to `LPIPS` metric ([#1216](https://github.com/Lightning-AI/metrics/pull/1216))
+
+
+- Added support for multiprocessing of batches in `PESQ` metric ([#1227](https://github.com/Lightning-AI/metrics/pull/1227))
+
+
 ### Changed
 
 - Classification refactor (
@@ -67,6 +73,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed MPS support for:
   * MAE metric ([#1210](https://github.com/Lightning-AI/metrics/pull/1210))
   * Jaccard index ([#1205](https://github.com/Lightning-AI/metrics/pull/1205))
+
+
+- Fixed bug in `ClasswiseWrapper` such that `compute` gave wrong result ([#1225](https://github.com/Lightning-AI/metrics/pull/1225))
+
+
+- Fixed synchronization of empty list states ([#1219](https://github.com/Lightning-AI/metrics/pull/1219))
 
 
 ## [0.9.3] - 2022-08-22
