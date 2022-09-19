@@ -353,7 +353,7 @@ def _multiscale_ssim_compute(
         raise ValueError(f"For a given number of `betas` parameters {len(betas)} and kernel size {kernel_size[1]}," f" the image width must be larger than {(kernel_size[1] - 1) * _betas_div}.")
 
     for _ in range(len(betas)):
-        sim, contrast_sensitivity = _get_normalized_sim_and_cs(preds, target, gaussian_kernel, sigma, kernel_size, reduction, data_range, k1, k2, normalize=normalize)
+        sim, contrast_sensitivity = _get_normalized_sim_and_cs(preds, target, gaussian_kernel, sigma, kernel_size, None, data_range, k1, k2, normalize=normalize)
         mcs_list.append(contrast_sensitivity)
 
         if len(kernel_size) == 2:
@@ -375,12 +375,7 @@ def _multiscale_ssim_compute(
     mcs_weighted = mcs_stack**betas
     mcs_per_image = torch.prod(mcs_weighted, axis=0)
 
-    if reduction == "elementwise_mean":
-        return mcs_per_image.mean()
-    elif reduction == "sum":
-        return mcs_per_image.sum()
-    else:
-        return mcs_per_image
+    return reduce(mcs_per_image, reduction)
 
 
 def multiscale_structural_similarity_index_measure(
