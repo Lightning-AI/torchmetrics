@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
 
-## [UnReleased] - 2022-MM-DD
+## [0.10.0] - 2022-09-DD
 
 ### Added
 
@@ -39,26 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     [#1195](https://github.com/Lightning-AI/metrics/pull/1195)
 )
 
-- Changed update in `FID` metric to be done in a online fashion to save memory ([#1199](https://github.com/PyTorchLightning/metrics/pull/1199))
-
-
--
-
-
-### Deprecated
-
--
-
-
--
-
-
-### Removed
-
--
-
-
--
+- Changed update in `FID` metric to be done in online fashion to save memory ([#1199](https://github.com/PyTorchLightning/metrics/pull/1199))
 
 
 ### Fixed
