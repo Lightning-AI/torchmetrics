@@ -33,10 +33,16 @@ def _ssim_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
     """
 
     if preds.dtype != target.dtype:
-        raise TypeError("Expected `preds` and `target` to have the same data type." f" Got preds: {preds.dtype} and target: {target.dtype}.")
+        raise TypeError(
+            "Expected `preds` and `target` to have the same data type."
+            f" Got preds: {preds.dtype} and target: {target.dtype}."
+        )
     _check_same_shape(preds, target)
     if len(preds.shape) not in (4, 5):
-        raise ValueError("Expected `preds` and `target` to have BxCxHxW or BxCxDxHxW shape." f" Got preds: {preds.shape} and target: {target.shape}.")
+        raise ValueError(
+            "Expected `preds` and `target` to have BxCxHxW or BxCxDxHxW shape."
+            f" Got preds: {preds.shape} and target: {target.shape}."
+        )
     return preds, target
 
 
@@ -93,13 +99,23 @@ def _ssim_compute(
         sigma = 3 * [sigma] if is_3d else 2 * [sigma]
 
     if len(kernel_size) != len(target.shape) - 2:
-        raise ValueError(f"`kernel_size` has dimension {len(kernel_size)}, but expected to be two less that target dimensionality," f" which is: {len(target.shape)}")
+        raise ValueError(
+            f"`kernel_size` has dimension {len(kernel_size)}, but expected to be two less that target dimensionality,"
+            f" which is: {len(target.shape)}"
+        )
     if len(kernel_size) not in (2, 3):
-        raise ValueError(f"Expected `kernel_size` dimension to be 2 or 3. `kernel_size` dimensionality: {len(kernel_size)}")
+        raise ValueError(
+            f"Expected `kernel_size` dimension to be 2 or 3. `kernel_size` dimensionality: {len(kernel_size)}"
+        )
     if len(sigma) != len(target.shape) - 2:
-        raise ValueError(f"`kernel_size` has dimension {len(kernel_size)}, but expected to be two less that target dimensionality," f" which is: {len(target.shape)}")
+        raise ValueError(
+            f"`kernel_size` has dimension {len(kernel_size)}, but expected to be two less that target dimensionality,"
+            f" which is: {len(target.shape)}"
+        )
     if len(sigma) not in (2, 3):
-        raise ValueError(f"Expected `kernel_size` dimension to be 2 or 3. `kernel_size` dimensionality: {len(kernel_size)}")
+        raise ValueError(
+            f"Expected `kernel_size` dimension to be 2 or 3. `kernel_size` dimensionality: {len(kernel_size)}"
+        )
 
     if return_full_image and return_contrast_sensitivity:
         raise ValueError("Arguments `return_full_image` and `return_contrast_sensitivity` are mutually exclusive.")
@@ -137,7 +153,9 @@ def _ssim_compute(
             kernel = _gaussian_kernel_2d(channel, gauss_kernel_size, sigma, dtype, device)
 
     if not gaussian_kernel:
-        kernel = torch.ones((channel, 1, *kernel_size), dtype=dtype, device=device) / torch.prod(torch.tensor(kernel_size, dtype=dtype, device=device))
+        kernel = torch.ones((channel, 1, *kernel_size), dtype=dtype, device=device) / torch.prod(
+            torch.tensor(kernel_size, dtype=dtype, device=device)
+        )
 
     input_list = torch.cat((preds, target, preds * preds, target * target, preds * target))  # (5 * B, C, H, W)
 
@@ -169,7 +187,9 @@ def _ssim_compute(
     if return_contrast_sensitivity:
         contrast_sensitivity = upper / lower
         contrast_sensitivity = contrast_sensitivity[..., pad_h:-pad_h, pad_w:-pad_w]
-        return reduce(ssim_idx.reshape(ssim_idx.shape[0], -1).mean(-1), reduction), reduce(contrast_sensitivity.reshape(contrast_sensitivity.shape[0], -1).mean(-1), reduction)
+        return reduce(ssim_idx.reshape(ssim_idx.shape[0], -1).mean(-1), reduction), reduce(
+            contrast_sensitivity.reshape(contrast_sensitivity.shape[0], -1).mean(-1), reduction
+        )
 
     elif return_full_image:
         return reduce(ssim_idx.reshape(ssim_idx.shape[0], -1).mean(-1), reduction), ssim_idx_full_image
@@ -344,16 +364,27 @@ def _multiscale_ssim_compute(
         sigma = 3 * [sigma] if is_3d else 2 * [sigma]
 
     if preds.size()[-1] < 2 ** len(betas) or preds.size()[-2] < 2 ** len(betas):
-        raise ValueError(f"For a given number of `betas` parameters {len(betas)}, the image height and width dimensions must be" f" larger than or equal to {2 ** len(betas)}.")
+        raise ValueError(
+            f"For a given number of `betas` parameters {len(betas)}, the image height and width dimensions must be"
+            f" larger than or equal to {2 ** len(betas)}."
+        )
 
     _betas_div = max(1, (len(betas) - 1)) ** 2
     if preds.size()[-2] // _betas_div <= kernel_size[0] - 1:
-        raise ValueError(f"For a given number of `betas` parameters {len(betas)} and kernel size {kernel_size[0]}," f" the image height must be larger than {(kernel_size[0] - 1) * _betas_div}.")
+        raise ValueError(
+            f"For a given number of `betas` parameters {len(betas)} and kernel size {kernel_size[0]},"
+            f" the image height must be larger than {(kernel_size[0] - 1) * _betas_div}."
+        )
     if preds.size()[-1] // _betas_div <= kernel_size[1] - 1:
-        raise ValueError(f"For a given number of `betas` parameters {len(betas)} and kernel size {kernel_size[1]}," f" the image width must be larger than {(kernel_size[1] - 1) * _betas_div}.")
+        raise ValueError(
+            f"For a given number of `betas` parameters {len(betas)} and kernel size {kernel_size[1]},"
+            f" the image width must be larger than {(kernel_size[1] - 1) * _betas_div}."
+        )
 
     for _ in range(len(betas)):
-        sim, contrast_sensitivity = _get_normalized_sim_and_cs(preds, target, gaussian_kernel, sigma, kernel_size, None, data_range, k1, k2, normalize=normalize)
+        sim, contrast_sensitivity = _get_normalized_sim_and_cs(
+            preds, target, gaussian_kernel, sigma, kernel_size, None, data_range, k1, k2, normalize=normalize
+        )
         mcs_list.append(contrast_sensitivity)
 
         if len(kernel_size) == 2:
@@ -448,4 +479,6 @@ def multiscale_structural_similarity_index_measure(
         raise ValueError("Argument `normalize` to be expected either `None` or one of 'relu' or 'simple'")
 
     preds, target = _ssim_update(preds, target)
-    return _multiscale_ssim_compute(preds, target, gaussian_kernel, sigma, kernel_size, reduction, data_range, k1, k2, betas, normalize)
+    return _multiscale_ssim_compute(
+        preds, target, gaussian_kernel, sigma, kernel_size, reduction, data_range, k1, k2, betas, normalize
+    )
