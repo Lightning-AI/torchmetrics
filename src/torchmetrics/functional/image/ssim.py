@@ -402,7 +402,7 @@ def _multiscale_ssim_compute(
     if normalize == "simple":
         mcs_stack = (mcs_stack + 1) / 2
 
-    betas = torch.tensor(betas).view(-1, 1)
+    betas = torch.tensor(betas, device=mcs_stack.device).view(-1, 1)
     mcs_weighted = mcs_stack**betas
     mcs_per_image = torch.prod(mcs_weighted, axis=0)
 
