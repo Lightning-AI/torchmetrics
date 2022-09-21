@@ -116,7 +116,7 @@ class StructuralSimilarityIndexMeasure(Metric):
             target: Ground truth values
         """
         preds, target = _ssim_update(preds, target)
-        similarity = _ssim_compute(
+        similarity_pack = _ssim_compute(
             preds,
             target,
             self.gaussian_kernel,
@@ -130,8 +130,12 @@ class StructuralSimilarityIndexMeasure(Metric):
             self.return_contrast_sensitivity,
         )
 
+        if isinstance(similarity_pack, tuple):
+            similarity, image = similarity_pack
+        else:
+            similarity = similarity_pack
+
         if self.return_contrast_sensitivity or self.return_full_image:
-            similarity, image = similarity
             self.image_return.append(image)
 
         if self.reduction in ("elementwise_mean", "sum"):
@@ -239,16 +243,9 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         self.add_state("total", default=torch.tensor(0.0), dist_reduce_fx="sum")
 
         if not (isinstance(kernel_size, (Sequence, int))):
-            raise ValueError(
-                f"Argument `kernel_size` expected to be an sequence or an int, or a single int. Got {kernel_size}"
-            )
-        if isinstance(kernel_size, Sequence) and (
-            len(kernel_size) not in (2, 3) or not all(isinstance(ks, int) for ks in kernel_size)
-        ):
-            raise ValueError(
-                "Argument `kernel_size` expected to be an sequence of size 2 or 3 where each element is an int, "
-                f"or a single int. Got {kernel_size}"
-            )
+            raise ValueError(f"Argument `kernel_size` expected to be an sequence or an int, or a single int. Got {kernel_size}")
+        if isinstance(kernel_size, Sequence) and (len(kernel_size) not in (2, 3) or not all(isinstance(ks, int) for ks in kernel_size)):
+            raise ValueError("Argument `kernel_size` expected to be an sequence of size 2 or 3 where each element is an int, " f"or a single int. Got {kernel_size}")
 
         self.gaussian_kernel = gaussian_kernel
         self.sigma = sigma
