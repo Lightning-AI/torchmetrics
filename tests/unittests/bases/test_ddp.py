@@ -273,3 +273,16 @@ def _test_sync_on_compute_list_state(rank, worldsize, sync_on_compute):
 def test_sync_on_compute(sync_on_compute, test_func):
     """Test that syncronization of states can be enabled and disabled for compute."""
     torch.multiprocessing.spawn(test_func, args=(2, sync_on_compute), nprocs=2)
+
+
+def _test_sync_with_empty_lists(rank, worldsize):
+    setup_ddp(rank, worldsize)
+    dummy = DummyListMetric()
+    val = dummy.compute()
+    assert val == []
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
+def test_sync_with_empty_lists():
+    """Test that syncronization of states can be enabled and disabled for compute."""
+    torch.multiprocessing.spawn(_test_sync_with_empty_lists, args=(2,), nprocs=2)
