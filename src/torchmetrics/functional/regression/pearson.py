@@ -28,7 +28,7 @@ def _pearson_corrcoef_update(
     var_y: Tensor,
     corr_xy: Tensor,
     n_prior: Tensor,
-    n_out: int,
+    num_outputs: int,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor, Tensor, Tensor]:
     """Updates and returns variables required to compute Pearson Correlation Coefficient.
 
@@ -49,9 +49,9 @@ def _pearson_corrcoef_update(
             f"Expected both predictions and target to be either 1- or 2-dimensional tensors,"
             f" but got {target.ndim} and {preds.ndim}."
         )
-    if (n_out == 1 and preds.ndim != 1) or (n_out > 1 and n_out != preds.shape[-1]):
+    if (num_outputs == 1 and preds.ndim != 1) or (num_outputs > 1 and num_outputs != preds.shape[-1]):
         raise ValueError(
-            f"Expected argument `num_outputs` to match the second dimension of input, but got {n_out}"
+            f"Expected argument `num_outputs` to match the second dimension of input, but got {num_outputs}"
             f" and {preds.ndim}."
         )
 
@@ -96,7 +96,7 @@ def pearson_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
         preds: estimated scores
         target: ground truth scores
 
-    Example:
+    Example (single output regression):
         >>> from torchmetrics.functional import pearson_corrcoef
         >>> target = torch.tensor([3, -0.5, 2, 7])
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])
@@ -115,6 +115,6 @@ def pearson_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
     mean_x, mean_y, var_x = _temp.clone(), _temp.clone(), _temp.clone()
     var_y, corr_xy, nb = _temp.clone(), _temp.clone(), _temp.clone()
     _, _, var_x, var_y, corr_xy, nb = _pearson_corrcoef_update(
-        preds, target, mean_x, mean_y, var_x, var_y, corr_xy, nb, n_out=1 if preds.ndim == 1 else preds.shape[-1]
+        preds, target, mean_x, mean_y, var_x, var_y, corr_xy, nb, num_outputs=1 if preds.ndim == 1 else preds.shape[-1]
     )
     return _pearson_corrcoef_compute(var_x, var_y, corr_xy, nb)

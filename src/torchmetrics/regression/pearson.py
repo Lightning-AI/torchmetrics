@@ -117,14 +117,14 @@ class PearsonCorrCoef(Metric):
         super().__init__(**kwargs)
         if not isinstance(num_outputs, int) and num_outputs < 1:
             raise ValueError("Expected argument `num_outputs` to be an int larger than 0, but got {num_outputs}")
-        self.n_out = num_outputs
+        self.num_outputs = num_outputs
 
-        self.add_state("mean_x", default=torch.zeros(self.n_out), dist_reduce_fx=None)
-        self.add_state("mean_y", default=torch.zeros(self.n_out), dist_reduce_fx=None)
-        self.add_state("var_x", default=torch.zeros(self.n_out), dist_reduce_fx=None)
-        self.add_state("var_y", default=torch.zeros(self.n_out), dist_reduce_fx=None)
-        self.add_state("corr_xy", default=torch.zeros(self.n_out), dist_reduce_fx=None)
-        self.add_state("n_total", default=torch.zeros(self.n_out), dist_reduce_fx=None)
+        self.add_state("mean_x", default=torch.zeros(self.num_outputs), dist_reduce_fx=None)
+        self.add_state("mean_y", default=torch.zeros(self.num_outputs), dist_reduce_fx=None)
+        self.add_state("var_x", default=torch.zeros(self.num_outputs), dist_reduce_fx=None)
+        self.add_state("var_y", default=torch.zeros(self.num_outputs), dist_reduce_fx=None)
+        self.add_state("corr_xy", default=torch.zeros(self.num_outputs), dist_reduce_fx=None)
+        self.add_state("n_total", default=torch.zeros(self.num_outputs), dist_reduce_fx=None)
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
@@ -133,11 +133,6 @@ class PearsonCorrCoef(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        if (self.n_out == 1 and preds.ndim != 1) or (self.n_out > 1 and self.n_out != preds.shape[-1]):
-            raise ValueError(
-                "Expected argument `num_outputs` to match the second dimension of input, but got {self.num_outputs}"
-                " and {preds.ndim}."
-            )
         self.mean_x, self.mean_y, self.var_x, self.var_y, self.corr_xy, self.n_total = _pearson_corrcoef_update(
             preds,
             target,
@@ -147,12 +142,12 @@ class PearsonCorrCoef(Metric):
             self.var_y,
             self.corr_xy,
             self.n_total,
-            self.n_out,
+            self.num_outputs,
         )
 
     def compute(self) -> Tensor:
         """Computes pearson correlation coefficient over state."""
-        if (self.n_out == 1 and self.mean_x.numel() > 1) or (self.n_out > 1 and self.mean_x.ndim > 1):
+        if (self.num_outputs == 1 and self.mean_x.numel() > 1) or (self.num_outputs > 1 and self.mean_x.ndim > 1):
             # multiple devices, need further reduction
             var_x, var_y, corr_xy, n_total = _final_aggregation(
                 self.mean_x, self.mean_y, self.var_x, self.var_y, self.corr_xy, self.n_total

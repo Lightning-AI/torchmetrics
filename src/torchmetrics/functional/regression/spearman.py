@@ -52,7 +52,7 @@ def _rank_data(data: Tensor) -> Tensor:
     return rank
 
 
-def _spearman_corrcoef_update(preds: Tensor, target: Tensor, n_out: int) -> Tuple[Tensor, Tensor]:
+def _spearman_corrcoef_update(preds: Tensor, target: Tensor, num_outputs: int) -> Tuple[Tensor, Tensor]:
     """Updates and returns variables required to compute Spearman Correlation Coefficient.
 
     Checks for same shape and type of input tensors.
@@ -73,9 +73,9 @@ def _spearman_corrcoef_update(preds: Tensor, target: Tensor, n_out: int) -> Tupl
             f"Expected both predictions and target to be either 1- or 2-dimensional tensors,"
             f" but got {target.ndim} and {preds.ndim}."
         )
-    if (n_out == 1 and preds.ndim != 1) or (n_out > 1 and n_out != preds.shape[-1]):
+    if (num_outputs == 1 and preds.ndim != 1) or (num_outputs > 1 and num_outputs != preds.shape[-1]):
         raise ValueError(
-            f"Expected argument `num_outputs` to match the second dimension of input, but got {n_out}"
+            f"Expected argument `num_outputs` to match the second dimension of input, but got {num_outputs}"
             f" and {preds.ndim}."
         )
 
@@ -143,5 +143,5 @@ def spearman_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
         >>> spearman_corrcoef(preds, target)
         tensor([1.0000, 1.0000])
     """
-    preds, target = _spearman_corrcoef_update(preds, target, n_out=1 if preds.ndim == 1 else preds.shape[-1])
+    preds, target = _spearman_corrcoef_update(preds, target, num_outputs=1 if preds.ndim == 1 else preds.shape[-1])
     return _spearman_corrcoef_compute(preds, target)
