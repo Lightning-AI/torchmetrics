@@ -49,14 +49,14 @@ def concordance_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
         >>> target = torch.tensor([3, -0.5, 2, 7])
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])
         >>> concordance_corrcoef(preds, target)
-        tensor(0.9849)
+        tensor([0.9777])
 
     Example (multi output regression):
         >>> from torchmetrics.functional import concordance_corrcoef
         >>> target = torch.tensor([[3, -0.5], [2, 7]])
         >>> preds = torch.tensor([[2.5, 0.0], [2, 8]])
         >>> concordance_corrcoef(preds, target)
-        tensor([1., 1.])
+        tensor([0.7273, 0.9887])
     """
     d = preds.shape[1] if preds.ndim == 2 else 1
     _temp = torch.zeros(d, dtype=preds.dtype, device=preds.device)
