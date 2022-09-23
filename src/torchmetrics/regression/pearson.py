@@ -73,19 +73,28 @@ class PearsonCorrCoef(Metric):
 
     Forward accepts
 
-    - ``preds`` (float tensor): ``(N,)``
-    - ``target``(float tensor): ``(N,)``
+    - ``preds`` (float tensor): either single output tensor with shape ``(N,)`` or multioutput tensor of shape ``(N,d)``
+    - ``target``(float tensor): either single output tensor with shape ``(N,)`` or multioutput tensor of shape ``(N,d)``
 
     Args:
+        num_outputs: Number of outputs in multioutput setting
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    Example:
+    Example (single output regression):
         >>> from torchmetrics import PearsonCorrCoef
         >>> target = torch.tensor([3, -0.5, 2, 7])
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])
         >>> pearson = PearsonCorrCoef()
         >>> pearson(preds, target)
         tensor(0.9849)
+
+    Example (multi output regression):
+        >>> from torchmetrics import PearsonCorrCoef
+        >>> target = torch.tensor([[3, -0.5], [2, 7]])
+        >>> preds = torch.tensor([[2.5, 0.0], [2, 8]])
+        >>> pearson = PearsonCorrCoef(num_outputs=2)
+        >>> pearson(preds, target)
+        tensor([1., 1.])
 
     """
     is_differentiable = True
@@ -102,16 +111,20 @@ class PearsonCorrCoef(Metric):
 
     def __init__(
         self,
+        num_outputs: int = 1,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
+        if not isinstance(num_outputs, int) and num_outputs < 1:
+            raise ValueError("Expected argument `num_outputs` to be an int larger than 0, but got {num_outputs}")
+        self.num_outputs = num_outputs
 
-        self.add_state("mean_x", default=torch.tensor(0.0), dist_reduce_fx=None)
-        self.add_state("mean_y", default=torch.tensor(0.0), dist_reduce_fx=None)
-        self.add_state("var_x", default=torch.tensor(0.0), dist_reduce_fx=None)
-        self.add_state("var_y", default=torch.tensor(0.0), dist_reduce_fx=None)
-        self.add_state("corr_xy", default=torch.tensor(0.0), dist_reduce_fx=None)
-        self.add_state("n_total", default=torch.tensor(0.0), dist_reduce_fx=None)
+        self.add_state("mean_x", default=torch.zeros(self.num_outputs), dist_reduce_fx=None)
+        self.add_state("mean_y", default=torch.zeros(self.num_outputs), dist_reduce_fx=None)
+        self.add_state("var_x", default=torch.zeros(self.num_outputs), dist_reduce_fx=None)
+        self.add_state("var_y", default=torch.zeros(self.num_outputs), dist_reduce_fx=None)
+        self.add_state("corr_xy", default=torch.zeros(self.num_outputs), dist_reduce_fx=None)
+        self.add_state("n_total", default=torch.zeros(self.num_outputs), dist_reduce_fx=None)
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
@@ -121,13 +134,22 @@ class PearsonCorrCoef(Metric):
             target: Ground truth values
         """
         self.mean_x, self.mean_y, self.var_x, self.var_y, self.corr_xy, self.n_total = _pearson_corrcoef_update(
-            preds, target, self.mean_x, self.mean_y, self.var_x, self.var_y, self.corr_xy, self.n_total
+            preds,
+            target,
+            self.mean_x,
+            self.mean_y,
+            self.var_x,
+            self.var_y,
+            self.corr_xy,
+            self.n_total,
+            self.num_outputs,
         )
 
     def compute(self) -> Tensor:
         """Computes pearson correlation coefficient over state."""
-        if self.mean_x.numel() > 1:  # multiple devices, need further reduction
-            _, _, var_x, var_y, corr_xy, n_total = _final_aggregation(
+        if (self.num_outputs == 1 and self.mean_x.numel() > 1) or (self.num_outputs > 1 and self.mean_x.ndim > 1):
+            # multiple devices, need further reduction
+            var_x, var_y, corr_xy, n_total = _final_aggregation(
                 self.mean_x, self.mean_y, self.var_x, self.var_y, self.corr_xy, self.n_total
             )
         else:
