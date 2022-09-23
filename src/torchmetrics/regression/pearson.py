@@ -27,7 +27,7 @@ def _final_aggregation(
     vars_y: Tensor,
     corrs_xy: Tensor,
     nbs: Tensor,
-) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+) -> Tuple[Tensor, Tensor, Tensor, Tensor, Tensor, Tensor]:
     """Aggregate the statistics from multiple devices.
 
     Formula taken from here: `Aggregate the statistics from multiple devices`_
