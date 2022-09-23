@@ -58,10 +58,11 @@ def concordance_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
         >>> concordance_corrcoef(preds, target)
         tensor([1., 1.])
     """
-    _temp = torch.zeros(1, dtype=preds.dtype, device=preds.device)
+    d = preds.shape[1] if preds.ndim == 2 else 1
+    _temp = torch.zeros(d, dtype=preds.dtype, device=preds.device)
     mean_x, mean_y, var_x = _temp.clone(), _temp.clone(), _temp.clone()
     var_y, corr_xy, nb = _temp.clone(), _temp.clone(), _temp.clone()
     mean_x, mean_y, var_x, var_y, corr_xy, nb = _pearson_corrcoef_update(
-        preds, target, mean_x, mean_y, var_x, var_y, corr_xy, nb, n_out=1 if preds.ndim == 1 else preds.shape[-1]
+        preds, target, mean_x, mean_y, var_x, var_y, corr_xy, nb, num_outputs=1 if preds.ndim == 1 else preds.shape[-1]
     )
     return _concordance_corrcoef_compute(mean_x, mean_y, var_x, var_y, corr_xy, nb)

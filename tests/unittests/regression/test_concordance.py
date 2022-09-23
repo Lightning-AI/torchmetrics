@@ -49,14 +49,14 @@ _multi_target_inputs2 = Input(
 )
 
 
-def _sk_metric(preds, target):
+def _sk_concordance(preds, target):
     preds, target = preds.numpy(), target.numpy()
     if preds.ndim == 2:
         mean_pred = np.mean(preds, axis=0)
         mean_gt = np.mean(target, axis=0)
         std_pred = np.std(preds, axis=0)
         std_gt = np.std(target, axis=0)
-        pearson = np.concatenate([pearsonr(t, p)[0] for t, p in zip(target.T, preds.T)])
+        pearson = np.stack([pearsonr(t, p)[0] for t, p in zip(target.T, preds.T)])
     else:
         mean_pred = np.mean(preds)
         mean_gt = np.mean(target)
@@ -76,6 +76,8 @@ def _sk_metric(preds, target):
     ],
 )
 class TestConcordanceCorrCoef(MetricTester):
+    atol = 1e-3
+
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_concordance_corrcoef(self, preds, target, ddp, dist_sync_on_step):
@@ -85,13 +87,13 @@ class TestConcordanceCorrCoef(MetricTester):
             preds,
             target,
             ConcordanceCorrCoef,
-            _sk_metric,
+            _sk_concordance,
             dist_sync_on_step,
             metric_args={"num_outputs": num_outputs},
         )
 
     def test_spearman_corrcoef_functional(self, preds, target):
-        self.run_functional_metric_test(preds, target, concordance_corrcoef, _sk_metric)
+        self.run_functional_metric_test(preds, target, concordance_corrcoef, _sk_concordance)
 
     def test_spearman_corrcoef_differentiability(self, preds, target):
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
@@ -118,7 +120,7 @@ def test_error_on_different_shape():
         metric(torch.randn(100), torch.randn(50))
 
     metric = ConcordanceCorrCoef(num_outputs=5)
-    with pytest.raises(ValueError, match="Expected both predictions and target to be either 1 or 2.*"):
+    with pytest.raises(ValueError, match="Expected both predictions and target to be either 1- or 2-.*"):
         metric(torch.randn(100, 2, 5), torch.randn(100, 2, 5))
 
     metric = ConcordanceCorrCoef(num_outputs=2)

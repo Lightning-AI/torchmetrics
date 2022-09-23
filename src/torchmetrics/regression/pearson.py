@@ -149,7 +149,7 @@ class PearsonCorrCoef(Metric):
         """Computes pearson correlation coefficient over state."""
         if (self.num_outputs == 1 and self.mean_x.numel() > 1) or (self.num_outputs > 1 and self.mean_x.ndim > 1):
             # multiple devices, need further reduction
-            var_x, var_y, corr_xy, n_total = _final_aggregation(
+            _, _, var_x, var_y, corr_xy, n_total = _final_aggregation(
                 self.mean_x, self.mean_y, self.var_x, self.var_y, self.corr_xy, self.n_total
             )
         else:

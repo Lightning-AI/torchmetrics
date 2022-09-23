@@ -55,7 +55,8 @@ class ConcordanceCorrCoef(PearsonCorrCoef):
     """
 
     def compute(self) -> Tensor:
-        if (self.n_out == 1 and self.mean_x.numel() > 1) or (self.n_out > 1 and self.mean_x.ndim > 1):
+        """Computes final concordance correlation coefficient over metric states."""
+        if (self.num_outputs == 1 and self.mean_x.numel() > 1) or (self.num_outputs > 1 and self.mean_x.ndim > 1):
             mean_x, mean_y, var_x, var_y, corr_xy, n_total = _final_aggregation(
                 self.mean_x, self.mean_y, self.var_x, self.var_y, self.corr_xy, self.n_total
             )
