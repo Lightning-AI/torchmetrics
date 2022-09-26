@@ -119,13 +119,16 @@ class BinaryPrecisionRecallCurve(Metric):
         self.ignore_index = ignore_index
         self.validate_args = validate_args
 
+        thresholds = _adjust_threshold_arg(thresholds)
         if thresholds is None:
             self.thresholds = thresholds
             self.add_state("preds", default=[], dist_reduce_fx="cat")
             self.add_state("target", default=[], dist_reduce_fx="cat")
         else:
-            self.register_buffer("thresholds", _adjust_threshold_arg(thresholds))
-            self.add_state("confmat", default=torch.zeros(thresholds, 2, 2, dtype=torch.long), dist_reduce_fx="sum")
+            self.register_buffer("thresholds", thresholds)
+            self.add_state(
+                "confmat", default=torch.zeros(len(thresholds), 2, 2, dtype=torch.long), dist_reduce_fx="sum"
+            )
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         if self.validate_args:
@@ -247,14 +250,17 @@ class MulticlassPrecisionRecallCurve(Metric):
         self.ignore_index = ignore_index
         self.validate_args = validate_args
 
+        thresholds = _adjust_threshold_arg(thresholds)
         if thresholds is None:
             self.thresholds = thresholds
             self.add_state("preds", default=[], dist_reduce_fx="cat")
             self.add_state("target", default=[], dist_reduce_fx="cat")
         else:
-            self.register_buffer("thresholds", _adjust_threshold_arg(thresholds))
+            self.register_buffer("thresholds", thresholds)
             self.add_state(
-                "confmat", default=torch.zeros(thresholds, num_classes, 2, 2, dtype=torch.long), dist_reduce_fx="sum"
+                "confmat",
+                default=torch.zeros(len(thresholds), num_classes, 2, 2, dtype=torch.long),
+                dist_reduce_fx="sum",
             )
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
@@ -381,14 +387,17 @@ class MultilabelPrecisionRecallCurve(Metric):
         self.ignore_index = ignore_index
         self.validate_args = validate_args
 
+        thresholds = _adjust_threshold_arg(thresholds)
         if thresholds is None:
             self.thresholds = thresholds
             self.add_state("preds", default=[], dist_reduce_fx="cat")
             self.add_state("target", default=[], dist_reduce_fx="cat")
         else:
-            self.register_buffer("thresholds", _adjust_threshold_arg(thresholds))
+            self.register_buffer("thresholds", thresholds)
             self.add_state(
-                "confmat", default=torch.zeros(thresholds, num_labels, 2, 2, dtype=torch.long), dist_reduce_fx="sum"
+                "confmat",
+                default=torch.zeros(len(thresholds), num_labels, 2, 2, dtype=torch.long),
+                dist_reduce_fx="sum",
             )
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
