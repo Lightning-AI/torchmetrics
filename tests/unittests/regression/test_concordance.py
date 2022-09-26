@@ -107,11 +107,17 @@ class TestConcordanceCorrCoef(MetricTester):
     # Spearman half + cpu does not work due to missing support in torch.arange
     @pytest.mark.xfail(reason="Concordance metric does not support cpu + half precision")
     def test_concordance_corrcoef_half_cpu(self, preds, target):
-        self.run_precision_test_cpu(preds, target, ConcordanceCorrCoef, concordance_corrcoef)
+        num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
+        self.run_precision_test_cpu(
+            preds, target, partial(ConcordanceCorrCoef, num_outputs=num_outputs), concordance_corrcoef
+        )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_concordance_corrcoef_half_gpu(self, preds, target):
-        self.run_precision_test_gpu(preds, target, ConcordanceCorrCoef, concordance_corrcoef)
+        num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
+        self.run_precision_test_gpu(
+            preds, target, partial(ConcordanceCorrCoef, num_outputs=num_outputs), concordance_corrcoef
+        )
 
 
 def test_error_on_different_shape():
