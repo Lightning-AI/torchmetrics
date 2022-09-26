@@ -1,5 +1,6 @@
-from torchmetrics.functional.segmentation.mean_iou import mean_iou
 import torch
+
+from torchmetrics.functional.segmentation.mean_iou import mean_iou
 
 # suppose one has 3 different segmentation maps predicted
 predicted_1 = torch.tensor([[1, 2], [3, 4], [5, 255]])
@@ -17,6 +18,6 @@ results = mean_iou(preds=predicted, target=ground_truth, num_labels=10, ignore_i
 
 print(results)
 
-preds = [torch.tensor([[2,0],[2,3]])]
-target = [torch.tensor([[255,255],[2,3]])]
+preds = [torch.tensor([[2, 0], [2, 3]])]
+target = [torch.tensor([[255, 255], [2, 3]])]
 print(mean_iou(preds, target, num_labels=4, ignore_index=255, reduce_labels=False))
