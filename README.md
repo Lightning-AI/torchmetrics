@@ -274,6 +274,7 @@ We currently have implemented metrics within the following domains:
 - Audio
 - Classification
 - Detection
+- Segmentation
 - Information Retrieval
 - Image
 - Regression
