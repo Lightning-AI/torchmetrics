@@ -189,8 +189,7 @@ class RetrievalPrecisionRecallCurve(Metric):
         precisions, recalls = [], []
 
         for mini_preds, mini_target in zip(
-            torch.split(preds, split_sizes, dim=0),
-            torch.split(target, split_sizes, dim=0)
+            torch.split(preds, split_sizes, dim=0), torch.split(target, split_sizes, dim=0)
         ):
             if not mini_target.sum():
                 if self.empty_target_action == "error":
