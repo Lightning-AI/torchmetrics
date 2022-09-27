@@ -213,8 +213,8 @@ def apply_to_collection(
 
 
 def get_indexes_splits(indexes: torch.Tensor) -> List[int]:
-    """ Create a list of integers where each value represents the number of repetitions
-    of a value in the original tensor.
+    """Create a list of integers where each value represents the number of repetitions of a value in the original
+    tensor.
 
     Example:
     >>> indexes = tensor([0, 0, 0, 0, 1, 1, 1])
