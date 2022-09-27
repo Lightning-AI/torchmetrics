@@ -19,9 +19,7 @@ from torch import Tensor, tensor
 
 from torchmetrics import Metric
 from torchmetrics.utilities.checks import _check_retrieval_inputs
-from torchmetrics.utilities.data import get_group_indexes
-
-#: get_group_indexes is used to group predictions belonging to the same document
+from torchmetrics.utilities.data import dim_zero_cat, get_indexes_splits
 
 
 class RetrievalMetric(Metric, ABC):
@@ -114,12 +112,9 @@ class RetrievalMetric(Metric, ABC):
         for each group compute the ``_metric`` if the number of positive targets is at least 1, otherwise behave as
         specified by ``self.empty_target_action``.
         """
-        indexes = torch.cat(self.indexes, dim=0)
-        preds = torch.cat(self.preds, dim=0)
-        target = torch.cat(self.target, dim=0)
-
-        if not indexes.numel():
-            return tensor(0.0).to(preds)
+        indexes = dim_zero_cat(self.indexes)
+        preds = dim_zero_cat(self.preds)
+        target = dim_zero_cat(self.target)
 
         indexes, indices = torch.sort(indexes)
         preds = preds[indices]
@@ -127,17 +122,7 @@ class RetrievalMetric(Metric, ABC):
 
         indexes = indexes.detach().cpu().tolist()
 
-        split_sizes = []
-        partial_length = 1
-
-        for i in range(1, len(indexes)):
-            if indexes[i] != indexes[i - 1]:
-                split_sizes.append(partial_length)
-                partial_length = 0
-            partial_length += 1
-
-        if partial_length > 0:
-            split_sizes.append(partial_length)
+        split_sizes = get_indexes_splits(indexes)
 
         res = []
         for mini_preds, mini_target in zip(

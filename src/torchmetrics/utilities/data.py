@@ -212,30 +212,32 @@ def apply_to_collection(
     return data
 
 
-def get_group_indexes(indexes: Tensor) -> List[Tensor]:
-    """Given an integer ``indexes``, return indexes for each different value in ``indexes``.
-
-    Args:
-        indexes:
-
-    Return:
-        A list of integer ``torch.Tensor``s
+def get_indexes_splits(indexes: torch.Tensor) -> List[int]:
+    """ Create a list of integers where each value represents the number of repetitions
+    of a value in the original tensor.
 
     Example:
-        >>> indexes = torch.tensor([0, 0, 0, 1, 1, 1, 1])
-        >>> get_group_indexes(indexes)
-        [tensor([0, 1, 2]), tensor([3, 4, 5, 6])]
+    >>> indexes = tensor([0, 0, 0, 0, 1, 1, 1])
+    >>> get_indexes_splits(indexes)
+    [4, 3]
     """
 
-    res: dict = {}
-    for i, _id in enumerate(indexes):
-        _id = _id.item()
-        if _id in res:
-            res[_id] += [i]
-        else:
-            res[_id] = [i]
+    if not indexes:
+        return []
 
-    return [tensor(x, dtype=torch.long) for x in res.values()]
+    res = []
+    partial_length = 1
+
+    for i in range(1, len(indexes)):
+        if indexes[i] != indexes[i - 1]:
+            res.append(partial_length)
+            partial_length = 0
+        partial_length += 1
+
+    if partial_length > 0:
+        res.append(partial_length)
+
+    return res
 
 
 def _squeeze_scalar_element_tensor(x: Tensor) -> Tensor:
