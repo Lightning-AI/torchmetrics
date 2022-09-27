@@ -106,7 +106,6 @@ class RetrievalFallOut(RetrievalMetric):
         target = target[indices]
 
         indexes = indexes.detach().cpu().tolist()
-
         split_sizes = get_indexes_splits(indexes)
 
         res = []

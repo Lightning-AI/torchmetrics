@@ -217,9 +217,9 @@ def get_indexes_splits(indexes: torch.Tensor) -> List[int]:
     tensor.
 
     Example:
-    >>> indexes = tensor([0, 0, 0, 0, 1, 1, 1])
-    >>> get_indexes_splits(indexes)
-    [4, 3]
+        >>> indexes = [0, 0, 0, 0, 1, 1, 1]
+        >>> get_indexes_splits(indexes)
+        [4, 3]
     """
 
     if not indexes:
