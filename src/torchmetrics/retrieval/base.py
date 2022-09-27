@@ -118,13 +118,32 @@ class RetrievalMetric(Metric, ABC):
         preds = torch.cat(self.preds, dim=0)
         target = torch.cat(self.target, dim=0)
 
+        if not indexes.numel():
+            return tensor(0.0).to(preds)
+
+        indexes, indices = torch.sort(indexes)
+        preds = preds[indices]
+        target = target[indices]
+
+        indexes = indexes.detach().cpu().tolist()
+
+        split_sizes = []
+        partial_length = 1
+
+        for i in range(1, len(indexes)):
+            if indexes[i] != indexes[i - 1]:
+                split_sizes.append(partial_length)
+                partial_length = 0
+            partial_length += 1
+
+        if partial_length > 0:
+            split_sizes.append(partial_length)
+
         res = []
-        groups = get_group_indexes(indexes)
-
-        for group in groups:
-            mini_preds = preds[group]
-            mini_target = target[group]
-
+        for mini_preds, mini_target in zip(
+            torch.split(preds, split_sizes, dim=0),
+            torch.split(target, split_sizes, dim=0)
+        ):
             if not mini_target.sum():
                 if self.empty_target_action == "error":
                     raise ValueError("`compute` method was provided with a query with no positive target.")
