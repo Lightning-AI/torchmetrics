@@ -17,7 +17,7 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.functional.image.ssim import _multiscale_ssim_compute, _ssim_compute, _ssim_update
+from torchmetrics.functional.image.ssim import _multiscale_ssim_update, _ssim_check_inputs, _ssim_compute, _ssim_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
 
@@ -115,14 +115,13 @@ class StructuralSimilarityIndexMeasure(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        preds, target = _ssim_update(preds, target)
-        similarity_pack = _ssim_compute(
+        preds, target = _ssim_check_inputs(preds, target)
+        similarity_pack = _ssim_update(
             preds,
             target,
             self.gaussian_kernel,
             self.sigma,
             self.kernel_size,
-            None,
             self.data_range,
             self.k1,
             self.k2,
@@ -277,14 +276,13 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
             preds: Predictions from model of shape ``[N, C, H, W]``
             target: Ground truth values of shape ``[N, C, H, W]``
         """
-        preds, target = _ssim_update(preds, target)
-        similarity = _multiscale_ssim_compute(
+        preds, target = _ssim_check_inputs(preds, target)
+        similarity = _multiscale_ssim_update(
             preds,
             target,
             self.gaussian_kernel,
             self.sigma,
             self.kernel_size,
-            None,
             self.data_range,
             self.k1,
             self.k2,
