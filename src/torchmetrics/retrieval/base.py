@@ -19,7 +19,7 @@ from torch import Tensor, tensor
 
 from torchmetrics import Metric
 from torchmetrics.utilities.checks import _check_retrieval_inputs
-from torchmetrics.utilities.data import dim_zero_cat, _flexible_bincount
+from torchmetrics.utilities.data import _flexible_bincount, dim_zero_cat
 
 
 class RetrievalMetric(Metric, ABC):

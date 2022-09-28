@@ -18,7 +18,7 @@ from torch import Tensor, tensor
 
 from torchmetrics.functional.retrieval.fall_out import retrieval_fall_out
 from torchmetrics.retrieval.base import RetrievalMetric
-from torchmetrics.utilities.data import dim_zero_cat, _flexible_bincount
+from torchmetrics.utilities.data import _flexible_bincount, dim_zero_cat
 
 
 class RetrievalFallOut(RetrievalMetric):
