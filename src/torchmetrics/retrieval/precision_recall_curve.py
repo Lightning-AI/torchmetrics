@@ -19,7 +19,7 @@ from torch import Tensor, tensor
 from torchmetrics import Metric
 from torchmetrics.functional.retrieval.precision_recall_curve import retrieval_precision_recall_curve
 from torchmetrics.utilities.checks import _check_retrieval_inputs
-from torchmetrics.utilities.data import dim_zero_cat, get_indexes_splits
+from torchmetrics.utilities.data import dim_zero_cat, _flexible_bincount
 
 
 def _retrieval_recall_at_fixed_precision(
@@ -176,8 +176,7 @@ class RetrievalPrecisionRecallCurve(Metric):
         preds = preds[indices]
         target = target[indices]
 
-        indexes = indexes.detach().cpu().tolist()
-        split_sizes = get_indexes_splits(indexes)
+        split_sizes = _flexible_bincount(indexes).detach().cpu().tolist()
 
         # don't want to change self.max_k
         max_k = self.max_k

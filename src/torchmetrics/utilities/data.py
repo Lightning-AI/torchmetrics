@@ -212,34 +212,6 @@ def apply_to_collection(
     return data
 
 
-def get_indexes_splits(indexes: torch.Tensor) -> List[int]:
-    """Create a list of integers where each value represents the number of repetitions of a value in the original
-    tensor.
-
-    Example:
-        >>> indexes = [0, 0, 0, 0, 1, 1, 1]
-        >>> get_indexes_splits(indexes)
-        [4, 3]
-    """
-
-    if not indexes:
-        return []
-
-    res = []
-    partial_length = 1
-
-    for i in range(1, len(indexes)):
-        if indexes[i] != indexes[i - 1]:
-            res.append(partial_length)
-            partial_length = 0
-        partial_length += 1
-
-    if partial_length > 0:
-        res.append(partial_length)
-
-    return res
-
-
 def _squeeze_scalar_element_tensor(x: Tensor) -> Tensor:
     return x.squeeze() if x.numel() == 1 else x
 
@@ -272,6 +244,25 @@ def _bincount(x: Tensor, minlength: Optional[int] = None) -> Tensor:
         return output
     z = torch.zeros(minlength, device=x.device, dtype=x.dtype)
     return z.index_add_(0, x, torch.ones_like(x))
+
+
+def _flexible_bincount(x: Tensor) -> Tensor:
+    """Similar to `_bincount`, but works also with tensor that do not contain continuous values.
+
+    Args:
+        x: tensor to count
+
+    Returns:
+        Number of occurrences for each unique element in x
+    """
+
+    # make sure elements in x start from 0
+    x = x - x.min()
+    unique_x = torch.unique(x)
+
+    output = _bincount(x, minlength=torch.max(unique_x) + 1)
+    # remove zeros from output tensor
+    return output[unique_x]
 
 
 def allclose(tensor1: Tensor, tensor2: Tensor) -> bool:

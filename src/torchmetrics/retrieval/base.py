@@ -19,7 +19,7 @@ from torch import Tensor, tensor
 
 from torchmetrics import Metric
 from torchmetrics.utilities.checks import _check_retrieval_inputs
-from torchmetrics.utilities.data import dim_zero_cat, get_indexes_splits
+from torchmetrics.utilities.data import dim_zero_cat, _flexible_bincount
 
 
 class RetrievalMetric(Metric, ABC):
@@ -120,8 +120,7 @@ class RetrievalMetric(Metric, ABC):
         preds = preds[indices]
         target = target[indices]
 
-        indexes = indexes.detach().cpu().tolist()
-        split_sizes = get_indexes_splits(indexes)
+        split_sizes = _flexible_bincount(indexes).detach().cpu().tolist()
 
         res = []
         for mini_preds, mini_target in zip(
