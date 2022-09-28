@@ -282,7 +282,7 @@ def structural_similarity_index_measure(
         return _ssim_compute(similarity, reduction), image
     else:
         similarity = similarity_pack
-        return _ssim_compute(similarity)
+        return _ssim_compute(similarity, reduction)
 
 
 def _get_normalized_sim_and_cs(
