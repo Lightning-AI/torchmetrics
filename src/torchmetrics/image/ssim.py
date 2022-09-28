@@ -17,7 +17,7 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.functional.image.ssim import _multiscale_ssim_update, _ssim_check_inputs, _ssim_compute, _ssim_update
+from torchmetrics.functional.image.ssim import _multiscale_ssim_update, _ssim_check_inputs, _ssim_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
 
