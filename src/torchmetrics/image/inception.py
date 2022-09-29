@@ -40,8 +40,10 @@ class InceptionScore(Metric):
     both a mean and standard deviation of the score are returned. The metric was originally proposed in [1].
 
     Using the default feature extraction (Inception v3 using the original weights from [2]), the input is
-    expected to be mini-batches of 3-channel RGB images of shape (3 x H x W) with dtype uint8. All images
-    will be resized to 299 x 299 which is the size of the original training data.
+    expected to be mini-batches of 3-channel RGB images of shape (``3 x H x W``). If argument ``normalize``
+    is ``True`` images are expected to be dtype ``float`` and have values in the ``[0, 1]`` range, else if
+    ``normalize`` is set to ``False`` images are expected to have dtype uint8 and take values in the ``[0, 255]``
+    range. All images will be resized to 299 x 299 which is the size of the original training data.
 
     .. note:: using this metric with the default feature extractor requires that ``torch-fidelity``
         is installed. Either install as ``pip install torchmetrics[image]`` or
@@ -98,6 +100,7 @@ class InceptionScore(Metric):
         self,
         feature: Union[str, int, Module] = "logits_unbiased",
         splits: int = 10,
+        normalize: bool = False,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -126,6 +129,10 @@ class InceptionScore(Metric):
         else:
             raise TypeError("Got unknown input to argument `feature`")
 
+        if not isinstance(normalize, bool):
+            raise ValueError("Argument `normalize` expected to be a bool")
+        self.normalize = normalize
+
         self.splits = splits
         self.add_state("features", [], dist_reduce_fx=None)
 
@@ -135,6 +142,7 @@ class InceptionScore(Metric):
         Args:
             imgs: tensor with images feed to the feature extractor
         """
+        imgs = (imgs * 255).byte() if self.normalize else imgs
         features = self.inception(imgs)
         self.features.append(features)
 

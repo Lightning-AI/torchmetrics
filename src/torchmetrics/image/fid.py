@@ -138,9 +138,12 @@ class FrechetInceptionDistance(Metric):
     originally proposed in [1].
 
     Using the default feature extraction (Inception v3 using the original weights from [2]), the input is
-    expected to be mini-batches of 3-channel RGB images of shape (``3 x H x W``) with dtype uint8. All images
-    will be resized to 299 x 299 which is the size of the original training data. The boolian flag ``real``
-    determines if the images should update the statistics of the real distribution or the fake distribution.
+    expected to be mini-batches of 3-channel RGB images of shape (``3 x H x W``). If argument ``normalize``
+    is ``True`` images are expected to be dtype ``float`` and have values in the ``[0, 1]`` range, else if
+    ``normalize`` is set to ``False`` images are expected to have dtype ``uint8`` and take values in the ``[0, 255]``
+    range. All images will be resized to 299 x 299 which is the size of the original training data. The boolian
+    flag ``real`` determines if the images should update the statistics of the real distribution or the
+    fake distribution.
 
     .. note:: using this metrics requires you to have ``scipy`` install. Either install as ``pip install
         torchmetrics[image]`` or ``pip install scipy``
@@ -213,6 +216,7 @@ class FrechetInceptionDistance(Metric):
         self,
         feature: Union[int, Module] = 2048,
         reset_real_features: bool = True,
+        normalize: bool = False,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -243,6 +247,10 @@ class FrechetInceptionDistance(Metric):
             raise ValueError("Argument `reset_real_features` expected to be a bool")
         self.reset_real_features = reset_real_features
 
+        if not isinstance(normalize, bool):
+            raise ValueError("Argument `normalize` expected to be a bool")
+        self.normalize = normalize
+
         mx_nb_feets = (num_features, num_features)
         self.add_state("real_features_sum", torch.zeros(num_features).double(), dist_reduce_fx="sum")
         self.add_state("real_features_cov_sum", torch.zeros(mx_nb_feets).double(), dist_reduce_fx="sum")
@@ -259,6 +267,7 @@ class FrechetInceptionDistance(Metric):
             imgs: tensor with images feed to the feature extractor
             real: bool indicating if ``imgs`` belong to the real or the fake distribution
         """
+        imgs = (imgs * 255).byte() if self.normalize else imgs
         features = self.inception(imgs)
         self.orig_dtype = features.dtype
         features = features.double()

@@ -82,8 +82,12 @@ class KernelInceptionDistance(Metric):
     subsets to be able to both get the mean and standard deviation of KID.
 
     Using the default feature extraction (Inception v3 using the original weights from [2]), the input is
-    expected to be mini-batches of 3-channel RGB images of shape (3 x H x W) with dtype uint8. All images
-    will be resized to 299 x 299 which is the size of the original training data.
+    expected to be mini-batches of 3-channel RGB images of shape (``3 x H x W``). If argument ``normalize``
+    is ``True`` images are expected to be dtype ``float`` and have values in the ``[0, 1]`` range, else if
+    ``normalize`` is set to ``False`` images are expected to have dtype ``uint8`` and take values in the ``[0, 255]``
+    range. All images will be resized to 299 x 299 which is the size of the original training data. The boolian
+    flag ``real`` determines if the images should update the statistics of the real distribution or the
+    fake distribution.
 
     .. note:: using this metric with the default feature extractor requires that ``torch-fidelity``
         is installed. Either install as ``pip install torchmetrics[image]`` or
@@ -165,6 +169,7 @@ class KernelInceptionDistance(Metric):
         gamma: Optional[float] = None,  # type: ignore
         coef: float = 1.0,
         reset_real_features: bool = True,
+        normalize: bool = False,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -217,6 +222,10 @@ class KernelInceptionDistance(Metric):
             raise ValueError("Arugment `reset_real_features` expected to be a bool")
         self.reset_real_features = reset_real_features
 
+        if not isinstance(normalize, bool):
+            raise ValueError("Argument `normalize` expected to be a bool")
+        self.normalize = normalize
+
         # states for extracted features
         self.add_state("real_features", [], dist_reduce_fx=None)
         self.add_state("fake_features", [], dist_reduce_fx=None)
@@ -228,6 +237,7 @@ class KernelInceptionDistance(Metric):
             imgs: tensor with images feed to the feature extractor
             real: bool indicating if ``imgs`` belong to the real or the fake distribution
         """
+        imgs = (imgs * 255).byte() if self.normalize else imgs
         features = self.inception(imgs)
 
         if real:
