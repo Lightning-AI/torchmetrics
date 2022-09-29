@@ -51,6 +51,7 @@ from torchmetrics.functional.pairwise.cosine import pairwise_cosine_similarity
 from torchmetrics.functional.pairwise.euclidean import pairwise_euclidean_distance
 from torchmetrics.functional.pairwise.linear import pairwise_linear_similarity
 from torchmetrics.functional.pairwise.manhattan import pairwise_manhattan_distance
+from torchmetrics.functional.regression.concordance import concordance_corrcoef
 from torchmetrics.functional.regression.cosine_similarity import cosine_similarity
 from torchmetrics.functional.regression.explained_variance import explained_variance
 from torchmetrics.functional.regression.kl_divergence import kl_divergence
@@ -101,6 +102,7 @@ __all__ = [
     "calibration_error",
     "char_error_rate",
     "chrf_score",
+    "concordance_corrcoef",
     "cohen_kappa",
     "confusion_matrix",
     "cosine_similarity",

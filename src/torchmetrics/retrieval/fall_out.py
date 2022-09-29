@@ -18,7 +18,7 @@ from torch import Tensor, tensor
 
 from torchmetrics.functional.retrieval.fall_out import retrieval_fall_out
 from torchmetrics.retrieval.base import RetrievalMetric
-from torchmetrics.utilities.data import get_group_indexes
+from torchmetrics.utilities.data import _flexible_bincount, dim_zero_cat
 
 
 class RetrievalFallOut(RetrievalMetric):
@@ -97,17 +97,20 @@ class RetrievalFallOut(RetrievalMetric):
         for each group compute the `_metric` if the number of negative targets is at least 1, otherwise behave as
         specified by `self.empty_target_action`.
         """
-        indexes = torch.cat(self.indexes, dim=0)
-        preds = torch.cat(self.preds, dim=0)
-        target = torch.cat(self.target, dim=0)
+        indexes = dim_zero_cat(self.indexes)
+        preds = dim_zero_cat(self.preds)
+        target = dim_zero_cat(self.target)
+
+        indexes, indices = torch.sort(indexes)
+        preds = preds[indices]
+        target = target[indices]
+
+        split_sizes = _flexible_bincount(indexes).detach().cpu().tolist()
 
         res = []
-        groups = get_group_indexes(indexes)
-
-        for group in groups:
-            mini_preds = preds[group]
-            mini_target = target[group]
-
+        for mini_preds, mini_target in zip(
+            torch.split(preds, split_sizes, dim=0), torch.split(target, split_sizes, dim=0)
+        ):
             if not (1 - mini_target).sum():
                 if self.empty_target_action == "error":
                     raise ValueError("`compute` method was provided with a query with no negative target.")

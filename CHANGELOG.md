@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added `Perplexity` metric ([#922](https://github.com/PyTorchLightning/metrics/pull/922))
 
+- Added `ConcordanceCorrCoef` metric to regression package ([#1201](https://github.com/Lightning-AI/metrics/pull/1201))
+
 - Added argument `normalize` to `LPIPS` metric ([#1216](https://github.com/Lightning-AI/metrics/pull/1216))
 
 - Added support for multiprocessing of batches in `PESQ` metric ([#1227](https://github.com/Lightning-AI/metrics/pull/1227))
@@ -41,6 +43,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 )
 
 - Changed update in `FID` metric to be done in online fashion to save memory ([#1199](https://github.com/PyTorchLightning/metrics/pull/1199))
+
+
+- Improved performance of retrieval metrics ([#1242](https://github.com/Lightning-AI/metrics/pull/1242))
 
 
 ### Fixed
