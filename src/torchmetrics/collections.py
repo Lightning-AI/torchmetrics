@@ -109,16 +109,16 @@ class MetricCollection(ModuleDict):
 
     Example (specification of compute groups):
         >>> metrics = MetricCollection(
-        ...     Accuracy(),
+        ...     Recall(num_classes=3, average='macro'),
         ...     Precision(num_classes=3, average='macro'),
         ...     MeanSquaredError(),
-        ...     compute_groups=[['Accuracy', 'Precision'], ['MeanSquaredError']]
+        ...     compute_groups=[['Recall', 'Precision'], ['MeanSquaredError']]
         ... )
         >>> metrics.update(preds, target)
         >>> pprint(metrics.compute())
-        {'Accuracy': tensor(0.1250), 'MeanSquaredError': tensor(2.3750), 'Precision': tensor(0.0667)}
+        {'MeanSquaredError': tensor(2.3750), 'Precision': tensor(0.0667), 'Recall': tensor(0.1111)}
         >>> pprint(metrics.compute_groups)
-        {0: ['Accuracy', 'Precision'] 1: ['MeanSquaredError']}
+        {0: ['Recall', 'Precision'], 1: ['MeanSquaredError']}
 
     Example (nested metric collections):
         >>> metrics = MetricCollection([
