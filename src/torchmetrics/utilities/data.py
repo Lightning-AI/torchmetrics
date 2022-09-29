@@ -212,32 +212,6 @@ def apply_to_collection(
     return data
 
 
-def get_group_indexes(indexes: Tensor) -> List[Tensor]:
-    """Given an integer ``indexes``, return indexes for each different value in ``indexes``.
-
-    Args:
-        indexes:
-
-    Return:
-        A list of integer ``torch.Tensor``s
-
-    Example:
-        >>> indexes = torch.tensor([0, 0, 0, 1, 1, 1, 1])
-        >>> get_group_indexes(indexes)
-        [tensor([0, 1, 2]), tensor([3, 4, 5, 6])]
-    """
-
-    res: dict = {}
-    for i, _id in enumerate(indexes):
-        _id = _id.item()
-        if _id in res:
-            res[_id] += [i]
-        else:
-            res[_id] = [i]
-
-    return [tensor(x, dtype=torch.long) for x in res.values()]
-
-
 def _squeeze_scalar_element_tensor(x: Tensor) -> Tensor:
     return x.squeeze() if x.numel() == 1 else x
 
@@ -270,6 +244,25 @@ def _bincount(x: Tensor, minlength: Optional[int] = None) -> Tensor:
         return output
     z = torch.zeros(minlength, device=x.device, dtype=x.dtype)
     return z.index_add_(0, x, torch.ones_like(x))
+
+
+def _flexible_bincount(x: Tensor) -> Tensor:
+    """Similar to `_bincount`, but works also with tensor that do not contain continuous values.
+
+    Args:
+        x: tensor to count
+
+    Returns:
+        Number of occurrences for each unique element in x
+    """
+
+    # make sure elements in x start from 0
+    x = x - x.min()
+    unique_x = torch.unique(x)
+
+    output = _bincount(x, minlength=torch.max(unique_x) + 1)
+    # remove zeros from output tensor
+    return output[unique_x]
 
 
 def allclose(tensor1: Tensor, tensor2: Tensor) -> bool:

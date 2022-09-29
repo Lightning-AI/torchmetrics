@@ -19,9 +19,7 @@ from torch import Tensor, tensor
 
 from torchmetrics import Metric
 from torchmetrics.utilities.checks import _check_retrieval_inputs
-from torchmetrics.utilities.data import get_group_indexes
-
-#: get_group_indexes is used to group predictions belonging to the same document
+from torchmetrics.utilities.data import _flexible_bincount, dim_zero_cat
 
 
 class RetrievalMetric(Metric, ABC):
@@ -114,17 +112,20 @@ class RetrievalMetric(Metric, ABC):
         for each group compute the ``_metric`` if the number of positive targets is at least 1, otherwise behave as
         specified by ``self.empty_target_action``.
         """
-        indexes = torch.cat(self.indexes, dim=0)
-        preds = torch.cat(self.preds, dim=0)
-        target = torch.cat(self.target, dim=0)
+        indexes = dim_zero_cat(self.indexes)
+        preds = dim_zero_cat(self.preds)
+        target = dim_zero_cat(self.target)
+
+        indexes, indices = torch.sort(indexes)
+        preds = preds[indices]
+        target = target[indices]
+
+        split_sizes = _flexible_bincount(indexes).detach().cpu().tolist()
 
         res = []
-        groups = get_group_indexes(indexes)
-
-        for group in groups:
-            mini_preds = preds[group]
-            mini_target = target[group]
-
+        for mini_preds, mini_target in zip(
+            torch.split(preds, split_sizes, dim=0), torch.split(target, split_sizes, dim=0)
+        ):
             if not mini_target.sum():
                 if self.empty_target_action == "error":
                     raise ValueError("`compute` method was provided with a query with no positive target.")
