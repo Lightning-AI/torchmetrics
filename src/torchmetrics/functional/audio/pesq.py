@@ -16,7 +16,7 @@ import torch
 from torch import Tensor
 
 from torchmetrics.utilities.checks import _check_same_shape
-from torchmetrics.utilities.imports import _PESQ_AVAILABLE
+from torchmetrics.utilities.imports import _MULTIPROCESSING_AVAILABLE, _PESQ_AVAILABLE
 
 if _PESQ_AVAILABLE:
     import pesq as pesq_backend
@@ -28,7 +28,12 @@ __doctest_requires__ = {("perceptual_evaluation_speech_quality",): ["pesq"]}
 
 
 def perceptual_evaluation_speech_quality(
-    preds: Tensor, target: Tensor, fs: int, mode: str, keep_same_device: bool = False
+    preds: Tensor,
+    target: Tensor,
+    fs: int,
+    mode: str,
+    keep_same_device: bool = False,
+    n_processes: int = 1,
 ) -> Tensor:
     r"""PESQ (Perceptual Evaluation of Speech Quality)
 
@@ -46,6 +51,8 @@ def perceptual_evaluation_speech_quality(
         fs: sampling frequency, should be 16000 or 8000 (Hz)
         mode: ``'wb'`` (wide-band) or ``'nb'`` (narrow-band)
         keep_same_device: whether to move the pesq value to the device of preds
+        n_processes: integer specifiying the number of processes to run in parallel for the metric calculation.
+            Only applies to batches of data and if ``multiprocessing`` package is installed.
 
     Returns:
         pesq value of shape [...]
@@ -89,9 +96,14 @@ def perceptual_evaluation_speech_quality(
     else:
         preds_np = preds.reshape(-1, preds.shape[-1]).detach().cpu().numpy()
         target_np = target.reshape(-1, preds.shape[-1]).detach().cpu().numpy()
-        pesq_val_np = np.empty(shape=(preds_np.shape[0]))
-        for b in range(preds_np.shape[0]):
-            pesq_val_np[b] = pesq_backend.pesq(fs, target_np[b, :], preds_np[b, :], mode)
+
+        if _MULTIPROCESSING_AVAILABLE and n_processes != 1:
+            pesq_val_np = pesq_backend.pesq_batch(fs, target_np, preds_np, mode, n_processor=n_processes)
+            pesq_val_np = np.array(pesq_val_np)
+        else:
+            pesq_val_np = np.empty(shape=(preds_np.shape[0]))
+            for b in range(preds_np.shape[0]):
+                pesq_val_np[b] = pesq_backend.pesq(fs, target_np[b, :], preds_np[b, :], mode)
         pesq_val = torch.from_numpy(pesq_val_np)
         pesq_val = pesq_val.reshape(preds.shape[:-1])
 

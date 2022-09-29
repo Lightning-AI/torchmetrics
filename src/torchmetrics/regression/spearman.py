@@ -32,16 +32,30 @@ class SpearmanCorrCoef(Metric):
     Spearmans correlations coefficient corresponds to the standard pearsons correlation coefficient calculated
     on the rank variables.
 
+    Forward accepts
+
+    - ``preds`` (float tensor): ``(N,d)``
+    - ``target``(float tensor): ``(N,d)``
+
     Args:
+        num_outputs: Number of outputs in multioutput setting
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    Example:
+    Example (single output regression):
         >>> from torchmetrics import SpearmanCorrCoef
         >>> target = torch.tensor([3, -0.5, 2, 7])
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])
         >>> spearman = SpearmanCorrCoef()
         >>> spearman(preds, target)
         tensor(1.0000)
+
+    Example (multi output regression):
+        >>> from torchmetrics import SpearmanCorrCoef
+        >>> target = torch.tensor([[3, -0.5], [2, 7]])
+        >>> preds = torch.tensor([[2.5, 0.0], [2, 8]])
+        >>> spearman = SpearmanCorrCoef(num_outputs=2)
+        >>> spearman(preds, target)
+        tensor([1.0000, 1.0000])
 
     """
     is_differentiable: bool = False
@@ -52,6 +66,7 @@ class SpearmanCorrCoef(Metric):
 
     def __init__(
         self,
+        num_outputs: int = 1,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -59,6 +74,9 @@ class SpearmanCorrCoef(Metric):
             "Metric `SpearmanCorrcoef` will save all targets and predictions in the buffer."
             " For large datasets, this may lead to large memory footprint."
         )
+        if not isinstance(num_outputs, int) and num_outputs < 1:
+            raise ValueError("Expected argument `num_outputs` to be an int larger than 0, but got {num_outputs}")
+        self.num_outputs = num_outputs
 
         self.add_state("preds", default=[], dist_reduce_fx="cat")
         self.add_state("target", default=[], dist_reduce_fx="cat")
@@ -70,7 +88,7 @@ class SpearmanCorrCoef(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        preds, target = _spearman_corrcoef_update(preds, target)
+        preds, target = _spearman_corrcoef_update(preds, target, num_outputs=self.num_outputs)
         self.preds.append(preds)
         self.target.append(target)
 
