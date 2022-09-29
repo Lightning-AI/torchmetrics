@@ -15,25 +15,26 @@ from typing import Any
 
 import torch
 from torch import Tensor, tensor
+from typing_extensions import Literal
 
 from torchmetrics.functional.image.tv import _total_variation_compute, _total_variation_update
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.data import dim_zero_cat
 
 
 class TotalVariation(Metric):
     """Computes Total Variation loss (`TV`_).
 
-    Adapted from: https://kornia.readthedocs.io/en/latest/_modules/kornia/losses/total_variation.html
-
     Args:
         reduction: a method to reduce metric score over samples.
-            - ``'mean'``: takes the mean (default)
-            - ``'sum'``: takes the sum
+            - ``'mean'``: takes the mean over samples
+            - ``'sum'``: takes the sum over samples
+            - ``None`` or ``'none': return the score per sample
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
-            If ``reduction`` is not one of ``'sum'`` or ``'mean'``
+            If ``reduction`` is not one of ``'sum'``, ``'mean'``, ``'none'`` or ``None``
 
     Example:
         >>> import torch
@@ -48,16 +49,17 @@ class TotalVariation(Metric):
     full_state_update: bool = False
     is_differentiable: bool = True
     higher_is_better: bool = False
-    score: Tensor
-    num_elements: Tensor
 
-    def __init__(self, reduction: str = "sum", **kwargs: Any) -> None:
+    def __init__(self, reduction: Literal["mean", "sum", "none", None] = "sum", **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        if reduction not in ("sum", "mean"):
-            raise ValueError("Expected argument `reduction` to either be 'sum' or 'mean'")
+        if reduction is not None and reduction not in ("sum", "mean", "none"):
+            raise ValueError("Expected argument `reduction` to either be 'sum', 'mean', 'none' or None")
         self.reduction = reduction
 
-        self.add_state("score", default=tensor(0, dtype=torch.float), dist_reduce_fx="sum")
+        if self.reduction is None or self.reduction == "none":
+            self.add_state("score", default=[], dist_reduce_fx="cat")
+        else:
+            self.add_state("score", default=tensor(0, dtype=torch.float), dist_reduce_fx="sum")
         self.add_state("num_elements", default=tensor(0, dtype=torch.int), dist_reduce_fx="sum")
 
     def update(self, img: Tensor) -> None:  # type: ignore
@@ -67,9 +69,16 @@ class TotalVariation(Metric):
             img: A `Tensor` of shape `(N, C, H, W)` consisting of images
         """
         score, num_elements = _total_variation_update(img)
-        self.score += score
+        if self.reduction is None or self.reduction == "none":
+            self.score.append(score)
+        else:
+            self.score += score.sum()
         self.num_elements += num_elements
 
     def compute(self) -> Tensor:
         """Compute final total variation."""
-        return _total_variation_compute(self.score, self.num_elements, self.reduction)
+        if self.reduction is None or self.reduction == "none":
+            score = dim_zero_cat(self.score)
+        else:
+            score = self.score
+        return _total_variation_compute(score, self.num_elements, self.reduction)

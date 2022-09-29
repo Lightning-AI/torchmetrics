@@ -39,7 +39,11 @@ def total_variaion_tester(preds, target, reduction="mean"):
 
 def total_variation_kornia_tester(preds, target, reduction):
     score = kornia_total_variation(preds).sum(-1)
-    return score.sum() if reduction == "sum" else score.mean()
+    if reduction == "sum":
+        return score.sum()
+    elif reduction == "mean":
+        return score.mean()
+    return score
 
 
 # define inputs
@@ -61,7 +65,7 @@ for size, channel, dtype in [
     "preds, target",
     [(i.preds, i.target) for i in _inputs],
 )
-@pytest.mark.parametrize("reduction", ["sum", "mean"])
+@pytest.mark.parametrize("reduction", ["sum", "mean", None])
 @pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_8, reason="Kornia used as reference requires min PT version")
 class TestTotalVariation(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])

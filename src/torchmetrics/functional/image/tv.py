@@ -14,6 +14,7 @@
 from typing import Tuple
 
 from torch import Tensor
+from typing_extensions import Literal
 
 
 def _total_variation_update(img: Tensor) -> Tuple[Tensor, int]:
@@ -25,32 +26,40 @@ def _total_variation_update(img: Tensor) -> Tuple[Tensor, int]:
 
     res1 = diff1.abs().sum([1, 2, 3])
     res2 = diff2.abs().sum([1, 2, 3])
-    score = (res1 + res2).sum()
+    score = res1 + res2
     return score, img.shape[0]
 
 
-def _total_variation_compute(score: Tensor, num_elements: int, reduction: str) -> Tensor:
+def _total_variation_compute(
+    score: Tensor, num_elements: int, reduction: Literal["mean", "sum", "none", None]
+) -> Tensor:
     """Compute final total variation score."""
-    return score if reduction == "sum" else score / num_elements
+    if reduction == "mean":
+        return score.sum() / num_elements
+    elif reduction == "sum":
+        return score.sum()
+    elif reduction is None or reduction == "none":
+        return score
+    else:
+        raise ValueError("Expected argument `reduction` to either be 'sum', 'mean', 'none' or None")
 
 
-def total_variation(img: Tensor, reduction: str = "sum") -> Tensor:
+def total_variation(img: Tensor, reduction: Literal["mean", "sum", "none", None] = "sum") -> Tensor:
     """Computes total variation loss.
-
-    Adapted from: https://kornia.readthedocs.io/en/latest/_modules/kornia/losses/total_variation.html
 
     Args:
         img: A `Tensor` of shape `(N, C, H, W)` consisting of images
         reduction: a method to reduce metric score over samples.
-            - ``'mean'``: takes the mean (default)
-            - ``'sum'``: takes the sum
+            - ``'mean'``: takes the mean over samples
+            - ``'sum'``: takes the sum over samples
+            - ``None`` or ``'none': return the score per sample
 
     Returns:
         A loss scalar value containing the total variation
 
     Raises:
         ValueError:
-            If ``reduction`` is not one of ``'sum'`` or ``'mean'``
+            If ``reduction`` is not one of ``'sum'``, ``'mean'``, ``'none'`` or ``None``
         RuntimeError:
             If ``img`` is not 4D tensor
 
@@ -61,8 +70,10 @@ def total_variation(img: Tensor, reduction: str = "sum") -> Tensor:
         >>> img = torch.rand(5, 3, 28, 28)
         >>> total_variation(img)
         tensor(7546.8018)
+        >>> total_variation(img, reduction=None)
+        tensor([7546.8018, 7546.8018, 7546.8018, 7546.8018, 7546.8018])
     """
-    if reduction not in ("sum", "mean"):
-        raise ValueError("Expected argument `reduction` to either be 'sum' or 'mean'")
+    # code adapted from:
+    # from kornia.losses import total_variation as kornia_total_variation
     score, num_elements = _total_variation_update(img)
     return _total_variation_compute(score, num_elements, reduction)
