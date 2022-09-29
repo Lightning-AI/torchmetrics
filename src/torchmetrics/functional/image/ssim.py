@@ -23,7 +23,7 @@ from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.distributed import reduce
 
 
-def _ssim_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
+def _ssim_check_inputs(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
     """Updates and returns variables required to compute Structural Similarity Index Measure. Checks for same shape
     and type of the input tensors.
 
@@ -46,13 +46,12 @@ def _ssim_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
     return preds, target
 
 
-def _ssim_compute(
+def _ssim_update(
     preds: Tensor,
     target: Tensor,
     gaussian_kernel: bool = True,
     sigma: Union[float, Sequence[float]] = 1.5,
     kernel_size: Union[int, Sequence[int]] = 11,
-    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
     data_range: Optional[float] = None,
     k1: float = 0.01,
     k2: float = 0.03,
@@ -69,12 +68,6 @@ def _ssim_compute(
             Ignored if a uniform kernel is used
         kernel_size: the size of the uniform kernel, anisotropic kernels are possible.
             Ignored if a Gaussian kernel is used
-        reduction: a method to reduce metric score over individual batch scores
-
-            - ``'elementwise_mean'``: takes the mean
-            - ``'sum'``: takes the sum
-            - ``'none'`` or ``None``: no reduction will be applied
-
         data_range: Range of the image. If ``None``, it is determined from the image (max - min)
         k1: Parameter of SSIM.
         k2: Parameter of SSIM.
@@ -83,13 +76,6 @@ def _ssim_compute(
         return_contrast_sensitivity: If true, the contrast term is returned as a second argument.
             The luminance term can be obtained with luminance=ssim/contrast
             Mutually exclusive with ``return_full_image``
-
-    Example:
-        >>> preds = torch.rand([16, 1, 16, 16])
-        >>> target = preds * 0.75
-        >>> preds, target = _ssim_update(preds, target)
-        >>> _ssim_compute(preds, target)
-        tensor(0.9219)
     """
     is_3d = len(preds.shape) == 5
 
@@ -187,14 +173,34 @@ def _ssim_compute(
     if return_contrast_sensitivity:
         contrast_sensitivity = upper / lower
         contrast_sensitivity = contrast_sensitivity[..., pad_h:-pad_h, pad_w:-pad_w]
-        return reduce(ssim_idx.reshape(ssim_idx.shape[0], -1).mean(-1), reduction), reduce(
-            contrast_sensitivity.reshape(contrast_sensitivity.shape[0], -1).mean(-1), reduction
-        )
+        return ssim_idx.reshape(ssim_idx.shape[0], -1).mean(-1), contrast_sensitivity.reshape(
+            contrast_sensitivity.shape[0], -1
+        ).mean(-1)
 
     elif return_full_image:
-        return reduce(ssim_idx.reshape(ssim_idx.shape[0], -1).mean(-1), reduction), ssim_idx_full_image
+        return ssim_idx.reshape(ssim_idx.shape[0], -1).mean(-1), ssim_idx_full_image
 
-    return reduce(ssim_idx.reshape(ssim_idx.shape[0], -1).mean(-1), reduction)
+    return ssim_idx.reshape(ssim_idx.shape[0], -1).mean(-1)
+
+
+def _ssim_compute(
+    similarities: Tensor,
+    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
+) -> Tensor:
+    """Applies the specified reduction to pre-computed structural similarity.
+
+    Args:
+        similarities: per image similarities for a batch of images.
+        reduction: a method to reduce metric score over individual batch scores
+
+                - ``'elementwise_mean'``: takes the mean
+                - ``'sum'``: takes the sum
+                - ``'none'`` or ``None``: no reduction will be applied
+
+    Returns:
+        The reduced SSIM score
+    """
+    return reduce(similarities, reduction)
 
 
 def structural_similarity_index_measure(
@@ -252,25 +258,31 @@ def structural_similarity_index_measure(
 
     Example:
         >>> from torchmetrics.functional import structural_similarity_index_measure
-        >>> preds = torch.rand([16, 1, 16, 16])
+        >>> preds = torch.rand([3, 3, 256, 256])
         >>> target = preds * 0.75
         >>> structural_similarity_index_measure(preds, target)
         tensor(0.9219)
     """
-    preds, target = _ssim_update(preds, target)
-    return _ssim_compute(
+    preds, target = _ssim_check_inputs(preds, target)
+    similarity_pack = _ssim_update(
         preds,
         target,
         gaussian_kernel,
         sigma,
         kernel_size,
-        reduction,
         data_range,
         k1,
         k2,
         return_full_image,
         return_contrast_sensitivity,
     )
+
+    if isinstance(similarity_pack, tuple):
+        similarity, image = similarity_pack
+        return _ssim_compute(similarity, reduction), image
+    else:
+        similarity = similarity_pack
+        return _ssim_compute(similarity, reduction)
 
 
 def _get_normalized_sim_and_cs(
@@ -279,19 +291,17 @@ def _get_normalized_sim_and_cs(
     gaussian_kernel: bool = True,
     sigma: Union[float, Sequence[float]] = 1.5,
     kernel_size: Union[int, Sequence[int]] = 11,
-    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
     data_range: Optional[float] = None,
     k1: float = 0.01,
     k2: float = 0.03,
     normalize: Optional[Literal["relu", "simple"]] = None,
 ) -> Tuple[Tensor, Tensor]:
-    sim, contrast_sensitivity = _ssim_compute(
+    sim, contrast_sensitivity = _ssim_update(
         preds,
         target,
         gaussian_kernel,
         sigma,
         kernel_size,
-        reduction,
         data_range,
         k1,
         k2,
@@ -303,13 +313,12 @@ def _get_normalized_sim_and_cs(
     return sim, contrast_sensitivity
 
 
-def _multiscale_ssim_compute(
+def _multiscale_ssim_update(
     preds: Tensor,
     target: Tensor,
     gaussian_kernel: bool = True,
     sigma: Union[float, Sequence[float]] = 1.5,
     kernel_size: Union[int, Sequence[int]] = 11,
-    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
     data_range: Optional[float] = None,
     k1: float = 0.01,
     k2: float = 0.03,
@@ -354,8 +363,7 @@ def _multiscale_ssim_compute(
         ValueError:
             If the image width is smaller than ``(kernel_size[0] - 1) * max(1, (len(betas) - 1)) ** 2``.
     """
-    sim_list: List[Tensor] = []
-    cs_list: List[Tensor] = []
+    mcs_list: List[Tensor] = []
 
     is_3d = len(preds.shape) == 5
 
@@ -384,10 +392,10 @@ def _multiscale_ssim_compute(
 
     for _ in range(len(betas)):
         sim, contrast_sensitivity = _get_normalized_sim_and_cs(
-            preds, target, gaussian_kernel, sigma, kernel_size, reduction, data_range, k1, k2, normalize=normalize
+            preds, target, gaussian_kernel, sigma, kernel_size, data_range, k1, k2, normalize=normalize
         )
-        sim_list.append(sim)
-        cs_list.append(contrast_sensitivity)
+        mcs_list.append(contrast_sensitivity)
+
         if len(kernel_size) == 2:
             preds = F.avg_pool2d(preds, (2, 2))
             target = F.avg_pool2d(target, (2, 2))
@@ -396,23 +404,38 @@ def _multiscale_ssim_compute(
             target = F.avg_pool3d(target, (2, 2, 2))
         else:
             raise ValueError("length of kernel_size is neither 2 nor 3")
-    sim_stack = torch.stack(sim_list)
-    cs_stack = torch.stack(cs_list)
+
+    mcs_list[-1] = sim
+    mcs_stack = torch.stack(mcs_list)
 
     if normalize == "simple":
-        sim_stack = (sim_stack + 1) / 2
-        cs_stack = (cs_stack + 1) / 2
+        mcs_stack = (mcs_stack + 1) / 2
 
-    if reduction is None or reduction == "none":
-        betas = torch.tensor(betas).unsqueeze(1).repeat(1, sim_stack.shape[0])
-        sim_stack = sim_stack ** torch.tensor(betas, device=sim_stack.device)
-        cs_stack = cs_stack ** torch.tensor(betas, device=cs_stack.device)
-        cs_and_sim = torch.cat((cs_stack[:-1], sim_stack[-1:]), axis=0)
-        return torch.prod(cs_and_sim, axis=0)
-    else:
-        sim_stack = sim_stack ** torch.tensor(betas, device=sim_stack.device)
-        cs_stack = cs_stack ** torch.tensor(betas, device=cs_stack.device)
-        return torch.prod(cs_stack[:-1]) * sim_stack[-1]
+    betas = torch.tensor(betas, device=mcs_stack.device).view(-1, 1)
+    mcs_weighted = mcs_stack**betas
+    mcs_per_image = torch.prod(mcs_weighted, axis=0)
+
+    return mcs_per_image
+
+
+def _multiscale_ssim_compute(
+    mcs_per_image: Tensor,
+    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
+) -> Tensor:
+    """Applies the specified reduction to pre-computed multi-scale structural similarity.
+
+    Args:
+        mcs_per_image: per image similarities for a batch of images.
+        reduction: a method to reduce metric score over individual batch scores
+
+                - ``'elementwise_mean'``: takes the mean
+                - ``'sum'``: takes the sum
+                - ``'none'`` or ``None``: no reduction will be applied
+
+    Returns:
+        The reduced multi-scale structural similarity
+    """
+    return reduce(mcs_per_image, reduction)
 
 
 def multiscale_structural_similarity_index_measure(
@@ -426,7 +449,7 @@ def multiscale_structural_similarity_index_measure(
     k1: float = 0.01,
     k2: float = 0.03,
     betas: Tuple[float, ...] = (0.0448, 0.2856, 0.3001, 0.2363, 0.1333),
-    normalize: Optional[Literal["relu", "simple"]] = None,
+    normalize: Optional[Literal["relu", "simple"]] = "relu",
 ) -> Tensor:
     """Computes `MultiScaleSSIM`_, Multi-scale Structual Similarity Index Measure, which is a generalization of
     Structual Similarity Index Measure by incorporating image details at different resolution scores.
@@ -468,10 +491,10 @@ def multiscale_structural_similarity_index_measure(
 
     Example:
         >>> from torchmetrics.functional import multiscale_structural_similarity_index_measure
-        >>> preds = torch.rand([1, 1, 256, 256], generator=torch.manual_seed(42))
+        >>> preds = torch.rand([3, 3, 256, 256], generator=torch.manual_seed(42))
         >>> target = preds * 0.75
-        >>> multiscale_structural_similarity_index_measure(preds, target)
-        tensor(0.9558)
+        >>> multiscale_structural_similarity_index_measure(preds, target, data_range=1.0)
+        tensor(0.9627)
 
     References:
         [1] Multi-Scale Structural Similarity For Image Quality Assessment by Zhou Wang, Eero P. Simoncelli and Alan C.
@@ -484,7 +507,8 @@ def multiscale_structural_similarity_index_measure(
     if normalize and normalize not in ("relu", "simple"):
         raise ValueError("Argument `normalize` to be expected either `None` or one of 'relu' or 'simple'")
 
-    preds, target = _ssim_update(preds, target)
-    return _multiscale_ssim_compute(
-        preds, target, gaussian_kernel, sigma, kernel_size, reduction, data_range, k1, k2, betas, normalize
+    preds, target = _ssim_check_inputs(preds, target)
+    mcs_per_image = _multiscale_ssim_update(
+        preds, target, gaussian_kernel, sigma, kernel_size, data_range, k1, k2, betas, normalize
     )
+    return _multiscale_ssim_compute(mcs_per_image, reduction)

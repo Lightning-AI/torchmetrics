@@ -17,6 +17,7 @@ from functools import partial
 import numpy as np
 import pytest
 import torch
+from pytorch_msssim import ssim
 from skimage.metrics import structural_similarity
 from torch import Tensor
 
@@ -111,6 +112,19 @@ def _sk_ssim(
         return results, fullimages
 
 
+def _pt_ssim(
+    preds,
+    target,
+    data_range,
+    sigma,
+    kernel_size=11,
+    reduction_arg="elementwise_mean",
+):
+    results = ssim(target, preds, data_range=data_range, win_size=kernel_size, win_sigma=sigma, size_average=False)
+
+    return results if reduction_arg != "sum" else results.sum()
+
+
 @pytest.mark.parametrize(
     "preds, target",
     [(i.preds, i.target) for i in _inputs],
@@ -121,13 +135,29 @@ class TestSSIM(MetricTester):
 
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_ssim(self, preds, target, sigma, ddp, dist_sync_on_step):
+    def test_ssim_sk(self, preds, target, sigma, ddp, dist_sync_on_step):
         self.run_class_metric_test(
             ddp,
             preds,
             target,
             StructuralSimilarityIndexMeasure,
             partial(_sk_ssim, data_range=1.0, sigma=sigma, kernel_size=None),
+            metric_args={
+                "data_range": 1.0,
+                "sigma": sigma,
+            },
+            dist_sync_on_step=dist_sync_on_step,
+        )
+
+    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
+    def test_ssim_pt(self, preds, target, sigma, ddp, dist_sync_on_step):
+        self.run_class_metric_test(
+            ddp,
+            preds,
+            target,
+            StructuralSimilarityIndexMeasure,
+            partial(_pt_ssim, data_range=1.0, sigma=sigma),
             metric_args={
                 "data_range": 1.0,
                 "sigma": sigma,
@@ -153,12 +183,22 @@ class TestSSIM(MetricTester):
         )
 
     @pytest.mark.parametrize("reduction_arg", ["sum", "elementwise_mean", None])
-    def test_ssim_functional(self, preds, target, sigma, reduction_arg):
+    def test_ssim_functional_sk(self, preds, target, sigma, reduction_arg):
         self.run_functional_metric_test(
             preds,
             target,
             structural_similarity_index_measure,
             partial(_sk_ssim, data_range=1.0, sigma=sigma, kernel_size=None, reduction_arg=reduction_arg),
+            metric_args={"data_range": 1.0, "sigma": sigma, "reduction": reduction_arg},
+        )
+
+    @pytest.mark.parametrize("reduction_arg", ["sum", "elementwise_mean", None])
+    def test_ssim_functional_pt(self, preds, target, sigma, reduction_arg):
+        self.run_functional_metric_test(
+            preds,
+            target,
+            structural_similarity_index_measure,
+            partial(_pt_ssim, data_range=1.0, sigma=sigma, reduction_arg=reduction_arg),
             metric_args={"data_range": 1.0, "sigma": sigma, "reduction": reduction_arg},
         )
 
