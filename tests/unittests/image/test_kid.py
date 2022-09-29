@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import pickle
+from contextlib import nullcontext as does_not_raise
 
 import pytest
 import torch
@@ -189,3 +190,19 @@ def test_reset_real_features_arg(reset_real_features):
     else:
         assert len(metric.real_features) == 1
         assert list(metric.real_features[0].shape) == [2, 64]
+
+
+@pytest.mark.parametrize(
+    "normalize, expectation, message",
+    [
+        (True, does_not_raise(), None),
+        (False, pytest.raises(ValueError), "Expecting image as torch.Tensor with dtype=torch.uint8"),
+    ],
+)
+def test_normalize_arg(normalize, expectation, message):
+    """Test that normalize argument works as expected."""
+    img = torch.rand(2, 3, 299, 299)
+    metric = KernelInceptionDistance(normalize=normalize)
+    with expectation as e:
+        metric.update(img, real=True)
+    assert message is None or message in str(e)
