@@ -70,8 +70,6 @@ def total_variation(img: Tensor, reduction: Literal["mean", "sum", "none", None]
         >>> img = torch.rand(5, 3, 28, 28)
         >>> total_variation(img)
         tensor(7546.8018)
-        >>> total_variation(img, reduction=None)
-        tensor([1475.1860, 1530.8628, 1538.2046, 1494.1165, 1508.4319])
     """
     # code adapted from:
     # from kornia.losses import total_variation as kornia_total_variation
