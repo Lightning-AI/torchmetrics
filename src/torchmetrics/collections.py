@@ -115,9 +115,9 @@ class MetricCollection(ModuleDict):
         ...     compute_groups=[['Accuracy', 'Precision'], ['MeanSquaredError']]
         ... )
         >>> metrics.update(preds, target)
-        >>> pprint(metrics.compute())
+        >>> ppprint(metrics.compute())
         {'Accuracy': tensor(0.1250), 'MeanSquaredError': tensor(2.3750), 'Precision': tensor(0.0667)}
-        >>> print(metrics.compute_groups)
+        >>> pprint(metrics.compute_groups)
         {0: ['Accuracy', 'Precision'] 1: ['MeanSquaredError']}
 
     Example (nested metric collections):
