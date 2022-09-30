@@ -26,10 +26,12 @@ class TotalVariation(Metric):
     """Computes Total Variation loss (`TV`_).
 
     Args:
-        reduction: a method to reduce metric score over samples.
+        reduction: a method to reduce metric score over samples
+
             - ``'mean'``: takes the mean over samples
             - ``'sum'``: takes the sum over samples
             - ``None`` or ``'none': return the score per sample
+
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
