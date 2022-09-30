@@ -50,9 +50,10 @@ def total_variation(img: Tensor, reduction: Literal["mean", "sum", "none", None]
     Args:
         img: A `Tensor` of shape `(N, C, H, W)` consisting of images
         reduction: a method to reduce metric score over samples.
+
             - ``'mean'``: takes the mean over samples
             - ``'sum'``: takes the sum over samples
-            - ``None`` or ``'none': return the score per sample
+            - ``None`` or ``'none'``: return the score per sample
 
     Returns:
         A loss scalar value containing the total variation
