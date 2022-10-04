@@ -33,8 +33,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class BinaryRecallAtFixedPrecision(BinaryPrecisionRecallCurve):
-    r"""
-    Computes the higest possible recall value given the minimum precision thresholds provided. This is done by
+    r"""Computes the higest possible recall value given the minimum precision thresholds provided. This is done by
     first calculating the precision-recall curve for different thresholds and the find the recall for a given
     precision level.
 
@@ -115,8 +114,7 @@ class BinaryRecallAtFixedPrecision(BinaryPrecisionRecallCurve):
 
 
 class MulticlassRecallAtFixedPrecision(MulticlassPrecisionRecallCurve):
-    r"""
-    Computes the higest possible recall value given the minimum precision thresholds provided. This is done by
+    r"""Computes the higest possible recall value given the minimum precision thresholds provided. This is done by
     first calculating the precision-recall curve for different thresholds and the find the recall for a given
     precision level.
 
@@ -206,8 +204,7 @@ class MulticlassRecallAtFixedPrecision(MulticlassPrecisionRecallCurve):
 
 
 class MultilabelRecallAtFixedPrecision(MultilabelPrecisionRecallCurve):
-    r"""
-    Computes the higest possible recall value given the minimum precision thresholds provided. This is done by
+    r"""Computes the higest possible recall value given the minimum precision thresholds provided. This is done by
     first calculating the precision-recall curve for different thresholds and the find the recall for a given
     precision level.
 

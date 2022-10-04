@@ -22,8 +22,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class AUC(Metric):
-    r"""
-    Computes Area Under the Curve (AUC) using the trapezoidal rule
+    r"""Computes Area Under the Curve (AUC) using the trapezoidal rule.
 
     Forward accepts two input tensors that should be 1D and have the same number
     of elements

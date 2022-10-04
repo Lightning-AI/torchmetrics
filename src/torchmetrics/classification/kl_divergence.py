@@ -62,7 +62,6 @@ class KLDivergence(_KLDivergence):
         >>> q = torch.tensor([[1/3, 1/3, 1/3]])
         >>> kl_divergence(p, q)
         tensor(0.0853)
-
     """
 
     def __init__(

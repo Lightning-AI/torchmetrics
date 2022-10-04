@@ -96,8 +96,7 @@ sqrtm = MatrixSquareRoot.apply
 
 
 def _compute_fid(mu1: Tensor, sigma1: Tensor, mu2: Tensor, sigma2: Tensor, eps: float = 1e-6) -> Tensor:
-    r"""
-    Adjusted version of `Fid Score`_
+    r"""Adjusted version of `Fid Score`_
 
     The Frechet Inception Distance between two multivariate Gaussians X_x ~ N(mu_1, sigm_1)
     and X_y ~ N(mu_2, sigm_2) is d^2 = ||mu_1 - mu_2||^2 + Tr(sigm_1 + sigm_2 - 2*sqrt(sigm_1*sigm_2)).
@@ -126,8 +125,8 @@ def _compute_fid(mu1: Tensor, sigma1: Tensor, mu2: Tensor, sigma2: Tensor, eps: 
 
 
 class FrechetInceptionDistance(Metric):
-    r"""
-    Calculates Fréchet inception distance (FID_) which is used to access the quality of generated images. Given by
+    r"""Calculates Fréchet inception distance (FID_) which is used to access the quality of generated images. Given
+    by.
 
     .. math::
         FID = |\mu - \mu_w| + tr(\Sigma + \Sigma_w - 2(\Sigma \Sigma_w)^{\frac{1}{2}})
@@ -194,7 +193,6 @@ class FrechetInceptionDistance(Metric):
         >>> fid.update(imgs_dist2, real=False)
         >>> fid.compute()
         tensor(12.7202)
-
     """
 
     higher_is_better: bool = False

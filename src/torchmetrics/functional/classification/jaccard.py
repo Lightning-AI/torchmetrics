@@ -91,10 +91,10 @@ def binary_jaccard_index(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculates the Jaccard index for binary tasks. The `Jaccard index`_ (also known as
-    the intersetion over union or jaccard similarity coefficient) is an statistic that can be
-    used to determine the similarity and diversity of a sample set. It is defined as the size
-    of the intersection divided by the union of the sample sets:
+    r"""Calculates the Jaccard index for binary tasks. The `Jaccard index`_ (also known as the intersetion over
+    union or jaccard similarity coefficient) is an statistic that can be used to determine the similarity and
+    diversity of a sample set. It is defined as the size of the intersection divided by the union of the sample
+    sets:
 
     .. math:: J(A,B) = \frac{|A\cap B|}{|A\cup B|}
 
@@ -163,10 +163,10 @@ def multiclass_jaccard_index(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculates the Jaccard index for multiclass tasks. The `Jaccard index`_ (also known as
-    the intersetion over union or jaccard similarity coefficient) is an statistic that can be
-    used to determine the similarity and diversity of a sample set. It is defined as the size
-    of the intersection divided by the union of the sample sets:
+    r"""Calculates the Jaccard index for multiclass tasks. The `Jaccard index`_ (also known as the intersetion over
+    union or jaccard similarity coefficient) is an statistic that can be used to determine the similarity and
+    diversity of a sample set. It is defined as the size of the intersection divided by the union of the sample
+    sets:
 
     .. math:: J(A,B) = \frac{|A\cap B|}{|A\cup B|}
 
@@ -243,10 +243,10 @@ def multilabel_jaccard_index(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculates the Jaccard index for multilabel tasks. The `Jaccard index`_ (also known as
-    the intersetion over union or jaccard similarity coefficient) is an statistic that can be
-    used to determine the similarity and diversity of a sample set. It is defined as the size
-    of the intersection divided by the union of the sample sets:
+    r"""Calculates the Jaccard index for multilabel tasks. The `Jaccard index`_ (also known as the intersetion over
+    union or jaccard similarity coefficient) is an statistic that can be used to determine the similarity and
+    diversity of a sample set. It is defined as the size of the intersection divided by the union of the sample
+    sets:
 
     .. math:: J(A,B) = \frac{|A\cap B|}{|A\cup B|}
 
@@ -289,7 +289,6 @@ def multilabel_jaccard_index(
         >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> multilabel_jaccard_index(preds, target, num_labels=3)
         tensor(0.5000)
-
     """
     if validate_args:
         _multilabel_jaccard_index_arg_validation(num_labels, threshold, ignore_index)
@@ -383,9 +382,10 @@ def jaccard_index(
     num_labels: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
+    r"""Jaccard index.
+
     .. note::
-        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
         metric. Moving forward we recommend using these versions. This base metric will still work as it did
         prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
         and the general order of arguments may change, such that this metric will just function as an single
@@ -464,7 +464,7 @@ def jaccard_index(
         )
     else:
         rank_zero_warn(
-            "From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification"
+            "From v0.10 an `'binary_*'`, `'multiclass_*'`, `'multilabel_*'` version now exist of each classification"
             " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
             " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
             " and the general order of arguments may change, such that this metric will just function as an single"

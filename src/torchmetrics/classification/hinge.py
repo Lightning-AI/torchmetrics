@@ -110,7 +110,7 @@ class BinaryHingeLoss(Metric):
 
 
 class MulticlassHingeLoss(Metric):
-    r"""Computes the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs) for multiclass tasks
+    r"""Computes the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs) for multiclass tasks.
 
     The metric can be computed in two ways. Either, the definition by Crammer and Singer is used:
 
@@ -206,9 +206,10 @@ class MulticlassHingeLoss(Metric):
 
 
 class HingeLoss(Metric):
-    r"""
+    r"""Hinge Loss.
+
     .. note::
-        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
         metric. Moving forward we recommend using these versions. This base metric will still work as it did
         prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
         and the general order of arguments may change, such that this metric will just function as an single
@@ -279,7 +280,6 @@ class HingeLoss(Metric):
         >>> hinge = HingeLoss(multiclass_mode="one-vs-all")
         >>> hinge(preds, target)
         tensor([2.2333, 1.5000, 1.2333])
-
     """
     is_differentiable: bool = True
     higher_is_better: bool = False
