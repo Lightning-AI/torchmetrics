@@ -272,7 +272,7 @@ Example:
      'Recall': tensor(0.1111)}
 
 Similarly it can also reduce the amount of code required to log multiple metrics
-inside your LightningModule
+inside your LightningModule. In most cases we just have to replace ``self.log`` with ``self.log_dict``.
 
 .. testcode::
 
@@ -295,9 +295,12 @@ inside your LightningModule
         def validation_step(self, batch, batch_idx):
             logits = self(x)
             # ...
-            output = self.valid_metrics(logits, y)
+            self.valid_metrics.update(logits, y)
+
+        def validation_epoch_end(self, outputs):
             # use log_dict instead of log
             # metrics are logged with keys: val_Accuracy, val_Precision and val_Recall
+            output = self.valid_metric.compute()
             self.log_dict(output)
 
 .. note::
@@ -308,14 +311,16 @@ inside your LightningModule
 
 An additional advantage of using the ``MetricCollection`` object is that it will
 automatically try to reduce the computations needed by finding groups of metrics
-that share the same underlying metric state. If such a group of metrics is found only one
-of them is actually updated and the updated state will be broadcasted to the rest
-of the metrics within the group. In the example above, this will lead to a 2x-3x lower computational
-cost compared to disabling this feature. However, this speedup comes with a fixed cost upfront, where
-the state-groups have to be determined after the first update. This overhead can be significantly higher then gains speed-up for very
-a low number of steps (approx. up to 100) but still leads to an overall speedup for everything beyond that.
-In case the groups are known beforehand, these can also be set manually to avoid this extra cost of the
-dynamic search. See the *compute_groups* argument in the class docs below for more information on this topic.
+that share the same underlying metric state. If such a group of metrics is found
+only one of them is actually updated and the updated state will be broadcasted to
+the rest of the metrics within the group. In the example above, this will lead to
+a 2x-3x lower computational cost compared to disabling this feature in the case of
+the validation metrics where only ``update`` is called (this feature does not work
+in combination with ``forward``). However, this speedup comes with a fixed cost upfront,
+where the state-groups have to be determined after the first update. In case the groups
+are known beforehand, these can also be set manually to avoid this extra cost of the
+dynamic search. See the *compute_groups* argument in the class docs below for more
+information on this topic.
 
 .. autoclass:: torchmetrics.MetricCollection
     :noindex:
