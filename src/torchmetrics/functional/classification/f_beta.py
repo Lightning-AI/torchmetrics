@@ -803,9 +803,10 @@ def fbeta_score(
     multidim_average: Optional[Literal["global", "samplewise"]] = "global",
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
+    r"""F-Beta score
+
     .. note::
-        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
         metric. Moving forward we recommend using these versions. This base metric will still work as it did
         prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
         and the general order of arguments may change, such that this metric will just function as an single
@@ -926,7 +927,7 @@ def fbeta_score(
         )
     else:
         rank_zero_warn(
-            "From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification"
+            "From v0.10 an `'binary_*'`, `'multiclass_*'`, `'multilabel_*'` version now exist of each classification"
             " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
             " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
             " and the general order of arguments may change, such that this metric will just function as an single"
@@ -978,15 +979,16 @@ def f1_score(
     multidim_average: Optional[Literal["global", "samplewise"]] = "global",
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
+    r"""F1 score
+
     .. note::
-        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
         metric. Moving forward we recommend using these versions. This base metric will still work as it did
         prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
         and the general order of arguments may change, such that this metric will just function as an single
         entrypoint to calling the three specialized versions.
 
-    Computes F1 metric. F1 metrics correspond to a equally weighted average of the precision and recall scores.
+    Computes F1 metric. F1 metrics correspond to equally weighted average of the precision and recall scores.
 
     Works with binary, multiclass, and multilabel data.
     Accepts probabilities or logits from a model output or integer class values in prediction.
@@ -1099,7 +1101,7 @@ def f1_score(
         )
     else:
         rank_zero_warn(
-            "From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification"
+            "From v0.10 an `'binary_*'`, `'multiclass_*'`, `'multilabel_*'` version now exist of each classification"
             " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
             " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
             " and the general order of arguments may change, such that this metric will just function as an single"

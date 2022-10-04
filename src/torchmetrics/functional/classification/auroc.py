@@ -610,9 +610,10 @@ def auroc(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tensor, Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    r"""
+    r"""Area Under the Receiver Operating Characteristic Curve
+
     .. note::
-        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
         metric. Moving forward we recommend using these versions. This base metric will still work as it did
         prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
         and the general order of arguments may change, such that this metric will just function as an single
@@ -694,7 +695,7 @@ def auroc(
         )
     else:
         rank_zero_warn(
-            "From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification"
+            "From v0.10 an `'binary_*'`, `'multiclass_*'`, `'multilabel_*'` version now exist of each classification"
             " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
             " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
             " and the general order of arguments may change, such that this metric will just function as an single"

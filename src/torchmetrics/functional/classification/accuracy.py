@@ -635,9 +635,10 @@ def accuracy(
     multidim_average: Optional[Literal["global", "samplewise"]] = "global",
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
+    r"""Accuracy
+
     .. note::
-        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
         metric. Moving forward we recommend using these versions. This base metric will still work as it did
         prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
         and the general order of arguments may change, such that this metric will just function as an single
@@ -786,7 +787,7 @@ def accuracy(
         )
     else:
         rank_zero_warn(
-            "From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification"
+            "From v0.10 an `'binary_*'`, `'multiclass_*'`, `'multilabel_*'` version now exist of each classification"
             " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
             " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
             " and the general order of arguments may change, such that this metric will just function as an single"
