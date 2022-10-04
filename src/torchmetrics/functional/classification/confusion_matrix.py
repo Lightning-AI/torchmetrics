@@ -166,8 +166,7 @@ def binary_confusion_matrix(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
-    Computes the `confusion matrix`_ for binary tasks.
+    r"""Computes the `confusion matrix`_ for binary tasks.
 
     Accepts the following input tensors:
 
@@ -351,8 +350,7 @@ def multiclass_confusion_matrix(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
-    Computes the `confusion matrix`_ for multiclass tasks.
+    r"""Computes the `confusion matrix`_ for multiclass tasks.
 
     Accepts the following input tensors:
 
@@ -538,8 +536,7 @@ def multilabel_confusion_matrix(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
-    Computes the `confusion matrix`_ for multilabel tasks.
+    r"""Computes the `confusion matrix`_ for multilabel tasks.
 
     Accepts the following input tensors:
 
@@ -698,7 +695,7 @@ def confusion_matrix(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Confusion matrix
+    r"""Confusion matrix.
 
     .. note::
         From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
@@ -766,7 +763,6 @@ def confusion_matrix(
         tensor([[[1, 0], [0, 1]],
                 [[1, 0], [1, 0]],
                 [[0, 1], [0, 1]]])
-
     """
     if task is not None:
         if task == "binary":

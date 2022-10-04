@@ -84,8 +84,8 @@ def binary_cohen_kappa(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculates `Cohen's kappa score`_ that measures inter-annotator agreement for binary
-    tasks. It is defined as
+    r"""Calculates `Cohen's kappa score`_ that measures inter-annotator agreement for binary tasks. It is defined
+    as.
 
     .. math::
         \kappa = (p_o - p_e) / (1 - p_e)
@@ -132,7 +132,6 @@ def binary_cohen_kappa(
         >>> preds = torch.tensor([0.35, 0.85, 0.48, 0.01])
         >>> binary_cohen_kappa(preds, target)
         tensor(0.5000)
-
     """
     if validate_args:
         _binary_cohen_kappa_arg_validation(threshold, ignore_index, weights)
@@ -167,8 +166,8 @@ def multiclass_cohen_kappa(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculates `Cohen's kappa score`_ that measures inter-annotator agreement for multiclass
-    tasks. It is defined as
+    r"""Calculates `Cohen's kappa score`_ that measures inter-annotator agreement for multiclass tasks. It is
+    defined as.
 
     .. math::
         \kappa = (p_o - p_e) / (1 - p_e)
@@ -222,7 +221,6 @@ def multiclass_cohen_kappa(
         ... ])
         >>> multiclass_cohen_kappa(preds, target, num_classes=3)
         tensor(0.6364)
-
     """
     if validate_args:
         _multiclass_cohen_kappa_arg_validation(num_classes, ignore_index, weights)
@@ -291,7 +289,7 @@ def cohen_kappa(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Cohen's kappa
+    r"""Cohen's kappa.
 
     .. note::
         From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification

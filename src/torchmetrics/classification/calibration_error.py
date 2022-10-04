@@ -36,8 +36,8 @@ from torchmetrics.utilities.prints import rank_zero_warn
 
 class BinaryCalibrationError(Metric):
     r"""`Computes the Top-label Calibration Error`_ for binary tasks. The expected calibration error can be used to
-    quantify how well a given model is calibrated e.g. how well the predicted output probabilities of the model matches
-    the actual probabilities of the ground truth distribution.
+    quantify how well a given model is calibrated e.g. how well the predicted output probabilities of the model
+    matches the actual probabilities of the ground truth distribution.
 
     Three different norms are implemented, each corresponding to variations on the calibration error metric.
 
@@ -126,9 +126,9 @@ class BinaryCalibrationError(Metric):
 
 
 class MulticlassCalibrationError(Metric):
-    r"""`Computes the Top-label Calibration Error`_ for multiclass tasks. The expected calibration error can be used to
-    quantify how well a given model is calibrated e.g. how well the predicted output probabilities of the model matches
-    the actual probabilities of the ground truth distribution.
+    r"""`Computes the Top-label Calibration Error`_ for multiclass tasks. The expected calibration error can be used
+    to quantify how well a given model is calibrated e.g. how well the predicted output probabilities of the model
+    matches the actual probabilities of the ground truth distribution.
 
     Three different norms are implemented, each corresponding to variations on the calibration error metric.
 
@@ -223,7 +223,7 @@ class MulticlassCalibrationError(Metric):
 
 
 class CalibrationError(Metric):
-    r"""Calibration Error
+    r"""Calibration Error.
 
     .. note::
         From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification

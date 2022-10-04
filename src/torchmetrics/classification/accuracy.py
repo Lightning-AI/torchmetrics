@@ -311,7 +311,6 @@ class MultilabelAccuracy(MultilabelStatScores):
         >>> metric(preds, target)
         tensor([[0.5000, 0.5000, 0.0000],
                 [0.0000, 0.0000, 0.5000]])
-
     """
     is_differentiable = False
     higher_is_better = True
@@ -325,7 +324,7 @@ class MultilabelAccuracy(MultilabelStatScores):
 
 
 class Accuracy(StatScores):
-    r"""Accuracy
+    r"""Accuracy.
 
     .. note::
         From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
@@ -456,7 +455,6 @@ class Accuracy(StatScores):
         >>> accuracy = Accuracy(top_k=2)
         >>> accuracy(preds, target)
         tensor(0.6667)
-
     """
     is_differentiable = False
     higher_is_better = True

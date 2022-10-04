@@ -88,8 +88,7 @@ def binary_average_precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
-    Computes the average precision (AP) score for binary tasks. The AP score summarizes a precision-recall curve
+    r"""Computes the average precision (AP) score for binary tasks. The AP score summarizes a precision-recall curve
     as an weighted mean of precisions at each threshold, with the difference in recall from the previous threshold
     as weight:
 
@@ -189,8 +188,7 @@ def multiclass_average_precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
-    Computes the average precision (AP) score for binary tasks. The AP score summarizes a precision-recall curve
+    r"""Computes the average precision (AP) score for binary tasks. The AP score summarizes a precision-recall curve
     as an weighted mean of precisions at each threshold, with the difference in recall from the previous threshold
     as weight:
 
@@ -259,7 +257,6 @@ def multiclass_average_precision(
         tensor(0.5000)
         >>> multiclass_average_precision(preds, target, num_classes=5, average=None, thresholds=5)
         tensor([1.0000, 1.0000, 0.2500, 0.2500, -0.0000])
-
     """
     if validate_args:
         _multiclass_average_precision_arg_validation(num_classes, average, thresholds, ignore_index)
@@ -320,8 +317,7 @@ def multilabel_average_precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
-    Computes the average precision (AP) score for binary tasks. The AP score summarizes a precision-recall curve
+    r"""Computes the average precision (AP) score for binary tasks. The AP score summarizes a precision-recall curve
     as an weighted mean of precisions at each threshold, with the difference in recall from the previous threshold
     as weight:
 
@@ -566,7 +562,7 @@ def average_precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[List[Tensor], Tensor]:
-    r"""Average precision
+    r"""Average precision.
 
     .. note::
         From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification

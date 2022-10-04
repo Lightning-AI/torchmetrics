@@ -86,8 +86,7 @@ def binary_recall_at_fixed_precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tuple[Tensor, Tensor]:
-    r"""
-    Computes the higest possible recall value given the minimum precision thresholds provided. This is done by
+    r"""Computes the higest possible recall value given the minimum precision thresholds provided. This is done by
     first calculating the precision-recall curve for different thresholds and the find the recall for a given
     precision level.
 
@@ -186,8 +185,7 @@ def multiclass_recall_at_fixed_precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tuple[Tensor, Tensor]:
-    r"""
-    Computes the higest possible recall value given the minimum precision thresholds provided. This is done by
+    r"""Computes the higest possible recall value given the minimum precision thresholds provided. This is done by
     first calculating the precision-recall curve for different thresholds and the find the recall for a given
     precision level.
 
@@ -295,8 +293,7 @@ def multilabel_recall_at_fixed_precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tuple[Tensor, Tensor]:
-    r"""
-    Computes the higest possible recall value given the minimum precision thresholds provided. This is done by
+    r"""Computes the higest possible recall value given the minimum precision thresholds provided. This is done by
     first calculating the precision-recall curve for different thresholds and the find the recall for a given
     precision level.
 

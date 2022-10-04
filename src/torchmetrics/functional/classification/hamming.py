@@ -377,7 +377,6 @@ def multilabel_hamming_distance(
         >>> multilabel_hamming_distance(preds, target, num_labels=3, multidim_average='samplewise', average=None)
         tensor([[0.5000, 0.5000, 1.0000],
                 [1.0000, 1.0000, 0.5000]])
-
     """
     if validate_args:
         _multilabel_stat_scores_arg_validation(num_labels, threshold, average, multidim_average, ignore_index)
@@ -440,7 +439,7 @@ def hamming_distance(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Hamming distance
+    r"""Hamming distance.
 
     .. note::
         From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification

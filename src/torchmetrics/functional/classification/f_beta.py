@@ -87,8 +87,7 @@ def binary_fbeta_score(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
-    Computes `F-score`_ metric for binary tasks:
+    r"""Computes `F-score`_ metric for binary tasks:
 
     .. math::
         F_{\beta} = (1 + \beta^2) * \frac{\text{precision} * \text{recall}}
@@ -183,8 +182,7 @@ def multiclass_fbeta_score(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
-    Computes `F-score`_ metric for multiclass tasks:
+    r"""Computes `F-score`_ metric for multiclass tasks:
 
     .. math::
         F_{\beta} = (1 + \beta^2) * \frac{\text{precision} * \text{recall}}
@@ -305,8 +303,7 @@ def multilabel_fbeta_score(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
-    Computes `F-score`_ metric for multilabel tasks:
+    r"""Computes `F-score`_ metric for multilabel tasks:
 
     .. math::
         F_{\beta} = (1 + \beta^2) * \frac{\text{precision} * \text{recall}}
@@ -393,7 +390,6 @@ def multilabel_fbeta_score(
         >>> multilabel_fbeta_score(preds, target, num_labels=3, beta=2.0, multidim_average='samplewise', average=None)
         tensor([[0.8333, 0.8333, 0.0000],
                 [0.0000, 0.0000, 0.0000]])
-
     """
     if validate_args:
         _multilabel_fbeta_score_arg_validation(beta, num_labels, threshold, average, multidim_average, ignore_index)
@@ -411,8 +407,7 @@ def binary_f1_score(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
-    Computes F-1 score for binary tasks:
+    r"""Computes F-1 score for binary tasks:
 
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
@@ -494,8 +489,7 @@ def multiclass_f1_score(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
-    Computes F-1 score for multiclass tasks:
+    r"""Computes F-1 score for multiclass tasks:
 
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
@@ -605,8 +599,7 @@ def multilabel_f1_score(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
-    Computes F-1 score for multilabel tasks:
+    r"""Computes F-1 score for multilabel tasks:
 
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
@@ -691,7 +684,6 @@ def multilabel_f1_score(
         >>> multilabel_f1_score(preds, target, num_labels=3, multidim_average='samplewise', average=None)
         tensor([[0.6667, 0.6667, 0.0000],
                 [0.0000, 0.0000, 0.0000]])
-
     """
     return multilabel_fbeta_score(
         preds=preds,
@@ -803,7 +795,7 @@ def fbeta_score(
     multidim_average: Optional[Literal["global", "samplewise"]] = "global",
     validate_args: bool = True,
 ) -> Tensor:
-    r"""F-Beta score
+    r"""F-Beta score.
 
     .. note::
         From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
@@ -905,7 +897,6 @@ def fbeta_score(
         >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])
         >>> fbeta_score(preds, target, num_classes=3, beta=0.5)
         tensor(0.3333)
-
     """
     if task is not None:
         assert multidim_average is not None
@@ -979,7 +970,7 @@ def f1_score(
     multidim_average: Optional[Literal["global", "samplewise"]] = "global",
     validate_args: bool = True,
 ) -> Tensor:
-    r"""F1 score
+    r"""F1 score.
 
     .. note::
         From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification

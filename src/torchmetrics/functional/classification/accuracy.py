@@ -375,7 +375,6 @@ def multilabel_accuracy(
         >>> multilabel_accuracy(preds, target, num_labels=3, multidim_average='samplewise', average=None)
         tensor([[0.5000, 0.5000, 0.0000],
                 [0.0000, 0.0000, 0.5000]])
-
     """
     if validate_args:
         _multilabel_stat_scores_arg_validation(num_labels, threshold, average, multidim_average, ignore_index)
@@ -635,7 +634,7 @@ def accuracy(
     multidim_average: Optional[Literal["global", "samplewise"]] = "global",
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Accuracy
+    r"""Accuracy.
 
     .. note::
         From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification

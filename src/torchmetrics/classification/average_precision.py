@@ -37,8 +37,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class BinaryAveragePrecision(BinaryPrecisionRecallCurve):
-    r"""
-    Computes the average precision (AP) score for binary tasks. The AP score summarizes a precision-recall curve
+    r"""Computes the average precision (AP) score for binary tasks. The AP score summarizes a precision-recall curve
     as an weighted mean of precisions at each threshold, with the difference in recall from the previous threshold
     as weight:
 
@@ -107,8 +106,7 @@ class BinaryAveragePrecision(BinaryPrecisionRecallCurve):
 
 
 class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
-    r"""
-    Computes the average precision (AP) score for binary tasks. The AP score summarizes a precision-recall curve
+    r"""Computes the average precision (AP) score for binary tasks. The AP score summarizes a precision-recall curve
     as an weighted mean of precisions at each threshold, with the difference in recall from the previous threshold
     as weight:
 
@@ -180,7 +178,6 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
         >>> metric = MulticlassAveragePrecision(num_classes=5, average=None, thresholds=5)
         >>> metric(preds, target)
         tensor([1.0000, 1.0000, 0.2500, 0.2500, -0.0000])
-
     """
 
     is_differentiable: bool = False
@@ -213,8 +210,7 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
 
 
 class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
-    r"""
-    Computes the average precision (AP) score for binary tasks. The AP score summarizes a precision-recall curve
+    r"""Computes the average precision (AP) score for binary tasks. The AP score summarizes a precision-recall curve
     as an weighted mean of precisions at each threshold, with the difference in recall from the previous threshold
     as weight:
 
@@ -323,7 +319,7 @@ class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
 
 
 class AveragePrecision(Metric):
-    r"""Average Precision
+    r"""Average Precision.
 
     .. note::
         From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification

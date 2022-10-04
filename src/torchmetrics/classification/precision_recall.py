@@ -110,7 +110,7 @@ class BinaryPrecision(BinaryStatScores):
 
 
 class MulticlassPrecision(MulticlassStatScores):
-    r"""Computes `Precision`_ for multiclass tasks
+    r"""Computes `Precision`_ for multiclass tasks.
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 
@@ -215,7 +215,7 @@ class MulticlassPrecision(MulticlassStatScores):
 
 
 class MultilabelPrecision(MultilabelStatScores):
-    r"""Computes `Precision`_ for multilabel tasks
+    r"""Computes `Precision`_ for multilabel tasks.
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 
@@ -306,7 +306,6 @@ class MultilabelPrecision(MultilabelStatScores):
         >>> metric(preds, target)
         tensor([[0.5000, 0.5000, 0.0000],
                 [0.0000, 0.0000, 0.0000]])
-
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
@@ -592,7 +591,6 @@ class MultilabelRecall(MultilabelStatScores):
         >>> metric(preds, target)
         tensor([[1., 1., 0.],
                 [0., 0., 0.]])
-
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
@@ -606,7 +604,7 @@ class MultilabelRecall(MultilabelStatScores):
 
 
 class Precision(StatScores):
-    r"""Precision
+    r"""Precision.
 
     .. note::
         From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
@@ -701,7 +699,6 @@ class Precision(StatScores):
         >>> precision = Precision(average='micro')
         >>> precision(preds, target)
         tensor(0.2500)
-
     """
     is_differentiable = False
     higher_is_better = True
@@ -797,7 +794,7 @@ class Precision(StatScores):
 
 
 class Recall(StatScores):
-    r"""Recall
+    r"""Recall.
 
     .. note::
         From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
@@ -892,7 +889,6 @@ class Recall(StatScores):
         >>> recall = Recall(average='micro')
         >>> recall(preds, target)
         tensor(0.2500)
-
     """
     is_differentiable: bool = False
     higher_is_better: bool = True

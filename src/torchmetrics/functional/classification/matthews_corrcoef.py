@@ -64,8 +64,8 @@ def binary_matthews_corrcoef(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculates `Matthews correlation coefficient`_ for binary tasks. This metric measures
-    the general correlation or quality of a classification.
+    r"""Calculates `Matthews correlation coefficient`_ for binary tasks. This metric measures the general
+    correlation or quality of a classification.
 
     Accepts the following input tensors:
 
@@ -104,7 +104,6 @@ def binary_matthews_corrcoef(
         >>> preds = torch.tensor([0.35, 0.85, 0.48, 0.01])
         >>> binary_matthews_corrcoef(preds, target)
         tensor(0.5774)
-
     """
     if validate_args:
         _binary_confusion_matrix_arg_validation(threshold, ignore_index, normalize=None)
@@ -121,8 +120,8 @@ def multiclass_matthews_corrcoef(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculates `Matthews correlation coefficient`_ for multiclass tasks. This metric measures
-    the general correlation or quality of a classification.
+    r"""Calculates `Matthews correlation coefficient`_ for multiclass tasks. This metric measures the general
+    correlation or quality of a classification.
 
     Accepts the following input tensors:
 
@@ -166,7 +165,6 @@ def multiclass_matthews_corrcoef(
         ... ])
         >>> multiclass_matthews_corrcoef(preds, target, num_classes=3)
         tensor(0.7000)
-
     """
     if validate_args:
         _multiclass_confusion_matrix_arg_validation(num_classes, ignore_index, normalize=None)
@@ -184,8 +182,8 @@ def multilabel_matthews_corrcoef(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculates `Matthews correlation coefficient`_ for multilabel tasks. This metric measures
-    the general correlation or quality of a classification.
+    r"""Calculates `Matthews correlation coefficient`_ for multilabel tasks. This metric measures the general
+    correlation or quality of a classification.
 
     Accepts the following input tensors:
 
@@ -225,7 +223,6 @@ def multilabel_matthews_corrcoef(
         >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> multilabel_matthews_corrcoef(preds, target, num_labels=3)
         tensor(0.3333)
-
     """
     if validate_args:
         _multilabel_confusion_matrix_arg_validation(num_labels, threshold, ignore_index, normalize=None)
@@ -277,7 +274,7 @@ def matthews_corrcoef(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Matthews correlation coefficient
+    r"""Matthews correlation coefficient.
 
     .. note::
         From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
@@ -311,7 +308,6 @@ def matthews_corrcoef(
         >>> preds = torch.tensor([0, 1, 0, 0])
         >>> matthews_corrcoef(preds, target, num_classes=2)
         tensor(0.5774)
-
     """
     if task is not None:
         if task == "binary":

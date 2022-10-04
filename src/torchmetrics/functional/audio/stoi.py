@@ -28,8 +28,8 @@ else:
 def short_time_objective_intelligibility(
     preds: Tensor, target: Tensor, fs: int, extended: bool = False, keep_same_device: bool = False
 ) -> Tensor:
-    r"""STOI (Short-Time Objective Intelligibility, see [2,3]), a wrapper for the pystoi package [1].
-    Note that input will be moved to `cpu` to perform the metric calculation.
+    r"""STOI (Short-Time Objective Intelligibility, see [2,3]), a wrapper for the pystoi package [1]. Note that
+    input will be moved to `cpu` to perform the metric calculation.
 
     Intelligibility measure which is highly correlated with the intelligibility of degraded speech signals, e.g., due
     to additive noise, single/multi-channel noise reduction, binary masking and vocoded speech as in CI simulations.
@@ -75,7 +75,6 @@ def short_time_objective_intelligibility(
 
         [4] J. Jensen and C. H. Taal, 'An Algorithm for Predicting the Intelligibility of Speech Masked by Modulated
         Noise Maskers', IEEE Transactions on Audio, Speech and Language Processing, 2016.
-
     """
     if not _PYSTOI_AVAILABLE:
         raise ModuleNotFoundError(

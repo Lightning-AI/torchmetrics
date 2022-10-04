@@ -36,8 +36,7 @@ from torchmetrics.utilities.prints import rank_zero_warn
 
 
 class BinaryFBetaScore(BinaryStatScores):
-    r"""
-    Computes `F-score`_ metric for binary tasks:
+    r"""Computes `F-score`_ metric for binary tasks:
 
     .. math::
         F_{\beta} = (1 + \beta^2) * \frac{\text{precision} * \text{recall}}
@@ -132,8 +131,7 @@ class BinaryFBetaScore(BinaryStatScores):
 
 
 class MulticlassFBetaScore(MulticlassStatScores):
-    r"""
-    Computes `F-score`_ metric for multiclass tasks:
+    r"""Computes `F-score`_ metric for multiclass tasks:
 
     .. math::
         F_{\beta} = (1 + \beta^2) * \frac{\text{precision} * \text{recall}}
@@ -262,8 +260,7 @@ class MulticlassFBetaScore(MulticlassStatScores):
 
 
 class MultilabelFBetaScore(MultilabelStatScores):
-    r"""
-    Computes `F-score`_ metric for multilabel tasks:
+    r"""Computes `F-score`_ metric for multilabel tasks:
 
     .. math::
         F_{\beta} = (1 + \beta^2) * \frac{\text{precision} * \text{recall}}
@@ -354,7 +351,6 @@ class MultilabelFBetaScore(MultilabelStatScores):
         >>> metric(preds, target)
         tensor([[0.8333, 0.8333, 0.0000],
                 [0.0000, 0.0000, 0.0000]])
-
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
@@ -391,8 +387,7 @@ class MultilabelFBetaScore(MultilabelStatScores):
 
 
 class BinaryF1Score(BinaryFBetaScore):
-    r"""
-    Computes F-1 score for binary tasks:
+    r"""Computes F-1 score for binary tasks:
 
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
@@ -477,8 +472,7 @@ class BinaryF1Score(BinaryFBetaScore):
 
 
 class MulticlassF1Score(MulticlassFBetaScore):
-    r"""
-    Computes F-1 score for multiclass tasks:
+    r"""Computes F-1 score for multiclass tasks:
 
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
@@ -598,8 +592,7 @@ class MulticlassF1Score(MulticlassFBetaScore):
 
 
 class MultilabelF1Score(MultilabelFBetaScore):
-    r"""
-    Computes F-1 score for multilabel tasks:
+    r"""Computes F-1 score for multilabel tasks:
 
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
@@ -688,7 +681,6 @@ class MultilabelF1Score(MultilabelFBetaScore):
         >>> metric(preds, target)
         tensor([[0.6667, 0.6667, 0.0000],
                 [0.0000, 0.0000, 0.0000]])
-
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
@@ -717,7 +709,7 @@ class MultilabelF1Score(MultilabelFBetaScore):
 
 
 class FBetaScore(StatScores):
-    r"""F-Beta Score
+    r"""F-Beta Score.
 
     .. note::
         From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
@@ -821,7 +813,6 @@ class FBetaScore(StatScores):
         >>> f_beta = FBetaScore(num_classes=3, beta=0.5)
         >>> f_beta(preds, target)
         tensor(0.3333)
-
     """
     full_state_update: bool = False
 
@@ -910,7 +901,7 @@ class FBetaScore(StatScores):
 
 
 class F1Score(FBetaScore):
-    r"""F1 Score
+    r"""F1 Score.
 
     .. note::
         From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification

@@ -401,6 +401,7 @@ class MetricCollection(ModuleDict):
 
     def keys(self, keep_base: bool = False) -> Iterable[Hashable]:
         r"""Return an iterable of the ModuleDict key.
+
         Args:
             keep_base: Whether to add prefix/postfix on the items collection.
         """

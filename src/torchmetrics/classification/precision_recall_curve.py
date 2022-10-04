@@ -43,8 +43,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class BinaryPrecisionRecallCurve(Metric):
-    r"""
-    Computes the precision-recall curve for binary tasks. The curve consist of multiple pairs of precision and
+    r"""Computes the precision-recall curve for binary tasks. The curve consist of multiple pairs of precision and
     recall values evaluated at different thresholds, such that the tradeoff between the two values can been seen.
 
     Accepts the following input tensors:
@@ -150,9 +149,9 @@ class BinaryPrecisionRecallCurve(Metric):
 
 
 class MulticlassPrecisionRecallCurve(Metric):
-    r"""
-    Computes the precision-recall curve for multiclass tasks. The curve consist of multiple pairs of precision and
-    recall values evaluated at different thresholds, such that the tradeoff between the two values can been seen.
+    r"""Computes the precision-recall curve for multiclass tasks. The curve consist of multiple pairs of precision
+    and recall values evaluated at different thresholds, such that the tradeoff between the two values can been
+    seen.
 
     Accepts the following input tensors:
 
@@ -285,9 +284,9 @@ class MulticlassPrecisionRecallCurve(Metric):
 
 
 class MultilabelPrecisionRecallCurve(Metric):
-    r"""
-    Computes the precision-recall curve for multilabel tasks. The curve consist of multiple pairs of precision and
-    recall values evaluated at different thresholds, such that the tradeoff between the two values can been seen.
+    r"""Computes the precision-recall curve for multilabel tasks. The curve consist of multiple pairs of precision
+    and recall values evaluated at different thresholds, such that the tradeoff between the two values can been
+    seen.
 
     Accepts the following input tensors:
 
@@ -422,7 +421,7 @@ class MultilabelPrecisionRecallCurve(Metric):
 
 
 class PrecisionRecallCurve(Metric):
-    r"""Precision Recall Curve
+    r"""Precision Recall Curve.
 
     .. note::
         From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification

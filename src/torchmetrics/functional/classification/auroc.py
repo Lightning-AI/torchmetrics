@@ -125,9 +125,8 @@ def binary_auroc(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    r"""
-    Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for binary tasks. The AUROC score
-    summarizes the ROC curve into an single number that describes the performance of a model for multiple
+    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for binary tasks. The AUROC
+    score summarizes the ROC curve into an single number that describes the performance of a model for multiple
     thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
     corresponds to random guessing.
 
@@ -221,9 +220,8 @@ def multiclass_auroc(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
-    Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for multiclass tasks. The AUROC score
-    summarizes the ROC curve into an single number that describes the performance of a model for multiple
+    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for multiclass tasks. The AUROC
+    score summarizes the ROC curve into an single number that describes the performance of a model for multiple
     thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
     corresponds to random guessing.
 
@@ -286,7 +284,6 @@ def multiclass_auroc(
         tensor(0.5333)
         >>> multiclass_auroc(preds, target, num_classes=5, average=None, thresholds=5)
         tensor([1.0000, 1.0000, 0.3333, 0.3333, 0.0000])
-
     """
     if validate_args:
         _multiclass_auroc_arg_validation(num_classes, average, thresholds, ignore_index)
@@ -348,9 +345,8 @@ def multilabel_auroc(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    r"""
-    Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for multilabel tasks. The AUROC score
-    summarizes the ROC curve into an single number that describes the performance of a model for multiple
+    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for multilabel tasks. The AUROC
+    score summarizes the ROC curve into an single number that describes the performance of a model for multiple
     thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
     corresponds to random guessing.
 
@@ -610,7 +606,7 @@ def auroc(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tensor, Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    r"""Area Under the Receiver Operating Characteristic Curve
+    r"""Area Under the Receiver Operating Characteristic Curve.
 
     .. note::
         From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification

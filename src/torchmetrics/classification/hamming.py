@@ -304,7 +304,6 @@ class MultilabelHammingDistance(MultilabelStatScores):
         >>> metric(preds, target)
         tensor([[0.5000, 0.5000, 1.0000],
                 [1.0000, 1.0000, 0.5000]])
-
     """
 
     is_differentiable: bool = False
@@ -319,7 +318,7 @@ class MultilabelHammingDistance(MultilabelStatScores):
 
 
 class HammingDistance(Metric):
-    r"""Hamming distance
+    r"""Hamming distance.
 
     .. note::
         From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
@@ -361,7 +360,6 @@ class HammingDistance(Metric):
         >>> hamming_distance = HammingDistance()
         >>> hamming_distance(preds, target)
         tensor(0.2500)
-
     """
     is_differentiable: bool = False
     higher_is_better: bool = False
