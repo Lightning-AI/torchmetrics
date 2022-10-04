@@ -155,7 +155,7 @@ def multiclass_precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes `Precision`_ for multiclass tasks
+    r"""Computes `Precision`_ for multiclass tasks.
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 
@@ -263,7 +263,7 @@ def multilabel_precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes `Precision`_ for multilabel tasks
+    r"""Computes `Precision`_ for multilabel tasks.
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 
@@ -350,7 +350,6 @@ def multilabel_precision(
         >>> multilabel_precision(preds, target, num_labels=3, multidim_average='samplewise', average=None)
         tensor([[0.5000, 0.5000, 0.0000],
                 [0.0000, 0.0000, 0.0000]])
-
     """
     if validate_args:
         _multilabel_stat_scores_arg_validation(num_labels, threshold, average, multidim_average, ignore_index)
@@ -644,7 +643,6 @@ def multilabel_recall(
         >>> multilabel_recall(preds, target, num_labels=3, multidim_average='samplewise', average=None)
         tensor([[1., 1., 0.],
                 [0., 0., 0.]])
-
     """
     if validate_args:
         _multilabel_stat_scores_arg_validation(num_labels, threshold, average, multidim_average, ignore_index)
@@ -721,9 +719,10 @@ def precision(
     multidim_average: Optional[Literal["global", "samplewise"]] = "global",
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
+    r"""Precision.
+
     .. note::
-        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
         metric. Moving forward we recommend using these versions. This base metric will still work as it did
         prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
         and the general order of arguments may change, such that this metric will just function as an single
@@ -827,7 +826,6 @@ def precision(
         tensor(0.1667)
         >>> precision(preds, target, average='micro')
         tensor(0.2500)
-
     """
     if task is not None:
         assert multidim_average is not None
@@ -849,7 +847,7 @@ def precision(
         )
     else:
         rank_zero_warn(
-            "From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification"
+            "From v0.10 an `'binary_*'`, `'multiclass_*'`, `'multilabel_*'` version now exist of each classification"
             " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
             " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
             " and the general order of arguments may change, such that this metric will just function as an single"
@@ -952,9 +950,10 @@ def recall(
     multidim_average: Optional[Literal["global", "samplewise"]] = "global",
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
+    r"""Recall.
+
     .. note::
-        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
         metric. Moving forward we recommend using these versions. This base metric will still work as it did
         prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
         and the general order of arguments may change, such that this metric will just function as an single
@@ -1059,7 +1058,6 @@ def recall(
         tensor(0.3333)
         >>> recall(preds, target, average='micro')
         tensor(0.2500)
-
     """
     if task is not None:
         assert multidim_average is not None
@@ -1081,7 +1079,7 @@ def recall(
         )
     else:
         rank_zero_warn(
-            "From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification"
+            "From v0.10 an `'binary_*'`, `'multiclass_*'`, `'multilabel_*'` version now exist of each classification"
             " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
             " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
             " and the general order of arguments may change, such that this metric will just function as an single"
@@ -1229,7 +1227,6 @@ def precision_recall(
         (tensor(0.1667), tensor(0.3333))
         >>> precision_recall(preds, target, average='micro')
         (tensor(0.2500), tensor(0.2500))
-
     """
     allowed_average = ("micro", "macro", "weighted", "samples", "none", None)
     if average not in allowed_average:

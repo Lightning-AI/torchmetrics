@@ -197,11 +197,9 @@ def _fix_empty_tensors(boxes: Tensor) -> Tensor:
 
 
 class MeanAveragePrecision(Metric):
-    r"""
-    Computes the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)
-    <https://jonathan-hui.medium.com/map-mean-average-precision-for-object-detection-45c121a31173>`_
-    for object detection predictions.
-    Optionally, the mAP and mAR values can be calculated per class.
+    r"""`Computes the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR) <https://jonathan-
+    hui.medium.com/map-mean-average-precision-for-object-detection-45c121a31173>`_ for object detection
+    predictions. Optionally, the mAP and mAR values can be calculated per class.
 
     Predicted boxes and targets have to be in Pascal VOC format
     (xmin-top left, ymin-top left, xmax-bottom right, ymax-bottom right).

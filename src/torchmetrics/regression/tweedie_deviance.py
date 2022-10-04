@@ -64,7 +64,6 @@ class TweedieDevianceScore(Metric):
         >>> deviance_score = TweedieDevianceScore(power=2)
         >>> deviance_score(preds, targets)
         tensor(1.2083)
-
     """
     is_differentiable: bool = True
     higher_is_better = None  # TODO: both -1 and 1 are optimal

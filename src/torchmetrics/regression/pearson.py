@@ -95,7 +95,6 @@ class PearsonCorrCoef(Metric):
         >>> pearson = PearsonCorrCoef(num_outputs=2)
         >>> pearson(preds, target)
         tensor([1., 1.])
-
     """
     is_differentiable = True
     higher_is_better = None  # both -1 and 1 are optimal
