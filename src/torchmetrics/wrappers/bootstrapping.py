@@ -47,8 +47,7 @@ def _bootstrap_sampler(
 
 
 class BootStrapper(Metric):
-    r"""
-    Using `Turn a Metric into a Bootstrapped`_
+    r"""Using `Turn a Metric into a Bootstrapped`_
 
     That can automate the process of getting confidence intervals for metric values. This wrapper
     class basically keeps multiple copies of the same base metric in memory and whenever ``update`` or
@@ -79,7 +78,6 @@ class BootStrapper(Metric):
         >>> output = bootstrap.compute()
         >>> pprint(output)
         {'mean': tensor(0.2205), 'std': tensor(0.0859)}
-
     """
 
     def __init__(

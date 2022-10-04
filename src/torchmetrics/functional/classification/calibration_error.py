@@ -178,8 +178,8 @@ def binary_calibration_error(
     validate_args: bool = True,
 ) -> Tensor:
     r"""`Computes the Top-label Calibration Error`_ for binary tasks. The expected calibration error can be used to
-    quantify how well a given model is calibrated e.g. how well the predicted output probabilities of the model matches
-    the actual probabilities of the ground truth distribution.
+    quantify how well a given model is calibrated e.g. how well the predicted output probabilities of the model
+    matches the actual probabilities of the ground truth distribution.
 
     Three different norms are implemented, each corresponding to variations on the calibration error metric.
 
@@ -285,9 +285,9 @@ def multiclass_calibration_error(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""`Computes the Top-label Calibration Error`_ for multiclass tasks. The expected calibration error can be used to
-    quantify how well a given model is calibrated e.g. how well the predicted output probabilities of the model matches
-    the actual probabilities of the ground truth distribution.
+    r"""`Computes the Top-label Calibration Error`_ for multiclass tasks. The expected calibration error can be used
+    to quantify how well a given model is calibrated e.g. how well the predicted output probabilities of the model
+    matches the actual probabilities of the ground truth distribution.
 
     Three different norms are implemented, each corresponding to variations on the calibration error metric.
 
@@ -396,9 +396,10 @@ def calibration_error(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
+    r"""Calibration Error.
+
     .. note::
-        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
         metric. Moving forward we recommend using these versions. This base metric will still work as it did
         prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
         and the general order of arguments may change, such that this metric will just function as an single
@@ -447,7 +448,7 @@ def calibration_error(
         raise ValueError(f"Expected argument `task` to either be `'binary'`, `'multiclass'` but got {task}")
     else:
         rank_zero_warn(
-            "From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification"
+            "From v0.10 an `'binary_*'`, `'multiclass_*'`, `'multilabel_*'` version now exist of each classification"
             " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
             " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
             " and the general order of arguments may change, such that this metric will just function as an single"

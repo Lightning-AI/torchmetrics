@@ -44,8 +44,7 @@ def pairwise_linear_similarity(
     reduction: Literal["mean", "sum", "none", None] = None,
     zero_diagonal: Optional[bool] = None,
 ) -> Tensor:
-    r"""
-    Calculates pairwise linear similarity:
+    r"""Calculates pairwise linear similarity:
 
     .. math::
         s_{lin}(x,y) = <x,y> = \sum_{d=1}^D x_d \cdot y_d
@@ -78,7 +77,6 @@ def pairwise_linear_similarity(
         tensor([[ 0., 21., 34.],
                 [21.,  0., 55.],
                 [34., 55.,  0.]])
-
     """
     distance = _pairwise_linear_similarity_update(x, y, zero_diagonal)
     return _reduce_distance_matrix(distance, reduction)

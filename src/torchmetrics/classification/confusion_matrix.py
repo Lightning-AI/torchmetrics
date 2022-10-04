@@ -41,8 +41,7 @@ from torchmetrics.utilities.prints import rank_zero_warn
 
 
 class BinaryConfusionMatrix(Metric):
-    r"""
-    Computes the `confusion matrix`_ for binary tasks.
+    r"""Computes the `confusion matrix`_ for binary tasks.
 
     Accepts the following input tensors:
 
@@ -129,8 +128,7 @@ class BinaryConfusionMatrix(Metric):
 
 
 class MulticlassConfusionMatrix(Metric):
-    r"""
-    Computes the `confusion matrix`_ for multiclass tasks.
+    r"""Computes the `confusion matrix`_ for multiclass tasks.
 
     Accepts the following input tensors:
 
@@ -224,8 +222,7 @@ class MulticlassConfusionMatrix(Metric):
 
 
 class MultilabelConfusionMatrix(Metric):
-    r"""
-    Computes the `confusion matrix`_ for multilabel tasks.
+    r"""Computes the `confusion matrix`_ for multilabel tasks.
 
     Accepts the following input tensors:
 
@@ -319,9 +316,10 @@ class MultilabelConfusionMatrix(Metric):
 
 
 class ConfusionMatrix(Metric):
-    r"""
+    r"""Confusion Matrix.
+
     .. note::
-        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
         metric. Moving forward we recommend using these versions. This base metric will still work as it did
         prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
         and the general order of arguments may change, such that this metric will just function as an single
@@ -389,7 +387,6 @@ class ConfusionMatrix(Metric):
         tensor([[[1, 0], [0, 1]],
                 [[1, 0], [1, 0]],
                 [[0, 1], [0, 1]]])
-
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None

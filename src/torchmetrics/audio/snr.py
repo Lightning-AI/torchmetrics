@@ -58,7 +58,6 @@ class SignalNoiseRatio(Metric):
     References:
         [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE International Conference on Acoustics, Speech
         and Signal Processing (ICASSP) 2019.
-
     """
     full_state_update: bool = False
     is_differentiable: bool = True
