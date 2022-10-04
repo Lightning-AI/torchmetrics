@@ -7,23 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
 
-## [0.10.0] - 2022-09-DD
+## [0.10.0] - 2022-10-04
 
 ### Added
 
 - Added a new NLP metric `InfoLM` ([#915](https://github.com/PyTorchLightning/metrics/pull/915))
-
-
 - Added `Perplexity` metric ([#922](https://github.com/PyTorchLightning/metrics/pull/922))
-
-
 - Added `ConcordanceCorrCoef` metric to regression package ([#1201](https://github.com/Lightning-AI/metrics/pull/1201))
-
-
 - Added argument `normalize` to `LPIPS` metric ([#1216](https://github.com/Lightning-AI/metrics/pull/1216))
-
 - Added support for multiprocessing of batches in `PESQ` metric ([#1227](https://github.com/Lightning-AI/metrics/pull/1227))
-
 - Added support for multioutput in `PearsonCorrCoef` and `SpearmanCorrCoef` ([#1200](https://github.com/Lightning-AI/metrics/pull/1200))
 
 ### Changed
@@ -42,29 +34,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     [#1215](https://github.com/Lightning-AI/metrics/pull/1215),
     [#1195](https://github.com/Lightning-AI/metrics/pull/1195)
 )
-
 - Changed update in `FID` metric to be done in online fashion to save memory ([#1199](https://github.com/PyTorchLightning/metrics/pull/1199))
-
-
 - Improved performance of retrieval metrics ([#1242](https://github.com/Lightning-AI/metrics/pull/1242))
-
-
 - Changed `SSIM` and `MSSSIM` update to be online to reduce memory usage ([#1231](https://github.com/Lightning-AI/metrics/pull/1231))
 
 
 ### Fixed
 
 - Fixed a bug in `ssim` when `return_full_image=True` where the score was still reduced ([#1204](https://github.com/Lightning-AI/metrics/pull/1204))
-
-
 - Fixed MPS support for:
   * MAE metric ([#1210](https://github.com/Lightning-AI/metrics/pull/1210))
   * Jaccard index ([#1205](https://github.com/Lightning-AI/metrics/pull/1205))
-
-
 - Fixed bug in `ClasswiseWrapper` such that `compute` gave wrong result ([#1225](https://github.com/Lightning-AI/metrics/pull/1225))
-
-
 - Fixed synchronization of empty list states ([#1219](https://github.com/Lightning-AI/metrics/pull/1219))
 
 
