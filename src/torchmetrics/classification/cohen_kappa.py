@@ -30,8 +30,8 @@ from torchmetrics.utilities.prints import rank_zero_warn
 
 
 class BinaryCohenKappa(BinaryConfusionMatrix):
-    r"""Calculates `Cohen's kappa score`_ that measures inter-annotator agreement for binary
-    tasks. It is defined as
+    r"""Calculates `Cohen's kappa score`_ that measures inter-annotator agreement for binary tasks. It is defined
+    as.
 
     .. math::
         \kappa = (p_o - p_e) / (1 - p_e)
@@ -79,7 +79,6 @@ class BinaryCohenKappa(BinaryConfusionMatrix):
         >>> metric = BinaryCohenKappa()
         >>> metric(preds, target)
         tensor(0.5000)
-
     """
     is_differentiable: bool = False
     higher_is_better: bool = True
@@ -104,8 +103,8 @@ class BinaryCohenKappa(BinaryConfusionMatrix):
 
 
 class MulticlassCohenKappa(MulticlassConfusionMatrix):
-    r"""Calculates `Cohen's kappa score`_ that measures inter-annotator agreement for multiclass
-    tasks. It is defined as
+    r"""Calculates `Cohen's kappa score`_ that measures inter-annotator agreement for multiclass tasks. It is
+    defined as.
 
     .. math::
         \kappa = (p_o - p_e) / (1 - p_e)
@@ -158,7 +157,6 @@ class MulticlassCohenKappa(MulticlassConfusionMatrix):
         >>> metric = MulticlassCohenKappa(num_classes=3)
         >>> metric(preds, target)
         tensor(0.6364)
-
     """
     is_differentiable: bool = False
     higher_is_better: bool = True
@@ -183,9 +181,10 @@ class MulticlassCohenKappa(MulticlassConfusionMatrix):
 
 
 class CohenKappa(Metric):
-    r"""
+    r"""Cohen Kappa.
+
     .. note::
-        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
         metric. Moving forward we recommend using these versions. This base metric will still work as it did
         prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
         and the general order of arguments may change, such that this metric will just function as an single
@@ -235,7 +234,6 @@ class CohenKappa(Metric):
         >>> cohenkappa = CohenKappa(num_classes=2)
         >>> cohenkappa(preds, target)
         tensor(0.5000)
-
     """
     is_differentiable: bool = False
     higher_is_better: bool = True

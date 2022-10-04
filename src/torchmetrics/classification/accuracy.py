@@ -311,7 +311,6 @@ class MultilabelAccuracy(MultilabelStatScores):
         >>> metric(preds, target)
         tensor([[0.5000, 0.5000, 0.0000],
                 [0.0000, 0.0000, 0.5000]])
-
     """
     is_differentiable = False
     higher_is_better = True
@@ -325,9 +324,10 @@ class MultilabelAccuracy(MultilabelStatScores):
 
 
 class Accuracy(StatScores):
-    r"""
+    r"""Accuracy.
+
     .. note::
-        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
         metric. Moving forward we recommend using these versions. This base metric will still work as it did
         prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
         and the general order of arguments may change, such that this metric will just function as an single
@@ -455,7 +455,6 @@ class Accuracy(StatScores):
         >>> accuracy = Accuracy(top_k=2)
         >>> accuracy(preds, target)
         tensor(0.6667)
-
     """
     is_differentiable = False
     higher_is_better = True

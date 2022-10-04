@@ -28,9 +28,8 @@ from torchmetrics.utilities.prints import rank_zero_warn
 
 
 class BinaryMatthewsCorrCoef(BinaryConfusionMatrix):
-    r"""
-    Calculates `Matthews correlation coefficient`_ for binary tasks. This metric measures
-    the general correlation or quality of a classification.
+    r"""Calculates `Matthews correlation coefficient`_ for binary tasks. This metric measures the general
+    correlation or quality of a classification.
 
     Accepts the following input tensors:
 
@@ -71,7 +70,6 @@ class BinaryMatthewsCorrCoef(BinaryConfusionMatrix):
         >>> metric = BinaryMatthewsCorrCoef()
         >>> metric(preds, target)
         tensor(0.5774)
-
     """
 
     is_differentiable: bool = False
@@ -92,8 +90,8 @@ class BinaryMatthewsCorrCoef(BinaryConfusionMatrix):
 
 
 class MulticlassMatthewsCorrCoef(MulticlassConfusionMatrix):
-    r"""Calculates `Matthews correlation coefficient`_ for multiclass tasks. This metric measures
-    the general correlation or quality of a classification.
+    r"""Calculates `Matthews correlation coefficient`_ for multiclass tasks. This metric measures the general
+    correlation or quality of a classification.
 
     Accepts the following input tensors:
 
@@ -139,7 +137,6 @@ class MulticlassMatthewsCorrCoef(MulticlassConfusionMatrix):
         >>> metric = MulticlassMatthewsCorrCoef(num_classes=3)
         >>> metric(preds, target)
         tensor(0.7000)
-
     """
 
     is_differentiable: bool = False
@@ -160,8 +157,8 @@ class MulticlassMatthewsCorrCoef(MulticlassConfusionMatrix):
 
 
 class MultilabelMatthewsCorrCoef(MultilabelConfusionMatrix):
-    r"""Calculates `Matthews correlation coefficient`_ for multilabel tasks. This metric measures
-    the general correlation or quality of a classification.
+    r"""Calculates `Matthews correlation coefficient`_ for multilabel tasks. This metric measures the general
+    correlation or quality of a classification.
 
     Accepts the following input tensors:
 
@@ -203,7 +200,6 @@ class MultilabelMatthewsCorrCoef(MultilabelConfusionMatrix):
         >>> metric = MultilabelMatthewsCorrCoef(num_labels=3)
         >>> metric(preds, target)
         tensor(0.3333)
-
     """
 
     is_differentiable: bool = False
@@ -225,9 +221,10 @@ class MultilabelMatthewsCorrCoef(MultilabelConfusionMatrix):
 
 
 class MatthewsCorrCoef(Metric):
-    r"""
+    r"""Matthews correlation coefficient.
+
     .. note::
-        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
         metric. Moving forward we recommend using these versions. This base metric will still work as it did
         prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
         and the general order of arguments may change, such that this metric will just function as an single
@@ -271,7 +268,6 @@ class MatthewsCorrCoef(Metric):
         >>> matthews_corrcoef = MatthewsCorrCoef(num_classes=2)
         >>> matthews_corrcoef(preds, target)
         tensor(0.5774)
-
     """
     is_differentiable: bool = False
     higher_is_better: bool = True

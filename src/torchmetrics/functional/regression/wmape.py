@@ -79,7 +79,6 @@ def weighted_mean_absolute_percentage_error(preds: Tensor, target: Tensor) -> Te
         >>> target = torch.randn(20,)
         >>> weighted_mean_absolute_percentage_error(preds, target)
         tensor(1.3967)
-
     """
     sum_abs_error, sum_scale = _weighted_mean_absolute_percentage_error_update(
         preds,

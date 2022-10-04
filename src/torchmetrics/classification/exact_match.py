@@ -31,8 +31,8 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class MultilabelExactMatch(Metric):
-    r"""Computes Exact match (also known as subset accuracy) for multilabel tasks. Exact Match is a stricter
-    version of accuracy where all labels have to match exactly for the sample to be correctly classified.
+    r"""Computes Exact match (also known as subset accuracy) for multilabel tasks. Exact Match is a stricter version
+    of accuracy where all labels have to match exactly for the sample to be correctly classified.
 
     Accepts the following input tensors:
 

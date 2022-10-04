@@ -40,7 +40,6 @@ class MeanSquaredLogError(Metric):
 
     .. note::
         Half precision is only support on GPU for this metric
-
     """
     is_differentiable: bool = True
     higher_is_better: bool = False

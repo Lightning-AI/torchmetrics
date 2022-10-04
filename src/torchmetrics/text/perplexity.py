@@ -21,9 +21,8 @@ from torchmetrics.metric import Metric
 
 
 class Perplexity(Metric):
-    r"""
-    Perplexity measures how well a language model predicts a text sample. It's calculated as the average number of bits
-    per word a model needs to represent the sample.
+    r"""Perplexity measures how well a language model predicts a text sample. It's calculated as the average number
+    of bits per word a model needs to represent the sample.
 
     Args:
         ignore_index:
