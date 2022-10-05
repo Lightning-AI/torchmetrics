@@ -387,3 +387,19 @@ class TestMultilabelRecallAtFixedPrecision(MetricTester):
                 pred, true, num_labels=NUM_CLASSES, min_precision=min_precision, thresholds=torch.linspace(0, 1, 100)
             )
             assert all(torch.allclose(r1[i], r2[i]) for i in range(len(r1)))
+
+
+@pytest.mark.parametrize(
+    "metric",
+    [
+        BinaryRecallAtFixedPrecision,
+        partial(MulticlassRecallAtFixedPrecision, num_classes=NUM_CLASSES),
+        partial(MultilabelRecallAtFixedPrecision, num_labels=NUM_CLASSES),
+    ],
+)
+@pytest.mark.parametrize("thresholds", [None, 100, [0.3, 0.5, 0.7, 0.9], torch.linspace(0, 1, 10)])
+def test_valid_input_thresholds(metric, thresholds):
+    """test valid formats of the threshold argument."""
+    with pytest.warns(None) as record:
+        metric(min_precision=0.5, thresholds=thresholds)
+    assert len(record) == 0

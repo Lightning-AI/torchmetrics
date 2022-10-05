@@ -55,6 +55,14 @@ class MetricCollection(ModuleDict):
             this behaviour. Can also be set to a list of lists of metrics for setting the compute groups yourself.
 
     .. note::
+        The compute groups feature can significatly speedup the calculation of metrics under the right conditions.
+        First, the feature is only available when calling the ``update`` method and not when calling ``forward`` method
+        due to the internal logic of ``forward`` preventing this. Secondly, since we compute groups share metric
+        states by reference, calling ``.items()``, ``.values()`` etc. on the metric collection will break this
+        reference and a copy of states are instead returned in this case (reference will be reestablished on the next
+        call to ``update``).
+
+    .. note::
         Metric collections can be nested at initilization (see last example) but the output of the collection will
         still be a single flatten dictionary combining the prefix and postfix arguments from the nested collection.
 
@@ -101,13 +109,16 @@ class MetricCollection(ModuleDict):
 
     Example (specification of compute groups):
         >>> metrics = MetricCollection(
-        ...     Accuracy(),
+        ...     Recall(num_classes=3, average='macro'),
         ...     Precision(num_classes=3, average='macro'),
         ...     MeanSquaredError(),
-        ...     compute_groups=[['Accuracy', 'Precision'], ['MeanSquaredError']]
+        ...     compute_groups=[['Recall', 'Precision'], ['MeanSquaredError']]
         ... )
-        >>> pprint(metrics(preds, target))
-        {'Accuracy': tensor(0.1250), 'MeanSquaredError': tensor(2.3750), 'Precision': tensor(0.0667)}
+        >>> metrics.update(preds, target)
+        >>> pprint(metrics.compute())
+        {'MeanSquaredError': tensor(2.3750), 'Precision': tensor(0.0667), 'Recall': tensor(0.1111)}
+        >>> pprint(metrics.compute_groups)
+        {0: ['Recall', 'Precision'], 1: ['MeanSquaredError']}
 
     Example (nested metric collections):
         >>> metrics = MetricCollection([
@@ -170,9 +181,6 @@ class MetricCollection(ModuleDict):
                 # only update the first member
                 m0 = getattr(self, cg[0])
                 m0.update(*args, **m0._filter_kwargs(**kwargs))
-                for i in range(1, len(cg)):  # copy over the update count
-                    mi = getattr(self, cg[i])
-                    mi._update_count = m0._update_count
             if self._state_is_copy:
                 # If we have deep copied state inbetween updates, reestablish link
                 self._compute_groups_create_state_ref()
@@ -191,7 +199,8 @@ class MetricCollection(ModuleDict):
     def _merge_compute_groups(self) -> None:
         """Iterates over the collection of metrics, checking if the state of each metric matches another.
 
-        If so, their compute groups will be merged into one
+        If so, their compute groups will be merged into one. The complexity of the method is approximately
+        ``O(number_of_metrics_in_collection ** 2)``, as all metrics need to be compared to all other metrics.
         """
         n_groups = len(self._groups)
         while True:
@@ -264,6 +273,7 @@ class MetricCollection(ModuleDict):
                         m0_state = getattr(m0, state)
                         # Determine if we just should set a reference or a full copy
                         setattr(mi, state, deepcopy(m0_state) if copy else m0_state)
+                    setattr(mi, "_update_count", deepcopy(m0._update_count) if copy else m0._update_count)
         self._state_is_copy = copy
 
     def compute(self) -> Dict[str, Any]:
@@ -401,6 +411,7 @@ class MetricCollection(ModuleDict):
 
     def keys(self, keep_base: bool = False) -> Iterable[Hashable]:
         r"""Return an iterable of the ModuleDict key.
+
         Args:
             keep_base: Whether to add prefix/postfix on the items collection.
         """

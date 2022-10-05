@@ -242,8 +242,7 @@ def binary_precision_recall_curve(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    r"""
-    Computes the precision-recall curve for binary tasks. The curve consist of multiple pairs of precision and
+    r"""Computes the precision-recall curve for binary tasks. The curve consist of multiple pairs of precision and
     recall values evaluated at different thresholds, such that the tradeoff between the two values can been seen.
 
     Accepts the following input tensors:
@@ -452,9 +451,9 @@ def multiclass_precision_recall_curve(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    r"""
-    Computes the precision-recall curve for multiclass tasks. The curve consist of multiple pairs of precision and
-    recall values evaluated at different thresholds, such that the tradeoff between the two values can been seen.
+    r"""Computes the precision-recall curve for multiclass tasks. The curve consist of multiple pairs of precision
+    and recall values evaluated at different thresholds, such that the tradeoff between the two values can been
+    seen.
 
     Accepts the following input tensors:
 
@@ -676,9 +675,9 @@ def multilabel_precision_recall_curve(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    r"""
-    Computes the precision-recall curve for multilabel tasks. The curve consist of multiple pairs of precision and
-    recall values evaluated at different thresholds, such that the tradeoff between the two values can been seen.
+    r"""Computes the precision-recall curve for multilabel tasks. The curve consist of multiple pairs of precision
+    and recall values evaluated at different thresholds, such that the tradeoff between the two values can been
+    seen.
 
     Accepts the following input tensors:
 
@@ -981,9 +980,10 @@ def precision_recall_curve(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    r"""
+    r"""Precision-recall.
+
     .. note::
-        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
         metric. Moving forward we recommend using these versions. This base metric will still work as it did
         prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
         and the general order of arguments may change, such that this metric will just function as an single
@@ -1065,7 +1065,7 @@ def precision_recall_curve(
         )
     else:
         rank_zero_warn(
-            "From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification"
+            "From v0.10 an `'binary_*'`, `'multiclass_*'`, `'multilabel_*'` version now exist of each classification"
             " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
             " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
             " and the general order of arguments may change, such that this metric will just function as an single"

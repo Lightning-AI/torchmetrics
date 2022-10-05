@@ -47,7 +47,6 @@ def signal_noise_ratio(preds: Tensor, target: Tensor, zero_mean: bool = False) -
     References:
         [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE International Conference on Acoustics, Speech
         and Signal Processing (ICASSP) 2019.
-
     """
     _check_same_shape(preds, target)
     eps = torch.finfo(preds.dtype).eps

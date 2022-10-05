@@ -201,7 +201,7 @@ class MulticlassSpecificity(MulticlassStatScores):
 
 
 class MultilabelSpecificity(MultilabelStatScores):
-    r"""Computes `Specificity`_ for multilabel tasks
+    r"""Computes `Specificity`_ for multilabel tasks.
 
     .. math:: \text{Specificity} = \frac{\text{TN}}{\text{TN} + \text{FP}}
 
@@ -295,9 +295,10 @@ class MultilabelSpecificity(MultilabelStatScores):
 
 
 class Specificity(StatScores):
-    r"""
+    r"""Specificity.
+
     .. note::
-        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
         metric. Moving forward we recommend using these versions. This base metric will still work as it did
         prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
         and the general order of arguments may change, such that this metric will just function as an single
@@ -390,7 +391,6 @@ class Specificity(StatScores):
         >>> specificity = Specificity(average='micro')
         >>> specificity(preds, target)
         tensor(0.6250)
-
     """
     is_differentiable: bool = False
     higher_is_better: bool = True

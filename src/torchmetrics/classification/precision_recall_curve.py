@@ -43,8 +43,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class BinaryPrecisionRecallCurve(Metric):
-    r"""
-    Computes the precision-recall curve for binary tasks. The curve consist of multiple pairs of precision and
+    r"""Computes the precision-recall curve for binary tasks. The curve consist of multiple pairs of precision and
     recall values evaluated at different thresholds, such that the tradeoff between the two values can been seen.
 
     Accepts the following input tensors:
@@ -119,13 +118,16 @@ class BinaryPrecisionRecallCurve(Metric):
         self.ignore_index = ignore_index
         self.validate_args = validate_args
 
+        thresholds = _adjust_threshold_arg(thresholds)
         if thresholds is None:
             self.thresholds = thresholds
             self.add_state("preds", default=[], dist_reduce_fx="cat")
             self.add_state("target", default=[], dist_reduce_fx="cat")
         else:
-            self.register_buffer("thresholds", _adjust_threshold_arg(thresholds))
-            self.add_state("confmat", default=torch.zeros(thresholds, 2, 2, dtype=torch.long), dist_reduce_fx="sum")
+            self.register_buffer("thresholds", thresholds)
+            self.add_state(
+                "confmat", default=torch.zeros(len(thresholds), 2, 2, dtype=torch.long), dist_reduce_fx="sum"
+            )
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         if self.validate_args:
@@ -147,9 +149,9 @@ class BinaryPrecisionRecallCurve(Metric):
 
 
 class MulticlassPrecisionRecallCurve(Metric):
-    r"""
-    Computes the precision-recall curve for multiclass tasks. The curve consist of multiple pairs of precision and
-    recall values evaluated at different thresholds, such that the tradeoff between the two values can been seen.
+    r"""Computes the precision-recall curve for multiclass tasks. The curve consist of multiple pairs of precision
+    and recall values evaluated at different thresholds, such that the tradeoff between the two values can been
+    seen.
 
     Accepts the following input tensors:
 
@@ -247,14 +249,17 @@ class MulticlassPrecisionRecallCurve(Metric):
         self.ignore_index = ignore_index
         self.validate_args = validate_args
 
+        thresholds = _adjust_threshold_arg(thresholds)
         if thresholds is None:
             self.thresholds = thresholds
             self.add_state("preds", default=[], dist_reduce_fx="cat")
             self.add_state("target", default=[], dist_reduce_fx="cat")
         else:
-            self.register_buffer("thresholds", _adjust_threshold_arg(thresholds))
+            self.register_buffer("thresholds", thresholds)
             self.add_state(
-                "confmat", default=torch.zeros(thresholds, num_classes, 2, 2, dtype=torch.long), dist_reduce_fx="sum"
+                "confmat",
+                default=torch.zeros(len(thresholds), num_classes, 2, 2, dtype=torch.long),
+                dist_reduce_fx="sum",
             )
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
@@ -279,9 +284,9 @@ class MulticlassPrecisionRecallCurve(Metric):
 
 
 class MultilabelPrecisionRecallCurve(Metric):
-    r"""
-    Computes the precision-recall curve for multilabel tasks. The curve consist of multiple pairs of precision and
-    recall values evaluated at different thresholds, such that the tradeoff between the two values can been seen.
+    r"""Computes the precision-recall curve for multilabel tasks. The curve consist of multiple pairs of precision
+    and recall values evaluated at different thresholds, such that the tradeoff between the two values can been
+    seen.
 
     Accepts the following input tensors:
 
@@ -381,14 +386,17 @@ class MultilabelPrecisionRecallCurve(Metric):
         self.ignore_index = ignore_index
         self.validate_args = validate_args
 
+        thresholds = _adjust_threshold_arg(thresholds)
         if thresholds is None:
             self.thresholds = thresholds
             self.add_state("preds", default=[], dist_reduce_fx="cat")
             self.add_state("target", default=[], dist_reduce_fx="cat")
         else:
-            self.register_buffer("thresholds", _adjust_threshold_arg(thresholds))
+            self.register_buffer("thresholds", thresholds)
             self.add_state(
-                "confmat", default=torch.zeros(thresholds, num_labels, 2, 2, dtype=torch.long), dist_reduce_fx="sum"
+                "confmat",
+                default=torch.zeros(len(thresholds), num_labels, 2, 2, dtype=torch.long),
+                dist_reduce_fx="sum",
             )
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
@@ -413,9 +421,10 @@ class MultilabelPrecisionRecallCurve(Metric):
 
 
 class PrecisionRecallCurve(Metric):
-    r"""
+    r"""Precision Recall Curve.
+
     .. note::
-        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
         metric. Moving forward we recommend using these versions. This base metric will still work as it did
         prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
         and the general order of arguments may change, such that this metric will just function as an single

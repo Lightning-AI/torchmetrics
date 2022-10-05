@@ -14,12 +14,13 @@
 from collections import namedtuple
 from functools import partial
 
+import numpy as np
 import pytest
 import torch
-from scipy.stats import rankdata, spearmanr
+from scipy.stats import pearsonr
 
-from torchmetrics.functional.regression.spearman import _rank_data, spearman_corrcoef
-from torchmetrics.regression.spearman import SpearmanCorrCoef
+from torchmetrics.functional.regression.concordance import concordance_corrcoef
+from torchmetrics.regression.concordance import ConcordanceCorrCoef
 from unittests.helpers import seed_all
 from unittests.helpers.testers import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, MetricTester
 
@@ -47,34 +48,22 @@ _multi_target_inputs2 = Input(
     target=torch.randn(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
 )
 
-_specific_input = Input(
-    preds=torch.stack([torch.tensor([1.0, 0.0, 4.0, 1.0, 0.0, 3.0, 0.0]) for _ in range(NUM_BATCHES)]),
-    target=torch.stack([torch.tensor([4.0, 0.0, 3.0, 3.0, 3.0, 1.0, 1.0]) for _ in range(NUM_BATCHES)]),
-)
 
-
-@pytest.mark.parametrize(
-    "preds, target",
-    [
-        (_single_target_inputs1.preds, _single_target_inputs1.target),
-        (_single_target_inputs2.preds, _single_target_inputs2.target),
-        (_specific_input.preds, _specific_input.target),
-    ],
-)
-def test_ranking(preds, target):
-    """test that ranking function works as expected."""
-    for p, t in zip(preds, target):
-        scipy_ranking = [rankdata(p.numpy()), rankdata(t.numpy())]
-        tm_ranking = [_rank_data(p), _rank_data(t)]
-        assert (torch.tensor(scipy_ranking[0]) == tm_ranking[0]).all()
-        assert (torch.tensor(scipy_ranking[1]) == tm_ranking[1]).all()
-
-
-def _sk_metric(preds, target):
+def _sk_concordance(preds, target):
+    preds, target = preds.numpy(), target.numpy()
     if preds.ndim == 2:
-        return [spearmanr(t.numpy(), p.numpy())[0] for t, p in zip(target.T, preds.T)]
+        mean_pred = np.mean(preds, axis=0)
+        mean_gt = np.mean(target, axis=0)
+        std_pred = np.std(preds, axis=0)
+        std_gt = np.std(target, axis=0)
+        pearson = np.stack([pearsonr(t, p)[0] for t, p in zip(target.T, preds.T)])
     else:
-        return spearmanr(target.numpy(), preds.numpy())[0]
+        mean_pred = np.mean(preds)
+        mean_gt = np.mean(target)
+        std_pred = np.std(preds)
+        std_gt = np.std(target)
+        pearson = pearsonr(target, preds)[0]
+    return 2.0 * pearson * std_pred * std_gt / (std_pred**2 + std_gt**2 + (mean_pred - mean_gt) ** 2)
 
 
 @pytest.mark.parametrize(
@@ -84,63 +73,62 @@ def _sk_metric(preds, target):
         (_single_target_inputs2.preds, _single_target_inputs2.target),
         (_multi_target_inputs1.preds, _multi_target_inputs1.target),
         (_multi_target_inputs2.preds, _multi_target_inputs2.target),
-        (_specific_input.preds, _specific_input.target),
     ],
 )
-class TestSpearmanCorrCoef(MetricTester):
-    atol = 1e-2
+class TestConcordanceCorrCoef(MetricTester):
+    atol = 1e-3
 
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_spearman_corrcoef(self, preds, target, ddp, dist_sync_on_step):
+    def test_concordance_corrcoef(self, preds, target, ddp, dist_sync_on_step):
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_class_metric_test(
             ddp,
             preds,
             target,
-            SpearmanCorrCoef,
-            _sk_metric,
+            ConcordanceCorrCoef,
+            _sk_concordance,
             dist_sync_on_step,
             metric_args={"num_outputs": num_outputs},
         )
 
-    def test_spearman_corrcoef_functional(self, preds, target):
-        self.run_functional_metric_test(preds, target, spearman_corrcoef, _sk_metric)
+    def test_concordance_corrcoef_functional(self, preds, target):
+        self.run_functional_metric_test(preds, target, concordance_corrcoef, _sk_concordance)
 
-    def test_spearman_corrcoef_differentiability(self, preds, target):
+    def test_concordance_corrcoef_differentiability(self, preds, target):
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_differentiability_test(
             preds=preds,
             target=target,
-            metric_module=partial(SpearmanCorrCoef, num_outputs=num_outputs),
-            metric_functional=spearman_corrcoef,
+            metric_module=partial(ConcordanceCorrCoef, num_outputs=num_outputs),
+            metric_functional=concordance_corrcoef,
         )
 
     # Spearman half + cpu does not work due to missing support in torch.arange
-    @pytest.mark.xfail(reason="Spearman metric does not support cpu + half precision")
-    def test_spearman_corrcoef_half_cpu(self, preds, target):
+    @pytest.mark.xfail(reason="Concordance metric does not support cpu + half precision")
+    def test_concordance_corrcoef_half_cpu(self, preds, target):
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_precision_test_cpu(
-            preds, target, partial(SpearmanCorrCoef, num_outputs=num_outputs), spearman_corrcoef
+            preds, target, partial(ConcordanceCorrCoef, num_outputs=num_outputs), concordance_corrcoef
         )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-    def test_spearman_corrcoef_half_gpu(self, preds, target):
+    def test_concordance_corrcoef_half_gpu(self, preds, target):
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_precision_test_gpu(
-            preds, target, partial(SpearmanCorrCoef, num_outputs=num_outputs), spearman_corrcoef
+            preds, target, partial(ConcordanceCorrCoef, num_outputs=num_outputs), concordance_corrcoef
         )
 
 
 def test_error_on_different_shape():
-    metric = SpearmanCorrCoef(num_outputs=1)
+    metric = ConcordanceCorrCoef(num_outputs=1)
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(100), torch.randn(50))
 
-    metric = SpearmanCorrCoef(num_outputs=5)
-    with pytest.raises(ValueError, match="Expected both predictions and target to be either 1- or 2-dimensional.*"):
+    metric = ConcordanceCorrCoef(num_outputs=5)
+    with pytest.raises(ValueError, match="Expected both predictions and target to be either 1- or 2-.*"):
         metric(torch.randn(100, 2, 5), torch.randn(100, 2, 5))
 
-    metric = SpearmanCorrCoef(num_outputs=2)
+    metric = ConcordanceCorrCoef(num_outputs=2)
     with pytest.raises(ValueError, match="Expected argument `num_outputs` to match the second dimension of input.*"):
         metric(torch.randn(100, 5), torch.randn(100, 5))

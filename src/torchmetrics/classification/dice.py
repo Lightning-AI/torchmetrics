@@ -114,7 +114,6 @@ class Dice(StatScores):
         >>> dice = Dice(average='micro')
         >>> dice(preds, target)
         tensor(0.2500)
-
     """
     is_differentiable: bool = False
     higher_is_better: bool = True

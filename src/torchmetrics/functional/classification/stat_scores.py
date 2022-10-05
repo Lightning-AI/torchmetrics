@@ -144,9 +144,8 @@ def binary_stat_scores(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
-    Computes the number of true positives, false positives, true negatives, false negatives and the support
-    for binary tasks. Related to `Type I and Type II errors`_.
+    r"""Computes the number of true positives, false positives, true negatives, false negatives and the support for
+    binary tasks. Related to `Type I and Type II errors`_.
 
     Accepts the following input tensors:
 
@@ -450,9 +449,8 @@ def multiclass_stat_scores(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
-    Computes the number of true positives, false positives, true negatives, false negatives and the support
-    for multiclass tasks. Related to `Type I and Type II errors`_.
+    r"""Computes the number of true positives, false positives, true negatives, false negatives and the support for
+    multiclass tasks. Related to `Type I and Type II errors`_.
 
     Accepts the following input tensors:
 
@@ -706,9 +704,8 @@ def multilabel_stat_scores(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
-    Computes the number of true positives, false positives, true negatives, false negatives and the support
-    for multilabel tasks. Related to `Type I and Type II errors`_.
+    r"""Computes the number of true positives, false positives, true negatives, false negatives and the support for
+    multilabel tasks. Related to `Type I and Type II errors`_.
 
     Accepts the following input tensors:
 
@@ -801,7 +798,6 @@ def multilabel_stat_scores(
                 [[0, 0, 0, 2, 2],
                  [0, 2, 0, 0, 0],
                  [0, 0, 1, 1, 1]]])
-
     """
     if validate_args:
         _multilabel_stat_scores_arg_validation(num_labels, threshold, average, multidim_average, ignore_index)
@@ -1096,9 +1092,10 @@ def stat_scores(
     multidim_average: Optional[Literal["global", "samplewise"]] = "global",
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
+    r"""Stat scores.
+
     .. note::
-        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
         metric. Moving forward we recommend using these versions. This base metric will still work as it did
         prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
         and the general order of arguments may change, such that this metric will just function as an single
@@ -1219,7 +1216,6 @@ def stat_scores(
                 [1, 0, 3, 0, 1]])
         >>> stat_scores(preds, target, reduce='micro')
         tensor([2, 2, 6, 2, 4])
-
     """
     if task is not None:
         assert multidim_average is not None
@@ -1241,7 +1237,7 @@ def stat_scores(
         )
     else:
         rank_zero_warn(
-            "From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification"
+            "From v0.10 an `'binary_*'`, `'multiclass_*'`, `'multilabel_*'` version now exist of each classification"
             " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
             " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
             " and the general order of arguments may change, such that this metric will just function as an single"
