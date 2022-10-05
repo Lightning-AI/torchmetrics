@@ -309,26 +309,14 @@ def matthews_corrcoef(
         >>> matthews_corrcoef(preds, target, num_classes=2)
         tensor(0.5774)
     """
-    if task is not None:
-        if task == "binary":
-            return binary_matthews_corrcoef(preds, target, threshold, ignore_index, validate_args)
-        if task == "multiclass":
-            assert isinstance(num_classes, int)
-            return multiclass_matthews_corrcoef(preds, target, num_classes, ignore_index, validate_args)
-        if task == "multilabel":
-            assert isinstance(num_labels, int)
-            return multilabel_matthews_corrcoef(preds, target, num_labels, threshold, ignore_index, validate_args)
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-        )
-    else:
-        rank_zero_warn(
-            "From v0.10 an `'binary_*'`, `'multiclass_*'`, `'multilabel_*'` version now exist of each classification"
-            " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
-            " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
-            " and the general order of arguments may change, such that this metric will just function as an single"
-            " entrypoint to calling the three specialized versions.",
-            DeprecationWarning,
-        )
-    confmat = _matthews_corrcoef_update(preds, target, num_classes, threshold)
-    return _matthews_corrcoef_compute(confmat)
+    if task == "binary":
+        return binary_matthews_corrcoef(preds, target, threshold, ignore_index, validate_args)
+    if task == "multiclass":
+        assert isinstance(num_classes, int)
+        return multiclass_matthews_corrcoef(preds, target, num_classes, ignore_index, validate_args)
+    if task == "multilabel":
+        assert isinstance(num_labels, int)
+        return multilabel_matthews_corrcoef(preds, target, num_labels, threshold, ignore_index, validate_args)
+    raise ValueError(
+        f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+    )

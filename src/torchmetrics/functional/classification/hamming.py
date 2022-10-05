@@ -478,33 +478,20 @@ def hamming_distance(
         >>> hamming_distance(preds, target)
         tensor(0.2500)
     """
-    if task is not None:
-        assert multidim_average is not None
-        if task == "binary":
-            return binary_hamming_distance(preds, target, threshold, multidim_average, ignore_index, validate_args)
-        if task == "multiclass":
-            assert isinstance(num_classes, int)
-            assert isinstance(top_k, int)
-            return multiclass_hamming_distance(
-                preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args
-            )
-        if task == "multilabel":
-            assert isinstance(num_labels, int)
-            return multilabel_hamming_distance(
-                preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
-            )
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+    assert multidim_average is not None
+    if task == "binary":
+        return binary_hamming_distance(preds, target, threshold, multidim_average, ignore_index, validate_args)
+    if task == "multiclass":
+        assert isinstance(num_classes, int)
+        assert isinstance(top_k, int)
+        return multiclass_hamming_distance(
+            preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args
         )
-    else:
-        rank_zero_warn(
-            "From v0.10 an `'binary_*'`, `'multiclass_*'`, `'multilabel_*'` version now exist of each classification"
-            " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
-            " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
-            " and the general order of arguments may change, such that this metric will just function as an single"
-            " entrypoint to calling the three specialized versions.",
-            DeprecationWarning,
+    if task == "multilabel":
+        assert isinstance(num_labels, int)
+        return multilabel_hamming_distance(
+            preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
         )
-
-    correct, total = _hamming_distance_update(preds, target, threshold)
-    return _hamming_distance_compute(correct, total)
+    raise ValueError(
+        f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+    )

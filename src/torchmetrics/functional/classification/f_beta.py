@@ -898,60 +898,23 @@ def fbeta_score(
         >>> fbeta_score(preds, target, num_classes=3, beta=0.5)
         tensor(0.3333)
     """
-    if task is not None:
-        assert multidim_average is not None
-        if task == "binary":
-            return binary_fbeta_score(preds, target, beta, threshold, multidim_average, ignore_index, validate_args)
-        if task == "multiclass":
-            assert isinstance(num_classes, int)
-            assert isinstance(top_k, int)
-            return multiclass_fbeta_score(
-                preds, target, beta, num_classes, average, top_k, multidim_average, ignore_index, validate_args
-            )
-        if task == "multilabel":
-            assert isinstance(num_labels, int)
-            return multilabel_fbeta_score(
-                preds, target, beta, num_labels, threshold, average, multidim_average, ignore_index, validate_args
-            )
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+    assert multidim_average is not None
+    if task == "binary":
+        return binary_fbeta_score(preds, target, beta, threshold, multidim_average, ignore_index, validate_args)
+    if task == "multiclass":
+        assert isinstance(num_classes, int)
+        assert isinstance(top_k, int)
+        return multiclass_fbeta_score(
+            preds, target, beta, num_classes, average, top_k, multidim_average, ignore_index, validate_args
         )
-    else:
-        rank_zero_warn(
-            "From v0.10 an `'binary_*'`, `'multiclass_*'`, `'multilabel_*'` version now exist of each classification"
-            " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
-            " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
-            " and the general order of arguments may change, such that this metric will just function as an single"
-            " entrypoint to calling the three specialized versions.",
-            DeprecationWarning,
+    if task == "multilabel":
+        assert isinstance(num_labels, int)
+        return multilabel_fbeta_score(
+            preds, target, beta, num_labels, threshold, average, multidim_average, ignore_index, validate_args
         )
-    allowed_average = list(AvgMethod)
-    if average not in allowed_average:
-        raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
-
-    if mdmc_average is not None and MDMCAverageMethod.from_str(mdmc_average) is None:
-        raise ValueError(f"The `mdmc_average` has to be one of {list(MDMCAverageMethod)}, got {mdmc_average}.")
-
-    if average in [AvgMethod.MACRO, AvgMethod.WEIGHTED, AvgMethod.NONE] and (not num_classes or num_classes < 1):
-        raise ValueError(f"When you set `average` as {average}, you have to provide the number of classes.")
-
-    if num_classes and ignore_index is not None and (not 0 <= ignore_index < num_classes or num_classes == 1):
-        raise ValueError(f"The `ignore_index` {ignore_index} is not valid for inputs with {num_classes} classes")
-
-    reduce = AvgMethod.MACRO if average in [AvgMethod.WEIGHTED, AvgMethod.NONE] else average
-    tp, fp, tn, fn = _stat_scores_update(
-        preds,
-        target,
-        reduce=reduce,
-        mdmc_reduce=mdmc_average,
-        threshold=threshold,
-        num_classes=num_classes,
-        top_k=top_k,
-        multiclass=multiclass,
-        ignore_index=ignore_index,
+    raise ValueError(
+        f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
     )
-
-    return _fbeta_compute(tp, fp, tn, fn, beta, ignore_index, average, mdmc_average)
 
 
 def f1_score(
@@ -1072,33 +1035,20 @@ def f1_score(
         >>> f1_score(preds, target, num_classes=3)
         tensor(0.3333)
     """
-    if task is not None:
-        assert multidim_average is not None
-        if task == "binary":
-            return binary_f1_score(preds, target, threshold, multidim_average, ignore_index, validate_args)
-        if task == "multiclass":
-            assert isinstance(num_classes, int)
-            assert isinstance(top_k, int)
-            return multiclass_f1_score(
-                preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args
-            )
-        if task == "multilabel":
-            assert isinstance(num_labels, int)
-            return multilabel_f1_score(
-                preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
-            )
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+    assert multidim_average is not None
+    if task == "binary":
+        return binary_f1_score(preds, target, threshold, multidim_average, ignore_index, validate_args)
+    if task == "multiclass":
+        assert isinstance(num_classes, int)
+        assert isinstance(top_k, int)
+        return multiclass_f1_score(
+            preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args
         )
-    else:
-        rank_zero_warn(
-            "From v0.10 an `'binary_*'`, `'multiclass_*'`, `'multilabel_*'` version now exist of each classification"
-            " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
-            " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
-            " and the general order of arguments may change, such that this metric will just function as an single"
-            " entrypoint to calling the three specialized versions.",
-            DeprecationWarning,
+    if task == "multilabel":
+        assert isinstance(num_labels, int)
+        return multilabel_f1_score(
+            preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
         )
-    return fbeta_score(
-        preds, target, 1.0, average, mdmc_average, ignore_index, num_classes, threshold, top_k, multiclass
+    raise ValueError(
+        f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
     )

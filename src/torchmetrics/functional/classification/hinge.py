@@ -461,26 +461,12 @@ def hinge_loss(
         >>> hinge_loss(preds, target, multiclass_mode="one-vs-all")
         tensor([2.2333, 1.5000, 1.2333])
     """
-    if task is not None:
-        if task == "binary":
-            return binary_hinge_loss(preds, target, squared, ignore_index, validate_args)
-        if task == "multiclass":
-            assert isinstance(num_classes, int)
-            assert multiclass_mode is not None
-            return multiclass_hinge_loss(
-                preds, target, num_classes, squared, multiclass_mode, ignore_index, validate_args
-            )
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-        )
-    else:
-        rank_zero_warn(
-            "From v0.10 an `'binary_*'`, `'multiclass_*'`, `'multilabel_*'` version now exist of each classification"
-            " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
-            " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
-            " and the general order of arguments may change, such that this metric will just function as an single"
-            " entrypoint to calling the three specialized versions.",
-            DeprecationWarning,
-        )
-    measure, total = _hinge_update(preds, target, squared=squared, multiclass_mode=multiclass_mode)
-    return _hinge_compute(measure, total)
+    if task == "binary":
+        return binary_hinge_loss(preds, target, squared, ignore_index, validate_args)
+    if task == "multiclass":
+        assert isinstance(num_classes, int)
+        assert multiclass_mode is not None
+        return multiclass_hinge_loss(preds, target, num_classes, squared, multiclass_mode, ignore_index, validate_args)
+    raise ValueError(
+        f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+    )

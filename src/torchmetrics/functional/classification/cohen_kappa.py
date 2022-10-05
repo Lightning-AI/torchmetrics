@@ -331,23 +331,10 @@ def cohen_kappa(
         >>> cohen_kappa(preds, target, num_classes=2)
         tensor(0.5000)
     """
-    if task is not None:
-        if task == "binary":
-            return binary_cohen_kappa(preds, target, threshold, weights, ignore_index, validate_args)
-        if task == "multiclass":
-            return multiclass_cohen_kappa(preds, target, num_classes, weights, ignore_index, validate_args)
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-        )
-    else:
-        rank_zero_warn(
-            "From v0.10 an `'binary_*'`, `'multiclass_*'`, `'multilabel_*'` version now exist of each classification"
-            " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
-            " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
-            " and the general order of arguments may change, such that this metric will just function as an single"
-            " entrypoint to calling the three specialized versions.",
-            DeprecationWarning,
-        )
-
-    confmat = _cohen_kappa_update(preds, target, num_classes, threshold)
-    return _cohen_kappa_compute(confmat, weights)
+    if task == "binary":
+        return binary_cohen_kappa(preds, target, threshold, weights, ignore_index, validate_args)
+    if task == "multiclass":
+        return multiclass_cohen_kappa(preds, target, num_classes, weights, ignore_index, validate_args)
+    raise ValueError(
+        f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+    )

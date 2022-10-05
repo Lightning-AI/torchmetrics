@@ -438,32 +438,10 @@ def calibration_error(
         norm: Norm used to compare empirical and expected probability bins.
             Defaults to "l1", or Expected Calibration Error.
     """
-    if task is not None:
-        assert norm is not None
-        if task == "binary":
-            return binary_calibration_error(preds, target, n_bins, norm, ignore_index, validate_args)
-        if task == "multiclass":
-            assert isinstance(num_classes, int)
-            return multiclass_calibration_error(preds, target, num_classes, n_bins, norm, ignore_index, validate_args)
-        raise ValueError(f"Expected argument `task` to either be `'binary'`, `'multiclass'` but got {task}")
-    else:
-        rank_zero_warn(
-            "From v0.10 an `'binary_*'`, `'multiclass_*'`, `'multilabel_*'` version now exist of each classification"
-            " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
-            " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
-            " and the general order of arguments may change, such that this metric will just function as an single"
-            " entrypoint to calling the three specialized versions.",
-            DeprecationWarning,
-        )
-
-    if norm not in ("l1", "l2", "max"):
-        raise ValueError(f"Norm {norm} is not supported. Please select from l1, l2, or max. ")
-
-    if not isinstance(n_bins, int) or n_bins <= 0:
-        raise ValueError(f"Expected argument `n_bins` to be a int larger than 0 but got {n_bins}")
-
-    confidences, accuracies = _ce_update(preds, target)
-
-    bin_boundaries = torch.linspace(0, 1, n_bins + 1, dtype=torch.float, device=preds.device)
-
-    return _ce_compute(confidences, accuracies, bin_boundaries, norm=norm)
+    assert norm is not None
+    if task == "binary":
+        return binary_calibration_error(preds, target, n_bins, norm, ignore_index, validate_args)
+    if task == "multiclass":
+        assert isinstance(num_classes, int)
+        return multiclass_calibration_error(preds, target, num_classes, n_bins, norm, ignore_index, validate_args)
+    raise ValueError(f"Expected argument `task` to either be `'binary'`, `'multiclass'` but got {task}")

@@ -690,26 +690,14 @@ def roc(
          tensor([1.7576, 0.7576, 0.3680, 0.3468, 0.0745]),
          tensor([1.1837, 0.1837, 0.1338, 0.1183, 0.1138])]
     """
-    if task is not None:
-        if task == "binary":
-            return binary_roc(preds, target, thresholds, ignore_index, validate_args)
-        if task == "multiclass":
-            assert isinstance(num_classes, int)
-            return multiclass_roc(preds, target, num_classes, thresholds, ignore_index, validate_args)
-        if task == "multilabel":
-            assert isinstance(num_labels, int)
-            return multilabel_roc(preds, target, num_labels, thresholds, ignore_index, validate_args)
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-        )
-    else:
-        rank_zero_warn(
-            "From v0.10 an `'binary_*'`, `'multiclass_*'`, `'multilabel_*'` version now exist of each classification"
-            " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
-            " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
-            " and the general order of arguments may change, such that this metric will just function as an single"
-            " entrypoint to calling the three specialized versions.",
-            DeprecationWarning,
-        )
-    preds, target, num_classes, pos_label = _roc_update(preds, target, num_classes, pos_label)
-    return _roc_compute(preds, target, num_classes, pos_label, sample_weights)
+    if task == "binary":
+        return binary_roc(preds, target, thresholds, ignore_index, validate_args)
+    if task == "multiclass":
+        assert isinstance(num_classes, int)
+        return multiclass_roc(preds, target, num_classes, thresholds, ignore_index, validate_args)
+    if task == "multilabel":
+        assert isinstance(num_labels, int)
+        return multilabel_roc(preds, target, num_labels, thresholds, ignore_index, validate_args)
+    raise ValueError(
+        f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+    )
