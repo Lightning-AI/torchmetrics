@@ -96,7 +96,6 @@ class GeneralizedDiceScore(StatScores):
         >>> generalized_dice_score = GeneralizedDiceScore(num_classes=3)
         >>> generalized_dice_score(preds, target)
         tensor(0.3478)
-
     """
     is_differentiable: bool = False
     higher_is_better: bool = True

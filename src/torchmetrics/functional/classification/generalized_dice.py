@@ -201,7 +201,6 @@ def generalized_dice_score(
         >>> target = torch.tensor([1, 1, 2, 0])
         >>> generalized_dice_score(preds, target, average='samples')
         tensor(0.3478)
-
     """
     allowed_weight_type = ("square", "simple", None)
     if weight_type not in allowed_weight_type:
