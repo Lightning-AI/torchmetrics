@@ -36,7 +36,6 @@ from torchmetrics.classification.accuracy import (  # noqa: F401
     MulticlassAccuracy,
     MultilabelAccuracy,
 )
-from torchmetrics.classification.auc import AUC  # noqa: F401
 from torchmetrics.classification.auroc import AUROC, BinaryAUROC, MulticlassAUROC, MultilabelAUROC  # noqa: F401
 from torchmetrics.classification.average_precision import (  # noqa: F401
     AveragePrecision,
@@ -44,9 +43,6 @@ from torchmetrics.classification.average_precision import (  # noqa: F401
     MulticlassAveragePrecision,
     MultilabelAveragePrecision,
 )
-from torchmetrics.classification.binned_precision_recall import BinnedAveragePrecision  # noqa: F401
-from torchmetrics.classification.binned_precision_recall import BinnedPrecisionRecallCurve  # noqa: F401
-from torchmetrics.classification.binned_precision_recall import BinnedRecallAtFixedPrecision  # noqa: F401
 from torchmetrics.classification.calibration_error import (  # noqa: F401
     BinaryCalibrationError,
     CalibrationError,
@@ -95,9 +91,6 @@ from torchmetrics.classification.precision_recall import (  # noqa: F401
     Recall,
 )
 from torchmetrics.classification.ranking import (  # noqa: F401
-    CoverageError,
-    LabelRankingAveragePrecision,
-    LabelRankingLoss,
     MultilabelCoverageError,
     MultilabelRankingAveragePrecision,
     MultilabelRankingLoss,
