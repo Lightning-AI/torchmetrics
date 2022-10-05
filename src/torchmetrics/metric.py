@@ -848,6 +848,9 @@ class Metric(Module, ABC):
     def __getitem__(self, idx: int) -> "Metric":
         return CompositionalMetric(lambda x: x[idx], self, None)
 
+    def __getnewargs__(self):
+        return (Metric.__str__(self),)
+
 
 def _neg(x: Tensor) -> Tensor:
     return -torch.abs(x)
