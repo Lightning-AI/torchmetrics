@@ -15,18 +15,20 @@ from typing import Any, List, Optional
 
 from torch import Tensor
 
-from torchmetrics.functional.classification.auc import _auc_compute, _auc_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities.compute import _auc_compute, _auc_format_inputs
 from torchmetrics.utilities.data import dim_zero_cat
 
 
 class AUC(Metric):
-    r"""
-    Computes Area Under the Curve (AUC) using the trapezoidal rule
+    r"""Computes Area Under the Curve (AUC) using the trapezoidal rule.
 
     Forward accepts two input tensors that should be 1D and have the same number
     of elements
+
+    .. note::
+        This metric has been deprecated in v0.10 and will be removed in v0.11.
 
     Args:
         reorder: AUC expects its first input to be sorted. If this is not the case,
@@ -47,6 +49,11 @@ class AUC(Metric):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
+        rank_zero_warn(
+            "`torchmetrics.classification.AUC` has been deprecated in v0.10 and will be removed in v0.11."
+            "A functional version is still available in `torchmetrics.utilities.compute`",
+            DeprecationWarning,
+        )
 
         self.reorder = reorder
 
@@ -65,7 +72,7 @@ class AUC(Metric):
             preds: Predictions from model (probabilities, or labels)
             target: Ground truth labels
         """
-        x, y = _auc_update(preds, target)
+        x, y = _auc_format_inputs(preds, target)
 
         self.x.append(x)
         self.y.append(y)

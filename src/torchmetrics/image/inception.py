@@ -27,9 +27,8 @@ __doctest_requires__ = {("InceptionScore", "IS"): ["torch_fidelity"]}
 
 
 class InceptionScore(Metric):
-    r"""
-    Calculates the Inception Score (IS) which is used to access how realistic generated images are.
-    It is defined as
+    r"""Calculates the Inception Score (IS) which is used to access how realistic generated images are. It is
+    defined as.
 
     .. math::
         IS = exp(\mathbb{E}_x KL(p(y | x ) || p(y)))
@@ -86,7 +85,6 @@ class InceptionScore(Metric):
         >>> inception.update(imgs)
         >>> inception.compute()
         (tensor(1.0544), tensor(0.0117))
-
     """
     is_differentiable: bool = False
     higher_is_better: bool = True

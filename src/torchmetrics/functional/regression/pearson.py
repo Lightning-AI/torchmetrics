@@ -28,6 +28,7 @@ def _pearson_corrcoef_update(
     var_y: Tensor,
     corr_xy: Tensor,
     n_prior: Tensor,
+    num_outputs: int,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor, Tensor, Tensor]:
     """Updates and returns variables required to compute Pearson Correlation Coefficient.
 
@@ -43,18 +44,24 @@ def _pearson_corrcoef_update(
     """
     # Data checking
     _check_same_shape(preds, target)
-    preds = preds.squeeze()
-    target = target.squeeze()
-    if preds.ndim > 1 or target.ndim > 1:
-        raise ValueError("Expected both predictions and target to be 1 dimensional tensors.")
+    if preds.ndim > 2 or target.ndim > 2:
+        raise ValueError(
+            f"Expected both predictions and target to be either 1- or 2-dimensional tensors,"
+            f" but got {target.ndim} and {preds.ndim}."
+        )
+    if (num_outputs == 1 and preds.ndim != 1) or (num_outputs > 1 and num_outputs != preds.shape[-1]):
+        raise ValueError(
+            f"Expected argument `num_outputs` to match the second dimension of input, but got {num_outputs}"
+            f" and {preds.ndim}."
+        )
 
-    n_obs = preds.numel()
-    mx_new = (n_prior * mean_x + preds.mean() * n_obs) / (n_prior + n_obs)
-    my_new = (n_prior * mean_y + target.mean() * n_obs) / (n_prior + n_obs)
+    n_obs = preds.shape[0]
+    mx_new = (n_prior * mean_x + preds.mean(0) * n_obs) / (n_prior + n_obs)
+    my_new = (n_prior * mean_y + target.mean(0) * n_obs) / (n_prior + n_obs)
     n_prior += n_obs
-    var_x += ((preds - mx_new) * (preds - mean_x)).sum()
-    var_y += ((target - my_new) * (target - mean_y)).sum()
-    corr_xy += ((preds - mx_new) * (target - mean_y)).sum()
+    var_x += ((preds - mx_new) * (preds - mean_x)).sum(0)
+    var_y += ((target - my_new) * (target - mean_y)).sum(0)
+    corr_xy += ((preds - mx_new) * (target - mean_y)).sum(0)
     mean_x = mx_new
     mean_y = my_new
 
@@ -89,15 +96,25 @@ def pearson_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
         preds: estimated scores
         target: ground truth scores
 
-    Example:
+    Example (single output regression):
         >>> from torchmetrics.functional import pearson_corrcoef
         >>> target = torch.tensor([3, -0.5, 2, 7])
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])
         >>> pearson_corrcoef(preds, target)
         tensor(0.9849)
+
+    Example (multi output regression):
+        >>> from torchmetrics.functional import pearson_corrcoef
+        >>> target = torch.tensor([[3, -0.5], [2, 7]])
+        >>> preds = torch.tensor([[2.5, 0.0], [2, 8]])
+        >>> pearson_corrcoef(preds, target)
+        tensor([1., 1.])
     """
-    _temp = torch.zeros(1, dtype=preds.dtype, device=preds.device)
+    d = preds.shape[1] if preds.ndim == 2 else 1
+    _temp = torch.zeros(d, dtype=preds.dtype, device=preds.device)
     mean_x, mean_y, var_x = _temp.clone(), _temp.clone(), _temp.clone()
     var_y, corr_xy, nb = _temp.clone(), _temp.clone(), _temp.clone()
-    _, _, var_x, var_y, corr_xy, nb = _pearson_corrcoef_update(preds, target, mean_x, mean_y, var_x, var_y, corr_xy, nb)
+    _, _, var_x, var_y, corr_xy, nb = _pearson_corrcoef_update(
+        preds, target, mean_x, mean_y, var_x, var_y, corr_xy, nb, num_outputs=1 if preds.ndim == 1 else preds.shape[-1]
+    )
     return _pearson_corrcoef_compute(var_x, var_y, corr_xy, nb)

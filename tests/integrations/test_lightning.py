@@ -18,9 +18,9 @@ from pytorch_lightning import LightningModule, Trainer
 from torch import tensor
 from torch.utils.data import DataLoader
 
+from integrations.helpers import no_warning_call
 from integrations.lightning.boring_model import BoringModel, RandomDataset
 from torchmetrics import Accuracy, AveragePrecision, MetricCollection, SumMetric
-from unittests.helpers.utilities import no_warning_call
 
 
 class DiffMetric(SumMetric):
@@ -57,7 +57,6 @@ def test_metric_lightning(tmpdir):
         limit_val_batches=2,
         max_epochs=2,
         log_every_n_steps=1,
-        weights_summary=None,
     )
     trainer.fit(model)
 
@@ -252,7 +251,6 @@ def test_metric_collection_lightning_log(tmpdir):
         limit_val_batches=0,
         max_epochs=1,
         log_every_n_steps=1,
-        weights_summary=None,
     )
     with no_warning_call(
         UserWarning,
@@ -290,9 +288,7 @@ def test_scriptable(tmpdir):
         limit_val_batches=2,
         max_epochs=1,
         log_every_n_steps=1,
-        weights_summary=None,
         logger=False,
-        checkpoint_callback=False,
     )
     trainer.fit(model)
     rand_input = torch.randn(10, 32)

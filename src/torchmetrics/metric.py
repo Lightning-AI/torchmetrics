@@ -143,7 +143,7 @@ class Metric(Module, ABC):
                 default needs access to the full metric state. If this is not the case, significant speedups can be
                 achieved and we recommend setting this to `False`.
                 We provide an checking function
-                `from torchmetrics.utilities import check_forward_no_full_state`
+                `from torchmetrics.utilities import check_forward_full_state_property`
                 that can be used to check if the `full_state_update=True` (old and potential slower behaviour,
                 default for now) or if `full_state_update=False` can be used safely.
                 """,
@@ -337,7 +337,7 @@ class Metric(Module, ABC):
             if reduce_fn == dim_zero_sum:
                 reduced = global_state + local_state
             elif reduce_fn == dim_zero_mean:
-                reduced = ((self._update_count - 1) * global_state + local_state) / self._update_count
+                reduced = ((self._update_count - 1) * global_state + local_state).float() / self._update_count
             elif reduce_fn == dim_zero_max:
                 reduced = torch.max(global_state, local_state)
             elif reduce_fn == dim_zero_min:
@@ -371,6 +371,10 @@ class Metric(Module, ABC):
         for attr, reduction_fn in self._reductions.items():
             # pre-processing ops (stack or flatten for inputs)
 
+            if isinstance(output_dict[attr], list) and len(output_dict[attr]) == 0:
+                setattr(self, attr, [])
+                continue
+
             if isinstance(output_dict[attr][0], Tensor):
                 output_dict[attr] = torch.stack(output_dict[attr])
             elif isinstance(output_dict[attr][0], list):
@@ -392,10 +396,9 @@ class Metric(Module, ABC):
                 except RuntimeError as err:
                     if "Expected all tensors to be on" in str(err):
                         raise RuntimeError(
-                            "Encountered different devices in metric calculation"
-                            " (see stacktrace for details)."
-                            "This could be due to the metric class not being on the same device as input."
-                            f"Instead of `metric={self.__class__.__name__}(...)` try to do"
+                            "Encountered different devices in metric calculation (see stacktrace for details)."
+                            " This could be due to the metric class not being on the same device as input."
+                            f" Instead of `metric={self.__class__.__name__}(...)` try to do"
                             f" `metric={self.__class__.__name__}(...).to(device)` where"
                             " device corresponds to the device of the input."
                         ) from err
