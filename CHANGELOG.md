@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added `TotalVariation` to image package ([#978](https://github.com/PyTorchLightning/metrics/pull/978))
+
+
 - Added a new NLP metric `InfoLM` ([#915](https://github.com/PyTorchLightning/metrics/pull/915))
 - Added `Perplexity` metric ([#922](https://github.com/PyTorchLightning/metrics/pull/922))
 - Added `ConcordanceCorrCoef` metric to regression package ([#1201](https://github.com/Lightning-AI/metrics/pull/1201))

@@ -40,6 +40,7 @@ from torchmetrics.functional.image.ssim import (
     multiscale_structural_similarity_index_measure,
     structural_similarity_index_measure,
 )
+from torchmetrics.functional.image.tv import total_variation
 from torchmetrics.functional.image.uqi import universal_image_quality_index
 from torchmetrics.functional.pairwise.cosine import pairwise_cosine_similarity
 from torchmetrics.functional.pairwise.euclidean import pairwise_euclidean_distance
@@ -156,6 +157,7 @@ __all__ = [
     "structural_similarity_index_measure",
     "stat_scores",
     "symmetric_mean_absolute_percentage_error",
+    "total_variation",
     "translation_edit_rate",
     "universal_image_quality_index",
     "spectral_angle_mapper",
