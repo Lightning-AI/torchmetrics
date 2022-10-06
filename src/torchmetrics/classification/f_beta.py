@@ -21,18 +21,14 @@ from torchmetrics.classification.stat_scores import (
     BinaryStatScores,
     MulticlassStatScores,
     MultilabelStatScores,
-    StatScores,
 )
 from torchmetrics.functional.classification.f_beta import (
     _binary_fbeta_score_arg_validation,
-    _fbeta_compute,
     _fbeta_reduce,
     _multiclass_fbeta_score_arg_validation,
     _multilabel_fbeta_score_arg_validation,
 )
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.enums import AverageMethod
-from torchmetrics.utilities.prints import rank_zero_warn
 
 
 class BinaryFBetaScore(BinaryStatScores):
@@ -708,7 +704,7 @@ class MultilabelF1Score(MultilabelFBetaScore):
         )
 
 
-class FBetaScore(StatScores):
+class FBetaScore(object):
     r"""F-Beta Score.
 
     .. note::
@@ -814,7 +810,6 @@ class FBetaScore(StatScores):
         >>> f_beta(preds, target)
         tensor(0.3333)
     """
-    full_state_update: bool = False
 
     def __new__(
         cls,
@@ -832,75 +827,23 @@ class FBetaScore(StatScores):
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
-        if task is not None:
-            assert multidim_average is not None
-            kwargs.update(
-                dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
-            )
-            if task == "binary":
-                return BinaryFBetaScore(beta, threshold, **kwargs)
-            if task == "multiclass":
-                assert isinstance(num_classes, int)
-                assert isinstance(top_k, int)
-                return MulticlassFBetaScore(beta, num_classes, top_k, average, **kwargs)
-            if task == "multilabel":
-                assert isinstance(num_labels, int)
-                return MultilabelFBetaScore(beta, num_labels, threshold, average, **kwargs)
-            raise ValueError(
-                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-            )
-        else:
-            rank_zero_warn(
-                "From v0.10 an `'Binary*'`, `'Multiclass*', `'Multilabel*'` version now exist of each classification"
-                " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
-                " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
-                " and the general order of arguments may change, such that this metric will just function as an single"
-                " entrypoint to calling the three specialized versions.",
-                DeprecationWarning,
-            )
-        return super().__new__(cls)
-
-    def __init__(
-        self,
-        num_classes: Optional[int] = None,
-        beta: float = 1.0,
-        threshold: float = 0.5,
-        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
-        mdmc_average: Optional[str] = None,
-        ignore_index: Optional[int] = None,
-        top_k: Optional[int] = None,
-        multiclass: Optional[bool] = None,
-        **kwargs: Any,
-    ) -> None:
-        self.beta = beta
-        allowed_average = list(AverageMethod)
-        if average not in allowed_average:
-            raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
-
-        _reduce_options = (AverageMethod.WEIGHTED, AverageMethod.NONE, None)
-        if "reduce" not in kwargs:
-            kwargs["reduce"] = AverageMethod.MACRO if average in _reduce_options else average
-        if "mdmc_reduce" not in kwargs:
-            kwargs["mdmc_reduce"] = mdmc_average
-
-        super().__init__(
-            threshold=threshold,
-            top_k=top_k,
-            num_classes=num_classes,
-            multiclass=multiclass,
-            ignore_index=ignore_index,
-            **kwargs,
+        assert multidim_average is not None
+        kwargs.update(dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args))
+        if task == "binary":
+            return BinaryFBetaScore(beta, threshold, **kwargs)
+        if task == "multiclass":
+            assert isinstance(num_classes, int)
+            assert isinstance(top_k, int)
+            return MulticlassFBetaScore(beta, num_classes, top_k, average, **kwargs)
+        if task == "multilabel":
+            assert isinstance(num_labels, int)
+            return MultilabelFBetaScore(beta, num_labels, threshold, average, **kwargs)
+        raise ValueError(
+            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
         )
 
-        self.average = average
 
-    def compute(self) -> Tensor:
-        """Computes f-beta over state."""
-        tp, fp, tn, fn = self._get_final_stats()
-        return _fbeta_compute(tp, fp, tn, fn, self.beta, self.ignore_index, self.average, self.mdmc_reduce)
-
-
-class F1Score(FBetaScore):
+class F1Score(object):
     r"""F1 Score.
 
     .. note::
@@ -996,10 +939,6 @@ class F1Score(FBetaScore):
         tensor(0.3333)
     """
 
-    is_differentiable: bool = False
-    higher_is_better: bool = True
-    full_state_update: bool = False
-
     def __new__(
         cls,
         num_classes: Optional[int] = None,
@@ -1015,53 +954,17 @@ class F1Score(FBetaScore):
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
-        if task is not None:
-            assert multidim_average is not None
-            kwargs.update(
-                dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
-            )
-            if task == "binary":
-                return BinaryF1Score(threshold, **kwargs)
-            if task == "multiclass":
-                assert isinstance(num_classes, int)
-                assert isinstance(top_k, int)
-                return MulticlassF1Score(num_classes, top_k, average, **kwargs)
-            if task == "multilabel":
-                assert isinstance(num_labels, int)
-                return MultilabelF1Score(num_labels, threshold, average, **kwargs)
-            raise ValueError(
-                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-            )
-        else:
-            rank_zero_warn(
-                "From v0.10 an `'Binary*'`, `'Multiclass*', `'Multilabel*'` version now exist of each classification"
-                " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
-                " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
-                " and the general order of arguments may change, such that this metric will just function as an single"
-                " entrypoint to calling the three specialized versions.",
-                DeprecationWarning,
-            )
-        return super().__new__(cls)
-
-    def __init__(
-        self,
-        num_classes: Optional[int] = None,
-        threshold: float = 0.5,
-        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
-        mdmc_average: Optional[str] = None,
-        ignore_index: Optional[int] = None,
-        top_k: Optional[int] = None,
-        multiclass: Optional[bool] = None,
-        **kwargs: Any,
-    ) -> None:
-        super().__init__(
-            num_classes=num_classes,
-            beta=1.0,
-            threshold=threshold,
-            average=average,
-            mdmc_average=mdmc_average,
-            ignore_index=ignore_index,
-            top_k=top_k,
-            multiclass=multiclass,
-            **kwargs,
+        assert multidim_average is not None
+        kwargs.update(dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args))
+        if task == "binary":
+            return BinaryF1Score(threshold, **kwargs)
+        if task == "multiclass":
+            assert isinstance(num_classes, int)
+            assert isinstance(top_k, int)
+            return MulticlassF1Score(num_classes, top_k, average, **kwargs)
+        if task == "multilabel":
+            assert isinstance(num_labels, int)
+            return MultilabelF1Score(num_labels, threshold, average, **kwargs)
+        raise ValueError(
+            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
         )

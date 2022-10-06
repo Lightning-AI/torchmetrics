@@ -20,13 +20,10 @@ from typing_extensions import Literal
 from torchmetrics.classification import BinaryConfusionMatrix, MulticlassConfusionMatrix
 from torchmetrics.functional.classification.cohen_kappa import (
     _binary_cohen_kappa_arg_validation,
-    _cohen_kappa_compute,
     _cohen_kappa_reduce,
-    _cohen_kappa_update,
     _multiclass_cohen_kappa_arg_validation,
 )
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.prints import rank_zero_warn
 
 
 class BinaryCohenKappa(BinaryConfusionMatrix):
@@ -180,7 +177,7 @@ class MulticlassCohenKappa(MulticlassConfusionMatrix):
         return _cohen_kappa_reduce(self.confmat, self.weights)
 
 
-class CohenKappa(Metric):
+class CohenKappa(object):
     r"""Cohen Kappa.
 
     .. note::
@@ -235,10 +232,6 @@ class CohenKappa(Metric):
         >>> cohenkappa(preds, target)
         tensor(0.5000)
     """
-    is_differentiable: bool = False
-    higher_is_better: bool = True
-    full_state_update: bool = False
-    confmat: Tensor
 
     def __new__(
         cls,
@@ -250,55 +243,12 @@ class CohenKappa(Metric):
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
-        if task is not None:
-            kwargs.update(dict(weights=weights, ignore_index=ignore_index, validate_args=validate_args))
-            if task == "binary":
-                return BinaryCohenKappa(threshold, **kwargs)
-            if task == "multiclass":
-                assert isinstance(num_classes, int)
-                return MulticlassCohenKappa(num_classes, **kwargs)
-            raise ValueError(
-                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-            )
-        else:
-            rank_zero_warn(
-                "From v0.10 an `'Binary*'`, `'Multiclass*', `'Multilabel*'` version now exist of each classification"
-                " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
-                " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
-                " and the general order of arguments may change, such that this metric will just function as an single"
-                " entrypoint to calling the three specialized versions.",
-                DeprecationWarning,
-            )
-        return super().__new__(cls)
-
-    def __init__(
-        self,
-        num_classes: int,
-        weights: Optional[str] = None,
-        threshold: float = 0.5,
-        **kwargs: Any,
-    ) -> None:
-        super().__init__(**kwargs)
-        self.num_classes = num_classes
-        self.weights = weights
-        self.threshold = threshold
-
-        allowed_weights = ("linear", "quadratic", "none", None)
-        if self.weights not in allowed_weights:
-            raise ValueError(f"Argument weights needs to one of the following: {allowed_weights}")
-
-        self.add_state("confmat", default=torch.zeros(num_classes, num_classes, dtype=torch.long), dist_reduce_fx="sum")
-
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
-        confmat = _cohen_kappa_update(preds, target, self.num_classes, self.threshold)
-        self.confmat += confmat
-
-    def compute(self) -> Tensor:
-        """Computes cohen kappa score."""
-        return _cohen_kappa_compute(self.confmat, self.weights)
+        kwargs.update(dict(weights=weights, ignore_index=ignore_index, validate_args=validate_args))
+        if task == "binary":
+            return BinaryCohenKappa(threshold, **kwargs)
+        if task == "multiclass":
+            assert isinstance(num_classes, int)
+            return MulticlassCohenKappa(num_classes, **kwargs)
+        raise ValueError(
+            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+        )

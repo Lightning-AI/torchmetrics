@@ -23,8 +23,6 @@ from torchmetrics.classification.precision_recall_curve import (
     MultilabelPrecisionRecallCurve,
 )
 from torchmetrics.functional.classification.average_precision import (
-    _average_precision_compute,
-    _average_precision_update,
     _binary_average_precision_compute,
     _multiclass_average_precision_arg_validation,
     _multiclass_average_precision_compute,
@@ -32,7 +30,6 @@ from torchmetrics.functional.classification.average_precision import (
     _multilabel_average_precision_compute,
 )
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 
 
@@ -318,7 +315,7 @@ class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
         )
 
 
-class AveragePrecision(Metric):
+class AveragePrecision(object):
     r"""Average Precision.
 
     .. note::
@@ -380,12 +377,6 @@ class AveragePrecision(Metric):
         [tensor(1.), tensor(1.), tensor(0.2500), tensor(0.2500), tensor(nan)]
     """
 
-    is_differentiable: bool = False
-    higher_is_better: Optional[bool] = None
-    full_state_update: bool = False
-    preds: List[Tensor]
-    target: List[Tensor]
-
     def __new__(
         cls,
         num_classes: Optional[int] = None,
@@ -398,82 +389,15 @@ class AveragePrecision(Metric):
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
-        if task is not None:
-            kwargs.update(dict(thresholds=thresholds, ignore_index=ignore_index, validate_args=validate_args))
-            if task == "binary":
-                return BinaryAveragePrecision(**kwargs)
-            if task == "multiclass":
-                assert isinstance(num_classes, int)
-                return MulticlassAveragePrecision(num_classes, average, **kwargs)
-            if task == "multilabel":
-                assert isinstance(num_labels, int)
-                return MultilabelAveragePrecision(num_labels, average, **kwargs)
-            raise ValueError(
-                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-            )
-        else:
-            rank_zero_warn(
-                "From v0.10 an `'Binary*'`, `'Multiclass*', `'Multilabel*'` version now exist of each classification"
-                " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
-                " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
-                " and the general order of arguments may change, such that this metric will just function as an single"
-                " entrypoint to calling the three specialized versions.",
-                DeprecationWarning,
-            )
-        return super().__new__(cls)
-
-    def __init__(
-        self,
-        num_classes: Optional[int] = None,
-        pos_label: Optional[int] = None,
-        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
-        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
-        thresholds: Optional[Union[int, List[float], Tensor]] = None,
-        num_labels: Optional[int] = None,
-        ignore_index: Optional[int] = None,
-        validate_args: bool = True,
-        **kwargs: Any,
-    ) -> None:
-        super().__init__(**kwargs)
-
-        self.num_classes = num_classes
-        self.pos_label = pos_label
-        allowed_average = ("micro", "macro", "weighted", "none", None)
-        if average not in allowed_average:
-            raise ValueError(f"Expected argument `average` to be one of {allowed_average}" f" but got {average}")
-        self.average = average
-
-        self.add_state("preds", default=[], dist_reduce_fx="cat")
-        self.add_state("target", default=[], dist_reduce_fx="cat")
-
-        rank_zero_warn(
-            "Metric `AveragePrecision` will save all targets and predictions in buffer."
-            " For large datasets this may lead to large memory footprint."
+        kwargs.update(dict(thresholds=thresholds, ignore_index=ignore_index, validate_args=validate_args))
+        if task == "binary":
+            return BinaryAveragePrecision(**kwargs)
+        if task == "multiclass":
+            assert isinstance(num_classes, int)
+            return MulticlassAveragePrecision(num_classes, average, **kwargs)
+        if task == "multilabel":
+            assert isinstance(num_labels, int)
+            return MultilabelAveragePrecision(num_labels, average, **kwargs)
+        raise ValueError(
+            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
         )
-
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
-        preds, target, num_classes, pos_label = _average_precision_update(
-            preds, target, self.num_classes, self.pos_label, self.average
-        )
-        self.preds.append(preds)
-        self.target.append(target)
-        self.num_classes = num_classes
-        self.pos_label = pos_label
-
-    def compute(self) -> Union[Tensor, List[Tensor]]:
-        """Compute the average precision score.
-
-        Returns:
-            tensor with average precision. If multiclass return list of such tensors, one for each class
-        """
-        preds = dim_zero_cat(self.preds)
-        target = dim_zero_cat(self.target)
-        if not self.num_classes:
-            raise ValueError(f"`num_classes` bas to be positive number, but got {self.num_classes}")
-        return _average_precision_compute(preds, target, self.num_classes, self.pos_label, self.average)

@@ -11,28 +11,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Union
+from typing import Any, Optional
 
 import torch
 from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.functional.classification.hinge import (
-    MulticlassMode,
     _binary_confusion_matrix_format,
     _binary_hinge_loss_arg_validation,
     _binary_hinge_loss_tensor_validation,
     _binary_hinge_loss_update,
-    _hinge_compute,
     _hinge_loss_compute,
-    _hinge_update,
     _multiclass_confusion_matrix_format,
     _multiclass_hinge_loss_arg_validation,
     _multiclass_hinge_loss_tensor_validation,
     _multiclass_hinge_loss_update,
 )
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.prints import rank_zero_warn
 
 
 class BinaryHingeLoss(Metric):
@@ -281,11 +277,6 @@ class HingeLoss(Metric):
         >>> hinge(preds, target)
         tensor([2.2333, 1.5000, 1.2333])
     """
-    is_differentiable: bool = True
-    higher_is_better: bool = False
-    full_state_update: bool = False
-    measure: Tensor
-    total: Tensor
 
     def __new__(
         cls,
@@ -297,54 +288,13 @@ class HingeLoss(Metric):
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
-        if task is not None:
-            kwargs.update(dict(ignore_index=ignore_index, validate_args=validate_args))
-            if task == "binary":
-                return BinaryHingeLoss(squared, **kwargs)
-            if task == "multiclass":
-                assert isinstance(num_classes, int)
-                assert multiclass_mode is not None
-                return MulticlassHingeLoss(num_classes, squared, multiclass_mode, **kwargs)
-            raise ValueError(
-                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-            )
-        else:
-            rank_zero_warn(
-                "From v0.10 an `'Binary*'`, `'Multiclass*', `'Multilabel*'` version now exist of each classification"
-                " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
-                " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
-                " and the general order of arguments may change, such that this metric will just function as an single"
-                " entrypoint to calling the three specialized versions.",
-                DeprecationWarning,
-            )
-        return super().__new__(cls)
-
-    def __init__(
-        self,
-        squared: bool = False,
-        multiclass_mode: Optional[Union[str, MulticlassMode]] = None,
-        **kwargs: Any,
-    ) -> None:
-        super().__init__(**kwargs)
-
-        self.add_state("measure", default=torch.tensor(0.0), dist_reduce_fx="sum")
-        self.add_state("total", default=torch.tensor(0), dist_reduce_fx="sum")
-
-        if multiclass_mode not in (None, MulticlassMode.CRAMMER_SINGER, MulticlassMode.ONE_VS_ALL):
-            raise ValueError(
-                "The `multiclass_mode` should be either None / 'crammer-singer' / MulticlassMode.CRAMMER_SINGER"
-                "(default) or 'one-vs-all' / MulticlassMode.ONE_VS_ALL,"
-                f" got {multiclass_mode}."
-            )
-
-        self.squared = squared
-        self.multiclass_mode = multiclass_mode
-
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        measure, total = _hinge_update(preds, target, squared=self.squared, multiclass_mode=self.multiclass_mode)
-
-        self.measure = measure + self.measure
-        self.total = total + self.total
-
-    def compute(self) -> Tensor:
-        return _hinge_compute(self.measure, self.total)
+        kwargs.update(dict(ignore_index=ignore_index, validate_args=validate_args))
+        if task == "binary":
+            return BinaryHingeLoss(squared, **kwargs)
+        if task == "multiclass":
+            assert isinstance(num_classes, int)
+            assert multiclass_mode is not None
+            return MulticlassHingeLoss(num_classes, squared, multiclass_mode, **kwargs)
+        raise ValueError(
+            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+        )

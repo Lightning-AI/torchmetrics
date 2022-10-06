@@ -26,11 +26,8 @@ from torchmetrics.functional.classification.roc import (
     _binary_roc_compute,
     _multiclass_roc_compute,
     _multilabel_roc_compute,
-    _roc_compute,
-    _roc_update,
 )
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 
 
@@ -305,7 +302,7 @@ class MultilabelROC(MultilabelPrecisionRecallCurve):
         return _multilabel_roc_compute(state, self.num_labels, self.thresholds, self.ignore_index)
 
 
-class ROC(Metric):
+class ROC(object):
     r"""Receiver Operating Characteristic.
 
     .. note::
@@ -392,12 +389,6 @@ class ROC(Metric):
          tensor([1.1837, 0.1837, 0.1338, 0.1183, 0.1138])]
     """
 
-    is_differentiable: bool = False
-    higher_is_better: Optional[bool] = None
-    full_state_update: bool = False
-    preds: List[Tensor]
-    target: List[Tensor]
-
     def __new__(
         cls,
         num_classes: Optional[int] = None,
@@ -409,77 +400,16 @@ class ROC(Metric):
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
-        if task is not None:
-            kwargs.update(dict(thresholds=thresholds, ignore_index=ignore_index, validate_args=validate_args))
-            if task == "binary":
-                return BinaryROC(**kwargs)
-            if task == "multiclass":
-                assert isinstance(num_classes, int)
-                return MulticlassROC(num_classes, **kwargs)
-            if task == "multilabel":
-                assert isinstance(num_labels, int)
-                return MultilabelROC(num_labels, **kwargs)
-            raise ValueError(
-                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-            )
-        else:
-            rank_zero_warn(
-                "From v0.10 an `'Binary*'`, `'Multiclass*', `'Multilabel*'` version now exist of each classification"
-                " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
-                " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
-                " and the general order of arguments may change, such that this metric will just function as an single"
-                " entrypoint to calling the three specialized versions.",
-                DeprecationWarning,
-            )
-        return super().__new__(cls)
 
-    def __init__(
-        self,
-        num_classes: Optional[int] = None,
-        pos_label: Optional[int] = None,
-        **kwargs: Any,
-    ) -> None:
-        super().__init__(**kwargs)
-
-        self.num_classes = num_classes
-        self.pos_label = pos_label
-
-        self.add_state("preds", default=[], dist_reduce_fx="cat")
-        self.add_state("target", default=[], dist_reduce_fx="cat")
-
-        rank_zero_warn(
-            "Metric `ROC` will save all targets and predictions in buffer."
-            " For large datasets this may lead to large memory footprint."
+        kwargs.update(dict(thresholds=thresholds, ignore_index=ignore_index, validate_args=validate_args))
+        if task == "binary":
+            return BinaryROC(**kwargs)
+        if task == "multiclass":
+            assert isinstance(num_classes, int)
+            return MulticlassROC(num_classes, **kwargs)
+        if task == "multilabel":
+            assert isinstance(num_labels, int)
+            return MultilabelROC(num_labels, **kwargs)
+        raise ValueError(
+            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
         )
-
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
-        preds, target, num_classes, pos_label = _roc_update(preds, target, self.num_classes, self.pos_label)
-        self.preds.append(preds)
-        self.target.append(target)
-        self.num_classes = num_classes
-        self.pos_label = pos_label
-
-    def compute(self) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-        """Compute the receiver operating characteristic.
-
-        Returns:
-            3-element tuple containing
-
-            fpr: tensor with false positive rates.
-                If multiclass, this is a list of such tensors, one for each class.
-            tpr: tensor with true positive rates.
-                If multiclass, this is a list of such tensors, one for each class.
-            thresholds:
-                thresholds used for computing false- and true-positive rates
-        """
-        preds = dim_zero_cat(self.preds)
-        target = dim_zero_cat(self.target)
-        if not self.num_classes:
-            raise ValueError(f"`num_classes` bas to be positive number, but got {self.num_classes}")
-        return _roc_compute(preds, target, self.num_classes, self.pos_label)
