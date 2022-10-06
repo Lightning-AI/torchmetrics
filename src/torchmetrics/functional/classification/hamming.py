@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Tuple, Union
+from typing import Optional
 
 import torch
 from torch import Tensor
@@ -31,9 +31,7 @@ from torchmetrics.functional.classification.stat_scores import (
     _multilabel_stat_scores_tensor_validation,
     _multilabel_stat_scores_update,
 )
-from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.compute import _safe_divide
-from torchmetrics.utilities.prints import rank_zero_warn
 
 
 def _hamming_distance_reduce(
@@ -384,46 +382,6 @@ def multilabel_hamming_distance(
     preds, target = _multilabel_stat_scores_format(preds, target, num_labels, threshold, ignore_index)
     tp, fp, tn, fn = _multilabel_stat_scores_update(preds, target, multidim_average)
     return _hamming_distance_reduce(tp, fp, tn, fn, average=average, multidim_average=multidim_average, multilabel=True)
-
-
-def _hamming_distance_update(
-    preds: Tensor,
-    target: Tensor,
-    threshold: float = 0.5,
-) -> Tuple[Tensor, int]:
-    """Returns the number of positions where prediction equals target, and number of predictions.
-
-    Args:
-        preds: Predicted tensor
-        target: Ground truth tensor
-        threshold: Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
-            of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
-    """
-
-    preds, target, _ = _input_format_classification(preds, target, threshold=threshold)
-
-    correct = (preds == target).sum()
-    total = preds.numel()
-
-    return correct, total
-
-
-def _hamming_distance_compute(correct: Tensor, total: Union[int, Tensor]) -> Tensor:
-    """Computes the Hamming distance.
-
-    Args:
-        correct: Number of positions where prediction equals target
-        total: Total number of predictions
-
-    Example:
-        >>> target = torch.tensor([[0, 1], [1, 1]])
-        >>> preds = torch.tensor([[0, 1], [0, 1]])
-        >>> correct, total = _hamming_distance_update(preds, target)
-        >>> _hamming_distance_compute(correct, total)
-        tensor(0.2500)
-    """
-
-    return 1 - correct.float() / total
 
 
 def hamming_distance(

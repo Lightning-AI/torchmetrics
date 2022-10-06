@@ -23,10 +23,7 @@ from torchmetrics.functional.classification.confusion_matrix import (
     _multiclass_confusion_matrix_format,
     _multiclass_confusion_matrix_tensor_validation,
 )
-from torchmetrics.utilities.checks import _input_format_classification
-from torchmetrics.utilities.enums import DataType
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_8
-from torchmetrics.utilities.prints import rank_zero_warn
 
 
 def _binning_with_loop(
@@ -345,45 +342,6 @@ def multiclass_calibration_error(
     preds, target = _multiclass_confusion_matrix_format(preds, target, ignore_index, convert_to_labels=False)
     confidences, accuracies = _multiclass_calibration_error_update(preds, target)
     return _ce_compute(confidences, accuracies, n_bins, norm)
-
-
-def _ce_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
-    """Given a predictions and targets tensor, computes the confidences of the top-1 prediction and records their
-    correctness.
-
-    Args:
-        preds:  Input ``softmaxed`` predictions.
-        target: Labels.
-
-    Raises:
-        ValueError: If the dataset shape is not binary, multiclass, or multidimensional-multiclass.
-
-    Returns:
-        tuple with confidences and accuracies
-    """
-    _, _, mode = _input_format_classification(preds, target)
-
-    if mode == DataType.BINARY:
-        if not ((0 <= preds) * (preds <= 1)).all():
-            preds = preds.sigmoid()
-        confidences, accuracies = preds, target
-    elif mode == DataType.MULTICLASS:
-        if not ((0 <= preds) * (preds <= 1)).all():
-            preds = preds.softmax(dim=1)
-        confidences, predictions = preds.max(dim=1)
-        accuracies = predictions.eq(target)
-    elif mode == DataType.MULTIDIM_MULTICLASS:
-        # reshape tensors
-        # for preds, move the class dimension to the final axis and flatten the rest
-        confidences, predictions = torch.transpose(preds, 1, -1).flatten(0, -2).max(dim=1)
-        # for targets, just flatten the target
-        accuracies = predictions.eq(target.flatten())
-    else:
-        raise ValueError(
-            f"Calibration error is not well-defined for data with size {preds.size()} and targets {target.size()}."
-        )
-    # must be cast to float for ddp allgather to work
-    return confidences.float(), accuracies.float()
 
 
 def calibration_error(

@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Tuple
+from typing import Optional
 
 import torch
 from torch import Tensor
@@ -30,12 +30,8 @@ from torchmetrics.functional.classification.stat_scores import (
     _multilabel_stat_scores_format,
     _multilabel_stat_scores_tensor_validation,
     _multilabel_stat_scores_update,
-    _reduce_stat_scores,
-    _stat_scores_update,
 )
 from torchmetrics.utilities.compute import _safe_divide
-from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
-from torchmetrics.utilities.prints import rank_zero_warn
 
 
 def _precision_recall_reduce(
@@ -652,58 +648,6 @@ def multilabel_recall(
     return _precision_recall_reduce("recall", tp, fp, tn, fn, average=average, multidim_average=multidim_average)
 
 
-def _precision_compute(
-    tp: Tensor,
-    fp: Tensor,
-    fn: Tensor,
-    average: Optional[str],
-    mdmc_average: Optional[str],
-) -> Tensor:
-    """Computes precision from the stat scores: true positives, false positives, true negatives, false negatives.
-
-    Args:
-        tp: True positives
-        fp: False positives
-        fn: False negatives
-        average: Defines the reduction that is applied
-        mdmc_average: Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
-            ``average`` parameter)
-
-    Example:
-        >>> from torchmetrics.functional.classification.stat_scores import _stat_scores_update
-        >>> preds  = torch.tensor([2, 0, 2, 1])
-        >>> target = torch.tensor([1, 1, 2, 0])
-        >>> tp, fp, tn, fn = _stat_scores_update( preds, target, reduce='macro', num_classes=3)
-        >>> _precision_compute(tp, fp, fn, average='macro', mdmc_average=None)
-        tensor(0.1667)
-        >>> tp, fp, tn, fn = _stat_scores_update(preds, target, reduce='micro')
-        >>> _precision_compute(tp, fp, fn, average='micro', mdmc_average=None)
-        tensor(0.2500)
-    """
-
-    numerator = tp.clone()
-    denominator = tp + fp
-
-    if average == AverageMethod.MACRO and mdmc_average != MDMCAverageMethod.SAMPLEWISE:
-        cond = tp + fp + fn == 0
-        numerator = numerator[~cond]
-        denominator = denominator[~cond]
-
-    if average == AverageMethod.NONE and mdmc_average != MDMCAverageMethod.SAMPLEWISE:
-        # a class is not present if there exists no TPs, no FPs, and no FNs
-        meaningless_indeces = torch.nonzero((tp | fn | fp) == 0).cpu()
-        numerator[meaningless_indeces, ...] = -1
-        denominator[meaningless_indeces, ...] = -1
-
-    return _reduce_stat_scores(
-        numerator=numerator,
-        denominator=denominator,
-        weights=None if average != "weighted" else tp + fn,
-        average=average,
-        mdmc_average=mdmc_average,
-    )
-
-
 def precision(
     preds: Tensor,
     target: Tensor,
@@ -843,57 +787,6 @@ def precision(
         )
     raise ValueError(
         f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-    )
-
-
-def _recall_compute(
-    tp: Tensor,
-    fp: Tensor,
-    fn: Tensor,
-    average: Optional[str],
-    mdmc_average: Optional[str],
-) -> Tensor:
-    """Computes precision from the stat scores: true positives, false positives, true negatives, false negatives.
-
-    Args:
-        tp: True positives
-        fp: False positives
-        fn: False negatives
-        average: Defines the reduction that is applied
-        mdmc_average: Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
-            ``average`` parameter)
-
-    Example:
-        >>> from torchmetrics.functional.classification.stat_scores import _stat_scores_update
-        >>> preds  = torch.tensor([2, 0, 2, 1])
-        >>> target = torch.tensor([1, 1, 2, 0])
-        >>> tp, fp, tn, fn = _stat_scores_update(preds, target, reduce='macro', num_classes=3)
-        >>> _recall_compute(tp, fp, fn, average='macro', mdmc_average=None)
-        tensor(0.3333)
-        >>> tp, fp, tn, fn = _stat_scores_update(preds, target, reduce='micro')
-        >>> _recall_compute(tp, fp, fn, average='micro', mdmc_average=None)
-        tensor(0.2500)
-    """
-    numerator = tp.clone()
-    denominator = tp + fn
-
-    if average == AverageMethod.MACRO and mdmc_average != MDMCAverageMethod.SAMPLEWISE:
-        cond = tp + fp + fn == 0
-        numerator = numerator[~cond]
-        denominator = denominator[~cond]
-
-    if average == AverageMethod.NONE and mdmc_average != MDMCAverageMethod.SAMPLEWISE:
-        # a class is not present if there exists no TPs, no FPs, and no FNs
-        meaningless_indeces = ((tp | fn | fp) == 0).nonzero().cpu()
-        numerator[meaningless_indeces, ...] = -1
-        denominator[meaningless_indeces, ...] = -1
-
-    return _reduce_stat_scores(
-        numerator=numerator,
-        denominator=denominator,
-        weights=None if average != AverageMethod.WEIGHTED else tp + fn,
-        average=average,
-        mdmc_average=mdmc_average,
     )
 
 

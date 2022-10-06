@@ -30,12 +30,8 @@ from torchmetrics.functional.classification.stat_scores import (
     _multilabel_stat_scores_format,
     _multilabel_stat_scores_tensor_validation,
     _multilabel_stat_scores_update,
-    _reduce_stat_scores,
-    _stat_scores_update,
 )
 from torchmetrics.utilities.compute import _safe_divide
-from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
-from torchmetrics.utilities.prints import rank_zero_warn
 
 
 def _specificity_reduce(
@@ -354,53 +350,6 @@ def multilabel_specificity(
     preds, target = _multilabel_stat_scores_format(preds, target, num_labels, threshold, ignore_index)
     tp, fp, tn, fn = _multilabel_stat_scores_update(preds, target, multidim_average)
     return _specificity_reduce(tp, fp, tn, fn, average=average, multidim_average=multidim_average)
-
-
-def _specificity_compute(
-    tp: Tensor,
-    fp: Tensor,
-    tn: Tensor,
-    fn: Tensor,
-    average: Optional[str],
-    mdmc_average: Optional[str],
-) -> Tensor:
-    """Computes specificity from the stat scores: true positives, false positives, true negatives, false negatives.
-
-    Args:
-        tp: True positives
-        fp: False positives
-        tn: True negatives
-        fn: False negatives
-        average: Defines the reduction that is applied
-        mdmc_average: Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
-            ``average`` parameter)
-
-    Example:
-        >>> from torchmetrics.functional.classification.stat_scores import _stat_scores_update
-        >>> preds  = torch.tensor([2, 0, 2, 1])
-        >>> target = torch.tensor([1, 1, 2, 0])
-        >>> tp, fp, tn, fn = _stat_scores_update(preds, target, reduce='macro', num_classes=3)
-        >>> _specificity_compute(tp, fp, tn, fn, average='macro', mdmc_average=None)
-        tensor(0.6111)
-        >>> tp, fp, tn, fn = _stat_scores_update(preds, target, reduce='micro')
-        >>> _specificity_compute(tp, fp, tn, fn, average='micro', mdmc_average=None)
-        tensor(0.6250)
-    """
-
-    numerator = tn.clone()
-    denominator = tn + fp
-    if average == AverageMethod.NONE and mdmc_average != MDMCAverageMethod.SAMPLEWISE:
-        # a class is not present if there exists no TPs, no FPs, and no FNs
-        meaningless_indeces = torch.nonzero((tp | fn | fp) == 0).cpu()
-        numerator[meaningless_indeces, ...] = -1
-        denominator[meaningless_indeces, ...] = -1
-    return _reduce_stat_scores(
-        numerator=numerator,
-        denominator=denominator,
-        weights=None if average != AverageMethod.WEIGHTED else denominator,
-        average=average,
-        mdmc_average=mdmc_average,
-    )
 
 
 def specificity(

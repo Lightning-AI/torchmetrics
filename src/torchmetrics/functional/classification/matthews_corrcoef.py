@@ -22,7 +22,6 @@ from torchmetrics.functional.classification.confusion_matrix import (
     _binary_confusion_matrix_format,
     _binary_confusion_matrix_tensor_validation,
     _binary_confusion_matrix_update,
-    _confusion_matrix_update,
     _multiclass_confusion_matrix_arg_validation,
     _multiclass_confusion_matrix_format,
     _multiclass_confusion_matrix_tensor_validation,
@@ -32,7 +31,6 @@ from torchmetrics.functional.classification.confusion_matrix import (
     _multilabel_confusion_matrix_tensor_validation,
     _multilabel_confusion_matrix_update,
 )
-from torchmetrics.utilities.prints import rank_zero_warn
 
 
 def _matthews_corrcoef_reduce(confmat: Tensor) -> Tensor:
@@ -230,38 +228,6 @@ def multilabel_matthews_corrcoef(
     preds, target = _multilabel_confusion_matrix_format(preds, target, num_labels, threshold, ignore_index)
     confmat = _multilabel_confusion_matrix_update(preds, target, num_labels)
     return _matthews_corrcoef_reduce(confmat)
-
-
-_matthews_corrcoef_update = _confusion_matrix_update
-
-
-def _matthews_corrcoef_compute(confmat: Tensor) -> Tensor:
-    """Computes Matthews correlation coefficient.
-
-    Args:
-        confmat: Confusion matrix
-
-    Example:
-        >>> target = torch.tensor([1, 1, 0, 0])
-        >>> preds = torch.tensor([0, 1, 0, 0])
-        >>> confmat = _matthews_corrcoef_update(preds, target, num_classes=2)
-        >>> _matthews_corrcoef_compute(confmat)
-        tensor(0.5774)
-    """
-
-    tk = confmat.sum(dim=1).float()
-    pk = confmat.sum(dim=0).float()
-    c = torch.trace(confmat).float()
-    s = confmat.sum().float()
-
-    cov_ytyp = c * s - sum(tk * pk)
-    cov_ypyp = s**2 - sum(pk * pk)
-    cov_ytyt = s**2 - sum(tk * tk)
-
-    if cov_ypyp * cov_ytyt == 0:
-        return torch.tensor(0, dtype=confmat.dtype, device=confmat.device)
-    else:
-        return cov_ytyp / torch.sqrt(cov_ytyt * cov_ypyp)
 
 
 def matthews_corrcoef(

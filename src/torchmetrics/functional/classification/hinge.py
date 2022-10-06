@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple
 
 import torch
 from torch import Tensor, tensor
@@ -23,10 +23,7 @@ from torchmetrics.functional.classification.confusion_matrix import (
     _multiclass_confusion_matrix_format,
     _multiclass_confusion_matrix_tensor_validation,
 )
-from torchmetrics.utilities.checks import _input_squeeze
 from torchmetrics.utilities.data import to_onehot
-from torchmetrics.utilities.enums import DataType, EnumStr
-from torchmetrics.utilities.prints import rank_zero_warn
 
 
 def _hinge_loss_compute(measure: Tensor, total: Tensor) -> Tensor:
@@ -241,139 +238,6 @@ def multiclass_hinge_loss(
     preds, target = _multiclass_confusion_matrix_format(preds, target, ignore_index, convert_to_labels=False)
     measures, total = _multiclass_hinge_loss_update(preds, target, squared, multiclass_mode)
     return _hinge_loss_compute(measures, total)
-
-
-class MulticlassMode(EnumStr):
-    """Enum to represent possible multiclass modes of hinge.
-
-    >>> "Crammer-Singer" in list(MulticlassMode)
-    True
-    """
-
-    CRAMMER_SINGER = "crammer-singer"
-    ONE_VS_ALL = "one-vs-all"
-
-
-def _check_shape_and_type_consistency_hinge(
-    preds: Tensor,
-    target: Tensor,
-) -> DataType:
-    """Checks shape and type of ``preds`` and ``target`` and returns mode of the input tensors.
-
-    Args:
-        preds: Predicted tensor
-        target: Ground truth tensor
-
-    Raises:
-        `ValueError`: if ``target`` is not one dimensional
-        `ValueError`: if ``preds`` and ``target`` do not have the same shape in the first dimension
-        `ValueError`: if ``preds`` is neither one nor two-dimensional
-    """
-
-    if target.ndim > 1:
-        raise ValueError(
-            f"The `target` should be one dimensional, got `target` with shape={target.shape}.",
-        )
-
-    if preds.ndim == 1:
-        if preds.shape != target.shape:
-            raise ValueError(
-                "The `preds` and `target` should have the same shape,",
-                f" got `preds` with shape={preds.shape} and `target` with shape={target.shape}.",
-            )
-        mode = DataType.BINARY
-    elif preds.ndim == 2:
-        if preds.shape[0] != target.shape[0]:
-            raise ValueError(
-                "The `preds` and `target` should have the same shape in the first dimension,",
-                f" got `preds` with shape={preds.shape} and `target` with shape={target.shape}.",
-            )
-        mode = DataType.MULTICLASS
-    else:
-        raise ValueError(f"The `preds` should be one or two dimensional, got `preds` with shape={preds.shape}.")
-    return mode
-
-
-def _hinge_update(
-    preds: Tensor,
-    target: Tensor,
-    squared: bool = False,
-    multiclass_mode: Optional[Union[str, MulticlassMode]] = None,
-) -> Tuple[Tensor, Tensor]:
-    """Updates and returns sum over Hinge loss scores for each observation and the total number of observations.
-
-    Args:
-        preds: Predicted tensor
-        target: Ground truth tensor
-        squared: If True, this will compute the squared hinge loss. Otherwise, computes the regular hinge loss.
-        multiclass_mode:
-            Which approach to use for multi-class inputs (has no effect in the binary case). ``None`` (default),
-            ``MulticlassMode.CRAMMER_SINGER`` or ``"crammer-singer"``, uses the Crammer Singer multi-class hinge loss.
-            ``MulticlassMode.ONE_VS_ALL`` or ``"one-vs-all"`` computes the hinge loss in a one-vs-all fashion.
-    """
-    preds, target = _input_squeeze(preds, target)
-
-    mode = _check_shape_and_type_consistency_hinge(preds, target)
-
-    if mode == DataType.MULTICLASS:
-        target = to_onehot(target, max(2, preds.shape[1])).bool()
-
-    if mode == DataType.MULTICLASS and (multiclass_mode is None or multiclass_mode == MulticlassMode.CRAMMER_SINGER):
-        margin = preds[target]
-        margin -= torch.max(preds[~target].view(preds.shape[0], -1), dim=1)[0]
-    elif mode == DataType.BINARY or multiclass_mode == MulticlassMode.ONE_VS_ALL:
-        target = target.bool()
-        margin = torch.zeros_like(preds)
-        margin[target] = preds[target]
-        margin[~target] = -preds[~target]
-    else:
-        raise ValueError(
-            "The `multiclass_mode` should be either None / 'crammer-singer' / MulticlassMode.CRAMMER_SINGER"
-            "(default) or 'one-vs-all' / MulticlassMode.ONE_VS_ALL,"
-            f" got {multiclass_mode}."
-        )
-
-    measures = 1 - margin
-    measures = torch.clamp(measures, 0)
-
-    if squared:
-        measures = measures.pow(2)
-
-    total = tensor(target.shape[0], device=target.device)
-    return measures.sum(dim=0), total
-
-
-def _hinge_compute(measure: Tensor, total: Tensor) -> Tensor:
-    """Computes mean Hinge loss.
-
-    Args:
-        measure: Sum over hinge losses for each observation
-        total: Number of observations
-
-    Example:
-        >>> # binary case
-        >>> target = torch.tensor([0, 1, 1])
-        >>> preds = torch.tensor([-2.2, 2.4, 0.1])
-        >>> measure, total = _hinge_update(preds, target)
-        >>> _hinge_compute(measure, total)
-        tensor(0.3000)
-
-        >>> # multiclass case
-        >>> target = torch.tensor([0, 1, 2])
-        >>> preds = torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
-        >>> measure, total = _hinge_update(preds, target)
-        >>> _hinge_compute(measure, total)
-        tensor(2.9000)
-
-        >>> # multiclass one-vs-all mode case
-        >>> target = torch.tensor([0, 1, 2])
-        >>> preds = torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
-        >>> measure, total = _hinge_update(preds, target, multiclass_mode="one-vs-all")
-        >>> _hinge_compute(measure, total)
-        tensor([2.2333, 1.5000, 1.2333])
-    """
-
-    return measure / total
 
 
 def hinge_loss(

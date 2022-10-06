@@ -17,9 +17,8 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.utilities.checks import _check_same_shape, _input_format_classification
+from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.data import _bincount, _movedim
-from torchmetrics.utilities.enums import DataType
 from torchmetrics.utilities.prints import rank_zero_warn
 
 
@@ -590,97 +589,6 @@ def multilabel_confusion_matrix(
     preds, target = _multilabel_confusion_matrix_format(preds, target, num_labels, threshold, ignore_index)
     confmat = _multilabel_confusion_matrix_update(preds, target, num_labels)
     return _multilabel_confusion_matrix_compute(confmat, normalize)
-
-
-def _confusion_matrix_update(
-    preds: Tensor, target: Tensor, num_classes: int, threshold: float = 0.5, multilabel: bool = False
-) -> Tensor:
-    """Updates and returns confusion matrix (without any normalization) based on the mode of the input.
-
-    Args:
-        preds: Predicted tensor
-        target: Ground truth tensor
-        threshold: Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the
-            case of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
-        multilabel: determines if data is multilabel or not.
-    """
-
-    preds, target, mode = _input_format_classification(preds, target, threshold)
-    if mode not in (DataType.BINARY, DataType.MULTILABEL):
-        preds = preds.argmax(dim=1)
-        target = target.argmax(dim=1)
-    if multilabel:
-        unique_mapping = ((2 * target + preds) + 4 * torch.arange(num_classes, device=preds.device)).flatten()
-        minlength = 4 * num_classes
-    else:
-        unique_mapping = (target.view(-1) * num_classes + preds.view(-1)).to(torch.long)
-        minlength = num_classes**2
-
-    bins = _bincount(unique_mapping, minlength=minlength)
-    if multilabel:
-        confmat = bins.reshape(num_classes, 2, 2)
-    else:
-        confmat = bins.reshape(num_classes, num_classes)
-    return confmat
-
-
-def _confusion_matrix_compute(confmat: Tensor, normalize: Optional[str] = None) -> Tensor:
-    """Computes confusion matrix based on the normalization mode.
-
-    Args:
-        confmat: Confusion matrix without normalization
-        normalize: Normalization mode for confusion matrix. Choose from:
-
-            - ``None`` or ``'none'``: no normalization (default)
-            - ``'true'``: normalization over the targets (most commonly used)
-            - ``'pred'``: normalization over the predictions
-            - ``'all'``: normalization over the whole matrix
-
-    Example:
-        >>> # binary case
-        >>> target = torch.tensor([1, 1, 0, 0])
-        >>> preds = torch.tensor([0, 1, 0, 0])
-        >>> confmat = _confusion_matrix_update(preds, target, num_classes=2)
-        >>> _confusion_matrix_compute(confmat)
-        tensor([[2, 0],
-                [1, 1]])
-
-        >>> # multiclass case
-        >>> target = torch.tensor([2, 1, 0, 0])
-        >>> preds = torch.tensor([2, 1, 0, 1])
-        >>> confmat = _confusion_matrix_update(preds, target, num_classes=3)
-        >>> _confusion_matrix_compute(confmat)
-        tensor([[1, 1, 0],
-                [0, 1, 0],
-                [0, 0, 1]])
-
-        >>> # multilabel case
-        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
-        >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
-        >>> confmat = _confusion_matrix_update(preds, target, num_classes=3, multilabel=True)
-        >>> _confusion_matrix_compute(confmat)
-        tensor([[[1, 0], [0, 1]],
-                [[1, 0], [1, 0]],
-                [[0, 1], [0, 1]]])
-    """
-
-    allowed_normalize = ("true", "pred", "all", "none", None)
-    if normalize not in allowed_normalize:
-        raise ValueError(f"Argument average needs to one of the following: {allowed_normalize}")
-    if normalize is not None and normalize != "none":
-        confmat = confmat.float() if not confmat.is_floating_point() else confmat
-        if normalize == "true":
-            confmat = confmat / confmat.sum(axis=1, keepdim=True)
-        elif normalize == "pred":
-            confmat = confmat / confmat.sum(axis=0, keepdim=True)
-        elif normalize == "all":
-            confmat = confmat / confmat.sum()
-
-        nan_elements = confmat[torch.isnan(confmat)].nelement()
-        if nan_elements != 0:
-            confmat[torch.isnan(confmat)] = 0
-            rank_zero_warn(f"{nan_elements} nan values found in confusion matrix have been replaced with zeros.")
-    return confmat
 
 
 def confusion_matrix(
