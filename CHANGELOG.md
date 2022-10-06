@@ -16,22 +16,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- 
+-
 
 
 ### Deprecated
 
-- 
+-
 
 
 ### Removed
 
-- 
+-
 
 
 ### Fixed
 
-- 
+- Fixed broken clone method for classification metrics ([#1250](https://github.com/Lightning-AI/metrics/pull/1250))
 
 
 ## [0.10.0] - 2022-10-04
