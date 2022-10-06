@@ -17,10 +17,9 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.functional.classification.accuracy import (
-    _accuracy_reduce,
-)
+from torchmetrics.functional.classification.accuracy import _accuracy_reduce
 from torchmetrics.metric import Metric
+
 from torchmetrics.classification.stat_scores import (  # isort:skip
     BinaryStatScores,
     MulticlassStatScores,
@@ -313,7 +312,7 @@ class MultilabelAccuracy(MultilabelStatScores):
         )
 
 
-class Accuracy(object):
+class Accuracy:
     r"""Accuracy.
 
     .. note::

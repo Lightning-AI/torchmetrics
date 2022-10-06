@@ -220,7 +220,7 @@ class MulticlassCalibrationError(Metric):
         return _ce_compute(confidences, accuracies, self.n_bins, norm=self.norm)
 
 
-class CalibrationError(object):
+class CalibrationError:
     r"""Calibration Error.
 
     .. note::

@@ -17,11 +17,7 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.classification.stat_scores import (
-    BinaryStatScores,
-    MulticlassStatScores,
-    MultilabelStatScores,
-)
+from torchmetrics.classification.stat_scores import BinaryStatScores, MulticlassStatScores, MultilabelStatScores
 from torchmetrics.functional.classification.f_beta import (
     _binary_fbeta_score_arg_validation,
     _fbeta_reduce,
@@ -704,7 +700,7 @@ class MultilabelF1Score(MultilabelFBetaScore):
         )
 
 
-class FBetaScore(object):
+class FBetaScore:
     r"""F-Beta Score.
 
     .. note::
@@ -843,7 +839,7 @@ class FBetaScore(object):
         )
 
 
-class F1Score(object):
+class F1Score:
     r"""F1 Score.
 
     .. note::

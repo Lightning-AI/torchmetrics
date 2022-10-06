@@ -417,7 +417,7 @@ class MultilabelPrecisionRecallCurve(Metric):
         return _multilabel_precision_recall_curve_compute(state, self.num_labels, self.thresholds, self.ignore_index)
 
 
-class PrecisionRecallCurve(object):
+class PrecisionRecallCurve:
     r"""Precision Recall Curve.
 
     .. note::

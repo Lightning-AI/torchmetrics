@@ -17,14 +17,8 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.classification.stat_scores import (
-    BinaryStatScores,
-    MulticlassStatScores,
-    MultilabelStatScores,
-)
-from torchmetrics.functional.classification.precision_recall import (
-    _precision_recall_reduce,
-)
+from torchmetrics.classification.stat_scores import BinaryStatScores, MulticlassStatScores, MultilabelStatScores
+from torchmetrics.functional.classification.precision_recall import _precision_recall_reduce
 from torchmetrics.metric import Metric
 
 
@@ -598,7 +592,7 @@ class MultilabelRecall(MultilabelStatScores):
         )
 
 
-class Precision(object):
+class Precision:
     r"""Precision.
 
     .. note::
@@ -727,7 +721,7 @@ class Precision(object):
         )
 
 
-class Recall(object):
+class Recall:
     r"""Recall.
 
     .. note::

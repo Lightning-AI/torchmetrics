@@ -177,7 +177,7 @@ class MulticlassCohenKappa(MulticlassConfusionMatrix):
         return _cohen_kappa_reduce(self.confmat, self.weights)
 
 
-class CohenKappa(object):
+class CohenKappa:
     r"""Cohen Kappa.
 
     .. note::

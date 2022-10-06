@@ -302,7 +302,7 @@ class MultilabelROC(MultilabelPrecisionRecallCurve):
         return _multilabel_roc_compute(state, self.num_labels, self.thresholds, self.ignore_index)
 
 
-class ROC(object):
+class ROC:
     r"""Receiver Operating Characteristic.
 
     .. note::

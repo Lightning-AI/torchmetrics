@@ -18,9 +18,7 @@ from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.classification.stat_scores import BinaryStatScores, MulticlassStatScores, MultilabelStatScores
-from torchmetrics.functional.classification.hamming import (
-    _hamming_distance_reduce,
-)
+from torchmetrics.functional.classification.hamming import _hamming_distance_reduce
 from torchmetrics.metric import Metric
 
 
@@ -314,7 +312,7 @@ class MultilabelHammingDistance(MultilabelStatScores):
         )
 
 
-class HammingDistance(object):
+class HammingDistance:
     r"""Hamming distance.
 
     .. note::

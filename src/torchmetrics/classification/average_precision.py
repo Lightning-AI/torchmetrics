@@ -315,7 +315,7 @@ class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
         )
 
 
-class AveragePrecision(object):
+class AveragePrecision:
     r"""Average Precision.
 
     .. note::
