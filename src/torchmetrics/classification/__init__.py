@@ -30,12 +30,7 @@ from torchmetrics.classification.stat_scores import (  # isort:skip
     StatScores,
 )
 
-from torchmetrics.classification.accuracy import (
-    Accuracy,
-    BinaryAccuracy,
-    MulticlassAccuracy,
-    MultilabelAccuracy,
-)
+from torchmetrics.classification.accuracy import Accuracy, BinaryAccuracy, MulticlassAccuracy, MultilabelAccuracy
 from torchmetrics.classification.auc import AUC
 from torchmetrics.classification.auroc import AUROC, BinaryAUROC, MulticlassAUROC, MultilabelAUROC
 from torchmetrics.classification.average_precision import (
@@ -44,9 +39,11 @@ from torchmetrics.classification.average_precision import (
     MulticlassAveragePrecision,
     MultilabelAveragePrecision,
 )
-from torchmetrics.classification.binned_precision_recall import BinnedAveragePrecision
-from torchmetrics.classification.binned_precision_recall import BinnedPrecisionRecallCurve
-from torchmetrics.classification.binned_precision_recall import BinnedRecallAtFixedPrecision
+from torchmetrics.classification.binned_precision_recall import (
+    BinnedAveragePrecision,
+    BinnedPrecisionRecallCurve,
+    BinnedRecallAtFixedPrecision,
+)
 from torchmetrics.classification.calibration_error import (
     BinaryCalibrationError,
     CalibrationError,
