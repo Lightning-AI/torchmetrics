@@ -579,10 +579,10 @@ class MeanAveragePrecision(Metric):
         det = [det[i] for i in det_label_mask]
         if len(gt) == 0 and len(det) == 0:
             return None
-        if isinstance(det, dict):
-            det = [det]
-        if isinstance(gt, dict):
-            gt = [gt]
+        # if isinstance(det, dict):
+        #     det = [det]
+        # if isinstance(gt, dict):
+        #     gt = [gt]
 
         areas = compute_area(gt, iou_type=self.iou_type).to(self.device)
 
