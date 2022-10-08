@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
--
+- Changed `MeanAveragePrecision` to vectorize `_find_best_gt_match` operation ([]())
 
 
 ### Deprecated

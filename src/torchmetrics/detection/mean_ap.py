@@ -612,15 +612,17 @@ class MeanAveragePrecision(Metric):
         gt_ignore = ignore_area_sorted
         det_ignore = torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool, device=self.device)
 
-        if torch.numel(ious) > 0:
-            for idx_iou, t in enumerate(self.iou_thresholds):
-                for idx_det, _ in enumerate(det):
-                    m = MeanAveragePrecision._find_best_gt_match(t, gt_matches, idx_iou, gt_ignore, ious, idx_det)
-                    if m == -1:
-                        continue
-                    det_ignore[idx_iou, idx_det] = gt_ignore[m]
-                    det_matches[idx_iou, idx_det] = 1
-                    gt_matches[idx_iou, m] = 1
+        iou_thresholds = torch.tensor(self.iou_thresholds, device=self.device)
+
+        M = self._find_best_gt_match(iou_thresholds, gt_matches, gt_ignore, ious)
+        for idx_iou, _ in enumerate(iou_thresholds):
+            for idx_det, _ in enumerate(det):
+                m = M[idx_iou, idx_det]
+                if m == -1:
+                    continue
+                det_ignore[idx_iou, idx_det] = gt_ignore[m]
+                det_matches[idx_iou, idx_det] = 1
+                gt_matches[idx_iou, m] = 1
 
         # set unmatched detections outside of area range to ignore
         det_areas = compute_area(det, iou_type=self.iou_type).to(self.device)
@@ -639,9 +641,7 @@ class MeanAveragePrecision(Metric):
         }
 
     @staticmethod
-    def _find_best_gt_match(
-        thr: int, gt_matches: Tensor, idx_iou: float, gt_ignore: Tensor, ious: Tensor, idx_det: int
-    ) -> int:
+    def _find_best_gt_match(thr: Tensor, gt_matches: Tensor, gt_ignore: Tensor, ious: Tensor) -> int:
         """Return id of best ground truth match with current detection.
 
         Args:
@@ -649,23 +649,15 @@ class MeanAveragePrecision(Metric):
                 Current threshold value.
             gt_matches:
                 Tensor showing if a ground truth matches for threshold ``t`` exists.
-            idx_iou:
-                Id of threshold ``t``.
             gt_ignore:
                 Tensor showing if ground truth should be ignored.
             ious:
                 IoUs for all combinations of detection and ground truth.
-            idx_det:
-                Id of current detection.
         """
-        previously_matched = gt_matches[idx_iou]
         # Remove previously matched or ignored gts
-        remove_mask = previously_matched | gt_ignore
-        gt_ious = ious[idx_det] * ~remove_mask
-        match_idx = gt_ious.argmax().item()
-        if gt_ious[match_idx] > thr:
-            return match_idx
-        return -1
+        remove_mask = gt_matches | gt_ignore
+        gt_ious = torch.einsum("cw,dw->cdw", ~remove_mask, ious).max(-1).values
+        return gt_ious.where(gt_ious > thr.unsqueeze(-1), torch.tensor(-1, dtype=gt_ious.dtype, device=gt_ious.device))
 
     def _summarize(
         self,
