@@ -579,10 +579,6 @@ class MeanAveragePrecision(Metric):
         det = [det[i] for i in det_label_mask]
         if len(gt) == 0 and len(det) == 0:
             return None
-        # if isinstance(det, dict):
-        #     det = [det]
-        # if isinstance(gt, dict):
-        #     gt = [gt]
 
         areas = compute_area(gt, iou_type=self.iou_type).to(self.device)
 
@@ -604,20 +600,19 @@ class MeanAveragePrecision(Metric):
         # load computed ious
         ious = ious[idx, class_id][:, gtind] if len(ious[idx, class_id]) > 0 else ious[idx, class_id]
 
-        nb_iou_thrs = len(self.iou_thresholds)
         nb_gt = len(gt)
         nb_det = len(det)
         gt_matches = torch.zeros((nb_iou_thrs, nb_gt), dtype=torch.bool, device=self.device)
-        det_matches = torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool, device=self.device)
         gt_ignore = ignore_area_sorted
-        det_ignore = torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool, device=self.device)
 
         iou_thresholds = torch.tensor(self.iou_thresholds, device=self.device)
 
         if torch.numel(ious) > 0:
             best_matches = self._find_best_gt_matches(iou_thresholds, gt_matches, gt_ignore, ious)
-            det_ignore = det_ignore.where(best_matches == -1, gt_ignore[best_matches])
-            det_matches = det_matches.where(best_matches == -1, torch.ones(1, device=det_matches.device))
+            _zero_tensor = torch.tensor(0, dtype=torch.bool, device=self.device)
+            _one_tensor = torch.tensor(1, dtype=torch.bool, device=self.device)
+            det_ignore = torch.where(best_matches != -1, gt_ignore[best_matches], _zero_tensor)
+            det_matches = torch.where(best_matches != -1, _one_tensor, _zero_tensor)
             for idx in range(nb_iou_thrs):
                 gt_matches[idx, best_matches[idx].clamp(0).unique()] = 1
 
