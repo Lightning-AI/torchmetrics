@@ -615,10 +615,10 @@ class MeanAveragePrecision(Metric):
         iou_thresholds = torch.tensor(self.iou_thresholds, device=self.device)
 
         if torch.numel(ious) > 0:
-            M = self._find_best_gt_matches(iou_thresholds, gt_matches, gt_ignore, ious)
+            best_matches = self._find_best_gt_matches(iou_thresholds, gt_matches, gt_ignore, ious)
             for idx_iou, _ in enumerate(iou_thresholds):
                 for idx_det, _ in enumerate(det):
-                    m = M[idx_iou, idx_det]
+                    m = best_matches[idx_iou, idx_det]
                     if m == -1:
                         continue
                     det_ignore[idx_iou, idx_det] = gt_ignore[m]
@@ -642,8 +642,8 @@ class MeanAveragePrecision(Metric):
         }
 
     @staticmethod
-    def _find_best_gt_matches(thr: Tensor, gt_matches: Tensor, gt_ignore: Tensor, ious: Tensor) -> int:
-        """Return id of best ground truth match with current detection.
+    def _find_best_gt_matches(thr: Tensor, gt_matches: Tensor, gt_ignore: Tensor, ious: Tensor) -> Tensor:
+        """Return matrix of indices of best ground truth match with current detection.
 
         Args:
             thr:
