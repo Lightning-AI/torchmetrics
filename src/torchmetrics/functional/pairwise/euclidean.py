@@ -77,7 +77,6 @@ def pairwise_euclidean_distance(
         tensor([[0.0000, 2.2361, 5.8310],
                 [2.2361, 0.0000, 3.6056],
                 [5.8310, 3.6056, 0.0000]])
-
     """
     distance = _pairwise_euclidean_distance_update(x, y, zero_diagonal)
     return _reduce_distance_matrix(distance, reduction)

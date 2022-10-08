@@ -72,13 +72,6 @@ def test_fid_pickle():
 
 def test_fid_raises_errors_and_warnings():
     """Test that expected warnings and errors are raised."""
-    with pytest.warns(
-        UserWarning,
-        match="Metric `FrechetInceptionDistance` will save all extracted features in buffer."
-        " For large datasets this may lead to large memory footprint.",
-    ):
-        _ = FrechetInceptionDistance()
-
     if _TORCH_FIDELITY_AVAILABLE:
         with pytest.raises(ValueError, match="Integer input to argument `feature` must be one of .*"):
             _ = FrechetInceptionDistance(feature=2)
@@ -106,7 +99,9 @@ def test_fid_same_input(feature):
         metric.update(img, real=True)
         metric.update(img, real=False)
 
-    assert torch.allclose(torch.cat(metric.real_features, dim=0), torch.cat(metric.fake_features, dim=0))
+    assert torch.allclose(metric.real_features_sum, metric.fake_features_sum)
+    assert torch.allclose(metric.real_features_cov_sum, metric.fake_features_cov_sum)
+    assert torch.allclose(metric.real_features_num_samples, metric.fake_features_num_samples)
 
     val = metric.compute()
     assert torch.allclose(val, torch.zeros_like(val), atol=1e-3)
@@ -167,19 +162,22 @@ def test_reset_real_features_arg(reset_real_features):
     metric.update(torch.randint(0, 180, (2, 3, 299, 299), dtype=torch.uint8), real=True)
     metric.update(torch.randint(0, 180, (2, 3, 299, 299), dtype=torch.uint8), real=False)
 
-    assert len(metric.real_features) == 1
-    assert list(metric.real_features[0].shape) == [2, 64]
+    assert metric.real_features_num_samples == 2
+    assert metric.real_features_sum.shape == torch.Size([64])
+    assert metric.real_features_cov_sum.shape == torch.Size([64, 64])
 
-    assert len(metric.fake_features) == 1
-    assert list(metric.fake_features[0].shape) == [2, 64]
+    assert metric.fake_features_num_samples == 2
+    assert metric.fake_features_sum.shape == torch.Size([64])
+    assert metric.fake_features_cov_sum.shape == torch.Size([64, 64])
 
     metric.reset()
 
     # fake features should always reset
-    assert len(metric.fake_features) == 0
+    assert metric.fake_features_num_samples == 0
 
     if reset_real_features:
-        assert len(metric.real_features) == 0
+        assert metric.real_features_num_samples == 0
     else:
-        assert len(metric.real_features) == 1
-        assert list(metric.real_features[0].shape) == [2, 64]
+        assert metric.real_features_num_samples == 2
+        assert metric.real_features_sum.shape == torch.Size([64])
+        assert metric.real_features_cov_sum.shape == torch.Size([64, 64])

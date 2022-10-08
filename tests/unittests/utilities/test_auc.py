@@ -19,8 +19,7 @@ import pytest
 from sklearn.metrics import auc as _sk_auc
 from torch import tensor
 
-from torchmetrics.classification.auc import AUC
-from torchmetrics.functional import auc
+from torchmetrics.utilities.compute import auc
 from unittests.helpers import seed_all
 from unittests.helpers.testers import NUM_BATCHES, MetricTester
 
@@ -55,28 +54,10 @@ for batch_size in (8, 4049):
 
 @pytest.mark.parametrize("x, y", _examples)
 class TestAUC(MetricTester):
-    @pytest.mark.parametrize("ddp", [False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_auc(self, x, y, ddp, dist_sync_on_step):
-        self.run_class_metric_test(
-            ddp=ddp,
-            preds=x,
-            target=y,
-            metric_class=AUC,
-            sk_metric=sk_auc,
-            dist_sync_on_step=dist_sync_on_step,
-        )
-
     @pytest.mark.parametrize("reorder", [True, False])
     def test_auc_functional(self, x, y, reorder):
         self.run_functional_metric_test(
             x, y, metric_functional=auc, sk_metric=partial(sk_auc, reorder=reorder), metric_args={"reorder": reorder}
-        )
-
-    @pytest.mark.parametrize("reorder", [True, False])
-    def test_auc_differentiability(self, x, y, reorder):
-        self.run_differentiability_test(
-            preds=x, target=y, metric_module=AUC, metric_functional=auc, metric_args={"reorder": reorder}
         )
 
 

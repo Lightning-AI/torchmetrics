@@ -52,7 +52,7 @@ def _rank_data(data: Tensor) -> Tensor:
     return rank
 
 
-def _spearman_corrcoef_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
+def _spearman_corrcoef_update(preds: Tensor, target: Tensor, num_outputs: int) -> Tuple[Tensor, Tensor]:
     """Updates and returns variables required to compute Spearman Correlation Coefficient.
 
     Checks for same shape and type of input tensors.
@@ -68,10 +68,17 @@ def _spearman_corrcoef_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Te
             f" Got preds: {preds.dtype} and target: {target.dtype}."
         )
     _check_same_shape(preds, target)
-    preds = preds.squeeze()
-    target = target.squeeze()
-    if preds.ndim > 1 or target.ndim > 1:
-        raise ValueError("Expected both predictions and target to be 1 dimensional tensors.")
+    if preds.ndim > 2 or target.ndim > 2:
+        raise ValueError(
+            f"Expected both predictions and target to be either 1- or 2-dimensional tensors,"
+            f" but got {target.ndim} and {preds.ndim}."
+        )
+    if (num_outputs == 1 and preds.ndim != 1) or (num_outputs > 1 and num_outputs != preds.shape[-1]):
+        raise ValueError(
+            f"Expected argument `num_outputs` to match the second dimension of input, but got {num_outputs}"
+            f" and {preds.ndim}."
+        )
+
     return preds, target
 
 
@@ -86,28 +93,30 @@ def _spearman_corrcoef_compute(preds: Tensor, target: Tensor, eps: float = 1e-6)
     Example:
         >>> target = torch.tensor([3, -0.5, 2, 7])
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])
-        >>> preds, target = _spearman_corrcoef_update(preds, target)
+        >>> preds, target = _spearman_corrcoef_update(preds, target, num_outputs=1)
         >>> _spearman_corrcoef_compute(preds, target)
         tensor(1.0000)
     """
+    if preds.ndim == 1:
+        preds = _rank_data(preds)
+        target = _rank_data(target)
+    else:
+        preds = torch.stack([_rank_data(p) for p in preds.T]).T
+        target = torch.stack([_rank_data(t) for t in target.T]).T
 
-    preds = _rank_data(preds)
-    target = _rank_data(target)
+    preds_diff = preds - preds.mean(0)
+    target_diff = target - target.mean(0)
 
-    preds_diff = preds - preds.mean()
-    target_diff = target - target.mean()
-
-    cov = (preds_diff * target_diff).mean()
-    preds_std = torch.sqrt((preds_diff * preds_diff).mean())
-    target_std = torch.sqrt((target_diff * target_diff).mean())
+    cov = (preds_diff * target_diff).mean(0)
+    preds_std = torch.sqrt((preds_diff * preds_diff).mean(0))
+    target_std = torch.sqrt((target_diff * target_diff).mean(0))
 
     corrcoef = cov / (preds_std * target_std + eps)
     return torch.clamp(corrcoef, -1.0, 1.0)
 
 
 def spearman_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
-    r"""
-     Computes `spearmans rank correlation coefficient`_:
+    r"""Computes `spearmans rank correlation coefficient`_:
 
     .. math:
         r_s = = \frac{cov(rg_x, rg_y)}{\sigma_{rg_x} * \sigma_{rg_y}}
@@ -119,13 +128,19 @@ def spearman_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
         preds: estimated scores
         target: ground truth scores
 
-    Example:
+    Example (single output regression):
         >>> from torchmetrics.functional import spearman_corrcoef
         >>> target = torch.tensor([3, -0.5, 2, 7])
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])
         >>> spearman_corrcoef(preds, target)
         tensor(1.0000)
 
+    Example (multi output regression):
+        >>> from torchmetrics.functional import spearman_corrcoef
+        >>> target = torch.tensor([[3, -0.5], [2, 7]])
+        >>> preds = torch.tensor([[2.5, 0.0], [2, 8]])
+        >>> spearman_corrcoef(preds, target)
+        tensor([1.0000, 1.0000])
     """
-    preds, target = _spearman_corrcoef_update(preds, target)
+    preds, target = _spearman_corrcoef_update(preds, target, num_outputs=1 if preds.ndim == 1 else preds.shape[-1])
     return _spearman_corrcoef_compute(preds, target)

@@ -322,7 +322,7 @@ def linkcode_resolve(domain, info):
         if any(s in fname for s in ("readthedocs", "rtfd", "checkouts")):
             # /home/docs/checkouts/readthedocs.org/user_builds/pytorch_lightning/checkouts/
             #  devel/pytorch_lightning/utilities/cls_experiment.py#L26-L176
-            path_top = os.path.abspath(os.path.join("..", "..", ".."))
+            path_top = os.path.abspath(os.path.join("..", "..", "..", ".."))
             fname = os.path.relpath(fname, start=path_top)
         else:
             # Local build, imitate master

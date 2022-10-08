@@ -61,7 +61,6 @@ def _symmetric_mean_absolute_percentage_error(
             But note the fact that bad predictions can lead to arbitarily large
             MAPE values, especially if some y_true values are very close to zero.
             Note that we return a large value instead of `inf` when y_true is zero.
-
     """
     _, y_true, y_pred, multioutput = _check_reg_targets(y_true, y_pred, multioutput)
     check_consistent_length(y_true, y_pred, sample_weight)

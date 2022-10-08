@@ -84,7 +84,6 @@ def pairwise_cosine_similarity(
         tensor([[0.0000, 0.9989, 0.9996],
                 [0.9989, 0.0000, 0.9998],
                 [0.9996, 0.9998, 0.0000]])
-
     """
     distance = _pairwise_cosine_similarity_update(x, y, zero_diagonal)
     return _reduce_distance_matrix(distance, reduction)

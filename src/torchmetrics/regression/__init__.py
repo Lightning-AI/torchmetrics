@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from torchmetrics.regression.concordance import ConcordanceCorrCoef  # noqa: F401
 from torchmetrics.regression.cosine_similarity import CosineSimilarity  # noqa: F401
 from torchmetrics.regression.explained_variance import ExplainedVariance  # noqa: F401
+from torchmetrics.regression.kl_divergence import KLDivergence  # noqa: F401
 from torchmetrics.regression.log_mse import MeanSquaredLogError  # noqa: F401
 from torchmetrics.regression.mae import MeanAbsoluteError  # noqa: F401
 from torchmetrics.regression.mape import MeanAbsolutePercentageError  # noqa: F401

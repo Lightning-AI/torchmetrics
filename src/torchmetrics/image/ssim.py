@@ -13,12 +13,12 @@
 # limitations under the License.
 from typing import Any, List, Optional, Sequence, Tuple, Union
 
+import torch
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.functional.image.ssim import _multiscale_ssim_compute, _ssim_compute, _ssim_update
+from torchmetrics.functional.image.ssim import _multiscale_ssim_update, _ssim_check_inputs, _ssim_update
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 
 
@@ -33,7 +33,7 @@ class StructuralSimilarityIndexMeasure(Metric):
             Ignored if a uniform kernel is used
         kernel_size: the size of the uniform kernel, anisotropic kernels are possible.
             Ignored if a Gaussian kernel is used
-        reduction: a method to reduce metric score over labels.
+        reduction: a method to reduce metric score over individual batch scores
 
             - ``'elementwise_mean'``: takes the mean
             - ``'sum'``: takes the sum
@@ -55,9 +55,9 @@ class StructuralSimilarityIndexMeasure(Metric):
     Example:
         >>> from torchmetrics import StructuralSimilarityIndexMeasure
         >>> import torch
-        >>> preds = torch.rand([16, 1, 16, 16])
+        >>> preds = torch.rand([3, 3, 256, 256])
         >>> target = preds * 0.75
-        >>> ssim = StructuralSimilarityIndexMeasure()
+        >>> ssim = StructuralSimilarityIndexMeasure(data_range=1.0)
         >>> ssim(preds, target)
         tensor(0.9219)
     """
@@ -83,14 +83,21 @@ class StructuralSimilarityIndexMeasure(Metric):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        rank_zero_warn(
-            "Metric `SSIM` will save all targets and"
-            " predictions in buffer. For large datasets this may lead"
-            " to large memory footprint."
-        )
 
-        self.add_state("preds", default=[], dist_reduce_fx="cat")
-        self.add_state("target", default=[], dist_reduce_fx="cat")
+        valid_reduction = ("elementwise_mean", "sum", "none", None)
+        if reduction not in valid_reduction:
+            raise ValueError(f"Argument `reduction` must be one of {valid_reduction}, but got {reduction}")
+
+        if reduction in ("elementwise_mean", "sum"):
+            self.add_state("similarity", default=torch.tensor(0.0), dist_reduce_fx="sum")
+        else:
+            self.add_state("similarity", default=[], dist_reduce_fx="cat")
+
+        self.add_state("total", default=torch.tensor(0.0), dist_reduce_fx="sum")
+
+        if return_contrast_sensitivity or return_full_image:
+            self.add_state("image_return", default=[], dist_reduce_fx="cat")
+
         self.gaussian_kernel = gaussian_kernel
         self.sigma = sigma
         self.kernel_size = kernel_size
@@ -108,27 +115,48 @@ class StructuralSimilarityIndexMeasure(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        preds, target = _ssim_update(preds, target)
-        self.preds.append(preds)
-        self.target.append(target)
-
-    def compute(self) -> Tensor:
-        """Computes explained variance over state."""
-        preds = dim_zero_cat(self.preds)
-        target = dim_zero_cat(self.target)
-        return _ssim_compute(
+        preds, target = _ssim_check_inputs(preds, target)
+        similarity_pack = _ssim_update(
             preds,
             target,
             self.gaussian_kernel,
             self.sigma,
             self.kernel_size,
-            self.reduction,
             self.data_range,
             self.k1,
             self.k2,
             self.return_full_image,
             self.return_contrast_sensitivity,
         )
+
+        if isinstance(similarity_pack, tuple):
+            similarity, image = similarity_pack
+        else:
+            similarity = similarity_pack
+
+        if self.return_contrast_sensitivity or self.return_full_image:
+            self.image_return.append(image)
+
+        if self.reduction in ("elementwise_mean", "sum"):
+            self.similarity += similarity.sum()
+            self.total += preds.shape[0]
+        else:
+            self.similarity.append(similarity)
+
+    def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+        """Computes SSIM over state."""
+        if self.reduction == "elementwise_mean":
+            similarity = self.similarity / self.total
+        elif self.reduction == "sum":
+            similarity = self.similarity
+        else:
+            similarity = dim_zero_cat(self.similarity)
+
+        if self.return_contrast_sensitivity or self.return_full_image:
+            image_return = dim_zero_cat(self.image_return)
+            return similarity, image_return
+
+        return similarity
 
 
 class MultiScaleStructuralSimilarityIndexMeasure(Metric):
@@ -169,11 +197,11 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
     Example:
         >>> from torchmetrics import MultiScaleStructuralSimilarityIndexMeasure
         >>> import torch
-        >>> preds = torch.rand([1, 1, 256, 256], generator=torch.manual_seed(42))
+        >>> preds = torch.rand([3, 3, 256, 256], generator=torch.manual_seed(42))
         >>> target = preds * 0.75
-        >>> ms_ssim = MultiScaleStructuralSimilarityIndexMeasure()
+        >>> ms_ssim = MultiScaleStructuralSimilarityIndexMeasure(data_range=1.0)
         >>> ms_ssim(preds, target)
-        tensor(0.9558)
+        tensor(0.9627)
 
     References:
         [1] Multi-Scale Structural Similarity For Image Quality Assessment by Zhou Wang, Eero P. Simoncelli and Alan C.
@@ -197,18 +225,21 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         k1: float = 0.01,
         k2: float = 0.03,
         betas: Tuple[float, ...] = (0.0448, 0.2856, 0.3001, 0.2363, 0.1333),
-        normalize: Literal["relu", "simple", None] = None,
+        normalize: Literal["relu", "simple", None] = "relu",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        rank_zero_warn(
-            "Metric `MS_SSIM` will save all targets and"
-            " predictions in buffer. For large datasets this may lead"
-            " to large memory footprint."
-        )
 
-        self.add_state("preds", default=[], dist_reduce_fx="cat")
-        self.add_state("target", default=[], dist_reduce_fx="cat")
+        valid_reduction = ("elementwise_mean", "sum", "none", None)
+        if reduction not in valid_reduction:
+            raise ValueError(f"Argument `reduction` must be one of {valid_reduction}, but got {reduction}")
+
+        if reduction in ("elementwise_mean", "sum"):
+            self.add_state("similarity", default=torch.tensor(0.0), dist_reduce_fx="sum")
+        else:
+            self.add_state("similarity", default=[], dist_reduce_fx="cat")
+
+        self.add_state("total", default=torch.tensor(0.0), dist_reduce_fx="sum")
 
         if not (isinstance(kernel_size, (Sequence, int))):
             raise ValueError(
@@ -245,24 +276,33 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
             preds: Predictions from model of shape ``[N, C, H, W]``
             target: Ground truth values of shape ``[N, C, H, W]``
         """
-        preds, target = _ssim_update(preds, target)
-        self.preds.append(preds)
-        self.target.append(target)
-
-    def compute(self) -> Tensor:
-        """Computes explained variance over state."""
-        preds = dim_zero_cat(self.preds)
-        target = dim_zero_cat(self.target)
-        return _multiscale_ssim_compute(
+        preds, target = _ssim_check_inputs(preds, target)
+        similarity = _multiscale_ssim_update(
             preds,
             target,
             self.gaussian_kernel,
             self.sigma,
             self.kernel_size,
-            self.reduction,
             self.data_range,
             self.k1,
             self.k2,
             self.betas,
             self.normalize,
         )
+
+        if self.reduction in ("none", None):
+            self.similarity.append(similarity)
+        else:
+            self.similarity += similarity.sum()
+
+        self.total += preds.shape[0]
+
+    def compute(self) -> Tensor:
+        """Computes MS-SSIM over state."""
+
+        if self.reduction in ("none", None):
+            return dim_zero_cat(self.similarity)
+        elif self.reduction == "sum":
+            return self.similarity
+        else:
+            return self.similarity / self.total
