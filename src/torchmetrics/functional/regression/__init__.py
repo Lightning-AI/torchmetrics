@@ -14,6 +14,7 @@
 from torchmetrics.functional.regression.concordance import concordance_corrcoef  # noqa: F401
 from torchmetrics.functional.regression.cosine_similarity import cosine_similarity  # noqa: F401
 from torchmetrics.functional.regression.explained_variance import explained_variance  # noqa: F401
+from torchmetrics.functional.regression.kendall import kendall_rank_corrcoef  # noqa: F401
 from torchmetrics.functional.regression.kl_divergence import kl_divergence  # noqa: F401
 from torchmetrics.functional.regression.log_mse import mean_squared_log_error  # noqa: F401
 from torchmetrics.functional.regression.mae import mean_absolute_error  # noqa: F401
