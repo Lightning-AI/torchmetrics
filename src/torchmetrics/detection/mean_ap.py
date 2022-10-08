@@ -615,7 +615,7 @@ class MeanAveragePrecision(Metric):
         iou_thresholds = torch.tensor(self.iou_thresholds, device=self.device)
 
         if torch.numel(ious) > 0:
-            M = self._find_best_gt_match(iou_thresholds, gt_matches, gt_ignore, ious)
+            M = self._find_best_gt_matches(iou_thresholds, gt_matches, gt_ignore, ious)
             for idx_iou, _ in enumerate(iou_thresholds):
                 for idx_det, _ in enumerate(det):
                     m = M[idx_iou, idx_det]
@@ -642,7 +642,7 @@ class MeanAveragePrecision(Metric):
         }
 
     @staticmethod
-    def _find_best_gt_match(thr: Tensor, gt_matches: Tensor, gt_ignore: Tensor, ious: Tensor) -> int:
+    def _find_best_gt_matches(thr: Tensor, gt_matches: Tensor, gt_ignore: Tensor, ious: Tensor) -> int:
         """Return id of best ground truth match with current detection.
 
         Args:
@@ -658,7 +658,10 @@ class MeanAveragePrecision(Metric):
         # Remove previously matched or ignored gts
         remove_mask = gt_matches | gt_ignore
         gt_ious = torch.einsum("cw,dw->cdw", ~remove_mask, ious).max(-1).values
-        return gt_ious.where(gt_ious > thr.unsqueeze(-1), torch.tensor(-1, dtype=gt_ious.dtype, device=gt_ious.device))
+        best_gt_matches = gt_ious.where(
+            gt_ious > thr.unsqueeze(-1), torch.tensor(-1, dtype=gt_ious.dtype, device=gt_ious.device)
+        )
+        return best_gt_matches.int()
 
     def _summarize(
         self,
