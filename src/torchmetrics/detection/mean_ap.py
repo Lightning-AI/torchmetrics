@@ -616,13 +616,14 @@ class MeanAveragePrecision(Metric):
 
         if torch.numel(ious) > 0:
             best_matches = self._find_best_gt_matches(iou_thresholds, gt_matches, gt_ignore, ious)
-            for idx_iou, _ in enumerate(iou_thresholds):
-                for idx_det, _ in enumerate(det):
+            det_ignore = det_ignore.where(best_matches == -1, gt_ignore[best_matches])
+            det_matches = det_matches.where(best_matches == -1, torch.ones(1, device=det_matches.device))
+            # gt_matches = gt_matches.where(best_matches == -1, torch.ones(1, device=det_matches.device))
+            for idx_iou in range(len(iou_thresholds)):
+                for idx_det in range(len(det)):
                     m = best_matches[idx_iou, idx_det]
                     if m == -1:
                         continue
-                    det_ignore[idx_iou, idx_det] = gt_ignore[m]
-                    det_matches[idx_iou, idx_det] = 1
                     gt_matches[idx_iou, m] = 1
 
         # set unmatched detections outside of area range to ignore
@@ -661,7 +662,7 @@ class MeanAveragePrecision(Metric):
         best_gt_matches = gt_ious.where(
             gt_ious > thr.unsqueeze(-1), torch.tensor(-1, dtype=gt_ious.dtype, device=gt_ious.device)
         )
-        return best_gt_matches.int()
+        return best_gt_matches.long()
 
     def _summarize(
         self,
