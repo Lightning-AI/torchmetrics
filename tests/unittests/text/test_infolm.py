@@ -100,7 +100,7 @@ def reference_infolm_score(preds, target, model_name, information_measure, idf, 
 @pytest.mark.skipif(not _TRANSFORMERS_AVAILABLE, reason="test requires transformers")
 class TestInfoLM(TextTester):
     # Set atol = 1e-4 as reference results are rounded
-    atol = 1e-4
+    atol = 1e-3
 
     @pytest.mark.parametrize("ddp", [False, True])
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
