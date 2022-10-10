@@ -315,8 +315,7 @@ def _rouge_score_update(
         result_avg: Dict[Union[int, str], List[Dict[str, Tensor]]] = {rouge_key: [] for rouge_key in rouge_keys_values}
         list_results = []
         pred = _normalize_and_tokenize_text(pred_raw, stemmer, normalizer, tokenizer)
-        rouge_keys_values = {k.lower() for k in rouge_keys_values}
-        if "lsum" in rouge_keys_values:
+        if "Lsum" in rouge_keys_values:
             pred_lsum = [
                 _normalize_and_tokenize_text(pred_sentence, stemmer, normalizer, tokenizer)
                 for pred_sentence in _split_sentence(pred_raw)
