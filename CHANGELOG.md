@@ -26,8 +26,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-- Removed deprecated classification code ([#1251](https://github.com/Lightning-AI/metrics/pull/1251))
-
+- Removed deprecated `BinnedAveragePrecision`, `BinnedPrecisionRecallCurve`, `RecallAtFixedPrecision` ([#1163])(https://github.com/Lightning-AI/metrics/pull/1251))
+- Removed deprecated `LabelRankingAveragePrecision`, `LabelRankingLoss` and `CoverageError` ([#1167](https://github.com/Lightning-AI/metrics/pull/1251))
+- Removed deprecated `KLDivergence` and `AUC` ([#1189](https://github.com/Lightning-AI/metrics/pull/1251))
 
 ### Fixed
 
@@ -71,6 +72,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved performance of retrieval metrics ([#1242](https://github.com/Lightning-AI/metrics/pull/1242))
 - Changed `SSIM` and `MSSSIM` update to be online to reduce memory usage ([#1231](https://github.com/Lightning-AI/metrics/pull/1231))
 
+### Deprecated
+
+- Deprecated `BinnedAveragePrecision`, `BinnedPrecisionRecallCurve`, `BinnedRecallAtFixedPrecision` ([#1163])(https://github.com/Lightning-AI/metrics/pull/1163))
+  * `BinnedAveragePrecision` -> use `AveragePrecision` with `thresholds` arg
+  * `BinnedPrecisionRecallCurve` -> use `AveragePrecisionRecallCurve` with `thresholds` arg
+  * `BinnedRecallAtFixedPrecision` -> use `RecallAtFixedPrecision` with `thresholds` arg
+- Renamed and refactored `LabelRankingAveragePrecision`, `LabelRankingLoss` and `CoverageError` ([#1167](https://github.com/Lightning-AI/metrics/pull/1167))
+  * `LabelRankingAveragePrecision` -> `MultilabelRankingAveragePrecision`
+  * `LabelRankingLoss` -> `MultilabelRankingLoss`
+  * `CoverageError` -> `MultilabelCoverageError`
+- Deprecated `KLDivergence` and `AUC` from classification package ([#1189](https://github.com/Lightning-AI/metrics/pull/1189))
+  * `KLDivergence` moved to `regression` package
+  * Instead of `AUC` use `torchmetrics.utils.compute.auc`
 
 ### Fixed
 
