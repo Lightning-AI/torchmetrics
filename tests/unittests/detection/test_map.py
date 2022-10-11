@@ -168,8 +168,16 @@ _inputs2 = Input(
 
 # Test empty preds case, to ensure bool inputs are properly casted to uint8
 # From https://github.com/Lightning-AI/metrics/issues/981
+# and https://github.com/Lightning-AI/metrics/issues/1147
 _inputs3 = Input(
     preds=[
+        [
+            dict(
+                boxes=Tensor([[258.0, 41.0, 606.0, 285.0]]),
+                scores=Tensor([0.536]),
+                labels=IntTensor([0]),
+            ),
+        ],
         [
             dict(boxes=Tensor([]), scores=Tensor([]), labels=Tensor([])),
         ],
@@ -177,8 +185,14 @@ _inputs3 = Input(
     target=[
         [
             dict(
+                boxes=Tensor([[214.0, 41.0, 562.0, 285.0]]),
+                labels=IntTensor([0]),
+            )
+        ],
+        [
+            dict(
                 boxes=Tensor([[1.0, 2.0, 3.0, 4.0]]),
-                scores=Tensor([0.8]),
+                scores=Tensor([0.8]),  # target does not have scores
                 labels=Tensor([1]),
             ),
         ],
