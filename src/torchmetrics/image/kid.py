@@ -220,7 +220,7 @@ class KernelInceptionDistance(Metric):
         self.add_state("real_features", [], dist_reduce_fx=None)
         self.add_state("fake_features", [], dist_reduce_fx=None)
 
-    def update(self, imgs: Tensor, real: bool) -> None:  # type: ignore
+    def update(self, imgs: Tensor, real: bool) -> None:
         """Update the state with extracted features.
 
         Args:
