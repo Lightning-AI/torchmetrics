@@ -23,7 +23,6 @@ from sklearn.metrics import roc_auc_score as sk_roc_auc_score
 from torchmetrics.classification.auroc import BinaryAUROC, MulticlassAUROC, MultilabelAUROC
 from torchmetrics.functional.classification.auroc import binary_auroc, multiclass_auroc, multilabel_auroc
 from torchmetrics.functional.classification.roc import binary_roc
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6, _TORCH_LOWER_1_6
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
 from unittests.helpers.testers import NUM_CLASSES, MetricTester, inject_ignore_index, remove_ignore_index
@@ -46,8 +45,6 @@ class TestBinaryAUROC(MetricTester):
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_binary_auroc(self, input, ddp, max_fpr, ignore_index):
-        if max_fpr is not None and _TORCH_LOWER_1_6:
-            pytest.skip("requires torch v1.6 or higher to test max_fpr argument")
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -67,8 +64,6 @@ class TestBinaryAUROC(MetricTester):
     @pytest.mark.parametrize("max_fpr", [None, 0.8, 0.5])
     @pytest.mark.parametrize("ignore_index", [None, -1])
     def test_binary_auroc_functional(self, input, max_fpr, ignore_index):
-        if max_fpr is not None and _TORCH_LOWER_1_6:
-            pytest.skip("requires torch v1.6 or higher to test max_fpr argument")
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -97,8 +92,7 @@ class TestBinaryAUROC(MetricTester):
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_binary_auroc_dtype_cpu(self, input, dtype):
         preds, target = input
-        if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_6:
-            pytest.xfail(reason="half support of core ops not support before pytorch v1.6")
+
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
         self.run_precision_test_cpu(
@@ -200,8 +194,7 @@ class TestMulticlassAUROC(MetricTester):
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multiclass_auroc_dtype_cpu(self, input, dtype):
         preds, target = input
-        if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_6:
-            pytest.xfail(reason="half support of core ops not support before pytorch v1.6")
+
         if dtype == torch.half and not ((0 < preds) & (preds < 1)).all():
             pytest.xfail(reason="half support for torch.softmax on cpu not implemented")
         self.run_precision_test_cpu(
@@ -321,8 +314,7 @@ class TestMultilabelAUROC(MetricTester):
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multilabel_auroc_dtype_cpu(self, input, dtype):
         preds, target = input
-        if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_6:
-            pytest.xfail(reason="half support of core ops not support before pytorch v1.6")
+
         if dtype == torch.half and not ((0 < preds) & (preds < 1)).all():
             pytest.xfail(reason="half support for torch.softmax on cpu not implemented")
         self.run_precision_test_cpu(

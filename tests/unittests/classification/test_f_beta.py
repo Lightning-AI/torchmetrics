@@ -38,7 +38,6 @@ from torchmetrics.functional.classification.f_beta import (
     multilabel_f1_score,
     multilabel_fbeta_score,
 )
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
 from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index, remove_ignore_index
@@ -141,8 +140,7 @@ class TestBinaryFBetaScore(MetricTester):
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_binary_fbeta_score_half_cpu(self, input, module, functional, compare, dtype):
         preds, target = input
-        if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_6:
-            pytest.xfail(reason="half support of core ops not support before pytorch v1.6")
+
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
         self.run_precision_test_cpu(
@@ -281,8 +279,7 @@ class TestMulticlassFBetaScore(MetricTester):
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multiclass_fbeta_score_half_cpu(self, input, module, functional, compare, dtype):
         preds, target = input
-        if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_6:
-            pytest.xfail(reason="half support of core ops not support before pytorch v1.6")
+
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
         self.run_precision_test_cpu(
@@ -524,8 +521,7 @@ class TestMultilabelFBetaScore(MetricTester):
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multilabel_fbeta_score_half_cpu(self, input, module, functional, compare, dtype):
         preds, target = input
-        if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_6:
-            pytest.xfail(reason="half support of core ops not support before pytorch v1.6")
+
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
         self.run_precision_test_cpu(
