@@ -161,7 +161,7 @@ class KernelInceptionDistance(Metric):
         subsets: int = 100,
         subset_size: int = 1000,
         degree: int = 3,
-        gamma: Optional[float] = None,  # type: ignore
+        gamma: Optional[float] = None,
         coef: float = 1.0,
         reset_real_features: bool = True,
         **kwargs: Any,
