@@ -1,4 +1,4 @@
 numpy>=1.17.2
-torch>=1.8
+torch>=1.8.0
 packaging
 typing-extensions; python_version < '3.9'
