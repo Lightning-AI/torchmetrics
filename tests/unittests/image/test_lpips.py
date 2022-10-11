@@ -34,36 +34,37 @@ _inputs = Input(
 )
 
 
-def _compare_fn(img1: Tensor, img2: Tensor, net_type: str, reduction: str = "mean") -> Tensor:
+def _compare_fn(img1: Tensor, img2: Tensor, net_type: str, normalize: bool, reduction: str = "mean") -> Tensor:
     """comparison function for tm implementation."""
     ref = LPIPS_reference(net=net_type)
-    res = ref(img1, img2).detach().cpu().numpy()
+    res = ref(img1, img2, normalize=normalize).detach().cpu().numpy()
     if reduction == "mean":
         return res.mean()
     return res.sum()
 
 
 @pytest.mark.skipif(not _LPIPS_AVAILABLE, reason="test requires that lpips is installed")
-@pytest.mark.parametrize("net_type", ["vgg", "alex", "squeeze"])
 class TestLPIPS(MetricTester):
     atol: float = 1e-6
 
+    @pytest.mark.parametrize("net_type", ["vgg", "alex", "squeeze"])
+    @pytest.mark.parametrize("normalize", [False, True])
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_lpips(self, net_type, ddp):
+    def test_lpips(self, net_type, normalize, ddp):
         """test modular implementation for correctness."""
         self.run_class_metric_test(
             ddp=ddp,
             preds=_inputs.img1,
             target=_inputs.img2,
             metric_class=LearnedPerceptualImagePatchSimilarity,
-            sk_metric=partial(_compare_fn, net_type=net_type),
+            sk_metric=partial(_compare_fn, net_type=net_type, normalize=normalize),
             dist_sync_on_step=False,
             check_scriptable=False,
             check_state_dict=False,
-            metric_args={"net_type": net_type},
+            metric_args={"net_type": net_type, "normalize": normalize},
         )
 
-    def test_lpips_differentiability(self, net_type):
+    def test_lpips_differentiability(self):
         """test for differentiability of LPIPS metric."""
         self.run_differentiability_test(
             preds=_inputs.img1, target=_inputs.img2, metric_module=LearnedPerceptualImagePatchSimilarity
@@ -71,12 +72,12 @@ class TestLPIPS(MetricTester):
 
     # LPIPS half + cpu does not work due to missing support in torch.min
     @pytest.mark.xfail(reason="LPIPS metric does not support cpu + half precision")
-    def test_lpips_half_cpu(self, net_type):
+    def test_lpips_half_cpu(self):
         """test for half + cpu support."""
         self.run_precision_test_cpu(_inputs.img1, _inputs.img2, LearnedPerceptualImagePatchSimilarity)
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-    def test_lpips_half_gpu(self, net_type):
+    def test_lpips_half_gpu(self):
         """test for half + gpu support."""
         self.run_precision_test_gpu(_inputs.img1, _inputs.img2, LearnedPerceptualImagePatchSimilarity)
 

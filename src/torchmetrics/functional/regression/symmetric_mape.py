@@ -66,8 +66,7 @@ def _symmetric_mean_absolute_percentage_error_compute(sum_abs_per_error: Tensor,
 
 
 def symmetric_mean_absolute_percentage_error(preds: Tensor, target: Tensor) -> Tensor:
-    r"""
-    Computes symmetric mean absolute percentage error (SMAPE_):
+    r"""Computes symmetric mean absolute percentage error (SMAPE_):
 
     .. math:: \text{SMAPE} = \frac{2}{n}\sum_1^n\frac{|   y_i - \hat{y_i} |}{max(| y_i | + | \hat{y_i} |, \epsilon)}
 
@@ -86,7 +85,6 @@ def symmetric_mean_absolute_percentage_error(preds: Tensor, target: Tensor) -> T
         >>> preds = torch.tensor([0.9, 15, 1.2e6])
         >>> symmetric_mean_absolute_percentage_error(preds, target)
         tensor(0.2290)
-
     """
     sum_abs_per_error, num_obs = _symmetric_mean_absolute_percentage_error_update(
         preds,

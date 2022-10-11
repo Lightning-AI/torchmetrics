@@ -16,7 +16,7 @@ import inspect
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from copy import deepcopy
-from typing import Any, Callable, Dict, Generator, List, Optional, Sequence, Union
+from typing import Any, Callable, Dict, Generator, List, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -337,7 +337,7 @@ class Metric(Module, ABC):
             if reduce_fn == dim_zero_sum:
                 reduced = global_state + local_state
             elif reduce_fn == dim_zero_mean:
-                reduced = ((self._update_count - 1) * global_state + local_state) / self._update_count
+                reduced = ((self._update_count - 1) * global_state + local_state).float() / self._update_count
             elif reduce_fn == dim_zero_max:
                 reduced = torch.max(global_state, local_state)
             elif reduce_fn == dim_zero_min:
@@ -371,6 +371,10 @@ class Metric(Module, ABC):
         for attr, reduction_fn in self._reductions.items():
             # pre-processing ops (stack or flatten for inputs)
 
+            if isinstance(output_dict[attr], list) and len(output_dict[attr]) == 0:
+                setattr(self, attr, [])
+                continue
+
             if isinstance(output_dict[attr][0], Tensor):
                 output_dict[attr] = torch.stack(output_dict[attr])
             elif isinstance(output_dict[attr][0], list):
@@ -392,10 +396,9 @@ class Metric(Module, ABC):
                 except RuntimeError as err:
                     if "Expected all tensors to be on" in str(err):
                         raise RuntimeError(
-                            "Encountered different devices in metric calculation"
-                            " (see stacktrace for details)."
-                            "This could be due to the metric class not being on the same device as input."
-                            f"Instead of `metric={self.__class__.__name__}(...)` try to do"
+                            "Encountered different devices in metric calculation (see stacktrace for details)."
+                            " This could be due to the metric class not being on the same device as input."
+                            f" Instead of `metric={self.__class__.__name__}(...)` try to do"
                             f" `metric={self.__class__.__name__}(...).to(device)` where"
                             " device corresponds to the device of the input."
                         ) from err
@@ -844,6 +847,9 @@ class Metric(Module, ABC):
 
     def __getitem__(self, idx: int) -> "Metric":
         return CompositionalMetric(lambda x: x[idx], self, None)
+
+    def __getnewargs__(self) -> Tuple:
+        return (Metric.__str__(self),)
 
 
 def _neg(x: Tensor) -> Tensor:

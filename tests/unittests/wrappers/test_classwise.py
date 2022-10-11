@@ -18,8 +18,8 @@ def test_output_no_labels():
     base = Accuracy(num_classes=3, average=None)
     metric = ClasswiseWrapper(Accuracy(num_classes=3, average=None))
     for _ in range(2):
-        preds = torch.randn(10, 3).softmax(dim=-1)
-        target = torch.randint(3, (10,))
+        preds = torch.randn(20, 3).softmax(dim=-1)
+        target = torch.randint(3, (20,))
         val = metric(preds, target)
         val_base = base(preds, target)
         assert isinstance(val, dict)
@@ -35,10 +35,17 @@ def test_output_with_labels():
     base = Accuracy(num_classes=3, average=None)
     metric = ClasswiseWrapper(Accuracy(num_classes=3, average=None), labels=labels)
     for _ in range(2):
-        preds = torch.randn(10, 3).softmax(dim=-1)
-        target = torch.randint(3, (10,))
+        preds = torch.randn(20, 3).softmax(dim=-1)
+        target = torch.randint(3, (20,))
         val = metric(preds, target)
         val_base = base(preds, target)
+        assert isinstance(val, dict)
+        assert len(val) == 3
+        for i, lab in enumerate(labels):
+            assert f"accuracy_{lab}" in val
+            assert val[f"accuracy_{lab}"] == val_base[i]
+        val = metric.compute()
+        val_base = base.compute()
         assert isinstance(val, dict)
         assert len(val) == 3
         for i, lab in enumerate(labels):

@@ -197,11 +197,9 @@ def _fix_empty_tensors(boxes: Tensor) -> Tensor:
 
 
 class MeanAveragePrecision(Metric):
-    r"""
-    Computes the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)
-    <https://jonathan-hui.medium.com/map-mean-average-precision-for-object-detection-45c121a31173>`_
-    for object detection predictions.
-    Optionally, the mAP and mAR values can be calculated per class.
+    r"""`Computes the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR) <https://jonathan-
+    hui.medium.com/map-mean-average-precision-for-object-detection-45c121a31173>`_ for object detection
+    predictions. Optionally, the mAP and mAR values can be calculated per class.
 
     Predicted boxes and targets have to be in Pascal VOC format
     (xmin-top left, ymin-top left, xmax-bottom right, ymax-bottom right).
@@ -226,7 +224,7 @@ class MeanAveragePrecision(Metric):
             Input format of given boxes. Supported formats are ``[`xyxy`, `xywh`, `cxcywh`]``.
         iou_type:
             Type of input (either masks or bounding-boxes) used for computing IOU.
-            Supported IOU types are ``["bboxes", "segm"]``.
+            Supported IOU types are ``["bbox", "segm"]``.
             If using ``"segm"``, masks should be provided (see :meth:`update`).
         iou_thresholds:
             IoU thresholds for evaluation. If set to ``None`` it corresponds to the stepped range ``[0.5,...,0.95]``

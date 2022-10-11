@@ -29,3 +29,5 @@ if _TORCH_FIDELITY_AVAILABLE:
 
 if _LPIPS_AVAILABLE:
     from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity  # noqa: F401
+
+from torchmetrics.image.tv import TotalVariation  # noqa: F401

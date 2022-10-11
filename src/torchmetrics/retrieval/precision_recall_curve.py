@@ -19,7 +19,7 @@ from torch import Tensor, tensor
 from torchmetrics import Metric
 from torchmetrics.functional.retrieval.precision_recall_curve import retrieval_precision_recall_curve
 from torchmetrics.utilities.checks import _check_retrieval_inputs
-from torchmetrics.utilities.data import dim_zero_cat, get_group_indexes
+from torchmetrics.utilities.data import _flexible_bincount, dim_zero_cat
 
 
 def _retrieval_recall_at_fixed_precision(
@@ -171,20 +171,24 @@ class RetrievalPrecisionRecallCurve(Metric):
         indexes = dim_zero_cat(self.indexes)
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
-        groups = get_group_indexes(indexes)
+
+        indexes, indices = torch.sort(indexes)
+        preds = preds[indices]
+        target = target[indices]
+
+        split_sizes = _flexible_bincount(indexes).detach().cpu().tolist()
 
         # don't want to change self.max_k
         max_k = self.max_k
         if max_k is None:
             # set max_k as size of max group by size
-            max_k = max(map(len, groups))
+            max_k = max(split_sizes)
 
         precisions, recalls = [], []
 
-        for group in groups:
-            mini_preds = preds[group]
-            mini_target = target[group]
-
+        for mini_preds, mini_target in zip(
+            torch.split(preds, split_sizes, dim=0), torch.split(target, split_sizes, dim=0)
+        ):
             if not mini_target.sum():
                 if self.empty_target_action == "error":
                     raise ValueError("`compute` method was provided with a query with no positive target.")

@@ -66,7 +66,6 @@ class ExplainedVariance(Metric):
         >>> explained_variance = ExplainedVariance(multioutput='raw_values')
         >>> explained_variance(preds, target)
         tensor([0.9677, 1.0000])
-
     """
     is_differentiable: bool = True
     higher_is_better: bool = True

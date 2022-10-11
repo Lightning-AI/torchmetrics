@@ -14,8 +14,9 @@
 import os
 import pickle
 import sys
+from copy import deepcopy
 from functools import partial
-from typing import Any, Callable, Dict, List, Optional, Sequence, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 import pytest
@@ -164,6 +165,11 @@ def _class_test(
     if check_scriptable:
         torch.jit.script(metric)
 
+    # check that metric can be cloned
+    clone = metric.clone()
+    assert clone is not metric, "Clone is not a different object than the metric"
+    assert type(clone) == type(metric), "Type of clone did not match metric type"
+
     # move to device
     metric = metric.to(device)
     preds = apply_to_collection(preds, Tensor, lambda x: x.to(device))
@@ -300,12 +306,13 @@ def _functional_test(
         _assert_allclose(tm_result, sk_result, atol=atol)
 
 
-def _assert_half_support(
+def _assert_dtype_support(
     metric_module: Optional[Metric],
     metric_functional: Optional[Callable],
     preds: Tensor,
     target: Tensor,
     device: str = "cpu",
+    dtype: torch.dtype = torch.half,
     **kwargs_update,
 ):
     """Test if an metric can be used with half precision tensors.
@@ -319,10 +326,10 @@ def _assert_half_support(
         kwargs_update: Additional keyword arguments that will be passed with preds and
                 target when running update on the metric.
     """
-    y_hat = preds[0].half().to(device) if preds[0].is_floating_point() else preds[0].to(device)
-    y = target[0].half().to(device) if target[0].is_floating_point() else target[0].to(device)
+    y_hat = preds[0].to(dtype=dtype, device=device) if preds[0].is_floating_point() else preds[0].to(device)
+    y = target[0].to(dtype=dtype, device=device) if target[0].is_floating_point() else target[0].to(device)
     kwargs_update = {
-        k: (v[0].half() if v.is_floating_point() else v[0]).to(device) if isinstance(v, Tensor) else v
+        k: (v[0].to(dtype=dtype) if v.is_floating_point() else v[0]).to(device) if isinstance(v, Tensor) else v
         for k, v in kwargs_update.items()
     }
     if metric_module is not None:
@@ -402,7 +409,7 @@ class MetricTester:
         target: Union[Tensor, List[Dict]],
         metric_class: Metric,
         sk_metric: Callable,
-        dist_sync_on_step: bool,
+        dist_sync_on_step: bool = False,
         metric_args: dict = None,
         check_dist_sync_on_step: bool = True,
         check_batch: bool = True,
@@ -482,6 +489,7 @@ class MetricTester:
         metric_module: Optional[Metric] = None,
         metric_functional: Optional[Callable] = None,
         metric_args: Optional[dict] = None,
+        dtype: torch.dtype = torch.half,
         **kwargs_update,
     ):
         """Test if a metric can be used with half precision tensors on cpu
@@ -495,12 +503,13 @@ class MetricTester:
                 target when running update on the metric.
         """
         metric_args = metric_args or {}
-        _assert_half_support(
+        _assert_dtype_support(
             metric_module(**metric_args) if metric_module is not None else None,
-            metric_functional,
+            partial(metric_functional, **metric_args) if metric_functional is not None else None,
             preds,
             target,
             device="cpu",
+            dtype=dtype,
             **kwargs_update,
         )
 
@@ -511,6 +520,7 @@ class MetricTester:
         metric_module: Optional[Metric] = None,
         metric_functional: Optional[Callable] = None,
         metric_args: Optional[dict] = None,
+        dtype: torch.dtype = torch.half,
         **kwargs_update,
     ):
         """Test if a metric can be used with half precision tensors on gpu
@@ -524,12 +534,13 @@ class MetricTester:
                 target when running update on the metric.
         """
         metric_args = metric_args or {}
-        _assert_half_support(
+        _assert_dtype_support(
             metric_module(**metric_args) if metric_module is not None else None,
-            metric_functional,
+            partial(metric_functional, **metric_args) if metric_functional is not None else None,
             preds,
             target,
             device="cuda",
+            dtype=dtype,
             **kwargs_update,
         )
 
@@ -619,3 +630,31 @@ class DummyMetricDiff(DummyMetric):
 class DummyMetricMultiOutput(DummyMetricSum):
     def compute(self):
         return [self.x, self.x]
+
+
+def inject_ignore_index(x: Tensor, ignore_index: int) -> Tensor:
+    """Utility function for injecting the ignore index value into a tensor randomly."""
+    if any(x.flatten() == ignore_index):  # ignore index is a class label
+        return x
+    classes = torch.unique(x)
+    idx = torch.randperm(x.numel())
+    x = deepcopy(x)
+    # randomly set either element {9, 10} to the ignore index value
+    skip = torch.randint(9, 11, (1,)).item()
+    x.view(-1)[idx[::skip]] = ignore_index
+    # if we accedently removed a class completly in a batch, reintroduce it again
+    for batch in x:
+        new_classes = torch.unique(batch)
+        class_not_in = [c not in new_classes for c in classes]
+        if any(class_not_in):
+            missing_class = int(np.where(class_not_in)[0][0])
+            batch[torch.where(batch == ignore_index)[0][0]] = missing_class
+    return x
+
+
+def remove_ignore_index(target: Tensor, preds: Tensor, ignore_index: Optional[int]) -> Tuple[Tensor, Tensor]:
+    """Utility function for removing samples that are equal to the ignore_index in comparison functions."""
+    if ignore_index is not None:
+        idx = target == ignore_index
+        target, preds = deepcopy(target[~idx]), deepcopy(preds[~idx])
+    return target, preds

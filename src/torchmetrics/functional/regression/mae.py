@@ -28,8 +28,9 @@ def _mean_absolute_error_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, 
         preds: Predicted tensor
         target: Ground truth tensor
     """
-
     _check_same_shape(preds, target)
+    preds = preds if preds.is_floating_point else preds.float()
+    target = target if target.is_floating_point else target.float()
     sum_abs_error = torch.sum(torch.abs(preds - target))
     n_obs = target.numel()
     return sum_abs_error, n_obs
