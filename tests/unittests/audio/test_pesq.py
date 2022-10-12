@@ -22,7 +22,6 @@ from torch import Tensor
 
 from torchmetrics.audio.pesq import PerceptualEvaluationSpeechQuality
 from torchmetrics.functional.audio.pesq import perceptual_evaluation_speech_quality
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 from unittests.audio import _SAMPLE_AUDIO_SPEECH, _SAMPLE_AUDIO_SPEECH_BAB_DB
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
@@ -112,9 +111,6 @@ class TestPESQ(MetricTester):
             metric_args=dict(fs=fs, mode=mode),
         )
 
-    @pytest.mark.skipif(
-        not _TORCH_GREATER_EQUAL_1_6, reason="half support of core operations on not support before pytorch v1.6"
-    )
     def test_pesq_half_cpu(self, preds, target, sk_metric, fs, mode):
         pytest.xfail("PESQ metric does not support cpu + half precision")
 

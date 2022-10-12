@@ -25,35 +25,7 @@ from torchmetrics.functional.classification.confusion_matrix import (
 )
 from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import DataType
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_8
 from torchmetrics.utilities.prints import rank_zero_warn
-
-
-def _binning_with_loop(
-    confidences: Tensor, accuracies: Tensor, bin_boundaries: Tensor
-) -> Tuple[Tensor, Tensor, Tensor]:
-    """Compute calibration bins using for loops. Use for pytorch < 1.6.
-
-    Args:
-        confidences: The confidence (i.e. predicted prob) of the top1 prediction.
-        accuracies: 1.0 if the top-1 prediction was correct, 0.0 otherwise.
-        bin_boundaries: Bin boundaries separating the ``linspace`` from 0 to 1.
-
-    Returns:
-        tuple with binned accuracy, binned confidence and binned probabilities
-    """
-    conf_bin = torch.zeros_like(bin_boundaries)
-    acc_bin = torch.zeros_like(bin_boundaries)
-    prop_bin = torch.zeros_like(bin_boundaries)
-    for i, (bin_lower, bin_upper) in enumerate(zip(bin_boundaries[:-1], bin_boundaries[1:])):
-        # Calculated confidence and accuracy in each bin
-        in_bin = confidences.gt(bin_lower.item()) * confidences.le(bin_upper.item())
-        prop_in_bin = in_bin.float().mean()
-        if prop_in_bin.item() > 0:
-            acc_bin[i] = accuracies[in_bin].float().mean()
-            conf_bin[i] = confidences[in_bin].mean()
-            prop_bin[i] = prop_in_bin
-    return acc_bin, conf_bin, prop_bin
 
 
 def _binning_bucketize(
@@ -118,10 +90,7 @@ def _ce_compute(
         raise ValueError(f"Norm {norm} is not supported. Please select from l1, l2, or max. ")
 
     with torch.no_grad():
-        if _TORCH_GREATER_EQUAL_1_8:
-            acc_bin, conf_bin, prop_bin = _binning_bucketize(confidences, accuracies, bin_boundaries)
-        else:
-            acc_bin, conf_bin, prop_bin = _binning_with_loop(confidences, accuracies, bin_boundaries)
+        acc_bin, conf_bin, prop_bin = _binning_bucketize(confidences, accuracies, bin_boundaries)
 
     if norm == "l1":
         ce = torch.sum(torch.abs(acc_bin - conf_bin) * prop_bin)

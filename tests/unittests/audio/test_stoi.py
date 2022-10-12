@@ -22,7 +22,6 @@ from torch import Tensor
 
 from torchmetrics.audio.stoi import ShortTimeObjectiveIntelligibility
 from torchmetrics.functional.audio.stoi import short_time_objective_intelligibility
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 from unittests.audio import _SAMPLE_AUDIO_SPEECH, _SAMPLE_AUDIO_SPEECH_BAB_DB
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
@@ -108,9 +107,6 @@ class TestSTOI(MetricTester):
             metric_args=dict(fs=fs, extended=extended),
         )
 
-    @pytest.mark.skipif(
-        not _TORCH_GREATER_EQUAL_1_6, reason="half support of core operations on not support before pytorch v1.6"
-    )
     def test_stoi_half_cpu(self, preds, target, sk_metric, fs, extended):
         pytest.xfail("STOI metric does not support cpu + half precision")
 

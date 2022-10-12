@@ -27,7 +27,6 @@ from torchmetrics.functional import (
     scale_invariant_signal_distortion_ratio,
     signal_noise_ratio,
 )
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 from unittests.helpers import seed_all
 from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 
@@ -152,9 +151,6 @@ class TestPIT(MetricTester):
             metric_args={"metric_func": metric_func, "eval_func": eval_func},
         )
 
-    @pytest.mark.skipif(
-        not _TORCH_GREATER_EQUAL_1_6, reason="half support of core operations on not support before pytorch v1.6"
-    )
     def test_pit_half_cpu(self, preds, target, sk_metric, metric_func, eval_func):
         pytest.xfail("PIT metric does not support cpu + half precision")
 
