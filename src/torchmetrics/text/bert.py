@@ -114,7 +114,7 @@ class BERTScore(Metric):
         device: Optional[Union[str, torch.device]] = None,
         max_length: int = 512,
         batch_size: int = 64,
-        num_threads: int = 0,
+        num_threads: int = 1,
         return_hash: bool = False,
         lang: str = "en",
         rescale_with_baseline: bool = False,
@@ -163,7 +163,7 @@ class BERTScore(Metric):
         self.add_state("target_input_ids", [], dist_reduce_fx="cat")
         self.add_state("target_attention_mask", [], dist_reduce_fx="cat")
 
-    def update(self, preds: Union[str, Sequence[str]], target: Union[str, Sequence[str]]) -> None:  # type: ignore
+    def update(self, preds: Union[str, Sequence[str]], target: Union[str, Sequence[str]]) -> None:
         """Store predictions/references for computing BERT scores. It is necessary to store sentences in a
         tokenized form to ensure the DDP mode working.
 

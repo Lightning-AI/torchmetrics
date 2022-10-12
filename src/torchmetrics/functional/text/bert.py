@@ -245,7 +245,7 @@ def bert_score(
     device: Optional[Union[str, torch.device]] = None,
     max_length: int = 512,
     batch_size: int = 64,
-    num_threads: int = 0,
+    num_threads: int = 1,
     return_hash: bool = False,
     lang: str = "en",
     rescale_with_baseline: bool = False,
@@ -371,7 +371,7 @@ def bert_score(
     )
     if _are_empty_lists:
         warn("Predictions and references are empty.")
-        output_dict: Dict[str, Union[List[float], str]] = {
+        output_dict: Dict[str, Union[Tensor, List[float], str]] = {
             "precision": [0.0],
             "recall": [0.0],
             "f1": [0.0],
