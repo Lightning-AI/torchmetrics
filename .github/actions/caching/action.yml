@@ -32,7 +32,9 @@ runs:
 
   - name: Set min. dependencies
     if: inputs.requires == 'oldest'
-    run: python .github/assistant.py set-oldest-versions
+    run: |
+      python .github/assistant.py set-oldest-versions
+      cat requirements.txt
     shell: bash
 
   - run: python -c "import time ; days = time.time() / 60 / 60 / 24 ; print(f'TIME_PERIOD={int(days / ${{ inputs.interval }})}')" >> $GITHUB_ENV

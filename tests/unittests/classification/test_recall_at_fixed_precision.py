@@ -31,7 +31,6 @@ from torchmetrics.functional.classification.recall_at_fixed_precision import (
     multiclass_recall_at_fixed_precision,
     multilabel_recall_at_fixed_precision,
 )
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_8
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
 from unittests.helpers.testers import NUM_CLASSES, MetricTester, inject_ignore_index, remove_ignore_index
@@ -118,8 +117,6 @@ class TestBinaryRecallAtFixedPrecision(MetricTester):
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_binary_recall_at_fixed_precision_dtype_cpu(self, input, dtype):
         preds, target = input
-        if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_8:
-            pytest.xfail(reason="torch.flip not support before pytorch v1.8 for cpu + half precision")
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
         self.run_precision_test_cpu(
@@ -235,8 +232,6 @@ class TestMulticlassRecallAtFixedPrecision(MetricTester):
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multiclass_recall_at_fixed_precision_dtype_cpu(self, input, dtype):
         preds, target = input
-        if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_8:
-            pytest.xfail(reason="torch.flip not support before pytorch v1.8 for cpu + half precision")
         if dtype == torch.half and not ((0 < preds) & (preds < 1)).all():
             pytest.xfail(reason="half support for torch.softmax on cpu not implemented")
         self.run_precision_test_cpu(
@@ -347,8 +342,6 @@ class TestMultilabelRecallAtFixedPrecision(MetricTester):
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multilabel_recall_at_fixed_precision_dtype_cpu(self, input, dtype):
         preds, target = input
-        if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_8:
-            pytest.xfail(reason="torch.flip not support before pytorch v1.8 for cpu + half precision")
         if dtype == torch.half and not ((0 < preds) & (preds < 1)).all():
             pytest.xfail(reason="half support for torch.softmax on cpu not implemented")
         self.run_precision_test_cpu(

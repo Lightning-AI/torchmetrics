@@ -20,7 +20,6 @@ from sklearn.metrics import explained_variance_score
 
 from torchmetrics.functional import explained_variance
 from torchmetrics.regression import ExplainedVariance
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 from unittests.helpers import seed_all
 from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 
@@ -93,9 +92,6 @@ class TestExplainedVariance(MetricTester):
             metric_args={"multioutput": multioutput},
         )
 
-    @pytest.mark.skipif(
-        not _TORCH_GREATER_EQUAL_1_6, reason="half support of core operations on not support before pytorch v1.6"
-    )
     def test_explained_variance_half_cpu(self, multioutput, preds, target, sk_metric):
         self.run_precision_test_cpu(preds, target, ExplainedVariance, explained_variance)
 

@@ -24,7 +24,6 @@ from torch import Tensor, tensor
 from torch.nn import Module
 
 from torchmetrics import PearsonCorrCoef
-from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
 from unittests.helpers import seed_all
 from unittests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum
 from unittests.helpers.utilities import no_warning_call
@@ -88,9 +87,6 @@ def test_add_state_persistent():
     assert "a" in a.state_dict()
 
     a.add_state("b", tensor(0), "sum", persistent=False)
-
-    if _TORCH_LOWER_1_6:
-        assert "b" not in a.state_dict()
 
 
 def test_reset():
