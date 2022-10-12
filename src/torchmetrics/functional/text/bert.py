@@ -251,7 +251,7 @@ def bert_score(
     rescale_with_baseline: bool = False,
     baseline_path: Optional[str] = None,
     baseline_url: Optional[str] = None,
-) -> Dict[str, Union[List[float], str]]:
+) -> Dict[str, Union[Tensor, List[float], str]]:
     """`Bert_score Evaluating Text Generation`_ leverages the pre-trained contextual embeddings from BERT and
     matches words in candidate and reference sentences by cosine similarity.
 
