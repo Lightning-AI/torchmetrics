@@ -64,7 +64,7 @@ class SQuAD(Metric):
         self.add_state(name="exact_match", default=torch.tensor(0, dtype=torch.float), dist_reduce_fx="sum")
         self.add_state(name="total", default=torch.tensor(0, dtype=torch.int), dist_reduce_fx="sum")
 
-    def update(self, preds: PREDS_TYPE, target: TARGETS_TYPE) -> None:  # type: ignore
+    def update(self, preds: PREDS_TYPE, target: TARGETS_TYPE) -> None:
         """Compute F1 Score and Exact Match for a collection of predictions and references.
 
         Args:

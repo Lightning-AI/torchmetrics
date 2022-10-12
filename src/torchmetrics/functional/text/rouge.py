@@ -133,7 +133,7 @@ def _union_lcs(pred_tokens_list: Sequence[Sequence[str]], target_tokens: Sequenc
 
     def find_union(lcs_tables: Sequence[Sequence[int]]) -> Sequence[int]:
         """Find union LCS given a list of LCS."""
-        return sorted(list(set().union(*lcs_tables)))  # type: ignore
+        return sorted(list(set().union(*lcs_tables)))
 
     lcs_tables = [lcs_ind(pred_tokens, target_tokens) for pred_tokens in pred_tokens_list]
     union_lcs = [target_tokens[i] for i in find_union(lcs_tables)]
@@ -395,7 +395,7 @@ def rouge_score(
     use_stemmer: bool = False,
     normalizer: Callable[[str], str] = None,
     tokenizer: Callable[[str], Sequence[str]] = None,
-    rouge_keys: Union[str, Tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),  # type: ignore
+    rouge_keys: Union[str, Tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),
 ) -> Dict[str, Tensor]:
     """Calculate `Calculate Rouge Score`_ , used for automatic summarization.
 
