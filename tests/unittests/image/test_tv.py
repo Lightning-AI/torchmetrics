@@ -21,7 +21,7 @@ from kornia.losses import total_variation as kornia_total_variation
 from torchmetrics.functional.image.tv import total_variation
 from torchmetrics.image.tv import TotalVariation
 from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -55,8 +55,8 @@ for size, channel, dtype in [
     (14, 3, torch.double),
     (15, 3, torch.float64),
 ]:
-    preds = torch.rand(NUM_BATCHES, BATCH_SIZE, channel, size, size, dtype=dtype)
-    target = torch.rand(NUM_BATCHES, BATCH_SIZE, channel, size, size, dtype=dtype)
+    preds = torch.rand(2, 4, channel, size, size, dtype=dtype)
+    target = torch.rand(2, 4, channel, size, size, dtype=dtype)
     _inputs.append(Input(preds=preds, target=target))
 
 
