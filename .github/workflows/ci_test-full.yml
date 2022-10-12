@@ -79,6 +79,7 @@ jobs:
       run: |
         pip --version
         pip install -e . -r requirements/test.txt --upgrade --find-links $PYTORCH_URL
+        pip list
 
     - name: DocTests
       working-directory: ./src

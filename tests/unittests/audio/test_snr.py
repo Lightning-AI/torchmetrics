@@ -22,7 +22,6 @@ from torch import Tensor
 
 from torchmetrics.audio import SignalNoiseRatio
 from torchmetrics.functional import signal_noise_ratio
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 from unittests.helpers import seed_all
 from unittests.helpers.testers import NUM_BATCHES, MetricTester
 
@@ -111,9 +110,6 @@ class TestSNR(MetricTester):
             metric_args={"zero_mean": zero_mean},
         )
 
-    @pytest.mark.skipif(
-        not _TORCH_GREATER_EQUAL_1_6, reason="half support of core operations on not support before pytorch v1.6"
-    )
     def test_snr_half_cpu(self, preds, target, sk_metric, zero_mean):
         pytest.xfail("SNR metric does not support cpu + half precision")
 
