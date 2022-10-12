@@ -16,7 +16,7 @@ import inspect
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from copy import deepcopy
-from typing import Any, Callable, Dict, Generator, List, Optional, Sequence, Union
+from typing import Any, Callable, Dict, Generator, List, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -256,7 +256,7 @@ class Metric(Module, ABC):
         self.update(*args, **kwargs)
         _update_count = self._update_count
 
-        self._to_sync = self.dist_sync_on_step  # type: ignore
+        self._to_sync = self.dist_sync_on_step
         # skip restore cache operation from compute as cache is stored below.
         self._should_unsync = False
         # skip computing on cpu for the batch
@@ -527,7 +527,7 @@ class Metric(Module, ABC):
             # if synchronization happened, the current rank accumulated states will be restored to keep
             # accumulation going if ``should_unsync=True``,
             with self.sync_context(
-                dist_sync_fn=self.dist_sync_fn,  # type: ignore
+                dist_sync_fn=self.dist_sync_fn,
                 should_sync=self._to_sync,
                 should_unsync=self._should_unsync,
             ):
@@ -847,6 +847,9 @@ class Metric(Module, ABC):
 
     def __getitem__(self, idx: int) -> "Metric":
         return CompositionalMetric(lambda x: x[idx], self, None)
+
+    def __getnewargs__(self) -> Tuple:
+        return (Metric.__str__(self),)
 
 
 def _neg(x: Tensor) -> Tensor:

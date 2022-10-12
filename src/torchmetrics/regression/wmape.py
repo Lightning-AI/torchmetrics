@@ -55,7 +55,7 @@ class WeightedMeanAbsolutePercentageError(Metric):
         self.add_state("sum_abs_error", default=torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("sum_scale", default=torch.tensor(0.0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets.
 
         Args:

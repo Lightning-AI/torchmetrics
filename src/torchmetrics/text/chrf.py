@@ -124,7 +124,7 @@ class CHRFScore(Metric):
         if self.return_sentence_level_score:
             self.add_state("sentence_chrf_score", [], dist_reduce_fx="cat")
 
-    def update(self, preds: Sequence[str], target: Sequence[Sequence[str]]) -> None:  # type: ignore
+    def update(self, preds: Sequence[str], target: Sequence[Sequence[str]]) -> None:
         """Compute Precision Scores.
 
         Args:

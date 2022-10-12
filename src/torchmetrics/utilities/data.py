@@ -14,26 +14,9 @@
 from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Union
 
 import torch
-from torch import Tensor, tensor
+from torch import Tensor
 
-from torchmetrics.utilities.imports import (
-    _TORCH_GREATER_EQUAL_1_6,
-    _TORCH_GREATER_EQUAL_1_7,
-    _TORCH_GREATER_EQUAL_1_8,
-    _TORCH_GREATER_EQUAL_1_12,
-)
-
-if _TORCH_GREATER_EQUAL_1_8:
-    deterministic = torch.are_deterministic_algorithms_enabled
-elif _TORCH_GREATER_EQUAL_1_7:
-    deterministic = torch.is_deterministic
-elif _TORCH_GREATER_EQUAL_1_6:
-    deterministic = torch._is_deterministic
-else:
-
-    def deterministic() -> bool:
-        return True
-
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_12
 
 METRIC_EPS = 1e-6
 
@@ -237,7 +220,7 @@ def _bincount(x: Tensor, minlength: Optional[int] = None) -> Tensor:
     """
     if minlength is None:
         minlength = len(torch.unique(x))
-    if deterministic() or _TORCH_GREATER_EQUAL_1_12 and x.is_mps:
+    if torch.are_deterministic_algorithms_enabled() or _TORCH_GREATER_EQUAL_1_12 and x.is_mps:
         output = torch.zeros(minlength, device=x.device, dtype=torch.long)
         for i in range(minlength):
             output[i] = (x == i).sum()
@@ -270,11 +253,3 @@ def allclose(tensor1: Tensor, tensor2: Tensor) -> bool:
     if tensor1.dtype != tensor2.dtype:
         tensor2 = tensor2.to(dtype=tensor1.dtype)
     return torch.allclose(tensor1, tensor2)
-
-
-def _movedim(tensor: Tensor, dim1: int, dim2: int) -> tensor:
-    if _TORCH_GREATER_EQUAL_1_7:
-        return torch.movedim(tensor, dim1, dim2)
-    if dim2 >= 0:
-        dim2 += 1
-    return tensor.unsqueeze(dim2).transpose(dim2, dim1).squeeze(dim1)

@@ -22,7 +22,6 @@ from torch import Tensor
 
 from torchmetrics import MeanSquaredError, Precision, Recall
 from torchmetrics.utilities import apply_to_collection
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_7
 from torchmetrics.wrappers.bootstrapping import BootStrapper, _bootstrap_sampler
 from unittests.helpers import seed_all
 
@@ -90,8 +89,7 @@ def test_bootstrap(device, sampling_strategy, metric, sk_metric):
         pytest.skip("Test with device='cuda' requires gpu")
 
     _kwargs = {"base_metric": metric, "mean": True, "std": True, "raw": True, "sampling_strategy": sampling_strategy}
-    if _TORCH_GREATER_EQUAL_1_7:
-        _kwargs.update(dict(quantile=torch.tensor([0.05, 0.95], device=device)))
+    _kwargs.update(dict(quantile=torch.tensor([0.05, 0.95], device=device)))
 
     bootstrapper = TestBootStrapper(**_kwargs)
     bootstrapper.to(device)
@@ -113,10 +111,8 @@ def test_bootstrap(device, sampling_strategy, metric, sk_metric):
     sk_scores = [sk_metric(ct, cp) for ct, cp in zip(collected_target, collected_preds)]
 
     output = bootstrapper.compute()
-    # quantile only avaible for pytorch v1.7 and forward
-    if _TORCH_GREATER_EQUAL_1_7:
-        assert np.allclose(output["quantile"][0].cpu(), np.quantile(sk_scores, 0.05))
-        assert np.allclose(output["quantile"][1].cpu(), np.quantile(sk_scores, 0.95))
+    assert np.allclose(output["quantile"][0].cpu(), np.quantile(sk_scores, 0.05))
+    assert np.allclose(output["quantile"][1].cpu(), np.quantile(sk_scores, 0.95))
 
     assert np.allclose(output["mean"].cpu(), np.mean(sk_scores))
     assert np.allclose(output["std"].cpu(), np.std(sk_scores, ddof=1))

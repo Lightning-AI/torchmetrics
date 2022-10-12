@@ -18,7 +18,7 @@ from torch import Tensor, tensor
 from typing_extensions import Literal
 
 from torchmetrics.utilities.checks import _check_same_shape, _input_format_classification
-from torchmetrics.utilities.data import _bincount, _movedim, select_topk
+from torchmetrics.utilities.data import _bincount, select_topk
 from torchmetrics.utilities.enums import AverageMethod, DataType, MDMCAverageMethod
 from torchmetrics.utilities.prints import rank_zero_warn
 
@@ -373,7 +373,7 @@ def _multiclass_stat_scores_update(
             target[idx] = num_classes
 
         if top_k > 1:
-            preds_oh = _movedim(select_topk(preds, topk=top_k, dim=1), 1, -1)
+            preds_oh = torch.movedim(select_topk(preds, topk=top_k, dim=1), 1, -1)
         else:
             preds_oh = torch.nn.functional.one_hot(
                 preds, num_classes + 1 if ignore_index is not None and not ignore_in else num_classes

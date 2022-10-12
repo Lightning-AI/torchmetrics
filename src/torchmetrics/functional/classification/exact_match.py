@@ -23,7 +23,6 @@ from torchmetrics.functional.classification.stat_scores import (
     _multilabel_stat_scores_tensor_validation,
 )
 from torchmetrics.utilities.compute import _safe_divide
-from torchmetrics.utilities.data import _movedim
 
 
 def _multilabel_exact_scores_update(
@@ -31,8 +30,8 @@ def _multilabel_exact_scores_update(
 ) -> Tuple[Tensor, Tensor]:
     """Computes the statistics."""
     if multidim_average == "global":
-        preds = _movedim(preds, 1, -1).reshape(-1, num_labels)
-        target = _movedim(target, 1, -1).reshape(-1, num_labels)
+        preds = torch.movedim(preds, 1, -1).reshape(-1, num_labels)
+        target = torch.movedim(target, 1, -1).reshape(-1, num_labels)
 
     correct = ((preds == target).sum(1) == num_labels).sum(dim=-1)
     total = torch.tensor(preds.shape[0 if multidim_average == "global" else 2], device=correct.device)

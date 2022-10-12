@@ -165,6 +165,11 @@ def _class_test(
     if check_scriptable:
         torch.jit.script(metric)
 
+    # check that metric can be cloned
+    clone = metric.clone()
+    assert clone is not metric, "Clone is not a different object than the metric"
+    assert type(clone) == type(metric), "Type of clone did not match metric type"
+
     # move to device
     metric = metric.to(device)
     preds = apply_to_collection(preds, Tensor, lambda x: x.to(device))

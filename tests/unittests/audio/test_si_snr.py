@@ -21,7 +21,6 @@ from torch import Tensor
 
 from torchmetrics.audio import ScaleInvariantSignalNoiseRatio
 from torchmetrics.functional import scale_invariant_signal_noise_ratio
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 from unittests.helpers import seed_all
 from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 
@@ -100,9 +99,6 @@ class TestSISNR(MetricTester):
             metric_functional=scale_invariant_signal_noise_ratio,
         )
 
-    @pytest.mark.skipif(
-        not _TORCH_GREATER_EQUAL_1_6, reason="half support of core operations on not support before pytorch v1.6"
-    )
     def test_si_snr_half_cpu(self, preds, target, sk_metric):
         pytest.xfail("SI-SNR metric does not support cpu + half precision")
 
