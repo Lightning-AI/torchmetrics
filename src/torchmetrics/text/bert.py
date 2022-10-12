@@ -114,7 +114,7 @@ class BERTScore(Metric):
         device: Optional[Union[str, torch.device]] = None,
         max_length: int = 512,
         batch_size: int = 64,
-        num_threads: int = 1,
+        num_threads: int = 0,
         return_hash: bool = False,
         lang: str = "en",
         rescale_with_baseline: bool = False,
