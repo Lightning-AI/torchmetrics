@@ -92,7 +92,7 @@ class ROUGEScore(Metric):
         normalizer: Callable[[str], str] = None,
         tokenizer: Callable[[str], Sequence[str]] = None,
         accumulate: Literal["avg", "best"] = "best",
-        rouge_keys: Union[str, Tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),  # type: ignore
+        rouge_keys: Union[str, Tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),
         **kwargs: Any,
     ):
         super().__init__(**kwargs)
@@ -126,7 +126,7 @@ class ROUGEScore(Metric):
             for score in ["fmeasure", "precision", "recall"]:
                 self.add_state(f"{rouge_key}_{score}", [], dist_reduce_fx=None)
 
-    def update(  # type: ignore
+    def update(
         self, preds: Union[str, Sequence[str]], target: Union[str, Sequence[str], Sequence[Sequence[str]]]
     ) -> None:
         """Compute rouge scores.

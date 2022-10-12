@@ -132,7 +132,6 @@ Or directly from conda
    pages/overview
    pages/implement
    pages/lightning
-   pages/classification
    pages/retrieval
 
 .. toctree::

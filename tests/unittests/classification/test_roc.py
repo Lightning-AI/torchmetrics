@@ -22,7 +22,6 @@ from sklearn.metrics import roc_curve as sk_roc_curve
 
 from torchmetrics.classification.roc import BinaryROC, MulticlassROC, MultilabelROC
 from torchmetrics.functional.classification.roc import binary_roc, multiclass_roc, multilabel_roc
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
 from unittests.helpers.testers import NUM_CLASSES, MetricTester, inject_ignore_index, remove_ignore_index
@@ -91,8 +90,6 @@ class TestBinaryROC(MetricTester):
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_binary_roc_dtype_cpu(self, input, dtype):
         preds, target = input
-        if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_6:
-            pytest.xfail(reason="half support of core ops not support before pytorch v1.6")
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
         self.run_precision_test_cpu(
@@ -201,8 +198,6 @@ class TestMulticlassROC(MetricTester):
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multiclass_roc_dtype_cpu(self, input, dtype):
         preds, target = input
-        if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_6:
-            pytest.xfail(reason="half support of core ops not support before pytorch v1.6")
         if dtype == torch.half and not ((0 < preds) & (preds < 1)).all():
             pytest.xfail(reason="half support for torch.softmax on cpu not implemented")
         self.run_precision_test_cpu(
@@ -303,8 +298,6 @@ class TestMultilabelROC(MetricTester):
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multilabel_roc_dtype_cpu(self, input, dtype):
         preds, target = input
-        if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_6:
-            pytest.xfail(reason="half support of core ops not support before pytorch v1.6")
         if dtype == torch.half and not ((0 < preds) & (preds < 1)).all():
             pytest.xfail(reason="half support for torch.softmax on cpu not implemented")
         self.run_precision_test_cpu(

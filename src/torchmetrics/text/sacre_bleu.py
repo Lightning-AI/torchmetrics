@@ -97,7 +97,7 @@ class SacreBLEUScore(BLEUScore):
             )
         self.tokenizer = _SacreBLEUTokenizer(tokenize, lowercase)
 
-    def update(self, preds: Sequence[str], target: Sequence[Sequence[str]]) -> None:  # type: ignore
+    def update(self, preds: Sequence[str], target: Sequence[Sequence[str]]) -> None:
         """Compute Precision Scores.
 
         Args:

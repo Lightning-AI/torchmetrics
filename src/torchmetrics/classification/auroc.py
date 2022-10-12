@@ -36,7 +36,6 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.enums import DataType
-from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
 
 
 class BinaryAUROC(BinaryPrecisionRecallCurve):
@@ -473,11 +472,6 @@ class AUROC(Metric):
         if self.max_fpr is not None:
             if not isinstance(max_fpr, float) or not 0 < max_fpr <= 1:
                 raise ValueError(f"`max_fpr` should be a float in range (0, 1], got: {max_fpr}")
-
-            if _TORCH_LOWER_1_6:
-                raise RuntimeError(
-                    "`max_fpr` argument requires `torch.bucketize` which is not available below PyTorch version 1.6"
-                )
 
         self.mode: DataType = None  # type: ignore
         self.add_state("preds", default=[], dist_reduce_fx="cat")

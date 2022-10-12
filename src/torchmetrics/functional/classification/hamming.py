@@ -420,8 +420,6 @@ def hamming_distance(
     treats each possible label separately - meaning that, for example, multi-class data is
     treated as if it were multi-label.
 
-    Accepts all input types listed in :ref:`pages/classification:input types`.
-
     Args:
         preds: Predictions from model (probabilities, logits or labels)
         target: Ground truth
