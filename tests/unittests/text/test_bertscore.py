@@ -60,7 +60,7 @@ def _reference_bert_score(
         idf=idf,
         batch_size=len(preds),
         rescale_with_baseline=rescale_with_baseline,
-        nthreads=1,
+        nthreads=0,
     )
     return score_tuple[_METRIC_KEY_TO_IDX[metric_key]]
 

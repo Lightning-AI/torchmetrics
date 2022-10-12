@@ -1,6 +1,6 @@
 jiwer>=2.3.0
 rouge-score>=0.0.4
-bert_score==0.3.10
+bert_score @ https://github.com/stancld/bert_score/archive/refs/heads/bugfix/ddp-not-working.zip
 transformers>=4.4.0
 huggingface-hub<0.7  # hotfix, failing SDR for latest PT 1.11
 sacrebleu>=2.0.0
