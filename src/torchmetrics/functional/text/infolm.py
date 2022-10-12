@@ -394,7 +394,7 @@ def _get_batch_distribution(
     for mask_idx in range(seq_len):
         input_ids = batch["input_ids"].clone()
         input_ids[:, mask_idx] = special_tokens_map["mask_token_id"]
-        logits_distribution = model(input_ids, batch["attention_mask"]).logits
+        logits_distribution = model(input_ids, batch["attention_mask"]).logits  # type: ignore
         # [batch_size, seq_len, vocab_size] -> [batch_size, vocab_size]
         logits_distribution = logits_distribution[:, mask_idx, :]
         prob_distribution = F.softmax(logits_distribution / temperature, dim=-1)
