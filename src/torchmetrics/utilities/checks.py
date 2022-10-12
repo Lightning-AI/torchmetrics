@@ -651,7 +651,7 @@ def check_forward_full_state_property(
         ...     ConfusionMatrix,
         ...     init_args = {'num_classes': 3},
         ...     input_args = {'preds': torch.randint(3, (10,)), 'target': torch.randint(3, (10,))},
-        ... )  # doctest: +ELLIPSIS
+        ... ) # doctest: +SKIP
         Full state for 10 steps took: ...
         Partial state for 10 steps took: ...
         Full state for 100 steps took: ...
@@ -672,7 +672,7 @@ def check_forward_full_state_property(
         ...     MyMetric,
         ...     init_args = {'num_classes': 3},
         ...     input_args = {'preds': torch.randint(3, (10,)), 'target': torch.randint(3, (10,))},
-        ... )
+        ... ) # doctest: +SKIP
         Recommended setting `full_state_update=True`
     """
 
