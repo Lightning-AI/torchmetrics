@@ -64,7 +64,7 @@
 .. _Demystifying MMD GANs: https://arxiv.org/abs/1801.01401
 .. _Computes Peak Signal-to-Noise Ratio: https://en.wikipedia.org/wiki/Peak_signal-to-noise_ratio
 .. _Turn a Metric into a Bootstrapped: https://en.wikipedia.org/wiki/Bootstrapping_(statistics)
-.. _Metric Test for Reset: https://github.com/PyTorchLightning/pytorch-lightning/pull/7055
+.. _Metric Test for Reset: https://github.com/Lightning-AI/pytorch-lightning/pull/7055
 .. _Computes Mean Absolute Error: https://en.wikipedia.org/wiki/Mean_absolute_error
 .. _Mean Absolute Percentage Error: https://en.wikipedia.org/wiki/Mean_absolute_percentage_error
 .. _mean squared error: https://en.wikipedia.org/wiki/Mean_squared_error
@@ -87,3 +87,10 @@
 .. _MER: https://www.isca-speech.org/archive_v0/archive_papers/interspeech_2004/i04_2765.pdf
 .. _WIL: https://www.isca-speech.org/archive_v0/archive_papers/interspeech_2004/i04_2765.pdf
 .. _WIP: https://infoscience.epfl.ch/record/82766
+.. _TV: https://en.wikipedia.org/wiki/Total_variation_denoising
+.. _InfoLM: https://arxiv.org/pdf/2112.01589.pdf
+.. _alpha divergence: https://static.renyi.hu/renyi_cikkek/1961_on_measures_of_entropy_and_information.pdf
+.. _beta divergence: https://www.sciencedirect.com/science/article/pii/S0047259X08000456
+.. _AB divergence: https://pdfs.semanticscholar.org/744b/1166de34cb099100f151f3b1459f141ae25b.pdf
+.. _Rényi divergence: https://static.renyi.hu/renyi_cikkek/1961_on_measures_of_entropy_and_information.pdf
+.. _Fisher-Rao distance: http://www.scholarpedia.org/article/Fisher-Rao_metric

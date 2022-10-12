@@ -1,3 +1,4 @@
 scikit-image>0.17.1
-pytorch_msssim
+kornia>=0.6.7
+pytorch-msssim==0.2.1
 sewar>=0.4.4

@@ -9,7 +9,7 @@
 TorchMetrics in PyTorch Lightning
 #################################
 
-TorchMetrics was originally created as part of `PyTorch Lightning <https://github.com/PyTorchLightning/pytorch-lightning>`_, a powerful deep learning research
+TorchMetrics was originally created as part of `PyTorch Lightning <https://github.com/Lightning-AI/pytorch-lightning>`_, a powerful deep learning research
 framework designed for scaling models without boilerplate.
 
 .. note::

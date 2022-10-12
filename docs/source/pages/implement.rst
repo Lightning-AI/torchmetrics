@@ -137,7 +137,7 @@ and tests gets formatted in the following way:
      makes up the functional interface for the metric.
 
   .. note::
-     The `functional accuracy <https://github.com/PyTorchLightning/metrics/blob/master/torchmetrics/functional/classification/accuracy.py>`_
+     The `functional accuracy <https://github.com/Lightning-AI/metrics/blob/master/src/torchmetrics/functional/classification/accuracy.py>`_
      metric is a great example of this division of logic.
 
 3. In a corresponding file placed in ``torchmetrics/"domain"/"new_metric".py`` create the module interface:
@@ -150,7 +150,7 @@ and tests gets formatted in the following way:
      We do this to not have duplicate code to maintain.
 
    .. note::
-     The module `Accuracy <https://github.com/PyTorchLightning/metrics/blob/master/torchmetrics/classification/accuracy.py>`_
+     The module `Accuracy <https://github.com/Lightning-AI/metrics/blob/master/src/torchmetrics/classification/accuracy.py>`_
      metric that corresponds to the above functional example showcases these steps.
 
 4. Remember to add binding to the different relevant ``__init__`` files.
@@ -158,7 +158,7 @@ and tests gets formatted in the following way:
 5. Testing is key to keeping ``torchmetrics`` trustworthy. This is why we have a very rigid testing protocol. This means
    that we in most cases require the metric to be tested against some other common framework (``sklearn``, ``scipy`` etc).
 
-  1. Create a testing file in ``tests/"domain"/test_"new_metric".py``. Only one file is needed as it is intended to test
+  1. Create a testing file in ``unittests/"domain"/test_"new_metric".py``. Only one file is needed as it is intended to test
      both the functional and module interface.
   2. In that file, start by defining a number of test inputs that your metric should be evaluated on.
   3. Create a testclass ``class NewMetric(MetricTester)`` that inherits from ``tests.helpers.testers.MetricTester``.
@@ -171,7 +171,7 @@ and tests gets formatted in the following way:
   5. (optional) If your metric raises any exception, please add tests that showcase this.
 
   .. note::
-    The `test file for accuracy <https://github.com/PyTorchLightning/metrics/blob/master/tests/classification/test_accuracy.py>`_ metric
+    The `test file for accuracy <https://github.com/Lightning-AI/metrics/blob/master/tests/unittests/classification/test_accuracy.py>`_ metric
     shows how to implement such tests.
 
 If you only can figure out part of the steps, do not fear to send a PR. We will much rather receive working

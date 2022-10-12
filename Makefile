@@ -9,6 +9,7 @@ clean:
 	rm -rf _ckpt_*
 	rm -rf .mypy_cache
 	rm -rf .pytest_cache
+	rm -rf tests/.pytest_cache
 	rm -rf ./docs/build
 	rm -rf ./docs/source/generated
 	rm -rf ./docs/source/*/generated
@@ -16,20 +17,24 @@ clean:
 	rm -rf build
 	rm -rf dist
 	rm -rf *.egg-info
+	rm -rf src/*.egg-info
 
 test: clean env data
 	# run tests with coverage
-	python -m pytest torchmetrics tests -v --cov=torchmetrics
-	python -m coverage report
+	cd src && python -m pytest torchmetrics
+	cd tests && python -m pytest unittests -v --cov=torchmetrics
+	cd tests && python -m coverage report
 
 docs: clean
+	pip install -e .
 	pip install --quiet -r requirements/docs.txt
 	python -m sphinx -b html -W --keep-going docs/source docs/build
 
 env:
-	pip install -r requirements.txt
+	pip install -e .
+	python ./requirements/adjust-versions.py requirements/image.txt
 	pip install -r requirements/devel.txt
 
 data:
 	python -c "from urllib.request import urlretrieve ; urlretrieve('https://pl-public-data.s3.amazonaws.com/metrics/data.zip', 'data.zip')"
-	unzip -o data.zip
+	unzip -o data.zip -d ./tests

@@ -10,15 +10,15 @@ jobs:
     runs-on: ubuntu-20.04
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@master
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
         with:
           python-version: 3.8
 
       # Note: This uses an internal pip API and may not always work
       # https://github.com/actions/cache/blob/master/examples.md#multiple-oss-in-a-workflow
       - name: Cache pip
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
@@ -26,8 +26,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -r requirements.txt -U -f https://download.pytorch.org/whl/cpu/torch_stable.html -q
-          pip install -r requirements/docs.txt
+          pip install -e . -U -q -r requirements/docs.txt -f https://download.pytorch.org/whl/cpu/torch_stable.html
           python --version ; pip --version ; pip list
         shell: bash
 
@@ -47,15 +46,15 @@ jobs:
     runs-on: ubuntu-20.04
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@master
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
         with:
           python-version: 3.8
 
       # Note: This uses an internal pip API and may not always work
       # https://github.com/actions/cache/blob/master/examples.md#multiple-oss-in-a-workflow
       - name: Cache pip
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}-${{ hashFiles('requirements/docs.txt') }}
@@ -63,8 +62,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -r requirements.txt -U -f https://download.pytorch.org/whl/torch_stable.html -q
-          pip install -r requirements/docs.txt
+          pip install -e . -U -q -r requirements/docs.txt -f https://download.pytorch.org/whl/torch_stable.html
           # install Texlive, see https://linuxconfig.org/how-to-install-latex-on-ubuntu-20-04-focal-fossa-linux
           sudo apt-get update
           sudo apt-get install -y texlive-latex-extra dvipng texlive-pictures
@@ -81,7 +79,7 @@ jobs:
           make html --debug SPHINXOPTS="-W --keep-going" -b linkcheck
 
       - name: Upload built docs
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: docs-build
           path: docs/build/
@@ -92,7 +90,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Build PDF
         uses: openjournals/openjournals-draft-action@v.1.0
         with:
@@ -100,7 +98,7 @@ jobs:
           # This should be the path to the paper within your repo.
           paper-path: ./docs/paper_JOSS/paper.md
       - name: Upload
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v3
         with:
           name: JOSS paper
           # This is the output path where Pandoc will write the compiled
@@ -111,8 +109,8 @@ jobs:
     runs-on: ubuntu-20.04
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
         with:
           python-version: 3.8
       - name: Validate
