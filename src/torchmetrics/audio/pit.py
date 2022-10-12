@@ -85,7 +85,7 @@ class PermutationInvariantTraining(Metric):
         self.add_state("sum_pit_metric", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets.
 
         Args:
