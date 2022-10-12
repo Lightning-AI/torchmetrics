@@ -340,8 +340,6 @@ class HammingDistance(Metric):
     treats each possible label separately - meaning that, for example, multi-class data is
     treated as if it were multi-label.
 
-    Accepts all input types listed in :ref:`pages/classification:input types`.
-
     Args:
         threshold:
             Threshold for transforming probability or logit predictions to binary ``(0,1)`` predictions, in the case
@@ -422,8 +420,6 @@ class HammingDistance(Metric):
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
-
-        See :ref:`pages/classification:input types` for more information on input types.
 
         Args:
             preds: Predictions from model (probabilities, logits or labels)
