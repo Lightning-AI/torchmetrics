@@ -301,7 +301,7 @@ class MeanAveragePrecision(Metric):
         max_detection_thresholds: Optional[List[int]] = None,
         class_metrics: bool = False,
         **kwargs: Any,
-    ) -> None:  # type: ignore
+    ) -> None:
         super().__init__(**kwargs)
 
         if not _TORCHVISION_GREATER_EQUAL_0_8:

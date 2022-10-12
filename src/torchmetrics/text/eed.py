@@ -86,7 +86,7 @@ class ExtendedEditDistance(Metric):
 
         self.add_state("sentence_eed", [], dist_reduce_fx="cat")
 
-    def update(  # type: ignore
+    def update(
         self,
         preds: Union[str, Sequence[str]],
         target: Sequence[Union[str, Sequence[str]]],

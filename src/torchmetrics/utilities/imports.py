@@ -80,7 +80,7 @@ def _compare_version(package: str, op: Callable, version: str) -> Optional[bool]
         return None
     try:
         pkg = import_module(package)
-        pkg_version = pkg.__version__  # type: ignore
+        pkg_version = pkg.__version__
     except (ModuleNotFoundError, DistributionNotFound):
         return None
     except (ImportError, AttributeError):
