@@ -198,7 +198,7 @@ class BERTScore(Metric):
         self.target_input_ids.append(target_dict["input_ids"])
         self.target_attention_mask.append(target_dict["attention_mask"])
 
-    def compute(self) -> Dict[str, Union[List[float], str]]:
+    def compute(self) -> Dict[str, Union[Tensor, List[float], str]]:
         """Calculate BERT scores.
 
         Return:
