@@ -20,9 +20,8 @@ from kornia.losses import total_variation as kornia_total_variation
 
 from torchmetrics.functional.image.tv import total_variation
 from torchmetrics.image.tv import TotalVariation
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6, _TORCH_GREATER_EQUAL_1_8
 from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -56,8 +55,8 @@ for size, channel, dtype in [
     (14, 3, torch.double),
     (15, 3, torch.float64),
 ]:
-    preds = torch.rand(NUM_BATCHES, BATCH_SIZE, channel, size, size, dtype=dtype)
-    target = torch.rand(NUM_BATCHES, BATCH_SIZE, channel, size, size, dtype=dtype)
+    preds = torch.rand(2, 4, channel, size, size, dtype=dtype)
+    target = torch.rand(2, 4, channel, size, size, dtype=dtype)
     _inputs.append(Input(preds=preds, target=target))
 
 
@@ -66,7 +65,6 @@ for size, channel, dtype in [
     [(i.preds, i.target) for i in _inputs],
 )
 @pytest.mark.parametrize("reduction", ["sum", "mean", None])
-@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_8, reason="Kornia used as reference requires min PT version")
 class TestTotalVariation(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
@@ -94,9 +92,6 @@ class TestTotalVariation(MetricTester):
             metric_args={"reduction": reduction},
         )
 
-    @pytest.mark.skipif(
-        not _TORCH_GREATER_EQUAL_1_6, reason="half support of core operations on not support before pytorch v1.6"
-    )
     def test_sam_half_cpu(self, preds, target, reduction):
         """Test for half precision on CPU."""
         self.run_precision_test_cpu(

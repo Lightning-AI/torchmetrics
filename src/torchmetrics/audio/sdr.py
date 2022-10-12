@@ -100,7 +100,7 @@ class SignalDistortionRatio(Metric):
         self.add_state("sum_sdr", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets.
 
         Args:
@@ -170,7 +170,7 @@ class ScaleInvariantSignalDistortionRatio(Metric):
         self.add_state("sum_si_sdr", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets.
 
         Args:

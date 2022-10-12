@@ -28,7 +28,7 @@ from torchmetrics.functional.text.helper_embedding_metric import (
     _load_tokenizer_and_model,
 )
 from torchmetrics.utilities.enums import EnumStr
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_8, _TRANSFORMERS_AVAILABLE
+from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 
 if _TRANSFORMERS_AVAILABLE:
     from transformers import PreTrainedModel, PreTrainedTokenizerBase
@@ -48,15 +48,6 @@ _ALLOWED_INFORMATION_MEASURE_LITERAL = Literal[
     "l_infinity_distance",
     "fisher_rao_distance",
 ]
-
-
-def _nan_to_num(x: Tensor) -> Tensor:
-    """Replace ``Replaces NaN`` values with 0.0."""
-    if _TORCH_GREATER_EQUAL_1_8:
-        return torch.nan_to_num(x)
-
-    x[x != x] = 0.0
-    return x
 
 
 @unique
@@ -154,7 +145,7 @@ class _InformationMeasure:
 
     def __call__(self, preds_distribution: Tensor, target_distribtuion: Tensor) -> Tensor:
         information_measure_function = getattr(self, f"_calculate_{self.information_measure}")
-        return _nan_to_num(information_measure_function(preds_distribution, target_distribtuion))
+        return torch.nan_to_num(information_measure_function(preds_distribution, target_distribtuion))
 
     @staticmethod
     def _calculate_kl_divergence(preds_distribution: Tensor, target_distribution: Tensor) -> Tensor:
@@ -403,7 +394,7 @@ def _get_batch_distribution(
     for mask_idx in range(seq_len):
         input_ids = batch["input_ids"].clone()
         input_ids[:, mask_idx] = special_tokens_map["mask_token_id"]
-        logits_distribution = model(input_ids, batch["attention_mask"]).logits
+        logits_distribution = model(input_ids, batch["attention_mask"]).logits  # type: ignore
         # [batch_size, seq_len, vocab_size] -> [batch_size, vocab_size]
         logits_distribution = logits_distribution[:, mask_idx, :]
         prob_distribution = F.softmax(logits_distribution / temperature, dim=-1)

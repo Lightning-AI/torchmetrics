@@ -499,7 +499,7 @@ class StatScores:
     ``reduce`` parameter, and additionally by the ``mdmc_reduce`` parameter in the
     multi-dimensional multi-class case.
 
-    Accepts all inputs listed in :ref:`pages/classification:input types`.
+
 
     Args:
         threshold:
@@ -535,7 +535,7 @@ class StatScores:
         mdmc_reduce: Defines how the multi-dimensional multi-class inputs are handeled. Should be one of the following:
 
             - ``None`` [default]: Should be left unchanged if your data is not multi-dimensional
-              multi-class (see :ref:`pages/classification:input types` for the definition of input types).
+              multi-class.
 
             - ``'samplewise'``: In this case, the statistics are computed separately for each
               sample on the ``N`` axis, and then the outputs are concatenated together. In each
@@ -549,9 +549,7 @@ class StatScores:
 
         multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
-            than what they appear to be. See the parameter's
-            :ref:`documentation section <pages/classification:using the multiclass parameter>`
-            for a more detailed explanation and examples.
+            than what they appear to be.
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
