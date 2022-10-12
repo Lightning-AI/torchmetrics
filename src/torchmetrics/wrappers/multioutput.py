@@ -65,17 +65,6 @@ class MultioutputWrapper(Metric):
          >>> r2score = MultioutputWrapper(R2Score(), 2)
          >>> r2score(preds, target)
          [tensor(0.9654), tensor(0.9082)]
-         >>> # Classification metric where prediction and label tensors have different shapes.
-         >>> from torchmetrics import BinnedAveragePrecision
-         >>> target = torch.tensor([[1, 2], [2, 0], [1, 2]])
-         >>> preds = torch.tensor([
-         ...     [[.1, .8], [.8, .05], [.1, .15]],
-         ...     [[.1, .1], [.2, .3], [.7, .6]],
-         ...     [[.002, .4], [.95, .45], [.048, .15]]
-         ... ])
-         >>> binned_avg_precision = MultioutputWrapper(BinnedAveragePrecision(3, thresholds=5), 2)
-         >>> binned_avg_precision(preds, target)
-         [[tensor(-0.), tensor(1.0000), tensor(1.0000)], [tensor(0.3333), tensor(-0.), tensor(0.6667)]]
     """
 
     is_differentiable = False
