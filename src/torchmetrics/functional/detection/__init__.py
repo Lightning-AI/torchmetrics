@@ -14,6 +14,5 @@
 from torchmetrics.utilities.imports import _TORCHVISION_GREATER_EQUAL_0_8
 
 if _TORCHVISION_GREATER_EQUAL_0_8:
-    from torchmetrics.detection.box_iou import BoxIntersectionOverUnion  # noqa: F401
-    from torchmetrics.detection.iou import IOU  # noqa: F401
-    from torchmetrics.detection.mean_ap import MeanAveragePrecision  # noqa: F401
+    from torchmetrics.functional.detection.box_iou import box_iou  # noqa: F401
+    from torchmetrics.functional.detection.iou import iou  # noqa: F401

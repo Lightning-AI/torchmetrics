@@ -18,6 +18,7 @@ import numpy as np
 import torch
 from torch import IntTensor, Tensor
 
+from torchmetrics.detection.helpers import _fix_empty_tensors, _input_validator
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _PYCOCOTOOLS_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
 
@@ -140,60 +141,6 @@ def _segm_iou(det: List[Tuple[np.ndarray, np.ndarray]], gt: List[Tuple[np.ndarra
     gt_coco_format = [{"size": i[0], "counts": i[1]} for i in gt]
 
     return torch.tensor(mask_utils.iou(det_coco_format, gt_coco_format, [False for _ in gt]))
-
-
-def _input_validator(
-    preds: Sequence[Dict[str, Tensor]], targets: Sequence[Dict[str, Tensor]], iou_type: str = "bbox"
-) -> None:
-    """Ensure the correct input format of `preds` and `targets`"""
-    if not isinstance(preds, Sequence):
-        raise ValueError("Expected argument `preds` to be of type Sequence")
-    if not isinstance(targets, Sequence):
-        raise ValueError("Expected argument `target` to be of type Sequence")
-    if len(preds) != len(targets):
-        raise ValueError("Expected argument `preds` and `target` to have the same length")
-    iou_attribute = "boxes" if iou_type == "bbox" else "masks"
-
-    for k in [iou_attribute, "scores", "labels"]:
-        if any(k not in p for p in preds):
-            raise ValueError(f"Expected all dicts in `preds` to contain the `{k}` key")
-
-    for k in [iou_attribute, "labels"]:
-        if any(k not in p for p in targets):
-            raise ValueError(f"Expected all dicts in `target` to contain the `{k}` key")
-
-    if any(type(pred[iou_attribute]) is not Tensor for pred in preds):
-        raise ValueError(f"Expected all {iou_attribute} in `preds` to be of type Tensor")
-    if any(type(pred["scores"]) is not Tensor for pred in preds):
-        raise ValueError("Expected all scores in `preds` to be of type Tensor")
-    if any(type(pred["labels"]) is not Tensor for pred in preds):
-        raise ValueError("Expected all labels in `preds` to be of type Tensor")
-    if any(type(target[iou_attribute]) is not Tensor for target in targets):
-        raise ValueError(f"Expected all {iou_attribute} in `target` to be of type Tensor")
-    if any(type(target["labels"]) is not Tensor for target in targets):
-        raise ValueError("Expected all labels in `target` to be of type Tensor")
-
-    for i, item in enumerate(targets):
-        if item[iou_attribute].size(0) != item["labels"].size(0):
-            raise ValueError(
-                f"Input {iou_attribute} and labels of sample {i} in targets have a"
-                f" different length (expected {item[iou_attribute].size(0)} labels, got {item['labels'].size(0)})"
-            )
-    for i, item in enumerate(preds):
-        if not (item[iou_attribute].size(0) == item["labels"].size(0) == item["scores"].size(0)):
-            raise ValueError(
-                f"Input {iou_attribute}, labels and scores of sample {i} in predictions have a"
-                f" different length (expected {item[iou_attribute].size(0)} labels and scores,"
-                f" got {item['labels'].size(0)} labels and {item['scores'].size(0)})"
-            )
-
-
-def _fix_empty_tensors(boxes: Tensor) -> Tensor:
-    """Empty tensors can cause problems in DDP mode, this methods corrects them."""
-
-    if boxes.numel() == 0 and boxes.ndim == 1:
-        return boxes.unsqueeze(0)
-    return boxes
 
 
 class MeanAveragePrecision(Metric):
