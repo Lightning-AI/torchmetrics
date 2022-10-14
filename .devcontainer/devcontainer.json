@@ -27,6 +27,9 @@
         "editor.rulers": [
             120
         ],
+        "files.exclude": {
+            "**/__pycache__": true
+        },
         "python.pythonPath": "/usr/local/bin/python",
         "python.defaultInterpreterPath": "/usr/local/bin/python",
         "python.languageServer": "Pylance",
@@ -37,7 +40,7 @@
         "python.analysis.useImportHeuristic": true,
         "python.sortImports": true,
         "python.sortImports.args": [
-            "--settings-path=${workspaceFolder}/pyproject.toml",
+            "--settings-path=${workspaceFolder}/pyproject.toml"
         ],
         "python.formatting.autopep8Path": "/usr/local/py-utils/bin/autopep8",
         "python.formatting.blackPath": "/usr/local/py-utils/bin/black",
@@ -63,12 +66,11 @@
         ],
         "python.testing.unittestEnabled": false,
         "python.testing.pytestEnabled": true,
-        "restructuredtext.confPath": "${workspaceFolder}/docs/source",
-        "restructuredtext.builtDocumentationPath": "${workspaceFolder}/docs/build",
-        "restructuredtext.languageServer.disabled": false,
+        "esbonio.sphinx.confDir": "${workspaceFolder}/docs/source",
+        "esbonio.sphinx.buildDir": "${workspaceFolder}/docs/build",
         "[python]": {
             "editor.codeActionsOnSave": {
-                "source.organizeImports": true,
+                "source.organizeImports": true
             }
         }
     },
@@ -84,7 +86,7 @@
         "shardulm94.trailing-spaces",
         "njqdev.vscode-python-typehint",
         "lextudio.restructuredtext",
-        "trond-snekvik.simple-rst",
+        "trond-snekvik.simple-rst"
     ],
     // Use 'forwardPorts' to make a list of ports inside the container available locally.
     // "forwardPorts": [],
