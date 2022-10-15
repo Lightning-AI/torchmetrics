@@ -26,7 +26,7 @@ def _sort_on_first_sequence(x: Tensor, y: Tensor) -> Tuple[Tensor, Tensor]:
     """Sort sequences in an ascent order according to the sequence ``x``."""
     # We need to clone `y` tensor not to change it in memory
     y = torch.clone(y)
-    x, perm = x.sort(stable=False)
+    x, perm = x.sort()
     for i in range(x.shape[0]):
         y[i] = y[i][perm[i]]
     return x, y
@@ -57,8 +57,11 @@ def _count_discordant_pairs(preds: Tensor, target: Tensor) -> Tensor:
     return torch.cat([_discordant_element_sum(preds, target, i) for i in range(preds.shape[0])]).sum(0)
 
 
-def _convert_sequence_to_dense_rank(x: Tensor) -> Tensor:
+def _convert_sequence_to_dense_rank(x: Tensor, sort: bool = False) -> Tensor:
     """Convert a sequence to the rank tensor."""
+    # Sort if a sequence has not been sorted before
+    if sort:
+        x = x.sort(dim=0).values
     _ones = torch.zeros(1, x.shape[1], dtype=torch.int32, device=x.device)
     return torch.cat([_ones, (x[1:] != x[:-1]).int()], dim=0).cumsum(0)
 
@@ -92,14 +95,13 @@ def _get_metric_metadata(
     concordant_pairs = _count_concordant_pairs(preds, target)
     discordant_pairs = _count_discordant_pairs(preds, target)
 
+    preds_ties = target_ties = n_total = None
     if variant == "b":
         preds = _convert_sequence_to_dense_rank(preds)
-        target = _convert_sequence_to_dense_rank(target)
+        target = _convert_sequence_to_dense_rank(target, sort=True)
         preds_ties = _get_ties(preds)
         target_ties = _get_ties(target)
         n_total = preds.shape[0]
-    else:
-        preds_ties = target_ties = n_total = None
 
     return concordant_pairs, discordant_pairs, preds_ties, target_ties, n_total
 
