@@ -23,6 +23,7 @@ from torchmetrics.utilities.data import _bincount
 
 
 def _sort_on_first_sequence(x: Tensor, y: Tensor) -> Tuple[Tensor, Tensor]:
+    """Sort sequences in an ascent order according to the sequence ``x``."""
     x, perm = x.sort(stable=False)
     for i in range(x.shape[0]):
         y[i] = y[i][perm[i]]
@@ -55,11 +56,13 @@ def _count_discordant_pairs(preds: Tensor, target: Tensor) -> Tensor:
 
 
 def _convert_sequence_to_dense_rank(x: Tensor) -> Tensor:
+    """Convert a sequence to the rank tensor."""
     _ones = torch.zeros(1, x.shape[1], dtype=torch.int32, device=x.device)
     return torch.cat([_ones, (x[1:] != x[:-1]).int()], dim=0).cumsum(0)
 
 
 def _get_ties(x: Tensor) -> Tensor:
+    """Get number of ties in a given sequence."""
     ties = torch.zeros(x.shape[1], dtype=x.dtype, device=x.device)
     for dim in range(x.shape[1]):
         n_ties = _bincount(x[:, dim])
@@ -78,14 +81,8 @@ def _kendall_corrcoef_update(
     total: Optional[Tensor],
     num_outputs: int,
     variant: Literal["a", "b", "c"] = "b",
-) -> Tuple[Tensor, Tensor, Optional[Tensor], Optional[Tensor]]:
+) -> Tuple[Tensor, Tensor, Optional[Tensor], Optional[Tensor], Optional[Tensor]]:
     """Update variables required to compute Kendall rank correlation coefficient.
-
-    Check for the same shape of input tensors
-
-    Args:
-        preds: Ordered sequence of data
-        target: Ordered sequence of data
 
     Raises:
         RuntimeError: If ``preds`` and ``target`` do not have the same shape
@@ -120,7 +117,7 @@ def _kendall_corrcoef_update(
         target_ties += _get_ties(target)
         total += preds.shape[0]
 
-    return concordant_pairs, discordant_pairs, preds_ties, target_ties
+    return concordant_pairs, discordant_pairs, preds_ties, target_ties, total
 
 
 def _kendall_corrcoef_compute(
@@ -129,16 +126,21 @@ def _kendall_corrcoef_compute(
     preds_ties: Optional[Tensor],
     target_ties: Optional[Tensor],
     total: Optional[Tensor],
-    variant: Literal["a", "b", "c"] = "a",
+    variant: Literal["a", "b", "c"],
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+    """Compute the value of Kendall rank correlation coefficient given pre-computed state variables."""
     con_min_dis_pairs = concordant_pairs - discordant_pairs
 
     if variant == "a":
-        return con_min_dis_pairs / (concordant_pairs + discordant_pairs)
-    if variant == "b":
-        combinations = total * (total - 1) // 2
-        denominator = (combinations - preds_ties) * (combinations - target_ties)
-        return con_min_dis_pairs / torch.sqrt(denominator)
+        tau = con_min_dis_pairs / (concordant_pairs + discordant_pairs)
+    elif variant == "b":
+        total_combinations = total * (total - 1) // 2
+        denominator = (total_combinations - preds_ties) * (total_combinations - target_ties)
+        tau = con_min_dis_pairs / torch.sqrt(denominator)
+    else:
+        tau = 2 * con_min_dis_pairs / (total**2)
+
+    return tau.clamp(-1, 1)
 
 
 def kendall_rank_corrcoef(
@@ -149,7 +151,7 @@ def kendall_rank_corrcoef(
     Args:
         preds: Ordered sequence of data
         target: Ordered sequence of data
-        variant: Indication of which variant of test to be used
+        variant: Indication of which variant of Kendall's tau to be used
 
     Return:
         Correlation tau statistic
@@ -159,19 +161,21 @@ def kendall_rank_corrcoef(
 
     Example (single output regression):
         >>> from torchmetrics.functional.regression import kendal_rank_corrcoef
-        >>> target = torch.tensor([3, -0.5, 2, 7])
+        >>> target = torch.tensor([3, -0.5, 2, 1])
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])
         >>> kendal_rank_corrcoef(preds, target)
+        tensor([0.3333])
 
     Example (multi output regression):
         >>> from torchmetrics.functional.regression import kendal_rank_corrcoef
-        >>> target = torch.tensor([[3, -0.5], [2, 7]])
+        >>> target = torch.tensor([[3, -0.5], [2, 1]])
         >>> preds = torch.tensor([[2.5, 0.0], [2, 8]])
         >>> kendal_rank_corrcoef(preds, target)
+        tensor([ 1., -1.])
     """
     if variant not in ["a", "b", "c"]:
         raise ValueError(f"Argument `variant` is expected to be one of ['a', 'b', 'c'], but got {variant!r}.")
-    d = preds.shape[1] if preds.ndim == 2 else 1
+    d = preds.shape[0] if preds.ndim == 2 else 1
     _temp = torch.zeros(d, dtype=preds.dtype, device=preds.device)
     concordant_pairs, discordant_pairs = _temp.clone(), _temp.clone()
     if variant == "b":
@@ -179,7 +183,7 @@ def kendall_rank_corrcoef(
     else:
         preds_ties = target_ties = total = None
 
-    concordant_pairs, discordant_pairs, preds_ties, target_ties = _kendall_corrcoef_update(
+    concordant_pairs, discordant_pairs, preds_ties, target_ties, total = _kendall_corrcoef_update(
         preds,
         target,
         concordant_pairs,
