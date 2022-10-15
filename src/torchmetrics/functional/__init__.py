@@ -15,7 +15,6 @@ from torchmetrics.functional.audio.pit import permutation_invariant_training, pi
 from torchmetrics.functional.audio.sdr import scale_invariant_signal_distortion_ratio, signal_distortion_ratio
 from torchmetrics.functional.audio.snr import scale_invariant_signal_noise_ratio, signal_noise_ratio
 from torchmetrics.functional.classification.accuracy import accuracy
-from torchmetrics.functional.classification.auc import auc
 from torchmetrics.functional.classification.auroc import auroc
 from torchmetrics.functional.classification.average_precision import average_precision
 from torchmetrics.functional.classification.calibration_error import calibration_error
@@ -29,11 +28,6 @@ from torchmetrics.functional.classification.jaccard import jaccard_index
 from torchmetrics.functional.classification.matthews_corrcoef import matthews_corrcoef
 from torchmetrics.functional.classification.precision_recall import precision, precision_recall, recall
 from torchmetrics.functional.classification.precision_recall_curve import precision_recall_curve
-from torchmetrics.functional.classification.ranking import (
-    coverage_error,
-    label_ranking_average_precision,
-    label_ranking_loss,
-)
 from torchmetrics.functional.classification.roc import roc
 from torchmetrics.functional.classification.specificity import specificity
 from torchmetrics.functional.classification.stat_scores import stat_scores
@@ -97,7 +91,6 @@ if _TRANSFORMERS_AVAILABLE:
 
 __all__ = [
     "accuracy",
-    "auc",
     "auroc",
     "average_precision",
     "bleu_score",
@@ -108,7 +101,6 @@ __all__ = [
     "cohen_kappa",
     "confusion_matrix",
     "cosine_similarity",
-    "coverage_error",
     "tweedie_deviance_score",
     "dice_score",
     "dice",
@@ -123,8 +115,6 @@ __all__ = [
     "jaccard_index",
     "kendall_rank_corrcoef",
     "kl_divergence",
-    "label_ranking_average_precision",
-    "label_ranking_loss",
     "match_error_rate",
     "matthews_corrcoef",
     "mean_absolute_error",
