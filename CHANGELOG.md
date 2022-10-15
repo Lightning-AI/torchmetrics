@@ -12,7 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added `TotalVariation` to image package ([#978](https://github.com/Lightning-AI/metrics/pull/978))
-- Added `KendallRankCorrCoef` to regression package ([]())
+
+
+- Added `KendallRankCorrCoef` to regression package ([#1271](https://github.com/Lightning-AI/metrics/pull/1271))
+
 
 ### Changed
 
