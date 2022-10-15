@@ -23,6 +23,15 @@ from torchmetrics.utilities.data import _bincount
 from torchmetrics.utilities.enums import EnumStr
 
 
+def _dim_one_cat(x: Union[Tensor, List[Tensor]]) -> Tensor:
+    """Concatenation along the one dimension."""
+    x = x if isinstance(x, (list, tuple)) else [x]
+    x = [y.unsqueeze(0) if y.numel() == 1 and y.ndim == 0 else y for y in x]
+    if not x:  # empty list
+        raise ValueError("No samples to concatenate")
+    return torch.cat(x, dim=1)
+
+
 class _TestAlternative(EnumStr):
     TWO_SIDED = "two-sided"
     LESS = "less"
@@ -35,12 +44,12 @@ class _TestAlternative(EnumStr):
             ValueError:
                 If required test alternativeis not among the supported options.
         """
-        _allowed_im = [im.lower().replace("_", "-") for im in _TestAlternative._member_names_]
+        _allowed_alternative = [im.lower().replace("_", "-") for im in _TestAlternative._member_names_]
 
         enum_key = super().from_str(value.replace("-", "_"))
-        if enum_key is not None and enum_key in _allowed_im:
+        if enum_key is not None and enum_key in _allowed_alternative:
             return enum_key
-        raise ValueError(f"Invalid test alternative. Expected one of {_allowed_im}, but got {enum_key}.")
+        raise ValueError(f"Invalid test alternative. Expected one of {_allowed_alternative}, but got {enum_key}.")
 
 
 def _sort_on_first_sequence(x: Tensor, y: Tensor) -> Tuple[Tensor, Tensor]:
@@ -102,17 +111,19 @@ def _get_ties(x: Tensor) -> Tuple[Tensor, Tensor, Tensor]:
     return ties, ties_p1, ties_p2
 
 
-def _dim_one_cat(x: Union[Tensor, List[Tensor]]) -> Tensor:
-    """Concatenation along the one dimension."""
-    x = x if isinstance(x, (list, tuple)) else [x]
-    if not x:  # empty list
-        raise ValueError("No samples to concatenate")
-    return torch.cat(x, dim=1)
-
-
 def _get_metric_metadata(
     preds: Tensor, target: Tensor, variant: Literal["a", "b", "c"]
-) -> Tuple[Tensor, Tensor, Optional[Tensor], Optional[Tensor], Tensor]:
+) -> Tuple[
+    Tensor,
+    Tensor,
+    Optional[Tensor],
+    Optional[Tensor],
+    Optional[Tensor],
+    Optional[Tensor],
+    Optional[Tensor],
+    Optional[Tensor],
+    Tensor,
+]:
     """Obtain statistics to calculate metric value."""
     # Sort on target and convert it to dense rank
     preds, target = _sort_on_first_sequence(preds, target)
@@ -162,7 +173,7 @@ def _calculate_p_value(
         t_value = 3 * con_min_dis_pairs / torch.sqrt(t_value_denominator_base / 2)
     else:
         m = n_total * (n_total - 1)
-        t_value_denominator = (t_value_denominator_base - preds_ties_p2 - target_ties_p2) / 18
+        t_value_denominator: Tensor = (t_value_denominator_base - preds_ties_p2 - target_ties_p2) / 18
         t_value_denominator += (2 * preds_ties * target_ties) / m
         t_value_denominator += preds_ties_p1 * target_ties_p1 / (9 * m * (n_total - 2))
         t_value = con_min_dis_pairs / torch.sqrt(t_value_denominator)
@@ -194,10 +205,10 @@ def _kendall_corrcoef_update(
             f"Expected both predictions and target to be either 1- or 2-dimensional tensors,"
             f" but got {target.ndim} and {preds.ndim}."
         )
-    if (num_outputs == 1 and preds.ndim != 1) or (num_outputs > 1 and num_outputs != preds.shape[-1]):
+    if (num_outputs == 1 and preds.ndim != 1) or (num_outputs > 1 and num_outputs != preds.shape[1]):
         raise ValueError(
             f"Expected argument `num_outputs` to match the second dimension of input, but got {num_outputs}"
-            f" and {preds.ndim}."
+            f" and {preds.shape[1]}."
         )
     if num_outputs == 1:
         preds = preds.unsqueeze(0)
@@ -307,15 +318,12 @@ def kendall_rank_corrcoef(
         raise ValueError(f"Argument `variant` is expected to be one of `['a', 'b', 'c']`, but got {variant!r}.")
     if not isinstance(t_test, bool):
         raise ValueError(f"Argument `t_test` is expected to be of a type `bool`, but got {type(t_test)}.")
-    if not t_test:
-        alternative = None
-    if t_test and not alternative:
-        raise ValueError("Alternative must be specified when `t_test=True`.")
-    _alternative = _TestAlternative.from_str(alternative)
+    _alternative = _TestAlternative.from_str(alternative) if t_test else None
 
     _preds, _target = _kendall_corrcoef_update(
         preds, target, [], [], num_outputs=1 if preds.ndim == 1 else preds.shape[-1]
     )
+    print(_preds[0].shape)
     tau, p_value = _kendall_corrcoef_compute(_dim_one_cat(_preds), _dim_one_cat(_target), variant, _alternative)
 
     if p_value is not None:

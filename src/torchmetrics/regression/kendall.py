@@ -84,11 +84,7 @@ class KendallRankCorrCoef(Metric):
         self.variant = variant
         if not isinstance(t_test, bool):
             raise ValueError(f"Argument `t_test` is expected to be of a type `bool`, but got {type(t_test)}.")
-        if not t_test:
-            alternative = None
-        if t_test and not alternative:
-            raise ValueError("Alternative must be specified when `t_test=True`.")
-        self.alternative = _TestAlternative.from_str(alternative)
+        self.alternative = _TestAlternative.from_str(alternative) if t_test else None
         self.num_outputs = num_outputs
 
         self.add_state("preds", [], dist_reduce_fx="cat")

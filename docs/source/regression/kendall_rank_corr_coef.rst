@@ -12,7 +12,7 @@ Kendal Rank Corr. Coef.
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.KendallRankCorrCoeff
+.. autoclass:: torchmetrics.KendallRankCorrCoef
     :noindex:
 
 Functional Interface
