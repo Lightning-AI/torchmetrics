@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, Tuple, Union
+from typing import List, Optional, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -24,6 +24,8 @@ from torchmetrics.utilities.data import _bincount
 
 def _sort_on_first_sequence(x: Tensor, y: Tensor) -> Tuple[Tensor, Tensor]:
     """Sort sequences in an ascent order according to the sequence ``x``."""
+    # We need to clone `y` tensor not to change it in memory
+    y = torch.clone(y)
     x, perm = x.sort(stable=False)
     for i in range(x.shape[0]):
         y[i] = y[i][perm[i]]
@@ -71,17 +73,40 @@ def _get_ties(x: Tensor) -> Tensor:
     return ties
 
 
-def _kendall_corrcoef_update(
-    preds: Tensor,
-    target: Tensor,
-    concordant_pairs: Tensor,
-    discordant_pairs: Tensor,
-    preds_ties: Optional[Tensor],
-    target_ties: Optional[Tensor],
-    total: Optional[Tensor],
-    num_outputs: int,
-    variant: Literal["a", "b", "c"] = "b",
+def _dim_one_cat(x: Union[Tensor, List[Tensor]]) -> Tensor:
+    """Concatenation along the one dimension."""
+    x = x if isinstance(x, (list, tuple)) else [x]
+    if not x:  # empty list
+        raise ValueError("No samples to concatenate")
+    return torch.cat(x, dim=1)
+
+
+def _get_metric_metadata(
+    preds: Tensor, target: Tensor, variant: Literal["a", "b", "c"]
 ) -> Tuple[Tensor, Tensor, Optional[Tensor], Optional[Tensor], Optional[Tensor]]:
+    """Obtain statistics to calculate metric value."""
+    # Sort on target and convert it to dense rank
+    preds, target = _sort_on_first_sequence(preds, target)
+    preds, target = preds.T, target.T
+
+    concordant_pairs = _count_concordant_pairs(preds, target)
+    discordant_pairs = _count_discordant_pairs(preds, target)
+
+    if variant == "b":
+        preds = _convert_sequence_to_dense_rank(preds)
+        target = _convert_sequence_to_dense_rank(target)
+        preds_ties = _get_ties(preds)
+        target_ties = _get_ties(target)
+        n_total = preds.shape[0]
+    else:
+        preds_ties = target_ties = n_total = None
+
+    return concordant_pairs, discordant_pairs, preds_ties, target_ties, n_total
+
+
+def _kendall_corrcoef_update(
+    preds: Tensor, target: Tensor, concat_preds: List[Tensor], concat_target: List[Tensor], num_outputs: int
+) -> Tuple[List[Tensor], List[Tensor]]:
     """Update variables required to compute Kendall rank correlation coefficient.
 
     Raises:
@@ -103,42 +128,29 @@ def _kendall_corrcoef_update(
         preds = preds.unsqueeze(0)
         target = target.unsqueeze(0)
 
-    # Sort on target and convert it to dense rank
-    preds, target = _sort_on_first_sequence(preds, target)
-    preds, target = preds.T, target.T  # [num_outputs, seq_len]
+    concat_preds.append(preds)
+    concat_target.append(target)
 
-    concordant_pairs += _count_concordant_pairs(preds, target)
-    discordant_pairs += _count_discordant_pairs(preds, target)
-
-    if variant == "b":
-        preds = _convert_sequence_to_dense_rank(preds)
-        target = _convert_sequence_to_dense_rank(target)
-        preds_ties += _get_ties(preds)
-        target_ties += _get_ties(target)
-        total += preds.shape[0]
-
-    return concordant_pairs, discordant_pairs, preds_ties, target_ties, total
+    return concat_preds, concat_target
 
 
 def _kendall_corrcoef_compute(
-    concordant_pairs: Tensor,
-    discordant_pairs: Tensor,
-    preds_ties: Optional[Tensor],
-    target_ties: Optional[Tensor],
-    total: Optional[Tensor],
+    preds: Tensor,
+    target: Tensor,
     variant: Literal["a", "b", "c"],
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
     """Compute the value of Kendall rank correlation coefficient given pre-computed state variables."""
+    concordant_pairs, discordant_pairs, preds_ties, target_ties, n_total = _get_metric_metadata(preds, target, variant)
     con_min_dis_pairs = concordant_pairs - discordant_pairs
 
     if variant == "a":
         tau = con_min_dis_pairs / (concordant_pairs + discordant_pairs)
     elif variant == "b":
-        total_combinations = total * (total - 1) // 2
+        total_combinations = n_total * (n_total - 1) // 2
         denominator = (total_combinations - preds_ties) * (total_combinations - target_ties)
         tau = con_min_dis_pairs / torch.sqrt(denominator)
     else:
-        tau = 2 * con_min_dis_pairs / (total**2)
+        tau = 2 * con_min_dis_pairs / (n_total**2)
 
     return tau.clamp(-1, 1)
 
@@ -160,38 +172,25 @@ def kendall_rank_corrcoef(
         ValueError: If ``variant`` is not from ``['a', 'b', 'c']``
 
     Example (single output regression):
-        >>> from torchmetrics.functional.regression import kendal_rank_corrcoef
+        >>> from torchmetrics.functional.regression import kendall_rank_corrcoef
         >>> target = torch.tensor([3, -0.5, 2, 1])
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])
-        >>> kendal_rank_corrcoef(preds, target)
+        >>> kendall_rank_corrcoef(preds, target)
         tensor([0.3333])
 
     Example (multi output regression):
-        >>> from torchmetrics.functional.regression import kendal_rank_corrcoef
+        >>> from torchmetrics.functional.regression import kendall_rank_corrcoef
         >>> target = torch.tensor([[3, -0.5], [2, 1]])
         >>> preds = torch.tensor([[2.5, 0.0], [2, 8]])
-        >>> kendal_rank_corrcoef(preds, target)
+        >>> kendall_rank_corrcoef(preds, target)
         tensor([ 1., -1.])
     """
     if variant not in ["a", "b", "c"]:
         raise ValueError(f"Argument `variant` is expected to be one of ['a', 'b', 'c'], but got {variant!r}.")
-    d = preds.shape[0] if preds.ndim == 2 else 1
-    _temp = torch.zeros(d, dtype=preds.dtype, device=preds.device)
-    concordant_pairs, discordant_pairs = _temp.clone(), _temp.clone()
-    if variant == "b":
-        preds_ties, target_ties, total = _temp.clone(), _temp.clone(), _temp.clone()
-    else:
-        preds_ties = target_ties = total = None
+    concat_preds, concat_target = [], []
 
-    concordant_pairs, discordant_pairs, preds_ties, target_ties, total = _kendall_corrcoef_update(
-        preds,
-        target,
-        concordant_pairs,
-        discordant_pairs,
-        preds_ties,
-        target_ties,
-        total,
-        num_outputs=1 if preds.ndim == 1 else preds.shape[-1],
-        variant=variant,
+    concat_preds, concat_target = _kendall_corrcoef_update(
+        preds, target, concat_preds, concat_target, num_outputs=1 if preds.ndim == 1 else preds.shape[-1]
     )
-    return _kendall_corrcoef_compute(concordant_pairs, discordant_pairs, preds_ties, target_ties, total, variant)
+
+    return _kendall_corrcoef_compute(_dim_one_cat(concat_preds), _dim_one_cat(concat_target), variant)
