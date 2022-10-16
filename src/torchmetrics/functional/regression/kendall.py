@@ -391,7 +391,7 @@ def kendall_rank_corrcoef(
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])
         >>> target = torch.tensor([3, -0.5, 2, 1])
         >>> kendall_rank_corrcoef(preds, target, t_test=True, alternative='two-sided')
-        (tensor(0.3333), tensor(0.4969)))
+        (tensor(0.3333), tensor(0.4969))
 
     Example (multi output regression with t-test):
         >>> from torchmetrics.functional.regression import kendall_rank_corrcoef

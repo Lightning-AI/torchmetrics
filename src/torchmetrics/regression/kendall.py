@@ -82,7 +82,7 @@ class KendallRankCorrCoef(Metric):
         >>> target = torch.tensor([3, -0.5, 2, 1])
         >>> kendall = KendallRankCorrCoef()
         >>> kendall(preds, target)
-        (tensor(0.3333), tensor(0.4969)))
+        (tensor(0.3333), tensor(0.4969))
 
     Example (multi output regression with t-test):
         >>> import torch
