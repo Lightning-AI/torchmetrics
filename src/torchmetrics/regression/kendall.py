@@ -30,8 +30,8 @@ from torchmetrics.utilities.data import dim_zero_cat
 class KendallRankCorrCoef(Metric):
     r"""Computes `Kendall Rank Correlation Coefficient`_:
 
-    .. math:
-        tau_b = \frac{C - D}{\sqrt{(C + D + T_{preds}) * (C + D + T_{target})}
+    .. math::
+        tau_b = \frac{C - D}{\sqrt{(C + D + T_{preds}) * (C + D + T_{target})}}
 
         tau_c = 2 * \frac{C - D}{n ** 2 * \frac{m - 1}{m}}
 
@@ -46,7 +46,7 @@ class KendallRankCorrCoef(Metric):
     Args:
         variant: Indication of which variant of Kendall's tau to be used
         t_test: Indication whether to run t-test
-        alternative: Alternative hypothesis for for t-test. Possible values:
+        alternative: Alternative hypothesis for t-test. Possible values:
             - 'two-sided': the rank correlation is nonzero
             - 'less': the rank correlation is negative (less than zero)
             - 'greater':  the rank correlation is positive (greater than zero)
