@@ -360,8 +360,8 @@ def kendall_rank_corrcoef(
     .. math::
         tau_c = 2 * \frac{C - D}{n^2 * \frac{m - 1}{m}}
 
-    where :math:`C` represents concordant pairs, :math:`D` stands for discordant pairs, :math:`n` is a number
-    of observations and :math:`m` is a ``min`` of uniques values in ``preds`` and ``target`` sequence.
+    where :math:`C` represents concordant pairs, :math:`D` stands for discordant pairs, :math:`n` is a total number
+    of observations and :math:`m` is a ``min`` of unique values in ``preds`` and ``target`` sequence.
 
     Definitions according to Definition according to `The Treatment of Ties in Ranking Problems`_.
 
