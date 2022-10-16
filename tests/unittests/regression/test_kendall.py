@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import operator
 from collections import namedtuple
 from functools import partial
 
@@ -20,8 +21,11 @@ from scipy.stats import kendalltau
 
 from torchmetrics.functional.regression.kendall import kendall_rank_corrcoef
 from torchmetrics.regression.kendall import KendallRankCorrCoef
+from torchmetrics.utilities.imports import _compare_version
 from unittests.helpers import seed_all
 from unittests.helpers.testers import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, MetricTester
+
+_SCIPY_GREATER_EQUAL_1_8 = _compare_version("scipy", operator.ge, "1.8.0")
 
 seed_all(42)
 
@@ -44,10 +48,12 @@ _multi_inputs3 = Input(
 
 
 def _sk_metric(preds, target, alternative, variant):
-    _alternative = alternative or "two-sided"
+    metric_args = {}
+    if _SCIPY_GREATER_EQUAL_1_8:
+        metric_args = {"alternative": alternative or "two-sided"}  # scipy cannot accept `None`
     if preds.ndim == 2:
         out = [
-            kendalltau(p.numpy(), t.numpy(), method="asymptotic", alternative=_alternative, variant=variant)
+            kendalltau(p.numpy(), t.numpy(), method="asymptotic", variant=variant, **metric_args)
             for p, t in zip(preds.T, target.T)
         ]
         tau = torch.cat([torch.tensor(o[0]).unsqueeze(0) for o in out])
@@ -56,9 +62,7 @@ def _sk_metric(preds, target, alternative, variant):
             return tau, p_value
         return tau
 
-    tau, p_value = kendalltau(
-        preds.numpy(), target.numpy(), method="asymptotic", alternative=_alternative, variant=variant
-    )
+    tau, p_value = kendalltau(preds.numpy(), target.numpy(), method="asymptotic", variant=variant, **metric_args)
 
     if alternative is not None:
         return torch.tensor(tau), torch.tensor(p_value)
@@ -84,6 +88,7 @@ class TestKendallRankCorrCoef(MetricTester):
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         t_test = True if alternative is not None else False
         _sk_kendall_tau = partial(_sk_metric, alternative=alternative, variant=variant)
+        alternative = _adjust_alternative_to_scipy(alternative)
 
         self.run_class_metric_test(
             ddp,
@@ -97,6 +102,7 @@ class TestKendallRankCorrCoef(MetricTester):
 
     def test_kendall_rank_corrcoef_functional(self, preds, target, alternative, variant):
         t_test = True if alternative is not None else False
+        alternative = _adjust_alternative_to_scipy(alternative)
         metric_args = {"t_test": t_test, "alternative": alternative, "variant": variant}
         _sk_kendall_tau = partial(_sk_metric, alternative=alternative, variant=variant)
         self.run_functional_metric_test(preds, target, kendall_rank_corrcoef, _sk_kendall_tau, metric_args=metric_args)
@@ -109,3 +115,10 @@ class TestKendallRankCorrCoef(MetricTester):
             metric_module=partial(KendallRankCorrCoef, num_outputs=num_outputs),
             metric_functional=kendall_rank_corrcoef,
         )
+
+
+def _adjust_alternative_to_scipy(alternative):
+    """Scipy<1.8.0 supports only two-sided hypothesis testing."""
+    if alternative is not None and not _compare_version("scipy", operator.ge, "1.8.0"):
+        alternative = "two-sided"
+    return alternative
