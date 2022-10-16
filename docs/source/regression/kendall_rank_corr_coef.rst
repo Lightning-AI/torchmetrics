@@ -18,5 +18,5 @@ ________________
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.kendall.kendall_rank_corrcoef
+.. autofunction:: torchmetrics.functional.kendall_rank_corrcoef
     :noindex:
