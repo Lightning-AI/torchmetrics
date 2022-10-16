@@ -78,8 +78,8 @@ def _sk_metric(preds, target, alternative, variant):
 )
 @pytest.mark.parametrize("variant", ["b", "c"])
 class TestKendallRankCorrCoef(MetricTester):
-    @pytest.mark.parametrize("ddp", [False])
-    @pytest.mark.parametrize("dist_sync_on_step", [False])
+    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
     def test_kendall_rank_corrcoef(self, preds, target, alternative, variant, ddp, dist_sync_on_step):
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         t_test = True if alternative is not None else False
