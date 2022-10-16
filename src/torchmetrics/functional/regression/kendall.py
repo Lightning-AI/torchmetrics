@@ -165,8 +165,8 @@ def _calculate_p_value(
     else:
         m = n_total * (n_total - 1)
         t_value_denominator: Tensor = (t_value_denominator_base - preds_ties_p2 - target_ties_p2) / 18
-        t_value_denominator += (2 * preds_ties * target_ties) / m
-        t_value_denominator += preds_ties_p1 * target_ties_p1 / (9 * m * (n_total - 2))
+        t_value_denominator += (2 * preds_ties * target_ties) / m  # typing: ignore (is Tensor)
+        t_value_denominator += preds_ties_p1 * target_ties_p1 / (9 * m * (n_total - 2))  # typing: ignore (is Tensor)
         t_value = con_min_dis_pairs / torch.sqrt(t_value_denominator)
 
     if alternative == _TestAlternative.TWO_SIDED:
@@ -292,6 +292,8 @@ def kendall_rank_corrcoef(
 
     Raises:
         ValueError: If ``variant`` is not from ``['a', 'b', 'c']``
+        ValueError: If ``t_test`` is not of a type bool
+        ValueError: If ``t_test=True`` and ``alternative=None``
 
     Example (single output regression):
         >>> from torchmetrics.functional.regression import kendall_rank_corrcoef
@@ -311,6 +313,8 @@ def kendall_rank_corrcoef(
         raise ValueError(f"Argument `variant` is expected to be one of `['a', 'b', 'c']`, but got {variant!r}.")
     if not isinstance(t_test, bool):
         raise ValueError(f"Argument `t_test` is expected to be of a type `bool`, but got {type(t_test)}.")
+    if t_test and alternative is None:
+        raise ValueError("Argument `alternative` is required if `t_test=True` but got `None`.")
     _alternative = _TestAlternative.from_str(alternative) if t_test else None
 
     _preds, _target = _kendall_corrcoef_update(

@@ -46,6 +46,11 @@ class KendallRankCorrCoef(Metric):
         num_outputs: Number of outputs in multioutput setting
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
+    Raises:
+        ValueError: If ``variant`` is not from ``['a', 'b', 'c']``
+        ValueError: If ``t_test`` is not of a type bool
+        ValueError: If ``t_test=True`` and ``alternative=None``
+
     Example (single output regression):
         >>> import torch
         >>> from torchmetrics.regression import KendallRankCorrCoef
@@ -85,6 +90,8 @@ class KendallRankCorrCoef(Metric):
         self.variant = variant
         if not isinstance(t_test, bool):
             raise ValueError(f"Argument `t_test` is expected to be of a type `bool`, but got {type(t_test)}.")
+        if t_test and alternative is None:
+            raise ValueError("Argument `alternative` is required if `t_test=True` but got `None`.")
         self.alternative = _TestAlternative.from_str(alternative) if t_test else None
         self.num_outputs = num_outputs
 
