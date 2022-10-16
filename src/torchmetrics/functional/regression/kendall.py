@@ -27,7 +27,7 @@ class _MetricVariant(EnumStr):
     """Enumerate for metric variants."""
 
     A = "a"
-    B = "B"
+    B = "b"
     C = "c"
 
     @classmethod
