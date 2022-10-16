@@ -29,7 +29,13 @@ from torchmetrics.utilities.data import dim_zero_cat
 class KendallRankCorrCoef(Metric):
     r"""Computes `Kendall Rank Correlation Coefficient`_:
 
-    Where :math:`y` is a tensor of target values, and :math:`x` is a tensor of predictions.
+    .. math:
+        tau_b = \frac{C - D}{\sqrt{(C + D + T_{preds}) * (C + D + T_{target})}
+
+        tau_c = 2 * \frac{C - D}{n ** 2 * \frac{m - 1}{m}}
+
+    where :math:`C` is represents concordant pairs, :math:`D` stands for discordant pairs and :math:`T` represents
+    a total number of ties. Definition according to `The Treatment of Ties in Ranking Problems`_.
 
     Forward accepts
 

@@ -24,6 +24,8 @@ from torchmetrics.utilities.enums import EnumStr
 
 
 class _TestAlternative(EnumStr):
+    """Enumerate for test altenative options."""
+
     TWO_SIDED = "two-sided"
     LESS = "less"
     GREATER = "greater"
@@ -45,7 +47,7 @@ class _TestAlternative(EnumStr):
 
 def _sort_on_first_sequence(x: Tensor, y: Tensor) -> Tuple[Tensor, Tensor]:
     """Sort sequences in an ascent order according to the sequence ``x``."""
-    # We need to clone `y` tensor not to change it in memory
+    # We need to clone `y` tensor not to change an object in memory
     y = torch.clone(y)
     x, y = x.T, y.T
     x, perm = x.sort()
@@ -89,7 +91,7 @@ def _convert_sequence_to_dense_rank(x: Tensor, sort: bool = False) -> Tensor:
 
 
 def _get_ties(x: Tensor) -> Tuple[Tensor, Tensor, Tensor]:
-    """Get number of ties and staistics for p-value calculation for  a given sequence."""
+    """Get a total number of ties and staistics for p-value calculation for  a given sequence."""
     ties = torch.zeros(x.shape[1], dtype=x.dtype, device=x.device)
     ties_p1 = torch.zeros(x.shape[1], dtype=x.dtype, device=x.device)
     ties_p2 = torch.zeros(x.shape[1], dtype=x.dtype, device=x.device)
@@ -117,12 +119,10 @@ def _get_metric_metadata(
     Tensor,
 ]:
     """Obtain statistics to calculate metric value."""
-    # Sort on target and convert it to dense rank
     preds, target = _sort_on_first_sequence(preds, target)
 
     concordant_pairs = _count_concordant_pairs(preds, target)
     discordant_pairs = _count_discordant_pairs(preds, target)
-    # preds, target = preds.T, target.T
 
     n_total = torch.tensor(preds.shape[0], device=preds.device)
     preds_ties = target_ties = None
@@ -155,7 +155,7 @@ def _calculate_p_value(
     target_ties_p1: Optional[Tensor],
     target_ties_p2: Optional[Tensor],
     variant: Literal["a", "b", "c"],
-    alternative: _TestAlternative,
+    alternative: Optional[_TestAlternative],
 ) -> Tensor:
     normal_dist = torch.distributions.normal.Normal(torch.tensor([0.0]), torch.tensor([1.0]))
 
@@ -165,8 +165,8 @@ def _calculate_p_value(
     else:
         m = n_total * (n_total - 1)
         t_value_denominator: Tensor = (t_value_denominator_base - preds_ties_p2 - target_ties_p2) / 18
-        t_value_denominator += (2 * preds_ties * target_ties) / m  # typing: ignore (is Tensor)
-        t_value_denominator += preds_ties_p1 * target_ties_p1 / (9 * m * (n_total - 2))  # typing: ignore (is Tensor)
+        t_value_denominator += (2 * preds_ties * target_ties) / m  # type: ignore (is Tensor)
+        t_value_denominator += preds_ties_p1 * target_ties_p1 / (9 * m * (n_total - 2))  # type: ignore (is Tensor)
         t_value = con_min_dis_pairs / torch.sqrt(t_value_denominator)
 
     if alternative == _TestAlternative.TWO_SIDED:
@@ -187,6 +187,13 @@ def _kendall_corrcoef_update(
     num_outputs: int = 1,
 ) -> Tuple[List[Tensor], List[Tensor]]:
     """Update variables required to compute Kendall rank correlation coefficient.
+
+    Args:
+        preds: Ordered sequence of data
+        target: Ordered sequence of data
+        concat_preds: List of batches of preds sequence to be concatenated
+        concat_target: List of batches of target sequence to be concatenated
+        num_outputs: Number of outputs in multioutput setting
 
     Raises:
         RuntimeError: If ``preds`` and ``target`` do not have the same shape
@@ -219,7 +226,18 @@ def _kendall_corrcoef_compute(
     variant: Literal["a", "b", "c"],
     alternative: Optional[_TestAlternative] = None,
 ) -> Tuple[Tensor, Optional[Tensor]]:
-    """Compute Kendall rank correlation coefficient, and optionally p-value of corresponding statistical test."""
+    """Compute Kendall rank correlation coefficient, and optionally p-value of corresponding statistical test.
+
+    Args:
+        Args:
+        preds: Ordered sequence of data
+        target: Ordered sequence of data
+        variant: Indication of which variant of Kendall's tau to be used
+        alternative: Alternative hypothesis for for t-test. Possible values:
+            - 'two-sided': the rank correlation is nonzero
+            - 'less': the rank correlation is negative (less than zero)
+            - 'greater':  the rank correlation is positive (greater than zero)
+    """
     (
         concordant_pairs,
         discordant_pairs,
@@ -274,7 +292,15 @@ def kendall_rank_corrcoef(
     t_test: bool = False,
     alternative: Optional[Literal["two-sided", "less", "greater"]] = "two-sided",
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    """Computes `Kendall Rank Correlation Coefficient`_.
+    r"""Computes `Kendall Rank Correlation Coefficient`_.
+
+    .. math:
+        tau_b = \frac{C - D}{\sqrt{(C + D + T_{preds}) * (C + D + T_{target})}
+
+        tau_c = 2 * \frac{C - D}{n ** 2 * \frac{m - 1}{m}}
+
+    where :math:`C` is represents concordant pairs, :math:`D` stands for discordant pairs and :math:`T` represents
+    a total number of ties. Definition according to `The Treatment of Ties in Ranking Problems`_.
 
     Args:
         preds: Ordered sequence of data

@@ -94,3 +94,4 @@
 .. _Rényi divergence: https://static.renyi.hu/renyi_cikkek/1961_on_measures_of_entropy_and_information.pdf
 .. _Fisher-Rao distance: http://www.scholarpedia.org/article/Fisher-Rao_metric
 .. _Kendall Rank Correlation Coefficient: https://en.wikipedia.org/wiki/Kendall_rank_correlation_coefficient
+.. _The Treatment of Ties in Ranking Problems: https://www.jstor.org/stable/2332303
