@@ -40,8 +40,8 @@ class KendallRankCorrCoef(Metric):
 
     Forward accepts
 
-    - ``preds``: Ordered sequence of data
-    - ``target``: Ordered sequence of data
+    - ``preds``: Sequence of data
+    - ``target``: Sequence of data
 
     Args:
         variant: Indication of which variant of Kendall's tau to be used
@@ -60,8 +60,8 @@ class KendallRankCorrCoef(Metric):
     Example (single output regression):
         >>> import torch
         >>> from torchmetrics.regression import KendallRankCorrCoef
-        >>> target = torch.tensor([3, -0.5, 2, 1])
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])
+        >>> target = torch.tensor([3, -0.5, 2, 1])
         >>> kendall = KendallRankCorrCoef()
         >>> kendall(preds, target)
         tensor(0.3333)
@@ -69,11 +69,29 @@ class KendallRankCorrCoef(Metric):
     Example (multi output regression):
         >>> import torch
         >>> from torchmetrics.regression import KendallRankCorrCoef
-        >>> target = torch.tensor([[3, -0.5], [2, 1]])
         >>> preds = torch.tensor([[2.5, 0.0], [2, 8]])
+        >>> target = torch.tensor([[3, -0.5], [2, 1]])
         >>> kendall = KendallRankCorrCoef(num_outputs=2)
         >>> kendall(preds, target)
         tensor([1., 1.])
+
+    Example (single output regression with t-test):
+        >>> import torch
+        >>> from torchmetrics.regression import KendallRankCorrCoef
+        >>> preds = torch.tensor([2.5, 0.0, 2, 8])
+        >>> target = torch.tensor([3, -0.5, 2, 1])
+        >>> kendall = KendallRankCorrCoef()
+        >>> kendall(preds, target)
+        (tensor(0.3333), tensor(0.4969)))
+
+    Example (multi output regression with t-test):
+        >>> import torch
+        >>> from torchmetrics.regression import KendallRankCorrCoef
+        >>> preds = torch.tensor([[2.5, 0.0], [2, 8]])
+        >>> target = torch.tensor([[3, -0.5], [2, 1]])
+        >>> kendall = KendallRankCorrCoef(num_outputs=2)
+        >>> kendall(preds, target)
+        (tensor([1., 1.]), tensor([nan, nan]))
     """
 
     is_differentiable = False
@@ -107,8 +125,8 @@ class KendallRankCorrCoef(Metric):
         """Update variables required to compute Kendall rank correlation coefficient.
 
         Args:
-            preds: Ordered sequence of data
-            target: Ordered sequence of data
+            preds: Sequence of data
+            target: Sequence of data
         """
         self.preds, self.target = _kendall_corrcoef_update(
             preds,

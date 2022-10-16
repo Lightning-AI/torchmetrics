@@ -78,28 +78,30 @@ def _sort_on_first_sequence(x: Tensor, y: Tensor) -> Tuple[Tensor, Tensor]:
     return x.T, y.T
 
 
+def _concordant_element_sum(x: Tensor, y: Tensor, i: int) -> Tensor:
+    """Count a total number of concordant pairs in a single sequence."""
+    return torch.logical_and(x[i] < x[(i + 1) :], y[i] < y[(i + 1) :]).sum(0).unsqueeze(0)
+
+
 def _count_concordant_pairs(preds: Tensor, target: Tensor) -> Tensor:
     """Count a total number of concordant pairs in given sequences."""
-
-    def _concordant_element_sum(x: Tensor, y: Tensor, i: int) -> Tensor:
-        return torch.logical_and(x[i] < x[(i + 1) :], y[i] < y[(i + 1) :]).sum(0).unsqueeze(0)
-
     return torch.cat([_concordant_element_sum(preds, target, i) for i in range(preds.shape[0])]).sum(0)
+
+
+def _discordant_element_sum(x: Tensor, y: Tensor, i: int) -> Tensor:
+    """Count a total number of discordant pairs in a single sequences."""
+    return (
+        torch.logical_or(
+            torch.logical_and(x[i] > x[(i + 1) :], y[i] < y[(i + 1) :]),
+            torch.logical_and(x[i] < x[(i + 1) :], y[i] > y[(i + 1) :]),
+        )
+        .sum(0)
+        .unsqueeze(0)
+    )
 
 
 def _count_discordant_pairs(preds: Tensor, target: Tensor) -> Tensor:
     """Count a total number of discordant pairs in given sequences."""
-
-    def _discordant_element_sum(x: Tensor, y: Tensor, i: int) -> Tensor:
-        return (
-            torch.logical_or(
-                torch.logical_and(x[i] > x[(i + 1) :], y[i] < y[(i + 1) :]),
-                torch.logical_and(x[i] < x[(i + 1) :], y[i] > y[(i + 1) :]),
-            )
-            .sum(0)
-            .unsqueeze(0)
-        )
-
     return torch.cat([_discordant_element_sum(preds, target, i) for i in range(preds.shape[0])]).sum(0)
 
 
@@ -194,6 +196,21 @@ def _calculate_tau(
     return tau
 
 
+def _get_p_value_for_t_value_from_dist(t_value: Tensor) -> Tensor:
+    """Obtain p-value for a given Tensor of t-values. Handle ``nan`` which cannot be passed into torch
+    distributions.
+
+    When t-value is ``nan``, a resulted p-value should be alson ``nan``.
+    """
+    device = t_value
+    normal_dist = torch.distributions.normal.Normal(torch.tensor([0.0]).to(device), torch.tensor([1.0]).to(device))
+
+    is_nan = t_value.isnan()
+    t_value = t_value.nan_to_num()
+    p_value = normal_dist.cdf(t_value)
+    return p_value.where(~is_nan, torch.tensor(float("nan"), dtype=p_value.dtype, device=p_value.device))
+
+
 def _calculate_p_value(
     con_min_dis_pairs: Tensor,
     n_total: Tensor,
@@ -207,8 +224,6 @@ def _calculate_p_value(
     alternative: Optional[_TestAlternative],
 ) -> Tensor:
     """Calculate p-value for Kendall's tau from metric metadata."""
-    normal_dist = torch.distributions.normal.Normal(torch.tensor([0.0]), torch.tensor([1.0]))
-
     t_value_denominator_base = n_total * (n_total - 1) * (2 * n_total + 5)
     if variant == _MetricVariant.A:
         t_value = 3 * con_min_dis_pairs / torch.sqrt(t_value_denominator_base / 2)
@@ -223,7 +238,7 @@ def _calculate_p_value(
         t_value = torch.abs(t_value)
     if alternative in [_TestAlternative.TWO_SIDED, _TestAlternative.GREATER]:
         t_value *= -1
-    p_value = normal_dist.cdf(t_value)
+    p_value = _get_p_value_for_t_value_from_dist(t_value)
     if alternative == _TestAlternative.TWO_SIDED:
         p_value *= 2
     return p_value
@@ -239,8 +254,8 @@ def _kendall_corrcoef_update(
     """Update variables required to compute Kendall rank correlation coefficient.
 
     Args:
-        preds: Ordered sequence of data
-        target: Ordered sequence of data
+        preds: Sequence of data
+        target: Sequence of data
         concat_preds: List of batches of preds sequence to be concatenated
         concat_target: List of batches of target sequence to be concatenated
         num_outputs: Number of outputs in multioutput setting
@@ -280,8 +295,8 @@ def _kendall_corrcoef_compute(
 
     Args:
         Args:
-        preds: Ordered sequence of data
-        target: Ordered sequence of data
+        preds: Sequence of data
+        target: Sequence of data
         variant: Indication of which variant of Kendall's tau to be used
         alternative: Alternative hypothesis for for t-test. Possible values:
             - 'two-sided': the rank correlation is nonzero
@@ -347,8 +362,8 @@ def kendall_rank_corrcoef(
     a total number of ties. Definition according to `The Treatment of Ties in Ranking Problems`_.
 
     Args:
-        preds: Ordered sequence of data
-        target: Ordered sequence of data
+        preds: Sequence of data
+        target: Sequence of data
         variant: Indication of which variant of Kendall's tau to be used
         t_test: Indication whether to run t-test
         alternative: Alternative hypothesis for t-test. Possible values:
@@ -366,17 +381,31 @@ def kendall_rank_corrcoef(
 
     Example (single output regression):
         >>> from torchmetrics.functional.regression import kendall_rank_corrcoef
-        >>> target = torch.tensor([3, -0.5, 2, 1])
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])
+        >>> target = torch.tensor([3, -0.5, 2, 1])
         >>> kendall_rank_corrcoef(preds, target)
         tensor(0.3333)
 
     Example (multi output regression):
         >>> from torchmetrics.functional.regression import kendall_rank_corrcoef
-        >>> target = torch.tensor([[3, -0.5], [2, 1]])
         >>> preds = torch.tensor([[2.5, 0.0], [2, 8]])
+        >>> target = torch.tensor([[3, -0.5], [2, 1]])
         >>> kendall_rank_corrcoef(preds, target)
         tensor([1., 1.])
+
+    Example (single output regression with t-test)
+        >>> from torchmetrics.functional.regression import kendall_rank_corrcoef
+        >>> preds = torch.tensor([2.5, 0.0, 2, 8])
+        >>> target = torch.tensor([3, -0.5, 2, 1])
+        >>> kendall_rank_corrcoef(preds, target, t_test=True, alternative='two-sided')
+        (tensor(0.3333), tensor(0.4969)))
+
+    Example (multi output regression with t-test):
+        >>> from torchmetrics.functional.regression import kendall_rank_corrcoef
+        >>> preds = torch.tensor([[2.5, 0.0], [2, 8]])
+        >>> target = torch.tensor([[3, -0.5], [2, 1]])
+        >>> kendall_rank_corrcoef(preds, target, t_test=True, alternative='two-sided')
+            (tensor([1., 1.]), tensor([nan, nan]))
     """
     if not isinstance(t_test, bool):
         raise ValueError(f"Argument `t_test` is expected to be of a type `bool`, but got {type(t_test)}.")
