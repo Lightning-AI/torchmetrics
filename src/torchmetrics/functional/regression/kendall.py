@@ -145,6 +145,28 @@ def _get_metric_metadata(
     )
 
 
+def _calculate_tau(
+    concordant_pairs: Tensor,
+    discordant_pairs: Tensor,
+    con_min_dis_pairs: Tensor,
+    n_total: Tensor,
+    preds_ties: Optional[Tensor],
+    target_ties: Optional[Tensor],
+    variant: Literal["a", "b", "c"],
+) -> Tensor:
+    """"""
+    if variant == "a":
+        tau = con_min_dis_pairs / (concordant_pairs + discordant_pairs)
+    elif variant == "b":
+        total_combinations: Tensor = n_total * (n_total - 1) // 2
+        denominator = (total_combinations - preds_ties) * (total_combinations - target_ties)  # type: ignore (is Tensor)
+        tau = con_min_dis_pairs / torch.sqrt(denominator)
+    else:
+        tau = 2 * con_min_dis_pairs / (n_total**2)
+
+    return tau
+
+
 def _calculate_p_value(
     con_min_dis_pairs: Tensor,
     n_total: Tensor,
@@ -157,6 +179,7 @@ def _calculate_p_value(
     variant: Literal["a", "b", "c"],
     alternative: Optional[_TestAlternative],
 ) -> Tensor:
+    """"""
     normal_dist = torch.distributions.normal.Normal(torch.tensor([0.0]), torch.tensor([1.0]))
 
     t_value_denominator_base = n_total * (n_total - 1) * (2 * n_total + 5)
@@ -251,15 +274,9 @@ def _kendall_corrcoef_compute(
     ) = _get_metric_metadata(preds, target, variant)
     con_min_dis_pairs = concordant_pairs - discordant_pairs
 
-    if variant == "a":
-        tau = con_min_dis_pairs / (concordant_pairs + discordant_pairs)
-    elif variant == "b":
-        total_combinations: Tensor = n_total * (n_total - 1) // 2
-        denominator = (total_combinations - preds_ties) * (total_combinations - target_ties)
-        tau = con_min_dis_pairs / torch.sqrt(denominator)
-    else:
-        tau = 2 * con_min_dis_pairs / (n_total**2)
-
+    tau = _calculate_tau(
+        concordant_pairs, discordant_pairs, con_min_dis_pairs, n_total, preds_ties, target_ties, variant
+    )
     p_value = (
         _calculate_p_value(
             con_min_dis_pairs,
