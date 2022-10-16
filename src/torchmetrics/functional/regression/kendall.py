@@ -23,6 +23,28 @@ from torchmetrics.utilities.data import _bincount, dim_zero_cat
 from torchmetrics.utilities.enums import EnumStr
 
 
+class _MetricVariant(EnumStr):
+    """Enumerate for metric variants."""
+
+    A = "a"
+    B = "B"
+    C = "c"
+
+    @classmethod
+    def from_str(cls, value: str) -> Optional["EnumStr"]:
+        """
+        Raises:
+            ValueError:
+                If required metric variant is not among the supported options.
+        """
+        _allowed_variants = [im.lower() for im in _MetricVariant._member_names_]
+
+        enum_key = super().from_str(value)
+        if enum_key is not None and enum_key in _allowed_variants:
+            return enum_key
+        raise ValueError(f"Invalid metric variant. Expected one of {_allowed_variants}, but got {enum_key}.")
+
+
 class _TestAlternative(EnumStr):
     """Enumerate for test altenative options."""
 
@@ -35,14 +57,14 @@ class _TestAlternative(EnumStr):
         """
         Raises:
             ValueError:
-                If required test alternativeis not among the supported options.
+                If required test alternative is not among the supported options.
         """
-        _allowed_alternative = [im.lower().replace("_", "-") for im in _TestAlternative._member_names_]
+        _allowed_alternatives = [im.lower().replace("_", "-") for im in _TestAlternative._member_names_]
 
         enum_key = super().from_str(value.replace("-", "_"))
-        if enum_key is not None and enum_key in _allowed_alternative:
+        if enum_key is not None and enum_key in _allowed_alternatives:
             return enum_key
-        raise ValueError(f"Invalid test alternative. Expected one of {_allowed_alternative}, but got {enum_key}.")
+        raise ValueError(f"Invalid test alternative. Expected one of {_allowed_alternatives}, but got {enum_key}.")
 
 
 def _sort_on_first_sequence(x: Tensor, y: Tensor) -> Tuple[Tensor, Tensor]:
@@ -106,7 +128,7 @@ def _get_ties(x: Tensor) -> Tuple[Tensor, Tensor, Tensor]:
 
 
 def _get_metric_metadata(
-    preds: Tensor, target: Tensor, variant: Literal["a", "b", "c"]
+    preds: Tensor, target: Tensor, variant: _MetricVariant
 ) -> Tuple[
     Tensor,
     Tensor,
@@ -127,7 +149,7 @@ def _get_metric_metadata(
     n_total = torch.tensor(preds.shape[0], device=preds.device)
     preds_ties = target_ties = None
     preds_ties_p1 = preds_ties_p2 = target_ties_p1 = target_ties_p2 = None
-    if variant == "b":
+    if variant != _MetricVariant.A:
         preds = _convert_sequence_to_dense_rank(preds)
         target = _convert_sequence_to_dense_rank(target, sort=True)
         preds_ties, preds_ties_p1, preds_ties_p2 = _get_ties(preds)
@@ -146,23 +168,28 @@ def _get_metric_metadata(
 
 
 def _calculate_tau(
+    preds: Tensor,
+    target: Tensor,
     concordant_pairs: Tensor,
     discordant_pairs: Tensor,
     con_min_dis_pairs: Tensor,
     n_total: Tensor,
     preds_ties: Optional[Tensor],
     target_ties: Optional[Tensor],
-    variant: Literal["a", "b", "c"],
+    variant: _MetricVariant,
 ) -> Tensor:
-    """"""
-    if variant == "a":
+    """Calculate Kendall's tau from metric metadata."""
+    if variant == _MetricVariant.A:
         tau = con_min_dis_pairs / (concordant_pairs + discordant_pairs)
-    elif variant == "b":
+    elif variant == _MetricVariant.B:
         total_combinations: Tensor = n_total * (n_total - 1) // 2
         denominator = (total_combinations - preds_ties) * (total_combinations - target_ties)  # type: ignore (is Tensor)
         tau = con_min_dis_pairs / torch.sqrt(denominator)
     else:
-        tau = 2 * con_min_dis_pairs / (n_total**2)
+        preds_unique = torch.tensor([len(p.unique()) for p in preds.T])
+        target_unique = torch.tensor([len(t.unique()) for t in target.T])
+        min_classes = torch.minimum(preds_unique, target_unique)
+        tau = 2 * con_min_dis_pairs / ((min_classes - 1) / min_classes * n_total**2)
 
     return tau
 
@@ -176,14 +203,14 @@ def _calculate_p_value(
     target_ties: Optional[Tensor],
     target_ties_p1: Optional[Tensor],
     target_ties_p2: Optional[Tensor],
-    variant: Literal["a", "b", "c"],
+    variant: _MetricVariant,
     alternative: Optional[_TestAlternative],
 ) -> Tensor:
-    """"""
+    """Calculate p-value for Kendall's tau from metric metadata."""
     normal_dist = torch.distributions.normal.Normal(torch.tensor([0.0]), torch.tensor([1.0]))
 
     t_value_denominator_base = n_total * (n_total - 1) * (2 * n_total + 5)
-    if variant == "a":
+    if variant == _MetricVariant.A:
         t_value = 3 * con_min_dis_pairs / torch.sqrt(t_value_denominator_base / 2)
     else:
         m = n_total * (n_total - 1)
@@ -246,7 +273,7 @@ def _kendall_corrcoef_update(
 def _kendall_corrcoef_compute(
     preds: Tensor,
     target: Tensor,
-    variant: Literal["a", "b", "c"],
+    variant: _MetricVariant,
     alternative: Optional[_TestAlternative] = None,
 ) -> Tuple[Tensor, Optional[Tensor]]:
     """Compute Kendall rank correlation coefficient, and optionally p-value of corresponding statistical test.
@@ -275,7 +302,7 @@ def _kendall_corrcoef_compute(
     con_min_dis_pairs = concordant_pairs - discordant_pairs
 
     tau = _calculate_tau(
-        concordant_pairs, discordant_pairs, con_min_dis_pairs, n_total, preds_ties, target_ties, variant
+        preds, target, concordant_pairs, discordant_pairs, con_min_dis_pairs, n_total, preds_ties, target_ties, variant
     )
     p_value = (
         _calculate_p_value(
@@ -334,7 +361,6 @@ def kendall_rank_corrcoef(
         (Optional) p-value of corresponding statistical test (asymptotic)
 
     Raises:
-        ValueError: If ``variant`` is not from ``['a', 'b', 'c']``
         ValueError: If ``t_test`` is not of a type bool
         ValueError: If ``t_test=True`` and ``alternative=None``
 
@@ -352,18 +378,18 @@ def kendall_rank_corrcoef(
         >>> kendall_rank_corrcoef(preds, target)
         tensor([ 1., -1.])
     """
-    if variant not in ["a", "b", "c"]:
-        raise ValueError(f"Argument `variant` is expected to be one of `['a', 'b', 'c']`, but got {variant!r}.")
     if not isinstance(t_test, bool):
         raise ValueError(f"Argument `t_test` is expected to be of a type `bool`, but got {type(t_test)}.")
     if t_test and alternative is None:
         raise ValueError("Argument `alternative` is required if `t_test=True` but got `None`.")
+
+    _variant = _MetricVariant.from_str(variant)
     _alternative = _TestAlternative.from_str(alternative) if t_test else None
 
     _preds, _target = _kendall_corrcoef_update(
         preds, target, [], [], num_outputs=1 if preds.ndim == 1 else preds.shape[-1]
     )
-    tau, p_value = _kendall_corrcoef_compute(dim_zero_cat(_preds), dim_zero_cat(_target), variant, _alternative)
+    tau, p_value = _kendall_corrcoef_compute(dim_zero_cat(_preds), dim_zero_cat(_target), _variant, _alternative)
 
     if p_value is not None:
         return tau, p_value

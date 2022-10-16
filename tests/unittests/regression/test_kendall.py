@@ -43,11 +43,11 @@ _multi_inputs3 = Input(
 )
 
 
-def _sk_metric(preds, target, alternative="two-sided"):
+def _sk_metric(preds, target, alternative, variant):
     _alternative = alternative or "two-sided"
     if preds.ndim == 2:
         out = [
-            kendalltau(p.numpy(), t.numpy(), method="asymptotic", alternative=_alternative)
+            kendalltau(p.numpy(), t.numpy(), method="asymptotic", alternative=_alternative, variant=variant)
             for p, t in zip(preds.T, target.T)
         ]
         tau = torch.cat([torch.tensor(o[0]).unsqueeze(0) for o in out])
@@ -56,7 +56,9 @@ def _sk_metric(preds, target, alternative="two-sided"):
             return tau, p_value
         return tau
 
-    tau, p_value = kendalltau(preds.numpy(), target.numpy(), method="asymptotic", alternative=_alternative)
+    tau, p_value = kendalltau(
+        preds.numpy(), target.numpy(), method="asymptotic", alternative=_alternative, variant=variant
+    )
 
     if alternative is not None:
         return torch.tensor(tau), torch.tensor(p_value)
@@ -74,13 +76,14 @@ def _sk_metric(preds, target, alternative="two-sided"):
         (_multi_inputs3.preds, _multi_inputs3.target, "greater"),
     ],
 )
+@pytest.mark.parametrize("variant", ["b", "c"])
 class TestKendallRankCorrCoef(MetricTester):
     @pytest.mark.parametrize("ddp", [False])
     @pytest.mark.parametrize("dist_sync_on_step", [False])
-    def test_kendall_rank_corrcoef(self, preds, target, alternative, ddp, dist_sync_on_step):
+    def test_kendall_rank_corrcoef(self, preds, target, alternative, variant, ddp, dist_sync_on_step):
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         t_test = True if alternative is not None else False
-        _sk_kendall_tau = partial(_sk_metric, alternative=alternative)
+        _sk_kendall_tau = partial(_sk_metric, alternative=alternative, variant=variant)
 
         self.run_class_metric_test(
             ddp,
@@ -89,16 +92,16 @@ class TestKendallRankCorrCoef(MetricTester):
             KendallRankCorrCoef,
             _sk_kendall_tau,
             dist_sync_on_step,
-            metric_args={"t_test": t_test, "alternative": alternative, "num_outputs": num_outputs},
+            metric_args={"t_test": t_test, "alternative": alternative, "variant": variant, "num_outputs": num_outputs},
         )
 
-    def test_kendall_rank_corrcoef_functional(self, preds, target, alternative):
+    def test_kendall_rank_corrcoef_functional(self, preds, target, alternative, variant):
         t_test = True if alternative is not None else False
-        metric_args = {"t_test": t_test, "alternative": alternative}
-        _sk_kendall_tau = partial(_sk_metric, alternative=alternative)
+        metric_args = {"t_test": t_test, "alternative": alternative, "variant": variant}
+        _sk_kendall_tau = partial(_sk_metric, alternative=alternative, variant=variant)
         self.run_functional_metric_test(preds, target, kendall_rank_corrcoef, _sk_kendall_tau, metric_args=metric_args)
 
-    def test_kendall_rank_corrcoef_differentiability(self, preds, target, alternative):
+    def test_kendall_rank_corrcoef_differentiability(self, preds, target, alternative, variant):
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_differentiability_test(
             preds=preds,

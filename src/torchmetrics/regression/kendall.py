@@ -20,6 +20,7 @@ from typing_extensions import Literal
 from torchmetrics.functional.regression.kendall import (
     _kendall_corrcoef_compute,
     _kendall_corrcoef_update,
+    _MetricVariant,
     _TestAlternative,
 )
 from torchmetrics.metric import Metric
@@ -53,7 +54,6 @@ class KendallRankCorrCoef(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
-        ValueError: If ``variant`` is not from ``['a', 'b', 'c']``
         ValueError: If ``t_test`` is not of a type bool
         ValueError: If ``t_test=True`` and ``alternative=None``
 
@@ -91,13 +91,12 @@ class KendallRankCorrCoef(Metric):
         **kwargs: Any,
     ):
         super().__init__(**kwargs)
-        if variant not in ["a", "b", "c"]:
-            raise ValueError(f"Argument `variant` is expected to be one of ['a', 'b', 'c'], but got {variant!r}.")
-        self.variant = variant
         if not isinstance(t_test, bool):
             raise ValueError(f"Argument `t_test` is expected to be of a type `bool`, but got {type(t_test)}.")
         if t_test and alternative is None:
             raise ValueError("Argument `alternative` is required if `t_test=True` but got `None`.")
+
+        self.variant = _MetricVariant.from_str(variant)
         self.alternative = _TestAlternative.from_str(alternative) if t_test else None
         self.num_outputs = num_outputs
 
