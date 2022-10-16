@@ -14,8 +14,8 @@
 import pytest
 import torch
 
-from torchmetrics.detection import IOU
-from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
+from torchmetrics.detection.ciou import CompleteIntersectionOverUnion
+from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_13
 from unittests.helpers.testers import MetricTester
 
 preds = torch.Tensor(
@@ -39,9 +39,7 @@ target = torch.Tensor(
     ]
 )
 
-iou = torch.Tensor([4.3985])
-
-giou = torch.Tensor(
+ciou = torch.Tensor(
     [
         [0.0000, 0.0000, 0.8970, 0.0000, 0.0000, 0.0000, 0.0000],
         [0.0000, 0.0000, 0.0000, 0.7428, 0.0000, 0.0000, 0.0000],
@@ -52,29 +50,24 @@ giou = torch.Tensor(
 )
 
 
-_pytest_condition = not (_TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8)
+_pytest_condition = not (_TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_13)
 
 
-@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
-class TestIOU(MetricTester):
-    """Test the MAP metric for object detection predictions.
-
-    Results are compared to original values from the pycocotools implementation.
-    A subset of the first 10 fake predictions of the official repo is used:
-    https://github.com/cocodataset/cocoapi/blob/master/results/instances_val2014_fakebbox100_results.json
-    """
+@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.13.0 is installed")
+class TestCompleteIntersectionOverUnion(MetricTester):
+    """Test the Complete Intersection over Union metric for object detection predictions."""
 
     atol = 1e-1
 
     @pytest.mark.parametrize("ddp", [False, True])
-    def test_iou(self, ddp):
+    def test_ciou(self, ddp):
         """Test modular implementation for correctness."""
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,  # Note: we fail this test because len(preds) != len(target)
             target=target,
-            metric_class=IOU,
-            sk_metric=iou,
+            metric_class=CompleteIntersectionOverUnion,
+            sk_metric=ciou,
             dist_sync_on_step=False,
             check_batch=False,
             metric_args={},

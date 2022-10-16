@@ -230,7 +230,7 @@ class MeanAveragePrecision(Metric):
             If ``class_metrics`` is not a boolean
     """
     is_differentiable: bool = False
-    higher_is_better: Optional[bool] = None
+    higher_is_better: Optional[bool] = True
     full_state_update: bool = True
 
     detections: List[Tensor]

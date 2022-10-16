@@ -18,22 +18,22 @@ import torch
 from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
 
 if _TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8:
-    from torchvision.ops import box_iou as tv_box_iou
+    from torchvision.ops import box_iou
 
 
-def iou(
+def intersection_over_union(
     preds: torch.Tensor,
     target: torch.Tensor,
     iou_threshold: Optional[float] = None,
 ) -> torch.Tensor:
     r"""
-    Computes intersection-over-union (Jaccard index) between two sets of boxes.
+    Computes Intersection over Union between two sets of boxes.
     Both sets of boxes are expected to be in (x1, y1, x2, y2) format with 0 <= x1 < x2 and 0 <= y1 < y2.
     Example:
-        >>> from torchmetrics.functional.detection import iou
+        >>> from torchmetrics.functional.detection import intersection_over_union
         >>> preds = torch.Tensor([[100, 100, 200, 200]])
         >>> target = torch.Tensor([[110, 110, 210, 210]])
-        >>> iou(preds, target)
+        >>> intersection_over_union(preds, target)
         tensor([[0.6807]])
     Concerns:
     1) Currently, we do not check that the box label for each prediction matches the ground truth label of the
@@ -53,11 +53,11 @@ def iou(
 
 
 def _iou_update(preds: torch.Tensor, target: torch.Tensor, iou_threshold: Optional[float]) -> torch.Tensor:
-    iou = tv_box_iou(preds, target)
+    iou = box_iou(preds, target)
     if iou_threshold is not None:
         return iou[iou >= iou_threshold]
     return iou
 
 
 def _iou_compute(iou: torch.Tensor) -> torch.Tensor:
-    return iou.sum()
+    return iou.mean()
