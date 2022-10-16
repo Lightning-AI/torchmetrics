@@ -48,7 +48,7 @@ def _sk_metric(preds, target, alternative="two-sided"):
     if preds.ndim == 2:
         out = [
             kendalltau(p.numpy(), t.numpy(), method="asymptotic", alternative=_alternative)
-            for p, t in zip(preds, target)
+            for p, t in zip(preds.T, target.T)
         ]
         tau = torch.cat([torch.tensor(o[0]).unsqueeze(0) for o in out])
         p_value = torch.cat([torch.tensor(o[1]).unsqueeze(0) for o in out])
@@ -97,3 +97,12 @@ class TestKendallRankCorrCoef(MetricTester):
         metric_args = {"t_test": t_test, "alternative": alternative}
         _sk_kendall_tau = partial(_sk_metric, alternative=alternative)
         self.run_functional_metric_test(preds, target, kendall_rank_corrcoef, _sk_kendall_tau, metric_args=metric_args)
+
+    def test_kendall_rank_corrcoef_differentiability(self, preds, target, alternative):
+        num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
+        self.run_differentiability_test(
+            preds=preds,
+            target=target,
+            metric_module=partial(KendallRankCorrCoef, num_outputs=num_outputs),
+            metric_functional=kendall_rank_corrcoef,
+        )

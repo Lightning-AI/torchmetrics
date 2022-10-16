@@ -14,17 +14,16 @@
 
 from typing import Any, List, Optional, Tuple, Union
 
-import torch
 from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.functional.regression.kendall import (
-    _dim_one_cat,
     _kendall_corrcoef_compute,
     _kendall_corrcoef_update,
     _TestAlternative,
 )
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.data import dim_zero_cat
 
 
 class KendallRankCorrCoef(Metric):
@@ -48,6 +47,7 @@ class KendallRankCorrCoef(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (single output regression):
+        >>> import torch
         >>> from torchmetrics.regression import KendallRankCorrCoef
         >>> target = torch.tensor([3, -0.5, 2, 1])
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])
@@ -56,15 +56,16 @@ class KendallRankCorrCoef(Metric):
         tensor(0.3333)
 
     Example (multi output regression):
-        kendall
+        >>> import torch
+        >>> from torchmetrics.regression import KendallRankCorrCoef
         >>> target = torch.tensor([[3, -0.5], [2, 1]])
         >>> preds = torch.tensor([[2.5, 0.0], [2, 8]])
-        >>> kendall = KendallRankCorrCoef()
+        >>> kendall = KendallRankCorrCoef(num_outputs=2)
         >>> kendall(preds, target)
         tensor([ 1., -1.])
     """
 
-    is_differentiable = True
+    is_differentiable = False
     higher_is_better = None
     full_state_update = True
     preds: List[Tensor]
@@ -112,8 +113,8 @@ class KendallRankCorrCoef(Metric):
             Correlation tau statistic
             (Optional) p-value of corresponding statistical test (asymptotic)
         """
-        preds = _dim_one_cat(self.preds)
-        target = _dim_one_cat(self.target)
+        preds = dim_zero_cat(self.preds)
+        target = dim_zero_cat(self.target)
         tau, p_value = _kendall_corrcoef_compute(preds, target, self.variant, self.alternative)
 
         if p_value is not None:

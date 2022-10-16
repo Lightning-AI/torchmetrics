@@ -19,17 +19,8 @@ from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.utilities.checks import _check_same_shape
-from torchmetrics.utilities.data import _bincount
+from torchmetrics.utilities.data import _bincount, dim_zero_cat
 from torchmetrics.utilities.enums import EnumStr
-
-
-def _dim_one_cat(x: Union[Tensor, List[Tensor]]) -> Tensor:
-    """Concatenation along the one dimension."""
-    x = x if isinstance(x, (list, tuple)) else [x]
-    x = [y.unsqueeze(0) if y.numel() == 1 and y.ndim == 0 else y for y in x]
-    if not x:  # empty list
-        raise ValueError("No samples to concatenate")
-    return torch.cat(x, dim=1)
 
 
 class _TestAlternative(EnumStr):
@@ -56,10 +47,11 @@ def _sort_on_first_sequence(x: Tensor, y: Tensor) -> Tuple[Tensor, Tensor]:
     """Sort sequences in an ascent order according to the sequence ``x``."""
     # We need to clone `y` tensor not to change it in memory
     y = torch.clone(y)
+    x, y = x.T, y.T
     x, perm = x.sort()
     for i in range(x.shape[0]):
         y[i] = y[i][perm[i]]
-    return x, y
+    return x.T, y.T
 
 
 def _count_concordant_pairs(preds: Tensor, target: Tensor) -> Tensor:
@@ -127,10 +119,10 @@ def _get_metric_metadata(
     """Obtain statistics to calculate metric value."""
     # Sort on target and convert it to dense rank
     preds, target = _sort_on_first_sequence(preds, target)
-    preds, target = preds.T, target.T
 
     concordant_pairs = _count_concordant_pairs(preds, target)
     discordant_pairs = _count_discordant_pairs(preds, target)
+    # preds, target = preds.T, target.T
 
     n_total = torch.tensor(preds.shape[0], device=preds.device)
     preds_ties = target_ties = None
@@ -140,7 +132,6 @@ def _get_metric_metadata(
         target = _convert_sequence_to_dense_rank(target, sort=True)
         preds_ties, preds_ties_p1, preds_ties_p2 = _get_ties(preds)
         target_ties, target_ties_p1, target_ties_p2 = _get_ties(target)
-
     return (
         concordant_pairs,
         discordant_pairs,
@@ -178,6 +169,8 @@ def _calculate_p_value(
         t_value_denominator += preds_ties_p1 * target_ties_p1 / (9 * m * (n_total - 2))
         t_value = con_min_dis_pairs / torch.sqrt(t_value_denominator)
 
+    if alternative == _TestAlternative.TWO_SIDED:
+        t_value = torch.abs(t_value)
     if alternative in [_TestAlternative.TWO_SIDED, _TestAlternative.GREATER]:
         t_value *= -1
     p_value = normal_dist.cdf(t_value)
@@ -211,8 +204,8 @@ def _kendall_corrcoef_update(
             f" and {preds.shape[1]}."
         )
     if num_outputs == 1:
-        preds = preds.unsqueeze(0)
-        target = target.unsqueeze(0)
+        preds = preds.unsqueeze(1)
+        target = target.unsqueeze(1)
 
     concat_preds.append(preds)
     concat_target.append(target)
@@ -323,8 +316,7 @@ def kendall_rank_corrcoef(
     _preds, _target = _kendall_corrcoef_update(
         preds, target, [], [], num_outputs=1 if preds.ndim == 1 else preds.shape[-1]
     )
-    print(_preds[0].shape)
-    tau, p_value = _kendall_corrcoef_compute(_dim_one_cat(_preds), _dim_one_cat(_target), variant, _alternative)
+    tau, p_value = _kendall_corrcoef_compute(dim_zero_cat(_preds), dim_zero_cat(_target), variant, _alternative)
 
     if p_value is not None:
         return tau, p_value
