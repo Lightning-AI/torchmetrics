@@ -186,8 +186,8 @@ def _calculate_tau(
         denominator = (total_combinations - preds_ties) * (total_combinations - target_ties)  # type: ignore (is Tensor)
         tau = con_min_dis_pairs / torch.sqrt(denominator)
     else:
-        preds_unique = torch.tensor([len(p.unique()) for p in preds.T])
-        target_unique = torch.tensor([len(t.unique()) for t in target.T])
+        preds_unique = torch.tensor([len(p.unique()) for p in preds.T], dtype=preds.dtype, device=preds.device)
+        target_unique = torch.tensor([len(t.unique()) for t in target.T], dtype=target.dtype, device=target.device)
         min_classes = torch.minimum(preds_unique, target_unique)
         tau = 2 * con_min_dis_pairs / ((min_classes - 1) / min_classes * n_total**2)
 
