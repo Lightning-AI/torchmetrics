@@ -18,6 +18,7 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.functional.regression.utils import _check_data_shape_for_corr_coef
 from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.data import _bincount, dim_zero_cat
 from torchmetrics.utilities.enums import EnumStr
@@ -265,16 +266,8 @@ def _kendall_corrcoef_update(
     """
     # Data checking
     _check_same_shape(preds, target)
-    if preds.ndim > 2 or target.ndim > 2:
-        raise ValueError(
-            f"Expected both predictions and target to be either 1- or 2-dimensional tensors,"
-            f" but got {target.ndim} and {preds.ndim}."
-        )
-    if (num_outputs == 1 and preds.ndim != 1) or (num_outputs > 1 and num_outputs != preds.shape[1]):
-        raise ValueError(
-            f"Expected argument `num_outputs` to match the second dimension of input, but got {num_outputs}"
-            f" and {preds.shape[1]}."
-        )
+    _check_data_shape_for_corr_coef(preds, target, num_outputs)
+
     if num_outputs == 1:
         preds = preds.unsqueeze(1)
         target = target.unsqueeze(1)

@@ -16,6 +16,7 @@ from typing import Tuple
 import torch
 from torch import Tensor
 
+from torchmetrics.functional.regression.utils import _check_data_shape_for_corr_coef
 from torchmetrics.utilities.checks import _check_same_shape
 
 
@@ -68,16 +69,7 @@ def _spearman_corrcoef_update(preds: Tensor, target: Tensor, num_outputs: int) -
             f" Got preds: {preds.dtype} and target: {target.dtype}."
         )
     _check_same_shape(preds, target)
-    if preds.ndim > 2 or target.ndim > 2:
-        raise ValueError(
-            f"Expected both predictions and target to be either 1- or 2-dimensional tensors,"
-            f" but got {target.ndim} and {preds.ndim}."
-        )
-    if (num_outputs == 1 and preds.ndim != 1) or (num_outputs > 1 and num_outputs != preds.shape[-1]):
-        raise ValueError(
-            f"Expected argument `num_outputs` to match the second dimension of input, but got {num_outputs}"
-            f" and {preds.ndim}."
-        )
+    _check_data_shape_for_corr_coef(preds, target, num_outputs)
 
     return preds, target
 
