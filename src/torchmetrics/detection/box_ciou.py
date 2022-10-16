@@ -16,10 +16,19 @@ from typing import Callable
 from torch import Tensor
 
 from torchmetrics.detection.box_iou import BoxIntersectionOverUnion
-from torchmetrics.functional.detection.giou import _ciou_compute, _ciou_update
+from torchmetrics.functional.detection.ciou import _ciou_compute, _ciou_update
 
 
 class BoxCompleteIntersectionOverUnion(BoxIntersectionOverUnion):
+    r"""Computes Complete Intersection Over Union (CIoU). The forward method accepts two input tensors and the
+    compute method returns a single tensor.
+
+    One for preds boxes (Nx4) and one for target boxes (Mx4), expected format for both is `xyxy`.
+    Args:
+        iou_threshold:
+            Optional threshold value of intersection over union. IOUs < threshold do not count toward the metric.
+    """
 
     update_fn: Callable[[Tensor, Tensor, bool], Tensor] = _ciou_update
     compute_fn: Callable[[Tensor], Tensor] = _ciou_compute
+    type: str = "ciou"

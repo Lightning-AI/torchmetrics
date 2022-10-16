@@ -48,4 +48,4 @@ def _diou_update(preds: torch.Tensor, target: torch.Tensor, iou_threshold: Optio
 
 
 def _diou_compute(iou: torch.Tensor) -> torch.Tensor:
-    return iou.sum()
+    return iou.diag().mean()

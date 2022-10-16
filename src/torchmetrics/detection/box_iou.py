@@ -36,6 +36,7 @@ class BoxIntersectionOverUnion(Metric):
 
     update_fn: Callable[[Tensor, Tensor, bool], Tensor] = _iou_update
     compute_fn: Callable[[Tensor], Tensor] = _iou_compute
+    type: str = "iou"
 
     def __init__(
         self,
@@ -47,7 +48,7 @@ class BoxIntersectionOverUnion(Metric):
         self.add_state("x", default=Tensor([]), dist_reduce_fx="cat")
 
         rank_zero_warn(
-            "Metric `IOU` will save all IOU > threshold values in buffer."
+            f"Metric `{self.type.upper()}` will save all {self.type.upper()} > threshold values in buffer."
             " For large datasets with many objects, this may lead to large memory footprint."
         )
 
@@ -56,13 +57,20 @@ class BoxIntersectionOverUnion(Metric):
 
         Args:
             preds: Predicted bounding boxes
-            target: Ground truth bounding boxes
+            targets: Ground truth bounding boxes
         """
+        if not isinstance(preds, Tensor):
+            raise ValueError("Expected argument `preds` to be of type Tensor")
+        if not isinstance(target, Tensor):
+            raise ValueError("Expected argument `target` to be of type Tensor")
+        if len(preds) != len(target):
+            raise ValueError("Expected argument `preds` and `target` to have the same length")
+
         preds = _fix_empty_tensors(preds)
         target = _fix_empty_tensors(target)
         result = self.update_fn(preds, target, self.iou_threshold)
         self.x.append(result)
 
     def compute(self) -> Tensor:
-        """Computes IOU based on inputs passed in to ``update`` previously."""
-        return self.compute_fn(self.x)
+        """Computes full IOU based on inputs passed in to ``update`` previously."""
+        return self.x

@@ -60,4 +60,4 @@ def _iou_update(preds: torch.Tensor, target: torch.Tensor, iou_threshold: Option
 
 
 def _iou_compute(iou: torch.Tensor) -> torch.Tensor:
-    return iou.mean()
+    return iou.diag().mean()

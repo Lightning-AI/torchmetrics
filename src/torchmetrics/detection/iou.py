@@ -37,9 +37,6 @@ class IntersectionOverUnion(Metric):
             Input format of given boxes. Supported formats are ``[`xyxy`, `xywh`, `cxcywh`]``.
         iou_thresholds:
             Optional IoU thresholds for evaluation. If set to `None` the threshold is ignored.
-        max_detection_thresholds:
-            Thresholds on max detections per image. If set to `None` will use thresholds `[1, 10, 100]`.
-            Else please provide a list of ints.
         class_metrics:
             Option to enable per-class metrics for IoU. Has a performance impact.
     """
@@ -62,7 +59,7 @@ class IntersectionOverUnion(Metric):
 
         if not _TORCHVISION_GREATER_EQUAL_0_8:
             raise ModuleNotFoundError(
-                "`BoxIntersectionOverUnion` metric requires that `torchvision` version 0.8.0 or newer is installed."
+                f"Metric `{self.type.upper()}` requires that `torchvision` version 0.8.0 or newer is installed."
                 " Please install with `pip install torchvision>=0.8` or `pip install torchmetrics[detection]`."
             )
 
@@ -81,7 +78,7 @@ class IntersectionOverUnion(Metric):
         self.add_state("x", default=Tensor([]), dist_reduce_fx="cat")
 
         rank_zero_warn(
-            "Metric `IoU` will save all IoU > threshold values in buffer."
+            f"Metric `{self.type.upper()}` will save all {self.type.upper()} > threshold values in buffer."
             " For large datasets with many objects, this may lead to large memory footprint."
         )
 
@@ -151,6 +148,12 @@ class IntersectionOverUnion(Metric):
 
     def compute(self) -> dict:
         """Computes IoU based on inputs passed in to ``update`` previously."""
-        self.classes = self._get_classes()
-        results = {"iou": self.compute_fn(self.x)}
+        results: Dict[str, Tensor] = {f"{self.type}": self.compute_fn(self.x)}
+        if self.class_metrics:
+            results.append(
+                {
+                    f"{self.type}/cl_{cl}": self.compute_fn(self.x[self.detection_labels == cl])
+                    for cl in self._get_classes()
+                }
+            )
         return results

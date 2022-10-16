@@ -20,6 +20,15 @@ from torchmetrics.functional.detection.giou import _giou_compute, _giou_update
 
 
 class BoxGeneralizedIntersectionOverUnion(BoxIntersectionOverUnion):
+    r"""Computes Generalized Intersection Over Union (GIoU). The forward method accepts two input tensors and the
+    compute method returns a single tensor.
+
+    One for preds boxes (Nx4) and one for target boxes (Mx4), expected format for both is `xyxy`.
+    Args:
+        iou_threshold:
+            Optional threshold value of intersection over union. IOUs < threshold do not count toward the metric.
+    """
 
     update_fn: Callable[[Tensor, Tensor, bool], Tensor] = _giou_update
     compute_fn: Callable[[Tensor], Tensor] = _giou_compute
+    type: str = "giou"
