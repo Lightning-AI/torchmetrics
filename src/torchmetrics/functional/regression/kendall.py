@@ -347,12 +347,23 @@ def kendall_rank_corrcoef(
     r"""Computes `Kendall Rank Correlation Coefficient`_.
 
     .. math::
+        tau_a = \frac{C - D}{C + D}
+
+    where :math:`C` represents concordant pairs, :math:`D` stands for discordant pairs.
+
+    .. math::
         tau_b = \frac{C - D}{\sqrt{(C + D + T_{preds}) * (C + D + T_{target})}}
 
-        tau_c = 2 * \frac{C - D}{n ** 2 * \frac{m - 1}{m}}
+    where :math:`C` represents concordant pairs, :math:`D` stands for discordant pairs and :math:`T` represents
+    a total number of ties.
 
-    where :math:`C` is represents concordant pairs, :math:`D` stands for discordant pairs and :math:`T` represents
-    a total number of ties. Definition according to `The Treatment of Ties in Ranking Problems`_.
+    .. math::
+        tau_c = 2 * \frac{C - D}{n^2 * \frac{m - 1}{m}}
+
+    where :math:`C` represents concordant pairs, :math:`D` stands for discordant pairs, :math:`n` is a number
+    of observations and :math:`m` is a ``min`` of uniques values in ``preds`` and ``target`` sequence.
+
+    Definitions according to Definition according to `The Treatment of Ties in Ranking Problems`_.
 
     Args:
         preds: Sequence of data
