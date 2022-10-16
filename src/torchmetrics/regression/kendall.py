@@ -73,7 +73,7 @@ class KendallRankCorrCoef(Metric):
         >>> preds = torch.tensor([[2.5, 0.0], [2, 8]])
         >>> kendall = KendallRankCorrCoef(num_outputs=2)
         >>> kendall(preds, target)
-        tensor([ 1., -1.])
+        tensor([ 1., 1.])
     """
 
     is_differentiable = False

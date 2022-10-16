@@ -376,7 +376,7 @@ def kendall_rank_corrcoef(
         >>> target = torch.tensor([[3, -0.5], [2, 1]])
         >>> preds = torch.tensor([[2.5, 0.0], [2, 8]])
         >>> kendall_rank_corrcoef(preds, target)
-        tensor([ 1., -1.])
+        tensor([ 1., 1.])
     """
     if not isinstance(t_test, bool):
         raise ValueError(f"Argument `t_test` is expected to be of a type `bool`, but got {type(t_test)}.")
