@@ -13,6 +13,7 @@
 # limitations under the License.
 from collections import namedtuple
 from dataclasses import dataclass
+from functools import partial
 from typing import Any, Dict
 
 import pytest
@@ -72,7 +73,7 @@ _inputs = Input(
         [
             dict(
                 boxes=Tensor([[300.00, 100.00, 315.00, 150.00]]),
-                labels=IntTensor([4]),
+                labels=IntTensor([5]),
             )
         ],
         [
@@ -93,6 +94,10 @@ _box_inputs = Input(preds=_preds, target=_target)
 _pytest_condition = not (_TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8)
 
 
+def compare_fn(preds: Any, target: Any, result: Any):
+    return result
+
+
 @pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
 @pytest.mark.parametrize("compute_on_cpu", [True, False])
 @pytest.mark.parametrize("ddp", [False, True])
@@ -108,12 +113,13 @@ class BaseTestIntersectionOverUnion:
     def test_iou_variant(self, compute_on_cpu: bool, ddp: bool):
         """Test modular implementation for correctness."""
         key = "iou_variant"
+
         self.run_class_metric_test(
             ddp=ddp,
             preds=self.data[key].data.preds,
             target=self.data[key].data.target,
             metric_class=self.metric_class,
-            sk_metric=self.data[key].result,
+            sk_metric=partial(compare_fn, result=self.data[key].result),
             dist_sync_on_step=False,
             check_batch=False,
             metric_args={"compute_on_cpu": compute_on_cpu},

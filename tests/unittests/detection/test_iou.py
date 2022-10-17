@@ -21,7 +21,7 @@ from unittests.helpers.testers import MetricTester
 
 iou = torch.Tensor(
     [
-        [0.6134],
+        [0.58793],
     ]
 )
 box_iou = torch.Tensor(

@@ -44,6 +44,12 @@ class IntersectionOverUnion(Metric):
     higher_is_better: Optional[bool] = True
     full_state_update: bool = True
 
+    detections: List[Tensor]
+    detection_scores: List[Tensor]
+    detection_labels: List[Tensor]
+    groundtruths: List[Tensor]
+    groundtruth_labels: List[Tensor]
+
     iou_fn: Callable[[Tensor, Tensor, bool], Tensor] = intersection_over_union
     type: str = "iou"
 
@@ -143,14 +149,17 @@ class IntersectionOverUnion(Metric):
 
     def compute(self) -> dict:
         """Computes IoU based on inputs passed in to ``update`` previously."""
-        result = self.iou_fn.__func__(self.detections, self.groundtruths, self.iou_threshold)
+        preds = torch.cat(self.detections)
+        target = torch.cat(self.groundtruths)
+        labels = torch.cat(self.detection_labels)
+        result = self.iou_fn.__func__(preds, target, self.iou_threshold)
         results: Dict[str, Tensor] = {f"{self.type}": result}
         if self.class_metrics:
-            results.append(
+            results.update(
                 {
                     f"{self.type}/cl_{cl}": self.iou_fn.__func__(
-                        self.detections[self.detection_labels == cl],
-                        self.groundtruths[self.detection_labels == cl],
+                        preds[labels == cl],
+                        target[labels == cl],
                         self.iou_threshold,
                     )
                     for cl in self._get_classes()
