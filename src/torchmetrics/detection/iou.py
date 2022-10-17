@@ -17,7 +17,7 @@ import torch
 from torch import Tensor
 
 from torchmetrics.detection.helpers import _fix_empty_tensors, _input_validator
-from torchmetrics.functional.detection.iou import _iou_compute, _iou_update
+from torchmetrics.functional.detection.iou import intersection_over_union
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.imports import _TORCHVISION_GREATER_EQUAL_0_8
@@ -44,8 +44,7 @@ class IntersectionOverUnion(Metric):
     higher_is_better: Optional[bool] = True
     full_state_update: bool = True
 
-    update_fn: Callable[[Tensor, Tensor, bool], Tensor] = _iou_update
-    compute_fn: Callable[[Tensor], Tensor] = _iou_compute
+    iou_fn: Callable[[Tensor, Tensor, bool], Tensor] = intersection_over_union
     type: str = "iou"
 
     def __init__(
@@ -75,7 +74,6 @@ class IntersectionOverUnion(Metric):
         self.add_state("detection_labels", default=[], dist_reduce_fx=None)
         self.add_state("groundtruths", default=[], dist_reduce_fx=None)
         self.add_state("groundtruth_labels", default=[], dist_reduce_fx=None)
-        self.add_state("x", default=Tensor([]), dist_reduce_fx="cat")
 
         rank_zero_warn(
             f"Metric `{self.type.upper()}` will save all {self.type.upper()} > threshold values in buffer."
@@ -125,20 +123,17 @@ class IntersectionOverUnion(Metric):
         _input_validator(preds, target)
 
         for item in preds:
-            det_boxes = box_convert(item["boxes"], in_fmt=self.box_format, out_fmt="xyxy")
-            det_boxes = _fix_empty_tensors(det_boxes)
+            det_boxes = _fix_empty_tensors(item["boxes"])
+            det_boxes = box_convert(det_boxes, in_fmt=self.box_format, out_fmt="xyxy")
             self.detections.append(det_boxes)
             self.detection_labels.append(item["labels"])
             self.detection_scores.append(item["scores"])
 
         for item in target:
-            gt_boxes = box_convert(item["boxes"], in_fmt=self.box_format, out_fmt="xyxy")
-            gt_boxes = _fix_empty_tensors(gt_boxes)
+            gt_boxes = _fix_empty_tensors(item["boxes"])
+            gt_boxes = box_convert(gt_boxes, in_fmt=self.box_format, out_fmt="xyxy")
             self.groundtruths.append(gt_boxes)
             self.groundtruth_labels.append(item["labels"])
-
-        result = self.update_fn(det_boxes, gt_boxes, self.iou_threshold)
-        self.x.append(result)
 
     def _get_classes(self) -> List:
         """Returns a list of unique classes found in ground truth and detection data."""
@@ -148,11 +143,16 @@ class IntersectionOverUnion(Metric):
 
     def compute(self) -> dict:
         """Computes IoU based on inputs passed in to ``update`` previously."""
-        results: Dict[str, Tensor] = {f"{self.type}": self.compute_fn(self.x)}
+        result = self.iou_fn.__func__(self.detections, self.groundtruths, self.iou_threshold)
+        results: Dict[str, Tensor] = {f"{self.type}": result}
         if self.class_metrics:
             results.append(
                 {
-                    f"{self.type}/cl_{cl}": self.compute_fn(self.x[self.detection_labels == cl])
+                    f"{self.type}/cl_{cl}": self.iou_fn.__func__(
+                        self.detections[self.detection_labels == cl],
+                        self.groundtruths[self.detection_labels == cl],
+                        self.iou_threshold,
+                    )
                     for cl in self._get_classes()
                 }
             )

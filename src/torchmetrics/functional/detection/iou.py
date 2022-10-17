@@ -35,18 +35,6 @@ def intersection_over_union(
         >>> target = torch.Tensor([[110, 110, 210, 210]])
         >>> intersection_over_union(preds, target)
         tensor([[0.6807]])
-    Concerns:
-    1) Currently, we do not check that the box label for each prediction matches the ground truth label of the
-       overlapping box. If the labels do not match, then IoU should be 0, even if IoU > threshold
-    2) We should not have a pred box match two different ground truth boxes. With N pred boxes and M
-       ground truth boxes, the IoUs calc results in a NxM matrix and each row should have, AT MOST, 1 value > threshold.
-       Do we want to check for this case?
-    3) The result is a matrix NxM of IoU values. But this is not great as a metric. Should we sum this value, or
-       take the mean? Perhaps we want to add a reduction function as input to result in a single value which a model
-       can optimize for.
-    4) This calculation cannot be run on a batch of data -> it is run independently for each image in the batch. Is
-       this an issue?
-    5) We will have a name collision with iou function in functional/classification/iou.py
     """
     iou = _iou_update(preds, target, iou_threshold)
     return _iou_compute(iou)

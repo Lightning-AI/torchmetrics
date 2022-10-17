@@ -11,13 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import pytest
+from typing import Dict
+
 import torch
 
-from torchmetrics.detection.box_giou import BoxGeneralizedIntersectionOverUnion
 from torchmetrics.detection.giou import GeneralizedIntersectionOverUnion
-from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
-from unittests.detection.test_iou import TestIntersectionOverUnion
+from unittests.detection.base_iou_test import BaseTestIntersectionOverUnion, TestCaseData, _box_inputs, _inputs
+from unittests.helpers.testers import MetricTester
 
 giou = torch.Tensor(
     [
@@ -26,17 +26,20 @@ giou = torch.Tensor(
         [-0.6024, -0.4021, 0.5345],
     ]
 )
+box_giou = torch.Tensor(
+    [
+        [0.6895, -0.4964, -0.4944],
+        [-0.5105, 0.4673, -0.3434],
+        [-0.6024, -0.4021, 0.5345],
+    ]
+)
 
 
-_pytest_condition = not (_TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8)
-
-
-@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
-class TestGeneralizedIntersectionOverUnion(TestIntersectionOverUnion):
+class TestGeneralizedIntersectionOverUnion(MetricTester, BaseTestIntersectionOverUnion):
     """Test the Generalized Intersection over Union metric for object detection predictions."""
 
-    def __init__(self) -> None:
-        super().__init__()
-        self.results = giou
-        self.metric_class = GeneralizedIntersectionOverUnion
-        self.metric_box_class = BoxGeneralizedIntersectionOverUnion
+    data: Dict[str, TestCaseData] = {
+        "iou_variant": TestCaseData(data=_inputs, result={GeneralizedIntersectionOverUnion.type: giou}),
+        "box_iou_variant": TestCaseData(data=_box_inputs, result=box_giou),
+    }
+    metric_class = GeneralizedIntersectionOverUnion

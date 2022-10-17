@@ -11,13 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Dict
+
 import pytest
 import torch
 
-from torchmetrics.detection.box_diou import BoxDistanceIntersectionOverUnion
 from torchmetrics.detection.diou import DistanceIntersectionOverUnion
 from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_13
-from unittests.detection.test_iou import TestIntersectionOverUnion
+from unittests.detection.base_iou_test import BaseTestIntersectionOverUnion, TestCaseData, _box_inputs, _inputs
+from unittests.helpers.testers import MetricTester
 
 diou = torch.Tensor(
     [
@@ -26,17 +28,23 @@ diou = torch.Tensor(
         [-0.3971, -0.1510, 0.5609],
     ]
 )
-
+box_diou = torch.Tensor(
+    [
+        [0.6883, -0.2043, -0.3351],
+        [-0.2214, 0.4886, -0.1913],
+        [-0.3971, -0.1510, 0.5609],
+    ]
+)
 
 _pytest_condition = not (_TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_13)
 
 
 @pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.13.0 is installed")
-class TestDistanceIntersectionOverUnion(TestIntersectionOverUnion):
+class TestDistanceIntersectionOverUnion(MetricTester, BaseTestIntersectionOverUnion):
     """Test the Distance Intersection over Union metric for object detection predictions."""
 
-    def __init__(self) -> None:
-        super().__init__()
-        self.results = diou
-        self.metric_class = DistanceIntersectionOverUnion
-        self.metric_box_class = BoxDistanceIntersectionOverUnion
+    data: Dict[str, TestCaseData] = {
+        "iou_variant": TestCaseData(data=_inputs, result={DistanceIntersectionOverUnion.type: diou}),
+        "box_iou_variant": TestCaseData(data=_box_inputs, result=box_diou),
+    }
+    metric_class = DistanceIntersectionOverUnion
