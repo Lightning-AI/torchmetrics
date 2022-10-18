@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from abc import ABC
 from collections import namedtuple
 from dataclasses import dataclass
 from functools import partial
@@ -101,20 +102,20 @@ def compare_fn(preds: Any, target: Any, result: Any):
 @pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
 @pytest.mark.parametrize("compute_on_cpu", [True, False])
 @pytest.mark.parametrize("ddp", [False, True])
-class BaseTestIntersectionOverUnion:
+class BaseTestIntersectionOverUnion(ABC):
     """Base Test the Intersection over Union metric for object detection predictions."""
 
     data: Dict[str, TestCaseData] = {
         "iou_variant": TestCaseData(data=_inputs, result=None),
         "box_iou_variant": TestCaseData(data=_box_inputs, result=None),
     }
-    metric_class: Metric = None
+    metric_class: Metric
 
     def test_iou_variant(self, compute_on_cpu: bool, ddp: bool):
         """Test modular implementation for correctness."""
         key = "iou_variant"
 
-        self.run_class_metric_test(
+        self.run_class_metric_test(  # type: ignore
             ddp=ddp,
             preds=self.data[key].data.preds,
             target=self.data[key].data.target,
