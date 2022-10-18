@@ -23,9 +23,7 @@ from unittests.helpers.testers import MetricTester
 
 diou = torch.Tensor(
     [
-        [0.6883, -0.2043, -0.3351],
-        [-0.2214, 0.4886, -0.1913],
-        [-0.3971, -0.1510, 0.5609],
+        [0.579264],
     ]
 )
 box_diou = torch.Tensor(

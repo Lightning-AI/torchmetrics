@@ -19,7 +19,8 @@ from torch import Tensor
 from torchmetrics.detection.helpers import _fix_empty_tensors, _input_validator
 from torchmetrics.functional.detection.iou import intersection_over_union
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import rank_zero_warn
+
+# from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.imports import _TORCHVISION_GREATER_EQUAL_0_8
 
 if _TORCHVISION_GREATER_EQUAL_0_8:
@@ -81,10 +82,10 @@ class IntersectionOverUnion(Metric):
         self.add_state("groundtruths", default=[], dist_reduce_fx=None)
         self.add_state("groundtruth_labels", default=[], dist_reduce_fx=None)
 
-        rank_zero_warn(
-            f"Metric `{self.type.upper()}` will save all {self.type.upper()} > threshold values in buffer."
-            " For large datasets with many objects, this may lead to large memory footprint."
-        )
+        # rank_zero_warn(
+        #     f"Metric `{self.type.upper()}` will save all {self.type.upper()} > threshold values in buffer."
+        #     " For large datasets with many objects, this may lead to large memory footprint."
+        # )
 
     def update(self, preds: List[Dict[str, Tensor]], target: List[Dict[str, Tensor]]) -> None:  # type: ignore
         """Add detections and ground truth to the metric.

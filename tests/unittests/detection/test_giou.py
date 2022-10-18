@@ -21,9 +21,7 @@ from unittests.helpers.testers import MetricTester
 
 giou = torch.Tensor(
     [
-        [0.6895, -0.4964, -0.4944],
-        [-0.5105, 0.4673, -0.3434],
-        [-0.6024, -0.4021, 0.5345],
+        [0.563799],
     ]
 )
 box_giou = torch.Tensor(

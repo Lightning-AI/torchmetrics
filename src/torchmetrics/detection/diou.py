@@ -16,7 +16,7 @@ from typing import Any, Callable, Optional
 from torch import Tensor
 
 from torchmetrics.detection.iou import IntersectionOverUnion
-from torchmetrics.functional.detection.diou import distance_box_iou
+from torchmetrics.functional.detection.diou import distance_intersection_over_union
 from torchmetrics.utilities.imports import _TORCHVISION_GREATER_EQUAL_0_8, _TORCHVISION_GREATER_EQUAL_0_13
 
 if _TORCHVISION_GREATER_EQUAL_0_8:
@@ -38,7 +38,7 @@ class DistanceIntersectionOverUnion(IntersectionOverUnion):
             Option to enable per-class metrics for IoU. Has a performance impact.
     """
 
-    iou_fn: Callable[[Tensor, Tensor, bool], Tensor] = distance_box_iou
+    iou_fn: Callable[[Tensor, Tensor, bool], Tensor] = distance_intersection_over_union
     type: str = "diou"
 
     def __init__(

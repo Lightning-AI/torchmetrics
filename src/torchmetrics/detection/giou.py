@@ -16,7 +16,7 @@ from typing import Any, Callable, Optional
 from torch import Tensor
 
 from torchmetrics.detection.iou import IntersectionOverUnion
-from torchmetrics.functional.detection.giou import generalized_box_iou
+from torchmetrics.functional.detection.giou import generalized_intersection_over_union
 from torchmetrics.utilities.imports import _TORCHVISION_GREATER_EQUAL_0_8
 
 if _TORCHVISION_GREATER_EQUAL_0_8:
@@ -38,7 +38,7 @@ class GeneralizedIntersectionOverUnion(IntersectionOverUnion):
             Option to enable per-class metrics for IoU. Has a performance impact.
     """
 
-    iou_fn: Callable[[Tensor, Tensor, bool], Tensor] = generalized_box_iou
+    iou_fn: Callable[[Tensor, Tensor, bool], Tensor] = generalized_intersection_over_union
     type: str = "giou"
 
     def __init__(
