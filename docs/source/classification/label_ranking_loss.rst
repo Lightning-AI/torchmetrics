@@ -1,5 +1,5 @@
 .. customcarditem::
-   :header: Label Ranking Average Precision
+   :header: Label Ranking Loss
    :image: https://pl-flash-data.s3.amazonaws.com/assets/thumbnails/tabular_classification.svg
    :tags: Classification
 
