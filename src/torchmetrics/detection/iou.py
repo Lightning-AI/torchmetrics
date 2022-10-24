@@ -84,7 +84,6 @@ class IntersectionOverUnion(Metric):
         self.add_state("groundtruths", default=[], dist_reduce_fx=None)
         self.add_state("groundtruth_labels", default=[], dist_reduce_fx=None)
 
-
     def update(self, preds: List[Dict[str, Tensor]], target: List[Dict[str, Tensor]]) -> None:  # type: ignore
         """Add detections and ground truth to the metric.
         Args:
@@ -149,6 +148,7 @@ class IntersectionOverUnion(Metric):
     def compute(self) -> dict:
         """Computes IoU based on inputs passed in to ``update`` previously."""
         from torchmetrics.utilities.data import dim_zero_cat
+
         preds = dim_zero_cat(self.detections)
         target = dim_zero_cat(self.groundtruths)
         labels = dim_zero_cat(self.detection_labels)
