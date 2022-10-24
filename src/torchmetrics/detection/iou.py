@@ -40,6 +40,8 @@ class IntersectionOverUnion(Metric):
             Optional IoU thresholds for evaluation. If set to `None` the threshold is ignored.
         class_metrics:
             Option to enable per-class metrics for IoU. Has a performance impact.
+        kwargs: 
+             Additional keyword arguments, see :ref:`Metric kwargs` for more info.
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
