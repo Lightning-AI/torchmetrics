@@ -539,7 +539,7 @@ class MulticlassF1Score(MulticlassFBetaScore):
 
     Example (preds is float tensor):
         >>> from torchmetrics.classification import MulticlassF1Score
-        >>> target = target = torch.tensor([2, 1, 0, 0])
+        >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = preds = torch.tensor([
         ...   [0.16, 0.26, 0.58],
         ...   [0.22, 0.61, 0.17],
