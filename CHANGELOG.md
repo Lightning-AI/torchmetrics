@@ -14,6 +14,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `TotalVariation` to image package ([#978](https://github.com/Lightning-AI/metrics/pull/978))
 
 
+- Added multiple metrics to detection package ([#1284](https://github.com/Lightning-AI/metrics/pull/1284))
+  * `IntersectionOverUnion`
+  * `GeneralizedIntersectionOverUnion`
+  * `CompleteIntersectionOverUnion`
+  * `DistanceIntersectionOverUnion`
+
+
 ### Changed
 
 - Changed `MeanAveragePrecision` to vectorize `_find_best_gt_match` operation ([#1259](https://github.com/Lightning-AI/metrics/pull/1259))
