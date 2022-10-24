@@ -66,7 +66,6 @@ class ExplainedVariance(Metric):
         >>> explained_variance = ExplainedVariance(multioutput='raw_values')
         >>> explained_variance(preds, target)
         tensor([0.9677, 1.0000])
-
     """
     is_differentiable: bool = True
     higher_is_better: bool = True
@@ -95,7 +94,7 @@ class ExplainedVariance(Metric):
         self.add_state("sum_squared_target", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("n_obs", default=tensor(0.0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets.
 
         Args:

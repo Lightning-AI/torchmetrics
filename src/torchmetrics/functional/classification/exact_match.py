@@ -23,7 +23,6 @@ from torchmetrics.functional.classification.stat_scores import (
     _multilabel_stat_scores_tensor_validation,
 )
 from torchmetrics.utilities.compute import _safe_divide
-from torchmetrics.utilities.data import _movedim
 
 
 def _multilabel_exact_scores_update(
@@ -31,8 +30,8 @@ def _multilabel_exact_scores_update(
 ) -> Tuple[Tensor, Tensor]:
     """Computes the statistics."""
     if multidim_average == "global":
-        preds = _movedim(preds, 1, -1).reshape(-1, num_labels)
-        target = _movedim(target, 1, -1).reshape(-1, num_labels)
+        preds = torch.movedim(preds, 1, -1).reshape(-1, num_labels)
+        target = torch.movedim(target, 1, -1).reshape(-1, num_labels)
 
     correct = ((preds == target).sum(1) == num_labels).sum(dim=-1)
     total = torch.tensor(preds.shape[0 if multidim_average == "global" else 2], device=correct.device)
@@ -56,8 +55,8 @@ def multilabel_exact_match(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes Exact match (also known as subset accuracy) for multilabel tasks. Exact Match is a stricter
-    version of accuracy where all labels have to match exactly for the sample to be correctly classified.
+    r"""Computes Exact match (also known as subset accuracy) for multilabel tasks. Exact Match is a stricter version
+    of accuracy where all labels have to match exactly for the sample to be correctly classified.
 
     Accepts the following input tensors:
 
@@ -124,7 +123,6 @@ def multilabel_exact_match(
         ... )
         >>> multilabel_exact_match(preds, target, num_labels=3, multidim_average='samplewise')
         tensor([0., 0.])
-
     """
     average = None
     if validate_args:

@@ -110,7 +110,7 @@ class BinaryPrecision(BinaryStatScores):
 
 
 class MulticlassPrecision(MulticlassStatScores):
-    r"""Computes `Precision`_ for multiclass tasks
+    r"""Computes `Precision`_ for multiclass tasks.
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 
@@ -215,7 +215,7 @@ class MulticlassPrecision(MulticlassStatScores):
 
 
 class MultilabelPrecision(MultilabelStatScores):
-    r"""Computes `Precision`_ for multilabel tasks
+    r"""Computes `Precision`_ for multilabel tasks.
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 
@@ -306,7 +306,6 @@ class MultilabelPrecision(MultilabelStatScores):
         >>> metric(preds, target)
         tensor([[0.5000, 0.5000, 0.0000],
                 [0.0000, 0.0000, 0.0000]])
-
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
@@ -592,7 +591,6 @@ class MultilabelRecall(MultilabelStatScores):
         >>> metric(preds, target)
         tensor([[1., 1., 0.],
                 [0., 0., 0.]])
-
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
@@ -606,9 +604,10 @@ class MultilabelRecall(MultilabelStatScores):
 
 
 class Precision(StatScores):
-    r"""
+    r"""Precision.
+
     .. note::
-        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
         metric. Moving forward we recommend using these versions. This base metric will still work as it did
         prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
         and the general order of arguments may change, such that this metric will just function as an single
@@ -624,7 +623,7 @@ class Precision(StatScores):
 
     The reduction method (how the precision scores are aggregated) is controlled by the
     ``average`` parameter, and additionally by the ``mdmc_average`` parameter in the
-    multi-dimensional multi-class case. Accepts all inputs listed in :ref:`pages/classification:input types`.
+    multi-dimensional multi-class case.
 
     Args:
         num_classes:
@@ -658,11 +657,11 @@ class Precision(StatScores):
             - ``'samplewise'``: In this case, the statistics are computed separately for each
               sample on the ``N`` axis, and then averaged over samples.
               The computation for each sample is done by treating the flattened extra axes ``...``
-              (see :ref:`pages/classification:input types`) as the ``N`` dimension within the sample,
+              as the ``N`` dimension within the sample,
               and computing the metric for the sample based on that.
 
             - ``'global'``: In this case the ``N`` and ``...`` dimensions of the inputs
-              (see :ref:`pages/classification:input types`) are flattened into a new ``N_X`` sample axis, i.e.
+              are flattened into a new ``N_X`` sample axis, i.e.
               the inputs are treated as if they were ``(N_X, C)``.
               From here on the ``average`` parameter applies as usual.
 
@@ -679,9 +678,7 @@ class Precision(StatScores):
 
         multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
-            than what they appear to be. See the parameter's
-            :ref:`documentation section <pages/classification:using the multiclass parameter>`
-            for a more detailed explanation and examples.
+            than what they appear to be.
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
@@ -700,7 +697,6 @@ class Precision(StatScores):
         >>> precision = Precision(average='micro')
         >>> precision(preds, target)
         tensor(0.2500)
-
     """
     is_differentiable = False
     higher_is_better = True
@@ -796,9 +792,10 @@ class Precision(StatScores):
 
 
 class Recall(StatScores):
-    r"""
+    r"""Recall.
+
     .. note::
-        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
         metric. Moving forward we recommend using these versions. This base metric will still work as it did
         prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
         and the general order of arguments may change, such that this metric will just function as an single
@@ -814,7 +811,7 @@ class Recall(StatScores):
 
     The reduction method (how the recall scores are aggregated) is controlled by the
     ``average`` parameter, and additionally by the ``mdmc_average`` parameter in the
-    multi-dimensional multi-class case. Accepts all inputs listed in :ref:`pages/classification:input types`.
+    multi-dimensional multi-class case.
 
     Args:
         num_classes:
@@ -847,11 +844,10 @@ class Recall(StatScores):
             - ``'samplewise'``: In this case, the statistics are computed separately for each
               sample on the ``N`` axis, and then averaged over samples.
               The computation for each sample is done by treating the flattened extra axes ``...``
-              (see :ref:`pages/classification:input types`) as the ``N`` dimension within the sample,
+              as the ``N`` dimension within the sample,
               and computing the metric for the sample based on that.
 
             - ``'global'``: In this case the ``N`` and ``...`` dimensions of the inputs
-              (see :ref:`pages/classification:input types`)
               are flattened into a new ``N_X`` sample axis, i.e. the inputs are treated as if they
               were ``(N_X, C)``. From here on the ``average`` parameter applies as usual.
 
@@ -869,9 +865,7 @@ class Recall(StatScores):
 
         multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
-            than what they appear to be. See the parameter's
-            :ref:`documentation section <pages/classification:using the multiclass parameter>`
-            for a more detailed explanation and examples.
+            than what they appear to be.
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
@@ -890,7 +884,6 @@ class Recall(StatScores):
         >>> recall = Recall(average='micro')
         >>> recall(preds, target)
         tensor(0.2500)
-
     """
     is_differentiable: bool = False
     higher_is_better: bool = True

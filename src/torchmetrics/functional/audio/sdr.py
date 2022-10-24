@@ -19,24 +19,15 @@ from typing import Optional, Tuple
 import torch
 from torch import Tensor
 
-from torchmetrics.utilities.checks import _check_same_shape
-from torchmetrics.utilities.imports import _FAST_BSS_EVAL_AVAILABLE, _TORCH_GREATER_EQUAL_1_8
-
 # import or def the norm/solve function
-if _TORCH_GREATER_EQUAL_1_8:
-    from torch.linalg import norm
+from torch.linalg import norm
 
-    solve = torch.linalg.solve
-else:
-    from torch import norm
-    from torch import solve as _solve
-    from torch.nn.functional import pad
+from torchmetrics.utilities.checks import _check_same_shape
+from torchmetrics.utilities.imports import _FAST_BSS_EVAL_AVAILABLE
 
-    def solve(A: Tensor, b: Tensor) -> Tensor:
-        return _solve(b[..., None], A)[0][..., 0]
+solve = torch.linalg.solve
 
-
-if _FAST_BSS_EVAL_AVAILABLE and _TORCH_GREATER_EQUAL_1_8:
+if _FAST_BSS_EVAL_AVAILABLE:
     from fast_bss_eval.torch.cgd import toeplitz_conjugate_gradient
 else:
     toeplitz_conjugate_gradient = None
@@ -72,8 +63,8 @@ def _symmetric_toeplitz(vector: Tensor) -> Tensor:
 def _compute_autocorr_crosscorr(target: Tensor, preds: Tensor, corr_len: int) -> Tuple[Tensor, Tensor]:
     r"""Compute the auto correlation of `target` and the cross correlation of `target` and `preds` using the fast
     Fourier transform (FFT). Let's denotes the symmetric Toeplitz matric of the auto correlation of `target` as
-    `R`, the cross correlation as 'b', then solving the equation `Rh=b` could have `h` as the coordinate of
-    `preds` in the column space of the `corr_len` shifts of `target`.
+    `R`, the cross correlation as 'b', then solving the equation `Rh=b` could have `h` as the coordinate of `preds`
+    in the column space of the `corr_len` shifts of `target`.
 
     Args:
         target: the target (reference) signal of shape [..., time]
@@ -89,28 +80,12 @@ def _compute_autocorr_crosscorr(target: Tensor, preds: Tensor, corr_len: int) ->
 
     # computes the auto correlation of `target`
     # r_0 is the first row of the symmetric Toeplitz matric
-    if _TORCH_GREATER_EQUAL_1_8:
-        t_fft = torch.fft.rfft(target, n=n_fft, dim=-1)
-        r_0 = torch.fft.irfft(t_fft.real**2 + t_fft.imag**2, n=n_fft)[..., :corr_len]
-    else:
-        t_pad = pad(target, (0, n_fft - target.shape[-1]), "constant", 0)
-        t_fft = torch.rfft(t_pad, signal_ndim=1)
-        real = t_fft[..., 0] ** 2 + t_fft[..., 1] ** 2
-        imag = torch.zeros(real.shape, dtype=real.dtype, device=real.device)
-        result = torch.stack([real, imag], len(real.shape))
-        r_0 = torch.irfft(result, signal_ndim=1, signal_sizes=[n_fft])[..., :corr_len]
+    t_fft = torch.fft.rfft(target, n=n_fft, dim=-1)
+    r_0 = torch.fft.irfft(t_fft.real**2 + t_fft.imag**2, n=n_fft)[..., :corr_len]
 
     # computes the cross-correlation of `target` and `preds`
-    if _TORCH_GREATER_EQUAL_1_8:
-        p_fft = torch.fft.rfft(preds, n=n_fft, dim=-1)
-        b = torch.fft.irfft(t_fft.conj() * p_fft, n=n_fft, dim=-1)[..., :corr_len]
-    else:
-        p_pad = pad(preds, (0, n_fft - preds.shape[-1]), "constant", 0)
-        p_fft = torch.rfft(p_pad, signal_ndim=1)
-        real = t_fft[..., 0] * p_fft[..., 0] + t_fft[..., 1] * p_fft[..., 1]
-        imag = t_fft[..., 0] * p_fft[..., 1] - t_fft[..., 1] * p_fft[..., 0]
-        result = torch.stack([real, imag], len(real.shape))
-        b = torch.irfft(result, signal_ndim=1, signal_sizes=[n_fft])[..., :corr_len]
+    p_fft = torch.fft.rfft(preds, n=n_fft, dim=-1)
+    b = torch.fft.irfft(t_fft.conj() * p_fft, n=n_fft, dim=-1)[..., :corr_len]
 
     return r_0, b
 
@@ -199,7 +174,7 @@ def signal_distortion_ratio(
         # the diagonal factor of the Toeplitz matrix is the first coefficient of r_0
         r_0[..., 0] += load_diag
 
-    if use_cg_iter is not None and _FAST_BSS_EVAL_AVAILABLE and _TORCH_GREATER_EQUAL_1_8:
+    if use_cg_iter is not None and _FAST_BSS_EVAL_AVAILABLE:
         # use preconditioned conjugate gradient
         sol = toeplitz_conjugate_gradient(r_0, b, n_iter=use_cg_iter)
     else:
@@ -210,13 +185,6 @@ def signal_distortion_ratio(
                     "To make this this warning disappear, you could install `fast-bss-eval` using "
                     "`pip install fast-bss-eval` or set `use_cg_iter=None`. For this time, the solver "
                     "provided by Pytorch is used.",
-                    UserWarning,
-                )
-            elif not _TORCH_GREATER_EQUAL_1_8:
-                warnings.warn(
-                    "The `use_cg_iter` parameter of `SDR` requires a Pytorch version >= 1.8. "
-                    "To make this this warning disappear, you could change to Pytorch v1.8+ or set `use_cg_iter=None`. "
-                    "For this time, the solver provided by Pytorch is used.",
                     UserWarning,
                 )
         # regular matrix solver

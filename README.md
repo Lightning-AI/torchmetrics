@@ -60,13 +60,13 @@ Pip from source
 
 ```bash
 # with git
-pip install git+https://github.com/Lightning-AI/metrics.git@release/latest
+pip install git+https://github.com/Lightning-AI/metrics.git@release/stable
 ```
 
 Pip from archive
 
 ```bash
-pip install https://github.com/Lightning-AI/metrics/archive/refs/heads/release/latest.zip
+pip install https://github.com/Lightning-AI/metrics/archive/refs/heads/release/stable.zip
 ```
 
 Extra dependencies for specialized metrics:

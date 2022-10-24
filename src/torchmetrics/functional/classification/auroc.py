@@ -42,7 +42,6 @@ from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.compute import _auc_compute_without_check, _safe_divide
 from torchmetrics.utilities.data import _bincount
 from torchmetrics.utilities.enums import AverageMethod, DataType
-from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
 from torchmetrics.utilities.prints import rank_zero_warn
 
 
@@ -81,13 +80,8 @@ def _binary_auroc_arg_validation(
     ignore_index: Optional[int] = None,
 ) -> None:
     _binary_precision_recall_curve_arg_validation(thresholds, ignore_index)
-    if max_fpr is not None:
-        if not isinstance(max_fpr, float) and 0 < max_fpr <= 1:
-            raise ValueError(f"Arguments `max_fpr` should be a float in range (0, 1], but got: {max_fpr}")
-        if _TORCH_LOWER_1_6:
-            raise RuntimeError(
-                "`max_fpr` argument requires `torch.bucketize` which" " is not available below PyTorch version 1.6"
-            )
+    if max_fpr is not None and not isinstance(max_fpr, float) and 0 < max_fpr <= 1:
+        raise ValueError(f"Arguments `max_fpr` should be a float in range (0, 1], but got: {max_fpr}")
 
 
 def _binary_auroc_compute(
@@ -125,9 +119,8 @@ def binary_auroc(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    r"""
-    Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for binary tasks. The AUROC score
-    summarizes the ROC curve into an single number that describes the performance of a model for multiple
+    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for binary tasks. The AUROC
+    score summarizes the ROC curve into an single number that describes the performance of a model for multiple
     thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
     corresponds to random guessing.
 
@@ -221,9 +214,8 @@ def multiclass_auroc(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
-    Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for multiclass tasks. The AUROC score
-    summarizes the ROC curve into an single number that describes the performance of a model for multiple
+    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for multiclass tasks. The AUROC
+    score summarizes the ROC curve into an single number that describes the performance of a model for multiple
     thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
     corresponds to random guessing.
 
@@ -286,7 +278,6 @@ def multiclass_auroc(
         tensor(0.5333)
         >>> multiclass_auroc(preds, target, num_classes=5, average=None, thresholds=5)
         tensor([1.0000, 1.0000, 0.3333, 0.3333, 0.0000])
-
     """
     if validate_args:
         _multiclass_auroc_arg_validation(num_classes, average, thresholds, ignore_index)
@@ -348,9 +339,8 @@ def multilabel_auroc(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    r"""
-    Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for multilabel tasks. The AUROC score
-    summarizes the ROC curve into an single number that describes the performance of a model for multiple
+    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for multilabel tasks. The AUROC
+    score summarizes the ROC curve into an single number that describes the performance of a model for multiple
     thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
     corresponds to random guessing.
 
@@ -506,11 +496,6 @@ def _auroc_compute(
         if not isinstance(max_fpr, float) and 0 < max_fpr <= 1:
             raise ValueError(f"`max_fpr` should be a float in range (0, 1], got: {max_fpr}")
 
-        if _TORCH_LOWER_1_6:
-            raise RuntimeError(
-                "`max_fpr` argument requires `torch.bucketize` which" " is not available below PyTorch version 1.6"
-            )
-
         # max_fpr parameter is only support for binary
         if mode != DataType.BINARY:
             raise ValueError(
@@ -610,9 +595,10 @@ def auroc(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tensor, Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    r"""
+    r"""Area Under the Receiver Operating Characteristic Curve.
+
     .. note::
-        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
         metric. Moving forward we recommend using these versions. This base metric will still work as it did
         prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
         and the general order of arguments may change, such that this metric will just function as an single
@@ -694,7 +680,7 @@ def auroc(
         )
     else:
         rank_zero_warn(
-            "From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification"
+            "From v0.10 an `'binary_*'`, `'multiclass_*'`, `'multilabel_*'` version now exist of each classification"
             " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
             " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
             " and the general order of arguments may change, such that this metric will just function as an single"

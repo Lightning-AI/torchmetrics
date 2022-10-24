@@ -311,7 +311,6 @@ class MultilabelAccuracy(MultilabelStatScores):
         >>> metric(preds, target)
         tensor([[0.5000, 0.5000, 0.0000],
                 [0.0000, 0.0000, 0.5000]])
-
     """
     is_differentiable = False
     higher_is_better = True
@@ -325,9 +324,10 @@ class MultilabelAccuracy(MultilabelStatScores):
 
 
 class Accuracy(StatScores):
-    r"""
+    r"""Accuracy.
+
     .. note::
-        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
         metric. Moving forward we recommend using these versions. This base metric will still work as it did
         prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
         and the general order of arguments may change, such that this metric will just function as an single
@@ -349,8 +349,6 @@ class Accuracy(StatScores):
     accuracy by default, which counts all labels or sub-samples separately. This can be
     changed to subset accuracy (which requires all labels or sub-samples in the sample to
     be correctly predicted) by setting ``subset_accuracy=True``.
-
-    Accepts all input types listed in :ref:`pages/classification:input types`.
 
     Args:
         num_classes:
@@ -387,11 +385,10 @@ class Accuracy(StatScores):
             - ``'samplewise'``: In this case, the statistics are computed separately for each
               sample on the ``N`` axis, and then averaged over samples.
               The computation for each sample is done by treating the flattened extra axes ``...``
-              (see :ref:`pages/classification:input types`) as the ``N`` dimension within the sample,
+              as the ``N`` dimension within the sample,
               and computing the metric for the sample based on that.
 
             - ``'global'``: In this case the ``N`` and ``...`` dimensions of the inputs
-              (see :ref:`pages/classification:input types`)
               are flattened into a new ``N_X`` sample axis, i.e. the inputs are treated as if they
               were ``(N_X, C)``. From here on the ``average`` parameter applies as usual.
 
@@ -409,9 +406,7 @@ class Accuracy(StatScores):
 
         multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
-            than what they appear to be. See the parameter's
-            :ref:`documentation section <pages/classification:using the multiclass parameter>`
-            for a more detailed explanation and examples.
+            than what they appear to be.
 
         subset_accuracy:
             Whether to compute subset accuracy for multi-label and multi-dimensional
@@ -455,7 +450,6 @@ class Accuracy(StatScores):
         >>> accuracy = Accuracy(top_k=2)
         >>> accuracy(preds, target)
         tensor(0.6667)
-
     """
     is_differentiable = False
     higher_is_better = True
@@ -558,9 +552,7 @@ class Accuracy(StatScores):
             self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets. See
-        :ref:`pages/classification:input types` for more information on input
-        types.
+        """Update state with predictions and targets.
 
         Args:
             preds: Predictions from model (logits, probabilities, or labels)

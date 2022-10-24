@@ -21,9 +21,8 @@ from torchmetrics.metric import Metric
 
 
 class Perplexity(Metric):
-    r"""
-    Perplexity measures how well a language model predicts a text sample. It's calculated as the average number of bits
-    per word a model needs to represent the sample.
+    r"""Perplexity measures how well a language model predicts a text sample. It's calculated as the average number
+    of bits per word a model needs to represent the sample.
 
     Args:
         ignore_index:
@@ -59,7 +58,7 @@ class Perplexity(Metric):
         self.add_state("total_log_probs", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("count", default=tensor(0.0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Compute and store intermediate statistics for Perplexity.
 
         Args:

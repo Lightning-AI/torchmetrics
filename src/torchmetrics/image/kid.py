@@ -65,8 +65,8 @@ def poly_mmd(
 
 
 class KernelInceptionDistance(Metric):
-    r"""
-    Calculates Kernel Inception Distance (KID) which is used to access the quality of generated images. Given by
+    r"""Calculates Kernel Inception Distance (KID) which is used to access the quality of generated images. Given
+    by.
 
     .. math::
         KID = MMD(f_{real}, f_{fake})^2
@@ -151,7 +151,6 @@ class KernelInceptionDistance(Metric):
         >>> kid_mean, kid_std = kid.compute()
         >>> print((kid_mean, kid_std))
         (tensor(0.0337), tensor(0.0023))
-
     """
     higher_is_better: bool = False
     is_differentiable: bool = False
@@ -166,7 +165,7 @@ class KernelInceptionDistance(Metric):
         subsets: int = 100,
         subset_size: int = 1000,
         degree: int = 3,
-        gamma: Optional[float] = None,  # type: ignore
+        gamma: Optional[float] = None,
         coef: float = 1.0,
         reset_real_features: bool = True,
         normalize: bool = False,
@@ -230,7 +229,7 @@ class KernelInceptionDistance(Metric):
         self.add_state("real_features", [], dist_reduce_fx=None)
         self.add_state("fake_features", [], dist_reduce_fx=None)
 
-    def update(self, imgs: Tensor, real: bool) -> None:  # type: ignore
+    def update(self, imgs: Tensor, real: bool) -> None:
         """Update the state with extracted features.
 
         Args:

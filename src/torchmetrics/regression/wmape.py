@@ -24,9 +24,8 @@ from torchmetrics.metric import Metric
 
 
 class WeightedMeanAbsolutePercentageError(Metric):
-    r"""
-    Computes weighted mean absolute percentage error (`WMAPE`_). The output of WMAPE metric
-    is a non-negative floating point, where the optimal value is 0. It is computes as:
+    r"""Computes weighted mean absolute percentage error (`WMAPE`_). The output of WMAPE metric is a non-negative
+    floating point, where the optimal value is 0. It is computes as:
 
     .. math::
         \text{WMAPE} = \frac{\sum_{t=1}^n | y_t - \hat{y}_t | }{\sum_{t=1}^n |y_t| }
@@ -44,7 +43,6 @@ class WeightedMeanAbsolutePercentageError(Metric):
         >>> metric = WeightedMeanAbsolutePercentageError()
         >>> metric(preds, target)
         tensor(1.3967)
-
     """
     is_differentiable: bool = True
     higher_is_better: bool = False
@@ -57,7 +55,7 @@ class WeightedMeanAbsolutePercentageError(Metric):
         self.add_state("sum_abs_error", default=torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("sum_scale", default=torch.tensor(0.0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets.
 
         Args:

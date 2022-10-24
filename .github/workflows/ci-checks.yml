@@ -1,0 +1,24 @@
+name: General checks
+
+on:
+  push:
+    branches: [master, "release/*"]
+  pull_request:
+    branches: [master, "release/*"]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.head_ref }}
+  cancel-in-progress: ${{ ! (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release/')) }}
+
+jobs:
+  check-code:
+    uses: Lightning-AI/utilities/.github/workflows/check-code.yml@v0.1.0
+
+  check-schema:
+    uses: Lightning-AI/utilities/.github/workflows/check-schema.yml@v0.1.0
+
+  check-package:
+    uses: Lightning-AI/utilities/.github/workflows/check-package.yml@v0.1.0
+    with:
+      import-name: "torchmetrics"
+      pypi-name: "torchmetrics"

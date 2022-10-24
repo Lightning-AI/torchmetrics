@@ -64,7 +64,6 @@ class TweedieDevianceScore(Metric):
         >>> deviance_score = TweedieDevianceScore(power=2)
         >>> deviance_score(preds, targets)
         tensor(1.2083)
-
     """
     is_differentiable: bool = True
     higher_is_better = None  # TODO: both -1 and 1 are optimal
@@ -86,7 +85,7 @@ class TweedieDevianceScore(Metric):
         self.add_state("sum_deviance_score", torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("num_observations", torch.tensor(0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, targets: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, targets: Tensor) -> None:
         """Update metric states with predictions and targets.
 
         Args:

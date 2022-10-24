@@ -18,8 +18,8 @@ from torchmetrics.regression.pearson import PearsonCorrCoef, _final_aggregation
 
 
 class ConcordanceCorrCoef(PearsonCorrCoef):
-    r"""Computes concordance correlation coefficient that measures the agreement between two variables.
-    It is defined as
+    r"""Computes concordance correlation coefficient that measures the agreement between two variables. It is
+    defined as.
 
     .. math::
         \rho_c = \frac{2 \rho \sigma_x \sigma_y}{\sigma_x^2 + \sigma_y^2 + (\mu_x - \mu_y)^2}

@@ -95,7 +95,6 @@ class PearsonCorrCoef(Metric):
         >>> pearson = PearsonCorrCoef(num_outputs=2)
         >>> pearson(preds, target)
         tensor([1., 1.])
-
     """
     is_differentiable = True
     higher_is_better = None  # both -1 and 1 are optimal
@@ -126,7 +125,7 @@ class PearsonCorrCoef(Metric):
         self.add_state("corr_xy", default=torch.zeros(self.num_outputs), dist_reduce_fx=None)
         self.add_state("n_total", default=torch.zeros(self.num_outputs), dist_reduce_fx=None)
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets.
 
         Args:

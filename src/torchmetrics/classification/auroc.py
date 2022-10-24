@@ -36,13 +36,11 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.enums import DataType
-from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
 
 
 class BinaryAUROC(BinaryPrecisionRecallCurve):
-    r"""
-    Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for binary tasks. The AUROC score
-    summarizes the ROC curve into an single number that describes the performance of a model for multiple
+    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for binary tasks. The AUROC
+    score summarizes the ROC curve into an single number that describes the performance of a model for multiple
     thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
     corresponds to random guessing.
 
@@ -119,9 +117,8 @@ class BinaryAUROC(BinaryPrecisionRecallCurve):
 
 
 class MulticlassAUROC(MulticlassPrecisionRecallCurve):
-    r"""
-    Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for multiclass tasks. The AUROC score
-    summarizes the ROC curve into an single number that describes the performance of a model for multiple
+    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for multiclass tasks. The AUROC
+    score summarizes the ROC curve into an single number that describes the performance of a model for multiple
     thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
     corresponds to random guessing.
 
@@ -188,7 +185,6 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
         >>> metric = MulticlassAUROC(num_classes=5, average=None, thresholds=5)
         >>> metric(preds, target)
         tensor([1.0000, 1.0000, 0.3333, 0.3333, 0.0000])
-
     """
 
     is_differentiable: bool = False
@@ -221,9 +217,8 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
 
 
 class MultilabelAUROC(MultilabelPrecisionRecallCurve):
-    r"""
-    Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for multilabel tasks. The AUROC score
-    summarizes the ROC curve into an single number that describes the performance of a model for multiple
+    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for multilabel tasks. The AUROC
+    score summarizes the ROC curve into an single number that describes the performance of a model for multiple
     thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
     corresponds to random guessing.
 
@@ -324,9 +319,10 @@ class MultilabelAUROC(MultilabelPrecisionRecallCurve):
 
 
 class AUROC(Metric):
-    r"""
+    r"""Area Under the Receiver Operating Characteristic Curve.
+
     .. note::
-        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
         metric. Moving forward we recommend using these versions. This base metric will still work as it did
         prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
         and the general order of arguments may change, such that this metric will just function as an single
@@ -403,7 +399,6 @@ class AUROC(Metric):
         >>> auroc = AUROC(num_classes=3)
         >>> auroc(preds, target)
         tensor(0.7778)
-
     """
     is_differentiable: bool = False
     higher_is_better: bool = True
@@ -477,11 +472,6 @@ class AUROC(Metric):
         if self.max_fpr is not None:
             if not isinstance(max_fpr, float) or not 0 < max_fpr <= 1:
                 raise ValueError(f"`max_fpr` should be a float in range (0, 1], got: {max_fpr}")
-
-            if _TORCH_LOWER_1_6:
-                raise RuntimeError(
-                    "`max_fpr` argument requires `torch.bucketize` which is not available below PyTorch version 1.6"
-                )
 
         self.mode: DataType = None  # type: ignore
         self.add_state("preds", default=[], dist_reduce_fx="cat")

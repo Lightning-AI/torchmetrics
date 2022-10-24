@@ -18,7 +18,7 @@ from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.utilities.checks import _check_same_shape, _input_format_classification
-from torchmetrics.utilities.data import _bincount, _movedim
+from torchmetrics.utilities.data import _bincount
 from torchmetrics.utilities.enums import DataType
 from torchmetrics.utilities.prints import rank_zero_warn
 
@@ -166,8 +166,7 @@ def binary_confusion_matrix(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
-    Computes the `confusion matrix`_ for binary tasks.
+    r"""Computes the `confusion matrix`_ for binary tasks.
 
     Accepts the following input tensors:
 
@@ -315,7 +314,7 @@ def _multiclass_confusion_matrix_format(
     if convert_to_labels:
         preds = preds.flatten()
     else:
-        preds = _movedim(preds, 1, -1).reshape(-1, preds.shape[1])
+        preds = torch.movedim(preds, 1, -1).reshape(-1, preds.shape[1])
     target = target.flatten()
 
     if ignore_index is not None:
@@ -351,8 +350,7 @@ def multiclass_confusion_matrix(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
-    Computes the `confusion matrix`_ for multiclass tasks.
+    r"""Computes the `confusion matrix`_ for multiclass tasks.
 
     Accepts the following input tensors:
 
@@ -496,8 +494,8 @@ def _multilabel_confusion_matrix_format(
             preds = preds.sigmoid()
         if should_threshold:
             preds = preds > threshold
-    preds = _movedim(preds, 1, -1).reshape(-1, num_labels)
-    target = _movedim(target, 1, -1).reshape(-1, num_labels)
+    preds = torch.movedim(preds, 1, -1).reshape(-1, num_labels)
+    target = torch.movedim(target, 1, -1).reshape(-1, num_labels)
 
     if ignore_index is not None:
         preds = preds.clone()
@@ -538,8 +536,7 @@ def multilabel_confusion_matrix(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
-    Computes the `confusion matrix`_ for multilabel tasks.
+    r"""Computes the `confusion matrix`_ for multilabel tasks.
 
     Accepts the following input tensors:
 
@@ -698,9 +695,10 @@ def confusion_matrix(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
+    r"""Confusion matrix.
+
     .. note::
-        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
         metric. Moving forward we recommend using these versions. This base metric will still work as it did
         prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
         and the general order of arguments may change, such that this metric will just function as an single
@@ -765,7 +763,6 @@ def confusion_matrix(
         tensor([[[1, 0], [0, 1]],
                 [[1, 0], [1, 0]],
                 [[0, 1], [0, 1]]])
-
     """
     if task is not None:
         if task == "binary":
@@ -783,7 +780,7 @@ def confusion_matrix(
         )
     else:
         rank_zero_warn(
-            "From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification"
+            "From v0.10 an `'binary_*'`, `'multiclass_*'`, `'multilabel_*'` version now exist of each classification"
             " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
             " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
             " and the general order of arguments may change, such that this metric will just function as an single"

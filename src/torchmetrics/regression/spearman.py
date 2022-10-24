@@ -56,7 +56,6 @@ class SpearmanCorrCoef(Metric):
         >>> spearman = SpearmanCorrCoef(num_outputs=2)
         >>> spearman(preds, target)
         tensor([1.0000, 1.0000])
-
     """
     is_differentiable: bool = False
     higher_is_better: bool = True
@@ -81,7 +80,7 @@ class SpearmanCorrCoef(Metric):
         self.add_state("preds", default=[], dist_reduce_fx="cat")
         self.add_state("target", default=[], dist_reduce_fx="cat")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets.
 
         Args:

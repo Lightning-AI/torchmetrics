@@ -23,8 +23,8 @@ __doctest_requires__ = {"ShortTimeObjectiveIntelligibility": ["pystoi"]}
 
 
 class ShortTimeObjectiveIntelligibility(Metric):
-    r"""STOI (Short-Time Objective Intelligibility, see [2,3]), a wrapper for the pystoi package [1].
-    Note that input will be moved to `cpu` to perform the metric calculation.
+    r"""STOI (Short-Time Objective Intelligibility, see [2,3]), a wrapper for the pystoi package [1]. Note that
+    input will be moved to `cpu` to perform the metric calculation.
 
     Intelligibility measure which is highly correlated with the intelligibility of degraded speech signals, e.g., due
     to additive noise, single-/multi-channel noise reduction, binary masking and vocoded speech as in CI simulations.
@@ -75,7 +75,6 @@ class ShortTimeObjectiveIntelligibility(Metric):
 
         [4] J. Jensen and C. H. Taal, 'An Algorithm for Predicting the Intelligibility of Speech Masked by Modulated
         Noise Maskers', IEEE Transactions on Audio, Speech and Language Processing, 2016.
-
     """
     sum_stoi: Tensor
     total: Tensor
@@ -101,7 +100,7 @@ class ShortTimeObjectiveIntelligibility(Metric):
         self.add_state("sum_stoi", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets.
 
         Args:

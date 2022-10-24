@@ -13,7 +13,7 @@
 # limitations under the License.
 
 default_language_version:
-  python: python3.9
+  python: python3.8
 
 ci:
   autofix_prs: true
@@ -38,14 +38,14 @@ repos:
       - id: detect-private-key
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v2.37.3
+    rev: v2.38.2
     hooks:
       - id: pyupgrade
         args: [--py36-plus]
         name: Upgrade code
 
-  - repo: https://github.com/myint/docformatter
-    rev: v1.4
+  - repo: https://github.com/PyCQA/docformatter
+    rev: v1.5.0
     hooks:
       - id: docformatter
         args: [--in-place, --wrap-summaries=115, --wrap-descriptions=120]
@@ -58,13 +58,13 @@ repos:
         require_serial: false
 
   - repo: https://github.com/psf/black
-    rev: 22.6.0
+    rev: 22.8.0
     hooks:
       - id: black
         name: Format code
 
   - repo: https://github.com/executablebooks/mdformat
-    rev: 0.7.14
+    rev: 0.7.16
     hooks:
       - id: mdformat
         additional_dependencies:
@@ -83,7 +83,7 @@ repos:
       - id: yesqa
 
   - repo: https://github.com/PyCQA/flake8
-    rev: 5.0.3
+    rev: 5.0.4
     hooks:
       - id: flake8
         name: PEP8

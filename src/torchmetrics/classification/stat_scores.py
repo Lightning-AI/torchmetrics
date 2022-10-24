@@ -81,9 +81,8 @@ class _AbstractStatScores(Metric):
 
 
 class BinaryStatScores(_AbstractStatScores):
-    r"""
-    Computes the number of true positives, false positives, true negatives, false negatives and the support
-    for binary tasks. Related to `Type I and Type II errors`_.
+    r"""Computes the number of true positives, false positives, true negatives, false negatives and the support for
+    binary tasks. Related to `Type I and Type II errors`_.
 
     Accepts the following input tensors:
 
@@ -191,9 +190,8 @@ class BinaryStatScores(_AbstractStatScores):
 
 
 class MulticlassStatScores(_AbstractStatScores):
-    r"""
-    Computes the number of true positives, false positives, true negatives, false negatives and the support
-    for multiclass tasks. Related to `Type I and Type II errors`_.
+    r"""Computes the number of true positives, false positives, true negatives, false negatives and the support for
+    multiclass tasks. Related to `Type I and Type II errors`_.
 
     Accepts the following input tensors:
 
@@ -341,9 +339,8 @@ class MulticlassStatScores(_AbstractStatScores):
 
 
 class MultilabelStatScores(_AbstractStatScores):
-    r"""
-    Computes the number of true positives, false positives, true negatives, false negatives and the support
-    for multilabel tasks. Related to `Type I and Type II errors`_.
+    r"""Computes the number of true positives, false positives, true negatives, false negatives and the support for
+    multilabel tasks. Related to `Type I and Type II errors`_.
 
     Accepts the following input tensors:
 
@@ -426,7 +423,6 @@ class MultilabelStatScores(_AbstractStatScores):
                 [[0, 0, 0, 2, 2],
                  [0, 2, 0, 0, 0],
                  [0, 0, 1, 1, 1]]])
-
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -491,9 +487,10 @@ class MultilabelStatScores(_AbstractStatScores):
 
 
 class StatScores(Metric):
-    r"""
+    r"""StatScores.
+
     .. note::
-        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
         metric. Moving forward we recommend using these versions. This base metric will still work as it did
         prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
         and the general order of arguments may change, such that this metric will just function as an single
@@ -506,7 +503,7 @@ class StatScores(Metric):
     ``reduce`` parameter, and additionally by the ``mdmc_reduce`` parameter in the
     multi-dimensional multi-class case.
 
-    Accepts all inputs listed in :ref:`pages/classification:input types`.
+
 
     Args:
         threshold:
@@ -542,7 +539,7 @@ class StatScores(Metric):
         mdmc_reduce: Defines how the multi-dimensional multi-class inputs are handeled. Should be one of the following:
 
             - ``None`` [default]: Should be left unchanged if your data is not multi-dimensional
-              multi-class (see :ref:`pages/classification:input types` for the definition of input types).
+              multi-class.
 
             - ``'samplewise'``: In this case, the statistics are computed separately for each
               sample on the ``N`` axis, and then the outputs are concatenated together. In each
@@ -556,9 +553,7 @@ class StatScores(Metric):
 
         multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
-            than what they appear to be. See the parameter's
-            :ref:`documentation section <pages/classification:using the multiclass parameter>`
-            for a more detailed explanation and examples.
+            than what they appear to be.
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
@@ -585,7 +580,6 @@ class StatScores(Metric):
         >>> stat_scores = StatScores(reduce='micro')
         >>> stat_scores(preds, target)
         tensor([2, 2, 6, 2, 4])
-
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -693,8 +687,6 @@ class StatScores(Metric):
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
-
-        See :ref:`pages/classification:input types` for more information on input types.
 
         Args:
             preds: Predictions from model (probabilities, logits or labels)

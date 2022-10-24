@@ -38,7 +38,6 @@ class MeanSquaredError(Metric):
         >>> mean_squared_error = MeanSquaredError()
         >>> mean_squared_error(preds, target)
         tensor(0.8750)
-
     """
     is_differentiable = True
     higher_is_better = False

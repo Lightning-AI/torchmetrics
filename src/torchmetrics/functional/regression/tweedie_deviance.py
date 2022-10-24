@@ -135,7 +135,6 @@ def tweedie_deviance_score(preds: Tensor, targets: Tensor, power: float = 0.0) -
         >>> preds = torch.tensor([4.0, 3.0, 2.0, 1.0])
         >>> tweedie_deviance_score(preds, targets, power=2)
         tensor(1.2083)
-
     """
     sum_deviance_score, num_observations = _tweedie_deviance_score_update(preds, targets, power=power)
     return _tweedie_deviance_score_compute(sum_deviance_score, num_observations)

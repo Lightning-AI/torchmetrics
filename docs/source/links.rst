@@ -86,6 +86,7 @@
 .. _MER: https://www.isca-speech.org/archive_v0/archive_papers/interspeech_2004/i04_2765.pdf
 .. _WIL: https://www.isca-speech.org/archive_v0/archive_papers/interspeech_2004/i04_2765.pdf
 .. _WIP: https://infoscience.epfl.ch/record/82766
+.. _TV: https://en.wikipedia.org/wiki/Total_variation_denoising
 .. _InfoLM: https://arxiv.org/pdf/2112.01589.pdf
 .. _alpha divergence: https://static.renyi.hu/renyi_cikkek/1961_on_measures_of_entropy_and_information.pdf
 .. _beta divergence: https://www.sciencedirect.com/science/article/pii/S0047259X08000456

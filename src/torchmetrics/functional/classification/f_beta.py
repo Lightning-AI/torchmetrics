@@ -87,8 +87,7 @@ def binary_fbeta_score(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
-    Computes `F-score`_ metric for binary tasks:
+    r"""Computes `F-score`_ metric for binary tasks:
 
     .. math::
         F_{\beta} = (1 + \beta^2) * \frac{\text{precision} * \text{recall}}
@@ -183,8 +182,7 @@ def multiclass_fbeta_score(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
-    Computes `F-score`_ metric for multiclass tasks:
+    r"""Computes `F-score`_ metric for multiclass tasks:
 
     .. math::
         F_{\beta} = (1 + \beta^2) * \frac{\text{precision} * \text{recall}}
@@ -305,8 +303,7 @@ def multilabel_fbeta_score(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
-    Computes `F-score`_ metric for multilabel tasks:
+    r"""Computes `F-score`_ metric for multilabel tasks:
 
     .. math::
         F_{\beta} = (1 + \beta^2) * \frac{\text{precision} * \text{recall}}
@@ -393,7 +390,6 @@ def multilabel_fbeta_score(
         >>> multilabel_fbeta_score(preds, target, num_labels=3, beta=2.0, multidim_average='samplewise', average=None)
         tensor([[0.8333, 0.8333, 0.0000],
                 [0.0000, 0.0000, 0.0000]])
-
     """
     if validate_args:
         _multilabel_fbeta_score_arg_validation(beta, num_labels, threshold, average, multidim_average, ignore_index)
@@ -411,8 +407,7 @@ def binary_f1_score(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
-    Computes F-1 score for binary tasks:
+    r"""Computes F-1 score for binary tasks:
 
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
@@ -494,8 +489,7 @@ def multiclass_f1_score(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
-    Computes F-1 score for multiclass tasks:
+    r"""Computes F-1 score for multiclass tasks:
 
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
@@ -605,8 +599,7 @@ def multilabel_f1_score(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
-    Computes F-1 score for multilabel tasks:
+    r"""Computes F-1 score for multilabel tasks:
 
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
@@ -691,7 +684,6 @@ def multilabel_f1_score(
         >>> multilabel_f1_score(preds, target, num_labels=3, multidim_average='samplewise', average=None)
         tensor([[0.6667, 0.6667, 0.0000],
                 [0.0000, 0.0000, 0.0000]])
-
     """
     return multilabel_fbeta_score(
         preds=preds,
@@ -803,9 +795,10 @@ def fbeta_score(
     multidim_average: Optional[Literal["global", "samplewise"]] = "global",
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
+    r"""F-Beta score.
+
     .. note::
-        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
         metric. Moving forward we recommend using these versions. This base metric will still work as it did
         prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
         and the general order of arguments may change, such that this metric will just function as an single
@@ -829,7 +822,7 @@ def fbeta_score(
 
     The reduction method (how the precision scores are aggregated) is controlled by the
     ``average`` parameter, and additionally by the ``mdmc_average`` parameter in the
-    multi-dimensional multi-class case. Accepts all inputs listed in :ref:`pages/classification:input types`.
+    multi-dimensional multi-class case.
 
     Args:
         preds: Predictions from model (probabilities, logits or labels)
@@ -863,10 +856,9 @@ def fbeta_score(
                 - ``'samplewise'``: In this case, the statistics are computed separately for each
                   sample on the ``N`` axis, and then averaged over samples.
                   The computation for each sample is done by treating the flattened extra axes ``...``
-                  (see :ref:`pages/classification:input types`) as the ``N`` dimension within the sample,
+                  as the ``N`` dimension within the sample,
                   and computing the metric for the sample based on that.
                 - ``'global'``: In this case the ``N`` and ``...`` dimensions of the inputs
-                  (see :ref:`pages/classification:input types`)
                   are flattened into a new ``N_X`` sample axis, i.e. the inputs are treated as if they
                   were ``(N_X, C)``. From here on the ``average`` parameter applies as usual.
 
@@ -887,9 +879,7 @@ def fbeta_score(
             Should be left at default (``None``) for all other types of inputs.
         multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
-            than what they appear to be. See the parameter's
-            :ref:`documentation section <pages/classification:using the multiclass parameter>`
-            for a more detailed explanation and examples.
+            than what they appear to be.
 
     Return:
         The shape of the returned tensor depends on the ``average`` parameter
@@ -904,7 +894,6 @@ def fbeta_score(
         >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])
         >>> fbeta_score(preds, target, num_classes=3, beta=0.5)
         tensor(0.3333)
-
     """
     if task is not None:
         assert multidim_average is not None
@@ -926,7 +915,7 @@ def fbeta_score(
         )
     else:
         rank_zero_warn(
-            "From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification"
+            "From v0.10 an `'binary_*'`, `'multiclass_*'`, `'multilabel_*'` version now exist of each classification"
             " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
             " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
             " and the general order of arguments may change, such that this metric will just function as an single"
@@ -978,15 +967,16 @@ def f1_score(
     multidim_average: Optional[Literal["global", "samplewise"]] = "global",
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
+    r"""F1 score.
+
     .. note::
-        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
+        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
         metric. Moving forward we recommend using these versions. This base metric will still work as it did
         prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
         and the general order of arguments may change, such that this metric will just function as an single
         entrypoint to calling the three specialized versions.
 
-    Computes F1 metric. F1 metrics correspond to a equally weighted average of the precision and recall scores.
+    Computes F1 metric. F1 metrics correspond to equally weighted average of the precision and recall scores.
 
     Works with binary, multiclass, and multilabel data.
     Accepts probabilities or logits from a model output or integer class values in prediction.
@@ -999,7 +989,7 @@ def f1_score(
 
     The reduction method (how the precision scores are aggregated) is controlled by the
     ``average`` parameter, and additionally by the ``mdmc_average`` parameter in the
-    multi-dimensional multi-class case. Accepts all inputs listed in :ref:`pages/classification:input types`.
+    multi-dimensional multi-class case.
 
     Args:
         preds: Predictions from model (probabilities, logits or labels)
@@ -1033,11 +1023,10 @@ def f1_score(
             - ``'samplewise'``: In this case, the statistics are computed separately for each
               sample on the ``N`` axis, and then averaged over samples.
               The computation for each sample is done by treating the flattened extra axes ``...``
-              (see :ref:`pages/classification:input types`) as the ``N`` dimension within the sample,
+              as the ``N`` dimension within the sample,
               and computing the metric for the sample based on that.
 
             - ``'global'``: In this case the ``N`` and ``...`` dimensions of the inputs
-              (see :ref:`pages/classification:input types`)
               are flattened into a new ``N_X`` sample axis, i.e. the inputs are treated as if they
               were ``(N_X, C)``. From here on the ``average`` parameter applies as usual.
 
@@ -1061,9 +1050,7 @@ def f1_score(
 
         multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
-            than what they appear to be. See the parameter's
-            :ref:`documentation section <pages/classification:using the multiclass parameter>`
-            for a more detailed explanation and examples.
+            than what they appear to be.
 
     Return:
         The shape of the returned tensor depends on the ``average`` parameter
@@ -1099,7 +1086,7 @@ def f1_score(
         )
     else:
         rank_zero_warn(
-            "From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification"
+            "From v0.10 an `'binary_*'`, `'multiclass_*'`, `'multilabel_*'` version now exist of each classification"
             " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
             " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
             " and the general order of arguments may change, such that this metric will just function as an single"

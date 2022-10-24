@@ -23,9 +23,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class CosineSimilarity(Metric):
-    r"""
-    Computes the `Cosine Similarity`_
-    between targets and predictions:
+    r"""Computes the `Cosine Similarity`_ between targets and predictions:
 
     .. math::
         cos_{sim}(x,y) = \frac{x \cdot y}{||x|| \cdot ||y||} =
@@ -49,7 +47,6 @@ class CosineSimilarity(Metric):
         >>> cosine_similarity = CosineSimilarity(reduction = 'mean')
         >>> cosine_similarity(preds, target)
         tensor(0.8536)
-
     """
     is_differentiable: bool = True
     higher_is_better: bool = True
@@ -71,7 +68,7 @@ class CosineSimilarity(Metric):
         self.add_state("preds", [], dist_reduce_fx="cat")
         self.add_state("target", [], dist_reduce_fx="cat")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Update metric states with predictions and targets.
 
         Args:
