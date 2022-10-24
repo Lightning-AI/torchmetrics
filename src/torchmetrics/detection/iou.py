@@ -84,10 +84,6 @@ class IntersectionOverUnion(Metric):
         self.add_state("groundtruths", default=[], dist_reduce_fx=None)
         self.add_state("groundtruth_labels", default=[], dist_reduce_fx=None)
 
-        # rank_zero_warn(
-        #     f"Metric `{self.type.upper()}` will save all {self.type.upper()} > threshold values in buffer."
-        #     " For large datasets with many objects, this may lead to large memory footprint."
-        # )
 
     def update(self, preds: List[Dict[str, Tensor]], target: List[Dict[str, Tensor]]) -> None:  # type: ignore
         """Add detections and ground truth to the metric.
@@ -152,9 +148,10 @@ class IntersectionOverUnion(Metric):
 
     def compute(self) -> dict:
         """Computes IoU based on inputs passed in to ``update`` previously."""
-        preds = torch.cat(self.detections)
-        target = torch.cat(self.groundtruths)
-        labels = torch.cat(self.detection_labels)
+        from torchmetrics.utilities.data import dim_zero_cat
+        preds = dim_zero_cat(self.detections)
+        target = dim_zero_cat(self.groundtruths)
+        labels = dim_zero_cat(self.detection_labels)
         result = self.iou_fn.__func__(preds, target, self.iou_threshold)
         results: Dict[str, Tensor] = {f"{self.type}": result}
         if self.class_metrics:
