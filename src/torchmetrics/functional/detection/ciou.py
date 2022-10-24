@@ -21,25 +21,6 @@ if _TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_13:
     from torchvision.ops import complete_box_iou
 
 
-def complete_intersection_over_union(
-    preds: torch.Tensor,
-    target: torch.Tensor,
-    iou_threshold: Optional[float] = None,
-) -> torch.Tensor:
-    r"""
-    Computes `Complete Intersection over Union <https://arxiv.org/abs/2005.03572>`_ between two sets of boxes.
-    Both sets of boxes are expected to be in (x1, y1, x2, y2) format with 0 <= x1 < x2 and 0 <= y1 < y2.
-    Example:
-        >>> from torchmetrics.functional.detection import complete_intersection_over_union
-        >>> preds = torch.Tensor([[100, 100, 200, 200]])
-        >>> target = torch.Tensor([[110, 110, 210, 210]])
-        >>> complete_intersection_over_union(preds, target)
-        tensor([[0.6807]])
-    """
-    iou = _ciou_update(preds, target, iou_threshold)
-    return _ciou_compute(iou)
-
-
 def _ciou_update(preds: torch.Tensor, target: torch.Tensor, iou_threshold: Optional[float]) -> torch.Tensor:
     iou = complete_box_iou(preds, target)
     if iou_threshold is not None:
@@ -49,3 +30,29 @@ def _ciou_update(preds: torch.Tensor, target: torch.Tensor, iou_threshold: Optio
 
 def _ciou_compute(iou: torch.Tensor) -> torch.Tensor:
     return iou.diag().mean()
+
+
+def complete_intersection_over_union(
+    preds: torch.Tensor,
+    target: torch.Tensor,
+    iou_threshold: Optional[float] = None,
+) -> torch.Tensor:
+    r"""
+    Computes `Complete Intersection over Union <https://arxiv.org/abs/2005.03572>`_ between two sets of boxes.
+    Both sets of boxes are expected to be in (x1, y1, x2, y2) format with 0 <= x1 < x2 and 0 <= y1 < y2.
+    Args:
+        preds:
+            The input tensor containing the predicted bounding boxes.
+        target:
+            The tensor containing the ground truth.
+        iou_thresholds:
+            Optional IoU thresholds for evaluation. If set to `None` the threshold is ignored.
+    Example:
+        >>> from torchmetrics.functional.detection import complete_intersection_over_union
+        >>> preds = torch.Tensor([[100, 100, 200, 200]])
+        >>> target = torch.Tensor([[110, 110, 210, 210]])
+        >>> complete_intersection_over_union(preds, target)
+        tensor([[0.6724]])
+    """
+    iou = _ciou_update(preds, target, iou_threshold)
+    return _ciou_compute(iou)
