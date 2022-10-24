@@ -437,7 +437,7 @@ def specificity(
 
     The reduction method (how the specificity scores are aggregated) is controlled by the
     ``average`` parameter, and additionally by the ``mdmc_average`` parameter in the
-    multi-dimensional multi-class case. Accepts all inputs listed in :ref:`pages/classification:input types`.
+    multi-dimensional multi-class case.
 
     Args:
         preds: Predictions from model (probabilities, or labels)
@@ -470,11 +470,10 @@ def specificity(
             - ``'samplewise'``: In this case, the statistics are computed separately for each
               sample on the ``N`` axis, and then averaged over samples.
               The computation for each sample is done by treating the flattened extra axes ``...``
-              (see :ref:`pages/classification:input types`) as the ``N`` dimension within the sample,
+              as the ``N`` dimension within the sample,
               and computing the metric for the sample based on that.
 
             - ``'global'``: In this case the ``N`` and ``...`` dimensions of the inputs
-              (see :ref:`pages/classification:input types`)
               are flattened into a new ``N_X`` sample axis, i.e. the inputs are treated as if they
               were ``(N_X, C)``. From here on the ``average`` parameter applies as usual.
 
@@ -496,9 +495,7 @@ def specificity(
             Should be left unset (``None``) for inputs with label predictions.
         multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
-            than what they appear to be. See the parameter's
-            :ref:`documentation section <pages/classification:using the multiclass parameter>`
-            for a more detailed explanation and examples.
+            than what they appear to be.
 
     Return:
         The shape of the returned tensor depends on the ``average`` parameter
