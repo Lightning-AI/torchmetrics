@@ -51,8 +51,8 @@ class KendallRankCorrCoef(Metric):
 
     Forward accepts
 
-    - ``preds``: Sequence of data
-    - ``target``: Sequence of data
+    - ``preds`` (float tensor): Sequence of data of either shape ``(N,)`` or ``(N,d)``
+    - ``target`` (float tensor): Sequence of data of either shape ``(N,)`` or ``(N,d)``
 
     Args:
         variant: Indication of which variant of Kendall's tau to be used
@@ -136,8 +136,8 @@ class KendallRankCorrCoef(Metric):
         """Update variables required to compute Kendall rank correlation coefficient.
 
         Args:
-            preds: Sequence of data
-            target: Sequence of data
+            preds: Sequence of data of either shape ``(N,)`` or ``(N,d)``
+            target: Sequence of data of either shape ``(N,)`` or ``(N,d)``
         """
         self.preds, self.target = _kendall_corrcoef_update(
             preds,

@@ -366,8 +366,8 @@ def kendall_rank_corrcoef(
     Definitions according to Definition according to `The Treatment of Ties in Ranking Problems`_.
 
     Args:
-        preds: Sequence of data
-        target: Sequence of data
+        preds: Sequence of data of either shape ``(N,)`` or ``(N,d)``
+        target: Sequence of data of either shape ``(N,)`` or ``(N,d)``
         variant: Indication of which variant of Kendall's tau to be used
         t_test: Indication whether to run t-test
         alternative: Alternative hypothesis for t-test. Possible values:
