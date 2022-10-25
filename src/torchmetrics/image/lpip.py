@@ -37,9 +37,9 @@ class NoTrainLpips(_LPIPS):
         return super().train(False)
 
 
-def _valid_img(img: Tensor, normalize: bool) -> bool:
+def _valid_img(img: Tensor, normalized: bool) -> bool:
     """check that input is a valid image to the network."""
-    value_check = img.max() <= 1.0 and img.min() >= 0.0 if normalize else img.min() >= -1
+    value_check = img.max() <= 1.0 and img.min() >= 0.0 if normalized else img.min() >= -1
     return img.ndim == 4 and img.shape[1] == 3 and value_check
 
 
@@ -61,7 +61,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
     Args:
         net_type: str indicating backbone network type to use. Choose between `'alex'`, `'vgg'` or `'squeeze'`
         reduction: str indicating how to reduce over the batch dimension. Choose between `'sum'` or `'mean'`.
-        normalize: by default this is ``False`` meaning that the input is expected to be in the [-1,1] range. If set
+        normalized: by default this is ``False`` meaning that the input is expected to be in the [-1,1] range. If set
             to ``True`` will instead expect input to be in the ``[0,1]`` range.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
@@ -98,7 +98,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
         self,
         net_type: str = "alex",
         reduction: Literal["sum", "mean"] = "mean",
-        normalize: bool = False,
+        normalized: bool = False,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -119,9 +119,9 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
             raise ValueError(f"Argument `reduction` must be one of {valid_reduction}, but got {reduction}")
         self.reduction = reduction
 
-        if not isinstance(normalize, bool):
-            raise ValueError(f"Argument `normalize` should be an bool but got {normalize}")
-        self.normalize = normalize
+        if not isinstance(normalized, bool):
+            raise ValueError(f"Argument `normalize` should be an bool but got {normalized}")
+        self.normalize = normalized
 
         self.add_state("sum_scores", torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", torch.tensor(0.0), dist_reduce_fx="sum")
