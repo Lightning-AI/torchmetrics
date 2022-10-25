@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import List, Optional, Sequence, Tuple, Union
+from typing import List, Optional, Tuple, Union
 
 import torch
 from torch import Tensor, tensor
@@ -417,14 +417,12 @@ def multilabel_auroc(
 def auroc(
     preds: Tensor,
     target: Tensor,
+    task: Literal["binary", "multiclass", "multilabel"],
     num_classes: Optional[int] = None,
-    pos_label: Optional[int] = None,
+    num_labels: Optional[int] = None,
     average: Optional[Literal["macro", "weighted", "none"]] = "macro",
     max_fpr: Optional[float] = None,
-    sample_weights: Optional[Sequence] = None,
-    task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
-    num_labels: Optional[int] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tensor, Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:

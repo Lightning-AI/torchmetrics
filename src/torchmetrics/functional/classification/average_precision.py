@@ -401,12 +401,12 @@ def multilabel_average_precision(
 def average_precision(
     preds: Tensor,
     target: Tensor,
+    task: Literal["binary", "multiclass", "multilabel"],
     num_classes: Optional[int] = None,
-    pos_label: Optional[int] = None,
-    average: Optional[Literal["macro", "weighted", "none"]] = "macro",
-    task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
     num_labels: Optional[int] = None,
+    average: Optional[Literal["macro", "weighted", "none"]] = "macro",
+    max_fpr: Optional[float] = None,
+    thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[List[Tensor], Tensor]:
