@@ -44,7 +44,11 @@ from torchmetrics.utilities.prints import rank_zero_warn
 
 class _AbstractStatScores(Metric):
     # define common functions
-    def _create_state(self, size: int, multidim_average: str) -> None:
+    def _create_state(
+        self,
+        size: int,
+        multidim_average: Literal["global", "samplewise"] = "global",
+    ) -> None:
         """Initialize the states for the different statistics."""
         default: Union[Callable[[], list], Callable[[], Tensor]]
         if multidim_average == "samplewise":
@@ -53,6 +57,7 @@ class _AbstractStatScores(Metric):
         else:
             default = lambda: torch.zeros(size, dtype=torch.long)
             dist_reduce_fx = "sum"
+
         self.add_state("tp", default(), dist_reduce_fx=dist_reduce_fx)
         self.add_state("fp", default(), dist_reduce_fx=dist_reduce_fx)
         self.add_state("tn", default(), dist_reduce_fx=dist_reduce_fx)
@@ -159,7 +164,7 @@ class BinaryStatScores(_AbstractStatScores):
         self.ignore_index = ignore_index
         self.validate_args = validate_args
 
-        self._create_state(1, multidim_average)
+        self._create_state(size=1, multidim_average=multidim_average)
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
@@ -243,8 +248,8 @@ class MulticlassStatScores(_AbstractStatScores):
 
     Example (preds is float tensor):
         >>> from torchmetrics.classification import MulticlassStatScores
-        >>> target = target = torch.tensor([2, 1, 0, 0])
-        >>> preds = preds = torch.tensor([
+        >>> target = torch.tensor([2, 1, 0, 0])
+        >>> preds = torch.tensor([
         ...   [0.16, 0.26, 0.58],
         ...   [0.22, 0.61, 0.17],
         ...   [0.71, 0.09, 0.20],
@@ -300,7 +305,9 @@ class MulticlassStatScores(_AbstractStatScores):
         self.ignore_index = ignore_index
         self.validate_args = validate_args
 
-        self._create_state(num_classes, multidim_average)
+        self._create_state(
+            size=1 if (average == "micro" and top_k == 1) else num_classes, multidim_average=multidim_average
+        )
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
@@ -315,7 +322,7 @@ class MulticlassStatScores(_AbstractStatScores):
             )
         preds, target = _multiclass_stat_scores_format(preds, target, self.top_k)
         tp, fp, tn, fn = _multiclass_stat_scores_update(
-            preds, target, self.num_classes, self.top_k, self.multidim_average, self.ignore_index
+            preds, target, self.num_classes, self.top_k, self.average, self.multidim_average, self.ignore_index
         )
         self._update_state(tp, fp, tn, fn)
 
@@ -448,7 +455,7 @@ class MultilabelStatScores(_AbstractStatScores):
         self.ignore_index = ignore_index
         self.validate_args = validate_args
 
-        self._create_state(num_labels, multidim_average)
+        self._create_state(size=num_labels, multidim_average=multidim_average)
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.

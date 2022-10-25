@@ -349,6 +349,7 @@ def _multiclass_stat_scores_update(
     target: Tensor,
     num_classes: int,
     top_k: int = 1,
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
@@ -391,7 +392,17 @@ def _multiclass_stat_scores_update(
         fn = ((target_oh != preds_oh) & (target_oh == 1)).sum(sum_dim)
         fp = ((target_oh != preds_oh) & (target_oh == 0)).sum(sum_dim)
         tn = ((target_oh == preds_oh) & (target_oh == 0)).sum(sum_dim)
-        return tp, fp, tn, fn
+    elif average == "micro":
+        preds = preds.flatten()
+        target = target.flatten()
+        if ignore_index is not None:
+            idx = target != ignore_index
+            preds = preds[idx]
+            target = target[idx]
+        tp = (preds == target).sum()
+        fp = (preds != target).sum()
+        fn = (preds != target).sum()
+        tn = num_classes * preds.numel() - (fp + fn + tp)
     else:
         preds = preds.flatten()
         target = target.flatten()
@@ -406,7 +417,7 @@ def _multiclass_stat_scores_update(
         fp = confmat.sum(0) - tp
         fn = confmat.sum(1) - tp
         tn = confmat.sum() - (fp + fn + tp)
-        return tp, fp, tn, fn
+    return tp, fp, tn, fn
 
 
 def _multiclass_stat_scores_compute(
@@ -424,8 +435,8 @@ def _multiclass_stat_scores_compute(
     res = torch.stack([tp, fp, tn, fn, tp + fn], dim=-1)
     sum_dim = 0 if multidim_average == "global" else 1
     if average == "micro":
-        return res.sum(sum_dim)
-    elif average == "macro":
+        return res.sum(sum_dim) if res.ndim > 1 else res
+    if average == "macro":
         return res.float().mean(sum_dim)
     elif average == "weighted":
         weight = tp + fn
@@ -547,7 +558,9 @@ def multiclass_stat_scores(
         _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index)
         _multiclass_stat_scores_tensor_validation(preds, target, num_classes, multidim_average, ignore_index)
     preds, target = _multiclass_stat_scores_format(preds, target, top_k)
-    tp, fp, tn, fn = _multiclass_stat_scores_update(preds, target, num_classes, top_k, multidim_average, ignore_index)
+    tp, fp, tn, fn = _multiclass_stat_scores_update(
+        preds, target, num_classes, top_k, average, multidim_average, ignore_index
+    )
     return _multiclass_stat_scores_compute(tp, fp, tn, fn, average, multidim_average)
 
 
