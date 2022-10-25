@@ -25,6 +25,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changed in-place operation to out-of-place operation in `pairwise_cosine_similarity` ([#1288](https://github.com/Lightning-AI/metrics/pull/1288))
 
 
+- Changed `normalize` to `normalized` for image metrics SSIM and LPIP  ([#1293](https://github.com/Lightning-AI/metrics/pull/1293))
+
+
 ### Deprecated
 
 -
