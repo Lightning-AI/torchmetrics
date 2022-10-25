@@ -177,7 +177,7 @@ class MulticlassPrecision(MulticlassStatScores):
 
     Example (preds is float tensor):
         >>> from torchmetrics.classification import MulticlassPrecision
-        >>> target = target = torch.tensor([2, 1, 0, 0])
+        >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([
         ...   [0.16, 0.26, 0.58],
         ...   [0.22, 0.61, 0.17],
