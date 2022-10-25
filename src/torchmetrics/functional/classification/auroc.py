@@ -38,7 +38,6 @@ from torchmetrics.functional.classification.roc import (
 )
 from torchmetrics.utilities.compute import _auc_compute_without_check, _safe_divide
 from torchmetrics.utilities.data import _bincount
-from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
 from torchmetrics.utilities.prints import rank_zero_warn
 
 
@@ -77,13 +76,8 @@ def _binary_auroc_arg_validation(
     ignore_index: Optional[int] = None,
 ) -> None:
     _binary_precision_recall_curve_arg_validation(thresholds, ignore_index)
-    if max_fpr is not None:
-        if not isinstance(max_fpr, float) and 0 < max_fpr <= 1:
-            raise ValueError(f"Arguments `max_fpr` should be a float in range (0, 1], but got: {max_fpr}")
-        if _TORCH_LOWER_1_6:
-            raise RuntimeError(
-                "`max_fpr` argument requires `torch.bucketize` which" " is not available below PyTorch version 1.6"
-            )
+    if max_fpr is not None and not isinstance(max_fpr, float) and 0 < max_fpr <= 1:
+        raise ValueError(f"Arguments `max_fpr` should be a float in range (0, 1], but got: {max_fpr}")
 
 
 def _binary_auroc_compute(

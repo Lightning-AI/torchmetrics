@@ -161,7 +161,7 @@ class KernelInceptionDistance(Metric):
         subsets: int = 100,
         subset_size: int = 1000,
         degree: int = 3,
-        gamma: Optional[float] = None,  # type: ignore
+        gamma: Optional[float] = None,
         coef: float = 1.0,
         reset_real_features: bool = True,
         **kwargs: Any,
@@ -220,7 +220,7 @@ class KernelInceptionDistance(Metric):
         self.add_state("real_features", [], dist_reduce_fx=None)
         self.add_state("fake_features", [], dist_reduce_fx=None)
 
-    def update(self, imgs: Tensor, real: bool) -> None:  # type: ignore
+    def update(self, imgs: Tensor, real: bool) -> None:
         """Update the state with extracted features.
 
         Args:

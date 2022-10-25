@@ -256,7 +256,7 @@ class Metric(Module, ABC):
         self.update(*args, **kwargs)
         _update_count = self._update_count
 
-        self._to_sync = self.dist_sync_on_step  # type: ignore
+        self._to_sync = self.dist_sync_on_step
         # skip restore cache operation from compute as cache is stored below.
         self._should_unsync = False
         # skip computing on cpu for the batch
@@ -527,7 +527,7 @@ class Metric(Module, ABC):
             # if synchronization happened, the current rank accumulated states will be restored to keep
             # accumulation going if ``should_unsync=True``,
             with self.sync_context(
-                dist_sync_fn=self.dist_sync_fn,  # type: ignore
+                dist_sync_fn=self.dist_sync_fn,
                 should_sync=self._to_sync,
                 should_unsync=self._should_unsync,
             ):
