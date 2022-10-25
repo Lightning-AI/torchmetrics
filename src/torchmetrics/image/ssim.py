@@ -178,7 +178,7 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         k2: Parameter of structural similarity index measure.
         betas: Exponent parameters for individual similarities and contrastive sensitivies returned by different image
             resolutions.
-        normalize: When MultiScaleStructuralSimilarityIndexMeasure loss is used for training, it is desirable to use
+        normalized: When MultiScaleStructuralSimilarityIndexMeasure loss is used for training, it is desirable to use
             normalizes to improve the training stability. This `normalize` argument is out of scope of the original
             implementation [1], and it is adapted from https://github.com/jorge-pessoa/pytorch-msssim instead.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
@@ -225,7 +225,7 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         k1: float = 0.01,
         k2: float = 0.03,
         betas: Tuple[float, ...] = (0.0448, 0.2856, 0.3001, 0.2363, 0.1333),
-        normalize: Literal["relu", "simple", None] = "relu",
+        normalized: Literal["relu", "simple", None] = "relu",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -265,9 +265,9 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         if isinstance(betas, tuple) and not all(isinstance(beta, float) for beta in betas):
             raise ValueError("Argument `betas` is expected to be a tuple of floats.")
         self.betas = betas
-        if normalize and normalize not in ("relu", "simple"):
+        if normalized and normalized not in ("relu", "simple"):
             raise ValueError("Argument `normalize` to be expected either `None` or one of 'relu' or 'simple'")
-        self.normalize = normalize
+        self.normalize = normalized
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.

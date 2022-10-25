@@ -294,7 +294,7 @@ def _get_normalized_sim_and_cs(
     data_range: Optional[float] = None,
     k1: float = 0.01,
     k2: float = 0.03,
-    normalize: Optional[Literal["relu", "simple"]] = None,
+    normalized: Optional[Literal["relu", "simple"]] = None,
 ) -> Tuple[Tensor, Tensor]:
     sim, contrast_sensitivity = _ssim_update(
         preds,
@@ -307,7 +307,7 @@ def _get_normalized_sim_and_cs(
         k2,
         return_contrast_sensitivity=True,
     )
-    if normalize == "relu":
+    if normalized == "relu":
         sim = torch.relu(sim)
         contrast_sensitivity = torch.relu(contrast_sensitivity)
     return sim, contrast_sensitivity
@@ -329,7 +329,7 @@ def _multiscale_ssim_update(
         0.2363,
         0.1333,
     ),
-    normalize: Optional[Literal["relu", "simple"]] = None,
+    normalized: Optional[Literal["relu", "simple"]] = None,
 ) -> Tensor:
     """Computes Multi-Scale Structual Similarity Index Measure.
 
@@ -351,7 +351,7 @@ def _multiscale_ssim_update(
         k2: Parameter of structural similarity index measure.
         betas: Exponent parameters for individual similarities and contrastive sensitives returned by different image
             resolutions.
-        normalize: When MultiScaleSSIM loss is used for training, it is desirable to use normalizes to improve the
+        normalized: When MultiScaleSSIM loss is used for training, it is desirable to use normalizes to improve the
             training stability. This `normalize` argument is out of scope of the original implementation [1], and it is
             adapted from https://github.com/jorge-pessoa/pytorch-msssim instead.
 
@@ -392,7 +392,7 @@ def _multiscale_ssim_update(
 
     for _ in range(len(betas)):
         sim, contrast_sensitivity = _get_normalized_sim_and_cs(
-            preds, target, gaussian_kernel, sigma, kernel_size, data_range, k1, k2, normalize=normalize
+            preds, target, gaussian_kernel, sigma, kernel_size, data_range, k1, k2, normalized=normalized
         )
         mcs_list.append(contrast_sensitivity)
 
@@ -408,7 +408,7 @@ def _multiscale_ssim_update(
     mcs_list[-1] = sim
     mcs_stack = torch.stack(mcs_list)
 
-    if normalize == "simple":
+    if normalized == "simple":
         mcs_stack = (mcs_stack + 1) / 2
 
     betas = torch.tensor(betas, device=mcs_stack.device).view(-1, 1)
@@ -449,7 +449,7 @@ def multiscale_structural_similarity_index_measure(
     k1: float = 0.01,
     k2: float = 0.03,
     betas: Tuple[float, ...] = (0.0448, 0.2856, 0.3001, 0.2363, 0.1333),
-    normalize: Optional[Literal["relu", "simple"]] = "relu",
+    normalized: Optional[Literal["relu", "simple"]] = "relu",
 ) -> Tensor:
     """Computes `MultiScaleSSIM`_, Multi-scale Structual Similarity Index Measure, which is a generalization of
     Structual Similarity Index Measure by incorporating image details at different resolution scores.
@@ -470,7 +470,7 @@ def multiscale_structural_similarity_index_measure(
         k2: Parameter of structural similarity index measure.
         betas: Exponent parameters for individual similarities and contrastive sensitivies returned by different image
             resolutions.
-        normalize: When MultiScaleSSIM loss is used for training, it is desirable to use normalizes to improve the
+        normalized: When MultiScaleSSIM loss is used for training, it is desirable to use normalizes to improve the
             training stability. This `normalize` argument is out of scope of the original implementation [1], and it is
             adapted from https://github.com/jorge-pessoa/pytorch-msssim instead.
 
@@ -504,11 +504,11 @@ def multiscale_structural_similarity_index_measure(
         raise ValueError("Argument `betas` is expected to be of a type tuple.")
     if isinstance(betas, tuple) and not all(isinstance(beta, float) for beta in betas):
         raise ValueError("Argument `betas` is expected to be a tuple of floats.")
-    if normalize and normalize not in ("relu", "simple"):
+    if normalized and normalized not in ("relu", "simple"):
         raise ValueError("Argument `normalize` to be expected either `None` or one of 'relu' or 'simple'")
 
     preds, target = _ssim_check_inputs(preds, target)
     mcs_per_image = _multiscale_ssim_update(
-        preds, target, gaussian_kernel, sigma, kernel_size, data_range, k1, k2, betas, normalize
+        preds, target, gaussian_kernel, sigma, kernel_size, data_range, k1, k2, betas, normalized
     )
     return _multiscale_ssim_compute(mcs_per_image, reduction)
