@@ -185,9 +185,9 @@ def multiclass_average_precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes the average precision (AP) score for binary tasks. The AP score summarizes a precision-recall curve
-    as an weighted mean of precisions at each threshold, with the difference in recall from the previous threshold
-    as weight:
+    r"""Computes the average precision (AP) score for multiclass tasks. The AP score summarizes a precision-recall
+    curve as an weighted mean of precisions at each threshold, with the difference in recall from the previous
+    threshold as weight:
 
     .. math::
         AP = \sum{n} (R_n - R_{n-1}) P_n
@@ -314,9 +314,9 @@ def multilabel_average_precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes the average precision (AP) score for binary tasks. The AP score summarizes a precision-recall curve
-    as an weighted mean of precisions at each threshold, with the difference in recall from the previous threshold
-    as weight:
+    r"""Computes the average precision (AP) score for multilabel tasks. The AP score summarizes a precision-recall
+    curve as an weighted mean of precisions at each threshold, with the difference in recall from the previous
+    threshold as weight:
 
     .. math::
         AP = \sum{n} (R_n - R_{n-1}) P_n
@@ -410,55 +410,19 @@ def average_precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[List[Tensor], Tensor]:
-    r"""Average precision.
+    r"""Computes the average precision (AP) score. The AP score summarizes a precision-recall curve as an weighted
+    mean of precisions at each threshold, with the difference in recall from the previous threshold as weight:
 
-    .. note::
-        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
-        metric. Moving forward we recommend using these versions. This base metric will still work as it did
-        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
-        and the general order of arguments may change, such that this metric will just function as an single
-        entrypoint to calling the three specialized versions.
+    .. math::
+        AP = \sum{n} (R_n - R_{n-1}) P_n
 
-    Computes the average precision score.
+    where :math:`P_n, R_n` is the respective precision and recall at threshold index :math:`n`. This value is
+    equivalent to the area under the precision-recall curve (AUPRC).
 
-    Args:
-        preds: predictions from model (logits or probabilities)
-        target: ground truth values
-        num_classes: integer with number of classes. Not nessesary to provide
-            for binary problems.
-        pos_label: integer determining the positive class. Default is ``None`` which for binary problem is translated
-            to 1. For multiclass problems his argument should not be set as we iteratively change it in the
-            range ``[0, num_classes-1]``
-        average:
-            defines the reduction that is applied in the case of multiclass and multilabel input.
-            Should be one of the following:
-
-            - ``'macro'`` [default]: Calculate the metric for each class separately, and average the
-              metrics across classes (with equal weights for each class).
-            - ``'weighted'``: Calculate the metric for each class separately, and average the
-              metrics across classes, weighting each class by its support.
-            - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
-              the metric for every class.
-
-    Returns:
-        tensor with average precision. If multiclass it returns list
-        of such tensors, one for each class
-
-    Example (binary case):
-        >>> from torchmetrics.functional import average_precision
-        >>> pred = torch.tensor([0, 1, 2, 3])
-        >>> target = torch.tensor([0, 1, 1, 1])
-        >>> average_precision(pred, target, pos_label=1)
-        tensor(1.)
-
-    Example (multiclass case):
-        >>> pred = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
-        ...                      [0.05, 0.75, 0.05, 0.05, 0.05],
-        ...                      [0.05, 0.05, 0.75, 0.05, 0.05],
-        ...                      [0.05, 0.05, 0.05, 0.75, 0.05]])
-        >>> target = torch.tensor([0, 1, 3, 2])
-        >>> average_precision(pred, target, num_classes=5, average=None)
-        [tensor(1.), tensor(1.), tensor(0.2500), tensor(0.2500), tensor(nan)]
+    This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    :func:`binary_average_precision`, :func:`multiclass_average_precision` and :func:`multilabel_average_precision`
+    for the specific details of each argument influence and examples.
     """
     if task == "binary":
         return binary_average_precision(preds, target, thresholds, ignore_index, validate_args)

@@ -428,76 +428,14 @@ def auroc(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tensor, Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    r"""Area Under the Receiver Operating Characteristic Curve.
+    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_). The AUROC score summarizes the
+    ROC curve into an single number that describes the performance of a model for multiple thresholds at the same
+    time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5 corresponds to random guessing.
 
-    .. note::
-        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
-        metric. Moving forward we recommend using these versions. This base metric will still work as it did
-        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
-        and the general order of arguments may change, such that this metric will just function as an single
-        entrypoint to calling the three specialized versions.
-
-    Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_)
-
-    For non-binary input, if the ``preds`` and ``target`` tensor have the same
-    size the input will be interpretated as multilabel and if ``preds`` have one
-    dimension more than the ``target`` tensor the input will be interpretated as
-    multiclass.
-
-    .. note::
-        If either the positive class or negative class is completly missing in the target tensor,
-        the auroc score is meaningless in this case and a score of 0 will be returned together
-        with a warning.
-
-    Args:
-        preds: predictions from model (logits or probabilities)
-        target: Ground truth labels
-        num_classes: integer with number of classes for multi-label and multiclass problems.
-            Should be set to ``None`` for binary problems
-        pos_label: integer determining the positive class. Default is ``None``
-            which for binary problem is translate to 1. For multiclass problems
-            this argument should not be set as we iteratively change it in the
-            range [0,num_classes-1]
-        average:
-
-            - ``'macro'`` computes metric for each class and uniformly averages them
-            - ``'weighted'`` computes metric for each class and does a weighted-average,
-              where each class is weighted by their support (accounts for class imbalance)
-            - ``None`` computes and returns the metric per class
-
-        max_fpr:
-            If not ``None``, calculates standardized partial AUC over the
-            range ``[0, max_fpr]``. Should be a float between 0 and 1.
-        sample_weights: sample weights for each data point
-
-    Raises:
-        ValueError:
-            If ``max_fpr`` is not a ``float`` in the range ``(0, 1]``.
-        RuntimeError:
-            If ``PyTorch version`` is below 1.6 since max_fpr requires ``torch.bucketize``
-            which is not available below 1.6.
-        ValueError:
-            If ``max_fpr`` is not set to ``None`` and the mode is ``not binary``
-            since partial AUC computation is not available in multilabel/multiclass.
-        ValueError:
-            If ``average`` is none of ``None``, ``"macro"`` or ``"weighted"``.
-
-    Example (binary case):
-        >>> from torchmetrics.functional import auroc
-        >>> preds = torch.tensor([0.13, 0.26, 0.08, 0.19, 0.34])
-        >>> target = torch.tensor([0, 0, 1, 1, 1])
-        >>> auroc(preds, target, pos_label=1)
-        tensor(0.5000)
-
-    Example (multiclass case):
-        >>> preds = torch.tensor([[0.90, 0.05, 0.05],
-        ...                       [0.05, 0.90, 0.05],
-        ...                       [0.05, 0.05, 0.90],
-        ...                       [0.85, 0.05, 0.10],
-        ...                       [0.10, 0.10, 0.80]])
-        >>> target = torch.tensor([0, 1, 1, 2, 2])
-        >>> auroc(preds, target, num_classes=3)
-        tensor(0.7778)
+    This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    :func:`binary_auroc`, :func:`multiclass_auroc` and :func:`multilabel_auroc` for the specific details of
+    each argument influence and examples.
     """
     if task == "binary":
         return binary_auroc(preds, target, max_fpr, thresholds, ignore_index, validate_args)
