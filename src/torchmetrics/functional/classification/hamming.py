@@ -274,7 +274,9 @@ def multiclass_hamming_distance(
         _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index)
         _multiclass_stat_scores_tensor_validation(preds, target, num_classes, multidim_average, ignore_index)
     preds, target = _multiclass_stat_scores_format(preds, target, top_k)
-    tp, fp, tn, fn = _multiclass_stat_scores_update(preds, target, num_classes, top_k, multidim_average, ignore_index)
+    tp, fp, tn, fn = _multiclass_stat_scores_update(
+        preds, target, num_classes, top_k, average, multidim_average, ignore_index
+    )
     return _hamming_distance_reduce(tp, fp, tn, fn, average=average, multidim_average=multidim_average)
 
 
