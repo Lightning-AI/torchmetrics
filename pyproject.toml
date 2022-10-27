@@ -90,6 +90,7 @@ module = [
     "torchmetrics.functional.regression.kendall.py",
     "torchmetrics.functional.regression.kl_divergence",
     "torchmetrics.functional.regression.r2",
+    "torchmetrics.functional.regression.utils.py",
     "torchmetrics.functional.regression.wmape",
     "torchmetrics.functional.retrieval.r_precision",
     "torchmetrics.functional.text.squad",
