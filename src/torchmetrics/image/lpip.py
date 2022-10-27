@@ -138,7 +138,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
                 "Expected both input arguments to be normalized tensors with shape [N, 3, H, W]."
                 f" Got input with shape {img1.shape} and {img2.shape} and values in range"
                 f" {[img1.min(), img1.max()]} and {[img2.min(), img2.max()]} when all values are"
-                f"expected to be in the {[0,1] if self.normalize else [-1,1]} range."
+                f" expected to be in the {[0,1] if self.normalize else [-1,1]} range."
             )
         loss = self.net(img1, img2, normalize=self.normalize).squeeze()
         self.sum_scores += loss.sum()
