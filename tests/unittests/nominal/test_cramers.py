@@ -26,6 +26,7 @@ from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 if _DYTHON_AVAILABLE:
     from dython.nominal import cramers_v as dython_cramers_v
 
+
 Input = namedtuple("Input", ["preds", "target"])
 NUM_CLASSES = 4
 
@@ -37,11 +38,11 @@ _input_default = Input(
 _preds = torch.randint(
     high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE), dtype=torch.float
 )  # Requires float type to pass NaNs
-_preds[0, 0] = torch.nan
-_preds[-1, -1] = torch.nan
+_preds[0, 0] = float("nan")
+_preds[-1, -1] = float("nan")
 _target = torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE), dtype=torch.float)
-_target[1, 0] = torch.nan
-_target[-1, 0] = torch.nan
+_target[1, 0] = float("nan")
+_target[-1, 0] = float("nan")
 _input_with_nans = Input(preds=_preds, target=_target)
 
 _input_logits = Input(
@@ -59,8 +60,8 @@ def _matrix_input():
         ],
         dim=-1,
     )
-    matrix[0, 0] = torch.nan
-    matrix[-1, -1] = torch.nan
+    matrix[0, 0] = float("nan")
+    matrix[-1, -1] = float("nan")
     return matrix
 
 
@@ -158,6 +159,7 @@ class TestCramersV(MetricTester):
         )
 
 
+@pytest.mark.skipif(not _DYTHON_AVAILABLE, reason="test requires dython")
 @pytest.mark.parametrize("bias_correction", [False, True])
 @pytest.mark.parametrize("nan_strategy, nan_replace_value", [("replace", 1.0), ("drop", None)])
 def test_cramers_v_matrix(_matrix_input, bias_correction, nan_strategy, nan_replace_value):
