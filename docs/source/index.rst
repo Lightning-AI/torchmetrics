@@ -184,6 +184,14 @@ Or directly from conda
 
 .. toctree::
    :maxdepth: 2
+   :name: nominal
+   :caption: Nominal
+   :glob:
+
+   regression/*
+
+.. toctree::
+   :maxdepth: 2
    :name: retrieval
    :caption: Retrieval
    :glob:

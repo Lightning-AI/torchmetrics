@@ -93,3 +93,4 @@
 .. _AB divergence: https://pdfs.semanticscholar.org/744b/1166de34cb099100f151f3b1459f141ae25b.pdf
 .. _Rényi divergence: https://static.renyi.hu/renyi_cikkek/1961_on_measures_of_entropy_and_information.pdf
 .. _Fisher-Rao distance: http://www.scholarpedia.org/article/Fisher-Rao_metric
+.. _Cramer's V: https://en.wikipedia.org/wiki/Cram%C3%A9r%27s_V

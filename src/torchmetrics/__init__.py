@@ -53,6 +53,7 @@ from torchmetrics.image import (  # noqa: E402
     UniversalImageQualityIndex,
 )
 from torchmetrics.metric import Metric  # noqa: E402
+from torchmetrics.nominal import CramersV  # noqa: E402
 from torchmetrics.regression import (  # noqa: E402
     ConcordanceCorrCoef,
     CosineSimilarity,
@@ -119,6 +120,7 @@ __all__ = [
     "CohenKappa",
     "ConfusionMatrix",
     "CosineSimilarity",
+    "CramersV",
     "Dice",
     "TweedieDevianceScore",
     "ErrorRelativeGlobalDimensionlessSynthesis",

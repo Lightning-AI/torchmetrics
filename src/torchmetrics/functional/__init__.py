@@ -42,6 +42,7 @@ from torchmetrics.functional.image.ssim import (
 )
 from torchmetrics.functional.image.tv import total_variation
 from torchmetrics.functional.image.uqi import universal_image_quality_index
+from torchmetrics.functional.nominal.cramers import cramers_v
 from torchmetrics.functional.pairwise.cosine import pairwise_cosine_similarity
 from torchmetrics.functional.pairwise.euclidean import pairwise_euclidean_distance
 from torchmetrics.functional.pairwise.linear import pairwise_linear_similarity
@@ -100,6 +101,7 @@ __all__ = [
     "cohen_kappa",
     "confusion_matrix",
     "cosine_similarity",
+    "cramers_v",
     "tweedie_deviance_score",
     "dice_score",
     "dice",
