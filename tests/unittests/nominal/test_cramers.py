@@ -35,9 +35,10 @@ _input_default = Input(
     target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
 )
 
+# Requires float type to pass NaNs
 _preds = torch.randint(
     high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE), dtype=torch.float
-)  # Requires float type to pass NaNs
+)
 _preds[0, 0] = float("nan")
 _preds[-1, -1] = float("nan")
 _target = torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE), dtype=torch.float)
