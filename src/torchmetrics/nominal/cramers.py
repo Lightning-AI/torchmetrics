@@ -55,7 +55,7 @@ class CramersV(Metric):
         >>> target = torch.round(preds + torch.randn(100)).clamp(0, 4)
         >>> cramers_v = CramersV(num_classes=5)
         >>> cramers_v(preds, target)
-        tensor(0.5284))
+        tensor(0.5284)
     """
 
     is_differentiable = False
