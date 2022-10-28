@@ -17,14 +17,12 @@ from functools import partial
 
 import pytest
 import torch
+from dython.nominal import cramers_v as dython_cramers_v
 
 from torchmetrics.functional.nominal.cramers import cramers_v, cramers_v_matrix
 from torchmetrics.nominal.cramers import CramersV
 from torchmetrics.utilities.imports import _DYTHON_AVAILABLE
 from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
-
-from dython.nominal import cramers_v as dython_cramers_v
-
 
 Input = namedtuple("Input", ["preds", "target"])
 NUM_CLASSES = 4
