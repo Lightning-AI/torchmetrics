@@ -247,7 +247,7 @@ def multiclass_accuracy(
 
     Example (preds is float tensor):
         >>> from torchmetrics.functional.classification import multiclass_accuracy
-        >>> target = target = torch.tensor([2, 1, 0, 0])
+        >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([
         ...   [0.16, 0.26, 0.58],
         ...   [0.22, 0.61, 0.17],
@@ -273,7 +273,9 @@ def multiclass_accuracy(
         _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index)
         _multiclass_stat_scores_tensor_validation(preds, target, num_classes, multidim_average, ignore_index)
     preds, target = _multiclass_stat_scores_format(preds, target, top_k)
-    tp, fp, tn, fn = _multiclass_stat_scores_update(preds, target, num_classes, top_k, multidim_average, ignore_index)
+    tp, fp, tn, fn = _multiclass_stat_scores_update(
+        preds, target, num_classes, top_k, average, multidim_average, ignore_index
+    )
     return _accuracy_reduce(tp, fp, tn, fn, average=average, multidim_average=multidim_average)
 
 
