@@ -156,10 +156,11 @@ def cramers_v(
 
     Example:
         >>> from torchmetrics.functional import cramers_v
+        >>> _ = torch.manual_seed(42)
         >>> preds = torch.randint(0, 4, (100,))
-        >>> target = torch.round(preds + torch.randn(100))
+        >>> target = torch.round(preds + torch.randn(100)).clamp(0, 4)
         >>> cramers_v(preds, target)
-        tensor(0.7178))
+        tensor(0.5284)
     """
     if nan_strategy not in ["replace", "drop"]:
         raise ValueError(
@@ -199,13 +200,14 @@ def cramers_v_matrix(
 
     Example:
         >>> from torchmetrics.functional.nominal import cramers_v_matrix
+        >>> _ = torch.manual_seed(42)
         >>> matrix = torch.randint(0, 4, (200, 5))
         >>> cramers_v_matrix(matrix)
-        tensor([[0.0000, 0.1065, 0.1243, 0.1462, 0.0604],
-                [0.1065, 0.0000, 0.0000, 0.0280, 0.0000],
-                [0.1243, 0.0000, 0.0000, 0.0000, 0.0000],
-                [0.1462, 0.0280, 0.0000, 0.0000, 0.0000],
-                [0.0604, 0.0000, 0.0000, 0.0000, 0.0000]])
+        tensor([[0.0000, 0.0637, 0.0000, 0.0542, 0.1337],
+                [0.0637, 0.0000, 0.0000, 0.0000, 0.0000],
+                [0.0000, 0.0000, 0.0000, 0.0000, 0.0649],
+                [0.0542, 0.0000, 0.0000, 0.0000, 0.1100],
+                [0.1337, 0.0000, 0.0649, 0.1100, 0.0000]])
     """
     if nan_strategy not in ["replace", "drop"]:
         raise ValueError(
