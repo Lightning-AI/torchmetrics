@@ -50,6 +50,7 @@ def _class_test(
     fragment_kwargs: bool = False,
     check_scriptable: bool = True,
     key: str = None,
+    ignore_order: bool = None,
     **kwargs_update: Any,
 ):
     """Utility function doing the actual comparison between class metric and reference metric.
@@ -72,6 +73,7 @@ def _class_test(
         fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `targets` among processes
         key: The key passed onto the `_assert_allclose` to compare the respective metric from the Dict output against
             the sk_metric.
+        ignore_order: Ignore order of prediction accross processes when DDP is used.
         kwargs_update: Additional keyword arguments that will be passed with preds and
             targets when running update on the metric.
     """
@@ -110,7 +112,10 @@ def _class_test(
             }
 
             sk_batch_result = sk_metric(ddp_preds, ddp_targets, **ddp_kwargs_upd)
-            _assert_allclose(batch_result, sk_batch_result, atol=atol, key=key)
+            if ignore_order:
+                _assert_allclose(batch_result.mean(0), sk_batch_result.mean(0), atol=atol, key=key)
+            else:
+                _assert_allclose(batch_result, sk_batch_result, atol=atol, key=key)
 
         elif check_batch and not metric.dist_sync_on_step:
             batch_kwargs_update = {
@@ -118,7 +123,10 @@ def _class_test(
                 for k, v in (batch_kwargs_update if fragment_kwargs else kwargs_update).items()
             }
             sk_batch_result = sk_metric(preds[i], targets[i], **batch_kwargs_update)
-            _assert_allclose(batch_result, sk_batch_result, atol=atol, key=key)
+            if ignore_order:
+                _assert_allclose(batch_result.mean(0), sk_batch_result.mean(0), atol=atol, key=key)
+            else:
+                _assert_allclose(batch_result, sk_batch_result, atol=atol, key=key)
 
     # check that metrics are hashable
     assert hash(metric)
@@ -283,6 +291,7 @@ class TextTester(MetricTester):
         fragment_kwargs: bool = False,
         check_scriptable: bool = True,
         key: str = None,
+        ignore_order: bool = None,
         **kwargs_update,
     ):
         """Main method that should be used for testing class. Call this inside testing methods.
@@ -304,6 +313,7 @@ class TextTester(MetricTester):
             check_scriptable:
             key: The key passed onto the `_assert_allclose` to compare the respective metric from the Dict output
                 against the sk_metric.
+            ignore_order: Ignore order of prediction accross processes when DDP is used.
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 targets when running update on the metric.
         """
@@ -328,6 +338,7 @@ class TextTester(MetricTester):
                     fragment_kwargs=fragment_kwargs,
                     check_scriptable=check_scriptable,
                     key=key,
+                    ignore_order=ignore_order,
                     **kwargs_update,
                 ),
                 [(rank, self.poolSize) for rank in range(self.poolSize)],

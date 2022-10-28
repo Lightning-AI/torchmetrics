@@ -117,6 +117,7 @@ class TestBERTScore(TextTester):
             metric_args=metric_args,
             key=metric_key,
             check_scriptable=False,  # huggingface transformers are not usually scriptable
+            ignore_order=ddp,  # ignore order of predictions when DDP is used
         )
 
     @skip_on_connection_issues()
