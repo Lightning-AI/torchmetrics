@@ -196,6 +196,16 @@ def cramers_v_matrix(
 
     Returns:
         Cramer's V statistic for a dataset of categorical variables
+
+    Example:
+        >>> from torchmetrics.functional.nominal import cramers_v_matrix
+        >>> matrix = torch.randint(0, 4, (200, 5))
+        >>> cramers_v_matrix(matrix)
+        tensor([[0.0000, 0.1065, 0.1243, 0.1462, 0.0604],
+        [0.1065, 0.0000, 0.0000, 0.0280, 0.0000],
+        [0.1243, 0.0000, 0.0000, 0.0000, 0.0000],
+        [0.1462, 0.0280, 0.0000, 0.0000, 0.0000],
+        [0.0604, 0.0000, 0.0000, 0.0000, 0.0000]])
     """
     if nan_strategy not in ["replace", "drop"]:
         raise ValueError(
