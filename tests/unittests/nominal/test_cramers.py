@@ -23,8 +23,7 @@ from torchmetrics.nominal.cramers import CramersV
 from torchmetrics.utilities.imports import _DYTHON_AVAILABLE
 from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 
-if _DYTHON_AVAILABLE:
-    from dython.nominal import cramers_v as dython_cramers_v
+from dython.nominal import cramers_v as dython_cramers_v
 
 
 Input = namedtuple("Input", ["preds", "target"])
