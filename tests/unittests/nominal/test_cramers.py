@@ -159,6 +159,4 @@ class TestCramersV(MetricTester):
 def test_cramers_v_matrix(_matrix_input, bias_correction, nan_strategy, nan_replace_value):
     tm_score = cramers_v_matrix(_matrix_input, bias_correction, nan_strategy, nan_replace_value)
     reference_score = _dython_cramers_v_matrix(_matrix_input, bias_correction, nan_strategy, nan_replace_value)
-    print(tm_score)
-    print(reference_score)
     assert torch.allclose(tm_score, reference_score)
