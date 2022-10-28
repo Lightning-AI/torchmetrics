@@ -188,7 +188,7 @@ Or directly from conda
    :caption: Nominal
    :glob:
 
-   regression/*
+   nominal/*
 
 .. toctree::
    :maxdepth: 2
