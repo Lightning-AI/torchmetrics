@@ -133,6 +133,14 @@ def _class_test(
             }
 
             sk_batch_result = sk_metric(ddp_preds, ddp_targets, **ddp_kwargs_upd)
+            if isinstance(batch_result, dict):
+                print(key)
+                print(batch_result)
+                print(batch_result[key])
+            else:
+                print(batch_result)
+            print("~~~~~~~~~~")
+            print(sk_batch_result)
             if ignore_order:
                 _assert_all_close_regardless_of_order(batch_result, sk_batch_result, atol=atol, key=key)
             else:
@@ -144,6 +152,14 @@ def _class_test(
                 for k, v in (batch_kwargs_update if fragment_kwargs else kwargs_update).items()
             }
             sk_batch_result = sk_metric(preds[i], targets[i], **batch_kwargs_update)
+            if isinstance(batch_result, dict):
+                print(key)
+                print(batch_result)
+                print(batch_result[key])
+            else:
+                print(batch_result)
+            print("~~~~~~~~~~")
+            print(sk_batch_result)
             if ignore_order:
                 _assert_all_close_regardless_of_order(batch_result, sk_batch_result, atol=atol, key=key)
             else:
