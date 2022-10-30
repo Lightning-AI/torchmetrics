@@ -78,10 +78,11 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
         >>> _ = torch.manual_seed(123)
         >>> from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
         >>> lpips = LearnedPerceptualImagePatchSimilarity(net_type='vgg')
-        >>> img1 = torch.rand(10, 3, 100, 100)
-        >>> img2 = torch.rand(10, 3, 100, 100)
+        >>> # LPIPS needs the images to be in the [-1, 1] range.
+        >>> img1 = (torch.rand(10, 3, 100, 100) * 2) - 1
+        >>> img2 = (torch.rand(10, 3, 100, 100) * 2) - 1
         >>> lpips(img1, img2)
-        tensor(0.3566, grad_fn=<SqueezeBackward0>)
+        tensor(0.3493, grad_fn=<SqueezeBackward0>)
     """
 
     is_differentiable: bool = True
