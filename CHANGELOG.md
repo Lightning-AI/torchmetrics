@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added `TotalVariation` to image package ([#978](https://github.com/Lightning-AI/metrics/pull/978))
 
+- Added option to pass `distributed_available_fn` to metrics to allow checks for custom communication backend for making `dist_sync_fn` actually useful ([#1301](https://github.com/Lightning-AI/metrics/pull/1301))
+
 
 - Added `normalize` argument to `Inception`, `FID`, `KID` metrics ([#1246](https://github.com/Lightning-AI/metrics/pull/1246))
 
@@ -42,6 +44,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fixed high memory usage for certain classification metrics when `average='micro'` ([#1286](https://github.com/Lightning-AI/metrics/pull/1286))
+
+
+- Fixed precision problems when `structural_similarity_index_measure` was used with autocast ([#1291](https://github.com/Lightning-AI/metrics/pull/1291))
+
+
+- Fixed slow performance for confusion matrix based metrics ([#1302](https://github.com/Lightning-AI/metrics/pull/1302))
+
+
+- Fixed restrictive dtype checking in `spearman_corrcoef` when used with autocast ([#1303](https://github.com/Lightning-AI/metrics/pull/1303))
 
 
 ## [0.10.1] - 2022-10-21

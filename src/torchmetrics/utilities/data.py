@@ -225,8 +225,7 @@ def _bincount(x: Tensor, minlength: Optional[int] = None) -> Tensor:
         for i in range(minlength):
             output[i] = (x == i).sum()
         return output
-    z = torch.zeros(minlength, device=x.device, dtype=x.dtype)
-    return z.index_add_(0, x, torch.ones_like(x))
+    return torch.bincount(x, minlength=minlength)
 
 
 def _flexible_bincount(x: Tensor) -> Tensor:
