@@ -153,6 +153,7 @@ class TestCramersV(MetricTester):
             metric_args=metric_args,
         )
 
+
 @pytest.mark.parametrize("bias_correction", [False, True])
 @pytest.mark.parametrize("nan_strategy, nan_replace_value", [("replace", 1.0), ("drop", None)])
 def test_cramers_v_matrix(_matrix_input, bias_correction, nan_strategy, nan_replace_value):
