@@ -31,7 +31,7 @@ class _MetricVariant(EnumStr):
     C = "c"
 
     @classmethod
-    def from_str(cls, value: Literal["a", "b", "c"]) -> "_MetricVariant":
+    def from_str(cls, value: Literal["a", "b", "c"]) -> "_MetricVariant":  # type: ignore[override]
         """
         Raises:
             ValueError:
@@ -41,7 +41,7 @@ class _MetricVariant(EnumStr):
 
         enum_key = super().from_str(value)
         if enum_key is not None and enum_key in _allowed_variants:
-            return enum_key
+            return enum_key  # type: ignore[return-value]  # use override
         raise ValueError(f"Invalid metric variant. Expected one of {_allowed_variants}, but got {enum_key}.")
 
 
@@ -53,7 +53,7 @@ class _TestAlternative(EnumStr):
     GREATER = "greater"
 
     @classmethod
-    def from_str(cls, value: Literal["two-sided", "less", "greater"]) -> "_TestAlternative":
+    def from_str(cls, value: Literal["two-sided", "less", "greater"]) -> "_TestAlternative":  # type: ignore[override]
         """
         Raises:
             ValueError:
@@ -63,7 +63,7 @@ class _TestAlternative(EnumStr):
 
         enum_key = super().from_str(value.replace("-", "_"))
         if enum_key is not None and enum_key in _allowed_alternatives:
-            return enum_key
+            return enum_key  # type: ignore[return-value]  # use override
         raise ValueError(f"Invalid test alternative. Expected one of {_allowed_alternatives}, but got {enum_key}.")
 
 
@@ -416,7 +416,7 @@ def kendall_rank_corrcoef(
         raise ValueError("Argument `alternative` is required if `t_test=True` but got `None`.")
 
     _variant = _MetricVariant.from_str(variant)
-    _alternative = _TestAlternative.from_str(alternative) if t_test else None
+    _alternative = _TestAlternative.from_str(alternative) if t_test and alternative else None
 
     _preds, _target = _kendall_corrcoef_update(
         preds, target, [], [], num_outputs=1 if preds.ndim == 1 else preds.shape[-1]
