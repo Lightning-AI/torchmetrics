@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import List, Optional, Sequence, Tuple, Union
+from typing import List, Optional, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -185,9 +185,9 @@ def multiclass_roc(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    r"""Computes the Receiver Operating Characteristic (ROC) for binary tasks. The curve consist of multiple pairs
-    of true positive rate (TPR) and false positive rate (FPR) values evaluated at different thresholds, such that
-    the tradeoff between the two values can be seen.
+    r"""Computes the Receiver Operating Characteristic (ROC) for multiclass tasks. The curve consist of multiple
+    pairs of true positive rate (TPR) and false positive rate (FPR) values evaluated at different thresholds, such
+    that the tradeoff between the two values can be seen.
 
     Accepts the following input tensors:
 
@@ -320,9 +320,9 @@ def multilabel_roc(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    r"""Computes the Receiver Operating Characteristic (ROC) for binary tasks. The curve consist of multiple pairs
-    of true positive rate (TPR) and false positive rate (FPR) values evaluated at different thresholds, such that
-    the tradeoff between the two values can be seen.
+    r"""Computes the Receiver Operating Characteristic (ROC) for multilabel tasks. The curve consist of multiple
+    pairs of true positive rate (TPR) and false positive rate (FPR) values evaluated at different thresholds, such
+    that the tradeoff between the two values can be seen.
 
     Accepts the following input tensors:
 
@@ -423,100 +423,21 @@ def multilabel_roc(
 def roc(
     preds: Tensor,
     target: Tensor,
-    num_classes: Optional[int] = None,
-    pos_label: Optional[int] = None,
-    sample_weights: Optional[Sequence] = None,
-    task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+    task: Literal["binary", "multiclass", "multilabel"],
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    num_classes: Optional[int] = None,
     num_labels: Optional[int] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    r"""Receiver Operating Characteristic.
+    r"""Computes the Receiver Operating Characteristic (ROC). The curve consist of multiple pairs of true positive
+    rate (TPR) and false positive rate (FPR) values evaluated at different thresholds, such that the tradeoff
+    between the two values can be seen.
 
-    .. note::
-        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
-        metric. Moving forward we recommend using these versions. This base metric will still work as it did
-        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
-        and the general order of arguments may change, such that this metric will just function as an single
-        entrypoint to calling the three specialized versions.
-
-    Computes the Receiver Operating Characteristic (ROC). Works with both binary, multiclass and multilabel
-    input.
-
-    .. note::
-        If either the positive class or negative class is completly missing in the target tensor,
-        the roc values are not well-defined in this case and a tensor of zeros will be returned (either fpr
-        or tpr depending on what class is missing) together with a warning.
-
-    Args:
-        preds: predictions from model (logits or probabilities)
-        target: ground truth values
-        num_classes: integer with number of classes for multi-label and multiclass problems.
-            Should be set to ``None`` for binary problems.
-        pos_label: integer determining the positive class. Default is ``None`` which for binary problem is translated
-            to 1. For multiclass problems this argument should not be set as we iteratively change it in the
-            range ``[0, num_classes-1]``
-        sample_weights: sample weights for each data point
-
-    Returns:
-        3-element tuple containing
-
-        fpr: tensor with false positive rates.
-            If multiclass or multilabel, this is a list of such tensors, one for each class/label.
-        tpr: tensor with true positive rates.
-            If multiclass or multilabel, this is a list of such tensors, one for each class/label.
-        thresholds: tensor with thresholds used for computing false- and true postive rates
-            If multiclass or multilabel, this is a list of such tensors, one for each class/label.
-
-    Example (binary case):
-        >>> from torchmetrics.functional import roc
-        >>> pred = torch.tensor([0, 1, 2, 3])
-        >>> target = torch.tensor([0, 1, 1, 1])
-        >>> fpr, tpr, thresholds = roc(pred, target, pos_label=1)
-        >>> fpr
-        tensor([0., 0., 0., 0., 1.])
-        >>> tpr
-        tensor([0.0000, 0.3333, 0.6667, 1.0000, 1.0000])
-        >>> thresholds
-        tensor([4, 3, 2, 1, 0])
-
-    Example (multiclass case):
-        >>> from torchmetrics.functional import roc
-        >>> pred = torch.tensor([[0.75, 0.05, 0.05, 0.05],
-        ...                      [0.05, 0.75, 0.05, 0.05],
-        ...                      [0.05, 0.05, 0.75, 0.05],
-        ...                      [0.05, 0.05, 0.05, 0.75]])
-        >>> target = torch.tensor([0, 1, 3, 2])
-        >>> fpr, tpr, thresholds = roc(pred, target, num_classes=4)
-        >>> fpr
-        [tensor([0., 0., 1.]), tensor([0., 0., 1.]), tensor([0.0000, 0.3333, 1.0000]), tensor([0.0000, 0.3333, 1.0000])]
-        >>> tpr
-        [tensor([0., 1., 1.]), tensor([0., 1., 1.]), tensor([0., 0., 1.]), tensor([0., 0., 1.])]
-        >>> thresholds
-        [tensor([1.7500, 0.7500, 0.0500]),
-         tensor([1.7500, 0.7500, 0.0500]),
-         tensor([1.7500, 0.7500, 0.0500]),
-         tensor([1.7500, 0.7500, 0.0500])]
-
-    Example (multilabel case):
-        >>> from torchmetrics.functional import roc
-        >>> pred = torch.tensor([[0.8191, 0.3680, 0.1138],
-        ...                      [0.3584, 0.7576, 0.1183],
-        ...                      [0.2286, 0.3468, 0.1338],
-        ...                      [0.8603, 0.0745, 0.1837]])
-        >>> target = torch.tensor([[1, 1, 0], [0, 1, 0], [0, 0, 0], [0, 1, 1]])
-        >>> fpr, tpr, thresholds = roc(pred, target, num_classes=3, pos_label=1)
-        >>> fpr
-        [tensor([0.0000, 0.3333, 0.3333, 0.6667, 1.0000]),
-         tensor([0., 0., 0., 1., 1.]),
-         tensor([0.0000, 0.0000, 0.3333, 0.6667, 1.0000])]
-        >>> tpr
-        [tensor([0., 0., 1., 1., 1.]), tensor([0.0000, 0.3333, 0.6667, 0.6667, 1.0000]), tensor([0., 1., 1., 1., 1.])]
-        >>> thresholds
-        [tensor([1.8603, 0.8603, 0.8191, 0.3584, 0.2286]),
-         tensor([1.7576, 0.7576, 0.3680, 0.3468, 0.0745]),
-         tensor([1.1837, 0.1837, 0.1338, 0.1183, 0.1138])]
+    This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    :func:`binary_roc`, :func:`multiclass_roc` and :func:`multilabel_roc` for the specific details of each argument
+    influence and examples.
     """
     if task == "binary":
         return binary_roc(preds, target, thresholds, ignore_index, validate_args)

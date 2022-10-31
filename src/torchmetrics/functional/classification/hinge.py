@@ -243,87 +243,19 @@ def multiclass_hinge_loss(
 def hinge_loss(
     preds: Tensor,
     target: Tensor,
+    task: Literal["binary", "multiclass"],
+    num_classes: Optional[int] = None,
     squared: bool = False,
     multiclass_mode: Optional[Literal["crammer-singer", "one-vs-all"]] = None,
-    task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
-    num_classes: Optional[int] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Hinge loss.
+    r"""Computes the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs).
 
-    .. note::
-        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
-        metric. Moving forward we recommend using these versions. This base metric will still work as it did
-        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
-        and the general order of arguments may change, such that this metric will just function as an single
-        entrypoint to calling the three specialized versions.
-
-    Computes the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs).
-
-     In the binary case it is defined as:
-
-    .. math::
-        \text{Hinge loss} = \max(0, 1 - y \times \hat{y})
-
-    Where :math:`y \in {-1, 1}` is the target, and :math:`\hat{y} \in \mathbb{R}` is the prediction.
-
-    In the multi-class case, when ``multiclass_mode=None`` (default), ``multiclass_mode=MulticlassMode.CRAMMER_SINGER``
-    or ``multiclass_mode="crammer-singer"``, this metric will compute the multi-class hinge loss defined by Crammer and
-    Singer as:
-
-    .. math::
-        \text{Hinge loss} = \max\left(0, 1 - \hat{y}_y + \max_{i \ne y} (\hat{y}_i)\right)
-
-    Where :math:`y \in {0, ..., \mathrm{C}}` is the target class (where :math:`\mathrm{C}` is the number of classes),
-    and :math:`\hat{y} \in \mathbb{R}^\mathrm{C}` is the predicted output per class.
-
-    In the multi-class case when ``multiclass_mode=MulticlassMode.ONE_VS_ALL`` or ``multiclass_mode='one-vs-all'``, this
-    metric will use a one-vs-all approach to compute the hinge loss, giving a vector of C outputs where each entry pits
-    that class against all remaining classes.
-
-    This metric can optionally output the mean of the squared hinge loss by setting ``squared=True``
-
-    Only accepts inputs with preds shape of (N) (binary) or (N, C) (multi-class) and target shape of (N).
-
-    Args:
-        preds: Predictions from model (as float outputs from decision function).
-        target: Ground truth labels.
-        squared:
-            If True, this will compute the squared hinge loss. Otherwise, computes the regular hinge loss (default).
-        multiclass_mode:
-            Which approach to use for multi-class inputs (has no effect in the binary case). ``None`` (default),
-            ``MulticlassMode.CRAMMER_SINGER`` or ``"crammer-singer"``, uses the Crammer Singer multi-class hinge loss.
-            ``MulticlassMode.ONE_VS_ALL`` or ``"one-vs-all"`` computes the hinge loss in a one-vs-all fashion.
-
-    Raises:
-        ValueError:
-            If preds shape is not of size (N) or (N, C).
-        ValueError:
-            If target shape is not of size (N).
-        ValueError:
-            If ``multiclass_mode`` is not: None, ``MulticlassMode.CRAMMER_SINGER``, ``"crammer-singer"``,
-            ``MulticlassMode.ONE_VS_ALL`` or ``"one-vs-all"``.
-
-    Example (binary case):
-        >>> import torch
-        >>> from torchmetrics.functional import hinge_loss
-        >>> target = torch.tensor([0, 1, 1])
-        >>> preds = torch.tensor([-2.2, 2.4, 0.1])
-        >>> hinge_loss(preds, target)
-        tensor(0.3000)
-
-    Example (default / multiclass case):
-        >>> target = torch.tensor([0, 1, 2])
-        >>> preds = torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
-        >>> hinge_loss(preds, target)
-        tensor(2.9000)
-
-    Example (multiclass example, one vs all mode):
-        >>> target = torch.tensor([0, 1, 2])
-        >>> preds = torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
-        >>> hinge_loss(preds, target, multiclass_mode="one-vs-all")
-        tensor([2.2333, 1.5000, 1.2333])
+    This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
+    ``task`` argument to either ``'binary'`` or ``'multiclass'``. See the documentation of
+    :func:`binary_hinge_loss` and :func:`multiclass_hinge_loss` for the specific details of
+    each argument influence and examples.
     """
     if task == "binary":
         return binary_hinge_loss(preds, target, squared, ignore_index, validate_args)
@@ -331,6 +263,4 @@ def hinge_loss(
         assert isinstance(num_classes, int)
         assert multiclass_mode is not None
         return multiclass_hinge_loss(preds, target, num_classes, squared, multiclass_mode, ignore_index, validate_args)
-    raise ValueError(
-        f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-    )
+    raise ValueError(f"Expected argument `task` to either be `'binary'` or `'multilabel'` but got {task}")

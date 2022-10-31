@@ -402,11 +402,10 @@ def average_precision(
     preds: Tensor,
     target: Tensor,
     task: Literal["binary", "multiclass", "multilabel"],
+    thresholds: Optional[Union[int, List[float], Tensor]] = None,
     num_classes: Optional[int] = None,
     num_labels: Optional[int] = None,
     average: Optional[Literal["macro", "weighted", "none"]] = "macro",
-    max_fpr: Optional[float] = None,
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[List[Tensor], Tensor]:

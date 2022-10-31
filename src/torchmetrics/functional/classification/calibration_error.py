@@ -353,4 +353,4 @@ def calibration_error(
     if task == "multiclass":
         assert isinstance(num_classes, int)
         return multiclass_calibration_error(preds, target, num_classes, n_bins, norm, ignore_index, validate_args)
-    raise ValueError(f"Expected argument `task` to either be `'binary'`, `'multiclass'` but got {task}")
+    raise ValueError(f"Expected argument `task` to either be `'binary'` or `'multiclass'` but got {task}")

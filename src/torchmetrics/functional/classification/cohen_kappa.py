@@ -230,26 +230,14 @@ def multiclass_cohen_kappa(
 def cohen_kappa(
     preds: Tensor,
     target: Tensor,
-    num_classes: int,
-    weights: Optional[Literal["linear", "quadratic", "none"]] = None,
+    task: Literal["binary", "multiclass"],
     threshold: float = 0.5,
-    task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+    num_classes: Optional[int] = None,
+    weights: Optional[Literal["linear", "quadratic", "none"]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Cohen's kappa.
-
-    .. note::
-        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
-        metric. Moving forward we recommend using these versions. This base metric will still work as it did
-        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
-        and the general order of arguments may change, such that this metric will just function as an single
-        entrypoint to calling the three specialized versions.
-
-
-    Calculates `Cohen's kappa score`_ that measures inter-annotator agreement.
-
-    It is defined as
+    r"""Calculates `Cohen's kappa score`_ that measures inter-annotator agreement. It is defined as.
 
     .. math::
         \kappa = (p_o - p_e) / (1 - p_e)
@@ -259,30 +247,13 @@ def cohen_kappa(
     :math:`p_e` is estimated using a per-annotator empirical prior over the
     class labels.
 
-    Args:
-        preds: (float or long tensor), Either a ``(N, ...)`` tensor with labels or
-            ``(N, C, ...)`` where C is the number of classes, tensor with labels/probabilities
-        target: ``target`` (long tensor), tensor with shape ``(N, ...)`` with ground true labels
-        num_classes: Number of classes in the dataset.
-        weights: Weighting type to calculate the score. Choose from:
-
-            - ``None`` or ``'none'``: no weighting
-            - ``'linear'``: linear weighting
-            - ``'quadratic'``: quadratic weighting
-
-        threshold: Threshold value for binary or multi-label probabilities.
-
-    Example:
-        >>> from torchmetrics.functional import cohen_kappa
-        >>> target = torch.tensor([1, 1, 0, 0])
-        >>> preds = torch.tensor([0, 1, 0, 0])
-        >>> cohen_kappa(preds, target, num_classes=2)
-        tensor(0.5000)
+    This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
+    ``task`` argument to either ``'binary'`` or ``'multiclass'``. See the documentation of
+    :func:`binary_cohen_kappa` and :func:`multiclass_cohen_kappa` for the specific details of
+    each argument influence and examples.
     """
     if task == "binary":
         return binary_cohen_kappa(preds, target, threshold, weights, ignore_index, validate_args)
     if task == "multiclass":
         return multiclass_cohen_kappa(preds, target, num_classes, weights, ignore_index, validate_args)
-    raise ValueError(
-        f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-    )
+    raise ValueError(f"Expected argument `task` to either be `'binary'` or `'multiclass'` but got {task}")

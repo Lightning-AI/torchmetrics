@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import List, Optional, Tuple, Union
+from typing import List, Literal, Optional, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -86,9 +86,9 @@ def binary_recall_at_fixed_precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tuple[Tensor, Tensor]:
-    r"""Computes the higest possible recall value given the minimum precision thresholds provided. This is done by
-    first calculating the precision-recall curve for different thresholds and the find the recall for a given
-    precision level.
+    r"""Computes the higest possible recall value given the minimum precision thresholds provided for binary tasks.
+    This is done by first calculating the precision-recall curve for different thresholds and the find the recall
+    for a given precision level.
 
     Accepts the following input tensors:
 
@@ -185,9 +185,9 @@ def multiclass_recall_at_fixed_precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tuple[Tensor, Tensor]:
-    r"""Computes the higest possible recall value given the minimum precision thresholds provided. This is done by
-    first calculating the precision-recall curve for different thresholds and the find the recall for a given
-    precision level.
+    r"""Computes the higest possible recall value given the minimum precision thresholds provided for multiclass
+    tasks. This is done by first calculating the precision-recall curve for different thresholds and the find the
+    recall for a given precision level.
 
     Accepts the following input tensors:
 
@@ -293,9 +293,9 @@ def multilabel_recall_at_fixed_precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tuple[Tensor, Tensor]:
-    r"""Computes the higest possible recall value given the minimum precision thresholds provided. This is done by
-    first calculating the precision-recall curve for different thresholds and the find the recall for a given
-    precision level.
+    r"""Computes the higest possible recall value given the minimum precision thresholds provided for multilabel
+    tasks. This is done by first calculating the precision-recall curve for different thresholds and the find the
+    recall for a given precision level.
 
     Accepts the following input tensors:
 
@@ -361,3 +361,40 @@ def multilabel_recall_at_fixed_precision(
     )
     state = _multilabel_precision_recall_curve_update(preds, target, num_labels, thresholds)
     return _multilabel_recall_at_fixed_precision_arg_compute(state, num_labels, thresholds, ignore_index, min_precision)
+
+
+def recall_at_fixed_precision(
+    preds: Tensor,
+    target: Tensor,
+    task: Literal["binary", "multiclass", "multilabel"],
+    min_precision: float,
+    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    num_classes: Optional[int] = None,
+    num_labels: Optional[int] = None,
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
+) -> Union[Tensor, Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
+    r"""Computes the higest possible recall value given the minimum precision thresholds provided. This is done by
+    first calculating the precision-recall curve for different thresholds and the find the recall for a given
+    precision level.
+
+    This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    :func:`binary_recall_at_fixed_precision`, :func:`multiclass_recall_at_fixed_precision` and
+    :func:`multilabel_recall_at_fixed_precision` for the specific details of each argument influence and examples.
+    """
+    if task == "binary":
+        return binary_recall_at_fixed_precision(preds, target, min_precision, thresholds, ignore_index, validate_args)
+    if task == "multiclass":
+        assert isinstance(num_classes, int)
+        return multiclass_recall_at_fixed_precision(
+            preds, target, num_classes, min_precision, thresholds, ignore_index, validate_args
+        )
+    if task == "multilabel":
+        assert isinstance(num_labels, int)
+        return multilabel_recall_at_fixed_precision(
+            preds, target, num_labels, min_precision, thresholds, ignore_index, validate_args
+        )
+    raise ValueError(
+        f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+    )
