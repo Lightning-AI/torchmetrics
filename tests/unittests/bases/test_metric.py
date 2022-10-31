@@ -14,6 +14,7 @@
 import os
 import pickle
 from collections import OrderedDict
+from unittest.mock import Mock
 
 import cloudpickle
 import numpy as np
@@ -27,8 +28,6 @@ from torchmetrics import Accuracy, PearsonCorrCoef
 from unittests.helpers import seed_all
 from unittests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum
 from unittests.helpers.utilities import no_warning_call
-from unittest.mock import Mock
-
 
 seed_all(42)
 
@@ -452,10 +451,11 @@ def test_no_warning_on_custom_forward(metric_class):
     ):
         UnsetProperty()
 
+
 def test_custom_availability_check_and_sync_fn():
     dummy_availability_check = Mock(return_value=True)
     dummy_dist_sync_fn = Mock(wraps=lambda x, group: [x])
-    acc = Accuracy(dist_sync_fn = dummy_dist_sync_fn, distributed_available_fn= dummy_availability_check)
+    acc = Accuracy(dist_sync_fn=dummy_dist_sync_fn, distributed_available_fn=dummy_availability_check)
 
     acc.update(torch.tensor([[1], [1], [1], [1]]), torch.tensor([[1], [1], [1], [1]]))
     dummy_dist_sync_fn.assert_not_called()
@@ -463,4 +463,4 @@ def test_custom_availability_check_and_sync_fn():
 
     acc.compute()
     dummy_availability_check.assert_called_once()
-    assert dummy_dist_sync_fn.call_count == 4 # tp, fp, tn, fn
+    assert dummy_dist_sync_fn.call_count == 4  # tp, fp, tn, fn
