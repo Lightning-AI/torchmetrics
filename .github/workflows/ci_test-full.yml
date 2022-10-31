@@ -63,7 +63,7 @@ jobs:
     - name: Setup macOS
       if: ${{ runner.os == 'macOS' }}
       run: |
-        echo 'UNITTEST_TIMEOUT=--timeout=120' >> $GITHUB_ENV
+        echo 'UNITTEST_TIMEOUT=--timeout=180' >> $GITHUB_ENV
         brew install gcc libomp ffmpeg # https://github.com/pytorch/pytorch/issues/20030
     - name: Setup Linux
       if: ${{ runner.os == 'Linux' }}
