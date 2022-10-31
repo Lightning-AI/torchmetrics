@@ -132,7 +132,7 @@ class KendallRankCorrCoef(Metric):
         self.add_state("preds", [], dist_reduce_fx="cat")
         self.add_state("target", [], dist_reduce_fx="cat")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Update variables required to compute Kendall rank correlation coefficient.
 
         Args:

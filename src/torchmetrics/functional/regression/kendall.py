@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from typing import List, Optional, Tuple, Union
 
 import torch
@@ -32,7 +31,7 @@ class _MetricVariant(EnumStr):
     C = "c"
 
     @classmethod
-    def from_str(cls, value: str) -> Optional["EnumStr"]:
+    def from_str(cls, value: Literal["a", "b", "c"]) -> "_MetricVariant":
         """
         Raises:
             ValueError:
@@ -54,7 +53,7 @@ class _TestAlternative(EnumStr):
     GREATER = "greater"
 
     @classmethod
-    def from_str(cls, value: str) -> Optional["EnumStr"]:
+    def from_str(cls, value: Literal["two-sided", "less", "greater"]) -> "_TestAlternative":
         """
         Raises:
             ValueError:
