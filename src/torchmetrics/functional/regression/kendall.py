@@ -186,7 +186,7 @@ def _calculate_tau(
         tau = con_min_dis_pairs / (concordant_pairs + discordant_pairs)
     elif variant == _MetricVariant.B:
         total_combinations: Tensor = n_total * (n_total - 1) // 2
-        denominator = (total_combinations - preds_ties) * (total_combinations - target_ties)  # type: ignore (is Tensor)
+        denominator = (total_combinations - preds_ties) * (total_combinations - target_ties)  # type: ignore
         tau = con_min_dis_pairs / torch.sqrt(denominator)
     else:
         preds_unique = torch.tensor([len(p.unique()) for p in preds.T], dtype=preds.dtype, device=preds.device)
@@ -231,8 +231,8 @@ def _calculate_p_value(
     else:
         m = n_total * (n_total - 1)
         t_value_denominator: Tensor = (t_value_denominator_base - preds_ties_p2 - target_ties_p2) / 18
-        t_value_denominator += (2 * preds_ties * target_ties) / m  # type: ignore (is Tensor)
-        t_value_denominator += preds_ties_p1 * target_ties_p1 / (9 * m * (n_total - 2))  # type: ignore (is Tensor)
+        t_value_denominator += (2 * preds_ties * target_ties) / m  # type: ignore
+        t_value_denominator += preds_ties_p1 * target_ties_p1 / (9 * m * (n_total - 2))  # type: ignore
         t_value = con_min_dis_pairs / torch.sqrt(t_value_denominator)
 
     if alternative == _TestAlternative.TWO_SIDED:
