@@ -24,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, macOS-11, windows-2022]
+        os: [ubuntu-20.04, macOS-12, windows-2022]
         python-version: ['3.7', '3.10']
         requires: ['oldest', 'latest']
         exclude:

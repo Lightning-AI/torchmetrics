@@ -33,8 +33,8 @@ jobs:
         include:
           - {os: 'ubuntu-22.04', python-version: '3.8', pytorch-version: '1.13.0'}
           - {os: 'ubuntu-22.04', python-version: '3.10', pytorch-version: '1.13.0'}
-          - {os: 'macOS-11', python-version: '3.8', pytorch-version: '1.13.0'}
-          - {os: 'macOS-11', python-version: '3.9', pytorch-version: '1.13.0'}
+          - {os: 'macOS-12', python-version: '3.8', pytorch-version: '1.13.0'}
+          - {os: 'macOS-12', python-version: '3.9', pytorch-version: '1.13.0'}
           - {os: 'windows-2022', python-version: '3.8', pytorch-version: '1.13.0'}
           - {os: 'windows-2022', python-version: '3.9', pytorch-version: '1.13.0'}
           # the oldest configurations
