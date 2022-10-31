@@ -186,7 +186,7 @@ def _calculate_tau(
         tau = con_min_dis_pairs / (concordant_pairs + discordant_pairs)
     elif variant == _MetricVariant.B:
         total_combinations: Tensor = n_total * (n_total - 1) // 2
-        denominator = (total_combinations - preds_ties) * (total_combinations - target_ties)  # type: ignore
+        denominator = (total_combinations - preds_ties) * (total_combinations - target_ties)
         tau = con_min_dis_pairs / torch.sqrt(denominator)
     else:
         preds_unique = torch.tensor([len(p.unique()) for p in preds.T], dtype=preds.dtype, device=preds.device)
