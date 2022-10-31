@@ -134,6 +134,9 @@ class TestSpearmanCorrCoef(MetricTester):
 
 def test_error_on_different_shape():
     metric = SpearmanCorrCoef(num_outputs=1)
+    with pytest.raises(TypeError, match="Expected `preds` and `target` both to be floating point tensors.*"):
+        metric(torch.randint(5, (100,)), torch.randn(100))
+
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(100), torch.randn(50))
 

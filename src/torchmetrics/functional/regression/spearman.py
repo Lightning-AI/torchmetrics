@@ -63,10 +63,9 @@ def _spearman_corrcoef_update(preds: Tensor, target: Tensor, num_outputs: int) -
         target: Ground truth tensor
     """
 
-    if preds.dtype != target.dtype:
+    if not (preds.is_floating_point() and target.is_floating_point()):
         raise TypeError(
-            "Expected `preds` and `target` to have the same data type."
-            f" Got preds: {preds.dtype} and target: {target.dtype}."
+            "Expected `preds` and `target` both to be floating point tensors, but got {pred.dtype} and {target.dtype}"
         )
     _check_same_shape(preds, target)
     _check_data_shape_for_corr_coef(preds, target, num_outputs)
