@@ -46,7 +46,7 @@ def _valid_img(img: Tensor, normalize: bool) -> bool:
 class LearnedPerceptualImagePatchSimilarity(Metric):
     """The Learned Perceptual Image Patch Similarity (`LPIPS_`) is used to judge the perceptual similarity between
     two images. LPIPS essentially computes the similarity between the activations of two image patches for some
-    pre-defined network. This measure has been shown to match human perseption well. A low LPIPS score means that
+    pre-defined network. This measure has been shown to match human perception well. A low LPIPS score means that
     image patches are perceptual similar.
 
     Both input image patches are expected to have shape `[N, 3, H, W]`.
@@ -78,10 +78,11 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
         >>> _ = torch.manual_seed(123)
         >>> from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
         >>> lpips = LearnedPerceptualImagePatchSimilarity(net_type='vgg')
-        >>> img1 = torch.rand(10, 3, 100, 100)
-        >>> img2 = torch.rand(10, 3, 100, 100)
+        >>> # LPIPS needs the images to be in the [-1, 1] range.
+        >>> img1 = (torch.rand(10, 3, 100, 100) * 2) - 1
+        >>> img2 = (torch.rand(10, 3, 100, 100) * 2) - 1
         >>> lpips(img1, img2)
-        tensor(0.3566, grad_fn=<SqueezeBackward0>)
+        tensor(0.3493, grad_fn=<SqueezeBackward0>)
     """
 
     is_differentiable: bool = True
@@ -138,7 +139,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
                 "Expected both input arguments to be normalized tensors with shape [N, 3, H, W]."
                 f" Got input with shape {img1.shape} and {img2.shape} and values in range"
                 f" {[img1.min(), img1.max()]} and {[img2.min(), img2.max()]} when all values are"
-                f"expected to be in the {[0,1] if self.normalize else [-1,1]} range."
+                f" expected to be in the {[0,1] if self.normalize else [-1,1]} range."
             )
         loss = self.net(img1, img2, normalize=self.normalize).squeeze()
         self.sum_scores += loss.sum()
