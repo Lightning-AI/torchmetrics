@@ -47,7 +47,7 @@ jobs:
 
     - name: Get Date
       id: get-date
-      run: echo "::set-output name=today::$(/bin/date -u '+%Y%m%d')"
+      run: echo "::set-output name=today::$(/bin/date -u '+%Yw%W')"
 
     - name: Cache Conda env
       uses: actions/cache@v2
