@@ -126,6 +126,9 @@ def test_tracker(base_metric, metric_input, maximize):
         assert val != 0.0
         assert idx in list(range(5))
 
+    val2 = tracker.best_metric(return_step=False)
+    assert val == val2
+
 
 @pytest.mark.parametrize(
     "base_metric",
