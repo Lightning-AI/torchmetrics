@@ -14,7 +14,7 @@
 
 from typing import List, Optional, Sequence, Tuple, Union
 
-import humandfriendly
+import humanfriendly
 import torch
 from torch import Tensor, tensor
 from torch.nn import functional as F
@@ -95,7 +95,7 @@ def _adjust_threshold_arg(
     if isinstance(thresholds, list):
         thresholds = torch.tensor(thresholds, device=device)
     if isinstance(thresholds, str):
-        thresholds = humandfriendly.parse_size(thresholds, binary=True)
+        thresholds = humanfriendly.parse_size(thresholds, binary=True)
     return thresholds
 
 
