@@ -57,7 +57,7 @@ jobs:
         offset: "integrate"
 
     - name: Set min. dependencies
-      if: ${{ inputs.requires == 'oldest' }}
+      if: ${{ matrix.requires == 'oldest' }}
       run: python .github/assistant.py set-oldest-versions --req_files=requirements/integrate.txt
 
     - name: Freeze PIL (hotfix)
