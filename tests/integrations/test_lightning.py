@@ -188,7 +188,7 @@ def test_metric_lightning_log(tmpdir):
             self.metric_epoch = SumMetric()
             self.sum = torch.tensor(0.0)
 
-        def on_epoch_start(self):
+        def on_train_epoch_start(self):
             self.sum = torch.tensor(0.0)
 
         def training_step(self, batch, batch_idx):
