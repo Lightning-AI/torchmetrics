@@ -125,7 +125,7 @@ class Dice(StatScores):
         average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
         mdmc_average: Optional[str] = "global",
         ignore_index: Optional[int] = None,
-        top_k: Optional[int] = None,
+        top_k: Optional[int] = 1,
         multiclass: Optional[bool] = None,
         **kwargs: Any,
     ) -> None:

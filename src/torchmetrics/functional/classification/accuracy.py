@@ -390,7 +390,7 @@ def accuracy(
     num_labels: Optional[int] = None,
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
     multidim_average: Optional[Literal["global", "samplewise"]] = "global",
-    top_k: Optional[int] = None,
+    top_k: Optional[int] = 1,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:

@@ -162,7 +162,7 @@ def dice(
     average: Optional[str] = "micro",
     mdmc_average: Optional[str] = "global",
     threshold: float = 0.5,
-    top_k: Optional[int] = None,
+    top_k: Optional[int] = 1,
     num_classes: Optional[int] = None,
     multiclass: Optional[bool] = None,
     ignore_index: Optional[int] = None,

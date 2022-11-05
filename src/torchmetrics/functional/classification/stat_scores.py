@@ -912,7 +912,7 @@ def _stat_scores_update(
     reduce: Optional[str] = "micro",
     mdmc_reduce: Optional[str] = None,
     num_classes: Optional[int] = None,
-    top_k: Optional[int] = None,
+    top_k: Optional[int] = 1,
     threshold: float = 0.5,
     multiclass: Optional[bool] = None,
     ignore_index: Optional[int] = None,
@@ -1097,7 +1097,7 @@ def stat_scores(
     num_labels: Optional[int] = None,
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
     multidim_average: Optional[Literal["global", "samplewise"]] = "global",
-    top_k: Optional[int] = None,
+    top_k: Optional[int] = 1,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
