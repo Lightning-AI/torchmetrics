@@ -27,6 +27,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changed minimum Pytorch version to be 1.8 ([#1263](https://github.com/Lightning-AI/metrics/pull/1263))
 
 
+- Changed interface for all functional and modular classification metrics after refactor ([#1252](https://github.com/Lightning-AI/metrics/pull/1252))
+
+
 ### Deprecated
 
 -
