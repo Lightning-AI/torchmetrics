@@ -222,55 +222,31 @@ class MulticlassCalibrationError(Metric):
         return _ce_compute(confidences, accuracies, self.n_bins, norm=self.norm)
 
 
-class CalibrationError(object):
-    r"""Calibration Error.
+class CalibrationError:
+    r"""`Computes the Top-label Calibration Error`_. The expected calibration error can be used to quantify how well
+    a given model is calibrated e.g. how well the predicted output probabilities of the model matches the actual
+    probabilities of the ground truth distribution.
 
-    .. note::
-        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
-        metric. Moving forward we recommend using these versions. This base metric will still work as it did
-        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
-        and the general order of arguments may change, such that this metric will just function as an single
-        entrypoint to calling the three specialized versions.
-
-    `Computes the Top-label Calibration Error`_
     Three different norms are implemented, each corresponding to variations on the calibration error metric.
 
-    L1 norm (Expected Calibration Error)
+    .. math::
+        \text{ECE} = \sum_i^N b_i \|(p_i - c_i)\|, \text{L1 norm (Expected Calibration Error)}
 
     .. math::
-        \text{ECE} = \sum_i^N b_i \|(p_i - c_i)\|
-
-    Infinity norm (Maximum Calibration Error)
+        \text{MCE} =  \max_{i} (p_i - c_i), \text{Infinity norm (Maximum Calibration Error)}
 
     .. math::
-        \text{MCE} =  \max_{i} (p_i - c_i)
+        \text{RMSCE} = \sqrt{\sum_i^N b_i(p_i - c_i)^2}, \text{L2 norm (Root Mean Square Calibration Error)}
 
-    L2 norm (Root Mean Square Calibration Error)
+    Where :math:`p_i` is the top-1 prediction accuracy in bin :math:`i`, :math:`c_i` is the average confidence of
+    predictions in bin :math:`i`, and :math:`b_i` is the fraction of data points in bin :math:`i`. Bins are constructed
+    in an uniform way in the [0,1] range.
 
-    .. math::
-        \text{RMSCE} = \sqrt{\sum_i^N b_i(p_i - c_i)^2}
-
-    Where :math:`p_i` is the top-1 prediction accuracy in bin :math:`i`,
-    :math:`c_i` is the average confidence of predictions in bin :math:`i`, and
-    :math:`b_i` is the fraction of data points in bin :math:`i`.
-
-    .. note::
-        L2-norm debiasing is not yet supported.
-
-    Args:
-        n_bins: Number of bins to use when computing probabilities and accuracies.
-        norm: Norm used to compare empirical and expected probability bins.
-            Defaults to "l1", or Expected Calibration Error.
-        debias: Applies debiasing term, only implemented for l2 norm. Defaults to True.
-
-        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+    This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
+    ``task`` argument to either ``'binary'`` or ``'multiclass'``. See the documentation of
+    :func:`binary_calibration_error` and :func:`multiclass_calibration_error` for the specific details of
+    each argument influence and examples.
     """
-    is_differentiable: bool = False
-    higher_is_better: bool = False
-    full_state_update: bool = False
-    DISTANCES = {"l1", "l2", "max"}
-    confidences: List[Tensor]
-    accuracies: List[Tensor]
 
     def __new__(
         cls,
@@ -291,5 +267,3 @@ class CalibrationError(object):
         raise ValueError(
             f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
         )
-
-

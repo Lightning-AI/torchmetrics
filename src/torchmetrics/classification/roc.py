@@ -305,98 +305,16 @@ class MultilabelROC(MultilabelPrecisionRecallCurve):
         return _multilabel_roc_compute(state, self.num_labels, self.thresholds, self.ignore_index)
 
 
-class ROC(object):
-    r"""Receiver Operating Characteristic.
+class ROC:
+    r"""Computes the Receiver Operating Characteristic (ROC). The curve consist of multiple pairs of true positive
+    rate (TPR) and false positive rate (FPR) values evaluated at different thresholds, such that the tradeoff
+    between the two values can be seen.
 
-    .. note::
-        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
-        metric. Moving forward we recommend using these versions. This base metric will still work as it did
-        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
-        and the general order of arguments may change, such that this metric will just function as an single
-        entrypoint to calling the three specialized versions.
-
-    Computes the Receiver Operating Characteristic (ROC). Works for both binary, multiclass and multilabel
-    problems. In the case of multiclass, the values will be calculated based on a one-vs-the-rest approach.
-
-    Forward accepts
-
-    - ``preds`` (float tensor): ``(N, ...)`` (binary) or ``(N, C, ...)`` (multiclass/multilabel) tensor
-      with probabilities, where C is the number of classes/labels.
-
-    - ``target`` (long tensor): ``(N, ...)`` or ``(N, C, ...)`` with integer labels
-
-    .. note::
-        If either the positive class or negative class is completly missing in the target tensor,
-        the roc values are not well-defined in this case and a tensor of zeros will be returned (either fpr
-        or tpr depending on what class is missing) together with a warning.
-
-    Args:
-        num_classes: integer with number of classes for multi-label and multiclass problems.
-            Should be set to ``None`` for binary problems
-        pos_label: integer determining the positive class. Default is ``None`` which for binary problem is translated
-            to 1. For multiclass problems this argument should not be set as we iteratively change it in the range
-            ``[0,num_classes-1]``
-
-        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
-
-    Example (binary case):
-        >>> from torchmetrics import ROC
-        >>> pred = torch.tensor([0, 1, 2, 3])
-        >>> target = torch.tensor([0, 1, 1, 1])
-        >>> roc = ROC(pos_label=1)
-        >>> fpr, tpr, thresholds = roc(pred, target)
-        >>> fpr
-        tensor([0., 0., 0., 0., 1.])
-        >>> tpr
-        tensor([0.0000, 0.3333, 0.6667, 1.0000, 1.0000])
-        >>> thresholds
-        tensor([4, 3, 2, 1, 0])
-
-    Example (multiclass case):
-        >>> pred = torch.tensor([[0.75, 0.05, 0.05, 0.05],
-        ...                      [0.05, 0.75, 0.05, 0.05],
-        ...                      [0.05, 0.05, 0.75, 0.05],
-        ...                      [0.05, 0.05, 0.05, 0.75]])
-        >>> target = torch.tensor([0, 1, 3, 2])
-        >>> roc = ROC(num_classes=4)
-        >>> fpr, tpr, thresholds = roc(pred, target)
-        >>> fpr
-        [tensor([0., 0., 1.]), tensor([0., 0., 1.]), tensor([0.0000, 0.3333, 1.0000]), tensor([0.0000, 0.3333, 1.0000])]
-        >>> tpr
-        [tensor([0., 1., 1.]), tensor([0., 1., 1.]), tensor([0., 0., 1.]), tensor([0., 0., 1.])]
-        >>> thresholds
-        [tensor([1.7500, 0.7500, 0.0500]),
-         tensor([1.7500, 0.7500, 0.0500]),
-         tensor([1.7500, 0.7500, 0.0500]),
-         tensor([1.7500, 0.7500, 0.0500])]
-
-    Example (multilabel case):
-        >>> pred = torch.tensor([[0.8191, 0.3680, 0.1138],
-        ...                      [0.3584, 0.7576, 0.1183],
-        ...                      [0.2286, 0.3468, 0.1338],
-        ...                      [0.8603, 0.0745, 0.1837]])
-        >>> target = torch.tensor([[1, 1, 0], [0, 1, 0], [0, 0, 0], [0, 1, 1]])
-        >>> roc = ROC(num_classes=3, pos_label=1)
-        >>> fpr, tpr, thresholds = roc(pred, target)
-        >>> fpr
-        [tensor([0.0000, 0.3333, 0.3333, 0.6667, 1.0000]),
-         tensor([0., 0., 0., 1., 1.]),
-         tensor([0.0000, 0.0000, 0.3333, 0.6667, 1.0000])]
-        >>> tpr
-        [tensor([0., 0., 1., 1., 1.]),
-         tensor([0.0000, 0.3333, 0.6667, 0.6667, 1.0000]),
-         tensor([0., 1., 1., 1., 1.])]
-        >>> thresholds
-        [tensor([1.8603, 0.8603, 0.8191, 0.3584, 0.2286]),
-         tensor([1.7576, 0.7576, 0.3680, 0.3468, 0.0745]),
-         tensor([1.1837, 0.1837, 0.1338, 0.1183, 0.1138])]
+    This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    :func:`binary_roc`, :func:`multiclass_roc` and :func:`multilabel_roc` for the specific details of each argument
+    influence and examples.
     """
-
-    is_differentiable: bool = False
-    higher_is_better: Optional[bool] = None
-    full_state_update: bool = False
-    preds: List[Tensor]
-    target: List[Tensor]
 
     def __new__(
         cls,
@@ -409,15 +327,15 @@ class ROC(object):
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
-          kwargs.update(dict(thresholds=thresholds, ignore_index=ignore_index, validate_args=validate_args))
-          if task == "binary":
-              return BinaryROC(**kwargs)
-          if task == "multiclass":
-              assert isinstance(num_classes, int)
-              return MulticlassROC(num_classes, **kwargs)
-          if task == "multilabel":
-              assert isinstance(num_labels, int)
-              return MultilabelROC(num_labels, **kwargs)
-          raise ValueError(
-              f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-          )
+        kwargs.update(dict(thresholds=thresholds, ignore_index=ignore_index, validate_args=validate_args))
+        if task == "binary":
+            return BinaryROC(**kwargs)
+        if task == "multiclass":
+            assert isinstance(num_classes, int)
+            return MulticlassROC(num_classes, **kwargs)
+        if task == "multilabel":
+            assert isinstance(num_labels, int)
+            return MultilabelROC(num_labels, **kwargs)
+        raise ValueError(
+            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+        )

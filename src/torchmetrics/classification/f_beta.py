@@ -708,110 +708,18 @@ class MultilabelF1Score(MultilabelFBetaScore):
         )
 
 
-class FBetaScore(object):
-    r"""F-Beta Score.
-
-    .. note::
-        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
-        metric. Moving forward we recommend using these versions. This base metric will still work as it did
-        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
-        and the general order of arguments may change, such that this metric will just function as an single
-        entrypoint to calling the three specialized versions.
-
-    Computes `F-score`_, specifically:
+class FBetaScore:
+    r"""Computes `F-score`_ metric:
 
     .. math::
-        F_\beta = (1 + \beta^2) * \frac{\text{precision} * \text{recall}}
+        F_{\beta} = (1 + \beta^2) * \frac{\text{precision} * \text{recall}}
         {(\beta^2 * \text{precision}) + \text{recall}}
 
-    Where :math:`\beta` is some positive real factor. Works with binary, multiclass, and multilabel data.
-    Accepts logit scores or probabilities from a model output or integer class values in prediction.
-    Works with multi-dimensional preds and target.
-
-    Forward accepts
-
-    - ``preds`` (float or long tensor): ``(N, ...)`` or ``(N, C, ...)`` where C is the number of classes
-    - ``target`` (long tensor): ``(N, ...)``
-
-    If preds and target are the same shape and preds is a float tensor, we use the ``self.threshold`` argument
-    to convert into integer labels. This is the case for binary and multi-label logits and probabilities.
-
-    If preds has an extra dimension as in the case of multi-class scores we perform an argmax on ``dim=1``.
-
-    Args:
-        num_classes: Number of classes. Necessary for ``'macro'``, ``'weighted'`` and ``None`` average methods.
-        beta: Beta coefficient in the F measure.
-        threshold:
-            Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
-            of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
-        average:
-            Defines the reduction that is applied. Should be one of the following:
-
-            - ``'micro'`` [default]: Calculate the metric globally, across all samples and classes.
-            - ``'macro'``: Calculate the metric for each class separately, and average the
-              metrics across classes (with equal weights for each class).
-            - ``'weighted'``: Calculate the metric for each class separately, and average the
-              metrics across classes, weighting each class by its support (``tp + fn``).
-            - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
-              the metric for every class.
-            - ``'samples'``: Calculate the metric for each sample, and average the metrics
-              across samples (with equal weights for each sample).
-
-            .. note:: What is considered a sample in the multi-dimensional multi-class case
-                depends on the value of ``mdmc_average``.
-
-            .. note:: If ``'none'`` and a given class doesn't occur in the ``preds`` or ``target``,
-                the value for the class will be ``nan``.
-
-        mdmc_average:
-            Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
-            ``average`` parameter). Should be one of the following:
-
-            - ``None`` [default]: Should be left unchanged if your data is not multi-dimensional
-              multi-class.
-
-            - ``'samplewise'``: In this case, the statistics are computed separately for each
-              sample on the ``N`` axis, and then averaged over samples.
-              The computation for each sample is done by treating the flattened extra axes ``...``
-              as the ``N`` dimension within the sample,
-              and computing the metric for the sample based on that.
-
-            - ``'global'``: In this case the ``N`` and ``...`` dimensions of the inputs
-              are flattened into a new ``N_X`` sample axis, i.e. the inputs are treated as if they
-              were ``(N_X, C)``. From here on the ``average`` parameter applies as usual.
-
-        ignore_index:
-            Integer specifying a target class to ignore. If given, this class index does not contribute
-            to the returned score, regardless of reduction method. If an index is ignored, and ``average=None``
-            or ``'none'``, the score for the ignored class will be returned as ``nan``.
-
-        top_k:
-            Number of the highest probability or logit score predictions considered finding the correct label,
-            relevant only for (multi-dimensional) multi-class inputs. The default value (``None``) will be interpreted
-            as 1 for these inputs.
-
-            Should be left at default (``None``) for all other types of inputs.
-
-        multiclass:
-            Used only in certain special cases, where you want to treat inputs as a different type
-            than what they appear to be.
-
-        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
-
-    Raises:
-        ValueError:
-            If ``average`` is none of ``"micro"``, ``"macro"``, ``"weighted"``, ``"none"``, ``None``.
-
-    Example:
-        >>> import torch
-        >>> from torchmetrics import FBetaScore
-        >>> target = torch.tensor([0, 1, 2, 0, 1, 2])
-        >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])
-        >>> f_beta = FBetaScore(num_classes=3, beta=0.5)
-        >>> f_beta(preds, target)
-        tensor(0.3333)
+    This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    :func:`binary_fbeta_score`, :func:`multiclass_fbeta_score` and :func:`multilabel_fbeta_score` for the specific
+    details of each argument influence and examples.
     """
-    full_state_update: bool = False
 
     def __new__(
         cls,
@@ -830,9 +738,7 @@ class FBetaScore(object):
         **kwargs: Any,
     ) -> Metric:
         assert multidim_average is not None
-        kwargs.update(
-            dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
-        )
+        kwargs.update(dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args))
         if task == "binary":
             return BinaryFBetaScore(beta, threshold, **kwargs)
         if task == "multiclass":
@@ -847,103 +753,17 @@ class FBetaScore(object):
         )
 
 
+class F1Score:
+    r"""Computes F-1 score:
 
-class F1Score(object):
-    r"""F1 Score.
+    .. math::
+        F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
 
-    .. note::
-        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
-        metric. Moving forward we recommend using these versions. This base metric will still work as it did
-        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
-        and the general order of arguments may change, such that this metric will just function as an single
-        entrypoint to calling the three specialized versions.
-
-    Computes F1 metric.
-
-    F1 metrics correspond to a harmonic mean of the precision and recall scores.
-    Works with binary, multiclass, and multilabel data. Accepts logits or probabilities from a model
-    output or integer class values in prediction. Works with multi-dimensional preds and target.
-
-    Forward accepts
-
-    - ``preds`` (float or long tensor): ``(N, ...)`` or ``(N, C, ...)`` where C is the number of classes
-    - ``target`` (long tensor): ``(N, ...)``
-
-    If preds and target are the same shape and preds is a float tensor, we use the ``self.threshold`` argument.
-    This is the case for binary and multi-label logits.
-
-    If preds has an extra dimension as in the case of multi-class scores we perform an argmax on ``dim=1``.
-
-    Args:
-        num_classes:
-            Number of classes. Necessary for ``'macro'``, ``'weighted'`` and ``None`` average methods.
-        threshold:
-            Threshold for transforming probability or logit predictions to binary ``(0,1)`` predictions, in the case
-            of binary or multi-label inputs. Default value of ``0.5`` corresponds to input being probabilities.
-        average:
-            Defines the reduction that is applied. Should be one of the following:
-
-            - ``'micro'`` [default]: Calculate the metric globally, across all samples and classes.
-            - ``'macro'``: Calculate the metric for each class separately, and average the
-              metrics across classes (with equal weights for each class).
-            - ``'weighted'``: Calculate the metric for each class separately, and average the
-              metrics across classes, weighting each class by its support (``tp + fn``).
-            - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
-              the metric for every class.
-            - ``'samples'``: Calculate the metric for each sample, and average the metrics
-              across samples (with equal weights for each sample).
-
-            .. note:: What is considered a sample in the multi-dimensional multi-class case
-                depends on the value of ``mdmc_average``.
-
-        mdmc_average:
-            Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
-            ``average`` parameter). Should be one of the following:
-
-            - ``None`` [default]: Should be left unchanged if your data is not multi-dimensional
-              multi-class.
-
-            - ``'samplewise'``: In this case, the statistics are computed separately for each
-              sample on the ``N`` axis, and then averaged over samples.
-              The computation for each sample is done by treating the flattened extra axes ``...``
-              as the ``N`` dimension within the sample,
-              and computing the metric for the sample based on that.
-
-            - ``'global'``: In this case the ``N`` and ``...`` dimensions of the inputs
-              are flattened into a new ``N_X`` sample axis, i.e. the inputs are treated as if they
-              were ``(N_X, C)``. From here on the ``average`` parameter applies as usual.
-
-        ignore_index:
-            Integer specifying a target class to ignore. If given, this class index does not contribute
-            to the returned score, regardless of reduction method. If an index is ignored, and ``average=None``
-            or ``'none'``, the score for the ignored class will be returned as ``nan``.
-
-        top_k:
-            Number of the highest probability or logit score predictions considered finding the correct label,
-            relevant only for (multi-dimensional) multi-class inputs. The
-            default value (``None``) will be interpreted as 1 for these inputs.
-            Should be left at default (``None``) for all other types of inputs.
-
-        multiclass:
-            Used only in certain special cases, where you want to treat inputs as a different type
-            than what they appear to be.
-
-        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
-
-
-    Example:
-        >>> import torch
-        >>> from torchmetrics import F1Score
-        >>> target = torch.tensor([0, 1, 2, 0, 1, 2])
-        >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])
-        >>> f1 = F1Score(num_classes=3)
-        >>> f1(preds, target)
-        tensor(0.3333)
+    This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    :func:`binary_f1_score`, :func:`multiclass_f1_score` and :func:`multilabel_f1_score` for the specific
+    details of each argument influence and examples.
     """
-
-    is_differentiable: bool = False
-    higher_is_better: bool = True
-    full_state_update: bool = False
 
     def __new__(
         cls,
@@ -961,9 +781,7 @@ class F1Score(object):
         **kwargs: Any,
     ) -> Metric:
         assert multidim_average is not None
-        kwargs.update(
-            dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
-        )
+        kwargs.update(dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args))
         if task == "binary":
             return BinaryF1Score(threshold, **kwargs)
         if task == "multiclass":

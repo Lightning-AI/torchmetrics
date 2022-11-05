@@ -314,23 +314,16 @@ class MultilabelAUROC(MultilabelPrecisionRecallCurve):
         return _multilabel_auroc_compute(state, self.num_labels, self.average, self.thresholds, self.ignore_index)
 
 
-class AUROC(object):
-    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_). The AUROC
-    score summarizes the ROC curve into an single number that describes the performance of a model for multiple
-    thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
-    corresponds to random guessing.
+class AUROC:
+    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_). The AUROC score summarizes the
+    ROC curve into an single number that describes the performance of a model for multiple thresholds at the same
+    time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5 corresponds to random guessing.
 
     This module is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
     :mod:`BinaryAUROC`, :mod:`MulticlassAUROC` and :mod:`MultilabelAUROC` for the specific details of
     each argument influence and examples.
-
     """
-    is_differentiable: bool = False
-    higher_is_better: bool = True
-    full_state_update: bool = False
-    preds: List[Tensor]
-    target: List[Tensor]
 
     def __new__(
         cls,
@@ -356,5 +349,3 @@ class AUROC(object):
         raise ValueError(
             f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
         )
-
-

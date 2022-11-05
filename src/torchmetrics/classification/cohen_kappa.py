@@ -180,17 +180,8 @@ class MulticlassCohenKappa(MulticlassConfusionMatrix):
         return _cohen_kappa_reduce(self.confmat, self.weights)
 
 
-class CohenKappa(object):
-    r"""Cohen Kappa.
-
-    .. note::
-        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
-        metric. Moving forward we recommend using these versions. This base metric will still work as it did
-        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
-        and the general order of arguments may change, such that this metric will just function as an single
-        entrypoint to calling the three specialized versions.
-
-    Calculates `Cohen's kappa score`_ that measures inter-annotator agreement. It is defined as
+class CohenKappa:
+    r"""Calculates `Cohen's kappa score`_ that measures inter-annotator agreement. It is defined as.
 
     .. math::
         \kappa = (p_o - p_e) / (1 - p_e)
@@ -200,45 +191,11 @@ class CohenKappa(object):
     :math:`p_e` is estimated using a per-annotator empirical prior over the
     class labels.
 
-    Works with binary, multiclass, and multilabel data.  Accepts probabilities from a model output or
-    integer class values in prediction.  Works with multi-dimensional preds and target.
-
-    Forward accepts
-        - ``preds`` (float or long tensor): ``(N, ...)`` or ``(N, C, ...)`` where C is the number of classes
-
-        - ``target`` (long tensor): ``(N, ...)``
-
-    If preds and target are the same shape and preds is a float tensor, we use the ``self.threshold`` argument
-    to convert into integer labels. This is the case for binary and multi-label probabilities or logits.
-
-    If preds has an extra dimension as in the case of multi-class scores we perform an argmax on ``dim=1``.
-
-    Args:
-        num_classes: Number of classes in the dataset.
-        weights: Weighting type to calculate the score. Choose from:
-
-            - ``None`` or ``'none'``: no weighting
-            - ``'linear'``: linear weighting
-            - ``'quadratic'``: quadratic weighting
-
-        threshold:
-            Threshold for transforming probability or logit predictions to binary ``(0,1)`` predictions, in the case
-            of binary or multi-label inputs. Default value of ``0.5`` corresponds to input being probabilities.
-
-        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
-
-    Example:
-        >>> from torchmetrics import CohenKappa
-        >>> target = torch.tensor([1, 1, 0, 0])
-        >>> preds = torch.tensor([0, 1, 0, 0])
-        >>> cohenkappa = CohenKappa(num_classes=2)
-        >>> cohenkappa(preds, target)
-        tensor(0.5000)
+    This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
+    ``task`` argument to either ``'binary'`` or ``'multiclass'``. See the documentation of
+    :func:`binary_cohen_kappa` and :func:`multiclass_cohen_kappa` for the specific details of
+    each argument influence and examples.
     """
-    is_differentiable: bool = False
-    higher_is_better: bool = True
-    full_state_update: bool = False
-    confmat: Tensor
 
     def __new__(
         cls,
@@ -259,4 +216,3 @@ class CohenKappa(object):
         raise ValueError(
             f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
         )
-

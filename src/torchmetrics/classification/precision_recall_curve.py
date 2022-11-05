@@ -420,70 +420,15 @@ class MultilabelPrecisionRecallCurve(Metric):
         return _multilabel_precision_recall_curve_compute(state, self.num_labels, self.thresholds, self.ignore_index)
 
 
-class PrecisionRecallCurve(object):
-    r"""Precision Recall Curve.
+class PrecisionRecallCurve:
+    r"""Computes the precision-recall curve. The curve consist of multiple pairs of precision and recall values
+    evaluated at different thresholds, such that the tradeoff between the two values can been seen.
 
-    .. note::
-        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
-        metric. Moving forward we recommend using these versions. This base metric will still work as it did
-        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
-        and the general order of arguments may change, such that this metric will just function as an single
-        entrypoint to calling the three specialized versions.
-
-    Computes precision-recall pairs for different thresholds. Works for both binary and multiclass problems. In
-    the case of multiclass, the values will be calculated based on a one-vs-the-rest approach.
-
-    Forward accepts
-
-    - ``preds`` (float tensor): ``(N, ...)`` (binary) or ``(N, C, ...)`` (multiclass) tensor
-      with probabilities, where C is the number of classes.
-
-    - ``target`` (long tensor): ``(N, ...)`` or ``(N, C, ...)`` with integer labels
-
-    Args:
-        num_classes: integer with number of classes for multi-label and multiclass problems.
-            Should be set to ``None`` for binary problems
-        pos_label: integer determining the positive class. Default is ``None`` which for binary problem is translated
-            to 1. For multiclass problems this argument should not be set as we iteratively change it in the range
-            ``[0, num_classes-1]``
-
-        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
-
-    Example (binary case):
-        >>> from torchmetrics import PrecisionRecallCurve
-        >>> pred = torch.tensor([0, 0.1, 0.8, 0.4])
-        >>> target = torch.tensor([0, 1, 1, 0])
-        >>> pr_curve = PrecisionRecallCurve(pos_label=1)
-        >>> precision, recall, thresholds = pr_curve(pred, target)
-        >>> precision
-        tensor([0.6667, 0.5000, 1.0000, 1.0000])
-        >>> recall
-        tensor([1.0000, 0.5000, 0.5000, 0.0000])
-        >>> thresholds
-        tensor([0.1000, 0.4000, 0.8000])
-
-    Example (multiclass case):
-        >>> pred = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
-        ...                      [0.05, 0.75, 0.05, 0.05, 0.05],
-        ...                      [0.05, 0.05, 0.75, 0.05, 0.05],
-        ...                      [0.05, 0.05, 0.05, 0.75, 0.05]])
-        >>> target = torch.tensor([0, 1, 3, 2])
-        >>> pr_curve = PrecisionRecallCurve(num_classes=5)
-        >>> precision, recall, thresholds = pr_curve(pred, target)
-        >>> precision
-        [tensor([1., 1.]), tensor([1., 1.]), tensor([0.2500, 0.0000, 1.0000]),
-         tensor([0.2500, 0.0000, 1.0000]), tensor([0., 1.])]
-        >>> recall
-        [tensor([1., 0.]), tensor([1., 0.]), tensor([1., 0., 0.]), tensor([1., 0., 0.]), tensor([nan, 0.])]
-        >>> thresholds
-        [tensor(0.7500), tensor(0.7500), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor(0.0500)]
+    This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    :func:`binary_precision_recall_curve`, :func:`multiclass_precision_recall_curve` and
+    :func:`multilabel_precision_recall_curve` for the specific details of each argument influence and examples.
     """
-
-    is_differentiable: bool = False
-    higher_is_better: Optional[bool] = None
-    full_state_update: bool = False
-    preds: List[Tensor]
-    target: List[Tensor]
 
     def __new__(
         cls,

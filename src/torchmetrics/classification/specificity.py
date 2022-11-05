@@ -294,104 +294,19 @@ class MultilabelSpecificity(MultilabelStatScores):
         return _specificity_reduce(tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average)
 
 
-class Specificity(object):
-    r"""Specificity.
-
-    .. note::
-        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
-        metric. Moving forward we recommend using these versions. This base metric will still work as it did
-        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
-        and the general order of arguments may change, such that this metric will just function as an single
-        entrypoint to calling the three specialized versions.
-
-    Computes `Specificity`_:
+class Specificity:
+    r"""Computes `Specificity`_.
 
     .. math:: \text{Specificity} = \frac{\text{TN}}{\text{TN} + \text{FP}}
 
     Where :math:`\text{TN}` and :math:`\text{FP}` represent the number of true negatives and
-    false positives respecitively. With the use of ``top_k`` parameter, this metric can
-    generalize to Specificity@K.
+    false positives respecitively.
 
-    The reduction method (how the specificity scores are aggregated) is controlled by the
-    ``average`` parameter, and additionally by the ``mdmc_average`` parameter in the
-    multi-dimensional multi-class case.
-
-    Args:
-        num_classes:
-            Number of classes. Necessary for ``'macro'``, ``'weighted'`` and ``None`` average methods.
-        threshold:
-            Threshold probability value for transforming probability predictions to binary
-            (0,1) predictions, in the case of binary or multi-label inputs.
-        average:
-            Defines the reduction that is applied. Should be one of the following:
-
-            - ``'micro'`` [default]: Calculate the metric globally, across all samples and classes.
-            - ``'macro'``: Calculate the metric for each class separately, and average the
-              metrics across classes (with equal weights for each class).
-            - ``'weighted'``: Calculate the metric for each class separately, and average the
-              metrics across classes, weighting each class by its support (``tn + fp``).
-            - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
-              the metric for every class.
-            - ``'samples'``: Calculate the metric for each sample, and average the metrics
-              across samples (with equal weights for each sample).
-
-            .. note:: What is considered a sample in the multi-dimensional multi-class case
-                depends on the value of ``mdmc_average``.
-
-        mdmc_average:
-            Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
-            ``average`` parameter). Should be one of the following:
-
-            - ``None`` [default]: Should be left unchanged if your data is not multi-dimensional
-              multi-class.
-
-            - ``'samplewise'``: In this case, the statistics are computed separately for each
-              sample on the ``N`` axis, and then averaged over samples.
-              The computation for each sample is done by treating the flattened extra axes ``...``
-              as the ``N`` dimension within the sample,
-              and computing the metric for the sample based on that.
-
-            - ``'global'``: In this case the ``N`` and ``...`` dimensions of the inputs
-              are flattened into a new ``N_X`` sample axis, i.e. the inputs are treated as if they
-              were ``(N_X, C)``. From here on the ``average`` parameter applies as usual.
-
-        ignore_index:
-            Integer specifying a target class to ignore. If given, this class index does not contribute
-            to the returned score, regardless of reduction method. If an index is ignored, and ``average=None``
-            or ``'none'``, the score for the ignored class will be returned as ``nan``.
-
-        top_k:
-            Number of the highest probability entries for each sample to convert to 1s - relevant
-            only for inputs with probability predictions. If this parameter is set for multi-label
-            inputs, it will take precedence over ``threshold``. For (multi-dim) multi-class inputs,
-            this parameter defaults to 1.
-
-            Should be left unset (``None``) for inputs with label predictions.
-
-        multiclass:
-            Used only in certain special cases, where you want to treat inputs as a different type
-            than what they appear to be.
-
-        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
-
-    Raises:
-        ValueError:
-            If ``average`` is none of ``"micro"``, ``"macro"``, ``"weighted"``, ``"samples"``, ``"none"``, ``None``.
-
-    Example:
-        >>> from torchmetrics import Specificity
-        >>> preds  = torch.tensor([2, 0, 2, 1])
-        >>> target = torch.tensor([1, 1, 2, 0])
-        >>> specificity = Specificity(average='macro', num_classes=3)
-        >>> specificity(preds, target)
-        tensor(0.6111)
-        >>> specificity = Specificity(average='micro')
-        >>> specificity(preds, target)
-        tensor(0.6250)
+    This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    :func:`binary_specificity`, :func:`multiclass_specificity` and :func:`multilabel_specificity` for the specific
+    details of each argument influence and examples.
     """
-    is_differentiable: bool = False
-    higher_is_better: bool = True
-    full_state_update: bool = False
 
     def __new__(
         cls,
@@ -409,9 +324,7 @@ class Specificity(object):
         **kwargs: Any,
     ) -> Metric:
         assert multidim_average is not None
-        kwargs.update(
-            dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
-        )
+        kwargs.update(dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args))
         if task == "binary":
             return BinarySpecificity(threshold, **kwargs)
         if task == "multiclass":

@@ -493,104 +493,14 @@ class MultilabelStatScores(_AbstractStatScores):
         return _multilabel_stat_scores_compute(tp, fp, tn, fn, self.average, self.multidim_average)
 
 
-class StatScores(object):
-    r"""StatScores.
+class StatScores:
+    r"""Computes the number of true positives, false positives, true negatives, false negatives and the support.
 
-    .. note::
-        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
-        metric. Moving forward we recommend using these versions. This base metric will still work as it did
-        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
-        and the general order of arguments may change, such that this metric will just function as an single
-        entrypoint to calling the three specialized versions.
-
-    Computes the number of true positives, false positives, true negatives, false negatives.
-    Related to `Type I and Type II errors`_ and the `confusion matrix`_.
-
-    The reduction method (how the statistics are aggregated) is controlled by the
-    ``reduce`` parameter, and additionally by the ``mdmc_reduce`` parameter in the
-    multi-dimensional multi-class case.
-
-
-
-    Args:
-        threshold:
-            Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
-            of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
-
-        top_k:
-            Number of the highest probability or logit score predictions considered finding the correct label,
-            relevant only for (multi-dimensional) multi-class inputs. The default value (``None``) will be interpreted
-            as 1 for these inputs. Should be left at default (``None``) for all other types of inputs.
-
-        reduce:
-            Defines the reduction that is applied. Should be one of the following:
-
-            - ``'micro'`` [default]: Counts the statistics by summing over all ``[sample, class]``
-              combinations (globally). Each statistic is represented by a single integer.
-            - ``'macro'``: Counts the statistics for each class separately (over all samples).
-              Each statistic is represented by a ``(C,)`` tensor. Requires ``num_classes`` to be set.
-            - ``'samples'``: Counts the statistics for each sample separately (over all classes).
-              Each statistic is represented by a ``(N, )`` 1d tensor.
-
-            .. note:: What is considered a sample in the multi-dimensional multi-class case
-                depends on the value of ``mdmc_reduce``.
-
-        num_classes: Number of classes. Necessary for (multi-dimensional) multi-class or multi-label data.
-
-        ignore_index:
-            Specify a class (label) to ignore. If given, this class index does not contribute
-            to the returned score, regardless of reduction method. If an index is ignored, and
-            ``reduce='macro'``, the class statistics for the ignored class will all be returned
-            as ``-1``.
-
-        mdmc_reduce: Defines how the multi-dimensional multi-class inputs are handeled. Should be one of the following:
-
-            - ``None`` [default]: Should be left unchanged if your data is not multi-dimensional
-              multi-class.
-
-            - ``'samplewise'``: In this case, the statistics are computed separately for each
-              sample on the ``N`` axis, and then the outputs are concatenated together. In each
-              sample the extra axes ``...`` are flattened to become the sub-sample axis, and
-              statistics for each sample are computed by treating the sub-sample axis as the
-              ``N`` axis for that sample.
-
-            - ``'global'``: In this case the ``N`` and ``...`` dimensions of the inputs are
-              flattened into a new ``N_X`` sample axis, i.e. the inputs are treated as if they
-              were ``(N_X, C)``. From here on the ``reduce`` parameter applies as usual.
-
-        multiclass:
-            Used only in certain special cases, where you want to treat inputs as a different type
-            than what they appear to be.
-
-        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
-
-    Raises:
-        ValueError:
-            If ``reduce`` is none of ``"micro"``, ``"macro"`` or ``"samples"``.
-        ValueError:
-            If ``mdmc_reduce`` is none of ``None``, ``"samplewise"``, ``"global"``.
-        ValueError:
-            If ``reduce`` is set to ``"macro"`` and ``num_classes`` is not provided.
-        ValueError:
-            If ``num_classes`` is set
-            and ``ignore_index`` is not in the range ``0`` <= ``ignore_index`` < ``num_classes``.
-
-    Example:
-        >>> from torchmetrics.classification import StatScores
-        >>> preds  = torch.tensor([1, 0, 2, 1])
-        >>> target = torch.tensor([1, 1, 2, 0])
-        >>> stat_scores = StatScores(reduce='macro', num_classes=3)
-        >>> stat_scores(preds, target)
-        tensor([[0, 1, 2, 1, 1],
-                [1, 1, 1, 1, 2],
-                [1, 0, 3, 0, 1]])
-        >>> stat_scores = StatScores(reduce='micro')
-        >>> stat_scores(preds, target)
-        tensor([2, 2, 6, 2, 4])
+    This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    :func:`binary_stat_scores`, :func:`multiclass_stat_scores` and :func:`multilabel_stat_scores` for the specific
+    details of each argument influence and examples.
     """
-    is_differentiable: bool = False
-    higher_is_better: Optional[bool] = None
-    full_state_update: bool = False
 
     def __new__(
         cls,
@@ -608,9 +518,7 @@ class StatScores(object):
         **kwargs: Any,
     ) -> Metric:
         assert multidim_average is not None
-        kwargs.update(
-            dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
-        )
+        kwargs.update(dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args))
         if task == "binary":
             return BinaryStatScores(threshold, **kwargs)
         if task == "multiclass":

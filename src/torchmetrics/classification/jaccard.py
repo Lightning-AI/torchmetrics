@@ -255,73 +255,15 @@ class MultilabelJaccardIndex(MultilabelConfusionMatrix):
         return _jaccard_index_reduce(self.confmat, average=self.average)
 
 
-class JaccardIndex(object):
-    r"""Jaccard Index.
+class JaccardIndex:
+    r"""Calculates `Matthews correlation coefficient`_ . This metric measures the general correlation or quality of
+    a classification.
 
-    .. note::
-        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
-        metric. Moving forward we recommend using these versions. This base metric will still work as it did
-        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
-        and the general order of arguments may change, such that this metric will just function as an single
-        entrypoint to calling the three specialized versions.
-
-    Computes Intersection over union, or `Jaccard index`_:
-
-    .. math:: J(A,B) = \frac{|A\cap B|}{|A\cup B|}
-
-    Where: :math:`A` and :math:`B` are both tensors of the same size, containing integer class values.
-    They may be subject to conversion from input data (see description below). Note that it is different from box IoU.
-
-    Works with binary, multiclass and multi-label data.
-    Accepts probabilities from a model output or integer class values in prediction.
-    Works with multi-dimensional preds and target.
-
-    Forward accepts
-
-    - ``preds`` (float or long tensor): ``(N, ...)`` or ``(N, C, ...)`` where C is the number of classes
-    - ``target`` (long tensor): ``(N, ...)``
-
-    If preds and target are the same shape and preds is a float tensor, we use the ``self.threshold`` argument
-    to convert into integer labels. This is the case for binary and multi-label probabilities.
-
-    If preds has an extra dimension as in the case of multi-class scores we perform an argmax on ``dim=1``.
-
-    Args:
-        num_classes: Number of classes in the dataset.
-        average:
-            Defines the reduction that is applied. Should be one of the following:
-
-            - ``'macro'`` [default]: Calculate the metric for each class separately, and average the
-              metrics across classes (with equal weights for each class).
-            - ``'micro'``: Calculate the metric globally, across all samples and classes.
-            - ``'weighted'``: Calculate the metric for each class separately, and average the
-              metrics across classes, weighting each class by its support (``tp + fn``).
-            - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
-              the metric for every class. Note that if a given class doesn't occur in the
-              `preds` or `target`, the value for the class will be ``nan``.
-
-        ignore_index: optional int specifying a target class to ignore. If given, this class index does not contribute
-            to the returned score, regardless of reduction method. Has no effect if given an int that is not in the
-            range [0, num_classes-1]. By default, no index is ignored, and all classes are used.
-        absent_score: score to use for an individual class, if no instances of the class index were present in
-            ``preds`` AND no instances of the class index were present in ``target``. For example, if we have 3 classes,
-            [0, 0] for ``preds``, and [0, 2] for ``target``, then class 1 would be assigned the `absent_score`.
-        threshold: Threshold value for binary or multi-label probabilities.
-        multilabel: determines if data is multilabel or not.
-        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
-
-    Example:
-        >>> from torchmetrics import JaccardIndex
-        >>> target = torch.randint(0, 2, (10, 25, 25))
-        >>> pred = torch.tensor(target)
-        >>> pred[2:5, 7:13, 9:15] = 1 - pred[2:5, 7:13, 9:15]
-        >>> jaccard = JaccardIndex(num_classes=2)
-        >>> jaccard(pred, target)
-        tensor(0.9660)
+    This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    :func:`binary_matthews_corrcoef`, :func:`multiclass_matthews_corrcoef` and :func:`multilabel_matthews_corrcoef` for
+    the specific details of each argument influence and examples.
     """
-    is_differentiable: bool = False
-    higher_is_better: bool = True
-    full_state_update: bool = False
 
     def __new__(
         cls,

@@ -318,73 +318,21 @@ class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
         )
 
 
-class AveragePrecision(object):
-    r"""Average Precision.
+class AveragePrecision:
+    r"""Computes the average precision (AP) score. The AP score summarizes a precision-recall curve as an weighted
+    mean of precisions at each threshold, with the difference in recall from the previous threshold as weight:
 
-    .. note::
-        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
-        metric. Moving forward we recommend using these versions. This base metric will still work as it did
-        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
-        and the general order of arguments may change, such that this metric will just function as an single
-        entrypoint to calling the three specialized versions.
+    .. math::
+        AP = \sum{n} (R_n - R_{n-1}) P_n
 
-    Computes the average precision score, which summarises the precision recall curve into one number. Works for
-    both binary and multiclass problems. In the case of multiclass, the values will be calculated based on a one-
-    vs-the-rest approach.
+    where :math:`P_n, R_n` is the respective precision and recall at threshold index :math:`n`. This value is
+    equivalent to the area under the precision-recall curve (AUPRC).
 
-    Forward accepts
-
-    - ``preds`` (float tensor): ``(N, ...)`` (binary) or ``(N, C, ...)`` (multiclass) tensor
-      with probabilities, where C is the number of classes.
-
-    - ``target`` (long tensor): ``(N, ...)`` with integer labels
-
-    Args:
-        num_classes: integer with number of classes. Not nessesary to provide
-            for binary problems.
-        pos_label: integer determining the positive class. Default is ``None``
-            which for binary problem is translated to 1. For multiclass problems
-            this argument should not be set as we iteratively change it in the
-            range ``[0, num_classes-1]``
-        average:
-            defines the reduction that is applied in the case of multiclass and multilabel input.
-            Should be one of the following:
-
-            - ``'macro'`` [default]: Calculate the metric for each class separately, and average the
-              metrics across classes (with equal weights for each class).
-            - ``'micro'``: Calculate the metric globally, across all samples and classes. Cannot be
-              used with multiclass input.
-            - ``'weighted'``: Calculate the metric for each class separately, and average the
-              metrics across classes, weighting each class by its support.
-            - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
-              the metric for every class.
-
-        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
-
-    Example (binary case):
-        >>> from torchmetrics import AveragePrecision
-        >>> pred = torch.tensor([0, 0.1, 0.8, 0.4])
-        >>> target = torch.tensor([0, 1, 1, 1])
-        >>> average_precision = AveragePrecision(pos_label=1)
-        >>> average_precision(pred, target)
-        tensor(1.)
-
-    Example (multiclass case):
-        >>> pred = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
-        ...                      [0.05, 0.75, 0.05, 0.05, 0.05],
-        ...                      [0.05, 0.05, 0.75, 0.05, 0.05],
-        ...                      [0.05, 0.05, 0.05, 0.75, 0.05]])
-        >>> target = torch.tensor([0, 1, 3, 2])
-        >>> average_precision = AveragePrecision(num_classes=5, average=None)
-        >>> average_precision(pred, target)
-        [tensor(1.), tensor(1.), tensor(0.2500), tensor(0.2500), tensor(nan)]
+    This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    :func:`binary_average_precision`, :func:`multiclass_average_precision` and :func:`multilabel_average_precision`
+    for the specific details of each argument influence and examples.
     """
-
-    is_differentiable: bool = False
-    higher_is_better: Optional[bool] = None
-    full_state_update: bool = False
-    preds: List[Tensor]
-    target: List[Tensor]
 
     def __new__(
         cls,
@@ -410,5 +358,3 @@ class AveragePrecision(object):
         raise ValueError(
             f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
         )
-
-

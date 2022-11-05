@@ -220,59 +220,15 @@ class MultilabelMatthewsCorrCoef(MultilabelConfusionMatrix):
         return _matthews_corrcoef_reduce(self.confmat)
 
 
-class MatthewsCorrCoef(object):
-    r"""Matthews correlation coefficient.
+class MatthewsCorrCoef:
+    r"""Calculates `Matthews correlation coefficient`_ . This metric measures the general correlation or quality of
+    a classification.
 
-    .. note::
-        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
-        metric. Moving forward we recommend using these versions. This base metric will still work as it did
-        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
-        and the general order of arguments may change, such that this metric will just function as an single
-        entrypoint to calling the three specialized versions.
-
-    Calculates `Matthews correlation coefficient`_ that measures the general correlation
-    or quality of a classification.
-
-    In the binary case it is defined as:
-
-    .. math::
-        MCC = \frac{TP*TN - FP*FN}{\sqrt{(TP+FP)*(TP+FN)*(TN+FP)*(TN+FN)}}
-
-    where TP, TN, FP and FN are respectively the true postitives, true negatives,
-    false positives and false negatives. Also works in the case of multi-label or
-    multi-class input.
-
-    Note:
-        This metric produces a multi-dimensional output, so it can not be directly logged.
-
-    Forward accepts
-
-    - ``preds`` (float or long tensor): ``(N, ...)`` or ``(N, C, ...)`` where C is the number of classes
-    - ``target`` (long tensor): ``(N, ...)``
-
-    If preds and target are the same shape and preds is a float tensor, we use the ``self.threshold`` argument
-    to convert into integer labels. This is the case for binary and multi-label probabilities.
-
-    If preds has an extra dimension as in the case of multi-class scores we perform an argmax on ``dim=1``.
-
-    Args:
-        num_classes: Number of classes in the dataset.
-        threshold: Threshold value for binary or multi-label probabilites.
-
-        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
-
-    Example:
-        >>> from torchmetrics import MatthewsCorrCoef
-        >>> target = torch.tensor([1, 1, 0, 0])
-        >>> preds = torch.tensor([0, 1, 0, 0])
-        >>> matthews_corrcoef = MatthewsCorrCoef(num_classes=2)
-        >>> matthews_corrcoef(preds, target)
-        tensor(0.5774)
+    This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    :func:`binary_matthews_corrcoef`, :func:`multiclass_matthews_corrcoef` and :func:`multilabel_matthews_corrcoef` for
+    the specific details of each argument influence and examples.
     """
-    is_differentiable: bool = False
-    higher_is_better: bool = True
-    full_state_update: bool = False
-    confmat: Tensor
 
     def __new__(
         cls,

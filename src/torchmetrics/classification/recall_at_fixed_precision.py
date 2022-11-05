@@ -296,13 +296,16 @@ class MultilabelRecallAtFixedPrecision(MultilabelPrecisionRecallCurve):
         )
 
 
-class RecallAtFixedPrecision(object):
-    r"""Recall.
+class RecallAtFixedPrecision:
+    r"""Computes the higest possible recall value given the minimum precision thresholds provided. This is done by
+    first calculating the precision-recall curve for different thresholds and the find the recall for a given
+    precision level.
 
+    This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    :func:`binary_recall_at_fixed_precision`, :func:`multiclass_recall_at_fixed_precision` and
+    :func:`multilabel_recall_at_fixed_precision` for the specific details of each argument influence and examples.
     """
-    is_differentiable: bool = False
-    higher_is_better: bool = True
-    full_state_update: bool = False
 
     def __new__(
         cls,
@@ -320,9 +323,7 @@ class RecallAtFixedPrecision(object):
         **kwargs: Any,
     ) -> Metric:
         assert multidim_average is not None
-        kwargs.update(
-            dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
-        )
+        kwargs.update(dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args))
         if task == "binary":
             return BinaryRecall(threshold, **kwargs)
         if task == "multiclass":
@@ -335,5 +336,3 @@ class RecallAtFixedPrecision(object):
         raise ValueError(
             f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
         )
-
-

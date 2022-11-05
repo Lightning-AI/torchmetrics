@@ -603,104 +603,19 @@ class MultilabelRecall(MultilabelStatScores):
         )
 
 
-class Precision(object):
-    r"""Precision.
-
-    .. note::
-        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
-        metric. Moving forward we recommend using these versions. This base metric will still work as it did
-        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
-        and the general order of arguments may change, such that this metric will just function as an single
-        entrypoint to calling the three specialized versions.
-
-    Computes `Precision`_:
+class Precision:
+    r"""Computes `Precision`_:
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 
     Where :math:`\text{TP}` and :math:`\text{FP}` represent the number of true positives and
-    false positives respecitively. With the use of ``top_k`` parameter, this metric can
-    generalize to Precision@K.
+    false positives respecitively.
 
-    The reduction method (how the precision scores are aggregated) is controlled by the
-    ``average`` parameter, and additionally by the ``mdmc_average`` parameter in the
-    multi-dimensional multi-class case.
-
-    Args:
-        num_classes:
-            Number of classes. Necessary for ``'macro'``, ``'weighted'`` and ``None`` average methods.
-        threshold:
-            Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
-            of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
-        average:
-            Defines the reduction that is applied. Should be one of the following:
-
-            - ``'micro'`` [default]: Calculate the metric globally, across all samples and classes.
-            - ``'macro'``: Calculate the metric for each class separately, and average the
-              metrics across classes (with equal weights for each class).
-            - ``'weighted'``: Calculate the metric for each class separately, and average the
-              metrics across classes, weighting each class by its support (``tp + fn``).
-            - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
-              the metric for every class.
-            - ``'samples'``: Calculate the metric for each sample, and average the metrics
-              across samples (with equal weights for each sample).
-
-            .. note:: What is considered a sample in the multi-dimensional multi-class case
-                depends on the value of ``mdmc_average``.
-
-        mdmc_average:
-            Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
-            ``average`` parameter). Should be one of the following:
-
-            - ``None`` [default]: Should be left unchanged if your data is not multi-dimensional
-              multi-class.
-
-            - ``'samplewise'``: In this case, the statistics are computed separately for each
-              sample on the ``N`` axis, and then averaged over samples.
-              The computation for each sample is done by treating the flattened extra axes ``...``
-              as the ``N`` dimension within the sample,
-              and computing the metric for the sample based on that.
-
-            - ``'global'``: In this case the ``N`` and ``...`` dimensions of the inputs
-              are flattened into a new ``N_X`` sample axis, i.e.
-              the inputs are treated as if they were ``(N_X, C)``.
-              From here on the ``average`` parameter applies as usual.
-
-        ignore_index:
-            Integer specifying a target class to ignore. If given, this class index does not contribute
-            to the returned score, regardless of reduction method. If an index is ignored, and ``average=None``
-            or ``'none'``, the score for the ignored class will be returned as ``nan``.
-
-        top_k:
-            Number of the highest probability or logit score predictions considered finding the correct label,
-            relevant only for (multi-dimensional) multi-class inputs. The
-            default value (``None``) will be interpreted as 1 for these inputs.
-            Should be left at default (``None``) for all other types of inputs.
-
-        multiclass:
-            Used only in certain special cases, where you want to treat inputs as a different type
-            than what they appear to be.
-
-        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
-
-    Raises:
-        ValueError:
-            If ``average`` is none of ``"micro"``, ``"macro"``, ``"weighted"``, ``"samples"``, ``"none"``, ``None``.
-
-    Example:
-        >>> import torch
-        >>> from torchmetrics import Precision
-        >>> preds  = torch.tensor([2, 0, 2, 1])
-        >>> target = torch.tensor([1, 1, 2, 0])
-        >>> precision = Precision(average='macro', num_classes=3)
-        >>> precision(preds, target)
-        tensor(0.1667)
-        >>> precision = Precision(average='micro')
-        >>> precision(preds, target)
-        tensor(0.2500)
+    This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    :func:`binary_precision`, :func:`multiclass_precision` and :func:`multilabel_precision` for the specific details of
+    each argument influence and examples.
     """
-    is_differentiable = False
-    higher_is_better = True
-    full_state_update: bool = False
 
     def __new__(
         cls,
@@ -718,9 +633,7 @@ class Precision(object):
         **kwargs: Any,
     ) -> Metric:
         assert multidim_average is not None
-        kwargs.update(
-            dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
-        )
+        kwargs.update(dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args))
         if task == "binary":
             return BinaryPrecision(threshold, **kwargs)
         if task == "multiclass":
@@ -735,104 +648,19 @@ class Precision(object):
         )
 
 
-
-class Recall(object):
-    r"""Recall.
-
-    .. note::
-        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
-        metric. Moving forward we recommend using these versions. This base metric will still work as it did
-        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
-        and the general order of arguments may change, such that this metric will just function as an single
-        entrypoint to calling the three specialized versions.
-
-    Computes `Recall`_:
+class Recall:
+    r"""Computes `Recall`_:
 
     .. math:: \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
 
     Where :math:`\text{TP}` and :math:`\text{FN}` represent the number of true positives and
-    false negatives respecitively. With the use of ``top_k`` parameter, this metric can
-    generalize to Recall@K.
+    false negatives respecitively.
 
-    The reduction method (how the recall scores are aggregated) is controlled by the
-    ``average`` parameter, and additionally by the ``mdmc_average`` parameter in the
-    multi-dimensional multi-class case.
-
-    Args:
-        num_classes:
-            Number of classes. Necessary for ``'macro'``, ``'weighted'`` and ``None`` average methods.
-        threshold:
-            Threshold for transforming probability or logit predictions to binary ``(0,1)`` predictions, in the case
-            of binary or multi-label inputs. Default value of ``0.5`` corresponds to input being probabilities.
-        average:
-            Defines the reduction that is applied. Should be one of the following:
-
-            - ``'micro'`` [default]: Calculate the metric globally, across all samples and classes.
-            - ``'macro'``: Calculate the metric for each class separately, and average the
-              metrics across classes (with equal weights for each class).
-            - ``'weighted'``: Calculate the metric for each class separately, and average the
-              metrics across classes, weighting each class by its support (``tp + fn``).
-            - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
-              the metric for every class.
-            - ``'samples'``: Calculate the metric for each sample, and average the metrics
-              across samples (with equal weights for each sample).
-
-            .. note:: What is considered a sample in the multi-dimensional multi-class case
-                depends on the value of ``mdmc_average``.
-
-        mdmc_average:
-            Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
-            ``average`` parameter). Should be one of the following:
-
-            - ``None`` [default]: Should be left unchanged if your data is not multi-dimensional multi-class.
-
-            - ``'samplewise'``: In this case, the statistics are computed separately for each
-              sample on the ``N`` axis, and then averaged over samples.
-              The computation for each sample is done by treating the flattened extra axes ``...``
-              as the ``N`` dimension within the sample,
-              and computing the metric for the sample based on that.
-
-            - ``'global'``: In this case the ``N`` and ``...`` dimensions of the inputs
-              are flattened into a new ``N_X`` sample axis, i.e. the inputs are treated as if they
-              were ``(N_X, C)``. From here on the ``average`` parameter applies as usual.
-
-        ignore_index:
-            Integer specifying a target class to ignore. If given, this class index does not contribute
-            to the returned score, regardless of reduction method. If an index is ignored, and ``average=None``
-            or ``'none'``, the score for the ignored class will be returned as ``nan``.
-
-        top_k:
-            Number of the highest probability or logit score predictions considered finding the correct label,
-            relevant only for (multi-dimensional) multi-class. The default value (``None``) will be interpreted
-            as 1 for these inputs.
-
-            Should be left at default (``None``) for all other types of inputs.
-
-        multiclass:
-            Used only in certain special cases, where you want to treat inputs as a different type
-            than what they appear to be.
-
-        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
-
-    Raises:
-        ValueError:
-            If ``average`` is none of ``"micro"``, ``"macro"``, ``"weighted"``, ``"samples"``, ``"none"``, ``None``.
-
-    Example:
-        >>> import torch
-        >>> from torchmetrics import Recall
-        >>> preds  = torch.tensor([2, 0, 2, 1])
-        >>> target = torch.tensor([1, 1, 2, 0])
-        >>> recall = Recall(average='macro', num_classes=3)
-        >>> recall(preds, target)
-        tensor(0.3333)
-        >>> recall = Recall(average='micro')
-        >>> recall(preds, target)
-        tensor(0.2500)
+    This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    :func:`binary_recall`, :func:`multiclass_recall` and :func:`multilabel_recall` for the specific details of
+    each argument influence and examples.
     """
-    is_differentiable: bool = False
-    higher_is_better: bool = True
-    full_state_update: bool = False
 
     def __new__(
         cls,
@@ -850,9 +678,7 @@ class Recall(object):
         **kwargs: Any,
     ) -> Metric:
         assert multidim_average is not None
-        kwargs.update(
-            dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
-        )
+        kwargs.update(dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args))
         if task == "binary":
             return BinaryRecall(threshold, **kwargs)
         if task == "multiclass":
@@ -865,5 +691,3 @@ class Recall(object):
         raise ValueError(
             f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
         )
-
-
