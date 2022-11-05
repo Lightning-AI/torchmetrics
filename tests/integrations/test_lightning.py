@@ -20,7 +20,8 @@ from torch.utils.data import DataLoader
 
 from integrations.helpers import no_warning_call
 from integrations.lightning.boring_model import BoringModel, RandomDataset
-from torchmetrics import Accuracy, AveragePrecision, MetricCollection, SumMetric
+from torchmetrics import MetricCollection, SumMetric
+from torchmetrics.classification import BinaryAccuracy, BinaryAveragePrecision
 
 
 class DiffMetric(SumMetric):
@@ -73,9 +74,9 @@ def test_metrics_reset(tmpdir):
             self.layer = torch.nn.Linear(32, 1)
 
             for stage in ["train", "val", "test"]:
-                acc = Accuracy()
+                acc = BinaryAccuracy()
                 acc.reset = mock.Mock(side_effect=acc.reset)
-                ap = AveragePrecision(num_classes=1, pos_label=1)
+                ap = BinaryAveragePrecision()
                 ap.reset = mock.Mock(side_effect=ap.reset)
                 self.add_module(f"acc_{stage}", acc)
                 self.add_module(f"ap_{stage}", ap)
