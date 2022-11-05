@@ -745,50 +745,6 @@ class Precision(StatScores):
             )
         return super().__new__(cls)
 
-    def __init__(
-        self,
-        num_classes: Optional[int] = None,
-        threshold: float = 0.5,
-        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
-        mdmc_average: Optional[str] = None,
-        ignore_index: Optional[int] = None,
-        top_k: Optional[int] = None,
-        multiclass: Optional[bool] = None,
-        **kwargs: Any,
-    ) -> None:
-        allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
-        if average not in allowed_average:
-            raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
-
-        _reduce_options = (AverageMethod.WEIGHTED, AverageMethod.NONE, None)
-        if "reduce" not in kwargs:
-            kwargs["reduce"] = AverageMethod.MACRO if average in _reduce_options else average
-        if "mdmc_reduce" not in kwargs:
-            kwargs["mdmc_reduce"] = mdmc_average
-
-        super().__init__(
-            threshold=threshold,
-            top_k=top_k,
-            num_classes=num_classes,
-            multiclass=multiclass,
-            ignore_index=ignore_index,
-            **kwargs,
-        )
-
-        self.average = average
-
-    def compute(self) -> Tensor:
-        """Computes the precision score based on inputs passed in to ``update`` previously.
-
-        Return:
-            The shape of the returned tensor depends on the ``average`` parameter:
-
-            - If ``average in ['micro', 'macro', 'weighted', 'samples']``, a one-element tensor will be returned
-            - If ``average in ['none', None]``, the shape will be ``(C,)``, where ``C`` stands  for the number
-              of classes
-        """
-        tp, fp, _, fn = self._get_final_stats()
-        return _precision_compute(tp, fp, fn, self.average, self.mdmc_reduce)
 
 
 class Recall(StatScores):
@@ -932,47 +888,3 @@ class Recall(StatScores):
             )
         return super().__new__(cls)
 
-    def __init__(
-        self,
-        num_classes: Optional[int] = None,
-        threshold: float = 0.5,
-        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
-        mdmc_average: Optional[str] = None,
-        ignore_index: Optional[int] = None,
-        top_k: Optional[int] = None,
-        multiclass: Optional[bool] = None,
-        **kwargs: Any,
-    ) -> None:
-        allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
-        if average not in allowed_average:
-            raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
-
-        _reduce_options = (AverageMethod.WEIGHTED, AverageMethod.NONE, None)
-        if "reduce" not in kwargs:
-            kwargs["reduce"] = AverageMethod.MACRO if average in _reduce_options else average
-        if "mdmc_reduce" not in kwargs:
-            kwargs["mdmc_reduce"] = mdmc_average
-
-        super().__init__(
-            threshold=threshold,
-            top_k=top_k,
-            num_classes=num_classes,
-            multiclass=multiclass,
-            ignore_index=ignore_index,
-            **kwargs,
-        )
-
-        self.average = average
-
-    def compute(self) -> Tensor:
-        """Computes the recall score based on inputs passed in to ``update`` previously.
-
-        Return:
-            The shape of the returned tensor depends on the ``average`` parameter:
-
-            - If ``average in ['micro', 'macro', 'weighted', 'samples']``, a one-element tensor will be returned
-            - If ``average in ['none', None]``, the shape will be ``(C,)``, where ``C`` stands  for the number
-              of classes
-        """
-        tp, fp, _, fn = self._get_final_stats()
-        return _recall_compute(tp, fp, fn, self.average, self.mdmc_reduce)

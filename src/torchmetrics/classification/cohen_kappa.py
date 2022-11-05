@@ -270,35 +270,3 @@ class CohenKappa(Metric):
                 DeprecationWarning,
             )
         return super().__new__(cls)
-
-    def __init__(
-        self,
-        num_classes: int,
-        weights: Optional[str] = None,
-        threshold: float = 0.5,
-        **kwargs: Any,
-    ) -> None:
-        super().__init__(**kwargs)
-        self.num_classes = num_classes
-        self.weights = weights
-        self.threshold = threshold
-
-        allowed_weights = ("linear", "quadratic", "none", None)
-        if self.weights not in allowed_weights:
-            raise ValueError(f"Argument weights needs to one of the following: {allowed_weights}")
-
-        self.add_state("confmat", default=torch.zeros(num_classes, num_classes, dtype=torch.long), dist_reduce_fx="sum")
-
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
-        confmat = _cohen_kappa_update(preds, target, self.num_classes, self.threshold)
-        self.confmat += confmat
-
-    def compute(self) -> Tensor:
-        """Computes cohen kappa score."""
-        return _cohen_kappa_compute(self.confmat, self.weights)

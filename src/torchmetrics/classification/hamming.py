@@ -405,31 +405,3 @@ class HammingDistance(Metric):
                 DeprecationWarning,
             )
         return super().__new__(cls)
-
-    def __init__(
-        self,
-        threshold: float = 0.5,
-        **kwargs: Any,
-    ) -> None:
-        super().__init__(**kwargs)
-
-        self.add_state("correct", default=tensor(0), dist_reduce_fx="sum")
-        self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
-
-        self.threshold = threshold
-
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model (probabilities, logits or labels)
-            target: Ground truth labels
-        """
-        correct, total = _hamming_distance_update(preds, target, self.threshold)
-
-        self.correct += correct
-        self.total += total
-
-    def compute(self) -> Tensor:
-        """Computes hamming distance based on inputs passed in to ``update`` previously."""
-        return _hamming_distance_compute(self.correct, self.total)

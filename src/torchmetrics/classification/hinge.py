@@ -318,33 +318,3 @@ class HingeLoss(Metric):
                 DeprecationWarning,
             )
         return super().__new__(cls)
-
-    def __init__(
-        self,
-        squared: bool = False,
-        multiclass_mode: Optional[Union[str, MulticlassMode]] = None,
-        **kwargs: Any,
-    ) -> None:
-        super().__init__(**kwargs)
-
-        self.add_state("measure", default=torch.tensor(0.0), dist_reduce_fx="sum")
-        self.add_state("total", default=torch.tensor(0), dist_reduce_fx="sum")
-
-        if multiclass_mode not in (None, MulticlassMode.CRAMMER_SINGER, MulticlassMode.ONE_VS_ALL):
-            raise ValueError(
-                "The `multiclass_mode` should be either None / 'crammer-singer' / MulticlassMode.CRAMMER_SINGER"
-                "(default) or 'one-vs-all' / MulticlassMode.ONE_VS_ALL,"
-                f" got {multiclass_mode}."
-            )
-
-        self.squared = squared
-        self.multiclass_mode = multiclass_mode
-
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        measure, total = _hinge_update(preds, target, squared=self.squared, multiclass_mode=self.multiclass_mode)
-
-        self.measure = measure + self.measure
-        self.total = total + self.total
-
-    def compute(self) -> Tensor:
-        return _hinge_compute(self.measure, self.total)

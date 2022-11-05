@@ -857,44 +857,6 @@ class FBetaScore(StatScores):
             )
         return super().__new__(cls)
 
-    def __init__(
-        self,
-        num_classes: Optional[int] = None,
-        beta: float = 1.0,
-        threshold: float = 0.5,
-        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
-        mdmc_average: Optional[str] = None,
-        ignore_index: Optional[int] = None,
-        top_k: Optional[int] = None,
-        multiclass: Optional[bool] = None,
-        **kwargs: Any,
-    ) -> None:
-        self.beta = beta
-        allowed_average = list(AverageMethod)
-        if average not in allowed_average:
-            raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
-
-        _reduce_options = (AverageMethod.WEIGHTED, AverageMethod.NONE, None)
-        if "reduce" not in kwargs:
-            kwargs["reduce"] = AverageMethod.MACRO if average in _reduce_options else average
-        if "mdmc_reduce" not in kwargs:
-            kwargs["mdmc_reduce"] = mdmc_average
-
-        super().__init__(
-            threshold=threshold,
-            top_k=top_k,
-            num_classes=num_classes,
-            multiclass=multiclass,
-            ignore_index=ignore_index,
-            **kwargs,
-        )
-
-        self.average = average
-
-    def compute(self) -> Tensor:
-        """Computes f-beta over state."""
-        tp, fp, tn, fn = self._get_final_stats()
-        return _fbeta_compute(tp, fp, tn, fn, self.beta, self.ignore_index, self.average, self.mdmc_reduce)
 
 
 class F1Score(FBetaScore):
@@ -1036,26 +998,3 @@ class F1Score(FBetaScore):
                 DeprecationWarning,
             )
         return super().__new__(cls)
-
-    def __init__(
-        self,
-        num_classes: Optional[int] = None,
-        threshold: float = 0.5,
-        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
-        mdmc_average: Optional[str] = None,
-        ignore_index: Optional[int] = None,
-        top_k: Optional[int] = None,
-        multiclass: Optional[bool] = None,
-        **kwargs: Any,
-    ) -> None:
-        super().__init__(
-            num_classes=num_classes,
-            beta=1.0,
-            threshold=threshold,
-            average=average,
-            mdmc_average=mdmc_average,
-            ignore_index=ignore_index,
-            top_k=top_k,
-            multiclass=multiclass,
-            **kwargs,
-        )

@@ -307,29 +307,3 @@ class MatthewsCorrCoef(Metric):
                 DeprecationWarning,
             )
         return super().__new__(cls)
-
-    def __init__(
-        self,
-        num_classes: int,
-        threshold: float = 0.5,
-        **kwargs: Any,
-    ) -> None:
-        super().__init__(**kwargs)
-        self.num_classes = num_classes
-        self.threshold = threshold
-
-        self.add_state("confmat", default=torch.zeros(num_classes, num_classes), dist_reduce_fx="sum")
-
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
-        confmat = _matthews_corrcoef_update(preds, target, self.num_classes, self.threshold)
-        self.confmat += confmat
-
-    def compute(self) -> Tensor:
-        """Computes matthews correlation coefficient."""
-        return _matthews_corrcoef_compute(self.confmat)
