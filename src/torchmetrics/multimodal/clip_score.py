@@ -76,6 +76,11 @@ class CLIPScore(Metric):
         if not isinstance(text, List):
             text = [text]
 
+        if len(text) != len(images):
+            raise ValueError(
+                f"Expected the number of images and text examples to be the same but got {len(images)} and {len(text)}"
+            )
+
         img_features = [
             self.model.get_image_features(self.features(i, return_tensors="pt")["pixel_values"]) for i in images
         ]
@@ -90,8 +95,15 @@ class CLIPScore(Metric):
 
         # cosine similarity between feature vectors
         score = (img_features * txt_features).sum(axis=-1)
-        self.score += score.sum(0)
+        self.score += 100 * score.sum(0)
         self.n_samples += img_features.shape[0]
 
     def compute(self) -> Tensor:
         return self.score / self.n_samples
+
+
+if __name__ == "__main__":
+    img = torch.randint(255, (3, 224, 224))
+    text = "min hest er meget flot"
+    metric = CLIPScore()
+    metric.update(img, text)
