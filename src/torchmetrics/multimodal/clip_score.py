@@ -15,25 +15,64 @@ from typing import List, Union
 
 import torch
 from torch import Tensor
-from transformers import CLIPFeatureExtractor as _CLIPFeatureExtractor
-from transformers import CLIPModel as _CLIPModel
-from transformers import CLIPTokenizer as _CLIPTokenizer
+
+from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
+
+if _TRANSFORMERS_AVAILABLE:
+    from transformers import CLIPFeatureExtractor as _CLIPFeatureExtractor
+    from transformers import CLIPModel as _CLIPModel
+    from transformers import CLIPTokenizer as _CLIPTokenizer
+else:
+    _CLIPFeatureExtractor = None
+    _CLIPModel = None
+    _CLIPTokenizer = None
 
 from torchmetrics import Metric
 
 
 class CLIPScore(Metric):
+    """`CLIP Score`_ is a reference free metric that can be used to evaluate the correlation between an generated
+    caption for an image and the actual content of the image. It has been found to be highly correlated with human
+    judgement. The metric is defined as.
+
+    .. math::
+        \text{CLIPScore(I, C)} = \\max(cos(E_I, E_C), 0)
+
+    which corresponds to the cosine similarity between visual CLIP embedding :math:`E_i` for an image :math:`i` and
+    textual CLIP embedding :math:`E_C` for an caption :math:`C`.
+
+    Args:
+        version: string indicating the version of the CLIP model to use. See `Huggingface OpenAI`_ for more info
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+    """
+
+    is_differentiable: bool = False
+    higher_is_better: bool = True
+    full_state_update: bool = False
+
     def __init__(self, version="openai/clip-vit-large-patch14", **kwargs) -> None:
         super().__init__(**kwargs)
-        self.tokenizer = _CLIPTokenizer.from_pretrained(version)
-        self.model = _CLIPModel.from_pretrained(version)
-        self.features = _CLIPFeatureExtractor.from_pretrained(version)
+        if _TRANSFORMERS_AVAILABLE:
+            self.tokenizer = _CLIPTokenizer.from_pretrained(version)
+            self.model = _CLIPModel.from_pretrained(version)
+            self.features = _CLIPFeatureExtractor.from_pretrained(version)
+        else:
+            raise ModuleNotFoundError(
+                "`CLIPScore` metric requires `transformers` package be installed."
+                " Either install with `pip install transformers>=4.0` or `pip install torchmetrics[multimodal]`."
+            )
         self.add_state("score", torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("n_samples", torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
 
     def update(self, images: Union[Tensor, List[Tensor]], text: Union[str, List[str]]) -> None:
         if not isinstance(images, List):
-            images = [images]
+            if images.ndim == 3:
+                images = [images]
+            else:  # unwrap into list
+                images = [i for i in images]
+        if not all(i.ndim == 3 for i in images):
+            raise ValueError("Expected all images to be 3d but found image that has either more or less")
+
         if not isinstance(text, List):
             text = [text]
 
@@ -56,10 +95,3 @@ class CLIPScore(Metric):
 
     def compute(self) -> Tensor:
         return self.score / self.n_samples
-
-
-if __name__ == "__main__":
-    img = torch.randint(255, (3, 224, 224))
-    text = "min hest er meget flot"
-    metric = CLIPScore()
-    metric.update(img, text)
