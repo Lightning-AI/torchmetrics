@@ -18,13 +18,8 @@ from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.classification import BinaryConfusionMatrix, MulticlassConfusionMatrix, MultilabelConfusionMatrix
-from torchmetrics.functional.classification.matthews_corrcoef import (
-    _matthews_corrcoef_compute,
-    _matthews_corrcoef_reduce,
-    _matthews_corrcoef_update,
-)
+from torchmetrics.functional.classification.matthews_corrcoef import _matthews_corrcoef_reduce
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.prints import rank_zero_warn
 
 
 class BinaryMatthewsCorrCoef(BinaryConfusionMatrix):

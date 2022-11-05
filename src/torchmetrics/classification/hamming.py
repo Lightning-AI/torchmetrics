@@ -14,17 +14,12 @@
 from typing import Any, Optional
 
 import torch
-from torch import Tensor, tensor
+from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.classification.stat_scores import BinaryStatScores, MulticlassStatScores, MultilabelStatScores
-from torchmetrics.functional.classification.hamming import (
-    _hamming_distance_compute,
-    _hamming_distance_reduce,
-    _hamming_distance_update,
-)
+from torchmetrics.functional.classification.hamming import _hamming_distance_reduce
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.prints import rank_zero_warn
 
 
 class BinaryHammingDistance(BinaryStatScores):

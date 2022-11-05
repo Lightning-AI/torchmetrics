@@ -23,8 +23,6 @@ from torchmetrics.classification.precision_recall_curve import (
     MultilabelPrecisionRecallCurve,
 )
 from torchmetrics.functional.classification.average_precision import (
-    _average_precision_compute,
-    _average_precision_update,
     _binary_average_precision_compute,
     _multiclass_average_precision_arg_validation,
     _multiclass_average_precision_compute,
@@ -32,7 +30,6 @@ from torchmetrics.functional.classification.average_precision import (
     _multilabel_average_precision_compute,
 )
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 
 

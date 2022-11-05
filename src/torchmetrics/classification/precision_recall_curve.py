@@ -34,11 +34,8 @@ from torchmetrics.functional.classification.precision_recall_curve import (
     _multilabel_precision_recall_curve_format,
     _multilabel_precision_recall_curve_tensor_validation,
     _multilabel_precision_recall_curve_update,
-    _precision_recall_curve_compute,
-    _precision_recall_curve_update,
 )
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 
 

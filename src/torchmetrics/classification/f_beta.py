@@ -17,22 +17,14 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.classification.stat_scores import (
-    BinaryStatScores,
-    MulticlassStatScores,
-    MultilabelStatScores,
-    StatScores,
-)
+from torchmetrics.classification.stat_scores import BinaryStatScores, MulticlassStatScores, MultilabelStatScores
 from torchmetrics.functional.classification.f_beta import (
     _binary_fbeta_score_arg_validation,
-    _fbeta_compute,
     _fbeta_reduce,
     _multiclass_fbeta_score_arg_validation,
     _multilabel_fbeta_score_arg_validation,
 )
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.enums import AverageMethod
-from torchmetrics.utilities.prints import rank_zero_warn
 
 
 class BinaryFBetaScore(BinaryStatScores):

@@ -17,20 +17,9 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.classification.stat_scores import (
-    BinaryStatScores,
-    MulticlassStatScores,
-    MultilabelStatScores,
-    StatScores,
-)
-from torchmetrics.functional.classification.precision_recall import (
-    _precision_compute,
-    _precision_recall_reduce,
-    _recall_compute,
-)
+from torchmetrics.classification.stat_scores import BinaryStatScores, MulticlassStatScores, MultilabelStatScores
+from torchmetrics.functional.classification.precision_recall import _precision_recall_reduce
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.enums import AverageMethod
-from torchmetrics.utilities.prints import rank_zero_warn
 
 
 class BinaryPrecision(BinaryStatScores):

@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional
+from typing import Any, Optional
 
 import torch
 from torch import Tensor
@@ -23,7 +23,6 @@ from torchmetrics.functional.classification.calibration_error import (
     _binary_calibration_error_update,
     _binary_confusion_matrix_format,
     _ce_compute,
-    _ce_update,
     _multiclass_calibration_error_arg_validation,
     _multiclass_calibration_error_tensor_validation,
     _multiclass_calibration_error_update,
@@ -31,7 +30,6 @@ from torchmetrics.functional.classification.calibration_error import (
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
-from torchmetrics.utilities.prints import rank_zero_warn
 
 
 class BinaryCalibrationError(Metric):

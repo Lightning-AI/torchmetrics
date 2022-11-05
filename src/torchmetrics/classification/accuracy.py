@@ -19,8 +19,6 @@ from typing_extensions import Literal
 
 from torchmetrics.functional.classification.accuracy import _accuracy_reduce
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.enums import AverageMethod, DataType
-from torchmetrics.utilities.prints import rank_zero_warn
 
 from torchmetrics.classification.stat_scores import (  # isort:skip
     BinaryStatScores,
