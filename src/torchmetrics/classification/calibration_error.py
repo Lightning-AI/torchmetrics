@@ -248,9 +248,9 @@ class CalibrationError:
 
     def __new__(
         cls,
+        task: Literal["binary", "multiclass"] = None,
         n_bins: int = 15,
-        norm: str = "l1",
-        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+        norm: Literal["l1", "l2", "max"] = "l1",
         num_classes: Optional[int] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,

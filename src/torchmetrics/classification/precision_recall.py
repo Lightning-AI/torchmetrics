@@ -608,16 +608,14 @@ class Precision:
 
     def __new__(
         cls,
+        task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,
         num_classes: Optional[int] = None,
-        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
-        mdmc_average: Optional[str] = None,
-        ignore_index: Optional[int] = None,
-        top_k: Optional[int] = None,
-        multiclass: Optional[bool] = None,
-        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
         num_labels: Optional[int] = None,
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
         multidim_average: Optional[Literal["global", "samplewise"]] = "global",
+        top_k: Optional[int] = None,
+        ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
@@ -653,16 +651,14 @@ class Recall:
 
     def __new__(
         cls,
+        task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,
         num_classes: Optional[int] = None,
-        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
-        mdmc_average: Optional[str] = None,
-        ignore_index: Optional[int] = None,
-        top_k: Optional[int] = None,
-        multiclass: Optional[bool] = None,
-        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
         num_labels: Optional[int] = None,
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
         multidim_average: Optional[Literal["global", "samplewise"]] = "global",
+        top_k: Optional[int] = None,
+        ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:

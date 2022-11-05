@@ -264,14 +264,12 @@ class JaccardIndex:
 
     def __new__(
         cls,
-        num_classes: int,
+        task: Literal["binary", "multiclass", "multilabel"],
+        threshold: float = 0.5,
+        num_classes: Optional[int] = None,
+        num_labels: Optional[int] = None,
         average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
         ignore_index: Optional[int] = None,
-        absent_score: float = 0.0,
-        threshold: float = 0.5,
-        multilabel: bool = False,
-        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
-        num_labels: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:

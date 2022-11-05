@@ -227,9 +227,9 @@ class MatthewsCorrCoef:
 
     def __new__(
         cls,
-        num_classes: int,
+        task: Literal["binary", "multiclass", "multilabel"] = None,
         threshold: float = 0.5,
-        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+        num_classes: Optional[int] = None,
         num_labels: Optional[int] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,

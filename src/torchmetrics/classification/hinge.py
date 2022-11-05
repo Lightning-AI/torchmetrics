@@ -209,18 +209,13 @@ class HingeLoss:
     :mod:`BinaryHingeLoss` and :mod:`MulticlassHingeLoss` for the specific details of
     each argument influence and examples.
     """
-    is_differentiable: bool = True
-    higher_is_better: bool = False
-    full_state_update: bool = False
-    measure: Tensor
-    total: Tensor
 
     def __new__(
         cls,
-        squared: bool = False,
-        multiclass_mode: Literal["crammer-singer", "one-vs-all"] = None,
-        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+        task: Literal["binary", "multiclass"],
         num_classes: Optional[int] = None,
+        squared: bool = False,
+        multiclass_mode: Optional[Literal["crammer-singer", "one-vs-all"]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,

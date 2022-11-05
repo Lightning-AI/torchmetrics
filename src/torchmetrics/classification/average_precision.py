@@ -333,12 +333,11 @@ class AveragePrecision:
 
     def __new__(
         cls,
-        num_classes: Optional[int] = None,
-        pos_label: Optional[int] = None,
-        average: Optional[Literal["macro", "weighted", "none"]] = "macro",
-        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+        task: Literal["binary", "multiclass", "multilabel"],
         thresholds: Optional[Union[int, List[float], Tensor]] = None,
+        num_classes: Optional[int] = None,
         num_labels: Optional[int] = None,
+        average: Optional[Literal["macro", "weighted", "none"]] = "macro",
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,

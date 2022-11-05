@@ -196,10 +196,10 @@ class CohenKappa:
 
     def __new__(
         cls,
-        num_classes: Optional[int] = None,
-        weights: Optional[str] = None,
+        task: Literal["binary", "multiclass"],
         threshold: float = 0.5,
-        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+        num_classes: Optional[int] = None,
+        weights: Optional[Literal["linear", "quadratic", "none"]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,

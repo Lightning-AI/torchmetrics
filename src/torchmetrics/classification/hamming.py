@@ -330,8 +330,8 @@ class HammingDistance:
 
     def __new__(
         cls,
+        task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,
-        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
         num_classes: Optional[int] = None,
         num_labels: Optional[int] = None,
         average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
