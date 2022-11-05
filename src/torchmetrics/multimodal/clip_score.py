@@ -44,6 +44,20 @@ class CLIPScore(Metric):
     Args:
         version: string indicating the version of the CLIP model to use. See `Huggingface OpenAI`_ for more info
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+
+    Raises:
+        ModuleNotFoundError:
+            If `transformers` package is not installed
+
+    Example:
+        >>> import torch
+        >>> _ = torch.manual_seed(42)
+        >>> from torchmetrics.multimodal import CLIPScore
+        >>> metric = CLIPScore()
+        >>> img = torch.randint(255, (3, 224, 224))
+        >>> text = "this is a random sentence"
+        >>> metric(img, text)
+        tensor([0.595])
     """
 
     is_differentiable: bool = False
@@ -65,6 +79,19 @@ class CLIPScore(Metric):
         self.add_state("n_samples", torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
 
     def update(self, images: Union[Tensor, List[Tensor]], text: Union[str, List[str]]) -> None:
+        """ Updates CLIP score with current batch of images and text
+
+        Args:
+            images: either a single tensor with shape `(N, C, H, W)` or an list of tensors each
+                with shape `(C, H, W)`
+            text: either a single string or a list of strings
+
+        Raises:
+            ValueError:
+                If not all images have shape `(C, H, W)`
+            ValueError:
+                If the number of images and number of text samples are different
+        """
         if not isinstance(images, List):
             if images.ndim == 3:
                 images = [images]
@@ -99,11 +126,5 @@ class CLIPScore(Metric):
         self.n_samples += img_features.shape[0]
 
     def compute(self) -> Tensor:
+        """ Calculates the accumulated CLIP score over all samples """
         return self.score / self.n_samples
-
-
-if __name__ == "__main__":
-    img = torch.randint(255, (3, 224, 224))
-    text = "min hest er meget flot"
-    metric = CLIPScore()
-    metric.update(img, text)
