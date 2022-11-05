@@ -24,10 +24,10 @@ This metrics API is independent of PyTorch Lightning. Metrics can directly be us
 
 .. code-block:: python
 
-    from torchmetrics.classification import Accuracy
+    from torchmetrics.classification import BinaryAccuracy
 
-    train_accuracy = Accuracy()
-    valid_accuracy = Accuracy()
+    train_accuracy = BinaryAccuracy()
+    valid_accuracy = BinaryAccuracy()
 
     for epoch in range(epochs):
         for x, y in train_data:
@@ -84,14 +84,14 @@ be moved to the same device as the input of the metric:
 
 .. code-block:: python
 
-    from torchmetrics import Accuracy
+    from torchmetrics.classification import BinaryAccuracy
 
     target = torch.tensor([1, 1, 0, 0], device=torch.device("cuda", 0))
     preds = torch.tensor([0, 1, 0, 0], device=torch.device("cuda", 0))
 
     # Metric states are always initialized on cpu, and needs to be moved to
     # the correct device
-    confmat = Accuracy(num_classes=2).to(torch.device("cuda", 0))
+    confmat = BinaryAccuracy().to(torch.device("cuda", 0))
     out = confmat(preds, target)
     print(out.device) # cuda:0
 
@@ -107,16 +107,17 @@ the native `MetricCollection`_ module can also be used to wrap multiple metrics.
 
 .. testcode::
 
-    from torchmetrics import Accuracy, MetricCollection
+    from torchmetrics import MetricCollection
+    from torchmetrics.classification import BinaryAccuracy
 
     class MyModule(torch.nn.Module):
         def __init__(self):
             ...
             # valid ways metrics will be identified as child modules
-            self.metric1 = Accuracy()
-            self.metric2 = nn.ModuleList(Accuracy())
-            self.metric3 = nn.ModuleDict({'accuracy': Accuracy()})
-            self.metric4 = MetricCollection([Accuracy()]) # torchmetrics build-in collection class
+            self.metric1 = BinaryAccuracy()
+            self.metric2 = nn.ModuleList(BinaryAccuracy())
+            self.metric3 = nn.ModuleDict({'accuracy': BinaryAccuracy()})
+            self.metric4 = MetricCollection([BinaryAccuracy()]) # torchmetrics build-in collection class
 
         def forward(self, batch):
             data, target = batch
@@ -254,13 +255,14 @@ Example:
 
 .. testcode::
 
-    from torchmetrics import MetricCollection, Accuracy, Precision, Recall
+    from torchmetrics import MetricCollection
+    from torchmetrics.classification import MulticlassAccuracy, MulticlassPrecision, MulticlassRecall
     target = torch.tensor([0, 2, 0, 2, 0, 1, 0, 2])
     preds = torch.tensor([2, 1, 2, 0, 1, 2, 2, 2])
     metric_collection = MetricCollection([
-        Accuracy(),
-        Precision(num_classes=3, average='macro'),
-        Recall(num_classes=3, average='macro')
+        MulticlassAccuracy(num_classes=3),
+        MulticlassPrecision(num_classes=3, average='macro'),
+        MulticlassRecall(num_classes=3, average='macro')
     ])
     print(metric_collection(preds, target))
 
@@ -276,11 +278,14 @@ inside your LightningModule. In most cases we just have to replace ``self.log`` 
 
 .. testcode::
 
-    from torchmetrics import Accuracy, MetricCollection, Precision, Recall
+    from torchmetrics import MetricCollection
+    from torchmetrics.classification import MulticlassAccuracy, MulticlassPrecision, MulticlassRecall
 
     class MyModule(LightningModule):
         def __init__(self):
-            metrics = MetricCollection([Accuracy(), Precision(), Recall()])
+            metrics = MetricCollection([
+                MulticlassAccuracy(), MulticlassPrecision(), MulticlassRecall()
+            ])
             self.train_metrics = metrics.clone(prefix='train_')
             self.valid_metrics = metrics.clone(prefix='val_')
 
