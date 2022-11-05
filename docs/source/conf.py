@@ -385,3 +385,7 @@ from torchmetrics import Metric
 
 """
 coverage_skip_undoc_in_source = True
+
+linkcheck_ignore = [
+    "https://www.jstor.org/stable/2332303"  # jstor cannot be accessed from python, but link work fine in a local doc
+]

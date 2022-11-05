@@ -13,10 +13,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added `TotalVariation` to image package ([#978](https://github.com/Lightning-AI/metrics/pull/978))
 
+
 - Added option to pass `distributed_available_fn` to metrics to allow checks for custom communication backend for making `dist_sync_fn` actually useful ([#1301](https://github.com/Lightning-AI/metrics/pull/1301))
 
 
 - Added `normalize` argument to `Inception`, `FID`, `KID` metrics ([#1246](https://github.com/Lightning-AI/metrics/pull/1246))
+
+
+- Added `KendallRankCorrCoef` to regression package ([#1271](https://github.com/Lightning-AI/metrics/pull/1271))
 
 
 ### Changed
@@ -25,9 +29,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 - Changed minimum Pytorch version to be 1.8 ([#1263](https://github.com/Lightning-AI/metrics/pull/1263))
-
-
-- Changed in-place operation to out-of-place operation in `pairwise_cosine_similarity` ([#1288](https://github.com/Lightning-AI/metrics/pull/1288))
 
 
 ### Deprecated
@@ -43,15 +44,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed bug in `Metrictracker.best_metric` when `return_step=False` ([#1306](https://github.com/Lightning-AI/metrics/pull/1306))
+
+
+## [0.10.2] - 2022-10-31
+
+### Changed
+
+- Changed in-place operation to out-of-place operation in `pairwise_cosine_similarity` ([#1288](https://github.com/Lightning-AI/metrics/pull/1288))
+
+### Fixed
+
 - Fixed high memory usage for certain classification metrics when `average='micro'` ([#1286](https://github.com/Lightning-AI/metrics/pull/1286))
-
-
 - Fixed precision problems when `structural_similarity_index_measure` was used with autocast ([#1291](https://github.com/Lightning-AI/metrics/pull/1291))
-
-
 - Fixed slow performance for confusion matrix based metrics ([#1302](https://github.com/Lightning-AI/metrics/pull/1302))
-
-
 - Fixed restrictive dtype checking in `spearman_corrcoef` when used with autocast ([#1303](https://github.com/Lightning-AI/metrics/pull/1303))
 
 
