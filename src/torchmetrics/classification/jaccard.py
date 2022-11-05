@@ -253,8 +253,12 @@ class MultilabelJaccardIndex(MultilabelConfusionMatrix):
 
 
 class JaccardIndex:
-    r"""Calculates `Matthews correlation coefficient`_ . This metric measures the general correlation or quality of
-    a classification.
+    r"""Calculates the Jaccard index for multilabel tasks. The `Jaccard index`_ (also known as the intersetion over
+    union or jaccard similarity coefficient) is an statistic that can be used to determine the similarity and
+    diversity of a sample set. It is defined as the size of the intersection divided by the union of the sample
+    sets:
+
+    .. math:: J(A,B) = \frac{|A\cap B|}{|A\cup B|}
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
