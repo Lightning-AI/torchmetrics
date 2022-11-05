@@ -255,7 +255,7 @@ class MultilabelJaccardIndex(MultilabelConfusionMatrix):
         return _jaccard_index_reduce(self.confmat, average=self.average)
 
 
-class JaccardIndex(ConfusionMatrix):
+class JaccardIndex(object):
     r"""Jaccard Index.
 
     .. note::

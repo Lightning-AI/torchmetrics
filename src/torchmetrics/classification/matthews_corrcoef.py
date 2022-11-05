@@ -220,7 +220,7 @@ class MultilabelMatthewsCorrCoef(MultilabelConfusionMatrix):
         return _matthews_corrcoef_reduce(self.confmat)
 
 
-class MatthewsCorrCoef(Metric):
+class MatthewsCorrCoef(object):
     r"""Matthews correlation coefficient.
 
     .. note::

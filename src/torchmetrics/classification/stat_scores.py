@@ -493,7 +493,7 @@ class MultilabelStatScores(_AbstractStatScores):
         return _multilabel_stat_scores_compute(tp, fp, tn, fn, self.average, self.multidim_average)
 
 
-class StatScores(Metric):
+class StatScores(object):
     r"""StatScores.
 
     .. note::

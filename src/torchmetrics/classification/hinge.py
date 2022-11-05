@@ -205,7 +205,7 @@ class MulticlassHingeLoss(Metric):
         return _hinge_loss_compute(self.measures, self.total)
 
 
-class HingeLoss(Metric):
+class HingeLoss(object):
     r"""Hinge Loss.
 
     .. note::

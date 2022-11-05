@@ -314,7 +314,7 @@ class MultilabelAUROC(MultilabelPrecisionRecallCurve):
         return _multilabel_auroc_compute(state, self.num_labels, self.average, self.thresholds, self.ignore_index)
 
 
-class AUROC(Metric):
+class AUROC(object):
     r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_). The AUROC
     score summarizes the ROC curve into an single number that describes the performance of a model for multiple
     thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5

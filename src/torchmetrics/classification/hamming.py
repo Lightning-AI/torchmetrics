@@ -317,7 +317,7 @@ class MultilabelHammingDistance(MultilabelStatScores):
         )
 
 
-class HammingDistance(Metric):
+class HammingDistance(object):
     r"""Hamming distance.
 
     .. note::

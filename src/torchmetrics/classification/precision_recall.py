@@ -603,7 +603,7 @@ class MultilabelRecall(MultilabelStatScores):
         )
 
 
-class Precision(StatScores):
+class Precision(object):
     r"""Precision.
 
     .. note::
@@ -736,7 +736,7 @@ class Precision(StatScores):
 
 
 
-class Recall(StatScores):
+class Recall(object):
     r"""Recall.
 
     .. note::

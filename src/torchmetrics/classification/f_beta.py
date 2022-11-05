@@ -708,7 +708,7 @@ class MultilabelF1Score(MultilabelFBetaScore):
         )
 
 
-class FBetaScore(StatScores):
+class FBetaScore(object):
     r"""F-Beta Score.
 
     .. note::
@@ -848,7 +848,7 @@ class FBetaScore(StatScores):
 
 
 
-class F1Score(FBetaScore):
+class F1Score(object):
     r"""F1 Score.
 
     .. note::
