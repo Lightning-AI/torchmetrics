@@ -79,7 +79,7 @@ class CLIPScore(Metric):
         self.add_state("n_samples", torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
 
     def update(self, images: Union[Tensor, List[Tensor]], text: Union[str, List[str]]) -> None:
-        """ Updates CLIP score with current batch of images and text
+        """Updates CLIP score with current batch of images and text.
 
         Args:
             images: either a single tensor with shape `(N, C, H, W)` or an list of tensors each
@@ -126,5 +126,5 @@ class CLIPScore(Metric):
         self.n_samples += img_features.shape[0]
 
     def compute(self) -> Tensor:
-        """ Calculates the accumulated CLIP score over all samples """
+        """Calculates the accumulated CLIP score over all samples."""
         return self.score / self.n_samples
