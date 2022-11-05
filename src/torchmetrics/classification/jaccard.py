@@ -359,4 +359,3 @@ class JaccardIndex(ConfusionMatrix):
                 DeprecationWarning,
             )
         return super().__new__(cls)
-

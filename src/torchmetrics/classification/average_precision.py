@@ -421,4 +421,3 @@ class AveragePrecision(Metric):
                 DeprecationWarning,
             )
         return super().__new__(cls)
-

@@ -302,4 +302,3 @@ class CalibrationError(Metric):
                 DeprecationWarning,
             )
         return super().__new__(cls)
-

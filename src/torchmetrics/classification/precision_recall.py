@@ -746,7 +746,6 @@ class Precision(StatScores):
         return super().__new__(cls)
 
 
-
 class Recall(StatScores):
     r"""Recall.
 
@@ -887,4 +886,3 @@ class Recall(StatScores):
                 DeprecationWarning,
             )
         return super().__new__(cls)
-

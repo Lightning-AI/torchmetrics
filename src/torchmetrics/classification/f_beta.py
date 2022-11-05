@@ -858,7 +858,6 @@ class FBetaScore(StatScores):
         return super().__new__(cls)
 
 
-
 class F1Score(FBetaScore):
     r"""F1 Score.
 
