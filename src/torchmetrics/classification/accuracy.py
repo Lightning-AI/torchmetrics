@@ -17,9 +17,7 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.functional.classification.accuracy import (
-    _accuracy_reduce,
-)
+from torchmetrics.functional.classification.accuracy import _accuracy_reduce
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.enums import AverageMethod, DataType
 from torchmetrics.utilities.prints import rank_zero_warn
@@ -313,7 +311,7 @@ class MultilabelAccuracy(MultilabelStatScores):
         )
 
 
-class Accuracy(object):
+class Accuracy:
     r"""Computes `Accuracy`_
 
     .. math::
@@ -326,6 +324,7 @@ class Accuracy(object):
     :mod:`BinaryAccuracy`, :mod:`MulticlassAccuracy` and :mod:`MultilabelAccuracy` for the specific details of
     each argument influence and examples.
     """
+
     def __new__(
         cls,
         task: Literal["binary", "multiclass", "multilabel"],
@@ -339,9 +338,7 @@ class Accuracy(object):
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
-        kwargs.update(
-            dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
-        )
+        kwargs.update(dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args))
         if task == "binary":
             return BinaryAccuracy(threshold, **kwargs)
         if task == "multiclass":
