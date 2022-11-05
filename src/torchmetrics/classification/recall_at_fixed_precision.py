@@ -17,7 +17,6 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics import Metric
 from torchmetrics.classification.precision_recall_curve import (
     BinaryPrecisionRecallCurve,
     MulticlassPrecisionRecallCurve,
@@ -31,6 +30,7 @@ from torchmetrics.functional.classification.recall_at_fixed_precision import (
     _multilabel_recall_at_fixed_precision_arg_compute,
     _multilabel_recall_at_fixed_precision_arg_validation,
 )
+from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
 
 
