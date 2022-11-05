@@ -753,7 +753,7 @@ class F1Score:
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
-    :func:`binary_f1_score`, :func:`multiclass_f1_score` and :func:`multilabel_f1_score` for the specific
+    :mod:`BinaryF1Score`, :mod:`MulticlassF1Score` and :mod:`MultilabelF1Score` for the specific
     details of each argument influence and examples.
     """
 

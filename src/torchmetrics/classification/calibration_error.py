@@ -242,7 +242,7 @@ class CalibrationError:
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'`` or ``'multiclass'``. See the documentation of
-    :func:`binary_calibration_error` and :func:`multiclass_calibration_error` for the specific details of
+    :mod:`BinaryCalibrationError` and :mod:`MulticlassCalibrationError` for the specific details of
     each argument influence and examples.
     """
 

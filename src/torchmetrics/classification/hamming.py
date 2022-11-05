@@ -324,8 +324,8 @@ class HammingDistance:
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
-    :func:`binary_hamming`, :func:`multiclass_hamming` and :func:`multilabel_hamming` for the specific details of
-    each argument influence and examples.
+    :mod:`BinaryHammingDistance`, :mod:`MulticlassHammingDistance` and :mod:`MultilabelHammingDistance` for the
+    specific details of each argument influence and examples.
     """
 
     def __new__(

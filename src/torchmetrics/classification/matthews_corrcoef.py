@@ -221,7 +221,7 @@ class MatthewsCorrCoef:
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
-    :func:`binary_matthews_corrcoef`, :func:`multiclass_matthews_corrcoef` and :func:`multilabel_matthews_corrcoef` for
+    :mod:`BinaryMatthewsCorrCoef`, :mod:`MulticlassMatthewsCorrCoef` and :mod:`MultilabelMatthewsCorrCoef` for
     the specific details of each argument influence and examples.
     """
 

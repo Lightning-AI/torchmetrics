@@ -309,7 +309,7 @@ class ROC:
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
-    :func:`binary_roc`, :func:`multiclass_roc` and :func:`multilabel_roc` for the specific details of each argument
+    :mod:`BinaryROC`, :mod:`MulticlassROC` and :mod:`MultilabelROC` for the specific details of each argument
     influence and examples.
     """
 

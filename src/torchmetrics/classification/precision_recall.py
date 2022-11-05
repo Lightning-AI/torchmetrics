@@ -602,7 +602,7 @@ class Precision:
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
-    :func:`binary_precision`, :func:`multiclass_precision` and :func:`multilabel_precision` for the specific details of
+    :mod:`BinaryPrecision`, :func:`MulticlassPrecision` and :func:`MultilabelPrecision` for the specific details of
     each argument influence and examples.
     """
 
@@ -647,7 +647,7 @@ class Recall:
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
-    :func:`binary_recall`, :func:`multiclass_recall` and :func:`multilabel_recall` for the specific details of
+    :mod:`BinaryRecall`, :mod:`MulticlassRecall` and :mod:`MultilabelRecall` for the specific details of
     each argument influence and examples.
     """
 

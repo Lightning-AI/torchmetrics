@@ -317,7 +317,7 @@ class ConfusionMatrix:
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
-    :func:`binary_confusion_matrix`, :func:`multiclass_confusion_matrix` and :func:`multilabel_confusion_matrix` for
+    :mod:`BinaryConfusionMatrix`, :mod:`MulticlassConfusionMatrix` and :func:`MultilabelConfusionMatrix` for
     the specific details of each argument influence and examples.
     """
 
