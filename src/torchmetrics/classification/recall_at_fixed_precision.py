@@ -294,3 +294,46 @@ class MultilabelRecallAtFixedPrecision(MultilabelPrecisionRecallCurve):
         return _multilabel_recall_at_fixed_precision_arg_compute(
             state, self.num_labels, self.thresholds, self.ignore_index, self.min_precision
         )
+
+
+class RecallAtFixedPrecision(object):
+    r"""Recall.
+
+    """
+    is_differentiable: bool = False
+    higher_is_better: bool = True
+    full_state_update: bool = False
+
+    def __new__(
+        cls,
+        threshold: float = 0.5,
+        num_classes: Optional[int] = None,
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+        mdmc_average: Optional[str] = None,
+        ignore_index: Optional[int] = None,
+        top_k: Optional[int] = None,
+        multiclass: Optional[bool] = None,
+        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+        num_labels: Optional[int] = None,
+        multidim_average: Optional[Literal["global", "samplewise"]] = "global",
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> Metric:
+        assert multidim_average is not None
+        kwargs.update(
+            dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
+        )
+        if task == "binary":
+            return BinaryRecall(threshold, **kwargs)
+        if task == "multiclass":
+            assert isinstance(num_classes, int)
+            assert isinstance(top_k, int)
+            return MulticlassRecall(num_classes, top_k, average, **kwargs)
+        if task == "multilabel":
+            assert isinstance(num_labels, int)
+            return MultilabelRecall(num_labels, threshold, average, **kwargs)
+        raise ValueError(
+            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+        )
+
+

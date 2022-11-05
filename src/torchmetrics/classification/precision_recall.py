@@ -717,33 +717,22 @@ class Precision(StatScores):
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
-        if task is not None:
-            assert multidim_average is not None
-            kwargs.update(
-                dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
-            )
-            if task == "binary":
-                return BinaryPrecision(threshold, **kwargs)
-            if task == "multiclass":
-                assert isinstance(num_classes, int)
-                assert isinstance(top_k, int)
-                return MulticlassPrecision(num_classes, top_k, average, **kwargs)
-            if task == "multilabel":
-                assert isinstance(num_labels, int)
-                return MultilabelPrecision(num_labels, threshold, average, **kwargs)
-            raise ValueError(
-                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-            )
-        else:
-            rank_zero_warn(
-                "From v0.10 an `'Binary*'`, `'Multiclass*', `'Multilabel*'` version now exist of each classification"
-                " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
-                " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
-                " and the general order of arguments may change, such that this metric will just function as an single"
-                " entrypoint to calling the three specialized versions.",
-                DeprecationWarning,
-            )
-        return super().__new__(cls)
+        assert multidim_average is not None
+        kwargs.update(
+            dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
+        )
+        if task == "binary":
+            return BinaryPrecision(threshold, **kwargs)
+        if task == "multiclass":
+            assert isinstance(num_classes, int)
+            assert isinstance(top_k, int)
+            return MulticlassPrecision(num_classes, top_k, average, **kwargs)
+        if task == "multilabel":
+            assert isinstance(num_labels, int)
+            return MultilabelPrecision(num_labels, threshold, average, **kwargs)
+        raise ValueError(
+            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+        )
 
 
 
@@ -860,31 +849,21 @@ class Recall(StatScores):
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
-        if task is not None:
-            assert multidim_average is not None
-            kwargs.update(
-                dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
-            )
-            if task == "binary":
-                return BinaryRecall(threshold, **kwargs)
-            if task == "multiclass":
-                assert isinstance(num_classes, int)
-                assert isinstance(top_k, int)
-                return MulticlassRecall(num_classes, top_k, average, **kwargs)
-            if task == "multilabel":
-                assert isinstance(num_labels, int)
-                return MultilabelRecall(num_labels, threshold, average, **kwargs)
-            raise ValueError(
-                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-            )
-        else:
-            rank_zero_warn(
-                "From v0.10 an `'Binary*'`, `'Multiclass*', `'Multilabel*'` version now exist of each classification"
-                " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
-                " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
-                " and the general order of arguments may change, such that this metric will just function as an single"
-                " entrypoint to calling the three specialized versions.",
-                DeprecationWarning,
-            )
-        return super().__new__(cls)
+        assert multidim_average is not None
+        kwargs.update(
+            dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
+        )
+        if task == "binary":
+            return BinaryRecall(threshold, **kwargs)
+        if task == "multiclass":
+            assert isinstance(num_classes, int)
+            assert isinstance(top_k, int)
+            return MulticlassRecall(num_classes, top_k, average, **kwargs)
+        if task == "multilabel":
+            assert isinstance(num_labels, int)
+            return MultilabelRecall(num_labels, threshold, average, **kwargs)
+        raise ValueError(
+            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+        )
+
 

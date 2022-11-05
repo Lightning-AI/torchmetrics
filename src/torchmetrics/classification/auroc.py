@@ -23,8 +23,6 @@ from torchmetrics.classification.precision_recall_curve import (
     MultilabelPrecisionRecallCurve,
 )
 from torchmetrics.functional.classification.auroc import (
-    _auroc_compute,
-    _auroc_update,
     _binary_auroc_arg_validation,
     _binary_auroc_compute,
     _multiclass_auroc_arg_validation,
@@ -33,9 +31,7 @@ from torchmetrics.functional.classification.auroc import (
     _multilabel_auroc_compute,
 )
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
-from torchmetrics.utilities.enums import DataType
 
 
 class BinaryAUROC(BinaryPrecisionRecallCurve):
