@@ -255,5 +255,6 @@ def cohen_kappa(
     if task == "binary":
         return binary_cohen_kappa(preds, target, threshold, weights, ignore_index, validate_args)
     if task == "multiclass":
+        assert isinstance(num_classes, int)
         return multiclass_cohen_kappa(preds, target, num_classes, weights, ignore_index, validate_args)
     raise ValueError(f"Expected argument `task` to either be `'binary'` or `'multiclass'` but got {task}")
