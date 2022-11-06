@@ -51,7 +51,7 @@ class LogCoshError(Metric):
     is_differentiable = True
     higher_is_better = False
     full_state_update = False
-    sum_squared_error: Tensor
+    sum_log_cosh_error: Tensor
     total: Tensor
 
     def __init__(self, num_outputs: int = 1, **kwargs: Any) -> None:
