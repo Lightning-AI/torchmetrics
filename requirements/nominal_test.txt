@@ -1,1 +1,2 @@
 dython
+pandas>=1.3.2  # otherwise, dython reference metric is not working
