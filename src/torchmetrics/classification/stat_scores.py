@@ -44,7 +44,11 @@ from torchmetrics.utilities.prints import rank_zero_warn
 
 class _AbstractStatScores(Metric):
     # define common functions
-    def _create_state(self, size: int, multidim_average: str) -> None:
+    def _create_state(
+        self,
+        size: int,
+        multidim_average: Literal["global", "samplewise"] = "global",
+    ) -> None:
         """Initialize the states for the different statistics."""
         default: Union[Callable[[], list], Callable[[], Tensor]]
         if multidim_average == "samplewise":
@@ -53,6 +57,7 @@ class _AbstractStatScores(Metric):
         else:
             default = lambda: torch.zeros(size, dtype=torch.long)
             dist_reduce_fx = "sum"
+
         self.add_state("tp", default(), dist_reduce_fx=dist_reduce_fx)
         self.add_state("fp", default(), dist_reduce_fx=dist_reduce_fx)
         self.add_state("tn", default(), dist_reduce_fx=dist_reduce_fx)
@@ -159,7 +164,7 @@ class BinaryStatScores(_AbstractStatScores):
         self.ignore_index = ignore_index
         self.validate_args = validate_args
 
-        self._create_state(1, multidim_average)
+        self._create_state(size=1, multidim_average=multidim_average)
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
@@ -243,8 +248,8 @@ class MulticlassStatScores(_AbstractStatScores):
 
     Example (preds is float tensor):
         >>> from torchmetrics.classification import MulticlassStatScores
-        >>> target = target = torch.tensor([2, 1, 0, 0])
-        >>> preds = preds = torch.tensor([
+        >>> target = torch.tensor([2, 1, 0, 0])
+        >>> preds = torch.tensor([
         ...   [0.16, 0.26, 0.58],
         ...   [0.22, 0.61, 0.17],
         ...   [0.71, 0.09, 0.20],
@@ -300,7 +305,9 @@ class MulticlassStatScores(_AbstractStatScores):
         self.ignore_index = ignore_index
         self.validate_args = validate_args
 
-        self._create_state(num_classes, multidim_average)
+        self._create_state(
+            size=1 if (average == "micro" and top_k == 1) else num_classes, multidim_average=multidim_average
+        )
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
@@ -315,7 +322,7 @@ class MulticlassStatScores(_AbstractStatScores):
             )
         preds, target = _multiclass_stat_scores_format(preds, target, self.top_k)
         tp, fp, tn, fn = _multiclass_stat_scores_update(
-            preds, target, self.num_classes, self.top_k, self.multidim_average, self.ignore_index
+            preds, target, self.num_classes, self.top_k, self.average, self.multidim_average, self.ignore_index
         )
         self._update_state(tp, fp, tn, fn)
 
@@ -448,7 +455,7 @@ class MultilabelStatScores(_AbstractStatScores):
         self.ignore_index = ignore_index
         self.validate_args = validate_args
 
-        self._create_state(num_labels, multidim_average)
+        self._create_state(size=num_labels, multidim_average=multidim_average)
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
@@ -503,7 +510,7 @@ class StatScores(Metric):
     ``reduce`` parameter, and additionally by the ``mdmc_reduce`` parameter in the
     multi-dimensional multi-class case.
 
-    Accepts all inputs listed in :ref:`pages/classification:input types`.
+
 
     Args:
         threshold:
@@ -524,8 +531,6 @@ class StatScores(Metric):
               Each statistic is represented by a ``(C,)`` tensor. Requires ``num_classes`` to be set.
             - ``'samples'``: Counts the statistics for each sample separately (over all classes).
               Each statistic is represented by a ``(N, )`` 1d tensor.
-            - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
-              the metric for every class.
 
             .. note:: What is considered a sample in the multi-dimensional multi-class case
                 depends on the value of ``mdmc_reduce``.
@@ -541,7 +546,7 @@ class StatScores(Metric):
         mdmc_reduce: Defines how the multi-dimensional multi-class inputs are handeled. Should be one of the following:
 
             - ``None`` [default]: Should be left unchanged if your data is not multi-dimensional
-              multi-class (see :ref:`pages/classification:input types` for the definition of input types).
+              multi-class.
 
             - ``'samplewise'``: In this case, the statistics are computed separately for each
               sample on the ``N`` axis, and then the outputs are concatenated together. In each
@@ -555,25 +560,20 @@ class StatScores(Metric):
 
         multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
-            than what they appear to be. See the parameter's
-            :ref:`documentation section <pages/classification:using the multiclass parameter>`
-            for a more detailed explanation and examples.
+            than what they appear to be.
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
-            If ``reduce`` is none of ``"micro"``, ``"macro"``, ``"samples"``, ``"none"`` or None.
+            If ``reduce`` is none of ``"micro"``, ``"macro"`` or ``"samples"``.
         ValueError:
             If ``mdmc_reduce`` is none of ``None``, ``"samplewise"``, ``"global"``.
         ValueError:
             If ``reduce`` is set to ``"macro"`` and ``num_classes`` is not provided.
         ValueError:
-            If ``num_classes`` is set and is not larger than ``0``.
-        ValueError:
-            If ``num_classes`` is set and ``ignore_index`` is not in the range ``[0, num_classes)``.
-        ValueError:
-            If ``top_k`` is not an ``integer`` larger than ``0``.
+            If ``num_classes`` is set
+            and ``ignore_index`` is not in the range ``0`` <= ``ignore_index`` < ``num_classes``.
 
     Example:
         >>> from torchmetrics.classification import StatScores
@@ -665,7 +665,7 @@ class StatScores(Metric):
         self.ignore_index = ignore_index
         self.top_k = top_k
 
-        if reduce not in ["micro", "macro", "samples", None]:
+        if reduce not in ["micro", "macro", "samples"]:
             raise ValueError(f"The `reduce` {reduce} is not valid.")
 
         if mdmc_reduce not in [None, "samplewise", "global"]:
@@ -674,14 +674,8 @@ class StatScores(Metric):
         if reduce == "macro" and (not num_classes or num_classes < 1):
             raise ValueError("When you set `reduce` as 'macro', you have to provide the number of classes.")
 
-        if num_classes and num_classes < 1:
-            raise ValueError("Number of classes must be larger than 0.")
-
         if num_classes and ignore_index is not None and (not ignore_index < num_classes or num_classes == 1):
             raise ValueError(f"The `ignore_index` {ignore_index} is not valid for inputs with {num_classes} classes")
-
-        if top_k is not None and (not isinstance(top_k, int) or top_k <= 0):
-            raise ValueError(f"The `top_k` should be an integer larger than 0, got {top_k}")
 
         default: Callable = lambda: []
         reduce_fn: Optional[str] = "cat"
@@ -700,8 +694,6 @@ class StatScores(Metric):
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
-
-        See :ref:`pages/classification:input types` for more information on input types.
 
         Args:
             preds: Predictions from model (probabilities, logits or labels)

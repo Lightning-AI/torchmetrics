@@ -18,7 +18,7 @@ from torch import Tensor, tensor
 from typing_extensions import Literal
 
 from torchmetrics.utilities.checks import _check_same_shape, _input_format_classification
-from torchmetrics.utilities.data import _bincount, _movedim, select_topk
+from torchmetrics.utilities.data import _bincount, select_topk
 from torchmetrics.utilities.enums import AverageMethod, DataType, MDMCAverageMethod
 from torchmetrics.utilities.prints import rank_zero_warn
 
@@ -351,6 +351,7 @@ def _multiclass_stat_scores_update(
     target: Tensor,
     num_classes: int,
     top_k: int = 1,
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
@@ -373,7 +374,7 @@ def _multiclass_stat_scores_update(
             target[idx] = num_classes
 
         if top_k > 1:
-            preds_oh = _movedim(select_topk(preds, topk=top_k, dim=1), 1, -1)
+            preds_oh = torch.movedim(select_topk(preds, topk=top_k, dim=1), 1, -1)
         else:
             preds_oh = torch.nn.functional.one_hot(
                 preds, num_classes + 1 if ignore_index is not None and not ignore_in else num_classes
@@ -393,7 +394,17 @@ def _multiclass_stat_scores_update(
         fn = ((target_oh != preds_oh) & (target_oh == 1)).sum(sum_dim)
         fp = ((target_oh != preds_oh) & (target_oh == 0)).sum(sum_dim)
         tn = ((target_oh == preds_oh) & (target_oh == 0)).sum(sum_dim)
-        return tp, fp, tn, fn
+    elif average == "micro":
+        preds = preds.flatten()
+        target = target.flatten()
+        if ignore_index is not None:
+            idx = target != ignore_index
+            preds = preds[idx]
+            target = target[idx]
+        tp = (preds == target).sum()
+        fp = (preds != target).sum()
+        fn = (preds != target).sum()
+        tn = num_classes * preds.numel() - (fp + fn + tp)
     else:
         preds = preds.flatten()
         target = target.flatten()
@@ -408,7 +419,7 @@ def _multiclass_stat_scores_update(
         fp = confmat.sum(0) - tp
         fn = confmat.sum(1) - tp
         tn = confmat.sum() - (fp + fn + tp)
-        return tp, fp, tn, fn
+    return tp, fp, tn, fn
 
 
 def _multiclass_stat_scores_compute(
@@ -426,8 +437,8 @@ def _multiclass_stat_scores_compute(
     res = torch.stack([tp, fp, tn, fn, tp + fn], dim=-1)
     sum_dim = 0 if multidim_average == "global" else 1
     if average == "micro":
-        return res.sum(sum_dim)
-    elif average == "macro":
+        return res.sum(sum_dim) if res.ndim > 1 else res
+    if average == "macro":
         return res.float().mean(sum_dim)
     elif average == "weighted":
         weight = tp + fn
@@ -549,7 +560,9 @@ def multiclass_stat_scores(
         _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index)
         _multiclass_stat_scores_tensor_validation(preds, target, num_classes, multidim_average, ignore_index)
     preds, target = _multiclass_stat_scores_format(preds, target, top_k)
-    tp, fp, tn, fn = _multiclass_stat_scores_update(preds, target, num_classes, top_k, multidim_average, ignore_index)
+    tp, fp, tn, fn = _multiclass_stat_scores_update(
+        preds, target, num_classes, top_k, average, multidim_average, ignore_index
+    )
     return _multiclass_stat_scores_compute(tp, fp, tn, fn, average, multidim_average)
 
 
@@ -864,9 +877,6 @@ def _stat_scores(
         The shape of the returned tensors depends on the shape of the inputs
         and the ``reduce`` parameter:
 
-        If ``reduce=None`` or ``reduce='none'``. the returned tensors have the same shape
-        as the input.
-
         If inputs are of the shape ``(N, C)``, then:
 
         - If ``reduce='micro'``, the returned tensors are 1 element tensors
@@ -879,7 +889,7 @@ def _stat_scores(
         - If ``reduce='macro'``, the returned tensors are ``(N,C)`` tensors
         - If ``reduce='samples'``, the returned tensors are ``(N,X)`` tensors
     """
-    dim: Union[int, List[int]] = 1
+    dim: Union[int, List[int]] = 1  # for "samples"
     if reduce == "micro":
         dim = [0, 1] if preds.ndim == 2 else [1, 2]
     elif reduce == "macro":
@@ -888,17 +898,11 @@ def _stat_scores(
     true_pred, false_pred = target == preds, target != preds
     pos_pred, neg_pred = preds == 1, preds == 0
 
-    tp = true_pred * pos_pred
-    fp = false_pred * pos_pred
+    tp = (true_pred * pos_pred).sum(dim=dim)
+    fp = (false_pred * pos_pred).sum(dim=dim)
 
-    tn = true_pred * neg_pred
-    fn = false_pred * neg_pred
-
-    if reduce is not None and reduce != "none":
-        tp = tp.sum(dim=dim)
-        fp = fp.sum(dim=dim)
-        tn = tn.sum(dim=dim)
-        fn = fn.sum(dim=dim)
+    tn = (true_pred * neg_pred).sum(dim=dim)
+    fn = (false_pred * neg_pred).sum(dim=dim)
 
     return tp.long(), fp.long(), tn.long(), fn.long()
 
@@ -1116,7 +1120,7 @@ def stat_scores(
 
     The reduction method (how the statistics are aggregated) is controlled by the
     ``reduce`` parameter, and additionally by the ``mdmc_reduce`` parameter in the
-    multi-dimensional multi-class case. Accepts all inputs listed in :ref:`pages/classification:input types`.
+    multi-dimensional multi-class case.
 
     Args:
         preds: Predictions from model (probabilities, logits or labels)
@@ -1156,7 +1160,7 @@ def stat_scores(
             one of the following:
 
             - ``None`` [default]: Should be left unchanged if your data is not multi-dimensional
-              multi-class (see :ref:`pages/classification:input types` for the definition of input types).
+              multi-class.
 
             - ``'samplewise'``: In this case, the statistics are computed separately for each
               sample on the ``N`` axis, and then the outputs are concatenated together. In each
@@ -1170,9 +1174,7 @@ def stat_scores(
 
         multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
-            than what they appear to be. See the parameter's
-            :ref:`documentation section <pages/classification:using the multiclass parameter>`
-            for a more detailed explanation and examples.
+            than what they appear to be.
 
     Return:
         The metric returns a tensor of shape ``(..., 5)``, where the last dimension corresponds
