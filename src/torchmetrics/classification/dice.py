@@ -19,10 +19,15 @@ from typing_extensions import Literal
 from torchmetrics.classification.stat_scores import StatScores
 from torchmetrics.functional.classification.dice import _dice_compute
 from torchmetrics.utilities.enums import AverageMethod
+from torchmetrics.utilities.prints import rank_zero_warn
 
 
 class Dice(StatScores):
     r"""Computes `Dice`_:
+
+    .. deprecated:: v0.10
+        The `Dice` module was deprecated in v0.10 and will be removed in v0.11. Use `F1Score` module instead which
+        is equivalent.
 
     .. math:: \text{Dice} = \frac{\text{2 * TP}}{\text{2 * TP} + \text{FP} + \text{FN}}
 
@@ -129,6 +134,12 @@ class Dice(StatScores):
         multiclass: Optional[bool] = None,
         **kwargs: Any,
     ) -> None:
+        rank_zero_warn(
+            "The `dice` function was deprecated in v0.10 and will be removed in v0.11. Use `f1score` function instead"
+            " which is equivalent.",
+            DeprecationWarning,
+        )
+
         allowed_average = ("micro", "macro", "weighted", "samples", "none", None)
         if average not in allowed_average:
             raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")

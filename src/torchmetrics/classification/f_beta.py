@@ -387,10 +387,12 @@ class MultilabelFBetaScore(MultilabelStatScores):
 
 
 class BinaryF1Score(BinaryFBetaScore):
-    r"""Computes F-1 score for binary tasks:
+    r"""Computes F-1 score (also known as Dice score/similarity) for binary tasks:
 
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
+
+    F-1 score correspond to equally weighted average of the precision and recall scores.
 
     Accepts the following input tensors:
 
@@ -472,10 +474,12 @@ class BinaryF1Score(BinaryFBetaScore):
 
 
 class MulticlassF1Score(MulticlassFBetaScore):
-    r"""Computes F-1 score for multiclass tasks:
+    r"""Computes F-1 score (also known as Dice score/similarity) for multiclass tasks:
 
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
+
+    F-1 score correspond to equally weighted average of the precision and recall scores.
 
     Accepts the following input tensors:
 
@@ -592,10 +596,12 @@ class MulticlassF1Score(MulticlassFBetaScore):
 
 
 class MultilabelF1Score(MultilabelFBetaScore):
-    r"""Computes F-1 score for multilabel tasks:
+    r"""Computes F-1 score (also known as Dice score/similarity) for multilabel tasks:
 
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
+
+    F-1 score correspond to equally weighted average of the precision and recall scores.
 
     Accepts the following input tensors:
 
