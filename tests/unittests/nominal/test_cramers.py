@@ -76,7 +76,7 @@ def _dython_cramers_v(preds, target, bias_correction, nan_strategy, nan_replace_
 
 def _dython_cramers_v_matrix(matrix, bias_correction, nan_strategy, nan_replace_value):
     num_variables = matrix.shape[1]
-    cramers_v_matrix_value = torch.zeros(num_variables, num_variables)
+    cramers_v_matrix_value = torch.ones(num_variables, num_variables)
     for i, j in itertools.combinations(range(num_variables), 2):
         x, y = matrix[:, i], matrix[:, j]
         cramers_v_matrix_value[i, j] = cramers_v_matrix_value[j, i] = _dython_cramers_v(
