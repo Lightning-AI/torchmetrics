@@ -14,7 +14,7 @@
 from torch import Tensor
 
 
-def _check_data_shape_for_corr_coef(preds: Tensor, target: Tensor, num_outputs: int) -> None:
+def _check_data_shape_to_num_outputs(preds: Tensor, target: Tensor, num_outputs: int) -> None:
     """Check that predictions and target have the correct shape, else raise error."""
     if preds.ndim > 2 or target.ndim > 2:
         raise ValueError(
