@@ -87,7 +87,9 @@ def _dython_cramers_v_matrix(matrix, bias_correction, nan_strategy, nan_replace_
     return cramers_v_matrix_value
 
 
-@pytest.mark.skipif(_compare_version("pandas", operator.lt, "1.3.2"), "`dython` package requires `pandas>=1.3.2`")
+@pytest.mark.skipif(
+    _compare_version("pandas", operator.lt, "1.3.2"), reason="`dython` package requires `pandas>=1.3.2`"
+)
 @pytest.mark.parametrize(
     "preds, target",
     [
