@@ -76,7 +76,7 @@ class SpectralAngleMapper(Metric):
         self.add_state("target", default=[], dist_reduce_fx="cat")
         self.reduction = reduction
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets.
 
         Args:

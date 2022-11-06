@@ -94,7 +94,7 @@ class ExplainedVariance(Metric):
         self.add_state("sum_squared_target", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("n_obs", default=tensor(0.0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets.
 
         Args:

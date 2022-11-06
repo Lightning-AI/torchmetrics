@@ -143,7 +143,7 @@ class InfoLM(Metric):
         self.add_state("target_input_ids", [], dist_reduce_fx="cat")
         self.add_state("target_attention_mask", [], dist_reduce_fx="cat")
 
-    def update(self, preds: Union[str, Sequence[str]], target: Union[str, Sequence[str]]) -> None:  # type: ignore
+    def update(self, preds: Union[str, Sequence[str]], target: Union[str, Sequence[str]]) -> None:
         """Update the metric state by a tokenization of ``preds`` and ``target`` sentencens.
 
         Args:

@@ -180,7 +180,7 @@ def _read_csv_from_url(baseline_url: str) -> Tensor:
 
     This method is implemented to avoid `pandas` dependency.
     """
-    with urllib.request.urlopen(baseline_url) as http_request:  # type: ignore
+    with urllib.request.urlopen(baseline_url) as http_request:
         baseline_list = [
             [float(item) for item in row.strip().decode("utf-8").split(",")]
             for idx, row in enumerate(http_request)
@@ -354,8 +354,8 @@ def bert_score(
     try:
         if num_layers and num_layers > model.config.num_hidden_layers:  # type: ignore
             raise ValueError(
-                f"num_layers={num_layers} is forbidden for {model_name_or_path}. "  # type: ignore
-                f"Please use num_layers <= {model.config.num_hidden_layers}"  # type: ignore
+                f"num_layers={num_layers} is forbidden for {model_name_or_path}."  # type: ignore
+                f" Please use num_layers <= {model.config.num_hidden_layers}"
             )
     except AttributeError:
         warn("It was not possible to retrieve the parameter `num_layers` from the model specification.")

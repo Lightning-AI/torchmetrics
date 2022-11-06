@@ -133,7 +133,7 @@ def _union_lcs(pred_tokens_list: Sequence[Sequence[str]], target_tokens: Sequenc
 
     def find_union(lcs_tables: Sequence[Sequence[int]]) -> Sequence[int]:
         """Find union LCS given a list of LCS."""
-        return sorted(list(set().union(*lcs_tables)))  # type: ignore
+        return sorted(list(set().union(*lcs_tables)))
 
     lcs_tables = [lcs_ind(pred_tokens, target_tokens) for pred_tokens in pred_tokens_list]
     union_lcs = [target_tokens[i] for i in find_union(lcs_tables)]
@@ -315,10 +315,11 @@ def _rouge_score_update(
         result_avg: Dict[Union[int, str], List[Dict[str, Tensor]]] = {rouge_key: [] for rouge_key in rouge_keys_values}
         list_results = []
         pred = _normalize_and_tokenize_text(pred_raw, stemmer, normalizer, tokenizer)
-        pred_lsum = [
-            _normalize_and_tokenize_text(pred_sentence, stemmer, normalizer, tokenizer)
-            for pred_sentence in _split_sentence(pred_raw)
-        ]
+        if "Lsum" in rouge_keys_values:
+            pred_lsum = [
+                _normalize_and_tokenize_text(pred_sentence, stemmer, normalizer, tokenizer)
+                for pred_sentence in _split_sentence(pred_raw)
+            ]
 
         for target_raw_inner in target_raw:
             tgt = _normalize_and_tokenize_text(target_raw_inner, stemmer, normalizer, tokenizer)
@@ -394,7 +395,7 @@ def rouge_score(
     use_stemmer: bool = False,
     normalizer: Callable[[str], str] = None,
     tokenizer: Callable[[str], Sequence[str]] = None,
-    rouge_keys: Union[str, Tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),  # type: ignore
+    rouge_keys: Union[str, Tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),
 ) -> Dict[str, Tensor]:
     """Calculate `Calculate Rouge Score`_ , used for automatic summarization.
 

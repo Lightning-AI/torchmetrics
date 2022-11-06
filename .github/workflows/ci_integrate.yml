@@ -52,13 +52,9 @@ jobs:
     - uses: ./.github/actions/caching
       with:
         os: ${{ runner.os }}
-        # requires: ${{ matrix.requires }}
+        requires: ${{ matrix.requires }}
         python-version: ${{ matrix.python-version }}
         offset: "integrate"
-
-    - name: Set min. dependencies
-      if: inputs.requires == 'oldest'
-      run: python .github/assistant.py set-oldest-versions --req_files=requirements/integrate.txt
 
     - name: Freeze PIL (hotfix)
       # import of PILLOW_VERSION which they recently removed in v9.0 in favor of __version__
