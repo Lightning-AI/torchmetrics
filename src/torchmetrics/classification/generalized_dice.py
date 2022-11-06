@@ -11,15 +11,132 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional
+from typing import Any, Literal, Optional
 
 from torch import Tensor
 
-from torchmetrics.classification.stat_scores import StatScores
-from torchmetrics.functional.classification.generalized_dice import _generalized_dice_compute
+from torchmetrics.classification.stat_scores import BinaryStatScores, MulticlassStatScores, MultilabelStatScores
+from torchmetrics.functional.classification.generalized_dice import (
+    _binary_generalized_dice_score_arg_validation,
+    _generalized_dice_reduce,
+    _multiclass_generalized_dice_score_arg_validation,
+    _multilabel_generalized_dice_score_arg_validation,
+)
+from torchmetrics.metric import Metric
 
 
-class GeneralizedDiceScore(StatScores):
+class BinaryGeneralizedDiceScore(BinaryStatScores):
+    is_differentiable: bool = False
+    higher_is_better: Optional[bool] = True
+    full_state_update: bool = False
+
+    def __init__(
+        self,
+        threshold: float = 0.5,
+        multidim_average: Literal["global", "samplewise"] = "global",
+        weight_type: Optional[Literal["square", "simple"]] = "square",
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(
+            threshold=threshold,
+            multidim_average=multidim_average,
+            ignore_index=ignore_index,
+            validate_args=False,
+            **kwargs,
+        )
+        if validate_args:
+            _binary_generalized_dice_score_arg_validation(weight_type, threshold, multidim_average, ignore_index)
+        self.validate_args = validate_args
+        self.weight_type = weight_type
+
+    def compute(self) -> Tensor:
+        tp, fp, tn, fn = self._final_state()
+        return _generalized_dice_reduce(
+            tp, fp, tn, fn, self.weight_type, average="binary", multidim_average=self.multidim_average
+        )
+
+
+class MulticlassGeneralizedDiceScore(MulticlassStatScores):
+    is_differentiable: bool = False
+    higher_is_better: Optional[bool] = True
+    full_state_update: bool = False
+
+    def __init__(
+        self,
+        num_classes: int,
+        top_k: int = 1,
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
+        multidim_average: Literal["global", "samplewise"] = "global",
+        weight_type: Optional[Literal["square", "simple"]] = "square",
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(
+            num_classes=num_classes,
+            top_k=top_k,
+            average=average,
+            multidim_average=multidim_average,
+            ignore_index=ignore_index,
+            validate_args=False,
+            **kwargs,
+        )
+        if validate_args:
+            _multiclass_generalized_dice_score_arg_validation(
+                weight_type, num_classes, top_k, average, multidim_average, ignore_index
+            )
+        self.validate_args = validate_args
+        self.weight_type = weight_type
+
+    def compute(self) -> Tensor:
+        tp, fp, tn, fn = self._final_state()
+        return _generalized_dice_reduce(
+            tp, fp, tn, fn, self.weight_type, average=self.average, multidim_average=self.multidim_average
+        )
+
+
+class MultilabelGeneralizedDiceScore(MultilabelStatScores):
+    is_differentiable: bool = False
+    higher_is_better: Optional[bool] = True
+    full_state_update: bool = False
+
+    def __init__(
+        self,
+        num_labels: int,
+        threshold: float = 0.5,
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
+        multidim_average: Literal["global", "samplewise"] = "global",
+        weight_type: Optional[Literal["square", "simple"]] = "square",
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(
+            num_labels=num_labels,
+            threshold=threshold,
+            average=average,
+            multidim_average=multidim_average,
+            ignore_index=ignore_index,
+            validate_args=False,
+            **kwargs,
+        )
+        if validate_args:
+            _multilabel_generalized_dice_score_arg_validation(
+                weight_type, num_labels, threshold, average, multidim_average, ignore_index
+            )
+        self.validate_args = validate_args
+        self.weight_type = weight_type
+
+    def compute(self) -> Tensor:
+        tp, fp, tn, fn = self._final_state()
+        return _generalized_dice_reduce(
+            tp, fp, tn, fn, self.weight_type, average=self.average, multidim_average=self.multidim_average
+        )
+
+
+class GeneralizedDiceScore:
     r"""Computes the Generalized Dice Score (GDS) metric:
 
     .. math::
@@ -97,72 +214,34 @@ class GeneralizedDiceScore(StatScores):
         >>> generalized_dice_score(preds, target)
         tensor(0.3478)
     """
-    is_differentiable: bool = False
-    higher_is_better: bool = True
-    full_state_update: bool = False
 
-    def __init__(
-        self,
-        num_classes: int,
-        weight_type: str = "square",
-        zero_division: Optional[int] = None,
+    def __new__(
+        cls,
+        num_classes: Optional[int] = None,
+        beta: float = 1.0,
         threshold: float = 0.5,
-        average: str = "samples",
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+        mdmc_average: Optional[str] = None,
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
-        multiclass: bool = True,
-        multidim: bool = True,
+        multiclass: Optional[bool] = None,
+        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+        num_labels: Optional[int] = None,
+        multidim_average: Optional[Literal["global", "samplewise"]] = "global",
+        validate_args: bool = True,
         **kwargs: Any,
-    ) -> None:
-        allowed_weight_type = ("square", "simple", None)
-        if weight_type not in allowed_weight_type:
-            raise ValueError(f"The `weight_type` has to be one of {allowed_weight_type}, got {weight_type}.")
-
-        allowed_average = ("samples", "none", None)
-        if average not in allowed_average:
-            raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
-
-        if ignore_index is not None and (not ignore_index < num_classes or num_classes == 1):
-            raise ValueError(f"The `ignore_index` {ignore_index} is not valid for inputs with {num_classes} classes")
-
-        if top_k is not None and (not isinstance(top_k, int) or top_k <= 0):
-            raise ValueError(f"The `top_k` should be an integer larger than 0, got {top_k}")
-
-        # Provide "mdmc_reduce" and "reduce" as kwargs
-        kwargs["mdmc_reduce"] = "samplewise"
-        kwargs["reduce"] = "macro" if multidim else None
-
-        super().__init__(
-            threshold=threshold,
-            top_k=top_k,
-            num_classes=num_classes,
-            multiclass=multiclass,
-            ignore_index=ignore_index,
-            **kwargs,
-        )
-
-        self.multidim = multidim
-        self.average = average
-        self.weight_type = weight_type
-        self.zero_division = zero_division
-
-    def compute(self) -> Tensor:
-        """Computes the generalized dice score based on inputs passed in to ``update`` previously.
-
-        Return:
-            The shape of the returned tensor depends on the ``average`` parameter:
-
-            - If ``average == 'samples'``, a one-element tensor will be returned
-            - If ``average in ['none', None]``, the shape will be ``(N,)``, where ``N`` stands
-                for the number of samples
-        """
-        tp, fp, _, fn = self._get_final_stats()
-        return _generalized_dice_compute(
-            tp,
-            fp,
-            fn,
-            average=self.average,
-            ignore_index=None if self.reduce is None else self.ignore_index,
-            weight_type=self.weight_type,
-            zero_division=self.zero_division,
+    ) -> Metric:
+        assert multidim_average is not None
+        kwargs.update(dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args))
+        if task == "binary":
+            return BinaryGeneralizedDiceScore(beta, threshold, **kwargs)
+        if task == "multiclass":
+            assert isinstance(num_classes, int)
+            assert isinstance(top_k, int)
+            return MulticlassGeneralizedDiceScore(beta, num_classes, top_k, average, **kwargs)
+        if task == "multilabel":
+            assert isinstance(num_labels, int)
+            return MultilabelGeneralizedDiceScore(beta, num_labels, threshold, average, **kwargs)
+        raise ValueError(
+            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
         )

@@ -11,13 +11,183 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional
+from typing import Optional
 
 import torch
 from torch import Tensor
+from typing_extensions import Literal
 
-from torchmetrics.functional.classification.stat_scores import _reduce_stat_scores, _stat_scores_update
-from torchmetrics.utilities.checks import _input_squeeze
+from torchmetrics.functional.classification.stat_scores import (
+    _binary_stat_scores_arg_validation,
+    _binary_stat_scores_format,
+    _binary_stat_scores_tensor_validation,
+    _binary_stat_scores_update,
+    _multiclass_stat_scores_arg_validation,
+    _multiclass_stat_scores_format,
+    _multiclass_stat_scores_tensor_validation,
+    _multiclass_stat_scores_update,
+    _multilabel_stat_scores_arg_validation,
+    _multilabel_stat_scores_format,
+    _multilabel_stat_scores_tensor_validation,
+    _multilabel_stat_scores_update,
+    _reduce_stat_scores,
+    _stat_scores_update,
+)
+from torchmetrics.utilities.compute import _safe_divide
+from torchmetrics.utilities.enums import AverageMethod as AvgMethod
+from torchmetrics.utilities.enums import MDMCAverageMethod
+from torchmetrics.utilities.prints import rank_zero_warn
+
+
+def _generalized_dice_reduce(
+    tp: Tensor,
+    fp: Tensor,
+    tn: Tensor,
+    fn: Tensor,
+    weight_type: Optional[Literal["square", "simple"]],
+    average: Optional[Literal["binary", "micro", "macro", "weighted", "none"]],
+    multidim_average: Literal["global", "samplewise"] = "global",
+) -> Tensor:
+    target_volume = tp + fn
+    if weight_type == "simple":
+        weights = torch.reciprocal(target_volume.float())
+    elif weight_type == "square":
+        weights = torch.reciprocal(target_volume.float() * target_volume.float())
+    elif weight_type is None:
+        weights = torch.ones_like(target_volume.float())
+
+    if weights.ndim > 1:
+        for sample_weights in weights:
+            infs = torch.isinf(sample_weights)
+            sample_weights[infs] = torch.max(sample_weights[~infs]) if len(sample_weights[~infs]) > 0 else 0
+    else:
+        infs = torch.isinf(weights)
+        weights[infs] = torch.max(weights[~infs])
+
+    if average == "binary":
+        return _safe_divide(2 * (tp + weights), 2 * tp + fp + fn)
+    elif average == "micro":
+        tp = tp.sum(dim=0 if multidim_average == "global" else 1)
+        fn = fn.sum(dim=0 if multidim_average == "global" else 1)
+        fp = fp.sum(dim=0 if multidim_average == "global" else 1)
+        weights = weights.sum(dim=0 if multidim_average == "global" else 1)
+        return _safe_divide(2 * (tp + weights), 2 * tp + fp + fn)
+    else:
+        generalized_dice_score = _safe_divide(2 * (tp + weights), 2 * tp + fp + fn)
+        if average is None or average == "none":
+            return generalized_dice_score
+        if average == "weighted":
+            weights = tp + fn
+        else:
+            weights = torch.ones_like(generalized_dice_score)
+        return _safe_divide(weights * generalized_dice_score, weights.sum(-1, keepdim=True)).sum(-1)
+
+
+def _binary_generalized_dice_score_arg_validation(
+    weight_type: Optional[Literal["square", "simple"]],
+    threshold: float = 0.5,
+    multidim_average: Literal["global", "samplewise"] = "global",
+    ignore_index: Optional[int] = None,
+) -> None:
+    allowed_weight_type = ("square", "simple", None)
+    if weight_type not in weight_type:
+        raise ValueError(
+            f"Argument `weight_type` needs to one of the following: {allowed_weight_type} but got {weight_type}"
+        )
+    _binary_stat_scores_arg_validation(threshold, multidim_average, ignore_index)
+
+
+def binary_generalized_dice_score(
+    preds: Tensor,
+    target: Tensor,
+    weight_type: Optional[Literal["square", "simple"]],
+    threshold: float = 0.5,
+    multidim_average: Literal["global", "samplewise"] = "global",
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
+) -> Tensor:
+    if validate_args:
+        _binary_generalized_dice_score_arg_validation(weight_type, threshold, multidim_average, ignore_index)
+        _binary_stat_scores_tensor_validation(preds, target, multidim_average, ignore_index)
+    preds, target = _binary_stat_scores_format(preds, target, threshold, ignore_index)
+    tp, fp, tn, fn = _binary_stat_scores_update(preds, target, multidim_average)
+    return _generalized_dice_reduce(tp, fp, tn, fn, weight_type, average="binary", multidim_average=multidim_average)
+
+
+def _multiclass_generalized_dice_score_arg_validation(
+    weight_type: Optional[Literal["square", "simple"]],
+    num_classes: int,
+    top_k: int = 1,
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
+    multidim_average: Literal["global", "samplewise"] = "global",
+    ignore_index: Optional[int] = None,
+) -> None:
+    allowed_weight_type = ("square", "simple", None)
+    if weight_type not in weight_type:
+        raise ValueError(
+            f"Argument `weight_type` needs to one of the following: {allowed_weight_type} but got {weight_type}"
+        )
+    _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index)
+
+
+def multiclass_generalized_dice_score(
+    preds: Tensor,
+    target: Tensor,
+    weight_type: Optional[Literal["square", "simple"]],
+    num_classes: int,
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
+    top_k: int = 1,
+    multidim_average: Literal["global", "samplewise"] = "global",
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
+) -> Tensor:
+    if validate_args:
+        _multiclass_generalized_dice_score_arg_validation(
+            weight_type, num_classes, top_k, average, multidim_average, ignore_index
+        )
+        _multiclass_stat_scores_tensor_validation(preds, target, num_classes, multidim_average, ignore_index)
+    preds, target = _multiclass_stat_scores_format(preds, target, top_k)
+    tp, fp, tn, fn = _multiclass_stat_scores_update(
+        preds, target, num_classes, top_k, average, multidim_average, ignore_index
+    )
+    return _generalized_dice_reduce(tp, fp, tn, fn, weight_type, average=average, multidim_average=multidim_average)
+
+
+def _multilabel_generalized_dice_score_arg_validation(
+    weight_type: Optional[Literal["square", "simple"]],
+    num_labels: int,
+    threshold: float = 0.5,
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
+    multidim_average: Literal["global", "samplewise"] = "global",
+    ignore_index: Optional[int] = None,
+) -> None:
+    allowed_weight_type = ("square", "simple", None)
+    if weight_type not in weight_type:
+        raise ValueError(
+            f"Argument `weight_type` needs to one of the following: {allowed_weight_type} but got {weight_type}"
+        )
+    _multilabel_stat_scores_arg_validation(num_labels, threshold, average, multidim_average, ignore_index)
+
+
+def multilabel_generalized_dice_score(
+    preds: Tensor,
+    target: Tensor,
+    weight_type: Optional[Literal["square", "simple"]],
+    num_labels: int,
+    threshold: float = 0.5,
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
+    multidim_average: Literal["global", "samplewise"] = "global",
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
+) -> Tensor:
+    if validate_args:
+        _multilabel_generalized_dice_score_arg_validation(
+            weight_type, num_labels, threshold, average, multidim_average, ignore_index
+        )
+        _multilabel_stat_scores_tensor_validation(preds, target, num_labels, multidim_average, ignore_index)
+    preds, target = _multilabel_stat_scores_format(preds, target, num_labels, threshold, ignore_index)
+    tp, fp, tn, fn = _multilabel_stat_scores_update(preds, target, multidim_average)
+    return _generalized_dice_reduce(tp, fp, tn, fn, weight_type, average=average, multidim_average=multidim_average)
 
 
 def _generalized_dice_compute(

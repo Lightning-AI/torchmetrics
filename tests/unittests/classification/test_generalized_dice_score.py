@@ -12,297 +12,508 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import partial
-from typing import Optional
 
+import numpy as np
 import pytest
-from torch import Tensor, isinf, max, ones_like, reciprocal, tensor, where
+import torch
+from scipy.special import expit as sigmoid
+from sklearn.metrics import confusion_matrix as sk_confusion_matrix
+from sklearn.metrics import f1_score as sk_f1_score
+from sklearn.metrics import generalized_dice_score as sk_generalized_dice_score
+from torch import Tensor
 
-from torchmetrics import GeneralizedDiceScore
-from torchmetrics.functional import generalized_dice_score
-from torchmetrics.functional.classification.stat_scores import _del_column
-from torchmetrics.utilities.checks import _input_format_classification
-
-# from unittests.classification.inputs import _input_multilabel_multidim as _input_mlmd
-# from unittests.classification.inputs import _input_multilabel_multidim_logits as _input_mlmd_logits
-# from unittests.classification.inputs import _input_multilabel_multidim_prob as _input_mlmd_prob
-from unittests.classification.inputs import (  # EXTRA_DIM,
-    _input_binary,
-    _input_binary_logits,
-    _input_binary_multidim,
-    _input_binary_multidim_logits,
-    _input_binary_multidim_prob,
-    _input_binary_prob,
+from torchmetrics.classification.generalized_dice import (
+    BinaryGeneralizedDiceScore,
+    MulticlassGeneralizedDiceScore,
+    MultilabelGeneralizedDiceScore,
 )
-from unittests.classification.inputs import _input_multiclass as _input_mcls
-from unittests.classification.inputs import _input_multiclass_logits as _input_mcls_logits
-from unittests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
-from unittests.classification.inputs import _input_multiclass_with_missing_class as _input_miss_class
-from unittests.classification.inputs import _input_multidim_multiclass as _input_mdmc
-from unittests.classification.inputs import _input_multidim_multiclass_logits as _input_mdmc_logits
-from unittests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
-from unittests.classification.inputs import _input_multilabel as _input_mlb
-from unittests.classification.inputs import _input_multilabel_logits as _input_mlb_logits
-from unittests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
+from torchmetrics.functional.classification.generalized_dice import (
+    binary_generalized_dice_score,
+    multiclass_generalized_dice_score,
+    multilabel_generalized_dice_score,
+)
+from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_CLASSES, MetricTester
+from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index, remove_ignore_index
 
 seed_all(42)
 
 
-def _sk_generalized_dice(
+def _sk_generalized_dice_score_binary(preds, target, sk_fn, ignore_index, multidim_average):
+    if multidim_average == "global":
+        preds = preds.view(-1).numpy()
+        target = target.view(-1).numpy()
+    else:
+        preds = preds.numpy()
+        target = target.numpy()
+
+    if np.issubdtype(preds.dtype, np.floating):
+        if not ((0 < preds) & (preds < 1)).all():
+            preds = sigmoid(preds)
+        preds = (preds >= THRESHOLD).astype(np.uint8)
+
+    if multidim_average == "global":
+        target, preds = remove_ignore_index(target, preds, ignore_index)
+        return sk_fn(target, preds)
+    else:
+        res = []
+        for pred, true in zip(preds, target):
+            pred = pred.flatten()
+            true = true.flatten()
+            true, pred = remove_ignore_index(true, pred, ignore_index)
+            res.append(sk_fn(true, pred))
+        return np.stack(res)
+
+
+@pytest.mark.parametrize("input", _binary_cases)
+class TestBinaryGeneralizedDiceScore(MetricTester):
+    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
+    @pytest.mark.parametrize("ddp", [False, True])
+    def test_binary_generalized_dice_score(
+        self, ddp, input, module, functional, compare, ignore_index, multidim_average
+    ):
+        preds, target = input
+        if ignore_index == -1:
+            target = inject_ignore_index(target, ignore_index)
+        if multidim_average == "samplewise" and preds.ndim < 3:
+            pytest.skip("samplewise and non-multidim arrays are not valid")
+        if multidim_average == "samplewise" and ddp:
+            pytest.skip("samplewise and ddp give different order than non ddp")
+
+        self.run_class_metric_test(
+            ddp=ddp,
+            preds=preds,
+            target=target,
+            metric_class=module,
+            sk_metric=partial(
+                _sk_generalized_dice_score_binary,
+                sk_fn=compare,
+                ignore_index=ignore_index,
+                multidim_average=multidim_average,
+            ),
+            metric_args={"threshold": THRESHOLD, "ignore_index": ignore_index, "multidim_average": multidim_average},
+        )
+
+    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
+    def test_binary_generalized_dice_score_functional(
+        self, input, module, functional, compare, ignore_index, multidim_average
+    ):
+        preds, target = input
+        if ignore_index == -1:
+            target = inject_ignore_index(target, ignore_index)
+        if multidim_average == "samplewise" and preds.ndim < 3:
+            pytest.skip("samplewise and non-multidim arrays are not valid")
+
+        self.run_functional_metric_test(
+            preds=preds,
+            target=target,
+            metric_functional=functional,
+            sk_metric=partial(
+                _sk_generalized_dice_score_binary,
+                sk_fn=compare,
+                ignore_index=ignore_index,
+                multidim_average=multidim_average,
+            ),
+            metric_args={
+                "threshold": THRESHOLD,
+                "ignore_index": ignore_index,
+                "multidim_average": multidim_average,
+            },
+        )
+
+    def test_binary_generalized_dice_score_differentiability(self, input, module, functional, compare):
+        preds, target = input
+        self.run_differentiability_test(
+            preds=preds,
+            target=target,
+            metric_module=module,
+            metric_functional=functional,
+            metric_args={"threshold": THRESHOLD},
+        )
+
+    @pytest.mark.parametrize("dtype", [torch.half, torch.double])
+    def test_binary_generalized_dice_score_half_cpu(self, input, module, functional, compare, dtype):
+        preds, target = input
+
+        if (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        self.run_precision_test_cpu(
+            preds=preds,
+            target=target,
+            metric_module=module,
+            metric_functional=functional,
+            metric_args={"threshold": THRESHOLD},
+            dtype=dtype,
+        )
+
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
+    @pytest.mark.parametrize("dtype", [torch.half, torch.double])
+    def test_binary_generalized_dice_score_half_gpu(self, input, module, functional, compare, dtype):
+        preds, target = input
+        self.run_precision_test_gpu(
+            preds=preds,
+            target=target,
+            metric_module=module,
+            metric_functional=functional,
+            metric_args={"threshold": THRESHOLD},
+            dtype=dtype,
+        )
+
+
+def _sk_generalized_dice_score_multiclass(preds, target, sk_fn, ignore_index, multidim_average, average):
+    if preds.ndim == target.ndim + 1:
+        preds = torch.argmax(preds, 1)
+    if multidim_average == "global":
+        preds = preds.numpy().flatten()
+        target = target.numpy().flatten()
+        target, preds = remove_ignore_index(target, preds, ignore_index)
+        return sk_fn(target, preds, average=average)
+    else:
+        preds = preds.numpy()
+        target = target.numpy()
+        res = []
+        for pred, true in zip(preds, target):
+            pred = pred.flatten()
+            true = true.flatten()
+            true, pred = remove_ignore_index(true, pred, ignore_index)
+            res.append(sk_fn(true, pred, average=average, labels=list(range(NUM_CLASSES))))
+        return np.stack(res, 0)
+
+
+@pytest.mark.parametrize("input", _multiclass_cases)
+class TestMulticlassGeneralizedDiceScore(MetricTester):
+    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
+    @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
+    @pytest.mark.parametrize("ddp", [True, False])
+    def test_multiclass_generalized_dice_score(
+        self, ddp, input, module, functional, compare, ignore_index, multidim_average, average
+    ):
+        preds, target = input
+        if ignore_index == -1:
+            target = inject_ignore_index(target, ignore_index)
+        if multidim_average == "samplewise" and target.ndim < 3:
+            pytest.skip("samplewise and non-multidim arrays are not valid")
+        if multidim_average == "samplewise" and ddp:
+            pytest.skip("samplewise and ddp give different order than non ddp")
+
+        self.run_class_metric_test(
+            ddp=ddp,
+            preds=preds,
+            target=target,
+            metric_class=module,
+            sk_metric=partial(
+                _sk_generalized_dice_score_multiclass,
+                sk_fn=compare,
+                ignore_index=ignore_index,
+                multidim_average=multidim_average,
+                average=average,
+            ),
+            metric_args={
+                "ignore_index": ignore_index,
+                "multidim_average": multidim_average,
+                "average": average,
+                "num_classes": NUM_CLASSES,
+            },
+        )
+
+    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
+    @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
+    def test_multiclass_generalized_dice_score_functional(
+        self, input, module, functional, compare, ignore_index, multidim_average, average
+    ):
+        preds, target = input
+        if ignore_index == -1:
+            target = inject_ignore_index(target, ignore_index)
+        if multidim_average == "samplewise" and target.ndim < 3:
+            pytest.skip("samplewise and non-multidim arrays are not valid")
+
+        self.run_functional_metric_test(
+            preds=preds,
+            target=target,
+            metric_functional=functional,
+            sk_metric=partial(
+                _sk_generalized_dice_score_multiclass,
+                sk_fn=compare,
+                ignore_index=ignore_index,
+                multidim_average=multidim_average,
+                average=average,
+            ),
+            metric_args={
+                "ignore_index": ignore_index,
+                "multidim_average": multidim_average,
+                "average": average,
+                "num_classes": NUM_CLASSES,
+            },
+        )
+
+    def test_multiclass_generalized_dice_score_differentiability(self, input, module, functional, compare):
+        preds, target = input
+        self.run_differentiability_test(
+            preds=preds,
+            target=target,
+            metric_module=module,
+            metric_functional=functional,
+            metric_args={"num_classes": NUM_CLASSES},
+        )
+
+    @pytest.mark.parametrize("dtype", [torch.half, torch.double])
+    def test_multiclass_generalized_dice_score_half_cpu(self, input, module, functional, compare, dtype):
+        preds, target = input
+
+        if (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        self.run_precision_test_cpu(
+            preds=preds,
+            target=target,
+            metric_module=module,
+            metric_functional=functional,
+            metric_args={"num_classes": NUM_CLASSES},
+            dtype=dtype,
+        )
+
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
+    @pytest.mark.parametrize("dtype", [torch.half, torch.double])
+    def test_multiclass_generalized_dice_score_half_gpu(self, input, module, functional, compare, dtype):
+        preds, target = input
+        self.run_precision_test_gpu(
+            preds=preds,
+            target=target,
+            metric_module=module,
+            metric_functional=functional,
+            metric_args={"num_classes": NUM_CLASSES},
+            dtype=dtype,
+        )
+
+
+_mc_k_target = torch.tensor([0, 1, 2])
+_mc_k_preds = torch.tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]])
+
+
+@pytest.mark.parametrize(
+    "metric_class, metric_fn",
+    [
+        (partial(MulticlassGeneralizedDiceScore, beta=2.0), partial(multiclass_generalized_dice_score, beta=2.0)),
+        (MulticlassF1Score, multiclass_f1_score),
+    ],
+)
+@pytest.mark.parametrize(
+    "k, preds, target, average, expected_generalized_dice, expected_f1",
+    [
+        (1, _mc_k_preds, _mc_k_target, "micro", torch.tensor(2 / 3), torch.tensor(2 / 3)),
+        (2, _mc_k_preds, _mc_k_target, "micro", torch.tensor(5 / 6), torch.tensor(2 / 3)),
+    ],
+)
+def test_top_k(
+    metric_class,
+    metric_fn,
+    k: int,
     preds: Tensor,
     target: Tensor,
-    weight_type: str,
-    multiclass: bool,
-    num_classes: int,
-    ignore_index: Optional[int] = None,
-    zero_division: Optional[int] = None,
-) -> float:
-    """Compute generalized dice score from 1D prediction and target.
+    average: str,
+    expected_generalized_dice: Tensor,
+    expected_f1: Tensor,
+):
+    """A simple test to check that top_k works as expected."""
+    class_metric = metric_class(top_k=k, average=average, num_classes=3)
+    class_metric.update(preds, target)
 
-    Args:
-        preds: prediction tensor
-        target: target tensor
-        weight_type: type of weight to use.
-        multiclass: whether problem is multiclass.
-        num_classes: number of classes.
-        ignore_index: integer specifying a target class to ignore.
-        zero_division: The value to use for the score if denominator equals zero. If set to 0, score will be 1
-            if the numerator is also 0, and 0 otherwise
-    Return:
-        Float generalized dice score
-    """
-    sk_preds, sk_target, mode = _input_format_classification(
-        preds, target, multiclass=multiclass, num_classes=num_classes
-    )
-
-    if ignore_index is not None:
-        sk_preds = _del_column(sk_preds, ignore_index)
-        sk_target = _del_column(sk_target, ignore_index)
-
-    # Compute intersection, target and prediction volumes
-    intersection = sk_preds * sk_target
-    target_volume = sk_target
-    pred_volume = sk_preds
-    volume = target_volume + pred_volume
-
-    # Reduce over the spatial dimension, if there is one, from (N, C, X) to (N, C)
-    if sk_preds.ndim == 3:
-        intersection = intersection.sum(dim=2)
-        target_volume = target_volume.sum(dim=2)
-        pred_volume = pred_volume.sum(dim=2)
-        volume = volume.sum(dim=2)
-
-    # Weight computation per sample per class
-    if weight_type == "simple":
-        weights = reciprocal(target_volume.float())
-    elif weight_type == "square":
-        weights = reciprocal(target_volume.float() * target_volume.float())
-    elif weight_type is None:
-        weights = ones_like(target_volume.float())
-
-    # Replace infinites by maximum weight value for the sample. If all weights are infinite, replace by 0
-    if weights.dim() > 1:
-        for sample_weights in weights:
-            infs = isinf(sample_weights)
-            sample_weights[infs] = max(sample_weights[~infs]) if len(sample_weights[~infs]) > 0 else 0
+    if class_metric.beta != 1.0:
+        result = expected_generalized_dice
     else:
-        infs = isinf(weights)
-        weights[infs] = max(weights[~infs])
+        result = expected_f1
 
-    # Reduce from (N, C) into (N)
-    numerator = 2 * (weights * intersection).sum(dim=-1)
-    denominator = (weights * volume).sum(dim=-1)
-    pred_volume = pred_volume.sum(dim=-1)
-
-    # Compute score and handle zero division
-    score = numerator / denominator
-    if zero_division is None:
-        score = where((denominator == 0) & (pred_volume == 0), tensor(1).float(), score)
-        score = where((denominator == 0) & (pred_volume != 0), tensor(0).float(), score)
-    else:
-        score[denominator == 0] = zero_division
-
-    # Return mean over samples
-    return score.mean()
+    assert torch.isclose(class_metric.compute(), result)
+    assert torch.isclose(metric_fn(preds, target, top_k=k, average=average, num_classes=3), result)
 
 
-@pytest.mark.parametrize(
-    ["pred", "target", "expected"],
-    [
-        ([[0, 0], [1, 1]], [[0, 0], [1, 1]], 1.0),
-        ([[1, 1], [0, 0]], [[0, 0], [1, 1]], 0.0),
-        ([[1, 1], [1, 1]], [[1, 1], [0, 0]], 0.5),
-        ([[1, 1], [0, 0]], [[1, 1], [0, 0]], 1.0),
-    ],
-)
-def test_generalized_dice_score(pred, target, expected):
-    score = generalized_dice_score(tensor(pred), tensor(target))
-    assert score == expected
+def _sk_generalized_dice_score_multilabel_global(preds, target, sk_fn, ignore_index, average):
+    if average == "micro":
+        preds = preds.flatten()
+        target = target.flatten()
+        target, preds = remove_ignore_index(target, preds, ignore_index)
+        return sk_fn(target, preds)
+
+    generalized_dice_score, weights = [], []
+    for i in range(preds.shape[1]):
+        pred, true = preds[:, i].flatten(), target[:, i].flatten()
+        true, pred = remove_ignore_index(true, pred, ignore_index)
+        generalized_dice_score.append(sk_fn(true, pred))
+        confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
+        weights.append(confmat[1, 1] + confmat[1, 0])
+    res = np.stack(generalized_dice_score, axis=0)
+
+    if average == "macro":
+        return res.mean(0)
+    elif average == "weighted":
+        weights = np.stack(weights, 0).astype(float)
+        weights_norm = weights.sum(-1, keepdims=True)
+        weights_norm[weights_norm == 0] = 1.0
+        return ((weights * res) / weights_norm).sum(-1)
+    elif average is None or average == "none":
+        return res
 
 
-@pytest.mark.parametrize(
-    "preds, target, multiclass, multidim, num_classes",
-    [
-        (_input_binary_multidim.preds, _input_binary_multidim.target, True, True, 2),
-        (_input_binary_multidim_logits.preds, _input_binary_multidim_logits.target, True, True, 2),
-        (_input_binary_multidim_prob.preds, _input_binary_multidim_prob.target, True, True, 2),
-        (_input_binary.preds, _input_binary.target, True, False, 2),
-        (_input_binary_logits.preds, _input_binary_logits.target, True, False, 2),
-        (_input_binary_prob.preds, _input_binary_prob.target, True, False, 2),
-    ],
-)
-@pytest.mark.parametrize("zero_division", [None, 0, 1])
-@pytest.mark.parametrize("ignore_index", [None, 0])
-@pytest.mark.parametrize("weight_type", ["simple", "square", None])
-class TestGeneralizedDiceBinary(MetricTester):
-    @pytest.mark.parametrize("ddp", [False])
-    @pytest.mark.parametrize("dist_sync_on_step", [False])
-    def test_generalized_dice_class(
-        self,
-        ddp,
-        dist_sync_on_step,
-        preds,
-        target,
-        multiclass,
-        multidim,
-        weight_type,
-        ignore_index,
-        num_classes,
-        zero_division,
+def _sk_generalized_dice_score_multilabel_local(preds, target, sk_fn, ignore_index, average):
+    generalized_dice_score, weights = [], []
+    for i in range(preds.shape[0]):
+        if average == "micro":
+            pred, true = preds[i].flatten(), target[i].flatten()
+            true, pred = remove_ignore_index(true, pred, ignore_index)
+            generalized_dice_score.append(sk_fn(true, pred))
+            confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
+            weights.append(confmat[1, 1] + confmat[1, 0])
+        else:
+            scores, w = [], []
+            for j in range(preds.shape[1]):
+                pred, true = preds[i, j], target[i, j]
+                true, pred = remove_ignore_index(true, pred, ignore_index)
+                scores.append(sk_fn(true, pred))
+                confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
+                w.append(confmat[1, 1] + confmat[1, 0])
+            generalized_dice_score.append(np.stack(scores))
+            weights.append(np.stack(w))
+    if average == "micro":
+        return np.array(generalized_dice_score)
+    res = np.stack(generalized_dice_score, 0)
+    if average == "macro":
+        return res.mean(-1)
+    elif average == "weighted":
+        weights = np.stack(weights, 0).astype(float)
+        weights_norm = weights.sum(-1, keepdims=True)
+        weights_norm[weights_norm == 0] = 1.0
+        return ((weights * res) / weights_norm).sum(-1)
+    elif average is None or average == "none":
+        return res
+
+
+def _sk_generalized_dice_score_multilabel(preds, target, sk_fn, ignore_index, multidim_average, average):
+    preds = preds.numpy()
+    target = target.numpy()
+    if np.issubdtype(preds.dtype, np.floating):
+        if not ((0 < preds) & (preds < 1)).all():
+            preds = sigmoid(preds)
+        preds = (preds >= THRESHOLD).astype(np.uint8)
+    preds = preds.reshape(*preds.shape[:2], -1)
+    target = target.reshape(*target.shape[:2], -1)
+    if ignore_index is None and multidim_average == "global":
+        return sk_fn(
+            target.transpose(0, 2, 1).reshape(-1, NUM_CLASSES),
+            preds.transpose(0, 2, 1).reshape(-1, NUM_CLASSES),
+            average=average,
+        )
+    elif multidim_average == "global":
+        return _sk_generalized_dice_score_multilabel_global(preds, target, sk_fn, ignore_index, average)
+    return _sk_generalized_dice_score_multilabel_local(preds, target, sk_fn, ignore_index, average)
+
+
+@pytest.mark.parametrize("input", _multilabel_cases)
+class TestMultilabelGeneralizedDiceScore(MetricTester):
+    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
+    @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
+    def test_multilabel_generalized_dice_score(
+        self, ddp, input, module, functional, compare, ignore_index, multidim_average, average
     ):
+        preds, target = input
+        if ignore_index == -1:
+            target = inject_ignore_index(target, ignore_index)
+        if multidim_average == "samplewise" and preds.ndim < 4:
+            pytest.skip("samplewise and non-multidim arrays are not valid")
+        if multidim_average == "samplewise" and ddp:
+            pytest.skip("samplewise and ddp give different order than non ddp")
+
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
             target=target,
-            metric_class=GeneralizedDiceScore,
+            metric_class=module,
             sk_metric=partial(
-                _sk_generalized_dice,
-                weight_type=weight_type,
+                _sk_generalized_dice_score_multilabel,
+                sk_fn=compare,
                 ignore_index=ignore_index,
-                multiclass=multiclass,
-                num_classes=num_classes,
-                zero_division=zero_division,
+                multidim_average=multidim_average,
+                average=average,
             ),
-            dist_sync_on_step=dist_sync_on_step,
             metric_args={
+                "num_labels": NUM_CLASSES,
+                "threshold": THRESHOLD,
                 "ignore_index": ignore_index,
-                "weight_type": weight_type,
-                "multiclass": multiclass,
-                "multidim": multidim,
-                "num_classes": num_classes,
-                "zero_division": zero_division,
+                "multidim_average": multidim_average,
+                "average": average,
             },
         )
 
-    def test_generalized_dice_fn(
-        self, preds, target, multiclass, multidim, weight_type, ignore_index, num_classes, zero_division
+    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
+    @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
+    def test_multilabel_generalized_dice_score_functional(
+        self, input, module, functional, compare, ignore_index, multidim_average, average
     ):
+        preds, target = input
+        if ignore_index == -1:
+            target = inject_ignore_index(target, ignore_index)
+        if multidim_average == "samplewise" and preds.ndim < 4:
+            pytest.skip("samplewise and non-multidim arrays are not valid")
+
         self.run_functional_metric_test(
-            preds,
-            target,
-            metric_functional=generalized_dice_score,
-            sk_metric=partial(
-                _sk_generalized_dice,
-                weight_type=weight_type,
-                ignore_index=ignore_index,
-                multiclass=multiclass,
-                num_classes=num_classes,
-                zero_division=zero_division,
-            ),
-            metric_args={
-                "ignore_index": ignore_index,
-                "weight_type": weight_type,
-                "multiclass": multiclass,
-                "multidim": multidim,
-                "num_classes": num_classes,
-                "zero_division": zero_division,
-            },
-        )
-
-
-@pytest.mark.parametrize(
-    "preds, target, multiclass, multidim, num_classes",
-    [
-        (_input_mcls.preds, _input_mcls.target, True, False, NUM_CLASSES),
-        (_input_mcls_logits.preds, _input_mcls_logits.target, True, False, NUM_CLASSES),
-        (_input_mcls_prob.preds, _input_mcls_prob.target, True, False, NUM_CLASSES),
-        (_input_mdmc.preds, _input_mdmc.target, True, True, NUM_CLASSES),
-        (_input_mdmc_logits.preds, _input_mdmc_logits.target, True, True, NUM_CLASSES),
-        (_input_mdmc_prob.preds, _input_mdmc_prob.target, True, True, NUM_CLASSES),
-        (_input_miss_class.preds, _input_miss_class.target, True, False, NUM_CLASSES),
-        (_input_mlb.preds, _input_mlb.target, False, False, NUM_CLASSES),
-        (_input_mlb_logits.preds, _input_mlb_logits.target, False, False, NUM_CLASSES),
-        (_input_mlb_prob.preds, _input_mlb_prob.target, False, False, NUM_CLASSES),
-        # (_input_mlmd.preds, _input_mlmd.target, True, True, NUM_CLASSES),
-        # (_input_mlmd_logits.preds, _input_mlmd_logits.target, False, True, NUM_CLASSES * EXTRA_DIM),
-        # (_input_mlmd_prob.preds, _input_mlmd_prob.target, True, True, NUM_CLASSES * EXTRA_DIM),
-    ],
-)
-@pytest.mark.parametrize("zero_division", [None, 0, 1])
-@pytest.mark.parametrize("ignore_index", [None, 0])
-@pytest.mark.parametrize("weight_type", ["simple", "square", None])
-class TestGeneralizedDiceMulti(MetricTester):
-    @pytest.mark.parametrize("ddp", [False])
-    @pytest.mark.parametrize("dist_sync_on_step", [False])
-    def test_generalized_dice_class(
-        self,
-        ddp,
-        dist_sync_on_step,
-        preds,
-        target,
-        multiclass,
-        multidim,
-        weight_type,
-        ignore_index,
-        num_classes,
-        zero_division,
-    ):
-        self.run_class_metric_test(
-            ddp=ddp,
             preds=preds,
             target=target,
-            metric_class=GeneralizedDiceScore,
+            metric_functional=functional,
             sk_metric=partial(
-                _sk_generalized_dice,
-                weight_type=weight_type,
+                _sk_generalized_dice_score_multilabel,
+                sk_fn=compare,
                 ignore_index=ignore_index,
-                multiclass=multiclass,
-                num_classes=num_classes,
-                zero_division=zero_division,
+                multidim_average=multidim_average,
+                average=average,
             ),
-            dist_sync_on_step=dist_sync_on_step,
             metric_args={
+                "num_labels": NUM_CLASSES,
+                "threshold": THRESHOLD,
                 "ignore_index": ignore_index,
-                "weight_type": weight_type,
-                "multiclass": multiclass,
-                "multidim": multidim,
-                "num_classes": num_classes,
-                "zero_division": zero_division,
+                "multidim_average": multidim_average,
+                "average": average,
             },
         )
 
-    def test_generalized_dice_fn(
-        self, preds, target, multiclass, multidim, weight_type, ignore_index, num_classes, zero_division
-    ):
-        self.run_functional_metric_test(
-            preds,
-            target,
-            metric_functional=generalized_dice_score,
-            sk_metric=partial(
-                _sk_generalized_dice,
-                weight_type=weight_type,
-                ignore_index=ignore_index,
-                multiclass=multiclass,
-                num_classes=num_classes,
-                zero_division=zero_division,
-            ),
-            metric_args={
-                "ignore_index": ignore_index,
-                "weight_type": weight_type,
-                "multiclass": multiclass,
-                "multidim": multidim,
-                "num_classes": num_classes,
-                "zero_division": zero_division,
-            },
+    def test_multilabel_generalized_dice_score_differentiability(self, input, module, functional, compare):
+        preds, target = input
+        self.run_differentiability_test(
+            preds=preds,
+            target=target,
+            metric_module=module,
+            metric_functional=functional,
+            metric_args={"num_labels": NUM_CLASSES, "threshold": THRESHOLD},
+        )
+
+    @pytest.mark.parametrize("dtype", [torch.half, torch.double])
+    def test_multilabel_generalized_dice_score_half_cpu(self, input, module, functional, compare, dtype):
+        preds, target = input
+
+        if (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        self.run_precision_test_cpu(
+            preds=preds,
+            target=target,
+            metric_module=module,
+            metric_functional=functional,
+            metric_args={"num_labels": NUM_CLASSES, "threshold": THRESHOLD},
+            dtype=dtype,
+        )
+
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
+    @pytest.mark.parametrize("dtype", [torch.half, torch.double])
+    def test_multilabel_generalized_dice_score_half_gpu(self, input, module, functional, compare, dtype):
+        preds, target = input
+        self.run_precision_test_gpu(
+            preds=preds,
+            target=target,
+            metric_module=module,
+            metric_functional=functional,
+            metric_args={"num_labels": NUM_CLASSES, "threshold": THRESHOLD},
+            dtype=dtype,
         )
