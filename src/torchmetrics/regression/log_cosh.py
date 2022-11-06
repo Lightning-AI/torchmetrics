@@ -23,7 +23,7 @@ from torchmetrics.metric import Metric
 class LogCoshError(Metric):
     r"""Compute the `LogCosh Error`_.
 
-    .. math:: \text{LogCoshError} = \log\left(\frac{\exp(\hat{y} - y) + \exp(\hat{y - y})}{2}\rigth)
+    .. math:: \text{LogCoshError} = \log\left(\frac{\exp(\hat{y} - y) + \exp(\hat{y - y})}{2}\right)
 
     Where :math:`y` is a tensor of target values, and :math:`\hat{y}` is a tensor of predictions.
 
