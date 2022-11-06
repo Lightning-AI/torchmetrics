@@ -19,6 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `KendallRankCorrCoef` to regression package ([#1271](https://github.com/Lightning-AI/metrics/pull/1271))
 
 
+- Added `GeneralizedDiceScore` to classification package ([#1090](https://github.com/Lightning-AI/metrics/pull/1090))
+
+
 ### Changed
 
 - Changed `MeanAveragePrecision` to vectorize `_find_best_gt_match` operation ([#1259](https://github.com/Lightning-AI/metrics/pull/1259))
@@ -29,7 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Deprecated
 
--
+- Deprecated `Dice` and `dice` from classification ([#1090](https://github.com/Lightning-AI/metrics/pull/1090))
 
 
 ### Removed
