@@ -20,7 +20,6 @@ from sklearn.metrics import r2_score as sk_r2score
 
 from torchmetrics.functional import r2_score
 from torchmetrics.regression import R2Score
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 from unittests.helpers import seed_all
 from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 
@@ -101,9 +100,6 @@ class TestR2Score(MetricTester):
             metric_args=dict(adjusted=adjusted, multioutput=multioutput),
         )
 
-    @pytest.mark.skipif(
-        not _TORCH_GREATER_EQUAL_1_6, reason="half support of core operations on not support before pytorch v1.6"
-    )
     def test_r2_half_cpu(self, adjusted, multioutput, preds, target, sk_metric, num_outputs):
         self.run_precision_test_cpu(
             preds,

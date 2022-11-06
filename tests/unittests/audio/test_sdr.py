@@ -24,7 +24,7 @@ from torch import Tensor
 
 from torchmetrics.audio import SignalDistortionRatio
 from torchmetrics.functional import signal_distortion_ratio
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6, _TORCH_GREATER_EQUAL_1_11
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_11
 from unittests.audio import _SAMPLE_AUDIO_SPEECH, _SAMPLE_AUDIO_SPEECH_BAB_DB, _SAMPLE_NUMPY_ISSUE_895
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
@@ -109,9 +109,6 @@ class TestSDR(MetricTester):
             metric_args={},
         )
 
-    @pytest.mark.skipif(
-        not _TORCH_GREATER_EQUAL_1_6, reason="half support of core operations on not support before pytorch v1.6"
-    )
     def test_sdr_half_cpu(self, preds, target, sk_metric):
         self.run_precision_test_cpu(
             preds=preds,

@@ -20,7 +20,6 @@ from torch.nn import ModuleList
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import apply_to_collection
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_7
 
 
 def _bootstrap_sampler(
@@ -102,8 +101,6 @@ class BootStrapper(Metric):
 
         self.mean = mean
         self.std = std
-        if quantile is not None and not _TORCH_GREATER_EQUAL_1_7:
-            raise ValueError("quantile argument can only be used with pytorch v1.7 or higher")
         self.quantile = quantile
         self.raw = raw
 
