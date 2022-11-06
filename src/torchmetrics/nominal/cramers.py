@@ -61,7 +61,6 @@ class CramersV(Metric):
 
     is_differentiable = False
     higher_is_better = False
-    full_state_update = False
     confmat: Tensor
 
     def __init__(
