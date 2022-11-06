@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import itertools
-import logging
 from typing import Optional, Union
 
 import torch
@@ -21,8 +20,19 @@ from typing_extensions import Literal
 
 from torchmetrics.functional.classification.confusion_matrix import _multiclass_confusion_matrix_update
 from torchmetrics.functional.nominal.utils import _handle_nan_in_data
+from torchmetrics.utilities.prints import rank_zero_warn
 
-logger = logging.getLogger(__name__)
+
+def _cramers_input_validation(nan_strategy: str, nan_replace_value: Optional[Union[int, float]]) -> None:
+    if nan_strategy not in ["replace", "drop"]:
+        raise ValueError(
+            f"Argument `nan_strategy` is expected to be one of `['replace', 'drop']`, but got {nan_strategy}"
+        )
+    if nan_strategy == "replace" and not isinstance(nan_replace_value, (int, float)):
+        raise ValueError(
+            "Argument `nan_replace` is expected to be of a type `int` or `float` when `nan_strategy = 'replace`, "
+            f"but got {nan_replace_value}"
+        )
 
 
 def _compute_expected_freqs(confmat: Tensor) -> Tensor:
@@ -106,7 +116,7 @@ def _cramers_v_compute(confmat: Tensor, bias_correction: bool) -> Tensor:
         rows_corrected = n_rows - (n_rows - 1) ** 2 / (cm_sum - 1)
         cols_corrected = n_cols - (n_cols - 1) ** 2 / (cm_sum - 1)
         if min(rows_corrected, cols_corrected) == 1:
-            logger.warn(
+            rank_zero_warn(
                 "Unable to compute Cramer's V using bias correction. Please consider to set `bias_correction=False`."
             )
             return torch.tensor(float("nan"), device=confmat.device)
@@ -149,7 +159,7 @@ def cramers_v(
             - 2D shape: (batch_size, num_classes)
         bias_correction: Indication of whether to use bias correction.
         nan_strategy: Indication of whether to replace or drop ``NaN`` values
-        nan_replace_value: Value to replace ``NaN`s when ``nan_strategy = 'replace```
+        nan_replace_value: Value to replace ``NaN``s when ``nan_strategy = 'replace'``
 
     Returns:
         Cramer's V statistic
@@ -162,15 +172,6 @@ def cramers_v(
         >>> cramers_v(preds, target)
         tensor(0.5284)
     """
-    if nan_strategy not in ["replace", "drop"]:
-        raise ValueError(
-            f"Argument `nan_strategy` is expected to be one of `['replace', 'drop']`, but got {nan_strategy}"
-        )
-    if nan_strategy == "replace" and not isinstance(nan_replace_value, (int, float)):
-        raise ValueError(
-            "Argument `nan_replace` is expected to be of a type `int` or `float` when `nan_strategy = 'replace`, "
-            f"but got {nan_replace_value}"
-        )
     num_classes = len(torch.cat([preds, target]).unique())
     confmat = _cramers_v_update(preds, target, num_classes, nan_strategy, nan_replace_value)
     return _cramers_v_compute(confmat, bias_correction)
@@ -193,7 +194,7 @@ def cramers_v_matrix(
             - columns represent a number of categorical (nominal) features
         bias_correction: Indication of whether to use bias correction.
         nan_strategy: Indication of whether to replace or drop ``NaN`` values
-        nan_replace_value: Value to replace ``NaN`s when ``nan_strategy = 'replace```
+        nan_replace_value: Value to replace ``NaN``s when ``nan_strategy = 'replace'``
 
     Returns:
         Cramer's V statistic for a dataset of categorical variables
@@ -209,18 +210,9 @@ def cramers_v_matrix(
                 [0.0542, 0.0000, 0.0000, 0.0000, 0.1100],
                 [0.1337, 0.0000, 0.0649, 0.1100, 0.0000]])
     """
-    if nan_strategy not in ["replace", "drop"]:
-        raise ValueError(
-            f"Argument `nan_strategy` is expected to be one of `['replace', 'drop']`, but got {nan_strategy}"
-        )
-    if nan_strategy == "replace" and not isinstance(nan_replace_value, (int, float)):
-        raise ValueError(
-            "Argument `nan_replace` is expected to be of a type `int` or `float` when `nan_strategy = 'replace`, "
-            f"but got {nan_replace_value}"
-        )
-
+    _cramers_input_validation(nan_strategy, nan_replace_value)
     num_variables = matrix.shape[1]
-    cramers_v_matrix_value = torch.zeros(num_variables, num_variables, device=matrix.device)
+    cramers_v_matrix_value = torch.ones(num_variables, num_variables, device=matrix.device)
     for i, j in itertools.combinations(range(num_variables), 2):
         x, y = matrix[:, i], matrix[:, j]
         num_classes = len(torch.cat([x, y]).unique())

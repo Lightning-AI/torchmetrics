@@ -43,7 +43,8 @@ class CramersV(Metric):
         num_classes: Integer specifing the number of classes
         bias_correction: Indication of whether to use bias correction.
         nan_strategy: Indication of whether to replace or drop ``NaN`` values
-        nan_replace_value: Value to replace ``NaN`s when ``nan_strategy = 'replace```
+        nan_replace_value: Value to replace ``NaN``s when ``nan_strategy = 'replace'``
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Returns:
         Cramer's V statistic
@@ -60,6 +61,7 @@ class CramersV(Metric):
 
     is_differentiable = False
     higher_is_better = False
+    full_state_update = False
     confmat: Tensor
 
     def __init__(
@@ -92,8 +94,12 @@ class CramersV(Metric):
         """Update state with predictions and targets.
 
         Args:
-            preds: Tensor with predictions
-            target: Tensor with true labels
+            preds: 1D or 2D tensor of categorical (nominal) data
+            - 1D shape: (batch_size,)
+            - 2D shape: (batch_size, num_classes)
+        target: 1D or 2D tensor of categorical (nominal) data
+            - 1D shape: (batch_size,)
+            - 2D shape: (batch_size, num_classes)
         """
         confmat = _cramers_v_update(preds, target, self.num_classes, self.nan_strategy, self.nan_replace_value)
         self.confmat += confmat
