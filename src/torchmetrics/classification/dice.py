@@ -26,14 +26,14 @@ class Dice(StatScores):
 
     .. math:: \text{Dice} = \frac{\text{2 * TP}}{\text{2 * TP} + \text{FP} + \text{FN}}
 
-    Where :math:`\text{TP}`, :math:`\text{FP}` and :math:`\text{FN}` represent the numbers of
-    true positives, false positives and false negatives, respectively.
+    Where :math:`\text{TP}` and :math:`\text{FP}` represent the number of true positives and
+    false positives respecitively.
 
     It is recommend set `ignore_index` to index of background class.
 
-    The reduction method (how the dice scores are aggregated) is controlled by the
+    The reduction method (how the precision scores are aggregated) is controlled by the
     ``average`` parameter, and additionally by the ``mdmc_average`` parameter in the
-    multi-dimensional multi-class case. Accepts all inputs listed in :ref:`pages/classification:input types`.
+    multi-dimensional multi-class case.
 
     Args:
         num_classes:
@@ -69,11 +69,11 @@ class Dice(StatScores):
             - ``'samplewise'``: In this case, the statistics are computed separately for each
               sample on the ``N`` axis, and then averaged over samples.
               The computation for each sample is done by treating the flattened extra axes ``...``
-              (see :ref:`pages/classification:input types`) as the ``N`` dimension within the sample,
+              as the ``N`` dimension within the sample,
               and computing the metric for the sample based on that.
 
             - ``'global'``: In this case the ``N`` and ``...`` dimensions of the inputs
-              (see :ref:`pages/classification:input types`) are flattened into a new ``N_X`` sample axis, i.e.
+              are flattened into a new ``N_X`` sample axis, i.e.
               the inputs are treated as if they were ``(N_X, C)``.
               From here on the ``average`` parameter applies as usual.
 
@@ -90,9 +90,7 @@ class Dice(StatScores):
 
         multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
-            than what they appear to be. See the parameter's
-            :ref:`documentation section <pages/classification:using the multiclass parameter>`
-            for a more detailed explanation and examples.
+            than what they appear to be.
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
@@ -104,11 +102,7 @@ class Dice(StatScores):
         ValueError:
             If ``average`` is set but ``num_classes`` is not provided.
         ValueError:
-            If ``num_classes`` is set and is not larger than ``0``.
-        ValueError:
             If ``num_classes`` is set and ``ignore_index`` is not in the range ``[0, num_classes)``.
-        ValueError:
-            If ``top_k`` is not an ``integer`` larger than ``0``.
 
     Example:
         >>> import torch

@@ -63,7 +63,6 @@ def dice_score(
         Tensor containing dice score
 
     Example:
-        >>> import torch
         >>> from torchmetrics.functional import dice_score
         >>> pred = torch.tensor([[0.85, 0.05, 0.05, 0.05],
         ...                      [0.05, 0.85, 0.05, 0.05],
@@ -124,7 +123,6 @@ def _dice_compute(
             ``average`` parameter)
 
     Example:
-        >>> import torch
         >>> from torchmetrics.functional.classification.stat_scores import _stat_scores_update
         >>> from torchmetrics.functional.classification.dice import _dice_compute
         >>> preds  = torch.tensor([2, 0, 2, 1])
@@ -173,14 +171,14 @@ def dice(
 
     .. math:: \text{Dice} = \frac{\text{2 * TP}}{\text{2 * TP} + \text{FP} + \text{FN}}
 
-    Where :math:`\text{TP}`, :math:`\text{FP}` and :math:`\text{FN}` represent the numbers of
-    true positives, false positives and false negatives, respectively.
+    Where :math:`\text{TP}` and :math:`\text{FN}` represent the number of true positives and
+    false negatives respecitively.
 
     It is recommend set `ignore_index` to index of background class.
 
     The reduction method (how the recall scores are aggregated) is controlled by the
     ``average`` parameter, and additionally by the ``mdmc_average`` parameter in the
-    multi-dimensional multi-class case. Accepts all inputs listed in :ref:`pages/classification:input types`.
+    multi-dimensional multi-class case.
 
     Args:
         preds: Predictions from model (probabilities, logits or labels)
@@ -215,11 +213,10 @@ def dice(
             - ``'samplewise'``: In this case, the statistics are computed separately for each
               sample on the ``N`` axis, and then averaged over samples.
               The computation for each sample is done by treating the flattened extra axes ``...``
-              (see :ref:`pages/classification:input types`) as the ``N`` dimension within the sample,
+              as the ``N`` dimension within the sample,
               and computing the metric for the sample based on that.
 
             - ``'global'``: In this case the ``N`` and ``...`` dimensions of the inputs
-              (see :ref:`pages/classification:input types`)
               are flattened into a new ``N_X`` sample axis, i.e. the inputs are treated as if they
               were ``(N_X, C)``. From here on the ``average`` parameter applies as usual.
 
@@ -242,9 +239,7 @@ def dice(
             Should be left at default (``None``) for all other types of inputs.
         multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
-            than what they appear to be. See the parameter's
-            :ref:`documentation section <pages/classification:using the multiclass parameter>`
-            for a more detailed explanation and examples.
+            than what they appear to be.
 
     Return:
         The shape of the returned tensor depends on the ``average`` parameter
@@ -261,11 +256,8 @@ def dice(
             If ``average`` is set but ``num_classes`` is not provided.
         ValueError:
             If ``num_classes`` is set and ``ignore_index`` is not in the range ``[0, num_classes)``.
-        ValueError:
-            If ``top_k`` is not an integer greater than ``0``.
 
     Example:
-        >>> import torch
         >>> from torchmetrics.functional import dice
         >>> preds = torch.tensor([2, 0, 2, 1])
         >>> target = torch.tensor([1, 1, 2, 0])
@@ -287,7 +279,7 @@ def dice(
         raise ValueError(f"The `ignore_index` {ignore_index} is not valid for inputs with {num_classes} classes")
 
     if top_k is not None and (not isinstance(top_k, int) or top_k <= 0):
-        raise ValueError(f"The `top_k` should be an integer greater than 0, got {top_k}")
+        raise ValueError(f"The `top_k` should be an integer larger than 0, got {top_k}")
 
     preds, target = _input_squeeze(preds, target)
     reduce = "macro" if average in ("weighted", "none", None) else average
