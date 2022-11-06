@@ -51,6 +51,7 @@ from torchmetrics.functional.pairwise.manhattan import pairwise_manhattan_distan
 from torchmetrics.functional.regression.concordance import concordance_corrcoef
 from torchmetrics.functional.regression.cosine_similarity import cosine_similarity
 from torchmetrics.functional.regression.explained_variance import explained_variance
+from torchmetrics.functional.regression.kendall import kendall_rank_corrcoef
 from torchmetrics.functional.regression.kl_divergence import kl_divergence
 from torchmetrics.functional.regression.log_mse import mean_squared_log_error
 from torchmetrics.functional.regression.mae import mean_absolute_error
@@ -114,6 +115,7 @@ __all__ = [
     "hinge_loss",
     "image_gradients",
     "jaccard_index",
+    "kendall_rank_corrcoef",
     "kl_divergence",
     "match_error_rate",
     "matthews_corrcoef",
