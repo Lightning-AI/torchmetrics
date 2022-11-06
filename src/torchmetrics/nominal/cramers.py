@@ -17,7 +17,7 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.functional.nominal.cramers import _cramers_v_compute, _cramers_v_update
+from torchmetrics.functional.nominal.cramers import _cramers_input_validation, _cramers_v_compute, _cramers_v_update
 from torchmetrics.metric import Metric
 
 
@@ -76,15 +76,7 @@ class CramersV(Metric):
         self.num_classes = num_classes
         self.bias_correction = bias_correction
 
-        if nan_strategy not in ["replace", "drop"]:
-            raise ValueError(
-                f"Argument `nan_strategy` is expected to be one of `['replace', 'drop']`, but got {nan_strategy}"
-            )
-        if nan_strategy == "replace" and not isinstance(nan_replace_value, (int, float)):
-            raise ValueError(
-                "Argument `nan_replace` is expected to be of a type `int` or `float` when `nan_strategy = 'replace`, "
-                f"but got {nan_replace_value}"
-            )
+        _cramers_input_validation(nan_strategy, nan_replace_value)
         self.nan_strategy = nan_strategy
         self.nan_replace_value = nan_replace_value
 
