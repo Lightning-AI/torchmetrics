@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import itertools
+import operator
 from collections import namedtuple
 from functools import partial
 
@@ -21,6 +22,7 @@ from dython.nominal import cramers_v as dython_cramers_v
 
 from torchmetrics.functional.nominal.cramers import cramers_v, cramers_v_matrix
 from torchmetrics.nominal.cramers import CramersV
+from torchmetrics.utilities.imports import _compare_version
 from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 
 Input = namedtuple("Input", ["preds", "target"])
@@ -85,6 +87,7 @@ def _dython_cramers_v_matrix(matrix, bias_correction, nan_strategy, nan_replace_
     return cramers_v_matrix_value
 
 
+@pytest.mark.skipif(_compare_version("pandas", operator.lt, "1.3.2"), "`dython` package requires `pandas>=1.3.2`")
 @pytest.mark.parametrize(
     "preds, target",
     [
