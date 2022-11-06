@@ -158,6 +158,9 @@ class TestCramersV(MetricTester):
         )
 
 
+@pytest.mark.skipif(
+    _compare_version("pandas", operator.lt, "1.3.2"), reason="`dython` package requires `pandas>=1.3.2`"
+)
 @pytest.mark.parametrize("bias_correction", [False, True])
 @pytest.mark.parametrize("nan_strategy, nan_replace_value", [("replace", 1.0), ("drop", None)])
 def test_cramers_v_matrix(_matrix_input, bias_correction, nan_strategy, nan_replace_value):
