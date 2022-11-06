@@ -43,9 +43,9 @@ class LogCoshError(Metric):
         >>> from torchmetrics import LogCoshError
         >>> preds = torch.tensor([[3.0, 5.0, 1.2], [-2.1, 2.5, 7.0]])
         >>> target = torch.tensor([[2.5, 5.0, 1.3], [0.3, 4.0, 8.0]])
-        >>> log_cosh_error = LogCoshError()
+        >>> log_cosh_error = LogCoshError(num_outputs=3)
         >>> log_cosh_error(preds, target)
-        tensor([0.0417, 1.0014])
+        tensor([0.9176, 0.4277, 0.2194])
     """
 
     is_differentiable = True

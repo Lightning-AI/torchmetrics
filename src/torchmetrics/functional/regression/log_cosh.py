@@ -79,12 +79,12 @@ def log_cosh_error(preds: Tensor, target: Tensor) -> Tensor:
         >>> log_cosh_error(preds, target)
         tensor(0.3523)
 
-    Example (single output regression)::
+    Example (multi output regression)::
         >>> from torchmetrics.functional import log_cosh_error
         >>> preds = torch.tensor([[3.0, 5.0, 1.2], [-2.1, 2.5, 7.0]])
         >>> target = torch.tensor([[2.5, 5.0, 1.3], [0.3, 4.0, 8.0]])
         >>> log_cosh_error(preds, target)
-        tensor([0.0417, 1.0014])
+        tensor([0.9176, 0.4277, 0.2194])
     """
     sum_log_cosh_error, n_obs = _log_cosh_error_update(
         preds, target, num_outputs=1 if preds.ndim == 1 else preds.shape[-1]
