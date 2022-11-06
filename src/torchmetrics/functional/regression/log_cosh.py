@@ -48,7 +48,7 @@ def _log_cosh_error_update(preds: Tensor, target: Tensor, num_outputs: int) -> T
     return sum_log_cosh_error, n_obs
 
 
-def _log_cosh_error_compute(sum_log_cosh_error: Tensor, n_obs: int) -> Tensor:
+def _log_cosh_error_compute(sum_log_cosh_error: Tensor, n_obs: Tensor) -> Tensor:
     """Computes Mean Squared Error.
 
     Args:
