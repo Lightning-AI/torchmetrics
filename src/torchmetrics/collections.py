@@ -83,24 +83,26 @@ class MetricCollection(ModuleDict):
     Example (input as list):
         >>> import torch
         >>> from pprint import pprint
-        >>> from torchmetrics import MetricCollection, Accuracy, Precision, Recall, MeanSquaredError
+        >>> from torchmetrics import MetricCollection, MeanSquaredError
+        >>> from torchmetrics.classification import MulticlassAccuracy, MulticlassPrecision, MulticlassRecall
         >>> target = torch.tensor([0, 2, 0, 2, 0, 1, 0, 2])
         >>> preds = torch.tensor([2, 1, 2, 0, 1, 2, 2, 2])
-        >>> metrics = MetricCollection([Accuracy(),
-        ...                             Precision(num_classes=3, average='macro'),
-        ...                             Recall(num_classes=3, average='macro')])
+        >>> metrics = MetricCollection([MulticlassAccuracy(num_classes=3, average='micro'),
+        ...                             MulticlassPrecision(num_classes=3, average='macro'),
+        ...                             MulticlassRecall(num_classes=3, average='macro')])
         >>> metrics(preds, target)
         {'Accuracy': tensor(0.1250), 'Precision': tensor(0.0667), 'Recall': tensor(0.1111)}
 
     Example (input as arguments):
-        >>> metrics = MetricCollection(Accuracy(), Precision(num_classes=3, average='macro'),
-        ...                            Recall(num_classes=3, average='macro'))
+        >>> metrics = MetricCollection(MulticlassAccuracy(num_classes=3, average='micro'),
+        ...                            MulticlassPrecision(num_classes=3, average='macro'),
+        ...                            MulticlassRecall(num_classes=3, average='macro'))
         >>> metrics(preds, target)
         {'Accuracy': tensor(0.1250), 'Precision': tensor(0.0667), 'Recall': tensor(0.1111)}
 
     Example (input as dict):
-        >>> metrics = MetricCollection({'micro_recall': Recall(num_classes=3, average='micro'),
-        ...                             'macro_recall': Recall(num_classes=3, average='macro')})
+        >>> metrics = MetricCollection({'micro_recall': MulticlassRecall(num_classes=3, average='micro'),
+        ...                             'macro_recall': MulticlassRecall(num_classes=3, average='macro')})
         >>> same_metric = metrics.clone()
         >>> pprint(metrics(preds, target))
         {'macro_recall': tensor(0.1111), 'micro_recall': tensor(0.1250)}
@@ -109,8 +111,8 @@ class MetricCollection(ModuleDict):
 
     Example (specification of compute groups):
         >>> metrics = MetricCollection(
-        ...     Recall(num_classes=3, average='macro'),
-        ...     Precision(num_classes=3, average='macro'),
+        ...     MulticlassRecall(num_classes=3, average='macro'),
+        ...     MulticlassPrecision(num_classes=3, average='macro'),
         ...     MeanSquaredError(),
         ...     compute_groups=[['Recall', 'Precision'], ['MeanSquaredError']]
         ... )
@@ -123,12 +125,12 @@ class MetricCollection(ModuleDict):
     Example (nested metric collections):
         >>> metrics = MetricCollection([
         ...     MetricCollection([
-        ...         Accuracy(num_classes=3, average='macro'),
-        ...         Precision(num_classes=3, average='macro')
+        ...         MulticlassAccuracy(num_classes=3, average='macro'),
+        ...         MulticlassPrecision(num_classes=3, average='macro')
         ...     ], postfix='_macro'),
         ...     MetricCollection([
-        ...         Accuracy(num_classes=3, average='micro'),
-        ...         Precision(num_classes=3, average='micro')
+        ...         MulticlassAccuracy(num_classes=3, average='micro'),
+        ...         MulticlassPrecision(num_classes=3, average='micro')
         ...     ], postfix='_micro'),
         ... ], prefix='valmetrics/')
         >>> pprint(metrics(preds, target))  # doctest: +NORMALIZE_WHITESPACE

@@ -69,15 +69,17 @@ class BootStrapper(Metric):
 
     Example::
         >>> from pprint import pprint
-        >>> from torchmetrics import Accuracy, BootStrapper
+        >>> from torchmetrics import BootStrapper
+        >>> from torchmetrics.classification import MulticlassAccuracy
         >>> _ = torch.manual_seed(123)
-        >>> base_metric = Accuracy()
+        >>> base_metric = MulticlassAccuracy(num_classes=5, average='micro')
         >>> bootstrap = BootStrapper(base_metric, num_bootstraps=20)
         >>> bootstrap.update(torch.randint(5, (20,)), torch.randint(5, (20,)))
         >>> output = bootstrap.compute()
         >>> pprint(output)
         {'mean': tensor(0.2205), 'std': tensor(0.0859)}
     """
+    full_state_update: Optional[bool] = True
 
     def __init__(
         self,

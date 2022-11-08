@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional, Union
 
 import torch
 from torch import Tensor
@@ -35,9 +35,10 @@ class MinMaxMetric(Metric):
 
     Example::
         >>> import torch
-        >>> from torchmetrics import Accuracy
+        >>> from torchmetrics import MinMaxMetric
+        >>> from torchmetrics.classification import BinaryAccuracy
         >>> from pprint import pprint
-        >>> base_metric = Accuracy()
+        >>> base_metric = BinaryAccuracy()
         >>> minmax_metric = MinMaxMetric(base_metric)
         >>> preds_1 = torch.Tensor([[0.1, 0.9], [0.2, 0.8]])
         >>> preds_2 = torch.Tensor([[0.9, 0.1], [0.2, 0.8]])
@@ -51,6 +52,7 @@ class MinMaxMetric(Metric):
         {'max': tensor(1.), 'min': tensor(0.7500), 'raw': tensor(0.7500)}
     """
 
+    full_state_update: Optional[bool] = True
     min_val: Tensor
     max_val: Tensor
 

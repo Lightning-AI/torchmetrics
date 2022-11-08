@@ -646,9 +646,9 @@ def check_forward_full_state_property(
         reps: number of repetitions of speedup test
 
     Example (states in ``update`` are independent, save to set ``full_state_update=False``)
-        >>> from torchmetrics import ConfusionMatrix
+        >>> from torchmetrics.classification import MulticlassConfusionMatrix
         >>> check_forward_full_state_property(
-        ...     ConfusionMatrix,
+        ...     MulticlassConfusionMatrix,
         ...     init_args = {'num_classes': 3},
         ...     input_args = {'preds': torch.randint(3, (10,)), 'target': torch.randint(3, (10,))},
         ... )  # doctest: +ELLIPSIS
@@ -661,8 +661,8 @@ def check_forward_full_state_property(
         Recommended setting `full_state_update=False`
 
     Example (states in ``update`` are dependend meaning that ``full_state_update=True``):
-        >>> from torchmetrics import ConfusionMatrix
-        >>> class MyMetric(ConfusionMatrix):
+        >>> from torchmetrics.classification import MulticlassConfusionMatrix
+        >>> class MyMetric(MulticlassConfusionMatrix):
         ...     def update(self, preds, target):
         ...         super().update(preds, target)
         ...         # by construction make future states dependent on prior states

@@ -41,9 +41,10 @@ class MetricTracker(ModuleList):
             better (``True``) or lower is better (``False``).
 
     Example (single metric):
-        >>> from torchmetrics import Accuracy, MetricTracker
+        >>> from torchmetrics import MetricTracker
+        >>> from torchmetrics.classification import MulticlassAccuracy
         >>> _ = torch.manual_seed(42)
-        >>> tracker = MetricTracker(Accuracy(num_classes=10))
+        >>> tracker = MetricTracker(MulticlassAccuracy(num_classes=10, average='micro'))
         >>> for epoch in range(5):
         ...     tracker.increment()
         ...     for batch_idx in range(5):
