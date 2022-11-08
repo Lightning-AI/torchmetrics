@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional, Tuple
+from typing import Any, Callable, Optional, Tuple, no_type_check
 
 import torch
 from torch import Tensor
@@ -119,6 +119,7 @@ class Dice(Metric):
     higher_is_better: bool = True
     full_state_update: bool = False
 
+    @no_type_check
     def __init__(
         self,
         zero_division: int = 0,
@@ -180,7 +181,8 @@ class Dice(Metric):
         self.average = average
         self.zero_division = zero_division
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    @no_type_check
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets.
 
         Args:
@@ -211,6 +213,7 @@ class Dice(Metric):
             self.tn.append(tn)
             self.fn.append(fn)
 
+    @no_type_check
     def _get_final_stats(self) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
         """Performs concatenation on the stat scores if neccesary, before passing them to a compute function."""
         tp = torch.cat(self.tp) if isinstance(self.tp, list) else self.tp
@@ -219,6 +222,7 @@ class Dice(Metric):
         fn = torch.cat(self.fn) if isinstance(self.fn, list) else self.fn
         return tp, fp, tn, fn
 
+    @no_type_check
     def compute(self) -> Tensor:
         """Computes the dice score based on inputs passed in to ``update`` previously.
 
