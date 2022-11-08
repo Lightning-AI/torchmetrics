@@ -36,6 +36,7 @@ def _handle_nan_in_data(
         nan_replace_value: Value to replace ``NaN`s when ``nan_strategy = 'replace```
 
     Returns:
+        Updated ``preds`` and ``target`` tensors which contain no ``Nan``
 
     Raises:
         ValueError: If ``nan_strategy`` is not from ``['replace', 'drop']``.
