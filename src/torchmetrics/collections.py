@@ -90,15 +90,19 @@ class MetricCollection(ModuleDict):
         >>> metrics = MetricCollection([MulticlassAccuracy(num_classes=3, average='micro'),
         ...                             MulticlassPrecision(num_classes=3, average='macro'),
         ...                             MulticlassRecall(num_classes=3, average='macro')])
-        >>> metrics(preds, target)
-        {'Accuracy': tensor(0.1250), 'Precision': tensor(0.0667), 'Recall': tensor(0.1111)}
+        >>> metrics(preds, target)  # doctest: +NORMALIZE_WHITESPACE
+        {'MulticlassAccuracy': tensor(0.1250),
+        'MulticlassPrecision': tensor(0.0667),
+        'MulticlassRecall': tensor(0.1111)}
 
     Example (input as arguments):
         >>> metrics = MetricCollection(MulticlassAccuracy(num_classes=3, average='micro'),
         ...                            MulticlassPrecision(num_classes=3, average='macro'),
         ...                            MulticlassRecall(num_classes=3, average='macro'))
-        >>> metrics(preds, target)
-        {'Accuracy': tensor(0.1250), 'Precision': tensor(0.0667), 'Recall': tensor(0.1111)}
+        >>> metrics(preds, target)  # doctest: +NORMALIZE_WHITESPACE
+        {'MulticlassAccuracy': tensor(0.1250),
+        'MulticlassPrecision': tensor(0.0667),
+        'MulticlassRecall': tensor(0.1111)}
 
     Example (input as dict):
         >>> metrics = MetricCollection({'micro_recall': MulticlassRecall(num_classes=3, average='micro'),
@@ -118,9 +122,9 @@ class MetricCollection(ModuleDict):
         ... )
         >>> metrics.update(preds, target)
         >>> pprint(metrics.compute())
-        {'MeanSquaredError': tensor(2.3750), 'Precision': tensor(0.0667), 'Recall': tensor(0.1111)}
+        {'MeanSquaredError': tensor(2.3750), 'MulticlassPrecision': tensor(0.0667), 'MulticlassRecall': tensor(0.1111)}
         >>> pprint(metrics.compute_groups)
-        {0: ['Recall', 'Precision'], 1: ['MeanSquaredError']}
+        {0: ['MulticlassRecall', 'MulticlassPrecision'], 1: ['MeanSquaredError']}
 
     Example (nested metric collections):
         >>> metrics = MetricCollection([
@@ -134,10 +138,10 @@ class MetricCollection(ModuleDict):
         ...     ], postfix='_micro'),
         ... ], prefix='valmetrics/')
         >>> pprint(metrics(preds, target))  # doctest: +NORMALIZE_WHITESPACE
-        {'valmetrics/Accuracy_macro': tensor(0.1111),
-        'valmetrics/Accuracy_micro': tensor(0.1250),
-        'valmetrics/Precision_macro': tensor(0.0667),
-        'valmetrics/Precision_micro': tensor(0.1250)}
+        {'valmetrics/MulticlassAccuracy_macro': tensor(0.1111),
+        'valmetrics/MulticlassAccuracy_micro': tensor(0.1250),
+        'valmetrics/MulticlassPrecision_macro': tensor(0.0667),
+        'valmetrics/MulticlassPrecision_micro': tensor(0.1250)}
     """
 
     _groups: Dict[int, List[str]]
