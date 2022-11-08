@@ -260,7 +260,7 @@ Example:
     target = torch.tensor([0, 2, 0, 2, 0, 1, 0, 2])
     preds = torch.tensor([2, 1, 2, 0, 1, 2, 2, 2])
     metric_collection = MetricCollection([
-        MulticlassAccuracy(num_classes=3),
+        MulticlassAccuracy(num_classes, average='micro),
         MulticlassPrecision(num_classes=3, average='macro'),
         MulticlassRecall(num_classes=3, average='macro')
     ])
