@@ -51,6 +51,7 @@ from torchmetrics.functional.regression.cosine_similarity import cosine_similari
 from torchmetrics.functional.regression.explained_variance import explained_variance
 from torchmetrics.functional.regression.kendall import kendall_rank_corrcoef
 from torchmetrics.functional.regression.kl_divergence import kl_divergence
+from torchmetrics.functional.regression.log_cosh import log_cosh_error
 from torchmetrics.functional.regression.log_mse import mean_squared_log_error
 from torchmetrics.functional.regression.mae import mean_absolute_error
 from torchmetrics.functional.regression.mape import mean_absolute_percentage_error
@@ -115,6 +116,7 @@ __all__ = [
     "jaccard_index",
     "kendall_rank_corrcoef",
     "kl_divergence",
+    "log_cosh_error",
     "match_error_rate",
     "matthews_corrcoef",
     "mean_absolute_error",
