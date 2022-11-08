@@ -1,1 +1,1 @@
-dython >=0.7.0
+dython # todo: pin version, but some version resolution issue
