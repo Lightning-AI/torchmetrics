@@ -24,7 +24,6 @@ from torchmetrics.functional import (
     pairwise_linear_similarity,
     pairwise_manhattan_distance,
 )
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_7
 from unittests.helpers import seed_all
 from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 
@@ -91,9 +90,6 @@ class TestPairwise(MetricTester):
             metric_args={"reduction": reduction},
         )
 
-    @pytest.mark.skipif(
-        not _TORCH_GREATER_EQUAL_1_7, reason="half support of core operations on not support before pytorch v1.7"
-    )
     def test_pairwise_half_cpu(self, x, y, metric_functional, sk_fn, reduction):
         """test half precision support on cpu."""
         if metric_functional == pairwise_euclidean_distance:

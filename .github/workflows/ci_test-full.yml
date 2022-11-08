@@ -54,18 +54,18 @@ jobs:
 
     # Github Actions: Run step on specific OS: https://stackoverflow.com/a/57948488/4521646
     - name: Setup macOS
-      if: runner.os == 'macOS'
+      if: ${{ runner.os == 'macOS' }}
       run: |
         python -c "print('UNITTEST_TIMEOUT=--timeout=120')" >> $GITHUB_ENV
         brew install gcc libomp ffmpeg # https://github.com/pytorch/pytorch/issues/20030
     - name: Setup Linux
-      if: runner.os == 'Linux'
+      if: ${{ runner.os == 'Linux' }}
       run: |
         python -c "print('UNITTEST_TIMEOUT=--timeout=120')" >> $GITHUB_ENV
         sudo apt update --fix-missing
         sudo apt install -y ffmpeg
     - name: Setup Windows
-      if: runner.os == 'windows'
+      if: ${{ runner.os == 'windows' }}
       run: |
         choco install ffmpeg
 
@@ -79,6 +79,7 @@ jobs:
       run: |
         pip --version
         pip install -e . -r requirements/test.txt --upgrade --find-links $PYTORCH_URL
+        pip list
 
     - name: DocTests
       working-directory: ./src

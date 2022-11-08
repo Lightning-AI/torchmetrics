@@ -16,7 +16,7 @@ import inspect
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from copy import deepcopy
-from typing import Any, Callable, Dict, Generator, List, Optional, Sequence, Union
+from typing import Any, Callable, Dict, Generator, List, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -69,6 +69,8 @@ class Metric(Module, ABC):
             - process_group: The process group on which the synchronization is called. Default is the world.
             - dist_sync_fn: function that performs the allgather option on the metric state. Default is an
                 custom implementation that calls ``torch.distributed.all_gather`` internally.
+            - distributed_available_fn: function that checks if the distributed backend is available.
+                Defaults to a check of ``torch.distributed.is_available()`` and ``torch.distributed.is_initialized()``.
             - sync_on_compute: If metric state should synchronize when ``compute`` is called. Default is ``True``-
     """
 
@@ -109,6 +111,8 @@ class Metric(Module, ABC):
             raise ValueError(
                 f"Expected keyword argument `dist_sync_fn` to be an callable function but got {self.dist_sync_fn}"
             )
+
+        self.distributed_available_fn = kwargs.pop("distributed_available_fn", jit_distributed_available)
 
         self.sync_on_compute = kwargs.pop("sync_on_compute", True)
         if not isinstance(self.sync_on_compute, bool):
@@ -256,7 +260,7 @@ class Metric(Module, ABC):
         self.update(*args, **kwargs)
         _update_count = self._update_count
 
-        self._to_sync = self.dist_sync_on_step  # type: ignore
+        self._to_sync = self.dist_sync_on_step
         # skip restore cache operation from compute as cache is stored below.
         self._should_unsync = False
         # skip computing on cpu for the batch
@@ -421,7 +425,7 @@ class Metric(Module, ABC):
         dist_sync_fn: Optional[Callable] = None,
         process_group: Optional[Any] = None,
         should_sync: bool = True,
-        distributed_available: Optional[Callable] = jit_distributed_available,
+        distributed_available: Optional[Callable] = None,
     ) -> None:
         """Sync function for manually controlling when metrics states should be synced across processes.
 
@@ -436,6 +440,9 @@ class Metric(Module, ABC):
         """
         if self._is_synced and should_sync:
             raise TorchMetricsUserError("The Metric has already been synced.")
+
+        if distributed_available is None and self.distributed_available_fn is not None:
+            distributed_available = self.distributed_available_fn
 
         is_distributed = distributed_available() if callable(distributed_available) else None
 
@@ -481,7 +488,7 @@ class Metric(Module, ABC):
         process_group: Optional[Any] = None,
         should_sync: bool = True,
         should_unsync: bool = True,
-        distributed_available: Optional[Callable] = jit_distributed_available,
+        distributed_available: Optional[Callable] = None,
     ) -> Generator:
         """Context manager to synchronize the states between processes when running in a distributed setting and
         restore the local cache states after yielding.
@@ -527,7 +534,7 @@ class Metric(Module, ABC):
             # if synchronization happened, the current rank accumulated states will be restored to keep
             # accumulation going if ``should_unsync=True``,
             with self.sync_context(
-                dist_sync_fn=self.dist_sync_fn,  # type: ignore
+                dist_sync_fn=self.dist_sync_fn,
                 should_sync=self._to_sync,
                 should_unsync=self._should_unsync,
             ):
@@ -847,6 +854,9 @@ class Metric(Module, ABC):
 
     def __getitem__(self, idx: int) -> "Metric":
         return CompositionalMetric(lambda x: x[idx], self, None)
+
+    def __getnewargs__(self) -> Tuple:
+        return (Metric.__str__(self),)
 
 
 def _neg(x: Tensor) -> Tensor:

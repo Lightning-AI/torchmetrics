@@ -13,25 +13,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added `TotalVariation` to image package ([#978](https://github.com/Lightning-AI/metrics/pull/978))
 
+- Added option to pass `distributed_available_fn` to metrics to allow checks for custom communication backend for making `dist_sync_fn` actually useful ([#1301](https://github.com/Lightning-AI/metrics/pull/1301))
+
+
+- Added `KendallRankCorrCoef` to regression package ([#1271](https://github.com/Lightning-AI/metrics/pull/1271))
+
 
 ### Changed
 
-- 
+- Changed `MeanAveragePrecision` to vectorize `_find_best_gt_match` operation ([#1259](https://github.com/Lightning-AI/metrics/pull/1259))
+
+
+- Changed minimum Pytorch version to be 1.8 ([#1263](https://github.com/Lightning-AI/metrics/pull/1263))
 
 
 ### Deprecated
 
-- 
+-
 
 
 ### Removed
 
-- 
-
+- Removed deprecated `BinnedAveragePrecision`, `BinnedPrecisionRecallCurve`, `RecallAtFixedPrecision` ([#1251](https://github.com/Lightning-AI/metrics/pull/1251))
+- Removed deprecated `LabelRankingAveragePrecision`, `LabelRankingLoss` and `CoverageError` ([#1251](https://github.com/Lightning-AI/metrics/pull/1251))
+- Removed deprecated `KLDivergence` and `AUC` ([#1251](https://github.com/Lightning-AI/metrics/pull/1251))
 
 ### Fixed
 
-- 
+- Fixed bug in `Metrictracker.best_metric` when `return_step=False` ([#1306](https://github.com/Lightning-AI/metrics/pull/1306))
+
+
+## [0.10.2] - 2022-10-31
+
+### Changed
+
+- Changed in-place operation to out-of-place operation in `pairwise_cosine_similarity` ([#1288](https://github.com/Lightning-AI/metrics/pull/1288))
+
+### Fixed
+
+- Fixed high memory usage for certain classification metrics when `average='micro'` ([#1286](https://github.com/Lightning-AI/metrics/pull/1286))
+- Fixed precision problems when `structural_similarity_index_measure` was used with autocast ([#1291](https://github.com/Lightning-AI/metrics/pull/1291))
+- Fixed slow performance for confusion matrix based metrics ([#1302](https://github.com/Lightning-AI/metrics/pull/1302))
+- Fixed restrictive dtype checking in `spearman_corrcoef` when used with autocast ([#1303](https://github.com/Lightning-AI/metrics/pull/1303))
+
+
+## [0.10.1] - 2022-10-21
+
+### Fixed
+
+- Fixed broken clone method for classification metrics ([#1250](https://github.com/Lightning-AI/metrics/pull/1250))
+- Fixed unintentional downloading of `nltk.punkt` when `lsum` not in `rouge_keys` ([#1258](https://github.com/Lightning-AI/metrics/pull/1258))
+- Fixed type casting in `MAP` metric between `bool` and `float32` ([#1150](https://github.com/Lightning-AI/metrics/pull/1150))
 
 
 ## [0.10.0] - 2022-10-04
@@ -65,6 +97,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved performance of retrieval metrics ([#1242](https://github.com/Lightning-AI/metrics/pull/1242))
 - Changed `SSIM` and `MSSSIM` update to be online to reduce memory usage ([#1231](https://github.com/Lightning-AI/metrics/pull/1231))
 
+### Deprecated
+
+- Deprecated `BinnedAveragePrecision`, `BinnedPrecisionRecallCurve`, `BinnedRecallAtFixedPrecision` ([#1163](https://github.com/Lightning-AI/metrics/pull/1163))
+  * `BinnedAveragePrecision` -> use `AveragePrecision` with `thresholds` arg
+  * `BinnedPrecisionRecallCurve` -> use `AveragePrecisionRecallCurve` with `thresholds` arg
+  * `BinnedRecallAtFixedPrecision` -> use `RecallAtFixedPrecision` with `thresholds` arg
+- Renamed and refactored `LabelRankingAveragePrecision`, `LabelRankingLoss` and `CoverageError` ([#1167](https://github.com/Lightning-AI/metrics/pull/1167))
+  * `LabelRankingAveragePrecision` -> `MultilabelRankingAveragePrecision`
+  * `LabelRankingLoss` -> `MultilabelRankingLoss`
+  * `CoverageError` -> `MultilabelCoverageError`
+- Deprecated `KLDivergence` and `AUC` from classification package ([#1189](https://github.com/Lightning-AI/metrics/pull/1189))
+  * `KLDivergence` moved to `regression` package
+  * Instead of `AUC` use `torchmetrics.utils.compute.auc`
 
 ### Fixed
 

@@ -39,7 +39,6 @@ from torchmetrics.regression import (
     WeightedMeanAbsolutePercentageError,
 )
 from torchmetrics.regression.symmetric_mape import SymmetricMeanAbsolutePercentageError
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 from unittests.helpers import seed_all
 from unittests.helpers.reference_metrics import (
     _symmetric_mean_absolute_percentage_error as sk_sym_mean_abs_percentage_error,
@@ -152,9 +151,6 @@ class TestMeanError(MetricTester):
             metric_args=metric_args,
         )
 
-    @pytest.mark.skipif(
-        not _TORCH_GREATER_EQUAL_1_6, reason="half support of core operations on not support before pytorch v1.6"
-    )
     def test_mean_error_half_cpu(self, preds, target, sk_metric, metric_class, metric_functional, sk_fn, metric_args):
         if metric_class == MeanSquaredLogError:
             # MeanSquaredLogError half + cpu does not work due to missing support in torch.log

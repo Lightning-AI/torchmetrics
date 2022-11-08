@@ -10,17 +10,11 @@ Coverage Error
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.CoverageError
-    :noindex:
-
 .. autoclass:: torchmetrics.classification.MultilabelCoverageError
     :noindex:
 
 Functional Interface
 ____________________
-
-.. autofunction:: torchmetrics.functional.coverage_error
-    :noindex:
 
 .. autofunction:: torchmetrics.functional.classification.multilabel_coverage_error
     :noindex:
