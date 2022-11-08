@@ -269,9 +269,9 @@ Example:
 .. testoutput::
     :options: +NORMALIZE_WHITESPACE
 
-    {'Accuracy': tensor(0.1250),
-     'Precision': tensor(0.0667),
-     'Recall': tensor(0.1111)}
+    {'MulticlassAccuracy': tensor(0.1250),
+     'MulticlassPrecision': tensor(0.0667),
+     'MulticlassRecall': tensor(0.1111)}
 
 Similarly it can also reduce the amount of code required to log multiple metrics
 inside your LightningModule. In most cases we just have to replace ``self.log`` with ``self.log_dict``.
