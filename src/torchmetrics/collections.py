@@ -118,7 +118,7 @@ class MetricCollection(ModuleDict):
         ...     MulticlassRecall(num_classes=3, average='macro'),
         ...     MulticlassPrecision(num_classes=3, average='macro'),
         ...     MeanSquaredError(),
-        ...     compute_groups=[['Recall', 'Precision'], ['MeanSquaredError']]
+        ...     compute_groups=[['MulticlassRecall', 'MulticlassPrecision'], ['MeanSquaredError']]
         ... )
         >>> metrics.update(preds, target)
         >>> pprint(metrics.compute())
