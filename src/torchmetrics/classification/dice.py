@@ -11,17 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional
+from typing import Any, Callable, Optional, Tuple
 
+import torch
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.classification.stat_scores import StatScores
 from torchmetrics.functional.classification.dice import _dice_compute
-from torchmetrics.utilities.enums import AverageMethod
+from torchmetrics.functional.classification.stat_scores import _stat_scores_update
+from torchmetrics.metric import Metric
+from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
 
 
-class Dice(StatScores):
+class Dice(Metric):
     r"""Computes `Dice`_:
 
     .. math:: \text{Dice} = \frac{\text{2 * TP}}{\text{2 * TP} + \text{FP} + \text{FN}}
@@ -125,10 +127,11 @@ class Dice(StatScores):
         average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
         mdmc_average: Optional[str] = "global",
         ignore_index: Optional[int] = None,
-        top_k: Optional[int] = 1,
+        top_k: Optional[int] = None,
         multiclass: Optional[bool] = None,
         **kwargs: Any,
     ) -> None:
+        super().__init__(**kwargs)
         allowed_average = ("micro", "macro", "weighted", "samples", "none", None)
         if average not in allowed_average:
             raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
@@ -139,17 +142,82 @@ class Dice(StatScores):
         if "mdmc_reduce" not in kwargs:
             kwargs["mdmc_reduce"] = mdmc_average
 
-        super().__init__(
-            threshold=threshold,
-            top_k=top_k,
-            num_classes=num_classes,
-            multiclass=multiclass,
-            ignore_index=ignore_index,
-            **kwargs,
-        )
+        self.reduce = average
+        self.mdmc_reduce = mdmc_average
+        self.num_classes = num_classes
+        self.threshold = threshold
+        self.multiclass = multiclass
+        self.ignore_index = ignore_index
+        self.top_k = top_k
+
+        if average not in ["micro", "macro", "samples"]:
+            raise ValueError(f"The `reduce` {average} is not valid.")
+
+        if mdmc_average not in [None, "samplewise", "global"]:
+            raise ValueError(f"The `mdmc_reduce` {mdmc_average} is not valid.")
+
+        if average == "macro" and (not num_classes or num_classes < 1):
+            raise ValueError("When you set `average` as 'macro', you have to provide the number of classes.")
+
+        if num_classes and ignore_index is not None and (not ignore_index < num_classes or num_classes == 1):
+            raise ValueError(f"The `ignore_index` {ignore_index} is not valid for inputs with {num_classes} classes")
+
+        default: Callable = lambda: []
+        reduce_fn: Optional[str] = "cat"
+        if mdmc_average != "samplewise" and average != "samples":
+            if average == "micro":
+                zeros_shape = []
+            elif average == "macro":
+                zeros_shape = [num_classes]
+            else:
+                raise ValueError(f'Wrong reduce="{average}"')
+            default = lambda: torch.zeros(zeros_shape, dtype=torch.long)
+            reduce_fn = "sum"
+
+        for s in ("tp", "fp", "tn", "fn"):
+            self.add_state(s, default=default(), dist_reduce_fx=reduce_fn)
 
         self.average = average
         self.zero_division = zero_division
+
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+        """Update state with predictions and targets.
+
+        Args:
+            preds: Predictions from model (probabilities, logits or labels)
+            target: Ground truth values
+        """
+        tp, fp, tn, fn = _stat_scores_update(
+            preds,
+            target,
+            reduce=self.reduce,
+            mdmc_reduce=self.mdmc_reduce,
+            threshold=self.threshold,
+            num_classes=self.num_classes,
+            top_k=self.top_k,
+            multiclass=self.multiclass,
+            ignore_index=self.ignore_index,
+        )
+
+        # Update states
+        if self.reduce != AverageMethod.SAMPLES and self.mdmc_reduce != MDMCAverageMethod.SAMPLEWISE:
+            self.tp += tp
+            self.fp += fp
+            self.tn += tn
+            self.fn += fn
+        else:
+            self.tp.append(tp)
+            self.fp.append(fp)
+            self.tn.append(tn)
+            self.fn.append(fn)
+
+    def _get_final_stats(self) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+        """Performs concatenation on the stat scores if neccesary, before passing them to a compute function."""
+        tp = torch.cat(self.tp) if isinstance(self.tp, list) else self.tp
+        fp = torch.cat(self.fp) if isinstance(self.fp, list) else self.fp
+        tn = torch.cat(self.tn) if isinstance(self.tn, list) else self.tn
+        fn = torch.cat(self.fn) if isinstance(self.fn, list) else self.fn
+        return tp, fp, tn, fn
 
     def compute(self) -> Tensor:
         """Computes the dice score based on inputs passed in to ``update`` previously.

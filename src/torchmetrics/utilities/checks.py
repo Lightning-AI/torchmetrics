@@ -316,7 +316,7 @@ def _input_format_classification(
     preds: Tensor,
     target: Tensor,
     threshold: float = 0.5,
-    top_k: Optional[int] = 1,
+    top_k: Optional[int] = None,
     num_classes: Optional[int] = None,
     multiclass: Optional[bool] = None,
     ignore_index: Optional[int] = None,
