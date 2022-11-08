@@ -96,3 +96,4 @@
 .. _Cramer's V: https://en.wikipedia.org/wiki/Cram%C3%A9r%27s_V
 .. _Kendall Rank Correlation Coefficient: https://en.wikipedia.org/wiki/Kendall_rank_correlation_coefficient
 .. _The Treatment of Ties in Ranking Problems: https://www.jstor.org/stable/2332303
+.. _LogCosh Error: https://arxiv.org/pdf/2101.10427.pdf
