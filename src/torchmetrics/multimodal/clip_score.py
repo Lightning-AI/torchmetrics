@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import List, Union
+from typing import Any, List, Union
 
 import torch
 from torch import Tensor
@@ -33,7 +33,7 @@ from torchmetrics import Metric
 class CLIPScore(Metric):
     """`CLIP Score`_ is a reference free metric that can be used to evaluate the correlation between an generated
     caption for an image and the actual content of the image. It has been found to be highly correlated with human
-    judgement. The metric is defined as.
+    judgement. The metric is defined as:
 
     .. math::
         \text{CLIPScore(I, C)} = \\max(cos(E_I, E_C), 0)
@@ -42,15 +42,28 @@ class CLIPScore(Metric):
     textual CLIP embedding :math:`E_C` for an caption :math:`C`.
 
     Args:
-        version: string indicating the version of the CLIP model to use. See `Huggingface OpenAI`_ for more info
+        version: string indicating the version of the CLIP model to use. See `Huggingface OpenAI`_ for more info on
+            availble CLIP models
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+
+    Raises:
+        ModuleNotFoundError:
+            If transformers package is not installed
+
+    Example:
+        >>> import torch
+        >>> _ = torch.manual_seed(42)
+        >>> from torchmetrics.multimodal import CLIPScore
+        >>> metric = CLIPScore()
+        >>> metric(torch.randint(255, (3, 224, 224)), "a photo of a cat")
+        tensor(19.4135, grad_fn=<SqueezeBackward0>)
     """
 
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
 
-    def __init__(self, version="openai/clip-vit-large-patch14", **kwargs) -> None:
+    def __init__(self, version: str = "openai/clip-vit-large-patch14", **kwargs: Any) -> None:
         super().__init__(**kwargs)
         if _TRANSFORMERS_AVAILABLE:
             self.tokenizer = _CLIPTokenizer.from_pretrained(version)
@@ -65,6 +78,18 @@ class CLIPScore(Metric):
         self.add_state("n_samples", torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
 
     def update(self, images: Union[Tensor, List[Tensor]], text: Union[str, List[str]]) -> None:
+        """Updates CLIP score on a batch of images and text.
+
+        Args:
+            images: Either a single [N, C, H, W] tensor or an list of [C, H, W] tensors
+            text: Either a single caption or a list of captions
+
+        Raises:
+            ValueError:
+                If not all images have format [C, H, W]
+            ValueError:
+                If the number of images and captions do not match
+        """
         if not isinstance(images, List):
             if images.ndim == 3:
                 images = [images]
@@ -99,11 +124,4 @@ class CLIPScore(Metric):
         self.n_samples += img_features.shape[0]
 
     def compute(self) -> Tensor:
-        return self.score / self.n_samples
-
-
-if __name__ == "__main__":
-    img = torch.randint(255, (3, 224, 224))
-    text = "min hest er meget flot"
-    metric = CLIPScore()
-    metric.update(img, text)
+        return torch.max(self.score / self.n_samples, torch.zeros_like(self.score))
