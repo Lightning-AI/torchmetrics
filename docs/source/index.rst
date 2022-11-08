@@ -136,6 +136,14 @@ Or directly from conda
 
 .. toctree::
    :maxdepth: 2
+   :name: aggregation
+   :caption: Aggregation
+   :glob:
+
+   aggregation/*
+
+.. toctree::
+   :maxdepth: 2
    :name: audio
    :caption: Audio
    :glob:
@@ -205,14 +213,6 @@ Or directly from conda
    :glob:
 
    text/*
-
-.. toctree::
-   :maxdepth: 2
-   :name: aggregation
-   :caption: Aggregation
-   :glob:
-
-   aggregation/*
 
 .. toctree::
    :maxdepth: 2
