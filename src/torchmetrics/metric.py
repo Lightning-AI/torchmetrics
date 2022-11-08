@@ -851,6 +851,9 @@ class Metric(Module, ABC):
     def __getnewargs__(self) -> Tuple:
         return (Metric.__str__(self),)
 
+    def __iter__(self):
+        raise NotImplementedError("Metrics does not support iteration.")
+
 
 def _neg(x: Tensor) -> Tensor:
     return -torch.abs(x)

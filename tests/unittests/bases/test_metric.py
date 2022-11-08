@@ -453,3 +453,10 @@ def test_no_warning_on_custom_forward(metric_class):
         match="Torchmetrics v0.9 introduced a new argument class property called.*",
     ):
         UnsetProperty()
+
+
+def test_no_iteration_allowed():
+    metric = DummyMetric()
+    with pytest.raises(NotImplementedError, match="Metrics does not support iteration."):
+        for m in metric:
+            continue

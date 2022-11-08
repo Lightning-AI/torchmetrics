@@ -6,6 +6,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
+## [unReleased] - 2022-MM-DD
+
+### Fixed
+
+- Fixed bug in `Metrictracker.best_metric` when `return_step=False` ([#1306](https://github.com/Lightning-AI/metrics/pull/1306))
+
+
+- Fixed bug to prevent users from going into a infinite loop if trying to iterate of a single metric ([#1320](https://github.com/Lightning-AI/metrics/pull/1320))
+
+
+- Fixed bug in `Metrictracker.best_metric` when `return_step=False` ([#1306](https://github.com/Lightning-AI/metrics/pull/1306))
+
 
 ## [0.10.2] - 2022-10-31
 
@@ -19,9 +31,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed precision problems when `structural_similarity_index_measure` was used with autocast ([#1291](https://github.com/Lightning-AI/metrics/pull/1291))
 - Fixed slow performance for confusion matrix based metrics ([#1302](https://github.com/Lightning-AI/metrics/pull/1302))
 - Fixed restrictive dtype checking in `spearman_corrcoef` when used with autocast ([#1303](https://github.com/Lightning-AI/metrics/pull/1303))
-
-
-- Fixed bug in `Metrictracker.best_metric` when `return_step=False` ([#1306](https://github.com/Lightning-AI/metrics/pull/1306))
 
 
 ## [0.10.1] - 2022-10-21
