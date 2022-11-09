@@ -83,10 +83,10 @@ jobs:
     - name: Install pkg
       run: |
         pip --version
-        pip install -e . -r requirements/test.txt --upgrade --find-links $PYTORCH_URL
+        pip install -e . "pytest" -U --find-links $PYTORCH_URL
         pip list
 
-    # todo: move this to install checks
+    # todo: copy this to install checks
     - name: DocTests
       working-directory: ./src
       # NOTE: run coverage on tests does not propagate failure status for Win, https://github.com/nedbat/coveragepy/issues/1003
@@ -104,10 +104,10 @@ jobs:
         pip list
 
     - name: Sanity check
-      run: python -c "from torch import __version__ as ver; assert ver.startswith('${{ matrix.pytorch-version }}'), ver"
-
-    - run: echo "::set-output name=TORCH::$(python -c 'import torch ; print(torch.__version__)' 2>&1)"
       id: info
+      run: |
+        python -c "from torch import __version__ as ver; assert '.'.join(ver.split('.')[:2]) == '${{ matrix.pytorch-version }}', ver"
+        python -c 'import torch ; print("TORCH=" + str(torch.__version__))' >> $GITHUB_OUTPUT
 
     - uses: ./.github/actions/unittesting
       if: ${{ needs.check-diff.outputs.test-dirs != '' }}
