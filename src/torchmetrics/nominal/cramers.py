@@ -59,6 +59,7 @@ class CramersV(Metric):
         tensor(0.5284)
     """
 
+    full_state_update = False
     is_differentiable = False
     higher_is_better = False
     confmat: Tensor
