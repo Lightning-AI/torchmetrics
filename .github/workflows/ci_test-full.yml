@@ -42,8 +42,8 @@ jobs:
           - {os: 'ubuntu-20.04', python-version: '3.8', pytorch-version: '1.8.1', requires: 'oldest'}
           - {os: 'macOS-11', python-version: '3.7', pytorch-version: '1.8.1', requires: 'oldest'}
           - {os: 'macOS-11', python-version: '3.8', pytorch-version: '1.8.1', requires: 'oldest'}
-          - {os: 'windows-2020', python-version: '3.7', pytorch-version: '1.8.1', requires: 'oldest'}
-          - {os: 'windows-2020', python-version: '3.8', pytorch-version: '1.8.1', requires: 'oldest'}
+          - {os: 'windows-2019', python-version: '3.7', pytorch-version: '1.8.1', requires: 'oldest'}
+          - {os: 'windows-2019', python-version: '3.8', pytorch-version: '1.8.1', requires: 'oldest'}
     env:
       PYTEST_ARTEFACT: test-results-${{ matrix.os }}-py${{ matrix.python-version }}-${{ matrix.requires }}.xml
       PYTORCH_URL: https://download.pytorch.org/whl/cpu/torch_stable.html
