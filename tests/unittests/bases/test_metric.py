@@ -464,3 +464,10 @@ def test_custom_availability_check_and_sync_fn():
     acc.compute()
     dummy_availability_check.assert_called_once()
     assert dummy_dist_sync_fn.call_count == 4  # tp, fp, tn, fn
+
+
+def test_no_iteration_allowed():
+    metric = DummyMetric()
+    with pytest.raises(NotImplementedError, match="Metrics does not support iteration."):
+        for m in metric:
+            continue
