@@ -35,9 +35,9 @@ jobs:
           - {os: 'macOS-12', python-version: '3.10', pytorch-version: '1.13', requires: 'latest'}
           - {os: 'windows-2022', python-version: '3.9', pytorch-version: '1.13', requires: 'latest'}
           # the oldest configurations
-          - {os: 'ubuntu-22.04', python-version: '3.7', pytorch-version: '1.8', requires: 'oldest'}
-          - {os: 'macOS-12', python-version: '3.7', pytorch-version: '1.8', requires: 'oldest'}
-          - {os: 'windows-2022', python-version: '3.7', pytorch-version: '1.8', requires: 'oldest'}
+          - {os: 'ubuntu-22.04', python-version: '3.7', pytorch-version: '1.8.1', requires: 'oldest'}
+          - {os: 'macOS-12', python-version: '3.7', pytorch-version: '1.8.1', requires: 'oldest'}
+          - {os: 'windows-2022', python-version: '3.7', pytorch-version: '1.8.1', requires: 'oldest'}
     env:
       PYTEST_ARTEFACT: test-results-${{ matrix.os }}-py${{ matrix.python-version }}-${{ matrix.requires }}.xml
       PYTORCH_URL: https://download.pytorch.org/whl/cpu/torch_stable.html
@@ -57,12 +57,12 @@ jobs:
     - name: Setup macOS
       if: ${{ runner.os == 'macOS' }}
       run: |
-        python -c "print('UNITTEST_TIMEOUT=--timeout=120')" >> $GITHUB_ENV
+        echo 'UNITTEST_TIMEOUT=--timeout=120' >> $GITHUB_ENV
         brew install gcc libomp ffmpeg # https://github.com/pytorch/pytorch/issues/20030
     - name: Setup Linux
       if: ${{ runner.os == 'Linux' }}
       run: |
-        python -c "print('UNITTEST_TIMEOUT=--timeout=120')" >> $GITHUB_ENV
+        echo 'UNITTEST_TIMEOUT=--timeout=120' >> $GITHUB_ENV
         sudo apt update --fix-missing
         sudo apt install -y ffmpeg
     - name: Setup Windows

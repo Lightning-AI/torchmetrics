@@ -51,7 +51,7 @@ def find_latest(ver: str) -> Dict[str, str]:
     raise ValueError(f"Missing {ver} in {VERSIONS}")
 
 
-def main(requires: str, torch_version: Optional[str] = None) -> str:
+def adjust(requires: str, torch_version: Optional[str] = None) -> str:
     if not torch_version:
         import torch
 
@@ -64,7 +64,7 @@ def main(requires: str, torch_version: Optional[str] = None) -> str:
     latest = find_latest(torch_version)
     for lib, version in latest.items():
         replace = f"{lib}=={version}" if version else ""
-        requires = re.sub(rf"\b{lib}(?!\w).*", replace, requires)
+        requires = re.sub(rf"\b{lib}(?![-_\w]).*", replace, requires)
 
     return requires
 
@@ -80,7 +80,7 @@ if __name__ == "__main__":
 
     with open(requirements_path) as fp:
         requirements = fp.read()
-    requirements = main(requirements, torch_version)
+    requirements = adjust(requirements, torch_version)
     logging.info(requirements)  # on purpose - to debug
     with open(requirements_path, "w") as fp:
         fp.write(requirements)
