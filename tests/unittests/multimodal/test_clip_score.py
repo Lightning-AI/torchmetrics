@@ -22,32 +22,43 @@ from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
-
-def _compare_fn(image):
-    processor = _CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
-    model = _CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
-    inputs = processor(text=["a photo of a cat", "a photo of a dog"], images=image, return_tensors="pt", padding=True)
-    outputs = model(**inputs)
-    logits_per_image = outputs.logits_per_image
-    return logits_per_image.mean()
+from collections import namedtuple
 
 
-preds = [
+Input = namedtuple("Input", ["images", "captions"])
+
+
+captions = [
     "28-year-old chef found dead in San Francisco mall",
     "A 28-year-old chef who recently moved to San Francisco was "
     "found dead in the staircase of a local shopping center.",
     "The victim's brother said he cannot imagine anyone who would want to harm him,\"Finally, it went uphill again at "
     'him."',
 ]
-target = []
+
+_random_input = Input(
+    images=torch.randint(255, (2, 2, 3, 224, 224)),
+    captions=[captions[0:2], captions[2:]]
+)
 
 
-@pytest.mark.parametrize("input", [preds, target])
+def _compare_fn(preds, target):
+    processor = _CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+    model = _CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
+    inputs = processor(text=target, images=[p.cpu() for p in preds], return_tensors="pt", padding=True)
+    outputs = model(**inputs)
+    logits_per_image = outputs.logits_per_image
+    print(logits_per_image)
+    return logits_per_image.diag().mean().detach()
+
+
+@pytest.mark.parametrize("input", [_random_input,])
 class TestCLIPScore(MetricTester):
     atol = 1e-5
 
     @pytest.mark.parametrize("ddp", [True, False])
     def test_clip_score(self, input, ddp):
+        # images are preds and targets are captions
         preds, target = input
         self.run_class_metric_test(
             ddp=ddp,
@@ -55,6 +66,7 @@ class TestCLIPScore(MetricTester):
             target=target,
             metric_class=CLIPScore,
             sk_metric=_compare_fn,
+            check_scriptable=False,
         )
 
 
@@ -69,4 +81,4 @@ def test_error_on_wrong_image_format():
     """Test that an error is raised if not all images are [c, h, w] format."""
     metric = CLIPScore()
     with pytest.raises(ValueError):
-        metric(torch.randint(255, (1, 224, 224)), "28-year-old chef found dead in San Francisco mall")
+        metric(torch.randint(255, (224, 224)), "28-year-old chef found dead in San Francisco mall")

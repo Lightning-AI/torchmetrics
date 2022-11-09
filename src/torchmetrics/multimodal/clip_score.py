@@ -22,6 +22,7 @@ if _TRANSFORMERS_AVAILABLE:
     from transformers import CLIPFeatureExtractor as _CLIPFeatureExtractor
     from transformers import CLIPModel as _CLIPModel
     from transformers import CLIPTokenizer as _CLIPTokenizer
+    from transformers import CLIPProcessor as _CLIPProcessor
 else:
     _CLIPFeatureExtractor = None
     _CLIPModel = None
@@ -36,10 +37,13 @@ class CLIPScore(Metric):
     judgement. The metric is defined as:
 
     .. math::
-        \text{CLIPScore(I, C)} = \\max(cos(E_I, E_C), 0)
+        \text{CLIPScore(I, C)} = \max(100 * cos(E_I, E_C), 0)
 
     which corresponds to the cosine similarity between visual CLIP embedding :math:`E_i` for an image :math:`i` and
-    textual CLIP embedding :math:`E_C` for an caption :math:`C`.
+    textual CLIP embedding :math:`E_C` for an caption :math:`C`. The score is bound between 0 and 100 and the closer
+    to 100 the better.
+
+    .. note:: Metric is not scriptable
 
     Args:
         version: string indicating the version of the CLIP model to use. See `Huggingface OpenAI`_ for more info on
@@ -66,9 +70,10 @@ class CLIPScore(Metric):
     def __init__(self, version: str = "openai/clip-vit-large-patch14", **kwargs: Any) -> None:
         super().__init__(**kwargs)
         if _TRANSFORMERS_AVAILABLE:
-            self.tokenizer = _CLIPTokenizer.from_pretrained(version)
             self.model = _CLIPModel.from_pretrained(version)
-            self.features = _CLIPFeatureExtractor.from_pretrained(version)
+            self.processor = _CLIPProcessor.from_pretrained(version)
+            #self.tokenizer = _CLIPTokenizer.from_pretrained(version)
+            #self.features = _CLIPFeatureExtractor.from_pretrained(version)
         else:
             raise ModuleNotFoundError(
                 "`CLIPScore` metric requires `transformers` package be installed."
@@ -95,6 +100,7 @@ class CLIPScore(Metric):
                 images = [images]
             else:  # unwrap into list
                 images = [i for i in images]
+
         if not all(i.ndim == 3 for i in images):
             raise ValueError("Expected all images to be 3d but found image that has either more or less")
 
@@ -106,20 +112,22 @@ class CLIPScore(Metric):
                 f"Expected the number of images and text examples to be the same but got {len(images)} and {len(text)}"
             )
 
-        img_features = [
-            self.model.get_image_features(self.features(i, return_tensors="pt")["pixel_values"]) for i in images
-        ]
-        img_features = torch.cat(img_features, 0)
-        img_features = img_features / torch.linalg.norm(img_features, axis=-1, keepdims=True)
+        processed_input = self.processor(text=text, images=[i.cpu() for i in images], return_tensors="pt", padding=True)
+        output = self.model(**processed_input)
 
-        txt_features = [
-            self.model.get_text_features(**self.tokenizer(t, padding=True, return_tensors="pt")) for t in text
-        ]
-        txt_features = torch.cat(txt_features, 0)
-        txt_features = txt_features / torch.linalg.norm(txt_features, axis=-1, keepdims=True)
+        img_features = self.model.get_image_features(processed_input['pixel_values'].to(self.device))
+        img_features = img_features / img_features.norm(p=2, dim=-1, keepdim=True)
+
+        txt_features = self.model.get_text_features(
+            processed_input['input_ids'].to(self.device), processed_input['attention_mask'].to(self.device)
+        )
+        txt_features = txt_features / txt_features.norm(p=2, dim=-1, keepdim=True)
 
         # cosine similarity between feature vectors
+        import pdb
+        pdb.set_trace()
         score = (img_features * txt_features).sum(axis=-1)
+        print(score)
         self.score += 100 * score.sum(0)
         self.n_samples += img_features.shape[0]
 
