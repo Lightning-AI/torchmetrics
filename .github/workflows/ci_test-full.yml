@@ -85,7 +85,7 @@ jobs:
     - name: Install pkg
       run: |
         pip --version
-        pip install -e . "pytest" -U --find-links $PYTORCH_URL
+        pip install -e . "pytest" "pytest-doctestplus" -U --find-links $PYTORCH_URL
         pip list
 
     # todo: copy this to install checks
