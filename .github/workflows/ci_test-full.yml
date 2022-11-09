@@ -72,7 +72,9 @@ jobs:
 
     - name: Set PyTorch version
       if: inputs.requires != 'oldest'
-      run: python ./requirements/adjust-versions.py requirements.txt ${{ matrix.pytorch-version }}
+      run: |
+        pip install packaging
+        python ./requirements/adjust-versions.py requirements.txt ${{ matrix.pytorch-version }}
 
     - uses: ./.github/actions/caching
       with:
