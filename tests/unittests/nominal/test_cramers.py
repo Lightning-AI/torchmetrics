@@ -101,6 +101,8 @@ def _dython_cramers_v_matrix(matrix, bias_correction, nan_strategy, nan_replace_
 @pytest.mark.parametrize("bias_correction", [False, True])
 @pytest.mark.parametrize("nan_strategy, nan_replace_value", [("replace", 0.0), ("drop", None)])
 class TestCramersV(MetricTester):
+    atol = 1e-5
+
     @pytest.mark.parametrize("ddp", [False, True])
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
     def test_cramers_v(self, ddp, dist_sync_on_step, preds, target, bias_correction, nan_strategy, nan_replace_value):
