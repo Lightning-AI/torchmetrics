@@ -29,15 +29,21 @@ jobs:
       matrix:
         os: ['ubuntu-20.04']
         python-version: ['3.8']
-        pytorch-version: ['1.9.0', '1.10.0', '1.11.0', '1.12.0']
+        pytorch-version: ['1.9.1', '1.10.2', '1.11.0', '1.12.1']
         include:
+          - {os: 'ubuntu-22.04', python-version: '3.8', pytorch-version: '1.13.0', requires: 'latest'}
           - {os: 'ubuntu-22.04', python-version: '3.10', pytorch-version: '1.13.0', requires: 'latest'}
+          - {os: 'macOS-12', python-version: '3.8', pytorch-version: '1.13.0', requires: 'latest'}
           - {os: 'macOS-12', python-version: '3.10', pytorch-version: '1.13.0', requires: 'latest'}
+          - {os: 'windows-2022', python-version: '3.8', pytorch-version: '1.13.0', requires: 'latest'}
           - {os: 'windows-2022', python-version: '3.9', pytorch-version: '1.13.0', requires: 'latest'}
           # the oldest configurations
           - {os: 'ubuntu-22.04', python-version: '3.7', pytorch-version: '1.8.1', requires: 'oldest'}
+          - {os: 'ubuntu-22.04', python-version: '3.8', pytorch-version: '1.8.1', requires: 'oldest'}
           - {os: 'macOS-12', python-version: '3.7', pytorch-version: '1.8.1', requires: 'oldest'}
+          - {os: 'macOS-12', python-version: '3.8', pytorch-version: '1.8.1', requires: 'oldest'}
           - {os: 'windows-2022', python-version: '3.7', pytorch-version: '1.8.1', requires: 'oldest'}
+          - {os: 'windows-2022', python-version: '3.8', pytorch-version: '1.8.1', requires: 'oldest'}
     env:
       PYTEST_ARTEFACT: test-results-${{ matrix.os }}-py${{ matrix.python-version }}-${{ matrix.requires }}.xml
       PYTORCH_URL: https://download.pytorch.org/whl/cpu/torch_stable.html
