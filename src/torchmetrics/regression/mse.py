@@ -11,13 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any
+from typing import Any, Optional, Sequence, Union
 
 import torch
 from torch import Tensor, tensor
 
 from torchmetrics.functional.regression.mse import _mean_squared_error_compute, _mean_squared_error_update
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.plot import _PLOT_OUT_TYPE, plot_single_or_multi_val
 
 
 class MeanSquaredError(Metric):
@@ -42,6 +43,7 @@ class MeanSquaredError(Metric):
     is_differentiable = True
     higher_is_better = False
     full_state_update = False
+    plot_options = {"lower_bound": 0.0}
     sum_squared_error: Tensor
     total: Tensor
 
@@ -71,3 +73,47 @@ class MeanSquaredError(Metric):
     def compute(self) -> Tensor:
         """Computes mean squared error over state."""
         return _mean_squared_error_compute(self.sum_squared_error, self.total, squared=self.squared)
+
+    def plot(self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either single result from calling `metric.forward` or `metric.compute` or an list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+
+        Returns:
+            fig: Figure object
+            ax: Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+
+            A plotting example:
+            >>> import torch
+            >>> from torchmetrics.regression import MeanSquaredError
+            >>> metric = MeanSquaredError()
+            >>> target = torch.tensor([2.5, 5.0, 4.0, 8.0])
+            >>> preds = torch.tensor([3.0, 5.0, 2.5, 7.0])
+            >>> metric.update(preds, target)
+            >>> fig, ax = metric.plot()
+            >>> fig.show()
+
+        .. plot::
+
+            A plotting example:
+            >>> import torch
+            >>> from torchmetrics.regression import MeanSquaredError
+            >>> metric = MeanSquaredError()
+            >>> val1 = metric(torch.randn(5,), torch.randn(5,))
+            >>> val2 = metric(torch.randn(5,), torch.randn(5,))
+            >>> fig, ax = metric.plot([val1, val2])
+            >>> fig.show()
+        """
+        val = val or self.compute()
+        fig, ax = plot_single_or_multi_val(
+            val, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
+        )
+        return fig, ax

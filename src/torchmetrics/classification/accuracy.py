@@ -108,10 +108,44 @@ class BinaryAccuracy(BinaryStatScores):
     is_differentiable = False
     higher_is_better = True
     full_state_update: bool = False
+    plot_options = {"lower_bound": 0.0, "upper_bound": 1.0}
 
     def compute(self) -> Tensor:
         tp, fp, tn, fn = self._final_state()
         return _accuracy_reduce(tp, fp, tn, fn, average="binary", multidim_average=self.multidim_average)
+
+    def plot(self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either single result from calling `metric.forward` or `metric.compute` or an list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+
+        Returns:
+            fig: Figure object
+            ax: Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+
+            A plotting example:
+            >>> import torch
+            >>> from torchmetrics.classification import BinaryAccuracy
+            >>> metric = BinaryAccuracy()
+            >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
+            >>> preds = torch.tensor([0, 0, 1, 1, 0, 1])
+            >>> metric.update(preds, target)
+            >>> fig, ax = metric.plot()
+            >>> fig.show()
+        """
+        val = val or self.compute()
+        fig, ax = plot_single_or_multi_val(
+            val, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
+        )
+        return fig, ax
 
 
 class MulticlassAccuracy(MulticlassStatScores):
@@ -219,13 +253,11 @@ class MulticlassAccuracy(MulticlassStatScores):
         tp, fp, tn, fn = self._final_state()
         return _accuracy_reduce(tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average)
 
-    def plot(self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, show: bool = False) -> _PLOT_OUT_TYPE:
+    def plot(self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None) -> _PLOT_OUT_TYPE:
         val = val or self.compute()
         fig, ax = plot_single_or_multi_val(
             val, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
         )
-        if show:
-            fig.show()
         return fig, ax
 
 
@@ -326,12 +358,20 @@ class MultilabelAccuracy(MultilabelStatScores):
     is_differentiable = False
     higher_is_better = True
     full_state_update: bool = False
+    plot_options = {"lower_bound": 0.0, "upper_bound": 1.0, "legend_name": "Label"}
 
     def compute(self) -> Tensor:
         tp, fp, tn, fn = self._final_state()
         return _accuracy_reduce(
             tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average, multilabel=True
         )
+
+    def plot(self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None) -> _PLOT_OUT_TYPE:
+        val = val or self.compute()
+        fig, ax = plot_single_or_multi_val(
+            val, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
+        )
+        return fig, ax
 
 
 class Accuracy(StatScores):
