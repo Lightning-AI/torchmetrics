@@ -13,7 +13,7 @@
 # limitations under the License.
 from itertools import product
 from math import ceil, floor, sqrt
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 import torch
@@ -25,8 +25,102 @@ from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 if _MATPLOTLIB_AVAILABLE:
     import matplotlib
     import matplotlib.pyplot as plt
+
+    _PLOT_OUT_TYPE = Tuple[plt.Figure, matplotlib.axes.Axes]
 else:
     plt = None
+    _PLOT_OUT_TYPE = None
+
+
+def _error_on_missing_matplotlib() -> None:
+    """Raise error if matplotlib is not installed."""
+    if not _MATPLOTLIB_AVAILABLE:
+        raise ValueError(
+            "Plot function expects `matplotlib` to be installed. Please install with `pip install matplotlib`"
+        )
+
+
+def plot_single_or_multi_val(
+    val: Optional[Union[Tensor, Sequence[Tensor]]],
+    higher_is_better: Optional[bool] = None,
+    lower_bound: Optional[float] = None,
+    upper_bound: Optional[float] = None,
+    legend_name: Optional[str] = None,
+    name: Optional[str] = None,
+    fig_ax: Optional[_PLOT_OUT_TYPE] = None,
+) -> _PLOT_OUT_TYPE:
+    _error_on_missing_matplotlib()
+    fig, ax = plt.subplots() if fig_ax is None else fig_ax
+    ax.get_xaxis().set_visible(False)
+
+    if isinstance(val, Tensor) and val.numel() == 1:
+        ax.plot([val.detach().cpu()], marker="o", markersize=10)
+    elif isinstance(val, Tensor) and val.numel() > 1:
+        for i, v in enumerate(val):
+            ax.plot(
+                i,
+                v.detach().cpu(),
+                marker="o",
+                markersize=10,
+                linestyle="None",
+                label=f"{legend_name} {i}" if legend_name else f"{i}",
+            )
+    else:
+        val = torch.stack(val, 0)
+        multi_series = val.ndim != 1
+        val = val.T if multi_series else val.unsqueeze(0)
+        for i, v in enumerate(val):
+            ax.plot(
+                v.detach().cpu(),
+                marker="o",
+                markersize=10,
+                linestyle="-",
+                label=(f"{legend_name} {i}" if legend_name else f"{i}") if multi_series else None,
+            )
+        ax.get_xaxis().set_visible(True)
+        ax.set_xlabel("Step")
+        ax.set_xticks(torch.arange(val.shape[1]))
+
+    handles, labels = ax.get_legend_handles_labels()
+    if handles and labels:
+        ax.legend(handles, labels, loc="upper center", bbox_to_anchor=(0.5, 1.15), ncol=3, fancybox=True, shadow=True)
+
+    if lower_bound is not None and upper_bound is not None:
+        factor = 0.1 * (upper_bound - lower_bound)
+    else:
+        ylim = ax.get_ylim()
+        factor = 0.1 * (ylim[1] - ylim[0])
+
+    ax.set_ylim(
+        bottom=lower_bound - factor if lower_bound is not None else None,
+        top=upper_bound + factor if upper_bound is not None else None,
+    )
+
+    ax.grid(True)
+    ax.set_ylabel(name if name is not None else None)
+
+    xlim = ax.get_xlim()
+    factor = 0.1 * (xlim[1] - xlim[0])
+
+    ax.hlines(
+        [lower_bound if lower_bound is not None else None, upper_bound if upper_bound is not None else None],
+        xlim[0],
+        xlim[1],
+        linestyles="dashed",
+        colors="k",
+    )
+    if higher_is_better is not None:
+        if lower_bound is not None and not higher_is_better:
+            ax.set_xlim(xlim[0] - factor, xlim[1])
+            ax.text(
+                xlim[0], lower_bound, s="Optimal \n value", horizontalalignment="center", verticalalignment="center"
+            )
+        if upper_bound is not None and higher_is_better:
+            ax.set_xlim(xlim[0] - factor, xlim[1])
+            ax.text(
+                xlim[0], upper_bound, s="Optimal \n value", horizontalalignment="center", verticalalignment="center"
+            )
+    return fig, ax
 
 
 def _get_col_row_split(n: int) -> Tuple[int, int]:
@@ -52,14 +146,6 @@ def trim_axs(axs: Union[matplotlib.axes.Axes, np.ndarray], N: int) -> np.ndarray
         for ax in axs[N:]:
             ax.remove()
         return axs[:N]
-
-
-def _error_on_missing_matplotlib() -> None:
-    """Raise error if matplotlib is not installed."""
-    if not _MATPLOTLIB_AVAILABLE:
-        raise ValueError(
-            "Plot function expects `matplotlib` to be installed. Please install with `pip install matplotlib`"
-        )
 
 
 def plot_confusion_matrix(

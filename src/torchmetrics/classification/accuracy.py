@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional
+from typing import Any, Optional, Sequence, Union
 
 import torch
 from torch import Tensor, tensor
@@ -28,6 +28,7 @@ from torchmetrics.functional.classification.accuracy import (
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.enums import AverageMethod, DataType
+from torchmetrics.utilities.plot import _PLOT_OUT_TYPE, plot_single_or_multi_val
 from torchmetrics.utilities.prints import rank_zero_warn
 
 from torchmetrics.classification.stat_scores import (  # isort:skip
@@ -212,10 +213,20 @@ class MulticlassAccuracy(MulticlassStatScores):
     is_differentiable = False
     higher_is_better = True
     full_state_update: bool = False
+    plot_options = {"lower_bound": 0.0, "upper_bound": 1.0, "legend_name": "Class"}
 
     def compute(self) -> Tensor:
         tp, fp, tn, fn = self._final_state()
         return _accuracy_reduce(tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average)
+
+    def plot(self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, show: bool = False) -> _PLOT_OUT_TYPE:
+        val = val or self.compute()
+        fig, ax = plot_single_or_multi_val(
+            val, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
+        )
+        if show:
+            fig.show()
+        return fig, ax
 
 
 class MultilabelAccuracy(MultilabelStatScores):
