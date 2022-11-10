@@ -19,14 +19,11 @@ from torch import Tensor
 from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 
 if _TRANSFORMERS_AVAILABLE:
-    from transformers import CLIPFeatureExtractor as _CLIPFeatureExtractor
     from transformers import CLIPModel as _CLIPModel
-    from transformers import CLIPTokenizer as _CLIPTokenizer
     from transformers import CLIPProcessor as _CLIPProcessor
 else:
-    _CLIPFeatureExtractor = None
     _CLIPModel = None
-    _CLIPTokenizer = None
+    _CLIPProcessor = None
 
 from torchmetrics import Metric
 
@@ -37,7 +34,7 @@ class CLIPScore(Metric):
     judgement. The metric is defined as:
 
     .. math::
-        \text{CLIPScore(I, C)} = \max(100 * cos(E_I, E_C), 0)
+        \text{CLIPScore(I, C)} = max(100 * cos(E_I, E_C), 0)
 
     which corresponds to the cosine similarity between visual CLIP embedding :math:`E_i` for an image :math:`i` and
     textual CLIP embedding :math:`E_C` for an caption :math:`C`. The score is bound between 0 and 100 and the closer
@@ -72,8 +69,6 @@ class CLIPScore(Metric):
         if _TRANSFORMERS_AVAILABLE:
             self.model = _CLIPModel.from_pretrained(version)
             self.processor = _CLIPProcessor.from_pretrained(version)
-            #self.tokenizer = _CLIPTokenizer.from_pretrained(version)
-            #self.features = _CLIPFeatureExtractor.from_pretrained(version)
         else:
             raise ModuleNotFoundError(
                 "`CLIPScore` metric requires `transformers` package be installed."
@@ -113,23 +108,20 @@ class CLIPScore(Metric):
             )
 
         processed_input = self.processor(text=text, images=[i.cpu() for i in images], return_tensors="pt", padding=True)
-        output = self.model(**processed_input)
 
-        img_features = self.model.get_image_features(processed_input['pixel_values'].to(self.device))
+        img_features = self.model.get_image_features(processed_input["pixel_values"].to(self.device))
         img_features = img_features / img_features.norm(p=2, dim=-1, keepdim=True)
 
         txt_features = self.model.get_text_features(
-            processed_input['input_ids'].to(self.device), processed_input['attention_mask'].to(self.device)
+            processed_input["input_ids"].to(self.device), processed_input["attention_mask"].to(self.device)
         )
         txt_features = txt_features / txt_features.norm(p=2, dim=-1, keepdim=True)
 
         # cosine similarity between feature vectors
-        import pdb
-        pdb.set_trace()
         score = (img_features * txt_features).sum(axis=-1)
-        print(score)
         self.score += 100 * score.sum(0)
         self.n_samples += img_features.shape[0]
 
     def compute(self) -> Tensor:
+        """Computes accumulated clip score."""
         return torch.max(self.score / self.n_samples, torch.zeros_like(self.score))

@@ -237,9 +237,11 @@ def _class_test(
 
     if isinstance(preds, Tensor):
         total_preds = torch.cat([preds[i] for i in range(num_batches)]).cpu()
-        total_target = torch.cat([target[i] for i in range(num_batches)]).cpu()
     else:
         total_preds = [item for sublist in preds for item in sublist]
+    if isinstance(target, Tensor):
+        total_target = torch.cat([target[i] for i in range(num_batches)]).cpu()
+    else:
         total_target = [item for sublist in target for item in sublist]
 
     total_kwargs_update = {
