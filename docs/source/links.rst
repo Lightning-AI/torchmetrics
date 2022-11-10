@@ -95,5 +95,6 @@
 .. _Fisher-Rao distance: http://www.scholarpedia.org/article/Fisher-Rao_metric
 .. _Kendall Rank Correlation Coefficient: https://en.wikipedia.org/wiki/Kendall_rank_correlation_coefficient
 .. _The Treatment of Ties in Ranking Problems: https://www.jstor.org/stable/2332303
+.. _LogCosh Error: https://arxiv.org/pdf/2101.10427.pdf
 .. _CLIP score: https://arxiv.org/pdf/2104.08718.pdf
 .. _Huggingface OpenAI: https://huggingface.co/openai
