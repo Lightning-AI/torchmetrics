@@ -351,20 +351,22 @@ class MetricTester:
     poolSize: int
     pool: Pool
 
-    def setup_class(self):
+    def setup_ddp(self):
         """Setup the metric class.
 
         This will spawn the pool of workers that are used for metric testing and setup_ddp
         """
 
         self.poolSize = NUM_PROCESSES
-        self.pool = Pool(processes=self.poolSize)
-        self.pool.starmap(setup_ddp, [(rank, self.poolSize) for rank in range(self.poolSize)])
+        pool = Pool(processes=self.poolSize)
+        pool.starmap(setup_ddp, [(rank, self.poolSize) for rank in range(self.poolSize)])
+        return pool
 
-    def teardown_class(self):
+    @staticmethod
+    def teardown_ddp(pool):
         """Close pool of workers."""
-        self.pool.close()
-        self.pool.join()
+        pool.close()
+        pool.join()
 
     def run_functional_metric_test(
         self,
@@ -443,7 +445,9 @@ class MetricTester:
             if sys.platform == "win32":
                 pytest.skip("DDP not supported on windows")
 
-            self.pool.starmap(
+            pool = self.setup_ddp()
+
+            pool.starmap(
                 partial(
                     _class_test,
                     preds=preds,
@@ -461,6 +465,8 @@ class MetricTester:
                 ),
                 [(rank, self.poolSize) for rank in range(self.poolSize)],
             )
+
+            self.teardown_ddp(pool)
         else:
             device = "cuda" if (torch.cuda.is_available() and torch.cuda.device_count() > 0) else "cpu"
 
