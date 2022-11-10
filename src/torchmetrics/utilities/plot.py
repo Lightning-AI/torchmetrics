@@ -35,7 +35,7 @@ else:
 def _error_on_missing_matplotlib() -> None:
     """Raise error if matplotlib is not installed."""
     if not _MATPLOTLIB_AVAILABLE:
-        raise ValueError(
+        raise ModuleNotFoundError(
             "Plot function expects `matplotlib` to be installed. Please install with `pip install matplotlib`"
         )
 
@@ -85,15 +85,15 @@ def plot_single_or_multi_val(
     if handles and labels:
         ax.legend(handles, labels, loc="upper center", bbox_to_anchor=(0.5, 1.15), ncol=3, fancybox=True, shadow=True)
 
+    ylim = ax.get_ylim()
     if lower_bound is not None and upper_bound is not None:
         factor = 0.1 * (upper_bound - lower_bound)
     else:
-        ylim = ax.get_ylim()
         factor = 0.1 * (ylim[1] - ylim[0])
 
     ax.set_ylim(
-        bottom=lower_bound - factor if lower_bound is not None else None,
-        top=upper_bound + factor if upper_bound is not None else None,
+        bottom=lower_bound - factor if lower_bound is not None else ylim[0] - factor,
+        top=upper_bound + factor if upper_bound is not None else ylim[1] + factor,
     )
 
     ax.grid(True)
