@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Union
+from typing import Any, List, Literal, Union
 
 import torch
 from torch import Tensor
@@ -21,9 +21,6 @@ from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 if _TRANSFORMERS_AVAILABLE:
     from transformers import CLIPModel as _CLIPModel
     from transformers import CLIPProcessor as _CLIPProcessor
-else:
-    _CLIPModel = None
-    _CLIPProcessor = None
 
 from torchmetrics import Metric
 
@@ -43,8 +40,10 @@ class CLIPScore(Metric):
     .. note:: Metric is not scriptable
 
     Args:
-        version: string indicating the version of the CLIP model to use. See `Huggingface OpenAI`_ for more info on
-            availble CLIP models
+        version: string indicating the version of the CLIP model to use. Available models are
+            `"openai/clip-vit-base-patch16"`, `"openai/clip-vit-base-patch32"`, `"openai/clip-vit-large-patch14-336"`
+            and `"openai/clip-vit-large-patch14"`,
+
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -64,7 +63,16 @@ class CLIPScore(Metric):
     higher_is_better: bool = True
     full_state_update: bool = False
 
-    def __init__(self, version: str = "openai/clip-vit-large-patch14", **kwargs: Any) -> None:
+    def __init__(
+        self,
+        version: Literal[
+            "openai/clip-vit-base-patch16",
+            "openai/clip-vit-base-patch32",
+            "openai/clip-vit-large-patch14-336",
+            "openai/clip-vit-large-patch14",
+        ] = "openai/clip-vit-large-patch14",
+        **kwargs: Any,
+    ) -> None:
         super().__init__(**kwargs)
         if _TRANSFORMERS_AVAILABLE:
             self.model = _CLIPModel.from_pretrained(version)
