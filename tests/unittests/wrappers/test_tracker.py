@@ -15,14 +15,12 @@
 import pytest
 import torch
 
-from torchmetrics import (
-    Accuracy,
-    ConfusionMatrix,
-    MeanAbsoluteError,
-    MeanSquaredError,
-    MetricCollection,
-    Precision,
-    Recall,
+from torchmetrics import MeanAbsoluteError, MeanSquaredError, MetricCollection
+from torchmetrics.classification import (
+    MulticlassAccuracy,
+    MulticlassConfusionMatrix,
+    MulticlassPrecision,
+    MulticlassRecall,
 )
 from torchmetrics.wrappers import MetricTracker
 from unittests.helpers import seed_all
@@ -53,7 +51,7 @@ def test_raises_error_on_wrong_input():
     ],
 )
 def test_raises_error_if_increment_not_called(method, method_input):
-    tracker = MetricTracker(Accuracy(num_classes=10))
+    tracker = MetricTracker(MulticlassAccuracy(num_classes=10))
     with pytest.raises(ValueError, match=f"`{method}` cannot be called before .*"):
         if method_input is not None:
             getattr(tracker, method)(*method_input)
@@ -64,18 +62,30 @@ def test_raises_error_if_increment_not_called(method, method_input):
 @pytest.mark.parametrize(
     "base_metric, metric_input, maximize",
     [
-        (Accuracy(num_classes=10), (torch.randint(10, (50,)), torch.randint(10, (50,))), True),
-        (Precision(num_classes=10), (torch.randint(10, (50,)), torch.randint(10, (50,))), True),
-        (Recall(num_classes=10), (torch.randint(10, (50,)), torch.randint(10, (50,))), True),
+        (MulticlassAccuracy(num_classes=10), (torch.randint(10, (50,)), torch.randint(10, (50,))), True),
+        (MulticlassPrecision(num_classes=10), (torch.randint(10, (50,)), torch.randint(10, (50,))), True),
+        (MulticlassRecall(num_classes=10), (torch.randint(10, (50,)), torch.randint(10, (50,))), True),
         (MeanSquaredError(), (torch.randn(50), torch.randn(50)), False),
         (MeanAbsoluteError(), (torch.randn(50), torch.randn(50)), False),
         (
-            MetricCollection([Accuracy(num_classes=10), Precision(num_classes=10), Recall(num_classes=10)]),
+            MetricCollection(
+                [
+                    MulticlassAccuracy(num_classes=10),
+                    MulticlassPrecision(num_classes=10),
+                    MulticlassRecall(num_classes=10),
+                ]
+            ),
             (torch.randint(10, (50,)), torch.randint(10, (50,))),
             True,
         ),
         (
-            MetricCollection([Accuracy(num_classes=10), Precision(num_classes=10), Recall(num_classes=10)]),
+            MetricCollection(
+                [
+                    MulticlassAccuracy(num_classes=10),
+                    MulticlassPrecision(num_classes=10),
+                    MulticlassRecall(num_classes=10),
+                ]
+            ),
             (torch.randint(10, (50,)), torch.randint(10, (50,))),
             [True, True, True],
         ),
@@ -133,8 +143,8 @@ def test_tracker(base_metric, metric_input, maximize):
 @pytest.mark.parametrize(
     "base_metric",
     [
-        ConfusionMatrix(3),
-        MetricCollection([ConfusionMatrix(3), Accuracy(3)]),
+        MulticlassConfusionMatrix(3),
+        MetricCollection([MulticlassConfusionMatrix(3), MulticlassAccuracy(3)]),
     ],
 )
 def test_best_metric_for_not_well_defined_metric_collection(base_metric):
