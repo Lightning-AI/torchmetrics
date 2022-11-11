@@ -27,16 +27,23 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, macOS-11, windows-2022]
-        python-version: ['3.7', '3.8', '3.10']
-        requires: ['oldest', 'latest']
-        exclude:
-          - {python-version: '3.7', requires: 'latest'}
-          - {python-version: '3.10', requires: 'oldest'}
-          - {python-version: '3.10', os: 'windows'}  # todo: https://discuss.pytorch.org/t/numpy-is-not-available-error/146192
+        os: ['ubuntu-20.04']
+        python-version: ['3.8']
+        pytorch-version: ['1.9.1', '1.10.2', '1.11.0', '1.12.1']
         include:
-          - {os: 'ubuntu-22.04', python-version: '3.10'}
-          - {os: 'macOS-12', python-version: '3.10'}
+          - {os: 'ubuntu-22.04', python-version: '3.8', pytorch-version: '1.13.0'}
+          - {os: 'ubuntu-22.04', python-version: '3.10', pytorch-version: '1.13.0'}
+          - {os: 'macOS-11', python-version: '3.8', pytorch-version: '1.13.0'}
+          - {os: 'macOS-11', python-version: '3.9', pytorch-version: '1.13.0'}
+          - {os: 'windows-2022', python-version: '3.8', pytorch-version: '1.13.0'}
+          - {os: 'windows-2022', python-version: '3.9', pytorch-version: '1.13.0'}
+          # the oldest configurations
+          - {os: 'ubuntu-20.04', python-version: '3.7', pytorch-version: '1.8.1', requires: 'oldest'}
+          - {os: 'ubuntu-20.04', python-version: '3.8', pytorch-version: '1.8.1', requires: 'oldest'}
+          - {os: 'macOS-11', python-version: '3.7', pytorch-version: '1.8.1', requires: 'oldest'}
+          - {os: 'macOS-11', python-version: '3.8', pytorch-version: '1.8.1', requires: 'oldest'}
+          - {os: 'windows-2019', python-version: '3.7', pytorch-version: '1.8.1', requires: 'oldest'}
+          - {os: 'windows-2019', python-version: '3.8', pytorch-version: '1.8.1', requires: 'oldest'}
     env:
       PYTEST_ARTEFACT: test-results-${{ matrix.os }}-py${{ matrix.python-version }}-${{ matrix.requires }}.xml
       PYTORCH_URL: https://download.pytorch.org/whl/cpu/torch_stable.html
@@ -56,18 +63,24 @@ jobs:
     - name: Setup macOS
       if: ${{ runner.os == 'macOS' }}
       run: |
-        python -c "print('UNITTEST_TIMEOUT=--timeout=120')" >> $GITHUB_ENV
+        echo 'UNITTEST_TIMEOUT=--timeout=120' >> $GITHUB_ENV
         brew install gcc libomp ffmpeg # https://github.com/pytorch/pytorch/issues/20030
     - name: Setup Linux
       if: ${{ runner.os == 'Linux' }}
       run: |
-        python -c "print('UNITTEST_TIMEOUT=--timeout=120')" >> $GITHUB_ENV
+        echo 'UNITTEST_TIMEOUT=--timeout=120' >> $GITHUB_ENV
         sudo apt update --fix-missing
         sudo apt install -y ffmpeg
     - name: Setup Windows
       if: ${{ runner.os == 'windows' }}
       run: |
         choco install ffmpeg
+
+    - name: Set PyTorch version
+      if: inputs.requires != 'oldest'
+      run: |
+        pip install packaging
+        python ./requirements/adjust-versions.py requirements.txt ${{ matrix.pytorch-version }}
 
     - uses: ./.github/actions/caching
       with:
@@ -78,9 +91,11 @@ jobs:
     - name: Install pkg
       run: |
         pip --version
-        pip install -e . -r requirements/test.txt --upgrade --find-links $PYTORCH_URL
+        pip install -e . -U --find-links $PYTORCH_URL
+        pip install "pytest" "pytest-doctestplus" -U
         pip list
 
+    # todo: copy this to install checks
     - name: DocTests
       working-directory: ./src
       # NOTE: run coverage on tests does not propagate failure status for Win, https://github.com/nedbat/coveragepy/issues/1003
@@ -97,8 +112,11 @@ jobs:
         pip install --requirement requirements/devel.txt -U --find-links $PYTORCH_URL
         pip list
 
-    - run: echo "::set-output name=TORCH::$(python -c 'import torch ; print(torch.__version__)' 2>&1)"
+    - name: Sanity check
       id: info
+      run: |
+        python -c "from torch import __version__ as ver; ver = ver.split('+')[0] ; assert ver == '${{ matrix.pytorch-version }}', ver"
+        python -c 'import torch ; print("TORCH=" + str(torch.__version__))' >> $GITHUB_OUTPUT
 
     - uses: ./.github/actions/unittesting
       if: ${{ needs.check-diff.outputs.test-dirs != '' }}
