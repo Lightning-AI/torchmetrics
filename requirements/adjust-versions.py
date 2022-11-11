@@ -51,39 +51,36 @@ def find_latest(ver: str) -> Dict[str, str]:
     raise ValueError(f"Missing {ver} in {VERSIONS}")
 
 
-def main(path_req: str, torch_version: Optional[str] = None) -> None:
+def adjust(requires: str, torch_version: Optional[str] = None) -> str:
     if not torch_version:
         import torch
 
         torch_version = torch.__version__
     assert torch_version, f"invalid torch: {torch_version}"
+
+    # remove comments and strip whitespace
+    requires = re.sub(rf"\s*#.*{os.linesep}", os.linesep, requires).strip()
+
     latest = find_latest(torch_version)
+    for lib, version in latest.items():
+        replace = f"{lib}=={version}" if version else ""
+        requires = re.sub(rf"\b{lib}(?![-_\w]).*", replace, requires)
 
-    if path_req == "conda":
-        # this is a special case when we need to get the remaining lib versions
-        # req = " ".join([f"{lib}={ver}" if ver else lib for lib, ver in latest.items() if lib != "torch"])
-        req = " ".join([f"{lib}={ver}" for lib, ver in latest.items() if lib != "torch" and ver])
-        print(req)
-        return
-
-    with open(path_req) as fp:
-        req = fp.readlines()
-    # remove comments
-    req = [r[: r.index("#")] if "#" in r else r for r in req]
-    req = [r.strip() for r in req]
-
-    for lib, ver in latest.items():
-        for i, ln in enumerate(req):
-            m = re.search(r"(\w\d-_)*?[>=]{0,2}.*", ln)
-            if m and m.group() == lib:
-                req[i] = f"{lib}=={ver}" if ver else lib
-
-    req = [r + os.linesep for r in req]
-    logging.info(req)  # on purpose - to debug
-    with open(path_req, "w") as fp:
-        fp.writelines(req)
+    return requires
 
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    main(*sys.argv[1:])
+
+    if len(sys.argv) == 3:
+        requirements_path, torch_version = sys.argv[1:]
+    else:
+        requirements_path, torch_version = sys.argv[1], None
+    logging.info(f"requirements_path='{requirements_path}' with torch_version='{torch_version}'")
+
+    with open(requirements_path) as fp:
+        requirements = fp.read()
+    requirements = adjust(requirements, torch_version)
+    logging.info(requirements)  # on purpose - to debug
+    with open(requirements_path, "w") as fp:
+        fp.write(requirements)
