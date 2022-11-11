@@ -28,7 +28,6 @@ if _MATPLOTLIB_AVAILABLE:
 
     _PLOT_OUT_TYPE = Tuple[plt.Figure, matplotlib.axes.Axes]
 else:
-    plt = None
     _PLOT_OUT_TYPE = None
 
 
