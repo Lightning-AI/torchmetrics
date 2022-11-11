@@ -22,6 +22,8 @@ from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 if _TRANSFORMERS_AVAILABLE:
     from transformers import CLIPModel as _CLIPModel
     from transformers import CLIPProcessor as _CLIPProcessor
+else:
+    __doctest_skip__ = ["CLIPScore"]
 
 from torchmetrics import Metric
 
