@@ -65,6 +65,8 @@ class CLIPScore(Metric):
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
+    score: Tensor
+    n_samples: Tensor
 
     def __init__(
         self,
