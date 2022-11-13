@@ -1,0 +1,2 @@
+pandas>=1.2.5; python_version >= '3.8'
+pandas==1.2.5; python_version == '3.7' # to be compatible with `oldest` configuration (practically, tests are skipped)
