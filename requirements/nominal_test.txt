@@ -1,2 +1,2 @@
-pandas
+pandas>=1.2.5
 dython # todo: pin version, but some version resolution issue
