@@ -1,2 +1,2 @@
-pandas>=1.2.5
+pandas # cannot pin version due to numpy version incompatibility
 dython # todo: pin version, but some version resolution issue
