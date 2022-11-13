@@ -492,7 +492,7 @@ class TestComputeGroups:
         },
     ],
 )
-@pytest.mark.parametrize("steps", [100, 1000])
+@pytest.mark.parametrize("steps", [1000])
 def test_check_compute_groups_is_faster(metrics, steps):
     """Check that compute groups are formed after initialization."""
     m = MetricCollection(deepcopy(metrics), compute_groups=True)

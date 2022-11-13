@@ -168,10 +168,10 @@ def test_best_metric_for_not_well_defined_metric_collection(base_metric):
         idx, best = tracker.best_metric(return_step=True)
 
         if isinstance(best, dict):
-            assert best["Accuracy"] is not None
-            assert best["ConfusionMatrix"] is None
-            assert idx["Accuracy"] is not None
-            assert idx["ConfusionMatrix"] is None
+            assert best["MulticlassAccuracy"] is not None
+            assert best["MulticlassConfusionMatrix"] is None
+            assert idx["MulticlassAccuracy"] is not None
+            assert idx["MulticlassConfusionMatrix"] is None
         else:
             assert best is None
             assert idx is None
