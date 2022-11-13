@@ -5,7 +5,7 @@
 -r test.txt
 
 # add integration dependencies
--r integration.txt
+-r integrate.txt
 
 # add extra requirements
 -r image.txt
