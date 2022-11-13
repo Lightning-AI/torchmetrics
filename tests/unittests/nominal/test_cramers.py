@@ -90,6 +90,9 @@ def _dython_cramers_v_matrix(matrix, bias_correction, nan_strategy, nan_replace_
 @pytest.mark.skipif(
     _compare_version("pandas", operator.lt, "1.3.2"), reason="`dython` package requires `pandas>=1.3.2`"
 )
+@pytest.mark.skipif(  # TODO: testing on CUDA fails with pandas 1.3.5, and newer is not available for python 3.7
+    torch.cuda.is_available(), reason="Tests fail on CUDA with the most up-to-date available pandas"
+)
 @pytest.mark.parametrize(
     "preds, target",
     [
