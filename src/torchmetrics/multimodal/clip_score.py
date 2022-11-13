@@ -29,7 +29,7 @@ from torchmetrics import Metric
 
 
 class CLIPScore(Metric):
-    """`CLIP Score`_ is a reference free metric that can be used to evaluate the correlation between an generated
+    """`CLIP Score`_ is a reference free metric that can be used to evaluate the correlation between a generated
     caption for an image and the actual content of the image. It has been found to be highly correlated with human
     judgement. The metric is defined as:
 
@@ -94,7 +94,7 @@ class CLIPScore(Metric):
         """Updates CLIP score on a batch of images and text.
 
         Args:
-            images: Either a single [N, C, H, W] tensor or an list of [C, H, W] tensors
+            images: Either a single [N, C, H, W] tensor or a list of [C, H, W] tensors
             text: Either a single caption or a list of captions
 
         Raises:
@@ -103,7 +103,7 @@ class CLIPScore(Metric):
             ValueError:
                 If the number of images and captions do not match
         """
-        if not isinstance(images, List):
+        if not isinstance(images, list):
             if images.ndim == 3:
                 images = [images]
             else:  # unwrap into list
@@ -112,7 +112,7 @@ class CLIPScore(Metric):
         if not all(i.ndim == 3 for i in images):
             raise ValueError("Expected all images to be 3d but found image that has either more or less")
 
-        if not isinstance(text, List):
+        if not isinstance(text, list):
             text = [text]
 
         if len(text) != len(images):
