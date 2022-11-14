@@ -129,7 +129,7 @@ def tschuprows_t(
         >>> preds = torch.randint(0, 4, (100,))
         >>> target = torch.round(preds + torch.randn(100)).clamp(0, 4)
         >>> tschuprows_t(preds, target)
-        tensor(0.5284)
+        tensor(0.4930)
     """
     _nominal_input_validation(nan_strategy, nan_replace_value)
     num_classes = len(torch.cat([preds, target]).unique())

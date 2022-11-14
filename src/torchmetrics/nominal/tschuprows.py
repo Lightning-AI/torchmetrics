@@ -57,7 +57,7 @@ class TschuprowsT(Metric):
         >>> target = torch.round(preds + torch.randn(100)).clamp(0, 4)
         >>> tschuprows_t = TschuprowsT(num_classes=5)
         >>> tschuprows_t(preds, target)
-        tensor(0.5284)
+        tensor(0.4930)
     """
 
     full_state_update = False
