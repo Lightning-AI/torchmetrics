@@ -33,12 +33,9 @@ class TschuprowsT(Metric):
     .. math::
         \chi^2 = \sum_{i,j} \ frac{\left(n_{ij} - \frac{n_{i.} n_{.j}}{n}\right)^2}{\frac{n_{i.} n_{.j}}{n}}
 
-    Tschuprow's T is a symmetric coefficient, i.e.
+    Tschuprow's T is a symmetric coefficient, i.e. :math:`T(preds, target) = T(target, preds)`.
 
-    .. math::
-        T(preds, target) = T(target, preds)
-
-    The output values lies in [0, 1].
+    The output values lies in [0, 1] with 1 meaning the perfect association.
 
     Args:
         num_classes: Integer specifing the number of classes
@@ -60,9 +57,9 @@ class TschuprowsT(Metric):
         tensor(0.4930)
     """
 
-    full_state_update = False
-    is_differentiable = False
-    higher_is_better = False
+    full_state_update: bool = False
+    is_differentiable: bool = False
+    higher_is_better: bool = False
     confmat: Tensor
 
     def __init__(

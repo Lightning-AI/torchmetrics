@@ -56,7 +56,7 @@ def _matrix_input():
     return matrix
 
 
-def _sk_pearsons_t(preds, target):
+def _pd_pearsons_t(preds, target):
     preds = preds.argmax(1) if preds.ndim == 2 else preds
     target = target.argmax(1) if target.ndim == 2 else target
     preds, target = preds.numpy().astype(int), target.numpy().astype(int)
@@ -66,12 +66,12 @@ def _sk_pearsons_t(preds, target):
     return torch.tensor(t)
 
 
-def _sk_pearsons_t_matrix(matrix):
+def _pd_pearsons_t_matrix(matrix):
     num_variables = matrix.shape[1]
     pearsons_t_matrix_value = torch.ones(num_variables, num_variables)
     for i, j in itertools.combinations(range(num_variables), 2):
         x, y = matrix[:, i], matrix[:, j]
-        pearsons_t_matrix_value[i, j] = pearsons_t_matrix_value[j, i] = _sk_pearsons_t(x, y)
+        pearsons_t_matrix_value[i, j] = pearsons_t_matrix_value[j, i] = _pd_pearsons_t(x, y)
     return pearsons_t_matrix_value
 
 
@@ -101,13 +101,13 @@ class TestPearsonsContingencyCoefficient(MetricTester):
             preds=preds,
             target=target,
             metric_class=PearsonsContingencyCoefficient,
-            sk_metric=_sk_pearsons_t,
+            sk_metric=_pd_pearsons_t,
             metric_args=metric_args,
         )
 
     def test_pearsons_t_functional(self, preds, target):
         self.run_functional_metric_test(
-            preds, target, metric_functional=pearsons_contingency_coefficient, sk_metric=_sk_pearsons_t
+            preds, target, metric_functional=pearsons_contingency_coefficient, sk_metric=_pd_pearsons_t
         )
 
     def test_pearsons_t_differentiability(self, preds, target):
@@ -129,5 +129,5 @@ class TestPearsonsContingencyCoefficient(MetricTester):
 )
 def test_pearsons_contingency_coefficient_matrix(_matrix_input):
     tm_score = pearsons_contingency_coefficient_matrix(_matrix_input)
-    reference_score = _sk_pearsons_t_matrix(_matrix_input)
+    reference_score = _pd_pearsons_t_matrix(_matrix_input)
     assert torch.allclose(tm_score, reference_score)

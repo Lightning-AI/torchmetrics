@@ -77,7 +77,7 @@ def pearsons_contingency_coefficient(
     nan_replace_value: Optional[Union[int, float]] = 0.0,
 ) -> Tensor:
     r"""Compute `Pearson's Contingency Coefficient`_  measuring the association between two categorical (nominal)
-    ata series.
+    data series.
 
     .. math::
         Pearson = \sqrt{\frac{\chi^2 / n}{1 + \chi^2 / n}}
@@ -88,11 +88,9 @@ def pearsons_contingency_coefficient(
         \chi^2 = \sum_{i,j} \ frac{\left(n_{ij} - \frac{n_{i.} n_{.j}}{n}\right)^2}{\frac{n_{i.} n_{.j}}{n}}
 
     Pearson's Contingency Coefficient is a symmetric coefficient, i.e.
+    :math:`Pearson(preds, target) = Pearson(target, preds)`.
 
-    .. math::
-        Pearson(preds, target) = Pearson(target, preds)
-
-    The output values lies in [0, 1].
+    The output values lies in [0, 1] with 1 meaning the perfect association.
 
     Args:
         preds: 1D or 2D tensor of categorical (nominal) data

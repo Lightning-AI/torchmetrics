@@ -33,12 +33,9 @@ class CramersV(Metric):
     .. math::
         \chi^2 = \sum_{i,j} \ frac{\left(n_{ij} - \frac{n_{i.} n_{.j}}{n}\right)^2}{\frac{n_{i.} n_{.j}}{n}}
 
-    Cramer's V is a symmetric coefficient, i.e.
+    Cramer's V is a symmetric coefficient, i.e. :math:`V(preds, target) = V(target, preds)`.
 
-    .. math::
-        V(preds, target) = V(target, preds)
-
-    The output values lies in [0, 1].
+    The output values lies in [0, 1] with 1 meaning the perfect association.
 
     Args:
         num_classes: Integer specifing the number of classes
@@ -60,9 +57,9 @@ class CramersV(Metric):
         tensor(0.5284)
     """
 
-    full_state_update = False
-    is_differentiable = False
-    higher_is_better = False
+    full_state_update: bool = False
+    is_differentiable: bool = False
+    higher_is_better: bool = False
     confmat: Tensor
 
     def __init__(

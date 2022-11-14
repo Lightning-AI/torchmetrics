@@ -53,7 +53,7 @@ def _matrix_input():
     return matrix
 
 
-def _sk_tschuprows_t(preds, target):
+def _pd_tschuprows_t(preds, target):
     preds = preds.argmax(1) if preds.ndim == 2 else preds
     target = target.argmax(1) if target.ndim == 2 else target
     preds, target = preds.numpy().astype(int), target.numpy().astype(int)
@@ -63,12 +63,12 @@ def _sk_tschuprows_t(preds, target):
     return torch.tensor(t)
 
 
-def _sk_tschuprows_t_matrix(matrix):
+def _pd_tschuprows_t_matrix(matrix):
     num_variables = matrix.shape[1]
     tschuprows_t_matrix_value = torch.ones(num_variables, num_variables)
     for i, j in itertools.combinations(range(num_variables), 2):
         x, y = matrix[:, i], matrix[:, j]
-        tschuprows_t_matrix_value[i, j] = tschuprows_t_matrix_value[j, i] = _sk_tschuprows_t(x, y)
+        tschuprows_t_matrix_value[i, j] = tschuprows_t_matrix_value[j, i] = _pd_tschuprows_t(x, y)
     return tschuprows_t_matrix_value
 
 
@@ -98,14 +98,14 @@ class TestTschuprowsT(MetricTester):
             preds=preds,
             target=target,
             metric_class=TschuprowsT,
-            sk_metric=_sk_tschuprows_t,
+            sk_metric=_pd_tschuprows_t,
             metric_args=metric_args,
         )
 
     def test_tschuprows_t_functional(self, preds, target):
         metric_args = {"bias_correction": False}
         self.run_functional_metric_test(
-            preds, target, metric_functional=tschuprows_t, sk_metric=_sk_tschuprows_t, metric_args=metric_args
+            preds, target, metric_functional=tschuprows_t, sk_metric=_pd_tschuprows_t, metric_args=metric_args
         )
 
     def test_tschuprows_t_differentiability(self, preds, target):
@@ -127,5 +127,5 @@ class TestTschuprowsT(MetricTester):
 )
 def test_tschuprows_t_matrix(_matrix_input):
     tm_score = tschuprows_t_matrix(_matrix_input, bias_correction=False)
-    reference_score = _sk_tschuprows_t_matrix(_matrix_input)
+    reference_score = _pd_tschuprows_t_matrix(_matrix_input)
     assert torch.allclose(tm_score, reference_score)

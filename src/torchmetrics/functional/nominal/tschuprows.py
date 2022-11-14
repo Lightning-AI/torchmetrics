@@ -102,12 +102,9 @@ def tschuprows_t(
     .. math::
         \chi^2 = \sum_{i,j} \ frac{\left(n_{ij} - \frac{n_{i.} n_{.j}}{n}\right)^2}{\frac{n_{i.} n_{.j}}{n}}
 
-    Tschuprow's T is a symmetric coefficient, i.e.
+    Tschuprow's T is a symmetric coefficient, i.e. :math:`T(preds, target) = T(target, preds)`.
 
-    .. math::
-        T(preds, target) = T(target, preds)
-
-    The output values lies in [0, 1].
+    The output values lies in [0, 1] with 1 meaning the perfect association.
 
     Args:
         preds: 1D or 2D tensor of categorical (nominal) data
