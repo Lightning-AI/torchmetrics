@@ -19,53 +19,13 @@ from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.functional.classification.confusion_matrix import _multiclass_confusion_matrix_update
-from torchmetrics.functional.nominal.utils import _handle_nan_in_data
+from torchmetrics.functional.nominal.utils import (
+    _compute_chi_squared,
+    _drop_empty_rows_and_cols,
+    _handle_nan_in_data,
+    _nominal_input_validation,
+)
 from torchmetrics.utilities.prints import rank_zero_warn
-
-
-def _cramers_input_validation(nan_strategy: str, nan_replace_value: Optional[Union[int, float]]) -> None:
-    if nan_strategy not in ["replace", "drop"]:
-        raise ValueError(
-            f"Argument `nan_strategy` is expected to be one of `['replace', 'drop']`, but got {nan_strategy}"
-        )
-    if nan_strategy == "replace" and not isinstance(nan_replace_value, (int, float)):
-        raise ValueError(
-            "Argument `nan_replace` is expected to be of a type `int` or `float` when `nan_strategy = 'replace`, "
-            f"but got {nan_replace_value}"
-        )
-
-
-def _compute_expected_freqs(confmat: Tensor) -> Tensor:
-    """Compute the expected frequenceis from the provided confusion matrix."""
-    margin_sum_rows, margin_sum_cols = confmat.sum(1), confmat.sum(0)
-    expected_freqs = torch.einsum("r, c -> rc", margin_sum_rows, margin_sum_cols) / confmat.sum()
-    return expected_freqs
-
-
-def _compute_chi_squared(confmat: Tensor, bias_correction: bool) -> Tensor:
-    """Chi-square test of independenc of variables in a confusion matrix table.
-
-    Adapted from: https://github.com/scipy/scipy/blob/v1.9.2/scipy/stats/contingency.py.
-    """
-    expected_freqs = _compute_expected_freqs(confmat)
-    # Get degrees of freedom
-    df = expected_freqs.numel() - sum(expected_freqs.shape) + expected_freqs.ndim - 1
-    if df == 0:
-        return torch.tensor(0.0, device=confmat.device)
-
-    if df == 1 and bias_correction:
-        diff = expected_freqs - confmat
-        direction = diff.sign()
-        confmat += direction * torch.minimum(0.5 * torch.ones_like(direction), direction.abs())
-
-    return torch.sum((confmat - expected_freqs) ** 2 / expected_freqs)
-
-
-def _drop_empty_rows_and_cols(confmat: Tensor) -> Tensor:
-    """Drop all rows and columns containing only zeros."""
-    confmat = confmat[confmat.sum(1) != 0]
-    confmat = confmat[:, confmat.sum(0) != 0]
-    return confmat
 
 
 def _cramers_v_update(
@@ -210,7 +170,7 @@ def cramers_v_matrix(
                 [0.0542, 0.0000, 0.0000, 1.0000, 0.1100],
                 [0.1337, 0.0000, 0.0649, 0.1100, 1.0000]])
     """
-    _cramers_input_validation(nan_strategy, nan_replace_value)
+    _nominal_input_validation(nan_strategy, nan_replace_value)
     num_variables = matrix.shape[1]
     cramers_v_matrix_value = torch.ones(num_variables, num_variables, device=matrix.device)
     for i, j in itertools.combinations(range(num_variables), 2):
