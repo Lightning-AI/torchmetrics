@@ -22,17 +22,17 @@ from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 if _TRANSFORMERS_AVAILABLE:
     from transformers import CLIPModel as _CLIPModel
     from transformers import CLIPProcessor as _CLIPProcessor
-    from transformers import ProcessorMixin as _ProcessorMixin
-    from transformers.modeling_utils import PreTrainedModel as _PreTrainedModel
 else:
     __doctest_skip__ = ["clip_score"]
+    _CLIPModel = None  # type:ignore
+    _CLIPProcessor = None  # type:ignore
 
 
 def _clip_score_update(
     images: Union[Tensor, List[Tensor]],
     text: Union[str, List[str]],
-    model: _PreTrainedModel,
-    processor: _ProcessorMixin,
+    model: _CLIPModel,
+    processor: _CLIPProcessor,
 ) -> Tuple[Tensor, int]:
     if not isinstance(images, list):
         if images.ndim == 3:
@@ -73,7 +73,7 @@ def _get_model_and_processor(
         "openai/clip-vit-large-patch14-336",
         "openai/clip-vit-large-patch14",
     ] = "openai/clip-vit-large-patch14",
-) -> Tuple[_PreTrainedModel, _ProcessorMixin]:
+) -> Tuple[_CLIPModel, _CLIPProcessor]:
     if _TRANSFORMERS_AVAILABLE:
         model = _CLIPModel.from_pretrained(model_name_or_path)
         processor = _CLIPProcessor.from_pretrained(model_name_or_path)
