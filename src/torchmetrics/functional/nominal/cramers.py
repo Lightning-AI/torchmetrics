@@ -20,12 +20,13 @@ from typing_extensions import Literal
 
 from torchmetrics.functional.classification.confusion_matrix import _multiclass_confusion_matrix_update
 from torchmetrics.functional.nominal.utils import (
+    _compute_bias_corrected_values,
     _compute_chi_squared,
     _drop_empty_rows_and_cols,
     _handle_nan_in_data,
     _nominal_input_validation,
+    _unable_to_use_bias_correction_warning,
 )
-from torchmetrics.utilities.prints import rank_zero_warn
 
 
 def _cramers_v_update(
@@ -70,15 +71,11 @@ def _cramers_v_compute(confmat: Tensor, bias_correction: bool) -> Tensor:
     n_rows, n_cols = confmat.shape
 
     if bias_correction:
-        phi_squared_corrected = torch.max(
-            torch.tensor(0.0, device=confmat.device), phi_squared - ((n_rows - 1) * (n_cols - 1)) / (cm_sum - 1)
+        phi_squared_corrected, rows_corrected, cols_corrected = _compute_bias_corrected_values(
+            phi_squared, n_rows, n_cols, cm_sum
         )
-        rows_corrected = n_rows - (n_rows - 1) ** 2 / (cm_sum - 1)
-        cols_corrected = n_cols - (n_cols - 1) ** 2 / (cm_sum - 1)
         if min(rows_corrected, cols_corrected) == 1:
-            rank_zero_warn(
-                "Unable to compute Cramer's V using bias correction. Please consider to set `bias_correction=False`."
-            )
+            _unable_to_use_bias_correction_warning(metric_name="Cramer's V")
             return torch.tensor(float("nan"), device=confmat.device)
         cramers_v_value = torch.sqrt(phi_squared_corrected / min(rows_corrected - 1, cols_corrected - 1))
     else:

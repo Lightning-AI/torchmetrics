@@ -17,6 +17,8 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.utilities.prints import rank_zero_warn
+
 
 def _nominal_input_validation(nan_strategy: str, nan_replace_value: Optional[Union[int, float]]) -> None:
     if nan_strategy not in ["replace", "drop"]:
@@ -63,6 +65,32 @@ def _drop_empty_rows_and_cols(confmat: Tensor) -> Tensor:
     return confmat
 
 
+def _compute_phi_squared_corrected(
+    phi_squared: Tensor,
+    n_rows: int,
+    n_cols: int,
+    confmat_sum: Tensor,
+) -> Tensor:
+    """Compute bias-corrected Phi Squared."""
+    return torch.max(
+        torch.tensor(0.0, device=phi_squared.device), phi_squared - ((n_rows - 1) * (n_cols - 1)) / (confmat_sum - 1)
+    )
+
+
+def _compute_rows_and_cols_corrected(n_rows: int, n_cols: int, confmat_sum: Tensor) -> Tuple[Tensor, Tensor]:
+    rows_corrected = n_rows - (n_rows - 1) ** 2 / (confmat_sum - 1)
+    cols_corrected = n_cols - (n_cols - 1) ** 2 / (confmat_sum - 1)
+    return rows_corrected, cols_corrected
+
+
+def _compute_bias_corrected_values(
+    phi_squared: Tensor, n_rows: int, n_cols: int, confmat_sum: Tensor
+) -> Tuple[Tensor, Tensor, Tensor]:
+    phi_squared_corrected = _compute_phi_squared_corrected(phi_squared, n_rows, n_cols, confmat_sum)
+    rows_corrected, cols_corrected = _compute_rows_and_cols_corrected(n_rows, n_cols, confmat_sum)
+    return phi_squared_corrected, rows_corrected, cols_corrected
+
+
 def _handle_nan_in_data(
     preds: Tensor,
     target: Tensor,
@@ -91,3 +119,9 @@ def _handle_nan_in_data(
         return preds.nan_to_num(nan_replace_value), target.nan_to_num(nan_replace_value)
     rows_contain_nan = torch.logical_or(preds.isnan(), target.isnan())
     return preds[~rows_contain_nan], target[~rows_contain_nan]
+
+
+def _unable_to_use_bias_correction_warning(metric_name: str) -> None:
+    rank_zero_warn(
+        f"Unable to compute {metric_name} using bias correction. Please consider to set `bias_correction=False`."
+    )
