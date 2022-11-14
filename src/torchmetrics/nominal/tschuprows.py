@@ -17,26 +17,26 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.functional.nominal.cramers import _cramers_v_compute, _cramers_v_update
+from torchmetrics.functional.nominal.tschuprows import _tschuprows_t_compute, _tschuprows_t_update
 from torchmetrics.functional.nominal.utils import _nominal_input_validation
 from torchmetrics.metric import Metric
 
 
-class CramersV(Metric):
-    r"""Compute `Cramer's V`_ statistic measuring the association between two categorical (nominal) data series.
+class TschuprowsT(Metric):
+    r"""Compute `Tschuprow's T`_ statistic measuring the association between two categorical (nominal) data series.
 
     .. math::
-        V = \sqrt{\frac{\chi^2 / 2}{\min(r - 1, k - 1)}}
+        T = \sqrt{\frac{\chi^2 / 2}{\sqrt{(r - 1) * (k - 1)}}}
 
     where
 
     .. math::
         \chi^2 = \sum_{i,j} \ frac{\left(n_{ij} - \frac{n_{i.} n_{.j}}{n}\right)^2}{\frac{n_{i.} n_{.j}}{n}}
 
-    Cramer's V is a symmetric coefficient, i.e.
+    Tschuprow's T is a symmetric coefficient, i.e.
 
     .. math::
-        V(preds, target) = V(target, preds)
+        T(preds, target) = T(target, preds)
 
     The output values lies in [0, 1].
 
@@ -48,15 +48,15 @@ class CramersV(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Returns:
-        Cramer's V statistic
+        Tschuprow's T statistic
 
     Example:
-        >>> from torchmetrics import CramersV
+        >>> from torchmetrics import TschuprowsT
         >>> _ = torch.manual_seed(42)
         >>> preds = torch.randint(0, 4, (100,))
         >>> target = torch.round(preds + torch.randn(100)).clamp(0, 4)
-        >>> cramers_v = CramersV(num_classes=5)
-        >>> cramers_v(preds, target)
+        >>> tschuprows_t = TschuprowsT(num_classes=5)
+        >>> tschuprows_t(preds, target)
         tensor(0.5284)
     """
 
@@ -94,9 +94,9 @@ class CramersV(Metric):
             - 1D shape: (batch_size,)
             - 2D shape: (batch_size, num_classes)
         """
-        confmat = _cramers_v_update(preds, target, self.num_classes, self.nan_strategy, self.nan_replace_value)
+        confmat = _tschuprows_t_update(preds, target, self.num_classes, self.nan_strategy, self.nan_replace_value)
         self.confmat += confmat
 
     def compute(self) -> Tensor:
-        """Computer Cramer's V statistic."""
-        return _cramers_v_compute(self.confmat, self.bias_correction)
+        """Computer Tschuprow's T statistic."""
+        return _tschuprows_t_compute(self.confmat, self.bias_correction)

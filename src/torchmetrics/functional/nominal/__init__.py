@@ -12,3 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from torchmetrics.functional.nominal.cramers import cramers_v, cramers_v_matrix  # noqa: F401
+from torchmetrics.functional.nominal.tschuprows import tschuprows_t, tschuprows_t_matrix  # noqa: F401
