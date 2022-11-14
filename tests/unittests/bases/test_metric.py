@@ -471,3 +471,19 @@ def test_no_iteration_allowed():
     with pytest.raises(NotImplementedError, match="Metrics does not support iteration."):
         for m in metric:
             continue
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
+@pytest.mark.parametrize("method", ["forward", "update"])
+def test_compute_on_cpu_arg_forward(method):
+    metric = DummyListMetric(compute_on_cpu=True)
+    x = torch.randn(10).cuda()
+    if method == "update":
+        metric.update(x)
+        metric.update(x)
+    else:
+        _ = metric(x)
+        _ = metric(x)
+    val = metric.compute()
+    assert all(str(v.device) == "cpu" for v in val)
+    assert all(torch.allclose(v, x.cpu()) for v in val)
