@@ -74,10 +74,10 @@ def _cramers_v_compute(confmat: Tensor, bias_correction: bool) -> Tensor:
         phi_squared_corrected, rows_corrected, cols_corrected = _compute_bias_corrected_values(
             phi_squared, n_rows, n_cols, cm_sum
         )
-        if min(rows_corrected, cols_corrected) == 1:
+        if torch.min(rows_corrected, cols_corrected) == 1:
             _unable_to_use_bias_correction_warning(metric_name="Cramer's V")
             return torch.tensor(float("nan"), device=confmat.device)
-        cramers_v_value = torch.sqrt(phi_squared_corrected / min(rows_corrected - 1, cols_corrected - 1))
+        cramers_v_value = torch.sqrt(phi_squared_corrected / torch.min(rows_corrected - 1, cols_corrected - 1))
     else:
         cramers_v_value = torch.sqrt(phi_squared / min(n_rows - 1, n_cols - 1))
     return cramers_v_value.clamp(0.0, 1.0)
