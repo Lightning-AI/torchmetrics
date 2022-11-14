@@ -78,6 +78,7 @@ def _compute_phi_squared_corrected(
 
 
 def _compute_rows_and_cols_corrected(n_rows: int, n_cols: int, confmat_sum: Tensor) -> Tuple[Tensor, Tensor]:
+    """Compute bias-corrected number of rows and columns."""
     rows_corrected = n_rows - (n_rows - 1) ** 2 / (confmat_sum - 1)
     cols_corrected = n_cols - (n_cols - 1) ** 2 / (confmat_sum - 1)
     return rows_corrected, cols_corrected
@@ -86,6 +87,7 @@ def _compute_rows_and_cols_corrected(n_rows: int, n_cols: int, confmat_sum: Tens
 def _compute_bias_corrected_values(
     phi_squared: Tensor, n_rows: int, n_cols: int, confmat_sum: Tensor
 ) -> Tuple[Tensor, Tensor, Tensor]:
+    """Compute bias-corrected Phi Squared and number of rows and columns."""
     phi_squared_corrected = _compute_phi_squared_corrected(phi_squared, n_rows, n_cols, confmat_sum)
     rows_corrected, cols_corrected = _compute_rows_and_cols_corrected(n_rows, n_cols, confmat_sum)
     return phi_squared_corrected, rows_corrected, cols_corrected
