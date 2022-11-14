@@ -21,29 +21,55 @@ from torchmetrics.functional.classification.stat_scores import (
     _multilabel_stat_scores_arg_validation,
     _multilabel_stat_scores_format,
     _multilabel_stat_scores_tensor_validation,
+    _multiclass_stat_scores_arg_validation,
+    _multiclass_stat_scores_format,
+    _multiclass_stat_scores_tensor_validation
 )
 from torchmetrics.utilities.compute import _safe_divide
 
 
-def _multilabel_exact_scores_update(
-    preds: Tensor, target: Tensor, num_labels: int, multidim_average: Literal["global", "samplewise"] = "global"
-) -> Tuple[Tensor, Tensor]:
-    """Computes the statistics."""
-    if multidim_average == "global":
-        preds = torch.movedim(preds, 1, -1).reshape(-1, num_labels)
-        target = torch.movedim(target, 1, -1).reshape(-1, num_labels)
-
-    correct = ((preds == target).sum(1) == num_labels).sum(dim=-1)
-    total = torch.tensor(preds.shape[0 if multidim_average == "global" else 2], device=correct.device)
-    return correct, total
-
-
-def _multilabel_exact_scores_compute(
+def _exact_scores_reduce(
     correct: Tensor,
     total: Tensor,
 ) -> Tensor:
     """Final reduction for exact match."""
     return _safe_divide(correct, total)
+
+
+def _exact_scores_update(
+    preds: Tensor, target: Tensor, num_cl: int, multidim_average: Literal["global", "samplewise"] = "global"
+) -> Tuple[Tensor, Tensor]:
+    """Computes the statistics."""
+    if multidim_average == "global":
+        preds = torch.movedim(preds, 1, -1).reshape(-1, num_cl)
+        target = torch.movedim(target, 1, -1).reshape(-1, num_cl)
+
+    correct = ((preds == target).sum(1) == num_cl).sum(dim=-1)
+    total = torch.tensor(preds.shape[0 if multidim_average == "global" else 2], device=correct.device)
+    return correct, total
+
+
+
+def _multiclass_exact_scores_tensor_validation(
+)
+
+
+def multiclass_exact_match(
+    preds: Tensor,
+    target: Tensor,
+    num_classes: int,
+    threshold: float = 0.5,
+    multidim_average: Literal["global", "samplewise"] = "global",
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
+) -> Tensor:
+    average = None
+    if validate_args:
+        _multiclass_stat_scores_arg_validation(num_labels, threshold, average, multidim_average, ignore_index)
+        _multiclass_stat_exact_scores_tensor_validation(preds, target, num_labels, multidim_average, ignore_index)
+    preds, target = _multiclass_stat_scores_format(preds, target, num_labels, threshold, ignore_index)
+    correct, total = _multiclass_exact_scores_update(preds, target, num_labels, multidim_average)
+    return _exact_scores_reduce(correct, total)
 
 
 def multilabel_exact_match(
@@ -129,5 +155,18 @@ def multilabel_exact_match(
         _multilabel_stat_scores_arg_validation(num_labels, threshold, average, multidim_average, ignore_index)
         _multilabel_stat_scores_tensor_validation(preds, target, num_labels, multidim_average, ignore_index)
     preds, target = _multilabel_stat_scores_format(preds, target, num_labels, threshold, ignore_index)
-    correct, total = _multilabel_exact_scores_update(preds, target, num_labels, multidim_average)
-    return _multilabel_exact_scores_compute(correct, total)
+    correct, total = _exact_scores_update(preds, target, num_labels, multidim_average)
+    return _exact_scores_reduce(correct, total)
+
+
+def exact_match(
+    preds: Tensor,
+    target: Tensor,
+    task: Literal['multiclass', 'multilabel'],
+    num_classes: Optional[int] = None
+    num_labels: Optional[int] = None,
+    threshold: float = 0.5,
+    multidim_average: Literal["global", "samplewise"] = "global",
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
+) -> Tensor:
