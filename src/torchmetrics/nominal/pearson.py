@@ -37,6 +37,9 @@ class PearsonsContingencyCoefficient(Metric):
     .. math::
         \chi^2 = \sum_{i,j} \ frac{\left(n_{ij} - \frac{n_{i.} n_{.j}}{n}\right)^2}{\frac{n_{i.} n_{.j}}{n}}
 
+    where :math:`n_{ij}` denotes the number of times the values :math:`(A_i, B_j)` are observed with :math:`A_i, B_j`
+    represent frequencies of values in ``preds`` and ``target``, respectively.
+
     Pearson's Contingency Coefficient is a symmetric coefficient, i.e.
     :math:`Pearson(preds, target) = Pearson(target, preds)`.
 
