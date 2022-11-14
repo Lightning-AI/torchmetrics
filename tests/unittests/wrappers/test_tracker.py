@@ -159,8 +159,8 @@ def test_best_metric_for_not_well_defined_metric_collection(base_metric):
     with pytest.warns(UserWarning, match="Encountered the following error when trying to get the best metric.*"):
         best = tracker.best_metric()
         if isinstance(best, dict):
-            assert best["Accuracy"] is not None
-            assert best["ConfusionMatrix"] is None
+            assert best["MulticlassAccuracy"] is not None
+            assert best["MulticlassConfusionMatrix"] is None
         else:
             assert best is None
 
