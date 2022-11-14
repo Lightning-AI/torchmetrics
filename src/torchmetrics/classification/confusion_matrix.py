@@ -37,8 +37,12 @@ from torchmetrics.functional.classification.confusion_matrix import (
     _multilabel_confusion_matrix_update,
 )
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _PLOT_OUT_TYPE, plot_confusion_matrix
 from torchmetrics.utilities.prints import rank_zero_warn
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["MulticlassConfusionMatrix.plot"]
 
 
 class BinaryConfusionMatrix(Metric):

@@ -27,8 +27,10 @@ if _MATPLOTLIB_AVAILABLE:
     import matplotlib.pyplot as plt
 
     _PLOT_OUT_TYPE = Tuple[plt.Figure, matplotlib.axes.Axes]
+    _AX_TYPE = matplotlib.axes.Axes
 else:
     _PLOT_OUT_TYPE = None
+    _AX_TYPE = None
 
 
 def _error_on_missing_matplotlib() -> None:
@@ -133,12 +135,12 @@ def _get_col_row_split(n: int) -> Tuple[int, int]:
         return ceil(nsq), ceil(nsq)
 
 
-def trim_axs(axs: Union[matplotlib.axes.Axes, np.ndarray], N: int) -> np.ndarray:
+def trim_axs(axs: Union[_AX_TYPE, np.ndarray], N: int) -> np.ndarray:
     """Reduce *axs* to *N* Axes.
 
     All further Axes are removed from the figure.
     """
-    if isinstance(axs, matplotlib.axes.Axes):
+    if isinstance(axs, _AX_TYPE):
         return axs
     else:
         axs = axs.flat
@@ -151,8 +153,7 @@ def plot_confusion_matrix(
     confmat: Tensor,
     add_text: bool = True,
     labels: Optional[List[str]] = None,
-    cmap: Optional[matplotlib.colors.Colormap] = None,
-) -> Tuple[plt.Figure, Union[matplotlib.axes.Axes, np.ndarray]]:
+) -> _PLOT_OUT_TYPE:
     """Inspired by: https://github.com/scikit-learn/scikit-
     learn/blob/main/sklearn/metrics/_plot/confusion_matrix.py."""
 
@@ -179,7 +180,7 @@ def plot_confusion_matrix(
             ax.set_title(f"Label {i}", fontsize=15)
         else:
             ax = axs
-        ax.imshow(confmat[i].cpu().detach() if confmat.ndim == 3 else confmat.cpu().detach(), cmap=cmap)
+        ax.imshow(confmat[i].cpu().detach() if confmat.ndim == 3 else confmat.cpu().detach())
         ax.set_xlabel("True class", fontsize=15)
         ax.set_ylabel("Predicted class", fontsize=15)
         ax.set_xticks(list(range(n_classes)))
@@ -200,7 +201,7 @@ def _plot_curve(
     auc: bool = False,
     single_plot: bool = False,
     xy_labels: Tuple[str, str] = ("X axis", "Y axis"),
-) -> plt.Figure:
+) -> _PLOT_OUT_TYPE:
     _error_on_missing_matplotlib()
     val1, val2, thresholds = input
 
@@ -248,7 +249,7 @@ def plot_roc(
     roc: Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]],
     auc: bool = False,
     single_plot: bool = False,
-) -> plt.Figure:
+) -> _PLOT_OUT_TYPE:
     return _plot_curve(roc, auc=auc, single_plot=single_plot, xy_labels=("False positive rate", "True positive rate"))
 
 
@@ -256,7 +257,7 @@ def plot_prc(
     prc: Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]],
     auc: bool = False,
     single_plot: bool = False,
-) -> plt.Figure:
+) -> _PLOT_OUT_TYPE:
     # change order
     return _plot_curve(
         [prc[1].flip(0), prc[0].flip(0), prc[2]], auc=auc, single_plot=single_plot, xy_labels=("Recall", "Precision")

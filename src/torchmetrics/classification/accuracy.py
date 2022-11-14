@@ -28,8 +28,12 @@ from torchmetrics.functional.classification.accuracy import (
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.enums import AverageMethod, DataType
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _PLOT_OUT_TYPE, plot_single_or_multi_val
 from torchmetrics.utilities.prints import rank_zero_warn
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["BinaryAccuracy.plot", "MulticlassAccuracy.plot"]
 
 from torchmetrics.classification.stat_scores import (  # isort:skip
     StatScores,
@@ -254,6 +258,32 @@ class MulticlassAccuracy(MulticlassStatScores):
         return _accuracy_reduce(tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average)
 
     def plot(self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either single result from calling `metric.forward` or `metric.compute` or an list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+
+        Returns:
+            fig: Figure object
+            ax: Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+
+            A plotting example:
+            >>> import torch
+            >>> from torchmetrics.classification import MulticlassAccuracy
+            >>> metric = MulticlassAccuracy(num_classes=3)
+            >>> target = torch.tensor([2, 1, 0, 0])
+            >>> preds = torch.tensor([2, 1, 0, 1])
+            >>> metric.update(preds, target)
+            >>> fig, ax = metric.plot()
+            >>> fig.show()
+        """
         val = val or self.compute()
         fig, ax = plot_single_or_multi_val(
             val, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
@@ -365,13 +395,6 @@ class MultilabelAccuracy(MultilabelStatScores):
         return _accuracy_reduce(
             tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average, multilabel=True
         )
-
-    def plot(self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None) -> _PLOT_OUT_TYPE:
-        val = val or self.compute()
-        fig, ax = plot_single_or_multi_val(
-            val, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
-        )
-        return fig, ax
 
 
 class Accuracy(StatScores):
