@@ -17,12 +17,10 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.functional.multimodal.clip_score import _clip_score_update, _get_model_and_processor
 from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 
-if _TRANSFORMERS_AVAILABLE:
-    from transformers import CLIPModel as _CLIPModel
-    from transformers import CLIPProcessor as _CLIPProcessor
-else:
+if not _TRANSFORMERS_AVAILABLE:
     __doctest_skip__ = ["CLIPScore"]
 
 from torchmetrics import Metric
@@ -78,15 +76,9 @@ class CLIPScore(Metric):
         ] = "openai/clip-vit-large-patch14",
         **kwargs: Any,
     ) -> None:
+
         super().__init__(**kwargs)
-        if _TRANSFORMERS_AVAILABLE:
-            self.model = _CLIPModel.from_pretrained(version)
-            self.processor = _CLIPProcessor.from_pretrained(version)
-        else:
-            raise ModuleNotFoundError(
-                "`CLIPScore` metric requires `transformers` package be installed."
-                " Either install with `pip install transformers>=4.0` or `pip install torchmetrics[multimodal]`."
-            )
+        self.model, self.processor = _get_model_and_processor(version)
         self.add_state("score", torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("n_samples", torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
 
@@ -103,37 +95,9 @@ class CLIPScore(Metric):
             ValueError:
                 If the number of images and captions do not match
         """
-        if not isinstance(images, list):
-            if images.ndim == 3:
-                images = [images]
-            else:  # unwrap into list
-                images = [i for i in images]
-
-        if not all(i.ndim == 3 for i in images):
-            raise ValueError("Expected all images to be 3d but found image that has either more or less")
-
-        if not isinstance(text, list):
-            text = [text]
-
-        if len(text) != len(images):
-            raise ValueError(
-                f"Expected the number of images and text examples to be the same but got {len(images)} and {len(text)}"
-            )
-
-        processed_input = self.processor(text=text, images=[i.cpu() for i in images], return_tensors="pt", padding=True)
-
-        img_features = self.model.get_image_features(processed_input["pixel_values"].to(self.device))
-        img_features = img_features / img_features.norm(p=2, dim=-1, keepdim=True)
-
-        txt_features = self.model.get_text_features(
-            processed_input["input_ids"].to(self.device), processed_input["attention_mask"].to(self.device)
-        )
-        txt_features = txt_features / txt_features.norm(p=2, dim=-1, keepdim=True)
-
-        # cosine similarity between feature vectors
-        score = (img_features * txt_features).sum(axis=-1)
+        score, n_samples = _clip_score_update(images, text, self.model, self.processor)
         self.score += 100 * score.sum(0)
-        self.n_samples += img_features.shape[0]
+        self.n_samples += n_samples
 
     def compute(self) -> Tensor:
         """Computes accumulated clip score."""

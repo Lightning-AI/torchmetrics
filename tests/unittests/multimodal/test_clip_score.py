@@ -19,9 +19,11 @@ import torch
 from transformers import CLIPModel as _CLIPModel
 from transformers import CLIPProcessor as _CLIPProcessor
 
+from torchmetrics.functional.multimodal.clip_score import clip_score
 from torchmetrics.multimodal.clip_score import CLIPScore
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
+from unittests.text.helpers import skip_on_connection_issues
 
 seed_all(42)
 
@@ -50,6 +52,7 @@ def _compare_fn(preds, target, version):
     return logits_per_image.diag().mean().detach()
 
 
+@skip_on_connection_issues()
 @pytest.mark.parametrize("version", ["openai/clip-vit-base-patch32"])
 @pytest.mark.parametrize(
     "input",
@@ -58,10 +61,9 @@ def _compare_fn(preds, target, version):
     ],
 )
 class TestCLIPScore(MetricTester):
-    atol = 1e-5
-
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_clip_score(self, input, version, ddp):
+    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
+    def test_clip_score(self, input, version, ddp, dist_sync_on_step):
         # images are preds and targets are captions
         preds, target = input
         self.run_class_metric_test(
@@ -70,9 +72,30 @@ class TestCLIPScore(MetricTester):
             target=target,
             metric_class=CLIPScore,
             sk_metric=partial(_compare_fn, version=version),
+            dist_sync_on_step=dist_sync_on_step,
             metric_args={"version": version},
             check_scriptable=False,
             check_state_dict=False,
+        )
+
+    def test_clip_score_functional(self, input, version):
+        preds, target = input
+        self.run_functional_metric_test(
+            preds=preds,
+            target=target,
+            metric_functional=clip_score,
+            sk_metric=partial(_compare_fn, version=version),
+            metric_args={"version": version},
+        )
+
+    def test_mean_error_differentiability(self, input, version):
+        preds, target = input
+        self.run_differentiability_test(
+            preds=preds,
+            target=target,
+            metric_module=CLIPScore,
+            metric_functional=clip_score,
+            metric_args={"version": version},
         )
 
     def test_error_on_not_same_amount_of_input(self, input, version):

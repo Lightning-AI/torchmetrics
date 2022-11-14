@@ -12,3 +12,9 @@ ________________
 
 .. autoclass:: torchmetrics.multimodal.clip_score.CLIPScore
     :noindex:
+
+Functional Interface
+____________________
+
+.. autofunction:: torchmetrics.functional.multimodal.clip_score.clip_score
+    :noindex:
