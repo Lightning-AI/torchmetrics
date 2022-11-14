@@ -95,7 +95,7 @@ def tschuprows_t(
     r"""Compute `Tschuprow's T`_ statistic measuring the association between two categorical (nominal) data series.
 
     .. math::
-        T = \sqrt{\frac{\chi^2 / 2}{\sqrt{(r - 1) * (k - 1)}}}
+        T = \sqrt{\frac{\chi^2 / n}{\sqrt{(r - 1) * (k - 1)}}}
 
     where
 
@@ -172,12 +172,12 @@ def tschuprows_t_matrix(
     """
     _nominal_input_validation(nan_strategy, nan_replace_value)
     num_variables = matrix.shape[1]
-    tschuprows_t_matrix_matrix_value = torch.ones(num_variables, num_variables, device=matrix.device)
+    tschuprows_t_matrix_value = torch.ones(num_variables, num_variables, device=matrix.device)
     for i, j in itertools.combinations(range(num_variables), 2):
         x, y = matrix[:, i], matrix[:, j]
         num_classes = len(torch.cat([x, y]).unique())
         confmat = _tschuprows_t_update(x, y, num_classes, nan_strategy, nan_replace_value)
-        tschuprows_t_matrix_matrix_value[i, j] = tschuprows_t_matrix_matrix_value[j, i] = _tschuprows_t_compute(
+        tschuprows_t_matrix_value[i, j] = tschuprows_t_matrix_value[j, i] = _tschuprows_t_compute(
             confmat, bias_correction
         )
-    return tschuprows_t_matrix_matrix_value
+    return tschuprows_t_matrix_value

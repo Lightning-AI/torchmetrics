@@ -17,23 +17,27 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.functional.nominal.tschuprows import _tschuprows_t_compute, _tschuprows_t_update
+from torchmetrics.functional.nominal.pearson import (
+    _pearsons_contingency_coefficient_compute,
+    _pearsons_contingency_coefficient_update,
+)
 from torchmetrics.functional.nominal.utils import _nominal_input_validation
 from torchmetrics.metric import Metric
 
 
-class TschuprowsT(Metric):
-    r"""Compute `Tschuprow's T`_ statistic measuring the association between two categorical (nominal) data series.
+class PearsonsContingencyCoefficient(Metric):
+    r"""Compute `Pearson's Contingency Coefficient`_ statistic measuring the association between two categorical
+    (nominal) data series.
 
     .. math::
-        T = \sqrt{\frac{\chi^2 / n}{\sqrt{(r - 1) * (k - 1)}}}
+        T = \sqrt{\frac{\chi^2 / n}{\frac{1 + \chi^2 / n}}}
 
     where
 
     .. math::
         \chi^2 = \sum_{i,j} \ frac{\left(n_{ij} - \frac{n_{i.} n_{.j}}{n}\right)^2}{\frac{n_{i.} n_{.j}}{n}}
 
-    Tschuprow's T is a symmetric coefficient, i.e.
+    Pearson's Contingency Coefficient is a symmetric coefficient, i.e.
 
     .. math::
         T(preds, target) = T(target, preds)
@@ -42,22 +46,21 @@ class TschuprowsT(Metric):
 
     Args:
         num_classes: Integer specifing the number of classes
-        bias_correction: Indication of whether to use bias correction.
         nan_strategy: Indication of whether to replace or drop ``NaN`` values
         nan_replace_value: Value to replace ``NaN``s when ``nan_strategy = 'replace'``
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Returns:
-        Tschuprow's T statistic
+        Pearson's Contingency Coefficient statistic
 
     Example:
-        >>> from torchmetrics import TschuprowsT
+        >>> from torchmetrics import PearsonsContingencyCoefficient
         >>> _ = torch.manual_seed(42)
         >>> preds = torch.randint(0, 4, (100,))
         >>> target = torch.round(preds + torch.randn(100)).clamp(0, 4)
-        >>> tschuprows_t = TschuprowsT(num_classes=5)
-        >>> tschuprows_t(preds, target)
-        tensor(0.5284)
+        >>> pearsons_contingency_coefficient = PearsonsContingencyCoefficient(num_classes=5)
+        >>> pearsons_contingency_coefficient(preds, target)
+        tensor(0.6948)
     """
 
     full_state_update = False
@@ -68,14 +71,12 @@ class TschuprowsT(Metric):
     def __init__(
         self,
         num_classes: int,
-        bias_correction: bool = True,
         nan_strategy: Literal["replace", "drop"] = "replace",
         nan_replace_value: Optional[Union[int, float]] = 0.0,
         **kwargs: Any,
     ):
         super().__init__(**kwargs)
         self.num_classes = num_classes
-        self.bias_correction = bias_correction
 
         _nominal_input_validation(nan_strategy, nan_replace_value)
         self.nan_strategy = nan_strategy
@@ -94,9 +95,11 @@ class TschuprowsT(Metric):
             - 1D shape: (batch_size,)
             - 2D shape: (batch_size, num_classes)
         """
-        confmat = _tschuprows_t_update(preds, target, self.num_classes, self.nan_strategy, self.nan_replace_value)
+        confmat = _pearsons_contingency_coefficient_update(
+            preds, target, self.num_classes, self.nan_strategy, self.nan_replace_value
+        )
         self.confmat += confmat
 
     def compute(self) -> Tensor:
-        """Computer Tschuprow's T statistic."""
-        return _tschuprows_t_compute(self.confmat, self.bias_correction)
+        """Computer Pearson's Contingency Coefficient statistic."""
+        return _pearsons_contingency_coefficient_compute(self.confmat)

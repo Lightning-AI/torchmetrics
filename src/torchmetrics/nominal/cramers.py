@@ -26,7 +26,7 @@ class CramersV(Metric):
     r"""Compute `Cramer's V`_ statistic measuring the association between two categorical (nominal) data series.
 
     .. math::
-        V = \sqrt{\frac{\chi^2 / 2}{\min(r - 1, k - 1)}}
+        V = \sqrt{\frac{\chi^2 / n}{\min(r - 1, k - 1)}}
 
     where
 
