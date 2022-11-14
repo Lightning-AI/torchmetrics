@@ -136,6 +136,14 @@ Or directly from conda
 
 .. toctree::
    :maxdepth: 2
+   :name: aggregation
+   :caption: Aggregation
+   :glob:
+
+   aggregation/*
+
+.. toctree::
+   :maxdepth: 2
    :name: audio
    :caption: Audio
    :glob:
@@ -152,6 +160,14 @@ Or directly from conda
 
 .. toctree::
    :maxdepth: 2
+   :name: detection
+   :caption: Detection
+   :glob:
+
+   detection/*
+
+.. toctree::
+   :maxdepth: 2
    :name: image
    :caption: Image
    :glob:
@@ -160,19 +176,19 @@ Or directly from conda
 
 .. toctree::
    :maxdepth: 2
+   :name: nominal
+   :caption: Nominal
+   :glob:
+
+   nominal/*
+
+.. toctree::
+   :maxdepth: 2
    :name: multimodal
    :caption: Multimodal
    :glob:
 
    multimodal/*
-
-.. toctree::
-   :maxdepth: 2
-   :name: detection
-   :caption: Detection
-   :glob:
-
-   detection/*
 
 .. toctree::
    :maxdepth: 2
@@ -205,14 +221,6 @@ Or directly from conda
    :glob:
 
    text/*
-
-.. toctree::
-   :maxdepth: 2
-   :name: aggregation
-   :caption: Aggregation
-   :glob:
-
-   aggregation/*
 
 .. toctree::
    :maxdepth: 2

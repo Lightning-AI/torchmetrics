@@ -26,7 +26,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `LogCoshError` to regression package ([#1316](https://github.com/Lightning-AI/metrics/pull/1316))
 
 
+- Added `CramersV` to the new nominal package ([#1298](https://github.com/Lightning-AI/metrics/pull/1298))
+
+
 - Added `CLIPScore` to new multimodal package ([#1314](https://github.com/Lightning-AI/metrics/pull/1314))
+
 
 ### Changed
 
