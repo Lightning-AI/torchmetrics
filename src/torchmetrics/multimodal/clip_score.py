@@ -62,7 +62,7 @@ class CLIPScore(Metric):
 
     is_differentiable: bool = False
     higher_is_better: bool = True
-    full_state_update: bool = False
+    full_state_update: bool = True
     score: Tensor
     n_samples: Tensor
 
@@ -82,7 +82,7 @@ class CLIPScore(Metric):
         self.add_state("score", torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("n_samples", torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
 
-    def update(self, images: Union[Tensor, List[Tensor]], text: Union[str, List[str]]) -> None:
+    def update(self, images: Union[Tensor, List[Tensor]], text: Union[str, List[str]]) -> None:  # type: ignore
         """Updates CLIP score on a batch of images and text.
 
         Args:
@@ -96,7 +96,7 @@ class CLIPScore(Metric):
                 If the number of images and captions do not match
         """
         score, n_samples = _clip_score_update(images, text, self.model, self.processor)
-        self.score += 100 * score.sum(0)
+        self.score += score.sum(0)
         self.n_samples += n_samples
 
     def compute(self) -> Tensor:

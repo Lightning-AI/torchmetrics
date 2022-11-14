@@ -21,6 +21,7 @@ from transformers import CLIPProcessor as _CLIPProcessor
 
 from torchmetrics.functional.multimodal.clip_score import clip_score
 from torchmetrics.multimodal.clip_score import CLIPScore
+from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 from unittests.text.helpers import skip_on_connection_issues
@@ -52,17 +53,13 @@ def _compare_fn(preds, target, model_name_or_path):
     return logits_per_image.diag().mean().detach()
 
 
-@skip_on_connection_issues()
 @pytest.mark.parametrize("model_name_or_path", ["openai/clip-vit-base-patch32"])
-@pytest.mark.parametrize(
-    "input",
-    [
-        _random_input,
-    ],
-)
+@pytest.mark.parametrize("input", [_random_input])
+@pytest.mark.skipif(not _TRANSFORMERS_AVAILABLE, reason="test requires bert_score")
 class TestCLIPScore(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
+    @skip_on_connection_issues()
     def test_clip_score(self, input, model_name_or_path, ddp, dist_sync_on_step):
         # images are preds and targets are captions
         preds, target = input
@@ -78,6 +75,7 @@ class TestCLIPScore(MetricTester):
             check_state_dict=False,
         )
 
+    @skip_on_connection_issues()
     def test_clip_score_functional(self, input, model_name_or_path):
         preds, target = input
         self.run_functional_metric_test(
@@ -88,7 +86,8 @@ class TestCLIPScore(MetricTester):
             metric_args={"model_name_or_path": model_name_or_path},
         )
 
-    def test_mean_error_differentiability(self, input, model_name_or_path):
+    @skip_on_connection_issues()
+    def test_clip_score_differentiability(self, input, model_name_or_path):
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -98,12 +97,14 @@ class TestCLIPScore(MetricTester):
             metric_args={"model_name_or_path": model_name_or_path},
         )
 
+    @skip_on_connection_issues()
     def test_error_on_not_same_amount_of_input(self, input, model_name_or_path):
         """Test that an error is raised if the number of images and text examples does not match."""
         metric = CLIPScore(model_name_or_path=model_name_or_path)
         with pytest.raises(ValueError):
             metric(torch.randint(255, (2, 3, 224, 224)), "28-year-old chef found dead in San Francisco mall")
 
+    @skip_on_connection_issues()
     def test_error_on_wrong_image_format(self, input, model_name_or_path):
         """Test that an error is raised if not all images are [c, h, w] format."""
         metric = CLIPScore(model_name_or_path=model_name_or_path)
