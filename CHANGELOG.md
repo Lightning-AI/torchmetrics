@@ -26,6 +26,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `LogCoshError` to regression package ([#1316](https://github.com/Lightning-AI/metrics/pull/1316))
 
 
+- Added `CramersV` to the new nominal package ([#1298](https://github.com/Lightning-AI/metrics/pull/1298))
+
+
 ### Changed
 
 - Changed `MeanAveragePrecision` to vectorize `_find_best_gt_match` operation ([#1259](https://github.com/Lightning-AI/metrics/pull/1259))
@@ -54,6 +57,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 - Fixed bug to prevent users from going into a infinite loop if trying to iterate of a single metric ([#1320](https://github.com/Lightning-AI/metrics/pull/1320))
+
+
+- Fixed bug when `compute_on_cpu` arg used together with `forward` method ([#1333](https://github.com/Lightning-AI/metrics/pull/1333))
 
 
 ## [0.10.2] - 2022-10-31
