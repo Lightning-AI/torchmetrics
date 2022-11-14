@@ -44,6 +44,7 @@ from torchmetrics.functional.image.ssim import (
 )
 from torchmetrics.functional.image.tv import total_variation
 from torchmetrics.functional.image.uqi import universal_image_quality_index
+from torchmetrics.functional.nominal.cramers import cramers_v
 from torchmetrics.functional.pairwise.cosine import pairwise_cosine_similarity
 from torchmetrics.functional.pairwise.euclidean import pairwise_euclidean_distance
 from torchmetrics.functional.pairwise.linear import pairwise_linear_similarity
@@ -53,6 +54,7 @@ from torchmetrics.functional.regression.cosine_similarity import cosine_similari
 from torchmetrics.functional.regression.explained_variance import explained_variance
 from torchmetrics.functional.regression.kendall import kendall_rank_corrcoef
 from torchmetrics.functional.regression.kl_divergence import kl_divergence
+from torchmetrics.functional.regression.log_cosh import log_cosh_error
 from torchmetrics.functional.regression.log_mse import mean_squared_log_error
 from torchmetrics.functional.regression.mae import mean_absolute_error
 from torchmetrics.functional.regression.mape import mean_absolute_percentage_error
@@ -103,6 +105,7 @@ __all__ = [
     "cohen_kappa",
     "confusion_matrix",
     "cosine_similarity",
+    "cramers_v",
     "tweedie_deviance_score",
     "dice_score",
     "dice",
@@ -117,6 +120,7 @@ __all__ = [
     "jaccard_index",
     "kendall_rank_corrcoef",
     "kl_divergence",
+    "log_cosh_error",
     "match_error_rate",
     "matthews_corrcoef",
     "mean_absolute_error",

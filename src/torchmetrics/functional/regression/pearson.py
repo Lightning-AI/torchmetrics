@@ -16,7 +16,7 @@ from typing import Tuple
 import torch
 from torch import Tensor
 
-from torchmetrics.functional.regression.utils import _check_data_shape_for_corr_coef
+from torchmetrics.functional.regression.utils import _check_data_shape_to_num_outputs
 from torchmetrics.utilities.checks import _check_same_shape
 
 
@@ -45,7 +45,7 @@ def _pearson_corrcoef_update(
     """
     # Data checking
     _check_same_shape(preds, target)
-    _check_data_shape_for_corr_coef(preds, target, num_outputs)
+    _check_data_shape_to_num_outputs(preds, target, num_outputs)
 
     n_obs = preds.shape[0]
     mx_new = (n_prior * mean_x + preds.mean(0) * n_obs) / (n_prior + n_obs)

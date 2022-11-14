@@ -17,7 +17,7 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.functional.regression.utils import _check_data_shape_for_corr_coef
+from torchmetrics.functional.regression.utils import _check_data_shape_to_num_outputs
 from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.data import _bincount, dim_zero_cat
 from torchmetrics.utilities.enums import EnumStr
@@ -265,7 +265,7 @@ def _kendall_corrcoef_update(
     """
     # Data checking
     _check_same_shape(preds, target)
-    _check_data_shape_for_corr_coef(preds, target, num_outputs)
+    _check_data_shape_to_num_outputs(preds, target, num_outputs)
 
     if num_outputs == 1:
         preds = preds.unsqueeze(1)

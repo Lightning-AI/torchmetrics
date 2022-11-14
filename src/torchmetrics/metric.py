@@ -288,6 +288,8 @@ class Metric(Module, ABC):
         self._computed = None
         self._enable_grad = False
         self.compute_on_cpu = _temp_compute_on_cpu
+        if self.compute_on_cpu:
+            self._move_list_states_to_cpu()
 
         return batch_val
 
@@ -325,6 +327,8 @@ class Metric(Module, ABC):
         self._computed = None
         self._enable_grad = False
         self.compute_on_cpu = _temp_compute_on_cpu
+        if self.compute_on_cpu:
+            self._move_list_states_to_cpu()
 
         return batch_val
 
@@ -857,6 +861,9 @@ class Metric(Module, ABC):
 
     def __getnewargs__(self) -> Tuple:
         return (Metric.__str__(self),)
+
+    def __iter__(self):
+        raise NotImplementedError("Metrics does not support iteration.")
 
 
 def _neg(x: Tensor) -> Tensor:
