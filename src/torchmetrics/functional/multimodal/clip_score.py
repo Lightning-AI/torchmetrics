@@ -62,7 +62,7 @@ def _clip_score_update(
 
 
 def _get_model_and_processor(
-    version: Literal[
+    model_name_or_path: Literal[
         "openai/clip-vit-base-patch16",
         "openai/clip-vit-base-patch32",
         "openai/clip-vit-large-patch14-336",
@@ -70,8 +70,8 @@ def _get_model_and_processor(
     ] = "openai/clip-vit-large-patch14",
 ):
     if _TRANSFORMERS_AVAILABLE:
-        model = _CLIPModel.from_pretrained(version)
-        processor = _CLIPProcessor.from_pretrained(version)
+        model = _CLIPModel.from_pretrained(model_name_or_path)
+        processor = _CLIPProcessor.from_pretrained(model_name_or_path)
         return model, processor
     else:
         raise ModuleNotFoundError(
@@ -83,7 +83,7 @@ def _get_model_and_processor(
 def clip_score(
     images: Union[Tensor, List[Tensor]],
     text: Union[str, List[str]],
-    version: Literal[
+    model_name_or_path: Literal[
         "openai/clip-vit-base-patch16",
         "openai/clip-vit-base-patch32",
         "openai/clip-vit-large-patch14-336",
@@ -106,7 +106,7 @@ def clip_score(
     Args:
         images: Either a single [N, C, H, W] tensor or a list of [C, H, W] tensors
         text: Either a single caption or a list of captions
-        version: string indicating the version of the CLIP model to use. Available models are
+        model_name_or_path: string indicating the version of the CLIP model to use. Available models are
             `"openai/clip-vit-base-patch16"`, `"openai/clip-vit-base-patch32"`, `"openai/clip-vit-large-patch14-336"`
             and `"openai/clip-vit-large-patch14"`,
 
@@ -125,6 +125,6 @@ def clip_score(
         >>> clip_score(torch.randint(255, (3, 224, 224)), "a photo of a cat")
         tensor(19.4135, grad_fn=<SqueezeBackward0>)
     """
-    model, processor = _get_model_and_processor(version)
+    model, processor = _get_model_and_processor(model_name_or_path)
     score, _ = _clip_score_update(images, text, model, processor)
     return torch.max(score.mean(0), torch.zeros_like(score))

@@ -41,7 +41,7 @@ class CLIPScore(Metric):
     .. note:: Metric is not scriptable
 
     Args:
-        version: string indicating the version of the CLIP model to use. Available models are
+        model_name_or_path: string indicating the version of the CLIP model to use. Available models are
             `"openai/clip-vit-base-patch16"`, `"openai/clip-vit-base-patch32"`, `"openai/clip-vit-large-patch14-336"`
             and `"openai/clip-vit-large-patch14"`,
 
@@ -68,7 +68,7 @@ class CLIPScore(Metric):
 
     def __init__(
         self,
-        version: Literal[
+        model_name_or_path: Literal[
             "openai/clip-vit-base-patch16",
             "openai/clip-vit-base-patch32",
             "openai/clip-vit-large-patch14-336",
@@ -78,7 +78,7 @@ class CLIPScore(Metric):
     ) -> None:
 
         super().__init__(**kwargs)
-        self.model, self.processor = _get_model_and_processor(version)
+        self.model, self.processor = _get_model_and_processor(model_name_or_path)
         self.add_state("score", torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("n_samples", torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
 

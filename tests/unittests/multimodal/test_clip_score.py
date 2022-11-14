@@ -43,9 +43,9 @@ captions = [
 _random_input = Input(images=torch.randint(255, (2, 2, 3, 224, 224)), captions=[captions[0:2], captions[2:]])
 
 
-def _compare_fn(preds, target, version):
-    processor = _CLIPProcessor.from_pretrained(version)
-    model = _CLIPModel.from_pretrained(version)
+def _compare_fn(preds, target, model_name_or_path):
+    processor = _CLIPProcessor.from_pretrained(model_name_or_path)
+    model = _CLIPModel.from_pretrained(model_name_or_path)
     inputs = processor(text=target, images=[p.cpu() for p in preds], return_tensors="pt", padding=True)
     outputs = model(**inputs)
     logits_per_image = outputs.logits_per_image
@@ -53,7 +53,7 @@ def _compare_fn(preds, target, version):
 
 
 @skip_on_connection_issues()
-@pytest.mark.parametrize("version", ["openai/clip-vit-base-patch32"])
+@pytest.mark.parametrize("model_name_or_path", ["openai/clip-vit-base-patch32"])
 @pytest.mark.parametrize(
     "input",
     [
@@ -63,7 +63,7 @@ def _compare_fn(preds, target, version):
 class TestCLIPScore(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_clip_score(self, input, version, ddp, dist_sync_on_step):
+    def test_clip_score(self, input, model_name_or_path, ddp, dist_sync_on_step):
         # images are preds and targets are captions
         preds, target = input
         self.run_class_metric_test(
@@ -71,41 +71,41 @@ class TestCLIPScore(MetricTester):
             preds=preds,
             target=target,
             metric_class=CLIPScore,
-            sk_metric=partial(_compare_fn, version=version),
+            sk_metric=partial(_compare_fn, model_name_or_path=model_name_or_path),
             dist_sync_on_step=dist_sync_on_step,
-            metric_args={"version": version},
+            metric_args={"model_name_or_path": model_name_or_path},
             check_scriptable=False,
             check_state_dict=False,
         )
 
-    def test_clip_score_functional(self, input, version):
+    def test_clip_score_functional(self, input, model_name_or_path):
         preds, target = input
         self.run_functional_metric_test(
             preds=preds,
             target=target,
             metric_functional=clip_score,
-            sk_metric=partial(_compare_fn, version=version),
-            metric_args={"version": version},
+            sk_metric=partial(_compare_fn, model_name_or_path=model_name_or_path),
+            metric_args={"model_name_or_path": model_name_or_path},
         )
 
-    def test_mean_error_differentiability(self, input, version):
+    def test_mean_error_differentiability(self, input, model_name_or_path):
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
             target=target,
             metric_module=CLIPScore,
             metric_functional=clip_score,
-            metric_args={"version": version},
+            metric_args={"model_name_or_path": model_name_or_path},
         )
 
-    def test_error_on_not_same_amount_of_input(self, input, version):
+    def test_error_on_not_same_amount_of_input(self, input, model_name_or_path):
         """Test that an error is raised if the number of images and text examples does not match."""
-        metric = CLIPScore(version=version)
+        metric = CLIPScore(model_name_or_path=model_name_or_path)
         with pytest.raises(ValueError):
             metric(torch.randint(255, (2, 3, 224, 224)), "28-year-old chef found dead in San Francisco mall")
 
-    def test_error_on_wrong_image_format(self, input, version):
+    def test_error_on_wrong_image_format(self, input, model_name_or_path):
         """Test that an error is raised if not all images are [c, h, w] format."""
-        metric = CLIPScore(version=version)
+        metric = CLIPScore(model_name_or_path=model_name_or_path)
         with pytest.raises(ValueError):
             metric(torch.randint(255, (224, 224)), "28-year-old chef found dead in San Francisco mall")
