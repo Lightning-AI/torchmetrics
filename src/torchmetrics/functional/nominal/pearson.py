@@ -80,7 +80,7 @@ def pearsons_contingency_coefficient(
     ata series.
 
     .. math::
-        T = \sqrt{\frac{\chi^2 / n}{\frac{1 + \chi^2 / n}}}
+        Pearson = \sqrt{\frac{\chi^2 / n}{1 + \chi^2 / n}}
 
     where
 
@@ -90,7 +90,7 @@ def pearsons_contingency_coefficient(
     Pearson's Contingency Coefficient is a symmetric coefficient, i.e.
 
     .. math::
-        T(preds, target) = T(target, preds)
+        Pearson(preds, target) = Pearson(target, preds)
 
     The output values lies in [0, 1].
 

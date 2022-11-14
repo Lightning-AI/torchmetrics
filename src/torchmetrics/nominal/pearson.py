@@ -30,7 +30,7 @@ class PearsonsContingencyCoefficient(Metric):
     (nominal) data series.
 
     .. math::
-        T = \sqrt{\frac{\chi^2 / n}{\frac{1 + \chi^2 / n}}}
+        Pearson = \sqrt{\frac{\chi^2 / n}{1 + \chi^2 / n}}
 
     where
 
@@ -40,7 +40,7 @@ class PearsonsContingencyCoefficient(Metric):
     Pearson's Contingency Coefficient is a symmetric coefficient, i.e.
 
     .. math::
-        T(preds, target) = T(target, preds)
+        Pearson(preds, target) = Pearson(target, preds)
 
     The output values lies in [0, 1].
 
