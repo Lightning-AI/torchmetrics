@@ -43,8 +43,8 @@ def conditional_entropy(
     nan_strategy: Literal["replace", "drop"] = "replace",
     nan_replace_value: Optional[Union[int, float]] = 0.0,
 ) -> Tensor:
-    r"""Computes conditional entropy of x given y: S(x|y)
-    The implementation is based on the code provided in https://github.com/shakedzy/dython/
+    r"""Computes conditional entropy of x given y: S(x|y) The implementation is based on the code provided in
+    https://github.com/shakedzy/dython/
 
     Args:
         preds: 1D or 2D tensor of categorical (nominal) data
@@ -95,9 +95,8 @@ def theils_u(
     nan_replace_value: Optional[Union[int, float]] = 0.0,
     _PRECISION: float = 1e-13,
 ) -> Tensor:
-    r"""Computes Theil's U Statistic (Uncertainty Coefficient). The value is
-    between 0 and 1, i.e. 0 means y has no information about x while value 1
-    means y has complete information about x.
+    r"""Computes Theil's U Statistic (Uncertainty Coefficient). The value is between 0 and 1, i.e. 0 means y has no
+    information about x while value 1 means y has complete information about x.
 
     The implementation is based on the code provided in https://github.com/shakedzy/dython/
 
