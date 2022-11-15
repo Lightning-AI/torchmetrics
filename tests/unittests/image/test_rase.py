@@ -18,10 +18,10 @@ from functools import partial
 import pytest
 import sewar
 import torch
-from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 
 from torchmetrics import RelativeAverageSpectralError
 from torchmetrics.functional import relative_average_spectral_error
+from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 
 Input = namedtuple("Input", ["preds", "target", "window_size"])
 

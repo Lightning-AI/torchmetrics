@@ -18,10 +18,10 @@ from functools import partial
 import pytest
 import sewar
 import torch
-from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 
 from torchmetrics import RootMeanSquaredErrorUsingSlidingWindow
 from torchmetrics.functional import root_mean_squared_error_using_sliding_window
+from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 
 Input = namedtuple("Input", ["preds", "target", "window_size"])
 
