@@ -59,7 +59,22 @@ def _compute_chi_squared(confmat: Tensor, bias_correction: bool) -> Tensor:
 
 
 def _drop_empty_rows_and_cols(confmat: Tensor) -> Tensor:
-    """Drop all rows and columns containing only zeros."""
+    """Drop all rows and columns containing only zeros.
+
+    Example:
+        >>> import torch
+        >>> from torchmetrics.funcitonal.nominal.utils import _drop_empty_rows_and_cols
+        >>> _ = torch.manual_seed(22)
+        >>> matrix = torch.randint(10, size=(3, 3))
+        >>> matrix[1, :] = matrix[:, 1] = 0
+        >>> matrix
+        tensor([[9, 0, 6],
+                [0, 0, 0],
+                [2, 0, 8]])
+        >>> _drop_empty_rows_and_cols(matrix)
+        tensor([[9, 6],
+                [2, 8]])
+    """
     confmat = confmat[confmat.sum(1) != 0]
     confmat = confmat[:, confmat.sum(0) != 0]
     return confmat
