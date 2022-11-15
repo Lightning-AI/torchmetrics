@@ -50,6 +50,12 @@ class CramersV(Metric):
     Returns:
         Cramer's V statistic
 
+    Raises:
+        ValueError:
+            If `nan_strategy` is not one of `'replace'` and `'drop'`
+        ValueError:
+            If `nan_strategy` is equal to `'replace'` and `nan_replace_value` is not an `int` or `float`
+
     Example:
         >>> from torchmetrics import CramersV
         >>> _ = torch.manual_seed(42)
