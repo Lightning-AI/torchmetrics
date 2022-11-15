@@ -51,6 +51,11 @@ class PearsonsContingencyCoefficient(Metric):
         nan_replace_value: Value to replace ``NaN``s when ``nan_strategy = 'replace'``
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
+Raises:
+    ValueError:
+        If `nan_strategy` is not one of `'replace'` and `'drop'`
+    ValueError:
+        If `nan_strategy` is equal to `'replace'` and `nan_replace_value` is not an `int` or `float` 
     Returns:
         Pearson's Contingency Coefficient statistic
 
@@ -66,7 +71,7 @@ class PearsonsContingencyCoefficient(Metric):
 
     full_state_update: bool = False
     is_differentiable: bool = False
-    higher_is_better: bool = False
+    higher_is_better: bool = True
     confmat: Tensor
 
     def __init__(

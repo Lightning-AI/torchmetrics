@@ -62,7 +62,7 @@ class CramersV(Metric):
 
     full_state_update: bool = False
     is_differentiable: bool = False
-    higher_is_better: bool = False
+    higher_is_better: bool = True
     confmat: Tensor
 
     def __init__(

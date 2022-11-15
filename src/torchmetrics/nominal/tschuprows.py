@@ -50,6 +50,11 @@ class TschuprowsT(Metric):
     Returns:
         Tschuprow's T statistic
 
+Raises:
+    ValueError:
+        If `nan_strategy` is not one of `'replace'` and `'drop'`
+    ValueError:
+        If `nan_strategy` is equal to `'replace'` and `nan_replace_value` is not an `int` or `float` 
     Example:
         >>> from torchmetrics import TschuprowsT
         >>> _ = torch.manual_seed(42)
@@ -62,7 +67,7 @@ class TschuprowsT(Metric):
 
     full_state_update: bool = False
     is_differentiable: bool = False
-    higher_is_better: bool = False
+    higher_is_better: bool = True
     confmat: Tensor
 
     def __init__(
