@@ -16,7 +16,6 @@ import warnings
 from collections import Counter
 from typing import Optional, Union
 
-import scipy.stats as ss
 import torch
 from torch import Tensor
 from typing_extensions import Literal
@@ -134,7 +133,7 @@ def theils_u(
     x_counter = Counter(preds.numpy())
     total_occurrences = sum(x_counter.values())
     p_x = list(map(lambda n: n / total_occurrences, x_counter.values()))
-    s_x = ss.entropy(p_x)
+    s_x = -sum([-x * math.log(x) for x in p_x])
 
     # if s_x is 0 (all elements are same, entropy 0), return 1.0
     if s_x == 0:
