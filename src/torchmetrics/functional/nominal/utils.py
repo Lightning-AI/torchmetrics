@@ -63,7 +63,7 @@ def _drop_empty_rows_and_cols(confmat: Tensor) -> Tensor:
 
     Example:
         >>> import torch
-        >>> from torchmetrics.funcitonal.nominal.utils import _drop_empty_rows_and_cols
+        >>> from torchmetrics.functional.nominal.utils import _drop_empty_rows_and_cols
         >>> _ = torch.manual_seed(22)
         >>> matrix = torch.randint(10, size=(3, 3))
         >>> matrix[1, :] = matrix[:, 1] = 0
