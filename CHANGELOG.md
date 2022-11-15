@@ -27,9 +27,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 - Added `CramersV` to the new nominal package ([#1298](https://github.com/Lightning-AI/metrics/pull/1298))
-
-
-- Added `PearsonsContingencyCoefficient` and `TschuprowsT` to nominal package ([#1334](https://github.com/Lightning-AI/metrics/pull/1334))
+  * `CramersV` ([#1298](https://github.com/Lightning-AI/metrics/pull/1298))
+  * `PearsonsContingencyCoefficient` ([#1334](https://github.com/Lightning-AI/metrics/pull/1334))
+  * `TschuprowsT` ([#1334](https://github.com/Lightning-AI/metrics/pull/1334))
 
 
 ### Changed

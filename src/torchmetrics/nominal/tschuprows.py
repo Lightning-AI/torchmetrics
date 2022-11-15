@@ -93,12 +93,16 @@ class TschuprowsT(Metric):
         """Update state with predictions and targets.
 
         Args:
-            preds: 1D or 2D tensor of categorical (nominal) data
-            - 1D shape: (batch_size,)
-            - 2D shape: (batch_size, num_classes)
-        target: 1D or 2D tensor of categorical (nominal) data
-            - 1D shape: (batch_size,)
-            - 2D shape: (batch_size, num_classes)
+            preds: 1D or 2D tensor of categorical (nominal) data:
+            
+                - 1D shape: (batch_size,)
+                - 2D shape: (batch_size, num_classes)
+                
+            target: 1D or 2D tensor of categorical (nominal) data:
+            
+                - 1D shape: (batch_size,)
+                - 2D shape: (batch_size, num_classes)
+                
         """
         confmat = _tschuprows_t_update(preds, target, self.num_classes, self.nan_strategy, self.nan_replace_value)
         self.confmat += confmat

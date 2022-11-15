@@ -96,12 +96,16 @@ def pearsons_contingency_coefficient(
     The output values lies in [0, 1] with 1 meaning the perfect association.
 
     Args:
-        preds: 1D or 2D tensor of categorical (nominal) data
+        preds: 1D or 2D tensor of categorical (nominal) data:
+        
             - 1D shape: (batch_size,)
             - 2D shape: (batch_size, num_classes)
-        target: 1D or 2D tensor of categorical (nominal) data
+            
+        target: 1D or 2D tensor of categorical (nominal) data:
+        
             - 1D shape: (batch_size,)
             - 2D shape: (batch_size, num_classes)
+            
         nan_strategy: Indication of whether to replace or drop ``NaN`` values
         nan_replace_value: Value to replace ``NaN``s when ``nan_strategy = 'replace'``
 
@@ -134,8 +138,10 @@ def pearsons_contingency_coefficient_matrix(
 
     Args:
         matrix: A tensor of categorical (nominal) data, where:
+        
             - rows represent a number of data points
             - columns represent a number of categorical (nominal) features
+            
         nan_strategy: Indication of whether to replace or drop ``NaN`` values
         nan_replace_value: Value to replace ``NaN``s when ``nan_strategy = 'replace'``
 
@@ -160,7 +166,8 @@ def pearsons_contingency_coefficient_matrix(
         x, y = matrix[:, i], matrix[:, j]
         num_classes = len(torch.cat([x, y]).unique())
         confmat = _pearsons_contingency_coefficient_update(x, y, num_classes, nan_strategy, nan_replace_value)
+        val = _pearsons_contingency_coefficient_compute(confmat)
         pearsons_cont_coef_matrix_value[i, j] = pearsons_cont_coef_matrix_value[
             j, i
-        ] = _pearsons_contingency_coefficient_compute(confmat)
+        ] = val
     return pearsons_cont_coef_matrix_value

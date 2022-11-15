@@ -110,12 +110,16 @@ def tschuprows_t(
     The output values lies in [0, 1] with 1 meaning the perfect association.
 
     Args:
-        preds: 1D or 2D tensor of categorical (nominal) data
+        preds: 1D or 2D tensor of categorical (nominal) data:
+        
             - 1D shape: (batch_size,)
             - 2D shape: (batch_size, num_classes)
-        target: 1D or 2D tensor of categorical (nominal) data
+            
+        target: 1D or 2D tensor of categorical (nominal) data:
+        
             - 1D shape: (batch_size,)
             - 2D shape: (batch_size, num_classes)
+            
         bias_correction: Indication of whether to use bias correction.
         nan_strategy: Indication of whether to replace or drop ``NaN`` values
         nan_replace_value: Value to replace ``NaN``s when ``nan_strategy = 'replace'``
@@ -150,8 +154,10 @@ def tschuprows_t_matrix(
 
     Args:
         matrix: A tensor of categorical (nominal) data, where:
+        
             - rows represent a number of data points
             - columns represent a number of categorical (nominal) features
+            
         bias_correction: Indication of whether to use bias correction.
         nan_strategy: Indication of whether to replace or drop ``NaN`` values
         nan_replace_value: Value to replace ``NaN``s when ``nan_strategy = 'replace'``
