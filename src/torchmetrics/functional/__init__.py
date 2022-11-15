@@ -43,6 +43,7 @@ from torchmetrics.functional.image.ssim import (
 from torchmetrics.functional.image.tv import total_variation
 from torchmetrics.functional.image.uqi import universal_image_quality_index
 from torchmetrics.functional.nominal.cramers import cramers_v
+from torchmetrics.functional.nominal.thiels_u import theils_u
 from torchmetrics.functional.pairwise.cosine import pairwise_cosine_similarity
 from torchmetrics.functional.pairwise.euclidean import pairwise_euclidean_distance
 from torchmetrics.functional.pairwise.linear import pairwise_linear_similarity
@@ -163,6 +164,7 @@ __all__ = [
     "structural_similarity_index_measure",
     "stat_scores",
     "symmetric_mean_absolute_percentage_error",
+    "theils_u",
     "total_variation",
     "translation_edit_rate",
     "universal_image_quality_index",
