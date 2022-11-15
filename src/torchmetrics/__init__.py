@@ -53,7 +53,7 @@ from torchmetrics.image import (  # noqa: E402
     UniversalImageQualityIndex,
 )
 from torchmetrics.metric import Metric  # noqa: E402
-from torchmetrics.nominal import CramersV, Thiels_U  # noqa: E402
+from torchmetrics.nominal import CramersV, ThielsU  # noqa: E402
 from torchmetrics.regression import (  # noqa: E402
     ConcordanceCorrCoef,
     CosineSimilarity,
@@ -184,7 +184,7 @@ __all__ = [
     "StatScores",
     "SumMetric",
     "SymmetricMeanAbsolutePercentageError",
-    "Thiels_U",
+    "ThielsU",
     "TotalVariation",
     "TranslationEditRate",
     "UniversalImageQualityIndex",

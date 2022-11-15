@@ -21,8 +21,8 @@ from torchmetrics.functional.nominal.thiels_u import _thiels_u_input_validation,
 from torchmetrics.metric import Metric
 
 
-class Thiels_U(Metric):
-    """Compute `Thiels_U` statistic measuring the association between two categorical (nominal) data series.
+class ThielsU(Metric):
+    """Compute `ThielsU` statistic measuring the association between two categorical (nominal) data series.
 
     .. math::
         U(X|Y) = \frac{H(X) - H(X|Y)}{H(X)}
@@ -53,11 +53,11 @@ class Thiels_U(Metric):
         Thiel's U Statistic: Tensor
 
     Example:
-        >>> from torchmetrics import Thiels_U
+        >>> from torchmetrics import ThielsU
         >>> _ = torch.manual_seed(42)
         >>> preds = torch.randint(10, (10,))
         >>> target = torch.randint(10, (10,))
-        >>> Thiels_U()(preds, target)
+        >>> ThielsU()(preds, target)
         tensor(0.0853)
     """
 
