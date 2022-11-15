@@ -25,9 +25,56 @@ from torchmetrics.functional.classification.stat_scores import (
     _multilabel_stat_scores_arg_validation,
     _multilabel_stat_scores_format,
     _multilabel_stat_scores_tensor_validation,
+    _multiclass_stat_scores_arg_validation,
+    _multiclass_stat_scores_format,
+    
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
+
+
+class MulticlassExactMatch(Metric):
+
+    is_differentiable = False
+    higher_is_better = True
+    full_state_update: bool = False
+
+    def __init__(
+        self,
+        num_classes: int,
+        multidim_average: Literal["global", "samplewise"] = "global",
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(**kwargs)
+        if validate_args:
+            _multiclass_stat_scores_arg_validation(
+                num_classes, threshold, average=None, multidim_average=multidim_average, ignore_index=ignore_index
+            )
+        self.num_labels = num_labels
+        self.threshold = threshold
+        self.multidim_average = multidim_average
+        self.ignore_index = ignore_index
+        self.validate_args = validate_args
+
+        self.add_state(
+            "correct",
+            torch.zeros(1, dtype=torch.long) if self.multidim_average == "global" else [],
+            dist_reduce_fx="sum" if self.multidim_average == "global" else "cat",
+        )
+        self.add_state(
+            "total",
+            torch.zeros(1, dtype=torch.long),
+            dist_reduce_fx="sum" if self.multidim_average == "global" else "mean",
+        )
+
+    def update(self, preds, target) -> None:
+        
+
+    def compute(self) -> Tensor:
+        correct = dim_zero_cat(self.correct) if isinstance(self.correct, Tensor) else self.correct
+        return _multilabel_exact_scores_compute(correct, self.total)
 
 
 class MultilabelExactMatch(Metric):
@@ -160,5 +207,9 @@ class MultilabelExactMatch(Metric):
             self.total += total
 
     def compute(self) -> Tensor:
-        correct = dim_zero_cat(self.correct)
+        correct = dim_zero_cat(self.correct) if isinstance(self.correct, Tensor) else self.correct
         return _multilabel_exact_scores_compute(correct, self.total)
+
+
+class ExactMatch:
+    def __new__(cls, )
