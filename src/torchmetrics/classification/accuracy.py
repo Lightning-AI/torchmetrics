@@ -122,7 +122,7 @@ class BinaryAccuracy(BinaryStatScores):
         """Plot a single or multiple values from the metric.
 
         Args:
-            val: Either single result from calling `metric.forward` or `metric.compute` or an list of these results.
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
                 If no value is provided, will automatically call `metric.compute` and plot that result.
 
         Returns:
@@ -261,7 +261,7 @@ class MulticlassAccuracy(MulticlassStatScores):
         """Plot a single or multiple values from the metric.
 
         Args:
-            val: Either single result from calling `metric.forward` or `metric.compute` or an list of these results.
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
                 If no value is provided, will automatically call `metric.compute` and plot that result.
 
         Returns:
