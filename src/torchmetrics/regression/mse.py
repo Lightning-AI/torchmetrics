@@ -18,7 +18,11 @@ from torch import Tensor, tensor
 
 from torchmetrics.functional.regression.mse import _mean_squared_error_compute, _mean_squared_error_update
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _PLOT_OUT_TYPE, plot_single_or_multi_val
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["MeanSquaredError.plot"]
 
 
 class MeanSquaredError(Metric):

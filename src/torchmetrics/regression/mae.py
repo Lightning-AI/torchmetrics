@@ -18,10 +18,6 @@ from torch import Tensor, tensor
 
 from torchmetrics.functional.regression.mae import _mean_absolute_error_compute, _mean_absolute_error_update
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
-
-if not _MATPLOTLIB_AVAILABLE:
-    __doctest_skip__ = ["MulticlassConfusionMatrix.plot"]
 
 
 class MeanAbsoluteError(Metric):

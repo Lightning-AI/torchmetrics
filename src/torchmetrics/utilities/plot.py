@@ -48,10 +48,28 @@ def plot_single_or_multi_val(
     upper_bound: Optional[float] = None,
     legend_name: Optional[str] = None,
     name: Optional[str] = None,
-    fig_ax: Optional[_PLOT_OUT_TYPE] = None,
 ) -> _PLOT_OUT_TYPE:
+    """Plot a single metric value or multiple, including bounds of value if existing.
+
+    Args:
+        val: A single tensor with one or multiple values (multiclass/label/output format) or an list of such tensors.
+            If a list is provided the values are interpret as an time series of evolving values.
+        higher_is_better: Indicates if an label indicating where the optimal value is should be added to the figure
+        lower_bound: lower value that the metric can take
+        upper_bound: upper value that the metric can take
+        legend_name: for class based metrics specify the legend prefix e.g. Class or Label to use when multiple values
+            are provided
+        name: Name of the metric to use for the y-axis label
+
+    Returns:
+        A tuple consisting of the figure and respective ax objects of the generated figure
+
+    Raises:
+        ModuleNotFoundError:
+            If `matplotlib` is not installed
+    """
     _error_on_missing_matplotlib()
-    fig, ax = plt.subplots() if fig_ax is None else fig_ax
+    fig, ax = plt.subplots()
     ax.get_xaxis().set_visible(False)
 
     if isinstance(val, Tensor) and val.numel() == 1:
@@ -155,7 +173,16 @@ def plot_confusion_matrix(
     labels: Optional[List[str]] = None,
 ) -> _PLOT_OUT_TYPE:
     """Inspired by: https://github.com/scikit-learn/scikit-
-    learn/blob/main/sklearn/metrics/_plot/confusion_matrix.py."""
+    learn/blob/main/sklearn/metrics/_plot/confusion_matrix.py.
+
+    Plots an confusion matrix
+
+    Args:
+        confmat: the confusion matrix. Either should be an [N,N] matrix in the binary and multiclass cases or an
+            [N, 2, 2] matrix for multilabel classification
+        add_text: if text should be added to each cell with the given value
+        labels: labels to
+    """
 
     _error_on_missing_matplotlib()
 
