@@ -25,44 +25,44 @@ from torchmetrics.metric import Metric
 class TschuprowsT(Metric):
     r"""Compute `Tschuprow's T`_ statistic measuring the association between two categorical (nominal) data series.
 
-    .. math::
-        T = \sqrt{\frac{\chi^2 / n}{\sqrt{(r - 1) * (k - 1)}}}
+        .. math::
+            T = \sqrt{\frac{\chi^2 / n}{\sqrt{(r - 1) * (k - 1)}}}
 
-    where
+        where
 
-    .. math::
-        \chi^2 = \sum_{i,j} \ frac{\left(n_{ij} - \frac{n_{i.} n_{.j}}{n}\right)^2}{\frac{n_{i.} n_{.j}}{n}}
+        .. math::
+            \chi^2 = \sum_{i,j} \ frac{\left(n_{ij} - \frac{n_{i.} n_{.j}}{n}\right)^2}{\frac{n_{i.} n_{.j}}{n}}
 
-    where :math:`n_{ij}` denotes the number of times the values :math:`(A_i, B_j)` are observed with :math:`A_i, B_j`
-    represent frequencies of values in ``preds`` and ``target``, respectively.
+        where :math:`n_{ij}` denotes the number of times the values :math:`(A_i, B_j)` are observed with :math:`A_i, B_j`
+        represent frequencies of values in ``preds`` and ``target``, respectively.
 
-    Tschuprow's T is a symmetric coefficient, i.e. :math:`T(preds, target) = T(target, preds)`.
+        Tschuprow's T is a symmetric coefficient, i.e. :math:`T(preds, target) = T(target, preds)`.
 
-    The output values lies in [0, 1] with 1 meaning the perfect association.
+        The output values lies in [0, 1] with 1 meaning the perfect association.
 
-    Args:
-        num_classes: Integer specifing the number of classes
-        bias_correction: Indication of whether to use bias correction.
-        nan_strategy: Indication of whether to replace or drop ``NaN`` values
-        nan_replace_value: Value to replace ``NaN``s when ``nan_strategy = 'replace'``
-        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        Args:
+            num_classes: Integer specifing the number of classes
+            bias_correction: Indication of whether to use bias correction.
+            nan_strategy: Indication of whether to replace or drop ``NaN`` values
+            nan_replace_value: Value to replace ``NaN``s when ``nan_strategy = 'replace'``
+            kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    Returns:
-        Tschuprow's T statistic
+        Returns:
+            Tschuprow's T statistic
 
-Raises:
-    ValueError:
-        If `nan_strategy` is not one of `'replace'` and `'drop'`
-    ValueError:
-        If `nan_strategy` is equal to `'replace'` and `nan_replace_value` is not an `int` or `float` 
-    Example:
-        >>> from torchmetrics import TschuprowsT
-        >>> _ = torch.manual_seed(42)
-        >>> preds = torch.randint(0, 4, (100,))
-        >>> target = torch.round(preds + torch.randn(100)).clamp(0, 4)
-        >>> tschuprows_t = TschuprowsT(num_classes=5)
-        >>> tschuprows_t(preds, target)
-        tensor(0.4930)
+    Raises:
+        ValueError:
+            If `nan_strategy` is not one of `'replace'` and `'drop'`
+        ValueError:
+            If `nan_strategy` is equal to `'replace'` and `nan_replace_value` is not an `int` or `float`
+        Example:
+            >>> from torchmetrics import TschuprowsT
+            >>> _ = torch.manual_seed(42)
+            >>> preds = torch.randint(0, 4, (100,))
+            >>> target = torch.round(preds + torch.randn(100)).clamp(0, 4)
+            >>> tschuprows_t = TschuprowsT(num_classes=5)
+            >>> tschuprows_t(preds, target)
+            tensor(0.4930)
     """
 
     full_state_update: bool = False
