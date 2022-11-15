@@ -27,7 +27,7 @@ from torchmetrics.metric import Metric
 
 class PearsonsContingencyCoefficient(Metric):
     r"""Compute `Pearson's Contingency Coefficient`_ statistic measuring the association between two categorical
-        (nominal) data series.
+    (nominal) data series.
 
         .. math::
             Pearson = \sqrt{\frac{\chi^2 / n}{1 + \chi^2 / n}}
