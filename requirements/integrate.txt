@@ -1,2 +1,2 @@
 pytorch-lightning>=1.5
-matplotlib
+matplotlib>=3.0.0

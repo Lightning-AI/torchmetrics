@@ -104,7 +104,7 @@ extensions = [
     "matplotlib.sphinxext.plot_directive",
 ]
 
-# something
+# Set that source code from plotting is always included
 plot_include_source = True
 
 # Add any paths that contain templates here, relative to this directory.
