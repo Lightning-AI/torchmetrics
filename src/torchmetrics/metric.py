@@ -851,7 +851,7 @@ class Metric(Module, ABC):
     def __getnewargs__(self) -> Tuple:
         return (Metric.__str__(self),)
 
-    def __iter__(self):
+    def __iter__(self) -> Any:
         raise NotImplementedError("Metrics does not support iteration.")
 
 
