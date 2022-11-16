@@ -115,6 +115,7 @@ class BinaryAccuracy(BinaryStatScores):
     plot_options = {"lower_bound": 0.0, "upper_bound": 1.0}
 
     def compute(self) -> Tensor:
+        """Computes accuracy based on inputs passed in to ``update`` previously."""
         tp, fp, tn, fn = self._final_state()
         return _accuracy_reduce(tp, fp, tn, fn, average="binary", multidim_average=self.multidim_average)
 
@@ -266,6 +267,7 @@ class MulticlassAccuracy(MulticlassStatScores):
     plot_options = {"lower_bound": 0.0, "upper_bound": 1.0, "legend_name": "Class"}
 
     def compute(self) -> Tensor:
+        """Computes accuracy based on inputs passed in to ``update`` previously."""
         tp, fp, tn, fn = self._final_state()
         return _accuracy_reduce(tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average)
 
@@ -415,6 +417,7 @@ class MultilabelAccuracy(MultilabelStatScores):
     plot_options = {"lower_bound": 0.0, "upper_bound": 1.0, "legend_name": "Label"}
 
     def compute(self) -> Tensor:
+        """Computes accuracy based on inputs passed in to ``update`` previously."""
         tp, fp, tn, fn = self._final_state()
         return _accuracy_reduce(
             tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average, multilabel=True
