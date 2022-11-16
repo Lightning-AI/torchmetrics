@@ -19,14 +19,13 @@ import numpy as np
 import torch
 from torch import Tensor
 
-from torchmetrics.utilities.compute import _auc_compute_without_check as auc_calc
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 
 if _MATPLOTLIB_AVAILABLE:
     import matplotlib
     import matplotlib.pyplot as plt
 
-    _PLOT_OUT_TYPE = Tuple[plt.Figure, matplotlib.axes.Axes]
+    _PLOT_OUT_TYPE = Tuple[plt.Figure, Union[matplotlib.axes.Axes, np.ndarray]]
     _AX_TYPE = matplotlib.axes.Axes
 else:
     _PLOT_OUT_TYPE = None
@@ -143,7 +142,7 @@ def plot_single_or_multi_val(
 
 
 def _get_col_row_split(n: int) -> Tuple[int, int]:
-    """Split n curves into rows x cols figures."""
+    """Split `n` figures into `rows` x `cols` figures."""
     nsq = sqrt(n)
     if nsq * nsq == n:
         return nsq, nsq
@@ -154,7 +153,7 @@ def _get_col_row_split(n: int) -> Tuple[int, int]:
 
 
 def trim_axs(axs: Union[_AX_TYPE, np.ndarray], N: int) -> np.ndarray:
-    """Reduce *axs* to *N* Axes.
+    """Reduce `axs` to `N` Axes.
 
     All further Axes are removed from the figure.
     """
@@ -181,9 +180,15 @@ def plot_confusion_matrix(
         confmat: the confusion matrix. Either should be an [N,N] matrix in the binary and multiclass cases or an
             [N, 2, 2] matrix for multilabel classification
         add_text: if text should be added to each cell with the given value
-        labels: labels to
-    """
+        labels: labels to add the the x and y axis
 
+    Returns:
+        A tuple consisting of the figure and respective ax objects (or array of ax objects) of the generated figure
+
+    Raises:
+        ModuleNotFoundError:
+            If `matplotlib` is not installed
+    """
     _error_on_missing_matplotlib()
 
     if confmat.ndim == 3:  # multilabel
@@ -221,71 +226,3 @@ def plot_confusion_matrix(
                 ax.text(jj, ii, str(val.item()), ha="center", va="center", fontsize=15)
 
     return fig, axs
-
-
-def _plot_curve(
-    input: Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]],
-    auc: bool = False,
-    single_plot: bool = False,
-    xy_labels: Tuple[str, str] = ("X axis", "Y axis"),
-) -> _PLOT_OUT_TYPE:
-    _error_on_missing_matplotlib()
-    val1, val2, thresholds = input
-
-    if auc:
-        if isinstance(val1, Tensor) and val1.ndim == 1:
-            val = auc_calc(val2, val1, 1.0)
-        elif isinstance(val1, Tensor):
-            val = auc_calc(val2, val1, 1.0, axis=1)
-        else:
-            val = [auc_calc(x, y, 1.0) for x, y in zip(val2, val1)]
-            val = torch.stack(val)
-
-    if isinstance(val1, Tensor) and val1.ndim == 1:  # binary case
-        fig, axs = plt.subplots(1, 1)
-        label = f"AUC: {val:0.2f}" if auc else ""
-        axs.plot(val1.cpu().detach(), val2.cpu().detach(), label=label)
-        axs.set_xlabel("False positive rate", fontsize=15)
-        axs.set_ylabel("True positive rate", fontsize=15)
-        if auc:
-            axs.legend()
-    else:
-        n = len(val1)
-        if not single_plot:
-            rows, cols = _get_col_row_split(n)
-            fig, axs = plt.subplots(rows, cols)
-            axs = trim_axs(axs, n)
-        else:
-            fig, axs = plt.subplots(1, 1)
-        for i in range(n):
-            ax = axs if single_plot else axs[i]
-            label = f"Class/Label {i}" if single_plot else ""
-            label += f" AUC: {val[i]:0.2f}" if auc else ""
-            ax.plot(val1[i], val2[i], "-", label=label)
-            ax.set_xlabel("False positive rate", fontsize=15)
-            ax.set_ylabel("True positive rate", fontsize=15)
-            if not single_plot:
-                ax.set_title(f"Class/Label {i}")
-            if label != "":
-                ax.legend()
-
-    return fig, axs
-
-
-def plot_roc(
-    roc: Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]],
-    auc: bool = False,
-    single_plot: bool = False,
-) -> _PLOT_OUT_TYPE:
-    return _plot_curve(roc, auc=auc, single_plot=single_plot, xy_labels=("False positive rate", "True positive rate"))
-
-
-def plot_prc(
-    prc: Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]],
-    auc: bool = False,
-    single_plot: bool = False,
-) -> _PLOT_OUT_TYPE:
-    # change order
-    return _plot_curve(
-        [prc[1].flip(0), prc[0].flip(0), prc[2]], auc=auc, single_plot=single_plot, xy_labels=("Recall", "Precision")
-    )
