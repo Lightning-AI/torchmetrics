@@ -42,13 +42,12 @@ from torchmetrics.functional.image.ssim import (
 )
 from torchmetrics.functional.image.tv import total_variation
 from torchmetrics.functional.image.uqi import universal_image_quality_index
-from torchmetrics.functional.nominal.cramers import cramers_v
-from torchmetrics.functional.nominal.thiels_u import theils_u
 from torchmetrics.functional.nominal.cramers import cramers_v, cramers_v_matrix
 from torchmetrics.functional.nominal.pearson import (
     pearsons_contingency_coefficient,
     pearsons_contingency_coefficient_matrix,
 )
+from torchmetrics.functional.nominal.thiels_u import theils_u
 from torchmetrics.functional.nominal.tschuprows import tschuprows_t, tschuprows_t_matrix
 from torchmetrics.functional.pairwise.cosine import pairwise_cosine_similarity
 from torchmetrics.functional.pairwise.euclidean import pairwise_euclidean_distance

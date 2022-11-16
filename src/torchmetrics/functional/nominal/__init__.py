@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from torchmetrics.functional.nominal.cramers import cramers_v, cramers_v_matrix  # noqa: F401
-from torchmetrics.functional.nominal.thiels_u import theils_u  # noqa: F401
 from torchmetrics.functional.nominal.pearson import (  # noqa: F401
     pearsons_contingency_coefficient,
     pearsons_contingency_coefficient_matrix,
 )
+from torchmetrics.functional.nominal.thiels_u import theils_u  # noqa: F401
 from torchmetrics.functional.nominal.tschuprows import tschuprows_t, tschuprows_t_matrix  # noqa: F401
