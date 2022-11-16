@@ -109,6 +109,7 @@ class BinaryAccuracy(BinaryStatScores):
     full_state_update: bool = False
 
     def compute(self) -> Tensor:
+        """Computes accuracy based on inputs passed in to ``update`` previously."""
         tp, fp, tn, fn = self._final_state()
         return _accuracy_reduce(tp, fp, tn, fn, average="binary", multidim_average=self.multidim_average)
 
@@ -214,6 +215,7 @@ class MulticlassAccuracy(MulticlassStatScores):
     full_state_update: bool = False
 
     def compute(self) -> Tensor:
+        """Computes accuracy based on inputs passed in to ``update`` previously."""
         tp, fp, tn, fn = self._final_state()
         return _accuracy_reduce(tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average)
 
@@ -317,6 +319,7 @@ class MultilabelAccuracy(MultilabelStatScores):
     full_state_update: bool = False
 
     def compute(self) -> Tensor:
+        """Computes accuracy based on inputs passed in to ``update`` previously."""
         tp, fp, tn, fn = self._final_state()
         return _accuracy_reduce(
             tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average, multilabel=True
