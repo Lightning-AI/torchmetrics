@@ -13,3 +13,5 @@
 # limitations under the License.
 from torchmetrics.nominal.cramers import CramersV  # noqa: F401
 from torchmetrics.nominal.thiels_u import ThielsU
+from torchmetrics.nominal.pearson import PearsonsContingencyCoefficient  # noqa: F401
+from torchmetrics.nominal.tschuprows import TschuprowsT  # noqa: F401

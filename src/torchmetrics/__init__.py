@@ -54,6 +54,7 @@ from torchmetrics.image import (  # noqa: E402
 )
 from torchmetrics.metric import Metric  # noqa: E402
 from torchmetrics.nominal import CramersV, ThielsU  # noqa: E402
+from torchmetrics.nominal import CramersV, PearsonsContingencyCoefficient, TschuprowsT  # noqa: E402
 from torchmetrics.regression import (  # noqa: E402
     ConcordanceCorrCoef,
     CosineSimilarity,
@@ -152,6 +153,7 @@ __all__ = [
     "MultioutputWrapper",
     "MultiScaleStructuralSimilarityIndexMeasure",
     "PearsonCorrCoef",
+    "PearsonsContingencyCoefficient",
     "PermutationInvariantTraining",
     "Perplexity",
     "Precision",
@@ -187,6 +189,7 @@ __all__ = [
     "ThielsU",
     "TotalVariation",
     "TranslationEditRate",
+    "TschuprowsT",
     "UniversalImageQualityIndex",
     "WeightedMeanAbsolutePercentageError",
     "WordErrorRate",
