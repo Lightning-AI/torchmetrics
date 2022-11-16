@@ -107,14 +107,6 @@ extensions = [
 # Set that source code from plotting is always included
 plot_include_source = True
 
-# Reduce the overall plot size in docs
-plot_pre_code = """
-import numpy as np
-import matplotlib
-from matplotlib import pyplot as plt
-matplotlib.rcParams['figure.figsize'] = (4, 3)
-"""
-
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
 

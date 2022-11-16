@@ -94,27 +94,26 @@ class MeanSquaredError(Metric):
                 If `matplotlib` is not installed
 
         .. plot::
+            :scale: 75
 
-            A plotting example:
+            >>> # Example plotting a single value
             >>> import torch
             >>> from torchmetrics.regression import MeanSquaredError
             >>> metric = MeanSquaredError()
-            >>> target = torch.tensor([2.5, 5.0, 4.0, 8.0])
-            >>> preds = torch.tensor([3.0, 5.0, 2.5, 7.0])
-            >>> metric.update(preds, target)
-            >>> fig, ax = metric.plot()
-            >>> fig.show()
+            >>> metric.update(torch.randn(10,), torch.randn(10,))
+            >>> metric.plot()
 
         .. plot::
+            :scale: 75
 
-            A plotting example:
+            >>> # Example plotting multiple values
             >>> import torch
             >>> from torchmetrics.regression import MeanSquaredError
             >>> metric = MeanSquaredError()
-            >>> val1 = metric(torch.randn(5,), torch.randn(5,))
-            >>> val2 = metric(torch.randn(5,), torch.randn(5,))
-            >>> fig, ax = metric.plot([val1, val2])
-            >>> fig.show()
+            >>> values = []
+            >>> for _ in range(10):
+            ...     values.append(metric(torch.randn(10,), torch.randn(10,)))
+            >>> fig, ax = metric.plot(values)
         """
         val = val or self.compute()
         fig, ax = plot_single_or_multi_val(

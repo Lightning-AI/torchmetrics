@@ -133,17 +133,29 @@ class BinaryAccuracy(BinaryStatScores):
             ModuleNotFoundError:
                 If `matplotlib` is not installed
 
-        .. plot::
+        Examples:
 
-            A plotting example:
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
             >>> import torch
             >>> from torchmetrics.classification import BinaryAccuracy
             >>> metric = BinaryAccuracy()
-            >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
-            >>> preds = torch.tensor([0, 0, 1, 1, 0, 1])
-            >>> metric.update(preds, target)
-            >>> fig, ax = metric.plot()
-            >>> fig.show()
+            >>> metric.update(torch.rand(10), torch.randint(2,(10,)))
+            >>> metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics.classification import BinaryAccuracy
+            >>> metric = BinaryAccuracy()
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(torch.rand(10), torch.randint(2,(10,))))
+            >>> metric.plot(values)
         """
         val = val or self.compute()
         fig, ax = plot_single_or_multi_val(
@@ -272,17 +284,29 @@ class MulticlassAccuracy(MulticlassStatScores):
             ModuleNotFoundError:
                 If `matplotlib` is not installed
 
-        .. plot::
+        Examples:
 
-            A plotting example:
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value per class
             >>> import torch
             >>> from torchmetrics.classification import MulticlassAccuracy
-            >>> metric = MulticlassAccuracy(num_classes=3)
-            >>> target = torch.tensor([2, 1, 0, 0])
-            >>> preds = torch.tensor([2, 1, 0, 1])
-            >>> metric.update(preds, target)
-            >>> fig, ax = metric.plot()
-            >>> fig.show()
+            >>> metric = MulticlassAccuracy(num_classes=3, average=None)
+            >>> metric.update(torch.randint(3, (20,)), torch.randint(3, (20,)))
+            >>> metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a multiple values per class
+            >>> import torch
+            >>> from torchmetrics.classification import MulticlassAccuracy
+            >>> metric = MulticlassAccuracy(num_classes=3, average=None)
+            >>> values = []
+            >>> for _ in range(20):
+            ...     values.append(metric(torch.randint(3, (20,)), torch.randint(3, (20,))))
+            >>> metric.plot(values)
         """
         val = val or self.compute()
         fig, ax = plot_single_or_multi_val(

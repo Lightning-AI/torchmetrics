@@ -241,16 +241,13 @@ class MulticlassConfusionMatrix(Metric):
                 If `matplotlib` is not installed
 
         .. plot::
+            :scale: 75
 
-            A plotting example:
             >>> import torch
             >>> from torchmetrics.classification import MulticlassConfusionMatrix
             >>> metric = MulticlassConfusionMatrix(num_classes=5)
-            >>> target = torch.randint(5, (20,))
-            >>> preds = torch.randint(5, (20,))
-            >>> metric.update(preds, target)
-            >>> fig, ax = metric.plot()
-            >>> fig.show()
+            >>> metric.update(torch.randint(5, (20,)), torch.randint(5, (20,)))
+            >>> metric.plot()
         """
         val = val or self.compute()
         if not isinstance(val, Tensor):
