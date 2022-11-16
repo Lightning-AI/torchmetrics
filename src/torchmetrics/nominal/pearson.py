@@ -17,38 +17,42 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.functional.nominal.cramers import _cramers_v_compute, _cramers_v_update
+from torchmetrics.functional.nominal.pearson import (
+    _pearsons_contingency_coefficient_compute,
+    _pearsons_contingency_coefficient_update,
+)
 from torchmetrics.functional.nominal.utils import _nominal_input_validation
 from torchmetrics.metric import Metric
 
 
-class CramersV(Metric):
-    r"""Compute `Cramer's V`_ statistic measuring the association between two categorical (nominal) data series.
+class PearsonsContingencyCoefficient(Metric):
+    r"""Compute `Pearson's Contingency Coefficient`_ statistic measuring the association between two categorical
+    (nominal) data series.
 
     .. math::
-        V = \sqrt{\frac{\chi^2 / n}{\min(r - 1, k - 1)}}
+        Pearson = \sqrt{\frac{\chi^2 / n}{1 + \chi^2 / n}}
 
     where
 
     .. math::
         \chi^2 = \sum_{i,j} \ frac{\left(n_{ij} - \frac{n_{i.} n_{.j}}{n}\right)^2}{\frac{n_{i.} n_{.j}}{n}}
 
-    where :math:`n_{ij}` denotes the number of times the values :math:`(A_i, B_j)` are observed with :math:`A_i, B_j`
-    represent frequencies of values in ``preds`` and ``target``, respectively.
+    where :math:`n_{ij}` denotes the number of times the values :math:`(A_i, B_j)` are observed
+    with :math:`A_i, B_j` represent frequencies of values in ``preds`` and ``target``, respectively.
 
-    Cramer's V is a symmetric coefficient, i.e. :math:`V(preds, target) = V(target, preds)`.
+    Pearson's Contingency Coefficient is a symmetric coefficient, i.e.
+    :math:`Pearson(preds, target) = Pearson(target, preds)`.
 
     The output values lies in [0, 1] with 1 meaning the perfect association.
 
     Args:
         num_classes: Integer specifing the number of classes
-        bias_correction: Indication of whether to use bias correction.
         nan_strategy: Indication of whether to replace or drop ``NaN`` values
         nan_replace_value: Value to replace ``NaN``s when ``nan_strategy = 'replace'``
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Returns:
-        Cramer's V statistic
+        Pearson's Contingency Coefficient statistic
 
     Raises:
         ValueError:
@@ -57,13 +61,13 @@ class CramersV(Metric):
             If `nan_strategy` is equal to `'replace'` and `nan_replace_value` is not an `int` or `float`
 
     Example:
-        >>> from torchmetrics import CramersV
+        >>> from torchmetrics import PearsonsContingencyCoefficient
         >>> _ = torch.manual_seed(42)
         >>> preds = torch.randint(0, 4, (100,))
         >>> target = torch.round(preds + torch.randn(100)).clamp(0, 4)
-        >>> cramers_v = CramersV(num_classes=5)
-        >>> cramers_v(preds, target)
-        tensor(0.5284)
+        >>> pearsons_contingency_coefficient = PearsonsContingencyCoefficient(num_classes=5)
+        >>> pearsons_contingency_coefficient(preds, target)
+        tensor(0.6948)
     """
 
     full_state_update: bool = False
@@ -74,14 +78,12 @@ class CramersV(Metric):
     def __init__(
         self,
         num_classes: int,
-        bias_correction: bool = True,
         nan_strategy: Literal["replace", "drop"] = "replace",
         nan_replace_value: Optional[Union[int, float]] = 0.0,
         **kwargs: Any,
     ):
         super().__init__(**kwargs)
         self.num_classes = num_classes
-        self.bias_correction = bias_correction
 
         _nominal_input_validation(nan_strategy, nan_replace_value)
         self.nan_strategy = nan_strategy
@@ -93,16 +95,21 @@ class CramersV(Metric):
         """Update state with predictions and targets.
 
         Args:
-            preds: 1D or 2D tensor of categorical (nominal) data
-            - 1D shape: (batch_size,)
-            - 2D shape: (batch_size, num_classes)
-        target: 1D or 2D tensor of categorical (nominal) data
-            - 1D shape: (batch_size,)
-            - 2D shape: (batch_size, num_classes)
+            preds: 1D or 2D tensor of categorical (nominal) data:
+
+                - 1D shape: (batch_size,)
+                - 2D shape: (batch_size, num_classes)
+
+            target: 1D or 2D tensor of categorical (nominal) data:
+
+                - 1D shape: (batch_size,)
+                - 2D shape: (batch_size, num_classes)
         """
-        confmat = _cramers_v_update(preds, target, self.num_classes, self.nan_strategy, self.nan_replace_value)
+        confmat = _pearsons_contingency_coefficient_update(
+            preds, target, self.num_classes, self.nan_strategy, self.nan_replace_value
+        )
         self.confmat += confmat
 
     def compute(self) -> Tensor:
-        """Computer Cramer's V statistic."""
-        return _cramers_v_compute(self.confmat, self.bias_correction)
+        """Computer Pearson's Contingency Coefficient statistic."""
+        return _pearsons_contingency_coefficient_compute(self.confmat)
