@@ -13,7 +13,7 @@
 # limitations under the License.
 from itertools import product
 from math import ceil, floor, sqrt
-from typing import List, Optional, Sequence, Tuple, Union
+from typing import List, Optional, Tuple, Union
 
 import numpy as np
 import torch
@@ -41,7 +41,7 @@ def _error_on_missing_matplotlib() -> None:
 
 
 def plot_single_or_multi_val(
-    val: Optional[Union[Tensor, Sequence[Tensor]]],
+    val: Union[Tensor, List[Tensor]],
     higher_is_better: Optional[bool] = None,
     lower_bound: Optional[float] = None,
     upper_bound: Optional[float] = None,
@@ -71,18 +71,19 @@ def plot_single_or_multi_val(
     fig, ax = plt.subplots()
     ax.get_xaxis().set_visible(False)
 
-    if isinstance(val, Tensor) and val.numel() == 1:
-        ax.plot([val.detach().cpu()], marker="o", markersize=10)
-    elif isinstance(val, Tensor) and val.numel() > 1:
-        for i, v in enumerate(val):
-            ax.plot(
-                i,
-                v.detach().cpu(),
-                marker="o",
-                markersize=10,
-                linestyle="None",
-                label=f"{legend_name} {i}" if legend_name else f"{i}",
-            )
+    if isinstance(val, Tensor):
+        if val.numel() == 1:
+            ax.plot([val.detach().cpu()], marker="o", markersize=10)
+        else:
+            for i, v in enumerate(val):
+                ax.plot(
+                    i,
+                    v.detach().cpu(),
+                    marker="o",
+                    markersize=10,
+                    linestyle="None",
+                    label=f"{legend_name} {i}" if legend_name else f"{i}",
+                )
     else:
         val = torch.stack(val, 0)
         multi_series = val.ndim != 1
@@ -145,7 +146,7 @@ def _get_col_row_split(n: int) -> Tuple[int, int]:
     """Split `n` figures into `rows` x `cols` figures."""
     nsq = sqrt(n)
     if nsq * nsq == n:
-        return nsq, nsq
+        return int(nsq), int(nsq)
     elif floor(nsq) * ceil(nsq) > n:
         return floor(nsq), ceil(nsq)
     else:
@@ -202,7 +203,7 @@ def plot_confusion_matrix(
             "Expected number of elements in arg `labels` to match number of labels in confmat but "
             f"got {len(labels)} and {n_classes}"
         )
-    labels = labels if labels is not None else list(range(n_classes))
+    labels: Union[List[int], List[str]] = labels if labels is not None else np.arange(n_classes).tolist()
 
     fig, axs = plt.subplots(nrows=rows, ncols=cols)
     axs = trim_axs(axs, n)
