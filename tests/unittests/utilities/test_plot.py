@@ -19,18 +19,47 @@ import numpy as np
 import pytest
 import torch
 
+from torchmetrics.functional.classification.accuracy import binary_accuracy, multiclass_accuracy
 from torchmetrics.functional.classification.confusion_matrix import (
     binary_confusion_matrix,
     multiclass_confusion_matrix,
     multilabel_confusion_matrix,
 )
-from torchmetrics.functional.classification.precision_recall_curve import (
-    binary_precision_recall_curve,
-    multiclass_precision_recall_curve,
-    multilabel_precision_recall_curve,
+from torchmetrics.utilities.plot import plot_confusion_matrix, plot_single_or_multi_val
+
+
+@pytest.mark.parametrize(
+    "metric, preds, target",
+    [
+        pytest.param(
+            binary_accuracy,
+            lambda: torch.rand(100),
+            lambda: torch.randint(2, (100,)),
+            id="binary",
+        ),
+        pytest.param(
+            partial(multiclass_accuracy, num_classes=3),
+            lambda: torch.randint(3, (100,)),
+            lambda: torch.randint(3, (100,)),
+            id="multiclass",
+        ),
+        pytest.param(
+            partial(multiclass_accuracy, num_classes=3, average=None),
+            lambda: torch.randint(3, (100,)),
+            lambda: torch.randint(3, (100,)),
+            id="multiclass and average=None",
+        ),
+    ],
 )
-from torchmetrics.functional.classification.roc import binary_roc, multiclass_roc, multilabel_roc
-from torchmetrics.utilities.plot import plot_confusion_matrix, plot_prc, plot_roc
+@pytest.mark.parametrize("num_vals", [1, 5, 10])
+def test_single_multi_val_plotter(metric, preds, target, num_vals):
+    vals = []
+    for i in range(num_vals):
+        vals.append(metric(preds(), target()))
+    vals = vals[0] if i == 1 else vals
+    fig, ax = plot_single_or_multi_val(vals)
+    assert isinstance(fig, plt.Figure)
+    assert isinstance(ax, matplotlib.axes.Axes)
 
 
 @pytest.mark.parametrize(
@@ -95,79 +124,3 @@ def test_confusion_matrix_plotter_with_labels(metric, preds, target, labels):
     cond1 = isinstance(axs, matplotlib.axes.Axes)
     cond2 = isinstance(axs, np.ndarray) and all(isinstance(a, matplotlib.axes.Axes) for a in axs)
     assert cond1 or cond2
-
-
-@pytest.mark.parametrize(
-    "metric, preds, target",
-    [
-        pytest.param(
-            binary_roc,
-            torch.rand(
-                100,
-            ),
-            torch.randint(2, (100,)),
-            id="binary roc",
-        ),
-        pytest.param(
-            partial(multiclass_roc, num_classes=3),
-            torch.randn(100, 3).softmax(-1),
-            torch.randint(3, (100,)),
-            id="multiclass roc",
-        ),
-        pytest.param(
-            partial(multilabel_roc, num_labels=3),
-            torch.rand(100, 3),
-            torch.randint(2, (100, 3)),
-            id="multilabel roc",
-        ),
-    ],
-)
-@pytest.mark.parametrize("auc", [True, False])
-@pytest.mark.parametrize("single_plot", [True, False])
-def test_roc_plotter(metric, preds, target, auc, single_plot):
-    output = metric(preds, target)
-    fig, axs = plot_roc(output, auc=auc, single_plot=single_plot)
-    assert isinstance(fig, plt.Figure)
-    cond1 = isinstance(axs, matplotlib.axes.Axes)
-    cond2 = isinstance(axs, np.ndarray) and all(isinstance(a, matplotlib.axes.Axes) for a in axs)
-    assert cond1 or cond2
-
-
-@pytest.mark.parametrize(
-    "metric, preds, target",
-    [
-        pytest.param(
-            binary_precision_recall_curve,
-            torch.rand(
-                100,
-            ),
-            torch.randint(2, (100,)),
-            id="binary prc",
-        ),
-        pytest.param(
-            partial(multiclass_precision_recall_curve, num_classes=3),
-            torch.randn(100, 3).softmax(-1),
-            torch.randint(3, (100,)),
-            id="multiclass prc",
-        ),
-        pytest.param(
-            partial(multilabel_precision_recall_curve, num_labels=3),
-            torch.rand(100, 3),
-            torch.randint(2, (100, 3)),
-            id="multilabel prc",
-        ),
-    ],
-)
-@pytest.mark.parametrize("auc", [True, False])
-@pytest.mark.parametrize("single_plot", [True, False])
-def test_prc_plotter(metric, preds, target, auc, single_plot):
-    output = metric(preds, target)
-    fig, axs = plot_prc(output, auc=auc, single_plot=single_plot)
-    assert isinstance(fig, plt.Figure)
-    cond1 = isinstance(axs, matplotlib.axes.Axes)
-    cond2 = isinstance(axs, np.ndarray) and all(isinstance(a, matplotlib.axes.Axes) for a in axs)
-    assert cond1 or cond2
-
-    import pdb
-
-    pdb.set_trace()
