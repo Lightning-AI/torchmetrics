@@ -18,9 +18,9 @@ from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.functional.multimodal.clip_score import _clip_score_update, _get_model_and_processor
-from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_10
+from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 
-if not _TRANSFORMERS_GREATER_EQUAL_4_10:
+if not _TRANSFORMERS_AVAILABLE:
     __doctest_skip__ = ["CLIPScore"]
 
 from torchmetrics import Metric

@@ -21,7 +21,7 @@ from transformers import CLIPProcessor as _CLIPProcessor
 
 from torchmetrics.functional.multimodal.clip_score import clip_score
 from torchmetrics.multimodal.clip_score import CLIPScore
-from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE, _TRANSFORMERS_GREATER_EQUAL_4_10
+from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 from unittests.text.helpers import skip_on_connection_issues
@@ -55,9 +55,7 @@ def _compare_fn(preds, target, model_name_or_path):
 
 @pytest.mark.parametrize("model_name_or_path", ["openai/clip-vit-base-patch32"])
 @pytest.mark.parametrize("input", [_random_input])
-@pytest.mark.skipif(
-    not (_TRANSFORMERS_AVAILABLE and _TRANSFORMERS_GREATER_EQUAL_4_10), reason="test requires bert_score"
-)
+@pytest.mark.skipif(not _TRANSFORMERS_AVAILABLE, reason="test requires bert_score")
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
 class TestCLIPScore(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
