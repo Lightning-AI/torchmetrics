@@ -112,7 +112,7 @@ class BinaryAccuracy(BinaryStatScores):
     is_differentiable = False
     higher_is_better = True
     full_state_update: bool = False
-    plot_options = {"lower_bound": 0.0, "upper_bound": 1.0}
+    plot_options: dict = {"lower_bound": 0.0, "upper_bound": 1.0}
 
     def compute(self) -> Tensor:
         """Computes accuracy based on inputs passed in to ``update`` previously."""
@@ -414,7 +414,7 @@ class MultilabelAccuracy(MultilabelStatScores):
     is_differentiable = False
     higher_is_better = True
     full_state_update: bool = False
-    plot_options = {"lower_bound": 0.0, "upper_bound": 1.0, "legend_name": "Label"}
+    plot_options: dict = {"lower_bound": 0.0, "upper_bound": 1.0, "legend_name": "Label"}
 
     def compute(self) -> Tensor:
         """Computes accuracy based on inputs passed in to ``update`` previously."""

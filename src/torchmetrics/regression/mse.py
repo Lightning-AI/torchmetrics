@@ -47,7 +47,7 @@ class MeanSquaredError(Metric):
     is_differentiable = True
     higher_is_better = False
     full_state_update = False
-    plot_options = {"lower_bound": 0.0}
+    plot_options: dict = {"lower_bound": 0.0}
     sum_squared_error: Tensor
     total: Tensor
 
