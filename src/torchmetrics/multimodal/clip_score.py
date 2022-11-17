@@ -56,8 +56,9 @@ class CLIPScore(Metric):
         >>> _ = torch.manual_seed(42)
         >>> from torchmetrics.multimodal import CLIPScore
         >>> metric = CLIPScore(model_name_or_path="openai/clip-vit-base-patch16")
-        >>> metric(torch.randint(255, (3, 224, 224)), "a photo of a cat")
-        tensor(25.0936, grad_fn=<SqueezeBackward0>)
+        >>> score = metric(torch.randint(255, (3, 224, 224)), "a photo of a cat")
+        >>> print(score.detach())
+        tensor(25.0936)
     """
 
     is_differentiable: bool = False
