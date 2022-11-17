@@ -810,7 +810,6 @@ def precision_recall_curve(
         [tensor([1., 0.]), tensor([1., 0.]), tensor([1., 0., 0.]), tensor([1., 0., 0.]), tensor([nan, 0.])]
         >>> thresholds
         [tensor([0.7500]), tensor([0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500])]
-
     """
     if task == "binary":
         return binary_precision_recall_curve(preds, target, thresholds, ignore_index, validate_args)
