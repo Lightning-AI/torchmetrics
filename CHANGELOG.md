@@ -14,22 +14,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `TotalVariation` to image package ([#978](https://github.com/Lightning-AI/metrics/pull/978))
 
 
+- Added regression metrics:
+   * `KendallRankCorrCoef` ([#1271](https://github.com/Lightning-AI/metrics/pull/1271))
+   * `LogCoshError` ([#1316](https://github.com/Lightning-AI/metrics/pull/1316))
+
+
+- Added new nominal metrics:
+  * `CramersV` ([#1298](https://github.com/Lightning-AI/metrics/pull/1298))
+  * `PearsonsContingencyCoefficient` ([#1334](https://github.com/Lightning-AI/metrics/pull/1334))
+  * `TschuprowsT` ([#1334](https://github.com/Lightning-AI/metrics/pull/1334))
+
+
 - Added option to pass `distributed_available_fn` to metrics to allow checks for custom communication backend for making `dist_sync_fn` actually useful ([#1301](https://github.com/Lightning-AI/metrics/pull/1301))
 
 
 - Added `normalize` argument to `Inception`, `FID`, `KID` metrics ([#1246](https://github.com/Lightning-AI/metrics/pull/1246))
-
-
-- Added `KendallRankCorrCoef` to regression package ([#1271](https://github.com/Lightning-AI/metrics/pull/1271))
-
-
-- Added `LogCoshError` to regression package ([#1316](https://github.com/Lightning-AI/metrics/pull/1316))
-
-
-- Added `CramersV` to the new nominal package ([#1298](https://github.com/Lightning-AI/metrics/pull/1298))
-  * `CramersV` ([#1298](https://github.com/Lightning-AI/metrics/pull/1298))
-  * `PearsonsContingencyCoefficient` ([#1334](https://github.com/Lightning-AI/metrics/pull/1334))
-  * `TschuprowsT` ([#1334](https://github.com/Lightning-AI/metrics/pull/1334))
 
 
 ### Changed
@@ -56,13 +55,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- 
+
+
+## [0.10.3] - 2022-11-16
+
+### Fixed
+
 - Fixed bug in `Metrictracker.best_metric` when `return_step=False` ([#1306](https://github.com/Lightning-AI/metrics/pull/1306))
-
-
-- Fixed bug to prevent users from going into a infinite loop if trying to iterate of a single metric ([#1320](https://github.com/Lightning-AI/metrics/pull/1320))
-
-
-- Fixed bug when `compute_on_cpu` arg used together with `forward` method ([#1333](https://github.com/Lightning-AI/metrics/pull/1333))
+- Fixed bug to prevent users from going into an infinite loop if trying to iterate of a single metric ([#1320](https://github.com/Lightning-AI/metrics/pull/1320))
+- Fixed bug in `Metrictracker.best_metric` when `return_step=False` ([#1306](https://github.com/Lightning-AI/metrics/pull/1306))
 
 
 ## [0.10.2] - 2022-10-31
