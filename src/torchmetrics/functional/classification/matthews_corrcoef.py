@@ -251,7 +251,7 @@ def matthews_corrcoef(
     Legacy Example:
         >>> target = torch.tensor([1, 1, 0, 0])
         >>> preds = torch.tensor([0, 1, 0, 0])
-        >>> matthews_corrcoef(preds, target, num_classes=2)
+        >>> matthews_corrcoef(preds, target, task="multiclass", num_classes=2)
         tensor(0.5774)
     """
     if task == "binary":

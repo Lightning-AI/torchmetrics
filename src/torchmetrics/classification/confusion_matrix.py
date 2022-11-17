@@ -323,14 +323,14 @@ class ConfusionMatrix:
     Legacy Example:
         >>> target = torch.tensor([1, 1, 0, 0])
         >>> preds = torch.tensor([0, 1, 0, 0])
-        >>> confmat = ConfusionMatrix(num_classes=2)
+        >>> confmat = ConfusionMatrix(task="binary", num_classes=2)
         >>> confmat(preds, target)
         tensor([[2, 0],
                 [1, 1]])
 
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([2, 1, 0, 1])
-        >>> confmat = ConfusionMatrix(num_classes=3)
+        >>> confmat = ConfusionMatrix(task="multiclass", num_classes=3)
         >>> confmat(preds, target)
         tensor([[1, 1, 0],
                 [0, 1, 0],
@@ -338,7 +338,7 @@ class ConfusionMatrix:
 
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
-        >>> confmat = ConfusionMatrix(num_classes=3, multilabel=True)
+        >>> confmat = ConfusionMatrix(task="multilabel", num_classes=3, multilabel=True)
         >>> confmat(preds, target)
         tensor([[[1, 0], [0, 1]],
                 [[1, 0], [1, 0]],

@@ -416,7 +416,7 @@ def hamming_distance(
     Legacy Example:
         >>> target = torch.tensor([[0, 1], [1, 1]])
         >>> preds = torch.tensor([[0, 1], [0, 1]])
-        >>> hamming_distance(preds, target)
+        >>> hamming_distance(preds, target, task="binary")
         tensor(0.2500)
     """
     assert multidim_average is not None

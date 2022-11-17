@@ -500,12 +500,12 @@ class StatScores:
     Legacy Example:
         >>> preds  = torch.tensor([1, 0, 2, 1])
         >>> target = torch.tensor([1, 1, 2, 0])
-        >>> stat_scores = StatScores(reduce='macro', num_classes=3)
+        >>> stat_scores = StatScores(task="multiclass", reduce='macro', num_classes=3)
         >>> stat_scores(preds, target)
         tensor([[0, 1, 2, 1, 1],
                 [1, 1, 1, 1, 2],
                 [1, 0, 3, 0, 1]])
-        >>> stat_scores = StatScores(reduce='micro')
+        >>> stat_scores = StatScores(task="multiclass", reduce='micro')
         >>> stat_scores(preds, target)
         tensor([2, 2, 6, 2, 4])
     """

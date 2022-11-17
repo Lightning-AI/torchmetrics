@@ -315,7 +315,7 @@ class ROC:
     Legacy Example:
         >>> pred = torch.tensor([0, 1, 2, 3])
         >>> target = torch.tensor([0, 1, 1, 1])
-        >>> roc = ROC(pos_label=1)
+        >>> roc = ROC(task="multiclass", pos_label=1)
         >>> fpr, tpr, thresholds = roc(pred, target)
         >>> fpr
         tensor([0., 0., 0., 0., 1.])
@@ -329,7 +329,7 @@ class ROC:
         ...                      [0.05, 0.05, 0.75, 0.05],
         ...                      [0.05, 0.05, 0.05, 0.75]])
         >>> target = torch.tensor([0, 1, 3, 2])
-        >>> roc = ROC(num_classes=4)
+        >>> roc = ROC(task="multiclass", num_classes=4)
         >>> fpr, tpr, thresholds = roc(pred, target)
         >>> fpr
         [tensor([0., 0., 1.]), tensor([0., 0., 1.]), tensor([0.0000, 0.3333, 1.0000]), tensor([0.0000, 0.3333, 1.0000])]

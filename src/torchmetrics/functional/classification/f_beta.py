@@ -723,7 +723,7 @@ def fbeta_score(
     Legacy Example:
         >>> target = torch.tensor([0, 1, 2, 0, 1, 2])
         >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])
-        >>> fbeta_score(preds, target, num_classes=3, beta=0.5)
+        >>> fbeta_score(preds, target, task="multiclass", num_classes=3, beta=0.5)
         tensor(0.3333)
     """
     assert multidim_average is not None
@@ -771,7 +771,7 @@ def f1_score(
     Legacy Example:
         >>> target = torch.tensor([0, 1, 2, 0, 1, 2])
         >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])
-        >>> f1_score(preds, target, num_classes=3)
+        >>> f1_score(preds, target, task="multiclass", num_classes=3)
         tensor(0.3333)
     """
     assert multidim_average is not None

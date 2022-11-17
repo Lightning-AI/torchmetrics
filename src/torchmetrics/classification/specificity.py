@@ -303,10 +303,10 @@ class Specificity:
     Legacy Example:
         >>> preds  = torch.tensor([2, 0, 2, 1])
         >>> target = torch.tensor([1, 1, 2, 0])
-        >>> specificity = Specificity(average='macro', num_classes=3)
+        >>> specificity = Specificity(task="multiclass", average='macro', num_classes=3)
         >>> specificity(preds, target)
         tensor(0.6111)
-        >>> specificity = Specificity(average='micro')
+        >>> specificity = Specificity(task="multiclass", average='micro')
         >>> specificity(preds, target)
         tensor(0.6250)
     """

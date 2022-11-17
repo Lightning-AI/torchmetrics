@@ -410,12 +410,12 @@ def accuracy(
         >>> import torch
         >>> target = torch.tensor([0, 1, 2, 3])
         >>> preds = torch.tensor([0, 2, 1, 3])
-        >>> accuracy(preds, target)
+        >>> accuracy(preds, target, task="multiclass")
         tensor(0.5000)
 
         >>> target = torch.tensor([0, 1, 2])
         >>> preds = torch.tensor([[0.1, 0.9, 0], [0.3, 0.1, 0.6], [0.2, 0.5, 0.3]])
-        >>> accuracy(preds, target, top_k=2)
+        >>> accuracy(preds, target, task="multilabel", top_k=2)
         tensor(0.6667)
     """
     assert multidim_average is not None

@@ -609,10 +609,10 @@ class Precision:
         >>> import torch
         >>> preds  = torch.tensor([2, 0, 2, 1])
         >>> target = torch.tensor([1, 1, 2, 0])
-        >>> precision = Precision(average='macro', num_classes=3)
+        >>> precision = Precision(task="multiclass", average='macro', num_classes=3)
         >>> precision(preds, target)
         tensor(0.1667)
-        >>> precision = Precision(average='micro')
+        >>> precision = Precision(task="multiclass", average='micro')
         >>> precision(preds, target)
         tensor(0.2500)
     """
@@ -663,10 +663,10 @@ class Recall:
         >>> import torch
         >>> preds  = torch.tensor([2, 0, 2, 1])
         >>> target = torch.tensor([1, 1, 2, 0])
-        >>> recall = Recall(average='macro', num_classes=3)
+        >>> recall = Recall(task="multiclass", average='macro', num_classes=3)
         >>> recall(preds, target)
         tensor(0.3333)
-        >>> recall = Recall(average='micro')
+        >>> recall = Recall(task="multiclass", average='micro')
         >>> recall(preds, target)
         tensor(0.2500)
     """

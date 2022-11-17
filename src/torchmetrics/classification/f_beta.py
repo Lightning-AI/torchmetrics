@@ -716,7 +716,7 @@ class FBetaScore:
         >>> import torch
         >>> target = torch.tensor([0, 1, 2, 0, 1, 2])
         >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])
-        >>> f_beta = FBetaScore(num_classes=3, beta=0.5)
+        >>> f_beta = FBetaScore(task="multiclass", num_classes=3, beta=0.5)
         >>> f_beta(preds, target)
         tensor(0.3333)
     """
@@ -766,7 +766,7 @@ class F1Score:
         >>> import torch
         >>> target = torch.tensor([0, 1, 2, 0, 1, 2])
         >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])
-        >>> f1 = F1Score(num_classes=3)
+        >>> f1 = F1Score(task="multiclass", num_classes=3)
         >>> f1(preds, target)
         tensor(0.3333)
     """

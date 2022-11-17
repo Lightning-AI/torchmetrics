@@ -255,7 +255,7 @@ def cohen_kappa(
     Legacy Example:
         >>> target = torch.tensor([1, 1, 0, 0])
         >>> preds = torch.tensor([0, 1, 0, 0])
-        >>> cohen_kappa(preds, target, num_classes=2)
+        >>> cohen_kappa(preds, target, task="multiclass", num_classes=2)
         tensor(0.5000)
     """
     if task == "binary":

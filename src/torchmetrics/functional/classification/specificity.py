@@ -382,9 +382,9 @@ def specificity(
     LegacyExample:
         >>> preds  = torch.tensor([2, 0, 2, 1])
         >>> target = torch.tensor([1, 1, 2, 0])
-        >>> specificity(preds, target, average='macro', num_classes=3)
+        >>> specificity(preds, target, task="multiclass", average='macro', num_classes=3)
         tensor(0.6111)
-        >>> specificity(preds, target, average='micro')
+        >>> specificity(preds, target, task="multiclass", average='micro')
         tensor(0.6250)
     """
     assert multidim_average is not None

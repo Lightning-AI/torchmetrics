@@ -213,19 +213,19 @@ class HingeLoss:
         >>> import torch
         >>> target = torch.tensor([0, 1, 1])
         >>> preds = torch.tensor([-2.2, 2.4, 0.1])
-        >>> hinge = HingeLoss()
+        >>> hinge = HingeLoss(task="multiclass")
         >>> hinge(preds, target)
         tensor(0.3000)
 
         >>> target = torch.tensor([0, 1, 2])
         >>> preds = torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
-        >>> hinge = HingeLoss()
+        >>> hinge = HingeLoss(task="multiclass")
         >>> hinge(preds, target)
         tensor(2.9000)
 
         >>> target = torch.tensor([0, 1, 2])
         >>> preds = torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
-        >>> hinge = HingeLoss(multiclass_mode="one-vs-all")
+        >>> hinge = HingeLoss(task="multiclass", multiclass_mode="one-vs-all")
         >>> hinge(preds, target)
         tensor([2.2333, 1.5000, 1.2333])
     """

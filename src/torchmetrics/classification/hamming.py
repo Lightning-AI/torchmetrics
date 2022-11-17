@@ -330,7 +330,7 @@ class HammingDistance:
     Legacy Example:
         >>> target = torch.tensor([[0, 1], [1, 1]])
         >>> preds = torch.tensor([[0, 1], [0, 1]])
-        >>> hamming_distance = HammingDistance()
+        >>> hamming_distance = HammingDistance(task="multiclass")
         >>> hamming_distance(preds, target)
         tensor(0.2500)
     """
