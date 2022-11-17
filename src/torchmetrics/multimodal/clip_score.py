@@ -18,9 +18,9 @@ from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.functional.multimodal.clip_score import _clip_score_update, _get_model_and_processor
-from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
+from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE, _TRANSFORMERS_GREATER_EQUAL_4_10
 
-if not _TRANSFORMERS_AVAILABLE:
+if not (_TRANSFORMERS_AVAILABLE and _TRANSFORMERS_GREATER_EQUAL_4_10):
     __doctest_skip__ = ["CLIPScore"]
 
 from torchmetrics import Metric
@@ -49,7 +49,7 @@ class CLIPScore(Metric):
 
     Raises:
         ModuleNotFoundError:
-            If transformers package is not installed
+            If transformers package is not installed or version is lower than 4.10.0
 
     Example:
         >>> import torch
