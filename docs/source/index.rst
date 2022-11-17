@@ -176,19 +176,19 @@ Or directly from conda
 
 .. toctree::
    :maxdepth: 2
-   :name: nominal
-   :caption: Nominal
-   :glob:
-
-   nominal/*
-
-.. toctree::
-   :maxdepth: 2
    :name: multimodal
    :caption: Multimodal
    :glob:
 
    multimodal/*
+
+.. toctree::
+   :maxdepth: 2
+   :name: nominal
+   :caption: Nominal
+   :glob:
+
+   nominal/*
 
 .. toctree::
    :maxdepth: 2
