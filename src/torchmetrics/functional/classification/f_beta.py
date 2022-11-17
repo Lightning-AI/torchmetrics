@@ -719,6 +719,12 @@ def fbeta_score(
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
     :func:`binary_fbeta_score`, :func:`multiclass_fbeta_score` and :func:`multilabel_fbeta_score` for the specific
     details of each argument influence and examples.
+
+    Legacy Example:
+        >>> target = torch.tensor([0, 1, 2, 0, 1, 2])
+        >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])
+        >>> fbeta_score(preds, target, num_classes=3, beta=0.5)
+        tensor(0.3333)
     """
     assert multidim_average is not None
     if task == "binary":
@@ -761,6 +767,12 @@ def f1_score(
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
     :func:`binary_f1_score`, :func:`multiclass_f1_score` and :func:`multilabel_f1_score` for the specific
     details of each argument influence and examples.
+
+    Legacy Example:
+        >>> target = torch.tensor([0, 1, 2, 0, 1, 2])
+        >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])
+        >>> f1_score(preds, target, num_classes=3)
+        tensor(0.3333)
     """
     assert multidim_average is not None
     if task == "binary":

@@ -1095,6 +1095,16 @@ def stat_scores(
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
     :func:`binary_stat_scores`, :func:`multiclass_stat_scores` and :func:`multilabel_stat_scores` for the specific
     details of each argument influence and examples.
+
+    Legacy Example:
+        >>> preds  = torch.tensor([1, 0, 2, 1])
+        >>> target = torch.tensor([1, 1, 2, 0])
+        >>> stat_scores(preds, target, reduce='macro', num_classes=3)
+        tensor([[0, 1, 2, 1, 1],
+                [1, 1, 1, 1, 2],
+                [1, 0, 3, 0, 1]])
+        >>> stat_scores(preds, target, reduce='micro')
+        tensor([2, 2, 6, 2, 4])
     """
     assert multidim_average is not None
     if task == "binary":

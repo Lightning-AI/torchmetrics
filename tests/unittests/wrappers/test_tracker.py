@@ -72,7 +72,7 @@ def test_raises_error_if_increment_not_called(method, method_input):
                 [
                     MulticlassAccuracy(num_classes=10),
                     MulticlassPrecision(num_classes=10),
-                    MulticlassRecall(num_classes=10),
+                    MulticlassRecall(num_classes=10)
                 ]
             ),
             (torch.randint(10, (50,)), torch.randint(10, (50,))),
@@ -83,7 +83,7 @@ def test_raises_error_if_increment_not_called(method, method_input):
                 [
                     MulticlassAccuracy(num_classes=10),
                     MulticlassPrecision(num_classes=10),
-                    MulticlassRecall(num_classes=10),
+                    MulticlassRecall(num_classes=10)
                 ]
             ),
             (torch.randint(10, (50,)), torch.randint(10, (50,))),

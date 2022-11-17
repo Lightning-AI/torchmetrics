@@ -251,6 +251,12 @@ def cohen_kappa(
     ``task`` argument to either ``'binary'`` or ``'multiclass'``. See the documentation of
     :func:`binary_cohen_kappa` and :func:`multiclass_cohen_kappa` for the specific details of
     each argument influence and examples.
+
+    Legacy Example:
+        >>> target = torch.tensor([1, 1, 0, 0])
+        >>> preds = torch.tensor([0, 1, 0, 0])
+        >>> cohen_kappa(preds, target, num_classes=2)
+        tensor(0.5000)
     """
     if task == "binary":
         return binary_cohen_kappa(preds, target, threshold, weights, ignore_index, validate_args)

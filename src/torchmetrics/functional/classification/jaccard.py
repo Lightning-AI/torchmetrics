@@ -318,6 +318,13 @@ def jaccard_index(
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
     :func:`binary_jaccard_index`, :func:`multiclass_jaccard_index` and :func:`multilabel_jaccard_index` for
     the specific details of each argument influence and examples.
+
+    Legacy Example:
+        >>> target = torch.randint(0, 2, (10, 25, 25))
+        >>> pred = torch.tensor(target)
+        >>> pred[2:5, 7:13, 9:15] = 1 - pred[2:5, 7:13, 9:15]
+        >>> jaccard_index(pred, target, num_classes=2)
+        tensor(0.9660)
     """
     if task == "binary":
         return binary_jaccard_index(preds, target, threshold, ignore_index, validate_args)

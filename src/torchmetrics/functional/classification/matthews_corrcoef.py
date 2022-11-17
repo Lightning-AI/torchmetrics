@@ -247,6 +247,12 @@ def matthews_corrcoef(
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
     :func:`binary_matthews_corrcoef`, :func:`multiclass_matthews_corrcoef` and :func:`multilabel_matthews_corrcoef` for
     the specific details of each argument influence and examples.
+
+    Legacy Example:
+        >>> target = torch.tensor([1, 1, 0, 0])
+        >>> preds = torch.tensor([0, 1, 0, 0])
+        >>> matthews_corrcoef(preds, target, num_classes=2)
+        tensor(0.5774)
     """
     if task == "binary":
         return binary_matthews_corrcoef(preds, target, threshold, ignore_index, validate_args)

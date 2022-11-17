@@ -412,6 +412,12 @@ def hamming_distance(
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
     :func:`binary_hamming_distance`, :func:`multiclass_hamming_distance` and :func:`multilabel_hamming_distance` for
     the specific details of each argument influence and examples.
+
+    Legacy Example:
+        >>> target = torch.tensor([[0, 1], [1, 1]])
+        >>> preds = torch.tensor([[0, 1], [0, 1]])
+        >>> hamming_distance(preds, target)
+        tensor(0.2500)
     """
     assert multidim_average is not None
     if task == "binary":

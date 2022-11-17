@@ -785,6 +785,32 @@ def precision_recall_curve(
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
     :func:`binary_precision_recall_curve`, :func:`multiclass_precision_recall_curve` and
     :func:`multilabel_precision_recall_curve` for the specific details of each argument influence and examples.
+
+    Legacy Example:
+        >>> pred = torch.tensor([0, 1, 2, 3])
+        >>> target = torch.tensor([0, 1, 1, 0])
+        >>> precision, recall, thresholds = precision_recall_curve(pred, target, pos_label=1)
+        >>> precision
+        tensor([0.6667, 0.5000, 0.0000, 1.0000])
+        >>> recall
+        tensor([1.0000, 0.5000, 0.0000, 0.0000])
+        >>> thresholds
+        tensor([1, 2, 3])
+
+        >>> pred = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
+        ...                      [0.05, 0.75, 0.05, 0.05, 0.05],
+        ...                      [0.05, 0.05, 0.75, 0.05, 0.05],
+        ...                      [0.05, 0.05, 0.05, 0.75, 0.05]])
+        >>> target = torch.tensor([0, 1, 3, 2])
+        >>> precision, recall, thresholds = precision_recall_curve(pred, target, num_classes=5)
+        >>> precision
+        [tensor([1., 1.]), tensor([1., 1.]), tensor([0.2500, 0.0000, 1.0000]),
+         tensor([0.2500, 0.0000, 1.0000]), tensor([0., 1.])]
+        >>> recall
+        [tensor([1., 0.]), tensor([1., 0.]), tensor([1., 0., 0.]), tensor([1., 0., 0.]), tensor([nan, 0.])]
+        >>> thresholds
+        [tensor([0.7500]), tensor([0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500])]
+
     """
     if task == "binary":
         return binary_precision_recall_curve(preds, target, thresholds, ignore_index, validate_args)

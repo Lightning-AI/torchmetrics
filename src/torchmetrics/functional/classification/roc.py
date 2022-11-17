@@ -438,6 +438,50 @@ def roc(
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
     :func:`binary_roc`, :func:`multiclass_roc` and :func:`multilabel_roc` for the specific details of each argument
     influence and examples.
+
+    Legacy Example:
+        >>> pred = torch.tensor([0, 1, 2, 3])
+        >>> target = torch.tensor([0, 1, 1, 1])
+        >>> fpr, tpr, thresholds = roc(pred, target, pos_label=1)
+        >>> fpr
+        tensor([0., 0., 0., 0., 1.])
+        >>> tpr
+        tensor([0.0000, 0.3333, 0.6667, 1.0000, 1.0000])
+        >>> thresholds
+        tensor([4, 3, 2, 1, 0])
+
+        >>> pred = torch.tensor([[0.75, 0.05, 0.05, 0.05],
+        ...                      [0.05, 0.75, 0.05, 0.05],
+        ...                      [0.05, 0.05, 0.75, 0.05],
+        ...                      [0.05, 0.05, 0.05, 0.75]])
+        >>> target = torch.tensor([0, 1, 3, 2])
+        >>> fpr, tpr, thresholds = roc(pred, target, num_classes=4)
+        >>> fpr
+        [tensor([0., 0., 1.]), tensor([0., 0., 1.]), tensor([0.0000, 0.3333, 1.0000]), tensor([0.0000, 0.3333, 1.0000])]
+        >>> tpr
+        [tensor([0., 1., 1.]), tensor([0., 1., 1.]), tensor([0., 0., 1.]), tensor([0., 0., 1.])]
+        >>> thresholds
+        [tensor([1.7500, 0.7500, 0.0500]),
+         tensor([1.7500, 0.7500, 0.0500]),
+         tensor([1.7500, 0.7500, 0.0500]),
+         tensor([1.7500, 0.7500, 0.0500])]
+
+        >>> pred = torch.tensor([[0.8191, 0.3680, 0.1138],
+        ...                      [0.3584, 0.7576, 0.1183],
+        ...                      [0.2286, 0.3468, 0.1338],
+        ...                      [0.8603, 0.0745, 0.1837]])
+        >>> target = torch.tensor([[1, 1, 0], [0, 1, 0], [0, 0, 0], [0, 1, 1]])
+        >>> fpr, tpr, thresholds = roc(pred, target, num_classes=3, pos_label=1)
+        >>> fpr
+        [tensor([0.0000, 0.3333, 0.3333, 0.6667, 1.0000]),
+         tensor([0., 0., 0., 1., 1.]),
+         tensor([0.0000, 0.0000, 0.3333, 0.6667, 1.0000])]
+        >>> tpr
+        [tensor([0., 0., 1., 1., 1.]), tensor([0.0000, 0.3333, 0.6667, 0.6667, 1.0000]), tensor([0., 1., 1., 1., 1.])]
+        >>> thresholds
+        [tensor([1.8603, 0.8603, 0.8191, 0.3584, 0.2286]),
+         tensor([1.7576, 0.7576, 0.3680, 0.3468, 0.0745]),
+         tensor([1.1837, 0.1837, 0.1338, 0.1183, 0.1138])]
     """
     if task == "binary":
         return binary_roc(preds, target, thresholds, ignore_index, validate_args)

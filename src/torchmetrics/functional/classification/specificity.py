@@ -378,6 +378,14 @@ def specificity(
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
     :func:`binary_specificity`, :func:`multiclass_specificity` and :func:`multilabel_specificity` for the specific
     details of each argument influence and examples.
+
+    LegacyExample:
+        >>> preds  = torch.tensor([2, 0, 2, 1])
+        >>> target = torch.tensor([1, 1, 2, 0])
+        >>> specificity(preds, target, average='macro', num_classes=3)
+        tensor(0.6111)
+        >>> specificity(preds, target, average='micro')
+        tensor(0.6250)
     """
     assert multidim_average is not None
     if task == "binary":

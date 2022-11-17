@@ -256,6 +256,23 @@ def hinge_loss(
     ``task`` argument to either ``'binary'`` or ``'multiclass'``. See the documentation of
     :func:`binary_hinge_loss` and :func:`multiclass_hinge_loss` for the specific details of
     each argument influence and examples.
+
+    Legacy Example:
+        >>> import torch
+        >>> target = torch.tensor([0, 1, 1])
+        >>> preds = torch.tensor([-2.2, 2.4, 0.1])
+        >>> hinge_loss(preds, target)
+        tensor(0.3000)
+
+        >>> target = torch.tensor([0, 1, 2])
+        >>> preds = torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
+        >>> hinge_loss(preds, target)
+        tensor(2.9000)
+
+        >>> target = torch.tensor([0, 1, 2])
+        >>> preds = torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
+        >>> hinge_loss(preds, target, multiclass_mode="one-vs-all")
+        tensor([2.2333, 1.5000, 1.2333])
     """
     if task == "binary":
         return binary_hinge_loss(preds, target, squared, ignore_index, validate_args)

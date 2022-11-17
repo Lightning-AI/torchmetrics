@@ -92,8 +92,8 @@ class MetricCollection(ModuleDict):
         ...                             MulticlassRecall(num_classes=3, average='macro')])
         >>> metrics(preds, target)  # doctest: +NORMALIZE_WHITESPACE
         {'MulticlassAccuracy': tensor(0.1250),
-        'MulticlassPrecision': tensor(0.0667),
-        'MulticlassRecall': tensor(0.1111)}
+         'MulticlassPrecision': tensor(0.0667),
+         'MulticlassRecall': tensor(0.1111)}
 
     Example (input as arguments):
         >>> metrics = MetricCollection(MulticlassAccuracy(num_classes=3, average='micro'),
@@ -101,8 +101,8 @@ class MetricCollection(ModuleDict):
         ...                            MulticlassRecall(num_classes=3, average='macro'))
         >>> metrics(preds, target)  # doctest: +NORMALIZE_WHITESPACE
         {'MulticlassAccuracy': tensor(0.1250),
-        'MulticlassPrecision': tensor(0.0667),
-        'MulticlassRecall': tensor(0.1111)}
+         'MulticlassPrecision': tensor(0.0667),
+         'MulticlassRecall': tensor(0.1111)}
 
     Example (input as dict):
         >>> metrics = MetricCollection({'micro_recall': MulticlassRecall(num_classes=3, average='micro'),
@@ -139,9 +139,9 @@ class MetricCollection(ModuleDict):
         ... ], prefix='valmetrics/')
         >>> pprint(metrics(preds, target))  # doctest: +NORMALIZE_WHITESPACE
         {'valmetrics/MulticlassAccuracy_macro': tensor(0.1111),
-        'valmetrics/MulticlassAccuracy_micro': tensor(0.1250),
-        'valmetrics/MulticlassPrecision_macro': tensor(0.0667),
-        'valmetrics/MulticlassPrecision_micro': tensor(0.1250)}
+         'valmetrics/MulticlassAccuracy_micro': tensor(0.1250),
+         'valmetrics/MulticlassPrecision_macro': tensor(0.0667),
+         'valmetrics/MulticlassPrecision_micro': tensor(0.1250)}
     """
 
     _groups: Dict[int, List[str]]

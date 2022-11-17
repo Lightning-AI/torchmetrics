@@ -68,11 +68,11 @@ class ClasswiseWrapper(Metric):
         >>> target = torch.randint(3, (10,))
         >>> metric(preds, target)  # doctest: +NORMALIZE_WHITESPACE
         {'multiclassaccuracy_horse': tensor(0.),
-        'multiclassaccuracy_fish': tensor(0.3333),
-        'multiclassaccuracy_dog': tensor(0.4000),
-        'multiclassrecall_horse': tensor(0.),
-        'multiclassrecall_fish': tensor(0.3333),
-        'multiclassrecall_dog': tensor(0.4000)}
+         'multiclassaccuracy_fish': tensor(0.3333),
+         'multiclassaccuracy_dog': tensor(0.4000),
+         'multiclassrecall_horse': tensor(0.),
+         'multiclassrecall_fish': tensor(0.3333),
+         'multiclassrecall_dog': tensor(0.4000)}
     """
 
     def __init__(self, metric: Metric, labels: Optional[List[str]] = None) -> None:

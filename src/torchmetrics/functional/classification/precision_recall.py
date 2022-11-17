@@ -676,6 +676,14 @@ def precision(
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
     :func:`binary_precision`, :func:`multiclass_precision` and :func:`multilabel_precision` for the specific details of
     each argument influence and examples.
+
+    Legacy Example:
+        >>> preds  = torch.tensor([2, 0, 2, 1])
+        >>> target = torch.tensor([1, 1, 2, 0])
+        >>> precision(preds, target, average='macro', num_classes=3)
+        tensor(0.1667)
+        >>> precision(preds, target, average='micro')
+        tensor(0.2500)
     """
     assert multidim_average is not None
     if task == "binary":
@@ -720,6 +728,14 @@ def recall(
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
     :func:`binary_recall`, :func:`multiclass_recall` and :func:`multilabel_recall` for the specific details of
     each argument influence and examples.
+
+    Legacy Example:
+        >>> preds  = torch.tensor([2, 0, 2, 1])
+        >>> target = torch.tensor([1, 1, 2, 0])
+        >>> recall(preds, target, average='macro', num_classes=3)
+        tensor(0.3333)
+        >>> recall(preds, target, average='micro')
+        tensor(0.2500)
     """
     assert multidim_average is not None
     if task == "binary":
