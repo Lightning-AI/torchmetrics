@@ -51,7 +51,6 @@ def _theils_u_compute(confmat: Tensor) -> Tensor:
 
     Args:
         confmat: Confusion matrix for observed data
-        bias_correction: Indication of whether to use bias correction.
 
     Returns:
         Theil's U statistic
@@ -118,7 +117,6 @@ def theils_u(
             - 2D shape: (batch_size, num_classes)
         nan_strategy: Indication of whether to replace or drop ``NaN`` values
         nan_replace_value: Value to replace ``NaN``s when ``nan_strategy = 'replace'``
-        _PRECISION: used to round off values above 1 + _PRECISION and below 0 - _PRECISION
     Returns:
         Theil's U Statistic: Tensor
 
@@ -128,7 +126,7 @@ def theils_u(
         >>> preds = torch.randint(10, (10,))
         >>> target = torch.randint(10, (10,))
         >>> theils_u(preds, target)
-        # TODO
+        tensor(0.8530)
     """
     num_classes = len(torch.cat([preds, target]).unique())
     confmat = _theils_u_update(preds, target, num_classes, nan_strategy, nan_replace_value)

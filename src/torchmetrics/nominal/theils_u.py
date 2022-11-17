@@ -54,8 +54,8 @@ class TheilsU(Metric):
         >>> _ = torch.manual_seed(42)
         >>> preds = torch.randint(10, (10,))
         >>> target = torch.randint(10, (10,))
-        >>> TheilsU()(preds, target)
-        tensor(0.0853)
+        >>> TheilsU(num_classes=10)(preds, target)
+        tensor(0.8530)
     """
 
     def __init__(
