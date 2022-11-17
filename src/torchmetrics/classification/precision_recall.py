@@ -604,6 +604,17 @@ class Precision:
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
     :mod:`BinaryPrecision`, :func:`MulticlassPrecision` and :func:`MultilabelPrecision` for the specific details of
     each argument influence and examples.
+
+    Legacy Example:
+        >>> import torch
+        >>> preds  = torch.tensor([2, 0, 2, 1])
+        >>> target = torch.tensor([1, 1, 2, 0])
+        >>> precision = Precision(average='macro', num_classes=3)
+        >>> precision(preds, target)
+        tensor(0.1667)
+        >>> precision = Precision(average='micro')
+        >>> precision(preds, target)
+        tensor(0.2500)
     """
 
     def __new__(
@@ -647,6 +658,17 @@ class Recall:
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
     :mod:`BinaryRecall`, :mod:`MulticlassRecall` and :mod:`MultilabelRecall` for the specific details of
     each argument influence and examples.
+
+    Legacy Example:
+        >>> import torch
+        >>> preds  = torch.tensor([2, 0, 2, 1])
+        >>> target = torch.tensor([1, 1, 2, 0])
+        >>> recall = Recall(average='macro', num_classes=3)
+        >>> recall(preds, target)
+        tensor(0.3333)
+        >>> recall = Recall(average='micro')
+        >>> recall(preds, target)
+        tensor(0.2500)
     """
 
     def __new__(

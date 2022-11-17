@@ -223,6 +223,13 @@ class MatthewsCorrCoef:
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
     :mod:`BinaryMatthewsCorrCoef`, :mod:`MulticlassMatthewsCorrCoef` and :mod:`MultilabelMatthewsCorrCoef` for
     the specific details of each argument influence and examples.
+
+    Legacy Example:
+        >>> target = torch.tensor([1, 1, 0, 0])
+        >>> preds = torch.tensor([0, 1, 0, 0])
+        >>> matthews_corrcoef = MatthewsCorrCoef(num_classes=2)
+        >>> matthews_corrcoef(preds, target)
+        tensor(0.5774)
     """
 
     def __new__(

@@ -192,6 +192,13 @@ class CohenKappa:
     ``task`` argument to either ``'binary'`` or ``'multiclass'``. See the documentation of
     :mod:`BinaryCohenKappa` and :mod:`MulticlassCohenKappa` for the specific details of
     each argument influence and examples.
+
+    Legacy Example:
+        >>> target = torch.tensor([1, 1, 0, 0])
+        >>> preds = torch.tensor([0, 1, 0, 0])
+        >>> cohenkappa = CohenKappa(num_classes=2)
+        >>> cohenkappa(preds, target)
+        tensor(0.5000)
     """
 
     def __new__(

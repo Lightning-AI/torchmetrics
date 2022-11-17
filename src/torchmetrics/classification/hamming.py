@@ -326,6 +326,13 @@ class HammingDistance:
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
     :mod:`BinaryHammingDistance`, :mod:`MulticlassHammingDistance` and :mod:`MultilabelHammingDistance` for the
     specific details of each argument influence and examples.
+
+    Legacy Example:
+        >>> target = torch.tensor([[0, 1], [1, 1]])
+        >>> preds = torch.tensor([[0, 1], [0, 1]])
+        >>> hamming_distance = HammingDistance()
+        >>> hamming_distance(preds, target)
+        tensor(0.2500)
     """
 
     def __new__(

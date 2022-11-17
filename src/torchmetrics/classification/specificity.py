@@ -299,6 +299,16 @@ class Specificity:
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
     :mod:`BinarySpecificity`, :mod:`MulticlassSpecificity` and :mod:`MultilabelSpecificity` for the specific
     details of each argument influence and examples.
+
+    Legacy Example:
+        >>> preds  = torch.tensor([2, 0, 2, 1])
+        >>> target = torch.tensor([1, 1, 2, 0])
+        >>> specificity = Specificity(average='macro', num_classes=3)
+        >>> specificity(preds, target)
+        tensor(0.6111)
+        >>> specificity = Specificity(average='micro')
+        >>> specificity(preds, target)
+        tensor(0.6250)
     """
 
     def __new__(

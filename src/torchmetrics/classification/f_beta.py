@@ -711,6 +711,14 @@ class FBetaScore:
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
     :func:`binary_fbeta_score`, :func:`multiclass_fbeta_score` and :func:`multilabel_fbeta_score` for the specific
     details of each argument influence and examples.
+
+    Legcy Example:
+        >>> import torch
+        >>> target = torch.tensor([0, 1, 2, 0, 1, 2])
+        >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])
+        >>> f_beta = FBetaScore(num_classes=3, beta=0.5)
+        >>> f_beta(preds, target)
+        tensor(0.3333)
     """
 
     def __new__(
@@ -753,6 +761,14 @@ class F1Score:
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
     :mod:`BinaryF1Score`, :mod:`MulticlassF1Score` and :mod:`MultilabelF1Score` for the specific
     details of each argument influence and examples.
+
+    Legacy Example:
+        >>> import torch
+        >>> target = torch.tensor([0, 1, 2, 0, 1, 2])
+        >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])
+        >>> f1 = F1Score(num_classes=3)
+        >>> f1(preds, target)
+        tensor(0.3333)
     """
 
     def __new__(

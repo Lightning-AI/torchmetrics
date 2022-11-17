@@ -319,6 +319,30 @@ class ConfusionMatrix:
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
     :mod:`BinaryConfusionMatrix`, :mod:`MulticlassConfusionMatrix` and :func:`MultilabelConfusionMatrix` for
     the specific details of each argument influence and examples.
+
+    Legacy Example:
+        >>> target = torch.tensor([1, 1, 0, 0])
+        >>> preds = torch.tensor([0, 1, 0, 0])
+        >>> confmat = ConfusionMatrix(num_classes=2)
+        >>> confmat(preds, target)
+        tensor([[2, 0],
+                [1, 1]])
+
+        >>> target = torch.tensor([2, 1, 0, 0])
+        >>> preds = torch.tensor([2, 1, 0, 1])
+        >>> confmat = ConfusionMatrix(num_classes=3)
+        >>> confmat(preds, target)
+        tensor([[1, 1, 0],
+                [0, 1, 0],
+                [0, 0, 1]])
+
+        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
+        >>> confmat = ConfusionMatrix(num_classes=3, multilabel=True)
+        >>> confmat(preds, target)
+        tensor([[[1, 0], [0, 1]],
+                [[1, 0], [1, 0]],
+                [[0, 1], [0, 1]]])
     """
 
     def __new__(

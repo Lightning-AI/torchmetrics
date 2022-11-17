@@ -264,6 +264,14 @@ class JaccardIndex:
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
     :mod:`BinaryJaccardIndex`, :mod:`MulticlassJaccardIndex` and :mod:`MultilabelJaccardIndex` for
     the specific details of each argument influence and examples.
+
+    Legacy Example:
+        >>> target = torch.randint(0, 2, (10, 25, 25))
+        >>> pred = torch.tensor(target)
+        >>> pred[2:5, 7:13, 9:15] = 1 - pred[2:5, 7:13, 9:15]
+        >>> jaccard = JaccardIndex(num_classes=2)
+        >>> jaccard(pred, target)
+        tensor(0.9660)
     """
 
     def __new__(

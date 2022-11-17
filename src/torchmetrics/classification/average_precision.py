@@ -329,6 +329,22 @@ class AveragePrecision:
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
     :mod:`BinaryAveragePrecision`, :mod:`MulticlassAveragePrecision` and :mod:`MultilabelAveragePrecision`
     for the specific details of each argument influence and examples.
+
+    Legacy Example:
+        >>> pred = torch.tensor([0, 0.1, 0.8, 0.4])
+        >>> target = torch.tensor([0, 1, 1, 1])
+        >>> average_precision = AveragePrecision(pos_label=1)
+        >>> average_precision(pred, target)
+        tensor(1.)
+
+        >>> pred = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
+        ...                      [0.05, 0.75, 0.05, 0.05, 0.05],
+        ...                      [0.05, 0.05, 0.75, 0.05, 0.05],
+        ...                      [0.05, 0.05, 0.05, 0.75, 0.05]])
+        >>> target = torch.tensor([0, 1, 3, 2])
+        >>> average_precision = AveragePrecision(num_classes=5, average=None)
+        >>> average_precision(pred, target)
+        [tensor(1.), tensor(1.), tensor(0.2500), tensor(0.2500), tensor(nan)]
     """
 
     def __new__(

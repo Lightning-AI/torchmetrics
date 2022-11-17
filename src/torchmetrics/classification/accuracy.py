@@ -324,6 +324,20 @@ class Accuracy:
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
     :mod:`BinaryAccuracy`, :mod:`MulticlassAccuracy` and :mod:`MultilabelAccuracy` for the specific details of
     each argument influence and examples.
+
+    Legacy Example:
+        >>> import torch
+        >>> target = torch.tensor([0, 1, 2, 3])
+        >>> preds = torch.tensor([0, 2, 1, 3])
+        >>> accuracy = Accuracy()
+        >>> accuracy(preds, target)
+        tensor(0.5000)
+
+        >>> target = torch.tensor([0, 1, 2])
+        >>> preds = torch.tensor([[0.1, 0.9, 0], [0.3, 0.1, 0.6], [0.2, 0.5, 0.3]])
+        >>> accuracy = Accuracy(top_k=2)
+        >>> accuracy(preds, target)
+        tensor(0.6667)
     """
 
     def __new__(
