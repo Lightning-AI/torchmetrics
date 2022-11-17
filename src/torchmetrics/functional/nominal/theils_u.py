@@ -71,8 +71,8 @@ def _theils_u_compute(confmat: Tensor) -> Tensor:
     s_x = -torch.sum(p_x * torch.log(p_x))
 
     # compute u statistic
-    if s_x == 0:
-        return 1.0
+    if s_x == torch.Tensor(0):
+        return torch.Tensor(1.0)
 
     return (s_x - s_xy) / s_x
 
@@ -83,7 +83,7 @@ def _theils_u_update(
     num_classes: int,
     nan_strategy: Literal["replace", "drop"] = "replace",
     nan_replace_value: Optional[Union[int, float]] = 0.0,
-):
+) -> Tensor:
     """Computes the bins to update the confusion matrix with for Theil's U calculation.
 
     Args:
