@@ -80,12 +80,8 @@ def _dython_theils_u_matrix(matrix, bias_correction, nan_strategy, nan_replace_v
     theils_u_matrix_value = torch.ones(num_variables, num_variables)
     for i, j in itertools.combinations(range(num_variables), 2):
         x, y = matrix[:, i], matrix[:, j]
-        theils_u_matrix_value[i, j] = _dython_theils_u(
-            x, y, bias_correction, nan_strategy, nan_replace_value
-        )
-        theils_u_matrix_value[j, i] = _dython_theils_u(
-            y, x, bias_correction, nan_strategy, nan_replace_value
-        )
+        theils_u_matrix_value[i, j] = _dython_theils_u(x, y, bias_correction, nan_strategy, nan_replace_value)
+        theils_u_matrix_value[j, i] = _dython_theils_u(y, x, bias_correction, nan_strategy, nan_replace_value)
     return theils_u_matrix_value
 
 
