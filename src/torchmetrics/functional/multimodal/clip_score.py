@@ -17,9 +17,9 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE, _TRANSFORMERS_GREATER_EQUAL_4_10
+from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_10
 
-if _TRANSFORMERS_AVAILABLE and _TRANSFORMERS_GREATER_EQUAL_4_10:
+if _TRANSFORMERS_GREATER_EQUAL_4_10:
     from transformers import CLIPModel as _CLIPModel
     from transformers import CLIPProcessor as _CLIPProcessor
 else:
@@ -76,7 +76,7 @@ def _get_model_and_processor(
         "openai/clip-vit-large-patch14",
     ] = "openai/clip-vit-large-patch14",
 ) -> Tuple[_CLIPModel, _CLIPProcessor]:
-    if _TRANSFORMERS_AVAILABLE and _TRANSFORMERS_GREATER_EQUAL_4_10:
+    if _TRANSFORMERS_GREATER_EQUAL_4_10:
         model = _CLIPModel.from_pretrained(model_name_or_path)
         processor = _CLIPProcessor.from_pretrained(model_name_or_path)
         return model, processor
