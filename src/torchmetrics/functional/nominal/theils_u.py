@@ -156,7 +156,7 @@ def theils_u_matrix(
         nan_replace_value: Value to replace ``NaN``s when ``nan_strategy = 'replace'``
 
     Returns:
-        Cramer's V statistic for a dataset of categorical variables
+        Theil's U statistic for a dataset of categorical variables
 
     Example:
         >>> from torchmetrics.functional.nominal import theils_u_matrix
