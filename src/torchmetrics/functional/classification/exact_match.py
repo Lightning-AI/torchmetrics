@@ -225,6 +225,16 @@ def exact_match(
     ``task`` argument to either ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :func:`multiclass_exact_match` and :func:`multilabel_exact_match` for the specific details of
     each argument influence and examples.
+    Legacy Example:
+        >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
+        >>> preds = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[2, 2], [2, 1], [1, 0]]])
+        >>> multiclass_exact_match(preds, target, task="multiclass", num_classes=3, multidim_average='global')
+        tensor(0.5000)
+        
+        >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
+        >>> preds = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[2, 2], [2, 1], [1, 0]]])
+        >>> multiclass_exact_match(preds, target, task="multiclass", num_classes=3, multidim_average='samplewise')
+        tensor([1., 0.])
     """
     if task == "multiclass":
         assert num_classes is not None

@@ -270,6 +270,19 @@ class ExactMatch:
     ``task`` argument to either ``'multiclass'`` or ``multilabel``. See the documentation of
     :mod:`MulticlassExactMatch` and :mod:`MultilabelExactMatch` for the specific details of
     each argument influence and examples.
+    
+        Legacy Example:
+        >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
+        >>> preds = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[2, 2], [2, 1], [1, 0]]])
+        >>> metric = ExactMatch(task="multiclass", num_classes=3, multidim_average='global')
+        >>> metric(preds, target)
+        tensor(0.5000)
+        
+        >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
+        >>> preds = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[2, 2], [2, 1], [1, 0]]])
+        >>> metric = ExactMatch(task="multiclass", num_classes=3, multidim_average='samplewise')
+        >>> metric(preds, target)
+        tensor([1., 0.])
     """
 
     def __new__(
