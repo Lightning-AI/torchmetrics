@@ -22,12 +22,11 @@ from torchmetrics.functional.classification.exact_match import (
     _multilabel_exact_scores_update,
 )
 from torchmetrics.functional.classification.stat_scores import (
+    _multiclass_stat_scores_arg_validation,
+    _multiclass_stat_scores_format,
     _multilabel_stat_scores_arg_validation,
     _multilabel_stat_scores_format,
     _multilabel_stat_scores_tensor_validation,
-    _multiclass_stat_scores_arg_validation,
-    _multiclass_stat_scores_format,
-    
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
@@ -70,7 +69,7 @@ class MulticlassExactMatch(Metric):
         )
 
     def update(self, preds, target) -> None:
-        
+
 
     def compute(self) -> Tensor:
         correct = dim_zero_cat(self.correct) if isinstance(self.correct, Tensor) else self.correct
