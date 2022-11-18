@@ -230,7 +230,7 @@ def exact_match(
         >>> preds = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[2, 2], [2, 1], [1, 0]]])
         >>> multiclass_exact_match(preds, target, task="multiclass", num_classes=3, multidim_average='global')
         tensor(0.5000)
-        
+
         >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
         >>> preds = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[2, 2], [2, 1], [1, 0]]])
         >>> multiclass_exact_match(preds, target, task="multiclass", num_classes=3, multidim_average='samplewise')
