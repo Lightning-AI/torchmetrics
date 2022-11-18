@@ -47,7 +47,7 @@ from torchmetrics.functional.nominal.pearson import (
     pearsons_contingency_coefficient,
     pearsons_contingency_coefficient_matrix,
 )
-from torchmetrics.functional.nominal.theils_u import theils_u
+from torchmetrics.functional.nominal.theils_u import theils_u, theils_u_matrix
 from torchmetrics.functional.nominal.tschuprows import tschuprows_t, tschuprows_t_matrix
 from torchmetrics.functional.pairwise.cosine import pairwise_cosine_similarity
 from torchmetrics.functional.pairwise.euclidean import pairwise_euclidean_distance
@@ -173,6 +173,7 @@ __all__ = [
     "stat_scores",
     "symmetric_mean_absolute_percentage_error",
     "theils_u",
+    "theils_u_matrix",
     "total_variation",
     "translation_edit_rate",
     "tschuprows_t",
