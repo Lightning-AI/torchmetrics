@@ -108,10 +108,19 @@ def theils_u(
     nan_strategy: Literal["replace", "drop"] = "replace",
     nan_replace_value: Optional[Union[int, float]] = 0.0,
 ) -> Tensor:
-    r"""Computes Theil's U Statistic (Uncertainty Coefficient).
+    r"""Compute `Theil's U`_ statistic (Uncertainty Coefficient) measuring the association between two categorical
+    (nominal) data series.
 
-    The value is between 0 and 1, i.e. 0 means y has no information about x while value 1
-    means y has complete information about x.
+    .. math::
+        U(X|Y) = \frac{H(X) - H(X|Y)}{H(X)}
+
+    where :math:`H(X)` is entropy of variable :math:`X` while :math:`H(X|Y)` is the conditional entropy of :math:`X`
+    given :math:`Y`.
+
+    Theils's U is an asymmetric coefficient, i.e. :math:`TheilsU(preds, target) \neq TheilsU(target, preds)`.
+
+    The output values lies in [0, 1]. 0 means y has no information about x while value 1 means y has complete
+    information about x.
 
     Args:
         preds: 1D or 2D tensor of categorical (nominal) data
@@ -122,6 +131,7 @@ def theils_u(
             - 2D shape: (batch_size, num_classes)
         nan_strategy: Indication of whether to replace or drop ``NaN`` values
         nan_replace_value: Value to replace ``NaN``s when ``nan_strategy = 'replace'``
+
     Returns:
         Theil's U Statistic: Tensor
 

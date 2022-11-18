@@ -23,22 +23,19 @@ from torchmetrics.metric import Metric
 
 
 class TheilsU(Metric):
-    """Compute `TheilsU` statistic measuring the association between two categorical (nominal) data series.
+    r"""Compute `Theil's U`_ statistic (Uncertainty Coefficient) measuring the association between two categorical
+    (nominal) data series.
 
     .. math::
         U(X|Y) = \frac{H(X) - H(X|Y)}{H(X)}
 
-    where H(X) is entropy of variable X while H(X|Y) is the conditional entropy of X given Y
+    where :math:`H(X)` is entropy of variable :math:`X` while :math:`H(X|Y)` is the conditional entropy of :math:`X`
+    given :math:`Y`.
 
-    Theils's U is an asymmetric coefficient, i.e.
-
-    .. math::
-        V(preds, target) != V(target, preds)
+    Theils's U is an asymmetric coefficient, i.e. :math:`TheilsU(preds, target) \neq TheilsU(target, preds)`.
 
     The output values lies in [0, 1]. 0 means y has no information about x while value 1 means y has complete
     information about x.
-
-    Article: https://en.wikipedia.org/wiki/Uncertainty_coefficient
 
     Args:
         num_classes: Integer specifing the number of classes
