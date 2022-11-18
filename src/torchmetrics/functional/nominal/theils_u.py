@@ -51,6 +51,31 @@ def _conditional_entropy_compute(confmat: Tensor) -> Tensor:
     return torch.nansum(p_xy_m * torch.log(p_y_m / p_xy_m))
 
 
+def _theils_u_update(
+    preds: Tensor,
+    target: Tensor,
+    num_classes: int,
+    nan_strategy: Literal["replace", "drop"] = "replace",
+    nan_replace_value: Optional[Union[int, float]] = 0.0,
+) -> Tensor:
+    """Computes the bins to update the confusion matrix with for Theil's U calculation.
+
+    Args:
+        preds: 1D or 2D tensor of categorical (nominal) data
+        target: 1D or 2D tensor of categorical (nominal) data
+        num_classes: Integer specifing the number of classes
+        nan_strategy: Indication of whether to replace or drop ``NaN`` values
+        nan_replace_value: Value to replace ``NaN`s when ``nan_strategy = 'replace```
+
+    Returns:
+        Non-reduced confusion matrix
+    """
+    preds = preds.argmax(1) if preds.ndim == 2 else preds
+    target = target.argmax(1) if target.ndim == 2 else target
+    preds, target = _handle_nan_in_data(preds, target, nan_strategy, nan_replace_value)
+    return _multiclass_confusion_matrix_update(preds, target, num_classes)
+
+
 def _theils_u_compute(confmat: Tensor) -> Tensor:
     """Compute Theil's U statistic based on a pre-computed confusion matrix.
 
@@ -75,31 +100,6 @@ def _theils_u_compute(confmat: Tensor) -> Tensor:
         return torch.tensor(0, device=confmat.device)
 
     return (s_x - s_xy) / s_x
-
-
-def _theils_u_update(
-    preds: Tensor,
-    target: Tensor,
-    num_classes: int,
-    nan_strategy: Literal["replace", "drop"] = "replace",
-    nan_replace_value: Optional[Union[int, float]] = 0.0,
-) -> Tensor:
-    """Computes the bins to update the confusion matrix with for Theil's U calculation.
-
-    Args:
-        preds: 1D or 2D tensor of categorical (nominal) data
-        target: 1D or 2D tensor of categorical (nominal) data
-        num_classes: Integer specifing the number of classes
-        nan_strategy: Indication of whether to replace or drop ``NaN`` values
-        nan_replace_value: Value to replace ``NaN`s when ``nan_strategy = 'replace```
-
-    Returns:
-        Non-reduced confusion matrix
-    """
-    preds = preds.argmax(1) if preds.ndim == 2 else preds
-    target = target.argmax(1) if target.ndim == 2 else target
-    preds, target = _handle_nan_in_data(preds, target, nan_strategy, nan_replace_value)
-    return _multiclass_confusion_matrix_update(preds, target, num_classes)
 
 
 def theils_u(
