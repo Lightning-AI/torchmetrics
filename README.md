@@ -89,7 +89,7 @@ ______________________________________________________________________
 
 ## What is TorchMetrics
 
-TorchMetrics is a collection of 80+ PyTorch metrics implementations and an easy-to-use API to create custom metrics. It offers:
+TorchMetrics is a collection of 90+ PyTorch metrics implementations and an easy-to-use API to create custom metrics. It offers:
 
 - A standardized interface to increase reproducibility
 - Reduces boilerplate
@@ -275,10 +275,12 @@ We currently have implemented metrics within the following domains:
 - Detection
 - Information Retrieval
 - Image
+- Multimodal (Image-Text)
+- Nominal
 - Regression
 - Text
 
-In total TorchMetrics contains [80+ metrics](https://torchmetrics.readthedocs.io/en/stable/all-metrics.html)!
+In total TorchMetrics contains [90+ metrics](https://torchmetrics.readthedocs.io/en/stable/all-metrics.html)!
 
 ## Contribute!
 
