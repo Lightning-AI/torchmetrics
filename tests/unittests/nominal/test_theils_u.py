@@ -62,7 +62,7 @@ def _matrix_input():
     return matrix
 
 
-def _dython_theils_u(preds, target, bias_correction, nan_strategy, nan_replace_value):
+def _dython_theils_u(preds, target, nan_strategy, nan_replace_value):
     preds = preds.argmax(1) if preds.ndim == 2 else preds
     target = target.argmax(1) if target.ndim == 2 else target
 
@@ -75,13 +75,13 @@ def _dython_theils_u(preds, target, bias_correction, nan_strategy, nan_replace_v
     return torch.tensor(v)
 
 
-def _dython_theils_u_matrix(matrix, bias_correction, nan_strategy, nan_replace_value):
+def _dython_theils_u_matrix(matrix, nan_strategy, nan_replace_value):
     num_variables = matrix.shape[1]
     theils_u_matrix_value = torch.ones(num_variables, num_variables)
     for i, j in itertools.combinations(range(num_variables), 2):
         x, y = matrix[:, i], matrix[:, j]
-        theils_u_matrix_value[i, j] = _dython_theils_u(x, y, bias_correction, nan_strategy, nan_replace_value)
-        theils_u_matrix_value[j, i] = _dython_theils_u(y, x, bias_correction, nan_strategy, nan_replace_value)
+        theils_u_matrix_value[i, j] = _dython_theils_u(x, y, nan_strategy, nan_replace_value)
+        theils_u_matrix_value[j, i] = _dython_theils_u(y, x, nan_strategy, nan_replace_value)
     return theils_u_matrix_value
 
 
@@ -99,23 +99,20 @@ def _dython_theils_u_matrix(matrix, bias_correction, nan_strategy, nan_replace_v
         (_input_logits.preds, _input_logits.target),
     ],
 )
-@pytest.mark.parametrize("bias_correction", [False, True])
 @pytest.mark.parametrize("nan_strategy, nan_replace_value", [("replace", 0.0), ("drop", None)])
 class TestTheilsU(MetricTester):
     atol = 1e-5
 
     @pytest.mark.parametrize("ddp", [False, True])
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_theils_u(self, ddp, dist_sync_on_step, preds, target, bias_correction, nan_strategy, nan_replace_value):
+    def test_theils_u(self, ddp, dist_sync_on_step, preds, target, nan_strategy, nan_replace_value):
         metric_args = {
-            "bias_correction": bias_correction,
             "nan_strategy": nan_strategy,
             "nan_replace_value": nan_replace_value,
             "num_classes": NUM_CLASSES,
         }
         reference_metric = partial(
             _dython_theils_u,
-            bias_correction=bias_correction,
             nan_strategy=nan_strategy,
             nan_replace_value=nan_replace_value,
         )
@@ -129,15 +126,13 @@ class TestTheilsU(MetricTester):
             metric_args=metric_args,
         )
 
-    def test_theils_u_functional(self, preds, target, bias_correction, nan_strategy, nan_replace_value):
+    def test_theils_u_functional(self, preds, target, nan_strategy, nan_replace_value):
         metric_args = {
-            "bias_correction": bias_correction,
             "nan_strategy": nan_strategy,
             "nan_replace_value": nan_replace_value,
         }
         reference_metric = partial(
             _dython_theils_u,
-            bias_correction=bias_correction,
             nan_strategy=nan_strategy,
             nan_replace_value=nan_replace_value,
         )
@@ -145,9 +140,8 @@ class TestTheilsU(MetricTester):
             preds, target, metric_functional=theils_u, sk_metric=reference_metric, metric_args=metric_args
         )
 
-    def test_theils_u_differentiability(self, preds, target, bias_correction, nan_strategy, nan_replace_value):
+    def test_theils_u_differentiability(self, preds, target, nan_strategy, nan_replace_value):
         metric_args = {
-            "bias_correction": bias_correction,
             "nan_strategy": nan_strategy,
             "nan_replace_value": nan_replace_value,
             "num_classes": NUM_CLASSES,
@@ -167,9 +161,8 @@ class TestTheilsU(MetricTester):
 @pytest.mark.skipif(  # TODO: testing on CUDA fails with pandas 1.3.5, and newer is not available for python 3.7
     torch.cuda.is_available(), reason="Tests fail on CUDA with the most up-to-date available pandas"
 )
-@pytest.mark.parametrize("bias_correction", [False, True])
 @pytest.mark.parametrize("nan_strategy, nan_replace_value", [("replace", 1.0), ("drop", None)])
-def test_theils_u_matrix(_matrix_input, bias_correction, nan_strategy, nan_replace_value):
-    tm_score = theils_u_matrix(_matrix_input, bias_correction, nan_strategy, nan_replace_value)
-    reference_score = _dython_theils_u_matrix(_matrix_input, bias_correction, nan_strategy, nan_replace_value)
+def test_theils_u_matrix(_matrix_input, nan_strategy, nan_replace_value):
+    tm_score = theils_u_matrix(_matrix_input, nan_strategy, nan_replace_value)
+    reference_score = _dython_theils_u_matrix(_matrix_input, nan_strategy, nan_replace_value)
     assert torch.allclose(tm_score, reference_score)
