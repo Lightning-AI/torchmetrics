@@ -58,7 +58,7 @@ def multiclass_exact_match(
 ) -> Tensor:
     top_k, average, = (
         1,
-        None,
+        None
     )
     if validate_args:
         _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index)
