@@ -18,23 +18,36 @@ from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.functional.classification.exact_match import (
-    _multilabel_exact_scores_compute,
-    _multilabel_exact_scores_update,
+    _exact_match_reduce,
+    _multiclass_exact_match_update,
+    _multilabel_exact_match_update,
 )
 from torchmetrics.functional.classification.stat_scores import (
+    _multiclass_stat_scores_arg_validation,
+    _multiclass_stat_scores_format,
+    _multiclass_stat_scores_tensor_validation,
     _multilabel_stat_scores_arg_validation,
     _multilabel_stat_scores_format,
     _multilabel_stat_scores_tensor_validation,
-    _multiclass_stat_scores_arg_validation,
-    _multiclass_stat_scores_format,
-    
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
 
 
 class MulticlassExactMatch(Metric):
+    r"""Computes Exact match (also known as subset accuracy) for multiclass tasks. Exact Match is a stricter version
+    of accuracy where all labels have to match exactly for the sample to be correctly classified.
 
+    Accepts the following input tensors:
+
+    - ``preds``: ``(N, ...)`` (int tensor) or ``(N, C, ..)`` (float tensor). If preds is a floating point
+      we apply ``torch.argmax`` along the ``C`` dimension to automatically convert probabilities/logits into
+      an int tensor.
+    - ``target`` (int tensor): ``(N, ...)``
+
+    The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
+    argument.
+    """
     is_differentiable = False
     higher_is_better = True
     full_state_update: bool = False
@@ -48,12 +61,10 @@ class MulticlassExactMatch(Metric):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
+        top_k, average = 1, None
         if validate_args:
-            _multiclass_stat_scores_arg_validation(
-                num_classes, threshold, average=None, multidim_average=multidim_average, ignore_index=ignore_index
-            )
-        self.num_labels = num_labels
-        self.threshold = threshold
+            _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index)
+        self.num_classes = num_classes
         self.multidim_average = multidim_average
         self.ignore_index = ignore_index
         self.validate_args = validate_args
@@ -70,11 +81,22 @@ class MulticlassExactMatch(Metric):
         )
 
     def update(self, preds, target) -> None:
-        
+        if self.validate_args:
+            _multiclass_stat_scores_tensor_validation(
+                preds, target, self.num_classes, self.multidim_average, self.ignore_index
+            )
+        preds, target = _multiclass_stat_scores_format(preds, target, 1)
+        correct, total = _multiclass_exact_match_update(preds, target, self.multidim_average)
+        if self.multidim_average == "samplewise":
+            self.correct.append(correct)
+            self.total = total
+        else:
+            self.correct += correct
+            self.total += total
 
     def compute(self) -> Tensor:
         correct = dim_zero_cat(self.correct) if isinstance(self.correct, Tensor) else self.correct
-        return _multilabel_exact_scores_compute(correct, self.total)
+        return _exact_match_reduce(correct, self.total)
 
 
 class MultilabelExactMatch(Metric):
@@ -198,7 +220,7 @@ class MultilabelExactMatch(Metric):
         preds, target = _multilabel_stat_scores_format(
             preds, target, self.num_labels, self.threshold, self.ignore_index
         )
-        correct, total = _multilabel_exact_scores_update(preds, target, self.num_labels, self.multidim_average)
+        correct, total = _multilabel_exact_match_update(preds, target, self.num_labels, self.multidim_average)
         if self.multidim_average == "samplewise":
             self.correct.append(correct)
             self.total = total
@@ -208,8 +230,35 @@ class MultilabelExactMatch(Metric):
 
     def compute(self) -> Tensor:
         correct = dim_zero_cat(self.correct) if isinstance(self.correct, Tensor) else self.correct
-        return _multilabel_exact_scores_compute(correct, self.total)
+        return _exact_match_reduce(correct, self.total)
 
 
 class ExactMatch:
-    def __new__(cls, )
+    r"""Computes Exact match (also known as subset accuracy). Exact Match is a stricter version of accuracy where
+    all labels have to match exactly for the sample to be correctly classified.
+
+    This module is a simple wrapper to get the task specific versions of this metric, which is done by setting the
+    ``task`` argument to either ``'multiclass'`` or ``multilabel``. See the documentation of
+    :mod:`MulticlassExactMatch` and :mod:`MultilabelExactMatch` for the specific details of
+    each argument influence and examples.
+    """
+
+    def __new__(
+        cls,
+        task: Literal["binary", "multiclass", "multilabel"],
+        threshold: float = 0.5,
+        num_classes: Optional[int] = None,
+        num_labels: Optional[int] = None,
+        multidim_average: Literal["global", "samplewise"] = "global",
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> Metric:
+        kwargs.update(dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args))
+        if task == "multiclass":
+            assert isinstance(num_classes, int)
+            return MulticlassExactMatch(num_classes, **kwargs)
+        if task == "multilabel":
+            assert isinstance(num_labels, int)
+            return MultilabelExactMatch(num_labels, threshold, **kwargs)
+        raise ValueError(f"Expected argument `task` to either be `'multiclass'` or `'multilabel'` but got {task}")

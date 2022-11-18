@@ -18,12 +18,12 @@ from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.functional.classification.stat_scores import (
+    _multiclass_stat_scores_arg_validation,
+    _multiclass_stat_scores_format,
+    _multiclass_stat_scores_tensor_validation,
     _multilabel_stat_scores_arg_validation,
     _multilabel_stat_scores_format,
     _multilabel_stat_scores_tensor_validation,
-    _multiclass_stat_scores_arg_validation,
-    _multiclass_stat_scores_format,
-    _multiclass_stat_scores_tensor_validation
 )
 from torchmetrics.utilities.compute import _safe_divide
 
@@ -37,9 +37,12 @@ def _exact_match_reduce(
 
 
 def _multiclass_exact_match_update(
-    preds: Tensor, target: Tensor, multidim_average: Literal["global", "samplewise"] = "global"
+    preds: Tensor,
+    target: Tensor,
+    multidim_average: Literal["global", "samplewise"] = "global",
 ) -> Tuple[Tensor, Tensor]:
-    correct = ((preds == target).sum(1) == preds.shape[1])
+    """Computes the statistics."""
+    correct = (preds == target).sum(1) == preds.shape[1]
     correct = correct if multidim_average == "samplewise" else correct.sum()
     total = torch.tensor(preds.shape[0] if multidim_average == "global" else 1, device=correct.device)
     return correct, total
@@ -53,8 +56,10 @@ def multiclass_exact_match(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    average = None
-    top_k, average = 1, None
+    top_k, average, = (
+        1,
+        None,
+    )
     if validate_args:
         _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index)
         _multiclass_stat_scores_tensor_validation(preds, target, num_classes, multidim_average, ignore_index)
@@ -166,7 +171,7 @@ def multilabel_exact_match(
 def exact_match(
     preds: Tensor,
     target: Tensor,
-    task: Literal['multiclass', 'multilabel'],
+    task: Literal["multiclass", "multilabel"],
     num_classes: Optional[int] = None,
     num_labels: Optional[int] = None,
     threshold: float = 0.5,
@@ -174,6 +179,20 @@ def exact_match(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    if task == 'multiclass':
+    r"""Computes Exact match (also known as subset accuracy). Exact Match is a stricter version of accuracy where
+    all classes/labels have to match exactly for the sample to be correctly classified.
+
+    This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
+    ``task`` argument to either ``'multiclass'`` or ``'multilabel'``. See the documentation of
+    :func:`multiclass_exact_match` and :func:`multilabel_exact_match` for the specific details of
+    each argument influence and examples.
+    """
+    if task == "multiclass":
         assert num_classes is not None
-        return multiclass_
+        return multiclass_exact_match(preds, target, num_classes, multidim_average, ignore_index, validate_args)
+    if task == "multilalbe":
+        assert num_labels is not None
+        return multilabel_exact_match(
+            preds, target, num_labels, threshold, multidim_average, ignore_index, validate_args
+        )
+    raise ValueError(f"Expected argument `task` to either be `'multiclass'` or `'multilabel'` but got {task}")
