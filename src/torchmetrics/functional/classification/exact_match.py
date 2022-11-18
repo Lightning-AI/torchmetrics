@@ -56,14 +56,60 @@ def multiclass_exact_match(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    top_k, average, = (
-        1,
-        None,
-    )
+    r"""Computes Exact match (also known as subset accuracy) for multiclass tasks. Exact Match is a stricter version
+    of accuracy where all labels have to match exactly for the sample to be correctly classified.
+
+    Accepts the following input tensors:
+
+    - ``preds``: ``(N, ...)`` (int tensor) or ``(N, C, ..)`` (float tensor). If preds is a floating point
+      we apply ``torch.argmax`` along the ``C`` dimension to automatically convert probabilities/logits into
+      an int tensor.
+    - ``target`` (int tensor): ``(N, ...)``
+
+    The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
+    argument.
+
+    Args:
+        preds: Tensor with predictions
+        target: Tensor with true labels
+        num_classes: Integer specifing the number of labels
+        multidim_average:
+            Defines how additionally dimensions ``...`` should be handled. Should be one of the following:
+
+            - ``global``: Additional dimensions are flatted along the batch dimension
+            - ``samplewise``: Statistic will be calculated independently for each sample on the ``N`` axis.
+              The statistics in this case are calculated over the additional dimensions.
+
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
+        validate_args: bool indicating if input arguments and tensors should be validated for correctness.
+            Set to ``False`` for faster computations.
+
+    Returns:
+        The returned shape depends on the ``multidim_average`` argument:
+
+        - If ``multidim_average`` is set to ``global`` the output will be a scalar tensor
+        - If ``multidim_average`` is set to ``samplewise`` the output will be a tensor of shape ``(N,)``
+
+    Example (multidim tensors):
+        >>> from torchmetrics.functional.classification import multiclass_exact_match
+        >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
+        >>> preds = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[2, 2], [2, 1], [1, 0]]])
+        >>> multiclass_exact_match(preds, target, num_classes=3, multidim_average='global')
+        tensor(0.5000)
+
+    Example (multidim tensors):
+        >>> from torchmetrics.functional.classification import multiclass_exact_match
+        >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
+        >>> preds = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[2, 2], [2, 1], [1, 0]]])
+        >>> multiclass_exact_match(preds, target, num_classes=3, multidim_average='samplewise')
+        tensor([1., 0.])
+    """
+    top_k, average = 1, None
     if validate_args:
         _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index)
         _multiclass_stat_scores_tensor_validation(preds, target, num_classes, multidim_average, ignore_index)
-    preds, target = _multiclass_stat_scores_format(preds, target, num_classes, top_k)
+    preds, target = _multiclass_stat_scores_format(preds, target, top_k)
     correct, total = _multiclass_exact_match_update(preds, target, multidim_average)
     return _exact_match_reduce(correct, total)
 
@@ -121,17 +167,10 @@ def multilabel_exact_match(
             Set to ``False`` for faster computations.
 
     Returns:
-        The returned shape depends on the ``average`` and ``multidim_average`` arguments:
+        The returned shape depends on the ``multidim_average`` argument:
 
-        - If ``multidim_average`` is set to ``global``:
-
-          - If ``average='micro'/'macro'/'weighted'``, the output will be a scalar tensor
-          - If ``average=None/'none'``, the shape will be ``(C,)``
-
-        - If ``multidim_average`` is set to ``samplewise``:
-
-          - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
-          - If ``average=None/'none'``, the shape will be ``(N, C)``
+        - If ``multidim_average`` is set to ``global`` the output will be a scalar tensor
+        - If ``multidim_average`` is set to ``samplewise`` the output will be a tensor of shape ``(N,)``
 
     Example (preds is int tensor):
         >>> from torchmetrics.functional.classification import multilabel_exact_match

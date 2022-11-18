@@ -22,7 +22,7 @@ from torchmetrics.classification.exact_match import MulticlassExactMatch, Multil
 from torchmetrics.functional.classification.exact_match import multiclass_exact_match, multilabel_exact_match
 from unittests.classification.inputs import _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index, remove_ignore_index
+from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index
 
 seed_all(42)
 
@@ -32,17 +32,21 @@ def _sk_exact_match_multiclass(preds, target, ignore_index, multidim_average):
         preds = torch.argmax(preds, 1)
     preds = preds.numpy()
     target = target.numpy()
-    target, preds = remove_ignore_index(target, preds, ignore_index)
-    correct = (preds == target).sum(-1) == NUM_CLASSES
+
+    if ignore_index is not None:
+        target = np.copy(target)
+        target[target == ignore_index] = -1
+
+    correct = (preds == target).sum(-1) == preds.shape[1]
     correct = correct.sum() if multidim_average == "global" else correct
-    total = len(preds) if multidim_average == "samplewise" else preds.shape[1]
+    total = len(preds) if multidim_average == "global" else 1
     return correct / total
 
 
 @pytest.mark.parametrize("input", _multiclass_cases)
-class TestMulticlassAccuracy(MetricTester):
+class TestMulticlassExactMatch(MetricTester):
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
-    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multiclass_exact_match(self, ddp, input, ignore_index, multidim_average):
         preds, target = input
@@ -66,17 +70,18 @@ class TestMulticlassAccuracy(MetricTester):
             metric_args={
                 "ignore_index": ignore_index,
                 "num_classes": NUM_CLASSES,
+                "multidim_average": multidim_average,
             },
         )
 
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
-    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     def test_multiclass_exact_match_functional(self, input, ignore_index, multidim_average):
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
-        if multidim_average == "samplewise" and target.ndim < 3:
-            pytest.skip("samplewise and non-multidim arrays are not valid")
+        if target.ndim < 3:
+            pytest.skip("non-multidim arrays are not valid")
 
         self.run_functional_metric_test(
             preds=preds,
@@ -90,6 +95,7 @@ class TestMulticlassAccuracy(MetricTester):
             metric_args={
                 "ignore_index": ignore_index,
                 "num_classes": NUM_CLASSES,
+                "multidim_average": multidim_average,
             },
         )
 
