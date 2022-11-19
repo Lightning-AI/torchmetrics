@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   * `CramersV` ([#1298](https://github.com/Lightning-AI/metrics/pull/1298))
   * `PearsonsContingencyCoefficient` ([#1334](https://github.com/Lightning-AI/metrics/pull/1334))
   * `TschuprowsT` ([#1334](https://github.com/Lightning-AI/metrics/pull/1334))
+  * `TheilsU` ([#1337](https://github.com/Lightning-AI/metrics/pull/1334))
 
 
 - Added option to pass `distributed_available_fn` to metrics to allow checks for custom communication backend for making `dist_sync_fn` actually useful ([#1301](https://github.com/Lightning-AI/metrics/pull/1301))
