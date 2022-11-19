@@ -165,4 +165,4 @@ class TestTheilsU(MetricTester):
 def test_theils_u_matrix(_matrix_input, nan_strategy, nan_replace_value):
     tm_score = theils_u_matrix(_matrix_input, nan_strategy, nan_replace_value)
     reference_score = _dython_theils_u_matrix(_matrix_input, nan_strategy, nan_replace_value)
-    assert torch.allclose(tm_score, reference_score)
+    assert torch.allclose(tm_score, reference_score, atol=1e-6)
