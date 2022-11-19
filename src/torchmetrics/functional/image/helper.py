@@ -68,14 +68,13 @@ def _uniform_weight_bias_conv2d(inputs: Tensor, window_size: int) -> Tuple[Tenso
     Return:
         The weight and bias for 2d convolution
     """
-    _channels = inputs.shape[1]
-    kernel_weight = torch.ones(1, _channels, window_size, window_size, dtype=inputs.dtype, device=inputs.device)
-    kernel_weight /= _channels * window_size * window_size
-    kernel_bias = torch.tensor([0.0], dtype=inputs.dtype, device=inputs.device)
+    kernel_weight = torch.ones(1, 1, window_size, window_size, dtype=inputs.dtype, device=inputs.device)
+    kernel_weight /= window_size**2
+    kernel_bias = torch.zeros(1, dtype=inputs.dtype, device=inputs.device)
     return kernel_weight, kernel_bias
 
 
-def _single_dimension_pad(inputs: Tensor, dim: int, pad: int) -> Tensor:
+def _single_dimension_pad(inputs: Tensor, dim: int, pad: int, outter_pad: int = 0) -> Tensor:
     """Applies single-dimension reflection padding to match scipy implementation:
 
     Args:
@@ -86,13 +85,13 @@ def _single_dimension_pad(inputs: Tensor, dim: int, pad: int) -> Tensor:
     Return:
         Image padded over a single dimension
     """
-    _max = inputs.shape[dim] - 2
+    _max = inputs.shape[dim]
     x = torch.index_select(inputs, dim, torch.arange(pad - 1, -1, -1).to(inputs.device))
-    y = torch.index_select(inputs, dim, torch.arange(_max - 1, _max - pad, -1).to(inputs.device))
+    y = torch.index_select(inputs, dim, torch.arange(_max - 1, _max - pad - outter_pad, -1).to(inputs.device))
     return torch.cat((x, inputs, y), dim)
 
 
-def _reflection_pad_2d(inputs: Tensor, pad: int) -> Tensor:
+def _reflection_pad_2d(inputs: Tensor, pad: int, outter_pad: int = 0) -> Tensor:
     """Applies reflection padding to the input image.
 
     Args:
@@ -103,7 +102,7 @@ def _reflection_pad_2d(inputs: Tensor, pad: int) -> Tensor:
         Padded image
     """
     for dim in [2, 3]:
-        inputs = _single_dimension_pad(inputs, dim, pad)
+        inputs = _single_dimension_pad(inputs, dim, pad, outter_pad)
     return inputs
 
 
@@ -117,9 +116,16 @@ def _uniform_filter(inputs: Tensor, window_size: int) -> Tensor:
     Return:
         Image transformed with the uniform input
     """
-    inputs = _reflection_pad_2d(inputs, window_size // 2)
+    inputs = _reflection_pad_2d(inputs, window_size // 2, window_size % 2)
     kernel_weight, kernel_bias = _uniform_weight_bias_conv2d(inputs, window_size)
-    inputs = F.conv2d(inputs, kernel_weight, kernel_bias)
+    # Iterate over channels
+    inputs = torch.cat(
+        [
+            F.conv2d(inputs[:, channel].unsqueeze(1), kernel_weight, kernel_bias, padding=0)
+            for channel in range(inputs.shape[1])
+        ],
+        dim=1,
+    )
     return inputs
 
 

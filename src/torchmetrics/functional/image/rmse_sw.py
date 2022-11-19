@@ -67,7 +67,7 @@ def _rmse_sw_update(
         total_images += target.shape[0]
     else:
         total_images = target.shape[0]
-    error = (preds - target) ** 2
+    error = (target - preds) ** 2
     error = _uniform_filter(error, window_size)
     _rmse_map = torch.sqrt(error)
     crop_slide = round(window_size / 2)

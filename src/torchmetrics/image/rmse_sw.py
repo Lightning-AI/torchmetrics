@@ -52,6 +52,7 @@ class RootMeanSquaredErrorUsingSlidingWindow(Metric):
     total_images: Tensor
     higher_is_better: bool = False
     is_differentiable: bool = True
+    full_state_update: bool = False
 
     def __init__(
         self,

@@ -51,6 +51,7 @@ class RelativeAverageSpectralError(Metric):
     target_sum: Tensor = None
     higher_is_better: bool = False
     is_differentiable: bool = True
+    full_state_update: bool = False
 
     def __init__(
         self,
@@ -75,9 +76,9 @@ class RelativeAverageSpectralError(Metric):
             target: Ground truth image
         """
         if self.rmse_map is None:
-            _img_shape = target.shape[1:]  # channels, width, height
-            self.rmse_map = torch.zeros(_img_shape, dtype=target.dtype, device=target.device)
-            self.target_sum = torch.zeros(_img_shape, dtype=target.dtype, device=target.device)
+            img_shape = target.shape[1:]  # [num_channels, width, height]
+            self.rmse_map = torch.zeros(img_shape, dtype=target.dtype, device=target.device)
+            self.target_sum = torch.zeros(img_shape, dtype=target.dtype, device=target.device)
 
         self.rmse_map, self.target_sum, self.total_images = _rase_update(
             preds, target, self.window_size, self.rmse_map, self.target_sum, self.add_total_images

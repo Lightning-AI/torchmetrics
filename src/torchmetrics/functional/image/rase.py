@@ -56,7 +56,7 @@ def _rase_compute(rmse_map: Tensor, target_sum: Tensor, total_images: Tensor, wi
     _, rmse_map = _rmse_sw_compute(rmse_val_sum=None, rmse_map=rmse_map, total_images=total_images)
     target_mean = target_sum / total_images
     target_mean = target_mean.mean(0)  # mean over image channels
-    rase_map = 100 / target_mean * torch.sqrt(rmse_map.mean(0))
+    rase_map = 100 / target_mean * torch.sqrt(torch.mean(rmse_map**2, 0))
     crop_slide = round(window_size / 2)
 
     return torch.mean(rase_map[crop_slide:-crop_slide, crop_slide:-crop_slide])
@@ -87,9 +87,9 @@ def relative_average_spectral_error(preds: Tensor, target: Tensor, window_size: 
     if not isinstance(window_size, int) or isinstance(window_size, int) and window_size < 1:
         raise ValueError("Argument `window_size` is expected to be a positive integer.")
 
-    _img_shape = target.shape[1:]  # channels, width, height
-    rmse_map = torch.zeros(_img_shape, dtype=target.dtype, device=target.device)
-    target_sum = torch.zeros(_img_shape, dtype=target.dtype, device=target.device)
+    img_shape = target.shape[1:]  # [num_channels, width, height]
+    rmse_map = torch.zeros(img_shape, dtype=target.dtype, device=target.device)
+    target_sum = torch.zeros(img_shape, dtype=target.dtype, device=target.device)
     total_images = torch.tensor(0.0, device=target.device)
 
     rmse_map, target_sum, total_images = _rase_update(preds, target, window_size, rmse_map, target_sum, total_images)
