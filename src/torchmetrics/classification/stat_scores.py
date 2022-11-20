@@ -71,18 +71,20 @@ class _AbstractStatScores(Metric):
             self.tn.append(tn)
             self.fn.append(fn)
         else:
-            self.tp += tp
-            self.fp += fp
-            self.tn += tn
-            self.fn += fn
+            self.tp.add_(tp)
+            self.fp.add_(fp)
+            self.tn.add_(tn)
+            self.fn.add_(fn)
 
     def _final_state(self) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
         """Final aggregation in case of list states."""
-        tp = dim_zero_cat(self.tp)
-        fp = dim_zero_cat(self.fp)
-        tn = dim_zero_cat(self.tn)
-        fn = dim_zero_cat(self.fn)
-        return tp, fp, tn, fn
+        if isinstance(self.tp, list):
+            tp = dim_zero_cat(self.tp)
+            fp = dim_zero_cat(self.fp)
+            tn = dim_zero_cat(self.tn)
+            fn = dim_zero_cat(self.fn)
+            return tp, fp, tn, fn
+        return self.tp, self.fp, self.tn, self.fn
 
 
 class BinaryStatScores(_AbstractStatScores):

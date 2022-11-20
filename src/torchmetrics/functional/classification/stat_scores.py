@@ -121,11 +121,19 @@ def _binary_stat_scores_update(
     multidim_average: Literal["global", "samplewise"] = "global",
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
     """Computes the statistics."""
-    sum_dim = [0, 1] if multidim_average == "global" else 1
-    tp = ((target == preds) & (target == 1)).sum(sum_dim).squeeze()
-    fn = ((target != preds) & (target == 1)).sum(sum_dim).squeeze()
-    fp = ((target != preds) & (target == 0)).sum(sum_dim).squeeze()
-    tn = ((target == preds) & (target == 0)).sum(sum_dim).squeeze()
+    if multidim_average == "global":
+        tp, fn = torch.zeros(2, dtype=torch.long, device=preds.device).scatter_(
+            0, target[target == preds], 1, reduce="add"
+        )
+        fp, tn = torch.zeros(2, dtype=torch.long, device=preds.device).scatter_(
+            0, target[target != preds], 1, reduce="add"
+        )
+    else:
+        sum_dim = [0, 1] if multidim_average == "global" else 1
+        tp = ((target == preds) & (target == 1)).sum(sum_dim).squeeze()
+        fn = ((target != preds) & (target == 1)).sum(sum_dim).squeeze()
+        fp = ((target != preds) & (target == 0)).sum(sum_dim).squeeze()
+        tn = ((target == preds) & (target == 0)).sum(sum_dim).squeeze()
     return tp, fp, tn, fn
 
 
