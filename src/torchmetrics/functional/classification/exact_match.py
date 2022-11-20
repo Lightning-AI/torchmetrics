@@ -18,12 +18,12 @@ from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.functional.classification.stat_scores import (
+    _multiclass_stat_scores_arg_validation,
+    _multiclass_stat_scores_format,
+    _multiclass_stat_scores_tensor_validation,
     _multilabel_stat_scores_arg_validation,
     _multilabel_stat_scores_format,
     _multilabel_stat_scores_tensor_validation,
-    _multiclass_stat_scores_arg_validation,
-    _multiclass_stat_scores_format,
-    _multiclass_stat_scores_tensor_validation
 )
 from torchmetrics.utilities.compute import _safe_divide
 
@@ -39,7 +39,7 @@ def _exact_match_reduce(
 def _multiclass_exact_match_update(
     preds: Tensor, target: Tensor, multidim_average: Literal["global", "samplewise"] = "global"
 ) -> Tuple[Tensor, Tensor]:
-    correct = ((preds == target).sum(1) == preds.shape[1])
+    correct = (preds == target).sum(1) == preds.shape[1]
     correct = correct if multidim_average == "samplewise" else correct.sum()
     total = torch.tensor(preds.shape[0] if multidim_average == "global" else 1, device=correct.device)
     return correct, total
@@ -166,7 +166,7 @@ def multilabel_exact_match(
 def exact_match(
     preds: Tensor,
     target: Tensor,
-    task: Literal['multiclass', 'multilabel'],
+    task: Literal["multiclass", "multilabel"],
     num_classes: Optional[int] = None,
     num_labels: Optional[int] = None,
     threshold: float = 0.5,
@@ -174,6 +174,6 @@ def exact_match(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    if task == 'multiclass':
+    if task == "multiclass":
         assert num_classes is not None
         return multiclass_

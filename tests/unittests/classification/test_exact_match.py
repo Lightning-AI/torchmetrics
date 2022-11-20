@@ -18,14 +18,13 @@ import pytest
 import torch
 from scipy.special import expit as sigmoid
 
-from torchmetrics.classification.exact_match import MultilabelExactMatch, MulticlassExactMatch
-from torchmetrics.functional.classification.exact_match import multilabel_exact_match, multiclass_exact_match
-from unittests.classification.inputs import _multilabel_cases, _multiclass_cases
+from torchmetrics.classification.exact_match import MulticlassExactMatch, MultilabelExactMatch
+from torchmetrics.functional.classification.exact_match import multiclass_exact_match, multilabel_exact_match
+from unittests.classification.inputs import _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
 from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index
 
 seed_all(42)
-
 
 
 def _sk_accuracy_multiclass(preds, target, ignore_index, multidim_average, average):
@@ -171,7 +170,6 @@ class TestMulticlassAccuracy(MetricTester):
             metric_args={"num_classes": NUM_CLASSES},
             dtype=dtype,
         )
-
 
 
 def _sk_exact_match_multilabel(preds, target, ignore_index, multidim_average):
