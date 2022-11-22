@@ -246,7 +246,7 @@ def hinge_loss(
     task: Literal["binary", "multiclass"],
     num_classes: Optional[int] = None,
     squared: bool = False,
-    multiclass_mode: Optional[Literal["crammer-singer", "one-vs-all"]] = None,
+    multiclass_mode: Optional[Literal["crammer-singer", "one-vs-all"]] = "crammer-singer",
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
@@ -260,24 +260,23 @@ def hinge_loss(
     Legacy Example:
         >>> import torch
         >>> target = torch.tensor([0, 1, 1])
-        >>> preds = torch.tensor([-2.2, 2.4, 0.1])
-        >>> hinge_loss(preds, target, task="multiclass")
-        tensor(0.3000)
+        >>> preds = torch.tensor([0.5, 0.7, 0.1])
+        >>> hinge_loss(preds, target, task="binary")
+        tensor(0.9000)
 
         >>> target = torch.tensor([0, 1, 2])
         >>> preds = torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
-        >>> hinge_loss(preds, target, task="multiclass")
-        tensor(2.9000)
+        >>> hinge_loss(preds, target, task="multiclass", num_classes=3)
+        tensor(1.5551)
 
         >>> target = torch.tensor([0, 1, 2])
         >>> preds = torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
-        >>> hinge_loss(preds, target, task="multiclass", multiclass_mode="one-vs-all")
-        tensor([2.2333, 1.5000, 1.2333])
+        >>> hinge_loss(preds, target, task="multiclass", num_classes=3, multiclass_mode="one-vs-all")
+        tensor([1.3743, 1.1945, 1.2359])
     """
     if task == "binary":
         return binary_hinge_loss(preds, target, squared, ignore_index, validate_args)
     if task == "multiclass":
         assert isinstance(num_classes, int)
-        assert multiclass_mode is not None
         return multiclass_hinge_loss(preds, target, num_classes, squared, multiclass_mode, ignore_index, validate_args)
     raise ValueError(f"Expected argument `task` to either be `'binary'` or `'multilabel'` but got {task}")

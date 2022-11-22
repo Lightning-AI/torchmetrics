@@ -425,9 +425,9 @@ def average_precision(
 
     Legacy Example:
         >>> from torchmetrics.functional import average_precision
-        >>> pred = torch.tensor([0, 1, 2, 3])
+        >>> pred = torch.tensor([0.0, 1.0, 2.0, 3.0])
         >>> target = torch.tensor([0, 1, 1, 1])
-        >>> average_precision(pred, target, task="multiclass")
+        >>> average_precision(pred, target, task="binary")
         tensor(1.)
 
         >>> pred = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
@@ -435,8 +435,8 @@ def average_precision(
         ...                      [0.05, 0.05, 0.75, 0.05, 0.05],
         ...                      [0.05, 0.05, 0.05, 0.75, 0.05]])
         >>> target = torch.tensor([0, 1, 3, 2])
-        >>> average_precision(pred, target, task="multilabel", num_classes=5, average=None)
-        [tensor(1.), tensor(1.), tensor(0.2500), tensor(0.2500), tensor(nan)]
+        >>> average_precision(pred, target, task="multiclass", num_classes=5, average=None)
+        tensor([1.0000, 1.0000, 0.2500, 0.2500,    nan])
     """
     if task == "binary":
         return binary_average_precision(preds, target, thresholds, ignore_index, validate_args)

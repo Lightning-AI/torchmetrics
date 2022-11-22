@@ -787,22 +787,22 @@ def precision_recall_curve(
     :func:`multilabel_precision_recall_curve` for the specific details of each argument influence and examples.
 
     Legacy Example:
-        >>> pred = torch.tensor([0, 1, 2, 3])
+        >>> pred = torch.tensor([0.0, 1.0, 2.0, 3.0])
         >>> target = torch.tensor([0, 1, 1, 0])
-        >>> precision, recall, thresholds = precision_recall_curve(pred, target, pos_label=1)
+        >>> precision, recall, thresholds = precision_recall_curve(pred, target, task='binary')
         >>> precision
         tensor([0.6667, 0.5000, 0.0000, 1.0000])
         >>> recall
         tensor([1.0000, 0.5000, 0.0000, 0.0000])
         >>> thresholds
-        tensor([1, 2, 3])
+        tensor([0.7311, 0.8808, 0.9526])
 
         >>> pred = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
         ...                      [0.05, 0.75, 0.05, 0.05, 0.05],
         ...                      [0.05, 0.05, 0.75, 0.05, 0.05],
         ...                      [0.05, 0.05, 0.05, 0.75, 0.05]])
         >>> target = torch.tensor([0, 1, 3, 2])
-        >>> precision, recall, thresholds = precision_recall_curve(pred, target, num_classes=5)
+        >>> precision, recall, thresholds = precision_recall_curve(pred, target, task='multiclass', num_classes=5)
         >>> precision
         [tensor([1., 1.]), tensor([1., 1.]), tensor([0.2500, 0.0000, 1.0000]),
          tensor([0.2500, 0.0000, 1.0000]), tensor([0., 1.])]

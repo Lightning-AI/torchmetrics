@@ -1099,12 +1099,12 @@ def stat_scores(
     Legacy Example:
         >>> preds  = torch.tensor([1, 0, 2, 1])
         >>> target = torch.tensor([1, 1, 2, 0])
-        >>> stat_scores(preds, target, reduce='macro', num_classes=3)
+        >>> stat_scores(preds, target, task='multiclass', num_classes=3, average='micro')
+        tensor([2, 2, 6, 2, 4])
+        >>> stat_scores(preds, target, task='multiclass', num_classes=3, average=None)
         tensor([[0, 1, 2, 1, 1],
                 [1, 1, 1, 1, 2],
                 [1, 0, 3, 0, 1]])
-        >>> stat_scores(preds, target, reduce='micro')
-        tensor([2, 2, 6, 2, 4])
     """
     assert multidim_average is not None
     if task == "binary":

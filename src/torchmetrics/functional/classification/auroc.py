@@ -438,7 +438,7 @@ def auroc(
     Legacy Example:
         >>> preds = torch.tensor([0.13, 0.26, 0.08, 0.19, 0.34])
         >>> target = torch.tensor([0, 0, 1, 1, 1])
-        >>> auroc(preds, target, pos_label=1)
+        >>> auroc(preds, target, task='binary')
         tensor(0.5000)
 
         >>> preds = torch.tensor([[0.90, 0.05, 0.05],
@@ -447,7 +447,7 @@ def auroc(
         ...                       [0.85, 0.05, 0.10],
         ...                       [0.10, 0.10, 0.80]])
         >>> target = torch.tensor([0, 1, 1, 2, 2])
-        >>> auroc(preds, target, num_classes=3)
+        >>> auroc(preds, target, task='multiclass', num_classes=3)
         tensor(0.7778)
     """
     if task == "binary":

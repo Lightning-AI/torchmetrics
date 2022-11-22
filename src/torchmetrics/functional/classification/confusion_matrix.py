@@ -613,14 +613,14 @@ def confusion_matrix(
         >>> from torchmetrics import ConfusionMatrix
         >>> target = torch.tensor([1, 1, 0, 0])
         >>> preds = torch.tensor([0, 1, 0, 0])
-        >>> confmat = ConfusionMatrix(num_classes=2, task="binary")
+        >>> confmat = ConfusionMatrix(task="binary")
         >>> confmat(preds, target)
         tensor([[2, 0],
                 [1, 1]])
 
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([2, 1, 0, 1])
-        >>> confmat = ConfusionMatrix(num_classes=3, task="multiclass")
+        >>> confmat = ConfusionMatrix(task="multiclass", num_classes=3)
         >>> confmat(preds, target)
         tensor([[1, 1, 0],
                 [0, 1, 0],
@@ -628,7 +628,7 @@ def confusion_matrix(
 
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
-        >>> confmat = ConfusionMatrix(num_classes=3, task="multilabel", multilabel=True)
+        >>> confmat = ConfusionMatrix(task="multilabel", num_labels=3)
         >>> confmat(preds, target)
         tensor([[[1, 0], [0, 1]],
                 [[1, 0], [1, 0]],

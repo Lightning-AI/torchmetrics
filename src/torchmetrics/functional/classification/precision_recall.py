@@ -682,7 +682,7 @@ def precision(
         >>> target = torch.tensor([1, 1, 2, 0])
         >>> precision(preds, target, task="multiclass", average='macro', num_classes=3)
         tensor(0.1667)
-        >>> precision(preds, target, task="multiclass", average='micro')
+        >>> precision(preds, target, task="multiclass", average='micro', num_classes=3)
         tensor(0.2500)
     """
     assert multidim_average is not None
@@ -734,7 +734,7 @@ def recall(
         >>> target = torch.tensor([1, 1, 2, 0])
         >>> recall(preds, target, task="multiclass", average='macro', num_classes=3)
         tensor(0.3333)
-        >>> recall(preds, target, task="multiclass", average='micro')
+        >>> recall(preds, target, task="multiclass", average='micro', num_classes=3)
         tensor(0.2500)
     """
     assert multidim_average is not None
