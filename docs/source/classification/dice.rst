@@ -20,14 +20,3 @@ ____________________
 
 .. autofunction:: torchmetrics.functional.dice
     :noindex:
-
-
-##########
-Dice Score
-##########
-
-Functional Interface
-_____________________________________________
-
-.. autofunction:: torchmetrics.functional.dice
-    :noindex:
