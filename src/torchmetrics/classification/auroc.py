@@ -23,8 +23,6 @@ from torchmetrics.classification.precision_recall_curve import (
     MultilabelPrecisionRecallCurve,
 )
 from torchmetrics.functional.classification.auroc import (
-    _auroc_compute,
-    _auroc_update,
     _binary_auroc_arg_validation,
     _binary_auroc_compute,
     _multiclass_auroc_arg_validation,
@@ -33,9 +31,7 @@ from torchmetrics.functional.classification.auroc import (
     _multilabel_auroc_compute,
 )
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
-from torchmetrics.utilities.enums import DataType
 
 
 class BinaryAUROC(BinaryPrecisionRecallCurve):
@@ -318,201 +314,55 @@ class MultilabelAUROC(MultilabelPrecisionRecallCurve):
         return _multilabel_auroc_compute(state, self.num_labels, self.average, self.thresholds, self.ignore_index)
 
 
-class AUROC(Metric):
-    r"""Area Under the Receiver Operating Characteristic Curve.
+class AUROC:
+    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_). The AUROC score summarizes the
+    ROC curve into an single number that describes the performance of a model for multiple thresholds at the same
+    time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5 corresponds to random guessing.
 
-    .. note::
-        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
-        metric. Moving forward we recommend using these versions. This base metric will still work as it did
-        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
-        and the general order of arguments may change, such that this metric will just function as an single
-        entrypoint to calling the three specialized versions.
+    This module is a simple wrapper to get the task specific versions of this metric, which is done by setting the
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    :mod:`BinaryAUROC`, :mod:`MulticlassAUROC` and :mod:`MultilabelAUROC` for the specific details of
+    each argument influence and examples.
 
-
-    Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_).
-    Works for both binary, multilabel and multiclass problems. In the case of
-    multiclass, the values will be calculated based on a one-vs-the-rest approach.
-
-    Forward accepts
-
-    - ``preds`` (float tensor): ``(N, ...)`` (binary) or ``(N, C, ...)`` (multiclass) tensor
-      with probabilities, where C is the number of classes.
-
-    - ``target`` (long tensor): ``(N, ...)`` or ``(N, C, ...)`` with integer labels
-
-    For non-binary input, if the ``preds`` and ``target`` tensor have the same
-    size the input will be interpretated as multilabel and if ``preds`` have one
-    dimension more than the ``target`` tensor the input will be interpretated as
-    multiclass.
-
-    .. note::
-        If either the positive class or negative class is completly missing in the target tensor,
-        the auroc score is meaningless in this case and a score of 0 will be returned together
-        with an warning.
-
-    Args:
-        num_classes: integer with number of classes for multi-label and multiclass problems.
-
-            Should be set to ``None`` for binary problems
-        pos_label: integer determining the positive class. Default is ``None``
-            which for binary problem is translated to 1. For multiclass problems
-            this argument should not be set as we iteratively change it in the
-            range ``[0, num_classes-1]``
-        average:
-            - ``'micro'`` computes metric globally. Only works for multilabel problems
-            - ``'macro'`` computes metric for each class and uniformly averages them
-            - ``'weighted'`` computes metric for each class and does a weighted-average,
-              where each class is weighted by their support (accounts for class imbalance)
-            - ``None`` computes and returns the metric per class
-        max_fpr:
-            If not ``None``, calculates standardized partial AUC over the
-            range ``[0, max_fpr]``. Should be a float between 0 and 1.
-
-        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
-
-    Raises:
-        ValueError:
-            If ``average`` is none of ``None``, ``"macro"`` or ``"weighted"``.
-        ValueError:
-            If ``max_fpr`` is not a ``float`` in the range ``(0, 1]``.
-        RuntimeError:
-            If ``PyTorch version`` is ``below 1.6`` since ``max_fpr`` requires ``torch.bucketize``
-            which is not available below 1.6.
-        ValueError:
-            If the mode of data (binary, multi-label, multi-class) changes between batches.
-
-    Example (binary case):
-        >>> from torchmetrics import AUROC
+    Legacy Example:
         >>> preds = torch.tensor([0.13, 0.26, 0.08, 0.19, 0.34])
         >>> target = torch.tensor([0, 0, 1, 1, 1])
-        >>> auroc = AUROC(pos_label=1)
+        >>> auroc = AUROC(task="binary")
         >>> auroc(preds, target)
         tensor(0.5000)
 
-    Example (multiclass case):
         >>> preds = torch.tensor([[0.90, 0.05, 0.05],
         ...                       [0.05, 0.90, 0.05],
         ...                       [0.05, 0.05, 0.90],
         ...                       [0.85, 0.05, 0.10],
         ...                       [0.10, 0.10, 0.80]])
         >>> target = torch.tensor([0, 1, 1, 2, 2])
-        >>> auroc = AUROC(num_classes=3)
+        >>> auroc = AUROC(task="multiclass", num_classes=3)
         >>> auroc(preds, target)
         tensor(0.7778)
     """
-    is_differentiable: bool = False
-    higher_is_better: bool = True
-    full_state_update: bool = False
-    preds: List[Tensor]
-    target: List[Tensor]
 
     def __new__(
         cls,
+        task: Literal["binary", "multiclass", "multilabel"],
+        thresholds: Optional[Union[int, List[float], Tensor]] = None,
         num_classes: Optional[int] = None,
-        pos_label: Optional[int] = None,
+        num_labels: Optional[int] = None,
         average: Optional[Literal["macro", "weighted", "none"]] = "macro",
         max_fpr: Optional[float] = None,
-        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
-        thresholds: Optional[Union[int, List[float], Tensor]] = None,
-        num_labels: Optional[int] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
-        if task is not None:
-            kwargs.update(dict(thresholds=thresholds, ignore_index=ignore_index, validate_args=validate_args))
-            if task == "binary":
-                return BinaryAUROC(max_fpr, **kwargs)
-            if task == "multiclass":
-                assert isinstance(num_classes, int)
-                return MulticlassAUROC(num_classes, average, **kwargs)
-            if task == "multilabel":
-                assert isinstance(num_labels, int)
-                return MultilabelAUROC(num_labels, average, **kwargs)
-            raise ValueError(
-                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-            )
-        else:
-            rank_zero_warn(
-                "From v0.10 an `'Binary*'`, `'Multiclass*', `'Multilabel*'` version now exist of each classification"
-                " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
-                " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
-                " and the general order of arguments may change, such that this metric will just function as an single"
-                " entrypoint to calling the three specialized versions.",
-                DeprecationWarning,
-            )
-        return super().__new__(cls)
-
-    def __init__(
-        self,
-        num_classes: Optional[int] = None,
-        pos_label: Optional[int] = None,
-        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
-        max_fpr: Optional[float] = None,
-        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
-        thresholds: Optional[Union[int, List[float], Tensor]] = None,
-        num_labels: Optional[int] = None,
-        ignore_index: Optional[int] = None,
-        validate_args: bool = True,
-        **kwargs: Any,
-    ) -> None:
-        super().__init__(**kwargs)
-
-        self.num_classes = num_classes
-        self.pos_label = pos_label
-        self.average = average
-        self.max_fpr = max_fpr
-
-        allowed_average = (None, "macro", "weighted", "micro")
-        if self.average not in allowed_average:
-            raise ValueError(
-                f"Argument `average` expected to be one of the following: {allowed_average} but got {average}"
-            )
-
-        if self.max_fpr is not None:
-            if not isinstance(max_fpr, float) or not 0 < max_fpr <= 1:
-                raise ValueError(f"`max_fpr` should be a float in range (0, 1], got: {max_fpr}")
-
-        self.mode: DataType = None  # type: ignore
-        self.add_state("preds", default=[], dist_reduce_fx="cat")
-        self.add_state("target", default=[], dist_reduce_fx="cat")
-
-        rank_zero_warn(
-            "Metric `AUROC` will save all targets and predictions in buffer."
-            " For large datasets this may lead to large memory footprint."
-        )
-
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model (probabilities, or labels)
-            target: Ground truth labels
-        """
-        preds, target, mode = _auroc_update(preds, target)
-
-        self.preds.append(preds)
-        self.target.append(target)
-
-        if self.mode and self.mode != mode:
-            raise ValueError(
-                "The mode of data (binary, multi-label, multi-class) should be constant, but changed"
-                f" between batches from {self.mode} to {mode}"
-            )
-        self.mode = mode
-
-    def compute(self) -> Tensor:
-        """Computes AUROC based on inputs passed in to ``update`` previously."""
-        if not self.mode:
-            raise RuntimeError("You have to have determined mode.")
-        preds = dim_zero_cat(self.preds)
-        target = dim_zero_cat(self.target)
-        return _auroc_compute(
-            preds,
-            target,
-            self.mode,
-            self.num_classes,
-            self.pos_label,
-            self.average,
-            self.max_fpr,
+        kwargs.update(dict(thresholds=thresholds, ignore_index=ignore_index, validate_args=validate_args))
+        if task == "binary":
+            return BinaryAUROC(max_fpr, **kwargs)
+        if task == "multiclass":
+            assert isinstance(num_classes, int)
+            return MulticlassAUROC(num_classes, average, **kwargs)
+        if task == "multilabel":
+            assert isinstance(num_labels, int)
+            return MultilabelAUROC(num_labels, average, **kwargs)
+        raise ValueError(
+            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
         )

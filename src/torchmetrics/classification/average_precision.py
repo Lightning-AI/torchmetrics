@@ -23,8 +23,6 @@ from torchmetrics.classification.precision_recall_curve import (
     MultilabelPrecisionRecallCurve,
 )
 from torchmetrics.functional.classification.average_precision import (
-    _average_precision_compute,
-    _average_precision_update,
     _binary_average_precision_compute,
     _multiclass_average_precision_arg_validation,
     _multiclass_average_precision_compute,
@@ -32,7 +30,6 @@ from torchmetrics.functional.classification.average_precision import (
     _multilabel_average_precision_compute,
 )
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 
 
@@ -318,162 +315,58 @@ class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
         )
 
 
-class AveragePrecision(Metric):
-    r"""Average Precision.
+class AveragePrecision:
+    r"""Computes the average precision (AP) score. The AP score summarizes a precision-recall curve as an weighted
+    mean of precisions at each threshold, with the difference in recall from the previous threshold as weight:
 
-    .. note::
-        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
-        metric. Moving forward we recommend using these versions. This base metric will still work as it did
-        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
-        and the general order of arguments may change, such that this metric will just function as an single
-        entrypoint to calling the three specialized versions.
+    .. math::
+        AP = \sum{n} (R_n - R_{n-1}) P_n
 
-    Computes the average precision score, which summarises the precision recall curve into one number. Works for
-    both binary and multiclass problems. In the case of multiclass, the values will be calculated based on a one-
-    vs-the-rest approach.
+    where :math:`P_n, R_n` is the respective precision and recall at threshold index :math:`n`. This value is
+    equivalent to the area under the precision-recall curve (AUPRC).
 
-    Forward accepts
+    This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    :mod:`BinaryAveragePrecision`, :mod:`MulticlassAveragePrecision` and :mod:`MultilabelAveragePrecision`
+    for the specific details of each argument influence and examples.
 
-    - ``preds`` (float tensor): ``(N, ...)`` (binary) or ``(N, C, ...)`` (multiclass) tensor
-      with probabilities, where C is the number of classes.
-
-    - ``target`` (long tensor): ``(N, ...)`` with integer labels
-
-    Args:
-        num_classes: integer with number of classes. Not nessesary to provide
-            for binary problems.
-        pos_label: integer determining the positive class. Default is ``None``
-            which for binary problem is translated to 1. For multiclass problems
-            this argument should not be set as we iteratively change it in the
-            range ``[0, num_classes-1]``
-        average:
-            defines the reduction that is applied in the case of multiclass and multilabel input.
-            Should be one of the following:
-
-            - ``'macro'`` [default]: Calculate the metric for each class separately, and average the
-              metrics across classes (with equal weights for each class).
-            - ``'micro'``: Calculate the metric globally, across all samples and classes. Cannot be
-              used with multiclass input.
-            - ``'weighted'``: Calculate the metric for each class separately, and average the
-              metrics across classes, weighting each class by its support.
-            - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
-              the metric for every class.
-
-        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
-
-    Example (binary case):
-        >>> from torchmetrics import AveragePrecision
+    Legacy Example:
         >>> pred = torch.tensor([0, 0.1, 0.8, 0.4])
         >>> target = torch.tensor([0, 1, 1, 1])
-        >>> average_precision = AveragePrecision(pos_label=1)
+        >>> average_precision = AveragePrecision(task="binary")
         >>> average_precision(pred, target)
         tensor(1.)
 
-    Example (multiclass case):
         >>> pred = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
         ...                      [0.05, 0.75, 0.05, 0.05, 0.05],
         ...                      [0.05, 0.05, 0.75, 0.05, 0.05],
         ...                      [0.05, 0.05, 0.05, 0.75, 0.05]])
         >>> target = torch.tensor([0, 1, 3, 2])
-        >>> average_precision = AveragePrecision(num_classes=5, average=None)
+        >>> average_precision = AveragePrecision(task="multiclass", num_classes=5, average=None)
         >>> average_precision(pred, target)
-        [tensor(1.), tensor(1.), tensor(0.2500), tensor(0.2500), tensor(nan)]
+        tensor([1.0000, 1.0000, 0.2500, 0.2500,    nan])
     """
-
-    is_differentiable: bool = False
-    higher_is_better: Optional[bool] = None
-    full_state_update: bool = False
-    preds: List[Tensor]
-    target: List[Tensor]
 
     def __new__(
         cls,
-        num_classes: Optional[int] = None,
-        pos_label: Optional[int] = None,
-        average: Optional[Literal["macro", "weighted", "none"]] = "macro",
-        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+        task: Literal["binary", "multiclass", "multilabel"],
         thresholds: Optional[Union[int, List[float], Tensor]] = None,
+        num_classes: Optional[int] = None,
         num_labels: Optional[int] = None,
+        average: Optional[Literal["macro", "weighted", "none"]] = "macro",
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
-        if task is not None:
-            kwargs.update(dict(thresholds=thresholds, ignore_index=ignore_index, validate_args=validate_args))
-            if task == "binary":
-                return BinaryAveragePrecision(**kwargs)
-            if task == "multiclass":
-                assert isinstance(num_classes, int)
-                return MulticlassAveragePrecision(num_classes, average, **kwargs)
-            if task == "multilabel":
-                assert isinstance(num_labels, int)
-                return MultilabelAveragePrecision(num_labels, average, **kwargs)
-            raise ValueError(
-                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-            )
-        else:
-            rank_zero_warn(
-                "From v0.10 an `'Binary*'`, `'Multiclass*', `'Multilabel*'` version now exist of each classification"
-                " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
-                " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
-                " and the general order of arguments may change, such that this metric will just function as an single"
-                " entrypoint to calling the three specialized versions.",
-                DeprecationWarning,
-            )
-        return super().__new__(cls)
-
-    def __init__(
-        self,
-        num_classes: Optional[int] = None,
-        pos_label: Optional[int] = None,
-        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
-        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
-        thresholds: Optional[Union[int, List[float], Tensor]] = None,
-        num_labels: Optional[int] = None,
-        ignore_index: Optional[int] = None,
-        validate_args: bool = True,
-        **kwargs: Any,
-    ) -> None:
-        super().__init__(**kwargs)
-
-        self.num_classes = num_classes
-        self.pos_label = pos_label
-        allowed_average = ("micro", "macro", "weighted", "none", None)
-        if average not in allowed_average:
-            raise ValueError(f"Expected argument `average` to be one of {allowed_average}" f" but got {average}")
-        self.average = average
-
-        self.add_state("preds", default=[], dist_reduce_fx="cat")
-        self.add_state("target", default=[], dist_reduce_fx="cat")
-
-        rank_zero_warn(
-            "Metric `AveragePrecision` will save all targets and predictions in buffer."
-            " For large datasets this may lead to large memory footprint."
+        kwargs.update(dict(thresholds=thresholds, ignore_index=ignore_index, validate_args=validate_args))
+        if task == "binary":
+            return BinaryAveragePrecision(**kwargs)
+        if task == "multiclass":
+            assert isinstance(num_classes, int)
+            return MulticlassAveragePrecision(num_classes, average, **kwargs)
+        if task == "multilabel":
+            assert isinstance(num_labels, int)
+            return MultilabelAveragePrecision(num_labels, average, **kwargs)
+        raise ValueError(
+            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
         )
-
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
-        preds, target, num_classes, pos_label = _average_precision_update(
-            preds, target, self.num_classes, self.pos_label, self.average
-        )
-        self.preds.append(preds)
-        self.target.append(target)
-        self.num_classes = num_classes
-        self.pos_label = pos_label
-
-    def compute(self) -> Union[Tensor, List[Tensor]]:
-        """Compute the average precision score.
-
-        Returns:
-            tensor with average precision. If multiclass return list of such tensors, one for each class
-        """
-        preds = dim_zero_cat(self.preds)
-        target = dim_zero_cat(self.target)
-        if not self.num_classes:
-            raise ValueError(f"`num_classes` bas to be positive number, but got {self.num_classes}")
-        return _average_precision_compute(preds, target, self.num_classes, self.pos_label, self.average)

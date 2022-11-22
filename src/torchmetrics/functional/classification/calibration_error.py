@@ -23,9 +23,6 @@ from torchmetrics.functional.classification.confusion_matrix import (
     _multiclass_confusion_matrix_format,
     _multiclass_confusion_matrix_tensor_validation,
 )
-from torchmetrics.utilities.checks import _input_format_classification
-from torchmetrics.utilities.enums import DataType
-from torchmetrics.utilities.prints import rank_zero_warn
 
 
 def _binning_bucketize(
@@ -316,123 +313,44 @@ def multiclass_calibration_error(
     return _ce_compute(confidences, accuracies, n_bins, norm)
 
 
-def _ce_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
-    """Given a predictions and targets tensor, computes the confidences of the top-1 prediction and records their
-    correctness.
-
-    Args:
-        preds:  Input ``softmaxed`` predictions.
-        target: Labels.
-
-    Raises:
-        ValueError: If the dataset shape is not binary, multiclass, or multidimensional-multiclass.
-
-    Returns:
-        tuple with confidences and accuracies
-    """
-    _, _, mode = _input_format_classification(preds, target)
-
-    if mode == DataType.BINARY:
-        if not ((0 <= preds) * (preds <= 1)).all():
-            preds = preds.sigmoid()
-        confidences, accuracies = preds, target
-    elif mode == DataType.MULTICLASS:
-        if not ((0 <= preds) * (preds <= 1)).all():
-            preds = preds.softmax(dim=1)
-        confidences, predictions = preds.max(dim=1)
-        accuracies = predictions.eq(target)
-    elif mode == DataType.MULTIDIM_MULTICLASS:
-        # reshape tensors
-        # for preds, move the class dimension to the final axis and flatten the rest
-        confidences, predictions = torch.transpose(preds, 1, -1).flatten(0, -2).max(dim=1)
-        # for targets, just flatten the target
-        accuracies = predictions.eq(target.flatten())
-    else:
-        raise ValueError(
-            f"Calibration error is not well-defined for data with size {preds.size()} and targets {target.size()}."
-        )
-    # must be cast to float for ddp allgather to work
-    return confidences.float(), accuracies.float()
-
-
 def calibration_error(
     preds: Tensor,
     target: Tensor,
+    task: Literal["binary", "multiclass"] = None,
     n_bins: int = 15,
     norm: Literal["l1", "l2", "max"] = "l1",
-    task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
     num_classes: Optional[int] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calibration Error.
-
-    .. note::
-        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
-        metric. Moving forward we recommend using these versions. This base metric will still work as it did
-        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
-        and the general order of arguments may change, such that this metric will just function as an single
-        entrypoint to calling the three specialized versions.
-
-    `Computes the Top-label Calibration Error`_
+    r"""`Computes the Top-label Calibration Error`_. The expected calibration error can be used to quantify how well
+    a given model is calibrated e.g. how well the predicted output probabilities of the model matches the actual
+    probabilities of the ground truth distribution.
 
     Three different norms are implemented, each corresponding to variations on the calibration error metric.
 
-    L1 norm (Expected Calibration Error)
+    .. math::
+        \text{ECE} = \sum_i^N b_i \|(p_i - c_i)\|, \text{L1 norm (Expected Calibration Error)}
 
     .. math::
-        \text{ECE} = \sum_i^N b_i \|(p_i - c_i)\|
-
-    Infinity norm (Maximum Calibration Error)
+        \text{MCE} =  \max_{i} (p_i - c_i), \text{Infinity norm (Maximum Calibration Error)}
 
     .. math::
-        \text{MCE} =  \max_{i} (p_i - c_i)
+        \text{RMSCE} = \sqrt{\sum_i^N b_i(p_i - c_i)^2}, \text{L2 norm (Root Mean Square Calibration Error)}
 
-    L2 norm (Root Mean Square Calibration Error)
+    Where :math:`p_i` is the top-1 prediction accuracy in bin :math:`i`, :math:`c_i` is the average confidence of
+    predictions in bin :math:`i`, and :math:`b_i` is the fraction of data points in bin :math:`i`. Bins are constructed
+    in an uniform way in the [0,1] range.
 
-    .. math::
-        \text{RMSCE} = \sqrt{\sum_i^N b_i(p_i - c_i)^2}
-
-    Where :math:`p_i` is the top-1 prediction accuracy in bin :math:`i`,
-    :math:`c_i` is the average confidence of predictions in bin :math:`i`, and
-    :math:`b_i` is the fraction of data points in bin :math:`i`.
-
-    .. note:
-        L2-norm debiasing is not yet supported.
-
-    Args:
-        preds: Model output probabilities.
-        target: Ground-truth target class labels.
-        n_bins: Number of bins to use when computing t.
-        norm: Norm used to compare empirical and expected probability bins.
-            Defaults to "l1", or Expected Calibration Error.
+    This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
+    ``task`` argument to either ``'binary'`` or ``'multiclass'``. See the documentation of
+    :func:`binary_calibration_error` and :func:`multiclass_calibration_error` for the specific details of
+    each argument influence and examples.
     """
-    if task is not None:
-        assert norm is not None
-        if task == "binary":
-            return binary_calibration_error(preds, target, n_bins, norm, ignore_index, validate_args)
-        if task == "multiclass":
-            assert isinstance(num_classes, int)
-            return multiclass_calibration_error(preds, target, num_classes, n_bins, norm, ignore_index, validate_args)
-        raise ValueError(f"Expected argument `task` to either be `'binary'`, `'multiclass'` but got {task}")
-    else:
-        rank_zero_warn(
-            "From v0.10 an `'binary_*'`, `'multiclass_*'`, `'multilabel_*'` version now exist of each classification"
-            " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
-            " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
-            " and the general order of arguments may change, such that this metric will just function as an single"
-            " entrypoint to calling the three specialized versions.",
-            DeprecationWarning,
-        )
-
-    if norm not in ("l1", "l2", "max"):
-        raise ValueError(f"Norm {norm} is not supported. Please select from l1, l2, or max. ")
-
-    if not isinstance(n_bins, int) or n_bins <= 0:
-        raise ValueError(f"Expected argument `n_bins` to be a int larger than 0 but got {n_bins}")
-
-    confidences, accuracies = _ce_update(preds, target)
-
-    bin_boundaries = torch.linspace(0, 1, n_bins + 1, dtype=torch.float, device=preds.device)
-
-    return _ce_compute(confidences, accuracies, bin_boundaries, norm=norm)
+    assert norm is not None
+    if task == "binary":
+        return binary_calibration_error(preds, target, n_bins, norm, ignore_index, validate_args)
+    if task == "multiclass":
+        assert isinstance(num_classes, int)
+        return multiclass_calibration_error(preds, target, num_classes, n_bins, norm, ignore_index, validate_args)
+    raise ValueError(f"Expected argument `task` to either be `'binary'` or `'multiclass'` but got {task}")
