@@ -8,7 +8,7 @@ from sklearn.metrics import r2_score as sk_r2score
 from torch import Tensor
 
 from torchmetrics import Metric
-from torchmetrics.classification import Accuracy
+from torchmetrics.classification import MulticlassAccuracy
 from torchmetrics.regression import R2Score
 from torchmetrics.wrappers.multioutput import MultioutputWrapper
 from unittests.helpers import seed_all
@@ -94,12 +94,12 @@ def _multi_target_sk_accuracy(preds, target, num_outputs):
             {},
         ),
         (
-            Accuracy,
+            MulticlassAccuracy,
             partial(_multi_target_sk_accuracy, num_outputs=2),
             _multi_target_classification_inputs.preds,
             _multi_target_classification_inputs.target,
             num_targets,
-            dict(num_classes=NUM_CLASSES),
+            dict(num_classes=NUM_CLASSES, average="micro"),
         ),
     ],
 )

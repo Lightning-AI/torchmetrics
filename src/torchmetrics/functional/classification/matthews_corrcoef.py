@@ -22,7 +22,6 @@ from torchmetrics.functional.classification.confusion_matrix import (
     _binary_confusion_matrix_format,
     _binary_confusion_matrix_tensor_validation,
     _binary_confusion_matrix_update,
-    _confusion_matrix_update,
     _multiclass_confusion_matrix_arg_validation,
     _multiclass_confusion_matrix_format,
     _multiclass_confusion_matrix_tensor_validation,
@@ -32,7 +31,6 @@ from torchmetrics.functional.classification.confusion_matrix import (
     _multilabel_confusion_matrix_tensor_validation,
     _multilabel_confusion_matrix_update,
 )
-from torchmetrics.utilities.prints import rank_zero_warn
 
 
 def _matthews_corrcoef_reduce(confmat: Tensor) -> Tensor:
@@ -232,103 +230,38 @@ def multilabel_matthews_corrcoef(
     return _matthews_corrcoef_reduce(confmat)
 
 
-_matthews_corrcoef_update = _confusion_matrix_update
-
-
-def _matthews_corrcoef_compute(confmat: Tensor) -> Tensor:
-    """Computes Matthews correlation coefficient.
-
-    Args:
-        confmat: Confusion matrix
-
-    Example:
-        >>> target = torch.tensor([1, 1, 0, 0])
-        >>> preds = torch.tensor([0, 1, 0, 0])
-        >>> confmat = _matthews_corrcoef_update(preds, target, num_classes=2)
-        >>> _matthews_corrcoef_compute(confmat)
-        tensor(0.5774)
-    """
-
-    tk = confmat.sum(dim=1).float()
-    pk = confmat.sum(dim=0).float()
-    c = torch.trace(confmat).float()
-    s = confmat.sum().float()
-
-    cov_ytyp = c * s - sum(tk * pk)
-    cov_ypyp = s**2 - sum(pk * pk)
-    cov_ytyt = s**2 - sum(tk * tk)
-
-    if cov_ypyp * cov_ytyt == 0:
-        return torch.tensor(0, dtype=confmat.dtype, device=confmat.device)
-    else:
-        return cov_ytyp / torch.sqrt(cov_ytyt * cov_ypyp)
-
-
 def matthews_corrcoef(
     preds: Tensor,
     target: Tensor,
-    num_classes: int,
+    task: Literal["binary", "multiclass", "multilabel"] = None,
     threshold: float = 0.5,
-    task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+    num_classes: Optional[int] = None,
     num_labels: Optional[int] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Matthews correlation coefficient.
+    r"""Calculates `Matthews correlation coefficient`_ . This metric measures the general correlation or quality of
+    a classification.
 
-    .. note::
-        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
-        metric. Moving forward we recommend using these versions. This base metric will still work as it did
-        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
-        and the general order of arguments may change, such that this metric will just function as an single
-        entrypoint to calling the three specialized versions.
+    This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    :func:`binary_matthews_corrcoef`, :func:`multiclass_matthews_corrcoef` and :func:`multilabel_matthews_corrcoef` for
+    the specific details of each argument influence and examples.
 
-    Calculates `Matthews correlation coefficient`_ that measures
-    the general correlation or quality of a classification. In the binary case it
-    is defined as:
-
-    .. math::
-        MCC = \frac{TP*TN - FP*FN}{\sqrt{(TP+FP)*(TP+FN)*(TN+FP)*(TN+FN)}}
-
-    where TP, TN, FP and FN are respectively the true postitives, true negatives,
-    false positives and false negatives. Also works in the case of multi-label or
-    multi-class input.
-
-    Args:
-        preds: (float or long tensor), Either a ``(N, ...)`` tensor with labels or
-            ``(N, C, ...)`` where C is the number of classes, tensor with labels/probabilities
-        target: ``target`` (long tensor), tensor with shape ``(N, ...)`` with ground true labels
-        num_classes: Number of classes in the dataset.
-        threshold:
-            Threshold value for binary or multi-label probabilities.
-
-    Example:
-        >>> from torchmetrics.functional import matthews_corrcoef
+    Legacy Example:
         >>> target = torch.tensor([1, 1, 0, 0])
         >>> preds = torch.tensor([0, 1, 0, 0])
-        >>> matthews_corrcoef(preds, target, num_classes=2)
+        >>> matthews_corrcoef(preds, target, task="multiclass", num_classes=2)
         tensor(0.5774)
     """
-    if task is not None:
-        if task == "binary":
-            return binary_matthews_corrcoef(preds, target, threshold, ignore_index, validate_args)
-        if task == "multiclass":
-            assert isinstance(num_classes, int)
-            return multiclass_matthews_corrcoef(preds, target, num_classes, ignore_index, validate_args)
-        if task == "multilabel":
-            assert isinstance(num_labels, int)
-            return multilabel_matthews_corrcoef(preds, target, num_labels, threshold, ignore_index, validate_args)
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-        )
-    else:
-        rank_zero_warn(
-            "From v0.10 an `'binary_*'`, `'multiclass_*'`, `'multilabel_*'` version now exist of each classification"
-            " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
-            " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
-            " and the general order of arguments may change, such that this metric will just function as an single"
-            " entrypoint to calling the three specialized versions.",
-            DeprecationWarning,
-        )
-    confmat = _matthews_corrcoef_update(preds, target, num_classes, threshold)
-    return _matthews_corrcoef_compute(confmat)
+    if task == "binary":
+        return binary_matthews_corrcoef(preds, target, threshold, ignore_index, validate_args)
+    if task == "multiclass":
+        assert isinstance(num_classes, int)
+        return multiclass_matthews_corrcoef(preds, target, num_classes, ignore_index, validate_args)
+    if task == "multilabel":
+        assert isinstance(num_labels, int)
+        return multilabel_matthews_corrcoef(preds, target, num_labels, threshold, ignore_index, validate_args)
+    raise ValueError(
+        f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+    )

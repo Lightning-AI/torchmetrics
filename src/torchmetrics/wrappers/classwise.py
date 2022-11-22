@@ -30,38 +30,49 @@ class ClasswiseWrapper(Metric):
     Example:
         >>> import torch
         >>> _ = torch.manual_seed(42)
-        >>> from torchmetrics import Accuracy, ClasswiseWrapper
-        >>> metric = ClasswiseWrapper(Accuracy(num_classes=3, average=None))
+        >>> from torchmetrics import ClasswiseWrapper
+        >>> from torchmetrics.classification import MulticlassAccuracy
+        >>> metric = ClasswiseWrapper(MulticlassAccuracy(num_classes=3, average=None))
         >>> preds = torch.randn(10, 3).softmax(dim=-1)
         >>> target = torch.randint(3, (10,))
-        >>> metric(preds, target)
-        {'accuracy_0': tensor(0.5000), 'accuracy_1': tensor(0.7500), 'accuracy_2': tensor(0.)}
+        >>> metric(preds, target)  # doctest: +NORMALIZE_WHITESPACE
+        {'multiclassaccuracy_0': tensor(0.5000),
+        'multiclassaccuracy_1': tensor(0.7500),
+        'multiclassaccuracy_2': tensor(0.)}
 
     Example (labels as list of strings):
         >>> import torch
-        >>> from torchmetrics import Accuracy, ClasswiseWrapper
+        >>> from torchmetrics import ClasswiseWrapper
+        >>> from torchmetrics.classification import MulticlassAccuracy
         >>> metric = ClasswiseWrapper(
-        ...    Accuracy(num_classes=3, average=None),
+        ...    MulticlassAccuracy(num_classes=3, average=None),
         ...    labels=["horse", "fish", "dog"]
         ... )
         >>> preds = torch.randn(10, 3).softmax(dim=-1)
         >>> target = torch.randint(3, (10,))
-        >>> metric(preds, target)
-        {'accuracy_horse': tensor(0.3333), 'accuracy_fish': tensor(0.6667), 'accuracy_dog': tensor(0.)}
+        >>> metric(preds, target)  # doctest: +NORMALIZE_WHITESPACE
+        {'multiclassaccuracy_horse': tensor(0.3333),
+        'multiclassaccuracy_fish': tensor(0.6667),
+        'multiclassaccuracy_dog': tensor(0.)}
 
     Example (in metric collection):
         >>> import torch
-        >>> from torchmetrics import Accuracy, ClasswiseWrapper, MetricCollection, Recall
+        >>> from torchmetrics import ClasswiseWrapper, MetricCollection
+        >>> from torchmetrics.classification import MulticlassAccuracy, MulticlassRecall
         >>> labels = ["horse", "fish", "dog"]
         >>> metric = MetricCollection(
-        ...     {'accuracy': ClasswiseWrapper(Accuracy(num_classes=3, average=None), labels),
-        ...     'recall': ClasswiseWrapper(Recall(num_classes=3, average=None), labels)}
+        ...     {'multiclassaccuracy': ClasswiseWrapper(MulticlassAccuracy(num_classes=3, average=None), labels),
+        ...     'multiclassrecall': ClasswiseWrapper(MulticlassRecall(num_classes=3, average=None), labels)}
         ... )
         >>> preds = torch.randn(10, 3).softmax(dim=-1)
         >>> target = torch.randint(3, (10,))
         >>> metric(preds, target)  # doctest: +NORMALIZE_WHITESPACE
-        {'accuracy_horse': tensor(0.), 'accuracy_fish': tensor(0.3333), 'accuracy_dog': tensor(0.4000),
-        'recall_horse': tensor(0.), 'recall_fish': tensor(0.3333), 'recall_dog': tensor(0.4000)}
+        {'multiclassaccuracy_horse': tensor(0.),
+         'multiclassaccuracy_fish': tensor(0.3333),
+         'multiclassaccuracy_dog': tensor(0.4000),
+         'multiclassrecall_horse': tensor(0.),
+         'multiclassrecall_fish': tensor(0.3333),
+         'multiclassrecall_dog': tensor(0.4000)}
     """
 
     def __init__(self, metric: Metric, labels: Optional[List[str]] = None) -> None:
