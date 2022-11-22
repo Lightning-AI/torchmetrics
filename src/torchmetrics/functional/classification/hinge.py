@@ -246,7 +246,7 @@ def hinge_loss(
     task: Literal["binary", "multiclass"],
     num_classes: Optional[int] = None,
     squared: bool = False,
-    multiclass_mode: Optional[Literal["crammer-singer", "one-vs-all"]] = "crammer-singer",
+    multiclass_mode: Literal["crammer-singer", "one-vs-all"] = "crammer-singer",
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
