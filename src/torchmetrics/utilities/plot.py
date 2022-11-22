@@ -42,6 +42,7 @@ def _error_on_missing_matplotlib() -> None:
 
 def plot_single_or_multi_val(
     val: Union[Tensor, List[Tensor]],
+    ax: Optional[_AX_TYPE] = None,
     higher_is_better: Optional[bool] = None,
     lower_bound: Optional[float] = None,
     upper_bound: Optional[float] = None,
@@ -68,7 +69,7 @@ def plot_single_or_multi_val(
             If `matplotlib` is not installed
     """
     _error_on_missing_matplotlib()
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots() if ax is None else (None, ax)
     ax.get_xaxis().set_visible(False)
 
     if isinstance(val, Tensor):

@@ -29,7 +29,7 @@ from torchmetrics.functional.classification.accuracy import (
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.enums import AverageMethod, DataType
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
-from torchmetrics.utilities.plot import _PLOT_OUT_TYPE, plot_single_or_multi_val
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
 from torchmetrics.utilities.prints import rank_zero_warn
 
 if not _MATPLOTLIB_AVAILABLE:
@@ -119,12 +119,15 @@ class BinaryAccuracy(BinaryStatScores):
         tp, fp, tn, fn = self._final_state()
         return _accuracy_reduce(tp, fp, tn, fn, average="binary", multidim_average=self.multidim_average)
 
-    def plot(self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None) -> _PLOT_OUT_TYPE:
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
         Args:
             val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
                 If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
 
         Returns:
             fig: Figure object
@@ -160,7 +163,7 @@ class BinaryAccuracy(BinaryStatScores):
         """
         val = val or self.compute()
         fig, ax = plot_single_or_multi_val(
-            val, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
+            val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
         )
         return fig, ax
 
@@ -271,12 +274,15 @@ class MulticlassAccuracy(MulticlassStatScores):
         tp, fp, tn, fn = self._final_state()
         return _accuracy_reduce(tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average)
 
-    def plot(self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None) -> _PLOT_OUT_TYPE:
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
         Args:
             val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
                 If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
 
         Returns:
             fig: Figure object
@@ -312,7 +318,7 @@ class MulticlassAccuracy(MulticlassStatScores):
         """
         val = val or self.compute()
         fig, ax = plot_single_or_multi_val(
-            val, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
+            val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
         )
         return fig, ax
 

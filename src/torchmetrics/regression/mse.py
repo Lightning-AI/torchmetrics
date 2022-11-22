@@ -19,7 +19,7 @@ from torch import Tensor, tensor
 from torchmetrics.functional.regression.mse import _mean_squared_error_compute, _mean_squared_error_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
-from torchmetrics.utilities.plot import _PLOT_OUT_TYPE, plot_single_or_multi_val
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["MeanSquaredError.plot"]
@@ -78,12 +78,15 @@ class MeanSquaredError(Metric):
         """Computes mean squared error over state."""
         return _mean_squared_error_compute(self.sum_squared_error, self.total, squared=self.squared)
 
-    def plot(self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None) -> _PLOT_OUT_TYPE:
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
         Args:
             val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
                 If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
 
         Returns:
             fig: Figure object
@@ -117,6 +120,6 @@ class MeanSquaredError(Metric):
         """
         val = val or self.compute()
         fig, ax = plot_single_or_multi_val(
-            val, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
+            val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
         )
         return fig, ax
