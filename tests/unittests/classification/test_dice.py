@@ -19,7 +19,7 @@ from scipy.spatial.distance import dice as _sc_dice
 from torch import Tensor, tensor
 
 from torchmetrics import Dice
-from torchmetrics.functional import dice, dice_score
+from torchmetrics.functional import dice
 from torchmetrics.functional.classification.stat_scores import _del_column
 from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import DataType
@@ -63,20 +63,6 @@ def _sk_dice(
     sk_preds, sk_target = sk_preds.numpy(), sk_target.numpy()
 
     return 1 - _sc_dice(sk_preds.reshape(-1), sk_target.reshape(-1))
-
-
-@pytest.mark.parametrize(
-    ["pred", "target", "expected"],
-    [
-        ([[0, 0], [1, 1]], [[0, 0], [1, 1]], 1.0),
-        ([[1, 1], [0, 0]], [[0, 0], [1, 1]], 0.0),
-        ([[1, 1], [1, 1]], [[1, 1], [0, 0]], 2 / 3),
-        ([[1, 1], [0, 0]], [[1, 1], [0, 0]], 1.0),
-    ],
-)
-def test_dice_score(pred, target, expected):
-    score = dice_score(tensor(pred), tensor(target))
-    assert score == expected
 
 
 @pytest.mark.parametrize(
