@@ -313,16 +313,16 @@ class ROC:
     influence and examples.
 
     Legacy Example:
-        >>> pred = torch.tensor([0, 1, 2, 3])
+        >>> pred = torch.tensor([0.0, 1.0, 2.0, 3.0])
         >>> target = torch.tensor([0, 1, 1, 1])
-        >>> roc = ROC(task="multiclass", pos_label=1)
+        >>> roc = ROC(task="binary")
         >>> fpr, tpr, thresholds = roc(pred, target)
         >>> fpr
         tensor([0., 0., 0., 0., 1.])
         >>> tpr
         tensor([0.0000, 0.3333, 0.6667, 1.0000, 1.0000])
         >>> thresholds
-        tensor([4, 3, 2, 1, 0])
+        tensor([1.0000, 0.9526, 0.8808, 0.7311, 0.5000])
 
         >>> pred = torch.tensor([[0.75, 0.05, 0.05, 0.05],
         ...                      [0.05, 0.75, 0.05, 0.05],
@@ -335,18 +335,18 @@ class ROC:
         [tensor([0., 0., 1.]), tensor([0., 0., 1.]), tensor([0.0000, 0.3333, 1.0000]), tensor([0.0000, 0.3333, 1.0000])]
         >>> tpr
         [tensor([0., 1., 1.]), tensor([0., 1., 1.]), tensor([0., 0., 1.]), tensor([0., 0., 1.])]
-        >>> thresholds
-        [tensor([1.7500, 0.7500, 0.0500]),
-         tensor([1.7500, 0.7500, 0.0500]),
-         tensor([1.7500, 0.7500, 0.0500]),
-         tensor([1.7500, 0.7500, 0.0500])]
+        >>> thresholds  # doctest: +NORMALIZE_WHITESPACE
+        [tensor([1.0000, 0.7500, 0.0500]),
+         tensor([1.0000, 0.7500, 0.0500]),
+         tensor([1.0000, 0.7500, 0.0500]),
+         tensor([1.0000, 0.7500, 0.0500])]
 
         >>> pred = torch.tensor([[0.8191, 0.3680, 0.1138],
         ...                      [0.3584, 0.7576, 0.1183],
         ...                      [0.2286, 0.3468, 0.1338],
         ...                      [0.8603, 0.0745, 0.1837]])
         >>> target = torch.tensor([[1, 1, 0], [0, 1, 0], [0, 0, 0], [0, 1, 1]])
-        >>> roc = ROC(num_classes=3, pos_label=1)
+        >>> roc = ROC(task='multilabel', num_labels=3)
         >>> fpr, tpr, thresholds = roc(pred, target)
         >>> fpr
         [tensor([0.0000, 0.3333, 0.3333, 0.6667, 1.0000]),
@@ -357,9 +357,9 @@ class ROC:
          tensor([0.0000, 0.3333, 0.6667, 0.6667, 1.0000]),
          tensor([0., 1., 1., 1., 1.])]
         >>> thresholds
-        [tensor([1.8603, 0.8603, 0.8191, 0.3584, 0.2286]),
-         tensor([1.7576, 0.7576, 0.3680, 0.3468, 0.0745]),
-         tensor([1.1837, 0.1837, 0.1338, 0.1183, 0.1138])]
+        [tensor([1.0000, 0.8603, 0.8191, 0.3584, 0.2286]),
+         tensor([1.0000, 0.7576, 0.3680, 0.3468, 0.0745]),
+         tensor([1.0000, 0.1837, 0.1338, 0.1183, 0.1138])]
     """
 
     def __new__(

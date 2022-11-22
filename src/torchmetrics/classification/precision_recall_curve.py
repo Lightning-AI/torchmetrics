@@ -429,7 +429,7 @@ class PrecisionRecallCurve:
     Legacy Example:
         >>> pred = torch.tensor([0, 0.1, 0.8, 0.4])
         >>> target = torch.tensor([0, 1, 1, 0])
-        >>> pr_curve = PrecisionRecallCurve(task="multiclass", pos_label=1)
+        >>> pr_curve = PrecisionRecallCurve(task="binary")
         >>> precision, recall, thresholds = pr_curve(pred, target)
         >>> precision
         tensor([0.6667, 0.5000, 1.0000, 1.0000])

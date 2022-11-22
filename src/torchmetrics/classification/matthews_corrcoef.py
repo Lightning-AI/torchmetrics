@@ -227,7 +227,7 @@ class MatthewsCorrCoef:
     Legacy Example:
         >>> target = torch.tensor([1, 1, 0, 0])
         >>> preds = torch.tensor([0, 1, 0, 0])
-        >>> matthews_corrcoef = MatthewsCorrCoef(num_classes=2)
+        >>> matthews_corrcoef = MatthewsCorrCoef(task='binary')
         >>> matthews_corrcoef(preds, target)
         tensor(0.5774)
     """

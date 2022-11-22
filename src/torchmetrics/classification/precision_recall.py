@@ -612,7 +612,7 @@ class Precision:
         >>> precision = Precision(task="multiclass", average='macro', num_classes=3)
         >>> precision(preds, target)
         tensor(0.1667)
-        >>> precision = Precision(task="multiclass", average='micro')
+        >>> precision = Precision(task="multiclass", average='micro', num_classes=3)
         >>> precision(preds, target)
         tensor(0.2500)
     """
@@ -666,7 +666,7 @@ class Recall:
         >>> recall = Recall(task="multiclass", average='macro', num_classes=3)
         >>> recall(preds, target)
         tensor(0.3333)
-        >>> recall = Recall(task="multiclass", average='micro')
+        >>> recall = Recall(task="multiclass", average='micro', num_classes=3)
         >>> recall(preds, target)
         tensor(0.2500)
     """

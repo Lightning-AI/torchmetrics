@@ -306,7 +306,7 @@ class Specificity:
         >>> specificity = Specificity(task="multiclass", average='macro', num_classes=3)
         >>> specificity(preds, target)
         tensor(0.6111)
-        >>> specificity = Specificity(task="multiclass", average='micro')
+        >>> specificity = Specificity(task="multiclass", average='micro', num_classes=3)
         >>> specificity(preds, target)
         tensor(0.6250)
     """
