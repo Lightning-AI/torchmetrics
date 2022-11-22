@@ -21,6 +21,7 @@ from torchmetrics.functional.classification.calibration_error import calibration
 from torchmetrics.functional.classification.cohen_kappa import cohen_kappa
 from torchmetrics.functional.classification.confusion_matrix import confusion_matrix
 from torchmetrics.functional.classification.dice import dice, dice_score
+from torchmetrics.functional.classification.exact_match import exact_match
 from torchmetrics.functional.classification.f_beta import f1_score, fbeta_score
 from torchmetrics.functional.classification.hamming import hamming_distance
 from torchmetrics.functional.classification.hinge import hinge_loss
@@ -117,6 +118,7 @@ __all__ = [
     "dice_score",
     "dice",
     "error_relative_global_dimensionless_synthesis",
+    "exact_match",
     "explained_variance",
     "extended_edit_distance",
     "f1_score",
