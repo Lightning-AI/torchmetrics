@@ -338,7 +338,7 @@ class ConfusionMatrix:
 
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
-        >>> confmat = ConfusionMatrix(task="multilabel", num_classes=3, multilabel=True)
+        >>> confmat = ConfusionMatrix(task="multilabel", num_labels=3)
         >>> confmat(preds, target)
         tensor([[[1, 0], [0, 1]],
                 [[1, 0], [1, 0]],

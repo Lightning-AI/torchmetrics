@@ -329,13 +329,13 @@ class Accuracy:
         >>> import torch
         >>> target = torch.tensor([0, 1, 2, 3])
         >>> preds = torch.tensor([0, 2, 1, 3])
-        >>> accuracy = Accuracy(task="multiclass", )
+        >>> accuracy = Accuracy(task="multiclass", num_classes=4)
         >>> accuracy(preds, target)
         tensor(0.5000)
 
         >>> target = torch.tensor([0, 1, 2])
         >>> preds = torch.tensor([[0.1, 0.9, 0], [0.3, 0.1, 0.6], [0.2, 0.5, 0.3]])
-        >>> accuracy = Accuracy(task="multiclass", top_k=2)
+        >>> accuracy = Accuracy(task="multiclass", num_classes=3, top_k=2)
         >>> accuracy(preds, target)
         tensor(0.6667)
     """

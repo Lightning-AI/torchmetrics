@@ -327,7 +327,7 @@ class AUROC:
     Legacy Example:
         >>> preds = torch.tensor([0.13, 0.26, 0.08, 0.19, 0.34])
         >>> target = torch.tensor([0, 0, 1, 1, 1])
-        >>> auroc = AUROC(task="multiclass", pos_label=1)
+        >>> auroc = AUROC(task="binary")
         >>> auroc(preds, target)
         tensor(0.5000)
 

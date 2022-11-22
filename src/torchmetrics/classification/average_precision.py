@@ -333,7 +333,7 @@ class AveragePrecision:
     Legacy Example:
         >>> pred = torch.tensor([0, 0.1, 0.8, 0.4])
         >>> target = torch.tensor([0, 1, 1, 1])
-        >>> average_precision = AveragePrecision(task="multiclass", pos_label=1)
+        >>> average_precision = AveragePrecision(task="binary")
         >>> average_precision(pred, target)
         tensor(1.)
 
@@ -344,7 +344,7 @@ class AveragePrecision:
         >>> target = torch.tensor([0, 1, 3, 2])
         >>> average_precision = AveragePrecision(task="multiclass", num_classes=5, average=None)
         >>> average_precision(pred, target)
-        [tensor(1.), tensor(1.), tensor(0.2500), tensor(0.2500), tensor(nan)]
+        tensor([1.0000, 1.0000, 0.2500, 0.2500,    nan])
     """
 
     def __new__(
