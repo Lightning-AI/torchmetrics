@@ -650,7 +650,7 @@ def check_forward_full_state_property(
         >>> check_forward_full_state_property(  # doctest: +ELLIPSIS
         ...     ConfusionMatrix,
         ...     init_args = {'num_classes': 3},
-        ...     input_args = {'preds': torch.randint(3, (10,)), 'target': torch.randint(3, (10,))},
+        ...     input_args = {'preds': torch.randint(3, (100,)), 'target': torch.randint(3, (100,))},
         ... )
         Full state for 10 steps took: ...
         Partial state for 10 steps took: ...

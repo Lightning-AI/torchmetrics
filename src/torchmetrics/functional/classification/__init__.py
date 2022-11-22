@@ -45,7 +45,7 @@ from torchmetrics.functional.classification.confusion_matrix import (  # noqa: F
     multiclass_confusion_matrix,
     multilabel_confusion_matrix,
 )
-from torchmetrics.functional.classification.dice import dice, dice_score  # noqa: F401
+from torchmetrics.functional.classification.dice import dice  # noqa: F401
 from torchmetrics.functional.classification.exact_match import (  # noqa: F401
     exact_match,
     multiclass_exact_match,
