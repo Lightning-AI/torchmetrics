@@ -12,6 +12,7 @@ ________________
 
 .. autoclass:: torchmetrics.SignalDistortionRatio
     :noindex:
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________

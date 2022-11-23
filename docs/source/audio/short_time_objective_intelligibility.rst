@@ -12,6 +12,7 @@ ________________
 
 .. autoclass:: torchmetrics.audio.stoi.ShortTimeObjectiveIntelligibility
     :noindex:
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________

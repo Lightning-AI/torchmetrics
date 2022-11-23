@@ -12,6 +12,7 @@ ________________
 
 .. autoclass:: torchmetrics.ScaleInvariantSignalDistortionRatio
     :noindex:
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________
