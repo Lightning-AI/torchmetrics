@@ -19,8 +19,8 @@ For the purposes of retrieval metrics, inputs (indexes, predictions and targets)
     that, for example, a tensor of shape ``(N, M)`` is treated as ``(N * M, )``.
 
 In Information Retrieval you have a query that is compared with a variable number of documents. For each pair ``(Q_i, D_j)``,
-a score is computed that measures the relevance of document ``D`` w.r.t. query ``Q``. Documents are then sorted by score
-and you hope that relevant documents are scored higher. ``target`` contains the labels for the documents (relevant or not).
+a score is computed that measures the relevance of document ``D_i`` w.r.t. query ``Q_i``. Documents are then sorted by score
+and you hope that the most relevant are scored higher. ``target`` contains the labels for the documents (relevant or not).
 
 Since a query may be compared with a variable number of documents, we use ``indexes`` to keep track of which scores belong to
 the set of pairs ``(Q_i, D_j)`` having the same query ``Q_i``.
@@ -37,7 +37,7 @@ the set of pairs ``(Q_i, D_j)`` having the same query ``Q_i``.
     >>> # functional version works on a single query at a time
     >>> from torchmetrics.functional import retrieval_average_precision
 
-    >>> # the first query was compared with two documents, the second with three
+    >>> # the first query is compared with two documents, the second with three
     >>> indexes = torch.tensor([0, 0, 1, 1, 1])
     >>> preds = torch.tensor([0.8, -0.4, 1.0, 1.4, 0.0])
     >>> target = torch.tensor([0, 1, 0, 1, 1])
@@ -46,7 +46,7 @@ the set of pairs ``(Q_i, D_j)`` having the same query ``Q_i``.
     >>> rmap(preds, target, indexes=indexes)
     tensor(0.6667)
 
-    >>> # the previous instruction is roughly equivalent to
+    >>> # the previous code block is roughly equivalent to the following
     >>> res = []
     >>> # iterate over indexes of first and second query
     >>> for indexes in ([0, 1], [2, 3, 4]):
