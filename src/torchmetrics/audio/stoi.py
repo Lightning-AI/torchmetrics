@@ -34,7 +34,7 @@ class ShortTimeObjectiveIntelligibility(Metric):
 
     This metric is a wrapper for the `pystoi package`_. As the implementation backend implementation only supports
     calculations on CPU, all input will automatically be moved to CPU to perform the metric calculation before being
-    moved back to the original device
+    moved back to the original device.
 
     As input to `forward` and `update` the metric accepts the following input
 

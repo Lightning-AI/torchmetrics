@@ -38,7 +38,7 @@ class PerceptualEvaluationSpeechQuality(Metric):
 
     As output of `forward` and `compute` the metric returns the following output
 
-    - ``pesq`` (: :class:`~torch.Tensor`): float scalar tensor with average PESQ value over samples
+    - ``pesq`` (: :class:`~torch.Tensor`): float tensor with shape ``(...,)`` of PESQ value per sample
 
     .. note:: using this metrics requires you to have ``pesq`` install. Either install as ``pip install
         torchmetrics[audio]`` or ``pip install pesq``. ``pesq`` will compile with your currently

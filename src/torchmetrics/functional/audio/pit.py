@@ -96,23 +96,22 @@ def _find_best_perm_by_exhaustive_method(
 def permutation_invariant_training(
     preds: Tensor, target: Tensor, metric_func: Callable, eval_func: Literal["max", "min"] = "max", **kwargs: Any
 ) -> Tuple[Tensor, Tensor]:
-    """Permutation invariant training (PIT). The ``permutation_invariant_training`` implements the famous
-    Permutation Invariant Training method.
-
-    [1] in speech separation field in order to calculate audio metrics in a permutation invariant way.
+    """Calculates `Permutation invariant training`_ (PIT) that can evaluate models for speaker independent multi-
+    talker speech separation in a permutation invariant way.
 
     Args:
-        preds: shape ``[batch, spk, ...]``
-        target: shape ``[batch, spk, ...]``
+        preds: float tensor with shape ``(batch_size,num_speakers,...)``
+        target: float tensor with shape ``(batch_size,num_speakers,...)``
         metric_func: a metric function accept a batch of target and estimate,
-            i.e. ``metric_func(preds[:, i, ...], target[:, j, ...])``, and returns a batch of metric tensors ``[batch]``
+            i.e. ``metric_func(preds[:, i, ...], target[:, j, ...])``, and returns a batch of metric
+            tensors ``(batch,)``
         eval_func: the function to find the best permutation, can be ``'min'`` or ``'max'``,
             i.e. the smaller the better or the larger the better.
         kwargs: Additional args for metric_func
 
     Returns:
-        best_metric of shape ``[batch]``
-        best_perm of shape ``[batch]``
+        Tuple of two float tensors. First tensor with shape ``(batch,)`` contains the best metric value for each sample
+        and second tensor with shape ``(batch,)`` contains the best permutation.
 
     Example:
         >>> from torchmetrics.functional.audio import scale_invariant_signal_distortion_ratio
@@ -128,9 +127,6 @@ def permutation_invariant_training(
         >>> pit_permutate(preds, best_perm)
         tensor([[[-0.0579,  0.3560, -0.9604],
                  [-0.1719,  0.3205,  0.2951]]])
-
-    Reference:
-        [1]	`Permutation Invariant Training of Deep Models`_
     """
     if preds.shape[0:2] != target.shape[0:2]:
         raise RuntimeError(

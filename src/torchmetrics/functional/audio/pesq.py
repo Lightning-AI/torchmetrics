@@ -35,10 +35,13 @@ def perceptual_evaluation_speech_quality(
     keep_same_device: bool = False,
     n_processes: int = 1,
 ) -> Tensor:
-    r"""PESQ (Perceptual Evaluation of Speech Quality)
+    r"""Calculates `Perceptual Evaluation of Speech Quality`_ (PESQ). Its a recognized industry standard for audio
+    quality that takes into considerations characteristics such as: audio sharpness, call volume, background noise,
+    clipping, audio interference ect. PESQ returns a score between -0.5 and 4.5 with the higher scores indicating a
+    better quality.
 
-    This is a wrapper for the ``pesq`` package [1]. Note that input will be moved to `cpu`
-    to perform the metric calculation.
+    This metric is a wrapper for the `pesq package`_. Note that input will be moved to `cpu` to perform the metric
+    calculation.
 
     .. note:: using this metrics requires you to have ``pesq`` install. Either install as ``pip install
         torchmetrics[audio]`` or ``pip install pesq``. Note that ``pesq`` will compile with your currently
@@ -46,8 +49,8 @@ def perceptual_evaluation_speech_quality(
         most likely have to reinstall ``pesq``.
 
     Args:
-        preds: shape ``[...,time]``
-        target: shape ``[...,time]``
+        preds: float tensor with shape ``(...,time)``
+        target: float tensor with shape ``(...,time)``
         fs: sampling frequency, should be 16000 or 8000 (Hz)
         mode: ``'wb'`` (wide-band) or ``'nb'`` (narrow-band)
         keep_same_device: whether to move the pesq value to the device of preds
@@ -55,7 +58,7 @@ def perceptual_evaluation_speech_quality(
             Only applies to batches of data and if ``multiprocessing`` package is installed.
 
     Returns:
-        pesq value of shape [...]
+        Float tensor with shape ``(...,)`` of PESQ values per sample
 
     Raises:
         ModuleNotFoundError:
@@ -64,6 +67,8 @@ def perceptual_evaluation_speech_quality(
             If ``fs`` is not either  ``8000`` or ``16000``
         ValueError:
             If ``mode`` is not either ``"wb"`` or ``"nb"``
+        RuntimeError:
+            If ``preds`` and ``target`` does not have the same shape
 
     Example:
         >>> from torchmetrics.functional.audio.pesq import perceptual_evaluation_speech_quality
@@ -75,9 +80,6 @@ def perceptual_evaluation_speech_quality(
         tensor(2.2076)
         >>> perceptual_evaluation_speech_quality(preds, target, 16000, 'wb')
         tensor(1.7359)
-
-    References:
-        [1] https://github.com/ludlows/python-pesq
     """
     if not _PESQ_AVAILABLE:
         raise ModuleNotFoundError(

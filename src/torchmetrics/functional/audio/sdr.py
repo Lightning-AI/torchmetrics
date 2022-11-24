@@ -98,14 +98,15 @@ def signal_distortion_ratio(
     zero_mean: bool = False,
     load_diag: Optional[float] = None,
 ) -> Tensor:
-    r"""Signal to Distortion Ratio (SDR) [1,2]
+    r"""Calculates Signal to Distortion Ratio (SDR) metric. See :ref:`[1] <sdr ref1>` and :ref:`[2] <sdr ref2>` for
+    details on the metric.
 
     .. note:
         The metric currently does not seem to work with Pytorch v1.11 and specific GPU hardware.
 
     Args:
-        preds: shape ``[..., time]``
-        target: shape ``[..., time]``
+        preds: float tensor with shape ``(...,time)``
+        target: float tensor with shape ``(...,time)``
         use_cg_iter:
             If provided, conjugate gradient descent is used to solve for the distortion
             filter coefficients instead of direct Gaussian elimination, which requires that
@@ -122,7 +123,11 @@ def signal_distortion_ratio(
             This can help stabilize the metric in the case where some reference signals may sometimes be zero
 
     Returns:
-        sdr value of shape ``[...]``
+        Float tensor with shape ``(...,)`` of SDR values per sample
+
+    Raises:
+        RuntimeError:
+            If ``preds`` and ``target`` does not have the same shape
 
     Example:
         >>> from torchmetrics.functional.audio import signal_distortion_ratio
@@ -144,12 +149,6 @@ def signal_distortion_ratio(
                 [0, 1],
                 [1, 0],
                 [0, 1]])
-
-    References:
-        [1] Vincent, E., Gribonval, R., & Fevotte, C. (2006). Performance measurement in blind audio source separation.
-        IEEE Transactions on Audio, Speech and Language Processing, 14(4), 1462–1469.
-
-        [2] Scheibler, R. (2021). SDR -- Medium Rare with Fast Computations.
     """
     _check_same_shape(preds, target)
 
@@ -205,16 +204,20 @@ def signal_distortion_ratio(
 
 
 def scale_invariant_signal_distortion_ratio(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
-    """Calculates Scale-invariant signal-to-distortion ratio (SI-SDR) metric. The SI-SDR value is in general
-    considered an overall measure of how good a source sound.
+    """`Scale-invariant signal-to-distortion ratio`_ (SI-SDR). The SI-SDR value is in general considered an overall
+    measure of how good a source sound.
 
     Args:
-        preds: shape ``[...,time]``
-        target: shape ``[...,time]``
+        preds: float tensor with shape ``(...,time)``
+        target: float tensor with shape ``(...,time)``
         zero_mean: If to zero mean target and preds or not
 
     Returns:
-        si-sdr value of shape [...]
+        Float tensor with shape ``(...,)`` of SDR values per sample
+
+    Raises:
+        RuntimeError:
+            If ``preds`` and ``target`` does not have the same shape
 
     Example:
         >>> from torchmetrics.functional.audio import scale_invariant_signal_distortion_ratio
@@ -222,10 +225,6 @@ def scale_invariant_signal_distortion_ratio(preds: Tensor, target: Tensor, zero_
         >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
         >>> scale_invariant_signal_distortion_ratio(preds, target)
         tensor(18.4030)
-
-    References:
-        [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE International Conference on Acoustics, Speech
-        and Signal Processing (ICASSP) 2019.
     """
     _check_same_shape(preds, target)
     eps = torch.finfo(preds.dtype).eps
