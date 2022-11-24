@@ -22,12 +22,17 @@ __doctest_requires__ = {"SignalDistortionRatio": ["fast_bss_eval"]}
 
 
 class SignalDistortionRatio(Metric):
-    r"""Signal to Distortion Ratio (SDR) [1,2]
+    r"""Calculates Signal to Distortion Ratio (SDR) metric. See :ref:`[1] <sdr ref1>` and :ref:`[2] <sdr ref2>` for
+    details on the metric.
 
-    Forward accepts
+    As input to `forward` and `update` the metric accepts the following input
 
-    - ``preds``: shape ``[..., time]``
-    - ``target``: shape ``[..., time]``
+    - ``preds`` (:class:`~torch.Tensor`): float tensor with shape ``(...,time)``
+    - ``target`` (: :class:`~torch.Tensor`): float tensor with shape ``(...,time)``
+
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``sdr`` (: :class:`~torch.Tensor`): float scalar tensor with average SDR value over samples
 
     .. note:
         The metric currently does not seem to work with Pytorch v1.11 and specific GPU hardware.
@@ -48,7 +53,6 @@ class SignalDistortionRatio(Metric):
             If provided, this small value is added to the diagonal coefficients of the system metrics when solving
             for the filter coefficients. This can help stabilize the metric in the case where some reference
             signals may sometimes be zero
-
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
@@ -68,12 +72,6 @@ class SignalDistortionRatio(Metric):
         >>> pit = PermutationInvariantTraining(signal_distortion_ratio, 'max')
         >>> pit(preds, target)
         tensor(-11.6051)
-
-    References:
-        [1] Vincent, E., Gribonval, R., & Fevotte, C. (2006). Performance measurement in blind audio source separation.
-        IEEE Transactions on Audio, Speech and Language Processing, 14(4), 1462–1469.
-
-        [2] Scheibler, R. (2021). SDR -- Medium Rare with Fast Computations.
     """
 
     sum_sdr: Tensor
@@ -101,12 +99,7 @@ class SignalDistortionRatio(Metric):
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
+        """Update state with predictions and targets."""
         sdr_batch = signal_distortion_ratio(
             preds, target, self.use_cg_iter, self.filter_length, self.zero_mean, self.load_diag
         )
@@ -115,30 +108,30 @@ class SignalDistortionRatio(Metric):
         self.total += sdr_batch.numel()
 
     def compute(self) -> Tensor:
-        """Computes average SDR."""
+        """Computes metric."""
         return self.sum_sdr / self.total
 
 
 class ScaleInvariantSignalDistortionRatio(Metric):
-    """Scale-invariant signal-to-distortion ratio (SI-SDR). The SI-SDR value is in general considered an overall
+    """`Scale-invariant signal-to-distortion ratio`_ (SI-SDR). The SI-SDR value is in general considered an overall
     measure of how good a source sound.
 
-    Forward accepts
+    As input to `forward` and `update` the metric accepts the following input
 
-    - ``preds``: ``shape [...,time]``
-    - ``target``: ``shape [...,time]``
+    - ``preds`` (:class:`~torch.Tensor`): float tensor with shape ``(...,time)``
+    - ``target`` (: :class:`~torch.Tensor`): float tensor with shape ``(...,time)``
+
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``si_sdr`` (: :class:`~torch.Tensor`): float scalar tensor with average SI-SDR value over samples
 
     Args:
         zero_mean: if to zero mean target and preds or not
-
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         TypeError:
             if target and preds have a different shape
-
-    Returns:
-        average si-sdr value
 
     Example:
         >>> import torch
@@ -148,10 +141,6 @@ class ScaleInvariantSignalDistortionRatio(Metric):
         >>> si_sdr = ScaleInvariantSignalDistortionRatio()
         >>> si_sdr(preds, target)
         tensor(18.4030)
-
-    References:
-        [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE International Conference on Acoustics, Speech
-        and Signal Processing (ICASSP) 2019.
     """
 
     is_differentiable = True
@@ -171,17 +160,12 @@ class ScaleInvariantSignalDistortionRatio(Metric):
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
+        """Update state with predictions and targets."""
         si_sdr_batch = scale_invariant_signal_distortion_ratio(preds=preds, target=target, zero_mean=self.zero_mean)
 
         self.sum_si_sdr += si_sdr_batch.sum()
         self.total += si_sdr_batch.numel()
 
     def compute(self) -> Tensor:
-        """Computes average SI-SDR."""
+        """Computes metric."""
         return self.sum_si_sdr / self.total

@@ -23,20 +23,27 @@ __doctest_requires__ = {"PerceptualEvaluationSpeechQuality": ["pesq"]}
 
 
 class PerceptualEvaluationSpeechQuality(Metric):
-    """Perceptual Evaluation of Speech Quality (PESQ)
+    """Calculates `Perceptual Evaluation of Speech Quality`_ (PESQ). Its a recognized industry standard for audio
+    quality that takes into considerations characteristics such as: audio sharpness, call volume, background noise,
+    clipping, audio interference ect. PESQ returns a score between -0.5 and 4.5 with the higher scores indicating a
+    better quality.
 
-    This is a wrapper for the pesq package [1]. Note that input will be moved to `cpu`
-    to perform the metric calculation.
+    This metric is a wrapper for the `pesq package`_. Note that input will be moved to `cpu` to perform the metric
+    calculation.
+
+    As input to `forward` and `update` the metric accepts the following input
+
+    - ``preds`` (:class:`~torch.Tensor`): float tensor with shape ``(...,time)``
+    - ``target`` (: :class:`~torch.Tensor`): float tensor with shape ``(...,time)``
+
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``pesq`` (: :class:`~torch.Tensor`): float scalar tensor with average PESQ value over samples
 
     .. note:: using this metrics requires you to have ``pesq`` install. Either install as ``pip install
-        torchmetrics[audio]`` or ``pip install pesq``. Note that ``pesq`` will compile with your currently
+        torchmetrics[audio]`` or ``pip install pesq``. ``pesq`` will compile with your currently
         installed version of numpy, meaning that if you upgrade numpy at some point in the future you will
         most likely have to reinstall ``pesq``.
-
-    Forward accepts
-
-    - ``preds``: ``shape [...,time]``
-    - ``target``: ``shape [...,time]``
 
     Args:
         fs: sampling frequency, should be 16000 or 8000 (Hz)
@@ -66,9 +73,6 @@ class PerceptualEvaluationSpeechQuality(Metric):
         >>> wb_pesq = PerceptualEvaluationSpeechQuality(16000, 'wb')
         >>> wb_pesq(preds, target)
         tensor(1.7359)
-
-    References:
-        [1] https://github.com/ludlows/python-pesq
     """
 
     sum_pesq: Tensor
@@ -104,12 +108,7 @@ class PerceptualEvaluationSpeechQuality(Metric):
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
+        """Update state with predictions and targets."""
         pesq_batch = perceptual_evaluation_speech_quality(
             preds, target, self.fs, self.mode, False, self.n_processes
         ).to(self.sum_pesq.device)
@@ -118,5 +117,5 @@ class PerceptualEvaluationSpeechQuality(Metric):
         self.total += pesq_batch.numel()
 
     def compute(self) -> Tensor:
-        """Computes average PESQ."""
+        """Computes metric."""
         return self.sum_pesq / self.total

@@ -17,6 +17,7 @@ from warnings import warn
 
 import torch
 from torch import Tensor
+from typing_extensions import Literal
 
 from torchmetrics.utilities.imports import _SCIPY_AVAILABLE
 
@@ -93,7 +94,7 @@ def _find_best_perm_by_exhaustive_method(
 
 
 def permutation_invariant_training(
-    preds: Tensor, target: Tensor, metric_func: Callable, eval_func: str = "max", **kwargs: Any
+    preds: Tensor, target: Tensor, metric_func: Callable, eval_func: Literal["max", "min"] = "max", **kwargs: Any
 ) -> Tuple[Tensor, Tensor]:
     """Permutation invariant training (PIT). The ``permutation_invariant_training`` implements the famous
     Permutation Invariant Training method.
