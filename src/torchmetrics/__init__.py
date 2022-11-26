@@ -66,6 +66,7 @@ from torchmetrics.regression import (  # noqa: E402
     MeanAbsolutePercentageError,
     MeanSquaredError,
     MeanSquaredLogError,
+    MinkowskiDistance,
     PearsonCorrCoef,
     R2Score,
     SpearmanCorrCoef,

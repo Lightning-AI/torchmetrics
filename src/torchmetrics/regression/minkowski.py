@@ -22,10 +22,33 @@ from torchmetrics.metric import Metric
 
 
 class MinkowskiDistance(Metric):
+    """Computes `Minkowski Distance`
+
+    .. math:: d_{\text{Minkowski}} = \\sum_{i}^N (| y_i - \\hat{y_i} |^p)^\frac{1}{p}
+
+    where
+        :math:`y` is a tensor of target values,
+        :math:`\\hat{y}` is a tensor of predictions,
+        :math: `\\p` is a non-negative integer or floating-point number
+
+    Args:
+        p: A non-negative number acting as the exponent in the calculation
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+
+    Example:
+        >>> import torch
+        >>> from torchmetrics import MeanSquaredError
+        >>> target = torch.tensor([1.0, 2.8, 3.5, 4.5])
+        >>> preds = torch.tensor([6.1, 2.11, 3.1, 5.6])
+        >>> minkowski_distance = MinkowskiDistance(3)
+        >>> minkowski_distance(preds, target)
+        tensor(5.1220)
+    """
+
     is_differentiable: Optional[bool] = True
     minkowski_dist_sum: Tensor
 
-    def __init__(self, p: int, **kwargs: Any) -> None:
+    def __init__(self, p: float, **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
         self.add_state("minkowski_dist_sum", default=tensor(0.0))
