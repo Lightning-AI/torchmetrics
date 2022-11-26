@@ -63,6 +63,7 @@ from torchmetrics.functional.regression.log_cosh import log_cosh_error
 from torchmetrics.functional.regression.log_mse import mean_squared_log_error
 from torchmetrics.functional.regression.mae import mean_absolute_error
 from torchmetrics.functional.regression.mape import mean_absolute_percentage_error
+from torchmetrics.functional.regression.minkowski import minkowski_distance
 from torchmetrics.functional.regression.mse import mean_squared_error
 from torchmetrics.functional.regression.pearson import pearson_corrcoef
 from torchmetrics.functional.regression.r2 import r2_score
@@ -133,6 +134,7 @@ __all__ = [
     "mean_absolute_percentage_error",
     "mean_squared_error",
     "mean_squared_log_error",
+    "minkowski_distance",
     "multiscale_structural_similarity_index_measure",
     "pairwise_cosine_similarity",
     "pairwise_euclidean_distance",
