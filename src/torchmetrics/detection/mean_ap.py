@@ -827,21 +827,25 @@ class MeanAveragePrecision(Metric):
             return recall, precision, scores
 
         det_scores = torch.cat([e["dtScores"][:max_det] for e in img_eval_cls_bbox])
-
         # different sorting method generates slightly different results.
         # mergesort is used to be consistent as Matlab implementation.
         # Sort in PyTorch does not support bool types on CUDA (yet, 1.11.0)
         dtype = torch.uint8 if det_scores.is_cuda and det_scores.dtype is torch.bool else det_scores.dtype
         # Explicitly cast to uint8 to avoid error for bool inputs on CUDA to argsort
         inds = torch.argsort(det_scores.to(dtype), descending=True)
-        det_scores_sorted = det_scores[inds]
-
-        det_matches = torch.cat([e["dtMatches"][:, :max_det] for e in img_eval_cls_bbox], axis=1)[:, inds]
         det_ignore = torch.cat([e["dtIgnore"][:, :max_det] for e in img_eval_cls_bbox], axis=1)[:, inds]
         gt_ignore = torch.cat([e["gtIgnore"] for e in img_eval_cls_bbox])
+
         npig = torch.count_nonzero(gt_ignore == False)  # noqa: E712
         if npig == 0:
+            # If there are any predictions, make Precision 0; otherwise, -1.
+            npreds = torch.count_nonzero(det_ignore == False)  # noqa: E712
+            if npreds != 0:
+                precision[:, :, idx_cls, idx_bbox_area, idx_max_det_thrs] = 0.0
             return recall, precision, scores
+
+        det_scores_sorted = det_scores[inds]
+        det_matches = torch.cat([e["dtMatches"][:, :max_det] for e in img_eval_cls_bbox], axis=1)[:, inds]
         tps = torch.logical_and(det_matches, torch.logical_not(det_ignore))
         fps = torch.logical_and(torch.logical_not(det_matches), torch.logical_not(det_ignore))
 
