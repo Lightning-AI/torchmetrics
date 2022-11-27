@@ -534,6 +534,53 @@ def test_missing_gt():
     assert result["map"] < 1, "MAP cannot be 1, as there is an image with no ground truth, but some predictions."
 
 
+@pytest.mark.skipif(_pytest_condition, reason="test requires that pycocotools and torchvision=>0.8.0 is installed")
+def test_class_metrics_with_missing_gt():
+    """
+    Checks MAP for each class when there are 4 detections, each for a
+    different class. But there are targets for only 2 classes. Hence, MAP
+    should be lower than 1. MAP for classes with targets should be 1 and 0 for
+    the others.
+    """
+    # Example source: Issue https://github.com/Lightning-AI/metrics/issues/1184
+    preds = [
+        dict(
+            boxes=torch.Tensor(
+                [
+                    [0, 0, 20, 20],
+                    [30, 30, 50, 50],
+                    [70, 70, 90, 90],  # FP
+                    [100, 100, 120, 120],  # FP
+                ]
+            ),
+            scores=torch.Tensor([0.6, 0.6, 0.6, 0.6]),
+            labels=torch.IntTensor([0, 1, 2, 3]),
+        )
+    ]
+
+    targets = [
+        dict(
+            boxes=torch.Tensor([[0, 0, 20, 20], [30, 30, 50, 50]]),
+            labels=torch.IntTensor([0, 1]),
+        )
+    ]
+
+    metric = MeanAveragePrecision(class_metrics=True)
+    metric.update(preds, targets)
+    result = metric.compute()
+
+    assert result["map"] < 1, "MAP cannot be 1, as for class 2 and 3, there are some predictions, but not targets."
+
+    result_map_per_class = result.get("map_per_class", None)
+    assert result_map_per_class is not None, "map_per_class must be present in results."
+    assert isinstance(result_map_per_class, Tensor), "map_per_class must be a tensor"
+    assert len(result_map_per_class) == 4, "map_per_class must be of length 4, same as the number of classes."
+    assert result_map_per_class[0].item() == 1.0, "map for class 0 must be 1."
+    assert result_map_per_class[1].item() == 1.0, "map for class 1 must be 1."
+    assert result_map_per_class[2].item() == 0.0, "map for class 2 must be 0."
+    assert result_map_per_class[3].item() == 0.0, "map for class 3 must be 0."
+
+
 @pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
 def test_segm_iou_empty_gt_mask():
     """Test empty ground truths."""
