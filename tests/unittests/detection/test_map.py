@@ -536,11 +536,10 @@ def test_missing_gt():
 
 @pytest.mark.skipif(_pytest_condition, reason="test requires that pycocotools and torchvision=>0.8.0 is installed")
 def test_class_metrics_with_missing_gt():
-    """
-    Checks MAP for each class when there are 4 detections, each for a
-    different class. But there are targets for only 2 classes. Hence, MAP
-    should be lower than 1. MAP for classes with targets should be 1 and 0 for
-    the others.
+    """Checks MAP for each class when there are 4 detections, each for a different class.
+
+    But there are targets for only 2 classes. Hence, MAP should be lower than 1. MAP for classes with targets should be
+    1 and 0 for the others.
     """
     # Example source: Issue https://github.com/Lightning-AI/metrics/issues/1184
     preds = [
