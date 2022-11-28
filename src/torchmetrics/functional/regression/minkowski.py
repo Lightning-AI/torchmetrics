@@ -1,3 +1,16 @@
+# Copyright The PyTorch Lightning team.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 from typing import Optional
 
 import torch
@@ -19,8 +32,8 @@ def _minkowski_distance_update(preds: Tensor, targets: Tensor, p: float) -> Tens
     """
     _check_same_shape(preds, targets)
 
-    if p < 0:
-        raise TorchMetricsUserError("p value must be greater than 0")
+    if not isinstance(p, float) and p < 0:
+        raise TorchMetricsUserError(f"Argument `p` must be a float greater than 0, but got {p}")
 
     difference = torch.abs(preds - targets)
     mink_dist_sum = torch.sum(torch.pow(difference, p))

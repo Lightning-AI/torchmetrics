@@ -37,7 +37,7 @@ class MinkowskiDistance(Metric):
 
     Example:
         >>> import torch
-        >>> from torchmetrics import MeanSquaredError
+        >>> from torchmetrics import MinkowskiDistance
         >>> target = torch.tensor([1.0, 2.8, 3.5, 4.5])
         >>> preds = torch.tensor([6.1, 2.11, 3.1, 5.6])
         >>> minkowski_distance = MinkowskiDistance(3)
@@ -46,13 +46,17 @@ class MinkowskiDistance(Metric):
     """
 
     is_differentiable: Optional[bool] = True
+    higher_is_better: Optional[bool] = False
+    full_state_update: Optional[bool] = False
     minkowski_dist_sum: Tensor
 
     def __init__(self, p: float, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-
-        self.add_state("minkowski_dist_sum", default=tensor(0.0))
+        if not isinstance(p, float) and p < 0:
+            raise TorchMetricsUserError(f"Argument `p` must be a float greater than 0, but got {p}")
         self.p = p
+        self.add_state("minkowski_dist_sum", default=tensor(0.0), dist_sync_fn="sum")
+        
 
     def update(self, preds: Tensor, targets: Tensor) -> None:
         minkowski_dist_sum = _minkowski_distance_update(preds, targets, self.p)
