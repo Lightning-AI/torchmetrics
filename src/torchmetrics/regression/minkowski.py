@@ -56,7 +56,6 @@ class MinkowskiDistance(Metric):
             raise TorchMetricsUserError(f"Argument `p` must be a float greater than 0, but got {p}")
         self.p = p
         self.add_state("minkowski_dist_sum", default=tensor(0.0), dist_sync_fn="sum")
-        
 
     def update(self, preds: Tensor, targets: Tensor) -> None:
         minkowski_dist_sum = _minkowski_distance_update(preds, targets, self.p)
