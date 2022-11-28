@@ -40,15 +40,6 @@ def _single_target_sk_metric(preds, target, sk_fn, metric_args):
     return res
 
 
-def _multi_target_sk_metric(preds, target, sk_fn, metric_args):
-    sk_preds = preds.view(-1, num_targets).numpy()
-    sk_target = target.view(-1, num_targets).numpy
-
-    res = sk_fn(sk_preds, sk_target, p=metric_args["p"])
-
-    return res
-
-
 @pytest.mark.parametrize(
     "preds, target, sk_metric",
     [
@@ -56,26 +47,24 @@ def _multi_target_sk_metric(preds, target, sk_fn, metric_args):
     ],
 )
 @pytest.mark.parametrize(
-    "metric_class, metric_functional, sk_fn, metric_args",
+    "metric_args",
     [
-        (MinkowskiDistance, minkowski_distance, scipy_minkowski, {"p": 1}),
-        (MinkowskiDistance, minkowski_distance, scipy_minkowski, {"p": 2}),
-        (MinkowskiDistance, minkowski_distance, scipy_minkowski, {"p": 3}),
-        (MinkowskiDistance, minkowski_distance, scipy_minkowski, {"p": 4}),
-        (MinkowskiDistance, minkowski_distance, scipy_minkowski, {"p": 5}),
-        (MinkowskiDistance, minkowski_distance, scipy_minkowski, {"p": 0.5}),
-        (MinkowskiDistance, minkowski_distance, scipy_minkowski, {"p": 1.5}),
-        (MinkowskiDistance, minkowski_distance, scipy_minkowski, {"p": -1.25}),
-        (MinkowskiDistance, minkowski_distance, scipy_minkowski, {"p": -0.5}),
-        (MinkowskiDistance, minkowski_distance, scipy_minkowski, {"p": -8}),
+        {"p": 1},
+        {"p": 2},
+        {"p": 3},
+        {"p": 4},
+        {"p": 5},
+        {"p": 0.5},
+        {"p": 1.5},
+        {"p": -1.25},
+        {"p": -0.5},
+        {"p": -8},
     ],
 )
 class TestMinkowskiDistance(MetricTester):
     @pytest.mark.parametrize("ddp", [False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_minkowski_distance_class(
-        self, preds, target, sk_metric, metric_class, metric_functional, sk_fn, metric_args, ddp, dist_sync_on_step
-    ):
+    def test_minkowski_distance_class(self, preds, target, sk_metric, metric_args, ddp, dist_sync_on_step):
         if metric_args["p"] < 0:
             pytest.xfail("p-value must not be less than 0")
 
@@ -83,22 +72,26 @@ class TestMinkowskiDistance(MetricTester):
             ddp=ddp,
             preds=preds,
             target=target,
-            metric_class=metric_class,
-            sk_metric=partial(sk_metric, sk_fn=sk_fn, metric_args=metric_args),
+            metric_class=MinkowskiDistance,
+            sk_metric=partial(sk_metric, sk_fn=scipy_minkowski, metric_args=metric_args),
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
         )
 
-    def test_minkowski_distance_functional(
-        self, preds, target, sk_metric, metric_class, metric_functional, sk_fn, metric_args
-    ):
+    def test_minkowski_distance_functional(self, preds, target, sk_metric, metric_args):
         if metric_args["p"] < 0:
             pytest.xfail("p-value must not be less than 0")
 
         self.run_functional_metric_test(
             preds=preds,
             target=target,
-            metric_functional=metric_functional,
-            sk_metric=partial(sk_metric, sk_fn=sk_fn, metric_args=metric_args),
+            metric_functional=minkowski_distance,
+            sk_metric=partial(sk_metric, sk_fn=scipy_minkowski, metric_args=metric_args),
             metric_args=metric_args,
         )
+
+
+def test_error_on_different_shape(metric_class=MinkowskiDistance):
+    metric = metric_class(5.1)
+    with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
+        metric(torch.randn(50), torch.randn(100))

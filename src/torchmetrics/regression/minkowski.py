@@ -19,6 +19,7 @@ from torch import Tensor, tensor
 
 from torchmetrics.functional.regression.minkowski import _minkowski_distance_compute, _minkowski_distance_update
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.exceptions import TorchMetricsUserError
 
 
 class MinkowskiDistance(Metric):
@@ -52,10 +53,11 @@ class MinkowskiDistance(Metric):
 
     def __init__(self, p: float, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        if not isinstance(p, float) and p < 0:
-            raise TorchMetricsUserError(f"Argument `p` must be a float greater than 0, but got {p}")
+        if not isinstance(p, (float, int)) and p < 0:
+            raise TorchMetricsUserError(f"Argument `p` must be a float or int greater than 0, but got {p}")
+
         self.p = p
-        self.add_state("minkowski_dist_sum", default=tensor(0.0), dist_sync_fn="sum")
+        self.add_state("minkowski_dist_sum", default=tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, targets: Tensor) -> None:
         minkowski_dist_sum = _minkowski_distance_update(preds, targets, self.p)
