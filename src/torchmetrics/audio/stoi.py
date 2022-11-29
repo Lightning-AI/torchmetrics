@@ -29,8 +29,8 @@ class ShortTimeObjectiveIntelligibility(Metric):
     intrusive, i.e., a function of the clean and degraded speech signals. STOI may be a good alternative to the speech
     intelligibility index (SII) or the speech transmission index (STI), when you are interested in the effect of
     nonlinear processing to noisy speech, e.g., noise reduction, binary masking algorithms, on speech intelligibility.
-    Description taken from  `Cees Taal's website`_ and for further defails see :ref:`[1] <stoi ref1>` and
-    :ref:`[2] <stoi ref2>`.
+    Description taken from  `Cees Taal's website`_ and for further defails see `STOI ref1`_ and
+    `STOI ref2`_.
 
     This metric is a wrapper for the `pystoi package`_. As the implementation backend implementation only supports
     calculations on CPU, all input will automatically be moved to CPU to perform the metric calculation before being
@@ -50,7 +50,7 @@ class ShortTimeObjectiveIntelligibility(Metric):
 
     Args:
         fs: sampling frequency (Hz)
-        extended: whether to use the extended STOI described in :ref:`[3] <stoi ref3>`
+        extended: whether to use the extended STOI described in `STOI ref3`_.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:

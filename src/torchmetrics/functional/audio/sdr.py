@@ -98,7 +98,7 @@ def signal_distortion_ratio(
     zero_mean: bool = False,
     load_diag: Optional[float] = None,
 ) -> Tensor:
-    r"""Calculates Signal to Distortion Ratio (SDR) metric. See :ref:`[1] <sdr ref1>` and :ref:`[2] <sdr ref2>` for
+    r"""Calculates Signal to Distortion Ratio (SDR) metric. See `SDR ref1`_ and `SDR ref2`_ for
     details on the metric.
 
     .. note:
