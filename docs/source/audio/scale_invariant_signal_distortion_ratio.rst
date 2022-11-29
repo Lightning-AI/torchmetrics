@@ -3,6 +3,8 @@
    :image: https://pl-flash-data.s3.amazonaws.com/assets/thumbnails/audio_classification.svg
    :tags: Audio
 
+.. include:: ../links.rst
+
 ###################################################
 Scale-Invariant Signal-to-Distortion Ratio (SI-SDR)
 ###################################################
