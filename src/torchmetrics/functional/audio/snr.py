@@ -63,7 +63,7 @@ def signal_noise_ratio(preds: Tensor, target: Tensor, zero_mean: bool = False) -
 
 
 def scale_invariant_signal_noise_ratio(preds: Tensor, target: Tensor) -> Tensor:
-    """Scale-invariant signal-to-noise ratio (SI-SNR).
+    """`Scale-invariant signal-to-noise ratio`_ (SI-SNR).
 
     Args:
         preds: float tensor with shape ``(...,time)``
