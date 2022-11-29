@@ -25,7 +25,7 @@ class SignalDistortionRatio(Metric):
     r"""Calculates Signal to Distortion Ratio (SDR) metric. See :ref:`[1] <sdr ref1>` and :ref:`[2] <sdr ref2>` for
     details on the metric.
 
-    As input to `forward` and `update` the metric accepts the following input
+    As input to ``forward`` and ``update`` the metric accepts the following input
 
     - ``preds`` (:class:`~torch.Tensor`): float tensor with shape ``(...,time)``
     - ``target`` (: :class:`~torch.Tensor`): float tensor with shape ``(...,time)``

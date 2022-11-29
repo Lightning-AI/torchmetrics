@@ -24,7 +24,7 @@ class PermutationInvariantTraining(Metric):
     """Calculates `Permutation invariant training`_ (PIT) that can evaluate models for speaker independent multi-
     talker speech separation in a permutation invariant way.
 
-    As input to `forward` and `update` the metric accepts the following input
+    As input to ``forward`` and ``update`` the metric accepts the following input
 
     - ``preds`` (:class:`~torch.Tensor`): float tensor with shape ``(batch_size,num_speakers,...)``
     - ``target`` (: :class:`~torch.Tensor`): float tensor with shape ``(batch_size,num_speakers,...)``

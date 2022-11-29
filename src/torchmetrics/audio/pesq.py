@@ -28,10 +28,10 @@ class PerceptualEvaluationSpeechQuality(Metric):
     clipping, audio interference ect. PESQ returns a score between -0.5 and 4.5 with the higher scores indicating a
     better quality.
 
-    This metric is a wrapper for the `pesq package`_. Note that input will be moved to `cpu` to perform the metric
+    This metric is a wrapper for the `pesq package`_. Note that input will be moved to ``cpu`` to perform the metric
     calculation.
 
-    As input to `forward` and `update` the metric accepts the following input
+    As input to ``forward`` and ``update`` the metric accepts the following input
 
     - ``preds`` (:class:`~torch.Tensor`): float tensor with shape ``(...,time)``
     - ``target`` (: :class:`~torch.Tensor`): float tensor with shape ``(...,time)``
