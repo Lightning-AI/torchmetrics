@@ -20,31 +20,30 @@ from torchmetrics.metric import Metric
 
 
 class SignalNoiseRatio(Metric):
-    r"""Signal-to-noise ratio (SNR_):
+    r"""Calculates `Signal-to-noise ratio`_ (SNR_) meric for evaluating quality of audio. It is defined as:
 
     .. math::
         \text{SNR} = \frac{P_{signal}}{P_{noise}}
 
-    where  :math:`P` denotes the power of each signal. The SNR metric compares the level
-    of the desired signal to the level of background noise. Therefore, a high value of
-    SNR means that the audio is clear.
+    where  :math:`P` denotes the power of each signal. The SNR metric compares the level of the desired signal to
+    the level of background noise. Therefore, a high value of SNR means that the audio is clear.
 
-    Forward accepts
+    As input to `forward` and `update` the metric accepts the following input
 
-    - ``preds``: ``shape [..., time]``
-    - ``target``: ``shape [..., time]``
+    - ``preds`` (:class:`~torch.Tensor`): float tensor with shape ``(...,time)``
+    - ``target`` (: :class:`~torch.Tensor`): float tensor with shape ``(...,time)``
+
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``snr`` (: :class:`~torch.Tensor`): float scalar tensor with average SNR value over samples
 
     Args:
         zero_mean: if to zero mean target and preds or not
-
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         TypeError:
             if target and preds have a different shape
-
-    Returns:
-        average snr value
 
     Example:
         >>> import torch
@@ -54,10 +53,6 @@ class SignalNoiseRatio(Metric):
         >>> snr = SignalNoiseRatio()
         >>> snr(preds, target)
         tensor(16.1805)
-
-    References:
-        [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE International Conference on Acoustics, Speech
-        and Signal Processing (ICASSP) 2019.
     """
     full_state_update: bool = False
     is_differentiable: bool = True
@@ -77,29 +72,28 @@ class SignalNoiseRatio(Metric):
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
+        """Update state with predictions and targets."""
         snr_batch = signal_noise_ratio(preds=preds, target=target, zero_mean=self.zero_mean)
 
         self.sum_snr += snr_batch.sum()
         self.total += snr_batch.numel()
 
     def compute(self) -> Tensor:
-        """Computes average SNR."""
+        """Computes metric."""
         return self.sum_snr / self.total
 
 
 class ScaleInvariantSignalNoiseRatio(Metric):
-    """Scale-invariant signal-to-noise ratio (SI-SNR).
+    """Calculates `Scale-invariant signal-to-noise ratio`_ (SI-SNR) metric for evaluating quality of audio.
 
-    Forward accepts
+    As input to `forward` and `update` the metric accepts the following input
 
-    - ``preds``: ``shape [...,time]``
-    - ``target``: ``shape [...,time]``
+    - ``preds`` (:class:`~torch.Tensor`): float tensor with shape ``(...,time)``
+    - ``target`` (: :class:`~torch.Tensor`): float tensor with shape ``(...,time)``
+
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``si_snr`` (: :class:`~torch.Tensor`): float scalar tensor with average SI-SNR value over samples
 
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
@@ -107,9 +101,6 @@ class ScaleInvariantSignalNoiseRatio(Metric):
     Raises:
         TypeError:
             if target and preds have a different shape
-
-    Returns:
-        average si-snr value
 
     Example:
         >>> import torch
@@ -119,11 +110,6 @@ class ScaleInvariantSignalNoiseRatio(Metric):
         >>> si_snr = ScaleInvariantSignalNoiseRatio()
         >>> si_snr(preds, target)
         tensor(15.0918)
-
-    References:
-        [1] Y. Luo and N. Mesgarani, "TaSNet: Time-Domain Audio Separation Network for Real-Time, Single-Channel Speech
-        Separation," 2018 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP), 2018, pp.
-        696-700, doi: 10.1109/ICASSP.2018.8462116.
     """
 
     is_differentiable = True
@@ -141,17 +127,12 @@ class ScaleInvariantSignalNoiseRatio(Metric):
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
+        """Update state with predictions and targets."""
         si_snr_batch = scale_invariant_signal_noise_ratio(preds=preds, target=target)
 
         self.sum_si_snr += si_snr_batch.sum()
         self.total += si_snr_batch.numel()
 
     def compute(self) -> Tensor:
-        """Computes average SI-SNR."""
+        """Computes metric."""
         return self.sum_si_snr / self.total

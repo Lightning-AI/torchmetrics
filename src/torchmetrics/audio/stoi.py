@@ -23,32 +23,35 @@ __doctest_requires__ = {"ShortTimeObjectiveIntelligibility": ["pystoi"]}
 
 
 class ShortTimeObjectiveIntelligibility(Metric):
-    r"""STOI (Short-Time Objective Intelligibility, see [2,3]), a wrapper for the pystoi package [1]. Note that
-    input will be moved to `cpu` to perform the metric calculation.
+    r"""Calculates STOI (Short-Time Objective Intelligibility) metric for evaluating speech signals. Intelligibility
+    measure which is highly correlated with the intelligibility of degraded speech signals, e.g., due to additive
+    noise, single-/multi-channel noise reduction, binary masking and vocoded speech as in CI simulations. The STOI-
+    measure is intrusive, i.e., a function of the clean and degraded speech signals. STOI may be a good alternative
+    to the speech intelligibility index (SII) or the speech transmission index (STI), when you are interested in
+    the effect of nonlinear processing to noisy speech, e.g., noise reduction, binary masking algorithms, on speech
+    intelligibility. Description taken from  `Cees Taal's website`_ and for further defails see `STOI ref1`_ and
+    `STOI ref2`_.
 
-    Intelligibility measure which is highly correlated with the intelligibility of degraded speech signals, e.g., due
-    to additive noise, single-/multi-channel noise reduction, binary masking and vocoded speech as in CI simulations.
-    The STOI-measure is intrusive, i.e., a function of the clean and degraded speech signals. STOI may be a good
-    alternative to the speech intelligibility index (SII) or the speech transmission index (STI), when you are
-    interested in the effect of nonlinear processing to noisy speech, e.g., noise reduction, binary masking algorithms,
-    on speech intelligibility. Description taken from `Cees Taal's website <http://www.ceestaal.nl/code/>`_.
+    This metric is a wrapper for the `pystoi package`_. As the implementation backend implementation only supports
+    calculations on CPU, all input will automatically be moved to CPU to perform the metric calculation before being
+    moved back to the original device.
+
+    As input to `forward` and `update` the metric accepts the following input
+
+    - ``preds`` (:class:`~torch.Tensor`): float tensor with shape ``(...,time)``
+    - ``target`` (: :class:`~torch.Tensor`): float tensor with shape ``(...,time)``
+
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``stoi`` (: :class:`~torch.Tensor`): float scalar tensor
 
     .. note:: using this metrics requires you to have ``pystoi`` install. Either install as ``pip install
-        torchmetrics[audio]`` or ``pip install pystoi``
-
-    Forward accepts
-
-    - ``preds``: ``shape [...,time]``
-    - ``target``: ``shape [...,time]``
+        torchmetrics[audio]`` or ``pip install pystoi``.
 
     Args:
         fs: sampling frequency (Hz)
-        extended: whether to use the extended STOI described in [4]
-
+        extended: whether to use the extended STOI described in `STOI ref3`_.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
-
-    Returns:
-        average STOI value
 
     Raises:
         ModuleNotFoundError:
@@ -63,18 +66,6 @@ class ShortTimeObjectiveIntelligibility(Metric):
         >>> stoi = ShortTimeObjectiveIntelligibility(8000, False)
         >>> stoi(preds, target)
         tensor(-0.0100)
-
-    References:
-        [1] https://github.com/mpariente/pystoi
-
-        [2] C.H.Taal, R.C.Hendriks, R.Heusdens, J.Jensen 'A Short-Time Objective Intelligibility Measure for
-        Time-Frequency Weighted Noisy Speech', ICASSP 2010, Texas, Dallas.
-
-        [3] C.H.Taal, R.C.Hendriks, R.Heusdens, J.Jensen 'An Algorithm for Intelligibility Prediction of
-        Time-Frequency Weighted Noisy Speech', IEEE Transactions on Audio, Speech, and Language Processing, 2011.
-
-        [4] J. Jensen and C. H. Taal, 'An Algorithm for Predicting the Intelligibility of Speech Masked by Modulated
-        Noise Maskers', IEEE Transactions on Audio, Speech and Language Processing, 2016.
     """
     sum_stoi: Tensor
     total: Tensor
@@ -101,12 +92,7 @@ class ShortTimeObjectiveIntelligibility(Metric):
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
+        """Update state with predictions and targets."""
         stoi_batch = short_time_objective_intelligibility(preds, target, self.fs, self.extended, False).to(
             self.sum_stoi.device
         )
@@ -115,5 +101,5 @@ class ShortTimeObjectiveIntelligibility(Metric):
         self.total += stoi_batch.numel()
 
     def compute(self) -> Tensor:
-        """Computes average STOI."""
+        """Computes metric."""
         return self.sum_stoi / self.total
