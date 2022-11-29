@@ -98,8 +98,8 @@ def signal_distortion_ratio(
     zero_mean: bool = False,
     load_diag: Optional[float] = None,
 ) -> Tensor:
-    r"""Calculates Signal to Distortion Ratio (SDR) metric. See `SDR ref1`_ and `SDR ref2`_ for
-    details on the metric.
+    r"""Calculates Signal to Distortion Ratio (SDR) metric. See `SDR ref1`_ and `SDR ref2`_ for details on the
+    metric.
 
     .. note:
         The metric currently does not seem to work with Pytorch v1.11 and specific GPU hardware.

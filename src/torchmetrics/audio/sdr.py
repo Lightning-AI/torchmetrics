@@ -22,8 +22,8 @@ __doctest_requires__ = {"SignalDistortionRatio": ["fast_bss_eval"]}
 
 
 class SignalDistortionRatio(Metric):
-    r"""Calculates Signal to Distortion Ratio (SDR) metric. See `SDR ref1`_ and `SDR ref2`_ for
-    details on the metric.
+    r"""Calculates Signal to Distortion Ratio (SDR) metric. See `SDR ref1`_ and `SDR ref2`_ for details on the
+    metric.
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 

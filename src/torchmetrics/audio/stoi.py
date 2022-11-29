@@ -24,12 +24,12 @@ __doctest_requires__ = {"ShortTimeObjectiveIntelligibility": ["pystoi"]}
 
 class ShortTimeObjectiveIntelligibility(Metric):
     r"""Calculates STOI (Short-Time Objective Intelligibility) metric for evaluating speech signals. Intelligibility
-    measure which is highly correlated with the intelligibility of degraded speech signals, e.g., due to additive noise,
-    single-/multi-channel noise reduction, binary masking and vocoded speech as in CI simulations. The STOI-measure is
-    intrusive, i.e., a function of the clean and degraded speech signals. STOI may be a good alternative to the speech
-    intelligibility index (SII) or the speech transmission index (STI), when you are interested in the effect of
-    nonlinear processing to noisy speech, e.g., noise reduction, binary masking algorithms, on speech intelligibility.
-    Description taken from  `Cees Taal's website`_ and for further defails see `STOI ref1`_ and
+    measure which is highly correlated with the intelligibility of degraded speech signals, e.g., due to additive
+    noise, single-/multi-channel noise reduction, binary masking and vocoded speech as in CI simulations. The STOI-
+    measure is intrusive, i.e., a function of the clean and degraded speech signals. STOI may be a good alternative
+    to the speech intelligibility index (SII) or the speech transmission index (STI), when you are interested in
+    the effect of nonlinear processing to noisy speech, e.g., noise reduction, binary masking algorithms, on speech
+    intelligibility. Description taken from  `Cees Taal's website`_ and for further defails see `STOI ref1`_ and
     `STOI ref2`_.
 
     This metric is a wrapper for the `pystoi package`_. As the implementation backend implementation only supports
@@ -66,7 +66,6 @@ class ShortTimeObjectiveIntelligibility(Metric):
         >>> stoi = ShortTimeObjectiveIntelligibility(8000, False)
         >>> stoi(preds, target)
         tensor(-0.0100)
-
     """
     sum_stoi: Tensor
     total: Tensor
