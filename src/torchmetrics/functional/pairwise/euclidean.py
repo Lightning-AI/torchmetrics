@@ -13,6 +13,7 @@
 # limitations under the License.
 from typing import Optional
 
+import torch
 from torch import Tensor
 from typing_extensions import Literal
 
@@ -30,9 +31,13 @@ def _pairwise_euclidean_distance_update(
         zero_diagonal: determines if the diagonal of the distance matrix should be set to zero
     """
     x, y, zero_diagonal = _check_input(x, y, zero_diagonal)
-    x_norm = x.norm(dim=1, keepdim=True)
-    y_norm = y.norm(dim=1).T
-    distance = x_norm * x_norm + y_norm * y_norm - 2 * x.mm(y.T)
+    # upcast to float64 to prevent precision issues
+    _orig_dtype = x.dtype
+    x = x.to(torch.float64)
+    y = y.to(torch.float64)
+    x_norm = (x * x).sum(dim=1, keepdim=True)
+    y_norm = (y * y).sum(dim=1)
+    distance = (x_norm + y_norm - 2 * x.mm(y.T)).to(_orig_dtype)
     if zero_diagonal:
         distance.fill_diagonal_(0)
     return distance.sqrt()

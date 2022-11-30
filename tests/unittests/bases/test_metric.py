@@ -24,7 +24,8 @@ import torch
 from torch import Tensor, tensor
 from torch.nn import Module
 
-from torchmetrics import Accuracy, PearsonCorrCoef
+from torchmetrics import PearsonCorrCoef
+from torchmetrics.classification import BinaryAccuracy
 from unittests.helpers import seed_all
 from unittests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum
 from unittests.helpers.utilities import no_warning_call
@@ -412,18 +413,6 @@ def test_constant_memory(device, requires_grad):
         assert base_memory_level >= memory, "memory increased above base level"
 
 
-@pytest.mark.parametrize("metric_class", [DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum])
-def test_warning_on_not_set_full_state_update(metric_class):
-    class UnsetProperty(metric_class):
-        full_state_update = None
-
-    with pytest.warns(
-        UserWarning,
-        match="Torchmetrics v0.9 introduced a new argument class property called.*",
-    ):
-        UnsetProperty()
-
-
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires gpu")
 def test_specific_error_on_wrong_device():
     metric = PearsonCorrCoef()
@@ -455,7 +444,7 @@ def test_no_warning_on_custom_forward(metric_class):
 def test_custom_availability_check_and_sync_fn():
     dummy_availability_check = Mock(return_value=True)
     dummy_dist_sync_fn = Mock(wraps=lambda x, group: [x])
-    acc = Accuracy(dist_sync_fn=dummy_dist_sync_fn, distributed_available_fn=dummy_availability_check)
+    acc = BinaryAccuracy(dist_sync_fn=dummy_dist_sync_fn, distributed_available_fn=dummy_availability_check)
 
     acc.update(torch.tensor([[1], [1], [1], [1]]), torch.tensor([[1], [1], [1], [1]]))
     dummy_dist_sync_fn.assert_not_called()

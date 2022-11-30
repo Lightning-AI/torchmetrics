@@ -23,7 +23,6 @@ from torch import Tensor
 from torch.nn import Module
 
 from torchmetrics.utilities import apply_to_collection, rank_zero_warn
-from torchmetrics.utilities.checks import is_overridden
 from torchmetrics.utilities.data import (
     _flatten,
     _squeeze_if_scalar,
@@ -139,20 +138,6 @@ class Metric(Module, ABC):
         # state management
         self._is_synced = False
         self._cache: Optional[Dict[str, Union[List[Tensor], Tensor]]] = None
-
-        if self.full_state_update is None and not is_overridden("forward", self, Metric):
-            rank_zero_warn(
-                f"""Torchmetrics v0.9 introduced a new argument class property called `full_state_update` that has
-                not been set for this class ({self.__class__.__name__}). The property determines if `update` by
-                default needs access to the full metric state. If this is not the case, significant speedups can be
-                achieved and we recommend setting this to `False`.
-                We provide an checking function
-                `from torchmetrics.utilities import check_forward_full_state_property`
-                that can be used to check if the `full_state_update=True` (old and potential slower behaviour,
-                default for now) or if `full_state_update=False` can be used safely.
-                """,
-                UserWarning,
-            )
 
     @property
     def _update_called(self) -> bool:
