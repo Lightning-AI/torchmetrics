@@ -15,6 +15,7 @@ from typing import Any, List, Optional, Tuple, Union
 
 import torch
 from torch import Tensor
+from typing_extensions import Literal
 
 from torchmetrics.classification.precision_recall_curve import (
     BinaryPrecisionRecallCurve,
@@ -29,6 +30,7 @@ from torchmetrics.functional.classification.recall_at_fixed_precision import (
     _multilabel_recall_at_fixed_precision_arg_compute,
     _multilabel_recall_at_fixed_precision_arg_validation,
 )
+from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
 
 
@@ -293,4 +295,43 @@ class MultilabelRecallAtFixedPrecision(MultilabelPrecisionRecallCurve):
             state = self.confmat
         return _multilabel_recall_at_fixed_precision_arg_compute(
             state, self.num_labels, self.thresholds, self.ignore_index, self.min_precision
+        )
+
+
+class RecallAtFixedPrecision:
+    r"""Computes the higest possible recall value given the minimum precision thresholds provided. This is done by
+    first calculating the precision-recall curve for different thresholds and the find the recall for a given
+    precision level.
+
+    This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    :mod:`BinaryRecallAtFixedPrecision`, :func:`MulticlassRecallAtFixedPrecision` and
+    :func:`MultilabelRecallAtFixedPrecision` for the specific details of each argument influence and examples.
+    """
+
+    def __new__(
+        cls,
+        task: Literal["binary", "multiclass", "multilabel"],
+        min_precision: float,
+        thresholds: Optional[Union[int, List[float], Tensor]] = None,
+        num_classes: Optional[int] = None,
+        num_labels: Optional[int] = None,
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
+        **kwargs: Any,
+    ) -> Metric:
+        if task == "binary":
+            return BinaryRecallAtFixedPrecision(min_precision, thresholds, ignore_index, validate_args, **kwargs)
+        if task == "multiclass":
+            assert isinstance(num_classes, int)
+            return MulticlassRecallAtFixedPrecision(
+                num_classes, min_precision, thresholds, ignore_index, validate_args, **kwargs
+            )
+        if task == "multilabel":
+            assert isinstance(num_labels, int)
+            return MultilabelRecallAtFixedPrecision(
+                num_labels, min_precision, thresholds, ignore_index, validate_args, **kwargs
+            )
+        raise ValueError(
+            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
         )

@@ -20,7 +20,8 @@ import torch
 from sklearn.metrics import mean_squared_error, precision_score, recall_score
 from torch import Tensor
 
-from torchmetrics import MeanSquaredError, Precision, Recall
+from torchmetrics import MeanSquaredError
+from torchmetrics.classification import MulticlassPrecision, MulticlassRecall
 from torchmetrics.utilities import apply_to_collection
 from torchmetrics.wrappers.bootstrapping import BootStrapper, _bootstrap_sampler
 from unittests.helpers import seed_all
@@ -78,8 +79,8 @@ def test_bootstrap_sampler(sampling_strategy):
 @pytest.mark.parametrize(
     "metric, sk_metric",
     [
-        [Precision(average="micro"), partial(precision_score, average="micro")],
-        [Recall(average="micro"), partial(recall_score, average="micro")],
+        [MulticlassPrecision(num_classes=10, average="micro"), partial(precision_score, average="micro")],
+        [MulticlassRecall(num_classes=10, average="micro"), partial(recall_score, average="micro")],
         [MeanSquaredError(), mean_squared_error],
     ],
 )

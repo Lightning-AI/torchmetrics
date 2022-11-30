@@ -92,7 +92,6 @@ from torchmetrics.functional.classification.precision_recall import (  # noqa: F
     multilabel_precision,
     multilabel_recall,
     precision,
-    precision_recall,
     recall,
 )
 from torchmetrics.functional.classification.precision_recall_curve import (  # noqa: F401
