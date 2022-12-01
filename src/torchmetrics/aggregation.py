@@ -348,14 +348,7 @@ class MeanMetric(BaseAggregator):
         if value.numel() == 0:
             return
         # broadcast weight to value shape
-        if hasattr(torch, "broadcast_to"):
-            weight = torch.broadcast_to(weight, value.shape)
-        else:
-            if weight.shape == ():
-                weight = torch.ones_like(value) * weight
-            if weight.shape != value.shape:
-                raise ValueError("Broadcasting not supported on PyTorch <1.8")
-
+        weight = torch.broadcast_to(weight, value.shape)
         self.value += (value * weight).sum()
         self.weight += weight.sum()
 

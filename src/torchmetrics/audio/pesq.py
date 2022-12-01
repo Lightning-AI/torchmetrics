@@ -34,11 +34,11 @@ class PerceptualEvaluationSpeechQuality(Metric):
     As input to ``forward`` and ``update`` the metric accepts the following input
 
     - ``preds`` (:class:`~torch.Tensor`): float tensor with shape ``(...,time)``
-    - ``target`` (: :class:`~torch.Tensor`): float tensor with shape ``(...,time)``
+    - ``target`` (:class:`~torch.Tensor`): float tensor with shape ``(...,time)``
 
     As output of `forward` and `compute` the metric returns the following output
 
-    - ``pesq`` (: :class:`~torch.Tensor`): float tensor with shape ``(...,)`` of PESQ value per sample
+    - ``pesq`` (:class:`~torch.Tensor`): float tensor with shape ``(...,)`` of PESQ value per sample
 
     .. note:: using this metrics requires you to have ``pesq`` install. Either install as ``pip install
         torchmetrics[audio]`` or ``pip install pesq``. ``pesq`` will compile with your currently
