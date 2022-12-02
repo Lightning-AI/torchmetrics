@@ -215,10 +215,10 @@ class MeanAveragePrecision(Metric):
         scores: :class:`~torch.FloatTensor` of shape ``[num_boxes]`` containing detection scores for the boxes.
         labels: :class:`~torch.IntTensor` of shape ``[num_boxes]`` containing 0-indexed detection classes for the boxes.
         masks: :class:`~torch.bool` of shape ``[num_boxes, image_height, image_width]`` containing boolean masks. Only required when `iou_type="segm"`.
-    
+
     - ``target`` A list consisting of dictionaries each containing the key-values (each dictionary corresponds to a single image).
-    
-    Parameters: 
+
+    Parameters:
         boxes: :class:`~torch.FloatTensor` of shape ``[num_boxes, 4]`` containing ``num_boxes`` ground truth boxes of the format specified in the constructor.
             By default, this method expects ``[xmin, ymin, xmax, ymax]`` in absolute image coordinates.
         labels: :class:`~torch.IntTensor` of shape ``[num_boxes]`` containing 0-indexed ground truth
