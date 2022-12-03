@@ -207,23 +207,29 @@ class MeanAveragePrecision(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input.
 
-    - ``preds`` A list consisting of dictionaries each containing the key-values (each dictionary corresponds to a single image).
+    - ``preds`` A list consisting of dictionaries each containing the key-values
+        (each dictionary corresponds to a single image).
 
     Parameters:
-        boxes: :class:`~torch.FloatTensor` of shape ``[num_boxes, 4]`` containing ``num_boxes`` detection boxes of the format specified in the constructor.
+        boxes: :class:`~torch.FloatTensor` of shape ``[num_boxes, 4]`` containing ``num_boxes`` detection
+            boxes of the format specified in the constructor.
             By default, this method expects ``[xmin, ymin, xmax, ymax]`` in absolute image coordinates.
         scores: :class:`~torch.FloatTensor` of shape ``[num_boxes]`` containing detection scores for the boxes.
         labels: :class:`~torch.IntTensor` of shape ``[num_boxes]`` containing 0-indexed detection classes for the boxes.
-        masks: :class:`~torch.bool` of shape ``[num_boxes, image_height, image_width]`` containing boolean masks. Only required when `iou_type="segm"`.
+        masks: :class:`~torch.bool` of shape ``[num_boxes, image_height, image_width]`` containing boolean masks.
+            Only required when `iou_type="segm"`.
 
-    - ``target`` A list consisting of dictionaries each containing the key-values (each dictionary corresponds to a single image).
+    - ``target`` A list consisting of dictionaries each containing the key-values
+        (each dictionary corresponds to a single image).
 
     Parameters:
-        boxes: :class:`~torch.FloatTensor` of shape ``[num_boxes, 4]`` containing ``num_boxes`` ground truth boxes of the format specified in the constructor.
+        boxes: :class:`~torch.FloatTensor` of shape ``[num_boxes, 4]`` containing ``num_boxes`` ground truth
+            boxes of the format specified in the constructor.
             By default, this method expects ``[xmin, ymin, xmax, ymax]`` in absolute image coordinates.
         labels: :class:`~torch.IntTensor` of shape ``[num_boxes]`` containing 0-indexed ground truth
             classes for the boxes.
-        masks: :class:`~torch.bool` of shape ``[num_boxes, image_height, image_width]`` containing boolean masks. Only required when `iou_type="segm"`.
+        masks: :class:`~torch.bool` of shape ``[num_boxes, image_height, image_width]`` containing boolean masks.
+            Only required when `iou_type="segm"`.
 
     Raises:
         ValueError:
