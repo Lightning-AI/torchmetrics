@@ -207,52 +207,32 @@ class MeanAveragePrecision(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input.
 
-    - ``preds`` A list consisting of dictionaries each containing the key-values
-        (each dictionary corresponds to a single image).
+    - ``preds`` (:class:`~List`) A list consisting of dictionaries each containing the key-values
+      (each dictionary corresponds to a single image). Parameters that should be provided per dict
 
-    Parameters:
-        boxes: :class:`~torch.FloatTensor` of shape ``[num_boxes, 4]`` containing ``num_boxes`` detection
-            boxes of the format specified in the constructor.
-            By default, this method expects ``[xmin, ymin, xmax, ymax]`` in absolute image coordinates.
-        scores: :class:`~torch.FloatTensor` of shape ``[num_boxes]`` containing detection scores for the boxes.
-        labels: :class:`~torch.IntTensor` of shape ``[num_boxes]`` containing 0-indexed detection classes for the boxes.
-        masks: :class:`~torch.bool` of shape ``[num_boxes, image_height, image_width]`` containing boolean masks.
-            Only required when `iou_type="segm"`.
+        - boxes: :class:`~torch.FloatTensor` of shape ``[num_boxes, 4]`` containing ``num_boxes`` detection
+          boxes of the format specified in the constructor.
+          By default, this method expects ``[xmin, ymin, xmax, ymax]`` in absolute image coordinates.
+        - scores: :class:`~torch.FloatTensor` of shape ``[num_boxes]`` containing detection scores for the boxes.
+        - labels: :class:`~torch.IntTensor` of shape ``[num_boxes]`` containing 0-indexed detection classes for
+          the boxes.
+        - masks: :class:`~torch.bool` of shape ``[num_boxes, image_height, image_width]`` containing boolean masks.
+          Only required when `iou_type="segm"`.
 
-    - ``target`` A list consisting of dictionaries each containing the key-values
-        (each dictionary corresponds to a single image).
+    - ``target`` (:class:`~List`) A list consisting of dictionaries each containing the key-values
+      (each dictionary corresponds to a single image). Parameters that should be provided per dict:
 
-    Parameters:
-        boxes: :class:`~torch.FloatTensor` of shape ``[num_boxes, 4]`` containing ``num_boxes`` ground truth
-            boxes of the format specified in the constructor.
-            By default, this method expects ``[xmin, ymin, xmax, ymax]`` in absolute image coordinates.
-        labels: :class:`~torch.IntTensor` of shape ``[num_boxes]`` containing 0-indexed ground truth
-            classes for the boxes.
-        masks: :class:`~torch.bool` of shape ``[num_boxes, image_height, image_width]`` containing boolean masks.
-            Only required when `iou_type="segm"`.
-
-    Raises:
-        ValueError:
-            If ``preds`` is not of type (:class:`~List[Dict[str, Tensor]]`)
-        ValueError:
-            If ``target`` is not of type ``List[Dict[str, Tensor]]``
-        ValueError:
-            If ``preds`` and ``target`` are not of the same length
-        ValueError:
-            If any of ``preds.boxes``, ``preds.scores`` and ``preds.labels`` are not of the same length
-        ValueError:
-            If any of ``target.boxes`` and ``target.labels`` are not of the same length
-        ValueError:
-            If any box is not type float and of length 4
-        ValueError:
-            If any class is not type int and of length 1
-        ValueError:
-            If any score is not type float and of length 1
+        - boxes: :class:`~torch.FloatTensor` of shape ``[num_boxes, 4]`` containing ``num_boxes`` ground truth
+          boxes of the format specified in the constructor.
+          By default, this method expects ``[xmin, ymin, xmax, ymax]`` in absolute image coordinates.
+        - labels: :class:`~torch.IntTensor` of shape ``[num_boxes]`` containing 0-indexed ground truth
+          classes for the boxes.
+        - masks: :class:`~torch.bool` of shape ``[num_boxes, image_height, image_width]`` containing boolean masks.
+          Only required when `iou_type="segm"`.
 
     As output of ``forward`` and ``compute`` the metric returns the following output.
 
-    Returns:
-        dict containing
+    - `map_dict`: A dictionary containing the following key-values:
 
         - map: (:class:`~torch.Tensor`)
         - map_small: (:class:`~torch.Tensor`)
@@ -269,14 +249,13 @@ class MeanAveragePrecision(Metric):
         - map_per_class: (:class:`~torch.Tensor`) (-1 if class metrics are disabled)
         - mar_100_per_class: (:class:`~torch.Tensor`) (-1 if class metrics are disabled)
 
-    Note:
-        ``map`` score is calculated with @[ IoU=self.iou_thresholds | area=all | max_dets=max_detection_thresholds ]
-
-        Caution: If the initialization parameters are changed, dictionary keys for mAR can change as well.
-        The default properties are also accessible via fields and will raise an ``AttributeError`` if not available.
-
     For an example on how to use this metric check the `torchmetrics examples
     <https://github.com/Lightning-AI/metrics/blob/master/examples/detection_map.py>`_
+
+    .. note::
+        ``map`` score is calculated with @[ IoU=self.iou_thresholds | area=all | max_dets=max_detection_thresholds ].
+        Caution: If the initialization parameters are changed, dictionary keys for mAR can change as well.
+        The default properties are also accessible via fields and will raise an ``AttributeError`` if not available.
 
     .. note::
         This metric is following the mAP implementation of
@@ -308,6 +287,30 @@ class MeanAveragePrecision(Metric):
         class_metrics:
             Option to enable per-class metrics for mAP and mAR_100. Has a performance impact.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+
+    Raises:
+        ModuleNotFoundError:
+            If ``torchvision`` is not installed or version installed is lower than 0.8.0
+        ModuleNotFoundError:
+            If ``iou_type`` is equal to ``seqm`` and ``pycocotools`` is not installed
+        ValueError:
+            If ``class_metrics`` is not a boolean
+        ValueError:
+            If ``preds`` is not of type (:class:`~List[Dict[str, Tensor]]`)
+        ValueError:
+            If ``target`` is not of type ``List[Dict[str, Tensor]]``
+        ValueError:
+            If ``preds`` and ``target`` are not of the same length
+        ValueError:
+            If any of ``preds.boxes``, ``preds.scores`` and ``preds.labels`` are not of the same length
+        ValueError:
+            If any of ``target.boxes`` and ``target.labels`` are not of the same length
+        ValueError:
+            If any box is not type float and of length 4
+        ValueError:
+            If any class is not type int and of length 1
+        ValueError:
+            If any score is not type float and of length 1
 
     Example:
         >>> import torch
@@ -343,14 +346,6 @@ class MeanAveragePrecision(Metric):
          'mar_large': tensor(0.6000),
          'mar_medium': tensor(-1.),
          'mar_small': tensor(-1.)}
-
-    Raises:
-        ModuleNotFoundError:
-            If ``torchvision`` is not installed or version installed is lower than 0.8.0
-        ModuleNotFoundError:
-            If ``iou_type`` is equal to ``seqm`` and ``pycocotools`` is not installed
-        ValueError:
-            If ``class_metrics`` is not a boolean
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
