@@ -14,3 +14,4 @@ ________________
 
 .. autoclass:: torchmetrics.MeanMetric
     :noindex:
+    :exclude-members: update, compute
