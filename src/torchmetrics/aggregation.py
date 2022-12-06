@@ -95,6 +95,15 @@ class BaseAggregator(Metric):
 class MaxMetric(BaseAggregator):
     """Aggregate a stream of value into their maximum value.
 
+    As input to ``forward`` and ``update`` the metric accepts the following input
+
+    - ``value`` (:class:`~float` or :class:`~torch.Tensor`): a single float or an tensor of float values with
+      arbitary shape ``(...,)``.
+
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``agg`` (:class:`~torch.Tensor`): scalar float tensor with aggregated maximum value over all inputs received
+
     Args:
         nan_strategy: options:
             - ``'error'``: if any `nan` values are encounted will give a RuntimeError
@@ -109,6 +118,7 @@ class MaxMetric(BaseAggregator):
             If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore`` or a float
 
     Example:
+        >>> import torch
         >>> from torchmetrics import MaxMetric
         >>> metric = MaxMetric()
         >>> metric.update(1)
@@ -146,6 +156,15 @@ class MaxMetric(BaseAggregator):
 class MinMetric(BaseAggregator):
     """Aggregate a stream of value into their minimum value.
 
+    As input to ``forward`` and ``update`` the metric accepts the following input
+
+    - ``value`` (:class:`~float` or :class:`~torch.Tensor`): a single float or an tensor of float values with
+      arbitary shape ``(...,)``.
+
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``agg`` (:class:`~torch.Tensor`): scalar float tensor with aggregated minimum value over all inputs received
+
     Args:
         nan_strategy: options:
             - ``'error'``: if any `nan` values are encounted will give a RuntimeError
@@ -160,6 +179,7 @@ class MinMetric(BaseAggregator):
             If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore`` or a float
 
     Example:
+        >>> import torch
         >>> from torchmetrics import MinMetric
         >>> metric = MinMetric()
         >>> metric.update(1)
@@ -197,6 +217,15 @@ class MinMetric(BaseAggregator):
 class SumMetric(BaseAggregator):
     """Aggregate a stream of value into their sum.
 
+    As input to ``forward`` and ``update`` the metric accepts the following input
+
+    - ``value`` (:class:`~float` or :class:`~torch.Tensor`): a single float or an tensor of float values with
+      arbitary shape ``(...,)``.
+
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``agg`` (:class:`~torch.Tensor`): scalar float tensor with aggregated sum over all inputs received
+
     Args:
         nan_strategy: options:
             - ``'error'``: if any `nan` values are encounted will give a RuntimeError
@@ -211,6 +240,7 @@ class SumMetric(BaseAggregator):
             If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore`` or a float
 
     Example:
+        >>> import torch
         >>> from torchmetrics import SumMetric
         >>> metric = SumMetric()
         >>> metric.update(1)
@@ -246,6 +276,15 @@ class SumMetric(BaseAggregator):
 class CatMetric(BaseAggregator):
     """Concatenate a stream of values.
 
+    As input to ``forward`` and ``update`` the metric accepts the following input
+
+    - ``value`` (:class:`~float` or :class:`~torch.Tensor`): a single float or an tensor of float values with
+      arbitary shape ``(...,)``.
+
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``agg`` (:class:`~torch.Tensor`): scalar float tensor with concatenated values over all input received
+
     Args:
         nan_strategy: options:
             - ``'error'``: if any `nan` values are encounted will give a RuntimeError
@@ -260,6 +299,7 @@ class CatMetric(BaseAggregator):
             If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore`` or a float
 
     Example:
+        >>> import torch
         >>> from torchmetrics import CatMetric
         >>> metric = CatMetric()
         >>> metric.update(1)
@@ -295,6 +335,17 @@ class CatMetric(BaseAggregator):
 
 class MeanMetric(BaseAggregator):
     """Aggregate a stream of value into their mean value.
+
+    As input to ``forward`` and ``update`` the metric accepts the following input
+
+    - ``value`` (:class:`~float` or :class:`~torch.Tensor`): a single float or an tensor of float values with
+      arbitary shape ``(...,)``.
+    - ``weight`` (:class:`~float` or :class:`~torch.Tensor`): a single float or an tensor of float value with
+      arbitary shape ``(...,)``. Needs to be broadcastable with the shape of ``value`` tensor.
+
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``agg`` (:class:`~torch.Tensor`): scalar float tensor with aggregated (weighted) mean over all inputs received
 
     Args:
        nan_strategy: options:
