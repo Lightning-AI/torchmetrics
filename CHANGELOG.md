@@ -296,7 +296,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-- Removed support for versions of [Pytorch-Lightning](https://github.com/PyTorchLightning/pytorch-lightning) lower than v1.5 ([#788](https://github.com/Lightning-AI/metrics/pull/788))
+- Removed support for versions of [Pytorch-Lightning](https://github.com/Lightning-AI/lightning) lower than v1.5 ([#788](https://github.com/Lightning-AI/metrics/pull/788))
 - Removed deprecated functions, and warnings in Text ([#773](https://github.com/Lightning-AI/metrics/pull/773))
   * `WER` and `functional.wer`
 - Removed deprecated functions and warnings in Image ([#796](https://github.com/Lightning-AI/metrics/pull/796))
