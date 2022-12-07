@@ -92,7 +92,7 @@ jobs:
       run: |
         pip --version
         pip install -e . -U --find-links $PYTORCH_URL
-        pip install "pytest" "pytest-doctestplus>=0.9.0" "pytest-rerunfailures>=10.0" -U
+        pip install -r requirements/doctest.txt -U
         pip list
 
     # todo: copy this to install checks
