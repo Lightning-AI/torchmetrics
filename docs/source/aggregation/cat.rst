@@ -14,3 +14,4 @@ ________________
 
 .. autoclass:: torchmetrics.CatMetric
     :noindex:
+    :exclude-members: update, compute
