@@ -7,53 +7,55 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
 
-## [unReleased] - 2022-MM-DD
+## [unreleased] - 2022-MM-DD
 
 ### Added
 
-- Added `TotalVariation` to image package ([#978](https://github.com/Lightning-AI/metrics/pull/978))
-
-
-- Added regression metrics:
-   * `KendallRankCorrCoef` ([#1271](https://github.com/Lightning-AI/metrics/pull/1271))
-   * `LogCoshError` ([#1316](https://github.com/Lightning-AI/metrics/pull/1316))
-
-
-- Added new nominal metrics:
-  * `CramersV` ([#1298](https://github.com/Lightning-AI/metrics/pull/1298))
-  * `PearsonsContingencyCoefficient` ([#1334](https://github.com/Lightning-AI/metrics/pull/1334))
-  * `TschuprowsT` ([#1334](https://github.com/Lightning-AI/metrics/pull/1334))
-  * `TheilsU` ([#1337](https://github.com/Lightning-AI/metrics/pull/1334))
-
-
-- Added option to pass `distributed_available_fn` to metrics to allow checks for custom communication backend for making `dist_sync_fn` actually useful ([#1301](https://github.com/Lightning-AI/metrics/pull/1301))
-
-
-- Added `normalize` argument to `Inception`, `FID`, `KID` metrics ([#1246](https://github.com/Lightning-AI/metrics/pull/1246))
-
-
-- Added `CLIPScore` to new multimodal package ([#1314](https://github.com/Lightning-AI/metrics/pull/1314))
-
-
-- Added `MulticlassExactMatch` to classification metrics ([#1343](https://github.com/Lightning-AI/metrics/pull/1343))
-
+-
 
 
 ### Changed
 
-- Changed `MeanAveragePrecision` to vectorize `_find_best_gt_match` operation ([#1259](https://github.com/Lightning-AI/metrics/pull/1259))
-
-
-- Changed minimum Pytorch version to be 1.8 ([#1263](https://github.com/Lightning-AI/metrics/pull/1263))
-
-
-- Changed interface for all functional and modular classification metrics after refactor ([#1252](https://github.com/Lightning-AI/metrics/pull/1252))
+-
 
 
 ### Deprecated
 
 -
 
+
+### Removed
+
+-
+
+
+### Fixed
+
+-
+
+
+## [0.11.0] - 2022-11-30
+
+### Added
+
+- Added `MulticlassExactMatch` to classification metrics ([#1343](https://github.com/Lightning-AI/metrics/pull/1343))
+- Added `TotalVariation` to image package ([#978](https://github.com/Lightning-AI/metrics/pull/978))
+- Added `CLIPScore` to new multimodal package ([#1314](https://github.com/Lightning-AI/metrics/pull/1314))
+- Added regression metrics:
+   * `KendallRankCorrCoef` ([#1271](https://github.com/Lightning-AI/metrics/pull/1271))
+   * `LogCoshError` ([#1316](https://github.com/Lightning-AI/metrics/pull/1316))
+- Added new nominal metrics:
+  * `CramersV` ([#1298](https://github.com/Lightning-AI/metrics/pull/1298))
+  * `PearsonsContingencyCoefficient` ([#1334](https://github.com/Lightning-AI/metrics/pull/1334))
+  * `TschuprowsT` ([#1334](https://github.com/Lightning-AI/metrics/pull/1334))
+  * `TheilsU` ([#1337](https://github.com/Lightning-AI/metrics/pull/1334))
+- Added option to pass `distributed_available_fn` to metrics to allow checks for custom communication backend for making `dist_sync_fn` actually useful ([#1301](https://github.com/Lightning-AI/metrics/pull/1301))
+- Added `normalize` argument to `Inception`, `FID`, `KID` metrics ([#1246](https://github.com/Lightning-AI/metrics/pull/1246))
+
+### Changed
+
+- Changed minimum Pytorch version to be 1.8 ([#1263](https://github.com/Lightning-AI/metrics/pull/1263))
+- Changed interface for all functional and modular classification metrics after refactor ([#1252](https://github.com/Lightning-AI/metrics/pull/1252))
 
 ### Removed
 

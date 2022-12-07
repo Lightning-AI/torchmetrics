@@ -14,35 +14,35 @@
 from typing import Any, Callable, Dict
 
 from torch import Tensor, tensor
+from typing_extensions import Literal
 
 from torchmetrics.functional.audio.pit import permutation_invariant_training
 from torchmetrics.metric import Metric
 
 
 class PermutationInvariantTraining(Metric):
-    """Permutation invariant training (PermutationInvariantTraining). The PermutationInvariantTraining implements
-    the famous Permutation Invariant Training method.
+    """Calculates `Permutation invariant training`_ (PIT) that can evaluate models for speaker independent multi-
+    talker speech separation in a permutation invariant way.
 
-    [1] in speech separation field in order to calculate audio metrics in a permutation invariant way.
+    As input to ``forward`` and ``update`` the metric accepts the following input
 
-    Forward accepts
+    - ``preds`` (:class:`~torch.Tensor`): float tensor with shape ``(batch_size,num_speakers,...)``
+    - ``target`` (: :class:`~torch.Tensor`): float tensor with shape ``(batch_size,num_speakers,...)``
 
-    - ``preds``: ``shape [batch, spk, ...]``
-    - ``target``: ``shape [batch, spk, ...]``
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``pesq`` (: :class:`~torch.Tensor`): float scalar tensor with average PESQ value over samples
 
     Args:
         metric_func:
             a metric function accept a batch of target and estimate,
-            i.e. ``metric_func(preds[:, i, ...], target[:, j, ...])``, and returns a batch of metric tensors ``[batch]``
+            i.e. ``metric_func(preds[:, i, ...], target[:, j, ...])``, and returns a batch of metric
+            tensors ``(batch,)``
         eval_func:
             the function to find the best permutation, can be 'min' or 'max', i.e. the smaller the better
             or the larger the better.
-
         kwargs: Additional keyword arguments for either the ``metric_func`` or distributed communication,
             see :ref:`Metric kwargs` for more info.
-
-    Returns:
-        average PermutationInvariantTraining metric
 
     Example:
         >>> import torch
@@ -54,11 +54,6 @@ class PermutationInvariantTraining(Metric):
         >>> pit = PermutationInvariantTraining(scale_invariant_signal_noise_ratio, 'max')
         >>> pit(preds, target)
         tensor(-2.1065)
-
-    Reference:
-        [1]	D. Yu, M. Kolbaek, Z.-H. Tan, J. Jensen, Permutation invariant training of deep models for
-        speaker-independent multi-talker speech separation, in: 2017 IEEE Int. Conf. Acoust. Speech
-        Signal Process. ICASSP, IEEE, New Orleans, LA, 2017: pp. 241–245. https://doi.org/10.1109/ICASSP.2017.7952154.
     """
 
     full_state_update: bool = False
@@ -69,7 +64,7 @@ class PermutationInvariantTraining(Metric):
     def __init__(
         self,
         metric_func: Callable,
-        eval_func: str = "max",
+        eval_func: Literal["max", "min"] = "max",
         **kwargs: Any,
     ) -> None:
         base_kwargs: Dict[str, Any] = {
@@ -86,17 +81,12 @@ class PermutationInvariantTraining(Metric):
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
+        """Update state with predictions and targets."""
         pit_metric = permutation_invariant_training(preds, target, self.metric_func, self.eval_func, **self.kwargs)[0]
 
         self.sum_pit_metric += pit_metric.sum()
         self.total += pit_metric.numel()
 
     def compute(self) -> Tensor:
-        """Computes average PermutationInvariantTraining metric."""
+        """Computes metric."""
         return self.sum_pit_metric / self.total

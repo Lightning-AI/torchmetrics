@@ -102,3 +102,16 @@
 .. _CLIP score: https://arxiv.org/pdf/2104.08718.pdf
 .. _Huggingface OpenAI: https://huggingface.co/openai
 .. _Theil's U: https://en.wikipedia.org/wiki/Uncertainty_coefficient
+.. _Perceptual Evaluation of Speech Quality: https://en.wikipedia.org/wiki/Perceptual_Evaluation_of_Speech_Quality
+.. _pesq package: https://github.com/ludlows/python-pesq
+.. _Cees Taal's website: http://www.ceestaal.nl/code/
+.. _pystoi package: https://github.com/mpariente/pystoi
+.. _stoi ref1: https://ieeexplore.ieee.org/document/5495701
+.. _stoi ref2: https://ieeexplore.ieee.org/document/5713237
+.. _stoi ref3: https://ieeexplore.ieee.org/document/7539284
+.. _sdr ref1: https://ieeexplore.ieee.org/document/1643671
+.. _sdr ref2: https://arxiv.org/abs/2110.06440
+.. _Scale-invariant signal-to-distortion ratio: https://arxiv.org/abs/1811.02508
+.. _Scale-invariant signal-to-noise ratio: https://arxiv.org/abs/1711.00541
+.. _Signal-to-noise ratio: https://arxiv.org/abs/1811.02508
+.. _Permutation invariant training: https://arxiv.org/abs/1607.00325
