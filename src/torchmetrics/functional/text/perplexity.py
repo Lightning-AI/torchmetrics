@@ -117,7 +117,7 @@ def perplexity(preds: Tensor, target: Tensor, ignore_index: Optional[int] = None
 
     Args:
         preds:
-            Probabilities assigned to each token in a sequence with shape [batch_size, seq_len, vocab_size].
+            Log probabilities assigned to each token in a sequence with shape [batch_size, seq_len, vocab_size].
         target:
             Ground truth values with a shape [batch_size, seq_len].
         ignore_index:
