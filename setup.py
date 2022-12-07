@@ -105,6 +105,7 @@ def _prepare_extras(skip_files: Tuple[str] = ("devel.txt", "doctest.txt")):
     extras_req = {n: list(set(req)) for n, req in extras_req.items()}
     # create an 'all' keyword that install all possible dependencies
     extras_req["all"] = list(chain([pkgs for k, pkgs in extras_req.items() if k not in ("test", "docs")]))
+    extras_req["dev"] = extras_req["all"] + extras_req["test"]
     return extras_req
 
 
