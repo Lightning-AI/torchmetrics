@@ -67,15 +67,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed precision bug in `pairwise_euclidean_distance` ([#1352](https://github.com/Lightning-AI/metrics/pull/1352))
 
-
 ## [0.10.3] - 2022-11-16
 
 ### Fixed
 
 - Fixed bug in `Metrictracker.best_metric` when `return_step=False` ([#1306](https://github.com/Lightning-AI/metrics/pull/1306))
 - Fixed bug to prevent users from going into an infinite loop if trying to iterate of a single metric ([#1320](https://github.com/Lightning-AI/metrics/pull/1320))
-- Fixed bug in `Metrictracker.best_metric` when `return_step=False` ([#1306](https://github.com/Lightning-AI/metrics/pull/1306))
-
 
 ## [0.10.2] - 2022-10-31
 

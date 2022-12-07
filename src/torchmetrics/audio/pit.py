@@ -27,11 +27,11 @@ class PermutationInvariantTraining(Metric):
     As input to ``forward`` and ``update`` the metric accepts the following input
 
     - ``preds`` (:class:`~torch.Tensor`): float tensor with shape ``(batch_size,num_speakers,...)``
-    - ``target`` (: :class:`~torch.Tensor`): float tensor with shape ``(batch_size,num_speakers,...)``
+    - ``target`` (:class:`~torch.Tensor`): float tensor with shape ``(batch_size,num_speakers,...)``
 
     As output of `forward` and `compute` the metric returns the following output
 
-    - ``pesq`` (: :class:`~torch.Tensor`): float scalar tensor with average PESQ value over samples
+    - ``pesq`` (:class:`~torch.Tensor`): float scalar tensor with average PESQ value over samples
 
     Args:
         metric_func:
