@@ -28,11 +28,11 @@ class SignalDistortionRatio(Metric):
     As input to ``forward`` and ``update`` the metric accepts the following input
 
     - ``preds`` (:class:`~torch.Tensor`): float tensor with shape ``(...,time)``
-    - ``target`` (: :class:`~torch.Tensor`): float tensor with shape ``(...,time)``
+    - ``target`` (:class:`~torch.Tensor`): float tensor with shape ``(...,time)``
 
     As output of `forward` and `compute` the metric returns the following output
 
-    - ``sdr`` (: :class:`~torch.Tensor`): float scalar tensor with average SDR value over samples
+    - ``sdr`` (:class:`~torch.Tensor`): float scalar tensor with average SDR value over samples
 
     .. note:
         The metric currently does not seem to work with Pytorch v1.11 and specific GPU hardware.
