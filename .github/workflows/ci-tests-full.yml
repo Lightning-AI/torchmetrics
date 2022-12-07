@@ -92,14 +92,14 @@ jobs:
       run: |
         pip --version
         pip install -e . -U --find-links $PYTORCH_URL
-        pip install "pytest" "pytest-doctestplus" -U
+        pip install "pytest" "pytest-doctestplus>=0.9.0" "pytest-rerunfailures>=10.0" -U
         pip list
 
     # todo: copy this to install checks
     - name: DocTests
       working-directory: ./src
       # NOTE: run coverage on tests does not propagate failure status for Win, https://github.com/nedbat/coveragepy/issues/1003
-      run: python -m pytest torchmetrics
+      run: python -m pytest torchmetrics --reruns 3 --reruns-delay 1
 
     - name: Freeze PIL (hotfix)
       # import of PILLOW_VERSION which they recently removed in v9.0 in favor of __version__
