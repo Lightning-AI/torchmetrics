@@ -66,11 +66,11 @@ def _get_embeddings_and_idf_scale(
         user_forward_fn:
             A user's own forward function used in a combination with ``user_model``. This function must
             take ``user_model`` and a python dictionary of containing ``"input_ids"`` and ``"attention_mask"``
-            represented by ``torch.Tensor`` as an input and return the model's output represented by the single
-            ``torch.Tensor``.
+            represented by :class:`~torch.Tensor` as an input and return the model's output represented by the single
+            :class:`~torch.Tensor`.
 
     Return:
-        A tuple of ``torch.Tensor``s containing the model's embeddings and the normalized tokens IDF.
+        A tuple of :class:`~torch.Tensor`s containing the model's embeddings and the normalized tokens IDF.
         When ``idf = False``, tokens IDF is not calculated, and a matrix of mean weights is returned instead.
         For a single sentence, ``mean_weight = 1/seq_len``, where ``seq_len`` is a sum over the corresponding
         ``attention_mask``.
@@ -273,15 +273,15 @@ def bert_score(
         user_tokenizer:
             A user's own tokenizer used with the own model. This must be an instance with the ``__call__`` method.
             This method must take an iterable of sentences (``List[str]``) and must return a python dictionary
-            containing ``"input_ids"`` and ``"attention_mask"`` represented by ``torch.Tensor``.
-            It is up to the user's model of whether ``"input_ids"`` is a ``torch.Tensor`` of input ids or embedding
+            containing ``"input_ids"`` and ``"attention_mask"`` represented by :class:`~torch.Tensor`.
+            It is up to the user's model of whether ``"input_ids"`` is a :class:`~torch.Tensor` of input ids or embedding
             vectors. his tokenizer must prepend an equivalent of ``[CLS]`` token and append an equivalent of ``[SEP]``
             token as `transformers` tokenizer does.
         user_forward_fn:
             A user's own forward function used in a combination with ``user_model``.
             This function must take ``user_model`` and a python dictionary of containing ``"input_ids"``
-            and ``"attention_mask"`` represented by ``torch.Tensor`` as an input and return the model's output
-            represented by the single ``torch.Tensor``.
+            and ``"attention_mask"`` represented by :class:`~torch.Tensor` as an input and return the model's output
+            represented by the single :class:`~torch.Tensor`.
         verbose: An indication of whether a progress bar to be displayed during the embeddings' calculation.
         idf: An indication of whether normalization using inverse document frequencies should be used.
         device: A device to be used for calculation.

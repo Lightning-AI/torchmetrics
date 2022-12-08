@@ -155,7 +155,7 @@ class Metric(Module, ABC):
 
         Args:
             name: The name of the state variable. The variable will then be accessible at ``self.name``.
-            default: Default value of the state; can either be a ``torch.Tensor`` or an empty list. The state will be
+            default: Default value of the state; can either be a :class:`~torch.Tensor` or an empty list. The state will be
                 reset to this value when ``self.reset()`` is called.
             dist_reduce_fx (Optional): Function to reduce state across multiple processes in distributed mode.
                 If value is ``"sum"``, ``"mean"``, ``"cat"``, ``"min"`` or ``"max"`` we will use ``torch.sum``,
@@ -171,8 +171,8 @@ class Metric(Module, ABC):
 
             The metric states would be synced as follows
 
-            - If the metric state is ``torch.Tensor``, the synced value will be a stacked ``torch.Tensor`` across
-              the process dimension if the metric state was a ``torch.Tensor``. The original ``torch.Tensor`` metric
+            - If the metric state is :class:`~torch.Tensor`, the synced value will be a stacked :class:`~torch.Tensor` across
+              the process dimension if the metric state was a :class:`~torch.Tensor`. The original :class:`~torch.Tensor` metric
               state retains dimension and hence the synchronized output will be of shape ``(num_process, ...)``.
 
             - If the metric state is a ``list``, the synced value will be a ``list`` containing the
