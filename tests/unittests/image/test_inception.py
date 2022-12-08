@@ -133,7 +133,7 @@ def test_compare_is(tmpdir, compute_on_cpu):
     "normalize, expectation, message",
     [
         (True, does_not_raise(), None),
-        (False, pytest.raises(ValueError), "Expecting image as Tensor with `dtype=torch.uint8`"),
+        (False, pytest.raises(ValueError), "Expecting image as Tensor with dtype=torch.uint8"),
     ],
 )
 def test_normalize_arg(normalize, expectation, message):
