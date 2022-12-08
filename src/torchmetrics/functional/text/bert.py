@@ -274,9 +274,9 @@ def bert_score(
             A user's own tokenizer used with the own model. This must be an instance with the ``__call__`` method.
             This method must take an iterable of sentences (``List[str]``) and must return a python dictionary
             containing ``"input_ids"`` and ``"attention_mask"`` represented by :class:`~torch.Tensor`.
-            It is up to the user's model of whether ``"input_ids"`` is a :class:`~torch.Tensor` of input ids or embedding
-            vectors. his tokenizer must prepend an equivalent of ``[CLS]`` token and append an equivalent of ``[SEP]``
-            token as `transformers` tokenizer does.
+            It is up to the user's model of whether ``"input_ids"`` is a :class:`~torch.Tensor` of input ids
+            or embedding vectors. his tokenizer must prepend an equivalent of ``[CLS]`` token and append an equivalent
+            of ``[SEP]`` token as `transformers` tokenizer does.
         user_forward_fn:
             A user's own forward function used in a combination with ``user_model``.
             This function must take ``user_model`` and a python dictionary of containing ``"input_ids"``
