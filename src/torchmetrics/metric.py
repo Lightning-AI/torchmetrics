@@ -140,15 +140,6 @@ class Metric(Module, ABC):
         self._cache: Optional[Dict[str, Union[List[Tensor], Tensor]]] = None
 
     @property
-    def _update_called(self) -> bool:
-        # Needed for lightning integration
-        rank_zero_warn(
-            "Property `._update_called` have been made public in v0.12 and `.update_called` can therefore"
-            " be used. Will be removed in v0.13"
-        )
-        return self.update_called
-
-    @property
     def update_called(self) -> bool:
         """Returns `True` if `update` or `forward` has been called initialization or last `reset`."""
         return self._update_count > 0
