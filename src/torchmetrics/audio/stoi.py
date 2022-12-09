@@ -39,11 +39,11 @@ class ShortTimeObjectiveIntelligibility(Metric):
     As input to `forward` and `update` the metric accepts the following input
 
     - ``preds`` (:class:`~torch.Tensor`): float tensor with shape ``(...,time)``
-    - ``target`` (: :class:`~torch.Tensor`): float tensor with shape ``(...,time)``
+    - ``target`` (:class:`~torch.Tensor`): float tensor with shape ``(...,time)``
 
     As output of `forward` and `compute` the metric returns the following output
 
-    - ``stoi`` (: :class:`~torch.Tensor`): float scalar tensor
+    - ``stoi`` (:class:`~torch.Tensor`): float scalar tensor
 
     .. note:: using this metrics requires you to have ``pystoi`` install. Either install as ``pip install
         torchmetrics[audio]`` or ``pip install pystoi``.
