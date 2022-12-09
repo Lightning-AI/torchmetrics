@@ -188,7 +188,7 @@ def test_reset_real_features_arg(reset_real_features):
     "normalize, expectation, message",
     [
         (True, does_not_raise(), None),
-        (False, pytest.raises(ValueError), "Expecting image as Tensor with dtype=torch.uint8"),
+        (False, pytest.raises(ValueError), "Expecting image as torch.Tensor with dtype=torch.uint8"),
     ],
 )
 def test_normalize_arg(normalize, expectation, message):
