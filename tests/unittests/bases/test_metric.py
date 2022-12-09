@@ -476,3 +476,23 @@ def test_compute_on_cpu_arg_forward(method):
     val = metric.compute()
     assert all(str(v.device) == "cpu" for v in val)
     assert all(torch.allclose(v, x.cpu()) for v in val)
+
+
+@pytest.mark.parametrize("method", ["forward", "update"])
+@pytest.mark.parametrize("metric", [DummyMetricSum, DummyListMetric])
+def test_update_properties(metric, method):
+    m = metric()
+    x = torch.randn(
+        1,
+    ).squeeze()
+    for i in range(10):
+        if method == "update":
+            m.update(x)
+        if method == "forward":
+            _ = m(x)
+        assert m.update_called
+        assert m.update_count == i + 1
+
+    m.reset()
+    assert not m.update_called
+    assert m.update_count == 0
