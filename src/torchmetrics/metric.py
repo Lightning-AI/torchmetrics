@@ -141,8 +141,19 @@ class Metric(Module, ABC):
 
     @property
     def _update_called(self) -> bool:
-        # Needed for lightning integration
+        # TODO: this is needed for internal lightning, remove after v0.12 and update on lightning side
         return self._update_count > 0
+
+    @property
+    def update_called(self) -> bool:
+        """Returns `True` if `update` or `forward` has been called initialization or last `reset`."""
+        return self._update_count > 0
+
+    @property
+    def update_count(self) -> int:
+        """Get the number of times `update` and/or `forward` has been called since initialization or last
+        `reset`."""
+        return self._update_count
 
     def add_state(
         self,
