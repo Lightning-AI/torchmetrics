@@ -40,11 +40,11 @@ log = logging.getLogger(__name__)
 def compute_area(input: List[Any], iou_type: str = "bbox") -> Tensor:
     """Compute area of input depending on the specified iou_type.
 
-    Default output for empty input is torch.Tensor([])
+    Default output for empty input is :class:`~torch.Tensor`
     """
     if len(input) == 0:
 
-        return torch.Tensor([])
+        return Tensor([])
 
     if iou_type == "bbox":
         return box_area(torch.stack(input))
@@ -124,7 +124,7 @@ class COCOMetricResults(BaseMetricResults):
     )
 
 
-def _segm_iou(det: List[Tuple[np.ndarray, np.ndarray]], gt: List[Tuple[np.ndarray, np.ndarray]]) -> torch.Tensor:
+def _segm_iou(det: List[Tuple[np.ndarray, np.ndarray]], gt: List[Tuple[np.ndarray, np.ndarray]]) -> Tensor:
     """
     Compute IOU between detections and ground-truths using mask-IOU. Based on pycocotools toolkit for mask_utils
     Args:
@@ -431,7 +431,7 @@ class MeanAveragePrecision(Metric):
             current_to_cpu = []
             if isinstance(current_val, Sequence):
                 for cur_v in current_val:
-                    # Cannot handle RLE as torch.Tensor
+                    # Cannot handle RLE as Tensor
                     if not isinstance(cur_v, tuple):
                         cur_v = cur_v.to("cpu")
                     current_to_cpu.append(cur_v)

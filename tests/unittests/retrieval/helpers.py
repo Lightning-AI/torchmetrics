@@ -41,14 +41,14 @@ seed_all(42)
 
 
 def get_group_indexes(indexes: Union[Tensor, np.ndarray]) -> List[Union[Tensor, np.ndarray]]:
-    """Given an integer `torch.Tensor` or `np.ndarray` `indexes`, return a `torch.Tensor` or `np.ndarray` of
-    indexes for each different value in `indexes`.
+    """Given an integer :class:`~torch.Tensor` or `np.ndarray` `indexes`, return a :class:`~torch.Tensor` or
+    `np.ndarray` of indexes for each different value in `indexes`.
 
     Args:
-        indexes: a `torch.Tensor` or `np.ndarray` of integers
+        indexes: a :class:`~torch.Tensor` or `np.ndarray` of integers
 
     Return:
-        A list of integer `torch.Tensor`s or `np.ndarray`s
+        A list of integer :class:`~torch.Tensor`s or `np.ndarray`s
 
     Example:
         >>> indexes = torch.tensor([0, 0, 0, 1, 1, 1, 1])
