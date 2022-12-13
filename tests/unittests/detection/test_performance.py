@@ -19,8 +19,8 @@ def test_performance_with_cuda():
 
 
 @pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
-def test_performance_with_cuda():
-    expected_results = {"init": 0.02504527010023594, "update": 0.11929452884942293, "compute": 1.9458624629769474}
-    results = run_benchmark()
+def test_performance_with_cpu():
+    expected_results = {"init": 0.01885106205008924, "update": 0.08663563523441553, "compute": 1.3717901199124753}
+    results = run_benchmark(device="cpu")
     for name, time in results.items():
         assert np.isclose(expected_results[name], results[name], rtol=1.0)

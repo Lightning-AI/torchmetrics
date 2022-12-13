@@ -30,10 +30,10 @@ def generate(n):
     return {"boxes": boxes, "labels": labels, "scores": scores}
 
 
-def run_benchmark():
+def run_benchmark(device: str = "cuda"):
     with UpdateTime("init"):
         mean_ap = MeanAveragePrecision()
-        # mean_ap.to(device=torch.device("cuda"))
+        mean_ap.to(device=torch.device(device))
 
     for batch_idx in range(100):
         with UpdateTime("update"):
