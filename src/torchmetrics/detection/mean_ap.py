@@ -468,8 +468,8 @@ class MeanAveragePrecision(Metric):
         gt = self.groundtruths[idx]
         det = self.detections[idx]
 
-        gt_label_mask = (self.groundtruth_labels[idx] == class_id).nonzero().squeeze(1)
-        det_label_mask = (self.detection_labels[idx] == class_id).nonzero().squeeze(1)
+        gt_label_mask = (self.groundtruth_labels[idx] == class_id).nonzero().squeeze(1).to(self.device)
+        det_label_mask = (self.detection_labels[idx] == class_id).nonzero().squeeze(1).to(self.device)
 
         if len(gt_label_mask) == 0 or len(det_label_mask) == 0:
             return Tensor([])
@@ -502,7 +502,7 @@ class MeanAveragePrecision(Metric):
         areas = compute_area(gt, iou_type=self.iou_type).to(self.device)
         ignore_area = (areas < area_range[0]) | (areas > area_range[1])
         gt_ignore, _ = torch.sort(ignore_area.to(torch.uint8))
-        gt_ignore = gt_ignore.to(torch.bool)
+        gt_ignore = gt_ignore.to(torch.bool).to(self.device)
 
         # Detections
         nb_det = 0
@@ -530,7 +530,7 @@ class MeanAveragePrecision(Metric):
         det = [det[i] for i in det_label_mask]
         scores = self.detection_scores[idx]
         scores_filtered = scores[det_label_mask]
-        scores_sorted, dtind = torch.sort(scores_filtered, descending=True)
+        scores_sorted, dtind = torch.sort(scores_filtered, descending=True).to(self.device)
 
         det = [det[i] for i in dtind]
         if len(det) > max_det:
@@ -545,8 +545,8 @@ class MeanAveragePrecision(Metric):
             "dtMatches": torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool, device=self.device),
             "gtMatches": torch.zeros((nb_iou_thrs, nb_gt), dtype=torch.bool, device=self.device),
             "dtScores": scores_sorted.to(self.device),
-            "gtIgnore": gt_ignore.to(self.device),
-            "dtIgnore": det_ignore.to(self.device),
+            "gtIgnore": gt_ignore,
+            "dtIgnore": det_ignore,
         }
 
     def _evaluate_image(
@@ -568,8 +568,8 @@ class MeanAveragePrecision(Metric):
         """
         gt = self.groundtruths[idx]
         det = self.detections[idx]
-        gt_label_mask = (self.groundtruth_labels[idx] == class_id).nonzero().squeeze(1)
-        det_label_mask = (self.detection_labels[idx] == class_id).nonzero().squeeze(1)
+        gt_label_mask = (self.groundtruth_labels[idx] == class_id).nonzero().squeeze(1).to(self.device)
+        det_label_mask = (self.detection_labels[idx] == class_id).nonzero().squeeze(1).to(self.device)
 
         # No Gt and No predictions --> ignore image
         if len(gt_label_mask) == 0 and len(det_label_mask) == 0:
@@ -599,7 +599,7 @@ class MeanAveragePrecision(Metric):
         ignore_area = torch.logical_or(areas < area_range[0], areas > area_range[1])
 
         # sort dt highest score first, sort gt ignore last
-        ignore_area_sorted, gtind = torch.sort(ignore_area.to(torch.uint8))
+        ignore_area_sorted, gtind = torch.sort(ignore_area.to(torch.uint8)).to(self.device)
         # Convert to uint8 temporarily and back to bool, because "Sort currently does not support bool dtype on CUDA"
 
         ignore_area_sorted = ignore_area_sorted.to(torch.bool).to(self.device)
