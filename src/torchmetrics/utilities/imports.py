@@ -13,7 +13,7 @@
 # limitations under the License.
 """Import utilities."""
 import operator
-from collections import OrderedDict  # noqa: F401
+from collections import OrderedDict
 from functools import lru_cache
 from importlib import import_module
 from importlib.util import find_spec
