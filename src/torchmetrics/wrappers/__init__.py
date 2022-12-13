@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torchmetrics.wrappers.bootstrapping import BootStrapper  # noqa: F401
-from torchmetrics.wrappers.classwise import ClasswiseWrapper  # noqa: F401
-from torchmetrics.wrappers.minmax import MinMaxMetric  # noqa: F401
-from torchmetrics.wrappers.multioutput import MultioutputWrapper  # noqa: F401
-from torchmetrics.wrappers.tracker import MetricTracker  # noqa: F401
+from torchmetrics.wrappers.bootstrapping import BootStrapper
+from torchmetrics.wrappers.classwise import ClasswiseWrapper
+from torchmetrics.wrappers.minmax import MinMaxMetric
+from torchmetrics.wrappers.multioutput import MultioutputWrapper
+from torchmetrics.wrappers.tracker import MetricTracker
