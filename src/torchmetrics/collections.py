@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# this is just a bypass for this module name collision with build-in one
+from collections import OrderedDict
 from copy import deepcopy
 from typing import Any, Dict, Hashable, Iterable, List, Optional, Sequence, Tuple, Union
 
@@ -21,9 +23,6 @@ from torch.nn import Module, ModuleDict
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import _flatten_dict, allclose
-
-# this is just a bypass for this module name collision with build-in one
-from collections import OrderedDict
 
 
 class MetricCollection(ModuleDict):
