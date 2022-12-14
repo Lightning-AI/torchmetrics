@@ -11,19 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torchmetrics.regression.concordance import ConcordanceCorrCoef
-from torchmetrics.regression.cosine_similarity import CosineSimilarity
-from torchmetrics.regression.explained_variance import ExplainedVariance
-from torchmetrics.regression.kendall import KendallRankCorrCoef
-from torchmetrics.regression.kl_divergence import KLDivergence
-from torchmetrics.regression.log_cosh import LogCoshError
-from torchmetrics.regression.log_mse import MeanSquaredLogError
-from torchmetrics.regression.mae import MeanAbsoluteError
-from torchmetrics.regression.mape import MeanAbsolutePercentageError
-from torchmetrics.regression.mse import MeanSquaredError
-from torchmetrics.regression.pearson import PearsonCorrCoef
-from torchmetrics.regression.r2 import R2Score
-from torchmetrics.regression.spearman import SpearmanCorrCoef
-from torchmetrics.regression.symmetric_mape import SymmetricMeanAbsolutePercentageError
-from torchmetrics.regression.tweedie_deviance import TweedieDevianceScore
-from torchmetrics.regression.wmape import WeightedMeanAbsolutePercentageError
+from torchmetrics.regression.concordance import ConcordanceCorrCoef  # noqa: F401
+from torchmetrics.regression.cosine_similarity import CosineSimilarity  # noqa: F401
+from torchmetrics.regression.explained_variance import ExplainedVariance  # noqa: F401
+from torchmetrics.regression.kendall import KendallRankCorrCoef  # noqa: F401
+from torchmetrics.regression.kl_divergence import KLDivergence  # noqa: F401
+from torchmetrics.regression.log_cosh import LogCoshError  # noqa: F401
+from torchmetrics.regression.log_mse import MeanSquaredLogError  # noqa: F401
+from torchmetrics.regression.mae import MeanAbsoluteError  # noqa: F401
+from torchmetrics.regression.mape import MeanAbsolutePercentageError  # noqa: F401
+from torchmetrics.regression.mse import MeanSquaredError  # noqa: F401
+from torchmetrics.regression.pearson import PearsonCorrCoef  # noqa: F401
+from torchmetrics.regression.r2 import R2Score  # noqa: F401
+from torchmetrics.regression.spearman import SpearmanCorrCoef  # noqa: F401
+from torchmetrics.regression.symmetric_mape import SymmetricMeanAbsolutePercentageError  # noqa: F401
+from torchmetrics.regression.tweedie_deviance import TweedieDevianceScore  # noqa: F401
+from torchmetrics.regression.wmape import WeightedMeanAbsolutePercentageError  # noqa: F401

@@ -14,4 +14,4 @@
 from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 
 if _TRANSFORMERS_AVAILABLE:
-    from torchmetrics.functional.multimodal.clip_score import clip_score
+    from torchmetrics.functional.multimodal.clip_score import clip_score  # noqa: F401

@@ -2,7 +2,7 @@ r"""Root package info."""
 import logging as __logging
 import os
 
-from torchmetrics.__about__ import *
+from torchmetrics.__about__ import *  # noqa: F401, F403
 
 _logger = __logging.getLogger("torchmetrics")
 _logger.addHandler(__logging.StreamHandler())
@@ -11,16 +11,16 @@ _logger.setLevel(__logging.INFO)
 _PACKAGE_ROOT = os.path.dirname(__file__)
 _PROJECT_ROOT = os.path.dirname(_PACKAGE_ROOT)
 
-from torchmetrics import functional
-from torchmetrics.aggregation import CatMetric, MaxMetric, MeanMetric, MinMetric, SumMetric
-from torchmetrics.audio import (
+from torchmetrics import functional  # noqa: E402
+from torchmetrics.aggregation import CatMetric, MaxMetric, MeanMetric, MinMetric, SumMetric  # noqa: E402
+from torchmetrics.audio import (  # noqa: E402
     PermutationInvariantTraining,
     ScaleInvariantSignalDistortionRatio,
     ScaleInvariantSignalNoiseRatio,
     SignalDistortionRatio,
     SignalNoiseRatio,
 )
-from torchmetrics.classification import (
+from torchmetrics.classification import (  # noqa: E402
     AUROC,
     ROC,
     Accuracy,
@@ -42,8 +42,8 @@ from torchmetrics.classification import (
     Specificity,
     StatScores,
 )
-from torchmetrics.collections import MetricCollection
-from torchmetrics.image import (
+from torchmetrics.collections import MetricCollection  # noqa: E402
+from torchmetrics.image import (  # noqa: E402
     ErrorRelativeGlobalDimensionlessSynthesis,
     MultiScaleStructuralSimilarityIndexMeasure,
     PeakSignalNoiseRatio,
@@ -53,9 +53,9 @@ from torchmetrics.image import (
     TotalVariation,
     UniversalImageQualityIndex,
 )
-from torchmetrics.metric import Metric
-from torchmetrics.nominal import CramersV, PearsonsContingencyCoefficient, TheilsU, TschuprowsT
-from torchmetrics.regression import (
+from torchmetrics.metric import Metric  # noqa: E402
+from torchmetrics.nominal import CramersV, PearsonsContingencyCoefficient, TheilsU, TschuprowsT  # noqa: E402
+from torchmetrics.regression import (  # noqa: E402
     ConcordanceCorrCoef,
     CosineSimilarity,
     ExplainedVariance,
@@ -73,7 +73,7 @@ from torchmetrics.regression import (
     TweedieDevianceScore,
     WeightedMeanAbsolutePercentageError,
 )
-from torchmetrics.retrieval import (
+from torchmetrics.retrieval import (  # noqa: E402
     RetrievalFallOut,
     RetrievalHitRate,
     RetrievalMAP,
@@ -85,7 +85,7 @@ from torchmetrics.retrieval import (
     RetrievalRecallAtFixedPrecision,
     RetrievalRPrecision,
 )
-from torchmetrics.text import (
+from torchmetrics.text import (  # noqa: E402
     BLEUScore,
     CharErrorRate,
     CHRFScore,
@@ -99,7 +99,13 @@ from torchmetrics.text import (
     WordInfoLost,
     WordInfoPreserved,
 )
-from torchmetrics.wrappers import BootStrapper, ClasswiseWrapper, MetricTracker, MinMaxMetric, MultioutputWrapper
+from torchmetrics.wrappers import (  # noqa: E402
+    BootStrapper,
+    ClasswiseWrapper,
+    MetricTracker,
+    MinMaxMetric,
+    MultioutputWrapper,
+)
 
 __all__ = [
     "functional",

@@ -11,14 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torchmetrics.functional.image.d_lambda import spectral_distortion_index
-from torchmetrics.functional.image.ergas import error_relative_global_dimensionless_synthesis
-from torchmetrics.functional.image.gradients import image_gradients
-from torchmetrics.functional.image.psnr import peak_signal_noise_ratio
-from torchmetrics.functional.image.sam import spectral_angle_mapper
-from torchmetrics.functional.image.ssim import (
+from torchmetrics.functional.image.d_lambda import spectral_distortion_index  # noqa: F401
+from torchmetrics.functional.image.ergas import error_relative_global_dimensionless_synthesis  # noqa: F401
+from torchmetrics.functional.image.gradients import image_gradients  # noqa: F401
+from torchmetrics.functional.image.psnr import peak_signal_noise_ratio  # noqa: F401
+from torchmetrics.functional.image.sam import spectral_angle_mapper  # noqa: F401
+from torchmetrics.functional.image.ssim import (  # noqa: F401
     multiscale_structural_similarity_index_measure,
     structural_similarity_index_measure,
 )
-from torchmetrics.functional.image.tv import total_variation
-from torchmetrics.functional.image.uqi import universal_image_quality_index
+from torchmetrics.functional.image.tv import total_variation  # noqa: F401
+from torchmetrics.functional.image.uqi import universal_image_quality_index  # noqa: F401
