@@ -1,6 +1,6 @@
-import numpy as np
 import pytest
 import torch
+import numpy as np
 
 from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
 from unittests.detection.benchmark.benchmark_setup import run_benchmark
