@@ -530,7 +530,7 @@ class MeanAveragePrecision(Metric):
         det = [det[i] for i in det_label_mask]
         scores = self.detection_scores[idx]
         scores_filtered = scores[det_label_mask]
-        scores_sorted, dtind = torch.sort(scores_filtered, descending=True).to(self.device)
+        scores_sorted, dtind = torch.sort(scores_filtered, descending=True)
 
         det = [det[i] for i in dtind]
         if len(det) > max_det:
@@ -599,7 +599,7 @@ class MeanAveragePrecision(Metric):
         ignore_area = torch.logical_or(areas < area_range[0], areas > area_range[1])
 
         # sort dt highest score first, sort gt ignore last
-        ignore_area_sorted, gtind = torch.sort(ignore_area.to(torch.uint8)).to(self.device)
+        ignore_area_sorted, gtind = torch.sort(ignore_area.to(torch.uint8))
         # Convert to uint8 temporarily and back to bool, because "Sort currently does not support bool dtype on CUDA"
 
         ignore_area_sorted = ignore_area_sorted.to(torch.bool).to(self.device)
