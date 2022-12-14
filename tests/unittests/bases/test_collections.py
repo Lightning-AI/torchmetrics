@@ -423,7 +423,7 @@ class TestComputeGroups:
             m2.update(preds, target)
 
             for _, member in m.items():
-                assert member._update_called
+                assert member.update_called
 
             assert m.compute_groups == expected
             assert m2.compute_groups == {}
@@ -433,7 +433,7 @@ class TestComputeGroups:
             m2.update(preds, target)
 
             for _, member in m.items():
-                assert member._update_called
+                assert member.update_called
 
             # compare results for correctness
             res_cg = m.compute()
