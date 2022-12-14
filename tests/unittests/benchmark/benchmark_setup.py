@@ -4,6 +4,7 @@ import torch
 
 from torchmetrics.detection import MeanAveragePrecision
 
+torch.manual_seed(1)
 total_time = dict()
 
 
@@ -23,15 +24,27 @@ class UpdateTime:
         return True
 
 
-def generate(n):
-    boxes = torch.rand(n, 4) * 1000
+def generate(n, factor: int = 1000):
+    boxes = torch.rand(n, 4) * factor
     boxes[:, 2:] += boxes[:, :2]
     labels = torch.randint(0, 10, (n,))
     scores = torch.rand(n)
     return {"boxes": boxes, "labels": labels, "scores": scores}
 
 
-def run_benchmark(device: str = "cuda") -> dict[str, float]:
+def run_mean_ap_benchmark(device: str = "cuda") -> dict[str, float]:
+    mean_ap = MeanAveragePrecision()
+    mean_ap.to(device=torch.device(device))
+
+    for batch_idx in range(64):
+        detections = [generate(100, 10) for _ in range(10)]
+        targets = [generate(10, 10) for _ in range(10)]
+        mean_ap.update(detections, targets)
+
+    return mean_ap.compute()
+
+
+def run_speed_benchmark(device: str = "cuda") -> dict[str, float]:
     with UpdateTime("init"):
         mean_ap = MeanAveragePrecision()
         mean_ap.to(device=torch.device(device))
@@ -49,3 +62,9 @@ def run_benchmark(device: str = "cuda") -> dict[str, float]:
             print(f"Error occurred when running compute -> {e}")
 
     return total_time
+
+
+if __name__ == "__main__":
+    results = run_speed_benchmark(device="cpu")
+    for name, time in results.items():
+        print(f"Total time in {name}: {time}")
