@@ -49,7 +49,8 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - uses: ./.github/actions/caching
+    - name: full chashing
+      uses: ./.github/actions/caching
       with:
         os: ${{ runner.os }}
         requires: ${{ matrix.requires }}
