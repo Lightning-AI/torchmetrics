@@ -665,14 +665,6 @@ class MeanAveragePrecision(Metric):
             ious:
                 IoUs for all combinations of detection and ground truth.
         """
-        # previously_matched = gt_matches[idx_iou]
-        # # Remove previously matched or ignored gts
-        # remove_mask = previously_matched | gt_ignore
-        # gt_ious = ious[idx_det] * ~remove_mask
-        # match_idx = gt_ious.argmax().item()
-        # if gt_ious[match_idx] > thr:
-        #     return match_idx
-        # return -1
         remove_mask = gt_matches | gt_ignore
         gt_ious = torch.einsum("cw,dw->cdw", ~remove_mask, ious).max(-1).values
         best_gt_matches = gt_ious.where(
