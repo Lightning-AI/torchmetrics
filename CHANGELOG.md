@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
--
+- Changed `update_count` and `update_called` from private to public methods ([#1370](https://github.com/Lightning-AI/metrics/pull/1370))
 
 
 ### Deprecated
@@ -70,15 +70,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed precision bug in `pairwise_euclidean_distance` ([#1352](https://github.com/Lightning-AI/metrics/pull/1352))
 
-
 ## [0.10.3] - 2022-11-16
 
 ### Fixed
 
 - Fixed bug in `Metrictracker.best_metric` when `return_step=False` ([#1306](https://github.com/Lightning-AI/metrics/pull/1306))
 - Fixed bug to prevent users from going into an infinite loop if trying to iterate of a single metric ([#1320](https://github.com/Lightning-AI/metrics/pull/1320))
-- Fixed bug in `Metrictracker.best_metric` when `return_step=False` ([#1306](https://github.com/Lightning-AI/metrics/pull/1306))
-
 
 ## [0.10.2] - 2022-10-31
 
@@ -299,7 +296,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-- Removed support for versions of [Pytorch-Lightning](https://github.com/PyTorchLightning/pytorch-lightning) lower than v1.5 ([#788](https://github.com/Lightning-AI/metrics/pull/788))
+- Removed support for versions of [Pytorch-Lightning](https://github.com/Lightning-AI/lightning) lower than v1.5 ([#788](https://github.com/Lightning-AI/metrics/pull/788))
 - Removed deprecated functions, and warnings in Text ([#773](https://github.com/Lightning-AI/metrics/pull/773))
   * `WER` and `functional.wer`
 - Removed deprecated functions and warnings in Image ([#796](https://github.com/Lightning-AI/metrics/pull/796))
@@ -709,8 +706,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added `BootStrapper` to easily calculate confidence intervals for metrics ([#101](https://github.com/Lightning-AI/metrics/pull/101))
 - Added Binned metrics  ([#128](https://github.com/Lightning-AI/metrics/pull/128))
-- Added metrics for Information Retrieval ([(PL^5032)](https://github.com/PyTorchLightning/pytorch-lightning/pull/5032)):
-    * `RetrievalMAP` ([PL^5032](https://github.com/PyTorchLightning/pytorch-lightning/pull/5032))
+- Added metrics for Information Retrieval ([(PL^5032)](https://github.com/Lightning-AI/lightning/pull/5032)):
+    * `RetrievalMAP` ([PL^5032](https://github.com/Lightning-AI/lightning/pull/5032))
     * `RetrievalMRR` ([#119](https://github.com/Lightning-AI/metrics/pull/119))
     * `RetrievalPrecision` ([#139](https://github.com/Lightning-AI/metrics/pull/139))
     * `RetrievalRecall` ([#146](https://github.com/Lightning-AI/metrics/pull/146))
@@ -753,7 +750,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fixed when `_stable_1d_sort` to work when `n>=N` ([PL^6177](https://github.com/PyTorchLightning/pytorch-lightning/pull/6177))
+- Fixed when `_stable_1d_sort` to work when `n>=N` ([PL^6177](https://github.com/Lightning-AI/lightning/pull/6177))
 - Fixed `_computed` attribute not being correctly reset ([#147](https://github.com/Lightning-AI/metrics/pull/147))
 - Fixed to Blau score ([#165](https://github.com/Lightning-AI/metrics/pull/165))
 - Fixed backwards compatibility for logging with older version of pytorch-lightning ([#182](https://github.com/Lightning-AI/metrics/pull/182))
@@ -777,29 +774,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.0] - 2021-02-22
 
-- Added `Accuracy` metric now generalizes to Top-k accuracy for (multi-dimensional) multi-class inputs using the `top_k` parameter ([PL^4838](https://github.com/PyTorchLightning/pytorch-lightning/pull/4838))
-- Added `Accuracy` metric now enables the computation of subset accuracy for multi-label or multi-dimensional multi-class inputs with the `subset_accuracy` parameter ([PL^4838](https://github.com/PyTorchLightning/pytorch-lightning/pull/4838))
-- Added `HammingDistance` metric to compute the hamming distance (loss) ([PL^4838](https://github.com/PyTorchLightning/pytorch-lightning/pull/4838))
-- Added `StatScores` metric to compute the number of true positives, false positives, true negatives and false negatives ([PL^4839](https://github.com/PyTorchLightning/pytorch-lightning/pull/4839))
-- Added `R2Score` metric ([PL^5241](https://github.com/PyTorchLightning/pytorch-lightning/pull/5241))
-- Added `MetricCollection` ([PL^4318](https://github.com/PyTorchLightning/pytorch-lightning/pull/4318))
-- Added `.clone()` method to metrics ([PL^4318](https://github.com/PyTorchLightning/pytorch-lightning/pull/4318))
-- Added `IoU` class interface ([PL^4704](https://github.com/PyTorchLightning/pytorch-lightning/pull/4704))
-- The `Recall` and `Precision` metrics (and their functional counterparts `recall` and `precision`) can now be generalized to Recall@K and Precision@K with the use of `top_k` parameter ([PL^4842](https://github.com/PyTorchLightning/pytorch-lightning/pull/4842))
-- Added compositional metrics ([PL^5464](https://github.com/PyTorchLightning/pytorch-lightning/pull/5464))
-- Added AUC/AUROC class interface ([PL^5479](https://github.com/PyTorchLightning/pytorch-lightning/pull/5479))
-- Added `QuantizationAwareTraining` callback ([PL^5706](https://github.com/PyTorchLightning/pytorch-lightning/pull/5706))
-- Added `ConfusionMatrix` class interface ([PL^4348](https://github.com/PyTorchLightning/pytorch-lightning/pull/4348))
-- Added multiclass AUROC metric ([PL^4236](https://github.com/PyTorchLightning/pytorch-lightning/pull/4236))
-- Added `PrecisionRecallCurve, ROC, AveragePrecision` class metric ([PL^4549](https://github.com/PyTorchLightning/pytorch-lightning/pull/4549))
-- Classification metrics overhaul ([PL^4837](https://github.com/PyTorchLightning/pytorch-lightning/pull/4837))
-- Added `F1` class metric ([PL^4656](https://github.com/PyTorchLightning/pytorch-lightning/pull/4656))
-- Added metrics aggregation in Horovod and fixed early stopping ([PL^3775](https://github.com/PyTorchLightning/pytorch-lightning/pull/3775))
-- Added `persistent(mode)` method to metrics, to enable and disable metric states being added to `state_dict` ([PL^4482](https://github.com/PyTorchLightning/pytorch-lightning/pull/4482))
-- Added unification of regression metrics ([PL^4166](https://github.com/PyTorchLightning/pytorch-lightning/pull/4166))
-- Added persistent flag to `Metric.add_state` ([PL^4195](https://github.com/PyTorchLightning/pytorch-lightning/pull/4195))
-- Added classification metrics ([PL^4043](https://github.com/PyTorchLightning/pytorch-lightning/pull/4043))
-- Added new Metrics API. ([PL^3868](https://github.com/PyTorchLightning/pytorch-lightning/pull/3868), [PL^3921](https://github.com/PyTorchLightning/pytorch-lightning/pull/3921))
-- Added EMB similarity ([PL^3349](https://github.com/PyTorchLightning/pytorch-lightning/pull/3349))
-- Added SSIM metrics ([PL^2671](https://github.com/PyTorchLightning/pytorch-lightning/pull/2671))
-- Added BLEU metrics ([PL^2535](https://github.com/PyTorchLightning/pytorch-lightning/pull/2535))
+- Added `Accuracy` metric now generalizes to Top-k accuracy for (multi-dimensional) multi-class inputs using the `top_k` parameter ([PL^4838](https://github.com/Lightning-AI/lightning/pull/4838))
+- Added `Accuracy` metric now enables the computation of subset accuracy for multi-label or multi-dimensional multi-class inputs with the `subset_accuracy` parameter ([PL^4838](https://github.com/Lightning-AI/lightning/pull/4838))
+- Added `HammingDistance` metric to compute the hamming distance (loss) ([PL^4838](https://github.com/Lightning-AI/lightning/pull/4838))
+- Added `StatScores` metric to compute the number of true positives, false positives, true negatives and false negatives ([PL^4839](https://github.com/Lightning-AI/lightning/pull/4839))
+- Added `R2Score` metric ([PL^5241](https://github.com/Lightning-AI/lightning/pull/5241))
+- Added `MetricCollection` ([PL^4318](https://github.com/Lightning-AI/lightning/pull/4318))
+- Added `.clone()` method to metrics ([PL^4318](https://github.com/Lightning-AI/lightning/pull/4318))
+- Added `IoU` class interface ([PL^4704](https://github.com/Lightning-AI/lightning/pull/4704))
+- The `Recall` and `Precision` metrics (and their functional counterparts `recall` and `precision`) can now be generalized to Recall@K and Precision@K with the use of `top_k` parameter ([PL^4842](https://github.com/Lightning-AI/lightning/pull/4842))
+- Added compositional metrics ([PL^5464](https://github.com/Lightning-AI/lightning/pull/5464))
+- Added AUC/AUROC class interface ([PL^5479](https://github.com/Lightning-AI/lightning/pull/5479))
+- Added `QuantizationAwareTraining` callback ([PL^5706](https://github.com/Lightning-AI/lightning/pull/5706))
+- Added `ConfusionMatrix` class interface ([PL^4348](https://github.com/Lightning-AI/lightning/pull/4348))
+- Added multiclass AUROC metric ([PL^4236](https://github.com/Lightning-AI/lightning/pull/4236))
+- Added `PrecisionRecallCurve, ROC, AveragePrecision` class metric ([PL^4549](https://github.com/Lightning-AI/lightning/pull/4549))
+- Classification metrics overhaul ([PL^4837](https://github.com/Lightning-AI/lightning/pull/4837))
+- Added `F1` class metric ([PL^4656](https://github.com/Lightning-AI/lightning/pull/4656))
+- Added metrics aggregation in Horovod and fixed early stopping ([PL^3775](https://github.com/Lightning-AI/lightning/pull/3775))
+- Added `persistent(mode)` method to metrics, to enable and disable metric states being added to `state_dict` ([PL^4482](https://github.com/Lightning-AI/lightning/pull/4482))
+- Added unification of regression metrics ([PL^4166](https://github.com/Lightning-AI/lightning/pull/4166))
+- Added persistent flag to `Metric.add_state` ([PL^4195](https://github.com/Lightning-AI/lightning/pull/4195))
+- Added classification metrics ([PL^4043](https://github.com/Lightning-AI/lightning/pull/4043))
+- Added new Metrics API. ([PL^3868](https://github.com/Lightning-AI/lightning/pull/3868), [PL^3921](https://github.com/Lightning-AI/lightning/pull/3921))
+- Added EMB similarity ([PL^3349](https://github.com/Lightning-AI/lightning/pull/3349))
+- Added SSIM metrics ([PL^2671](https://github.com/Lightning-AI/lightning/pull/2671))
+- Added BLEU metrics ([PL^2535](https://github.com/Lightning-AI/lightning/pull/2535))
