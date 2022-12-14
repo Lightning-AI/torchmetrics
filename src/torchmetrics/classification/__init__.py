@@ -119,7 +119,6 @@ __all__ = [
     "BinaryAccuracy",
     "MulticlassAccuracy",
     "MultilabelAccuracy",
-    "AUC",
     "AUROC",
     "BinaryAUROC",
     "MulticlassAUROC",
