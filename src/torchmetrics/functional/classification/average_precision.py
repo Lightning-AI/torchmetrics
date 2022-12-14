@@ -101,7 +101,7 @@ def binary_average_precision(
       observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
       sigmoid per element.
     - ``target`` (int tensor): ``(N, ...)``. Target should be a tensor containing ground truth labels, and therefore
-      only contain {0,1} values (except if `ignore_index` is specified).
+      only contain {0,1} values (except if `ignore_index` is specified). The value 1 always encodes the positive class.
 
     Additional dimension ``...`` will be flattened into the batch dimension.
 
