@@ -126,8 +126,9 @@ class COCOMetricResults(BaseMetricResults):
     )
 
 
-def _segm_iou(det: List[Tuple[np.ndarray, np.ndarray]], gt: List[Tuple[np.ndarray, np.ndarray]],
-              device: torch.device) -> Tensor:
+def _segm_iou(
+    det: List[Tuple[np.ndarray, np.ndarray]], gt: List[Tuple[np.ndarray, np.ndarray]], device: torch.device
+) -> Tensor:
     """
     Compute IOU between detections and ground-truths using mask-IOU. Based on pycocotools toolkit for mask_utils
 
@@ -627,8 +628,9 @@ class MeanAveragePrecision(Metric):
             best_matches = self._find_best_gt_matches(iou_thresholds, gt_matches, gt_ignore, ious)
             _zero_tensor = torch.tensor(0, dtype=torch.bool, device=self.device)
             _one_tensor = torch.tensor(1, dtype=torch.bool, device=self.device)
-            det_ignore = torch.where(best_matches != -1, gt_ignore[best_matches.clamp(max=gt_ignore.shape[0] - 1)],
-                                     _zero_tensor)
+            det_ignore = torch.where(
+                best_matches != -1, gt_ignore[best_matches.clamp(max=gt_ignore.shape[0] - 1)], _zero_tensor
+            )
             det_matches = torch.where(best_matches != -1, _one_tensor, _zero_tensor)
             for idx in range(nb_iou_thrs):
                 gt_matches[idx, best_matches[idx].clamp(0, max=gt_matches.shape[1] - 1).unique()] = 1
