@@ -448,7 +448,7 @@ class MeanAveragePrecision(Metric):
         if self.iou_type == "segm":
             masks = []
 
-            for i in item["masks"].to(self.device).numpy():
+            for i in item["masks"].to(self.device):
                 rle = mask_utils.encode(np.asfortranarray(i))
                 masks.append((tuple(rle["size"]), rle["counts"]))
             return tuple(masks)
