@@ -12,7 +12,7 @@ _gpu_test_condition = not torch.cuda.is_available()
 @pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
 @pytest.mark.skipif(_gpu_test_condition, reason="test requires CUDA availability")
 def test_performance_with_cuda():
-    expected_results = {"init": 1.0296829228755087, "update": 0.07939263735897839, "compute": 2.355824921047315}
+    expected_results = {"init": 1.5171937870327383, "update": 0.11278650932945311, "compute": 146.6234815029893}
     results = run_benchmark()
     for name, time in results.items():
         assert np.isclose(expected_results[name], results[name], rtol=1.0)
@@ -20,7 +20,7 @@ def test_performance_with_cuda():
 
 @pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
 def test_performance_with_cpu():
-    expected_results = {"init": 0.01885106205008924, "update": 0.08663563523441553, "compute": 1.3717901199124753}
+    expected_results = {"init": 0.025219694012776017, "update": 0.11010122182779014, "compute": 77.43531435285695}
     results = run_benchmark(device="cpu")
     for name, time in results.items():
         assert np.isclose(expected_results[name], results[name], rtol=1.0)
