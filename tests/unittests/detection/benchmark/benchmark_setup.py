@@ -1,4 +1,5 @@
 import time
+
 import torch
 
 from torchmetrics.detection import MeanAveragePrecision
