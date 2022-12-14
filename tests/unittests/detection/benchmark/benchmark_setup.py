@@ -31,7 +31,7 @@ def generate(n):
     return {"boxes": boxes, "labels": labels, "scores": scores}
 
 
-def run_benchmark(device: str = "cuda"):
+def run_benchmark(device: str = "cuda") -> dict[str, float]:
     with UpdateTime("init"):
         mean_ap = MeanAveragePrecision()
         mean_ap.to(device=torch.device(device))
@@ -43,6 +43,9 @@ def run_benchmark(device: str = "cuda"):
             mean_ap.update(detections, targets)
 
     with UpdateTime("compute"):
-        mean_ap.compute()
+        try:
+            mean_ap.compute()
+        except Exception as e:
+            print(f"Error occurred when running compute -> {e}")
 
     return total_time
