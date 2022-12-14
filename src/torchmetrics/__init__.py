@@ -54,7 +54,7 @@ from torchmetrics.image import (  # noqa: E402
     UniversalImageQualityIndex,
 )
 from torchmetrics.metric import Metric  # noqa: E402
-from torchmetrics.nominal import CramersV, PearsonsContingencyCoefficient, TheilsU, TschuprowsT  # noqa: E
+from torchmetrics.nominal import CramersV, PearsonsContingencyCoefficient, TheilsU, TschuprowsT  # noqa: E402
 from torchmetrics.regression import (  # noqa: E402
     ConcordanceCorrCoef,
     CosineSimilarity,
