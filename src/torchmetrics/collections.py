@@ -23,7 +23,7 @@ from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import _flatten_dict, allclose
 
 # this is just a bypass for this module name collision with build-in one
-from torchmetrics.utilities.imports import OrderedDict
+from collections import OrderedDict
 
 
 class MetricCollection(ModuleDict):
