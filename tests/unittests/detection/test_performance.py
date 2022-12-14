@@ -3,7 +3,7 @@ import pytest
 import torch
 
 from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
-from unittests.detection.benchmark.benchmark_setup import run_benchmark
+from unittests.benchmark.benchmark_setup import run_benchmark
 
 _pytest_condition = not (_TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8)
 _gpu_test_condition = not torch.cuda.is_available()
