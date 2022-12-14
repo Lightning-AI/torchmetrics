@@ -12,10 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from torchmetrics.functional.audio.pit import permutation_invariant_training, pit_permutate
-from torchmetrics.functional.audio.sdr import (
-    scale_invariant_signal_distortion_ratio,
-    signal_distortion_ratio,
-)
+from torchmetrics.functional.audio.sdr import scale_invariant_signal_distortion_ratio, signal_distortion_ratio
 from torchmetrics.functional.audio.snr import scale_invariant_signal_noise_ratio, signal_noise_ratio
 from torchmetrics.utilities.imports import _PESQ_AVAILABLE, _PYSTOI_AVAILABLE
 
