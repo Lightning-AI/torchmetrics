@@ -99,13 +99,7 @@ from torchmetrics.text import (
     WordInfoLost,
     WordInfoPreserved,
 )
-from torchmetrics.wrappers import (
-    BootStrapper,
-    ClasswiseWrapper,
-    MetricTracker,
-    MinMaxMetric,
-    MultioutputWrapper,
-)
+from torchmetrics.wrappers import BootStrapper, ClasswiseWrapper, MetricTracker, MinMaxMetric, MultioutputWrapper
 
 __all__ = [
     "functional",
