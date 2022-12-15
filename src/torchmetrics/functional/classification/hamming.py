@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Tuple, Union
+from typing import Optional
 
 import torch
 from torch import Tensor
@@ -31,9 +31,7 @@ from torchmetrics.functional.classification.stat_scores import (
     _multilabel_stat_scores_tensor_validation,
     _multilabel_stat_scores_update,
 )
-from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.compute import _safe_divide
-from torchmetrics.utilities.prints import rank_zero_warn
 
 
 def _hamming_distance_reduce(
@@ -388,70 +386,20 @@ def multilabel_hamming_distance(
     return _hamming_distance_reduce(tp, fp, tn, fn, average=average, multidim_average=multidim_average, multilabel=True)
 
 
-def _hamming_distance_update(
-    preds: Tensor,
-    target: Tensor,
-    threshold: float = 0.5,
-) -> Tuple[Tensor, int]:
-    """Returns the number of positions where prediction equals target, and number of predictions.
-
-    Args:
-        preds: Predicted tensor
-        target: Ground truth tensor
-        threshold: Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
-            of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
-    """
-
-    preds, target, _ = _input_format_classification(preds, target, threshold=threshold)
-
-    correct = (preds == target).sum()
-    total = preds.numel()
-
-    return correct, total
-
-
-def _hamming_distance_compute(correct: Tensor, total: Union[int, Tensor]) -> Tensor:
-    """Computes the Hamming distance.
-
-    Args:
-        correct: Number of positions where prediction equals target
-        total: Total number of predictions
-
-    Example:
-        >>> target = torch.tensor([[0, 1], [1, 1]])
-        >>> preds = torch.tensor([[0, 1], [0, 1]])
-        >>> correct, total = _hamming_distance_update(preds, target)
-        >>> _hamming_distance_compute(correct, total)
-        tensor(0.2500)
-    """
-
-    return 1 - correct.float() / total
-
-
 def hamming_distance(
     preds: Tensor,
     target: Tensor,
+    task: Literal["binary", "multiclass", "multilabel"],
     threshold: float = 0.5,
-    task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
     num_classes: Optional[int] = None,
     num_labels: Optional[int] = None,
-    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
-    top_k: int = 1,
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
     multidim_average: Optional[Literal["global", "samplewise"]] = "global",
+    top_k: Optional[int] = 1,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Hamming distance.
-
-    .. note::
-        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
-        metric. Moving forward we recommend using these versions. This base metric will still work as it did
-        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
-        and the general order of arguments may change, such that this metric will just function as an single
-        entrypoint to calling the three specialized versions.
-
-    Computes the average `Hamming distance`_ (also
-    known as Hamming loss) between targets and predictions:
+    r"""Computes the average `Hamming distance`_ (also known as Hamming loss):
 
     .. math::
         \text{Hamming distance} = \frac{1}{N \cdot L} \sum_i^N \sum_l^L 1(y_{il} \neq \hat{y}_{il})
@@ -460,51 +408,31 @@ def hamming_distance(
     and :math:`\bullet_{il}` refers to the :math:`l`-th label of the :math:`i`-th sample of that
     tensor.
 
-    This is the same as ``1-accuracy`` for binary data, while for all other types of inputs it
-    treats each possible label separately - meaning that, for example, multi-class data is
-    treated as if it were multi-label.
+    This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    :func:`binary_hamming_distance`, :func:`multiclass_hamming_distance` and :func:`multilabel_hamming_distance` for
+    the specific details of each argument influence and examples.
 
-    Args:
-        preds: Predictions from model (probabilities, logits or labels)
-        target: Ground truth
-        threshold:
-            Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
-            of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
-
-    Example:
-        >>> from torchmetrics.functional import hamming_distance
+    Legacy Example:
         >>> target = torch.tensor([[0, 1], [1, 1]])
         >>> preds = torch.tensor([[0, 1], [0, 1]])
-        >>> hamming_distance(preds, target)
+        >>> hamming_distance(preds, target, task="binary")
         tensor(0.2500)
     """
-    if task is not None:
-        assert multidim_average is not None
-        if task == "binary":
-            return binary_hamming_distance(preds, target, threshold, multidim_average, ignore_index, validate_args)
-        if task == "multiclass":
-            assert isinstance(num_classes, int)
-            assert isinstance(top_k, int)
-            return multiclass_hamming_distance(
-                preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args
-            )
-        if task == "multilabel":
-            assert isinstance(num_labels, int)
-            return multilabel_hamming_distance(
-                preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
-            )
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+    assert multidim_average is not None
+    if task == "binary":
+        return binary_hamming_distance(preds, target, threshold, multidim_average, ignore_index, validate_args)
+    if task == "multiclass":
+        assert isinstance(num_classes, int)
+        assert isinstance(top_k, int)
+        return multiclass_hamming_distance(
+            preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args
         )
-    else:
-        rank_zero_warn(
-            "From v0.10 an `'binary_*'`, `'multiclass_*'`, `'multilabel_*'` version now exist of each classification"
-            " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
-            " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
-            " and the general order of arguments may change, such that this metric will just function as an single"
-            " entrypoint to calling the three specialized versions.",
-            DeprecationWarning,
+    if task == "multilabel":
+        assert isinstance(num_labels, int)
+        return multilabel_hamming_distance(
+            preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
         )
-
-    correct, total = _hamming_distance_update(preds, target, threshold)
-    return _hamming_distance_compute(correct, total)
+    raise ValueError(
+        f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+    )

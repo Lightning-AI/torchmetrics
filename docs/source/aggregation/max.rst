@@ -14,3 +14,4 @@ ________________
 
 .. autoclass:: torchmetrics.MaxMetric
     :noindex:
+    :exclude-members: update, compute

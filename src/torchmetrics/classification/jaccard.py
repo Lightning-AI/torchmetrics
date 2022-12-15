@@ -18,15 +18,12 @@ from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.classification import BinaryConfusionMatrix, MulticlassConfusionMatrix, MultilabelConfusionMatrix
-from torchmetrics.classification.confusion_matrix import ConfusionMatrix
 from torchmetrics.functional.classification.jaccard import (
-    _jaccard_from_confmat,
     _jaccard_index_reduce,
     _multiclass_jaccard_index_arg_validation,
     _multilabel_jaccard_index_arg_validation,
 )
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.prints import rank_zero_warn
 
 
 class BinaryJaccardIndex(BinaryConfusionMatrix):
@@ -50,12 +47,6 @@ class BinaryJaccardIndex(BinaryConfusionMatrix):
         threshold: Threshold for transforming probability to binary (0,1) predictions
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
-        normalize: Normalization mode for confusion matrix. Choose from:
-
-            - ``None`` or ``'none'``: no normalization (default)
-            - ``'true'``: normalization over the targets (most commonly used)
-            - ``'pred'``: normalization over the predictions
-            - ``'all'``: normalization over the whole matrix
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
@@ -255,154 +246,48 @@ class MultilabelJaccardIndex(MultilabelConfusionMatrix):
         return _jaccard_index_reduce(self.confmat, average=self.average)
 
 
-class JaccardIndex(ConfusionMatrix):
-    r"""Jaccard Index.
-
-    .. note::
-        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
-        metric. Moving forward we recommend using these versions. This base metric will still work as it did
-        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
-        and the general order of arguments may change, such that this metric will just function as an single
-        entrypoint to calling the three specialized versions.
-
-    Computes Intersection over union, or `Jaccard index`_:
+class JaccardIndex:
+    r"""Calculates the Jaccard index for multilabel tasks. The `Jaccard index`_ (also known as the intersetion over
+    union or jaccard similarity coefficient) is an statistic that can be used to determine the similarity and
+    diversity of a sample set. It is defined as the size of the intersection divided by the union of the sample
+    sets:
 
     .. math:: J(A,B) = \frac{|A\cap B|}{|A\cup B|}
 
-    Where: :math:`A` and :math:`B` are both tensors of the same size, containing integer class values.
-    They may be subject to conversion from input data (see description below). Note that it is different from box IoU.
+    This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    :mod:`BinaryJaccardIndex`, :mod:`MulticlassJaccardIndex` and :mod:`MultilabelJaccardIndex` for
+    the specific details of each argument influence and examples.
 
-    Works with binary, multiclass and multi-label data.
-    Accepts probabilities from a model output or integer class values in prediction.
-    Works with multi-dimensional preds and target.
-
-    Forward accepts
-
-    - ``preds`` (float or long tensor): ``(N, ...)`` or ``(N, C, ...)`` where C is the number of classes
-    - ``target`` (long tensor): ``(N, ...)``
-
-    If preds and target are the same shape and preds is a float tensor, we use the ``self.threshold`` argument
-    to convert into integer labels. This is the case for binary and multi-label probabilities.
-
-    If preds has an extra dimension as in the case of multi-class scores we perform an argmax on ``dim=1``.
-
-    Args:
-        num_classes: Number of classes in the dataset.
-        average:
-            Defines the reduction that is applied. Should be one of the following:
-
-            - ``'macro'`` [default]: Calculate the metric for each class separately, and average the
-              metrics across classes (with equal weights for each class).
-            - ``'micro'``: Calculate the metric globally, across all samples and classes.
-            - ``'weighted'``: Calculate the metric for each class separately, and average the
-              metrics across classes, weighting each class by its support (``tp + fn``).
-            - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
-              the metric for every class. Note that if a given class doesn't occur in the
-              `preds` or `target`, the value for the class will be ``nan``.
-
-        ignore_index: optional int specifying a target class to ignore. If given, this class index does not contribute
-            to the returned score, regardless of reduction method. Has no effect if given an int that is not in the
-            range [0, num_classes-1]. By default, no index is ignored, and all classes are used.
-        absent_score: score to use for an individual class, if no instances of the class index were present in
-            ``preds`` AND no instances of the class index were present in ``target``. For example, if we have 3 classes,
-            [0, 0] for ``preds``, and [0, 2] for ``target``, then class 1 would be assigned the `absent_score`.
-        threshold: Threshold value for binary or multi-label probabilities.
-        multilabel: determines if data is multilabel or not.
-        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
-
-    Example:
-        >>> from torchmetrics import JaccardIndex
+    Legacy Example:
         >>> target = torch.randint(0, 2, (10, 25, 25))
         >>> pred = torch.tensor(target)
         >>> pred[2:5, 7:13, 9:15] = 1 - pred[2:5, 7:13, 9:15]
-        >>> jaccard = JaccardIndex(num_classes=2)
+        >>> jaccard = JaccardIndex(task="multiclass", num_classes=2)
         >>> jaccard(pred, target)
         tensor(0.9660)
     """
-    is_differentiable: bool = False
-    higher_is_better: bool = True
-    full_state_update: bool = False
 
     def __new__(
         cls,
-        num_classes: int,
+        task: Literal["binary", "multiclass", "multilabel"],
+        threshold: float = 0.5,
+        num_classes: Optional[int] = None,
+        num_labels: Optional[int] = None,
         average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
         ignore_index: Optional[int] = None,
-        absent_score: float = 0.0,
-        threshold: float = 0.5,
-        multilabel: bool = False,
-        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
-        num_labels: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
-        if task is not None:
-            kwargs.update(dict(ignore_index=ignore_index, validate_args=validate_args))
-            if task == "binary":
-                return BinaryJaccardIndex(threshold, **kwargs)
-            if task == "multiclass":
-                assert isinstance(num_classes, int)
-                return MulticlassJaccardIndex(num_classes, average, **kwargs)
-            if task == "multilabel":
-                assert isinstance(num_labels, int)
-                return MultilabelJaccardIndex(num_labels, threshold, average, **kwargs)
-            raise ValueError(
-                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-            )
-        else:
-            rank_zero_warn(
-                "From v0.10 an `'Binary*'`, `'Multiclass*', `'Multilabel*'` version now exist of each classification"
-                " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
-                " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
-                " and the general order of arguments may change, such that this metric will just function as an single"
-                " entrypoint to calling the three specialized versions.",
-                DeprecationWarning,
-            )
-        return super().__new__(cls)
-
-    def __init__(
-        self,
-        num_classes: int,
-        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
-        ignore_index: Optional[int] = None,
-        absent_score: float = 0.0,
-        threshold: float = 0.5,
-        multilabel: bool = False,
-        **kwargs: Any,
-    ) -> None:
-        kwargs["normalize"] = kwargs.get("normalize")
-
-        super().__init__(
-            num_classes=num_classes,
-            threshold=threshold,
-            multilabel=multilabel,
-            **kwargs,
+        kwargs.update(dict(ignore_index=ignore_index, validate_args=validate_args))
+        if task == "binary":
+            return BinaryJaccardIndex(threshold, **kwargs)
+        if task == "multiclass":
+            assert isinstance(num_classes, int)
+            return MulticlassJaccardIndex(num_classes, average, **kwargs)
+        if task == "multilabel":
+            assert isinstance(num_labels, int)
+            return MultilabelJaccardIndex(num_labels, threshold, average, **kwargs)
+        raise ValueError(
+            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
         )
-        self.average = average
-        self.ignore_index = ignore_index
-        self.absent_score = absent_score
-
-    def compute(self) -> Tensor:
-        """Computes intersection over union (IoU)"""
-
-        if self.multilabel:
-            return torch.stack(
-                [
-                    _jaccard_from_confmat(
-                        confmat,
-                        2,
-                        self.average,
-                        self.ignore_index,
-                        self.absent_score,
-                    )[1]
-                    for confmat in self.confmat
-                ]
-            )
-        else:
-            return _jaccard_from_confmat(
-                self.confmat,
-                self.num_classes,
-                self.average,
-                self.ignore_index,
-                self.absent_score,
-            )

@@ -29,6 +29,7 @@ from torchmetrics.classification import (  # noqa: E402
     CohenKappa,
     ConfusionMatrix,
     Dice,
+    ExactMatch,
     F1Score,
     FBetaScore,
     HammingDistance,
@@ -53,6 +54,7 @@ from torchmetrics.image import (  # noqa: E402
     UniversalImageQualityIndex,
 )
 from torchmetrics.metric import Metric  # noqa: E402
+from torchmetrics.nominal import CramersV, PearsonsContingencyCoefficient, TheilsU, TschuprowsT  # noqa: E402
 from torchmetrics.regression import (  # noqa: E402
     ConcordanceCorrCoef,
     CosineSimilarity,
@@ -121,9 +123,11 @@ __all__ = [
     "CohenKappa",
     "ConfusionMatrix",
     "CosineSimilarity",
+    "CramersV",
     "Dice",
     "TweedieDevianceScore",
     "ErrorRelativeGlobalDimensionlessSynthesis",
+    "ExactMatch",
     "ExplainedVariance",
     "ExtendedEditDistance",
     "F1Score",
@@ -150,6 +154,7 @@ __all__ = [
     "MultioutputWrapper",
     "MultiScaleStructuralSimilarityIndexMeasure",
     "PearsonCorrCoef",
+    "PearsonsContingencyCoefficient",
     "PermutationInvariantTraining",
     "Perplexity",
     "Precision",
@@ -182,8 +187,10 @@ __all__ = [
     "StatScores",
     "SumMetric",
     "SymmetricMeanAbsolutePercentageError",
+    "TheilsU",
     "TotalVariation",
     "TranslationEditRate",
+    "TschuprowsT",
     "UniversalImageQualityIndex",
     "WeightedMeanAbsolutePercentageError",
     "WordErrorRate",

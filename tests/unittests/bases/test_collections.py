@@ -18,18 +18,20 @@ from copy import deepcopy
 import pytest
 import torch
 
-from torchmetrics import (
-    AUROC,
-    Accuracy,
-    AveragePrecision,
-    CohenKappa,
-    ConfusionMatrix,
-    F1Score,
-    MatthewsCorrCoef,
-    Metric,
-    MetricCollection,
-    Precision,
-    Recall,
+from torchmetrics import Metric, MetricCollection
+from torchmetrics.classification import (
+    BinaryAccuracy,
+    MulticlassAccuracy,
+    MulticlassAUROC,
+    MulticlassAveragePrecision,
+    MulticlassCohenKappa,
+    MulticlassConfusionMatrix,
+    MulticlassF1Score,
+    MulticlassMatthewsCorrCoef,
+    MulticlassPrecision,
+    MulticlassRecall,
+    MultilabelAUROC,
+    MultilabelAveragePrecision,
 )
 from torchmetrics.utilities.checks import _allclose_recursive
 from unittests.helpers import seed_all
@@ -293,15 +295,15 @@ def test_collection_filtering():
         def compute(self):
             return
 
-    mc = MetricCollection([Accuracy(), DummyMetric()])
+    mc = MetricCollection([BinaryAccuracy(), DummyMetric()])
     mc2 = MetricCollection([MyAccuracy(), DummyMetric()])
     mc(torch.tensor([0, 1]), torch.tensor([0, 1]), kwarg="kwarg")
     mc2(torch.tensor([0, 1]), torch.tensor([0, 1]), kwarg="kwarg", kwarg2="kwarg2")
 
 
 # function for generating
-_mc_preds = torch.randn(10, 3).softmax(dim=-1)
-_mc_target = torch.randint(3, (10,))
+_mc_preds = torch.randn(10, 3, 2).softmax(dim=1)
+_mc_target = torch.randint(3, (10, 2))
 _ml_preds = torch.rand(10, 3)
 _ml_target = torch.randint(2, (10, 3))
 
@@ -310,29 +312,49 @@ _ml_target = torch.randint(2, (10, 3))
     "metrics, expected, preds, target",
     [
         # single metric forms its own compute group
-        (Accuracy(3), {0: ["Accuracy"]}, _mc_preds, _mc_target),
+        (MulticlassAccuracy(num_classes=3), {0: ["MulticlassAccuracy"]}, _mc_preds, _mc_target),
         # two metrics of same class forms a compute group
-        ({"acc0": Accuracy(3), "acc1": Accuracy(3)}, {0: ["acc0", "acc1"]}, _mc_preds, _mc_target),
+        (
+            {"acc0": MulticlassAccuracy(num_classes=3), "acc1": MulticlassAccuracy(num_classes=3)},
+            {0: ["acc0", "acc1"]},
+            _mc_preds,
+            _mc_target,
+        ),
         # two metrics from registry froms a compute group
-        ([Precision(3), Recall(3)], {0: ["Precision", "Recall"]}, _mc_preds, _mc_target),
+        (
+            [MulticlassPrecision(num_classes=3), MulticlassRecall(num_classes=3)],
+            {0: ["MulticlassPrecision", "MulticlassRecall"]},
+            _mc_preds,
+            _mc_target,
+        ),
         # two metrics from different classes gives two compute groups
-        ([ConfusionMatrix(3), Recall(3)], {0: ["ConfusionMatrix"], 1: ["Recall"]}, _mc_preds, _mc_target),
+        (
+            [MulticlassConfusionMatrix(num_classes=3), MulticlassRecall(num_classes=3)],
+            {0: ["MulticlassConfusionMatrix"], 1: ["MulticlassRecall"]},
+            _mc_preds,
+            _mc_target,
+        ),
         # multi group multi metric
         (
-            [ConfusionMatrix(3), CohenKappa(3), Recall(3), Precision(3)],
-            {0: ["ConfusionMatrix", "CohenKappa"], 1: ["Recall", "Precision"]},
+            [
+                MulticlassConfusionMatrix(num_classes=3),
+                MulticlassCohenKappa(num_classes=3),
+                MulticlassRecall(num_classes=3),
+                MulticlassPrecision(num_classes=3),
+            ],
+            {0: ["MulticlassConfusionMatrix", "MulticlassCohenKappa"], 1: ["MulticlassRecall", "MulticlassPrecision"]},
             _mc_preds,
             _mc_target,
         ),
         # Complex example
         (
             {
-                "acc": Accuracy(3),
-                "acc2": Accuracy(3),
-                "acc3": Accuracy(num_classes=3, average="macro"),
-                "f1": F1Score(3),
-                "recall": Recall(3),
-                "confmat": ConfusionMatrix(3),
+                "acc": MulticlassAccuracy(num_classes=3),
+                "acc2": MulticlassAccuracy(num_classes=3),
+                "acc3": MulticlassAccuracy(num_classes=3, multidim_average="samplewise"),
+                "f1": MulticlassF1Score(num_classes=3),
+                "recall": MulticlassRecall(num_classes=3),
+                "confmat": MulticlassConfusionMatrix(num_classes=3),
             },
             {0: ["acc", "acc2", "f1", "recall"], 1: ["acc3"], 2: ["confmat"]},
             _mc_preds,
@@ -340,8 +362,11 @@ _ml_target = torch.randint(2, (10, 3))
         ),
         # With list states
         (
-            [AUROC(average="macro", num_classes=3), AveragePrecision(average="macro", num_classes=3)],
-            {0: ["AUROC", "AveragePrecision"]},
+            [
+                MulticlassAUROC(num_classes=3, average="macro"),
+                MulticlassAveragePrecision(num_classes=3, average="macro"),
+            ],
+            {0: ["MulticlassAUROC", "MulticlassAveragePrecision"]},
             _mc_preds,
             _mc_target,
         ),
@@ -349,17 +374,24 @@ _ml_target = torch.randint(2, (10, 3))
         (
             [
                 MetricCollection(
-                    AUROC(average="micro", num_classes=3),
-                    AveragePrecision(average="micro", num_classes=3),
+                    MultilabelAUROC(num_labels=3, average="micro"),
+                    MultilabelAveragePrecision(num_labels=3, average="micro"),
                     postfix="_micro",
                 ),
                 MetricCollection(
-                    AUROC(average="macro", num_classes=3),
-                    AveragePrecision(average="macro", num_classes=3),
+                    MultilabelAUROC(num_labels=3, average="macro"),
+                    MultilabelAveragePrecision(num_labels=3, average="macro"),
                     postfix="_macro",
                 ),
             ],
-            {0: ["AUROC_micro", "AveragePrecision_micro", "AUROC_macro", "AveragePrecision_macro"]},
+            {
+                0: [
+                    "MultilabelAUROC_micro",
+                    "MultilabelAveragePrecision_micro",
+                    "MultilabelAUROC_macro",
+                    "MultilabelAveragePrecision_macro",
+                ]
+            },
             _ml_preds,
             _ml_target,
         ),
@@ -391,7 +423,7 @@ class TestComputeGroups:
             m2.update(preds, target)
 
             for _, member in m.items():
-                assert member._update_called
+                assert member.update_called
 
             assert m.compute_groups == expected
             assert m2.compute_groups == {}
@@ -401,7 +433,7 @@ class TestComputeGroups:
             m2.update(preds, target)
 
             for _, member in m.items():
-                assert member._update_called
+                assert member.update_called
 
             # compare results for correctness
             res_cg = m.compute()
@@ -447,20 +479,20 @@ class TestComputeGroups:
 @pytest.mark.parametrize(
     "metrics",
     [
-        {"acc0": Accuracy(3), "acc1": Accuracy(3)},
-        [Precision(3), Recall(3)],
-        [ConfusionMatrix(3), CohenKappa(3), Recall(3), Precision(3)],
+        {"acc0": MulticlassAccuracy(3), "acc1": MulticlassAccuracy(3)},
+        [MulticlassPrecision(3), MulticlassRecall(3)],
+        [MulticlassConfusionMatrix(3), MulticlassCohenKappa(3), MulticlassRecall(3), MulticlassPrecision(3)],
         {
-            "acc": Accuracy(3),
-            "acc2": Accuracy(3),
-            "acc3": Accuracy(num_classes=3, average="macro"),
-            "f1": F1Score(3),
-            "recall": Recall(3),
-            "confmat": ConfusionMatrix(3),
+            "acc": MulticlassAccuracy(3),
+            "acc2": MulticlassAccuracy(3),
+            "acc3": MulticlassAccuracy(num_classes=3, average="macro"),
+            "f1": MulticlassF1Score(3),
+            "recall": MulticlassRecall(3),
+            "confmat": MulticlassConfusionMatrix(3),
         },
     ],
 )
-@pytest.mark.parametrize("steps", [100, 1000])
+@pytest.mark.parametrize("steps", [1000])
 def test_check_compute_groups_is_faster(metrics, steps):
     """Check that compute groups are formed after initialization."""
     m = MetricCollection(deepcopy(metrics), compute_groups=True)
@@ -486,12 +518,15 @@ def test_check_compute_groups_is_faster(metrics, steps):
 def test_compute_group_define_by_user():
     """Check that user can provide compute groups."""
     m = MetricCollection(
-        ConfusionMatrix(3), Recall(3), Precision(3), compute_groups=[["ConfusionMatrix"], ["Recall", "Precision"]]
+        MulticlassConfusionMatrix(3),
+        MulticlassRecall(3),
+        MulticlassPrecision(3),
+        compute_groups=[["MulticlassConfusionMatrix"], ["MulticlassRecall", "MulticlassPrecision"]],
     )
 
     # Check that we are not going to check the groups in the first update
     assert m._groups_checked
-    assert m.compute_groups == {0: ["ConfusionMatrix"], 1: ["Recall", "Precision"]}
+    assert m.compute_groups == {0: ["MulticlassConfusionMatrix"], 1: ["MulticlassRecall", "MulticlassPrecision"]}
 
     preds = torch.randn(10, 3).softmax(dim=-1)
     target = torch.randint(3, (10,))
@@ -503,25 +538,28 @@ def test_compute_on_different_dtype():
     """Check that extraction of compute groups are robust towards difference in dtype."""
     m = MetricCollection(
         [
-            ConfusionMatrix(num_classes=3),
-            MatthewsCorrCoef(num_classes=3),
+            MulticlassConfusionMatrix(num_classes=3),
+            MulticlassMatthewsCorrCoef(num_classes=3),
         ]
     )
     assert not m._groups_checked
-    assert m.compute_groups == {0: ["ConfusionMatrix"], 1: ["MatthewsCorrCoef"]}
+    assert m.compute_groups == {0: ["MulticlassConfusionMatrix"], 1: ["MulticlassMatthewsCorrCoef"]}
     preds = torch.randn(10, 3).softmax(dim=-1)
     target = torch.randint(3, (10,))
     for _ in range(2):
         m.update(preds, target)
-    assert m.compute_groups == {0: ["ConfusionMatrix", "MatthewsCorrCoef"]}
+    assert m.compute_groups == {0: ["MulticlassConfusionMatrix", "MulticlassMatthewsCorrCoef"]}
     assert m.compute()
 
 
 def test_error_on_wrong_specified_compute_groups():
     """Test that error is raised if user mis-specify the compute groups."""
-    with pytest.raises(ValueError, match="Input Accuracy in `compute_groups`.*"):
+    with pytest.raises(ValueError, match="Input MulticlassAccuracy in `compute_groups`.*"):
         MetricCollection(
-            ConfusionMatrix(3), Recall(3), Precision(3), compute_groups=[["ConfusionMatrix"], ["Recall", "Accuracy"]]
+            MulticlassConfusionMatrix(3),
+            MulticlassRecall(3),
+            MulticlassPrecision(3),
+            compute_groups=[["MulticlassConfusionMatrix"], ["MulticlassRecall", "MulticlassAccuracy"]],
         )
 
 
@@ -530,18 +568,32 @@ def test_error_on_wrong_specified_compute_groups():
     [
         [
             MetricCollection(
-                [Accuracy(num_classes=3, average="macro"), Precision(num_classes=3, average="macro")], prefix="macro_"
+                [
+                    MulticlassAccuracy(num_classes=3, average="macro"),
+                    MulticlassPrecision(num_classes=3, average="macro"),
+                ],
+                prefix="macro_",
             ),
             MetricCollection(
-                [Accuracy(num_classes=3, average="micro"), Precision(num_classes=3, average="micro")], prefix="micro_"
+                [
+                    MulticlassAccuracy(num_classes=3, average="micro"),
+                    MulticlassPrecision(num_classes=3, average="micro"),
+                ],
+                prefix="micro_",
             ),
         ],
         {
             "macro": MetricCollection(
-                [Accuracy(num_classes=3, average="macro"), Precision(num_classes=3, average="macro")]
+                [
+                    MulticlassAccuracy(num_classes=3, average="macro"),
+                    MulticlassPrecision(num_classes=3, average="macro"),
+                ]
             ),
             "micro": MetricCollection(
-                [Accuracy(num_classes=3, average="micro"), Precision(num_classes=3, average="micro")]
+                [
+                    MulticlassAccuracy(num_classes=3, average="micro"),
+                    MulticlassPrecision(num_classes=3, average="micro"),
+                ]
             ),
         },
     ],
@@ -552,7 +604,7 @@ def test_nested_collections(input_collections):
     preds = torch.randn(10, 3).softmax(dim=-1)
     target = torch.randint(3, (10,))
     val = metrics(preds, target)
-    assert "valmetrics/macro_Accuracy" in val
-    assert "valmetrics/macro_Precision" in val
-    assert "valmetrics/micro_Accuracy" in val
-    assert "valmetrics/micro_Precision" in val
+    assert "valmetrics/macro_MulticlassAccuracy" in val
+    assert "valmetrics/macro_MulticlassPrecision" in val
+    assert "valmetrics/micro_MulticlassAccuracy" in val
+    assert "valmetrics/micro_MulticlassPrecision" in val
