@@ -109,7 +109,9 @@ jobs:
     - name: Install all dependencies
       run: |
         python ./requirements/adjust-versions.py requirements.txt
-        python ./requirements/adjust-versions.py requirements/image.txt
+        for fpath in `ls requirements/*.txt`; do
+            python ./requirements/adjust-versions.py $fpath
+        done
         pip install --requirement requirements/devel.txt -U --find-links $PYTORCH_URL
         pip list
 
