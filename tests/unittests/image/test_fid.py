@@ -132,9 +132,9 @@ def test_compare_fid(tmpdir, equal_size, feature=768):
     m = 100 if equal_size else 90
 
     # Generate some synthetic data
-    torch.cuda.manual_seed_all(42)
-    img1 = torch.randint(0, 180, (n, 3, 299, 299), dtype=torch.uint8, device="cuda")
-    img2 = torch.randint(100, 255, (m, 3, 299, 299), dtype=torch.uint8, device="cuda")
+    torch.manual_seed(42)
+    img1 = torch.randint(0, 180, (n, 3, 299, 299), dtype=torch.uint8)
+    img2 = torch.randint(100, 255, (m, 3, 299, 299), dtype=torch.uint8)
 
     batch_size = 10
     for i in range(n // batch_size):
