@@ -58,6 +58,9 @@ def _compare_fn(preds, target, model_name_or_path):
 @pytest.mark.skipif(not _TRANSFORMERS_AVAILABLE, reason="test requires bert_score")
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
 class TestCLIPScore(MetricTester):
+
+    atol = 1e-7
+
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @skip_on_connection_issues()
