@@ -38,7 +38,7 @@ targets = [
 
 _METRICS = ["precision", "recall", "f1"]
 
-MODEL_NAME = "t5-small"
+MODEL_NAME = "nreimers/albert-small-v2"
 
 
 def _assert_list(preds: Any, targets: Any, threshold: float = 1e-7):
