@@ -3,6 +3,8 @@
    :image: https://pl-flash-data.s3.amazonaws.com/assets/thumbnails/audio_classification.svg
    :tags: Audio
 
+.. include:: ../links.rst
+
 ###########################################
 Short-Time Objective Intelligibility (STOI)
 ###########################################
@@ -12,6 +14,7 @@ ________________
 
 .. autoclass:: torchmetrics.audio.stoi.ShortTimeObjectiveIntelligibility
     :noindex:
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________
