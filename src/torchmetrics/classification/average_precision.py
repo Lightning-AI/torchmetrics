@@ -39,7 +39,7 @@ class BinaryAveragePrecision(BinaryPrecisionRecallCurve):
     as weight:
 
     .. math::
-        AP = \sum{n} (R_n - R_{n-1}) P_n
+        AP = \sum_{n} (R_n - R_{n-1}) P_n
 
     where :math:`P_n, R_n` is the respective precision and recall at threshold index :math:`n`. This value is
     equivalent to the area under the precision-recall curve (AUPRC).
@@ -108,7 +108,7 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
     as weight:
 
     .. math::
-        AP = \sum{n} (R_n - R_{n-1}) P_n
+        AP = \sum_{n} (R_n - R_{n-1}) P_n
 
     where :math:`P_n, R_n` is the respective precision and recall at threshold index :math:`n`. This value is
     equivalent to the area under the precision-recall curve (AUPRC).
@@ -212,7 +212,7 @@ class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
     as weight:
 
     .. math::
-        AP = \sum{n} (R_n - R_{n-1}) P_n
+        AP = \sum_{n} (R_n - R_{n-1}) P_n
 
     where :math:`P_n, R_n` is the respective precision and recall at threshold index :math:`n`. This value is
     equivalent to the area under the precision-recall curve (AUPRC).
@@ -320,7 +320,7 @@ class AveragePrecision:
     mean of precisions at each threshold, with the difference in recall from the previous threshold as weight:
 
     .. math::
-        AP = \sum{n} (R_n - R_{n-1}) P_n
+        AP = \sum_{n} (R_n - R_{n-1}) P_n
 
     where :math:`P_n, R_n` is the respective precision and recall at threshold index :math:`n`. This value is
     equivalent to the area under the precision-recall curve (AUPRC).
