@@ -1,26 +1,27 @@
 import time
+from typing import Union
 
 import torch
 
 from torchmetrics.detection import MeanAveragePrecision
 
-torch.manual_seed(1)
+torch.manual_seed(42)
 total_time = dict()
 
 
 class UpdateTime:
-    def __init__(self, name):
-        self._name = name
+    def __init__(self, step_name: str):
+        self._step_name = step_name
 
     def __enter__(self):
         self._start_time = time.perf_counter()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         end_time = time.perf_counter()
-        if self._name in total_time:
-            total_time[self._name] += end_time - self._start_time
+        if self._step_name in total_time:
+            total_time[self._step_name] += end_time - self._start_time
         else:
-            total_time[self._name] = end_time - self._start_time
+            total_time[self._step_name] = end_time - self._start_time
         return True
 
 
@@ -32,7 +33,7 @@ def generate(n, factor: int = 1000):
     return {"boxes": boxes, "labels": labels, "scores": scores}
 
 
-def run_mean_ap_benchmark(device: str = "cuda") -> dict[str, float]:
+def run_mean_ap_benchmark(device: Union[str, int] = "cuda") -> dict[str, float]:
     mean_ap = MeanAveragePrecision()
     mean_ap.to(device=torch.device(device))
 
@@ -41,10 +42,12 @@ def run_mean_ap_benchmark(device: str = "cuda") -> dict[str, float]:
         targets = [generate(10, 10) for _ in range(10)]
         mean_ap.update(detections, targets)
 
-    return mean_ap.compute()
+    mean_ap_results = mean_ap.compute()
+    mean_ap.reset()
+    return mean_ap_results
 
 
-def run_speed_benchmark(device: str = "cuda") -> dict[str, float]:
+def run_speed_benchmark(device: Union[str, int] = "cuda") -> dict[str, float]:
     with UpdateTime("init"):
         mean_ap = MeanAveragePrecision()
         mean_ap.to(device=torch.device(device))
@@ -57,7 +60,8 @@ def run_speed_benchmark(device: str = "cuda") -> dict[str, float]:
 
     with UpdateTime("compute"):
         try:
-            mean_ap.compute()
+            _ = mean_ap.compute()
+            mean_ap.reset()
         except Exception as e:
             print(f"Error occurred when running compute -> {e}")
 
@@ -65,6 +69,10 @@ def run_speed_benchmark(device: str = "cuda") -> dict[str, float]:
 
 
 if __name__ == "__main__":
+    results = run_mean_ap_benchmark(device="cpu")
+    for metric_name, metric_value in results.items():
+        print(f"{metric_name}: {metric_value}")
+    print("\\\\\\\\\\\\//////")
     results = run_speed_benchmark(device="cpu")
-    for name, time in results.items():
-        print(f"Total time in {name}: {time}")
+    for step, step_time in results.items():
+        print(f"Total time in {step}: {step_time}")
