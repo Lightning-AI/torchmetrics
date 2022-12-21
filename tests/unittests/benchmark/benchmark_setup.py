@@ -1,5 +1,5 @@
 import time
-from typing import Union
+from typing import Union, Dict
 
 import torch
 
@@ -33,7 +33,7 @@ def generate(n, factor: int = 1000):
     return {"boxes": boxes, "labels": labels, "scores": scores}
 
 
-def run_mean_ap_benchmark(device: Union[str, int] = "cuda") -> dict[str, float]:
+def run_mean_ap_benchmark(device: Union[str, int] = "cuda") -> Dict[str, float]:
     mean_ap = MeanAveragePrecision()
     mean_ap.to(device=torch.device(device))
 
@@ -47,7 +47,7 @@ def run_mean_ap_benchmark(device: Union[str, int] = "cuda") -> dict[str, float]:
     return mean_ap_results
 
 
-def run_speed_benchmark(device: Union[str, int] = "cuda") -> dict[str, float]:
+def run_speed_benchmark(device: Union[str, int] = "cuda") -> Dict[str, float]:
     with UpdateTime("init"):
         mean_ap = MeanAveragePrecision()
         mean_ap.to(device=torch.device(device))
