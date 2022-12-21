@@ -4,8 +4,9 @@ from typing import Union, Dict
 import torch
 
 from torchmetrics.detection import MeanAveragePrecision
+from unittests.helpers import seed_all
 
-torch.manual_seed(42)
+seed_all(42)
 total_time = dict()
 
 
