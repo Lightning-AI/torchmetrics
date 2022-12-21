@@ -130,7 +130,7 @@ class BinaryGroupStatRates(_AbstractGroupStatScores):
 
     def compute(
         self,
-    ) -> Union[Dict[str, torch.Tensor], Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]]:
+    ) -> Dict[str, torch.Tensor]:
         """Computes tp, fp, tn and fn rates based on inputs passed in to ``update`` previously."""
         results = torch.stack((self.tp, self.fp, self.tn, self.fn), dim=1)
 
