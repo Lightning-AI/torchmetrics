@@ -59,7 +59,9 @@ def _binary_groups_stat_scores(
     validate_args: bool = True,
 ) -> Dict[str, Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]:
     """Computes the number of true positives, false positives, true negatives, and false negatives for binary
-    classification by group. Related to `Type I and Type II errors`_.
+    classification by group.
+
+    Related to `Type I and Type II errors`_.
     """
     if validate_args:
         _binary_stat_scores_arg_validation(threshold, "global", ignore_index)
@@ -338,10 +340,8 @@ def binary_fairness(
     """
     if task not in ["demographic_parity", "equal_opportunity", "all"]:
         raise ValueError(
-            (
-                f"Expected argument `task` to either be ``demographic_parity``,"
-                f"``equal_opportunity`` or ``all`` but got {task}."
-            )
+            f"Expected argument `task` to either be ``demographic_parity``,"
+            f"``equal_opportunity`` or ``all`` but got {task}."
         )
 
     if task == "demographic_parity":

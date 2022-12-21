@@ -207,10 +207,8 @@ class BinaryFairness(_AbstractGroupStatScores):
 
         if task not in ["demographic_parity", "equal_opportunity", "all"]:
             raise ValueError(
-                (
-                    f"Expected argument `task` to either be ``demographic_parity``,"
-                    f"``equal_opportunity`` or ``all`` but got {task}."
-                )
+                f"Expected argument `task` to either be ``demographic_parity``,"
+                f"``equal_opportunity`` or ``all`` but got {task}."
             )
 
         if validate_args:
