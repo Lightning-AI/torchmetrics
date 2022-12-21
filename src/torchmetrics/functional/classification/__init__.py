@@ -61,6 +61,12 @@ from torchmetrics.functional.classification.f_beta import (  # noqa: F401
     multilabel_f1_score,
     multilabel_fbeta_score,
 )
+from torchmetrics.functional.classification.group_fairness import (  # noqa: F401
+    binary_fairness,
+    binary_groups_stat_rates,
+    demographic_parity,
+    equal_opportunity,
+)
 from torchmetrics.functional.classification.hamming import (  # noqa: F401
     binary_hamming_distance,
     hamming_distance,
