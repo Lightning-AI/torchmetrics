@@ -3,7 +3,7 @@ import pytest
 import torch
 
 from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
-from unittests.benchmark.benchmark_setup import run_speed_benchmark, run_mean_ap_benchmark
+from unittests.benchmark.benchmark_setup import run_mean_ap_benchmark, run_speed_benchmark
 
 _pytest_condition = not (_TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8)
 _gpu_test_condition = not torch.cuda.is_available()
@@ -16,7 +16,7 @@ def test_performance_with_cuda():
     expected_results = {"init": 0.0011681069154292345, "update": 0.11278650932945311, "compute": 146.6234815029893}
     for step_name, step_time in results.items():
         print(f"Total time in {step_name}: {step_time}")
-        assert np.isclose(expected_results[step_name], results[step_name], atol=8.e-1, rtol=8.e-1)
+        assert np.isclose(expected_results[step_name], results[step_name], atol=8.0e-1, rtol=8.0e-1)
 
 
 @pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
@@ -25,7 +25,7 @@ def test_performance_with_cpu():
     expected_results = {"init": 0.0011681069154292345, "update": 0.11010122182779014, "compute": 77.43531435285695}
     for step_name, step_time in results.items():
         print(f"Total time in {step_name}: {step_time}")
-        assert np.isclose(expected_results[step_name], results[step_name], atol=8.e-1, rtol=8.e-1)
+        assert np.isclose(expected_results[step_name], results[step_name], atol=8.0e-1, rtol=8.0e-1)
 
 
 @pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
@@ -34,4 +34,4 @@ def test_test_consecutive_runs_with_cpu():
     restuls_2 = run_mean_ap_benchmark(device="cpu")
 
     for key in restuls_1.keys():
-        assert np.isclose(restuls_1[key], restuls_2[key], atol=8.e-1, rtol=8.e-1)
+        assert np.isclose(restuls_1[key], restuls_2[key], atol=8.0e-1, rtol=8.0e-1)
