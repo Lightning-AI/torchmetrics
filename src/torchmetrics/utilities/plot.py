@@ -77,26 +77,15 @@ def plot_single_or_multi_val(
             ax.plot([val.detach().cpu()], marker="o", markersize=10)
         else:
             for i, v in enumerate(val):
-                ax.plot(
-                    i,
-                    v.detach().cpu(),
-                    marker="o",
-                    markersize=10,
-                    linestyle="None",
-                    label=f"{legend_name} {i}" if legend_name else f"{i}",
-                )
+                label = f"{legend_name} {i}" if legend_name else f"{i}"
+                ax.plot(i, v.detach().cpu(), marker="o", markersize=10, linestyle="None", label=label)
     else:
         val = torch.stack(val, 0)
         multi_series = val.ndim != 1
         val = val.T if multi_series else val.unsqueeze(0)
         for i, v in enumerate(val):
-            ax.plot(
-                v.detach().cpu(),
-                marker="o",
-                markersize=10,
-                linestyle="-",
-                label=(f"{legend_name} {i}" if legend_name else f"{i}") if multi_series else None,
-            )
+            label = (f"{legend_name} {i}" if legend_name else f"{i}") if multi_series else None
+            ax.plot(v.detach().cpu(), marker="o", markersize=10, linestyle="-", label=label)
         ax.get_xaxis().set_visible(True)
         ax.set_xlabel("Step")
         ax.set_xticks(torch.arange(val.shape[1]))
@@ -122,13 +111,8 @@ def plot_single_or_multi_val(
     xlim = ax.get_xlim()
     factor = 0.1 * (xlim[1] - xlim[0])
 
-    ax.hlines(
-        [lower_bound if lower_bound is not None else None, upper_bound if upper_bound is not None else None],
-        xlim[0],
-        xlim[1],
-        linestyles="dashed",
-        colors="k",
-    )
+    y_ = [lower_bound, upper_bound] if lower_bound or upper_bound else []
+    ax.hlines(y_, xlim[0], xlim[1], linestyles="dashed", colors="k")
     if higher_is_better is not None:
         if lower_bound is not None and not higher_is_better:
             ax.set_xlim(xlim[0] - factor, xlim[1])
