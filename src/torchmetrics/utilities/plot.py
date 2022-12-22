@@ -85,7 +85,7 @@ def plot_single_or_multi_val(
         multi_series = val.ndim != 1
         val = val.T if multi_series else val.unsqueeze(0)
         for i, v in enumerate(val):
-            label = (f"{legend_name} {i}" if legend_name else f"{i}") if multi_series else None
+            label = (f"{legend_name} {i}" if legend_name else f"{i}") if multi_series else ""
             ax.plot(v.detach().cpu(), marker="o", markersize=10, linestyle="-", label=label)
         ax.get_xaxis().set_visible(True)
         ax.set_xlabel("Step")
