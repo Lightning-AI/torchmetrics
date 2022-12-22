@@ -21,21 +21,27 @@ if _TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8:
     from torchvision.ops import generalized_box_iou
 
 
-def _giou_update(preds: torch.Tensor, target: torch.Tensor, iou_threshold: Optional[float]) -> torch.Tensor:
+def _giou_update(
+    preds: torch.Tensor, target: torch.Tensor, iou_threshold: Optional[float], replacement_val: float = 0
+) -> torch.Tensor:
     iou = generalized_box_iou(preds, target)
     if iou_threshold is not None:
-        return iou[iou >= iou_threshold]
+        iou[iou < iou_threshold] = replacement_val
     return iou
 
 
-def _giou_compute(iou: torch.Tensor) -> torch.Tensor:
-    return iou.diag().mean()
+def _giou_compute(iou: torch.Tensor, labels_eq: bool = True) -> torch.Tensor:
+    if labels_eq:
+        return iou.diag().mean()
+    return iou.mean()
 
 
 def generalized_intersection_over_union(
     preds: torch.Tensor,
     target: torch.Tensor,
     iou_threshold: Optional[float] = None,
+    replacement_val: float = 0,
+    aggregate: bool = True,
 ) -> torch.Tensor:
     r"""
     Computes `Generalized Intersection over Union <https://arxiv.org/abs/1902.09630>`_ between two sets of boxes.
@@ -47,6 +53,10 @@ def generalized_intersection_over_union(
             The tensor containing the ground truth.
         iou_thresholds:
             Optional IoU thresholds for evaluation. If set to `None` the threshold is ignored.
+        replacement_val:
+            Value to replace values under the threshold with.
+        aggregate:
+            Return the average value instead of the complete IoU matrix.
     Example:
         >>> from torchmetrics.functional.detection import generalized_intersection_over_union
         >>> preds = torch.Tensor([[100, 100, 200, 200]])
@@ -54,5 +64,5 @@ def generalized_intersection_over_union(
         >>> generalized_intersection_over_union(preds, target)
         tensor([[0.6641]])
     """
-    iou = _giou_update(preds, target, iou_threshold)
-    return _giou_compute(iou)
+    iou = _giou_update(preds, target, iou_threshold, replacement_val)
+    return _giou_compute(iou) if aggregate else iou

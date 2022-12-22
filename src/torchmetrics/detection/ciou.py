@@ -16,7 +16,7 @@ from typing import Any, Callable, Optional
 from torch import Tensor
 
 from torchmetrics.detection.iou import IntersectionOverUnion
-from torchmetrics.functional.detection.ciou import complete_intersection_over_union
+from torchmetrics.functional.detection.ciou import _ciou_compute, _ciou_update
 from torchmetrics.utilities.imports import _TORCHVISION_GREATER_EQUAL_0_8, _TORCHVISION_GREATER_EQUAL_0_13
 
 if _TORCHVISION_GREATER_EQUAL_0_8:
@@ -40,8 +40,10 @@ class CompleteIntersectionOverUnion(IntersectionOverUnion):
              Additional keyword arguments, see :ref:`Metric kwargs` for more info.
     """
 
-    iou_fn: Callable[[Tensor, Tensor, bool], Tensor] = complete_intersection_over_union
+    iou_update_fn: Callable[[Tensor, Tensor, bool, float], Tensor] = _ciou_update
+    iou_compute_fn: Callable[[Tensor, bool], Tensor] = _ciou_compute
     type: str = "ciou"
+    invalid_val: float = -2  # unsure, min val could be just -1.5 as well
 
     def __init__(
         self,

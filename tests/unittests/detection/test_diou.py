@@ -11,12 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Dict
+from typing import Callable, Dict
 
 import pytest
 import torch
+from torch import Tensor
 
 from torchmetrics.detection.diou import DistanceIntersectionOverUnion
+from torchmetrics.functional.detection.diou import distance_intersection_over_union
 from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_13
 from unittests.detection.base_iou_test import BaseTestIntersectionOverUnion, TestCaseData, _box_inputs, _inputs
 from unittests.helpers.testers import MetricTester
@@ -46,3 +48,4 @@ class TestDistanceIntersectionOverUnion(MetricTester, BaseTestIntersectionOverUn
         "box_iou_variant": TestCaseData(data=_box_inputs, result=box_diou),
     }
     metric_class = DistanceIntersectionOverUnion
+    metric_fn: Callable[[Tensor, Tensor, bool, float], Tensor] = distance_intersection_over_union

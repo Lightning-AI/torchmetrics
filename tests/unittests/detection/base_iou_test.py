@@ -15,7 +15,7 @@ from abc import ABC
 from collections import namedtuple
 from dataclasses import dataclass
 from functools import partial
-from typing import Any, Dict
+from typing import Any, Callable, Dict
 
 import pytest
 import torch
@@ -52,9 +52,9 @@ _inputs = Input(
     preds=[
         [
             dict(
-                boxes=Tensor([[296.55, 93.96, 314.97, 152.79]]),
-                scores=Tensor([0.236]),
-                labels=IntTensor([4]),
+                boxes=Tensor([[296.55, 93.96, 314.97, 152.79], [298.55, 98.96, 314.97, 151.79]]),
+                scores=Tensor([0.236, 0.56]),
+                labels=IntTensor([4, 5]),
             )
         ],
         [
@@ -69,6 +69,18 @@ _inputs = Input(
                 labels=IntTensor([4]),
             ),
         ],
+        [
+            dict(
+                boxes=Tensor([[328.94, 97.05, 342.49, 122.98]]),
+                scores=Tensor([0.456]),
+                labels=IntTensor([5]),
+            ),
+            dict(
+                boxes=Tensor([[356.62, 95.47, 372.33, 147.55]]),
+                scores=Tensor([0.791]),
+                labels=IntTensor([5]),
+            ),
+        ],
     ],
     target=[
         [
@@ -81,6 +93,16 @@ _inputs = Input(
             dict(
                 boxes=Tensor([[330.00, 100.00, 350.00, 125.00]]),
                 labels=IntTensor([4]),
+            ),
+            dict(
+                boxes=Tensor([[350.00, 100.00, 375.00, 150.00]]),
+                labels=IntTensor([4]),
+            ),
+        ],
+        [
+            dict(
+                boxes=Tensor([[330.00, 100.00, 350.00, 125.00]]),
+                labels=IntTensor([5]),
             ),
             dict(
                 boxes=Tensor([[350.00, 100.00, 375.00, 150.00]]),
@@ -106,10 +128,11 @@ class BaseTestIntersectionOverUnion(ABC):
     """Base Test the Intersection over Union metric for object detection predictions."""
 
     data: Dict[str, TestCaseData] = {
-        "iou_variant": TestCaseData(data=_inputs, result=None),
+        "iou_variant": TestCaseData(data=_inputs, result={"iou": torch.Tensor([0])}),
         "box_iou_variant": TestCaseData(data=_box_inputs, result=None),
     }
     metric_class: Metric
+    metric_fn: Callable[[Tensor, Tensor, bool, float], Tensor]
 
     def test_iou_variant(self, compute_on_cpu: bool, ddp: bool):
         """Test modular implementation for correctness."""
@@ -125,6 +148,11 @@ class BaseTestIntersectionOverUnion(ABC):
             check_batch=False,
             metric_args={"compute_on_cpu": compute_on_cpu},
         )
+
+    def test_fn(self, compute_on_cpu: bool, ddp: bool):
+        preds = _preds[0]
+        target = _target[0]
+        result = self.metric_fn(preds, target)
 
     def test_error_on_wrong_input(self, compute_on_cpu: bool, ddp: bool):
         """Test class input validation."""

@@ -16,7 +16,7 @@ from typing import Any, Callable, Optional
 from torch import Tensor
 
 from torchmetrics.detection.iou import IntersectionOverUnion
-from torchmetrics.functional.detection.giou import generalized_intersection_over_union
+from torchmetrics.functional.detection.giou import _giou_compute, _giou_update
 from torchmetrics.utilities.imports import _TORCHVISION_GREATER_EQUAL_0_8
 
 if _TORCHVISION_GREATER_EQUAL_0_8:
@@ -40,8 +40,10 @@ class GeneralizedIntersectionOverUnion(IntersectionOverUnion):
              Additional keyword arguments, see :ref:`Metric kwargs` for more info.
     """
 
-    iou_fn: Callable[[Tensor, Tensor, bool], Tensor] = generalized_intersection_over_union
+    iou_update_fn: Callable[[Tensor, Tensor, bool, float], Tensor] = _giou_update
+    iou_compute_fn: Callable[[Tensor, bool], Tensor] = _giou_compute
     type: str = "giou"
+    invalid_val: float = -1
 
     def __init__(
         self,

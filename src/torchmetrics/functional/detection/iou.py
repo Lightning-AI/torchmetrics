@@ -21,21 +21,27 @@ if _TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8:
     from torchvision.ops import box_iou
 
 
-def _iou_update(preds: torch.Tensor, target: torch.Tensor, iou_threshold: Optional[float]) -> torch.Tensor:
+def _iou_update(
+    preds: torch.Tensor, target: torch.Tensor, iou_threshold: Optional[float], replacement_val: float = 0
+) -> torch.Tensor:
     iou = box_iou(preds, target)
     if iou_threshold is not None:
-        return iou[iou >= iou_threshold]
+        iou[iou < iou_threshold] = replacement_val
     return iou
 
 
-def _iou_compute(iou: torch.Tensor) -> torch.Tensor:
-    return iou.diag().mean()
+def _iou_compute(iou: torch.Tensor, labels_eq: bool = True) -> torch.Tensor:
+    if labels_eq:
+        return iou.diag().mean()
+    return iou.mean()
 
 
 def intersection_over_union(
     preds: torch.Tensor,
     target: torch.Tensor,
     iou_threshold: Optional[float] = None,
+    replacement_val: float = 0,
+    aggregate: bool = True,
 ) -> torch.Tensor:
     r"""
     Computes Intersection over Union between two sets of boxes.
@@ -47,6 +53,10 @@ def intersection_over_union(
             The tensor containing the ground truth.
         iou_thresholds:
             Optional IoU thresholds for evaluation. If set to `None` the threshold is ignored.
+        replacement_val:
+            Value to replace values under the threshold with.
+        aggregate:
+            Return the average value instead of the complete IoU matrix.
     Example:
         >>> from torchmetrics.functional.detection import intersection_over_union
         >>> preds = torch.Tensor([[100, 100, 200, 200]])
@@ -54,5 +64,5 @@ def intersection_over_union(
         >>> intersection_over_union(preds, target)
         tensor([[0.6807]])
     """
-    iou = _iou_update(preds, target, iou_threshold)
-    return _iou_compute(iou)
+    iou = _iou_update(preds, target, iou_threshold, replacement_val)
+    return _iou_compute(iou) if aggregate else iou

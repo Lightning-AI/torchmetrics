@@ -11,11 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Dict
+from typing import Callable, Dict
 
 import torch
+from torch import Tensor
 
 from torchmetrics.detection.giou import GeneralizedIntersectionOverUnion
+from torchmetrics.functional.detection.giou import generalized_intersection_over_union
 from unittests.detection.base_iou_test import BaseTestIntersectionOverUnion, TestCaseData, _box_inputs, _inputs
 from unittests.helpers.testers import MetricTester
 
@@ -41,3 +43,4 @@ class TestGeneralizedIntersectionOverUnion(MetricTester, BaseTestIntersectionOve
         "box_iou_variant": TestCaseData(data=_box_inputs, result=box_giou),
     }
     metric_class = GeneralizedIntersectionOverUnion
+    metric_fn: Callable[[Tensor, Tensor, bool, float], Tensor] = generalized_intersection_over_union
