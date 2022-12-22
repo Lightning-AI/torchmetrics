@@ -484,9 +484,6 @@ class MeanAveragePrecision(Metric):
         gt = [gt[i] for i in gt_label_mask]
         det = [det[i] for i in det_label_mask]
 
-        if len(gt) == 0 or len(det) == 0:
-            return Tensor([])
-
         # Sort by scores and use only max detections
         scores = self.detection_scores[idx].to(self.device)
         scores_filtered = scores[self.detection_labels[idx] == class_id]
@@ -545,8 +542,8 @@ class MeanAveragePrecision(Metric):
         nb_det = len(det)
         det_areas = compute_area(det, device=self.device, iou_type=self.iou_type)
         det_ignore_area = (det_areas < area_range[0]) | (det_areas > area_range[1])
-        ar = torch.clone(det_ignore_area.reshape((1, nb_det))).detach()
-        det_ignore = torch.repeat_interleave(ar.to(self.device), nb_iou_thrs, 0)
+        ar = torch.clone(det_ignore_area.reshape((1, nb_det))).detach().to(self.device)
+        det_ignore = torch.repeat_interleave(ar, nb_iou_thrs, 0)
 
         return {
             "dtMatches": torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool, device=self.device),
@@ -638,7 +635,7 @@ class MeanAveragePrecision(Metric):
         # set unmatched detections outside of area range to ignore
         det_areas = compute_area(det, device=self.device, iou_type=self.iou_type)
         det_ignore_area = (det_areas < area_range[0]) | (det_areas > area_range[1])
-        ar = torch.clone(det_ignore_area.reshape((1, nb_det))).detach()
+        ar = torch.clone(det_ignore_area.reshape((1, nb_det))).detach().to(self.device)
         det_ignore = torch.logical_or(
             det_ignore, torch.logical_and(det_matches == 0, torch.repeat_interleave(ar, nb_iou_thrs, 0))
         )
@@ -746,12 +743,12 @@ class MeanAveragePrecision(Metric):
         nb_bbox_areas = len(self.bbox_area_ranges)
         nb_max_det_thrs = len(self.max_detection_thresholds)
         nb_imgs = len(img_ids)
-        precision = -torch.ones((nb_iou_thrs, nb_rec_thrs, nb_classes, nb_bbox_areas, nb_max_det_thrs))
-        recall = -torch.ones((nb_iou_thrs, nb_classes, nb_bbox_areas, nb_max_det_thrs))
-        scores = -torch.ones((nb_iou_thrs, nb_rec_thrs, nb_classes, nb_bbox_areas, nb_max_det_thrs))
+        precision = -torch.ones((nb_iou_thrs, nb_rec_thrs, nb_classes, nb_bbox_areas, nb_max_det_thrs)).to(self.device)
+        recall = -torch.ones((nb_iou_thrs, nb_classes, nb_bbox_areas, nb_max_det_thrs)).to(self.device)
+        scores = -torch.ones((nb_iou_thrs, nb_rec_thrs, nb_classes, nb_bbox_areas, nb_max_det_thrs)).to(self.device)
 
         # move tensors if necessary
-        rec_thresholds_tensor = torch.tensor(self.rec_thresholds)
+        rec_thresholds_tensor = torch.tensor(self.rec_thresholds).to(self.device)
 
         # retrieve E at each category, area range, and max number of detections
         for idx_cls, _ in enumerate(class_ids):
@@ -854,15 +851,15 @@ class MeanAveragePrecision(Metric):
         for idx, (tp, fp) in enumerate(zip(tp_sum, fp_sum)):
             nd = len(tp)
             rc = tp / npig
-            pr = tp / (fp + tp + torch.finfo(torch.float64).eps)
-            prec = torch.zeros((nb_rec_thrs,))
-            score = torch.zeros((nb_rec_thrs,))
+            pr = tp / (fp + tp) if (fp + tp > 0).all() else torch.zeros((nd,)).to(recall.device)
+            prec = torch.zeros((nb_rec_thrs,)).to(recall.device)
+            score = torch.zeros((nb_rec_thrs,)).to(recall.device)
 
             recall[idx, idx_cls, idx_bbox_area, idx_max_det_thrs] = rc[-1] if nd else 0
 
             # Remove zigzags for AUC
-            diff_zero = torch.zeros((1,), device=pr.device)
-            diff = torch.ones((1,), device=pr.device)
+            diff_zero = torch.zeros((1,)).to(recall.device)
+            diff = torch.ones((1,)).to(recall.device)
             while not torch.all(diff == 0):
                 diff = torch.clamp(torch.cat(((pr[1:] - pr[:-1]), diff_zero), 0), min=0)
                 pr += diff
