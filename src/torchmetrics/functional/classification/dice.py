@@ -11,97 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import math
 from typing import Optional
 
 import torch
 from torch import Tensor
-from typing_extensions import Literal
 
 from torchmetrics.functional.classification.stat_scores import _reduce_stat_scores, _stat_scores_update
 from torchmetrics.utilities.checks import _input_squeeze
 from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
-from torchmetrics.utilities.prints import rank_zero_warn
-
-
-def dice_score(
-    preds: Tensor,
-    target: Tensor,
-    bg: bool = False,
-    nan_score: float = 0.0,
-    no_fg_score: float = 0.0,
-    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
-) -> Tensor:
-    """Compute dice score from prediction scores.
-
-    Supports only "macro" approach, which mean calculate the metric for each class separately,
-    and average the metrics across classes (with equal weights for each class).
-
-    .. deprecated:: v0.9
-        The `dice_score` function was deprecated in v0.9 and will be removed in v0.10. Use `dice` function instead.
-
-    Args:
-        preds: estimated probabilities
-        target: ground-truth labels
-        bg: whether to also compute dice for the background
-        nan_score: score to return, if a NaN occurs during computation
-        no_fg_score: (default, ``0.0``) score to return, if no foreground pixel was found in target
-
-            .. deprecated:: v0.9
-                All different from default options will be changed to default.
-
-        reduction: (default, ``'elementwise_mean'``) a method to reduce metric score over labels.
-
-            .. deprecated:: v0.9
-                All different from default options will be changed to default.
-
-            - ``'elementwise_mean'``: takes the mean (default)
-            - ``'sum'``: takes the sum
-            - ``'none'`` or ``None``: no reduction will be applied
-
-    Return:
-        Tensor containing dice score
-
-    Example:
-        >>> from torchmetrics.functional import dice_score
-        >>> pred = torch.tensor([[0.85, 0.05, 0.05, 0.05],
-        ...                      [0.05, 0.85, 0.05, 0.05],
-        ...                      [0.05, 0.05, 0.85, 0.05],
-        ...                      [0.05, 0.05, 0.05, 0.85]])
-        >>> target = torch.tensor([0, 1, 3, 2])
-        >>> dice_score(pred, target)
-        tensor(0.3333)
-    """
-    rank_zero_warn(
-        "The `dice_score` function was deprecated in v0.9 and will be removed in v0.10. Use `dice` function instead.",
-        DeprecationWarning,
-    )
-    num_classes = preds.shape[1]
-
-    if no_fg_score != 0.0:
-        no_fg_score = 0.0
-        rank_zero_warn(f"Deprecated parameter. Switched to default `no_fg_score` = {no_fg_score}.")
-
-    if reduction != "elementwise_mean":
-        reduction = "elementwise_mean"
-        rank_zero_warn(f"Deprecated parameter. Switched to default `reduction` = {reduction}.")
-
-    zero_division = math.floor(nan_score)
-    if zero_division != nan_score:
-        rank_zero_warn(f"Deprecated parameter. `nan_score` converted to integer {zero_division}.")
-
-    ignore_index = None
-    if not bg:
-        ignore_index = 0
-
-    return dice(
-        preds,
-        target,
-        ignore_index=ignore_index,
-        average="macro",
-        num_classes=num_classes,
-        zero_division=zero_division,
-    )
 
 
 def _dice_compute(
@@ -121,15 +38,6 @@ def _dice_compute(
         average: Defines the reduction that is applied
         mdmc_average: Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
             ``average`` parameter)
-
-    Example:
-        >>> from torchmetrics.functional.classification.stat_scores import _stat_scores_update
-        >>> from torchmetrics.functional.classification.dice import _dice_compute
-        >>> preds  = torch.tensor([2, 0, 2, 1])
-        >>> target = torch.tensor([1, 1, 2, 0])
-        >>> tp, fp, tn, fn = _stat_scores_update(preds, target, reduce='micro')
-        >>> _dice_compute(tp, fp, fn, average='micro', mdmc_average=None)
-        tensor(0.2500)
     """
     numerator = 2 * tp
     denominator = 2 * tp + fp + fn

@@ -58,7 +58,7 @@ class CharErrorRate(Metric):
     higher_is_better: bool = False
     full_state_update: bool = False
 
-    error: Tensor
+    errors: Tensor
     total: Tensor
 
     def __init__(

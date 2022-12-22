@@ -49,7 +49,8 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - uses: ./.github/actions/caching
+    - name: full chashing
+      uses: ./.github/actions/caching
       with:
         os: ${{ runner.os }}
         requires: ${{ matrix.requires }}
@@ -75,4 +76,4 @@ jobs:
       working-directory: ./tests
       env:
         PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: 'python'
-      run: python -m pytest integrations -v --durations=25
+      run: python -m pytest integrations -v --durations=25 --reruns 3 --reruns-delay 2
