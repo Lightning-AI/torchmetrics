@@ -28,7 +28,7 @@ if _MATPLOTLIB_AVAILABLE:
     _PLOT_OUT_TYPE = Tuple[plt.Figure, Union[matplotlib.axes.Axes, np.ndarray]]
     _AX_TYPE = matplotlib.axes.Axes
 else:
-    _PLOT_OUT_TYPE = (object, object)
+    _PLOT_OUT_TYPE = Tuple[object, object]  # type: ignore[misc]
     _AX_TYPE = object
 
 
@@ -42,7 +42,7 @@ def _error_on_missing_matplotlib() -> None:
 
 def plot_single_or_multi_val(
     val: Union[Tensor, List[Tensor]],
-    ax: Optional[_AX_TYPE] = None,
+    ax: Optional[_AX_TYPE] = None,  # type: ignore[valid-type]
     higher_is_better: Optional[bool] = None,
     lower_bound: Optional[float] = None,
     upper_bound: Optional[float] = None,
@@ -52,9 +52,10 @@ def plot_single_or_multi_val(
     """Plot a single metric value or multiple, including bounds of value if existing.
 
     Args:
-        val: A single tensor with one or multiple values (multiclass/label/output format) or an list of such tensors.
-            If a list is provided the values are interpret as an time series of evolving values.
-        higher_is_better: Indicates if an label indicating where the optimal value is should be added to the figure
+        val: A single tensor with one or multiple values (multiclass/label/output format) or a list of such tensors.
+            If a list is provided the values are interpreted as a time series of evolving values.
+        ax: Axis from a figure.
+        higher_is_better: Indicates if a label indicating where the optimal value it should be added to the figure
         lower_bound: lower value that the metric can take
         upper_bound: upper value that the metric can take
         legend_name: for class based metrics specify the legend prefix e.g. Class or Label to use when multiple values
@@ -138,18 +139,18 @@ def _get_col_row_split(n: int) -> Tuple[int, int]:
         return ceil(nsq), ceil(nsq)
 
 
-def trim_axs(axs: Union[_AX_TYPE, np.ndarray], N: int) -> np.ndarray:
-    """Reduce `axs` to `N` Axes.
+def trim_axs(axs: Union[_AX_TYPE, np.ndarray], nb: int) -> np.ndarray:  # type: ignore[valid-type]
+    """Reduce `axs` to `nb` Axes.
 
     All further Axes are removed from the figure.
     """
     if isinstance(axs, _AX_TYPE):
         return axs
     else:
-        axs = axs.flat
-        for ax in axs[N:]:
+        axs = axs.flat  # type: ignore[union-attr]
+        for ax in axs[nb:]:
             ax.remove()
-        return axs[:N]
+        return axs[:nb]
 
 
 def plot_confusion_matrix(
@@ -178,10 +179,10 @@ def plot_confusion_matrix(
     _error_on_missing_matplotlib()
 
     if confmat.ndim == 3:  # multilabel
-        n, n_classes = confmat.shape[0], 2
-        rows, cols = _get_col_row_split(n)
+        nb, n_classes = confmat.shape[0], 2
+        rows, cols = _get_col_row_split(nb)
     else:
-        n, n_classes, rows, cols = 1, confmat.shape[0], 1, 1
+        nb, n_classes, rows, cols = 1, confmat.shape[0], 1, 1
 
     if labels is not None and confmat.ndim != 3 and len(labels) != n_classes:
         raise ValueError(
@@ -191,8 +192,8 @@ def plot_confusion_matrix(
     labels: Union[List[int], List[str]] = labels if labels is not None else np.arange(n_classes).tolist()
 
     fig, axs = plt.subplots(nrows=rows, ncols=cols)
-    axs = trim_axs(axs, n)
-    for i in range(n):
+    axs = trim_axs(axs, nb)
+    for i in range(nb):
         if rows != 1 and cols != 1:
             ax = axs[i]
             ax.set_title(f"Label {i}", fontsize=15)
