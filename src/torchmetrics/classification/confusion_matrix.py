@@ -244,7 +244,7 @@ class MulticlassConfusionMatrix(Metric):
             >>> from torchmetrics.classification import MulticlassConfusionMatrix
             >>> metric = MulticlassConfusionMatrix(num_classes=5)
             >>> metric.update(torch.randint(5, (20,)), torch.randint(5, (20,)))
-            >>> metric.plot()
+            >>> fig_, ax_ = metric.plot()
         """
         val = val or self.compute()
         if not isinstance(val, Tensor):

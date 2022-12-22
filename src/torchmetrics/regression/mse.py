@@ -104,7 +104,7 @@ class MeanSquaredError(Metric):
             >>> from torchmetrics.regression import MeanSquaredError
             >>> metric = MeanSquaredError()
             >>> metric.update(torch.randn(10,), torch.randn(10,))
-            >>> metric.plot()
+            >>> fig_, ax_ = metric.plot()
 
         .. plot::
             :scale: 75
