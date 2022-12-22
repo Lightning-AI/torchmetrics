@@ -17,15 +17,15 @@ from functools import partial
 
 import pytest
 import torch
+from lightning_utilities.core.imports import compare_version
 from scipy.stats import kendalltau
 
 from torchmetrics.functional.regression.kendall import kendall_rank_corrcoef
 from torchmetrics.regression.kendall import KendallRankCorrCoef
-from torchmetrics.utilities.imports import _compare_version
 from unittests.helpers import seed_all
 from unittests.helpers.testers import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, MetricTester
 
-_SCIPY_GREATER_EQUAL_1_8 = _compare_version("scipy", operator.ge, "1.8.0")
+_SCIPY_GREATER_EQUAL_1_8 = compare_version("scipy", operator.ge, "1.8.0")
 
 seed_all(42)
 
@@ -119,6 +119,6 @@ class TestKendallRankCorrCoef(MetricTester):
 
 def _adjust_alternative_to_scipy(alternative):
     """Scipy<1.8.0 supports only two-sided hypothesis testing."""
-    if alternative is not None and not _compare_version("scipy", operator.ge, "1.8.0"):
+    if alternative is not None and not compare_version("scipy", operator.ge, "1.8.0"):
         alternative = "two-sided"
     return alternative
