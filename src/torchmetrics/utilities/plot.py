@@ -28,8 +28,8 @@ if _MATPLOTLIB_AVAILABLE:
     _PLOT_OUT_TYPE = Tuple[plt.Figure, Union[matplotlib.axes.Axes, np.ndarray]]
     _AX_TYPE = matplotlib.axes.Axes
 else:
-    _PLOT_OUT_TYPE = None
-    _AX_TYPE = None
+    _PLOT_OUT_TYPE = (object, object)
+    _AX_TYPE = object
 
 
 def _error_on_missing_matplotlib() -> None:
