@@ -20,13 +20,14 @@ from torchmetrics.functional.classification.average_precision import average_pre
 from torchmetrics.functional.classification.calibration_error import calibration_error
 from torchmetrics.functional.classification.cohen_kappa import cohen_kappa
 from torchmetrics.functional.classification.confusion_matrix import confusion_matrix
-from torchmetrics.functional.classification.dice import dice, dice_score
+from torchmetrics.functional.classification.dice import dice
+from torchmetrics.functional.classification.exact_match import exact_match
 from torchmetrics.functional.classification.f_beta import f1_score, fbeta_score
 from torchmetrics.functional.classification.hamming import hamming_distance
 from torchmetrics.functional.classification.hinge import hinge_loss
 from torchmetrics.functional.classification.jaccard import jaccard_index
 from torchmetrics.functional.classification.matthews_corrcoef import matthews_corrcoef
-from torchmetrics.functional.classification.precision_recall import precision, precision_recall, recall
+from torchmetrics.functional.classification.precision_recall import precision, recall
 from torchmetrics.functional.classification.precision_recall_curve import precision_recall_curve
 from torchmetrics.functional.classification.roc import roc
 from torchmetrics.functional.classification.specificity import specificity
@@ -112,9 +113,9 @@ __all__ = [
     "cramers_v",
     "cramers_v_matrix",
     "tweedie_deviance_score",
-    "dice_score",
     "dice",
     "error_relative_global_dimensionless_synthesis",
+    "exact_match",
     "explained_variance",
     "extended_edit_distance",
     "f1_score",
@@ -144,7 +145,6 @@ __all__ = [
     "perplexity",
     "pit_permutate",
     "precision",
-    "precision_recall",
     "precision_recall_curve",
     "peak_signal_noise_ratio",
     "r2_score",

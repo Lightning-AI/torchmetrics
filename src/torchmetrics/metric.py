@@ -23,7 +23,6 @@ from torch import Tensor
 from torch.nn import Module
 
 from torchmetrics.utilities import apply_to_collection, rank_zero_warn
-from torchmetrics.utilities.checks import is_overridden
 from torchmetrics.utilities.data import (
     _flatten,
     _squeeze_if_scalar,
@@ -140,24 +139,21 @@ class Metric(Module, ABC):
         self._is_synced = False
         self._cache: Optional[Dict[str, Union[List[Tensor], Tensor]]] = None
 
-        if self.full_state_update is None and not is_overridden("forward", self, Metric):
-            rank_zero_warn(
-                f"""Torchmetrics v0.9 introduced a new argument class property called `full_state_update` that has
-                not been set for this class ({self.__class__.__name__}). The property determines if `update` by
-                default needs access to the full metric state. If this is not the case, significant speedups can be
-                achieved and we recommend setting this to `False`.
-                We provide an checking function
-                `from torchmetrics.utilities import check_forward_full_state_property`
-                that can be used to check if the `full_state_update=True` (old and potential slower behaviour,
-                default for now) or if `full_state_update=False` can be used safely.
-                """,
-                UserWarning,
-            )
-
     @property
     def _update_called(self) -> bool:
-        # Needed for lightning integration
+        # TODO: this is needed for internal lightning, remove after v0.12 and update on lightning side
         return self._update_count > 0
+
+    @property
+    def update_called(self) -> bool:
+        """Returns `True` if `update` or `forward` has been called initialization or last `reset`."""
+        return self._update_count > 0
+
+    @property
+    def update_count(self) -> int:
+        """Get the number of times `update` and/or `forward` has been called since initialization or last
+        `reset`."""
+        return self._update_count
 
     def add_state(
         self,
@@ -170,8 +166,8 @@ class Metric(Module, ABC):
 
         Args:
             name: The name of the state variable. The variable will then be accessible at ``self.name``.
-            default: Default value of the state; can either be a ``torch.Tensor`` or an empty list. The state will be
-                reset to this value when ``self.reset()`` is called.
+            default: Default value of the state; can either be a :class:`~torch.Tensor` or an empty list.
+                The state will be reset to this value when ``self.reset()`` is called.
             dist_reduce_fx (Optional): Function to reduce state across multiple processes in distributed mode.
                 If value is ``"sum"``, ``"mean"``, ``"cat"``, ``"min"`` or ``"max"`` we will use ``torch.sum``,
                 ``torch.mean``, ``torch.cat``, ``torch.min`` and ``torch.max``` respectively, each with argument
@@ -186,9 +182,10 @@ class Metric(Module, ABC):
 
             The metric states would be synced as follows
 
-            - If the metric state is ``torch.Tensor``, the synced value will be a stacked ``torch.Tensor`` across
-              the process dimension if the metric state was a ``torch.Tensor``. The original ``torch.Tensor`` metric
-              state retains dimension and hence the synchronized output will be of shape ``(num_process, ...)``.
+            - If the metric state is :class:`~torch.Tensor`, the synced value will be a stacked :class:`~torch.Tensor`
+              across the process dimension if the metric state was a :class:`~torch.Tensor`. The original
+              :class:`~torch.Tensor` metric state retains dimension and hence the synchronized output will be of shape
+              ``(num_process, ...)``.
 
             - If the metric state is a ``list``, the synced value will be a ``list`` containing the
               combined elements from all processes.
@@ -557,6 +554,10 @@ class Metric(Module, ABC):
     def compute(self) -> Any:
         """Override this method to compute the final metric value from state variables synchronized across the
         distributed backend."""
+
+    def plot(self, *_: Any, **__: Any) -> None:
+        """Override this method plot the metric value."""
+        raise NotImplementedError
 
     def reset(self) -> None:
         """This method automatically resets the metric state variables to their default value."""

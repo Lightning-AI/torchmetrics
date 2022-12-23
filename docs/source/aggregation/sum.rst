@@ -14,3 +14,4 @@ ________________
 
 .. autoclass:: torchmetrics.SumMetric
     :noindex:
+    :exclude-members: update, compute

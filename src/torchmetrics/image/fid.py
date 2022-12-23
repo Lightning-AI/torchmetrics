@@ -161,7 +161,7 @@ class FrechetInceptionDistance(Metric):
               an ``[N,d]`` matrix where ``N`` is the batch size and ``d`` is the feature size.
 
         reset_real_features: Whether to also reset the real features. Since in many cases the real dataset does not
-            change, the features can cached them to avoid recomputing them which is costly. Set this to ``False`` if
+            change, the features can be cached them to avoid recomputing them which is costly. Set this to ``False`` if
             your dataset does not change.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
@@ -226,7 +226,7 @@ class FrechetInceptionDistance(Metric):
                     "FrechetInceptionDistance metric requires that `Torch-fidelity` is installed."
                     " Either install as `pip install torchmetrics[image]` or `pip install torch-fidelity`."
                 )
-            valid_int_input = [64, 192, 768, 2048]
+            valid_int_input = (64, 192, 768, 2048)
             if feature not in valid_int_input:
                 raise ValueError(
                     f"Integer input to argument `feature` must be one of {valid_int_input}, but got {feature}."
