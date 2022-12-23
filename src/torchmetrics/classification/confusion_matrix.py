@@ -35,6 +35,11 @@ from torchmetrics.functional.classification.confusion_matrix import (
     _multilabel_confusion_matrix_update,
 )
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _PLOT_OUT_TYPE, plot_confusion_matrix
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["MulticlassConfusionMatrix.plot"]
 
 
 class BinaryConfusionMatrix(Metric):
@@ -216,6 +221,36 @@ class MulticlassConfusionMatrix(Metric):
         Returns an [num_classes, num_classes] matrix.
         """
         return _multiclass_confusion_matrix_compute(self.confmat, self.normalize)
+
+    def plot(self, val: Optional[Tensor] = None) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+
+        Returns:
+            fig: Figure object
+            ax: Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> import torch
+            >>> from torchmetrics.classification import MulticlassConfusionMatrix
+            >>> metric = MulticlassConfusionMatrix(num_classes=5)
+            >>> metric.update(torch.randint(5, (20,)), torch.randint(5, (20,)))
+            >>> fig_, ax_ = metric.plot()
+        """
+        val = val or self.compute()
+        if not isinstance(val, Tensor):
+            raise TypeError(f"Expected val to be a single tensor but got {val}")
+        fig, ax = plot_confusion_matrix(val)
+        return fig, ax
 
 
 class MultilabelConfusionMatrix(Metric):
