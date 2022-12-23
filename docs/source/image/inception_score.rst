@@ -12,3 +12,4 @@ ________________
 
 .. autoclass:: torchmetrics.image.inception.InceptionScore
     :noindex:
+    :exclude-members: update, compute

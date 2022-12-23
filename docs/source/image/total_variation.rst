@@ -14,6 +14,7 @@ ________________
 
 .. autoclass:: torchmetrics.TotalVariation
     :noindex:
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________

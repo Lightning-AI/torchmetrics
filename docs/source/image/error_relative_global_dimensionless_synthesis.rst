@@ -12,6 +12,8 @@ ________________
 
 .. autoclass:: torchmetrics.image.ergas.ErrorRelativeGlobalDimensionlessSynthesis
     :noindex:
+    :exclude-members: update, compute
+
 
 Functional Interface
 ____________________
