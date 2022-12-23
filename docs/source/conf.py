@@ -101,7 +101,11 @@ extensions = [
     "sphinx_paramlinks",
     "sphinx.ext.githubpages",
     "pt_lightning_sphinx_theme.extensions.lightning",
+    "matplotlib.sphinxext.plot_directive",
 ]
+
+# Set that source code from plotting is always included
+plot_include_source = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]

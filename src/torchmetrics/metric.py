@@ -555,6 +555,10 @@ class Metric(Module, ABC):
         """Override this method to compute the final metric value from state variables synchronized across the
         distributed backend."""
 
+    def plot(self, *_: Any, **__: Any) -> None:
+        """Override this method plot the metric value."""
+        raise NotImplementedError
+
     def reset(self) -> None:
         """This method automatically resets the metric state variables to their default value."""
         self._update_count = 0
