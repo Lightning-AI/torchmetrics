@@ -12,6 +12,7 @@ ________________
 
 .. autoclass:: torchmetrics.classification.MultilabelCoverageError
     :noindex:
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________

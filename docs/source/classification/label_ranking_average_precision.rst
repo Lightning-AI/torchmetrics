@@ -12,6 +12,7 @@ ________________
 
 .. autoclass:: torchmetrics.classification.MultilabelRankingAveragePrecision
     :noindex:
+    :exclude-members: update, compute
 
 
 Functional Interface
