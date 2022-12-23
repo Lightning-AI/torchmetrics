@@ -33,7 +33,7 @@ def accuracy_example():
     metric.update(p(), t())
     fig, ax = metric.plot()
 
-    # plot two values as an series
+    # plot two values as a series
     metric = MulticlassAccuracy(num_classes=5)
     val1 = metric(p(), t())
     val2 = metric(p(), t())
@@ -79,18 +79,17 @@ def confusion_matrix_example():
 
 
 if __name__ == "__main__":
-    list_of_choices = ["accuracy", "mean_squared_error", "confusion_matrix"]
+
+    metrics_func = {
+        "accuracy": accuracy_example,
+        "mean_squared_error": mean_squared_error_example,
+        "confusion_matrix": confusion_matrix_example,
+    }
+
     parser = argparse.ArgumentParser(description="Example script for plotting metrics.")
-    parser.add_argument("metric", choices=list_of_choices)
+    parser.add_argument("metric", type=str, nargs="?", choices=list(metrics_func.keys()), default="accuracy")
     args = parser.parse_args()
 
-    if args.metric == "accuracy":
-        fig, ax = accuracy_example()
-
-    if args.metric == "mean_squared_error":
-        fig, ax = mean_squared_error_example()
-
-    if args.metric == "confusion_matrix":
-        fig, ax = confusion_matrix_example()
+    fig, ax = metrics_func[args.metric]()
 
     plt.show()
