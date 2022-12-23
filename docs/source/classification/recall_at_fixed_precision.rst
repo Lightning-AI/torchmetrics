@@ -15,18 +15,21 @@ BinaryRecallAtFixedPrecision
 
 .. autoclass:: torchmetrics.classification.BinaryRecallAtFixedPrecision
     :noindex:
+    :exclude-members: update, compute
 
 MulticlassRecallAtFixedPrecision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.MulticlassRecallAtFixedPrecision
     :noindex:
+    :exclude-members: update, compute
 
 MultilabelRecallAtFixedPrecision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.MultilabelRecallAtFixedPrecision
     :noindex:
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________

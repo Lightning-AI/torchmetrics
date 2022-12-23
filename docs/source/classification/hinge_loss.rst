@@ -12,18 +12,21 @@ ________________
 
 .. autoclass:: torchmetrics.HingeLoss
     :noindex:
+    :exclude-members: update, compute
 
 BinaryHingeLoss
 ^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.BinaryHingeLoss
     :noindex:
+    :exclude-members: update, compute
 
 MulticlassHingeLoss
 ^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.MulticlassHingeLoss
     :noindex:
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________

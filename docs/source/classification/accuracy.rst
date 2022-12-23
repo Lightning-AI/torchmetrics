@@ -12,24 +12,29 @@ ________________
 
 .. autoclass:: torchmetrics.Accuracy
     :noindex:
+    :exclude-members: update, compute
+
 
 BinaryAccuracy
 ^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.BinaryAccuracy
     :noindex:
+    :exclude-members: update, compute
 
 MulticlassAccuracy
 ^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.MulticlassAccuracy
     :noindex:
+    :exclude-members: update, compute
 
 MultilabelAccuracy
 ^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.MultilabelAccuracy
     :noindex:
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________
@@ -48,6 +53,7 @@ multiclass_accuracy
 
 .. autofunction:: torchmetrics.functional.classification.multiclass_accuracy
     :noindex:
+
 
 multilabel_accuracy
 ^^^^^^^^^^^^^^^^^^^

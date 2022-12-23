@@ -115,3 +115,4 @@
 .. _Scale-invariant signal-to-noise ratio: https://arxiv.org/abs/1711.00541
 .. _Signal-to-noise ratio: https://arxiv.org/abs/1811.02508
 .. _Permutation invariant training: https://arxiv.org/abs/1607.00325
+.. _ranking ref1: https://link.springer.com/chapter/10.1007/978-0-387-09823-4_34
