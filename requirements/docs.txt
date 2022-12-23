@@ -13,3 +13,4 @@ sphinx-copybutton>=0.3
 
 # integrations
 -r integrate.txt
+-r visual.txt
