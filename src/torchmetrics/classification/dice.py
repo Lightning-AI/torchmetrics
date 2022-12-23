@@ -37,6 +37,18 @@ class Dice(Metric):
     ``average`` parameter, and additionally by the ``mdmc_average`` parameter in the
     multi-dimensional multi-class case.
 
+    As input to 'update' the metric accepts the following input:
+
+    - ``preds``: Predictions from model (probabilities, logits or labels)
+    - ``target``: Ground truth values
+
+    As output of 'compute' the metric returns the dice score based on inputs passed in to ``update`` previously.
+    
+    The shape of the returned tensor, depending on the ``average`` parameter:
+
+    - If ``average in ['micro', 'macro', 'weighted', 'samples']``, a one-element tensor will be returned
+    - If ``average in ['none', None]``, the shape will be ``(C,)``, where ``C`` stands  for the number of classes
+
     Args:
         num_classes:
             Number of classes. Necessary for ``'macro'``, ``'weighted'`` and ``None`` average methods.
@@ -183,12 +195,7 @@ class Dice(Metric):
 
     @no_type_check
     def update(self, preds: Tensor, target: Tensor) -> None:
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model (probabilities, logits or labels)
-            target: Ground truth values
-        """
+        """Update state with predictions and targets."""
         tp, fp, tn, fn = _stat_scores_update(
             preds,
             target,
@@ -224,14 +231,6 @@ class Dice(Metric):
 
     @no_type_check
     def compute(self) -> Tensor:
-        """Computes the dice score based on inputs passed in to ``update`` previously.
-
-        Return:
-            The shape of the returned tensor depends on the ``average`` parameter:
-
-            - If ``average in ['micro', 'macro', 'weighted', 'samples']``, a one-element tensor will be returned
-            - If ``average in ['none', None]``, the shape will be ``(C,)``, where ``C`` stands  for the number
-              of classes
-        """
+        """Computes metric."""
         tp, fp, _, fn = self._get_final_stats()
         return _dice_compute(tp, fp, fn, self.average, self.mdmc_reduce, self.zero_division)

@@ -85,7 +85,7 @@ class BinaryStatScores(_AbstractStatScores):
     r"""Computes the number of true positives, false positives, true negatives, false negatives and the support for
     binary tasks. Related to `Type I and Type II errors`_.
 
-    Accepts the following input tensors:
+    As input to 'update' the metric accepts the following input:
 
     - ``preds`` (int or float tensor): ``(N, ...)``. If preds is a floating point tensor with values outside
       [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
@@ -94,6 +94,15 @@ class BinaryStatScores(_AbstractStatScores):
 
     The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
     argument.
+
+    As output to 'compute' the metric returns the final statistics.
+    
+    The final statistics are a tensor of shape ``(..., 5)``, where the last dimension corresponds
+    to ``[tp, fp, tn, fn, sup]`` (``sup`` stands for support and equals ``tp + fn``). The shape
+    depends on the ``multidim_average`` parameter:
+
+    - If ``multidim_average`` is set to ``global``, the shape will be ``(5,)``
+    - If ``multidim_average`` is set to ``samplewise``, the shape will be ``(N, 5)``
 
     Args:
         threshold: Threshold for transforming probability to binary {0,1} predictions
@@ -163,12 +172,7 @@ class BinaryStatScores(_AbstractStatScores):
         self._create_state(size=1, multidim_average=multidim_average)
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Tensor with predictions
-            target: Tensor with true labels
-        """
+        """Update state with predictions and targets."""
         if self.validate_args:
             _binary_stat_scores_tensor_validation(preds, target, self.multidim_average, self.ignore_index)
         preds, target = _binary_stat_scores_format(preds, target, self.threshold, self.ignore_index)
@@ -176,16 +180,7 @@ class BinaryStatScores(_AbstractStatScores):
         self._update_state(tp, fp, tn, fn)
 
     def compute(self) -> Tensor:
-        """Computes the final statistics.
-
-        Returns:
-            The metric returns a tensor of shape ``(..., 5)``, where the last dimension corresponds
-            to ``[tp, fp, tn, fn, sup]`` (``sup`` stands for support and equals ``tp + fn``). The shape
-            depends on the ``multidim_average`` parameter:
-
-            - If ``multidim_average`` is set to ``global``, the shape will be ``(5,)``
-            - If ``multidim_average`` is set to ``samplewise``, the shape will be ``(N, 5)``
-        """
+        """Computes the final statistics."""
         tp, fp, tn, fn = self._final_state()
         return _binary_stat_scores_compute(tp, fp, tn, fn, self.multidim_average)
 
@@ -194,7 +189,7 @@ class MulticlassStatScores(_AbstractStatScores):
     r"""Computes the number of true positives, false positives, true negatives, false negatives and the support for
     multiclass tasks. Related to `Type I and Type II errors`_.
 
-    Accepts the following input tensors:
+    As input to 'update' the metric accepts the following input:
 
     - ``preds``: ``(N, ...)`` (int tensor) or ``(N, C, ..)`` (float tensor). If preds is a floating point
       we apply ``torch.argmax`` along the ``C`` dimension to automatically convert probabilities/logits into
@@ -203,6 +198,19 @@ class MulticlassStatScores(_AbstractStatScores):
 
     The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
     argument.
+
+    As output to 'compute' the metric returns the final statistics.
+    
+    The final statistics are a tensor of shape ``(..., 5)``, where the last dimension corresponds
+    to ``[tp, fp, tn, fn, sup]`` (``sup`` stands for support and equals ``tp + fn``). The shape
+    depends on ``average`` and ``multidim_average`` parameters:
+
+    - If ``multidim_average`` is set to ``global``
+    - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(5,)``
+    - If ``average=None/'none'``, the shape will be ``(C, 5)``
+    - If ``multidim_average`` is set to ``samplewise``
+    - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N, 5)``
+    - If ``average=None/'none'``, the shape will be ``(N, C, 5)``
 
     Args:
         num_classes: Integer specifing the number of classes
@@ -306,12 +314,7 @@ class MulticlassStatScores(_AbstractStatScores):
         )
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Tensor with predictions
-            target: Tensor with true labels
-        """
+        """Update state with predictions and targets."""
         if self.validate_args:
             _multiclass_stat_scores_tensor_validation(
                 preds, target, self.num_classes, self.multidim_average, self.ignore_index
@@ -323,20 +326,7 @@ class MulticlassStatScores(_AbstractStatScores):
         self._update_state(tp, fp, tn, fn)
 
     def compute(self) -> Tensor:
-        """Computes the final statistics.
-
-        Returns:
-            The metric returns a tensor of shape ``(..., 5)``, where the last dimension corresponds
-            to ``[tp, fp, tn, fn, sup]`` (``sup`` stands for support and equals ``tp + fn``). The shape
-            depends on ``average`` and ``multidim_average`` parameters:
-
-            - If ``multidim_average`` is set to ``global``
-            - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(5,)``
-            - If ``average=None/'none'``, the shape will be ``(C, 5)``
-            - If ``multidim_average`` is set to ``samplewise``
-            - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N, 5)``
-            - If ``average=None/'none'``, the shape will be ``(N, C, 5)``
-        """
+        """Computes the final statistics."""
         tp, fp, tn, fn = self._final_state()
         return _multiclass_stat_scores_compute(tp, fp, tn, fn, self.average, self.multidim_average)
 
@@ -345,7 +335,7 @@ class MultilabelStatScores(_AbstractStatScores):
     r"""Computes the number of true positives, false positives, true negatives, false negatives and the support for
     multilabel tasks. Related to `Type I and Type II errors`_.
 
-    Accepts the following input tensors:
+    As input to 'update' the metric accepts the following input:
 
     - ``preds`` (int or float tensor): ``(N, C, ...)``. If preds is a floating point tensor with values outside
       [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
@@ -354,6 +344,19 @@ class MultilabelStatScores(_AbstractStatScores):
 
     The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
     argument.
+
+    As output to 'compute' the metric returns the final statistics.
+    
+    The final statistics are a tensor of shape ``(..., 5)``, where the last dimension corresponds
+    to ``[tp, fp, tn, fn, sup]`` (``sup`` stands for support and equals ``tp + fn``). The shape
+    depends on ``average`` and ``multidim_average`` parameters:
+
+    - If ``multidim_average`` is set to ``global``
+    - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(5,)``
+    - If ``average=None/'none'``, the shape will be ``(C, 5)``
+    - If ``multidim_average`` is set to ``samplewise``
+    - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N, 5)``
+    - If ``average=None/'none'``, the shape will be ``(N, C, 5)``
 
     Args:
         num_labels: Integer specifing the number of labels
@@ -454,12 +457,7 @@ class MultilabelStatScores(_AbstractStatScores):
         self._create_state(size=num_labels, multidim_average=multidim_average)
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Tensor with predictions
-            target: Tensor with true labels
-        """
+        """Update state with predictions and targets."""
         if self.validate_args:
             _multilabel_stat_scores_tensor_validation(
                 preds, target, self.num_labels, self.multidim_average, self.ignore_index
@@ -471,20 +469,7 @@ class MultilabelStatScores(_AbstractStatScores):
         self._update_state(tp, fp, tn, fn)
 
     def compute(self) -> Tensor:
-        """Computes the final statistics.
-
-        Returns:
-            The metric returns a tensor of shape ``(..., 5)``, where the last dimension corresponds
-            to ``[tp, fp, tn, fn, sup]`` (``sup`` stands for support and equals ``tp + fn``). The shape
-            depends on ``average`` and ``multidim_average`` parameters:
-
-            - If ``multidim_average`` is set to ``global``
-            - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(5,)``
-            - If ``average=None/'none'``, the shape will be ``(C, 5)``
-            - If ``multidim_average`` is set to ``samplewise``
-            - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N, 5)``
-            - If ``average=None/'none'``, the shape will be ``(N, C, 5)``
-        """
+        """Computes the final statistics."""
         tp, fp, tn, fn = self._final_state()
         return _multilabel_stat_scores_compute(tp, fp, tn, fn, self.average, self.multidim_average)
 

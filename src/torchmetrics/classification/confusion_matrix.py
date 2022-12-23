@@ -40,7 +40,7 @@ from torchmetrics.metric import Metric
 class BinaryConfusionMatrix(Metric):
     r"""Computes the `confusion matrix`_ for binary tasks.
 
-    Accepts the following input tensors:
+    As input to 'compute' the metric accepts the following input:
 
     - ``preds`` (int or float tensor): ``(N, ...)``. If preds is a floating point tensor with values outside
       [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
@@ -48,6 +48,10 @@ class BinaryConfusionMatrix(Metric):
     - ``target`` (int tensor): ``(N, ...)``
 
     Additional dimension ``...`` will be flattened into the batch dimension.
+
+    As output of 'compute' the metrics returns the following output: 
+    
+    - ``confusion matrix``: [2, 2] matrix
 
     Args:
         threshold: Threshold for transforming probability to binary (0,1) predictions
@@ -104,12 +108,7 @@ class BinaryConfusionMatrix(Metric):
         self.add_state("confmat", torch.zeros(2, 2, dtype=torch.long), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Tensor with predictions
-            target: Tensor with true labels
-        """
+        """Update state with predictions and targets."""
         if self.validate_args:
             _binary_confusion_matrix_tensor_validation(preds, target, self.ignore_index)
         preds, target = _binary_confusion_matrix_format(preds, target, self.threshold, self.ignore_index)
@@ -117,17 +116,14 @@ class BinaryConfusionMatrix(Metric):
         self.confmat += confmat
 
     def compute(self) -> Tensor:
-        """Computes confusion matrix.
-
-        Returns an [2,2] matrix.
-        """
+        """Computes confusion matrix."""
         return _binary_confusion_matrix_compute(self.confmat, self.normalize)
 
 
 class MulticlassConfusionMatrix(Metric):
     r"""Computes the `confusion matrix`_ for multiclass tasks.
 
-    Accepts the following input tensors:
+    As input to 'update' the metric accepts the following input:
 
     - ``preds``: ``(N, ...)`` (int tensor) or ``(N, C, ..)`` (float tensor). If preds is a floating point
       we apply ``torch.argmax`` along the ``C`` dimension to automatically convert probabilities/logits into
@@ -135,6 +131,10 @@ class MulticlassConfusionMatrix(Metric):
     - ``target`` (int tensor): ``(N, ...)``
 
     Additional dimension ``...`` will be flattened into the batch dimension.
+
+    As output of 'compute' the metric returns the following output:
+
+    - ``confusion matrix``: [num_classes, num_classes] matrix
 
     Args:
         num_classes: Integer specifing the number of classes
@@ -198,12 +198,7 @@ class MulticlassConfusionMatrix(Metric):
         self.add_state("confmat", torch.zeros(num_classes, num_classes, dtype=torch.long), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Tensor with predictions
-            target: Tensor with true labels
-        """
+        """Update state with predictions and targets. """
         if self.validate_args:
             _multiclass_confusion_matrix_tensor_validation(preds, target, self.num_classes, self.ignore_index)
         preds, target = _multiclass_confusion_matrix_format(preds, target, self.ignore_index)
@@ -211,17 +206,14 @@ class MulticlassConfusionMatrix(Metric):
         self.confmat += confmat
 
     def compute(self) -> Tensor:
-        """Computes confusion matrix.
-
-        Returns an [num_classes, num_classes] matrix.
-        """
+        """Computes confusion matrix."""
         return _multiclass_confusion_matrix_compute(self.confmat, self.normalize)
 
 
 class MultilabelConfusionMatrix(Metric):
     r"""Computes the `confusion matrix`_ for multilabel tasks.
 
-    Accepts the following input tensors:
+    As input to 'update' the metric accepts the following input:
 
     - ``preds`` (int or float tensor): ``(N, C, ...)``. If preds is a floating point tensor with values outside
       [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
@@ -230,6 +222,10 @@ class MultilabelConfusionMatrix(Metric):
 
     Additional dimension ``...`` will be flattened into the batch dimension.
 
+    As output of 'compute' the metric returns the following output:
+
+    - ``confusion matrix``: [num_labels,2,2] matrix
+    
     Args:
         num_classes: Integer specifing the number of labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
@@ -290,12 +286,7 @@ class MultilabelConfusionMatrix(Metric):
         self.add_state("confmat", torch.zeros(num_labels, 2, 2, dtype=torch.long), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Tensor with predictions
-            target: Tensor with true labels
-        """
+        """Update state with predictions and targets."""
         if self.validate_args:
             _multilabel_confusion_matrix_tensor_validation(preds, target, self.num_labels, self.ignore_index)
         preds, target = _multilabel_confusion_matrix_format(
@@ -305,10 +296,7 @@ class MultilabelConfusionMatrix(Metric):
         self.confmat += confmat
 
     def compute(self) -> Tensor:
-        """Computes confusion matrix.
-
-        Returns an [num_labels,2,2] matrix.
-        """
+        """Computes confusion matrix."""
         return _multilabel_confusion_matrix_compute(self.confmat, self.normalize)
 
 
