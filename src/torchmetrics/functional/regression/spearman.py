@@ -16,7 +16,7 @@ from typing import Tuple
 import torch
 from torch import Tensor
 
-from torchmetrics.functional.regression.utils import _check_data_shape_for_corr_coef
+from torchmetrics.functional.regression.utils import _check_data_shape_to_num_outputs
 from torchmetrics.utilities.checks import _check_same_shape
 
 
@@ -68,7 +68,7 @@ def _spearman_corrcoef_update(preds: Tensor, target: Tensor, num_outputs: int) -
             "Expected `preds` and `target` both to be floating point tensors, but got {pred.dtype} and {target.dtype}"
         )
     _check_same_shape(preds, target)
-    _check_data_shape_for_corr_coef(preds, target, num_outputs)
+    _check_data_shape_to_num_outputs(preds, target, num_outputs)
 
     return preds, target
 

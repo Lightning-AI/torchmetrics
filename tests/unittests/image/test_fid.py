@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import pickle
+from contextlib import nullcontext as does_not_raise
 
 import pytest
 import torch
@@ -121,7 +122,7 @@ class _ImgDataset(Dataset):
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test is too slow without gpu")
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 @pytest.mark.parametrize("equal_size", [False, True])
-def test_compare_fid(tmpdir, equal_size, feature=2048):
+def test_compare_fid(tmpdir, equal_size, feature=768):
     """check that the hole pipeline give the same result as torch-fidelity."""
     from torch_fidelity import calculate_metrics
 
@@ -131,6 +132,7 @@ def test_compare_fid(tmpdir, equal_size, feature=2048):
     m = 100 if equal_size else 90
 
     # Generate some synthetic data
+    torch.manual_seed(42)
     img1 = torch.randint(0, 180, (n, 3, 299, 299), dtype=torch.uint8)
     img2 = torch.randint(100, 255, (m, 3, 299, 299), dtype=torch.uint8)
 
@@ -181,3 +183,19 @@ def test_reset_real_features_arg(reset_real_features):
         assert metric.real_features_num_samples == 2
         assert metric.real_features_sum.shape == torch.Size([64])
         assert metric.real_features_cov_sum.shape == torch.Size([64, 64])
+
+
+@pytest.mark.parametrize(
+    "normalize, expectation, message",
+    [
+        (True, does_not_raise(), None),
+        (False, pytest.raises(ValueError), "Expecting image as torch.Tensor with dtype=torch.uint8"),
+    ],
+)
+def test_normalize_arg(normalize, expectation, message):
+    """Test that normalize argument works as expected."""
+    img = torch.rand(2, 3, 299, 299)
+    metric = FrechetInceptionDistance(normalize=normalize)
+    with expectation as e:
+        metric.update(img, real=True)
+    assert message is None or message in str(e)

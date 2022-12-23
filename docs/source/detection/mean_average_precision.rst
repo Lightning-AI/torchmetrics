@@ -12,3 +12,4 @@ ________________
 
 .. autoclass:: torchmetrics.detection.mean_ap.MeanAveragePrecision
     :noindex:
+    :exclude-members: update, compute

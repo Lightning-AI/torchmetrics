@@ -14,3 +14,4 @@ ________________
 
 .. autoclass:: torchmetrics.MinMetric
     :noindex:
+    :exclude-members: update, compute

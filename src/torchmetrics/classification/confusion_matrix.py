@@ -23,8 +23,6 @@ from torchmetrics.functional.classification.confusion_matrix import (
     _binary_confusion_matrix_format,
     _binary_confusion_matrix_tensor_validation,
     _binary_confusion_matrix_update,
-    _confusion_matrix_compute,
-    _confusion_matrix_update,
     _multiclass_confusion_matrix_arg_validation,
     _multiclass_confusion_matrix_compute,
     _multiclass_confusion_matrix_format,
@@ -37,7 +35,11 @@ from torchmetrics.functional.classification.confusion_matrix import (
     _multilabel_confusion_matrix_update,
 )
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.prints import rank_zero_warn
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _PLOT_OUT_TYPE, plot_confusion_matrix
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["MulticlassConfusionMatrix.plot"]
 
 
 class BinaryConfusionMatrix(Metric):
@@ -220,6 +222,36 @@ class MulticlassConfusionMatrix(Metric):
         """
         return _multiclass_confusion_matrix_compute(self.confmat, self.normalize)
 
+    def plot(self, val: Optional[Tensor] = None) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+
+        Returns:
+            fig: Figure object
+            ax: Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> import torch
+            >>> from torchmetrics.classification import MulticlassConfusionMatrix
+            >>> metric = MulticlassConfusionMatrix(num_classes=5)
+            >>> metric.update(torch.randint(5, (20,)), torch.randint(5, (20,)))
+            >>> fig_, ax_ = metric.plot()
+        """
+        val = val or self.compute()
+        if not isinstance(val, Tensor):
+            raise TypeError(f"Expected val to be a single tensor but got {val}")
+        fig, ax = plot_confusion_matrix(val)
+        return fig, ax
+
 
 class MultilabelConfusionMatrix(Metric):
     r"""Computes the `confusion matrix`_ for multilabel tasks.
@@ -315,159 +347,59 @@ class MultilabelConfusionMatrix(Metric):
         return _multilabel_confusion_matrix_compute(self.confmat, self.normalize)
 
 
-class ConfusionMatrix(Metric):
-    r"""Confusion Matrix.
+class ConfusionMatrix:
+    r"""Computes the `confusion matrix`_.
 
-    .. note::
-        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
-        metric. Moving forward we recommend using these versions. This base metric will still work as it did
-        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
-        and the general order of arguments may change, such that this metric will just function as an single
-        entrypoint to calling the three specialized versions.
+    This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    :mod:`BinaryConfusionMatrix`, :mod:`MulticlassConfusionMatrix` and :func:`MultilabelConfusionMatrix` for
+    the specific details of each argument influence and examples.
 
-    Computes the `confusion matrix`_.
-
-    Works with binary, multiclass, and multilabel data. Accepts probabilities or logits from a model output
-    or integer class values in prediction. Works with multi-dimensional preds and target, but it should be noted that
-    additional dimensions will be flattened.
-
-    Forward accepts
-
-    - ``preds`` (float or long tensor): ``(N, ...)`` or ``(N, C, ...)`` where C is the number of classes
-    - ``target`` (long tensor): ``(N, ...)``
-
-    If preds and target are the same shape and preds is a float tensor, we use the ``self.threshold`` argument
-    to convert into integer labels. This is the case for binary and multi-label probabilities or logits.
-
-    If preds has an extra dimension as in the case of multi-class scores we perform an argmax on ``dim=1``.
-
-    If working with multilabel data, setting the ``is_multilabel`` argument to ``True`` will make sure that a
-    `confusion matrix gets calculated per label`_.
-
-    Args:
-        num_classes: Number of classes in the dataset.
-        normalize: Normalization mode for confusion matrix. Choose from:
-
-            - ``None`` or ``'none'``: no normalization (default)
-            - ``'true'``: normalization over the targets (most commonly used)
-            - ``'pred'``: normalization over the predictions
-            - ``'all'``: normalization over the whole matrix
-
-        threshold:
-            Threshold for transforming probability or logit predictions to binary ``(0,1)`` predictions, in the case
-            of binary or multi-label inputs. Default value of ``0.5`` corresponds to input being probabilities.
-
-        multilabel: determines if data is multilabel or not.
-
-        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
-
-    Example (binary data):
-        >>> from torchmetrics import ConfusionMatrix
+    Legacy Example:
         >>> target = torch.tensor([1, 1, 0, 0])
         >>> preds = torch.tensor([0, 1, 0, 0])
-        >>> confmat = ConfusionMatrix(num_classes=2)
+        >>> confmat = ConfusionMatrix(task="binary", num_classes=2)
         >>> confmat(preds, target)
         tensor([[2, 0],
                 [1, 1]])
 
-    Example (multiclass data):
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([2, 1, 0, 1])
-        >>> confmat = ConfusionMatrix(num_classes=3)
+        >>> confmat = ConfusionMatrix(task="multiclass", num_classes=3)
         >>> confmat(preds, target)
         tensor([[1, 1, 0],
                 [0, 1, 0],
                 [0, 0, 1]])
 
-    Example (multilabel data):
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
-        >>> confmat = ConfusionMatrix(num_classes=3, multilabel=True)
+        >>> confmat = ConfusionMatrix(task="multilabel", num_labels=3)
         >>> confmat(preds, target)
         tensor([[[1, 0], [0, 1]],
                 [[1, 0], [1, 0]],
                 [[0, 1], [0, 1]]])
     """
-    is_differentiable: bool = False
-    higher_is_better: Optional[bool] = None
-    full_state_update: bool = False
-    confmat: Tensor
 
     def __new__(
         cls,
-        num_classes: Optional[int] = None,
-        normalize: Optional[str] = None,
+        task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,
-        multilabel: bool = False,
-        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+        num_classes: Optional[int] = None,
         num_labels: Optional[int] = None,
+        normalize: Optional[Literal["true", "pred", "all", "none"]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
-        if task is not None:
-            kwargs.update(dict(normalize=normalize, ignore_index=ignore_index, validate_args=validate_args))
-            if task == "binary":
-                return BinaryConfusionMatrix(threshold, **kwargs)
-            if task == "multiclass":
-                assert isinstance(num_classes, int)
-                return MulticlassConfusionMatrix(num_classes, **kwargs)
-            if task == "multilabel":
-                assert isinstance(num_labels, int)
-                return MultilabelConfusionMatrix(num_labels, threshold, **kwargs)
-            raise ValueError(
-                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-            )
-        else:
-            rank_zero_warn(
-                "From v0.10 an `'Binary*'`, `'Multiclass*', `'Multilabel*'` version now exist of each classification"
-                " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
-                " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
-                " and the general order of arguments may change, such that this metric will just function as an single"
-                " entrypoint to calling the three specialized versions.",
-                DeprecationWarning,
-            )
-        return super().__new__(cls)
-
-    def __init__(
-        self,
-        num_classes: int,
-        normalize: Optional[str] = None,
-        threshold: float = 0.5,
-        multilabel: bool = False,
-        **kwargs: Any,
-    ) -> None:
-        super().__init__(**kwargs)
-        self.num_classes = num_classes
-        self.normalize = normalize
-        self.threshold = threshold
-        self.multilabel = multilabel
-
-        allowed_normalize = ("true", "pred", "all", "none", None)
-        if self.normalize not in allowed_normalize:
-            raise ValueError(f"Argument average needs to one of the following: {allowed_normalize}")
-
-        if multilabel:
-            default = torch.zeros(num_classes, 2, 2, dtype=torch.long)
-        else:
-            default = torch.zeros(num_classes, num_classes, dtype=torch.long)
-        self.add_state("confmat", default=default, dist_reduce_fx="sum")
-
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
-        confmat = _confusion_matrix_update(preds, target, self.num_classes, self.threshold, self.multilabel)
-        self.confmat += confmat
-
-    def compute(self) -> Tensor:
-        """Computes confusion matrix.
-
-        Returns:
-            If ``multilabel=False`` this will be a ``[n_classes, n_classes]`` tensor and if ``multilabel=True``
-            this will be a ``[n_classes, 2, 2]`` tensor.
-        """
-        return _confusion_matrix_compute(self.confmat, self.normalize)
+        kwargs.update(dict(normalize=normalize, ignore_index=ignore_index, validate_args=validate_args))
+        if task == "binary":
+            return BinaryConfusionMatrix(threshold, **kwargs)
+        if task == "multiclass":
+            assert isinstance(num_classes, int)
+            return MulticlassConfusionMatrix(num_classes, **kwargs)
+        if task == "multilabel":
+            assert isinstance(num_labels, int)
+            return MultilabelConfusionMatrix(num_labels, threshold, **kwargs)
+        raise ValueError(
+            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+        )
