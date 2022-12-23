@@ -29,9 +29,8 @@ from torchmetrics.metric import Metric
 
 
 class PanopticQuality(Metric):
-    r"""
-    Computes the `Panoptic Quality (PQ) <https://arxiv.org/abs/1801.00868>`_
-    for panoptic segmentations. It is defined as:
+    r"""Computes the `Panoptic Quality (PQ) <https://arxiv.org/abs/1801.00868>`_ for panoptic segmentations. It is
+    defined as:
 
     .. math::
         PQ = \frac{IOU}{TP + 0.5\cdot FP + 0.5\cdot FN}
@@ -95,8 +94,7 @@ class PanopticQuality(Metric):
         self.add_state("false_negatives", default=torch.zeros(n_categories, dtype=torch.int), dist_reduce_fx="sum")
 
     def update(self, preds: torch.Tensor, target: torch.Tensor) -> None:  # type: ignore
-        r"""
-        Update state with predictions and targets.
+        r"""Update state with predictions and targets.
 
         Args:
             preds: ``torch.IntTensor`` panoptic detection of shape [height, width, 2] containing

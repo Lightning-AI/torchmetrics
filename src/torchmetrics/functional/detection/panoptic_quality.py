@@ -108,10 +108,8 @@ def _panoptic_quality_update(
     cat_id_to_continuous_id: Dict[int, int],
     void_color: Tuple[int, int],
 ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
-    r"""
-    Returns stat scores (iou sum, true positives, false positives, false negatives) required
-    to compute accuracy.
-    """
+    r"""Returns stat scores (iou sum, true positives, false positives, false negatives) required to compute
+    accuracy."""
     device = flatten_preds.device
     n_categories = len(cat_id_to_continuous_id)
     iou_sum = torch.zeros(n_categories, dtype=torch.double, device=device)
