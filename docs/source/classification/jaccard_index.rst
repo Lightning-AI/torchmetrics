@@ -15,6 +15,7 @@ CohenKappa
 
 .. autoclass:: torchmetrics.JaccardIndex
     :noindex:
+    :exclude-members: update, compute
 
 BinaryJaccardIndex
 ^^^^^^^^^^^^^^^^^^

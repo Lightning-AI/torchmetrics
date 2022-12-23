@@ -17,6 +17,7 @@ StatScores
 
 .. autoclass:: torchmetrics.StatScores
     :noindex:
+    :exclude-members: update, compute
 
 BinaryStatScores
 ^^^^^^^^^^^^^^^^
