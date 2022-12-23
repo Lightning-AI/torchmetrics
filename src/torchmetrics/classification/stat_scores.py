@@ -96,7 +96,7 @@ class BinaryStatScores(_AbstractStatScores):
     argument.
 
     As output to 'compute' the metric returns the final statistics.
-    
+
     The final statistics are a tensor of shape ``(..., 5)``, where the last dimension corresponds
     to ``[tp, fp, tn, fn, sup]`` (``sup`` stands for support and equals ``tp + fn``). The shape
     depends on the ``multidim_average`` parameter:
@@ -200,7 +200,7 @@ class MulticlassStatScores(_AbstractStatScores):
     argument.
 
     As output to 'compute' the metric returns the final statistics.
-    
+
     The final statistics are a tensor of shape ``(..., 5)``, where the last dimension corresponds
     to ``[tp, fp, tn, fn, sup]`` (``sup`` stands for support and equals ``tp + fn``). The shape
     depends on ``average`` and ``multidim_average`` parameters:
@@ -346,7 +346,7 @@ class MultilabelStatScores(_AbstractStatScores):
     argument.
 
     As output to 'compute' the metric returns the final statistics.
-    
+
     The final statistics are a tensor of shape ``(..., 5)``, where the last dimension corresponds
     to ``[tp, fp, tn, fn, sup]`` (``sup`` stands for support and equals ``tp + fn``). The shape
     depends on ``average`` and ``multidim_average`` parameters:

@@ -43,7 +43,7 @@ class Dice(Metric):
     - ``target``: Ground truth values
 
     As output of 'compute' the metric returns the dice score based on inputs passed in to ``update`` previously.
-    
+
     The shape of the returned tensor, depending on the ``average`` parameter:
 
     - If ``average in ['micro', 'macro', 'weighted', 'samples']``, a one-element tensor will be returned

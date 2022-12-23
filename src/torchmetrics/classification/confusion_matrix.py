@@ -49,8 +49,8 @@ class BinaryConfusionMatrix(Metric):
 
     Additional dimension ``...`` will be flattened into the batch dimension.
 
-    As output of 'compute' the metrics returns the following output: 
-    
+    As output of 'compute' the metrics returns the following output:
+
     - ``confusion matrix``: [2, 2] matrix
 
     Args:
@@ -198,7 +198,7 @@ class MulticlassConfusionMatrix(Metric):
         self.add_state("confmat", torch.zeros(num_classes, num_classes, dtype=torch.long), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets. """
+        """Update state with predictions and targets."""
         if self.validate_args:
             _multiclass_confusion_matrix_tensor_validation(preds, target, self.num_classes, self.ignore_index)
         preds, target = _multiclass_confusion_matrix_format(preds, target, self.ignore_index)
@@ -225,7 +225,7 @@ class MultilabelConfusionMatrix(Metric):
     As output of 'compute' the metric returns the following output:
 
     - ``confusion matrix``: [num_labels,2,2] matrix
-    
+
     Args:
         num_classes: Integer specifing the number of labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
