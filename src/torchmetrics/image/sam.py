@@ -27,6 +27,11 @@ class SpectralAngleMapper(Metric):
     calculating the angle between the spectra, where small angles between indicate high similarity and high angles
     indicate low similarity.
 
+    As input to 'update' the metric accepts the following input:
+
+    - ``preds``: Predictions from model
+    - ``target``: Ground truth values
+
     Args:
         reduction: a method to reduce metric score over labels.
 
@@ -77,12 +82,7 @@ class SpectralAngleMapper(Metric):
         self.reduction = reduction
 
     def update(self, preds: Tensor, target: Tensor) -> None:
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
+        """Update state with predictions and targets."""
         preds, target = _sam_update(preds, target)
         self.preds.append(preds)
         self.target.append(target)

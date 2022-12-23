@@ -28,6 +28,11 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
     image considering normalized average error of each band of the result image
     (ErrorRelativeGlobalDimensionlessSynthesis).
 
+    As input to 'update' the metric accepts the following input:
+
+    - ``preds``: Predictions from model
+    - ``target``: Ground truth values
+
     Args:
         ratio: ratio of high resolution to low resolution
         reduction: a method to reduce metric score over labels.
@@ -82,12 +87,7 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
         self.reduction = reduction
 
     def update(self, preds: Tensor, target: Tensor) -> None:
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
+        """Update state with predictions and targets."""
         preds, target = _ergas_update(preds, target)
         self.preds.append(preds)
         self.target.append(target)

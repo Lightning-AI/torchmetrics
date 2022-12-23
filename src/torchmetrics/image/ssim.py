@@ -25,6 +25,11 @@ from torchmetrics.utilities.data import dim_zero_cat
 class StructuralSimilarityIndexMeasure(Metric):
     """Computes Structual Similarity Index Measure (SSIM_).
 
+    As input to 'update' the metric accepts the following input:
+
+    - ``preds``: Predictions from model
+    - ``target``: Ground truth values
+
     Args:
         preds: estimated image
         target: ground truth image
@@ -109,12 +114,7 @@ class StructuralSimilarityIndexMeasure(Metric):
         self.return_contrast_sensitivity = return_contrast_sensitivity
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
+        """Update state with predictions and targets."""
         preds, target = _ssim_check_inputs(preds, target)
         similarity_pack = _ssim_update(
             preds,
@@ -162,6 +162,11 @@ class StructuralSimilarityIndexMeasure(Metric):
 class MultiScaleStructuralSimilarityIndexMeasure(Metric):
     """Computes `MultiScaleSSIM`_, Multi-scale Structural Similarity Index Measure, which is a generalization of
     Structural Similarity Index Measure by incorporating image details at different resolution scores.
+
+    As input to 'update' the metric accepts the following input:
+
+    - ``preds``: Predictions from model of shape ``[N, C, H, W]``
+    - ``target``: Ground truth values of shape ``[N, C, H, W]``
 
     Args:
         gaussian_kernel: If ``True`` (default), a gaussian kernel is used, if false a uniform kernel is used
@@ -270,12 +275,7 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         self.normalize = normalize
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model of shape ``[N, C, H, W]``
-            target: Ground truth values of shape ``[N, C, H, W]``
-        """
+        """Update state with predictions and targets."""
         preds, target = _ssim_check_inputs(preds, target)
         similarity = _multiscale_ssim_update(
             preds,

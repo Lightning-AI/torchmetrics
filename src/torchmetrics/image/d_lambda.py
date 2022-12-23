@@ -26,6 +26,11 @@ class SpectralDistortionIndex(Metric):
     """Computes Spectral Distortion Index (SpectralDistortionIndex_) also now as D_lambda is used to compare the
     spectral distortion between two images.
 
+    As input to 'update' the metric accepts the following input:
+
+    - ``preds``: Low resolution multispectral image
+    - ``target``: High resolution fused image
+
     Args:
         p: Large spectral differences
         reduction: a method to reduce metric score over labels.
@@ -82,12 +87,7 @@ class SpectralDistortionIndex(Metric):
         self.add_state("target", default=[], dist_reduce_fx="cat")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
-        """Update state with preds and target.
-
-        Args:
-            preds: Low resolution multispectral image
-            target: High resolution fused image
-        """
+        """Update state with preds and target."""
         preds, target = _spectral_distortion_index_update(preds, target)
         self.preds.append(preds)
         self.target.append(target)

@@ -25,6 +25,10 @@ from torchmetrics.utilities.data import dim_zero_cat
 class TotalVariation(Metric):
     """Computes Total Variation loss (`TV`_).
 
+    As input to 'update' the metric accepts the following input:
+
+    - ``img``: A `Tensor` of shape `(N, C, H, W)` consisting of images
+
     Args:
         reduction: a method to reduce metric score over samples
 
@@ -65,11 +69,7 @@ class TotalVariation(Metric):
         self.add_state("num_elements", default=tensor(0, dtype=torch.int), dist_reduce_fx="sum")
 
     def update(self, img: Tensor) -> None:  # type: ignore
-        """Update current score with batch of input images.
-
-        Args:
-            img: A `Tensor` of shape `(N, C, H, W)` consisting of images
-        """
+        """Update current score with batch of input images."""
         score, num_elements = _total_variation_update(img)
         if self.reduction is None or self.reduction == "none":
             self.score.append(score)

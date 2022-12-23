@@ -29,6 +29,11 @@ class PeakSignalNoiseRatio(Metric):
 
     Where :math:`\text{MSE}` denotes the `mean-squared-error`_ function.
 
+    As input to 'update' the metric accepts the following input:
+
+    - ``preds``: Predictions from model
+    - ``target``: Ground truth values
+
     Args:
         data_range:
             the range of the data. If None, it is determined from the data (max - min).
@@ -103,12 +108,7 @@ class PeakSignalNoiseRatio(Metric):
         self.dim = tuple(dim) if isinstance(dim, Sequence) else dim
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
+        """Update state with predictions and targets."""
         sum_squared_error, n_obs = _psnr_update(preds, target, dim=self.dim)
         if self.dim is None:
             if self.data_range is None:

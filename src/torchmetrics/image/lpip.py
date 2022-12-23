@@ -58,6 +58,11 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
     .. note:: this metric is not scriptable when using ``torch<1.8``. Please update your pytorch installation
         if this is a issue.
 
+    As input to 'update' the metric accepts the following input:
+
+    - ``img1``: tensor with images of shape ``[N, 3, H, W]``
+    - ``img2``: tensor with images of shape ``[N, 3, H, W]``
+    
     Args:
         net_type: str indicating backbone network type to use. Choose between `'alex'`, `'vgg'` or `'squeeze'`
         reduction: str indicating how to reduce over the batch dimension. Choose between `'sum'` or `'mean'`.
@@ -128,12 +133,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
         self.add_state("total", torch.tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, img1: Tensor, img2: Tensor) -> None:  # type: ignore
-        """Update internal states with lpips score.
-
-        Args:
-            img1: tensor with images of shape ``[N, 3, H, W]``
-            img2: tensor with images of shape ``[N, 3, H, W]``
-        """
+        """Update internal states with lpips score."""
         if not (_valid_img(img1, self.normalize) and _valid_img(img2, self.normalize)):
             raise ValueError(
                 "Expected both input arguments to be normalized tensors with shape [N, 3, H, W]."

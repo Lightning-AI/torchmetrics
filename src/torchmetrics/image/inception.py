@@ -48,6 +48,10 @@ class InceptionScore(Metric):
         is installed. Either install as ``pip install torchmetrics[image]`` or
         ``pip install torch-fidelity``
 
+    As input to 'update' the metric accepts the following input:
+
+    - ``imgs``: tensor with images feed to the feature extractor
+    
     Args:
         feature:
             Either an str, integer or ``nn.Module``:
@@ -135,11 +139,7 @@ class InceptionScore(Metric):
         self.add_state("features", [], dist_reduce_fx=None)
 
     def update(self, imgs: Tensor) -> None:  # type: ignore
-        """Update the state with extracted features.
-
-        Args:
-            imgs: tensor with images feed to the feature extractor
-        """
+        """Update the state with extracted features."""
         imgs = (imgs * 255).byte() if self.normalize else imgs
         features = self.inception(imgs)
         self.features.append(features)

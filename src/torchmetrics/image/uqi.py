@@ -25,6 +25,11 @@ from torchmetrics.utilities.data import dim_zero_cat
 class UniversalImageQualityIndex(Metric):
     """Computes Universal Image Quality Index (UniversalImageQualityIndex_).
 
+    As input to 'update' the metric accepts the following input:
+
+    - ``preds``: Predictions from model
+    - ``target``: Ground truth values
+
     Args:
         kernel_size: size of the gaussian kernel
         sigma: Standard deviation of the gaussian kernel
@@ -81,12 +86,7 @@ class UniversalImageQualityIndex(Metric):
         self.reduction = reduction
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
+        """Update state with predictions and targets."""
         preds, target = _uqi_update(preds, target)
         self.preds.append(preds)
         self.target.append(target)

@@ -93,6 +93,14 @@ class KernelInceptionDistance(Metric):
         is installed. Either install as ``pip install torchmetrics[image]`` or
         ``pip install torch-fidelity``
 
+    As input to 'update' the metric accepts the following input:
+
+    - ``imgs``: tensor with images feed to the feature extractor
+    - ``real``: bool indicating if ``imgs`` belong to the real or the fake distribution
+
+    As output of 'compute' the metrics returns a tuple of mean and standard deviation of KID scores 
+    calculated on subsets of extracted features.
+
     Args:
         feature: Either an str, integer or ``nn.Module``:
 
@@ -230,12 +238,7 @@ class KernelInceptionDistance(Metric):
         self.add_state("fake_features", [], dist_reduce_fx=None)
 
     def update(self, imgs: Tensor, real: bool) -> None:
-        """Update the state with extracted features.
-
-        Args:
-            imgs: tensor with images feed to the feature extractor
-            real: bool indicating if ``imgs`` belong to the real or the fake distribution
-        """
+        """Update the state with extracted features."""
         imgs = (imgs * 255).byte() if self.normalize else imgs
         features = self.inception(imgs)
 
@@ -245,8 +248,7 @@ class KernelInceptionDistance(Metric):
             self.fake_features.append(features)
 
     def compute(self) -> Tuple[Tensor, Tensor]:
-        """Calculate KID score based on accumulated extracted features from the two distributions. Returns a tuple
-        of mean and standard deviation of KID scores calculated on subsets of extracted features.
+        """Calculate KID score based on accumulated extracted features from the two distributions. 
 
         Implementation inspired by `Fid Score`_
         """

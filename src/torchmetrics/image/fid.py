@@ -151,6 +151,11 @@ class FrechetInceptionDistance(Metric):
         is installed. Either install as ``pip install torchmetrics[image]`` or
         ``pip install torch-fidelity``
 
+    As input to 'update' the metric accepts the following input:
+
+    - ``imgs``: tensor with images feed to the feature extractor
+    - ``real``: bool indicating if ``imgs`` belong to the real or the fake distribution
+
     Args:
         feature:
             Either an integer or ``nn.Module``:
@@ -259,12 +264,7 @@ class FrechetInceptionDistance(Metric):
         self.add_state("fake_features_num_samples", torch.tensor(0).long(), dist_reduce_fx="sum")
 
     def update(self, imgs: Tensor, real: bool) -> None:  # type: ignore
-        """Update the state with extracted features.
-
-        Args:
-            imgs: tensor with images feed to the feature extractor
-            real: bool indicating if ``imgs`` belong to the real or the fake distribution
-        """
+        """Update the state with extracted features."""
         imgs = (imgs * 255).byte() if self.normalize else imgs
         features = self.inception(imgs)
         self.orig_dtype = features.dtype
