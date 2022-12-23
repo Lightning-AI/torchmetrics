@@ -1,6 +1,0 @@
-:orphan:
-
-All TorchMetrics
-================
-
-.. tutoriallist::

@@ -62,6 +62,8 @@ pull_request_rules:
   - name: Not ready yet
     conditions:
       - or:
+        - draft  # filter-out GH draft PRs
+        - title~=(?i)wip  # drop for all PR that title contains “WIP” (ignoring case)
         - "#approved-reviews-by=0"  # number of review approvals
         - "#changes-requested-reviews-by>=1"  # no requested changes
         - "#check-failure>=5"
@@ -78,4 +80,4 @@ pull_request_rules:
     actions:
       request_reviews:
         teams:
-          - "@PyTorchLightning/core-metrics"
+          - "@Lightning-AI/core-metrics"

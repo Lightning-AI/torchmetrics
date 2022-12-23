@@ -8,12 +8,17 @@ version: 2
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
   configuration: docs/source/conf.py
+  fail_on_warning: true
 
 # Optionally build your docs in additional formats such as PDF and ePub
-formats: all
+formats:
+  - htmlzip
+  - pdf
 
 # Optionally set the version of Python and requirements required to build your docs
 python:
-  version: 3.8
+  version: "3.8"
   install:
     - requirements: requirements/docs.txt
+    - method: pip
+      path: .

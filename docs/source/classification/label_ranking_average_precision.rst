@@ -10,11 +10,12 @@ Label Ranking Average Precision
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.LabelRankingAveragePrecision
+.. autoclass:: torchmetrics.classification.MultilabelRankingAveragePrecision
     :noindex:
+
 
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.label_ranking_average_precision
+.. autofunction:: torchmetrics.functional.classification.multilabel_ranking_average_precision
     :noindex:

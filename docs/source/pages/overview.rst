@@ -3,11 +3,11 @@
     import torch
     from pytorch_lightning.core.lightning import LightningModule
 
-########
-Overview
-########
+##################
+Structure Overview
+##################
 
-The ``torchmetrics`` is a Metrics API created for easy metric development and usage in
+TorchMetrics is a Metrics API created for easy metric development and usage in
 PyTorch and PyTorch Lightning. It is rigorously tested for all edge cases and includes a growing list of
 common metric implementations.
 
@@ -24,10 +24,10 @@ This metrics API is independent of PyTorch Lightning. Metrics can directly be us
 
 .. code-block:: python
 
-    from torchmetrics.classification import Accuracy
+    from torchmetrics.classification import BinaryAccuracy
 
-    train_accuracy = Accuracy()
-    valid_accuracy = Accuracy()
+    train_accuracy = BinaryAccuracy()
+    valid_accuracy = BinaryAccuracy()
 
     for epoch in range(epochs):
         for x, y in train_data:
@@ -84,14 +84,14 @@ be moved to the same device as the input of the metric:
 
 .. code-block:: python
 
-    from torchmetrics import Accuracy
+    from torchmetrics.classification import BinaryAccuracy
 
     target = torch.tensor([1, 1, 0, 0], device=torch.device("cuda", 0))
     preds = torch.tensor([0, 1, 0, 0], device=torch.device("cuda", 0))
 
     # Metric states are always initialized on cpu, and needs to be moved to
     # the correct device
-    confmat = Accuracy(num_classes=2).to(torch.device("cuda", 0))
+    confmat = BinaryAccuracy().to(torch.device("cuda", 0))
     out = confmat(preds, target)
     print(out.device) # cuda:0
 
@@ -107,16 +107,17 @@ the native `MetricCollection`_ module can also be used to wrap multiple metrics.
 
 .. testcode::
 
-    from torchmetrics import Accuracy, MetricCollection
+    from torchmetrics import MetricCollection
+    from torchmetrics.classification import BinaryAccuracy
 
     class MyModule(torch.nn.Module):
         def __init__(self):
             ...
             # valid ways metrics will be identified as child modules
-            self.metric1 = Accuracy()
-            self.metric2 = nn.ModuleList(Accuracy())
-            self.metric3 = nn.ModuleDict({'accuracy': Accuracy()})
-            self.metric4 = MetricCollection([Accuracy()]) # torchmetrics build-in collection class
+            self.metric1 = BinaryAccuracy()
+            self.metric2 = nn.ModuleList(BinaryAccuracy())
+            self.metric3 = nn.ModuleDict({'accuracy': BinaryAccuracy()})
+            self.metric4 = MetricCollection([BinaryAccuracy()]) # torchmetrics build-in collection class
 
         def forward(self, batch):
             data, target = batch
@@ -162,7 +163,7 @@ When using metrics in `Distributed Data Parallel (DDP) <https://pytorch.org/docs
 mode, one should be aware that DDP will add additional samples to your dataset if the size of your dataset is
 not equally divisible by ``batch_size * num_processors``. The added samples will always be replicates of datapoints
 already in your dataset. This is done to secure an equal load for all processes. However, this has the consequence
-that the calculated metric value will be sligtly bias towards those replicated samples, leading to a wrong result.
+that the calculated metric value will be slightly biased towards those replicated samples, leading to a wrong result.
 
 During training and/or validation this may not be important, however it is highly recommended when evaluating
 the test dataset to only run on a single gpu or use a `join <https://pytorch.org/docs/stable/_modules/torch/nn/parallel/distributed.html#DistributedDataParallel.join>`_
@@ -183,7 +184,7 @@ the following limitations:
 
   - :ref:`image/peak_signal_noise_ratio:Peak Signal-to-Noise Ratio (PSNR)`
   - :ref:`image/structural_similarity:Structural Similarity Index Measure (SSIM)`
-  - :ref:`classification/kl_divergence:KL Divergence`
+  - :ref:`regression/kl_divergence:KL Divergence`
 
 You can always check the precision/dtype of the metric by checking the `.dtype` property.
 
@@ -254,33 +255,37 @@ Example:
 
 .. testcode::
 
-    from torchmetrics import MetricCollection, Accuracy, Precision, Recall
+    from torchmetrics import MetricCollection
+    from torchmetrics.classification import MulticlassAccuracy, MulticlassPrecision, MulticlassRecall
     target = torch.tensor([0, 2, 0, 2, 0, 1, 0, 2])
     preds = torch.tensor([2, 1, 2, 0, 1, 2, 2, 2])
     metric_collection = MetricCollection([
-        Accuracy(),
-        Precision(num_classes=3, average='macro'),
-        Recall(num_classes=3, average='macro')
+        MulticlassAccuracy(num_classes=3, average="micro"),
+        MulticlassPrecision(num_classes=3, average="macro"),
+        MulticlassRecall(num_classes=3, average="macro")
     ])
     print(metric_collection(preds, target))
 
 .. testoutput::
     :options: +NORMALIZE_WHITESPACE
 
-    {'Accuracy': tensor(0.1250),
-     'Precision': tensor(0.0667),
-     'Recall': tensor(0.1111)}
+    {'MulticlassAccuracy': tensor(0.1250),
+     'MulticlassPrecision': tensor(0.0667),
+     'MulticlassRecall': tensor(0.1111)}
 
 Similarly it can also reduce the amount of code required to log multiple metrics
-inside your LightningModule
+inside your LightningModule. In most cases we just have to replace ``self.log`` with ``self.log_dict``.
 
 .. testcode::
 
-    from torchmetrics import Accuracy, MetricCollection, Precision, Recall
+    from torchmetrics import MetricCollection
+    from torchmetrics.classification import MulticlassAccuracy, MulticlassPrecision, MulticlassRecall
 
     class MyModule(LightningModule):
         def __init__(self):
-            metrics = MetricCollection([Accuracy(), Precision(), Recall()])
+            metrics = MetricCollection([
+                MulticlassAccuracy(), MulticlassPrecision(), MulticlassRecall()
+            ])
             self.train_metrics = metrics.clone(prefix='train_')
             self.valid_metrics = metrics.clone(prefix='val_')
 
@@ -295,9 +300,12 @@ inside your LightningModule
         def validation_step(self, batch, batch_idx):
             logits = self(x)
             # ...
-            output = self.valid_metrics(logits, y)
+            self.valid_metrics.update(logits, y)
+
+        def validation_epoch_end(self, outputs):
             # use log_dict instead of log
             # metrics are logged with keys: val_Accuracy, val_Precision and val_Recall
+            output = self.valid_metric.compute()
             self.log_dict(output)
 
 .. note::
@@ -308,14 +316,16 @@ inside your LightningModule
 
 An additional advantage of using the ``MetricCollection`` object is that it will
 automatically try to reduce the computations needed by finding groups of metrics
-that share the same underlying metric state. If such a group of metrics is found only one
-of them is actually updated and the updated state will be broadcasted to the rest
-of the metrics within the group. In the example above, this will lead to a 2x-3x lower computational
-cost compared to disabling this feature. However, this speedup comes with a fixed cost upfront, where
-the state-groups have to be determined after the first update. This overhead can be significantly higher then gains speed-up for very
-a low number of steps (approx. up to 100) but still leads to an overall speedup for everything beyond that.
-In case the groups are known beforehand, these can also be set manually to avoid this extra cost of the
-dynamic search. See the *compute_groups* argument in the class docs below for more information on this topic.
+that share the same underlying metric state. If such a group of metrics is found
+only one of them is actually updated and the updated state will be broadcasted to
+the rest of the metrics within the group. In the example above, this will lead to
+a 2x-3x lower computational cost compared to disabling this feature in the case of
+the validation metrics where only ``update`` is called (this feature does not work
+in combination with ``forward``). However, this speedup comes with a fixed cost upfront,
+where the state-groups have to be determined after the first update. In case the groups
+are known beforehand, these can also be set manually to avoid this extra cost of the
+dynamic search. See the *compute_groups* argument in the class docs below for more
+information on this topic.
 
 .. autoclass:: torchmetrics.MetricCollection
     :noindex:
@@ -389,17 +399,17 @@ argument can help:
   GPU memory is not filling up. The consequence will be that the ``compute`` method will be called on CPU instead
   of GPU. Only applies to metric states that are lists.
 
-If you are running in a distributed environment, ``TorchMetrics`` will automatically take care of the distributed
+If you are running in a distributed environment, TorchMetrics will automatically take care of the distributed
 synchronization for you. However, the following three keyword arguments can be given to any metric class for
 further control over the distributed aggregation:
 
-- ``dist_sync_on_step``: This argument is ``bool`` that indicates if the metric should syncronize between
+- ``dist_sync_on_step``: This argument is ``bool`` that indicates if the metric should synchronize between
   different devices every time ``forward`` is called. Setting this to ``True`` is in general not recommended
-  as syncronization is an expensive operation to do after each batch.
+  as synchronization is an expensive operation to do after each batch.
 
-- ``process_group``: By default we syncronize across the *world* i.e. all proceses being computed on. You
+- ``process_group``: By default we synchronize across the *world* i.e. all processes being computed on. You
   can provide an ``torch._C._distributed_c10d.ProcessGroup`` in this argument to specify exactly what
-  devices should be syncronized over.
+  devices should be synchronized over.
 
 - ``dist_sync_fn``: By default we use :func:`torch.distributed.all_gather` to perform the synchronization between
   devices. Provide another callable function for this argument to perform custom distributed synchronization.

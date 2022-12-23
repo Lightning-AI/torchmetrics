@@ -16,9 +16,10 @@ import inspect
 import os
 import shutil
 import sys
-from importlib.util import module_from_spec, spec_from_file_location
 
 import pt_lightning_sphinx_theme
+
+import torchmetrics
 
 _PATH_HERE = os.path.abspath(os.path.dirname(__file__))
 _PATH_ROOT = os.path.realpath(os.path.join(_PATH_HERE, "..", ".."))
@@ -27,28 +28,23 @@ sys.path.insert(0, os.path.abspath(_PATH_ROOT))
 FOLDER_GENERATED = "generated"
 SPHINX_MOCK_REQUIREMENTS = int(os.environ.get("SPHINX_MOCK_REQUIREMENTS", True))
 
-# alternative https://stackoverflow.com/a/67692/4521646
-spec = spec_from_file_location("torchmetrics/__about__.py", os.path.join(_PATH_ROOT, "torchmetrics", "__about__.py"))
-about = module_from_spec(spec)
-spec.loader.exec_module(about)
-
 html_favicon = "_static/images/icon.svg"
 
 # -- Project information -----------------------------------------------------
 
 # this name shall match the project name in Github as it is used for linking to code
 project = "PyTorch-Metrics"
-copyright = about.__copyright__
-author = about.__author__
+copyright = torchmetrics.__copyright__
+author = torchmetrics.__author__
 
 # The short X.Y version
-version = about.__version__
+version = torchmetrics.__version__
 # The full version, including alpha/beta/rc tags
-release = about.__version__
+release = torchmetrics.__version__
 
 # Options for the linkcode extension
 # ----------------------------------
-github_user = "PyTorchLightning"
+github_user = "Lightning-AI"
 github_repo = "metrics"
 
 # -- Project documents -------------------------------------------------------
@@ -105,7 +101,11 @@ extensions = [
     "sphinx_paramlinks",
     "sphinx.ext.githubpages",
     "pt_lightning_sphinx_theme.extensions.lightning",
+    "matplotlib.sphinxext.plot_directive",
 ]
+
+# Set that source code from plotting is always included
+plot_include_source = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -163,7 +163,7 @@ html_theme_path = [pt_lightning_sphinx_theme.get_html_theme_path()]
 
 html_theme_options = {
     "pytorch_project": "https://pytorchlightning.ai",
-    "canonical_url": about.__docs_url__,
+    "canonical_url": torchmetrics.__docs_url__,
     "collapse_navigation": False,
     "display_version": True,
     "logo_only": False,
@@ -219,7 +219,7 @@ texinfo_documents = [
         project + " Documentation",
         author,
         project,
-        about.__docs__,
+        torchmetrics.__docs__,
         "Miscellaneous",
     ),
 ]
@@ -266,7 +266,7 @@ todo_include_todos = True
 
 # packages for which sphinx-apidoc should generate the docs (.rst files)
 PACKAGES = [
-    about.__name__,
+    torchmetrics.__name__,
 ]
 
 
@@ -326,7 +326,7 @@ def linkcode_resolve(domain, info):
         if any(s in fname for s in ("readthedocs", "rtfd", "checkouts")):
             # /home/docs/checkouts/readthedocs.org/user_builds/pytorch_lightning/checkouts/
             #  devel/pytorch_lightning/utilities/cls_experiment.py#L26-L176
-            path_top = os.path.abspath(os.path.join("..", "..", ".."))
+            path_top = os.path.abspath(os.path.join("..", "..", "..", ".."))
             fname = os.path.relpath(fname, start=path_top)
         else:
             # Local build, imitate master
@@ -389,3 +389,7 @@ from torchmetrics import Metric
 
 """
 coverage_skip_undoc_in_source = True
+
+linkcheck_ignore = [
+    "https://www.jstor.org/stable/2332303"  # jstor cannot be accessed from python, but link work fine in a local doc
+]

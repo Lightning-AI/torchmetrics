@@ -18,10 +18,12 @@ import os
 import re
 import sys
 import traceback
+from distutils.version import LooseVersion
 from typing import List, Optional, Tuple, Union
 
 import fire
 import requests
+from pkg_resources import parse_requirements
 
 _REQUEST_TIMEOUT = 10
 _PATH_ROOT = os.path.dirname(os.path.dirname(__file__))
@@ -29,10 +31,10 @@ _PKG_WIDE_SUBPACKAGES = ("utilities", "helpers")
 LUT_PYTHON_TORCH = {
     "3.8": "1.4",
     "3.9": "1.7.1",
+    "3.10": "1.11",
 }
-REQUIREMENTS_FILES = (os.path.join(_PATH_ROOT, "requirements.txt"),) + tuple(
-    glob.glob(os.path.join(_PATH_ROOT, "requirements", "*.txt"))
-)
+_path = lambda *ds: os.path.join(_PATH_ROOT, *ds)
+REQUIREMENTS_FILES = tuple(glob.glob(_path("requirements", "*.txt")) + [_path("requirements.txt")])
 
 
 def request_url(url: str, auth_token: Optional[str] = None) -> Optional[dict]:
@@ -64,15 +66,23 @@ class AssistantCLI:
 
     @staticmethod
     def set_min_torch_by_python(fpath: str = "requirements.txt") -> None:
-        """Set minimal torch version according to Python actual version."""
+        """Set minimal torch version according to Python actual version.
+
+        >>> AssistantCLI.set_min_torch_by_python("../requirements.txt")
+        """
         py_ver = f"{sys.version_info.major}.{sys.version_info.minor}"
         if py_ver not in LUT_PYTHON_TORCH:
             return
         with open(fpath) as fp:
-            req = fp.read()
-        req = re.sub(r"torch>=[\d\.]+", f"torch>={LUT_PYTHON_TORCH[py_ver]}", req)
+            reqs = parse_requirements(fp.readlines())
+        pkg_ver = [p for p in reqs if p.name == "torch"][0]
+        pt_ver = min([LooseVersion(v[1]) for v in pkg_ver.specs])
+        pt_ver = max(LooseVersion(LUT_PYTHON_TORCH[py_ver]), pt_ver)
+        with open(fpath) as fp:
+            requires = fp.read()
+        requires = re.sub(r"torch>=[\d\.]+", f"torch>={pt_ver}", requires)
         with open(fpath, "w", encoding="utf-8") as fp:
-            fp.write(req)
+            fp.write(requires)
 
     @staticmethod
     def replace_min_requirements(fpath: str) -> None:
@@ -99,42 +109,54 @@ class AssistantCLI:
     ) -> Union[str, List[str]]:
         """Determine what domains were changed in particular PR."""
         if not pr:
-            return "tests"
-        url = f"https://api.github.com/repos/PyTorchLightning/metrics/pulls/{pr}/files"
+            return "unittests"
+        url = f"https://api.github.com/repos/Lightning-AI/metrics/pulls/{pr}/files"
         logging.debug(url)
         data = request_url(url, auth_token)
         if not data:
             logging.debug("WARNING: No data was received -> test everything.")
-            return "tests"
+            return "unittests"
         files = [d["filename"] for d in data]
 
+        # filter out all integrations as they run in separate suit
+        files = [fn for fn in files if not fn.startswith("tests/integrations")]
+        if not files:
+            logging.debug("Only integrations was changed so not reason for deep testing...")
+            return ""
         # filter only docs files
-        files_docs = [fn for fn in files if fn.startswith("docs")]
-        if len(files) == len(files_docs):
+        files_ = [fn for fn in files if fn.startswith("docs")]
+        if len(files) == len(files_):
             logging.debug("Only docs was changed so not reason for deep testing...")
             return ""
 
         # filter only package files and skip inits
-        _filter_pkg = lambda fn: (fn.startswith("torchmetrics") and "__init__.py" not in fn) or fn.startswith("tests")
+        _is_in_test = lambda fn: fn.startswith("tests")
+        _filter_pkg = lambda fn: _is_in_test(fn) or (fn.startswith("src/torchmetrics") and "__init__.py" not in fn)
         files_pkg = [fn for fn in files if _filter_pkg(fn)]
         if not files_pkg:
-            return "tests"
+            return "unittests"
 
         # parse domains
-        _crop_path = lambda fn: fn.replace("torchmetrics/", "").replace("tests/", "").replace("functional/", "")
-        files_pkg = [_crop_path(fn) for fn in files_pkg]
+        def _crop_path(fname: str, paths: List[str]):
+            for p in paths:
+                fname = fname.replace(p, "")
+            return fname
+
+        files_pkg = [_crop_path(fn, ["src/torchmetrics/", "tests/unittests/", "functional/"]) for fn in files_pkg]
         # filter domain names
         tm_modules = [fn.split("/")[0] for fn in files_pkg if "/" in fn]
         # filter general (used everywhere) sub-packages
         tm_modules = [md for md in tm_modules if md not in general_sub_pkgs]
         if len(files_pkg) > len(tm_modules):
             logging.debug("Some more files was changed -> rather test everything...")
-            return "tests"
+            return "unittests"
         # keep only unique
-        tm_modules = set(tm_modules)
         if as_list:
             return list(tm_modules)
-        return " ".join([f"tests/{md}" for md in tm_modules])
+        tm_modules = [f"unittests/{md}" for md in set(tm_modules)]
+        not_exists = [p for p in tm_modules if os.path.exists(p)]
+        assert not not_exists, f"Missing following paths: {not_exists}"
+        return " ".join(tm_modules)
 
 
 if __name__ == "__main__":

@@ -9,7 +9,7 @@
 TorchMetrics in PyTorch Lightning
 #################################
 
-TorchMetrics was originally created as part of `PyTorch Lightning <https://github.com/PyTorchLightning/pytorch-lightning>`_, a powerful deep learning research
+TorchMetrics was originally created as part of `PyTorch Lightning <https://github.com/Lightning-AI/pytorch-lightning>`_, a powerful deep learning research
 framework designed for scaling models without boilerplate.
 
 .. note::
@@ -34,7 +34,7 @@ The example below shows how to use a metric in your `LightningModule <https://py
 
         def __init__(self):
             ...
-            self.accuracy = torchmetrics.Accuracy()
+            self.accuracy = torchmetrics.Accuracy(task='multiclass')
 
         def training_step(self, batch, batch_idx):
             x, y = batch
@@ -80,8 +80,8 @@ value by calling ``.compute()``.
 
         def __init__(self):
             ...
-            self.train_acc = torchmetrics.Accuracy()
-            self.valid_acc = torchmetrics.Accuracy()
+            self.train_acc = torchmetrics.Accuracy(task='multiclass')
+            self.valid_acc = torchmetrics.Accuracy(task='multiclass')
 
         def training_step(self, batch, batch_idx):
             x, y = batch
@@ -105,8 +105,8 @@ of the metrics.
 
         def __init__(self):
             ...
-            self.train_acc = torchmetrics.Accuracy()
-            self.valid_acc = torchmetrics.Accuracy()
+            self.train_acc = torchmetrics.Accuracy(task='multiclass')
+            self.valid_acc = torchmetrics.Accuracy(task='multiclass')
 
         def training_step(self, batch, batch_idx):
             x, y = batch
@@ -143,7 +143,7 @@ mixed as it can lead to wrong results.
 
             def __init__(self):
                 ...
-                self.valid_acc = torchmetrics.Accuracy()
+                self.valid_acc = torchmetrics.Accuracy(task='multiclass')
 
             def validation_step(self, batch, batch_idx):
                 logits = self(x)
@@ -187,7 +187,7 @@ The following contains a list of pitfalls to be aware of:
 
         def __init__(self):
             ...
-            self.val_acc = nn.ModuleList([torchmetrics.Accuracy() for _ in range(2)])
+            self.val_acc = nn.ModuleList([torchmetrics.Accuracy(task='multiclass') for _ in range(2)])
 
         def val_dataloader(self):
             return [DataLoader(...), DataLoader(...)]

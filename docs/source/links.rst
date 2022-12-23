@@ -64,7 +64,7 @@
 .. _Demystifying MMD GANs: https://arxiv.org/abs/1801.01401
 .. _Computes Peak Signal-to-Noise Ratio: https://en.wikipedia.org/wiki/Peak_signal-to-noise_ratio
 .. _Turn a Metric into a Bootstrapped: https://en.wikipedia.org/wiki/Bootstrapping_(statistics)
-.. _Metric Test for Reset: https://github.com/PyTorchLightning/pytorch-lightning/pull/7055
+.. _Metric Test for Reset: https://github.com/Lightning-AI/pytorch-lightning/pull/7055
 .. _Computes Mean Absolute Error: https://en.wikipedia.org/wiki/Mean_absolute_error
 .. _Mean Absolute Percentage Error: https://en.wikipedia.org/wiki/Mean_absolute_percentage_error
 .. _mean squared error: https://en.wikipedia.org/wiki/Mean_squared_error
@@ -86,3 +86,32 @@
 .. _MER: https://www.isca-speech.org/archive_v0/archive_papers/interspeech_2004/i04_2765.pdf
 .. _WIL: https://www.isca-speech.org/archive_v0/archive_papers/interspeech_2004/i04_2765.pdf
 .. _WIP: https://infoscience.epfl.ch/record/82766
+.. _TV: https://en.wikipedia.org/wiki/Total_variation_denoising
+.. _InfoLM: https://arxiv.org/pdf/2112.01589.pdf
+.. _alpha divergence: https://static.renyi.hu/renyi_cikkek/1961_on_measures_of_entropy_and_information.pdf
+.. _beta divergence: https://www.sciencedirect.com/science/article/pii/S0047259X08000456
+.. _AB divergence: https://pdfs.semanticscholar.org/744b/1166de34cb099100f151f3b1459f141ae25b.pdf
+.. _Rényi divergence: https://static.renyi.hu/renyi_cikkek/1961_on_measures_of_entropy_and_information.pdf
+.. _Fisher-Rao distance: http://www.scholarpedia.org/article/Fisher-Rao_metric
+.. _Cramer's V: https://en.wikipedia.org/wiki/Cram%C3%A9r%27s_V
+.. _Kendall Rank Correlation Coefficient: https://en.wikipedia.org/wiki/Kendall_rank_correlation_coefficient
+.. _The Treatment of Ties in Ranking Problems: https://www.jstor.org/stable/2332303
+.. _LogCosh Error: https://arxiv.org/pdf/2101.10427.pdf
+.. _Tschuprow's T: https://en.wikipedia.org/wiki/Tschuprow%27s_T
+.. _Pearson's Contingency Coefficient: https://www.itl.nist.gov/div898/software/dataplot/refman2/auxillar/pearcont.htm
+.. _CLIP score: https://arxiv.org/pdf/2104.08718.pdf
+.. _Huggingface OpenAI: https://huggingface.co/openai
+.. _Theil's U: https://en.wikipedia.org/wiki/Uncertainty_coefficient
+.. _Perceptual Evaluation of Speech Quality: https://en.wikipedia.org/wiki/Perceptual_Evaluation_of_Speech_Quality
+.. _pesq package: https://github.com/ludlows/python-pesq
+.. _Cees Taal's website: http://www.ceestaal.nl/code/
+.. _pystoi package: https://github.com/mpariente/pystoi
+.. _stoi ref1: https://ieeexplore.ieee.org/document/5495701
+.. _stoi ref2: https://ieeexplore.ieee.org/document/5713237
+.. _stoi ref3: https://ieeexplore.ieee.org/document/7539284
+.. _sdr ref1: https://ieeexplore.ieee.org/document/1643671
+.. _sdr ref2: https://arxiv.org/abs/2110.06440
+.. _Scale-invariant signal-to-distortion ratio: https://arxiv.org/abs/1811.02508
+.. _Scale-invariant signal-to-noise ratio: https://arxiv.org/abs/1711.00541
+.. _Signal-to-noise ratio: https://arxiv.org/abs/1811.02508
+.. _Permutation invariant training: https://arxiv.org/abs/1607.00325
