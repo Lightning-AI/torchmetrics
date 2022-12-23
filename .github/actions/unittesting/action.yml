@@ -59,7 +59,6 @@ runs:
     working-directory: ./tests
     run: |
       python -m pytest -v \
-        --maxfail=5 \
         ${{ inputs.dirs }} \
         --cov=torchmetrics \
         --durations=50 \

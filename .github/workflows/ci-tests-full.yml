@@ -108,6 +108,7 @@ jobs:
 
     - name: Install all dependencies
       run: |
+        pip install cython  # needed for installing `pycocotools` in latest config
         python ./requirements/adjust-versions.py requirements.txt
         for fpath in `ls requirements/*.txt`; do
             python ./requirements/adjust-versions.py $fpath

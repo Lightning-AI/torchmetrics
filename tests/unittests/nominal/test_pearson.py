@@ -18,6 +18,7 @@ from collections import namedtuple
 import pandas as pd
 import pytest
 import torch
+from lightning_utilities.core.imports import compare_version
 from scipy.stats.contingency import association
 
 from torchmetrics.functional.nominal.pearson import (
@@ -25,7 +26,6 @@ from torchmetrics.functional.nominal.pearson import (
     pearsons_contingency_coefficient_matrix,
 )
 from torchmetrics.nominal.pearson import PearsonsContingencyCoefficient
-from torchmetrics.utilities.imports import _compare_version
 from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 
 Input = namedtuple("Input", ["preds", "target"])
@@ -75,9 +75,7 @@ def _pd_pearsons_t_matrix(matrix):
     return pearsons_t_matrix_value
 
 
-@pytest.mark.skipif(
-    _compare_version("pandas", operator.lt, "1.3.2"), reason="`dython` package requires `pandas>=1.3.2`"
-)
+@pytest.mark.skipif(compare_version("pandas", operator.lt, "1.3.2"), reason="`dython` package requires `pandas>=1.3.2`")
 @pytest.mark.skipif(  # TODO: testing on CUDA fails with pandas 1.3.5, and newer is not available for python 3.7
     torch.cuda.is_available(), reason="Tests fail on CUDA with the most up-to-date available pandas"
 )
@@ -121,9 +119,7 @@ class TestPearsonsContingencyCoefficient(MetricTester):
         )
 
 
-@pytest.mark.skipif(
-    _compare_version("pandas", operator.lt, "1.3.2"), reason="`dython` package requires `pandas>=1.3.2`"
-)
+@pytest.mark.skipif(compare_version("pandas", operator.lt, "1.3.2"), reason="`dython` package requires `pandas>=1.3.2`")
 @pytest.mark.skipif(  # TODO: testing on CUDA fails with pandas 1.3.5, and newer is not available for python 3.7
     torch.cuda.is_available(), reason="Tests fail on CUDA with the most up-to-date available pandas"
 )
