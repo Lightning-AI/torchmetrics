@@ -116,3 +116,13 @@
 .. _Signal-to-noise ratio: https://arxiv.org/abs/1811.02508
 .. _Permutation invariant training: https://arxiv.org/abs/1607.00325
 .. _ranking ref1: https://link.springer.com/chapter/10.1007/978-0-387-09823-4_34
+.. _Spectral Distortion Index: https://www.ingentaconnect.com/content/asprs/pers/2008/00000074/00000002/art00003;jsessionid=nzjnb3v9xxr1.x-ic-live-03
+.. _Error Relative Global Dimensionless Synthesis: https://ieeexplore.ieee.org/document/4317530
+.. _fid ref1: https://arxiv.org/abs/1512.00567
+.. _fid ref2: https://arxiv.org/abs/1706.08500
+.. _inception ref1: https://arxiv.org/abs/1606.03498
+.. _inception ref2: https://arxiv.org/abs/1706.08500
+.. _kid ref1: https://arxiv.org/abs/1801.01401
+.. _kid ref2: https://arxiv.org/abs/1706.08500
+.. _Spectral Angle Mapper: https://ntrs.nasa.gov/citations/19940012238
+.. _Multi-Scale Structural Similarity Index Measure: https://www.cns.nyu.edu/pub/eero/wang03b.pdf

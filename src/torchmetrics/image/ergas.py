@@ -54,11 +54,6 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
         >>> ergas = ErrorRelativeGlobalDimensionlessSynthesis()
         >>> torch.round(ergas(preds, target))
         tensor(154.)
-
-    References:
-        [1] Qian Du; Nicholas H. Younan; Roger King; Vijay P. Shah, "On the Performance Evaluation of
-        Pan-Sharpening Techniques" in IEEE Geoscience and Remote Sensing Letters, vol. 4, no. 4, pp. 518-522,
-        15 October 2007, doi: 10.1109/LGRS.2007.896328.
     """
 
     higher_is_better: bool = False

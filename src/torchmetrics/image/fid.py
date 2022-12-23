@@ -170,15 +170,6 @@ class FrechetInceptionDistance(Metric):
             your dataset does not change.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    References:
-        [1] Rethinking the Inception Architecture for Computer Vision
-        Christian Szegedy, Vincent Vanhoucke, Sergey Ioffe, Jonathon Shlens, Zbigniew Wojna
-        https://arxiv.org/abs/1512.00567
-
-        [2] GANs Trained by a Two Time-Scale Update Rule Converge to a Local Nash Equilibrium,
-        Martin Heusel, Hubert Ramsauer, Thomas Unterthiner, Bernhard Nessler, Sepp Hochreiter
-        https://arxiv.org/abs/1706.08500
-
     Raises:
         ValueError:
             If ``feature`` is set to an ``int`` (default settings) and ``torch-fidelity`` is not installed

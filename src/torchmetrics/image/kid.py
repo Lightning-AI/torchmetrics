@@ -119,15 +119,6 @@ class KernelInceptionDistance(Metric):
             your dataset does not change.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    References:
-        [1] Demystifying MMD GANs
-        Mikołaj Bińkowski, Danica J. Sutherland, Michael Arbel, Arthur Gretton
-        https://arxiv.org/abs/1801.01401
-
-        [2] GANs Trained by a Two Time-Scale Update Rule Converge to a Local Nash Equilibrium,
-        Martin Heusel, Hubert Ramsauer, Thomas Unterthiner, Bernhard Nessler, Sepp Hochreiter
-        https://arxiv.org/abs/1706.08500
-
     Raises:
         ValueError:
             If ``feature`` is set to an ``int`` (default settings) and ``torch-fidelity`` is not installed

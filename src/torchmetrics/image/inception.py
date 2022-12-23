@@ -64,15 +64,6 @@ class InceptionScore(Metric):
         splits: integer determining how many splits the inception score calculation should be split among
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    References:
-        [1] Improved Techniques for Training GANs
-        Tim Salimans, Ian Goodfellow, Wojciech Zaremba, Vicki Cheung, Alec Radford, Xi Chen
-        https://arxiv.org/abs/1606.03498
-
-        [2] GANs Trained by a Two Time-Scale Update Rule Converge to a Local Nash Equilibrium,
-        Martin Heusel, Hubert Ramsauer, Thomas Unterthiner, Bernhard Nessler, Sepp Hochreiter
-        https://arxiv.org/abs/1706.08500
-
     Raises:
         ValueError:
             If ``feature`` is set to an ``str`` or ``int`` and ``torch-fidelity`` is not installed
