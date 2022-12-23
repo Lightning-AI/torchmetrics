@@ -165,8 +165,8 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
 
     As input to 'update' the metric accepts the following input:
 
-    - ``preds``: Predictions from model of shape ``[N, C, H, W]``
-    - ``target``: Ground truth values of shape ``[N, C, H, W]``
+    - ``preds``: Predictions from model of shape ``(N, C, H, W)``
+    - ``target``: Ground truth values of shape ``(N, C, H, W)``
 
     Args:
         gaussian_kernel: If ``True`` (default), a gaussian kernel is used, if false a uniform kernel is used

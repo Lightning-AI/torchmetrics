@@ -137,7 +137,7 @@ class FrechetInceptionDistance(Metric):
     originally proposed in [1].
 
     Using the default feature extraction (Inception v3 using the original weights from [2]), the input is
-    expected to be mini-batches of 3-channel RGB images of shape (``3 x H x W``). If argument ``normalize``
+    expected to be mini-batches of 3-channel RGB images of shape ``(3 x H x W)``. If argument ``normalize``
     is ``True`` images are expected to be dtype ``float`` and have values in the ``[0, 1]`` range, else if
     ``normalize`` is set to ``False`` images are expected to have dtype ``uint8`` and take values in the ``[0, 255]``
     range. All images will be resized to 299 x 299 which is the size of the original training data. The boolian
@@ -163,7 +163,7 @@ class FrechetInceptionDistance(Metric):
             - an integer will indicate the inceptionv3 feature layer to choose. Can be one of the following:
               64, 192, 768, 2048
             - an ``nn.Module`` for using a custom feature extractor. Expects that its forward method returns
-              an ``[N,d]`` matrix where ``N`` is the batch size and ``d`` is the feature size.
+              an ``(N,d)`` matrix where ``N`` is the batch size and ``d`` is the feature size.
 
         reset_real_features: Whether to also reset the real features. Since in many cases the real dataset does not
             change, the features can be cached them to avoid recomputing them which is costly. Set this to ``False`` if

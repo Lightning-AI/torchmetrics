@@ -49,7 +49,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
     pre-defined network. This measure has been shown to match human perception well. A low LPIPS score means that
     image patches are perceptual similar.
 
-    Both input image patches are expected to have shape `[N, 3, H, W]`.
+    Both input image patches are expected to have shape ``(N, 3, H, W)``.
     The minimum size of `H, W` depends on the chosen backbone (see `net_type` arg).
 
     .. note:: using this metrics requires you to have ``lpips`` package installed. Either install
@@ -60,8 +60,8 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
 
     As input to 'update' the metric accepts the following input:
 
-    - ``img1``: tensor with images of shape ``[N, 3, H, W]``
-    - ``img2``: tensor with images of shape ``[N, 3, H, W]``
+    - ``img1``: tensor with images of shape ``(N, 3, H, W)``
+    - ``img2``: tensor with images of shape ``(N, 3, H, W)``
     
     Args:
         net_type: str indicating backbone network type to use. Choose between `'alex'`, `'vgg'` or `'squeeze'`

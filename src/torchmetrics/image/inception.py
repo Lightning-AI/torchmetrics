@@ -39,7 +39,7 @@ class InceptionScore(Metric):
     both a mean and standard deviation of the score are returned. The metric was originally proposed in [1].
 
     Using the default feature extraction (Inception v3 using the original weights from [2]), the input is
-    expected to be mini-batches of 3-channel RGB images of shape (``3 x H x W``). If argument ``normalize``
+    expected to be mini-batches of 3-channel RGB images of shape ``(3 x H x W)``. If argument ``normalize``
     is ``True`` images are expected to be dtype ``float`` and have values in the ``[0, 1]`` range, else if
     ``normalize`` is set to ``False`` images are expected to have dtype uint8 and take values in the ``[0, 255]``
     range. All images will be resized to 299 x 299 which is the size of the original training data.
@@ -59,7 +59,7 @@ class InceptionScore(Metric):
             - an str or integer will indicate the inceptionv3 feature layer to choose. Can be one of the following:
               'logits_unbiased', 64, 192, 768, 2048
             - an ``nn.Module`` for using a custom feature extractor. Expects that its forward method returns
-              an ``[N,d]`` matrix where ``N`` is the batch size and ``d`` is the feature size.
+              an ``(N,d)`` matrix where ``N`` is the batch size and ``d`` is the feature size.
 
         splits: integer determining how many splits the inception score calculation should be split among
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
@@ -68,7 +68,7 @@ class InceptionScore(Metric):
         ValueError:
             If ``feature`` is set to an ``str`` or ``int`` and ``torch-fidelity`` is not installed
         ValueError:
-            If ``feature`` is set to an ``str`` or ``int`` and not one of ``['logits_unbiased', 64, 192, 768, 2048]``
+            If ``feature`` is set to an ``str`` or ``int`` and not one of ``('logits_unbiased', 64, 192, 768, 2048)``
         TypeError:
             If ``feature`` is not an ``str``, ``int`` or ``torch.nn.Module``
 

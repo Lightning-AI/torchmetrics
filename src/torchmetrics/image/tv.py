@@ -27,7 +27,7 @@ class TotalVariation(Metric):
 
     As input to 'update' the metric accepts the following input:
 
-    - ``img``: A `Tensor` of shape `(N, C, H, W)` consisting of images
+    - ``img``: A `Tensor` of shape ``(N, C, H, W)`` consisting of images
 
     Args:
         reduction: a method to reduce metric score over samples

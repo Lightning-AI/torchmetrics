@@ -82,7 +82,7 @@ class KernelInceptionDistance(Metric):
     subsets to be able to both get the mean and standard deviation of KID.
 
     Using the default feature extraction (Inception v3 using the original weights from [2]), the input is
-    expected to be mini-batches of 3-channel RGB images of shape (``3 x H x W``). If argument ``normalize``
+    expected to be mini-batches of 3-channel RGB images of shape ``(3 x H x W)``. If argument ``normalize``
     is ``True`` images are expected to be dtype ``float`` and have values in the ``[0, 1]`` range, else if
     ``normalize`` is set to ``False`` images are expected to have dtype ``uint8`` and take values in the ``[0, 255]``
     range. All images will be resized to 299 x 299 which is the size of the original training data. The boolian
@@ -107,7 +107,7 @@ class KernelInceptionDistance(Metric):
             - an str or integer will indicate the inceptionv3 feature layer to choose. Can be one of the following:
               'logits_unbiased', 64, 192, 768, 2048
             - an ``nn.Module`` for using a custom feature extractor. Expects that its forward method returns
-              an ``[N,d]`` matrix where ``N`` is the batch size and ``d`` is the feature size.
+              an ``(N,d)`` matrix where ``N`` is the batch size and ``d`` is the feature size.
 
         subsets: Number of subsets to calculate the mean and standard deviation scores over
         subset_size: Number of randomly picked samples in each subset
@@ -123,7 +123,7 @@ class KernelInceptionDistance(Metric):
         ValueError:
             If ``feature`` is set to an ``int`` (default settings) and ``torch-fidelity`` is not installed
         ValueError:
-            If ``feature`` is set to an ``int`` not in ``[64, 192, 768, 2048]``
+            If ``feature`` is set to an ``int`` not in ``(64, 192, 768, 2048)``
         ValueError:
             If ``subsets`` is not an integer larger than 0
         ValueError:
