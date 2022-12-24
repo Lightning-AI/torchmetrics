@@ -62,7 +62,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
 
     - ``img1``: tensor with images of shape ``(N, 3, H, W)``
     - ``img2``: tensor with images of shape ``(N, 3, H, W)``
-    
+
     Args:
         net_type: str indicating backbone network type to use. Choose between `'alex'`, `'vgg'` or `'squeeze'`
         reduction: str indicating how to reduce over the batch dimension. Choose between `'sum'` or `'mean'`.

@@ -51,7 +51,7 @@ class InceptionScore(Metric):
     As input to 'update' the metric accepts the following input:
 
     - ``imgs``: tensor with images feed to the feature extractor
-    
+
     Args:
         feature:
             Either an str, integer or ``nn.Module``:

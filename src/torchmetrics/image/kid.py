@@ -98,7 +98,7 @@ class KernelInceptionDistance(Metric):
     - ``imgs``: tensor with images feed to the feature extractor
     - ``real``: bool indicating if ``imgs`` belong to the real or the fake distribution
 
-    As output of 'compute' the metrics returns a tuple of mean and standard deviation of KID scores 
+    As output of 'compute' the metrics returns a tuple of mean and standard deviation of KID scores
     calculated on subsets of extracted features.
 
     Args:
@@ -239,7 +239,7 @@ class KernelInceptionDistance(Metric):
             self.fake_features.append(features)
 
     def compute(self) -> Tuple[Tensor, Tensor]:
-        """Calculate KID score based on accumulated extracted features from the two distributions. 
+        """Calculate KID score based on accumulated extracted features from the two distributions.
 
         Implementation inspired by `Fid Score`_
         """

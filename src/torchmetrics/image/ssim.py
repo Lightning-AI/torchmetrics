@@ -207,7 +207,7 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         >>> ms_ssim = MultiScaleStructuralSimilarityIndexMeasure(data_range=1.0)
         >>> ms_ssim(preds, target)
         tensor(0.9627)
-"""
+    """
 
     higher_is_better: bool = True
     is_differentiable: bool = True
