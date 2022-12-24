@@ -34,7 +34,7 @@ class R2Score(Metric):
     where the parameter :math:`k` (the number of independent regressors) should be provided as the `adjusted` argument.
 
     As input to 'forward' and 'update' the metric accepts the following input:
-    
+
     - ``preds`` (float tensor): Predictions from model with shape ``(N,)`` or ``(N, M)`` (multioutput)
     - ``target`` (float tensor): Ground truth values with shape ``(N,)`` or ``(N, M)`` (multioutput)
 

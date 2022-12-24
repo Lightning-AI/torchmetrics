@@ -54,7 +54,7 @@ class KendallRankCorrCoef(Metric):
     - ``preds`` (float tensor): Sequence of data of either shape ``(N,)`` or ``(N,d)``
     - ``target`` (float tensor): Sequence of data of either shape ``(N,)`` or ``(N,d)``
 
-    As output of 'forward' and 'compute' the metric returns the correlation tau statistic, and optionally 
+    As output of 'forward' and 'compute' the metric returns the correlation tau statistic, and optionally
     p-value of corresponding statistical test.
 
     Args:
@@ -146,7 +146,8 @@ class KendallRankCorrCoef(Metric):
         )
 
     def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-        """Compute Kendall rank correlation coefficient, and optionally p-value of corresponding statistical test."""
+        """Compute Kendall rank correlation coefficient, and optionally p-value of corresponding statistical
+        test."""
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         tau, p_value = _kendall_corrcoef_compute(preds, target, self.variant, self.alternative)

@@ -35,7 +35,7 @@ class WeightedMeanAbsolutePercentageError(Metric):
     As input to 'forward' and 'update' the metric accepts the following input:
 
     - ``preds``: Predictions from model
-    - ``target``: Ground truth values        
+    - ``target``: Ground truth values
 
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
