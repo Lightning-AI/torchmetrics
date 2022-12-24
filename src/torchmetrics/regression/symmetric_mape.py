@@ -29,6 +29,11 @@ class SymmetricMeanAbsolutePercentageError(Metric):
 
     Where :math:`y` is a tensor of target values, and :math:`\hat{y}` is a tensor of predictions.
 
+    As input to 'forward' and 'update' the metric accepts the following input:
+
+    - ``preds``: Predictions from model
+    - ``target``: Ground truth values
+
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
@@ -63,12 +68,7 @@ class SymmetricMeanAbsolutePercentageError(Metric):
         self.add_state("total", default=tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
+        """Update state with predictions and targets."""
         sum_abs_per_error, num_obs = _symmetric_mean_absolute_percentage_error_update(preds, target)
 
         self.sum_abs_per_error += sum_abs_per_error

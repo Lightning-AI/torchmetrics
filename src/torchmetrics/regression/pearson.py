@@ -71,7 +71,7 @@ class PearsonCorrCoef(Metric):
 
     Where :math:`y` is a tensor of target values, and :math:`x` is a tensor of predictions.
 
-    Forward accepts
+    As input to 'forward' and 'update' the metric accepts the following input:
 
     - ``preds`` (float tensor): either single output tensor with shape ``(N,)`` or multioutput tensor of shape ``(N,d)``
     - ``target``(float tensor): either single output tensor with shape ``(N,)`` or multioutput tensor of shape ``(N,d)``
@@ -126,12 +126,7 @@ class PearsonCorrCoef(Metric):
         self.add_state("n_total", default=torch.zeros(self.num_outputs), dist_reduce_fx=None)
 
     def update(self, preds: Tensor, target: Tensor) -> None:
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
+        """Update state with predictions and targets."""
         self.mean_x, self.mean_y, self.var_x, self.var_y, self.corr_xy, self.n_total = _pearson_corrcoef_update(
             preds,
             target,

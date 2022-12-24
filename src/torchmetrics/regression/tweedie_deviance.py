@@ -39,10 +39,15 @@ class TweedieDevianceScore(Metric):
     where :math:`y` is a tensor of targets values, :math:`\hat{y}` is a tensor of predictions, and
     :math:`p` is the `power`.
 
-    Forward accepts
+    As input to 'forward' the metric accepts the following input:
 
     - ``preds`` (float tensor): ``(N,...)``
     - ``targets`` (float tensor): ``(N,...)``
+
+    As input to 'update' the metric accepts the following input:
+
+    - ``preds``: Predicted tensor with shape ``(N,d)``
+    - ``target``: Ground truth tensor with shape ``(N,d)``
 
     Args:
         power:
@@ -86,12 +91,7 @@ class TweedieDevianceScore(Metric):
         self.add_state("num_observations", torch.tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, targets: Tensor) -> None:
-        """Update metric states with predictions and targets.
-
-        Args:
-            preds: Predicted tensor with shape ``(N,d)``
-            targets: Ground truth tensor with shape ``(N,d)``
-        """
+        """Update metric states with predictions and targets."""
         sum_deviance_score, num_observations = _tweedie_deviance_score_update(preds, targets, self.power)
 
         self.sum_deviance_score += sum_deviance_score

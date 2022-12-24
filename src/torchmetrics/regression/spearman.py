@@ -32,10 +32,10 @@ class SpearmanCorrCoef(Metric):
     Spearmans correlations coefficient corresponds to the standard pearsons correlation coefficient calculated
     on the rank variables.
 
-    Forward accepts
+    As input to 'forward' and 'update' the metric accepts the following input:
 
-    - ``preds`` (float tensor): ``(N,d)``
-    - ``target``(float tensor): ``(N,d)``
+    - ``preds`` (float tensor): Predictions from model with shape ``(N,d)``
+    - ``target``(float tensor): Ground truth values with shape ``(N,d)``
 
     Args:
         num_outputs: Number of outputs in multioutput setting
@@ -81,12 +81,7 @@ class SpearmanCorrCoef(Metric):
         self.add_state("target", default=[], dist_reduce_fx="cat")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
+        """Update state with predictions and targets."""
         preds, target = _spearman_corrcoef_update(preds, target, num_outputs=self.num_outputs)
         self.preds.append(preds)
         self.target.append(target)

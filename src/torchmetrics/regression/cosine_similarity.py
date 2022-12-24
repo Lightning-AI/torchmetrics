@@ -31,10 +31,10 @@ class CosineSimilarity(Metric):
 
     where :math:`y` is a tensor of target values, and :math:`x` is a tensor of predictions.
 
-    Forward accepts
+    As input to 'forward' and 'update' the metric accepts the following input:
 
-    - ``preds`` (float tensor): ``(N,d)``
-    - ``target`` (float tensor): ``(N,d)``
+    - ``preds``: (float tensor): Predicted tensor with shape ``(N,d)``
+    - ``target``(float tensor): Ground truth tensor with shape ``(N,d)``
 
     Args:
         reduction: how to reduce over the batch dimension using 'sum', 'mean' or 'none' (taking the individual scores)
@@ -69,12 +69,7 @@ class CosineSimilarity(Metric):
         self.add_state("target", [], dist_reduce_fx="cat")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
-        """Update metric states with predictions and targets.
-
-        Args:
-            preds: Predicted tensor with shape ``(N,d)``
-            target: Ground truth tensor with shape ``(N,d)``
-        """
+        """Update metric states with predictions and targets."""
         preds, target = _cosine_similarity_update(preds, target)
 
         self.preds.append(preds)
