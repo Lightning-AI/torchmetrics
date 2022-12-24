@@ -33,8 +33,8 @@ class KLDivergence(Metric):
     is a non-symetrical metric i.e. :math:`D_{KL}(P||Q) \neq D_{KL}(Q||P)`.
 
     Args:
-        p: data distribution with shape ``[N, d]``
-        q: prior or approximate distribution with shape ``[N, d]``
+        p: data distribution with shape ``(N, d)``
+        q: prior or approximate distribution with shape ``(N, d)``
         log_prob: bool indicating if input is log-probabilities or probabilities. If given as probabilities,
             will normalize to make sure the distributes sum to 1.
         reduction:
