@@ -23,8 +23,8 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class SpectralAngleMapper(Metric):
-    """The metric `Spectral Angle Mapper`_ determines the spectral similarity between image spectra and reference 
-    spectra by calculating the angle between the spectra, where small angles between indicate high similarity and 
+    """The metric `Spectral Angle Mapper`_ determines the spectral similarity between image spectra and reference
+    spectra by calculating the angle between the spectra, where small angles between indicate high similarity and
     high angles indicate low similarity.
 
     As input to 'update' the metric accepts the following input:

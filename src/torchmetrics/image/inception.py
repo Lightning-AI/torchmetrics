@@ -36,10 +36,10 @@ class InceptionScore(Metric):
     where :math:`KL(p(y | x) || p(y))` is the KL divergence between the conditional distribution :math:`p(y|x)`
     and the margianl distribution :math:`p(y)`. Both the conditional and marginal distribution is calculated
     from features extracted from the images. The score is calculated on random splits of the images such that
-    both a mean and standard deviation of the score are returned. The metric was originally proposed in 
+    both a mean and standard deviation of the score are returned. The metric was originally proposed in
     `inception ref1`_.
 
-    Using the default feature extraction (Inception v3 using the original weights from `inception ref2`_), the input 
+    Using the default feature extraction (Inception v3 using the original weights from `inception ref2`_), the input
     is expected to be mini-batches of 3-channel RGB images of shape ``(3 x H x W)``. If argument ``normalize``
     is ``True`` images are expected to be dtype ``float`` and have values in the ``[0, 1]`` range, else if
     ``normalize`` is set to ``False`` images are expected to have dtype uint8 and take values in the ``[0, 255]``

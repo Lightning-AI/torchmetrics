@@ -131,9 +131,9 @@ class FrechetInceptionDistance(Metric):
     .. math::
         FID = |\mu - \mu_w| + tr(\Sigma + \Sigma_w - 2(\Sigma \Sigma_w)^{\frac{1}{2}})
 
-    where :math:`\mathcal{N}(\mu, \Sigma)` is the multivariate normal distribution estimated from Inception v3 
-    (`fid ref1`_) features calculated on real life images and :math:`\mathcal{N}(\mu_w, \Sigma_w)` is the 
-    multivariate normal distribution estimated from Inception v3 features calculated on generated (fake) images. 
+    where :math:`\mathcal{N}(\mu, \Sigma)` is the multivariate normal distribution estimated from Inception v3
+    (`fid ref1`_) features calculated on real life images and :math:`\mathcal{N}(\mu_w, \Sigma_w)` is the
+    multivariate normal distribution estimated from Inception v3 features calculated on generated (fake) images.
     The metric was originally proposed in `fid ref1`_.
 
     Using the default feature extraction (Inception v3 using the original weights from `fid ref2`_), the input is
