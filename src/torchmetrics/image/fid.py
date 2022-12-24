@@ -131,12 +131,12 @@ class FrechetInceptionDistance(Metric):
     .. math::
         FID = |\mu - \mu_w| + tr(\Sigma + \Sigma_w - 2(\Sigma \Sigma_w)^{\frac{1}{2}})
 
-    where :math:`\mathcal{N}(\mu, \Sigma)` is the multivariate normal distribution estimated from Inception v3 [1]
-    features calculated on real life images and :math:`\mathcal{N}(\mu_w, \Sigma_w)` is the multivariate normal
-    distribution estimated from Inception v3 features calculated on generated (fake) images. The metric was
-    originally proposed in [1].
+    where :math:`\mathcal{N}(\mu, \Sigma)` is the multivariate normal distribution estimated from Inception v3 
+    (`fid ref1`_) features calculated on real life images and :math:`\mathcal{N}(\mu_w, \Sigma_w)` is the 
+    multivariate normal distribution estimated from Inception v3 features calculated on generated (fake) images. 
+    The metric was originally proposed in `fid ref1`_.
 
-    Using the default feature extraction (Inception v3 using the original weights from [2]), the input is
+    Using the default feature extraction (Inception v3 using the original weights from `fid ref2`_), the input is
     expected to be mini-batches of 3-channel RGB images of shape ``(3 x H x W)``. If argument ``normalize``
     is ``True`` images are expected to be dtype ``float`` and have values in the ``[0, 1]`` range, else if
     ``normalize`` is set to ``False`` images are expected to have dtype ``uint8`` and take values in the ``[0, 255]``

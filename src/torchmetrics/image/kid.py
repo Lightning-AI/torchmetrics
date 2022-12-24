@@ -72,7 +72,7 @@ class KernelInceptionDistance(Metric):
         KID = MMD(f_{real}, f_{fake})^2
 
     where :math:`MMD` is the maximum mean discrepancy and :math:`I_{real}, I_{fake}` are extracted features
-    from real and fake images, see [1] for more details. In particular, calculating the MMD requires the
+    from real and fake images, see `kid ref1`_ for more details. In particular, calculating the MMD requires the
     evaluation of a polynomial kernel function :math:`k`
 
     .. math::
@@ -81,7 +81,7 @@ class KernelInceptionDistance(Metric):
     which controls the distance between two features. In practise the MMD is calculated over a number of
     subsets to be able to both get the mean and standard deviation of KID.
 
-    Using the default feature extraction (Inception v3 using the original weights from [2]), the input is
+    Using the default feature extraction (Inception v3 using the original weights from `kid ref2`_), the input is
     expected to be mini-batches of 3-channel RGB images of shape ``(3 x H x W)``. If argument ``normalize``
     is ``True`` images are expected to be dtype ``float`` and have values in the ``[0, 1]`` range, else if
     ``normalize`` is set to ``False`` images are expected to have dtype ``uint8`` and take values in the ``[0, 255]``
