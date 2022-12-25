@@ -15,18 +15,21 @@ ExactMatch
 
 .. autoclass:: torchmetrics.ExactMatch
     :noindex:
+    :exclude-members: update, compute
 
 MulticlassExactMatch
 ^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.MulticlassExactMatch
     :noindex:
+    :exclude-members: update, compute
 
 MultilabelExactMatch
 ^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.MultilabelExactMatch
     :noindex:
+    :exclude-members: update, compute
 
 
 Functional Interface

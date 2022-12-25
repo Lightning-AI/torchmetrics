@@ -14,24 +14,28 @@ ________________
 
 .. autoclass:: torchmetrics.Precision
     :noindex:
+    :exclude-members: update, compute
 
 BinaryPrecision
 ^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.BinaryPrecision
     :noindex:
+    :exclude-members: update, compute
 
 MulticlassPrecision
 ^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.MulticlassPrecision
     :noindex:
+    :exclude-members: update, compute
 
 MultilabelPrecision
 ^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.MultilabelPrecision
     :noindex:
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________
