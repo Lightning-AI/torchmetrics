@@ -10,8 +10,8 @@ Jaccard Index
 Module Interface
 ________________
 
-CohenKappa
-^^^^^^^^^^
+JaccardIndex
+^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.JaccardIndex
     :noindex:
