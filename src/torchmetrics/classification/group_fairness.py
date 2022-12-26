@@ -50,6 +50,7 @@ class BinaryGroupStatRates(_AbstractGroupStatScores):
     classification by group. Related to `Type I and Type II errors`_.
 
     Accepts the following input tensors:
+
     - ``preds`` (int or float tensor): ``(N, ...)``. If preds is a floating point tensor with values outside
       [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
@@ -79,7 +80,7 @@ class BinaryGroupStatRates(_AbstractGroupStatScores):
         {'group_0': tensor([0., 0., 1., 0.]), 'group_1': tensor([1., 0., 0., 0.])}
 
     Example (preds is float tensor):
-        >>> from torchmetrics.classification import BinaryGroupStatRates
+        >>> from torchmetrics.classification.group_fairness import BinaryGroupStatRates
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0.11, 0.84, 0.22, 0.73, 0.33, 0.92])
         >>> groups = torch.tensor([0, 1, 0, 1, 0, 1])
@@ -99,7 +100,6 @@ class BinaryGroupStatRates(_AbstractGroupStatScores):
         validate_args: bool = True,
         **kwargs: Any,
     ) -> None:
-        """Initialize states and validate arguments."""
         super().__init__()
 
         if validate_args:
@@ -138,15 +138,8 @@ class BinaryGroupStatRates(_AbstractGroupStatScores):
 class BinaryFairness(_AbstractGroupStatScores):
     r"""Computes demographic parity and equal opportunity ratio for binary classification problems.
 
-    This class computes the ratio between positivity rates and true positives rates for different groups.
-    If more than two groups are present, the disparity between the lowest and highest group is reported.
-    A disparity between positivity rates indicates a potential violation of demographic parity, and between
-    true positive rates indicates a potential violation of equal opportunity.
-
-    The lowest rate is divided by the highest, so a lower value means more discrimination against the numerator.
-    In the results this is also indicated as the key of dict is {metric}_{identifier_low_group}_{identifier_high_group}.
-
     Accepts the following input tensors:
+
     - ``preds`` (int or float tensor): ``(N, ...)``. If preds is a floating point tensor with values outside
       [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
@@ -154,6 +147,14 @@ class BinaryFairness(_AbstractGroupStatScores):
     - ``target`` (int tensor): ``(N, ...)``.
 
     The additional dimensions are flatted along the batch dimension.
+
+    This class computes the ratio between positivity rates and true positives rates for different groups.
+    If more than two groups are present, the disparity between the lowest and highest group is reported.
+    A disparity between positivity rates indicates a potential violation of demographic parity, and between
+    true positive rates indicates a potential violation of equal opportunity.
+
+    The lowest rate is divided by the highest, so a lower value means more discrimination against the numerator.
+    In the results this is also indicated as the key of dict is {metric}_{identifier_low_group}_{identifier_high_group}.
 
     Args:
         num_groups: The number of groups.
@@ -170,7 +171,7 @@ class BinaryFairness(_AbstractGroupStatScores):
         The value is a tensor with the disparity rate.
 
     Example (preds is int tensor):
-        >>> from torchmetrics.classification import BinaryFairness
+        >>> from torchmetrics.classification.group_fairness import BinaryFairness
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> groups = torch.tensor([0, 1, 0, 1, 0, 1])
@@ -179,7 +180,7 @@ class BinaryFairness(_AbstractGroupStatScores):
         ({'DP_0_1': tensor(0.)}, {'EO_0_1': tensor(0.)})
 
     Example (preds is float tensor):
-        >>> from torchmetrics.classification import BinaryFairness
+        >>> from torchmetrics.classification.group_fairness import BinaryFairness
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0.11, 0.84, 0.22, 0.73, 0.33, 0.92])
         >>> groups = torch.tensor([0, 1, 0, 1, 0, 1])
@@ -200,7 +201,6 @@ class BinaryFairness(_AbstractGroupStatScores):
         validate_args: bool = True,
         **kwargs: Any,
     ) -> None:
-        """Initialize states and validate arguments."""
         super().__init__()
 
         if task not in ["demographic_parity", "equal_opportunity", "all"]:

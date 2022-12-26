@@ -118,6 +118,7 @@ def binary_groups_stat_rates(
     classification by group. Related to `Type I and Type II errors`_.
 
     Accepts the following input tensors:
+
     - ``preds`` (int or float tensor): ``(N, ...)``. If preds is a floating point tensor with values outside
       [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
@@ -181,18 +182,18 @@ def demographic_parity(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Dict[str, torch.Tensor]:
-    r"""Demographic parity.
-
-    Demographic parity compares the positivity rates between all groups. If more than two groups are present,
+    r"""Demographic parity compares the positivity rates between all groups. If more than two groups are present,
     the disparity between the lowest and highest group is reported. The lowest positivity rate is divided by
     the highest, so a lower value means more discrimination against the numerator. In the results this is also
     indicated as the key of dict is DP_{identifier_low_group}_{identifier_high_group}.
 
-    .. math:: \text{DP} = \dfrac{\min_a PR_a}{\max_a PR_a}.
+    .. math::
+        \text{DP} = \dfrac{\min_a PR_a}{\max_a PR_a}.
 
     where :math:`\text{PR}` represents the positivity rate for group :math:`\text{a}`.
 
     Accepts the following input tensors:
+
     - ``preds`` (int or float tensor): ``(N, ...)``. If preds is a floating point tensor with values outside
       [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
@@ -261,18 +262,18 @@ def equal_opportunity(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Dict[str, torch.Tensor]:
-    r"""Equal opportunity.
-
-    Equal opportunity compares the true positive rates between all groups. If more than two groups are present,
+    r"""Equal opportunity compares the true positive rates between all groups. If more than two groups are present,
     the disparity between the lowest and highest group is reported. The lowest true positive rate is divided by
     the highest, so a lower value means more discrimination against the numerator. In the results this is also
     indicated as the key of dict is EO_{identifier_low_group}_{identifier_high_group}.
 
-    .. math:: \text{DP} = \dfrac{\min_a TPR_a}{\max_a TPR_a}.
+    .. math::
+        \text{DP} = \dfrac{\min_a TPR_a}{\max_a TPR_a}.
 
     where :math:`\text{TPR}` represents the true positives rate for group :math:`\text{a}`.
 
     Accepts the following input tensors:
+
     - ``preds`` (int or float tensor): ``(N, ...)``. If preds is a floating point tensor with values outside
       [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
@@ -328,9 +329,7 @@ def binary_fairness(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]:
-    r"""Binary fairness metrics.
-
-    This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
+    r"""This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'demographic_parity'``, ``'equal_opportunity'`` or ``all``. See the documentation of
     :func:`_compute_binary_demographic_parity` and :func:`_compute_binary_equal_opportunity` for the specific
     details of each argument influence and examples.
