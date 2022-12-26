@@ -183,8 +183,8 @@ def demographic_parity(
     validate_args: bool = True,
 ) -> Dict[str, torch.Tensor]:
     r"""Demographic parity compares the positivity rates between all groups. If more than two groups are present,
-    the disparity between the lowest and highest group is reported. The lowest positivity rate is divided by
-    the highest, so a lower value means more discrimination against the numerator. In the results this is also
+    the disparity between the lowest and highest group is reported. The lowest positivity rate is divided by the
+    highest, so a lower value means more discrimination against the numerator. In the results this is also
     indicated as the key of dict is DP_{identifier_low_group}_{identifier_high_group}.
 
     .. math::
@@ -263,8 +263,8 @@ def equal_opportunity(
     validate_args: bool = True,
 ) -> Dict[str, torch.Tensor]:
     r"""Equal opportunity compares the true positive rates between all groups. If more than two groups are present,
-    the disparity between the lowest and highest group is reported. The lowest true positive rate is divided by
-    the highest, so a lower value means more discrimination against the numerator. In the results this is also
+    the disparity between the lowest and highest group is reported. The lowest true positive rate is divided by the
+    highest, so a lower value means more discrimination against the numerator. In the results this is also
     indicated as the key of dict is EO_{identifier_low_group}_{identifier_high_group}.
 
     .. math::
