@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Dict, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import torch
 from typing_extensions import Literal
@@ -24,6 +24,7 @@ from torchmetrics.functional.classification.stat_scores import (
 )
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.compute import _safe_divide
+from torchmetrics.utilities.data import _flexible_bincount
 
 
 def _groups_validation(groups: torch.Tensor, num_groups: int) -> None:
@@ -57,7 +58,7 @@ def _binary_groups_stat_scores(
     threshold: float = 0.5,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Dict[str, Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]:
+) -> List[Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]:
     """Computes the number of true positives, false positives, true negatives, and false negatives for binary
     classification by group.
 
@@ -71,29 +72,36 @@ def _binary_groups_stat_scores(
     preds, target = _binary_stat_scores_format(preds, target, threshold, ignore_index)
     groups = _groups_format(groups)
 
-    group_preds = [preds[groups == i].unsqueeze(1) for i in range(num_groups)]
-    group_target = [target[groups == i].unsqueeze(1) for i in range(num_groups)]
+    indexes, indices = torch.sort(groups.squeeze(1))
+    preds = preds[indices]
+    target = target[indices]
 
-    group_stats = {
-        f"group_{group}": _binary_stat_scores_update(group_preds.pop(0), group_target.pop(0))
-        for group in range(num_groups)
-    }
+    split_sizes = _flexible_bincount(indexes).detach().cpu().tolist()
+
+    group_preds = [mini_preds for mini_preds in torch.split(preds, split_sizes, dim=0)]
+    group_target = [mini_target for mini_target in torch.split(target, split_sizes, dim=0)]
+
+    group_stats = [_binary_stat_scores_update(group_p, group_t) for group_p, group_t in zip(group_preds, group_target)]
 
     return group_stats
 
 
-def _groups_reduce(group_stats: Dict[str, Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]):
+def _groups_reduce(
+    group_stats: List[Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]
+) -> Dict[str, torch.Tensor]:
     """Compute rates for all the group statistics."""
-    return {group: torch.stack(stats) / torch.stack(stats).sum() for group, stats in group_stats.items()}
+    return {f"group_{group}": torch.stack(stats) / torch.stack(stats).sum() for group, stats in enumerate(group_stats)}
 
 
-def _groups_stat_transform(group_stats: Dict[str, Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]):
+def _groups_stat_transform(
+    group_stats: List[Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]
+) -> Dict[str, torch.Tensor]:
     """Transform group statistics by creating a tensor for each statistic."""
     return {
-        "tp": torch.cat([stat[0].unsqueeze(0) for stat in group_stats.values()]),
-        "fp": torch.cat([stat[1].unsqueeze(0) for stat in group_stats.values()]),
-        "tn": torch.cat([stat[2].unsqueeze(0) for stat in group_stats.values()]),
-        "fn": torch.cat([stat[3].unsqueeze(0) for stat in group_stats.values()]),
+        "tp": torch.cat([stat[0].unsqueeze(0) for stat in group_stats]),
+        "fp": torch.cat([stat[1].unsqueeze(0) for stat in group_stats]),
+        "tn": torch.cat([stat[2].unsqueeze(0) for stat in group_stats]),
+        "fn": torch.cat([stat[3].unsqueeze(0) for stat in group_stats]),
     }
 
 

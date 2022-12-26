@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import torch
 from typing_extensions import Literal
@@ -36,10 +36,8 @@ class _AbstractGroupStatScores(Metric):
         self.add_state("tn", default(), dist_reduce_fx="sum")
         self.add_state("fn", default(), dist_reduce_fx="sum")
 
-    def _update_states(
-        self, group_stats: Dict[str, Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]
-    ) -> None:
-        for group, stats in enumerate(group_stats.values()):
+    def _update_states(self, group_stats: List[Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]) -> None:
+        for group, stats in enumerate(group_stats):
             tp, fp, tn, fn = stats
             self.tp[group] += tp
             self.fp[group] += fp
