@@ -28,7 +28,7 @@ class TranslationEditRate(Metric):
     near-exact reimplementation of the Tercom algorithm, produces identical results on all "sane" outputs.
 
     As input to 'update' and 'forward' the metric accepts the following input:
-    
+
     - ``preds``: An iterable of hypothesis corpus
     - ``target``: An iterable of iterables of reference corpus
 

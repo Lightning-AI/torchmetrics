@@ -56,7 +56,7 @@ class InfoLM(Metric):
     The implementation of this metric is fully based HuggingFace `transformers`' package.
 
     As input to 'update' and 'forward' the metric accepts the following input:
-    
+
     - ``preds``: An iterable of hypothesis corpus
     - ``target``: An iterable of reference corpus
 

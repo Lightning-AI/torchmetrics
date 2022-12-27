@@ -21,10 +21,11 @@ from torchmetrics.metric import Metric
 
 
 class WordInfoPreserved(Metric):
-    r"""Word Information Preserved (`WIP`_) is a metric of the performance of an automatic speech recognition system.
-    This value indicates the percentage of words that were correctly predicted between a set of ground-truth
-    sentences and a set of hypothesis sentences. The higher the value, the better the performance of the ASR system
-    with a WordInfoPreserved of 1 being a perfect score. Word Information Preserved rate can then be computed as:
+    r"""Word Information Preserved (`WIP`_) is a metric of the performance of an automatic speech recognition
+    system. This value indicates the percentage of words that were correctly predicted between a set of ground-
+    truth sentences and a set of hypothesis sentences. The higher the value, the better the performance of the ASR
+    system with a WordInfoPreserved of 1 being a perfect score. Word Information Preserved rate can then be
+    computed as:
 
     .. math::
         wip = \frac{C}{N} + \frac{C}{P}
@@ -36,7 +37,7 @@ class WordInfoPreserved(Metric):
         - :math:`P` is the number of words in the prediction
 
     As input to 'update' and 'forward' the metric accepts the following input:
-    
+
     - ``preds``: Transcription(s) to score as a string or list of strings
     - ``target``: Reference(s) for each speech input as a string or list of strings
 

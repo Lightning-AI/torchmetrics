@@ -48,11 +48,11 @@ class BERTScore(Metric):
     This implemenation follows the original implementation from `BERT_score`_.
 
     As input to 'update' and 'forward' the metric accepts the following input:
-    
+
     - ``preds``: An iterable of predicted sentences
     - ``target``: An iterable of reference sentences
 
-    As output of 'compute' and 'forward' the metric returns a Python dictionary containing the keys `precision`, 
+    As output of 'compute' and 'forward' the metric returns a Python dictionary containing the keys `precision`,
     `recall` and `f1` with corresponding values.
 
     Args:
@@ -183,8 +183,10 @@ class BERTScore(Metric):
         self.add_state("target_attention_mask", [], dist_reduce_fx="cat")
 
     def update(self, preds: List[str], target: List[str]) -> None:
-        """Store predictions/references for computing BERT scores. It is necessary to store sentences in a
-        tokenized form to ensure the DDP mode working."""
+        """Store predictions/references for computing BERT scores.
+
+        It is necessary to store sentences in a tokenized form to ensure the DDP mode working.
+        """
         preds_dict, _ = _preprocess_text(
             preds,
             self.tokenizer,

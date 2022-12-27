@@ -21,10 +21,10 @@ from torchmetrics.metric import Metric
 
 
 class WordInfoLost(Metric):
-    r"""Word Information Lost (`WIL`_) is a metric of the performance of an automatic speech recognition system. This
-    value indicates the percentage of words that were incorrectly predicted between a set of ground-truth sentences
-    and a set of hypothesis sentences. The lower the value, the better the performance of the ASR system with a
-    WordInfoLost of 0 being a perfect score. Word Information Lost rate can then be computed as:
+    r"""Word Information Lost (`WIL`_) is a metric of the performance of an automatic speech recognition system.
+    This value indicates the percentage of words that were incorrectly predicted between a set of ground-truth
+    sentences and a set of hypothesis sentences. The lower the value, the better the performance of the ASR system
+    with a WordInfoLost of 0 being a perfect score. Word Information Lost rate can then be computed as:
 
     .. math::
         wil = 1 - \frac{C}{N} + \frac{C}{P}
@@ -36,7 +36,7 @@ class WordInfoLost(Metric):
         - :math:`P` is the number of words in the prediction
 
     As input to 'update' and 'forward' the metric accepts the following input:
-    
+
     - ``preds``: Transcription(s) to score as a string or list of strings
     - ``target``: Reference(s) for each speech input as a string or list of strings
 

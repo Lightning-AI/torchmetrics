@@ -51,7 +51,7 @@ class CHRFScore(Metric):
     https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/chrf.py.
 
     As input to 'update' and 'forward' the metric accepts the following input:
-    
+
     - ``preds``: An iterable of hypothesis corpus
     - ``target``: An iterable of iterables of reference corpus
 

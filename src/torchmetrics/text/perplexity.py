@@ -25,7 +25,7 @@ class Perplexity(Metric):
     of bits per word a model needs to represent the sample.
 
     As input to 'update' and 'forward' the metric accepts the following input:
-    
+
     - ``preds``: Probabilities assigned to each token in a sequence with shape [batch_size, seq_len, vocab_size]
     - ``target``: Ground truth values with a shape [batch_size, seq_len]
 

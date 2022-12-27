@@ -39,7 +39,7 @@ class MatchErrorRate(Metric):
         - :math:`N` is the number of words in the reference (:math:`N=S+D+C`).
 
     As input to 'update' and 'forward' the metric accepts the following input:
-    
+
     - ``preds``: Transcription(s) to score as a string or list of strings
     - ``target``: Reference(s) for each speech input as a string or list of strings
 

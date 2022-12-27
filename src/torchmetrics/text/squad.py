@@ -31,7 +31,7 @@ class SQuAD(Metric):
     Answering Dataset (SQuAD).
 
     As input to 'update' and 'forward' the metric accepts the following input:
-    
+
     - ``preds``: A Dictionary or List of Dictionary-s that map ``id`` and ``prediction_text`` to the respective values
         Example ``prediction``:
 
@@ -61,7 +61,7 @@ class SQuAD(Metric):
                 'title': 'train test'
             }
 
-    As output of 'compute' and 'forward' the metric returns a dictionary containing the F1 score, Exact match 
+    As output of 'compute' and 'forward' the metric returns a dictionary containing the F1 score, Exact match
     score for the batch.
 
     Args:

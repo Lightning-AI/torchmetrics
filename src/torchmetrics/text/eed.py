@@ -27,7 +27,7 @@ class ExtendedEditDistance(Metric):
     The metric utilises the Levenshtein distance and extends it by adding a jump operation.
 
     As input to 'update' and 'forward' the metric accepts the following input:
-    
+
     - ``preds``: An iterable of hypothesis corpus
     - ``target``: An iterable of iterables of reference corpus
 
