@@ -71,7 +71,7 @@ class BinaryGroupStatRates(_AbstractGroupStatScores):
         The metric returns a dict with a group identifier as key and a tensor with the tp, fp, tn and fn rates as value.
 
     Example (preds is int tensor):
-        >>> from torchmetrics.classification import BinaryGroupStatRates
+        >>> from torchmetrics.classification.group_fairness import BinaryGroupStatRates
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> groups = torch.tensor([0, 1, 0, 1, 0, 1])
