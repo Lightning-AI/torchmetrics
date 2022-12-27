@@ -33,6 +33,14 @@ class ROUGEScore(Metric):
 
     This implementation should imitate the behaviour of the `rouge-score` package `Python ROUGE Implementation`
 
+    As input to 'update' and 'forward' the metric accepts the following input:
+    
+    - ``preds``: An iterable of predicted sentences or a single predicted sentence
+    - ``target``: An iterable of target sentences or an iterable of target sentences or a single target sentence
+
+    As output of 'compute' and 'forward' the metric returns a Python dictionary of rouge scores for each input 
+    rouge key.
+
     Args:
         use_stemmer: Use Porter stemmer to strip word suffixes to improve matching.
         normalizer: A user's own normalizer function.
@@ -129,12 +137,7 @@ class ROUGEScore(Metric):
     def update(
         self, preds: Union[str, Sequence[str]], target: Union[str, Sequence[str], Sequence[Sequence[str]]]
     ) -> None:
-        """Compute rouge scores.
-
-        Args:
-            preds: An iterable of predicted sentences or a single predicted sentence.
-            target: An iterable of target sentences or an iterable of target sentences or a single target sentence.
-        """
+        """Compute rouge scores."""
         if isinstance(target, list) and all(isinstance(tgt, str) for tgt in target):
             target = [target] if isinstance(preds, str) else [[tgt] for tgt in target]
 
@@ -159,11 +162,7 @@ class ROUGEScore(Metric):
                     getattr(self, f"rouge{rouge_key}_{tp}").append(value.to(self.device))
 
     def compute(self) -> Dict[str, Tensor]:
-        """Calculate (Aggregate and provide confidence intervals) ROUGE score.
-
-        Return:
-            Python dictionary of rouge scores for each input rouge key.
-        """
+        """Calculate (Aggregate and provide confidence intervals) ROUGE score."""
         update_output = {}
         for rouge_key in self.rouge_keys_values:
             for tp in ["fmeasure", "precision", "recall"]:

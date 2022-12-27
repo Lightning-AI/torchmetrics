@@ -38,6 +38,12 @@ class MatchErrorRate(Metric):
         - :math:`C` is the number of correct words,
         - :math:`N` is the number of words in the reference (:math:`N=S+D+C`).
 
+    As input to 'update' and 'forward' the metric accepts the following input:
+    
+    - ``preds``: Transcription(s) to score as a string or list of strings
+    - ``target``: Reference(s) for each speech input as a string or list of strings
+
+    As output of 'compute' and 'forward' the metric returns the match error rate.
 
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
@@ -72,12 +78,7 @@ class MatchErrorRate(Metric):
         preds: Union[str, List[str]],
         target: Union[str, List[str]],
     ) -> None:
-        """Store references/predictions for computing Match Error Rate scores.
-
-        Args:
-            preds: Transcription(s) to score as a string or list of strings
-            target: Reference(s) for each speech input as a string or list of strings
-        """
+        """Store references/predictions for computing Match Error Rate scores."""
         errors, total = _mer_update(
             preds,
             target,
@@ -86,9 +87,5 @@ class MatchErrorRate(Metric):
         self.total += total
 
     def compute(self) -> Tensor:
-        """Calculate the Match error rate.
-
-        Returns:
-            Match error rate
-        """
+        """Calculate the Match error rate."""
         return _mer_compute(self.errors, self.total)

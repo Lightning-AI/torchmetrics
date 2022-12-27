@@ -35,6 +35,11 @@ class WordInfoPreserved(Metric):
         - :math:`N` is the number of words in the reference
         - :math:`P` is the number of words in the prediction
 
+    As input to 'update' and 'forward' the metric accepts the following input:
+    
+    - ``preds``: Transcription(s) to score as a string or list of strings
+    - ``target``: Reference(s) for each speech input as a string or list of strings
+
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
@@ -65,21 +70,12 @@ class WordInfoPreserved(Metric):
         self.add_state("preds_total", tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, preds: Union[str, List[str]], target: Union[str, List[str]]) -> None:
-        """Store predictions/references for computing word Information Preserved scores.
-
-        Args:
-            preds: Transcription(s) to score as a string or list of strings
-            target: Reference(s) for each speech input as a string or list of strings
-        """
+        """Store predictions/references for computing word Information Preserved scores."""
         errors, target_total, preds_total = _wip_update(preds, target)
         self.errors += errors
         self.target_total += target_total
         self.preds_total += preds_total
 
     def compute(self) -> Tensor:
-        """Calculate the word Information Preserved.
-
-        Returns:
-            word Information Preserved score
-        """
+        """Calculate the word Information Preserved."""
         return _wip_compute(self.errors, self.target_total, self.preds_total)

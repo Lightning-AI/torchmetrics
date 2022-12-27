@@ -26,6 +26,13 @@ class ExtendedEditDistance(Metric):
 
     The metric utilises the Levenshtein distance and extends it by adding a jump operation.
 
+    As input to 'update' and 'forward' the metric accepts the following input:
+    
+    - ``preds``: An iterable of hypothesis corpus
+    - ``target``: An iterable of iterables of reference corpus
+
+    As output of 'compute' and 'forward' the metric returns an extended edit distance score as a tensor.
+
     Args:
         language: Language used in sentences. Only supports English (en) and Japanese (ja) for now.
         return_sentence_level_score: An indication of whether sentence-level EED score is to be returned
@@ -91,12 +98,7 @@ class ExtendedEditDistance(Metric):
         preds: Union[str, Sequence[str]],
         target: Sequence[Union[str, Sequence[str]]],
     ) -> None:
-        """Update ExtendedEditDistance statistics.
-
-        Args:
-            preds: An iterable of hypothesis corpus
-            target: An iterable of iterables of reference corpus
-        """
+        """Update ExtendedEditDistance statistics."""
         self.sentence_eed = _eed_update(
             preds,
             target,
@@ -109,11 +111,7 @@ class ExtendedEditDistance(Metric):
         )
 
     def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-        """Calculate extended edit distance score.
-
-        Return:
-            Extended edit distance score as tensor
-        """
+        """Calculate extended edit distance score."""
         average = _eed_compute(self.sentence_eed)
 
         if self.return_sentence_level_score:

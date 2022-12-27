@@ -41,6 +41,13 @@ class CharErrorRate(Metric):
 
     Compute CharErrorRate score of transcribed segments against references.
 
+    As input to 'update' and 'forward' the metric accepts the following input:
+    
+    - ``preds``: Transcription(s) to score as a string or list of strings
+    - ``target``: Reference(s) for each speech input as a string or list of strings
+
+    As output of 'compute' and 'forward' the metric returns a character error rate score.
+
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
@@ -70,20 +77,11 @@ class CharErrorRate(Metric):
         self.add_state("total", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
 
     def update(self, preds: Union[str, List[str]], target: Union[str, List[str]]) -> None:  # type: ignore
-        """Store references/predictions for computing Character Error Rate scores.
-
-        Args:
-            preds: Transcription(s) to score as a string or list of strings
-            target: Reference(s) for each speech input as a string or list of strings
-        """
+        """Store references/predictions for computing Character Error Rate scores."""
         errors, total = _cer_update(preds, target)
         self.errors += errors
         self.total += total
 
     def compute(self) -> Tensor:
-        """Calculate the character error rate.
-
-        Returns:
-           Character error rate score
-        """
+        """Calculate the character error rate."""
         return _cer_compute(self.errors, self.total)

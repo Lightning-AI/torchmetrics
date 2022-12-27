@@ -50,6 +50,16 @@ class CHRFScore(Metric):
     in `chrF++ score_`. This implementation follows the implmenetaions from https://github.com/m-popovic/chrF and
     https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/chrf.py.
 
+    As input to 'update' and 'forward' the metric accepts the following input:
+    
+    - ``preds``: An iterable of hypothesis corpus
+    - ``target``: An iterable of iterables of reference corpus
+
+    As output of 'compute' and 'forward' the metric returns the following output:
+
+    - A corpus-level chrF/chrF++ score.
+    - (Optionally) A list of sentence-level chrF/chrF++ scores if `return_sentence_level_score=True`.
+
     Args:
         n_char_order: A character n-gram order. If ``n_char_order=6``, the metrics refers to the official chrF/chrF++.
         n_word_order: A word n-gram order. If ``n_word_order=2``, the metric refers to the official chrF++.
@@ -125,12 +135,7 @@ class CHRFScore(Metric):
             self.add_state("sentence_chrf_score", [], dist_reduce_fx="cat")
 
     def update(self, preds: Sequence[str], target: Sequence[Sequence[str]]) -> None:
-        """Compute Precision Scores.
-
-        Args:
-            preds: An iterable of hypothesis corpus.
-            target: An iterable of iterables of reference corpus.
-        """
+        """Compute Precision Scores."""
         n_grams_dicts_tuple = _chrf_score_update(
             preds,
             target,
@@ -148,12 +153,7 @@ class CHRFScore(Metric):
             self.sentence_chrf_score = n_grams_dicts_tuple[-1]
 
     def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-        """Calculate chrF/chrF++ score.
-
-        Return:
-            A corpus-level chrF/chrF++ score.
-            (Optionally) A list of sentence-level chrF/chrF++ scores if `return_sentence_level_score=True`.
-        """
+        """Calculate chrF/chrF++ score."""
         if self.sentence_chrf_score is not None:
             return (
                 _chrf_score_compute(*self._convert_states_to_dicts(), self.n_order, self.beta),

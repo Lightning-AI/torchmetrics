@@ -24,6 +24,11 @@ class Perplexity(Metric):
     r"""Perplexity measures how well a language model predicts a text sample. It's calculated as the average number
     of bits per word a model needs to represent the sample.
 
+    As input to 'update' and 'forward' the metric accepts the following input:
+    
+    - ``preds``: Probabilities assigned to each token in a sequence with shape [batch_size, seq_len, vocab_size]
+    - ``target``: Ground truth values with a shape [batch_size, seq_len]
+
     Args:
         ignore_index:
             Integer specifying a target class to ignore. If given, this class index does not contribute
@@ -59,22 +64,11 @@ class Perplexity(Metric):
         self.add_state("count", default=tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
-        """Compute and store intermediate statistics for Perplexity.
-
-        Args:
-            preds:
-                Probabilities assigned to each token in a sequence with shape [batch_size, seq_len, vocab_size].
-            target:
-                Ground truth values with a shape [batch_size, seq_len].
-        """
+        """Compute and store intermediate statistics for Perplexity."""
         total_log_probs, count = _perplexity_update(preds, target, self.ignore_index)
         self.total_log_probs += total_log_probs
         self.count += count
 
     def compute(self) -> Tensor:
-        """Compute the Perplexity.
-
-        Returns:
-           Perplexity
-        """
+        """Compute the Perplexity."""
         return _perplexity_compute(self.total_log_probs, self.count)

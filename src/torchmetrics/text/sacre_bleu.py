@@ -35,6 +35,11 @@ class SacreBLEUScore(BLEUScore):
 
     The SacreBLEU implementation differs from the NLTK BLEU implementation in tokenization techniques.
 
+    As input to 'update' and 'forward' the metric accepts the following input:
+    
+    - ``preds``: An iterable of machine translated corpus
+    - ``target``: An iterable of iterables of reference corpus
+
     Args:
         n_gram: Gram value ranged from 1 to 4
         smooth: Whether to apply smoothing, see [2]
@@ -98,12 +103,7 @@ class SacreBLEUScore(BLEUScore):
         self.tokenizer = _SacreBLEUTokenizer(tokenize, lowercase)
 
     def update(self, preds: Sequence[str], target: Sequence[Sequence[str]]) -> None:
-        """Compute Precision Scores.
-
-        Args:
-            preds: An iterable of machine translated corpus
-            target: An iterable of iterables of reference corpus
-        """
+        """Compute Precision Scores."""
         self.preds_len, self.target_len = _bleu_score_update(
             preds,
             target,

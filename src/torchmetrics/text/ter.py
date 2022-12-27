@@ -28,6 +28,16 @@ class TranslationEditRate(Metric):
     https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/ter.py. The `sacrebleu` implmenetation is a
     near-exact reimplementation of the Tercom algorithm, produces identical results on all "sane" outputs.
 
+    As input to 'update' and 'forward' the metric accepts the following input:
+    
+    - ``preds``: An iterable of hypothesis corpus
+    - ``target``: An iterable of iterables of reference corpus
+
+    As output of 'compute' and 'forward' the metric returns the following output:
+
+    - A corpus-level translation edit rate (TER).
+    - (Optionally) A list of sentence-level translation_edit_rate (TER) if ``return_sentence_level_score=True``.
+
     Args:
         normalize: An indication whether a general tokenization to be applied.
         no_punctuation: An indication whteher a punctuation to be removed from the sentences.
@@ -84,12 +94,7 @@ class TranslationEditRate(Metric):
             self.add_state("sentence_ter", [], dist_reduce_fx="cat")
 
     def update(self, preds: Union[str, Sequence[str]], target: Sequence[Union[str, Sequence[str]]]) -> None:
-        """Update TER statistics.
-
-        Args:
-            preds: An iterable of hypothesis corpus.
-            target: An iterable of iterables of reference corpus.
-        """
+        """Update TER statistics."""
         self.total_num_edits, self.total_tgt_len, self.sentence_ter = _ter_update(
             preds,
             target,
@@ -100,12 +105,7 @@ class TranslationEditRate(Metric):
         )
 
     def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-        """Calculate the translate error rate (TER).
-
-        Return:
-            A corpus-level translation edit rate (TER).
-            (Optionally) A list of sentence-level translation_edit_rate (TER) if ``return_sentence_level_score=True``.
-        """
+        """Calculate the translate error rate (TER)."""
         ter = _ter_compute(self.total_num_edits, self.total_tgt_len)
         if self.sentence_ter is not None:
             return ter, torch.cat(self.sentence_ter)

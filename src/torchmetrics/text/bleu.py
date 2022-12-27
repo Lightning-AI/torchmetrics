@@ -28,6 +28,13 @@ from torchmetrics.functional.text.bleu import _bleu_score_compute, _bleu_score_u
 class BLEUScore(Metric):
     """Calculate `BLEU score`_ of machine translated text with one or more references.
 
+    As input to 'update' and 'forward' the metric accepts the following input:
+    
+    - ``preds``: An iterable of machine translated corpus
+    - ``target``: An iterable of iterables of reference corpus
+
+    As output of 'compute' and 'forward' the metric returns a tensor with BLEU Score.
+
     Args:
         n_gram: Gram value ranged from 1 to 4
         smooth: Whether or not to apply smoothing, see [2]
@@ -84,12 +91,7 @@ class BLEUScore(Metric):
         self.add_state("denominator", torch.zeros(self.n_gram), dist_reduce_fx="sum")
 
     def update(self, preds: Sequence[str], target: Sequence[Sequence[str]]) -> None:
-        """Compute Precision Scores.
-
-        Args:
-            preds: An iterable of machine translated corpus
-            target: An iterable of iterables of reference corpus
-        """
+        """Compute Precision Scores."""
         self.preds_len, self.target_len = _bleu_score_update(
             preds,
             target,
@@ -102,11 +104,7 @@ class BLEUScore(Metric):
         )
 
     def compute(self) -> Tensor:
-        """Calculate BLEU score.
-
-        Return:
-            Tensor with BLEU Score
-        """
+        """Calculate BLEU score."""
         return _bleu_score_compute(
             self.preds_len, self.target_len, self.numerator, self.denominator, self.n_gram, self.weights, self.smooth
         )

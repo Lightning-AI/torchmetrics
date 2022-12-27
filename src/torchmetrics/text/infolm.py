@@ -55,6 +55,13 @@ class InfoLM(Metric):
 
     The implementation of this metric is fully based HuggingFace `transformers`' package.
 
+    As input to 'update' and 'forward' the metric accepts the following input:
+    
+    - ``preds``: An iterable of hypothesis corpus
+    - ``target``: An iterable of reference corpus
+
+    As output of 'compute' and 'forward' the metric returns a corpus-level InfoLM score.
+
     Args:
         model_name_or_path:
             A name or a model path used to load `transformers` pretrained model.
@@ -144,14 +151,7 @@ class InfoLM(Metric):
         self.add_state("target_attention_mask", [], dist_reduce_fx="cat")
 
     def update(self, preds: Union[str, Sequence[str]], target: Union[str, Sequence[str]]) -> None:
-        """Update the metric state by a tokenization of ``preds`` and ``target`` sentencens.
-
-        Args:
-            preds:
-            An iterable of hypothesis corpus.
-        target:
-            An iterable of reference corpus.
-        """
+        """Update the metric state by a tokenization of ``preds`` and ``target`` sentencens."""
         preds_input_ids, preds_attention_mask, target_input_ids, target_attention_mask = _infolm_update(
             preds, target, self.tokenizer, self.max_length
         )
@@ -161,11 +161,7 @@ class InfoLM(Metric):
         self.target_attention_mask.append(target_attention_mask)
 
     def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-        """Calculate selected information measure using the pre-trained language model.
-
-        Return:
-            A corpus-level InfoLM score.
-        """
+        """Calculate selected information measure using the pre-trained language model."""
         preds_dataloader = _get_dataloader(
             input_ids=dim_zero_cat(self.preds_input_ids),
             attention_mask=dim_zero_cat(self.preds_attention_mask),

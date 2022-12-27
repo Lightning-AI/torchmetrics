@@ -30,6 +30,40 @@ class SQuAD(Metric):
     """Calculate `SQuAD Metric`_ which corresponds to the scoring script for version 1 of the Stanford Question
     Answering Dataset (SQuAD).
 
+    As input to 'update' and 'forward' the metric accepts the following input:
+    
+    - ``preds``: A Dictionary or List of Dictionary-s that map ``id`` and ``prediction_text`` to the respective values
+        Example ``prediction``:
+
+                .. code-block:: python
+
+                    {"prediction_text": "TorchMetrics is awesome", "id": "123"}
+
+    - ``target``: A Dictionary or List of Dictionary-s that contain the ``answers`` and ``id`` in the SQuAD Format.
+        Example ``target``:
+
+        .. code-block:: python
+
+            {
+                'answers': [{'answer_start': [1], 'text': ['This is a test answer']}],
+                'id': '1',
+            }
+
+        Reference SQuAD Format:
+
+        .. code-block:: python
+
+            {
+                'answers': {'answer_start': [1], 'text': ['This is a test text']},
+                'context': 'This is a test context.',
+                'id': '1',
+                'question': 'Is this a test?',
+                'title': 'train test'
+            }
+
+    As output of 'compute' and 'forward' the metric returns a dictionary containing the F1 score, Exact match 
+    score for the batch.
+
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
@@ -67,38 +101,6 @@ class SQuAD(Metric):
     def update(self, preds: PREDS_TYPE, target: TARGETS_TYPE) -> None:
         """Compute F1 Score and Exact Match for a collection of predictions and references.
 
-        Args:
-            preds:
-                A Dictionary or List of Dictionary-s that map ``id`` and ``prediction_text`` to the respective values.
-                Example prediction:
-
-                .. code-block:: python
-
-                    {"prediction_text": "TorchMetrics is awesome", "id": "123"}
-
-            target:
-                A Dictionary or List of Dictionary-s that contain the ``answers`` and ``id`` in the SQuAD Format.
-                Example target:
-
-                .. code-block:: python
-
-                    {
-                        'answers': [{'answer_start': [1], 'text': ['This is a test answer']}],
-                        'id': '1',
-                    }
-
-                Reference SQuAD Format:
-
-                .. code-block:: python
-
-                    {
-                        'answers': {'answer_start': [1], 'text': ['This is a test text']},
-                        'context': 'This is a test context.',
-                        'id': '1',
-                        'question': 'Is this a test?',
-                        'title': 'train test'
-                    }
-
         Raises:
             KeyError:
                 If the required keys are missing in either predictions or targets.
@@ -110,9 +112,5 @@ class SQuAD(Metric):
         self.total += total
 
     def compute(self) -> Dict[str, Tensor]:
-        """Aggregate the F1 Score and Exact match for the batch.
-
-        Return:
-            Dictionary containing the F1 score, Exact match score for the batch.
-        """
+        """Aggregate the F1 Score and Exact match for the batch."""
         return _squad_compute(self.f1_score, self.exact_match, self.total)
