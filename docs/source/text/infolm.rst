@@ -14,6 +14,7 @@ ________________
 
 .. autoclass:: torchmetrics.text.infolm.InfoLM
     :noindex:
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________
