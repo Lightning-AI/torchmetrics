@@ -74,10 +74,6 @@ class SQuAD(Metric):
         >>> squad = SQuAD()
         >>> squad(preds, target)
         {'exact_match': tensor(100.), 'f1': tensor(100.)}
-
-    References:
-        [1] SQuAD: 100,000+ Questions for Machine Comprehension of Text by Pranav Rajpurkar, Jian Zhang, Konstantin
-        Lopyrev, Percy Liang `SQuAD Metric`_ .
     """
 
     is_differentiable: bool = False

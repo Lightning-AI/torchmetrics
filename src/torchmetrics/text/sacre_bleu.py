@@ -30,8 +30,8 @@ AVAILABLE_TOKENIZERS = ("none", "13a", "zh", "intl", "char")
 
 
 class SacreBLEUScore(BLEUScore):
-    """Calculate `BLEU score`_ [1] of machine translated text with one or more references. This implementation
-    follows the behaviour of SacreBLEU [2] implementation from https://github.com/mjpost/sacrebleu.
+    """Calculate `BLEU score`_ of machine translated text with one or more references. This implementation
+    follows the behaviour of `SacreBLEU`_.
 
     The SacreBLEU implementation differs from the NLTK BLEU implementation in tokenization techniques.
 
@@ -42,7 +42,7 @@ class SacreBLEUScore(BLEUScore):
 
     Args:
         n_gram: Gram value ranged from 1 to 4
-        smooth: Whether to apply smoothing, see [2]
+        smooth: Whether to apply smoothing, see `SacreBLEU`_
         tokenize: Tokenization technique to be used.
             Supported tokenization: ``['none', '13a', 'zh', 'intl', 'char']``
         lowercase:  If ``True``, BLEU score over lowercased text is calculated.
@@ -68,13 +68,8 @@ class SacreBLEUScore(BLEUScore):
         >>> metric(preds, target)
         tensor(0.7598)
 
-    References:
-        [1] BLEU: a Method for Automatic Evaluation of Machine Translation by Papineni,
-        Kishore, Salim Roukos, Todd Ward, and Wei-Jing Zhu `BLEU`_
-
-        [2] A Call for Clarity in Reporting BLEU Scores by Matt Post.
-
-        [3] Automatic Evaluation of Machine Translation Quality Using Longest Common Subsequence
+    Additional References:
+        - Automatic Evaluation of Machine Translation Quality Using Longest Common Subsequence
         and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och `Machine Translation Evolution`_
     """
 

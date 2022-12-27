@@ -24,8 +24,7 @@ from torchmetrics.metric import Metric
 class TranslationEditRate(Metric):
     """Calculate Translation edit rate (`TER`_)  of machine translated text with one or more references.
 
-    This implementation follows the implmenetaions from
-    https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/ter.py. The `sacrebleu` implmenetation is a
+    This implementation follows the one from `SacreBleu_ter`_, which is a
     near-exact reimplementation of the Tercom algorithm, produces identical results on all "sane" outputs.
 
     As input to 'update' and 'forward' the metric accepts the following input:
@@ -52,10 +51,6 @@ class TranslationEditRate(Metric):
         >>> metric = TranslationEditRate()
         >>> metric(preds, target)
         tensor(0.1538)
-
-    References:
-        [1] A Study of Translation Edit Rate with Targeted Human Annotation
-        by Mathew Snover, Bonnie Dorr, Richard Schwartz, Linnea Micciulla and John Makhoul `TER`_
     """
 
     is_differentiable: bool = False

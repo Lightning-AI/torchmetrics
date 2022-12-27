@@ -22,7 +22,7 @@ from torchmetrics.metric import Metric
 
 
 class ExtendedEditDistance(Metric):
-    """Computes extended edit distance score (`ExtendedEditDistance`_) [1] for strings or list of strings.
+    """Computes extended edit distance score (`ExtendedEditDistance`_) for strings or list of strings.
 
     The metric utilises the Levenshtein distance and extends it by adding a jump operation.
 
@@ -52,10 +52,6 @@ class ExtendedEditDistance(Metric):
         >>> metric = ExtendedEditDistance()
         >>> metric(preds=preds, target=target)
         tensor(0.3078)
-
-    References:
-        [1] P. Stanchev, W. Wang, and H. Ney, “EED: Extended Edit Distance Measure for Machine Translation”, submitted
-        to WMT 2019. `ExtendedEditDistance`_
     """
 
     higher_is_better: bool = False

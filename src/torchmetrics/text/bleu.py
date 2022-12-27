@@ -37,7 +37,7 @@ class BLEUScore(Metric):
 
     Args:
         n_gram: Gram value ranged from 1 to 4
-        smooth: Whether or not to apply smoothing, see [2]
+        smooth: Whether or not to apply smoothing, see `Machine Translation Evolution`_
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
         weights:
             Weights used for unigrams, bigrams, etc. to calculate BLEU score.
@@ -53,13 +53,6 @@ class BLEUScore(Metric):
         >>> metric = BLEUScore()
         >>> metric(preds, target)
         tensor(0.7598)
-
-    References:
-        [1] BLEU: a Method for Automatic Evaluation of Machine Translation by Papineni,
-        Kishore, Salim Roukos, Todd Ward, and Wei-Jing Zhu `BLEU`_
-
-        [2] Automatic Evaluation of Machine Translation Quality Using Longest Common Subsequence
-        and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och `Machine Translation Evolution`_
     """
 
     is_differentiable: bool = False

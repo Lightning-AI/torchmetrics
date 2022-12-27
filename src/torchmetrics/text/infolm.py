@@ -36,7 +36,7 @@ if not _TRANSFORMERS_AVAILABLE:
 
 class InfoLM(Metric):
     """
-    Calculate `InfoLM`_ [1] - i.e. calculate a distance/divergence between predicted and reference sentence discrete
+    Calculate `InfoLM`_ - i.e. calculate a distance/divergence between predicted and reference sentence discrete
     distribution using one of the following information measures:
 
         - `KL divergence`_
@@ -98,10 +98,6 @@ class InfoLM(Metric):
         >>> infolm = InfoLM('google/bert_uncased_L-2_H-128_A-2', idf=False)
         >>> infolm(preds, target)
         tensor(-0.1784)
-
-    References:
-        [1] InfoLM: A New Metric to Evaluate Summarization & Data2Text Generation by Pierre Colombo, Chloé Clavel and
-        Pablo Piantanida `InfoLM`_
     """
 
     is_differentiable = False

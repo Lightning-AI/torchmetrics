@@ -85,9 +85,6 @@ class ROUGEScore(Metric):
             If the python packages ``nltk`` is not installed.
         ValueError:
             If any of the ``rouge_keys`` does not belong to the allowed set of keys.
-
-    References:
-        [1] ROUGE: A Package for Automatic Evaluation of Summaries by Chin-Yew Lin `Rouge Detail`_
     """
 
     is_differentiable: bool = False

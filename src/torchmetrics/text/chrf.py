@@ -46,7 +46,7 @@ _DICT_STATES_TYPES = Tuple[
 class CHRFScore(Metric):
     """Calculate `chrf score`_ of machine translated text with one or more references.
 
-    This implementation supports both ChrF score computation introduced in [1] and chrF++ score introduced
+    This implementation supports both ChrF score computation introduced in `chrF score`_ and `chrF++ score`_ introduced
     in `chrF++ score_`. This implementation follows the implmenetaions from https://github.com/m-popovic/chrF and
     https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/chrf.py.
 
@@ -85,11 +85,6 @@ class CHRFScore(Metric):
         >>> metric = CHRFScore()
         >>> metric(preds, target)
         tensor(0.8640)
-
-    References:
-        [1] chrF: character n-gram F-score for automatic MT evaluation by Maja Popović `chrF score`_
-
-        [2] chrF++: words helping character n-grams by Maja Popović `chrF++ score`_
     """
 
     is_differentiable: bool = False

@@ -51,6 +51,8 @@
 .. _Bert_score Evaluating Text Generation: https://arxiv.org/abs/1904.09675
 .. _BLEU score: https://en.wikipedia.org/wiki/BLEU
 .. _BLEU: http://www.aclweb.org/anthology/P02-1040.pdf
+.. _SacreBLEU: https://github.com/mjpost/sacrebleu 
+.. _SacreBleu_ter: https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/ter.py
 .. _Machine Translation Evolution: https://aclanthology.org/P04-1077.pdf
 .. _Rouge score_Text Normalizition: https://github.com/google-research/google-research/blob/master/rouge/tokenize.py
 .. _Calculate Rouge Score: https://en.wikipedia.org/wiki/ROUGE_(metric)
@@ -116,3 +118,4 @@
 .. _Signal-to-noise ratio: https://arxiv.org/abs/1811.02508
 .. _Permutation invariant training: https://arxiv.org/abs/1607.00325
 .. _ranking ref1: https://link.springer.com/chapter/10.1007/978-0-387-09823-4_34
+
