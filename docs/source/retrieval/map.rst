@@ -14,6 +14,7 @@ ________________
 
 .. autoclass:: torchmetrics.RetrievalMAP
     :noindex:
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________
