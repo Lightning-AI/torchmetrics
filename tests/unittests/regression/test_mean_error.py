@@ -182,7 +182,9 @@ class TestMeanError(MetricTester):
             metric_args=metric_args,
         )
 
-    def test_mean_error_functional(self, preds, target, ref_metric, metric_class, metric_functional, sk_fn, metric_args):
+    def test_mean_error_functional(
+        self, preds, target, ref_metric, metric_class, metric_functional, sk_fn, metric_args
+    ):
         # todo: `metric_class` is unused
         self.run_functional_metric_test(
             preds=preds,
