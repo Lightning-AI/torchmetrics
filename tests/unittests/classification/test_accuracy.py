@@ -79,7 +79,9 @@ class TestBinaryAccuracy(MetricTester):
             preds=preds,
             target=target,
             metric_class=BinaryAccuracy,
-            reference_metric=partial(_sklearn_accuracy_binary, ignore_index=ignore_index, multidim_average=multidim_average),
+            reference_metric=partial(
+                _sklearn_accuracy_binary, ignore_index=ignore_index, multidim_average=multidim_average
+            ),
             metric_args={"threshold": THRESHOLD, "ignore_index": ignore_index, "multidim_average": multidim_average},
         )
 
@@ -96,7 +98,9 @@ class TestBinaryAccuracy(MetricTester):
             preds=preds,
             target=target,
             metric_functional=binary_accuracy,
-            reference_metric=partial(_sklearn_accuracy_binary, ignore_index=ignore_index, multidim_average=multidim_average),
+            reference_metric=partial(
+                _sklearn_accuracy_binary, ignore_index=ignore_index, multidim_average=multidim_average
+            ),
             metric_args={
                 "threshold": THRESHOLD,
                 "ignore_index": ignore_index,

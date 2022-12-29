@@ -58,7 +58,9 @@ class TestBinaryCalibrationError(MetricTester):
             preds=preds,
             target=target,
             metric_class=BinaryCalibrationError,
-            reference_metric=partial(_netcal_binary_calibration_error, n_bins=n_bins, norm=norm, ignore_index=ignore_index),
+            reference_metric=partial(
+                _netcal_binary_calibration_error, n_bins=n_bins, norm=norm, ignore_index=ignore_index
+            ),
             metric_args={
                 "n_bins": n_bins,
                 "norm": norm,
@@ -77,7 +79,9 @@ class TestBinaryCalibrationError(MetricTester):
             preds=preds,
             target=target,
             metric_functional=binary_calibration_error,
-            reference_metric=partial(_netcal_binary_calibration_error, n_bins=n_bins, norm=norm, ignore_index=ignore_index),
+            reference_metric=partial(
+                _netcal_binary_calibration_error, n_bins=n_bins, norm=norm, ignore_index=ignore_index
+            ),
             metric_args={
                 "n_bins": n_bins,
                 "norm": norm,

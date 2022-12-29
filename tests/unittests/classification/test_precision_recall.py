@@ -99,7 +99,10 @@ class TestBinaryPrecisionRecall(MetricTester):
             target=target,
             metric_class=module,
             reference_metric=partial(
-                _sklearn_precision_recall_binary, sk_fn=compare, ignore_index=ignore_index, multidim_average=multidim_average
+                _sklearn_precision_recall_binary,
+                sk_fn=compare,
+                ignore_index=ignore_index,
+                multidim_average=multidim_average,
             ),
             metric_args={"threshold": THRESHOLD, "ignore_index": ignore_index, "multidim_average": multidim_average},
         )
@@ -120,7 +123,10 @@ class TestBinaryPrecisionRecall(MetricTester):
             target=target,
             metric_functional=functional,
             reference_metric=partial(
-                _sklearn_precision_recall_binary, sk_fn=compare, ignore_index=ignore_index, multidim_average=multidim_average
+                _sklearn_precision_recall_binary,
+                sk_fn=compare,
+                ignore_index=ignore_index,
+                multidim_average=multidim_average,
             ),
             metric_args={
                 "threshold": THRESHOLD,
