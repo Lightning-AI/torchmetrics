@@ -267,7 +267,7 @@ def _functional_test(
     atol: float = 1e-8,
     device: str = "cpu",
     fragment_kwargs: bool = False,
-    **kwargs_update,
+    **kwargs_update: Any,
 ):
     """Utility function doing the actual comparison between functional metric and reference metric.
 
@@ -319,7 +319,7 @@ def _assert_dtype_support(
     target: Tensor,
     device: str = "cpu",
     dtype: torch.dtype = torch.half,
-    **kwargs_update,
+    **kwargs_update: Any,
 ):
     """Test if a metric can be used with half precision tensors.
 
@@ -330,7 +330,7 @@ def _assert_dtype_support(
         target: torch tensor with targets
         device: determine device, either "cpu" or "cuda"
         kwargs_update: Additional keyword arguments that will be passed with preds and
-                target when running update on the metric.
+            target when running update on the metric.
     """
     y_hat = preds[0].to(dtype=dtype, device=device) if preds[0].is_floating_point() else preds[0].to(device)
     y = target[0].to(dtype=dtype, device=device) if target[0].is_floating_point() else target[0].to(device)
@@ -349,7 +349,7 @@ class MetricTester:
     """Class used for efficiently run alot of parametrized tests in ddp mode. Makes sure that ddp is only setup
     once and that pool of processes are used for all tests.
 
-    All tests should subclass from this and implement a new method called     `test_metric_name` where the method
+    All tests should subclass from this and implement a new method called `test_metric_name` where the method
     `self.run_metric_test` is called inside.
     """
 
@@ -362,7 +362,6 @@ class MetricTester:
 
         This will spawn the pool of workers that are used for metric testing and setup_ddp
         """
-
         self.poolSize = NUM_PROCESSES
         self.pool = Pool(processes=self.poolSize)
         self.pool.starmap(setup_ddp, [(rank, self.poolSize) for rank in range(self.poolSize)])
@@ -380,7 +379,7 @@ class MetricTester:
         reference_metric: Callable,
         metric_args: dict = None,
         fragment_kwargs: bool = False,
-        **kwargs_update,
+        **kwargs_update: Any,
     ):
         """Main method that should be used for testing functions. Call this inside testing method.
 
@@ -421,7 +420,7 @@ class MetricTester:
         check_batch: bool = True,
         fragment_kwargs: bool = False,
         check_scriptable: bool = True,
-        **kwargs_update,
+        **kwargs_update: Any,
     ):
         """Main method that should be used for testing class. Call this inside testing methods.
 
@@ -431,8 +430,7 @@ class MetricTester:
             target: torch tensor with targets
             metric_class: metric class that should be tested
             reference_metric: callable function that is used for comparison
-            dist_sync_on_step: bool, if true will synchronize metric state across
-                processes at each ``forward()``
+            dist_sync_on_step: bool, if true will synchronize metric state across processes at each ``forward()``
             metric_args: dict with additional arguments used for class initialization
             check_dist_sync_on_step: bool, if true will check if the metric is also correctly
                 calculated per batch and per device (and not just at the end)
@@ -443,8 +441,7 @@ class MetricTester:
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 target when running update on the metric.
         """
-        if not metric_args:
-            metric_args = {}
+        metric_args = metric_args or {}
         if ddp:
             if sys.platform == "win32":
                 pytest.skip("DDP not supported on windows")
@@ -496,9 +493,10 @@ class MetricTester:
         metric_functional: Optional[Callable] = None,
         metric_args: Optional[dict] = None,
         dtype: torch.dtype = torch.half,
-        **kwargs_update,
+        **kwargs_update: Any,
     ):
-        """Test if a metric can be used with half precision tensors on cpu
+        """Test if a metric can be used with half precision tensors on cpu.
+
         Args:
             preds: torch tensor with predictions
             target: torch tensor with targets
@@ -527,9 +525,10 @@ class MetricTester:
         metric_functional: Optional[Callable] = None,
         metric_args: Optional[dict] = None,
         dtype: torch.dtype = torch.half,
-        **kwargs_update,
+        **kwargs_update: Any,
     ):
-        """Test if a metric can be used with half precision tensors on gpu
+        """Test if a metric can be used with half precision tensors on gpu.
+
         Args:
             preds: torch tensor with predictions
             target: torch tensor with targets
@@ -564,7 +563,7 @@ class MetricTester:
             preds: torch tensor with predictions
             target: torch tensor with targets
             metric_module: the metric module to test
-            metric_functional:
+            metric_functional: functional version of the metric
             metric_args: dict with additional arguments used for class initialization
         """
         metric_args = metric_args or {}
