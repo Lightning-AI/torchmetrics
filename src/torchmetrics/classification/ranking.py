@@ -29,7 +29,7 @@ from torchmetrics.metric import Metric
 
 
 class MultilabelCoverageError(Metric):
-    """Computes multilabel coverage error [1]. The score measure how far we need to go through the ranked scores to
+    """Computes `Multilabel coverage error`_. The score measure how far we need to go through the ranked scores to
     cover all true labels. The best value is equal to the average number of labels in the target tensor per sample.
 
     Accepts the following input tensors:
