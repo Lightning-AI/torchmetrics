@@ -29,7 +29,7 @@ from unittests.text.inputs import (
 )
 
 
-def _reference_perplexity(preds, target, ignore_index):
+def _baseline_perplexity(preds, target, ignore_index):
     """Reference Perplexity metrics based upon PyTorch Cross Entropy."""
     preds = preds.reshape(-1, preds.shape[-1])
     target = target.reshape(-1)
@@ -55,7 +55,7 @@ class TestPerplexity(MetricTester):
             preds=preds,
             target=target,
             metric_class=Perplexity,
-            reference_metric=partial(_reference_perplexity, ignore_index=ignore_index),
+            reference_metric=partial(_baseline_perplexity, ignore_index=ignore_index),
             dist_sync_on_step=dist_sync_on_step,
             metric_args={"ignore_index": ignore_index},
         )
@@ -65,7 +65,7 @@ class TestPerplexity(MetricTester):
             preds,
             target,
             metric_functional=perplexity,
-            reference_metric=partial(_reference_perplexity, ignore_index=ignore_index),
+            reference_metric=partial(_baseline_perplexity, ignore_index=ignore_index),
             metric_args={"ignore_index": ignore_index},
         )
 

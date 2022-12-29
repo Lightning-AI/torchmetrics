@@ -16,7 +16,6 @@ import pickle
 import sys
 from copy import deepcopy
 from functools import partial
-from os import cpu_count
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
@@ -34,7 +33,7 @@ try:
 except RuntimeError:
     pass
 
-NUM_PROCESSES = cpu_count()
+NUM_PROCESSES = 2
 NUM_BATCHES = 2 * NUM_PROCESSES  # Need to be divisible with the number of processes
 BATCH_SIZE = 32
 # NUM_BATCHES = 10 if torch.cuda.is_available() else 4
@@ -322,7 +321,7 @@ def _assert_dtype_support(
     dtype: torch.dtype = torch.half,
     **kwargs_update,
 ):
-    """Test if an metric can be used with half precision tensors.
+    """Test if a metric can be used with half precision tensors.
 
     Args:
         metric_module: the metric module to test
