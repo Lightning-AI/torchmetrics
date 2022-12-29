@@ -39,7 +39,7 @@ from unittests.helpers.testers import NUM_CLASSES, MetricTester, inject_ignore_i
 seed_all(42)
 
 
-def _sk_ranking(preds, target, fn, ignore_index):
+def _sklearn_ranking(preds, target, fn, ignore_index):
     preds = preds.numpy()
     target = target.numpy()
     if np.issubdtype(preds.dtype, np.floating):
@@ -76,7 +76,7 @@ class TestMultilabelRanking(MetricTester):
             preds=preds,
             target=target,
             metric_class=metric,
-            reference_metric=partial(_sk_ranking, fn=sk_metric, ignore_index=ignore_index),
+            reference_metric=partial(_sklearn_ranking, fn=sk_metric, ignore_index=ignore_index),
             metric_args={
                 "num_labels": NUM_CLASSES,
                 "ignore_index": ignore_index,
@@ -92,7 +92,7 @@ class TestMultilabelRanking(MetricTester):
             preds=preds,
             target=target,
             metric_functional=functional_metric,
-            reference_metric=partial(_sk_ranking, fn=sk_metric, ignore_index=ignore_index),
+            reference_metric=partial(_sklearn_ranking, fn=sk_metric, ignore_index=ignore_index),
             metric_args={
                 "num_labels": NUM_CLASSES,
                 "ignore_index": ignore_index,

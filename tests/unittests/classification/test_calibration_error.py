@@ -33,7 +33,7 @@ from unittests.helpers.testers import NUM_CLASSES, MetricTester, inject_ignore_i
 seed_all(42)
 
 
-def _sk_binary_calibration_error(preds, target, n_bins, norm, ignore_index):
+def _netcal_binary_calibration_error(preds, target, n_bins, norm, ignore_index):
     preds = preds.numpy().flatten()
     target = target.numpy().flatten()
     if not ((0 < preds) & (preds < 1)).all():
@@ -58,7 +58,7 @@ class TestBinaryCalibrationError(MetricTester):
             preds=preds,
             target=target,
             metric_class=BinaryCalibrationError,
-            reference_metric=partial(_sk_binary_calibration_error, n_bins=n_bins, norm=norm, ignore_index=ignore_index),
+            reference_metric=partial(_netcal_binary_calibration_error, n_bins=n_bins, norm=norm, ignore_index=ignore_index),
             metric_args={
                 "n_bins": n_bins,
                 "norm": norm,
@@ -77,7 +77,7 @@ class TestBinaryCalibrationError(MetricTester):
             preds=preds,
             target=target,
             metric_functional=binary_calibration_error,
-            reference_metric=partial(_sk_binary_calibration_error, n_bins=n_bins, norm=norm, ignore_index=ignore_index),
+            reference_metric=partial(_netcal_binary_calibration_error, n_bins=n_bins, norm=norm, ignore_index=ignore_index),
             metric_args={
                 "n_bins": n_bins,
                 "norm": norm,
@@ -121,7 +121,7 @@ class TestBinaryCalibrationError(MetricTester):
         )
 
 
-def _sk_multiclass_calibration_error(preds, target, n_bins, norm, ignore_index):
+def _netcal_multiclass_calibration_error(preds, target, n_bins, norm, ignore_index):
     preds = preds.numpy()
     target = target.numpy().flatten()
     if not ((0 < preds) & (preds < 1)).all():
@@ -150,7 +150,7 @@ class TestMulticlassCalibrationError(MetricTester):
             target=target,
             metric_class=MulticlassCalibrationError,
             reference_metric=partial(
-                _sk_multiclass_calibration_error, n_bins=n_bins, norm=norm, ignore_index=ignore_index
+                _netcal_multiclass_calibration_error, n_bins=n_bins, norm=norm, ignore_index=ignore_index
             ),
             metric_args={
                 "num_classes": NUM_CLASSES,
@@ -172,7 +172,7 @@ class TestMulticlassCalibrationError(MetricTester):
             target=target,
             metric_functional=multiclass_calibration_error,
             reference_metric=partial(
-                _sk_multiclass_calibration_error, n_bins=n_bins, norm=norm, ignore_index=ignore_index
+                _netcal_multiclass_calibration_error, n_bins=n_bins, norm=norm, ignore_index=ignore_index
             ),
             metric_args={
                 "num_classes": NUM_CLASSES,

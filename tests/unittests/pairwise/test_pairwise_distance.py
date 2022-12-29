@@ -46,8 +46,7 @@ _inputs2 = Input(
 )
 
 
-def _sk_metric(x, y, sk_fn, reduction):
-    """comparison function."""
+def _wrap_reduction(x, y, sk_fn, reduction):
     x = x.view(-1, extra_dim).numpy()
     y = y.view(-1, extra_dim).numpy()
     res = sk_fn(x, y)
@@ -86,7 +85,7 @@ class TestPairwise(MetricTester):
             preds=x,
             target=y,
             metric_functional=metric_functional,
-            reference_metric=partial(_sk_metric, sk_fn=sk_fn, reduction=reduction),
+            reference_metric=partial(_wrap_reduction, sk_fn=sk_fn, reduction=reduction),
             metric_args={"reduction": reduction},
         )
 

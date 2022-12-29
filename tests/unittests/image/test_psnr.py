@@ -58,7 +58,7 @@ def _to_sk_peak_signal_noise_ratio_inputs(value, dim):
     return inputs
 
 
-def _sk_psnr(preds, target, data_range, reduction, dim):
+def _skimage_psnr(preds, target, data_range, reduction, dim):
     sk_preds_lists = _to_sk_peak_signal_noise_ratio_inputs(preds, dim=dim)
     sk_target_lists = _to_sk_peak_signal_noise_ratio_inputs(target, dim=dim)
     np_reduce_map = {"elementwise_mean": np.mean, "none": np.array, "sum": np.sum}
@@ -71,7 +71,7 @@ def _sk_psnr(preds, target, data_range, reduction, dim):
 
 
 def _base_e_sk_psnr(preds, target, data_range, reduction, dim):
-    return _sk_psnr(preds, target, data_range, reduction, dim) * np.log(10)
+    return _skimage_psnr(preds, target, data_range, reduction, dim) * np.log(10)
 
 
 @pytest.mark.parametrize(
@@ -88,7 +88,7 @@ def _base_e_sk_psnr(preds, target, data_range, reduction, dim):
 @pytest.mark.parametrize(
     "base, sk_metric",
     [
-        (10.0, _sk_psnr),
+        (10.0, _skimage_psnr),
         (2.718281828459045, _base_e_sk_psnr),
     ],
 )

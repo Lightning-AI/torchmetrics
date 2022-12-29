@@ -30,7 +30,7 @@ from unittests.classification.inputs import _binary_cases, _multiclass_cases, _m
 from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index, remove_ignore_index
 
 
-def _sk_jaccard_index_binary(preds, target, ignore_index=None):
+def _sklearn_jaccard_index_binary(preds, target, ignore_index=None):
     preds = preds.view(-1).numpy()
     target = target.view(-1).numpy()
     if np.issubdtype(preds.dtype, np.floating):
@@ -54,7 +54,7 @@ class TestBinaryJaccardIndex(MetricTester):
             preds=preds,
             target=target,
             metric_class=BinaryJaccardIndex,
-            reference_metric=partial(_sk_jaccard_index_binary, ignore_index=ignore_index),
+            reference_metric=partial(_sklearn_jaccard_index_binary, ignore_index=ignore_index),
             metric_args={
                 "threshold": THRESHOLD,
                 "ignore_index": ignore_index,
@@ -70,7 +70,7 @@ class TestBinaryJaccardIndex(MetricTester):
             preds=preds,
             target=target,
             metric_functional=binary_jaccard_index,
-            reference_metric=partial(_sk_jaccard_index_binary, ignore_index=ignore_index),
+            reference_metric=partial(_sklearn_jaccard_index_binary, ignore_index=ignore_index),
             metric_args={
                 "threshold": THRESHOLD,
                 "ignore_index": ignore_index,
@@ -115,7 +115,7 @@ class TestBinaryJaccardIndex(MetricTester):
         )
 
 
-def _sk_jaccard_index_multiclass(preds, target, ignore_index=None, average="macro"):
+def _sklearn_jaccard_index_multiclass(preds, target, ignore_index=None, average="macro"):
     preds = preds.numpy()
     target = target.numpy()
     if np.issubdtype(preds.dtype, np.floating):
@@ -140,7 +140,7 @@ class TestMulticlassJaccardIndex(MetricTester):
             preds=preds,
             target=target,
             metric_class=MulticlassJaccardIndex,
-            reference_metric=partial(_sk_jaccard_index_multiclass, ignore_index=ignore_index, average=average),
+            reference_metric=partial(_sklearn_jaccard_index_multiclass, ignore_index=ignore_index, average=average),
             metric_args={
                 "num_classes": NUM_CLASSES,
                 "ignore_index": ignore_index,
@@ -158,7 +158,7 @@ class TestMulticlassJaccardIndex(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multiclass_jaccard_index,
-            reference_metric=partial(_sk_jaccard_index_multiclass, ignore_index=ignore_index, average=average),
+            reference_metric=partial(_sklearn_jaccard_index_multiclass, ignore_index=ignore_index, average=average),
             metric_args={
                 "num_classes": NUM_CLASSES,
                 "ignore_index": ignore_index,
@@ -202,7 +202,7 @@ class TestMulticlassJaccardIndex(MetricTester):
         )
 
 
-def _sk_jaccard_index_multilabel(preds, target, ignore_index=None, average="macro"):
+def _sklearn_jaccard_index_multilabel(preds, target, ignore_index=None, average="macro"):
     preds = preds.numpy()
     target = target.numpy()
     if np.issubdtype(preds.dtype, np.floating):
@@ -215,7 +215,7 @@ def _sk_jaccard_index_multilabel(preds, target, ignore_index=None, average="macr
         return sk_jaccard_index(y_true=target, y_pred=preds, average=average)
     else:
         if average == "micro":
-            return _sk_jaccard_index_binary(torch.tensor(preds), torch.tensor(target), ignore_index)
+            return _sklearn_jaccard_index_binary(torch.tensor(preds), torch.tensor(target), ignore_index)
         scores, weights = [], []
         for i in range(preds.shape[1]):
             pred, true = preds[:, i], target[:, i]
@@ -246,7 +246,7 @@ class TestMultilabelJaccardIndex(MetricTester):
             preds=preds,
             target=target,
             metric_class=MultilabelJaccardIndex,
-            reference_metric=partial(_sk_jaccard_index_multilabel, ignore_index=ignore_index, average=average),
+            reference_metric=partial(_sklearn_jaccard_index_multilabel, ignore_index=ignore_index, average=average),
             metric_args={
                 "num_labels": NUM_CLASSES,
                 "ignore_index": ignore_index,
@@ -264,7 +264,7 @@ class TestMultilabelJaccardIndex(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multilabel_jaccard_index,
-            reference_metric=partial(_sk_jaccard_index_multilabel, ignore_index=ignore_index, average=average),
+            reference_metric=partial(_sklearn_jaccard_index_multilabel, ignore_index=ignore_index, average=average),
             metric_args={
                 "num_labels": NUM_CLASSES,
                 "ignore_index": ignore_index,
