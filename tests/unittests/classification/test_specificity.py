@@ -96,7 +96,9 @@ class TestBinarySpecificity(MetricTester):
             preds=preds,
             target=target,
             metric_class=BinarySpecificity,
-            reference_metric=partial(_sk_specificity_binary, ignore_index=ignore_index, multidim_average=multidim_average),
+            reference_metric=partial(
+                _sk_specificity_binary, ignore_index=ignore_index, multidim_average=multidim_average
+            ),
             metric_args={"threshold": THRESHOLD, "ignore_index": ignore_index, "multidim_average": multidim_average},
         )
 
@@ -113,7 +115,9 @@ class TestBinarySpecificity(MetricTester):
             preds=preds,
             target=target,
             metric_functional=binary_specificity,
-            reference_metric=partial(_sk_specificity_binary, ignore_index=ignore_index, multidim_average=multidim_average),
+            reference_metric=partial(
+                _sk_specificity_binary, ignore_index=ignore_index, multidim_average=multidim_average
+            ),
             metric_args={
                 "threshold": THRESHOLD,
                 "ignore_index": ignore_index,
