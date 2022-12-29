@@ -33,7 +33,7 @@ try:
 except RuntimeError:
     pass
 
-NUM_PROCESSES = 2
+NUM_PROCESSES = torch.cuda.device_count() if torch.cuda.is_available() else os.cpu_count()
 NUM_BATCHES = 2 * NUM_PROCESSES  # Need to be divisible with the number of processes
 BATCH_SIZE = 32
 # NUM_BATCHES = 10 if torch.cuda.is_available() else 4
