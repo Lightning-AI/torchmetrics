@@ -149,7 +149,9 @@ class TestMulticlassCalibrationError(MetricTester):
             preds=preds,
             target=target,
             metric_class=MulticlassCalibrationError,
-            reference_metric=partial(_sk_multiclass_calibration_error, n_bins=n_bins, norm=norm, ignore_index=ignore_index),
+            reference_metric=partial(
+                _sk_multiclass_calibration_error, n_bins=n_bins, norm=norm, ignore_index=ignore_index
+            ),
             metric_args={
                 "num_classes": NUM_CLASSES,
                 "n_bins": n_bins,
@@ -169,7 +171,9 @@ class TestMulticlassCalibrationError(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multiclass_calibration_error,
-            reference_metric=partial(_sk_multiclass_calibration_error, n_bins=n_bins, norm=norm, ignore_index=ignore_index),
+            reference_metric=partial(
+                _sk_multiclass_calibration_error, n_bins=n_bins, norm=norm, ignore_index=ignore_index
+            ),
             metric_args={
                 "num_classes": NUM_CLASSES,
                 "n_bins": n_bins,

@@ -79,7 +79,9 @@ class TestBinaryStatScores(MetricTester):
             preds=preds,
             target=target,
             metric_class=BinaryStatScores,
-            reference_metric=partial(_sk_stat_scores_binary, ignore_index=ignore_index, multidim_average=multidim_average),
+            reference_metric=partial(
+                _sk_stat_scores_binary, ignore_index=ignore_index, multidim_average=multidim_average
+            ),
             metric_args={"threshold": THRESHOLD, "ignore_index": ignore_index, "multidim_average": multidim_average},
         )
 
@@ -96,7 +98,9 @@ class TestBinaryStatScores(MetricTester):
             preds=preds,
             target=target,
             metric_functional=binary_stat_scores,
-            reference_metric=partial(_sk_stat_scores_binary, ignore_index=ignore_index, multidim_average=multidim_average),
+            reference_metric=partial(
+                _sk_stat_scores_binary, ignore_index=ignore_index, multidim_average=multidim_average
+            ),
             metric_args={
                 "threshold": THRESHOLD,
                 "ignore_index": ignore_index,
