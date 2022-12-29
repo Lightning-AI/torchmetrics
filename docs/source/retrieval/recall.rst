@@ -14,6 +14,7 @@ ________________
 
 .. autoclass:: torchmetrics.RetrievalRecall
     :noindex:
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________

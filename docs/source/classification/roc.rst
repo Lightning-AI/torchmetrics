@@ -12,24 +12,28 @@ ________________
 
 .. autoclass:: torchmetrics.ROC
     :noindex:
+    :exclude-members: update, compute
 
 BinaryROC
 ^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.BinaryROC
     :noindex:
+    :exclude-members: update, compute
 
 MulticlassROC
 ^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.MulticlassROC
     :noindex:
+    :exclude-members: update, compute
 
 MultilabelROC
 ^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.MultilabelROC
     :noindex:
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________

@@ -139,7 +139,7 @@ class MultilabelExactMatch(Metric):
     r"""Computes Exact match (also known as subset accuracy) for multilabel tasks. Exact Match is a stricter version
     of accuracy where all labels have to match exactly for the sample to be correctly classified.
 
-    Accepts the following input tensors:
+    As input to 'update' the metric accepts the following input:
 
     - ``preds`` (int or float tensor): ``(N, C, ...)``. If preds is a floating point tensor with values outside
       [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
@@ -236,12 +236,7 @@ class MultilabelExactMatch(Metric):
         )
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Tensor with predictions
-            target: Tensor with true labels
-        """
+        """Update state with predictions and targets."""
         if self.validate_args:
             _multilabel_stat_scores_tensor_validation(
                 preds, target, self.num_labels, self.multidim_average, self.ignore_index
