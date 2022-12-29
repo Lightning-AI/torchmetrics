@@ -441,18 +441,18 @@ class RetrievalMetricTester(MetricTester):
         metric_args: dict,
         reverse: bool = False,
     ):
-        _sk_metric_adapted = partial(_compute_sklearn_metric, metric=reference_metric, reverse=reverse, **metric_args)
+        _ref_metric_adapted = partial(_compute_sklearn_metric, metric=reference_metric, reverse=reverse, **metric_args)
 
         super().run_class_metric_test(
             ddp=ddp,
             preds=preds,
             target=target,
             metric_class=metric_class,
-            reference_metric=_sk_metric_adapted,
+            reference_metric=_ref_metric_adapted,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
             fragment_kwargs=True,
-            indexes=indexes,  # every additional argument will be passed to metric_class and _sk_metric_adapted
+            indexes=indexes,  # every additional argument will be passed to metric_class and _ref_metric_adapted
         )
 
     def run_functional_metric_test(
@@ -465,13 +465,13 @@ class RetrievalMetricTester(MetricTester):
         reverse: bool = False,
         **kwargs,
     ):
-        _sk_metric_adapted = partial(_compute_sklearn_metric, metric=reference_metric, reverse=reverse, **metric_args)
+        _ref_metric_adapted = partial(_compute_sklearn_metric, metric=reference_metric, reverse=reverse, **metric_args)
 
         super().run_functional_metric_test(
             preds=preds,
             target=target,
             metric_functional=metric_functional,
-            reference_metric=_sk_metric_adapted,
+            reference_metric=_ref_metric_adapted,
             metric_args=metric_args,
             fragment_kwargs=True,
             **kwargs,
@@ -494,7 +494,7 @@ class RetrievalMetricTester(MetricTester):
             metric_module=metric_module,
             metric_functional=metric_functional_ignore_indexes,
             metric_args={"empty_target_action": "neg"},
-            indexes=indexes,  # every additional argument will be passed to the retrieval metric and _sk_metric_adapted
+            indexes=indexes,  # every additional argument will be passed to the retrieval metric and _ref_metric_adapted
         )
 
     def run_precision_test_gpu(
@@ -517,7 +517,7 @@ class RetrievalMetricTester(MetricTester):
             metric_module=metric_module,
             metric_functional=metric_functional_ignore_indexes,
             metric_args={"empty_target_action": "neg"},
-            indexes=indexes,  # every additional argument will be passed to retrieval metric and _sk_metric_adapted
+            indexes=indexes,  # every additional argument will be passed to retrieval metric and _ref_metric_adapted
         )
 
     @staticmethod

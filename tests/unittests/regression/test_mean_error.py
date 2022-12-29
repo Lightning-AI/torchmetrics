@@ -118,7 +118,7 @@ def sk_weighted_mean_abs_percentage_error(target, preds):
     return np.sum(np.abs(target - preds)) / np.sum(np.abs(target))
 
 
-def _single_target_sk_metric(preds, target, sk_fn, metric_args):
+def _single_target_ref_metric(preds, target, sk_fn, metric_args):
     sk_preds = preds.view(-1).numpy()
     sk_target = target.view(-1).numpy()
 
@@ -127,7 +127,7 @@ def _single_target_sk_metric(preds, target, sk_fn, metric_args):
     return math.sqrt(res) if (metric_args and not metric_args["squared"]) else res
 
 
-def _multi_target_sk_metric(preds, target, sk_fn, metric_args):
+def _multi_target_ref_metric(preds, target, sk_fn, metric_args):
     sk_preds = preds.view(-1, num_targets).numpy()
     sk_target = target.view(-1, num_targets).numpy()
 
@@ -137,10 +137,10 @@ def _multi_target_sk_metric(preds, target, sk_fn, metric_args):
 
 
 @pytest.mark.parametrize(
-    "preds, target, sk_metric",
+    "preds, target, ref_metric",
     [
-        (_single_target_inputs.preds, _single_target_inputs.target, _single_target_sk_metric),
-        (_multi_target_inputs.preds, _multi_target_inputs.target, _multi_target_sk_metric),
+        (_single_target_inputs.preds, _single_target_inputs.target, _single_target_ref_metric),
+        (_multi_target_inputs.preds, _multi_target_inputs.target, _multi_target_ref_metric),
     ],
 )
 @pytest.mark.parametrize(
@@ -169,7 +169,7 @@ class TestMeanError(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_mean_error_class(
-        self, preds, target, sk_metric, metric_class, metric_functional, sk_fn, metric_args, ddp, dist_sync_on_step
+        self, preds, target, ref_metric, metric_class, metric_functional, sk_fn, metric_args, ddp, dist_sync_on_step
     ):
         # todo: `metric_functional` is unused
         self.run_class_metric_test(
@@ -177,23 +177,23 @@ class TestMeanError(MetricTester):
             preds=preds,
             target=target,
             metric_class=metric_class,
-            reference_metric=partial(sk_metric, sk_fn=sk_fn, metric_args=metric_args),
+            reference_metric=partial(ref_metric, sk_fn=sk_fn, metric_args=metric_args),
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
         )
 
-    def test_mean_error_functional(self, preds, target, sk_metric, metric_class, metric_functional, sk_fn, metric_args):
+    def test_mean_error_functional(self, preds, target, ref_metric, metric_class, metric_functional, sk_fn, metric_args):
         # todo: `metric_class` is unused
         self.run_functional_metric_test(
             preds=preds,
             target=target,
             metric_functional=metric_functional,
-            reference_metric=partial(sk_metric, sk_fn=sk_fn, metric_args=metric_args),
+            reference_metric=partial(ref_metric, sk_fn=sk_fn, metric_args=metric_args),
             metric_args=metric_args,
         )
 
     def test_mean_error_differentiability(
-        self, preds, target, sk_metric, metric_class, metric_functional, sk_fn, metric_args
+        self, preds, target, ref_metric, metric_class, metric_functional, sk_fn, metric_args
     ):
         self.run_differentiability_test(
             preds=preds,
@@ -203,7 +203,7 @@ class TestMeanError(MetricTester):
             metric_args=metric_args,
         )
 
-    def test_mean_error_half_cpu(self, preds, target, sk_metric, metric_class, metric_functional, sk_fn, metric_args):
+    def test_mean_error_half_cpu(self, preds, target, ref_metric, metric_class, metric_functional, sk_fn, metric_args):
         if metric_class == MeanSquaredLogError:
             # MeanSquaredLogError half + cpu does not work due to missing support in torch.log
             pytest.xfail("MeanSquaredLogError metric does not support cpu + half precision")
@@ -223,7 +223,7 @@ class TestMeanError(MetricTester):
         self.run_precision_test_cpu(preds, target, metric_class, metric_functional)
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-    def test_mean_error_half_gpu(self, preds, target, sk_metric, metric_class, metric_functional, sk_fn, metric_args):
+    def test_mean_error_half_gpu(self, preds, target, ref_metric, metric_class, metric_functional, sk_fn, metric_args):
         self.run_precision_test_gpu(preds, target, metric_class, metric_functional)
 
 

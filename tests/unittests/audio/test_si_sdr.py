@@ -67,7 +67,7 @@ speechmetrics_si_sdr_no_zero_mean = partial(speechmetrics_si_sdr, zero_mean=Fals
 
 
 @pytest.mark.parametrize(
-    "preds, target, sk_metric, zero_mean",
+    "preds, target, ref_metric, zero_mean",
     [
         (inputs.preds, inputs.target, speechmetrics_si_sdr_zero_mean, True),
         (inputs.preds, inputs.target, speechmetrics_si_sdr_no_zero_mean, False),
@@ -78,27 +78,27 @@ class TestSISDR(MetricTester):
 
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_si_sdr(self, preds, target, sk_metric, zero_mean, ddp, dist_sync_on_step):
+    def test_si_sdr(self, preds, target, ref_metric, zero_mean, ddp, dist_sync_on_step):
         self.run_class_metric_test(
             ddp,
             preds,
             target,
             ScaleInvariantSignalDistortionRatio,
-            reference_metric=partial(average_metric, metric_func=sk_metric),
+            reference_metric=partial(average_metric, metric_func=ref_metric),
             dist_sync_on_step=dist_sync_on_step,
             metric_args=dict(zero_mean=zero_mean),
         )
 
-    def test_si_sdr_functional(self, preds, target, sk_metric, zero_mean):
+    def test_si_sdr_functional(self, preds, target, ref_metric, zero_mean):
         self.run_functional_metric_test(
             preds,
             target,
             scale_invariant_signal_distortion_ratio,
-            sk_metric,
+            ref_metric,
             metric_args=dict(zero_mean=zero_mean),
         )
 
-    def test_si_sdr_differentiability(self, preds, target, sk_metric, zero_mean):
+    def test_si_sdr_differentiability(self, preds, target, ref_metric, zero_mean):
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -107,11 +107,11 @@ class TestSISDR(MetricTester):
             metric_args={"zero_mean": zero_mean},
         )
 
-    def test_si_sdr_half_cpu(self, preds, target, sk_metric, zero_mean):
+    def test_si_sdr_half_cpu(self, preds, target, ref_metric, zero_mean):
         pytest.xfail("SI-SDR metric does not support cpu + half precision")
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-    def test_si_sdr_half_gpu(self, preds, target, sk_metric, zero_mean):
+    def test_si_sdr_half_gpu(self, preds, target, ref_metric, zero_mean):
         self.run_precision_test_gpu(
             preds=preds,
             target=target,

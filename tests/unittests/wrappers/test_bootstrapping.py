@@ -77,14 +77,14 @@ def test_bootstrap_sampler(sampling_strategy):
 @pytest.mark.parametrize("device", ["cpu", "cuda"])
 @pytest.mark.parametrize("sampling_strategy", ["poisson", "multinomial"])
 @pytest.mark.parametrize(
-    "metric, sk_metric",
+    "metric, ref_metric",
     [
         [MulticlassPrecision(num_classes=10, average="micro"), partial(precision_score, average="micro")],
         [MulticlassRecall(num_classes=10, average="micro"), partial(recall_score, average="micro")],
         [MeanSquaredError(), mean_squared_error],
     ],
 )
-def test_bootstrap(device, sampling_strategy, metric, sk_metric):
+def test_bootstrap(device, sampling_strategy, metric, ref_metric):
     """Test that the different bootstraps gets updated as we expected and that the compute method works."""
     if device == "cuda" and not torch.cuda.is_available():
         pytest.skip("Test with device='cuda' requires gpu")
@@ -109,7 +109,7 @@ def test_bootstrap(device, sampling_strategy, metric, sk_metric):
     collected_preds = [torch.cat(cp).cpu() for cp in collected_preds]
     collected_target = [torch.cat(ct).cpu() for ct in collected_target]
 
-    sk_scores = [sk_metric(ct, cp) for ct, cp in zip(collected_target, collected_preds)]
+    sk_scores = [ref_metric(ct, cp) for ct, cp in zip(collected_target, collected_preds)]
 
     output = bootstrapper.compute()
     assert np.allclose(output["quantile"][0].cpu(), np.quantile(sk_scores, 0.05))

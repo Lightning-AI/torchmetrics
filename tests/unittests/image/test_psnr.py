@@ -86,7 +86,7 @@ def _base_e_sk_psnr(preds, target, data_range, reduction, dim):
     ],
 )
 @pytest.mark.parametrize(
-    "base, sk_metric",
+    "base, ref_metric",
     [
         (10.0, _skimage_psnr),
         (2.718281828459045, _base_e_sk_psnr),
@@ -95,31 +95,31 @@ def _base_e_sk_psnr(preds, target, data_range, reduction, dim):
 class TestPSNR(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_psnr(self, preds, target, data_range, base, reduction, dim, sk_metric, ddp, dist_sync_on_step):
+    def test_psnr(self, preds, target, data_range, base, reduction, dim, ref_metric, ddp, dist_sync_on_step):
         _args = {"data_range": data_range, "base": base, "reduction": reduction, "dim": dim}
         self.run_class_metric_test(
             ddp,
             preds,
             target,
             PeakSignalNoiseRatio,
-            partial(sk_metric, data_range=data_range, reduction=reduction, dim=dim),
+            partial(ref_metric, data_range=data_range, reduction=reduction, dim=dim),
             metric_args=_args,
             dist_sync_on_step=dist_sync_on_step,
         )
 
-    def test_psnr_functional(self, preds, target, sk_metric, data_range, base, reduction, dim):
+    def test_psnr_functional(self, preds, target, ref_metric, data_range, base, reduction, dim):
         _args = {"data_range": data_range, "base": base, "reduction": reduction, "dim": dim}
         self.run_functional_metric_test(
             preds,
             target,
             peak_signal_noise_ratio,
-            partial(sk_metric, data_range=data_range, reduction=reduction, dim=dim),
+            partial(ref_metric, data_range=data_range, reduction=reduction, dim=dim),
             metric_args=_args,
         )
 
     # PSNR half + cpu does not work due to missing support in torch.log
     @pytest.mark.xfail(reason="PSNR metric does not support cpu + half precision")
-    def test_psnr_half_cpu(self, preds, target, data_range, reduction, dim, base, sk_metric):
+    def test_psnr_half_cpu(self, preds, target, data_range, reduction, dim, base, ref_metric):
         self.run_precision_test_cpu(
             preds,
             target,
@@ -129,7 +129,7 @@ class TestPSNR(MetricTester):
         )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-    def test_psnr_half_gpu(self, preds, target, data_range, reduction, dim, base, sk_metric):
+    def test_psnr_half_gpu(self, preds, target, data_range, reduction, dim, base, ref_metric):
         self.run_precision_test_gpu(
             preds,
             target,

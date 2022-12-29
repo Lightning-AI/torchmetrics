@@ -63,7 +63,7 @@ def average_metric(preds, target, metric_func):
 
 
 @pytest.mark.parametrize(
-    "preds, target, sk_metric",
+    "preds, target, ref_metric",
     [
         (inputs.preds, inputs.target, speechmetrics_si_sdr),
     ],
@@ -73,25 +73,25 @@ class TestSISNR(MetricTester):
 
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_si_snr(self, preds, target, sk_metric, ddp, dist_sync_on_step):
+    def test_si_snr(self, preds, target, ref_metric, ddp, dist_sync_on_step):
         self.run_class_metric_test(
             ddp,
             preds,
             target,
             ScaleInvariantSignalNoiseRatio,
-            reference_metric=partial(average_metric, metric_func=sk_metric),
+            reference_metric=partial(average_metric, metric_func=ref_metric),
             dist_sync_on_step=dist_sync_on_step,
         )
 
-    def test_si_snr_functional(self, preds, target, sk_metric):
+    def test_si_snr_functional(self, preds, target, ref_metric):
         self.run_functional_metric_test(
             preds,
             target,
             scale_invariant_signal_noise_ratio,
-            sk_metric,
+            ref_metric,
         )
 
-    def test_si_snr_differentiability(self, preds, target, sk_metric):
+    def test_si_snr_differentiability(self, preds, target, ref_metric):
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -99,11 +99,11 @@ class TestSISNR(MetricTester):
             metric_functional=scale_invariant_signal_noise_ratio,
         )
 
-    def test_si_snr_half_cpu(self, preds, target, sk_metric):
+    def test_si_snr_half_cpu(self, preds, target, ref_metric):
         pytest.xfail("SI-SNR metric does not support cpu + half precision")
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-    def test_si_snr_half_gpu(self, preds, target, sk_metric):
+    def test_si_snr_half_gpu(self, preds, target, ref_metric):
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
