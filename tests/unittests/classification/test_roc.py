@@ -54,7 +54,7 @@ class TestBinaryROC(MetricTester):
             preds=preds,
             target=target,
             metric_class=BinaryROC,
-            sk_metric=partial(_sk_roc_binary, ignore_index=ignore_index),
+            reference_metric=partial(_sk_roc_binary, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "ignore_index": ignore_index,
@@ -70,7 +70,7 @@ class TestBinaryROC(MetricTester):
             preds=preds,
             target=target,
             metric_functional=binary_roc,
-            sk_metric=partial(_sk_roc_binary, ignore_index=ignore_index),
+            reference_metric=partial(_sk_roc_binary, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "ignore_index": ignore_index,
@@ -160,7 +160,7 @@ class TestMulticlassROC(MetricTester):
             preds=preds,
             target=target,
             metric_class=MulticlassROC,
-            sk_metric=partial(_sk_roc_multiclass, ignore_index=ignore_index),
+            reference_metric=partial(_sk_roc_multiclass, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_classes": NUM_CLASSES,
@@ -177,7 +177,7 @@ class TestMulticlassROC(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multiclass_roc,
-            sk_metric=partial(_sk_roc_multiclass, ignore_index=ignore_index),
+            reference_metric=partial(_sk_roc_multiclass, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_classes": NUM_CLASSES,
@@ -260,7 +260,7 @@ class TestMultilabelROC(MetricTester):
             preds=preds,
             target=target,
             metric_class=MultilabelROC,
-            sk_metric=partial(_sk_roc_multilabel, ignore_index=ignore_index),
+            reference_metric=partial(_sk_roc_multilabel, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_labels": NUM_CLASSES,
@@ -277,7 +277,7 @@ class TestMultilabelROC(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multilabel_roc,
-            sk_metric=partial(_sk_roc_multilabel, ignore_index=ignore_index),
+            reference_metric=partial(_sk_roc_multilabel, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_labels": NUM_CLASSES,

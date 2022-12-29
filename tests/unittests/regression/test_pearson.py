@@ -77,14 +77,14 @@ class TestPearsonCorrcoef(MetricTester):
             preds=preds,
             target=target,
             metric_class=PearsonCorrCoef,
-            sk_metric=_sk_pearsonr,
+            reference_metric=_sk_pearsonr,
             dist_sync_on_step=False,
             metric_args={"num_outputs": num_outputs, "compute_on_cpu": compute_on_cpu},
         )
 
     def test_pearson_corrcoef_functional(self, preds, target):
         self.run_functional_metric_test(
-            preds=preds, target=target, metric_functional=pearson_corrcoef, sk_metric=_sk_pearsonr
+            preds=preds, target=target, metric_functional=pearson_corrcoef, reference_metric=_sk_pearsonr
         )
 
     def test_pearson_corrcoef_differentiability(self, preds, target):

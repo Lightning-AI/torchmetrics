@@ -60,7 +60,7 @@ class TestBinaryMatthewsCorrCoef(MetricTester):
             preds=preds,
             target=target,
             metric_class=BinaryMatthewsCorrCoef,
-            sk_metric=partial(_sk_matthews_corrcoef_binary, ignore_index=ignore_index),
+            reference_metric=partial(_sk_matthews_corrcoef_binary, ignore_index=ignore_index),
             metric_args={
                 "threshold": THRESHOLD,
                 "ignore_index": ignore_index,
@@ -76,7 +76,7 @@ class TestBinaryMatthewsCorrCoef(MetricTester):
             preds=preds,
             target=target,
             metric_functional=binary_matthews_corrcoef,
-            sk_metric=partial(_sk_matthews_corrcoef_binary, ignore_index=ignore_index),
+            reference_metric=partial(_sk_matthews_corrcoef_binary, ignore_index=ignore_index),
             metric_args={
                 "threshold": THRESHOLD,
                 "ignore_index": ignore_index,
@@ -145,7 +145,7 @@ class TestMulticlassMatthewsCorrCoef(MetricTester):
             preds=preds,
             target=target,
             metric_class=MulticlassMatthewsCorrCoef,
-            sk_metric=partial(_sk_matthews_corrcoef_multiclass, ignore_index=ignore_index),
+            reference_metric=partial(_sk_matthews_corrcoef_multiclass, ignore_index=ignore_index),
             metric_args={
                 "num_classes": NUM_CLASSES,
                 "ignore_index": ignore_index,
@@ -161,7 +161,7 @@ class TestMulticlassMatthewsCorrCoef(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multiclass_matthews_corrcoef,
-            sk_metric=partial(_sk_matthews_corrcoef_multiclass, ignore_index=ignore_index),
+            reference_metric=partial(_sk_matthews_corrcoef_multiclass, ignore_index=ignore_index),
             metric_args={
                 "num_classes": NUM_CLASSES,
                 "ignore_index": ignore_index,
@@ -228,7 +228,7 @@ class TestMultilabelMatthewsCorrCoef(MetricTester):
             preds=preds,
             target=target,
             metric_class=MultilabelMatthewsCorrCoef,
-            sk_metric=partial(_sk_matthews_corrcoef_multilabel, ignore_index=ignore_index),
+            reference_metric=partial(_sk_matthews_corrcoef_multilabel, ignore_index=ignore_index),
             metric_args={
                 "num_labels": NUM_CLASSES,
                 "ignore_index": ignore_index,
@@ -244,7 +244,7 @@ class TestMultilabelMatthewsCorrCoef(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multilabel_matthews_corrcoef,
-            sk_metric=partial(_sk_matthews_corrcoef_multilabel, ignore_index=ignore_index),
+            reference_metric=partial(_sk_matthews_corrcoef_multilabel, ignore_index=ignore_index),
             metric_args={
                 "num_labels": NUM_CLASSES,
                 "ignore_index": ignore_index,

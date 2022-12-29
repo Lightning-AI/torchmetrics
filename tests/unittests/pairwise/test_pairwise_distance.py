@@ -86,7 +86,7 @@ class TestPairwise(MetricTester):
             preds=x,
             target=y,
             metric_functional=metric_functional,
-            sk_metric=partial(_sk_metric, sk_fn=sk_fn, reduction=reduction),
+            reference_metric=partial(_sk_metric, sk_fn=sk_fn, reduction=reduction),
             metric_args={"reduction": reduction},
         )
 

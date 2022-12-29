@@ -55,7 +55,7 @@ class TestPerplexity(MetricTester):
             preds=preds,
             target=target,
             metric_class=Perplexity,
-            sk_metric=partial(_reference_perplexity, ignore_index=ignore_index),
+            reference_metric=partial(_reference_perplexity, ignore_index=ignore_index),
             dist_sync_on_step=dist_sync_on_step,
             metric_args={"ignore_index": ignore_index},
         )
@@ -65,7 +65,7 @@ class TestPerplexity(MetricTester):
             preds,
             target,
             metric_functional=perplexity,
-            sk_metric=partial(_reference_perplexity, ignore_index=ignore_index),
+            reference_metric=partial(_reference_perplexity, ignore_index=ignore_index),
             metric_args={"ignore_index": ignore_index},
         )
 

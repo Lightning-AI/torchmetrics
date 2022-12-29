@@ -97,7 +97,7 @@ class TestDiceBinary(MetricTester):
             preds=preds,
             target=target,
             metric_class=Dice,
-            sk_metric=partial(_sk_dice, ignore_index=ignore_index),
+            reference_metric=partial(_sk_dice, ignore_index=ignore_index),
             dist_sync_on_step=dist_sync_on_step,
             metric_args={"ignore_index": ignore_index},
         )
@@ -107,7 +107,7 @@ class TestDiceBinary(MetricTester):
             preds,
             target,
             metric_functional=dice,
-            sk_metric=partial(_sk_dice, ignore_index=ignore_index),
+            reference_metric=partial(_sk_dice, ignore_index=ignore_index),
             metric_args={"ignore_index": ignore_index},
         )
 
@@ -136,7 +136,7 @@ class TestDiceMulti(MetricTester):
             preds=preds,
             target=target,
             metric_class=Dice,
-            sk_metric=partial(_sk_dice, ignore_index=ignore_index),
+            reference_metric=partial(_sk_dice, ignore_index=ignore_index),
             dist_sync_on_step=dist_sync_on_step,
             metric_args={"ignore_index": ignore_index},
         )
@@ -146,6 +146,6 @@ class TestDiceMulti(MetricTester):
             preds,
             target,
             metric_functional=dice,
-            sk_metric=partial(_sk_dice, ignore_index=ignore_index),
+            reference_metric=partial(_sk_dice, ignore_index=ignore_index),
             metric_args={"ignore_index": ignore_index},
         )

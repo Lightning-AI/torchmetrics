@@ -436,19 +436,19 @@ class RetrievalMetricTester(MetricTester):
         preds: Tensor,
         target: Tensor,
         metric_class: Metric,
-        sk_metric: Callable,
+        reference_metric: Callable,
         dist_sync_on_step: bool,
         metric_args: dict,
         reverse: bool = False,
     ):
-        _sk_metric_adapted = partial(_compute_sklearn_metric, metric=sk_metric, reverse=reverse, **metric_args)
+        _sk_metric_adapted = partial(_compute_sklearn_metric, metric=reference_metric, reverse=reverse, **metric_args)
 
         super().run_class_metric_test(
             ddp=ddp,
             preds=preds,
             target=target,
             metric_class=metric_class,
-            sk_metric=_sk_metric_adapted,
+            reference_metric=_sk_metric_adapted,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
             fragment_kwargs=True,
@@ -460,18 +460,18 @@ class RetrievalMetricTester(MetricTester):
         preds: Tensor,
         target: Tensor,
         metric_functional: Callable,
-        sk_metric: Callable,
+        reference_metric: Callable,
         metric_args: dict,
         reverse: bool = False,
         **kwargs,
     ):
-        _sk_metric_adapted = partial(_compute_sklearn_metric, metric=sk_metric, reverse=reverse, **metric_args)
+        _sk_metric_adapted = partial(_compute_sklearn_metric, metric=reference_metric, reverse=reverse, **metric_args)
 
         super().run_functional_metric_test(
             preds=preds,
             target=target,
             metric_functional=metric_functional,
-            sk_metric=_sk_metric_adapted,
+            reference_metric=_sk_metric_adapted,
             metric_args=metric_args,
             fragment_kwargs=True,
             **kwargs,

@@ -55,7 +55,7 @@ class TestBinaryCohenKappa(MetricTester):
             preds=preds,
             target=target,
             metric_class=BinaryCohenKappa,
-            sk_metric=partial(_sk_cohen_kappa_binary, weights=weights, ignore_index=ignore_index),
+            reference_metric=partial(_sk_cohen_kappa_binary, weights=weights, ignore_index=ignore_index),
             metric_args={
                 "threshold": THRESHOLD,
                 "weights": weights,
@@ -73,7 +73,7 @@ class TestBinaryCohenKappa(MetricTester):
             preds=preds,
             target=target,
             metric_functional=binary_cohen_kappa,
-            sk_metric=partial(_sk_cohen_kappa_binary, weights=weights, ignore_index=ignore_index),
+            reference_metric=partial(_sk_cohen_kappa_binary, weights=weights, ignore_index=ignore_index),
             metric_args={
                 "threshold": THRESHOLD,
                 "weights": weights,
@@ -147,7 +147,7 @@ class TestMulticlassCohenKappa(MetricTester):
             preds=preds,
             target=target,
             metric_class=MulticlassCohenKappa,
-            sk_metric=partial(_sk_cohen_kappa_multiclass, weights=weights, ignore_index=ignore_index),
+            reference_metric=partial(_sk_cohen_kappa_multiclass, weights=weights, ignore_index=ignore_index),
             metric_args={
                 "num_classes": NUM_CLASSES,
                 "weights": weights,
@@ -165,7 +165,7 @@ class TestMulticlassCohenKappa(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multiclass_cohen_kappa,
-            sk_metric=partial(_sk_cohen_kappa_multiclass, weights=weights, ignore_index=ignore_index),
+            reference_metric=partial(_sk_cohen_kappa_multiclass, weights=weights, ignore_index=ignore_index),
             metric_args={
                 "num_classes": NUM_CLASSES,
                 "weights": weights,

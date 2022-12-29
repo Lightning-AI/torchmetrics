@@ -234,7 +234,7 @@ class TextTester(MetricTester):
         preds: TEXT_METRIC_INPUT,
         targets: TEXT_METRIC_INPUT,
         metric_functional: Callable,
-        sk_metric: Callable,
+        reference_metric: Callable,
         metric_args: dict = None,
         fragment_kwargs: bool = False,
         key: str = None,
@@ -246,7 +246,7 @@ class TextTester(MetricTester):
             preds: torch tensor with predictions
             targets: torch tensor with targets
             metric_functional: metric class that should be tested
-            sk_metric: callable function that is used for comparison
+            reference_metric: callable function that is used for comparison
             metric_args: dict with additional arguments used for class initialization
             fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `targets` among processes
             key: The key passed onto the `_assert_allclose` to compare the respective metric from the Dict output
@@ -260,7 +260,7 @@ class TextTester(MetricTester):
             preds=preds,
             targets=targets,
             metric_functional=metric_functional,
-            sk_metric=sk_metric,
+            sk_metric=reference_metric,
             metric_args=metric_args,
             atol=self.atol,
             device=device,
@@ -275,7 +275,7 @@ class TextTester(MetricTester):
         preds: TEXT_METRIC_INPUT,
         targets: TEXT_METRIC_INPUT,
         metric_class: Metric,
-        sk_metric: Callable,
+        reference_metric: Callable,
         dist_sync_on_step: bool,
         metric_args: dict = None,
         check_dist_sync_on_step: bool = True,
@@ -292,7 +292,7 @@ class TextTester(MetricTester):
             preds: torch tensor with predictions
             targets: torch tensor with targets
             metric_class: metric class that should be tested
-            sk_metric: callable function that is used for comparison
+            reference_metric: callable function that is used for comparison
             dist_sync_on_step: bool, if true will synchronize metric state across
                 processes at each ``forward()``
             metric_args: dict with additional arguments used for class initialization
@@ -319,7 +319,7 @@ class TextTester(MetricTester):
                     preds=preds,
                     targets=targets,
                     metric_class=metric_class,
-                    sk_metric=sk_metric,
+                    sk_metric=reference_metric,
                     dist_sync_on_step=dist_sync_on_step,
                     metric_args=metric_args,
                     check_dist_sync_on_step=check_dist_sync_on_step,
@@ -341,7 +341,7 @@ class TextTester(MetricTester):
                 preds=preds,
                 targets=targets,
                 metric_class=metric_class,
-                sk_metric=sk_metric,
+                sk_metric=reference_metric,
                 dist_sync_on_step=dist_sync_on_step,
                 metric_args=metric_args,
                 check_dist_sync_on_step=check_dist_sync_on_step,

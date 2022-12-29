@@ -62,7 +62,7 @@ class TestMulticlassExactMatch(MetricTester):
             preds=preds,
             target=target,
             metric_class=MulticlassExactMatch,
-            sk_metric=partial(
+            reference_metric=partial(
                 _sk_exact_match_multiclass,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
@@ -87,7 +87,7 @@ class TestMulticlassExactMatch(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multiclass_exact_match,
-            sk_metric=partial(
+            reference_metric=partial(
                 _sk_exact_match_multiclass,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
@@ -182,7 +182,7 @@ class TestMultilabelExactMatch(MetricTester):
             preds=preds,
             target=target,
             metric_class=MultilabelExactMatch,
-            sk_metric=partial(
+            reference_metric=partial(
                 _sk_exact_match_multilabel,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
@@ -208,7 +208,7 @@ class TestMultilabelExactMatch(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multilabel_exact_match,
-            sk_metric=partial(
+            reference_metric=partial(
                 _sk_exact_match_multilabel,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,

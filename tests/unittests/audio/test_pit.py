@@ -125,7 +125,7 @@ class TestPIT(MetricTester):
             preds,
             target,
             PermutationInvariantTraining,
-            sk_metric=partial(_average_metric, metric_func=sk_metric),
+            reference_metric=partial(_average_metric, metric_func=sk_metric),
             dist_sync_on_step=dist_sync_on_step,
             metric_args=dict(metric_func=metric_func, eval_func=eval_func),
         )
@@ -135,7 +135,7 @@ class TestPIT(MetricTester):
             preds=preds,
             target=target,
             metric_functional=permutation_invariant_training,
-            sk_metric=sk_metric,
+            reference_metric=sk_metric,
             metric_args=dict(metric_func=metric_func, eval_func=eval_func),
         )
 

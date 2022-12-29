@@ -61,7 +61,7 @@ class TestBinaryConfusionMatrix(MetricTester):
             preds=preds,
             target=target,
             metric_class=BinaryConfusionMatrix,
-            sk_metric=partial(_sk_confusion_matrix_binary, normalize=normalize, ignore_index=ignore_index),
+            reference_metric=partial(_sk_confusion_matrix_binary, normalize=normalize, ignore_index=ignore_index),
             metric_args={
                 "threshold": THRESHOLD,
                 "normalize": normalize,
@@ -79,7 +79,7 @@ class TestBinaryConfusionMatrix(MetricTester):
             preds=preds,
             target=target,
             metric_functional=binary_confusion_matrix,
-            sk_metric=partial(_sk_confusion_matrix_binary, normalize=normalize, ignore_index=ignore_index),
+            reference_metric=partial(_sk_confusion_matrix_binary, normalize=normalize, ignore_index=ignore_index),
             metric_args={
                 "threshold": THRESHOLD,
                 "normalize": normalize,
@@ -151,7 +151,7 @@ class TestMulticlassConfusionMatrix(MetricTester):
             preds=preds,
             target=target,
             metric_class=MulticlassConfusionMatrix,
-            sk_metric=partial(_sk_confusion_matrix_multiclass, normalize=normalize, ignore_index=ignore_index),
+            reference_metric=partial(_sk_confusion_matrix_multiclass, normalize=normalize, ignore_index=ignore_index),
             metric_args={
                 "num_classes": NUM_CLASSES,
                 "normalize": normalize,
@@ -169,7 +169,7 @@ class TestMulticlassConfusionMatrix(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multiclass_confusion_matrix,
-            sk_metric=partial(_sk_confusion_matrix_multiclass, normalize=normalize, ignore_index=ignore_index),
+            reference_metric=partial(_sk_confusion_matrix_multiclass, normalize=normalize, ignore_index=ignore_index),
             metric_args={
                 "num_classes": NUM_CLASSES,
                 "normalize": normalize,
@@ -245,7 +245,7 @@ class TestMultilabelConfusionMatrix(MetricTester):
             preds=preds,
             target=target,
             metric_class=MultilabelConfusionMatrix,
-            sk_metric=partial(_sk_confusion_matrix_multilabel, normalize=normalize, ignore_index=ignore_index),
+            reference_metric=partial(_sk_confusion_matrix_multilabel, normalize=normalize, ignore_index=ignore_index),
             metric_args={
                 "num_labels": NUM_CLASSES,
                 "normalize": normalize,
@@ -263,7 +263,7 @@ class TestMultilabelConfusionMatrix(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multilabel_confusion_matrix,
-            sk_metric=partial(_sk_confusion_matrix_multilabel, normalize=normalize, ignore_index=ignore_index),
+            reference_metric=partial(_sk_confusion_matrix_multilabel, normalize=normalize, ignore_index=ignore_index),
             metric_args={
                 "num_labels": NUM_CLASSES,
                 "normalize": normalize,

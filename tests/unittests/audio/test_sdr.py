@@ -87,7 +87,7 @@ class TestSDR(MetricTester):
             preds,
             target,
             SignalDistortionRatio,
-            sk_metric=partial(average_metric, metric_func=sk_metric),
+            reference_metric=partial(average_metric, metric_func=sk_metric),
             dist_sync_on_step=dist_sync_on_step,
             metric_args={},
         )

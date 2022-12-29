@@ -36,7 +36,7 @@ class TestMatchErrorRate(TextTester):
             preds=preds,
             targets=targets,
             metric_class=MatchErrorRate,
-            sk_metric=_compute_mer_metric_jiwer,
+            reference_metric=_compute_mer_metric_jiwer,
             dist_sync_on_step=dist_sync_on_step,
         )
 
@@ -46,7 +46,7 @@ class TestMatchErrorRate(TextTester):
             preds,
             targets,
             metric_functional=match_error_rate,
-            sk_metric=_compute_mer_metric_jiwer,
+            reference_metric=_compute_mer_metric_jiwer,
         )
 
     def test_mer_differentiability(self, preds, targets):

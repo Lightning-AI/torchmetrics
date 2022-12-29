@@ -53,7 +53,7 @@ class TestBinaryAUROC(MetricTester):
             preds=preds,
             target=target,
             metric_class=BinaryAUROC,
-            sk_metric=partial(_sk_auroc_binary, max_fpr=max_fpr, ignore_index=ignore_index),
+            reference_metric=partial(_sk_auroc_binary, max_fpr=max_fpr, ignore_index=ignore_index),
             metric_args={
                 "max_fpr": max_fpr,
                 "thresholds": None,
@@ -71,7 +71,7 @@ class TestBinaryAUROC(MetricTester):
             preds=preds,
             target=target,
             metric_functional=binary_auroc,
-            sk_metric=partial(_sk_auroc_binary, max_fpr=max_fpr, ignore_index=ignore_index),
+            reference_metric=partial(_sk_auroc_binary, max_fpr=max_fpr, ignore_index=ignore_index),
             metric_args={
                 "max_fpr": max_fpr,
                 "thresholds": None,
@@ -153,7 +153,7 @@ class TestMulticlassAUROC(MetricTester):
             preds=preds,
             target=target,
             metric_class=MulticlassAUROC,
-            sk_metric=partial(_sk_auroc_multiclass, average=average, ignore_index=ignore_index),
+            reference_metric=partial(_sk_auroc_multiclass, average=average, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_classes": NUM_CLASSES,
@@ -172,7 +172,7 @@ class TestMulticlassAUROC(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multiclass_auroc,
-            sk_metric=partial(_sk_auroc_multiclass, average=average, ignore_index=ignore_index),
+            reference_metric=partial(_sk_auroc_multiclass, average=average, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_classes": NUM_CLASSES,
@@ -273,7 +273,7 @@ class TestMultilabelAUROC(MetricTester):
             preds=preds,
             target=target,
             metric_class=MultilabelAUROC,
-            sk_metric=partial(_sk_auroc_multilabel, average=average, ignore_index=ignore_index),
+            reference_metric=partial(_sk_auroc_multilabel, average=average, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_labels": NUM_CLASSES,
@@ -292,7 +292,7 @@ class TestMultilabelAUROC(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multilabel_auroc,
-            sk_metric=partial(_sk_auroc_multilabel, average=average, ignore_index=ignore_index),
+            reference_metric=partial(_sk_auroc_multilabel, average=average, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_labels": NUM_CLASSES,

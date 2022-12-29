@@ -74,7 +74,7 @@ class TestBinaryRecallAtFixedPrecision(MetricTester):
             preds=preds,
             target=target,
             metric_class=BinaryRecallAtFixedPrecision,
-            sk_metric=partial(
+            reference_metric=partial(
                 _sk_recall_at_fixed_precision_binary, min_precision=min_precision, ignore_index=ignore_index
             ),
             metric_args={
@@ -94,7 +94,7 @@ class TestBinaryRecallAtFixedPrecision(MetricTester):
             preds=preds,
             target=target,
             metric_functional=binary_recall_at_fixed_precision,
-            sk_metric=partial(
+            reference_metric=partial(
                 _sk_recall_at_fixed_precision_binary, min_precision=min_precision, ignore_index=ignore_index
             ),
             metric_args={
@@ -187,7 +187,7 @@ class TestMulticlassRecallAtFixedPrecision(MetricTester):
             preds=preds,
             target=target,
             metric_class=MulticlassRecallAtFixedPrecision,
-            sk_metric=partial(
+            reference_metric=partial(
                 _sk_recall_at_fixed_precision_multiclass, min_precision=min_precision, ignore_index=ignore_index
             ),
             metric_args={
@@ -208,7 +208,7 @@ class TestMulticlassRecallAtFixedPrecision(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multiclass_recall_at_fixed_precision,
-            sk_metric=partial(
+            reference_metric=partial(
                 _sk_recall_at_fixed_precision_multiclass, min_precision=min_precision, ignore_index=ignore_index
             ),
             metric_args={
@@ -297,7 +297,7 @@ class TestMultilabelRecallAtFixedPrecision(MetricTester):
             preds=preds,
             target=target,
             metric_class=MultilabelRecallAtFixedPrecision,
-            sk_metric=partial(
+            reference_metric=partial(
                 _sk_recall_at_fixed_precision_multilabel, min_precision=min_precision, ignore_index=ignore_index
             ),
             metric_args={
@@ -318,7 +318,7 @@ class TestMultilabelRecallAtFixedPrecision(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multilabel_recall_at_fixed_precision,
-            sk_metric=partial(
+            reference_metric=partial(
                 _sk_recall_at_fixed_precision_multilabel, min_precision=min_precision, ignore_index=ignore_index
             ),
             metric_args={

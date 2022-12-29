@@ -54,7 +54,7 @@ class TestBinaryJaccardIndex(MetricTester):
             preds=preds,
             target=target,
             metric_class=BinaryJaccardIndex,
-            sk_metric=partial(_sk_jaccard_index_binary, ignore_index=ignore_index),
+            reference_metric=partial(_sk_jaccard_index_binary, ignore_index=ignore_index),
             metric_args={
                 "threshold": THRESHOLD,
                 "ignore_index": ignore_index,
@@ -70,7 +70,7 @@ class TestBinaryJaccardIndex(MetricTester):
             preds=preds,
             target=target,
             metric_functional=binary_jaccard_index,
-            sk_metric=partial(_sk_jaccard_index_binary, ignore_index=ignore_index),
+            reference_metric=partial(_sk_jaccard_index_binary, ignore_index=ignore_index),
             metric_args={
                 "threshold": THRESHOLD,
                 "ignore_index": ignore_index,
@@ -140,7 +140,7 @@ class TestMulticlassJaccardIndex(MetricTester):
             preds=preds,
             target=target,
             metric_class=MulticlassJaccardIndex,
-            sk_metric=partial(_sk_jaccard_index_multiclass, ignore_index=ignore_index, average=average),
+            reference_metric=partial(_sk_jaccard_index_multiclass, ignore_index=ignore_index, average=average),
             metric_args={
                 "num_classes": NUM_CLASSES,
                 "ignore_index": ignore_index,
@@ -158,7 +158,7 @@ class TestMulticlassJaccardIndex(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multiclass_jaccard_index,
-            sk_metric=partial(_sk_jaccard_index_multiclass, ignore_index=ignore_index, average=average),
+            reference_metric=partial(_sk_jaccard_index_multiclass, ignore_index=ignore_index, average=average),
             metric_args={
                 "num_classes": NUM_CLASSES,
                 "ignore_index": ignore_index,
@@ -246,7 +246,7 @@ class TestMultilabelJaccardIndex(MetricTester):
             preds=preds,
             target=target,
             metric_class=MultilabelJaccardIndex,
-            sk_metric=partial(_sk_jaccard_index_multilabel, ignore_index=ignore_index, average=average),
+            reference_metric=partial(_sk_jaccard_index_multilabel, ignore_index=ignore_index, average=average),
             metric_args={
                 "num_labels": NUM_CLASSES,
                 "ignore_index": ignore_index,
@@ -264,7 +264,7 @@ class TestMultilabelJaccardIndex(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multilabel_jaccard_index,
-            sk_metric=partial(_sk_jaccard_index_multilabel, ignore_index=ignore_index, average=average),
+            reference_metric=partial(_sk_jaccard_index_multilabel, ignore_index=ignore_index, average=average),
             metric_args={
                 "num_labels": NUM_CLASSES,
                 "ignore_index": ignore_index,

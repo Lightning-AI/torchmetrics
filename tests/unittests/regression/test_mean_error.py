@@ -125,7 +125,7 @@ class TestMeanError(MetricTester):
             preds=preds,
             target=target,
             metric_class=metric_class,
-            sk_metric=partial(sk_metric, sk_fn=sk_fn, metric_args=metric_args),
+            reference_metric=partial(sk_metric, sk_fn=sk_fn, metric_args=metric_args),
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
         )
@@ -136,7 +136,7 @@ class TestMeanError(MetricTester):
             preds=preds,
             target=target,
             metric_functional=metric_functional,
-            sk_metric=partial(sk_metric, sk_fn=sk_fn, metric_args=metric_args),
+            reference_metric=partial(sk_metric, sk_fn=sk_fn, metric_args=metric_args),
             metric_args=metric_args,
         )
 

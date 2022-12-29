@@ -76,7 +76,7 @@ class TestMultilabelRanking(MetricTester):
             preds=preds,
             target=target,
             metric_class=metric,
-            sk_metric=partial(_sk_ranking, fn=sk_metric, ignore_index=ignore_index),
+            reference_metric=partial(_sk_ranking, fn=sk_metric, ignore_index=ignore_index),
             metric_args={
                 "num_labels": NUM_CLASSES,
                 "ignore_index": ignore_index,
@@ -92,7 +92,7 @@ class TestMultilabelRanking(MetricTester):
             preds=preds,
             target=target,
             metric_functional=functional_metric,
-            sk_metric=partial(_sk_ranking, fn=sk_metric, ignore_index=ignore_index),
+            reference_metric=partial(_sk_ranking, fn=sk_metric, ignore_index=ignore_index),
             metric_args={
                 "num_labels": NUM_CLASSES,
                 "ignore_index": ignore_index,

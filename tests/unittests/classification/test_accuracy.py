@@ -79,7 +79,7 @@ class TestBinaryAccuracy(MetricTester):
             preds=preds,
             target=target,
             metric_class=BinaryAccuracy,
-            sk_metric=partial(_sk_accuracy_binary, ignore_index=ignore_index, multidim_average=multidim_average),
+            reference_metric=partial(_sk_accuracy_binary, ignore_index=ignore_index, multidim_average=multidim_average),
             metric_args={"threshold": THRESHOLD, "ignore_index": ignore_index, "multidim_average": multidim_average},
         )
 
@@ -96,7 +96,7 @@ class TestBinaryAccuracy(MetricTester):
             preds=preds,
             target=target,
             metric_functional=binary_accuracy,
-            sk_metric=partial(_sk_accuracy_binary, ignore_index=ignore_index, multidim_average=multidim_average),
+            reference_metric=partial(_sk_accuracy_binary, ignore_index=ignore_index, multidim_average=multidim_average),
             metric_args={
                 "threshold": THRESHOLD,
                 "ignore_index": ignore_index,
@@ -207,7 +207,7 @@ class TestMulticlassAccuracy(MetricTester):
             preds=preds,
             target=target,
             metric_class=MulticlassAccuracy,
-            sk_metric=partial(
+            reference_metric=partial(
                 _sk_accuracy_multiclass,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
@@ -235,7 +235,7 @@ class TestMulticlassAccuracy(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multiclass_accuracy,
-            sk_metric=partial(
+            reference_metric=partial(
                 _sk_accuracy_multiclass,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
@@ -395,7 +395,7 @@ class TestMultilabelAccuracy(MetricTester):
             preds=preds,
             target=target,
             metric_class=MultilabelAccuracy,
-            sk_metric=partial(
+            reference_metric=partial(
                 _sk_accuracy_multilabel,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
@@ -424,7 +424,7 @@ class TestMultilabelAccuracy(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multilabel_accuracy,
-            sk_metric=partial(
+            reference_metric=partial(
                 _sk_accuracy_multilabel,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,

@@ -53,7 +53,7 @@ class TestBinaryHingeLoss(MetricTester):
             preds=preds,
             target=target,
             metric_class=BinaryHingeLoss,
-            sk_metric=partial(_sk_binary_hinge_loss, ignore_index=ignore_index),
+            reference_metric=partial(_sk_binary_hinge_loss, ignore_index=ignore_index),
             metric_args={
                 "ignore_index": ignore_index,
             },
@@ -68,7 +68,7 @@ class TestBinaryHingeLoss(MetricTester):
             preds=preds,
             target=target,
             metric_functional=binary_hinge_loss,
-            sk_metric=partial(_sk_binary_hinge_loss, ignore_index=ignore_index),
+            reference_metric=partial(_sk_binary_hinge_loss, ignore_index=ignore_index),
             metric_args={
                 "ignore_index": ignore_index,
             },
@@ -146,7 +146,7 @@ class TestMulticlassHingeLoss(MetricTester):
             preds=preds,
             target=target,
             metric_class=MulticlassHingeLoss,
-            sk_metric=partial(_sk_multiclass_hinge_loss, multiclass_mode=multiclass_mode, ignore_index=ignore_index),
+            reference_metric=partial(_sk_multiclass_hinge_loss, multiclass_mode=multiclass_mode, ignore_index=ignore_index),
             metric_args={
                 "num_classes": NUM_CLASSES,
                 "multiclass_mode": multiclass_mode,
@@ -164,7 +164,7 @@ class TestMulticlassHingeLoss(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multiclass_hinge_loss,
-            sk_metric=partial(_sk_multiclass_hinge_loss, multiclass_mode=multiclass_mode, ignore_index=ignore_index),
+            reference_metric=partial(_sk_multiclass_hinge_loss, multiclass_mode=multiclass_mode, ignore_index=ignore_index),
             metric_args={
                 "num_classes": NUM_CLASSES,
                 "multiclass_mode": multiclass_mode,

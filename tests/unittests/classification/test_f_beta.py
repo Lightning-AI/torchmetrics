@@ -98,7 +98,7 @@ class TestBinaryFBetaScore(MetricTester):
             preds=preds,
             target=target,
             metric_class=module,
-            sk_metric=partial(
+            reference_metric=partial(
                 _sk_fbeta_score_binary, sk_fn=compare, ignore_index=ignore_index, multidim_average=multidim_average
             ),
             metric_args={"threshold": THRESHOLD, "ignore_index": ignore_index, "multidim_average": multidim_average},
@@ -117,7 +117,7 @@ class TestBinaryFBetaScore(MetricTester):
             preds=preds,
             target=target,
             metric_functional=functional,
-            sk_metric=partial(
+            reference_metric=partial(
                 _sk_fbeta_score_binary, sk_fn=compare, ignore_index=ignore_index, multidim_average=multidim_average
             ),
             metric_args={
@@ -220,7 +220,7 @@ class TestMulticlassFBetaScore(MetricTester):
             preds=preds,
             target=target,
             metric_class=module,
-            sk_metric=partial(
+            reference_metric=partial(
                 _sk_fbeta_score_multiclass,
                 sk_fn=compare,
                 ignore_index=ignore_index,
@@ -251,7 +251,7 @@ class TestMulticlassFBetaScore(MetricTester):
             preds=preds,
             target=target,
             metric_functional=functional,
-            sk_metric=partial(
+            reference_metric=partial(
                 _sk_fbeta_score_multiclass,
                 sk_fn=compare,
                 ignore_index=ignore_index,
@@ -460,7 +460,7 @@ class TestMultilabelFBetaScore(MetricTester):
             preds=preds,
             target=target,
             metric_class=module,
-            sk_metric=partial(
+            reference_metric=partial(
                 _sk_fbeta_score_multilabel,
                 sk_fn=compare,
                 ignore_index=ignore_index,
@@ -492,7 +492,7 @@ class TestMultilabelFBetaScore(MetricTester):
             preds=preds,
             target=target,
             metric_functional=functional,
-            sk_metric=partial(
+            reference_metric=partial(
                 _sk_fbeta_score_multilabel,
                 sk_fn=compare,
                 ignore_index=ignore_index,

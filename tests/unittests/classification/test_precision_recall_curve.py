@@ -60,7 +60,7 @@ class TestBinaryPrecisionRecallCurve(MetricTester):
             preds=preds,
             target=target,
             metric_class=BinaryPrecisionRecallCurve,
-            sk_metric=partial(_sk_precision_recall_curve_binary, ignore_index=ignore_index),
+            reference_metric=partial(_sk_precision_recall_curve_binary, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "ignore_index": ignore_index,
@@ -76,7 +76,7 @@ class TestBinaryPrecisionRecallCurve(MetricTester):
             preds=preds,
             target=target,
             metric_functional=binary_precision_recall_curve,
-            sk_metric=partial(_sk_precision_recall_curve_binary, ignore_index=ignore_index),
+            reference_metric=partial(_sk_precision_recall_curve_binary, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "ignore_index": ignore_index,
@@ -167,7 +167,7 @@ class TestMulticlassPrecisionRecallCurve(MetricTester):
             preds=preds,
             target=target,
             metric_class=MulticlassPrecisionRecallCurve,
-            sk_metric=partial(_sk_precision_recall_curve_multiclass, ignore_index=ignore_index),
+            reference_metric=partial(_sk_precision_recall_curve_multiclass, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_classes": NUM_CLASSES,
@@ -184,7 +184,7 @@ class TestMulticlassPrecisionRecallCurve(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multiclass_precision_recall_curve,
-            sk_metric=partial(_sk_precision_recall_curve_multiclass, ignore_index=ignore_index),
+            reference_metric=partial(_sk_precision_recall_curve_multiclass, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_classes": NUM_CLASSES,
@@ -269,7 +269,7 @@ class TestMultilabelPrecisionRecallCurve(MetricTester):
             preds=preds,
             target=target,
             metric_class=MultilabelPrecisionRecallCurve,
-            sk_metric=partial(_sk_precision_recall_curve_multilabel, ignore_index=ignore_index),
+            reference_metric=partial(_sk_precision_recall_curve_multilabel, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_labels": NUM_CLASSES,
@@ -286,7 +286,7 @@ class TestMultilabelPrecisionRecallCurve(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multilabel_precision_recall_curve,
-            sk_metric=partial(_sk_precision_recall_curve_multilabel, ignore_index=ignore_index),
+            reference_metric=partial(_sk_precision_recall_curve_multilabel, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_labels": NUM_CLASSES,

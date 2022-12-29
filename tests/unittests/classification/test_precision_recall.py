@@ -98,7 +98,7 @@ class TestBinaryPrecisionRecall(MetricTester):
             preds=preds,
             target=target,
             metric_class=module,
-            sk_metric=partial(
+            reference_metric=partial(
                 _sk_precision_recall_binary, sk_fn=compare, ignore_index=ignore_index, multidim_average=multidim_average
             ),
             metric_args={"threshold": THRESHOLD, "ignore_index": ignore_index, "multidim_average": multidim_average},
@@ -119,7 +119,7 @@ class TestBinaryPrecisionRecall(MetricTester):
             preds=preds,
             target=target,
             metric_functional=functional,
-            sk_metric=partial(
+            reference_metric=partial(
                 _sk_precision_recall_binary, sk_fn=compare, ignore_index=ignore_index, multidim_average=multidim_average
             ),
             metric_args={
@@ -217,7 +217,7 @@ class TestMulticlassPrecisionRecall(MetricTester):
             preds=preds,
             target=target,
             metric_class=module,
-            sk_metric=partial(
+            reference_metric=partial(
                 _sk_precision_recall_multiclass,
                 sk_fn=compare,
                 ignore_index=ignore_index,
@@ -248,7 +248,7 @@ class TestMulticlassPrecisionRecall(MetricTester):
             preds=preds,
             target=target,
             metric_functional=functional,
-            sk_metric=partial(
+            reference_metric=partial(
                 _sk_precision_recall_multiclass,
                 sk_fn=compare,
                 ignore_index=ignore_index,
@@ -449,7 +449,7 @@ class TestMultilabelPrecisionRecall(MetricTester):
             preds=preds,
             target=target,
             metric_class=module,
-            sk_metric=partial(
+            reference_metric=partial(
                 _sk_precision_recall_multilabel,
                 sk_fn=compare,
                 ignore_index=ignore_index,
@@ -481,7 +481,7 @@ class TestMultilabelPrecisionRecall(MetricTester):
             preds=preds,
             target=target,
             metric_functional=functional,
-            sk_metric=partial(
+            reference_metric=partial(
                 _sk_precision_recall_multilabel,
                 sk_fn=compare,
                 ignore_index=ignore_index,

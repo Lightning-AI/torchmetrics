@@ -16,6 +16,7 @@ import pickle
 import sys
 from copy import deepcopy
 from functools import partial
+from os import cpu_count
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
@@ -33,8 +34,8 @@ try:
 except RuntimeError:
     pass
 
-NUM_PROCESSES = 2
-NUM_BATCHES = 4  # Need to be divisible with the number of processes
+NUM_PROCESSES = cpu_count()
+NUM_BATCHES = 2 * NUM_PROCESSES  # Need to be divisible with the number of processes
 BATCH_SIZE = 32
 # NUM_BATCHES = 10 if torch.cuda.is_available() else 4
 # BATCH_SIZE = 64 if torch.cuda.is_available() else 32
@@ -115,7 +116,7 @@ def _class_test(
     preds: Union[Tensor, list, List[Dict[str, Tensor]]],
     target: Union[Tensor, list, List[Dict[str, Tensor]]],
     metric_class: Metric,
-    sk_metric: Callable,
+    reference_metric: Callable,
     dist_sync_on_step: bool,
     metric_args: dict = None,
     check_dist_sync_on_step: bool = True,
@@ -135,12 +136,12 @@ def _class_test(
         preds: torch tensor with predictions
         target: torch tensor with targets
         metric_class: metric class that should be tested
-        sk_metric: callable function that is used for comparison
+        reference_metric: callable function that is used for comparison
         dist_sync_on_step: bool, if true will synchronize metric state across
             processes at each ``forward()``
         metric_args: dict with additional arguments used for class initialization
         check_dist_sync_on_step: bool, if true will check if the metric is also correctly
-            calculated per batch per device (and not just at the end)
+            calculated per batch and per device (and not just at the end)
         check_batch: bool, if true will check if the metric is also correctly
             calculated across devices for each batch (and not just at the end)
         device: determine which device to run on, either 'cuda' or 'cpu'
@@ -199,12 +200,12 @@ def _class_test(
                 k: torch.cat([v[i + r] for r in range(worldsize)]).cpu() if isinstance(v, Tensor) else v
                 for k, v in (kwargs_update if fragment_kwargs else batch_kwargs_update).items()
             }
-            sk_batch_result = sk_metric(ddp_preds, ddp_target, **ddp_kwargs_upd)
+            ref_batch_result = reference_metric(ddp_preds, ddp_target, **ddp_kwargs_upd)
             if isinstance(batch_result, dict):
                 for key in batch_result:
-                    _assert_allclose(batch_result, sk_batch_result[key].numpy(), atol=atol, key=key)
+                    _assert_allclose(batch_result, ref_batch_result[key].numpy(), atol=atol, key=key)
             else:
-                _assert_allclose(batch_result, sk_batch_result, atol=atol)
+                _assert_allclose(batch_result, ref_batch_result, atol=atol)
 
         elif check_batch and not metric.dist_sync_on_step:
             batch_kwargs_update = {
@@ -213,16 +214,15 @@ def _class_test(
             }
             preds_ = preds[i].cpu() if isinstance(preds, Tensor) else preds[i]
             target_ = target[i].cpu() if isinstance(target, Tensor) else target[i]
-            sk_batch_result = sk_metric(preds_, target_, **batch_kwargs_update)
+            ref_batch_result = reference_metric(preds_, target_, **batch_kwargs_update)
             if isinstance(batch_result, dict):
                 for key in batch_result.keys():
-                    _assert_allclose(batch_result, sk_batch_result[key].numpy(), atol=atol, key=key)
+                    _assert_allclose(batch_result, ref_batch_result[key].numpy(), atol=atol, key=key)
             else:
-                _assert_allclose(batch_result, sk_batch_result, atol=atol)
+                _assert_allclose(batch_result, ref_batch_result, atol=atol)
 
     # check that metrics are hashable
-
-    assert hash(metric)
+    assert hash(metric), repr(metric)
 
     # assert that state dict is empty
     if check_state_dict:
@@ -249,7 +249,7 @@ def _class_test(
         k: torch.cat([v[i] for i in range(num_batches)]).cpu() if isinstance(v, Tensor) else v
         for k, v in kwargs_update.items()
     }
-    sk_result = sk_metric(total_preds, total_target, **total_kwargs_update)
+    sk_result = reference_metric(total_preds, total_target, **total_kwargs_update)
 
     # assert after aggregation
     if isinstance(sk_result, dict):
@@ -263,7 +263,7 @@ def _functional_test(
     preds: Union[Tensor, list],
     target: Union[Tensor, list],
     metric_functional: Callable,
-    sk_metric: Callable,
+    reference_metric: Callable,
     metric_args: dict = None,
     atol: float = 1e-8,
     device: str = "cpu",
@@ -276,7 +276,7 @@ def _functional_test(
         preds: torch tensor with predictions
         target: torch tensor with targets
         metric_functional: metric functional that should be tested
-        sk_metric: callable function that is used for comparison
+        reference_metric: callable function that is used for comparison
         metric_args: dict with additional arguments used for class initialization
         device: determine which device to run on, either 'cuda' or 'cpu'
         fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `target` among processes
@@ -307,14 +307,14 @@ def _functional_test(
             k: v.cpu() if isinstance(v, Tensor) else v
             for k, v in (extra_kwargs if fragment_kwargs else kwargs_update).items()
         }
-        sk_result = sk_metric(
+        ref_result = reference_metric(
             preds[i].cpu() if isinstance(preds, Tensor) else preds[i],
             target[i].cpu() if isinstance(target, Tensor) else target[i],
             **extra_kwargs,
         )
 
         # assert its the same
-        _assert_allclose(tm_result, sk_result, atol=atol)
+        _assert_allclose(tm_result, ref_result, atol=atol)
 
 
 def _assert_dtype_support(
@@ -382,7 +382,7 @@ class MetricTester:
         preds: Tensor,
         target: Tensor,
         metric_functional: Callable,
-        sk_metric: Callable,
+        reference_metric: Callable,
         metric_args: dict = None,
         fragment_kwargs: bool = False,
         **kwargs_update,
@@ -393,7 +393,7 @@ class MetricTester:
             preds: torch tensor with predictions
             target: torch tensor with targets
             metric_functional: metric class that should be tested
-            sk_metric: callable function that is used for comparison
+            reference_metric: callable function that is used for comparison
             metric_args: dict with additional arguments used for class initialization
             fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `target` among processes
             kwargs_update: Additional keyword arguments that will be passed with preds and
@@ -405,7 +405,7 @@ class MetricTester:
             preds=preds,
             target=target,
             metric_functional=metric_functional,
-            sk_metric=sk_metric,
+            reference_metric=reference_metric,
             metric_args=metric_args,
             atol=self.atol,
             device=device,
@@ -419,7 +419,7 @@ class MetricTester:
         preds: Union[Tensor, List[Dict]],
         target: Union[Tensor, List[Dict]],
         metric_class: Metric,
-        sk_metric: Callable,
+        reference_metric: Callable,
         dist_sync_on_step: bool = False,
         metric_args: dict = None,
         check_dist_sync_on_step: bool = True,
@@ -435,7 +435,7 @@ class MetricTester:
             preds: torch tensor with predictions
             target: torch tensor with targets
             metric_class: metric class that should be tested
-            sk_metric: callable function that is used for comparison
+            reference_metric: callable function that is used for comparison
             dist_sync_on_step: bool, if true will synchronize metric state across
                 processes at each ``forward()``
             metric_args: dict with additional arguments used for class initialization
@@ -460,7 +460,7 @@ class MetricTester:
                     preds=preds,
                     target=target,
                     metric_class=metric_class,
-                    sk_metric=sk_metric,
+                    reference_metric=reference_metric,
                     dist_sync_on_step=dist_sync_on_step,
                     metric_args=metric_args,
                     check_dist_sync_on_step=check_dist_sync_on_step,
@@ -481,7 +481,7 @@ class MetricTester:
                 preds=preds,
                 target=target,
                 metric_class=metric_class,
-                sk_metric=sk_metric,
+                reference_metric=reference_metric,
                 dist_sync_on_step=dist_sync_on_step,
                 metric_args=metric_args,
                 check_dist_sync_on_step=check_dist_sync_on_step,

@@ -61,7 +61,7 @@ class TestBinaryAveragePrecision(MetricTester):
             preds=preds,
             target=target,
             metric_class=BinaryAveragePrecision,
-            sk_metric=partial(_sk_average_precision_binary, ignore_index=ignore_index),
+            reference_metric=partial(_sk_average_precision_binary, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "ignore_index": ignore_index,
@@ -77,7 +77,7 @@ class TestBinaryAveragePrecision(MetricTester):
             preds=preds,
             target=target,
             metric_functional=binary_average_precision,
-            sk_metric=partial(_sk_average_precision_binary, ignore_index=ignore_index),
+            reference_metric=partial(_sk_average_precision_binary, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "ignore_index": ignore_index,
@@ -169,7 +169,7 @@ class TestMulticlassAveragePrecision(MetricTester):
             preds=preds,
             target=target,
             metric_class=MulticlassAveragePrecision,
-            sk_metric=partial(_sk_average_precision_multiclass, average=average, ignore_index=ignore_index),
+            reference_metric=partial(_sk_average_precision_multiclass, average=average, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_classes": NUM_CLASSES,
@@ -188,7 +188,7 @@ class TestMulticlassAveragePrecision(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multiclass_average_precision,
-            sk_metric=partial(_sk_average_precision_multiclass, average=average, ignore_index=ignore_index),
+            reference_metric=partial(_sk_average_precision_multiclass, average=average, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_classes": NUM_CLASSES,
@@ -279,7 +279,7 @@ class TestMultilabelAveragePrecision(MetricTester):
             preds=preds,
             target=target,
             metric_class=MultilabelAveragePrecision,
-            sk_metric=partial(_sk_average_precision_multilabel, average=average, ignore_index=ignore_index),
+            reference_metric=partial(_sk_average_precision_multilabel, average=average, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_labels": NUM_CLASSES,
@@ -298,7 +298,7 @@ class TestMultilabelAveragePrecision(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multilabel_average_precision,
-            sk_metric=partial(_sk_average_precision_multilabel, average=average, ignore_index=ignore_index),
+            reference_metric=partial(_sk_average_precision_multilabel, average=average, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_labels": NUM_CLASSES,

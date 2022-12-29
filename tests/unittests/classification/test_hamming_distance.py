@@ -87,7 +87,7 @@ class TestBinaryHammingDistance(MetricTester):
             preds=preds,
             target=target,
             metric_class=BinaryHammingDistance,
-            sk_metric=partial(
+            reference_metric=partial(
                 _sk_hamming_distance_binary, ignore_index=ignore_index, multidim_average=multidim_average
             ),
             metric_args={"threshold": THRESHOLD, "ignore_index": ignore_index, "multidim_average": multidim_average},
@@ -106,7 +106,7 @@ class TestBinaryHammingDistance(MetricTester):
             preds=preds,
             target=target,
             metric_functional=binary_hamming_distance,
-            sk_metric=partial(
+            reference_metric=partial(
                 _sk_hamming_distance_binary, ignore_index=ignore_index, multidim_average=multidim_average
             ),
             metric_args={
@@ -224,7 +224,7 @@ class TestMulticlassHammingDistance(MetricTester):
             preds=preds,
             target=target,
             metric_class=MulticlassHammingDistance,
-            sk_metric=partial(
+            reference_metric=partial(
                 _sk_hamming_distance_multiclass,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
@@ -252,7 +252,7 @@ class TestMulticlassHammingDistance(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multiclass_hamming_distance,
-            sk_metric=partial(
+            reference_metric=partial(
                 _sk_hamming_distance_multiclass,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
@@ -397,7 +397,7 @@ class TestMultilabelHammingDistance(MetricTester):
             preds=preds,
             target=target,
             metric_class=MultilabelHammingDistance,
-            sk_metric=partial(
+            reference_metric=partial(
                 _sk_hamming_distance_multilabel,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
@@ -426,7 +426,7 @@ class TestMultilabelHammingDistance(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multilabel_hamming_distance,
-            sk_metric=partial(
+            reference_metric=partial(
                 _sk_hamming_distance_multilabel,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
