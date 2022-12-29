@@ -28,7 +28,7 @@ def _baseline_symmetric_mape(
     y_true: np.ndarray,
     y_pred: np.ndarray,
     sample_weight: Optional[np.ndarray] = None,
-    multi_output: str = "uniform_average",
+    multioutput: str = "uniform_average",
 ):
     r"""Symmetric mean absolute percentage error regression loss (SMAPE_):
 
@@ -43,7 +43,7 @@ def _baseline_symmetric_mape(
             Estimated target values.
         sample_weight: array-like of shape (n_samples,), default=None
             Sample weights.
-        multi_output: {'raw_values', 'uniform_average'} or array-like
+        multioutput: {'raw_values', 'uniform_average'} or array-like
             Defines aggregating of multiple output values.
             Array-like value defines weights used to average errors.
             If input is list then the shape must be (n_outputs,).
@@ -62,18 +62,18 @@ def _baseline_symmetric_mape(
             MAPE values, especially if some y_true values are very close to zero.
             Note that we return a large value instead of `inf` when y_true is zero.
     """
-    _, y_true, y_pred, multi_output = _check_reg_targets(y_true, y_pred, multi_output)
+    _, y_true, y_pred, multioutput = _check_reg_targets(y_true, y_pred, multioutput)
     check_consistent_length(y_true, y_pred, sample_weight)
     epsilon = np.finfo(np.float64).eps
     smape = 2 * np.abs(y_pred - y_true) / np.maximum(np.abs(y_true) + np.abs(y_pred), epsilon)
     output_errors = np.average(smape, weights=sample_weight, axis=0)
-    if isinstance(multi_output, str):
-        if multi_output == "raw_values":
+    if isinstance(multioutput, str):
+        if multioutput == "raw_values":
             return output_errors
         # pass None as weights to np.average: uniform mean
-        multi_output = None
+        multioutput = None
 
-    return np.average(output_errors, weights=multi_output)
+    return np.average(output_errors, weights=multioutput)
 
 
 # sklearn reference function from

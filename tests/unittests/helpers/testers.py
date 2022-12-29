@@ -285,12 +285,9 @@ def _functional_test(
     """
     p_size = preds.shape[0] if isinstance(preds, Tensor) else len(preds)
     t_size = target.shape[0] if isinstance(target, Tensor) else len(target)
-    assert p_size == t_size
+    assert p_size == t_size, f"different sizes {p_size} and {t_size}"
     num_batches = p_size
-
-    if not metric_args:
-        metric_args = {}
-
+    metric_args = metric_args or {}
     metric = partial(metric_functional, **metric_args)
 
     # move to device
@@ -312,8 +309,7 @@ def _functional_test(
             target[i].cpu() if isinstance(target, Tensor) else target[i],
             **extra_kwargs,
         )
-
-        # assert its the same
+        # assert it is the same
         _assert_allclose(tm_result, ref_result, atol=atol)
 
 
@@ -440,7 +436,7 @@ class MetricTester:
                 processes at each ``forward()``
             metric_args: dict with additional arguments used for class initialization
             check_dist_sync_on_step: bool, if true will check if the metric is also correctly
-                calculated per batch per device (and not just at the end)
+                calculated per batch and per device (and not just at the end)
             check_batch: bool, if true will check if the metric is also correctly
                 calculated across devices for each batch (and not just at the end)
             fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `target` among processes
@@ -473,7 +469,7 @@ class MetricTester:
                 [(rank, self.poolSize) for rank in range(self.poolSize)],
             )
         else:
-            device = "cuda" if (torch.cuda.is_available() and torch.cuda.device_count() > 0) else "cpu"
+            device = "cuda" if torch.cuda.is_available() else "cpu"
 
             _class_test(
                 rank=0,
@@ -644,16 +640,16 @@ class DummyMetricMultiOutput(DummyMetricSum):
 
 
 def inject_ignore_index(x: Tensor, ignore_index: int) -> Tensor:
-    """Utility function for injecting the ignore index value into a tensor randomly."""
+    """Utility function for injecting the ignored index value into a tensor randomly."""
     if any(x.flatten() == ignore_index):  # ignore index is a class label
         return x
     classes = torch.unique(x)
     idx = torch.randperm(x.numel())
     x = deepcopy(x)
-    # randomly set either element {9, 10} to the ignore index value
+    # randomly set either element {9, 10} to ignore index value
     skip = torch.randint(9, 11, (1,)).item()
     x.view(-1)[idx[::skip]] = ignore_index
-    # if we accedently removed a class completly in a batch, reintroduce it again
+    # if we accidentally removed a class completely in a batch, reintroduce it again
     for batch in x:
         new_classes = torch.unique(batch)
         class_not_in = [c not in new_classes for c in classes]
