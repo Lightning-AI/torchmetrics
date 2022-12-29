@@ -41,7 +41,7 @@ from torchmetrics.regression import (
 from torchmetrics.regression.symmetric_mape import SymmetricMeanAbsolutePercentageError
 from unittests.helpers import seed_all
 from unittests.helpers.reference_metrics import (
-    _symmetric_mean_absolute_percentage_error as sk_sym_mean_abs_percentage_error,
+    _baseline_symmetric_mape as sk_sym_mean_abs_percentage_error,
 )
 from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 

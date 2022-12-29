@@ -20,7 +20,7 @@ import torch
 from torchmetrics.functional.image.ergas import error_relative_global_dimensionless_synthesis
 from torchmetrics.image.ergas import ErrorRelativeGlobalDimensionlessSynthesis
 from unittests.helpers import seed_all
-from unittests.helpers.reference_metrics import _sk_ergas
+from unittests.helpers.reference_metrics import _baseline_ergas
 from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 
 seed_all(42)
@@ -52,7 +52,7 @@ class TestErrorRelativeGlobalDimensionlessSynthesis(MetricTester):
             preds,
             target,
             ErrorRelativeGlobalDimensionlessSynthesis,
-            partial(_sk_ergas, ratio=ratio, reduction=reduction),
+            partial(_baseline_ergas, ratio=ratio, reduction=reduction),
             dist_sync_on_step,
             metric_args=dict(ratio=ratio, reduction=reduction),
         )
@@ -62,7 +62,7 @@ class TestErrorRelativeGlobalDimensionlessSynthesis(MetricTester):
             preds,
             target,
             error_relative_global_dimensionless_synthesis,
-            partial(_sk_ergas, ratio=ratio, reduction=reduction),
+            partial(_baseline_ergas, ratio=ratio, reduction=reduction),
             metric_args=dict(ratio=ratio, reduction=reduction),
         )
 

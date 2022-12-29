@@ -20,7 +20,7 @@ import torch
 from torchmetrics.functional.image.d_lambda import spectral_distortion_index
 from torchmetrics.image.d_lambda import SpectralDistortionIndex
 from unittests.helpers import seed_all
-from unittests.helpers.reference_metrics import d_lambda
+from unittests.helpers.reference_metrics import _baseline_d_lambda
 from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 
 seed_all(42)
@@ -51,7 +51,7 @@ def _np_d_lambda(preds, target, p):
     np_preds = preds.view(-1, c, h, w).permute(0, 2, 3, 1).numpy()
     np_target = target.view(-1, c, h, w).permute(0, 2, 3, 1).numpy()
 
-    return d_lambda(
+    return _baseline_d_lambda(
         np_preds,
         np_target,
         p=p,

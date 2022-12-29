@@ -24,11 +24,11 @@ from torch import Tensor
 from torchmetrics.functional.image.uqi import universal_image_quality_index
 
 
-def _symmetric_mean_absolute_percentage_error(
+def _baseline_symmetric_mape(
     y_true: np.ndarray,
     y_pred: np.ndarray,
     sample_weight: Optional[np.ndarray] = None,
-    multioutput: str = "uniform_average",
+    multi_output: str = "uniform_average",
 ):
     r"""Symmetric mean absolute percentage error regression loss (SMAPE_):
 
@@ -43,7 +43,7 @@ def _symmetric_mean_absolute_percentage_error(
             Estimated target values.
         sample_weight: array-like of shape (n_samples,), default=None
             Sample weights.
-        multioutput: {'raw_values', 'uniform_average'} or array-like
+        multi_output: {'raw_values', 'uniform_average'} or array-like
             Defines aggregating of multiple output values.
             Array-like value defines weights used to average errors.
             If input is list then the shape must be (n_outputs,).
@@ -55,31 +55,31 @@ def _symmetric_mean_absolute_percentage_error(
         loss: float or ndarray of floats in the range [0, 1]
             If multioutput is 'raw_values', then symmetric mean absolute percentage error
             is returned for each output separately.
-            If multioutput is 'uniform_average' or an ndarray of weights, then the
+            If multioutput is 'uniform_average' or a ndarray of weights, then the
             weighted average of all output errors is returned.
             MAPE output is non-negative floating point. The best value is 0.0.
-            But note the fact that bad predictions can lead to arbitarily large
+            But note the fact that bad predictions can lead to arbitrarily large
             MAPE values, especially if some y_true values are very close to zero.
             Note that we return a large value instead of `inf` when y_true is zero.
     """
-    _, y_true, y_pred, multioutput = _check_reg_targets(y_true, y_pred, multioutput)
+    _, y_true, y_pred, multi_output = _check_reg_targets(y_true, y_pred, multi_output)
     check_consistent_length(y_true, y_pred, sample_weight)
     epsilon = np.finfo(np.float64).eps
     smape = 2 * np.abs(y_pred - y_true) / np.maximum(np.abs(y_true) + np.abs(y_pred), epsilon)
     output_errors = np.average(smape, weights=sample_weight, axis=0)
-    if isinstance(multioutput, str):
-        if multioutput == "raw_values":
+    if isinstance(multi_output, str):
+        if multi_output == "raw_values":
             return output_errors
         # pass None as weights to np.average: uniform mean
-        multioutput = None
+        multi_output = None
 
-    return np.average(output_errors, weights=multioutput)
+    return np.average(output_errors, weights=multi_output)
 
 
 # sklearn reference function from
 # https://github.com/samronsin/scikit-learn/blob/calibration-loss/sklearn/metrics/_classification.py.
 # TODO: when the PR into sklearn is accepted, update this to use the official function.
-def _calibration_error(
+def _baseline_calibration_error(
     y_true: np.ndarray,
     y_prob: np.ndarray,
     sample_weight: Optional[np.ndarray] = None,
@@ -204,7 +204,7 @@ def _calibration_error(
     return loss
 
 
-def d_lambda(preds: np.ndarray, target: np.ndarray, p: int = 1) -> float:
+def _baseline_d_lambda(preds: np.ndarray, target: np.ndarray, p: int = 1) -> float:
     """A NumPy based implementation of Spectral Distortion Index, which uses UQI of TorchMetrics."""
     target, preds = torch.from_numpy(target), torch.from_numpy(preds)
     # Permute to ensure B x C x H x W (Pillow/NumPy stores in B x H x W x C)
@@ -228,11 +228,10 @@ def d_lambda(preds: np.ndarray, target: np.ndarray, p: int = 1) -> float:
     # Special case: when number of channels (L) is 1, there will be only one element in M1 and M2. Hence no need to sum.
     if length == 1:
         return diff[0][0] ** (1.0 / p)
-    else:
-        return (1.0 / (length * (length - 1)) * np.sum(diff)) ** (1.0 / p)
+    return (1.0 / (length * (length - 1)) * np.sum(diff)) ** (1.0 / p)
 
 
-def _sk_ergas(
+def _baseline_ergas(
     preds: Tensor,
     target: Tensor,
     ratio: Union[int, float] = 4,
@@ -263,7 +262,7 @@ def _sk_ergas(
     return to_return
 
 
-def _sk_sam(
+def _baseline_sam(
     preds: Tensor,
     target: Tensor,
     reduction: str = "elementwise_mean",
