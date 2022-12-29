@@ -53,9 +53,9 @@ def _baseline_symmetric_mape(
 
     Returns:
         loss: float or ndarray of floats in the range [0, 1]
-            If multioutput is 'raw_values', then symmetric mean absolute percentage error
+            If multi-output is 'raw_values', then symmetric mean absolute percentage error
             is returned for each output separately.
-            If multioutput is 'uniform_average' or a ndarray of weights, then the
+            If multi-output is 'uniform_average' or a ndarray of weights, then the
             weighted average of all output errors is returned.
             MAPE output is non-negative floating point. The best value is 0.0.
             But note the fact that bad predictions can lead to arbitrarily large
@@ -86,7 +86,7 @@ def _baseline_calibration_error(
     norm: str = "l2",
     n_bins: int = 10,
     strategy: str = "uniform",
-    pos_label: Optional[Union[int, str]] = None,
+    pos_label: Union[int, str, None] = None,
     reduce_bias: bool = True,
 ) -> float:
     """Compute calibration error of a binary classifier. Across all items in a set of N predictions, the
@@ -104,18 +104,17 @@ def _baseline_calibration_error(
         norm: {'l1', 'l2', 'max'}
             Norm method. The l1-norm is the Expected Calibration Error (ECE),
             and the max-norm corresponds to Maximum Calibration Error (MCE).
-        n_bins: int, default=10
-        The number of bins to compute error on.
+        n_bins: The number of bins to compute error on.
         strategy: {'uniform', 'quantile'}
-            Strategy used to define the widths of the bins.
-            uniform
-                All bins have identical widths.
-            quantile
-                All bins have the same number of points.
-        pos_label: int or str, default=None
+            Strategy used to define the widths of the bins:
+
+            - uniform: All bins have identical widths.
+            - quantile: All bins have the same number of points.
+
+        pos_label:
             Label of the positive class. If None, the maximum label is used as positive class.
-        reduce_bias: bool, default=True
-            Add debiasing term as in Verified Uncertainty Calibration, A. Kumar.
+        reduce_bias:
+            Add de-biasing term as in Verified Uncertainty Calibration, A. Kumar.
             Only effective for the l2-norm.
 
     Returns:
