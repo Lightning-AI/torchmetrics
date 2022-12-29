@@ -15,24 +15,28 @@ HammingDistance
 
 .. autoclass:: torchmetrics.HammingDistance
     :noindex:
+    :exclude-members: update, compute
 
 BinaryHammingDistance
 ^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.BinaryHammingDistance
     :noindex:
+    :exclude-members: update, compute
 
 MulticlassHammingDistance
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.MulticlassHammingDistance
     :noindex:
+    :exclude-members: update, compute
 
 MultilabelHammingDistance
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.MultilabelHammingDistance
     :noindex:
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________
