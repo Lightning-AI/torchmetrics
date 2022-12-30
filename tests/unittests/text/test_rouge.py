@@ -131,7 +131,7 @@ class TestROUGEScore(TextTester):
             preds=preds,
             targets=targets,
             metric_class=ROUGEScore,
-            sk_metric=rouge_metric,
+            reference_metric=rouge_metric,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
             key=pl_rouge_metric_key,
@@ -148,7 +148,7 @@ class TestROUGEScore(TextTester):
             preds,
             targets,
             metric_functional=rouge_score,
-            sk_metric=rouge_metric,
+            reference_metric=rouge_metric,
             metric_args=metric_args,
             key=pl_rouge_metric_key,
         )

@@ -74,7 +74,7 @@ class TestNDCG(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_class=RetrievalNormalizedDCG,
-            sk_metric=_ndcg_at_k,
+            reference_metric=_ndcg_at_k,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
         )
@@ -102,7 +102,7 @@ class TestNDCG(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_class=RetrievalNormalizedDCG,
-            sk_metric=_ndcg_at_k,
+            reference_metric=_ndcg_at_k,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
         )
@@ -114,7 +114,7 @@ class TestNDCG(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_functional=retrieval_normalized_dcg,
-            sk_metric=_ndcg_at_k,
+            reference_metric=_ndcg_at_k,
             metric_args={},
             k=k,
         )
