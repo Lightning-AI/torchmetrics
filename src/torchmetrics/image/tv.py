@@ -27,7 +27,12 @@ class TotalVariation(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 
-    - ``img`` (:class:`~torch.Tensor`): A `Tensor` of shape ``(N, C, H, W)`` consisting of images
+    - ``img`` (:class:`~torch.Tensor`): A tensor of shape ``(N, C, H, W)`` consisting of images
+
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``sdi`` (:class:`~torch.Tensor`): if ``reduction!='none'`` returns float scalar tensor with average TV value
+      over sample else returns tensor of shape ``(N,)`` with TV values per sample
 
     Args:
         reduction: a method to reduce metric score over samples

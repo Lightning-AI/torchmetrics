@@ -63,6 +63,10 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
     - ``img1`` (:class:`~torch.Tensor`): tensor with images of shape ``(N, 3, H, W)``
     - ``img2`` (:class:`~torch.Tensor`): tensor with images of shape ``(N, 3, H, W)``
 
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``lpips`` (:class:`~torch.Tensor`): returns float scalar tensor with average LPIPS value over samples
+
     Args:
         net_type: str indicating backbone network type to use. Choose between `'alex'`, `'vgg'` or `'squeeze'`
         reduction: str indicating how to reduce over the batch dimension. Choose between `'sum'` or `'mean'`.

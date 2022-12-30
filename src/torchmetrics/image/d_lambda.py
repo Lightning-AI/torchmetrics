@@ -28,8 +28,13 @@ class SpectralDistortionIndex(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 
-    - ``preds`` (:class:`~torch.Tensor`): Low resolution multispectral image
-    - ``target``(:class:`~torch.Tensor`): High resolution fused image
+    - ``preds`` (:class:`~torch.Tensor`): Low resolution multispectral image of shape ``(N,C,H,W)``
+    - ``target``(:class:`~torch.Tensor`): High resolution fused image of shape ``(N,C,H,W)``
+
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``sdi`` (:class:`~torch.Tensor`): if ``reduction!='none'`` returns float scalar tensor with average SDI value
+      over sample else returns tensor of shape ``(N,)`` with SDI values per sample
 
     Args:
         p: Large spectral differences
@@ -40,7 +45,6 @@ class SpectralDistortionIndex(Metric):
             - ``'none'``: no reduction will be applied
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
-
 
     Example:
         >>> import torch

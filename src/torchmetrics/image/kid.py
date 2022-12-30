@@ -95,11 +95,13 @@ class KernelInceptionDistance(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 
-    - ``imgs`` (:class:`~torch.Tensor`): tensor with images feed to the feature extractor
-    - ``real`` (:class:`~torch.Tensor`): bool indicating if ``imgs`` belong to the real or the fake distribution
+    - ``imgs`` (:class:`~torch.Tensor`): tensor with images feed to the feature extractor of shape ``(N,C,H,W)``
+    - ``real`` (`bool`): bool indicating if ``imgs`` belong to the real or the fake distribution
 
-    As output of 'compute' the metrics returns a tuple of mean and standard deviation of KID scores
-    calculated on subsets of extracted features.
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``kid_mean`` (:class:`~torch.Tensor`): float scalar tensor with mean value over subsets
+    - ``kid_std`` (:class:`~torch.Tensor`): float scalar tensor with mean value over subsets
 
     Args:
         feature: Either an str, integer or ``nn.Module``:

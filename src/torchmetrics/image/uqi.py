@@ -27,8 +27,13 @@ class UniversalImageQualityIndex(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 
-    - ``preds`` (:class:`~torch.Tensor`): Predictions from model
-    - ``target`` (:class:`~torch.Tensor`): Ground truth values
+    - ``preds`` (:class:`~torch.Tensor`): Predictions from model of shape ``(N,C,H,W)``
+    - ``target`` (:class:`~torch.Tensor`): Ground truth values of shape ``(N,C,H,W)``
+
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``uiqi`` (:class:`~torch.Tensor`): if ``reduction!='none'`` returns float scalar tensor with average UIQI value
+      over sample else returns tensor of shape ``(N,)`` with UIQI values per sample
 
     Args:
         kernel_size: size of the gaussian kernel

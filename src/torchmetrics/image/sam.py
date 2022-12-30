@@ -29,8 +29,13 @@ class SpectralAngleMapper(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 
-    - ``preds`` (:class:`~torch.Tensor`): Predictions from model
-    - ``target`` (:class:`~torch.Tensor`): Ground truth values
+    - ``preds`` (:class:`~torch.Tensor`): Predictions from model of shape ``(N,C,H,W)``
+    - ``target`` (:class:`~torch.Tensor`): Ground truth values of shape ``(N,C,H,W)``
+
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``sam`` (:class:`~torch.Tensor`): if ``reduction!='none'`` returns float scalar tensor with average SAM value
+      over sample else returns tensor of shape ``(N,)`` with SAM values per sample
 
     Args:
         reduction: a method to reduce metric score over labels.

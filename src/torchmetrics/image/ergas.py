@@ -33,6 +33,11 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
     - ``preds`` (:class:`~torch.Tensor`): Predictions from model
     - ``target`` (:class:`~torch.Tensor`): Ground truth values
 
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``ergas`` (:class:`~torch.Tensor`): if ``reduction!='none'`` returns float scalar tensor with average ERGAS
+      value over sample else returns tensor of shape ``(N,)`` with ERGAS values per sample
+
     Args:
         ratio: ratio of high resolution to low resolution
         reduction: a method to reduce metric score over labels.
@@ -42,9 +47,6 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
             - ``'none'`` or ``None``: no reduction will be applied
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
-
-    Return:
-        Tensor with ErrorRelativeGlobalDimensionlessSynthesis score
 
     Example:
         >>> import torch

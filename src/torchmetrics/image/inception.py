@@ -53,6 +53,10 @@ class InceptionScore(Metric):
 
     - ``imgs`` (:class:`~torch.Tensor`): tensor with images feed to the feature extractor
 
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``fid`` (:class:`~torch.Tensor`): float scalar tensor with mean FID value over samples
+
     Args:
         feature:
             Either an str, integer or ``nn.Module``:

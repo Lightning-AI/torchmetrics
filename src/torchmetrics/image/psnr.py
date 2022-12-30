@@ -31,8 +31,13 @@ class PeakSignalNoiseRatio(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 
-    - ``preds`` (:class:`~torch.Tensor`): Predictions from model
-    - ``target`` (:class:`~torch.Tensor`): Ground truth values
+    - ``preds`` (:class:`~torch.Tensor`): Predictions from model of shape ``(N,C,H,W)``
+    - ``target`` (:class:`~torch.Tensor`): Ground truth values of shape ``(N,C,H,W)``
+
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``psnr`` (:class:`~torch.Tensor`): if ``reduction!='none'`` returns float scalar tensor with average PSNR value
+      over sample else returns tensor of shape ``(N,)`` with PSNR values per sample
 
     Args:
         data_range:
@@ -61,9 +66,6 @@ class PeakSignalNoiseRatio(Metric):
         >>> target = torch.tensor([[3.0, 2.0], [1.0, 0.0]])
         >>> psnr(preds, target)
         tensor(2.5527)
-
-    .. note::
-        Half precision is only support on GPU for this metric
     """
     is_differentiable: bool = True
     higher_is_better: bool = True

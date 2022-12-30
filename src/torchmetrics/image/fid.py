@@ -153,8 +153,12 @@ class FrechetInceptionDistance(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 
-    - ``imgs`` (:class:`~torch.Tensor`): tensor with images feed to the feature extractor
+    - ``imgs`` (:class:`~torch.Tensor`): tensor with images feed to the feature extractor with
     - ``real`` (:class:`~bool`): bool indicating if ``imgs`` belong to the real or the fake distribution
+
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``fid`` (:class:`~torch.Tensor`): float scalar tensor with mean FID value over samples
 
     Args:
         feature:

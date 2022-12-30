@@ -30,6 +30,11 @@ class StructuralSimilarityIndexMeasure(Metric):
     - ``preds`` (:class:`~torch.Tensor`): Predictions from model
     - ``target`` (:class:`~torch.Tensor`): Ground truth values
 
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``ssim`` (:class:`~torch.Tensor`): if ``reduction!='none'`` returns float scalar tensor with average SSIM value
+      over sample else returns tensor of shape ``(N,)`` with SSIM values per sample
+
     Args:
         preds: estimated image
         target: ground truth image
@@ -53,9 +58,6 @@ class StructuralSimilarityIndexMeasure(Metric):
             The luminance term can be obtained with luminance=ssim/contrast
             Mutually exclusive with ``return_full_image``
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
-
-    Return:
-        Tensor with SSIM score
 
     Example:
         >>> from torchmetrics import StructuralSimilarityIndexMeasure
@@ -163,10 +165,15 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
     """Computes `MultiScaleSSIM`_, Multi-scale Structural Similarity Index Measure, which is a generalization of
     Structural Similarity Index Measure by incorporating image details at different resolution scores.
 
-    As input to 'update' the metric accepts the following input:
+    As input to ``forward`` and ``update`` the metric accepts the following input
 
-    - ``preds``: Predictions from model of shape ``(N, C, H, W)``
-    - ``target``: Ground truth values of shape ``(N, C, H, W)``
+    - ``preds`` (:class:`~torch.Tensor`): Predictions from model
+    - ``target`` (:class:`~torch.Tensor`): Ground truth values
+
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``msssim`` (: :class:`~torch.Tensor`): if ``reduction!='none'`` returns float scalar tensor with average MSSSIM
+      value over sample else returns tensor of shape ``(N,)`` with SSIM values per sample
 
     Args:
         gaussian_kernel: If ``True`` (default), a gaussian kernel is used, if false a uniform kernel is used
