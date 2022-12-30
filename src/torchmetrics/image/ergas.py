@@ -28,10 +28,10 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
     sharpened image considering normalized average error of each band of the result image
     (ErrorRelativeGlobalDimensionlessSynthesis).
 
-    As input to 'update' the metric accepts the following input:
+    As input to ``forward`` and ``update`` the metric accepts the following input
 
-    - ``preds``: Predictions from model
-    - ``target``: Ground truth values
+    - ``preds`` (:class:`~torch.Tensor`): Predictions from model
+    - ``target`` (:class:`~torch.Tensor`): Ground truth values
 
     Args:
         ratio: ratio of high resolution to low resolution

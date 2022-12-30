@@ -58,10 +58,10 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
     .. note:: this metric is not scriptable when using ``torch<1.8``. Please update your pytorch installation
         if this is a issue.
 
-    As input to 'update' the metric accepts the following input:
+    As input to ``forward`` and ``update`` the metric accepts the following input
 
-    - ``img1``: tensor with images of shape ``(N, 3, H, W)``
-    - ``img2``: tensor with images of shape ``(N, 3, H, W)``
+    - ``img1`` (:class:`~torch.Tensor`): tensor with images of shape ``(N, 3, H, W)``
+    - ``img2`` (:class:`~torch.Tensor`): tensor with images of shape ``(N, 3, H, W)``
 
     Args:
         net_type: str indicating backbone network type to use. Choose between `'alex'`, `'vgg'` or `'squeeze'`

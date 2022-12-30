@@ -27,10 +27,10 @@ class SpectralAngleMapper(Metric):
     spectra by calculating the angle between the spectra, where small angles between indicate high similarity and
     high angles indicate low similarity.
 
-    As input to 'update' the metric accepts the following input:
+    As input to ``forward`` and ``update`` the metric accepts the following input
 
-    - ``preds``: Predictions from model
-    - ``target``: Ground truth values
+    - ``preds`` (:class:`~torch.Tensor`): Predictions from model
+    - ``target`` (:class:`~torch.Tensor`): Ground truth values
 
     Args:
         reduction: a method to reduce metric score over labels.

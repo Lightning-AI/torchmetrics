@@ -26,10 +26,10 @@ class SpectralDistortionIndex(Metric):
     """Computes Spectral Distortion Index (SpectralDistortionIndex_) also now as D_lambda is used to compare the
     spectral distortion between two images.
 
-    As input to 'update' the metric accepts the following input:
+    As input to ``forward`` and ``update`` the metric accepts the following input
 
-    - ``preds``: Low resolution multispectral image
-    - ``target``: High resolution fused image
+    - ``preds`` (:class:`~torch.Tensor`): Low resolution multispectral image
+    - ``target``(:class:`~torch.Tensor`): High resolution fused image
 
     Args:
         p: Large spectral differences

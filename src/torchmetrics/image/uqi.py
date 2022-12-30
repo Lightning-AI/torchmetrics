@@ -25,10 +25,10 @@ from torchmetrics.utilities.data import dim_zero_cat
 class UniversalImageQualityIndex(Metric):
     """Computes Universal Image Quality Index (UniversalImageQualityIndex_).
 
-    As input to 'update' the metric accepts the following input:
+    As input to ``forward`` and ``update`` the metric accepts the following input
 
-    - ``preds``: Predictions from model
-    - ``target``: Ground truth values
+    - ``preds`` (:class:`~torch.Tensor`): Predictions from model
+    - ``target`` (:class:`~torch.Tensor`): Ground truth values
 
     Args:
         kernel_size: size of the gaussian kernel

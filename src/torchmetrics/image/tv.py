@@ -25,9 +25,9 @@ from torchmetrics.utilities.data import dim_zero_cat
 class TotalVariation(Metric):
     """Computes Total Variation loss (`TV`_).
 
-    As input to 'update' the metric accepts the following input:
+    As input to ``forward`` and ``update`` the metric accepts the following input
 
-    - ``img``: A `Tensor` of shape ``(N, C, H, W)`` consisting of images
+    - ``img`` (:class:`~torch.Tensor`): A `Tensor` of shape ``(N, C, H, W)`` consisting of images
 
     Args:
         reduction: a method to reduce metric score over samples

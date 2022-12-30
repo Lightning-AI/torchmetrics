@@ -25,10 +25,10 @@ from torchmetrics.utilities.data import dim_zero_cat
 class StructuralSimilarityIndexMeasure(Metric):
     """Computes Structual Similarity Index Measure (SSIM_).
 
-    As input to 'update' the metric accepts the following input:
+    As input to ``forward`` and ``update`` the metric accepts the following input
 
-    - ``preds``: Predictions from model
-    - ``target``: Ground truth values
+    - ``preds`` (:class:`~torch.Tensor`): Predictions from model
+    - ``target`` (:class:`~torch.Tensor`): Ground truth values
 
     Args:
         preds: estimated image

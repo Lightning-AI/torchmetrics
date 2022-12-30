@@ -93,10 +93,10 @@ class KernelInceptionDistance(Metric):
         is installed. Either install as ``pip install torchmetrics[image]`` or
         ``pip install torch-fidelity``
 
-    As input to 'update' the metric accepts the following input:
+    As input to ``forward`` and ``update`` the metric accepts the following input
 
-    - ``imgs``: tensor with images feed to the feature extractor
-    - ``real``: bool indicating if ``imgs`` belong to the real or the fake distribution
+    - ``imgs`` (:class:`~torch.Tensor`): tensor with images feed to the feature extractor
+    - ``real`` (:class:`~torch.Tensor`): bool indicating if ``imgs`` belong to the real or the fake distribution
 
     As output of 'compute' the metrics returns a tuple of mean and standard deviation of KID scores
     calculated on subsets of extracted features.
