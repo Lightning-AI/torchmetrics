@@ -88,7 +88,7 @@ class TestAggregation(MetricTester):
             ddp=ddp,
             dist_sync_on_step=dist_sync_on_step,
             metric_class=metric_class,
-            sk_metric=compare_fn,
+            reference_metric=compare_fn,
             check_scriptable=True,
             # Abuse of names here
             preds=values,

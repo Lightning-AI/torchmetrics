@@ -47,7 +47,7 @@ for size, channel, coef, multichannel, dtype in [
     )
 
 
-def _sk_uqi(preds, target, data_range, multichannel, kernel_size):
+def _skimage_uqi(preds, target, data_range, multichannel, kernel_size):
     c, h, w = preds.shape[-3:]
     sk_preds = preds.view(-1, c, h, w).permute(0, 2, 3, 1).numpy()
     sk_target = target.view(-1, c, h, w).permute(0, 2, 3, 1).numpy()
@@ -83,7 +83,7 @@ class TestUQI(MetricTester):
             preds,
             target,
             UniversalImageQualityIndex,
-            partial(_sk_uqi, data_range=1.0, multichannel=multichannel, kernel_size=kernel_size),
+            partial(_skimage_uqi, data_range=1.0, multichannel=multichannel, kernel_size=kernel_size),
             metric_args={"data_range": 1.0, "kernel_size": (kernel_size, kernel_size)},
             dist_sync_on_step=dist_sync_on_step,
         )
@@ -93,7 +93,7 @@ class TestUQI(MetricTester):
             preds,
             target,
             universal_image_quality_index,
-            partial(_sk_uqi, data_range=1.0, multichannel=multichannel, kernel_size=kernel_size),
+            partial(_skimage_uqi, data_range=1.0, multichannel=multichannel, kernel_size=kernel_size),
             metric_args={"data_range": 1.0, "kernel_size": (kernel_size, kernel_size)},
         )
 
