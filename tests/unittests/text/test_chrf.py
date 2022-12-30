@@ -68,7 +68,7 @@ class TestCHRFScore(TextTester):
             preds=preds,
             targets=targets,
             metric_class=CHRFScore,
-            sk_metric=nltk_metric,
+            reference_metric=nltk_metric,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
         )
@@ -88,7 +88,7 @@ class TestCHRFScore(TextTester):
             preds,
             targets,
             metric_functional=chrf_score,
-            sk_metric=nltk_metric,
+            reference_metric=nltk_metric,
             metric_args=metric_args,
         )
 

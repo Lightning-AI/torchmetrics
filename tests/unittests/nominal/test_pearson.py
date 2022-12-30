@@ -99,13 +99,13 @@ class TestPearsonsContingencyCoefficient(MetricTester):
             preds=preds,
             target=target,
             metric_class=PearsonsContingencyCoefficient,
-            sk_metric=_pd_pearsons_t,
+            reference_metric=_pd_pearsons_t,
             metric_args=metric_args,
         )
 
     def test_pearsons_t_functional(self, preds, target):
         self.run_functional_metric_test(
-            preds, target, metric_functional=pearsons_contingency_coefficient, sk_metric=_pd_pearsons_t
+            preds, target, metric_functional=pearsons_contingency_coefficient, reference_metric=_pd_pearsons_t
         )
 
     def test_pearsons_t_differentiability(self, preds, target):

@@ -70,11 +70,10 @@ def test_ranking(preds, target):
         assert (torch.tensor(scipy_ranking[1]) == tm_ranking[1]).all()
 
 
-def _sk_metric(preds, target):
+def _scipy_spearman(preds, target):
     if preds.ndim == 2:
         return [spearmanr(t.numpy(), p.numpy())[0] for t, p in zip(target.T, preds.T)]
-    else:
-        return spearmanr(target.numpy(), preds.numpy())[0]
+    return spearmanr(target.numpy(), preds.numpy())[0]
 
 
 @pytest.mark.parametrize(
@@ -99,13 +98,13 @@ class TestSpearmanCorrCoef(MetricTester):
             preds,
             target,
             SpearmanCorrCoef,
-            _sk_metric,
+            _scipy_spearman,
             dist_sync_on_step,
             metric_args={"num_outputs": num_outputs},
         )
 
     def test_spearman_corrcoef_functional(self, preds, target):
-        self.run_functional_metric_test(preds, target, spearman_corrcoef, _sk_metric)
+        self.run_functional_metric_test(preds, target, spearman_corrcoef, _scipy_spearman)
 
     def test_spearman_corrcoef_differentiability(self, preds, target):
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1

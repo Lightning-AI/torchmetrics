@@ -72,7 +72,7 @@ class TestRPrecision(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_class=RetrievalRPrecision,
-            sk_metric=_r_precision,
+            reference_metric=_r_precision,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
         )
@@ -98,7 +98,7 @@ class TestRPrecision(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_class=RetrievalRPrecision,
-            sk_metric=_r_precision,
+            reference_metric=_r_precision,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
         )
@@ -109,7 +109,7 @@ class TestRPrecision(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_functional=retrieval_r_precision,
-            sk_metric=_r_precision,
+            reference_metric=_r_precision,
             metric_args={},
         )
 

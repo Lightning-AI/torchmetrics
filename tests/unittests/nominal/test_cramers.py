@@ -125,7 +125,7 @@ class TestCramersV(MetricTester):
             preds=preds,
             target=target,
             metric_class=CramersV,
-            sk_metric=reference_metric,
+            reference_metric=reference_metric,
             metric_args=metric_args,
         )
 
@@ -142,7 +142,7 @@ class TestCramersV(MetricTester):
             nan_replace_value=nan_replace_value,
         )
         self.run_functional_metric_test(
-            preds, target, metric_functional=cramers_v, sk_metric=reference_metric, metric_args=metric_args
+            preds, target, metric_functional=cramers_v, reference_metric=reference_metric, metric_args=metric_args
         )
 
     def test_cramers_v_differentiability(self, preds, target, bias_correction, nan_strategy, nan_replace_value):
