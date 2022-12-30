@@ -94,7 +94,7 @@ class BaseMetricResults(dict):
 class MAPMetricResults(BaseMetricResults):
     """Class to wrap the final mAP results."""
 
-    __slots__ = ("map", "map_50", "map_75", "map_small", "map_medium", "map_large")
+    __slots__ = ("map", "map_50", "map_75", "map_small", "map_medium", "map_large", "classes")
 
 
 class MARMetricResults(BaseMetricResults):
@@ -248,6 +248,7 @@ class MeanAveragePrecision(Metric):
         - map_75: (:class:`~torch.Tensor`) (-1 if 0.75 not in the list of iou thresholds)
         - map_per_class: (:class:`~torch.Tensor`) (-1 if class metrics are disabled)
         - mar_100_per_class: (:class:`~torch.Tensor`) (-1 if class metrics are disabled)
+        - classes (:class:`~torch.Tensor`)
 
     For an example on how to use this metric check the `torchmetrics examples
     <https://github.com/Lightning-AI/metrics/blob/master/examples/detection_map.py>`_
@@ -345,7 +346,8 @@ class MeanAveragePrecision(Metric):
          'mar_100_per_class': tensor(-1.),
          'mar_large': tensor(0.6000),
          'mar_medium': tensor(-1.),
-         'mar_small': tensor(-1.)}
+         'mar_small': tensor(-1.),
+         'classes': tensor(0)}
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -924,5 +926,5 @@ class MeanAveragePrecision(Metric):
         metrics.update(mar_val)
         metrics.map_per_class = map_per_class_values
         metrics[f"mar_{self.max_detection_thresholds[-1]}_per_class"] = mar_max_dets_per_class_values
-
+        metrics.classes = torch.tensor(classes, dtype=torch.int)
         return metrics
