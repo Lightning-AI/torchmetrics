@@ -347,7 +347,7 @@ class MeanAveragePrecision(Metric):
          'mar_large': tensor(0.6000),
          'mar_medium': tensor(-1.),
          'mar_small': tensor(-1.),
-         'classes': tensor(0)}
+         'classes': tensor(0, dtype=torch.int32)}
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
