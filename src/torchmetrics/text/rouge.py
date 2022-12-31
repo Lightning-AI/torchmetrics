@@ -33,10 +33,12 @@ class ROUGEScore(Metric):
 
     This implementation should imitate the behaviour of the ``rouge-score`` package `Python ROUGE Implementation`
 
-    As input to 'update' and 'forward' the metric accepts the following input:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds``: An iterable of predicted sentences or a single predicted sentence
-    - ``target``: An iterable of target sentences or an iterable of target sentences or a single target sentence
+    - ``preds`` (:class:`~Union`): An iterable of predicted sentences or a single predicted sentence
+    - ``target`` (:class:`~Union`): An iterable of target sentences 
+                                    or an iterable of interables of target sentences 
+                                    or a single target sentence
 
     As output of 'compute' and 'forward' the metric returns a Python dictionary of rouge scores for each input
     rouge key.

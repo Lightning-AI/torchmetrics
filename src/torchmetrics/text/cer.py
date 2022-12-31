@@ -42,10 +42,10 @@ class CharErrorRate(Metric):
 
     Compute CharErrorRate score of transcribed segments against references.
 
-    As input to 'update' and 'forward' the metric accepts the following input:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds``: Transcription(s) to score as a string or list of strings
-    - ``target``: Reference(s) for each speech input as a string or list of strings
+    - ``preds`` (:class:`~Union`): Transcription(s) to score as a string or list of strings
+    - ``target`` (:class:`~Union`): Reference(s) for each speech input as a string or list of strings
 
     As output of 'compute' and 'forward' the metric returns a character error rate score.
 

@@ -28,10 +28,10 @@ from torchmetrics.functional.text.bleu import _bleu_score_compute, _bleu_score_u
 class BLEUScore(Metric):
     """Calculate `BLEU score`_ of machine translated text with one or more references.
 
-    As input to 'update' and 'forward' the metric accepts the following input:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds``: An iterable of machine translated corpus
-    - ``target``: An iterable of iterables of reference corpus
+    - ``preds`` (:class:`~Sequence`): An iterable of machine translated corpus
+    - ``target`` (:class:`~Sequence`): An iterable of iterables of reference corpus
 
     As output of 'compute' and 'forward' the metric returns a tensor with BLEU Score.
 

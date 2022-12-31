@@ -26,10 +26,10 @@ class ExtendedEditDistance(Metric):
 
     The metric utilises the Levenshtein distance and extends it by adding a jump operation.
 
-    As input to 'update' and 'forward' the metric accepts the following input:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds``: An iterable of hypothesis corpus
-    - ``target``: An iterable of iterables of reference corpus
+    - ``preds`` (:class:`~Union`): An iterable of hypothesis corpus
+    - ``target`` (:class:`~Sequence`): An iterable of iterables of reference corpus
 
     As output of 'compute' and 'forward' the metric returns an extended edit distance score as a tensor.
 

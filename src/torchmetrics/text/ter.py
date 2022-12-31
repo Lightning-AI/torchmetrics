@@ -27,10 +27,10 @@ class TranslationEditRate(Metric):
     This implementation follows the one from `SacreBleu_ter`_, which is a
     near-exact reimplementation of the Tercom algorithm, produces identical results on all "sane" outputs.
 
-    As input to 'update' and 'forward' the metric accepts the following input:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds``: An iterable of hypothesis corpus
-    - ``target``: An iterable of iterables of reference corpus
+    - ``preds`` (:class:`~Union`): An iterable of hypothesis corpus
+    - ``target`` (:class:`~Sequence`): An iterable of iterables of reference corpus
 
     As output of 'compute' and 'forward' the metric returns the following output:
 

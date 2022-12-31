@@ -55,10 +55,10 @@ class InfoLM(Metric):
 
     The implementation of this metric is fully based HuggingFace ``transformers``' package.
 
-    As input to 'update' and 'forward' the metric accepts the following input:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds``: An iterable of hypothesis corpus
-    - ``target``: An iterable of reference corpus
+    - ``preds`` (:class:`~Union`): An iterable of hypothesis corpus
+    - ``target`` (:class:`~Union`): An iterable of reference corpus
 
     As output of 'compute' and 'forward' the metric returns a corpus-level InfoLM score.
 

@@ -47,10 +47,10 @@ class BERTScore(Metric):
 
     This implemenation follows the original implementation from `BERT_score`_.
 
-    As input to 'update' and 'forward' the metric accepts the following input:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds``: An iterable of predicted sentences
-    - ``target``: An iterable of reference sentences
+    - ``preds`` (:class:`~List`): An iterable of predicted sentences
+    - ``target`` (:class:`~List`): An iterable of reference sentences
 
     As output of 'compute' and 'forward' the metric returns a Python dictionary containing the keys ``precision``,
     ``recall`` and ``f1`` with corresponding values.

@@ -24,10 +24,10 @@ class Perplexity(Metric):
     r"""Perplexity measures how well a language model predicts a text sample. It's calculated as the average number
     of bits per word a model needs to represent the sample.
 
-    As input to 'update' and 'forward' the metric accepts the following input:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds``: Probabilities assigned to each token in a sequence with shape [batch_size, seq_len, vocab_size]
-    - ``target``: Ground truth values with a shape [batch_size, seq_len]
+    - ``preds`` (:class:`~torch.Tensor`): Probabilities assigned to each token in a sequence with shape [batch_size, seq_len, vocab_size]
+    - ``target`` (:class:`~torch.Tensor`): Ground truth values with a shape [batch_size, seq_len]
 
     Args:
         ignore_index:

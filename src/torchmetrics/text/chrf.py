@@ -50,10 +50,10 @@ class CHRFScore(Metric):
     in `chrF++ score`_. This implementation follows the implmenetaions from https://github.com/m-popovic/chrF and
     https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/chrf.py.
 
-    As input to 'update' and 'forward' the metric accepts the following input:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds``: An iterable of hypothesis corpus
-    - ``target``: An iterable of iterables of reference corpus
+    - ``preds`` (:class:`~Sequence`): An iterable of hypothesis corpus
+    - ``target`` (:class:`~Sequence`): An iterable of iterables of reference corpus
 
     As output of 'compute' and 'forward' the metric returns the following output:
 

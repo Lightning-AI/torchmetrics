@@ -35,10 +35,10 @@ class SacreBLEUScore(BLEUScore):
 
     The SacreBLEU implementation differs from the NLTK BLEU implementation in tokenization techniques.
 
-    As input to 'update' and 'forward' the metric accepts the following input:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-        - ``preds``: An iterable of machine translated corpus
-        - ``target``: An iterable of iterables of reference corpus
+    - ``preds`` (:class:`~Sequence`): An iterable of machine translated corpus
+    - ``target`` (:class:`~Sequence`): An iterable of iterables of reference corpus
 
     Args:
         n_gram: Gram value ranged from 1 to 4
