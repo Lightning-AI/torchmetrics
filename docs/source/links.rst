@@ -116,3 +116,4 @@
 .. _Signal-to-noise ratio: https://arxiv.org/abs/1811.02508
 .. _Permutation invariant training: https://arxiv.org/abs/1607.00325
 .. _Multilabel coverage error: https://link.springer.com/chapter/10.1007/978-0-387-09823-4_34
+.. _Peak Signal to Noise Ratio with Blocked Effect:https://ieeexplore.ieee.org/abstract/document/5535179

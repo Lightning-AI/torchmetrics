@@ -36,6 +36,7 @@ from torchmetrics.functional.image.d_lambda import spectral_distortion_index
 from torchmetrics.functional.image.ergas import error_relative_global_dimensionless_synthesis
 from torchmetrics.functional.image.gradients import image_gradients
 from torchmetrics.functional.image.psnr import peak_signal_noise_ratio
+from torchmetrics.functional.image.psnrb import peak_signal_noise_ratio_with_blocked_effect
 from torchmetrics.functional.image.sam import spectral_angle_mapper
 from torchmetrics.functional.image.ssim import (
     multiscale_structural_similarity_index_measure,
