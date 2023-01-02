@@ -37,8 +37,8 @@ class SacreBLEUScore(BLEUScore):
 
     As input to 'update' and 'forward' the metric accepts the following input:
 
-    - ``preds``: An iterable of machine translated corpus
-    - ``target``: An iterable of iterables of reference corpus
+        - ``preds``: An iterable of machine translated corpus
+        - ``target``: An iterable of iterables of reference corpus
 
     Args:
         n_gram: Gram value ranged from 1 to 4
@@ -69,8 +69,10 @@ class SacreBLEUScore(BLEUScore):
         tensor(0.7598)
 
     Additional References:
+
         - Automatic Evaluation of Machine Translation Quality Using Longest Common Subsequence
-        and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och `Machine Translation Evolution`_
+          and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och `Machine Translation Evolution`_
+
     """
 
     is_differentiable: bool = False
