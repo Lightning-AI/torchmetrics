@@ -125,5 +125,4 @@
 .. _kid ref1: https://arxiv.org/abs/1801.01401
 .. _kid ref2: https://arxiv.org/abs/1706.08500
 .. _Spectral Angle Mapper: https://ntrs.nasa.gov/citations/19940012238
-.. _MultiScaleSSIM: https://www.cns.nyu.edu/pub/eero/wang03b.pdf
 .. _Multilabel coverage error: https://link.springer.com/chapter/10.1007/978-0-387-09823-4_34
