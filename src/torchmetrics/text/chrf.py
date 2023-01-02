@@ -47,7 +47,7 @@ class CHRFScore(Metric):
     """Calculate `chrf score`_ of machine translated text with one or more references.
 
     This implementation supports both ChrF score computation introduced in `chrF score`_ and `chrF++ score`_ introduced
-    in `chrF++ score_`. This implementation follows the implmenetaions from https://github.com/m-popovic/chrF and
+    in `chrF++ score`_. This implementation follows the implmenetaions from https://github.com/m-popovic/chrF and
     https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/chrf.py.
 
     As input to 'update' and 'forward' the metric accepts the following input:
@@ -157,7 +157,7 @@ class CHRFScore(Metric):
         return _chrf_score_compute(*self._convert_states_to_dicts(), self.n_order, self.beta)
 
     def _convert_states_to_dicts(self) -> _DICT_STATES_TYPES:
-        """Convert global metric states to the n-gram dictionaries to be passed in `_chrf_score_update`."""
+        """Convert global metric states to the n-gram dictionaries to be passed in ``_chrf_score_update``."""
         n_grams_dicts: Dict[str, Dict[int, Tensor]] = {
             name: n_gram_dict
             for name, n_gram_dict in zip(

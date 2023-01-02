@@ -31,7 +31,7 @@ __doctest_requires__ = {("ROUGEScore",): ["nltk"]}
 class ROUGEScore(Metric):
     """`Calculate Rouge Score`_, used for automatic summarization.
 
-    This implementation should imitate the behaviour of the `rouge-score` package `Python ROUGE Implementation`
+    This implementation should imitate the behaviour of the ``rouge-score`` package `Python ROUGE Implementation`
 
     As input to 'update' and 'forward' the metric accepts the following input:
 
@@ -48,7 +48,7 @@ class ROUGEScore(Metric):
             This function must take a ``str`` and return a ``str``.
         tokenizer:
             A user's own tokenizer function. If this is ``None``, spliting by spaces is default
-            This function must take a `str` and return ``Sequence[str]``
+            This function must take a ``str`` and return ``Sequence[str]``
         accumulate:
             Useful in case of multi-reference rouge score.
 

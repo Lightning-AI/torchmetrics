@@ -53,7 +53,7 @@ class InfoLM(Metric):
     string-based metrics thanks to the usage of pre-trained masked language models. This family of metrics is mainly
     designed for summarization and data-to-text tasks.
 
-    The implementation of this metric is fully based HuggingFace `transformers`' package.
+    The implementation of this metric is fully based HuggingFace ``transformers``' package.
 
     As input to 'update' and 'forward' the metric accepts the following input:
 
@@ -64,7 +64,7 @@ class InfoLM(Metric):
 
     Args:
         model_name_or_path:
-            A name or a model path used to load `transformers` pretrained model.
+            A name or a model path used to load ``transformers`` pretrained model.
             By default the `"bert-base-uncased"` model is used.
         temperature:
             A temperature for calibrating language modelling. For more information, please reference `InfoLM`_ paper.
@@ -81,7 +81,7 @@ class InfoLM(Metric):
         device:
             A device to be used for calculation.
         max_length:
-            A maximum length of input sequences. Sequences longer than `max_length` are to be trimmed.
+            A maximum length of input sequences. Sequences longer than ``max_length`` are to be trimmed.
         batch_size:
             A batch size used for model processing.
         num_threads:
