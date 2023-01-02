@@ -78,7 +78,7 @@ class TestRecall(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_class=RetrievalRecall,
-            sk_metric=_recall_at_k,
+            reference_metric=_recall_at_k,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
         )
@@ -106,7 +106,7 @@ class TestRecall(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_class=RetrievalRecall,
-            sk_metric=_recall_at_k,
+            reference_metric=_recall_at_k,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
         )
@@ -118,7 +118,7 @@ class TestRecall(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_functional=retrieval_recall,
-            sk_metric=_recall_at_k,
+            reference_metric=_recall_at_k,
             metric_args={},
             k=k,
         )

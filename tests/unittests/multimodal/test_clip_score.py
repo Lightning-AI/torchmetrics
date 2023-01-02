@@ -69,7 +69,7 @@ class TestCLIPScore(MetricTester):
             preds=preds,
             target=target,
             metric_class=CLIPScore,
-            sk_metric=partial(_compare_fn, model_name_or_path=model_name_or_path),
+            reference_metric=partial(_compare_fn, model_name_or_path=model_name_or_path),
             dist_sync_on_step=dist_sync_on_step,
             metric_args={"model_name_or_path": model_name_or_path},
             check_scriptable=False,
@@ -83,7 +83,7 @@ class TestCLIPScore(MetricTester):
             preds=preds,
             target=target,
             metric_functional=clip_score,
-            sk_metric=partial(_compare_fn, model_name_or_path=model_name_or_path),
+            reference_metric=partial(_compare_fn, model_name_or_path=model_name_or_path),
             metric_args={"model_name_or_path": model_name_or_path},
         )
 

@@ -32,7 +32,7 @@ class TestWordInfoPreserved(TextTester):
             preds=preds,
             targets=targets,
             metric_class=WordInfoPreserved,
-            sk_metric=_compute_wip_metric_jiwer,
+            reference_metric=_compute_wip_metric_jiwer,
             dist_sync_on_step=dist_sync_on_step,
         )
 
@@ -42,7 +42,7 @@ class TestWordInfoPreserved(TextTester):
             preds,
             targets,
             metric_functional=word_information_preserved,
-            sk_metric=_compute_wip_metric_jiwer,
+            reference_metric=_compute_wip_metric_jiwer,
         )
 
     def test_wip_differentiability(self, preds, targets):
