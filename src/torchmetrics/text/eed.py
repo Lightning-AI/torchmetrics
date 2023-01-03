@@ -31,7 +31,9 @@ class ExtendedEditDistance(Metric):
     - ``preds`` (:class:`~Union`): An iterable of hypothesis corpus
     - ``target`` (:class:`~Sequence`): An iterable of iterables of reference corpus
 
-    As output of 'compute' and 'forward' the metric returns an extended edit distance score as a tensor.
+    As output of ``forward`` and ``compute`` the metric returns the following output: 
+    
+    -  ``eed`` (:class:`~torch.Tensor`): A tensor with the extended edit distance score
 
     Args:
         language: Language used in sentences. Only supports English (en) and Japanese (ja) for now.
@@ -49,8 +51,8 @@ class ExtendedEditDistance(Metric):
         >>> from torchmetrics import ExtendedEditDistance
         >>> preds = ["this is the prediction", "here is an other sample"]
         >>> target = ["this is the reference", "here is another one"]
-        >>> metric = ExtendedEditDistance()
-        >>> metric(preds=preds, target=target)
+        >>> eed = ExtendedEditDistance()
+        >>> eed(preds=preds, target=target)
         tensor(0.3078)
     """
 

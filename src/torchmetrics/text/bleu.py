@@ -33,7 +33,9 @@ class BLEUScore(Metric):
     - ``preds`` (:class:`~Sequence`): An iterable of machine translated corpus
     - ``target`` (:class:`~Sequence`): An iterable of iterables of reference corpus
 
-    As output of 'compute' and 'forward' the metric returns a tensor with BLEU Score.
+    As output of ``forward`` and ``update`` the metric returns the following output: 
+    
+    - ``bleu`` (:class:`~torch.Tensor`): A tensor with the BLEU Score
 
     Args:
         n_gram: Gram value ranged from 1 to 4
@@ -50,8 +52,8 @@ class BLEUScore(Metric):
         >>> from torchmetrics import BLEUScore
         >>> preds = ['the cat is on the mat']
         >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
-        >>> metric = BLEUScore()
-        >>> metric(preds, target)
+        >>> bleu = BLEUScore()
+        >>> bleu(preds, target)
         tensor(0.7598)
     """
 

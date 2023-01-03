@@ -40,16 +40,19 @@ class WordInfoLost(Metric):
     - ``preds`` (:class:`~Union`): Transcription(s) to score as a string or list of strings
     - ``target`` (:class:`~Union`): Reference(s) for each speech input as a string or list of strings
 
+    As output of ``forward`` and ``compute`` the metric returns the following output: 
+    
+    -  ``wil`` (:class:`~torch.Tensor`): A tensor with the Word Information Lost score
+
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
-
 
     Examples:
         >>> from torchmetrics import WordInfoLost
         >>> preds = ["this is the prediction", "there is an other sample"]
         >>> target = ["this is the reference", "there is another one"]
-        >>> metric = WordInfoLost()
-        >>> metric(preds, target)
+        >>> wil = WordInfoLost()
+        >>> wil(preds, target)
         tensor(0.6528)
     """
     is_differentiable: bool = False

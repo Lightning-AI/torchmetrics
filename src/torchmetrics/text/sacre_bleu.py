@@ -40,6 +40,10 @@ class SacreBLEUScore(BLEUScore):
     - ``preds`` (:class:`~Sequence`): An iterable of machine translated corpus
     - ``target`` (:class:`~Sequence`): An iterable of iterables of reference corpus
 
+    As output of ``forward`` and ``compute`` the metric returns the following output: 
+    
+    -  ``sacre_bleu`` (:class:`~torch.Tensor`): A tensor with the SacreBLEU Score
+
     Args:
         n_gram: Gram value ranged from 1 to 4
         smooth: Whether to apply smoothing, see `SacreBLEU`_
@@ -64,8 +68,8 @@ class SacreBLEUScore(BLEUScore):
         >>> from torchmetrics import SacreBLEUScore
         >>> preds = ['the cat is on the mat']
         >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
-        >>> metric = SacreBLEUScore()
-        >>> metric(preds, target)
+        >>> sacre_bleu = SacreBLEUScore()
+        >>> sacre_bleu(preds, target)
         tensor(0.7598)
 
     Additional References:

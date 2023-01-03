@@ -55,10 +55,9 @@ class CHRFScore(Metric):
     - ``preds`` (:class:`~Sequence`): An iterable of hypothesis corpus
     - ``target`` (:class:`~Sequence`): An iterable of iterables of reference corpus
 
-    As output of 'compute' and 'forward' the metric returns the following output:
-
-    - A corpus-level chrF/chrF++ score.
-    - (Optionally) A list of sentence-level chrF/chrF++ scores if `return_sentence_level_score=True`.
+    As output of ``forward`` and ``compute`` the metric returns the following output: 
+    
+    -  ``chrf`` (:class:`~torch.Tensor`): If `return_sentence_level_score=True` return a list of sentence-level chrF/chrF++ scores, else return a corpus-level chrF/chrF++ score
 
     Args:
         n_char_order: A character n-gram order. If ``n_char_order=6``, the metrics refers to the official chrF/chrF++.
@@ -82,8 +81,8 @@ class CHRFScore(Metric):
         >>> from torchmetrics import CHRFScore
         >>> preds = ['the cat is on the mat']
         >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
-        >>> metric = CHRFScore()
-        >>> metric(preds, target)
+        >>> chrf = CHRFScore()
+        >>> chrf(preds, target)
         tensor(0.8640)
     """
 

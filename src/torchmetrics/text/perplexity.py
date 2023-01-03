@@ -29,6 +29,10 @@ class Perplexity(Metric):
     - ``preds`` (:class:`~torch.Tensor`): Probabilities assigned to each token in a sequence with shape [batch_size, seq_len, vocab_size]
     - ``target`` (:class:`~torch.Tensor`): Ground truth values with a shape [batch_size, seq_len]
 
+    As output of ``forward`` and ``compute`` the metric returns the following output: 
+    
+    -  ``perp`` (:class:`~torch.Tensor`): A tensor with the perplexity score
+
     Args:
         ignore_index:
             Integer specifying a target class to ignore. If given, this class index does not contribute
@@ -41,8 +45,8 @@ class Perplexity(Metric):
         >>> preds = torch.rand(2, 8, 5, generator=torch.manual_seed(22))
         >>> target = torch.randint(5, (2, 8), generator=torch.manual_seed(22))
         >>> target[0, 6:] = -100
-        >>> metric = Perplexity(ignore_index=-100)
-        >>> metric(preds, target)
+        >>> perp = Perplexity(ignore_index=-100)
+        >>> perp(preds, target)
         tensor(5.2545)
     """
     is_differentiable = True

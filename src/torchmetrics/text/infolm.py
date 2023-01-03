@@ -59,8 +59,10 @@ class InfoLM(Metric):
 
     - ``preds`` (:class:`~Union`): An iterable of hypothesis corpus
     - ``target`` (:class:`~Union`): An iterable of reference corpus
-
-    As output of 'compute' and 'forward' the metric returns a corpus-level InfoLM score.
+    
+    As output of ``forward`` and ``compute`` the metric returns the following output: 
+    
+    -  ``infolm`` (:class:`~torch.Tensor`): If `return_sentence_level_score=True` return a tuple with a tensor with the corpus-level InfoLM score and a list of sentence-level InfoLM scores, else return a corpus-level InfoLM score
 
     Args:
         model_name_or_path:

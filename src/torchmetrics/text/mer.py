@@ -43,7 +43,9 @@ class MatchErrorRate(Metric):
     - ``preds`` (:class:`~Union`): Transcription(s) to score as a string or list of strings
     - ``target`` (:class:`~Union`): Reference(s) for each speech input as a string or list of strings
 
-    As output of 'compute' and 'forward' the metric returns the match error rate.
+    As output of ``forward`` and ``compute`` the metric returns the following output: 
+    
+    -  ``mer`` (:class:`~torch.Tensor`): A tensor with the match error rate
 
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
@@ -54,8 +56,8 @@ class MatchErrorRate(Metric):
     Examples:
         >>> preds = ["this is the prediction", "there is an other sample"]
         >>> target = ["this is the reference", "there is another one"]
-        >>> metric = MatchErrorRate()
-        >>> metric(preds, target)
+        >>> mer = MatchErrorRate()
+        >>> mer(preds, target)
         tensor(0.4444)
     """
     is_differentiable: bool = False

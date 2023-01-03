@@ -30,11 +30,11 @@ class WordErrorRate(Metric):
         WER = \frac{S + D + I}{N} = \frac{S + D + I}{S + D + C}
 
     where:
-        - :math:`S` is the number of substitutions,
-        - :math:`D` is the number of deletions,
-        - :math:`I` is the number of insertions,
-        - :math:`C` is the number of correct words,
-        - :math:`N` is the number of words in the reference (:math:`N=S+D+C`).
+    - :math:`S` is the number of substitutions,
+    - :math:`D` is the number of deletions,
+    - :math:`I` is the number of insertions,
+    - :math:`C` is the number of correct words,
+    - :math:`N` is the number of words in the reference (:math:`N=S+D+C`).
 
     Compute WER score of transcribed segments against references.
 
@@ -43,17 +43,18 @@ class WordErrorRate(Metric):
     - ``preds`` (:class:`~Union`): Transcription(s) to score as a string or list of strings
     - ``target`` (:class:`~Union`): Reference(s) for each speech input as a string or list of strings
 
+    As output of ``forward`` and ``compute`` the metric returns the following output: 
+    
+    -  ``wer`` (:class:`~torch.Tensor`): A tensor with the Word Error Rate score
+
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
-
-    Returns:
-        Word error rate score
 
     Examples:
         >>> preds = ["this is the prediction", "there is an other sample"]
         >>> target = ["this is the reference", "there is another one"]
-        >>> metric = WordErrorRate()
-        >>> metric(preds, target)
+        >>> wer = WordErrorRate()
+        >>> wer(preds, target)
         tensor(0.5000)
     """
     is_differentiable: bool = False

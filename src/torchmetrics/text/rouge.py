@@ -40,8 +40,9 @@ class ROUGEScore(Metric):
                                     or an iterable of interables of target sentences 
                                     or a single target sentence
 
-    As output of 'compute' and 'forward' the metric returns a Python dictionary of rouge scores for each input
-    rouge key.
+    As output of ``forward`` and ``compute`` the metric returns the following output: 
+    
+    -  ``rouge`` (:class:`~Dict`): A dictionary of tensor rouge scores for each input str rouge key
 
     Args:
         use_stemmer: Use Porter stemmer to strip word suffixes to improve matching.

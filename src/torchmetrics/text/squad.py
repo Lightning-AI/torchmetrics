@@ -32,7 +32,7 @@ class SQuAD(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~Union`): A Dictionary or List of Dictionary-s that map ``id`` and ``prediction_text`` to the respective values
+    -  ``preds`` (:class:`~Union`): A Dictionary or List of Dictionary-s that map ``id`` and ``prediction_text`` to the respective values
         Example ``prediction``:
 
                 .. code-block:: python
@@ -61,8 +61,9 @@ class SQuAD(Metric):
                 'title': 'train test'
             }
 
-    As output of 'compute' and 'forward' the metric returns a dictionary containing the F1 score, Exact match
-    score for the batch.
+    As output of ``forward`` and ``compute`` the metric returns the following output: 
+    
+    -  ``squad`` (:class:`~Dict`): A dictionary containing the F1 score (key: "f1"), and Exact match score (key: "exact_match") for the batch.
 
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.

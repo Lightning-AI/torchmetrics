@@ -52,8 +52,9 @@ class BERTScore(Metric):
     - ``preds`` (:class:`~List`): An iterable of predicted sentences
     - ``target`` (:class:`~List`): An iterable of reference sentences
 
-    As output of 'compute' and 'forward' the metric returns a Python dictionary containing the keys ``precision``,
-    ``recall`` and ``f1`` with corresponding values.
+    As output of ``forward`` and ``compute`` the metric returns the following output: 
+
+    - ``score`` (:class:`~Dict`): A dictionary containing the keys ``precision``, ``recall`` and ``f1`` with corresponding values
 
     Args:
         preds: An iterable of predicted sentences.
@@ -93,9 +94,6 @@ class BERTScore(Metric):
         baseline_path: A path to the user's own local csv/tsv file with the baseline scale.
         baseline_url: A url path to the user's own  csv/tsv file with the baseline scale.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
-
-    Returns:
-        Python dictionary containing the keys ``precision``, ``recall`` and ``f1`` with corresponding values.
 
     Example:
         >>> from torchmetrics.text.bert import BERTScore

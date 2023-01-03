@@ -41,16 +41,19 @@ class WordInfoPreserved(Metric):
     - ``preds`` (:class:`~Union`): Transcription(s) to score as a string or list of strings
     - ``target`` (:class:`~Union`): Reference(s) for each speech input as a string or list of strings
 
+    As output of ``forward`` and ``compute`` the metric returns the following output: 
+    
+    -  ``wip`` (:class:`~torch.Tensor`): A tensor with the Word Information Preserved score
+
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
-
 
     Examples:
         >>> from torchmetrics import WordInfoPreserved
         >>> preds = ["this is the prediction", "there is an other sample"]
         >>> target = ["this is the reference", "there is another one"]
-        >>> metric = WordInfoPreserved()
-        >>> metric(preds, target)
+        >>> wip = WordInfoPreserved()
+        >>> wip(preds, target)
         tensor(0.3472)
     """
     is_differentiable: bool = False
@@ -78,5 +81,5 @@ class WordInfoPreserved(Metric):
         self.preds_total += preds_total
 
     def compute(self) -> Tensor:
-        """Calculate the word Information Preserved."""
+        """Calculate the Word Information Preserved."""
         return _wip_compute(self.errors, self.target_total, self.preds_total)

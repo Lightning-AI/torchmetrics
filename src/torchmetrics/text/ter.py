@@ -32,10 +32,9 @@ class TranslationEditRate(Metric):
     - ``preds`` (:class:`~Union`): An iterable of hypothesis corpus
     - ``target`` (:class:`~Sequence`): An iterable of iterables of reference corpus
 
-    As output of 'compute' and 'forward' the metric returns the following output:
-
-    - A corpus-level translation edit rate (TER).
-    - (Optionally) A list of sentence-level translation_edit_rate (TER) if ``return_sentence_level_score=True``.
+    As output of ``forward`` and ``compute`` the metric returns the following output: 
+    
+    -  ``ter`` (:class:`~torch.Tensor`): if ``return_sentence_level_score=True`` return a corpus-level translation edit rate with a list of sentence-level translation_edit_rate, else return a corpus-level translation edit rate
 
     Args:
         normalize: An indication whether a general tokenization to be applied.
@@ -48,8 +47,8 @@ class TranslationEditRate(Metric):
     Example:
         >>> preds = ['the cat is on the mat']
         >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
-        >>> metric = TranslationEditRate()
-        >>> metric(preds, target)
+        >>> ter = TranslationEditRate()
+        >>> ter(preds, target)
         tensor(0.1538)
     """
 

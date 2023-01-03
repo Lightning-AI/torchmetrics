@@ -47,19 +47,18 @@ class CharErrorRate(Metric):
     - ``preds`` (:class:`~Union`): Transcription(s) to score as a string or list of strings
     - ``target`` (:class:`~Union`): Reference(s) for each speech input as a string or list of strings
 
-    As output of 'compute' and 'forward' the metric returns a character error rate score.
+    As output of ``forward`` and ``compute`` the metric returns the following output: 
+    
+    -  ``cer`` (:class:`~torch.Tensor`): A tensor with the Character Error Rate score
 
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    Returns:
-        Character error rate score
-
     Examples:
         >>> preds = ["this is the prediction", "there is an other sample"]
         >>> target = ["this is the reference", "there is another one"]
-        >>> metric = CharErrorRate()
-        >>> metric(preds, target)
+        >>> cer = CharErrorRate()
+        >>> cer(preds, target)
         tensor(0.3415)
     """
     is_differentiable: bool = False
