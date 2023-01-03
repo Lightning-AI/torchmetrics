@@ -29,6 +29,16 @@ class PeakSignalNoiseRatio(Metric):
 
     Where :math:`\text{MSE}` denotes the `mean-squared-error`_ function.
 
+    As input to ``forward`` and ``update`` the metric accepts the following input
+
+    - ``preds`` (:class:`~torch.Tensor`): Predictions from model of shape ``(N,C,H,W)``
+    - ``target`` (:class:`~torch.Tensor`): Ground truth values of shape ``(N,C,H,W)``
+
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``psnr`` (:class:`~torch.Tensor`): if ``reduction!='none'`` returns float scalar tensor with average PSNR value
+      over sample else returns tensor of shape ``(N,)`` with PSNR values per sample
+
     Args:
         data_range:
             the range of the data. If None, it is determined from the data (max - min).
@@ -56,9 +66,6 @@ class PeakSignalNoiseRatio(Metric):
         >>> target = torch.tensor([[3.0, 2.0], [1.0, 0.0]])
         >>> psnr(preds, target)
         tensor(2.5527)
-
-    .. note::
-        Half precision is only support on GPU for this metric
     """
     is_differentiable: bool = True
     higher_is_better: bool = True
@@ -103,12 +110,7 @@ class PeakSignalNoiseRatio(Metric):
         self.dim = tuple(dim) if isinstance(dim, Sequence) else dim
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
+        """Update state with predictions and targets."""
         sum_squared_error, n_obs = _psnr_update(preds, target, dim=self.dim)
         if self.dim is None:
             if self.data_range is None:
