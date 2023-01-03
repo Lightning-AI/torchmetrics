@@ -14,3 +14,4 @@ ________________
 
 .. autoclass:: torchmetrics.image.kid.KernelInceptionDistance
     :noindex:
+    :exclude-members: update, compute
