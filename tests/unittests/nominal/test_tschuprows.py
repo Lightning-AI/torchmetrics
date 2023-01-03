@@ -96,14 +96,14 @@ class TestTschuprowsT(MetricTester):
             preds=preds,
             target=target,
             metric_class=TschuprowsT,
-            sk_metric=_pd_tschuprows_t,
+            reference_metric=_pd_tschuprows_t,
             metric_args=metric_args,
         )
 
     def test_tschuprows_t_functional(self, preds, target):
         metric_args = {"bias_correction": False}
         self.run_functional_metric_test(
-            preds, target, metric_functional=tschuprows_t, sk_metric=_pd_tschuprows_t, metric_args=metric_args
+            preds, target, metric_functional=tschuprows_t, reference_metric=_pd_tschuprows_t, metric_args=metric_args
         )
 
     def test_tschuprows_t_differentiability(self, preds, target):
