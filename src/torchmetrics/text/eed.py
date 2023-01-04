@@ -31,8 +31,8 @@ class ExtendedEditDistance(Metric):
     - ``preds`` (:class:`~Sequence`): An iterable of hypothesis corpus
     - ``target`` (:class:`~Sequence`): An iterable of iterables of reference corpus
 
-    As output of ``forward`` and ``compute`` the metric returns the following output: 
-    
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
     - ``eed`` (:class:`~torch.Tensor`): A tensor with the extended edit distance score
 
     Args:

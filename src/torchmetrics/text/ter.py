@@ -32,9 +32,9 @@ class TranslationEditRate(Metric):
     - ``preds`` (:class:`~Sequence`): An iterable of hypothesis corpus
     - ``target`` (:class:`~Sequence`): An iterable of iterables of reference corpus
 
-    As output of ``forward`` and ``compute`` the metric returns the following output: 
-    
-    - ``ter`` (:class:`~torch.Tensor`): if ``return_sentence_level_score=True`` return a corpus-level translation 
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``ter`` (:class:`~torch.Tensor`): if ``return_sentence_level_score=True`` return a corpus-level translation
       edit rate with a list of sentence-level translation_edit_rate, else return a corpus-level translation edit rate
 
     Args:

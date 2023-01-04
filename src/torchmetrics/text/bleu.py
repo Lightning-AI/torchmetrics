@@ -33,8 +33,8 @@ class BLEUScore(Metric):
     - ``preds`` (:class:`~Sequence`): An iterable of machine translated corpus
     - ``target`` (:class:`~Sequence`): An iterable of iterables of reference corpus
 
-    As output of ``forward`` and ``update`` the metric returns the following output: 
-    
+    As output of ``forward`` and ``update`` the metric returns the following output:
+
     - ``bleu`` (:class:`~torch.Tensor`): A tensor with the BLEU Score
 
     Args:

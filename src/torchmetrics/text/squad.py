@@ -32,7 +32,7 @@ class SQuAD(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    -  ``preds`` (:class:`~Dict`): A Dictionary or List of Dictionary-s that map ``id`` and ``prediction_text`` to 
+    -  ``preds`` (:class:`~Dict`): A Dictionary or List of Dictionary-s that map ``id`` and ``prediction_text`` to
        the respective values
 
        Example ``prediction``:
@@ -41,10 +41,10 @@ class SQuAD(Metric):
 
                     {"prediction_text": "TorchMetrics is awesome", "id": "123"}
 
-    
-    - ``target`` (:class:`~Dict`): A Dictionary or List of Dictionary-s that contain the ``answers`` and ``id`` in 
+
+    - ``target`` (:class:`~Dict`): A Dictionary or List of Dictionary-s that contain the ``answers`` and ``id`` in
       the SQuAD Format.
-        
+
         Example ``target``:
 
         .. code-block:: python
@@ -66,8 +66,8 @@ class SQuAD(Metric):
                 'title': 'train test'
             }
 
-    As output of ``forward`` and ``compute`` the metric returns the following output: 
-    
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
     -  ``squad`` (:class:`~Dict`): A dictionary containing the F1 score (key: "f1"), and Exact match score (key: "exact_match") for the batch.
 
     Args:

@@ -36,12 +36,12 @@ class ROUGEScore(Metric):
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
     - ``preds`` (:class:`~Sequence`): An iterable of predicted sentences or a single predicted sentence
-    - ``target`` (:class:`~Sequence`): An iterable of target sentences 
-      or an iterable of interables of target sentences 
+    - ``target`` (:class:`~Sequence`): An iterable of target sentences
+      or an iterable of interables of target sentences
       or a single target sentence
 
-    As output of ``forward`` and ``compute`` the metric returns the following output: 
-    
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
     - ``rouge`` (:class:`~Dict`): A dictionary of tensor rouge scores for each input str rouge key
 
     Args:

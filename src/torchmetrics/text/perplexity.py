@@ -29,8 +29,8 @@ class Perplexity(Metric):
     - ``preds`` (:class:`~torch.Tensor`): Probabilities assigned to each token in a sequence with shape [batch_size, seq_len, vocab_size]
     - ``target`` (:class:`~torch.Tensor`): Ground truth values with a shape [batch_size, seq_len]
 
-    As output of ``forward`` and ``compute`` the metric returns the following output: 
-    
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
     - ``perp`` (:class:`~torch.Tensor`): A tensor with the perplexity score
 
     Args:

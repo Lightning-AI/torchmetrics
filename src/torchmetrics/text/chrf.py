@@ -55,9 +55,9 @@ class CHRFScore(Metric):
     - ``preds`` (:class:`~Sequence`): An iterable of hypothesis corpus
     - ``target`` (:class:`~Sequence`): An iterable of iterables of reference corpus
 
-    As output of ``forward`` and ``compute`` the metric returns the following output: 
-    
-    - ``chrf`` (:class:`~torch.Tensor`): If `return_sentence_level_score=True` return a list of sentence-level 
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``chrf`` (:class:`~torch.Tensor`): If `return_sentence_level_score=True` return a list of sentence-level
       chrF/chrF++ scores, else return a corpus-level chrF/chrF++ score
 
     Args:

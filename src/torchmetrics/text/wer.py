@@ -43,8 +43,8 @@ class WordErrorRate(Metric):
     - ``preds`` (:class:`~List`): Transcription(s) to score as a string or list of strings
     - ``target`` (:class:`~List`): Reference(s) for each speech input as a string or list of strings
 
-    As output of ``forward`` and ``compute`` the metric returns the following output: 
-    
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
     -  ``wer`` (:class:`~torch.Tensor`): A tensor with the Word Error Rate score
 
     Args:

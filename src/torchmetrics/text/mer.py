@@ -37,14 +37,14 @@ class MatchErrorRate(Metric):
         - :math:`I` is the number of insertions,
         - :math:`C` is the number of correct words,
         - :math:`N` is the number of words in the reference (:math:`N=S+D+C`).
-    
+
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
     - ``preds`` (:class:`~List`): Transcription(s) to score as a string or list of strings
     - ``target`` (:class:`~List`): Reference(s) for each speech input as a string or list of strings
 
-    As output of ``forward`` and ``compute`` the metric returns the following output: 
-    
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
     - ``mer`` (:class:`~torch.Tensor`): A tensor with the match error rate
 
     Args:
