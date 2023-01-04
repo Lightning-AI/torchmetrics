@@ -32,10 +32,14 @@ class MeanSquaredError(Metric):
 
     Where :math:`y` is a tensor of target values, and :math:`\hat{y}` is a tensor of predictions.
 
-    As input to 'forward' and 'update' the metric accepts the following input:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds``: Predictions from model
-    - ``target``: Ground truth values
+    - ``preds`` (:class:`~torch.Tensor`): Predictions from model
+    - ``target`` (:class:`~torch.Tensor`): Ground truth values
+
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``mean_squared_error`` (:class:`~torch.Tensor`): A tensor with the mean squared error
 
     Args:
         squared: If True returns MSE value, if False returns RMSE value.

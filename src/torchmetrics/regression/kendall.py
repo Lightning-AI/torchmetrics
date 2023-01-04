@@ -49,13 +49,15 @@ class KendallRankCorrCoef(Metric):
 
     Definitions according to Definition according to `The Treatment of Ties in Ranking Problems`_.
 
-    As input to 'forward' and 'update' the metric accepts the following input:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (float tensor): Sequence of data of either shape ``(N,)`` or ``(N,d)``
-    - ``target`` (float tensor): Sequence of data of either shape ``(N,)`` or ``(N,d)``
+    - ``preds`` (:class:`~torch.Tensor`): Sequence of data in float tensor of either shape ``(N,)`` or ``(N,d)``
+    - ``target`` (:class:`~torch.Tensor`): Sequence of data in float tensor of either shape ``(N,)`` or ``(N,d)``
 
-    As output of 'forward' and 'compute' the metric returns the correlation tau statistic, and optionally
-    p-value of corresponding statistical test.
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``kendall`` (:class:`~torch.Tensor`): A tensor with the correlation tau statistic, 
+      and if it is not None, the p-value of corresponding statistical test.
 
     Args:
         variant: Indication of which variant of Kendall's tau to be used

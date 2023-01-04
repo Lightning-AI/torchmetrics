@@ -32,10 +32,14 @@ class SpearmanCorrCoef(Metric):
     Spearmans correlations coefficient corresponds to the standard pearsons correlation coefficient calculated
     on the rank variables.
 
-    As input to 'forward' and 'update' the metric accepts the following input:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (float tensor): Predictions from model with shape ``(N,d)``
-    - ``target``(float tensor): Ground truth values with shape ``(N,d)``
+    - ``preds`` (:class:`~torch.Tensor`): Predictions from model in float tensor with shape ``(N,d)``
+    - ``target`` (:class:`~torch.Tensor`): Ground truth values in float tensor with shape ``(N,d)``
+
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``spearman`` (:class:`~torch.Tensor`): A tensor with the spearman correlation(s)
 
     Args:
         num_outputs: Number of outputs in multioutput setting

@@ -31,10 +31,14 @@ class CosineSimilarity(Metric):
 
     where :math:`y` is a tensor of target values, and :math:`x` is a tensor of predictions.
 
-    As input to 'forward' and 'update' the metric accepts the following input:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds``: (float tensor): Predicted tensor with shape ``(N,d)``
-    - ``target``(float tensor): Ground truth tensor with shape ``(N,d)``
+    - ``preds`` (:class:`~torch.Tensor`): Predicted float tensor with shape ``(N,d)``
+    - ``target`` (:class:`~torch.Tensor`): Ground truth float tensor with shape ``(N,d)``
+
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``cosine_similarity`` (:class:`~torch.Tensor`): A float tensor with the cosine similarity
 
     Args:
         reduction: how to reduce over the batch dimension using 'sum', 'mean' or 'none' (taking the individual scores)

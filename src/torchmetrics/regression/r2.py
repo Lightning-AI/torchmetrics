@@ -33,13 +33,19 @@ class R2Score(Metric):
 
     where the parameter :math:`k` (the number of independent regressors) should be provided as the `adjusted` argument.
 
-    As input to 'forward' and 'update' the metric accepts the following input:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (float tensor): Predictions from model with shape ``(N,)`` or ``(N, M)`` (multioutput)
-    - ``target`` (float tensor): Ground truth values with shape ``(N,)`` or ``(N, M)`` (multioutput)
+    - ``preds`` (:class:`~torch.Tensor`): Predictions from model in float tensor with shape ``(N,)`` 
+      or ``(N, M)`` (multioutput)
+    - ``target`` (:class:`~torch.Tensor`): Ground truth values in float tensor with shape ``(N,)`` 
+      or ``(N, M)`` (multioutput)
 
-    In the case of multioutput, as default the variances will be uniformly averaged over the additional dimensions.
-    Please see argument ``multioutput`` for changing this behavior.
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``r2score`` (:class:`~torch.Tensor`): A tensor with the r2 score(s) 
+
+      In the case of multioutput, as default the variances will be uniformly averaged over the additional dimensions.
+      Please see argument ``multioutput`` for changing this behavior.
 
     Args:
         num_outputs: Number of outputs in multioutput setting

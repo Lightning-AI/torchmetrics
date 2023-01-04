@@ -39,15 +39,14 @@ class TweedieDevianceScore(Metric):
     where :math:`y` is a tensor of targets values, :math:`\hat{y}` is a tensor of predictions, and
     :math:`p` is the `power`.
 
-    As input to 'forward' the metric accepts the following input:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (float tensor): ``(N,...)``
-    - ``targets`` (float tensor): ``(N,...)``
+    - ``preds`` (:class:`~torch.Tensor`): Predicted float tensor with shape ``(N,...)``
+    - ``target`` (:class:`~torch.Tensor`): Ground truth float tensor with shape ``(N,...)``
 
-    As input to 'update' the metric accepts the following input:
+    As output of ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``preds``: Predicted tensor with shape ``(N,d)``
-    - ``target``: Ground truth tensor with shape ``(N,d)``
+    - ``deviance_score`` (:class:`~torch.Tensor`): A tensor with the deviance score
 
     Args:
         power:
