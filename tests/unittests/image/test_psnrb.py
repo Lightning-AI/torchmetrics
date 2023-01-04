@@ -23,6 +23,7 @@ from skimage.metrics import (
 )
 
 from torchmetrics.functional import peak_signal_noise_ratio
+from torchmetrics.functional.image.psnrb import peak_signal_noise_ratio_with_blocked_effect
 from torchmetrics.image import PeakSignalNoiseRatioWithBlockedEffect
 from unittests.helpers import seed_all
 from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
@@ -103,7 +104,7 @@ class TestPSNR(MetricTester):
             ddp,
             preds,
             target,
-            PeakSignalNoiseRatiowithBlockedEffect,
+            PeakSignalNoiseRatioWithBlockedEffect,
             partial(ref_metric, data_range=data_range, reduction=reduction, dim=dim),
             metric_args=_args,
             dist_sync_on_step=dist_sync_on_step,
@@ -134,7 +135,7 @@ class TestPSNR(MetricTester):
         self.run_precision_test_gpu(
             preds,
             target,
-            PeakSignalNoiseRatioWithBlockedEfect,
+            PeakSignalNoiseRatioWithBlockedEffect,
             peak_signal_noise_ratio,
             {"data_range": data_range, "base": base, "reduction": reduction, "dim": dim},
         )
@@ -144,10 +145,10 @@ class TestPSNR(MetricTester):
 def test_reduction_for_dim_none(reduction):
     match = f"The `reduction={reduction}` will not have any effect when `dim` is None."
     with pytest.warns(UserWarning, match=match):
-        PeakSignalNoiseRatiowithBlockedEffect(reduction=reduction, dim=None)
+        PeakSignalNoiseRatioWithBlockedEffect(reduction=reduction, dim=None)
 
     with pytest.warns(UserWarning, match=match):
-        peak_signal_noise_ratio_with_blocked_Effect(_inputs[0].preds, _inputs[0].target, reduction=reduction, dim=None)
+        peak_signal_noise_ratio_with_blocked_effect(_inputs[0].preds, _inputs[0].target, reduction=reduction, dim=None)
 
 
 def test_missing_data_range():
@@ -155,4 +156,4 @@ def test_missing_data_range():
         PeakSignalNoiseRatioWithBlockedEffect(data_range=None, dim=0)
 
     with pytest.raises(ValueError):
-        peak_signal_noise_ratio_with_Blocked_Effect(_inputs[0].preds, _inputs[0].target, data_range=None, dim=0)
+        peak_signal_noise_ratio_with_blocked_effect(_inputs[0].preds, _inputs[0].target, data_range=None, dim=0)
