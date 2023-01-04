@@ -25,6 +25,16 @@ from torchmetrics.utilities.data import dim_zero_cat
 class StructuralSimilarityIndexMeasure(Metric):
     """Computes Structual Similarity Index Measure (SSIM_).
 
+    As input to ``forward`` and ``update`` the metric accepts the following input
+
+    - ``preds`` (:class:`~torch.Tensor`): Predictions from model
+    - ``target`` (:class:`~torch.Tensor`): Ground truth values
+
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``ssim`` (:class:`~torch.Tensor`): if ``reduction!='none'`` returns float scalar tensor with average SSIM value
+      over sample else returns tensor of shape ``(N,)`` with SSIM values per sample
+
     Args:
         preds: estimated image
         target: ground truth image
@@ -48,9 +58,6 @@ class StructuralSimilarityIndexMeasure(Metric):
             The luminance term can be obtained with luminance=ssim/contrast
             Mutually exclusive with ``return_full_image``
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
-
-    Return:
-        Tensor with SSIM score
 
     Example:
         >>> from torchmetrics import StructuralSimilarityIndexMeasure
@@ -109,12 +116,7 @@ class StructuralSimilarityIndexMeasure(Metric):
         self.return_contrast_sensitivity = return_contrast_sensitivity
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
+        """Update state with predictions and targets."""
         preds, target = _ssim_check_inputs(preds, target)
         similarity_pack = _ssim_update(
             preds,
@@ -163,6 +165,16 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
     """Computes `MultiScaleSSIM`_, Multi-scale Structural Similarity Index Measure, which is a generalization of
     Structural Similarity Index Measure by incorporating image details at different resolution scores.
 
+    As input to ``forward`` and ``update`` the metric accepts the following input
+
+    - ``preds`` (:class:`~torch.Tensor`): Predictions from model
+    - ``target`` (:class:`~torch.Tensor`): Ground truth values
+
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``msssim`` (: :class:`~torch.Tensor`): if ``reduction!='none'`` returns float scalar tensor with average MSSSIM
+      value over sample else returns tensor of shape ``(N,)`` with SSIM values per sample
+
     Args:
         gaussian_kernel: If ``True`` (default), a gaussian kernel is used, if false a uniform kernel is used
         kernel_size: size of the gaussian kernel
@@ -202,10 +214,6 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         >>> ms_ssim = MultiScaleStructuralSimilarityIndexMeasure(data_range=1.0)
         >>> ms_ssim(preds, target)
         tensor(0.9627)
-
-    References:
-        [1] Multi-Scale Structural Similarity For Image Quality Assessment by Zhou Wang, Eero P. Simoncelli and Alan C.
-        Bovik `MultiScaleSSIM`_
     """
 
     higher_is_better: bool = True
@@ -270,12 +278,7 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         self.normalize = normalize
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model of shape ``[N, C, H, W]``
-            target: Ground truth values of shape ``[N, C, H, W]``
-        """
+        """Update state with predictions and targets."""
         preds, target = _ssim_check_inputs(preds, target)
         similarity = _multiscale_ssim_update(
             preds,

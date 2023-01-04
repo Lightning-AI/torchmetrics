@@ -25,6 +25,16 @@ from torchmetrics.utilities.data import dim_zero_cat
 class UniversalImageQualityIndex(Metric):
     """Computes Universal Image Quality Index (UniversalImageQualityIndex_).
 
+    As input to ``forward`` and ``update`` the metric accepts the following input
+
+    - ``preds`` (:class:`~torch.Tensor`): Predictions from model of shape ``(N,C,H,W)``
+    - ``target`` (:class:`~torch.Tensor`): Ground truth values of shape ``(N,C,H,W)``
+
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``uiqi`` (:class:`~torch.Tensor`): if ``reduction!='none'`` returns float scalar tensor with average UIQI value
+      over sample else returns tensor of shape ``(N,)`` with UIQI values per sample
+
     Args:
         kernel_size: size of the gaussian kernel
         sigma: Standard deviation of the gaussian kernel
@@ -81,12 +91,7 @@ class UniversalImageQualityIndex(Metric):
         self.reduction = reduction
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
+        """Update state with predictions and targets."""
         preds, target = _uqi_update(preds, target)
         self.preds.append(preds)
         self.target.append(target)

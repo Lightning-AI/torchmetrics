@@ -30,7 +30,6 @@ class TestMatchErrorRate(TextTester):
     @pytest.mark.parametrize("ddp", [False, True])
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
     def test_mer_class(self, ddp, dist_sync_on_step, preds, targets):
-
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -41,7 +40,6 @@ class TestMatchErrorRate(TextTester):
         )
 
     def test_mer_functional(self, preds, targets):
-
         self.run_functional_metric_test(
             preds,
             targets,
@@ -50,7 +48,6 @@ class TestMatchErrorRate(TextTester):
         )
 
     def test_mer_differentiability(self, preds, targets):
-
         self.run_differentiability_test(
             preds=preds,
             targets=targets,
