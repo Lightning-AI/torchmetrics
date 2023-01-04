@@ -56,7 +56,7 @@ class KendallRankCorrCoef(Metric):
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``kendall`` (:class:`~torch.Tensor`): A tensor with the correlation tau statistic, 
+    - ``kendall`` (:class:`~torch.Tensor`): A tensor with the correlation tau statistic,
       and if it is not None, the p-value of corresponding statistical test.
 
     Args:

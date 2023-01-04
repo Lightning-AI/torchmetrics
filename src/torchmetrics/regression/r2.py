@@ -35,14 +35,14 @@ class R2Score(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~torch.Tensor`): Predictions from model in float tensor with shape ``(N,)`` 
+    - ``preds`` (:class:`~torch.Tensor`): Predictions from model in float tensor with shape ``(N,)``
       or ``(N, M)`` (multioutput)
-    - ``target`` (:class:`~torch.Tensor`): Ground truth values in float tensor with shape ``(N,)`` 
+    - ``target`` (:class:`~torch.Tensor`): Ground truth values in float tensor with shape ``(N,)``
       or ``(N, M)`` (multioutput)
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``r2score`` (:class:`~torch.Tensor`): A tensor with the r2 score(s) 
+    - ``r2score`` (:class:`~torch.Tensor`): A tensor with the r2 score(s)
 
 
       Note: In the case of multioutput, as default the variances will be uniformly averaged over the additional dimensions.

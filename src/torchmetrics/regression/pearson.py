@@ -70,12 +70,12 @@ class PearsonCorrCoef(Metric):
         P_{corr}(x,y) = \frac{cov(x,y)}{\sigma_x \sigma_y}
 
     Where :math:`y` is a tensor of target values, and :math:`x` is a tensor of predictions.
-    
+
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~torch.Tensor`): either single output float tensor with shape ``(N,)`` 
+    - ``preds`` (:class:`~torch.Tensor`): either single output float tensor with shape ``(N,)``
       or multioutput float tensor of shape ``(N,d)``
-    - ``target`` (:class:`~torch.Tensor`): either single output tensor with shape ``(N,)`` 
+    - ``target`` (:class:`~torch.Tensor`): either single output tensor with shape ``(N,)``
       or multioutput tensor of shape ``(N,d)``
 
     As output of ``forward`` and ``compute`` the metric returns the following output:

@@ -32,7 +32,7 @@ class ExplainedVariance(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~torch.Tensor`): Predictions from model in float tensor 
+    - ``preds`` (:class:`~torch.Tensor`): Predictions from model in float tensor
       with shape ``(N,)`` or ``(N, ...)`` (multioutput)
     - ``target`` (:class:`~torch.Tensor`): Ground truth values in long tensor
       with shape ``(N,)`` or ``(N, ...)`` (multioutput)
@@ -40,7 +40,7 @@ class ExplainedVariance(Metric):
     As output of ``forward`` and ``compute`` the metric returns the following output:
 
     - ``explained_variance`` (:class:`~torch.Tensor`): A tensor with the explained variance(s)
-      
+
       In the case of multioutput, as default the variances will be uniformly averaged over the additional dimensions.
       Please see argument ``multioutput`` for changing this behavior.
 
