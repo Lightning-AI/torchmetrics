@@ -44,9 +44,6 @@ class ExtendedEditDistance(Metric):
         insertion: penalty for insertion or substitution of character
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    Return:
-        Extended edit distance score as a tensor
-
     Example:
         >>> from torchmetrics import ExtendedEditDistance
         >>> preds = ["this is the prediction", "here is an other sample"]

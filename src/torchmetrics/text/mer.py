@@ -37,7 +37,7 @@ class MatchErrorRate(Metric):
         - :math:`I` is the number of insertions,
         - :math:`C` is the number of correct words,
         - :math:`N` is the number of words in the reference (:math:`N=S+D+C`).
-
+    
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
     - ``preds`` (:class:`~Union`): Transcription(s) to score as a string or list of strings
@@ -49,9 +49,6 @@ class MatchErrorRate(Metric):
 
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
-
-    Returns:
-        Match error rate score
 
     Examples:
         >>> preds = ["this is the prediction", "there is an other sample"]

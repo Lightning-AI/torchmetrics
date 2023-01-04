@@ -55,7 +55,7 @@ class SacreBLEUScore(BLEUScore):
             Weights used for unigrams, bigrams, etc. to calculate BLEU score.
             If not provided, uniform weights are used.
 
-     Raises:
+    Raises:
         ValueError:
             If ``tokenize`` not one of 'none', '13a', 'zh', 'intl' or 'char'
         ValueError:

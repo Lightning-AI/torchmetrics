@@ -33,13 +33,16 @@ class SQuAD(Metric):
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
     -  ``preds`` (:class:`~Union`): A Dictionary or List of Dictionary-s that map ``id`` and ``prediction_text`` to the respective values
-        Example ``prediction``:
+
+       Example ``prediction``:
 
                 .. code-block:: python
 
                     {"prediction_text": "TorchMetrics is awesome", "id": "123"}
 
-    - ``target`` (:class:`~Union`): A Dictionary or List of Dictionary-s that contain the ``answers`` and ``id`` in the SQuAD Format.
+    
+    -  ``target`` (:class:`~Union`): A Dictionary or List of Dictionary-s that contain the ``answers`` and ``id`` in the SQuAD Format.
+        
         Example ``target``:
 
         .. code-block:: python

@@ -37,8 +37,8 @@ class ROUGEScore(Metric):
 
     - ``preds`` (:class:`~Union`): An iterable of predicted sentences or a single predicted sentence
     - ``target`` (:class:`~Union`): An iterable of target sentences 
-                                    or an iterable of interables of target sentences 
-                                    or a single target sentence
+      or an iterable of interables of target sentences 
+      or a single target sentence
 
     As output of ``forward`` and ``compute`` the metric returns the following output: 
     
