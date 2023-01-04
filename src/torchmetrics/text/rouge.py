@@ -42,7 +42,7 @@ class ROUGEScore(Metric):
 
     As output of ``forward`` and ``compute`` the metric returns the following output: 
     
-    -  ``rouge`` (:class:`~Dict`): A dictionary of tensor rouge scores for each input str rouge key
+    - ``rouge`` (:class:`~Dict`): A dictionary of tensor rouge scores for each input str rouge key
 
     Args:
         use_stemmer: Use Porter stemmer to strip word suffixes to improve matching.

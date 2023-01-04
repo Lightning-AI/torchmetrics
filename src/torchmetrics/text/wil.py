@@ -42,7 +42,7 @@ class WordInfoLost(Metric):
 
     As output of ``forward`` and ``compute`` the metric returns the following output: 
     
-    -  ``wil`` (:class:`~torch.Tensor`): A tensor with the Word Information Lost score
+    - ``wil`` (:class:`~torch.Tensor`): A tensor with the Word Information Lost score
 
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.

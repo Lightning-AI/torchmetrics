@@ -42,7 +42,7 @@ class SacreBLEUScore(BLEUScore):
 
     As output of ``forward`` and ``compute`` the metric returns the following output: 
     
-    -  ``sacre_bleu`` (:class:`~torch.Tensor`): A tensor with the SacreBLEU Score
+    - ``sacre_bleu`` (:class:`~torch.Tensor`): A tensor with the SacreBLEU Score
 
     Args:
         n_gram: Gram value ranged from 1 to 4

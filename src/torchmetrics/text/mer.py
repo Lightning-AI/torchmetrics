@@ -45,7 +45,7 @@ class MatchErrorRate(Metric):
 
     As output of ``forward`` and ``compute`` the metric returns the following output: 
     
-    -  ``mer`` (:class:`~torch.Tensor`): A tensor with the match error rate
+    - ``mer`` (:class:`~torch.Tensor`): A tensor with the match error rate
 
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.

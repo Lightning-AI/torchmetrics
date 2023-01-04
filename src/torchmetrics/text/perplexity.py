@@ -31,7 +31,7 @@ class Perplexity(Metric):
 
     As output of ``forward`` and ``compute`` the metric returns the following output: 
     
-    -  ``perp`` (:class:`~torch.Tensor`): A tensor with the perplexity score
+    - ``perp`` (:class:`~torch.Tensor`): A tensor with the perplexity score
 
     Args:
         ignore_index:

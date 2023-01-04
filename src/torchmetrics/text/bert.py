@@ -54,7 +54,8 @@ class BERTScore(Metric):
 
     As output of ``forward`` and ``compute`` the metric returns the following output: 
 
-    - ``score`` (:class:`~Dict`): A dictionary containing the keys ``precision``, ``recall`` and ``f1`` with corresponding values
+    - ``score`` (:class:`~Dict`): A dictionary containing the keys ``precision``, ``recall`` and ``f1`` with 
+      corresponding values
 
     Args:
         preds: An iterable of predicted sentences.

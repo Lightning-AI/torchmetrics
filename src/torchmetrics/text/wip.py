@@ -43,7 +43,7 @@ class WordInfoPreserved(Metric):
 
     As output of ``forward`` and ``compute`` the metric returns the following output: 
     
-    -  ``wip`` (:class:`~torch.Tensor`): A tensor with the Word Information Preserved score
+    - ``wip`` (:class:`~torch.Tensor`): A tensor with the Word Information Preserved score
 
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.

@@ -34,7 +34,8 @@ class TranslationEditRate(Metric):
 
     As output of ``forward`` and ``compute`` the metric returns the following output: 
     
-    -  ``ter`` (:class:`~torch.Tensor`): if ``return_sentence_level_score=True`` return a corpus-level translation edit rate with a list of sentence-level translation_edit_rate, else return a corpus-level translation edit rate
+    - ``ter`` (:class:`~torch.Tensor`): if ``return_sentence_level_score=True`` return a corpus-level translation 
+      edit rate with a list of sentence-level translation_edit_rate, else return a corpus-level translation edit rate
 
     Args:
         normalize: An indication whether a general tokenization to be applied.

@@ -33,7 +33,7 @@ class ExtendedEditDistance(Metric):
 
     As output of ``forward`` and ``compute`` the metric returns the following output: 
     
-    -  ``eed`` (:class:`~torch.Tensor`): A tensor with the extended edit distance score
+    - ``eed`` (:class:`~torch.Tensor`): A tensor with the extended edit distance score
 
     Args:
         language: Language used in sentences. Only supports English (en) and Japanese (ja) for now.
