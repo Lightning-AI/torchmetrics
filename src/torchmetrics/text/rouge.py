@@ -35,8 +35,8 @@ class ROUGEScore(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~Union`): An iterable of predicted sentences or a single predicted sentence
-    - ``target`` (:class:`~Union`): An iterable of target sentences 
+    - ``preds`` (:class:`~Sequence`): An iterable of predicted sentences or a single predicted sentence
+    - ``target`` (:class:`~Sequence`): An iterable of target sentences 
       or an iterable of interables of target sentences 
       or a single target sentence
 

@@ -44,8 +44,8 @@ class CharErrorRate(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~Union`): Transcription(s) to score as a string or list of strings
-    - ``target`` (:class:`~Union`): Reference(s) for each speech input as a string or list of strings
+    - ``preds`` (:class:`~str`): Transcription(s) to score as a string or list of strings
+    - ``target`` (:class:`~str`): Reference(s) for each speech input as a string or list of strings
 
     As output of ``forward`` and ``compute`` the metric returns the following output: 
     

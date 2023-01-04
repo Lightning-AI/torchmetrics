@@ -57,8 +57,8 @@ class InfoLM(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~Union`): An iterable of hypothesis corpus
-    - ``target`` (:class:`~Union`): An iterable of reference corpus
+    - ``preds`` (:class:`~Sequence`): An iterable of hypothesis corpus
+    - ``target`` (:class:`~Sequence`): An iterable of reference corpus
     
     As output of ``forward`` and ``compute`` the metric returns the following output: 
     

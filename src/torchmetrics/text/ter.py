@@ -29,7 +29,7 @@ class TranslationEditRate(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~Union`): An iterable of hypothesis corpus
+    - ``preds`` (:class:`~Sequence`): An iterable of hypothesis corpus
     - ``target`` (:class:`~Sequence`): An iterable of iterables of reference corpus
 
     As output of ``forward`` and ``compute`` the metric returns the following output: 
