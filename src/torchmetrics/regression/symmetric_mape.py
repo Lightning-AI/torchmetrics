@@ -36,7 +36,7 @@ class SymmetricMeanAbsolutePercentageError(Metric):
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``smape`` (:class:`~torch.Tensor`): A tensor with the non-negative floating point smape value between 0 and 1
+    - ``smape`` (:class:`~torch.Tensor`): A tensor with non-negative floating point smape value between 0 and 1
 
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.

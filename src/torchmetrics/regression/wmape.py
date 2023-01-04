@@ -39,7 +39,7 @@ class WeightedMeanAbsolutePercentageError(Metric):
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``wmape`` (:class:`~torch.Tensor`): A tensor with the non-negative floating point wmape value between 0 and 1
+    - ``wmape`` (:class:`~torch.Tensor`): A tensor with non-negative floating point wmape value between 0 and 1
 
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.

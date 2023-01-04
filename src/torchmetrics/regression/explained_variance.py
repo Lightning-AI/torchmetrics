@@ -35,7 +35,7 @@ class ExplainedVariance(Metric):
     - ``preds`` (:class:`~torch.Tensor`): Predictions from model in float tensor 
       with shape ``(N,)`` or ``(N, ...)`` (multioutput)
     - ``target`` (:class:`~torch.Tensor`): Ground truth values in long tensor
-       with shape ``(N,)`` or ``(N, ...)`` (multioutput)
+      with shape ``(N,)`` or ``(N, ...)`` (multioutput)
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
 
