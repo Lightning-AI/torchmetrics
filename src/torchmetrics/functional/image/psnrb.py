@@ -19,76 +19,70 @@ from typing_extensions import Literal
 
 from torchmetrics.utilities import rank_zero_warn, reduce
 
-def _compute_bef(self,
-                target: Tensor,
-                dim: Optional[Union[int, Tuple[int, ...]]] = None,
-                block_size=8) -> Tuple[Tensor, Tensor]:
 
-	if dim == 3:
-		height, width, channels = target.Size
-	elif dim == 2:
-		height, width = target.Size
-		channels = 1
-	else:
-		raise ValueError("Not a 1-channel/3-channel grayscale image")
+def _compute_bef(
+    self, target: Tensor, dim: Optional[Union[int, Tuple[int, ...]]] = None, block_size=8
+) -> Tuple[Tensor, Tensor]:
 
-	if channels > 1:
-		raise ValueError("Not for color images")
+    if dim == 3:
+        height, width, channels = target.Size
+    elif dim == 2:
+        height, width = target.Size
+        channels = 1
+    else:
+        raise ValueError("Not a 1-channel/3-channel grayscale image")
 
-	h = torch.tensor(range(0, width - 1))
-	h_b = torch.tensor(range(block_size - 1, width - 1, block_size))
-	h_bc = torch.tensor(list(set(h).symmetric_difference(h_b)))
+    if channels > 1:
+        raise ValueError("Not for color images")
 
-	v = torch.tensor(range(0, height - 1))
-	v_b = torch.tensor(range(block_size - 1, height - 1, block_size))
-	v_bc = torch.tensor(list(set(v).symmetric_difference(v_b)))
+    h = torch.arange(width - 1)
+    h_b = torch.tensor(range(block_size - 1, width - 1, block_size))
+    h_bc = torch.tensor(list(set(h).symmetric_difference(h_b)))
 
-	d_b = 0
-	d_bc = 0
+    h = torch.arange(height - 1)
+    v_b = torch.tensor(range(block_size - 1, height - 1, block_size))
+    v_bc = torch.tensor(list(set(v).symmetric_difference(v_b)))
 
-	# h_b for loop
-	for i in list(h_b):
-		diff = target[:, i] - target[:, i+1]
-		d_b += torch.sum(torch.square(diff))
+    d_b = 0
+    d_bc = 0
 
-	# h_bc for loop
-	for i in list(h_bc):
-		diff = target[:, i] - target[:, i+1]
-		d_bc += torch.sum(torch.square(diff))
+    # h_b for loop
+    for i in list(h_b):
+        diff = target[:, i] - target[:, i + 1]
+        d_b += torch.sum(torch.square(diff))
 
-	# v_b for loop
-	for j in list(v_b):
-		diff = target[j, :] - target[j+1, :]
-		d_b += torch.sum(torch.square(diff))
+    # h_bc for loop
+    for i in list(h_bc):
+        diff = target[:, i] - target[:, i + 1]
+        d_bc += torch.sum(torch.square(diff))
 
-	# V_bc for loop
-	for j in list(v_bc):
-		diff = target[j, :] - target[j+1, :]
-		d_bc += torch.sum(tensor.square(diff))
+    # v_b for loop
+    for j in list(v_b):
+        diff = target[j, :] - target[j + 1, :]
+        d_b += torch.sum(torch.square(diff))
 
-	# N code
-	n_hb = height * (width/block_size) - 1
-	n_hbc = (height * (width - 1)) - n_hb
-	n_vb = width * (height/block_size) - 1
-	n_vbc = (width * (height - 1)) - n_vb
+    # V_bc for loop
+    for j in list(v_bc):
+        diff = target[j, :] - target[j + 1, :]
+        d_bc += torch.sum(tensor.square(diff))
 
-	# D code
-	d_b /= (n_hb + n_vb)
-	d_bc /= (n_hbc + n_vbc)
+    # N code
+    n_hb = height * (width / block_size) - 1
+    n_hbc = (height * (width - 1)) - n_hb
+    n_vb = width * (height / block_size) - 1
+    n_vbc = (width * (height - 1)) - n_vb
 
-	# Log
-	if d_b > d_bc:
-		t = torch.log2(block_size)/torch.log2(min(height, width))
-	else:
-		t = 0
+    # D code
+    d_b /= n_hb + n_vb
+    d_bc /= n_hbc + n_vbc
 
-	# BEF
-	bef = t*(d_b - d_bc)
+    # Log
+    t = torch.log2(block_size) / torch.log2(min(height, width)) if d_b > d_bc else 0
 
-	return bef
+    # BEF
+    bef = t * (d_b - d_bc)
 
-
-
+    return bef
 
 def _psnr_compute(
     sum_squared_error: Tensor,

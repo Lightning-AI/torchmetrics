@@ -18,10 +18,12 @@ from functools import partial
 import numpy as np
 import pytest
 import torch
-from skimage.metrics import peak_signal_noise_ratio as skimage_peak_signal_noise_ratio
+from skimage.metrics import (
+    peak_signal_noise_ratio_with_blocked_effect as skimage_peak_signal_noise_ratio_with_blocked_effect,
+)
 
 from torchmetrics.functional import peak_signal_noise_ratio
-from torchmetrics.image import PeakSignalNoiseRatio
+from torchmetrics.image import PeakSignalNoiseRatioWithBlockedEffect
 from unittests.helpers import seed_all
 from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 
@@ -64,7 +66,7 @@ def _skimage_psnr(preds, target, data_range, reduction, dim):
     np_reduce_map = {"elementwise_mean": np.mean, "none": np.array, "sum": np.sum}
     return np_reduce_map[reduction](
         [
-            skimage_peak_signal_noise_ratio(sk_target, sk_preds, data_range=data_range)
+            skimage_peak_signal_noise_ratio_with_blocked_effect(sk_target, sk_preds, data_range=data_range)
             for sk_target, sk_preds in zip(sk_target_lists, sk_preds_lists)
         ]
     )
@@ -123,8 +125,7 @@ class TestPSNR(MetricTester):
         self.run_precision_test_cpu(
             preds,
             target,
-            PeakSignalNoiseRatiowith BlockedEffect,
-            peak_signal_noise_ratio_with_Blocked_Effect,
+            peak_signal_noise_ratio_with_blocked_effect,
             {"data_range": data_range, "base": base, "reduction": reduction, "dim": dim},
         )
 

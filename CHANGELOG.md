@@ -797,3 +797,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added EMB similarity ([PL^3349](https://github.com/Lightning-AI/lightning/pull/3349))
 - Added SSIM metrics ([PL^2671](https://github.com/Lightning-AI/lightning/pull/2671))
 - Added BLEU metrics ([PL^2535](https://github.com/Lightning-AI/lightning/pull/2535))
+- Added  PSNRB metrics ([PL^1421](https://github.com/Lightning-AI/metrics/pull/1421)
