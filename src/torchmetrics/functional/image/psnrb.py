@@ -61,7 +61,6 @@ def _compute_bef(
     diff = torch.gather(0, v_bc.unsqueeze(0)) - torch.gather(0, v_b.unsqueeze(0))
     d_bc += torch.sum(torch.square(diff))
 
-
     # N code
     n_hb = height * (width / block_size) - 1
     n_hbc = (height * (width - 1)) - n_hb
