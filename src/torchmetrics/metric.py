@@ -120,7 +120,8 @@ class Metric(Module, ABC):
             )
 
         if kwargs:
-            raise ValueError("Unexpected keyword arguments: " + " ".join(sorted(kwargs)))
+            kwargs_ = [f'`{a}`' for a in sorted(kwargs)]
+            raise ValueError(f"Unexpected keyword arguments: {', '.join(kwargs_)}")
 
         # initialize
         self._update_signature = inspect.signature(self.update)
