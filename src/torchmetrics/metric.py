@@ -120,7 +120,7 @@ class Metric(Module, ABC):
             )
 
         if kwargs:
-            kwargs_ = [f'`{a}`' for a in sorted(kwargs)]
+            kwargs_ = [f"`{a}`" for a in sorted(kwargs)]
             raise ValueError(f"Unexpected keyword arguments: {', '.join(kwargs_)}")
 
         # initialize
