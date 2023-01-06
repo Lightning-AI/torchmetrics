@@ -68,7 +68,8 @@ class SQuAD(Metric):
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
 
-    -  ``squad`` (:class:`~Dict`): A dictionary containing the F1 score (key: "f1"), and Exact match score (key: "exact_match") for the batch.
+    -  ``squad`` (:class:`~Dict`): A dictionary containing the F1 score (key: "f1"),
+        and Exact match score (key: "exact_match") for the batch.
 
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.

@@ -26,7 +26,8 @@ class Perplexity(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~torch.Tensor`): Probabilities assigned to each token in a sequence with shape [batch_size, seq_len, vocab_size]
+    - ``preds`` (:class:`~torch.Tensor`): Probabilities assigned to each token in a sequence with shape
+        [batch_size, seq_len, vocab_size]
     - ``target`` (:class:`~torch.Tensor`): Ground truth values with a shape [batch_size, seq_len]
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
@@ -34,9 +35,8 @@ class Perplexity(Metric):
     - ``perp`` (:class:`~torch.Tensor`): A tensor with the perplexity score
 
     Args:
-        ignore_index:
-            Integer specifying a target class to ignore. If given, this class index does not contribute
-            to the returned score.
+        ignore_index: Integer specifying a target class to ignore.
+            If given, this class index does not contribute to the returned score.
         kwargs:
             Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
