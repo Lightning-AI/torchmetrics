@@ -93,5 +93,36 @@
 .. _AB divergence: https://pdfs.semanticscholar.org/744b/1166de34cb099100f151f3b1459f141ae25b.pdf
 .. _Rényi divergence: https://static.renyi.hu/renyi_cikkek/1961_on_measures_of_entropy_and_information.pdf
 .. _Fisher-Rao distance: http://www.scholarpedia.org/article/Fisher-Rao_metric
+.. _Cramer's V: https://en.wikipedia.org/wiki/Cram%C3%A9r%27s_V
 .. _Kendall Rank Correlation Coefficient: https://en.wikipedia.org/wiki/Kendall_rank_correlation_coefficient
 .. _The Treatment of Ties in Ranking Problems: https://www.jstor.org/stable/2332303
+.. _LogCosh Error: https://arxiv.org/pdf/2101.10427.pdf
+.. _Tschuprow's T: https://en.wikipedia.org/wiki/Tschuprow%27s_T
+.. _Pearson's Contingency Coefficient: https://www.itl.nist.gov/div898/software/dataplot/refman2/auxillar/pearcont.htm
+.. _CLIP score: https://arxiv.org/pdf/2104.08718.pdf
+.. _Huggingface OpenAI: https://huggingface.co/openai
+.. _Theil's U: https://en.wikipedia.org/wiki/Uncertainty_coefficient
+.. _Perceptual Evaluation of Speech Quality: https://en.wikipedia.org/wiki/Perceptual_Evaluation_of_Speech_Quality
+.. _pesq package: https://github.com/ludlows/python-pesq
+.. _Cees Taal's website: http://www.ceestaal.nl/code/
+.. _pystoi package: https://github.com/mpariente/pystoi
+.. _stoi ref1: https://ieeexplore.ieee.org/document/5495701
+.. _stoi ref2: https://ieeexplore.ieee.org/document/5713237
+.. _stoi ref3: https://ieeexplore.ieee.org/document/7539284
+.. _sdr ref1: https://ieeexplore.ieee.org/document/1643671
+.. _sdr ref2: https://arxiv.org/abs/2110.06440
+.. _Scale-invariant signal-to-distortion ratio: https://arxiv.org/abs/1811.02508
+.. _Scale-invariant signal-to-noise ratio: https://arxiv.org/abs/1711.00541
+.. _Signal-to-noise ratio: https://arxiv.org/abs/1811.02508
+.. _Permutation invariant training: https://arxiv.org/abs/1607.00325
+.. _ranking ref1: https://link.springer.com/chapter/10.1007/978-0-387-09823-4_34
+.. _Spectral Distortion Index: https://www.ingentaconnect.com/content/asprs/pers/2008/00000074/00000002/art00003;jsessionid=nzjnb3v9xxr1.x-ic-live-03
+.. _Relative dimensionless global error synthesis: https://ieeexplore.ieee.org/document/4317530
+.. _fid ref1: https://arxiv.org/abs/1512.00567
+.. _fid ref2: https://arxiv.org/abs/1706.08500
+.. _inception ref1: https://arxiv.org/abs/1606.03498
+.. _inception ref2: https://arxiv.org/abs/1706.08500
+.. _kid ref1: https://arxiv.org/abs/1801.01401
+.. _kid ref2: https://arxiv.org/abs/1706.08500
+.. _Spectral Angle Mapper: https://ntrs.nasa.gov/citations/19940012238
+.. _Multilabel coverage error: https://link.springer.com/chapter/10.1007/978-0-387-09823-4_34

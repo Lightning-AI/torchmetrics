@@ -22,14 +22,11 @@ from torchmetrics.functional.classification.confusion_matrix import (
     _binary_confusion_matrix_format,
     _binary_confusion_matrix_tensor_validation,
     _binary_confusion_matrix_update,
-    _confusion_matrix_compute,
-    _confusion_matrix_update,
     _multiclass_confusion_matrix_arg_validation,
     _multiclass_confusion_matrix_format,
     _multiclass_confusion_matrix_tensor_validation,
     _multiclass_confusion_matrix_update,
 )
-from torchmetrics.utilities.prints import rank_zero_warn
 
 
 def _cohen_kappa_reduce(confmat: Tensor, weights: Optional[Literal["linear", "quadratic", "none"]] = None) -> Tensor:
@@ -230,78 +227,17 @@ def multiclass_cohen_kappa(
     return _cohen_kappa_reduce(confmat, weights)
 
 
-_cohen_kappa_update = _confusion_matrix_update
-
-
-def _cohen_kappa_compute(confmat: Tensor, weights: Optional[str] = None) -> Tensor:
-    """Computes Cohen's kappa based on the weighting type.
-
-    Args:
-        confmat: Confusion matrix without normalization
-        weights: Weighting type to calculate the score. Choose from:
-
-            - ``None`` or ``'none'``: no weighting
-            - ``'linear'``: linear weighting
-            - ``'quadratic'``: quadratic weighting
-
-    Example:
-        >>> target = torch.tensor([1, 1, 0, 0])
-        >>> preds = torch.tensor([0, 1, 0, 0])
-        >>> confmat = _cohen_kappa_update(preds, target, num_classes=2)
-        >>> _cohen_kappa_compute(confmat)
-        tensor(0.5000)
-    """
-
-    confmat = _confusion_matrix_compute(confmat)
-    confmat = confmat.float() if not confmat.is_floating_point() else confmat
-    n_classes = confmat.shape[0]
-    sum0 = confmat.sum(dim=0, keepdim=True)
-    sum1 = confmat.sum(dim=1, keepdim=True)
-    expected = sum1 @ sum0 / sum0.sum()  # outer product
-
-    if weights is None:
-        w_mat = torch.ones_like(confmat).flatten()
-        w_mat[:: n_classes + 1] = 0
-        w_mat = w_mat.reshape(n_classes, n_classes)
-    elif weights in ("linear", "quadratic"):
-        w_mat = torch.zeros_like(confmat)
-        w_mat += torch.arange(n_classes, dtype=w_mat.dtype, device=w_mat.device)
-        if weights == "linear":
-            w_mat = torch.abs(w_mat - w_mat.T)
-        else:
-            w_mat = torch.pow(w_mat - w_mat.T, 2.0)
-    else:
-        raise ValueError(
-            f"Received {weights} for argument ``weights`` but should be either" " None, 'linear' or 'quadratic'"
-        )
-
-    k = torch.sum(w_mat * confmat) / torch.sum(w_mat * expected)
-    return 1 - k
-
-
 def cohen_kappa(
     preds: Tensor,
     target: Tensor,
-    num_classes: int,
-    weights: Optional[Literal["linear", "quadratic", "none"]] = None,
+    task: Literal["binary", "multiclass"],
     threshold: float = 0.5,
-    task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+    num_classes: Optional[int] = None,
+    weights: Optional[Literal["linear", "quadratic", "none"]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Cohen's kappa.
-
-    .. note::
-        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
-        metric. Moving forward we recommend using these versions. This base metric will still work as it did
-        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
-        and the general order of arguments may change, such that this metric will just function as an single
-        entrypoint to calling the three specialized versions.
-
-
-    Calculates `Cohen's kappa score`_ that measures inter-annotator agreement.
-
-    It is defined as
+    r"""Calculates `Cohen's kappa score`_ that measures inter-annotator agreement. It is defined as.
 
     .. math::
         \kappa = (p_o - p_e) / (1 - p_e)
@@ -311,43 +247,20 @@ def cohen_kappa(
     :math:`p_e` is estimated using a per-annotator empirical prior over the
     class labels.
 
-    Args:
-        preds: (float or long tensor), Either a ``(N, ...)`` tensor with labels or
-            ``(N, C, ...)`` where C is the number of classes, tensor with labels/probabilities
-        target: ``target`` (long tensor), tensor with shape ``(N, ...)`` with ground true labels
-        num_classes: Number of classes in the dataset.
-        weights: Weighting type to calculate the score. Choose from:
+    This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
+    ``task`` argument to either ``'binary'`` or ``'multiclass'``. See the documentation of
+    :func:`binary_cohen_kappa` and :func:`multiclass_cohen_kappa` for the specific details of
+    each argument influence and examples.
 
-            - ``None`` or ``'none'``: no weighting
-            - ``'linear'``: linear weighting
-            - ``'quadratic'``: quadratic weighting
-
-        threshold: Threshold value for binary or multi-label probabilities.
-
-    Example:
-        >>> from torchmetrics.functional import cohen_kappa
+    Legacy Example:
         >>> target = torch.tensor([1, 1, 0, 0])
         >>> preds = torch.tensor([0, 1, 0, 0])
-        >>> cohen_kappa(preds, target, num_classes=2)
+        >>> cohen_kappa(preds, target, task="multiclass", num_classes=2)
         tensor(0.5000)
     """
-    if task is not None:
-        if task == "binary":
-            return binary_cohen_kappa(preds, target, threshold, weights, ignore_index, validate_args)
-        if task == "multiclass":
-            return multiclass_cohen_kappa(preds, target, num_classes, weights, ignore_index, validate_args)
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-        )
-    else:
-        rank_zero_warn(
-            "From v0.10 an `'binary_*'`, `'multiclass_*'`, `'multilabel_*'` version now exist of each classification"
-            " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
-            " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
-            " and the general order of arguments may change, such that this metric will just function as an single"
-            " entrypoint to calling the three specialized versions.",
-            DeprecationWarning,
-        )
-
-    confmat = _cohen_kappa_update(preds, target, num_classes, threshold)
-    return _cohen_kappa_compute(confmat, weights)
+    if task == "binary":
+        return binary_cohen_kappa(preds, target, threshold, weights, ignore_index, validate_args)
+    if task == "multiclass":
+        assert isinstance(num_classes, int)
+        return multiclass_cohen_kappa(preds, target, num_classes, weights, ignore_index, validate_args)
+    raise ValueError(f"Expected argument `task` to either be `'binary'` or `'multiclass'` but got {task}")

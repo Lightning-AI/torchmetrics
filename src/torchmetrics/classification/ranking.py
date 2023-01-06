@@ -29,7 +29,7 @@ from torchmetrics.metric import Metric
 
 
 class MultilabelCoverageError(Metric):
-    """Computes multilabel coverage error [1]. The score measure how far we need to go through the ranked scores to
+    """Computes `Multilabel coverage error`_. The score measure how far we need to go through the ranked scores to
     cover all true labels. The best value is equal to the average number of labels in the target tensor per sample.
 
     Accepts the following input tensors:
@@ -57,10 +57,6 @@ class MultilabelCoverageError(Metric):
         >>> metric = MultilabelCoverageError(num_labels=5)
         >>> metric(preds, target)
         tensor(3.9000)
-
-    References:
-        [1] Tsoumakas, G., Katakis, I., & Vlahavas, I. (2010). Mining multi-label data. In Data mining and
-        knowledge discovery handbook (pp. 667-685). Springer US.
     """
 
     higher_is_better: bool = False
@@ -127,10 +123,6 @@ class MultilabelRankingAveragePrecision(Metric):
         >>> metric = MultilabelRankingAveragePrecision(num_labels=5)
         >>> metric(preds, target)
         tensor(0.7744)
-
-    References:
-        [1] Tsoumakas, G., Katakis, I., & Vlahavas, I. (2010). Mining multi-label data. In Data mining and
-        knowledge discovery handbook (pp. 667-685). Springer US.
     """
 
     higher_is_better: bool = True
@@ -199,10 +191,6 @@ class MultilabelRankingLoss(Metric):
         >>> metric = MultilabelRankingLoss(num_labels=5)
         >>> metric(preds, target)
         tensor(0.4167)
-
-    References:
-        [1] Tsoumakas, G., Katakis, I., & Vlahavas, I. (2010). Mining multi-label data. In Data mining and
-        knowledge discovery handbook (pp. 667-685). Springer US.
     """
 
     higher_is_better: bool = False

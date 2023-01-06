@@ -32,7 +32,7 @@ from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inje
 seed_all(42)
 
 
-def _sk_stat_scores_binary(preds, target, ignore_index, multidim_average):
+def _sklearn_stat_scores_binary(preds, target, ignore_index, multidim_average):
     if multidim_average == "global":
         preds = preds.view(-1).numpy()
         target = target.view(-1).numpy()
@@ -79,7 +79,9 @@ class TestBinaryStatScores(MetricTester):
             preds=preds,
             target=target,
             metric_class=BinaryStatScores,
-            sk_metric=partial(_sk_stat_scores_binary, ignore_index=ignore_index, multidim_average=multidim_average),
+            reference_metric=partial(
+                _sklearn_stat_scores_binary, ignore_index=ignore_index, multidim_average=multidim_average
+            ),
             metric_args={"threshold": THRESHOLD, "ignore_index": ignore_index, "multidim_average": multidim_average},
         )
 
@@ -96,7 +98,9 @@ class TestBinaryStatScores(MetricTester):
             preds=preds,
             target=target,
             metric_functional=binary_stat_scores,
-            sk_metric=partial(_sk_stat_scores_binary, ignore_index=ignore_index, multidim_average=multidim_average),
+            reference_metric=partial(
+                _sklearn_stat_scores_binary, ignore_index=ignore_index, multidim_average=multidim_average
+            ),
             metric_args={
                 "threshold": THRESHOLD,
                 "ignore_index": ignore_index,
@@ -142,7 +146,7 @@ class TestBinaryStatScores(MetricTester):
         )
 
 
-def _sk_stat_scores_multiclass_global(preds, target, ignore_index, average):
+def _sklearn_stat_scores_multiclass_global(preds, target, ignore_index, average):
     preds = preds.numpy().flatten()
     target = target.numpy().flatten()
     target, preds = remove_ignore_index(target, preds, ignore_index)
@@ -164,7 +168,7 @@ def _sk_stat_scores_multiclass_global(preds, target, ignore_index, average):
         return res
 
 
-def _sk_stat_scores_multiclass_local(preds, target, ignore_index, average):
+def _sklearn_stat_scores_multiclass_local(preds, target, ignore_index, average):
     preds = preds.numpy()
     target = target.numpy()
 
@@ -191,12 +195,12 @@ def _sk_stat_scores_multiclass_local(preds, target, ignore_index, average):
     return np.stack(res, 0)
 
 
-def _sk_stat_scores_multiclass(preds, target, ignore_index, multidim_average, average):
+def _sklearn_stat_scores_multiclass(preds, target, ignore_index, multidim_average, average):
     if preds.ndim == target.ndim + 1:
         preds = torch.argmax(preds, 1)
     if multidim_average == "global":
-        return _sk_stat_scores_multiclass_global(preds, target, ignore_index, average)
-    return _sk_stat_scores_multiclass_local(preds, target, ignore_index, average)
+        return _sklearn_stat_scores_multiclass_global(preds, target, ignore_index, average)
+    return _sklearn_stat_scores_multiclass_local(preds, target, ignore_index, average)
 
 
 @pytest.mark.parametrize("input", _multiclass_cases)
@@ -219,8 +223,8 @@ class TestMulticlassStatScores(MetricTester):
             preds=preds,
             target=target,
             metric_class=MulticlassStatScores,
-            sk_metric=partial(
-                _sk_stat_scores_multiclass,
+            reference_metric=partial(
+                _sklearn_stat_scores_multiclass,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
                 average=average,
@@ -247,8 +251,8 @@ class TestMulticlassStatScores(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multiclass_stat_scores,
-            sk_metric=partial(
-                _sk_stat_scores_multiclass,
+            reference_metric=partial(
+                _sklearn_stat_scores_multiclass,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
                 average=average,
@@ -323,7 +327,7 @@ def test_top_k_multiclass(k, preds, target, average, expected):
     )
 
 
-def _sk_stat_scores_multilabel(preds, target, ignore_index, multidim_average, average):
+def _sklearn_stat_scores_multilabel(preds, target, ignore_index, multidim_average, average):
     preds = preds.numpy()
     target = target.numpy()
     if np.issubdtype(preds.dtype, np.floating):
@@ -392,8 +396,8 @@ class TestMultilabelStatScores(MetricTester):
             preds=preds,
             target=target,
             metric_class=MultilabelStatScores,
-            sk_metric=partial(
-                _sk_stat_scores_multilabel,
+            reference_metric=partial(
+                _sklearn_stat_scores_multilabel,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
                 average=average,
@@ -421,8 +425,8 @@ class TestMultilabelStatScores(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multilabel_stat_scores,
-            sk_metric=partial(
-                _sk_stat_scores_multilabel,
+            reference_metric=partial(
+                _sklearn_stat_scores_multilabel,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
                 average=average,

@@ -17,6 +17,7 @@ MatthewsCorrCoef
 
 .. autoclass:: torchmetrics.MatthewsCorrCoef
     :noindex:
+    :exclude-members: update, compute
 
 BinaryMatthewsCorrCoef
 ^^^^^^^^^^^^^^^^^^^^^^

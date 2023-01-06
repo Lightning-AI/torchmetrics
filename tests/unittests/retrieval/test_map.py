@@ -56,7 +56,7 @@ class TestMAP(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_class=RetrievalMAP,
-            sk_metric=sk_average_precision_score,
+            reference_metric=sk_average_precision_score,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
         )
@@ -82,7 +82,7 @@ class TestMAP(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_class=RetrievalMAP,
-            sk_metric=sk_average_precision_score,
+            reference_metric=sk_average_precision_score,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
         )
@@ -93,7 +93,7 @@ class TestMAP(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_functional=retrieval_average_precision,
-            sk_metric=sk_average_precision_score,
+            reference_metric=sk_average_precision_score,
             metric_args={},
         )
 

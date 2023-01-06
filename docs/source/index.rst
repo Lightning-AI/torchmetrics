@@ -10,7 +10,7 @@ Welcome to TorchMetrics
    <div class="row" style='font-size: 14px'>
       <div class='col-md-12'>
 
-TorchMetrics is a collection of 80+ PyTorch metrics implementations and an easy-to-use API to create custom metrics. It offers:
+TorchMetrics is a collection of 90+ PyTorch metrics implementations and an easy-to-use API to create custom metrics. It offers:
 
 * A standardized interface to increase reproducibility
 * Reduces Boilerplate
@@ -136,6 +136,14 @@ Or directly from conda
 
 .. toctree::
    :maxdepth: 2
+   :name: aggregation
+   :caption: Aggregation
+   :glob:
+
+   aggregation/*
+
+.. toctree::
+   :maxdepth: 2
    :name: audio
    :caption: Audio
    :glob:
@@ -152,6 +160,14 @@ Or directly from conda
 
 .. toctree::
    :maxdepth: 2
+   :name: detection
+   :caption: Detection
+   :glob:
+
+   detection/*
+
+.. toctree::
+   :maxdepth: 2
    :name: image
    :caption: Image
    :glob:
@@ -160,11 +176,19 @@ Or directly from conda
 
 .. toctree::
    :maxdepth: 2
-   :name: detection
-   :caption: Detection
+   :name: multimodal
+   :caption: Multimodal
    :glob:
 
-   detection/*
+   multimodal/*
+
+.. toctree::
+   :maxdepth: 2
+   :name: nominal
+   :caption: Nominal
+   :glob:
+
+   nominal/*
 
 .. toctree::
    :maxdepth: 2
@@ -197,14 +221,6 @@ Or directly from conda
    :glob:
 
    text/*
-
-.. toctree::
-   :maxdepth: 2
-   :name: aggregation
-   :caption: Aggregation
-   :glob:
-
-   aggregation/*
 
 .. toctree::
    :maxdepth: 2

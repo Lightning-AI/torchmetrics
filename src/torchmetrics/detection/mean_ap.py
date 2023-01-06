@@ -40,11 +40,11 @@ log = logging.getLogger(__name__)
 def compute_area(input: List[Any], iou_type: str = "bbox") -> Tensor:
     """Compute area of input depending on the specified iou_type.
 
-    Default output for empty input is torch.Tensor([])
+    Default output for empty input is :class:`~torch.Tensor`
     """
     if len(input) == 0:
 
-        return torch.Tensor([])
+        return Tensor([])
 
     if iou_type == "bbox":
         return box_area(torch.stack(input))
@@ -124,7 +124,7 @@ class COCOMetricResults(BaseMetricResults):
     )
 
 
-def _segm_iou(det: List[Tuple[np.ndarray, np.ndarray]], gt: List[Tuple[np.ndarray, np.ndarray]]) -> torch.Tensor:
+def _segm_iou(det: List[Tuple[np.ndarray, np.ndarray]], gt: List[Tuple[np.ndarray, np.ndarray]]) -> Tensor:
     """
     Compute IOU between detections and ground-truths using mask-IOU. Based on pycocotools toolkit for mask_utils
     Args:
@@ -205,8 +205,57 @@ class MeanAveragePrecision(Metric):
     (xmin-top left, ymin-top left, xmax-bottom right, ymax-bottom right).
     See the :meth:`update` method for more information about the input format to this metric.
 
+    As input to ``forward`` and ``update`` the metric accepts the following input.
+
+    - ``preds`` (:class:`~List`) A list consisting of dictionaries each containing the key-values
+      (each dictionary corresponds to a single image). Parameters that should be provided per dict
+
+        - boxes: :class:`~torch.FloatTensor` of shape ``[num_boxes, 4]`` containing ``num_boxes`` detection
+          boxes of the format specified in the constructor.
+          By default, this method expects ``[xmin, ymin, xmax, ymax]`` in absolute image coordinates.
+        - scores: :class:`~torch.FloatTensor` of shape ``[num_boxes]`` containing detection scores for the boxes.
+        - labels: :class:`~torch.IntTensor` of shape ``[num_boxes]`` containing 0-indexed detection classes for
+          the boxes.
+        - masks: :class:`~torch.bool` of shape ``[num_boxes, image_height, image_width]`` containing boolean masks.
+          Only required when `iou_type="segm"`.
+
+    - ``target`` (:class:`~List`) A list consisting of dictionaries each containing the key-values
+      (each dictionary corresponds to a single image). Parameters that should be provided per dict:
+
+        - boxes: :class:`~torch.FloatTensor` of shape ``[num_boxes, 4]`` containing ``num_boxes`` ground truth
+          boxes of the format specified in the constructor.
+          By default, this method expects ``[xmin, ymin, xmax, ymax]`` in absolute image coordinates.
+        - labels: :class:`~torch.IntTensor` of shape ``[num_boxes]`` containing 0-indexed ground truth
+          classes for the boxes.
+        - masks: :class:`~torch.bool` of shape ``[num_boxes, image_height, image_width]`` containing boolean masks.
+          Only required when `iou_type="segm"`.
+
+    As output of ``forward`` and ``compute`` the metric returns the following output.
+
+    - `map_dict`: A dictionary containing the following key-values:
+
+        - map: (:class:`~torch.Tensor`)
+        - map_small: (:class:`~torch.Tensor`)
+        - map_medium:(:class:`~torch.Tensor`)
+        - map_large: (:class:`~torch.Tensor`)
+        - mar_1: (:class:`~torch.Tensor`)
+        - mar_10: (:class:`~torch.Tensor`)
+        - mar_100: (:class:`~torch.Tensor`)
+        - mar_small: (:class:`~torch.Tensor`)
+        - mar_medium: (:class:`~torch.Tensor`)
+        - mar_large: (:class:`~torch.Tensor`)
+        - map_50: (:class:`~torch.Tensor`) (-1 if 0.5 not in the list of iou thresholds)
+        - map_75: (:class:`~torch.Tensor`) (-1 if 0.75 not in the list of iou thresholds)
+        - map_per_class: (:class:`~torch.Tensor`) (-1 if class metrics are disabled)
+        - mar_100_per_class: (:class:`~torch.Tensor`) (-1 if class metrics are disabled)
+
     For an example on how to use this metric check the `torchmetrics examples
     <https://github.com/Lightning-AI/metrics/blob/master/examples/detection_map.py>`_
+
+    .. note::
+        ``map`` score is calculated with @[ IoU=self.iou_thresholds | area=all | max_dets=max_detection_thresholds ].
+        Caution: If the initialization parameters are changed, dictionary keys for mAR can change as well.
+        The default properties are also accessible via fields and will raise an ``AttributeError`` if not available.
 
     .. note::
         This metric is following the mAP implementation of
@@ -238,6 +287,30 @@ class MeanAveragePrecision(Metric):
         class_metrics:
             Option to enable per-class metrics for mAP and mAR_100. Has a performance impact.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+
+    Raises:
+        ModuleNotFoundError:
+            If ``torchvision`` is not installed or version installed is lower than 0.8.0
+        ModuleNotFoundError:
+            If ``iou_type`` is equal to ``seqm`` and ``pycocotools`` is not installed
+        ValueError:
+            If ``class_metrics`` is not a boolean
+        ValueError:
+            If ``preds`` is not of type (:class:`~List[Dict[str, Tensor]]`)
+        ValueError:
+            If ``target`` is not of type ``List[Dict[str, Tensor]]``
+        ValueError:
+            If ``preds`` and ``target`` are not of the same length
+        ValueError:
+            If any of ``preds.boxes``, ``preds.scores`` and ``preds.labels`` are not of the same length
+        ValueError:
+            If any of ``target.boxes`` and ``target.labels`` are not of the same length
+        ValueError:
+            If any box is not type float and of length 4
+        ValueError:
+            If any class is not type int and of length 1
+        ValueError:
+            If any score is not type float and of length 1
 
     Example:
         >>> import torch
@@ -273,14 +346,6 @@ class MeanAveragePrecision(Metric):
          'mar_large': tensor(0.6000),
          'mar_medium': tensor(-1.),
          'mar_small': tensor(-1.)}
-
-    Raises:
-        ModuleNotFoundError:
-            If ``torchvision`` is not installed or version installed is lower than 0.8.0
-        ModuleNotFoundError:
-            If ``iou_type`` is equal to ``seqm`` and ``pycocotools`` is not installed
-        ValueError:
-            If ``class_metrics`` is not a boolean
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -342,50 +407,7 @@ class MeanAveragePrecision(Metric):
         self.add_state("groundtruth_labels", default=[], dist_reduce_fx=None)
 
     def update(self, preds: List[Dict[str, Tensor]], target: List[Dict[str, Tensor]]) -> None:  # type: ignore
-        """Add detections and ground truth to the metric.
-
-        Args:
-            preds: A list consisting of dictionaries each containing the key-values
-                (each dictionary corresponds to a single image):
-
-                - ``boxes``: ``torch.FloatTensor`` of shape ``[num_boxes, 4]`` containing ``num_boxes`` detection boxes
-                  of the format specified in the constructor. By default, this method expects
-                  ``[xmin, ymin, xmax, ymax]`` in absolute image coordinates.
-                - ``scores``: ``torch.FloatTensor`` of shape ``[num_boxes]`` containing detection scores for the boxes.
-                - ``labels``: ``torch.IntTensor`` of shape ``[num_boxes]`` containing 0-indexed detection classes
-                  for the boxes.
-                - ``masks``: ``torch.bool`` of shape ``[num_boxes, image_height, image_width]`` containing boolean
-                  masks. Only required when `iou_type="segm"`.
-
-            target: A list consisting of dictionaries each containing the key-values
-                (each dictionary corresponds to a single image):
-
-                - ``boxes``: ``torch.FloatTensor`` of shape ``[num_boxes, 4]`` containing ``num_boxes``
-                  ground truth boxes of the format specified in the constructor. By default, this method expects
-                  ``[xmin, ymin, xmax, ymax]`` in absolute image coordinates.
-                - ``labels``: ``torch.IntTensor`` of shape ``[num_boxes]`` containing 0-indexed ground truth
-                   classes for the boxes.
-                - ``masks``: ``torch.bool`` of shape ``[num_boxes, image_height, image_width]`` containing boolean
-                  masks. Only required when `iou_type="segm"`.
-
-        Raises:
-            ValueError:
-                If ``preds`` is not of type ``List[Dict[str, Tensor]]``
-            ValueError:
-                If ``target`` is not of type ``List[Dict[str, Tensor]]``
-            ValueError:
-                If ``preds`` and ``target`` are not of the same length
-            ValueError:
-                If any of ``preds.boxes``, ``preds.scores`` and ``preds.labels`` are not of the same length
-            ValueError:
-                If any of ``target.boxes`` and ``target.labels`` are not of the same length
-            ValueError:
-                If any box is not type float and of length 4
-            ValueError:
-                If any class is not type int and of length 1
-            ValueError:
-                If any score is not type float and of length 1
-        """
+        """Update state with predictions and targets."""
         _input_validator(preds, target, iou_type=self.iou_type)
 
         for item in preds:
@@ -409,14 +431,13 @@ class MeanAveragePrecision(Metric):
             current_to_cpu = []
             if isinstance(current_val, Sequence):
                 for cur_v in current_val:
-                    # Cannot handle RLE as torch.Tensor
+                    # Cannot handle RLE as Tensor
                     if not isinstance(cur_v, tuple):
                         cur_v = cur_v.to("cpu")
                     current_to_cpu.append(cur_v)
             setattr(self, key, current_to_cpu)
 
     def _get_safe_item_values(self, item: Dict[str, Any]) -> Union[Tensor, Tuple]:
-
         if self.iou_type == "bbox":
             boxes = _fix_empty_tensors(item["boxes"])
             if boxes.numel() > 0:
@@ -579,6 +600,10 @@ class MeanAveragePrecision(Metric):
         det = [det[i] for i in det_label_mask]
         if len(gt) == 0 and len(det) == 0:
             return None
+        if isinstance(det, dict):
+            det = [det]
+        if isinstance(gt, dict):
+            gt = [gt]
 
         areas = compute_area(gt, iou_type=self.iou_type).to(self.device)
 
@@ -600,23 +625,23 @@ class MeanAveragePrecision(Metric):
         # load computed ious
         ious = ious[idx, class_id][:, gtind] if len(ious[idx, class_id]) > 0 else ious[idx, class_id]
 
+        nb_iou_thrs = len(self.iou_thresholds)
         nb_gt = len(gt)
         nb_det = len(det)
         gt_matches = torch.zeros((nb_iou_thrs, nb_gt), dtype=torch.bool, device=self.device)
+        det_matches = torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool, device=self.device)
         gt_ignore = ignore_area_sorted
-
-        iou_thresholds = torch.tensor(self.iou_thresholds, device=self.device)
+        det_ignore = torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool, device=self.device)
 
         if torch.numel(ious) > 0:
-            best_matches = self._find_best_gt_matches(iou_thresholds, gt_matches, gt_ignore, ious)
-            _zero_tensor = torch.tensor(0, dtype=torch.bool, device=self.device)
-            _one_tensor = torch.tensor(1, dtype=torch.bool, device=self.device)
-            det_ignore = torch.where(
-                best_matches != -1, gt_ignore[best_matches.clamp(max=gt_ignore.shape[0] - 1)], _zero_tensor
-            )
-            det_matches = torch.where(best_matches != -1, _one_tensor, _zero_tensor)
-            for idx in range(nb_iou_thrs):
-                gt_matches[idx, best_matches[idx].clamp(0, max=gt_matches.shape[1] - 1).unique()] = 1
+            for idx_iou, t in enumerate(self.iou_thresholds):
+                for idx_det, _ in enumerate(det):
+                    m = MeanAveragePrecision._find_best_gt_match(t, gt_matches, idx_iou, gt_ignore, ious, idx_det)
+                    if m == -1:
+                        continue
+                    det_ignore[idx_iou, idx_det] = gt_ignore[m]
+                    det_matches[idx_iou, idx_det] = 1
+                    gt_matches[idx_iou, m] = 1
 
         # set unmatched detections outside of area range to ignore
         det_areas = compute_area(det, iou_type=self.iou_type).to(self.device)
@@ -635,26 +660,33 @@ class MeanAveragePrecision(Metric):
         }
 
     @staticmethod
-    def _find_best_gt_matches(thr: Tensor, gt_matches: Tensor, gt_ignore: Tensor, ious: Tensor) -> Tensor:
-        """Return matrix of indices of best ground truth match with current detection.
+    def _find_best_gt_match(
+        thr: int, gt_matches: Tensor, idx_iou: float, gt_ignore: Tensor, ious: Tensor, idx_det: int
+    ) -> int:
+        """Return id of best ground truth match with current detection.
 
         Args:
             thr:
                 Current threshold value.
             gt_matches:
                 Tensor showing if a ground truth matches for threshold ``t`` exists.
+            idx_iou:
+                Id of threshold ``t``.
             gt_ignore:
                 Tensor showing if ground truth should be ignored.
             ious:
                 IoUs for all combinations of detection and ground truth.
+            idx_det:
+                Id of current detection.
         """
+        previously_matched = gt_matches[idx_iou]
         # Remove previously matched or ignored gts
-        remove_mask = gt_matches | gt_ignore
-        gt_ious = torch.einsum("cw,dw->cdw", ~remove_mask, ious).max(-1).values
-        best_gt_matches = gt_ious.where(
-            gt_ious > thr.unsqueeze(-1), torch.tensor(-1, dtype=gt_ious.dtype, device=gt_ious.device)
-        )
-        return best_gt_matches.long()
+        remove_mask = previously_matched | gt_ignore
+        gt_ious = ious[idx_det] * ~remove_mask
+        match_idx = gt_ious.argmax().item()
+        if gt_ious[match_idx] > thr:
+            return match_idx
+        return -1
 
     def _summarize(
         self,
@@ -864,33 +896,7 @@ class MeanAveragePrecision(Metric):
         return recall, precision, scores
 
     def compute(self) -> dict:
-        """Compute the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)` scores.
-
-        Note:
-            ``map`` score is calculated with @[ IoU=self.iou_thresholds | area=all | max_dets=max_detection_thresholds ]
-
-            Caution: If the initialization parameters are changed, dictionary keys for mAR can change as well.
-            The default properties are also accessible via fields and will raise an ``AttributeError`` if not available.
-
-        Returns:
-            dict containing
-
-            - map: ``torch.Tensor``
-            - map_small: ``torch.Tensor``
-            - map_medium: ``torch.Tensor``
-            - map_large: ``torch.Tensor``
-            - mar_1: ``torch.Tensor``
-            - mar_10: ``torch.Tensor``
-            - mar_100: ``torch.Tensor``
-            - mar_small: ``torch.Tensor``
-            - mar_medium: ``torch.Tensor``
-            - mar_large: ``torch.Tensor``
-            - map_50: ``torch.Tensor`` (-1 if 0.5 not in the list of iou thresholds)
-            - map_75: ``torch.Tensor`` (-1 if 0.75 not in the list of iou thresholds)
-            - map_per_class: ``torch.Tensor`` (-1 if class metrics are disabled)
-            - mar_100_per_class: ``torch.Tensor`` (-1 if class metrics are disabled)
-        """
-
+        """Computes metric."""
         classes = self._get_classes()
         precisions, recalls = self._calculate(classes)
         map_val, mar_val = self._summarize_results(precisions, recalls)

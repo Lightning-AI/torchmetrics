@@ -65,7 +65,7 @@ stoi_original_batch_16k_noext = partial(stoi_original_batch, fs=16000, extended=
 
 
 @pytest.mark.parametrize(
-    "preds, target, sk_metric, fs, extended",
+    "preds, target, ref_metric, fs, extended",
     [
         (inputs_8k.preds, inputs_8k.target, stoi_original_batch_8k_ext, 8000, True),
         (inputs_16k.preds, inputs_16k.target, stoi_original_batch_16k_ext, 16000, True),
@@ -78,27 +78,27 @@ class TestSTOI(MetricTester):
 
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_stoi(self, preds, target, sk_metric, fs, extended, ddp, dist_sync_on_step):
+    def test_stoi(self, preds, target, ref_metric, fs, extended, ddp, dist_sync_on_step):
         self.run_class_metric_test(
             ddp,
             preds,
             target,
             ShortTimeObjectiveIntelligibility,
-            sk_metric=partial(average_metric, metric_func=sk_metric),
+            reference_metric=partial(average_metric, metric_func=ref_metric),
             dist_sync_on_step=dist_sync_on_step,
             metric_args=dict(fs=fs, extended=extended),
         )
 
-    def test_stoi_functional(self, preds, target, sk_metric, fs, extended):
+    def test_stoi_functional(self, preds, target, ref_metric, fs, extended):
         self.run_functional_metric_test(
             preds,
             target,
             short_time_objective_intelligibility,
-            sk_metric,
+            ref_metric,
             metric_args=dict(fs=fs, extended=extended),
         )
 
-    def test_stoi_differentiability(self, preds, target, sk_metric, fs, extended):
+    def test_stoi_differentiability(self, preds, target, ref_metric, fs, extended):
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -107,11 +107,11 @@ class TestSTOI(MetricTester):
             metric_args=dict(fs=fs, extended=extended),
         )
 
-    def test_stoi_half_cpu(self, preds, target, sk_metric, fs, extended):
+    def test_stoi_half_cpu(self, preds, target, ref_metric, fs, extended):
         pytest.xfail("STOI metric does not support cpu + half precision")
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-    def test_stoi_half_gpu(self, preds, target, sk_metric, fs, extended):
+    def test_stoi_half_gpu(self, preds, target, ref_metric, fs, extended):
         self.run_precision_test_gpu(
             preds=preds,
             target=target,

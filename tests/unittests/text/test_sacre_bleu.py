@@ -58,7 +58,7 @@ class TestSacreBLEUScore(TextTester):
             preds=preds,
             targets=targets,
             metric_class=SacreBLEUScore,
-            sk_metric=original_sacrebleu,
+            reference_metric=original_sacrebleu,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
         )
@@ -71,7 +71,7 @@ class TestSacreBLEUScore(TextTester):
             preds,
             targets,
             metric_functional=sacre_bleu_score,
-            sk_metric=original_sacrebleu,
+            reference_metric=original_sacrebleu,
             metric_args=metric_args,
         )
 

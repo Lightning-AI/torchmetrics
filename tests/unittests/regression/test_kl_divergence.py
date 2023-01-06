@@ -41,7 +41,7 @@ _log_probs_inputs = Input(
 )
 
 
-def _sk_metric(p: Tensor, q: Tensor, log_prob: bool, reduction: Optional[str] = "mean"):
+def _wrap_reduction(p: Tensor, q: Tensor, log_prob: bool, reduction: Optional[str] = "mean"):
     if log_prob:
         p = p.softmax(dim=-1)
         q = q.softmax(dim=-1)
@@ -68,7 +68,7 @@ class TestKLDivergence(MetricTester):
             p,
             q,
             KLDivergence,
-            partial(_sk_metric, log_prob=log_prob, reduction=reduction),
+            partial(_wrap_reduction, log_prob=log_prob, reduction=reduction),
             dist_sync_on_step,
             metric_args=dict(log_prob=log_prob, reduction=reduction),
         )
@@ -79,7 +79,7 @@ class TestKLDivergence(MetricTester):
             p,
             q,
             kl_divergence,
-            partial(_sk_metric, log_prob=log_prob, reduction=reduction),
+            partial(_wrap_reduction, log_prob=log_prob, reduction=reduction),
             metric_args=dict(log_prob=log_prob, reduction=reduction),
         )
 

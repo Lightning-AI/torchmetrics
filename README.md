@@ -25,7 +25,6 @@ ______________________________________________________________________
 [![license](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/Lightning-AI/metrics/blob/master/LICENSE)
 
 [![CI testing - complete](https://github.com/Lightning-AI/metrics/actions/workflows/ci_test-full.yml/badge.svg?event=push)](https://github.com/Lightning-AI/metrics/actions/workflows/ci_test-full.yml)
-[![PyTorch & Conda](https://github.com/Lightning-AI/metrics/actions/workflows/ci_test-conda.yml/badge.svg?branch=master&event=push)](https://github.com/Lightning-AI/metrics/actions/workflows/ci_test-conda.yml)
 [![Build Status](https://dev.azure.com/Lightning-AI/Metrics/_apis/build/status/Lightning-AI.metrics?branchName=master)](https://dev.azure.com/Lightning-AI/Metrics/_build/latest?definitionId=3&branchName=master)
 [![codecov](https://codecov.io/gh/Lightning-AI/metrics/branch/master/graph/badge.svg?token=NER6LPI3HS)](https://codecov.io/gh/Lightning-AI/metrics)
 
@@ -90,7 +89,7 @@ ______________________________________________________________________
 
 ## What is TorchMetrics
 
-TorchMetrics is a collection of 80+ PyTorch metrics implementations and an easy-to-use API to create custom metrics. It offers:
+TorchMetrics is a collection of 90+ PyTorch metrics implementations and an easy-to-use API to create custom metrics. It offers:
 
 - A standardized interface to increase reproducibility
 - Reduces boilerplate
@@ -124,7 +123,7 @@ import torch
 import torchmetrics
 
 # initialize metric
-metric = torchmetrics.Accuracy()
+metric = torchmetrics.Accuracy(task="multiclass", num_classes=5)
 
 # move the metric to device you want computations to take place
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -170,7 +169,7 @@ def metric_ddp(rank, world_size):
     dist.init_process_group("gloo", rank=rank, world_size=world_size)
 
     # initialize model
-    metric = torchmetrics.Accuracy()
+    metric = torchmetrics.Accuracy(task="multiclass", num_classes=5)
 
     # define a model and append your metric to it
     # this allows metric states to be placed on correct accelerators when
@@ -264,7 +263,9 @@ import torchmetrics
 preds = torch.randn(10, 5).softmax(dim=-1)
 target = torch.randint(5, (10,))
 
-acc = torchmetrics.functional.accuracy(preds, target)
+acc = torchmetrics.functional.classification.multiclass_accuracy(
+    preds, target, num_classes=5
+)
 ```
 
 ### Covered domains and example metrics
@@ -276,10 +277,12 @@ We currently have implemented metrics within the following domains:
 - Detection
 - Information Retrieval
 - Image
+- Multimodal (Image-Text)
+- Nominal
 - Regression
 - Text
 
-In total TorchMetrics contains [80+ metrics](https://torchmetrics.readthedocs.io/en/stable/all-metrics.html)!
+In total TorchMetrics contains [90+ metrics](https://torchmetrics.readthedocs.io/en/stable/all-metrics.html)!
 
 ## Contribute!
 

@@ -87,7 +87,7 @@ LONG_DESCRIPTION = _load_readme_description(
 BASE_REQUIREMENTS = _load_requirements(path_dir=_PATH_ROOT, file_name="requirements.txt")
 
 
-def _prepare_extras(skip_files: Tuple[str] = ("devel.txt",)):
+def _prepare_extras(skip_files: Tuple[str] = ("devel.txt", "doctest.txt")):
     # find all extra requirements
     _load_req = partial(_load_requirements, path_dir=_PATH_REQUIRE)
     found_req_files = sorted(os.path.basename(p) for p in glob.glob(os.path.join(_PATH_REQUIRE, "*.txt")))
@@ -105,6 +105,7 @@ def _prepare_extras(skip_files: Tuple[str] = ("devel.txt",)):
     extras_req = {n: list(set(req)) for n, req in extras_req.items()}
     # create an 'all' keyword that install all possible dependencies
     extras_req["all"] = list(chain([pkgs for k, pkgs in extras_req.items() if k not in ("test", "docs")]))
+    extras_req["dev"] = extras_req["all"] + extras_req["test"]
     return extras_req
 
 

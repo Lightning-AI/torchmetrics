@@ -44,7 +44,7 @@ _multi_target_inputs = Input(
 )
 
 
-def _sk_deviance(preds: Tensor, targets: Tensor, power: float):
+def _sklearn_deviance(preds: Tensor, targets: Tensor, power: float):
     sk_preds = preds.view(-1).numpy()
     sk_target = targets.view(-1).numpy()
     return mean_tweedie_deviance(sk_target, sk_preds, power=power)
@@ -68,7 +68,7 @@ class TestDevianceScore(MetricTester):
             preds,
             targets,
             TweedieDevianceScore,
-            partial(_sk_deviance, power=power),
+            partial(_sklearn_deviance, power=power),
             dist_sync_on_step,
             metric_args=dict(power=power),
         )
@@ -78,7 +78,7 @@ class TestDevianceScore(MetricTester):
             preds,
             targets,
             tweedie_deviance_score,
-            partial(_sk_deviance, power=power),
+            partial(_sklearn_deviance, power=power),
             metric_args=dict(power=power),
         )
 
