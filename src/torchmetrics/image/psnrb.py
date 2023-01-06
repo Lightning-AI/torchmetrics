@@ -22,7 +22,7 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 
 
-class PeakSignalNoiseRatio(Metric):
+class PeakSignalNoiseRatioWithBlockedEffect(Metric):
     r"""Computes `Computes Peak Signal-to-Noise Ratio with a blocking effect`_ (PSNRB):
 
     .. math:: \text{PSNRB}(I, J) = 10 * \log_{10} \left(\frac{\max(I)^2}{\text{MSE}(I, J)-\text{B}(I, J)}\right)
