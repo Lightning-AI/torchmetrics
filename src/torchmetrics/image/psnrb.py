@@ -50,8 +50,8 @@ class PeakSignalNoiseRatioWithBlockedEffect(Metric):
             If ``dim`` is not ``None`` and ``data_range`` is not given.
 
     Example:
-        >>> from torchmetrics import PeakSignalNoiseRatio
-        >>> psnrb = PeakSignalNoiseRatioBlockedEffect()
+        >>> from torchmetrics.image import PeakSignalNoiseRatioWithBlockedEffect
+        >>> psnrb = PeakSignalNoiseRatioWithBlockedEffect()
         >>> preds = torch.tensor([[0.0, 1.0], [2.0, 3.0]])
         >>> target = torch.tensor([[3.0, 2.0], [1.0, 0.0]])
         >>> psnrb(preds, target)

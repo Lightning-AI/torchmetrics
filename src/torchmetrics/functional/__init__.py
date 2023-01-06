@@ -148,6 +148,7 @@ __all__ = [
     "precision",
     "precision_recall_curve",
     "peak_signal_noise_ratio",
+    "peak_signal_noise_ratio_with_blocked_effect",
     "r2_score",
     "recall",
     "retrieval_average_precision",
