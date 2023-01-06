@@ -80,7 +80,7 @@ def _compute_bef(
     return bef
 
 
-def _psnr_compute(
+def _psnrb_compute(
     sum_squared_error: Tensor,
     n_obs: Tensor,
     data_range: Tensor,
@@ -105,8 +105,8 @@ def _psnr_compute(
         >>> preds = torch.tensor([[0.0, 1.0], [2.0, 3.0]])
         >>> target = torch.tensor([[3.0, 2.0], [1.0, 0.0]])
         >>> data_range = target.max() - target.min()
-        >>> sum_squared_error, n_obs = _psnr_update(preds, target)
-        >>> _psnr_compute(sum_squared_error, n_obs, data_range)
+        >>> sum_squared_error, n_obs = _psnrb_update(preds, target)
+        >>> _psnrb_compute(sum_squared_error, n_obs, data_range)
         tensor(2.5527)
     """
     bef = _compute_bef()
@@ -116,7 +116,7 @@ def _psnr_compute(
     return reduce(psnr_vals, reduction=reduction)
 
 
-def _psnr_update(
+def _psnrb_update(
     preds: Tensor,
     target: Tensor,
     dim: Optional[Union[int, Tuple[int, ...]]] = None,
@@ -206,5 +206,5 @@ def peak_signal_noise_ratio_with_blocked_effect(
         data_range = target.max() - target.min()
     else:
         data_range = tensor(float(data_range))
-    sum_squared_error, n_obs = _psnr_update(preds, target, dim=dim)
-    return _psnr_compute(sum_squared_error, n_obs, data_range, base=base, reduction=reduction)
+    sum_squared_error, n_obs = _psnrb_update(preds, target, dim=dim)
+    return _psnrb_compute(sum_squared_error, n_obs, data_range, base=base, reduction=reduction)
