@@ -72,7 +72,7 @@ class KernelInceptionDistance(Metric):
         KID = MMD(f_{real}, f_{fake})^2
 
     where :math:`MMD` is the maximum mean discrepancy and :math:`I_{real}, I_{fake}` are extracted features
-    from real and fake images, see [1] for more details. In particular, calculating the MMD requires the
+    from real and fake images, see `kid ref1`_ for more details. In particular, calculating the MMD requires the
     evaluation of a polynomial kernel function :math:`k`
 
     .. math::
@@ -81,8 +81,8 @@ class KernelInceptionDistance(Metric):
     which controls the distance between two features. In practise the MMD is calculated over a number of
     subsets to be able to both get the mean and standard deviation of KID.
 
-    Using the default feature extraction (Inception v3 using the original weights from [2]), the input is
-    expected to be mini-batches of 3-channel RGB images of shape (``3 x H x W``). If argument ``normalize``
+    Using the default feature extraction (Inception v3 using the original weights from `kid ref2`_), the input is
+    expected to be mini-batches of 3-channel RGB images of shape ``(3 x H x W)``. If argument ``normalize``
     is ``True`` images are expected to be dtype ``float`` and have values in the ``[0, 1]`` range, else if
     ``normalize`` is set to ``False`` images are expected to have dtype ``uint8`` and take values in the ``[0, 255]``
     range. All images will be resized to 299 x 299 which is the size of the original training data. The boolian
@@ -93,13 +93,23 @@ class KernelInceptionDistance(Metric):
         is installed. Either install as ``pip install torchmetrics[image]`` or
         ``pip install torch-fidelity``
 
+    As input to ``forward`` and ``update`` the metric accepts the following input
+
+    - ``imgs`` (:class:`~torch.Tensor`): tensor with images feed to the feature extractor of shape ``(N,C,H,W)``
+    - ``real`` (`bool`): bool indicating if ``imgs`` belong to the real or the fake distribution
+
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``kid_mean`` (:class:`~torch.Tensor`): float scalar tensor with mean value over subsets
+    - ``kid_std`` (:class:`~torch.Tensor`): float scalar tensor with mean value over subsets
+
     Args:
         feature: Either an str, integer or ``nn.Module``:
 
             - an str or integer will indicate the inceptionv3 feature layer to choose. Can be one of the following:
               'logits_unbiased', 64, 192, 768, 2048
             - an ``nn.Module`` for using a custom feature extractor. Expects that its forward method returns
-              an ``[N,d]`` matrix where ``N`` is the batch size and ``d`` is the feature size.
+              an ``(N,d)`` matrix where ``N`` is the batch size and ``d`` is the feature size.
 
         subsets: Number of subsets to calculate the mean and standard deviation scores over
         subset_size: Number of randomly picked samples in each subset
@@ -111,20 +121,11 @@ class KernelInceptionDistance(Metric):
             your dataset does not change.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    References:
-        [1] Demystifying MMD GANs
-        Mikołaj Bińkowski, Danica J. Sutherland, Michael Arbel, Arthur Gretton
-        https://arxiv.org/abs/1801.01401
-
-        [2] GANs Trained by a Two Time-Scale Update Rule Converge to a Local Nash Equilibrium,
-        Martin Heusel, Hubert Ramsauer, Thomas Unterthiner, Bernhard Nessler, Sepp Hochreiter
-        https://arxiv.org/abs/1706.08500
-
     Raises:
         ValueError:
             If ``feature`` is set to an ``int`` (default settings) and ``torch-fidelity`` is not installed
         ValueError:
-            If ``feature`` is set to an ``int`` not in ``[64, 192, 768, 2048]``
+            If ``feature`` is set to an ``int`` not in ``(64, 192, 768, 2048)``
         ValueError:
             If ``subsets`` is not an integer larger than 0
         ValueError:
@@ -230,12 +231,7 @@ class KernelInceptionDistance(Metric):
         self.add_state("fake_features", [], dist_reduce_fx=None)
 
     def update(self, imgs: Tensor, real: bool) -> None:
-        """Update the state with extracted features.
-
-        Args:
-            imgs: tensor with images feed to the feature extractor
-            real: bool indicating if ``imgs`` belong to the real or the fake distribution
-        """
+        """Update the state with extracted features."""
         imgs = (imgs * 255).byte() if self.normalize else imgs
         features = self.inception(imgs)
 
@@ -245,8 +241,7 @@ class KernelInceptionDistance(Metric):
             self.fake_features.append(features)
 
     def compute(self) -> Tuple[Tensor, Tensor]:
-        """Calculate KID score based on accumulated extracted features from the two distributions. Returns a tuple
-        of mean and standard deviation of KID scores calculated on subsets of extracted features.
+        """Calculate KID score based on accumulated extracted features from the two distributions.
 
         Implementation inspired by `Fid Score`_
         """
