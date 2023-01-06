@@ -32,7 +32,7 @@ class RetrievalMetric(Metric, ABC):
     - ``indexes`` (:class:`~torch.Tensor`): A long tensor of shape ``(N, ...)`` which indicate to which query a
       prediction belongs
 
-    Note: ``indexes``, ``preds`` and ``target`` must have the same dimension and will be flatten
+    .. note:: ``indexes``, ``preds`` and ``target`` must have the same dimension and will be flatten
     to single dimension once provided.
 
     Note: Predictions will be first grouped by ``indexes`` and then the real metric, defined by overriding

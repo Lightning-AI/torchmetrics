@@ -33,7 +33,7 @@ class RetrievalFallOut(RetrievalMetric):
     - ``indexes`` (:class:`~torch.Tensor`): A long tensor of shape ``(N, ...)`` which indicate to which query a
       prediction belongs
 
-    Note: ``indexes``, ``preds`` and ``target`` must have the same dimension.
+    .. note:: ``indexes``, ``preds`` and ``target`` must have the same dimension.
 
     Note: Predictions will be first grouped by ``indexes`` and then `Fall-out` will be computed as the mean
     of the `Fall-out` over each query.
