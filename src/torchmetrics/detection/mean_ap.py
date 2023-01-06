@@ -333,7 +333,8 @@ class MeanAveragePrecision(Metric):
         >>> metric.update(preds, target)
         >>> from pprint import pprint
         >>> pprint(metric.compute())
-        {'map': tensor(0.6000),
+        {'classes': tensor(0, dtype=torch.int32),
+         'map': tensor(0.6000),
          'map_50': tensor(1.),
          'map_75': tensor(1.),
          'map_large': tensor(0.6000),
@@ -346,8 +347,7 @@ class MeanAveragePrecision(Metric):
          'mar_100_per_class': tensor(-1.),
          'mar_large': tensor(0.6000),
          'mar_medium': tensor(-1.),
-         'mar_small': tensor(-1.),
-         'classes': tensor(0, dtype=torch.int32)}
+         'mar_small': tensor(-1.)}
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
