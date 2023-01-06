@@ -330,8 +330,8 @@ _pytest_condition = not (_TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0
 class TestMAP(MetricTester):
     """Test the MAP metric for object detection predictions.
 
-    Results are compared to original values from the pycocotools implementation.
-    A subset of the first 10 fake predictions of the official repo is used:
+    Results are compared to original values from the pycocotools implementation. A subset of the first 10 fake
+    predictions of the official repo is used:
     https://github.com/cocodataset/cocoapi/blob/master/results/instances_val2014_fakebbox100_results.json
     """
 

@@ -12,3 +12,4 @@ ________________
 
 .. autoclass:: torchmetrics.image.lpip.LearnedPerceptualImagePatchSimilarity
     :noindex:
+    :exclude-members: update, compute

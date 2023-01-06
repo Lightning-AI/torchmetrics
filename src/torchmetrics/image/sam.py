@@ -23,9 +23,19 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class SpectralAngleMapper(Metric):
-    """The Spectral Angle Mapper determines the spectral similarity between image spectra and reference spectra by
-    calculating the angle between the spectra, where small angles between indicate high similarity and high angles
-    indicate low similarity.
+    """The metric `Spectral Angle Mapper`_ determines the spectral similarity between image spectra and reference
+    spectra by calculating the angle between the spectra, where small angles between indicate high similarity and
+    high angles indicate low similarity.
+
+    As input to ``forward`` and ``update`` the metric accepts the following input
+
+    - ``preds`` (:class:`~torch.Tensor`): Predictions from model of shape ``(N,C,H,W)``
+    - ``target`` (:class:`~torch.Tensor`): Ground truth values of shape ``(N,C,H,W)``
+
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``sam`` (:class:`~torch.Tensor`): if ``reduction!='none'`` returns float scalar tensor with average SAM value
+      over sample else returns tensor of shape ``(N,)`` with SAM values per sample
 
     Args:
         reduction: a method to reduce metric score over labels.
@@ -47,11 +57,6 @@ class SpectralAngleMapper(Metric):
         >>> sam = SpectralAngleMapper()
         >>> sam(preds, target)
         tensor(0.5943)
-
-    References:
-        [1] Roberta H. Yuhas, Alexander F. H. Goetz and Joe W. Boardman, "Discrimination among semi-arid
-        landscape endmembers using the Spectral Angle Mapper (SAM) algorithm" in PL, Summaries of the Third Annual JPL
-        Airborne Geoscience Workshop, vol. 1, June 1, 1992.
     """
 
     higher_is_better: bool = False
@@ -77,12 +82,7 @@ class SpectralAngleMapper(Metric):
         self.reduction = reduction
 
     def update(self, preds: Tensor, target: Tensor) -> None:
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
+        """Update state with predictions and targets."""
         preds, target = _sam_update(preds, target)
         self.preds.append(preds)
         self.target.append(target)
