@@ -22,23 +22,23 @@ class RetrievalMAP(RetrievalMetric):
 
     Works with binary target data. Accepts float predictions from a model output.
 
-    As input to ``forward`` and ``update`` the metric accepts the following input: 
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, ...)`` 
+    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, ...)``
     - ``target`` (:class:`~torch.Tensor`): A long or bool tensor of shape ``(N, ...)``
-    - ``indexes`` (:class:`~torch.Tensor`): A long tensor of shape ``(N, ...)`` which indicate to which query a 
+    - ``indexes`` (:class:`~torch.Tensor`): A long tensor of shape ``(N, ...)`` which indicate to which query a
       prediction belongs
 
     Note: ``indexes``, ``preds`` and ``target`` must have the same dimension.
-    
+
     Note: Predictions will be first grouped by ``indexes`` and then will be computed as the mean
     of the `Average Precisions` over each query.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``rmap`` (:class:`~torch.Tensor`): A tensor with the mean average precision of the predictions ``preds`` 
+    - ``rmap`` (:class:`~torch.Tensor`): A tensor with the mean average precision of the predictions ``preds``
       w.r.t. the labels ``target``
-    
+
     Args:
         empty_target_action:
             Specify what to do with queries that do not have at least a positive ``target``. Choose from:

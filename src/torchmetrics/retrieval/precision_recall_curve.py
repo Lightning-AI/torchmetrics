@@ -64,23 +64,23 @@ class RetrievalPrecisionRecallCurve(Metric):
     For each such set, precision and recall values can be plotted to give a recall-precision
     curve.
 
-    As input to ``forward`` and ``update`` the metric accepts the following input: 
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, ...)`` 
+    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, ...)``
     - ``target`` (:class:`~torch.Tensor`): A long or bool tensor of shape ``(N, ...)``
-    - ``indexes`` (:class:`~torch.Tensor`): A long tensor of shape ``(N, ...)`` which indicate to which query a 
+    - ``indexes`` (:class:`~torch.Tensor`): A long tensor of shape ``(N, ...)`` which indicate to which query a
       prediction belongs
 
     Note: ``indexes``, ``preds`` and ``target`` must have the same dimension.
-    
+
     Note: Predictions will be first grouped by ``indexes`` and then `RetrievalRecallAtFixedPrecision`
     will be computed as the mean of the `RetrievalRecallAtFixedPrecision` over each query.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``precisions`` (:class:`~torch.Tensor`): A tensor with the fraction of relevant documents among all the 
+    - ``precisions`` (:class:`~torch.Tensor`): A tensor with the fraction of relevant documents among all the
       retrieved documents.
-    - ``recalls`` (:class:`~torch.Tensor`): A tensor with the fraction of relevant documents retrieved among all the 
+    - ``recalls`` (:class:`~torch.Tensor`): A tensor with the fraction of relevant documents retrieved among all the
       relevant documents
     - ``top_k`` (:class:`~torch.Tensor`): A tensor with k from 1 to `max_k`
 
@@ -225,11 +225,11 @@ class RetrievalPrecisionRecallCurve(Metric):
 class RetrievalRecallAtFixedPrecision(RetrievalPrecisionRecallCurve):
     """Computes `IR Recall at fixed Precision`_.
 
-    As input to ``forward`` and ``update`` the metric accepts the following input: 
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, ...)`` 
+    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, ...)``
     - ``target`` (:class:`~torch.Tensor`): A long or bool tensor of shape ``(N, ...)``
-    - ``indexes`` (:class:`~torch.Tensor`): A long tensor of shape ``(N, ...)`` which indicate to which query a 
+    - ``indexes`` (:class:`~torch.Tensor`): A long tensor of shape ``(N, ...)`` which indicate to which query a
       prediction belongs
 
     Note: ``indexes``, ``preds`` and ``target`` must have the same dimension.

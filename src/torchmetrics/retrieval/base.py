@@ -25,22 +25,22 @@ from torchmetrics.utilities.data import _flexible_bincount, dim_zero_cat
 class RetrievalMetric(Metric, ABC):
     """Works with binary target data. Accepts float predictions from a model output.
 
-    As input to ``forward`` and ``update`` the metric accepts the following input: 
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, ...)`` 
+    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, ...)``
     - ``target`` (:class:`~torch.Tensor`): A long or bool tensor of shape ``(N, ...)``
-    - ``indexes`` (:class:`~torch.Tensor`): A long tensor of shape ``(N, ...)`` which indicate to which query a 
+    - ``indexes`` (:class:`~torch.Tensor`): A long tensor of shape ``(N, ...)`` which indicate to which query a
       prediction belongs
 
     Note: ``indexes``, ``preds`` and ``target`` must have the same dimension and will be flatten
     to single dimension once provided.
-    
-    Note: Predictions will be first grouped by ``indexes`` and then the real metric, defined by overriding 
+
+    Note: Predictions will be first grouped by ``indexes`` and then the real metric, defined by overriding
     the `_metric` method, will be computed as the mean of the scores over each query.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``metric`` (:class:`~torch.Tensor`): A tensor as computed by ``_metric`` if the number of positive targets is 
+    - ``metric`` (:class:`~torch.Tensor`): A tensor as computed by ``_metric`` if the number of positive targets is
       at least 1, otherwise behave as specified by ``self.empty_target_action``.
 
     Args:
