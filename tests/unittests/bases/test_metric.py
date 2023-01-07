@@ -44,10 +44,10 @@ def test_error_on_wrong_input():
     with pytest.raises(ValueError, match="Expected keyword argument `compute_on_cpu` to be an `bool` bu.*"):
         DummyMetric(compute_on_cpu=None)
 
-    with pytest.raises(ValueError, match="Unexpected keyword arguments: foo"):
+    with pytest.raises(ValueError, match="Unexpected keyword arguments: `foo`"):
         DummyMetric(foo=True)
 
-    with pytest.raises(ValueError, match="Unexpected keyword arguments: bar foo"):
+    with pytest.raises(ValueError, match="Unexpected keyword arguments: `bar`, `foo`"):
         DummyMetric(foo=True, bar=42)
 
 
