@@ -79,6 +79,7 @@ class BinarySpecificityAtSensitivity(BinaryPrecisionRecallCurve):
 
     Example:
         >>> from torchmetrics.classification import BinarySpecificityAtSensitivity
+        >>> import torch
         >>> preds = torch.tensor([0, 0.5, 0.4, 0.1])
         >>> target = torch.tensor([0, 1, 1, 1])
         >>> metric = BinarySpecificityAtSensitivity(min_sensitivity=0.5, thresholds=None)
@@ -161,6 +162,7 @@ class MulticlassSpecificityAtSensitivity(MulticlassPrecisionRecallCurve):
 
     Example:
         >>> from torchmetrics.classification import MulticlassSpecificityAtSensitivity
+        >>> import torch
         >>> preds = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
         ...                       [0.05, 0.75, 0.05, 0.05, 0.05],
         ...                       [0.05, 0.05, 0.75, 0.05, 0.05],
@@ -253,6 +255,7 @@ class MultilabelSpecificityAtSensitivity(MultilabelPrecisionRecallCurve):
 
     Example:
         >>> from torchmetrics.classification import MultilabelSpecificityAtSensitivity
+        >>> import torch
         >>> preds = torch.tensor([[0.75, 0.05, 0.35],
         ...                       [0.45, 0.75, 0.05],
         ...                       [0.05, 0.55, 0.75],

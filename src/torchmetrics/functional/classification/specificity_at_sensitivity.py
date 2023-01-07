@@ -72,7 +72,7 @@ def _binary_specificity_at_sensitivity_arg_validation(
     _binary_precision_recall_curve_arg_validation(thresholds, ignore_index)
     if not isinstance(min_sensitivity, float) and not (0 <= min_sensitivity <= 1):
         raise ValueError(
-            f"Expected argument `min_sensivitiy` to be an float in the [0,1] range, but got {min_sensitivity}"
+            f"Expected argument `min_sensitivity` to be an float in the [0,1] range, but got {min_sensitivity}"
         )
 
 
@@ -140,12 +140,12 @@ def binary_specificity_at_sensitivity(
         - threshold: a scalar tensor with the corresponding threshold level
 
     Example:
-        >>> from torchmetrics.functional.classification import binary_specicity_at_sensitivity
+        >>> from torchmetrics.functional.classification import binary_specificity_at_sensitivity
         >>> preds = torch.tensor([0, 0.5, 0.4, 0.1])
         >>> target = torch.tensor([0, 1, 1, 1])
-        >>> binary_specicity_at_sensitivity(preds, target, min_sensivitiy=0.5, thresholds=None)
+        >>> binary_specificity_at_sensitivity(preds, target, min_sensitivity=0.5, thresholds=None)
         (tensor(1.), tensor(0.1000))
-        >>> binary_specicity_at_sensitivity(preds, target, min_sensivitiy=0.5, thresholds=5)
+        >>> binary_specificity_at_sensitivity(preds, target, min_sensitivity=0.5, thresholds=5)
         (tensor(1.), tensor(0.2500))
     """
     if validate_args:
@@ -174,7 +174,7 @@ def _multiclass_specificity_at_sensitivity_compute(
     num_classes: int,
     thresholds: Optional[Tensor],
     min_sensitivity: float,
-) -> Tuple[Tensor, Tensor]:
+) -> Union[Tensor, Tuple[Tensor, Tensor], Tuple[List[Tensor], List[Tensor]]]:
     fpr, sensitivity, thresholds = _multiclass_roc_compute(state, num_classes, thresholds)
     specificity = [_convert_fpr_to_specificity(fpr_) for fpr_ in fpr]
     if isinstance(state, Tensor):
@@ -246,7 +246,7 @@ def multiclass_specificity_at_sensitivity(
         - thresholds: an 1d tensor of size (n_classes, ) with the corresponding threshold level per class
 
     Example:
-        >>> from torchmetrics.functional.classification import multiclass_recall_at_precision
+        >>> from torchmetrics.functional.classification import multiclass_specificity_at_sensitivity
         >>> preds = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
         ...                       [0.05, 0.75, 0.05, 0.05, 0.05],
         ...                       [0.05, 0.05, 0.75, 0.05, 0.05],
@@ -399,7 +399,7 @@ def specicity_at_sensitivity(
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
-    :func:`binary_specicity_at_sensitivity`, :func:`multiclass_specicity_at_sensitivity` and
+    :func:`binary_specificity_at_sensitivity`, :func:`multiclass_specicity_at_sensitivity` and
     :func:`multilabel_specifity_at_sensitvity` for the specific details of each argument influence and examples.
     """
     if task == "binary":
