@@ -10,6 +10,7 @@
 # -r detection.txt  # version collision with min versio of PyTorch
 -r audio.txt
 -r multimodal.txt
+-r visual.txt
 
 # add extra testing
 -r image_test.txt

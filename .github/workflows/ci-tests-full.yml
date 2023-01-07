@@ -82,7 +82,8 @@ jobs:
         pip install packaging
         python ./requirements/adjust-versions.py requirements.txt ${{ matrix.pytorch-version }}
 
-    - uses: ./.github/actions/caching
+    - name: full chashing
+      uses: ./.github/actions/caching
       with:
         os: ${{ runner.os }}
         requires: ${{ matrix.requires }}
@@ -107,8 +108,11 @@ jobs:
 
     - name: Install all dependencies
       run: |
+        pip install cython  # needed for installing `pycocotools` in latest config
         python ./requirements/adjust-versions.py requirements.txt
-        python ./requirements/adjust-versions.py requirements/image.txt
+        for fpath in `ls requirements/*.txt`; do
+            python ./requirements/adjust-versions.py $fpath
+        done
         pip install --requirement requirements/devel.txt -U --find-links $PYTORCH_URL
         pip list
 
@@ -118,7 +122,8 @@ jobs:
         python -c "from torch import __version__ as ver; ver = ver.split('+')[0] ; assert ver == '${{ matrix.pytorch-version }}', ver"
         python -c 'import torch ; print("TORCH=" + str(torch.__version__))' >> $GITHUB_OUTPUT
 
-    - uses: ./.github/actions/unittesting
+    - name: Unitests
+      uses: ./.github/actions/unittesting
       if: ${{ needs.check-diff.outputs.test-dirs != '' }}
       with:
         os: ${{ runner.os }}

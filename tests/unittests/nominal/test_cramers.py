@@ -19,10 +19,10 @@ from functools import partial
 import pytest
 import torch
 from dython.nominal import cramers_v as dython_cramers_v
+from lightning_utilities.core.imports import compare_version
 
 from torchmetrics.functional.nominal.cramers import cramers_v, cramers_v_matrix
 from torchmetrics.nominal.cramers import CramersV
-from torchmetrics.utilities.imports import _compare_version
 from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 
 Input = namedtuple("Input", ["preds", "target"])
@@ -87,9 +87,7 @@ def _dython_cramers_v_matrix(matrix, bias_correction, nan_strategy, nan_replace_
     return cramers_v_matrix_value
 
 
-@pytest.mark.skipif(
-    _compare_version("pandas", operator.lt, "1.3.2"), reason="`dython` package requires `pandas>=1.3.2`"
-)
+@pytest.mark.skipif(compare_version("pandas", operator.lt, "1.3.2"), reason="`dython` package requires `pandas>=1.3.2`")
 @pytest.mark.skipif(  # TODO: testing on CUDA fails with pandas 1.3.5, and newer is not available for python 3.7
     torch.cuda.is_available(), reason="Tests fail on CUDA with the most up-to-date available pandas"
 )
@@ -127,7 +125,7 @@ class TestCramersV(MetricTester):
             preds=preds,
             target=target,
             metric_class=CramersV,
-            sk_metric=reference_metric,
+            reference_metric=reference_metric,
             metric_args=metric_args,
         )
 
@@ -144,7 +142,7 @@ class TestCramersV(MetricTester):
             nan_replace_value=nan_replace_value,
         )
         self.run_functional_metric_test(
-            preds, target, metric_functional=cramers_v, sk_metric=reference_metric, metric_args=metric_args
+            preds, target, metric_functional=cramers_v, reference_metric=reference_metric, metric_args=metric_args
         )
 
     def test_cramers_v_differentiability(self, preds, target, bias_correction, nan_strategy, nan_replace_value):
@@ -163,9 +161,7 @@ class TestCramersV(MetricTester):
         )
 
 
-@pytest.mark.skipif(
-    _compare_version("pandas", operator.lt, "1.3.2"), reason="`dython` package requires `pandas>=1.3.2`"
-)
+@pytest.mark.skipif(compare_version("pandas", operator.lt, "1.3.2"), reason="`dython` package requires `pandas>=1.3.2`")
 @pytest.mark.skipif(  # TODO: testing on CUDA fails with pandas 1.3.5, and newer is not available for python 3.7
     torch.cuda.is_available(), reason="Tests fail on CUDA with the most up-to-date available pandas"
 )

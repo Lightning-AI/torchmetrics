@@ -555,6 +555,10 @@ class Metric(Module, ABC):
         """Override this method to compute the final metric value from state variables synchronized across the
         distributed backend."""
 
+    def plot(self, *_: Any, **__: Any) -> None:
+        """Override this method plot the metric value."""
+        raise NotImplementedError
+
     def reset(self) -> None:
         """This method automatically resets the metric state variables to their default value."""
         self._update_count = 0
@@ -911,7 +915,6 @@ class CompositionalMetric(Metric):
             self.metric_b.update(*args, **self.metric_b._filter_kwargs(**kwargs))
 
     def compute(self) -> Any:
-
         # also some parsing for kwargs?
         if isinstance(self.metric_a, Metric):
             val_a = self.metric_a.compute()
@@ -930,7 +933,6 @@ class CompositionalMetric(Metric):
 
     @torch.jit.unused
     def forward(self, *args: Any, **kwargs: Any) -> Any:
-
         val_a = (
             self.metric_a(*args, **self.metric_a._filter_kwargs(**kwargs))
             if isinstance(self.metric_a, Metric)

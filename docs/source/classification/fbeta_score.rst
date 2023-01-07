@@ -17,24 +17,28 @@ FBetaScore
 
 .. autoclass:: torchmetrics.FBetaScore
     :noindex:
+    :exclude-members: update, compute
 
 BinaryFBetaScore
 ^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.BinaryFBetaScore
     :noindex:
+    :exclude-members: update, compute
 
 MulticlassFBetaScore
 ^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.MulticlassFBetaScore
     :noindex:
+    :exclude-members: update, compute
 
 MultilabelFBetaScore
 ^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.MultilabelFBetaScore
     :noindex:
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________
