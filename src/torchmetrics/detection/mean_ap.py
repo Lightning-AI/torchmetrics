@@ -385,7 +385,6 @@ class MeanAveragePrecision(Metric):
             setattr(self, key, current_to_cpu)
 
     def _get_safe_item_values(self, item: Dict[str, Any]) -> Union[Tensor, Tuple]:
-
         if self.iou_type == "bbox":
             boxes = _fix_empty_tensors(item["boxes"])
             if boxes.numel() > 0:

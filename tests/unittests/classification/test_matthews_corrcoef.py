@@ -36,7 +36,7 @@ from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inje
 seed_all(42)
 
 
-def _sk_matthews_corrcoef_binary(preds, target, ignore_index=None):
+def _sklearn_matthews_corrcoef_binary(preds, target, ignore_index=None):
     preds = preds.view(-1).numpy()
     target = target.view(-1).numpy()
     if np.issubdtype(preds.dtype, np.floating):
@@ -60,7 +60,7 @@ class TestBinaryMatthewsCorrCoef(MetricTester):
             preds=preds,
             target=target,
             metric_class=BinaryMatthewsCorrCoef,
-            sk_metric=partial(_sk_matthews_corrcoef_binary, ignore_index=ignore_index),
+            reference_metric=partial(_sklearn_matthews_corrcoef_binary, ignore_index=ignore_index),
             metric_args={
                 "threshold": THRESHOLD,
                 "ignore_index": ignore_index,
@@ -76,7 +76,7 @@ class TestBinaryMatthewsCorrCoef(MetricTester):
             preds=preds,
             target=target,
             metric_functional=binary_matthews_corrcoef,
-            sk_metric=partial(_sk_matthews_corrcoef_binary, ignore_index=ignore_index),
+            reference_metric=partial(_sklearn_matthews_corrcoef_binary, ignore_index=ignore_index),
             metric_args={
                 "threshold": THRESHOLD,
                 "ignore_index": ignore_index,
@@ -121,7 +121,7 @@ class TestBinaryMatthewsCorrCoef(MetricTester):
         )
 
 
-def _sk_matthews_corrcoef_multiclass(preds, target, ignore_index=None):
+def _sklearn_matthews_corrcoef_multiclass(preds, target, ignore_index=None):
     preds = preds.numpy()
     target = target.numpy()
     if np.issubdtype(preds.dtype, np.floating):
@@ -145,7 +145,7 @@ class TestMulticlassMatthewsCorrCoef(MetricTester):
             preds=preds,
             target=target,
             metric_class=MulticlassMatthewsCorrCoef,
-            sk_metric=partial(_sk_matthews_corrcoef_multiclass, ignore_index=ignore_index),
+            reference_metric=partial(_sklearn_matthews_corrcoef_multiclass, ignore_index=ignore_index),
             metric_args={
                 "num_classes": NUM_CLASSES,
                 "ignore_index": ignore_index,
@@ -161,7 +161,7 @@ class TestMulticlassMatthewsCorrCoef(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multiclass_matthews_corrcoef,
-            sk_metric=partial(_sk_matthews_corrcoef_multiclass, ignore_index=ignore_index),
+            reference_metric=partial(_sklearn_matthews_corrcoef_multiclass, ignore_index=ignore_index),
             metric_args={
                 "num_classes": NUM_CLASSES,
                 "ignore_index": ignore_index,
@@ -204,7 +204,7 @@ class TestMulticlassMatthewsCorrCoef(MetricTester):
         )
 
 
-def _sk_matthews_corrcoef_multilabel(preds, target, ignore_index=None):
+def _sklearn_matthews_corrcoef_multilabel(preds, target, ignore_index=None):
     preds = preds.view(-1).numpy()
     target = target.view(-1).numpy()
     if np.issubdtype(preds.dtype, np.floating):
@@ -228,7 +228,7 @@ class TestMultilabelMatthewsCorrCoef(MetricTester):
             preds=preds,
             target=target,
             metric_class=MultilabelMatthewsCorrCoef,
-            sk_metric=partial(_sk_matthews_corrcoef_multilabel, ignore_index=ignore_index),
+            reference_metric=partial(_sklearn_matthews_corrcoef_multilabel, ignore_index=ignore_index),
             metric_args={
                 "num_labels": NUM_CLASSES,
                 "ignore_index": ignore_index,
@@ -244,7 +244,7 @@ class TestMultilabelMatthewsCorrCoef(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multilabel_matthews_corrcoef,
-            sk_metric=partial(_sk_matthews_corrcoef_multilabel, ignore_index=ignore_index),
+            reference_metric=partial(_sklearn_matthews_corrcoef_multilabel, ignore_index=ignore_index),
             metric_args={
                 "num_labels": NUM_CLASSES,
                 "ignore_index": ignore_index,
