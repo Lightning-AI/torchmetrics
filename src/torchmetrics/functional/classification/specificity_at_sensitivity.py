@@ -94,7 +94,7 @@ def binary_specificity_at_sensitivity(
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-):
+) -> Tuple[Tensor, Tensor]:
     r"""Computes the higest possible specificity value given the minimum sensitivity thresholds provided for binary
     tasks. This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different
     thresholds and the find the specificity for a given sensitivity level.
@@ -354,11 +354,12 @@ def multilabel_specificity_at_sensitivity(
     Returns:
         (tuple): a tuple of either 2 tensors or 2 lists containing
 
-        - specificity: an 1d tensor of size (n_classes, ) with the maximum recall for the given precision level per class
+        - specificity: an 1d tensor of size (n_classes, ) with the maximum recall for the given precision
+        level per class
         - thresholds: an 1d tensor of size (n_classes, ) with the corresponding threshold level per class
 
     Example:
-        >>> from torchmetrics.functional.classification import multilabel_recall_at_fixed_precision
+        >>> from torchmetrics.functional.classification import multilabel_specificity_at_sensitivity
         >>> preds = torch.tensor([[0.75, 0.05, 0.35],
         ...                       [0.45, 0.75, 0.05],
         ...                       [0.05, 0.55, 0.75],

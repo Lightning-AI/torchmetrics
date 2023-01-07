@@ -157,7 +157,8 @@ class MulticlassSpecificityAtSensitivity(MulticlassPrecisionRecallCurve):
     Returns:
         (tuple): a tuple of either 2 tensors or 2 lists containing
 
-        - specificity: an 1d tensor of size (n_classes, ) with the maximum specificity for the given sensitivity level per class
+        - specificity: an 1d tensor of size (n_classes, ) with the maximum specificity for the given
+        sensitivity level per class
         - thresholds: an 1d tensor of size (n_classes, ) with the corresponding threshold level per class
 
     Example:
@@ -250,7 +251,8 @@ class MultilabelSpecificityAtSensitivity(MultilabelPrecisionRecallCurve):
     Returns:
         (tuple): a tuple of either 2 tensors or 2 lists containing
 
-        - specificity: an 1d tensor of size (n_classes, ) with the maximum specificity for the given sensitivity level per class
+        - specificity: an 1d tensor of size (n_classes, ) with the maximum specificity for the given
+        sensitivity level per class
         - thresholds: an 1d tensor of size (n_classes, ) with the corresponding threshold level per class
 
     Example:
