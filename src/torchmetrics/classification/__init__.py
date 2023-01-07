@@ -195,5 +195,5 @@ __all__ = [
     "Specificity",
     "BinarySpecificityAtSensitivity",
     "MulticlassSpecificityAtSensitivity",
-    "MultilabelSpecificityAtSensitivity",    
+    "MultilabelSpecificityAtSensitivity",
 ]
