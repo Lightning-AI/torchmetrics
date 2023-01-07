@@ -33,7 +33,7 @@ class RetrievalRecall(RetrievalMetric):
 
     .. note:: ``indexes``, ``preds`` and ``target`` must have the same dimension.
 
-    Note: Predictions will be first grouped by ``indexes`` and then `Recall` will be computed as the mean
+    .. note:: Predictions will be first grouped by ``indexes`` and then `Recall` will be computed as the mean
     of the `Recall` over each query.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
