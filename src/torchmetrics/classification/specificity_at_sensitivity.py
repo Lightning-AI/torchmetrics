@@ -34,9 +34,9 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class BinarySpecificityAtSensitivity(BinaryPrecisionRecallCurve):
-    r"""Computes the higest possible specificity value given the minimum sensitivity thresholds provided. This is done by
-    first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the find the
-    specificity for a given sensitivity level.
+    r"""Computes the higest possible specificity value given the minimum sensitivity thresholds provided. This is
+    done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the
+    find the specificity for a given sensitivity level.
 
     Accepts the following input tensors:
 
@@ -115,9 +115,9 @@ class BinarySpecificityAtSensitivity(BinaryPrecisionRecallCurve):
 
 
 class MulticlassSpecificityAtSensitivity(MulticlassPrecisionRecallCurve):
-    r"""Computes the higest possible specificity value given the minimum sensitivity thresholds provided. This is done by
-    first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the find the
-    specificity for a given sensitivity level.
+    r"""Computes the higest possible specificity value given the minimum sensitivity thresholds provided. This is
+    done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the
+    find the specificity for a given sensitivity level.
 
     Accepts the following input tensors:
 
@@ -207,9 +207,9 @@ class MulticlassSpecificityAtSensitivity(MulticlassPrecisionRecallCurve):
 
 
 class MultilabelSpecificityAtSensitivity(MultilabelPrecisionRecallCurve):
-    r"""Computes the higest possible specificity value given the minimum sensitivity thresholds provided. This is done by
-    first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the find the
-    specificity for a given sensitivity level.
+    r"""Computes the higest possible specificity value given the minimum sensitivity thresholds provided. This is
+    done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the
+    find the specificity for a given sensitivity level.
 
     Accepts the following input tensors:
 
