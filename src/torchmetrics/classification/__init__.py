@@ -101,6 +101,11 @@ from torchmetrics.classification.specificity import (
     MultilabelSpecificity,
     Specificity,
 )
+from torchmetrics.classification.specificity_at_sensitivity import (
+    BinarySpecificityAtSensitivity,
+    MulticlassSpecificityAtSensitivity,
+    MultilabelPrecisionRecallCurve,
+)
 
 __all__ = [
     "BinaryConfusionMatrix",
