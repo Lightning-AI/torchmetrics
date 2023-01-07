@@ -413,7 +413,7 @@ def specicity_at_sensitivity(
         )
     if task == "multilabel":
         assert isinstance(num_labels, int)
-        return multilabel_specifity_at_sensitivity(
+        return multilabel_specificity_at_sensitivity(
             preds, target, num_labels, min_sensitivity, thresholds, ignore_index, validate_args
         )
     raise ValueError(
