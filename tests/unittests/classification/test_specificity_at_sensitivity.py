@@ -27,10 +27,10 @@ from torchmetrics.classification.specificity_at_sensitivity import (
     MultilabelSpecificityAtSensitivity,
 )
 from torchmetrics.functional.classification.specificity_at_sensitivity import (
+    _convert_fpr_to_specificity,
     binary_specificity_at_sensitivity,
     multiclass_specificity_at_sensitivity,
     multilabel_specificity_at_sensitivity,
-    _convert_fpr_to_specificity,
 )
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
@@ -190,7 +190,9 @@ class TestMulticlassSpecificityAtSensitivity(MetricTester):
             target=target,
             metric_class=MulticlassSpecificityAtSensitivity,
             reference_metric=partial(
-                _sklearn_specificity_at_sensitivity_multiclass, min_sensitivity=min_sensitivity, ignore_index=ignore_index
+                _sklearn_specificity_at_sensitivity_multiclass,
+                min_sensitivity=min_sensitivity,
+                ignore_index=ignore_index,
             ),
             metric_args={
                 "min_sensitivity": min_sensitivity,
@@ -211,7 +213,9 @@ class TestMulticlassSpecificityAtSensitivity(MetricTester):
             target=target,
             metric_functional=multiclass_specificity_at_sensitivity,
             reference_metric=partial(
-                _sklearn_specificity_at_sensitivity_multiclass, min_sensitivity=min_sensitivity, ignore_index=ignore_index
+                _sklearn_specificity_at_sensitivity_multiclass,
+                min_sensitivity=min_sensitivity,
+                ignore_index=ignore_index,
             ),
             metric_args={
                 "min_sensitivity": min_sensitivity,
@@ -269,7 +273,11 @@ class TestMulticlassSpecificityAtSensitivity(MetricTester):
                 pred, true, num_classes=NUM_CLASSES, min_sensitivity=min_sensitivity, thresholds=None
             )
             r2, _ = multiclass_specificity_at_sensitivity(
-                pred, true, num_classes=NUM_CLASSES, min_sensitivity=min_sensitivity, thresholds=torch.linspace(0, 1, 100)
+                pred,
+                true,
+                num_classes=NUM_CLASSES,
+                min_sensitivity=min_sensitivity,
+                thresholds=torch.linspace(0, 1, 100),
             )
             assert all(torch.allclose(r1[i], r2[i]) for i in range(len(r1)))
 
@@ -300,7 +308,9 @@ class TestMultilabelSpecificityAtSensitivity(MetricTester):
             target=target,
             metric_class=MultilabelSpecificityAtSensitivity,
             reference_metric=partial(
-                _sklearn_specificity_at_sensitivity_multilabel, min_sensitivity=min_sensitivity, ignore_index=ignore_index
+                _sklearn_specificity_at_sensitivity_multilabel,
+                min_sensitivity=min_sensitivity,
+                ignore_index=ignore_index,
             ),
             metric_args={
                 "min_sensitivity": min_sensitivity,
@@ -321,7 +331,9 @@ class TestMultilabelSpecificityAtSensitivity(MetricTester):
             target=target,
             metric_functional=multilabel_specificity_at_sensitivity,
             reference_metric=partial(
-                _sklearn_specificity_at_sensitivity_multilabel, min_sensitivity=min_sensitivity, ignore_index=ignore_index
+                _sklearn_specificity_at_sensitivity_multilabel,
+                min_sensitivity=min_sensitivity,
+                ignore_index=ignore_index,
             ),
             metric_args={
                 "min_sensitivity": min_sensitivity,
@@ -379,7 +391,11 @@ class TestMultilabelSpecificityAtSensitivity(MetricTester):
                 pred, true, num_labels=NUM_CLASSES, min_sensitivity=min_sensitivity, thresholds=None
             )
             r2, _ = multilabel_specificity_at_sensitivity(
-                pred, true, num_labels=NUM_CLASSES, min_sensitivity=min_sensitivity, thresholds=torch.linspace(0, 1, 100)
+                pred,
+                true,
+                num_labels=NUM_CLASSES,
+                min_sensitivity=min_sensitivity,
+                thresholds=torch.linspace(0, 1, 100),
             )
             assert all(torch.allclose(r1[i], r2[i]) for i in range(len(r1)))
 
