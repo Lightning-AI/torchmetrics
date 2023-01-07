@@ -141,12 +141,12 @@ def binary_specificity_at_sensitivity(
 
     Example:
         >>> from torchmetrics.functional.classification import binary_specicity_at_sensitivity
-        >>> preds = torch.tensor([0, 0.5, 0.7, 0.8])
-        >>> target = torch.tensor([0, 1, 1, 0])
+        >>> preds = torch.tensor([0, 0.5, 0.4, 0.1])
+        >>> target = torch.tensor([0, 1, 1, 1])
         >>> binary_specicity_at_sensitivity(preds, target, min_sensivitiy=0.5, thresholds=None)
-        TODO
+        (tensor(1.), tensor(0.1000))
         >>> binary_specicity_at_sensitivity(preds, target, min_sensivitiy=0.5, thresholds=5)
-        TODO
+        (tensor(1.), tensor(0.2500))
     """
     if validate_args:
         _binary_specificity_at_sensitivity_arg_validation(min_sensitivity, thresholds, ignore_index)
@@ -176,7 +176,7 @@ def _multiclass_specificity_at_sensitivity_compute(
     min_sensitivity: float,
 ) -> Tuple[Tensor, Tensor]:
     fpr, sensitivity, thresholds = _multiclass_roc_compute(state, num_classes, thresholds)
-    specificity = _convert_fpr_to_specificity(fpr)
+    specificity = [_convert_fpr_to_specificity(fpr_) for fpr_ in fpr]
     if isinstance(state, Tensor):
         res = [
             _specificity_at_sensitivity(sp, sn, thresholds, min_sensitivity) for sp, sn in zip(specificity, sensitivity)
@@ -253,9 +253,9 @@ def multiclass_specificity_at_sensitivity(
         ...                       [0.05, 0.05, 0.05, 0.75, 0.05]])
         >>> target = torch.tensor([0, 1, 3, 2])
         >>> multiclass_specificity_at_sensitivity(preds, target, num_classes=5, min_sensitivity=0.5, thresholds=None)
-        TODO
+        (tensor([1., 1., 0., 0., 0.]), tensor([7.5000e-01, 7.5000e-01, 1.0000e+06, 1.0000e+06, 1.0000e+06]))
         >>> multiclass_specificity_at_sensitivity(preds, target, num_classes=5, min_sensitivity=0.5, thresholds=5)
-        TODO
+        (tensor([1., 1., 0., 0., 0.]), tensor([7.5000e-01, 7.5000e-01, 1.0000e+06, 1.0000e+06, 1.0000e+06]))
     """
     if validate_args:
         _multiclass_specificity_at_sensitivity_arg_validation(num_classes, min_sensitivity, thresholds, ignore_index)
@@ -288,7 +288,7 @@ def _multilabel_specificity_at_sensitivity_compute(
     min_sensitivity: float,
 ) -> Tuple[Tensor, Tensor]:
     fpr, sensitivity, thresholds = _multilabel_roc_compute(state, num_labels, thresholds, ignore_index)
-    specificity = _convert_fpr_to_specificity(fpr)
+    specificity = [_convert_fpr_to_specificity(fpr_) for fpr_ in fpr]
     if isinstance(state, Tensor):
         res = [
             _specificity_at_sensitivity(sp, sn, thresholds, min_sensitivity) for sp, sn in zip(specificity, sensitivity)
@@ -368,9 +368,9 @@ def multilabel_specifity_at_sensitivity(
         ...                        [0, 1, 1],
         ...                        [1, 1, 1]])
         >>> multilabel_specifity_at_sensitivity(preds, target, num_labels=3, min_sensitivity=0.5, thresholds=None)
-        TODO
+        (tensor([1.0000, 0.5000, 1.0000]), tensor([0.7500, 0.5500, 0.3500]))
         >>> multilabel_specifity_at_sensitivity(preds, target, num_labels=3, min_sensitivity=0.5, thresholds=5)
-        TODO
+        (tensor([1.0000, 0.5000, 1.0000]), tensor([0.7500, 0.5000, 0.2500]))
     """
     if validate_args:
         _multilabel_specificity_at_sensitivity_arg_validation(num_labels, min_sensitivity, thresholds, ignore_index)

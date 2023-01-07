@@ -79,14 +79,14 @@ class BinarySpecificityAtSensitivity(BinaryPrecisionRecallCurve):
 
     Example:
         >>> from torchmetrics.classification import BinarySpecificityAtSensitivity
-        >>> preds = torch.tensor([0, 0.5, 0.7, 0.8])
-        >>> target = torch.tensor([0, 1, 1, 0])
+        >>> preds = torch.tensor([0, 0.5, 0.4, 0.1])
+        >>> target = torch.tensor([0, 1, 1, 1])
         >>> metric = BinarySpecificityAtSensitivity(min_sensitivity=0.5, thresholds=None)
         >>> metric(preds, target)
-        TODO
+        (tensor(1.), tensor(0.1000))
         >>> metric = BinarySpecificityAtSensitivity(min_sensitivity=0.5, thresholds=5)
         >>> metric(preds, target)
-        TODO
+        (tensor(1.), tensor(0.2500))
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -263,10 +263,10 @@ class MultilabelSpecificityAtSensitivity(MultilabelPrecisionRecallCurve):
         ...                        [1, 1, 1]])
         >>> metric = MultilabelSpecificityAtSensitivity(num_labels=3, min_sensitivity=0.5, thresholds=None)
         >>> metric(preds, target)
-        TODO
+        (tensor([1.0000, 0.5000, 1.0000]), tensor([0.7500, 0.5500, 0.3500]))
         >>> metric = MultilabelSpecificityAtSensitivity(num_labels=3, min_sensitivity=0.5, thresholds=5)
         >>> metric(preds, target)
-        TODO
+        (tensor([1.0000, 0.5000, 1.0000]), tensor([0.7500, 0.5000, 0.2500]))
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
