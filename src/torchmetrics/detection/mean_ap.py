@@ -197,7 +197,7 @@ def _fix_empty_tensors(boxes: Tensor) -> Tensor:
 
 
 class MeanAveragePrecision(Metric):
-    r"""`Computes the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)`_ for object detection
+    r"""Computes the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)`_ for object detection
     predictions. Optionally, the mAP and mAR values can be calculated per class.
 
     Predicted boxes and targets have to be in Pascal VOC format
@@ -248,7 +248,7 @@ class MeanAveragePrecision(Metric):
         - map_per_class: (:class:`~torch.Tensor`) (-1 if class metrics are disabled)
         - mar_100_per_class: (:class:`~torch.Tensor`) (-1 if class metrics are disabled)
 
-    For an example on how to use this metric check the `torchmetrics mean_ap example`_
+    For an example on how to use this metric check the `torchmetrics mAP example`_.
 
     .. note::
         ``map`` score is calculated with @[ IoU=self.iou_thresholds | area=all | max_dets=max_detection_thresholds ].
