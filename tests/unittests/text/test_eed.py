@@ -56,7 +56,7 @@ class TestExtendedEditDistance(TextTester):
             preds=preds,
             targets=targets,
             metric_class=ExtendedEditDistance,
-            sk_metric=rwth_metric,
+            reference_metric=rwth_metric,
             dist_sync_on_step=dist_sync_on_step,
         )
 
@@ -66,7 +66,7 @@ class TestExtendedEditDistance(TextTester):
             preds,
             targets,
             metric_functional=extended_edit_distance,
-            sk_metric=rwth_metric,
+            reference_metric=rwth_metric,
         )
 
     def test_eed_differentiability(self, preds, targets):
