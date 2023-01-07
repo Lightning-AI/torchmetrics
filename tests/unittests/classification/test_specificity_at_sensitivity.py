@@ -32,6 +32,7 @@ from torchmetrics.functional.classification.specificity_at_sensitivity import (
     multiclass_specificity_at_sensitivity,
     multilabel_specificity_at_sensitivity,
 )
+from torchmetrics.functional.classification.roc import _binary_roc_compute
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
 from unittests.helpers.testers import NUM_CLASSES, MetricTester, inject_ignore_index, remove_ignore_index
@@ -40,14 +41,21 @@ seed_all(42)
 
 
 def specificity_at_sensitivity_x_multilabel(predictions, targets, min_sensitivity):
-    fpr, sensitivity, thresholds = sk_roc_curve(targets, predictions)
+    # get fpr, tpr and thresholds
+    fpr, sensitivity, thresholds = sk_roc_curve(targets, predictions, pos_label=1.)
+    # check if fpr is filled with nan (All positive samples),
+    # replace nan with zero tensor
+    if np.isnan(fpr).all():
+        fpr = np.zeros_like(thresholds)
+    
+    # convert fpr to specificity (specificity = 1 - fpr)
     specificity = _convert_fpr_to_specificity(fpr)
-
     try:
-        tuple_all = [(sp, sn, th) for sp, sn, th in zip(specificity, sensitivity, thresholds) if sn >= min_sensitivity]
-        max_spec, _, best_threshold = max(tuple_all)
+        max_spec, _, best_threshold = max([
+            (sp, sn, thresh) for sp, sn, thresh in zip(specificity, sensitivity, thresholds) if sn >= min_sensitivity
+        ])
     except ValueError:
-        max_spec, best_threshold = 0, 1e6
+        max_spec, best_threshold = 0., 1e6
 
     return float(max_spec), float(best_threshold)
 

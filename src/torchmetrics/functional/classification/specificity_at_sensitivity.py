@@ -51,14 +51,11 @@ def _specificity_at_sensitivity(
 ) -> Tuple[Tensor, Tensor]:
     try:
         max_spec, _, best_threshold = max(
-            (sp, sn, thresh) for sp, sn, thresh in zip(specificity, sensitivity, thresholds) if sn >= min_sensitivity
+            [(sp, sn, thresh) for sp, sn, thresh in zip(specificity, sensitivity, thresholds) if sn >= min_sensitivity]
         )
 
     except ValueError:
         max_spec = torch.tensor(0.0, device=specificity.device, dtype=specificity.dtype)
-        best_threshold = torch.tensor(0)
-
-    if max_spec == 0.0:
         best_threshold = torch.tensor(1e6, device=thresholds.device, dtype=thresholds.dtype)
 
     return max_spec, best_threshold
