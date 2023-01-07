@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
 from functools import partial
 from typing import Sequence
 
@@ -36,6 +37,9 @@ _METRIC_KEY_TO_IDX = {
 }
 
 MODEL_NAME = "albert-base-v2"
+
+# Disable tokenizers parallelism (forking not friendly with parallelism)
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
 @pytest.mark.skipif(not _TRANSFORMERS_AVAILABLE, reason="test requires transformers")
