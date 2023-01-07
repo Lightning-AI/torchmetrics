@@ -303,7 +303,7 @@ def _multilabel_specificity_at_sensitivity_compute(
     return specificity, thresholds
 
 
-def multilabel_specifity_at_sensitivity(
+def multilabel_specificity_at_sensitivity(
     preds: Tensor,
     target: Tensor,
     num_labels: int,
@@ -367,9 +367,9 @@ def multilabel_specifity_at_sensitivity(
         ...                        [0, 0, 0],
         ...                        [0, 1, 1],
         ...                        [1, 1, 1]])
-        >>> multilabel_specifity_at_sensitivity(preds, target, num_labels=3, min_sensitivity=0.5, thresholds=None)
+        >>> multilabel_specificity_at_sensitivity(preds, target, num_labels=3, min_sensitivity=0.5, thresholds=None)
         (tensor([1.0000, 0.5000, 1.0000]), tensor([0.7500, 0.5500, 0.3500]))
-        >>> multilabel_specifity_at_sensitivity(preds, target, num_labels=3, min_sensitivity=0.5, thresholds=5)
+        >>> multilabel_specificity_at_sensitivity(preds, target, num_labels=3, min_sensitivity=0.5, thresholds=5)
         (tensor([1.0000, 0.5000, 1.0000]), tensor([0.7500, 0.5000, 0.2500]))
     """
     if validate_args:
