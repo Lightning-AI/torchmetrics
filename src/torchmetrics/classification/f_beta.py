@@ -34,15 +34,23 @@ class BinaryFBetaScore(BinaryStatScores):
         F_{\beta} = (1 + \beta^2) * \frac{\text{precision} * \text{recall}}
         {(\beta^2 * \text{precision}) + \text{recall}}
 
-    Accepts the following input tensors:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (int or float tensor): ``(N, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
-      we convert to int tensor with thresholding using the value in ``threshold``.
-    - ``target`` (int tensor): ``(N, ...)``
+    - ``preds`` (:class:`~torch.Tensor`): An int tensor or float tensor of shape ``(N, ...)``. If preds is a floating 
+      point tensor with values outside [0,1] range we consider the input to be logits and will auto apply sigmoid 
+      per element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``.
+    
+    .. note:: The influence of the additional dimension ``...`` (if present) will be determined by the 
+    `multidim_average` argument.
 
-    The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
+    As output to ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``bfbs`` (:class:`~torch.Tensor`): A tensor whose returned shape depends on the ``multidim_average`` argument:
+
+        - If ``multidim_average`` is set to ``global`` the output will be a scalar tensor
+        - If ``multidim_average`` is set to ``samplewise`` the output will be a tensor of shape ``(N,)``consisting of 
+          a scalar value per sample.
 
     Args:
         beta: Weighting between precision and recall in calculation. Setting to 1 corresponds to equal weight
@@ -59,24 +67,20 @@ class BinaryFBetaScore(BinaryStatScores):
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 
-    Returns:
-        If ``multidim_average`` is set to ``global``, the metric returns a scalar value. If ``multidim_average``
-        is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of a scalar value per sample.
-
     Example (preds is int tensor):
         >>> from torchmetrics.classification import BinaryFBetaScore
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0, 0, 1, 1, 0, 1])
-        >>> metric = BinaryFBetaScore(beta=2.0)
-        >>> metric(preds, target)
+        >>> bfbs = BinaryFBetaScore(beta=2.0)
+        >>> bfbs(preds, target)
         tensor(0.6667)
 
     Example (preds is float tensor):
         >>> from torchmetrics.classification import BinaryFBetaScore
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
-        >>> metric = BinaryFBetaScore(beta=2.0)
-        >>> metric(preds, target)
+        >>> bfbs = BinaryFBetaScore(beta=2.0)
+        >>> bfbs(preds, target)
         tensor(0.6667)
 
     Example (multidim tensors):
@@ -88,8 +92,8 @@ class BinaryFBetaScore(BinaryStatScores):
         ...         [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]],
         ...     ]
         ... )
-        >>> metric = BinaryFBetaScore(beta=2.0, multidim_average='samplewise')
-        >>> metric(preds, target)
+        >>> bfbs = BinaryFBetaScore(beta=2.0, multidim_average='samplewise')
+        >>> bfbs(preds, target)
         tensor([0.5882, 0.0000])
     """
     is_differentiable: bool = False
@@ -129,15 +133,30 @@ class MulticlassFBetaScore(MulticlassStatScores):
         F_{\beta} = (1 + \beta^2) * \frac{\text{precision} * \text{recall}}
         {(\beta^2 * \text{precision}) + \text{recall}}
 
-    Accepts the following input tensors:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds``: ``(N, ...)`` (int tensor) or ``(N, C, ..)`` (float tensor). If preds is a floating point
-      we apply ``torch.argmax`` along the ``C`` dimension to automatically convert probabilities/logits into
-      an int tensor.
-    - ``target`` (int tensor): ``(N, ...)``
+    - ``preds`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)`` or float tensor of shape ``(N, C, ..)``. 
+      If preds is a floating point we apply ``torch.argmax`` along the ``C`` dimension to automatically convert 
+      probabilities/logits into an int tensor.
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``.
+    
+    .. note:: The influence of the additional dimension ``...`` (if present) will be determined by the 
+    `multidim_average` argument.
 
-    The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
+    As output to ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``mcfbs`` (:class:`~torch.Tensor`): A tensor whose returned shape depends on the ``average`` and 
+      ``multidim_average`` arguments:
+
+        - If ``multidim_average`` is set to ``global``:
+
+          - If ``average='micro'/'macro'/'weighted'``, the output will be a scalar tensor
+          - If ``average=None/'none'``, the shape will be ``(C,)``
+
+        - If ``multidim_average`` is set to ``samplewise``:
+
+          - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
+          - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Args:
         beta: Weighting between precision and recall in calculation. Setting to 1 corresponds to equal weight
@@ -165,28 +184,15 @@ class MulticlassFBetaScore(MulticlassStatScores):
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 
-    Returns:
-        The returned shape depends on the ``average`` and ``multidim_average`` arguments:
-
-        - If ``multidim_average`` is set to ``global``:
-
-          - If ``average='micro'/'macro'/'weighted'``, the output will be a scalar tensor
-          - If ``average=None/'none'``, the shape will be ``(C,)``
-
-        - If ``multidim_average`` is set to ``samplewise``:
-
-          - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
-          - If ``average=None/'none'``, the shape will be ``(N, C)``
-
     Example (preds is int tensor):
         >>> from torchmetrics.classification import MulticlassFBetaScore
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([2, 1, 0, 1])
-        >>> metric = MulticlassFBetaScore(beta=2.0, num_classes=3)
-        >>> metric(preds, target)
+        >>> mcfbs = MulticlassFBetaScore(beta=2.0, num_classes=3)
+        >>> mcfbs(preds, target)
         tensor(0.7963)
-        >>> metric = MulticlassFBetaScore(beta=2.0, num_classes=3, average=None)
-        >>> metric(preds, target)
+        >>> mcfbs = MulticlassFBetaScore(beta=2.0, num_classes=3, average=None)
+        >>> mcfbs(preds, target)
         tensor([0.5556, 0.8333, 1.0000])
 
     Example (preds is float tensor):
@@ -198,11 +204,11 @@ class MulticlassFBetaScore(MulticlassStatScores):
         ...   [0.71, 0.09, 0.20],
         ...   [0.05, 0.82, 0.13],
         ... ])
-        >>> metric = MulticlassFBetaScore(beta=2.0, num_classes=3)
-        >>> metric(preds, target)
+        >>> mcfbs = MulticlassFBetaScore(beta=2.0, num_classes=3)
+        >>> mcfbs(preds, target)
         tensor(0.7963)
-        >>> metric = MulticlassFBetaScore(beta=2.0, num_classes=3, average=None)
-        >>> metric(preds, target)
+        >>> mcfbs = MulticlassFBetaScore(beta=2.0, num_classes=3, average=None)
+        >>> mcfbs(preds, target)
         tensor([0.5556, 0.8333, 1.0000])
 
     Example (multidim tensors):
@@ -212,8 +218,8 @@ class MulticlassFBetaScore(MulticlassStatScores):
         >>> metric = MulticlassFBetaScore(beta=2.0, num_classes=3, multidim_average='samplewise')
         >>> metric(preds, target)
         tensor([0.4697, 0.2706])
-        >>> metric = MulticlassFBetaScore(beta=2.0, num_classes=3, multidim_average='samplewise', average=None)
-        >>> metric(preds, target)
+        >>> mcfbs = MulticlassFBetaScore(beta=2.0, num_classes=3, multidim_average='samplewise', average=None)
+        >>> mcfbs(preds, target)
         tensor([[0.9091, 0.0000, 0.5000],
                 [0.0000, 0.3571, 0.4545]])
     """
@@ -258,15 +264,30 @@ class MultilabelFBetaScore(MultilabelStatScores):
         F_{\beta} = (1 + \beta^2) * \frac{\text{precision} * \text{recall}}
         {(\beta^2 * \text{precision}) + \text{recall}}
 
-    Accepts the following input tensors:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (int or float tensor): ``(N, C, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
-      we convert to int tensor with thresholding using the value in ``threshold``.
-    - ``target`` (int tensor): ``(N, C, ...)``
+    - ``preds`` (:class:`~torch.Tensor`): An int or float tensor of shape ``(N, C, ...)``. If preds is a floating 
+      point tensor with values outside [0,1] range we consider the input to be logits and will auto apply sigmoid 
+      per element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``.
+    
+    .. note:: The influence of the additional dimension ``...`` (if present) will be determined by the 
+    `multidim_average` argument.
 
-    The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
+    As output to ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``mlfbs`` (:class:`~torch.Tensor`): A tensor whose returned shape depends on the ``average`` and 
+      ``multidim_average`` arguments:
+
+        - If ``multidim_average`` is set to ``global``:
+
+          - If ``average='micro'/'macro'/'weighted'``, the output will be a scalar tensor
+          - If ``average=None/'none'``, the shape will be ``(C,)``
+
+        - If ``multidim_average`` is set to ``samplewise``:
+
+          - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
+          - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Args:
         beta: Weighting between precision and recall in calculation. Setting to 1 corresponds to equal weight
@@ -292,39 +313,26 @@ class MultilabelFBetaScore(MultilabelStatScores):
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 
-    Returns:
-        The returned shape depends on the ``average`` and ``multidim_average`` arguments:
-
-        - If ``multidim_average`` is set to ``global``:
-
-          - If ``average='micro'/'macro'/'weighted'``, the output will be a scalar tensor
-          - If ``average=None/'none'``, the shape will be ``(C,)``
-
-        - If ``multidim_average`` is set to ``samplewise``:
-
-          - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
-          - If ``average=None/'none'``, the shape will be ``(N, C)``
-
     Example (preds is int tensor):
         >>> from torchmetrics.classification import MultilabelFBetaScore
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
-        >>> metric = MultilabelFBetaScore(beta=2.0, num_labels=3)
-        >>> metric(preds, target)
+        >>> mlfbs = MultilabelFBetaScore(beta=2.0, num_labels=3)
+        >>> mlfbs(preds, target)
         tensor(0.6111)
-        >>> metric = MultilabelFBetaScore(beta=2.0, num_labels=3, average=None)
-        >>> metric(preds, target)
+        >>> mlfbs = MultilabelFBetaScore(beta=2.0, num_labels=3, average=None)
+        >>> mlfbs(preds, target)
         tensor([1.0000, 0.0000, 0.8333])
 
     Example (preds is float tensor):
         >>> from torchmetrics.classification import MultilabelFBetaScore
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
-        >>> metric = MultilabelFBetaScore(beta=2.0, num_labels=3)
-        >>> metric(preds, target)
+        >>> mlfbs = MultilabelFBetaScore(beta=2.0, num_labels=3)
+        >>> mlfbs(preds, target)
         tensor(0.6111)
-        >>> metric = MultilabelFBetaScore(beta=2.0, num_labels=3, average=None)
-        >>> metric(preds, target)
+        >>> mlfbs = MultilabelFBetaScore(beta=2.0, num_labels=3, average=None)
+        >>> mlfbs(preds, target)
         tensor([1.0000, 0.0000, 0.8333])
 
     Example (multidim tensors):
@@ -336,11 +344,11 @@ class MultilabelFBetaScore(MultilabelStatScores):
         ...         [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]],
         ...     ]
         ... )
-        >>> metric = MultilabelFBetaScore(num_labels=3, beta=2.0, multidim_average='samplewise')
-        >>> metric(preds, target)
+        >>> mlfbs = MultilabelFBetaScore(num_labels=3, beta=2.0, multidim_average='samplewise')
+        >>> mlfbs(preds, target)
         tensor([0.5556, 0.0000])
-        >>> metric = MultilabelFBetaScore(num_labels=3, beta=2.0, multidim_average='samplewise', average=None)
-        >>> metric(preds, target)
+        >>> mlfbs = MultilabelFBetaScore(num_labels=3, beta=2.0, multidim_average='samplewise', average=None)
+        >>> mlfbs(preds, target)
         tensor([[0.8333, 0.8333, 0.0000],
                 [0.0000, 0.0000, 0.0000]])
     """
@@ -384,15 +392,23 @@ class BinaryF1Score(BinaryFBetaScore):
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
 
-    Accepts the following input tensors:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (int or float tensor): ``(N, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
-      we convert to int tensor with thresholding using the value in ``threshold``.
-    - ``target`` (int tensor): ``(N, ...)``
+    - ``preds`` (:class:`~torch.Tensor`): An int or float tensor of shape ``(N, ...)``. If preds is a floating point 
+      tensor with values outside [0,1] range we consider the input to be logits and will auto apply sigmoid per 
+      element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``
+    
+    .. note:: The influence of the additional dimension ``...`` (if present) will be determined by the 
+    `multidim_average` argument.
 
-    The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
+    As output to ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``bf1s`` (:class:`~torch.Tensor`): A tensor whose returned shape depends on the ``multidim_average`` argument:
+
+        - If ``multidim_average`` is set to ``global``, the metric returns a scalar value. 
+        - If ``multidim_average`` is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of a scalar 
+          value per sample.
 
     Args:
         threshold: Threshold for transforming probability to binary {0,1} predictions
@@ -408,24 +424,20 @@ class BinaryF1Score(BinaryFBetaScore):
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 
-    Returns:
-        If ``multidim_average`` is set to ``global``, the metric returns a scalar value. If ``multidim_average``
-        is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of a scalar value per sample.
-
     Example (preds is int tensor):
         >>> from torchmetrics.classification import BinaryF1Score
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0, 0, 1, 1, 0, 1])
-        >>> metric = BinaryF1Score()
-        >>> metric(preds, target)
+        >>> bf1s = BinaryF1Score()
+        >>> bf1s(preds, target)
         tensor(0.6667)
 
     Example (preds is float tensor):
         >>> from torchmetrics.classification import BinaryF1Score
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
-        >>> metric = BinaryF1Score()
-        >>> metric(preds, target)
+        >>> bf1s = BinaryF1Score()
+        >>> bf1s(preds, target)
         tensor(0.6667)
 
     Example (multidim tensors):
@@ -437,8 +449,8 @@ class BinaryF1Score(BinaryFBetaScore):
         ...         [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]],
         ...     ]
         ... )
-        >>> metric = BinaryF1Score(multidim_average='samplewise')
-        >>> metric(preds, target)
+        >>> bf1s = BinaryF1Score(multidim_average='samplewise')
+        >>> bf1s(preds, target)
         tensor([0.5000, 0.0000])
     """
     is_differentiable: bool = False
@@ -469,15 +481,30 @@ class MulticlassF1Score(MulticlassFBetaScore):
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
 
-    Accepts the following input tensors:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds``: ``(N, ...)`` (int tensor) or ``(N, C, ..)`` (float tensor). If preds is a floating point
-      we apply ``torch.argmax`` along the ``C`` dimension to automatically convert probabilities/logits into
-      an int tensor.
-    - ``target`` (int tensor): ``(N, ...)``
+    - ``preds`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)`` or float tensor of shape ``(N, C, ..)``. 
+      If preds is a floating point we apply ``torch.argmax`` along the ``C`` dimension to automatically convert 
+      probabilities/logits into an int tensor.
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``
+    
+    .. note:: The influence of the additional dimension ``...`` (if present) will be determined by the 
+    `multidim_average` argument.
 
-    The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
+    As output to ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``mcf1s`` (:class:`~torch.Tensor`): A tensor whose returned shape depends on the ``average`` and 
+      ``multidim_average`` arguments:
+
+        - If ``multidim_average`` is set to ``global``:
+
+          - If ``average='micro'/'macro'/'weighted'``, the output will be a scalar tensor
+          - If ``average=None/'none'``, the shape will be ``(C,)``
+
+        - If ``multidim_average`` is set to ``samplewise``:
+
+          - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
+          - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Args:
         preds: Tensor with predictions
@@ -505,28 +532,15 @@ class MulticlassF1Score(MulticlassFBetaScore):
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 
-    Returns:
-        The returned shape depends on the ``average`` and ``multidim_average`` arguments:
-
-        - If ``multidim_average`` is set to ``global``:
-
-          - If ``average='micro'/'macro'/'weighted'``, the output will be a scalar tensor
-          - If ``average=None/'none'``, the shape will be ``(C,)``
-
-        - If ``multidim_average`` is set to ``samplewise``:
-
-          - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
-          - If ``average=None/'none'``, the shape will be ``(N, C)``
-
     Example (preds is int tensor):
         >>> from torchmetrics.classification import MulticlassF1Score
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([2, 1, 0, 1])
-        >>> metric = MulticlassF1Score(num_classes=3)
-        >>> metric(preds, target)
+        >>> mcf1s = MulticlassF1Score(num_classes=3)
+        >>> mcf1s(preds, target)
         tensor(0.7778)
-        >>> metric = MulticlassF1Score(num_classes=3, average=None)
-        >>> metric(preds, target)
+        >>> mcf1s = MulticlassF1Score(num_classes=3, average=None)
+        >>> mcf1s(preds, target)
         tensor([0.6667, 0.6667, 1.0000])
 
     Example (preds is float tensor):
@@ -538,22 +552,22 @@ class MulticlassF1Score(MulticlassFBetaScore):
         ...   [0.71, 0.09, 0.20],
         ...   [0.05, 0.82, 0.13],
         ... ])
-        >>> metric = MulticlassF1Score(num_classes=3)
-        >>> metric(preds, target)
+        >>> mcf1s = MulticlassF1Score(num_classes=3)
+        >>> mcf1s(preds, target)
         tensor(0.7778)
-        >>> metric = MulticlassF1Score(num_classes=3, average=None)
-        >>> metric(preds, target)
+        >>> mcf1s = MulticlassF1Score(num_classes=3, average=None)
+        >>> mcf1s(preds, target)
         tensor([0.6667, 0.6667, 1.0000])
 
     Example (multidim tensors):
         >>> from torchmetrics.classification import MulticlassF1Score
         >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
         >>> preds = torch.tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
-        >>> metric = MulticlassF1Score(num_classes=3, multidim_average='samplewise')
-        >>> metric(preds, target)
+        >>> mcf1s = MulticlassF1Score(num_classes=3, multidim_average='samplewise')
+        >>> mcf1s(preds, target)
         tensor([0.4333, 0.2667])
-        >>> metric = MulticlassF1Score(num_classes=3, multidim_average='samplewise', average=None)
-        >>> metric(preds, target)
+        >>> mcf1s = MulticlassF1Score(num_classes=3, multidim_average='samplewise', average=None)
+        >>> mcf1s(preds, target)
         tensor([[0.8000, 0.0000, 0.5000],
                 [0.0000, 0.4000, 0.4000]])
     """
@@ -589,15 +603,31 @@ class MultilabelF1Score(MultilabelFBetaScore):
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
 
-    Accepts the following input tensors:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (int or float tensor): ``(N, C, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
-      we convert to int tensor with thresholding using the value in ``threshold``.
-    - ``target`` (int tensor): ``(N, C, ...)``
+    - ``preds`` (:class:`~torch.Tensor`): An int or float tensor of shape ``(N, C, ...)``. 
+      If preds is a floating point tensor with values outside [0,1] range we consider the input to be logits and 
+      will auto apply sigmoid per element. Addtionally, we convert to int tensor with thresholding using the value 
+      in ``threshold``.
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``.
+    
+    .. note:: The influence of the additional dimension ``...`` (if present) will be determined by the 
+    `multidim_average` argument.
 
-    The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
+    As output to ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``mlf1s`` (:class:`~torch.Tensor`): A tensor whose returned shape depends on the ``average`` and 
+      ``multidim_average`` arguments:
+
+        - If ``multidim_average`` is set to ``global``:
+
+          - If ``average='micro'/'macro'/'weighted'``, the output will be a scalar tensor
+          - If ``average=None/'none'``, the shape will be ``(C,)``
+
+        - If ``multidim_average`` is set to ``samplewise``:
+
+          - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
+          - If ``average=None/'none'``, the shape will be ``(N, C)```
 
     Args:
         num_labels: Integer specifing the number of labels
@@ -622,39 +652,26 @@ class MultilabelF1Score(MultilabelFBetaScore):
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 
-    Returns:
-        The returned shape depends on the ``average`` and ``multidim_average`` arguments:
-
-        - If ``multidim_average`` is set to ``global``:
-
-          - If ``average='micro'/'macro'/'weighted'``, the output will be a scalar tensor
-          - If ``average=None/'none'``, the shape will be ``(C,)``
-
-        - If ``multidim_average`` is set to ``samplewise``:
-
-          - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
-          - If ``average=None/'none'``, the shape will be ``(N, C)```
-
     Example (preds is int tensor):
         >>> from torchmetrics.classification import MultilabelF1Score
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
-        >>> metric = MultilabelF1Score(num_labels=3)
-        >>> metric(preds, target)
+        >>> mlf1s = MultilabelF1Score(num_labels=3)
+        >>> mlf1s(preds, target)
         tensor(0.5556)
-        >>> metric = MultilabelF1Score(num_labels=3, average=None)
-        >>> metric(preds, target)
+        >>> mlf1s = MultilabelF1Score(num_labels=3, average=None)
+        >>> mlf1s(preds, target)
         tensor([1.0000, 0.0000, 0.6667])
 
     Example (preds is float tensor):
         >>> from torchmetrics.classification import MultilabelF1Score
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
-        >>> metric = MultilabelF1Score(num_labels=3)
-        >>> metric(preds, target)
+        >>> mlf1s = MultilabelF1Score(num_labels=3)
+        >>> mlf1s(preds, target)
         tensor(0.5556)
-        >>> metric = MultilabelF1Score(num_labels=3, average=None)
-        >>> metric(preds, target)
+        >>> mlf1s = MultilabelF1Score(num_labels=3, average=None)
+        >>> mlf1s(preds, target)
         tensor([1.0000, 0.0000, 0.6667])
 
     Example (multidim tensors):
@@ -666,11 +683,11 @@ class MultilabelF1Score(MultilabelFBetaScore):
         ...         [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]],
         ...     ]
         ... )
-        >>> metric = MultilabelF1Score(num_labels=3, multidim_average='samplewise')
-        >>> metric(preds, target)
+        >>> mlf1s = MultilabelF1Score(num_labels=3, multidim_average='samplewise')
+        >>> mlf1s(preds, target)
         tensor([0.4444, 0.0000])
-        >>> metric = MultilabelF1Score(num_labels=3, multidim_average='samplewise', average=None)
-        >>> metric(preds, target)
+        >>> mlf1s = MultilabelF1Score(num_labels=3, multidim_average='samplewise', average=None)
+        >>> mlf1s(preds, target)
         tensor([[0.6667, 0.6667, 0.0000],
                 [0.0000, 0.0000, 0.0000]])
     """

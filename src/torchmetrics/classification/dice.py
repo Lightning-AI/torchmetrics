@@ -37,17 +37,17 @@ class Dice(Metric):
     ``average`` parameter, and additionally by the ``mdmc_average`` parameter in the
     multi-dimensional multi-class case.
 
-    As input to 'update' the metric accepts the following input:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds``: Predictions from model (probabilities, logits or labels)
-    - ``target``: Ground truth values
+    - ``preds`` (:class:`~torch.Tensor`): Predictions from model (probabilities, logits or labels)
+    - ``target`` (:class:`~torch.Tensor`): Ground truth values
 
-    As output of 'compute' the metric returns the dice score based on inputs passed in to ``update`` previously.
+    As output to ``forward`` and ``compute`` the metric returns the following output:
 
-    The shape of the returned tensor, depending on the ``average`` parameter:
+    - ``dice`` (:class:`~torch.Tensor`): A tensor containing the dice score. 
 
-    - If ``average in ['micro', 'macro', 'weighted', 'samples']``, a one-element tensor will be returned
-    - If ``average in ['none', None]``, the shape will be ``(C,)``, where ``C`` stands  for the number of classes
+        - If ``average in ['micro', 'macro', 'weighted', 'samples']``, a one-element tensor will be returned
+        - If ``average in ['none', None]``, the shape will be ``(C,)``, where ``C`` stands  for the number of classes
 
     Args:
         num_classes:
