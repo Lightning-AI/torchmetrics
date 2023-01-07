@@ -231,7 +231,7 @@ class MeanAveragePrecision(Metric):
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
 
-    - `map_dict`: A dictionary containing the following key-values:
+    - ``map_dict``: A dictionary containing the following key-values:
 
         - map: (:class:`~torch.Tensor`)
         - map_small: (:class:`~torch.Tensor`)
