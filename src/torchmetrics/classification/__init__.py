@@ -104,7 +104,7 @@ from torchmetrics.classification.specificity import (
 from torchmetrics.classification.specificity_at_sensitivity import (
     BinarySpecificityAtSensitivity,
     MulticlassSpecificityAtSensitivity,
-    MultilabelPrecisionRecallCurve,
+    MultilabelSpecificityAtSensitivity,
 )
 
 __all__ = [
@@ -194,4 +194,7 @@ __all__ = [
     "MulticlassSpecificity",
     "MultilabelSpecificity",
     "Specificity",
+    "BinarySpecificityAtSensitivity",
+    "MulticlassSpecificityAtSensitivity",
+    "MultilabelSpecificityAtSensitivity",    
 ]
