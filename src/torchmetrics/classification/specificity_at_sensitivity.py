@@ -34,7 +34,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class BinarySpecificityAtSensitivity(BinaryPrecisionRecallCurve):
-    r"""Computes the higest possible recall value given the minimum precision thresholds provided. This is done by
+    r"""Computes the higest possible specificity value given the minimum sensitivity thresholds provided. This is done by
     first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the find the
     specificity for a given sensitivity level.
 
@@ -55,7 +55,7 @@ class BinarySpecificityAtSensitivity(BinaryPrecisionRecallCurve):
     size :math:`\mathcal{O}(n_{thresholds})` (constant memory).
 
     Args:
-        min_sensitivity: float value specifying minimum precision threshold.
+        min_sensitivity: float value specifying minimum sensitivity threshold.
         thresholds:
             Can be one of:
 
@@ -74,7 +74,7 @@ class BinarySpecificityAtSensitivity(BinaryPrecisionRecallCurve):
     Returns:
         (tuple): a tuple of 2 tensors containing:
 
-        - recall: an scalar tensor with the maximum recall for the given precision level
+        - specificity: an scalar tensor with the maximum specificity for the given sensitivity level
         - threshold: an scalar tensor with the corresponding threshold level
 
     Example:
@@ -115,9 +115,9 @@ class BinarySpecificityAtSensitivity(BinaryPrecisionRecallCurve):
 
 
 class MulticlassSpecificityAtSensitivity(MulticlassPrecisionRecallCurve):
-    r"""Computes the higest possible recall value given the minimum precision thresholds provided. This is done by
+    r"""Computes the higest possible specificity value given the minimum sensitivity thresholds provided. This is done by
     first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the find the
-    specificity for a given precision level.
+    specificity for a given sensitivity level.
 
     Accepts the following input tensors:
 
@@ -137,7 +137,7 @@ class MulticlassSpecificityAtSensitivity(MulticlassPrecisionRecallCurve):
 
     Args:
         num_classes: Integer specifing the number of classes
-        min_sensitivity: float value specifying minimum precision threshold.
+        min_sensitivity: float value specifying minimum sensitivity threshold.
         thresholds:
             Can be one of:
 
@@ -156,7 +156,7 @@ class MulticlassSpecificityAtSensitivity(MulticlassPrecisionRecallCurve):
     Returns:
         (tuple): a tuple of either 2 tensors or 2 lists containing
 
-        - recall: an 1d tensor of size (n_classes, ) with the maximum recall for the given precision level per class
+        - specificity: an 1d tensor of size (n_classes, ) with the maximum specificity for the given sensitivity level per class
         - thresholds: an 1d tensor of size (n_classes, ) with the corresponding threshold level per class
 
     Example:
@@ -207,7 +207,7 @@ class MulticlassSpecificityAtSensitivity(MulticlassPrecisionRecallCurve):
 
 
 class MultilabelSpecificityAtSensitivity(MultilabelPrecisionRecallCurve):
-    r"""Computes the higest possible recall value given the minimum precision thresholds provided. This is done by
+    r"""Computes the higest possible specificity value given the minimum sensitivity thresholds provided. This is done by
     first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the find the
     specificity for a given sensitivity level.
 
@@ -229,7 +229,7 @@ class MultilabelSpecificityAtSensitivity(MultilabelPrecisionRecallCurve):
 
     Args:
         num_labels: Integer specifing the number of labels
-        min_sensitivity: float value specifying minimum precision threshold.
+        min_sensitivity: float value specifying minimum sensitivity threshold.
         thresholds:
             Can be one of:
 
