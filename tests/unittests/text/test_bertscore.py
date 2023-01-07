@@ -112,7 +112,7 @@ class TestBERTScore(TextTester):
             preds=preds,
             targets=targets,
             metric_class=BERTScore,
-            sk_metric=reference_bert_score_metric,
+            reference_metric=reference_bert_score_metric,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
             key=metric_key,
@@ -142,7 +142,7 @@ class TestBERTScore(TextTester):
             preds,
             targets,
             metric_functional=bert_score,
-            sk_metric=reference_bert_score_metric,
+            reference_metric=reference_bert_score_metric,
             metric_args=metric_args,
             key=metric_key,
         )
