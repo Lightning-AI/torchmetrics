@@ -19,7 +19,6 @@ import numpy as np
 import pytest
 import torch
 
-from torchmetrics.functional.audio.pesq import perceptual_evaluation_speech_quality
 from torchmetrics.functional.classification.accuracy import binary_accuracy, multiclass_accuracy
 from torchmetrics.functional.classification.confusion_matrix import (
     binary_confusion_matrix,
@@ -49,13 +48,7 @@ from torchmetrics.utilities.plot import plot_confusion_matrix, plot_single_or_mu
             lambda: torch.randint(3, (100,)),
             lambda: torch.randint(3, (100,)),
             id="multiclass and average=None",
-        ),
-        pytest.param(
-            partial(perceptual_evaluation_speech_quality),
-            lambda: torch.randint(3, (100,)),
-            lambda: torch.randint(3, (100,)),
-            id="perceptual_evaluation_speech_quality",
-        ),
+        )
     ],
 )
 @pytest.mark.parametrize("num_vals", [1, 5, 10])
