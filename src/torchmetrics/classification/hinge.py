@@ -42,14 +42,14 @@ class BinaryHingeLoss(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, ...)``. Preds should be a tensor containing 
-      probabilities or logits for each observation. If preds has values outside [0,1] range we consider the input 
+    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, ...)``. Preds should be a tensor containing
+      probabilities or logits for each observation. If preds has values outside [0,1] range we consider the input
       to be logits and will auto apply sigmoid per element.
-    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``. Target should be a tensor containing 
-      ground truth labels, and therefore only contain {0,1} values (except if `ignore_index` is specified). The value 
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``. Target should be a tensor containing
+      ground truth labels, and therefore only contain {0,1} values (except if `ignore_index` is specified). The value
       1 always encodes the positive class.
-    
-    .. note:: 
+
+    .. note::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
@@ -125,14 +125,14 @@ class MulticlassHingeLoss(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, C, ...)``. Preds should be a tensor 
-      containing probabilities or logits for each observation. If preds has values outside [0,1] range we consider 
+    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, C, ...)``. Preds should be a tensor
+      containing probabilities or logits for each observation. If preds has values outside [0,1] range we consider
       the input to be logits and will auto apply softmax per sample.
-    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``. Target should be a tensor containing 
-      ground truth labels, and therefore only contain values in the [0, n_classes-1] range (except if `ignore_index` 
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``. Target should be a tensor containing
+      ground truth labels, and therefore only contain values in the [0, n_classes-1] range (except if `ignore_index`
       is specified).
-    
-    .. note:: 
+
+    .. note::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:

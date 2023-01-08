@@ -52,10 +52,10 @@ class BinaryAveragePrecision(BinaryPrecisionRecallCurve):
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)`` containing ground truth labels, and therefore
       only contain {0,1} values (except if `ignore_index` is specified). The value 1 always encodes the positive class.
 
-    .. note:: 
+    .. note::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
-    .. note:: 
+    .. note::
        The implementation both supports calculating the metric in a non-binned but accurate version and a binned version
        that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
        non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
@@ -124,10 +124,10 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)`` containing ground truth labels, and therefore
       only contain values in the [0, n_classes-1] range (except if `ignore_index` is specified).
 
-    .. note:: 
+    .. note::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
-    .. note:: 
+    .. note::
        The implementation both supports calculating the metric in a non-binned but accurate version and a binned version
        that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
        non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
@@ -136,7 +136,7 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``mcap`` (:class:`~torch.Tensor`): If `average=None|"none"` then a 1d tensor of shape (n_classes, ) will be 
+    - ``mcap`` (:class:`~torch.Tensor`): If `average=None|"none"` then a 1d tensor of shape (n_classes, ) will be
       returned with AP score per class. If `average="macro"|"weighted"` then a single scalar is returned.
 
     Args:
@@ -228,22 +228,22 @@ class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
     - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, C, ...)`` containing probabilities or logits for each
       observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
       sigmoid per element.
-    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)`` containing ground truth labels, and 
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)`` containing ground truth labels, and
       therefore only contain {0,1} values (except if `ignore_index` is specified).
 
-    .. note:: 
+    .. note::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
-    .. note:: 
-       The implementation both supports calculating the metric in a non-binned but accurate version and a binned 
-       version that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate 
-       the non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the 
+    .. note::
+       The implementation both supports calculating the metric in a non-binned but accurate version and a binned
+       version that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate
+       the non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the
        `thresholds` argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
        size :math:`\mathcal{O}(n_{thresholds} \times n_{labels})` (constant memory).
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``mlap`` (:class:`~torch.Tensor`): If `average=None|"none"` then a 1d tensor of shape (n_classes, ) will be 
+    - ``mlap`` (:class:`~torch.Tensor`): If `average=None|"none"` then a 1d tensor of shape (n_classes, ) will be
       returned with AP score per class. If `average="micro|macro"|"weighted"` then a single scalar is returned.
 
     Args:

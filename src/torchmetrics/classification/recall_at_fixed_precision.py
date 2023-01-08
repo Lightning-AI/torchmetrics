@@ -41,26 +41,26 @@ class BinaryRecallAtFixedPrecision(BinaryPrecisionRecallCurve):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, ...)``. Preds should be a tensor containing 
-      probabilities or logits for each observation. If preds has values outside [0,1] range we consider the input 
+    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, ...)``. Preds should be a tensor containing
+      probabilities or logits for each observation. If preds has values outside [0,1] range we consider the input
       to be logits and will auto apply sigmoid per element.
-    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``. Target should be a tensor containing 
-      ground truth labels, and therefore only contain {0,1} values (except if `ignore_index` is specified). The value 
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``. Target should be a tensor containing
+      ground truth labels, and therefore only contain {0,1} values (except if `ignore_index` is specified). The value
       1 always encodes the positive class.
-    
-    .. note:: 
+
+    .. note::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
     - ``recall`` (:class:`~torch.Tensor`): A scalar tensor with the maximum recall for the given precision level
     - ``threshold`` (:class:`~torch.Tensor`): A scalar tensor with the corresponding threshold level
-    
-    .. note:: 
-       The implementation both supports calculating the metric in a non-binned but accurate version and a 
-       binned version that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` 
-       will activate the non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting 
-       the `thresholds` argument to either an integer, list or a 1d tensor will use a binned version that uses memory 
+
+    .. note::
+       The implementation both supports calculating the metric in a non-binned but accurate version and a
+       binned version that is less accurate but more memory efficient. Setting the `thresholds` argument to `None`
+       will activate the non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting
+       the `thresholds` argument to either an integer, list or a 1d tensor will use a binned version that uses memory
        of size :math:`\mathcal{O}(n_{thresholds})` (constant memory).
 
     Args:
@@ -124,24 +124,24 @@ class MulticlassRecallAtFixedPrecision(MulticlassPrecisionRecallCurve):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, C, ...)``. Preds should be a tensor 
-      containing probabilities or logits for each observation. If preds has values outside [0,1] range we consider 
+    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, C, ...)``. Preds should be a tensor
+      containing probabilities or logits for each observation. If preds has values outside [0,1] range we consider
       the input to be logits and will auto apply softmax per sample.
-    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``. Target should be a tensor containing 
-      ground truth labels, and therefore only contain values in the [0, n_classes-1] range (except if `ignore_index` 
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``. Target should be a tensor containing
+      ground truth labels, and therefore only contain values in the [0, n_classes-1] range (except if `ignore_index`
       is specified).
-    
-    .. note:: 
+
+    .. note::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns a tuple of either 2 tensors or 2 lists containing:
 
-    - ``recall`` (:class:`~torch.Tensor`): A 1d tensor of size ``(n_classes, )`` with the maximum recall for the 
+    - ``recall`` (:class:`~torch.Tensor`): A 1d tensor of size ``(n_classes, )`` with the maximum recall for the
       given precision level per class
-    - ``threshold`` (:class:`~torch.Tensor`): A 1d tensor of size ``(n_classes, )`` with the corresponding threshold 
+    - ``threshold`` (:class:`~torch.Tensor`): A 1d tensor of size ``(n_classes, )`` with the corresponding threshold
       level per class
-    
-    .. note:: 
+
+    .. note::
        The implementation both supports calculating the metric in a non-binned but accurate version and a binned version
        that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
        non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
@@ -218,24 +218,24 @@ class MultilabelRecallAtFixedPrecision(MultilabelPrecisionRecallCurve):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, C, ...)``. Preds should be a tensor 
-      containing probabilities or logits for each observation. If preds has values outside [0,1] range we consider 
+    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, C, ...)``. Preds should be a tensor
+      containing probabilities or logits for each observation. If preds has values outside [0,1] range we consider
       the input to be logits and will auto apply sigmoid per element.
-    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``. Target should be a tensor containing 
-      ground truth labels, and therefore only contain {0,1} values (except if `ignore_index` is specified). The value 
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``. Target should be a tensor containing
+      ground truth labels, and therefore only contain {0,1} values (except if `ignore_index` is specified). The value
       1 always encodes the positive class.
-    
-    .. note:: 
+
+    .. note::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns a tuple of either 2 tensors or 2 lists containing:
 
-    - ``recall`` (:class:`~torch.Tensor`): A 1d tensor of size ``(n_classes, )`` with the maximum recall for the 
+    - ``recall`` (:class:`~torch.Tensor`): A 1d tensor of size ``(n_classes, )`` with the maximum recall for the
       given precision level per class
-    - ``threshold`` (:class:`~torch.Tensor`): A 1d tensor of size ``(n_classes, )`` with the corresponding threshold 
+    - ``threshold`` (:class:`~torch.Tensor`): A 1d tensor of size ``(n_classes, )`` with the corresponding threshold
       level per class
-    
-    .. note:: 
+
+    .. note::
        The implementation both supports calculating the metric in a non-binned but accurate version and a binned version
        that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
        non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`

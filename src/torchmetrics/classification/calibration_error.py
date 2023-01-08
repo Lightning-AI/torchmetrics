@@ -33,9 +33,9 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class BinaryCalibrationError(Metric):
-    r"""`Top-label Calibration Error`_ for binary tasks. The expected calibration error can be used to
-    quantify how well a given model is calibrated e.g. how well the predicted output probabilities of the model
-    matches the actual probabilities of the ground truth distribution.
+    r"""`Top-label Calibration Error`_ for binary tasks. The expected calibration error can be used to quantify how
+    well a given model is calibrated e.g. how well the predicted output probabilities of the model matches the
+    actual probabilities of the ground truth distribution.
 
     Three different norms are implemented, each corresponding to variations on the calibration error metric.
 
@@ -60,7 +60,7 @@ class BinaryCalibrationError(Metric):
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)`` containing ground truth labels, and therefore
       only contain {0,1} values (except if `ignore_index` is specified). The value 1 always encodes the positive class.
 
-    .. note:: 
+    .. note::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
@@ -156,7 +156,7 @@ class MulticlassCalibrationError(Metric):
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)`` containing ground truth labels, and therefore
       only contain values in the [0, n_classes-1] range (except if `ignore_index` is specified).
 
-    .. note:: 
+    .. note::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:

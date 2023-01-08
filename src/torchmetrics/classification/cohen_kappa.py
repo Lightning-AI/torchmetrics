@@ -45,7 +45,7 @@ class BinaryCohenKappa(BinaryConfusionMatrix):
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``.
 
-    .. note:: 
+    .. note::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
@@ -118,12 +118,12 @@ class MulticlassCohenKappa(MulticlassConfusionMatrix):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~torch.Tensor`): Either an int tensor of shape ``(N, ...)` or float tensor of shape ``(N, C, ..)``. 
-      If preds is a floating point we apply ``torch.argmax`` along the ``C`` dimension to automatically convert 
+    - ``preds`` (:class:`~torch.Tensor`): Either an int tensor of shape ``(N, ...)` or float tensor of shape ``(N, C, ..)``.
+      If preds is a floating point we apply ``torch.argmax`` along the ``C`` dimension to automatically convert
       probabilities/logits into an int tensor.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``.
 
-    .. note:: 
+    .. note::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:

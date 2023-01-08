@@ -44,7 +44,7 @@ class Dice(Metric):
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``dice`` (:class:`~torch.Tensor`): A tensor containing the dice score. 
+    - ``dice`` (:class:`~torch.Tensor`): A tensor containing the dice score.
 
         - If ``average in ['micro', 'macro', 'weighted', 'samples']``, a one-element tensor will be returned
         - If ``average in ['none', None]``, the shape will be ``(C,)``, where ``C`` stands  for the number of classes
@@ -70,7 +70,7 @@ class Dice(Metric):
             - ``'samples'``: Calculate the metric for each sample, and average the metrics
               across samples (with equal weights for each sample).
 
-            .. note:: 
+            .. note::
                What is considered a sample in the multi-dimensional multi-class case
                depends on the value of ``mdmc_average``.
 

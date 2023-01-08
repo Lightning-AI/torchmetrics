@@ -40,13 +40,13 @@ class MulticlassExactMatch(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)`` or float tensor of shape ``(N, C, ..)``. 
-      If preds is a floating point we apply ``torch.argmax`` along the ``C`` dimension to automatically convert 
+    - ``preds`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)`` or float tensor of shape ``(N, C, ..)``.
+      If preds is a floating point we apply ``torch.argmax`` along the ``C`` dimension to automatically convert
       probabilities/logits into an int tensor.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``.
-    
-    .. note:: 
-       The influence of the additional dimension ``...`` (if present) will be determined by the 
+
+    .. note::
+       The influence of the additional dimension ``...`` (if present) will be determined by the
        `multidim_average` argument.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
@@ -143,13 +143,13 @@ class MultilabelExactMatch(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~torch.Tensor`): An int tensor or float tensor of shape ``(N, C, ..)``. If preds is a 
-      floating point tensor with values outside [0,1] range we consider the input to be logits and will auto apply 
+    - ``preds`` (:class:`~torch.Tensor`): An int tensor or float tensor of shape ``(N, C, ..)``. If preds is a
+      floating point tensor with values outside [0,1] range we consider the input to be logits and will auto apply
       sigmoid per element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``.
-    
-    .. note:: 
-       The influence of the additional dimension ``...`` (if present) will be determined by the 
+
+    .. note::
+       The influence of the additional dimension ``...`` (if present) will be determined by the
        `multidim_average` argument.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:

@@ -38,32 +38,32 @@ class BinaryROC(BinaryPrecisionRecallCurve):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, ...)``. Preds should be a tensor containing 
-      probabilities or logits for each observation. If preds has values outside [0,1] range we consider the input 
+    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, ...)``. Preds should be a tensor containing
+      probabilities or logits for each observation. If preds has values outside [0,1] range we consider the input
       to be logits and will auto apply sigmoid per element.
-    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``. Target should be a tensor containing 
-      ground truth labels, and therefore only contain {0,1} values (except if `ignore_index` is specified). The value 
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``. Target should be a tensor containing
+      ground truth labels, and therefore only contain {0,1} values (except if `ignore_index` is specified). The value
       1 always encodes the positive class.
-    
-    .. note:: 
+
+    .. note::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns a tuple of 3 tensors containing:
 
     - ``fpr`` (:class:`~torch.Tensor`): A 1d tensor of size ``(n_thresholds+1, )`` with false positive rate values
     - ``tpr`` (:class:`~torch.Tensor`): A 1d tensor of size ``(n_thresholds+1, )`` with true positive rate values
-    - ``thresholds`` (:class:`~torch.Tensor`): A 1d tensor of size ``(n_thresholds, )`` with decreasing threshold 
+    - ``thresholds`` (:class:`~torch.Tensor`): A 1d tensor of size ``(n_thresholds, )`` with decreasing threshold
       values
 
-    .. note:: 
-       The implementation both supports calculating the metric in a non-binned but accurate version and a 
-       binned version that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will 
-       activate the non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the 
-       `thresholds` argument to either an integer, list or a 1d tensor will use a binned version that uses memory of 
+    .. note::
+       The implementation both supports calculating the metric in a non-binned but accurate version and a
+       binned version that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will
+       activate the non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the
+       `thresholds` argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
        size :math:`\mathcal{O}(n_{thresholds})` (constant memory).
 
-    .. note:: 
-       The outputted thresholds will be in reversed order to ensure that they corresponds to both fpr and 
+    .. note::
+       The outputted thresholds will be in reversed order to ensure that they corresponds to both fpr and
        tpr which are sorted in reversed order during their calculation, such that they are monotome increasing.
 
     Args:
@@ -116,40 +116,40 @@ class MulticlassROC(MulticlassPrecisionRecallCurve):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, C, ...)``. Preds should be a tensor 
-      containing probabilities or logits for each observation. If preds has values outside [0,1] range we consider 
+    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, C, ...)``. Preds should be a tensor
+      containing probabilities or logits for each observation. If preds has values outside [0,1] range we consider
       the input to be logits and will auto apply softmax per sample.
-    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``. Target should be a tensor containing 
-      ground truth labels, and therefore only contain values in the [0, n_classes-1] range (except if `ignore_index` 
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``. Target should be a tensor containing
+      ground truth labels, and therefore only contain values in the [0, n_classes-1] range (except if `ignore_index`
       is specified).
-    
-    .. note:: 
+
+    .. note::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns a tuple of either 3 tensors or 3 lists containing
 
-    - ``fpr`` (:class:`~torch.Tensor`): if `thresholds=None` a list for each class is returned with an 1d tensor of 
-      size ``(n_thresholds+1, )`` with false positive rate values (length may differ between classes). If `thresholds` 
-      is set to something else, then a single 2d tensor of size ``(n_classes, n_thresholds+1)`` with false positive rate 
+    - ``fpr`` (:class:`~torch.Tensor`): if `thresholds=None` a list for each class is returned with an 1d tensor of
+      size ``(n_thresholds+1, )`` with false positive rate values (length may differ between classes). If `thresholds`
+      is set to something else, then a single 2d tensor of size ``(n_classes, n_thresholds+1)`` with false positive rate
       values is returned.
-    - ``tpr`` (:class:`~torch.Tensor`): if `thresholds=None` a list for each class is returned with an 1d tensor of 
-      size ``(n_thresholds+1, )`` with true positive rate values (length may differ between classes). If `thresholds` is 
-      set to something else, then a single 2d tensor of size ``(n_classes, n_thresholds+1)`` with true positive rate 
+    - ``tpr`` (:class:`~torch.Tensor`): if `thresholds=None` a list for each class is returned with an 1d tensor of
+      size ``(n_thresholds+1, )`` with true positive rate values (length may differ between classes). If `thresholds` is
+      set to something else, then a single 2d tensor of size ``(n_classes, n_thresholds+1)`` with true positive rate
       values is returned.
-    - ``thresholds`` (:class:`~torch.Tensor`): if `thresholds=None` a list for each class is returned with an 1d 
-      tensor of size ``(n_thresholds, )`` with decreasing threshold values (length may differ between classes). If 
-      `threshold` is set to something else, then a single 1d tensor of size ``(n_thresholds, )`` is returned with shared 
+    - ``thresholds`` (:class:`~torch.Tensor`): if `thresholds=None` a list for each class is returned with an 1d
+      tensor of size ``(n_thresholds, )`` with decreasing threshold values (length may differ between classes). If
+      `threshold` is set to something else, then a single 1d tensor of size ``(n_thresholds, )`` is returned with shared
       threshold values for all classes.
 
-    .. note:: 
-       The implementation both supports calculating the metric in a non-binned but accurate version and a 
-       binned version that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will 
-       activate the non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the 
-       `thresholds` argument to either an integer, list or a 1d tensor will use a binned version that uses memory of 
+    .. note::
+       The implementation both supports calculating the metric in a non-binned but accurate version and a
+       binned version that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will
+       activate the non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the
+       `thresholds` argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
        size :math:`\mathcal{O}(n_{thresholds} \times n_{classes})` (constant memory).
 
-    .. note:: 
-       Note that outputted thresholds will be in reversed order to ensure that they corresponds to both fpr 
+    .. note::
+       Note that outputted thresholds will be in reversed order to ensure that they corresponds to both fpr
        and tpr which are sorted in reversed order during their calculation, such that they are monotome increasing.
 
     Args:
@@ -219,39 +219,39 @@ class MultilabelROC(MultilabelPrecisionRecallCurve):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, C, ...)``. Preds should be a tensor 
-      containing probabilities or logits for each observation. If preds has values outside [0,1] range we consider 
+    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, C, ...)``. Preds should be a tensor
+      containing probabilities or logits for each observation. If preds has values outside [0,1] range we consider
       the input to be logits and will auto apply sigmoid per element.
-    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``. Target should be a tensor 
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``. Target should be a tensor
       containing ground truth labels, and therefore only contain {0,1} values (except if `ignore_index` is specified).
-    
-    .. note:: 
+
+    .. note::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns a tuple of either 3 tensors or 3 lists containing
 
-    - ``fpr`` (:class:`~torch.Tensor`): if `thresholds=None` a list for each label is returned with an 1d tensor of 
-      size ``(n_thresholds+1, )`` with false positive rate values (length may differ between labels). If `thresholds` is 
-      set to something else, then a single 2d tensor of size ``(n_labels, n_thresholds+1)`` with false positive rate values 
+    - ``fpr`` (:class:`~torch.Tensor`): if `thresholds=None` a list for each label is returned with an 1d tensor of
+      size ``(n_thresholds+1, )`` with false positive rate values (length may differ between labels). If `thresholds` is
+      set to something else, then a single 2d tensor of size ``(n_labels, n_thresholds+1)`` with false positive rate values
       is returned.
-    - ``tpr`` (:class:`~torch.Tensor`): if `thresholds=None` a list for each label is returned with an 1d tensor of 
-      size ``(n_thresholds+1, )`` with true positive rate values (length may differ between labels). If `thresholds` is set 
-      to something else, then a single 2d tensor of size ``(n_labels, n_thresholds+1)`` with true positive rate values is 
+    - ``tpr`` (:class:`~torch.Tensor`): if `thresholds=None` a list for each label is returned with an 1d tensor of
+      size ``(n_thresholds+1, )`` with true positive rate values (length may differ between labels). If `thresholds` is set
+      to something else, then a single 2d tensor of size ``(n_labels, n_thresholds+1)`` with true positive rate values is
       returned.
-    - ``thresholds`` (:class:`~torch.Tensor`): if `thresholds=None` a list for each label is returned with an 1d 
-      tensor of size ``(n_thresholds, )`` with decreasing threshold values (length may differ between labels). If 
-      `threshold` is set to something else, then a single 1d tensor of size ``(n_thresholds, )`` is returned with shared 
+    - ``thresholds`` (:class:`~torch.Tensor`): if `thresholds=None` a list for each label is returned with an 1d
+      tensor of size ``(n_thresholds, )`` with decreasing threshold values (length may differ between labels). If
+      `threshold` is set to something else, then a single 1d tensor of size ``(n_thresholds, )`` is returned with shared
       threshold values for all labels.
 
-    .. note:: 
-       The implementation both supports calculating the metric in a non-binned but accurate version and a 
-       binned version that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will 
-       activate the non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the 
-       `thresholds` argument to either an integer, list or a 1d tensor will use a binned version that uses memory of 
+    .. note::
+       The implementation both supports calculating the metric in a non-binned but accurate version and a
+       binned version that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will
+       activate the non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the
+       `thresholds` argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
        size :math:`\mathcal{O}(n_{thresholds} \times n_{labels})` (constant memory).
 
-    .. note:: 
-       The outputted thresholds will be in reversed order to ensure that they corresponds to both fpr and tpr 
+    .. note::
+       The outputted thresholds will be in reversed order to ensure that they corresponds to both fpr and tpr
        which are sorted in reversed order during their calculation, such that they are monotome increasing.
 
     Args:
