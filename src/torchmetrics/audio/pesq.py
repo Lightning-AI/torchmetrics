@@ -151,8 +151,8 @@ class PerceptualEvaluationSpeechQuality(Metric):
             >>> # Example plotting a single value
             >>> import torch
             >>> from torchmetrics.audio import PerceptualEvaluationSpeechQuality
-            >>> metric = PerceptualEvaluationSpeechQuality()
-            >>> metric.update(torch.rand(10), torch.rand(10))
+            >>> metric = PerceptualEvaluationSpeechQuality(8000, 'nb')
+            >>> metric.update(torch.rand(8000), torch.rand(8000))
             >>> fig_, ax_ = metric.plot()
 
         .. plot::
