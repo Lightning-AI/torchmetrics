@@ -45,8 +45,9 @@ class MulticlassExactMatch(Metric):
       probabilities/logits into an int tensor.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``.
     
-    .. note:: The influence of the additional dimension ``...`` (if present) will be determined by the 
-    `multidim_average` argument.
+    .. note:: 
+       The influence of the additional dimension ``...`` (if present) will be determined by the 
+       `multidim_average` argument.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
@@ -147,8 +148,9 @@ class MultilabelExactMatch(Metric):
       sigmoid per element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``.
     
-    .. note:: The influence of the additional dimension ``...`` (if present) will be determined by the 
-    `multidim_average` argument.
+    .. note:: 
+       The influence of the additional dimension ``...`` (if present) will be determined by the 
+       `multidim_average` argument.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
@@ -268,7 +270,7 @@ class ExactMatch:
     :mod:`MulticlassExactMatch` and :mod:`MultilabelExactMatch` for the specific details of
     each argument influence and examples.
 
-        Legacy Example:
+    Legacy Example:
         >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
         >>> preds = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[2, 2], [2, 1], [1, 0]]])
         >>> metric = ExactMatch(task="multiclass", num_classes=3, multidim_average='global')

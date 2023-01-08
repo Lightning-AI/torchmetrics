@@ -35,7 +35,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class BinaryRecallAtFixedPrecision(BinaryPrecisionRecallCurve):
-    r"""Computes the higest possible recall value given the minimum precision thresholds provided. This is done by
+    r"""Computes the highest possible recall value given the minimum precision thresholds provided. This is done by
     first calculating the precision-recall curve for different thresholds and the find the recall for a given
     precision level.
 
@@ -48,18 +48,20 @@ class BinaryRecallAtFixedPrecision(BinaryPrecisionRecallCurve):
       ground truth labels, and therefore only contain {0,1} values (except if `ignore_index` is specified). The value 
       1 always encodes the positive class.
     
-    .. note:: Additional dimension ``...`` will be flattened into the batch dimension.
+    .. note:: 
+       Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
     - ``recall`` (:class:`~torch.Tensor`): A scalar tensor with the maximum recall for the given precision level
     - ``threshold`` (:class:`~torch.Tensor`): A scalar tensor with the corresponding threshold level
     
-    .. note:: The implementation both supports calculating the metric in a non-binned but accurate version and a 
-    binned version that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` 
-    will activate the non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting 
-    the `thresholds` argument to either an integer, list or a 1d tensor will use a binned version that uses memory 
-    of size :math:`\mathcal{O}(n_{thresholds})` (constant memory).
+    .. note:: 
+       The implementation both supports calculating the metric in a non-binned but accurate version and a 
+       binned version that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` 
+       will activate the non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting 
+       the `thresholds` argument to either an integer, list or a 1d tensor will use a binned version that uses memory 
+       of size :math:`\mathcal{O}(n_{thresholds})` (constant memory).
 
     Args:
         min_precision: float value specifying minimum precision threshold.
@@ -116,7 +118,7 @@ class BinaryRecallAtFixedPrecision(BinaryPrecisionRecallCurve):
 
 
 class MulticlassRecallAtFixedPrecision(MulticlassPrecisionRecallCurve):
-    r"""Computes the higest possible recall value given the minimum precision thresholds provided. This is done by
+    r"""Computes the highest possible recall value given the minimum precision thresholds provided. This is done by
     first calculating the precision-recall curve for different thresholds and the find the recall for a given
     precision level.
 
@@ -129,7 +131,8 @@ class MulticlassRecallAtFixedPrecision(MulticlassPrecisionRecallCurve):
       ground truth labels, and therefore only contain values in the [0, n_classes-1] range (except if `ignore_index` 
       is specified).
     
-    .. note:: Additional dimension ``...`` will be flattened into the batch dimension.
+    .. note:: 
+       Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns a tuple of either 2 tensors or 2 lists containing:
 
@@ -138,11 +141,12 @@ class MulticlassRecallAtFixedPrecision(MulticlassPrecisionRecallCurve):
     - ``threshold`` (:class:`~torch.Tensor`): A 1d tensor of size ``(n_classes, )`` with the corresponding threshold 
       level per class
     
-    .. note:: The implementation both supports calculating the metric in a non-binned but accurate version and a binned version
-    that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
-    non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
-    argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
-    size :math:`\mathcal{O}(n_{thresholds} \times n_{classes})` (constant memory).
+    .. note:: 
+       The implementation both supports calculating the metric in a non-binned but accurate version and a binned version
+       that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
+       non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
+       argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
+       size :math:`\mathcal{O}(n_{thresholds} \times n_{classes})` (constant memory).
 
     Args:
         num_classes: Integer specifing the number of classes
@@ -208,7 +212,7 @@ class MulticlassRecallAtFixedPrecision(MulticlassPrecisionRecallCurve):
 
 
 class MultilabelRecallAtFixedPrecision(MultilabelPrecisionRecallCurve):
-    r"""Computes the higest possible recall value given the minimum precision thresholds provided. This is done by
+    r"""Computes the highest possible recall value given the minimum precision thresholds provided. This is done by
     first calculating the precision-recall curve for different thresholds and the find the recall for a given
     precision level.
 
@@ -221,7 +225,8 @@ class MultilabelRecallAtFixedPrecision(MultilabelPrecisionRecallCurve):
       ground truth labels, and therefore only contain {0,1} values (except if `ignore_index` is specified). The value 
       1 always encodes the positive class.
     
-    .. note:: Additional dimension ``...`` will be flattened into the batch dimension.
+    .. note:: 
+       Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns a tuple of either 2 tensors or 2 lists containing:
 
@@ -230,11 +235,12 @@ class MultilabelRecallAtFixedPrecision(MultilabelPrecisionRecallCurve):
     - ``threshold`` (:class:`~torch.Tensor`): A 1d tensor of size ``(n_classes, )`` with the corresponding threshold 
       level per class
     
-    .. note:: The implementation both supports calculating the metric in a non-binned but accurate version and a binned version
-    that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
-    non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
-    argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
-    size :math:`\mathcal{O}(n_{thresholds} \times n_{labels})` (constant memory).
+    .. note:: 
+       The implementation both supports calculating the metric in a non-binned but accurate version and a binned version
+       that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
+       non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
+       argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
+       size :math:`\mathcal{O}(n_{thresholds} \times n_{labels})` (constant memory).
 
     Args:
         num_labels: Integer specifing the number of labels
@@ -303,7 +309,7 @@ class MultilabelRecallAtFixedPrecision(MultilabelPrecisionRecallCurve):
 
 
 class RecallAtFixedPrecision:
-    r"""Computes the higest possible recall value given the minimum precision thresholds provided. This is done by
+    r"""Computes the highest possible recall value given the minimum precision thresholds provided. This is done by
     first calculating the precision-recall curve for different thresholds and the find the recall for a given
     precision level.
 

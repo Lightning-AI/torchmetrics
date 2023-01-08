@@ -33,7 +33,8 @@ class BinaryMatthewsCorrCoef(BinaryConfusionMatrix):
       per element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``
     
-    .. note:: Additional dimension ``...`` will be flattened into the batch dimension.
+    .. note:: 
+       Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
@@ -92,7 +93,8 @@ class MulticlassMatthewsCorrCoef(MulticlassConfusionMatrix):
       probabilities/logits into an int tensor.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``
     
-    .. note:: Additional dimension ``...`` will be flattened into the batch dimension.
+    .. note:: 
+       Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
@@ -156,7 +158,8 @@ class MultilabelMatthewsCorrCoef(MultilabelConfusionMatrix):
       per element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``
     
-    .. note:: Additional dimension ``...`` will be flattened into the batch dimension.
+    .. note:: 
+       Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 

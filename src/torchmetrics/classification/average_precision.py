@@ -52,13 +52,15 @@ class BinaryAveragePrecision(BinaryPrecisionRecallCurve):
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)`` containing ground truth labels, and therefore
       only contain {0,1} values (except if `ignore_index` is specified). The value 1 always encodes the positive class.
 
-    .. note:: Additional dimension ``...`` will be flattened into the batch dimension.
+    .. note:: 
+       Additional dimension ``...`` will be flattened into the batch dimension.
 
-    .. note:: The implementation both supports calculating the metric in a non-binned but accurate version and a binned version
-    that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
-    non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
-    argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
-    size :math:`\mathcal{O}(n_{thresholds})` (constant memory).
+    .. note:: 
+       The implementation both supports calculating the metric in a non-binned but accurate version and a binned version
+       that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
+       non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
+       argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
+       size :math:`\mathcal{O}(n_{thresholds})` (constant memory).
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
@@ -122,13 +124,15 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)`` containing ground truth labels, and therefore
       only contain values in the [0, n_classes-1] range (except if `ignore_index` is specified).
 
-    .. note:: Additional dimension ``...`` will be flattened into the batch dimension.
+    .. note:: 
+       Additional dimension ``...`` will be flattened into the batch dimension.
 
-    .. note:: The implementation both supports calculating the metric in a non-binned but accurate version and a binned version
-    that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
-    non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
-    argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
-    size :math:`\mathcal{O}(n_{thresholds} \times n_{classes})` (constant memory).
+    .. note:: 
+       The implementation both supports calculating the metric in a non-binned but accurate version and a binned version
+       that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
+       non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
+       argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
+       size :math:`\mathcal{O}(n_{thresholds} \times n_{classes})` (constant memory).
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
@@ -227,13 +231,15 @@ class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)`` containing ground truth labels, and 
       therefore only contain {0,1} values (except if `ignore_index` is specified).
 
-    .. note:: Additional dimension ``...`` will be flattened into the batch dimension.
+    .. note:: 
+       Additional dimension ``...`` will be flattened into the batch dimension.
 
-    .. note:: The implementation both supports calculating the metric in a non-binned but accurate version and a binned 
-    version that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate 
-    the non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the 
-    `thresholds` argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
-    size :math:`\mathcal{O}(n_{thresholds} \times n_{labels})` (constant memory).
+    .. note:: 
+       The implementation both supports calculating the metric in a non-binned but accurate version and a binned 
+       version that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate 
+       the non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the 
+       `thresholds` argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
+       size :math:`\mathcal{O}(n_{thresholds} \times n_{labels})` (constant memory).
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 

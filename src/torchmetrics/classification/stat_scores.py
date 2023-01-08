@@ -92,8 +92,9 @@ class BinaryStatScores(_AbstractStatScores):
       per element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``
     
-    .. note:: The influence of the additional dimension ``...`` (if present) will be determined by the 
-    `multidim_average` argument.
+    .. note:: 
+       The influence of the additional dimension ``...`` (if present) will be determined by the 
+       `multidim_average` argument.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
@@ -196,14 +197,15 @@ class MulticlassStatScores(_AbstractStatScores):
       probabilities/logits into an int tensor.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``
     
-    .. note:: The influence of the additional dimension ``...`` (if present) will be determined by the 
-    `multidim_average` argument.
+    .. note:: 
+       The influence of the additional dimension ``...`` (if present) will be determined by the 
+       `multidim_average` argument.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
     - ``mcss`` (:class:`~torch.Tensor`): A tensor of shape ``(..., 5)``, where the last dimension corresponds
-    to ``[tp, fp, tn, fn, sup]`` (``sup`` stands for support and equals ``tp + fn``). The shape
-    depends on ``average`` and ``multidim_average`` parameters:
+      to ``[tp, fp, tn, fn, sup]`` (``sup`` stands for support and equals ``tp + fn``). The shape
+      depends on ``average`` and ``multidim_average`` parameters:
 
     - If ``multidim_average`` is set to ``global``
     - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(5,)``
@@ -342,14 +344,15 @@ class MultilabelStatScores(_AbstractStatScores):
       per element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``
     
-    .. note:: The influence of the additional dimension ``...`` (if present) will be determined by the 
-    `multidim_average` argument.
+    .. note:: 
+       The influence of the additional dimension ``...`` (if present) will be determined by the 
+       `multidim_average` argument.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
     - ``mlss`` (:class:`~torch.Tensor`): A tensor of shape ``(..., 5)``, where the last dimension corresponds
-    to ``[tp, fp, tn, fn, sup]`` (``sup`` stands for support and equals ``tp + fn``). The shape
-    depends on ``average`` and ``multidim_average`` parameters:
+      to ``[tp, fp, tn, fn, sup]`` (``sup`` stands for support and equals ``tp + fn``). The shape
+      depends on ``average`` and ``multidim_average`` parameters:
 
     - If ``multidim_average`` is set to ``global``
     - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(5,)``

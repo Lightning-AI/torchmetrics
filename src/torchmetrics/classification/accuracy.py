@@ -47,8 +47,9 @@ class BinaryAccuracy(BinaryStatScores):
       per element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``
 
-    .. note:: The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
+    .. note:: 
+       The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
+       argument.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
@@ -173,8 +174,9 @@ class MulticlassAccuracy(MulticlassStatScores):
       an int tensor.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``
 
-    .. note:: The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
+    .. note:: 
+       The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
+       argument.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
@@ -329,8 +331,9 @@ class MultilabelAccuracy(MultilabelStatScores):
       element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``
 
-    .. note:: The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
+    .. note:: 
+       The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
+       argument.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 

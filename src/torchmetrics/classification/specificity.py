@@ -33,17 +33,18 @@ class BinarySpecificity(BinaryStatScores):
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
     - ``preds`` (:class:`~torch.Tensor`): An int or float tensor of shape ``(N, ...)``. If preds is a floating point 
-    tensor with values outside [0,1] range we consider the input to be logits and will auto apply sigmoid per 
-    element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
+      tensor with values outside [0,1] range we consider the input to be logits and will auto apply sigmoid per 
+      element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``
     
-    .. note:: The influence of the additional dimension ``...`` (if present) will be determined by the 
-    `multidim_average` argument.
+    .. note:: 
+       The influence of the additional dimension ``...`` (if present) will be determined by the 
+       `multidim_average` argument.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
     - ``bs`` (:class:`~torch.Tensor`): If ``multidim_average`` is set to ``global``, the metric returns a scalar value. If ``multidim_average``
-        is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of a scalar value per sample.
+      is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of a scalar value per sample.
 
     Args:
         threshold: Threshold for transforming probability to binary {0,1} predictions
@@ -109,8 +110,9 @@ class MulticlassSpecificity(MulticlassStatScores):
       probabilities/logits into an int tensor.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``
     
-    .. note:: The influence of the additional dimension ``...`` (if present) will be determined by the 
-    `multidim_average` argument.
+    .. note:: 
+       The influence of the additional dimension ``...`` (if present) will be determined by the 
+       `multidim_average` argument.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
@@ -210,8 +212,9 @@ class MultilabelSpecificity(MultilabelStatScores):
       per element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``
     
-    .. note:: The influence of the additional dimension ``...`` (if present) will be determined by the 
-    `multidim_average` argument.
+    .. note:: 
+       The influence of the additional dimension ``...`` (if present) will be determined by the 
+       `multidim_average` argument.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
