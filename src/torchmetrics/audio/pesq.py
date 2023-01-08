@@ -84,6 +84,7 @@ class PerceptualEvaluationSpeechQuality(Metric):
     full_state_update: bool = False
     is_differentiable: bool = False
     higher_is_better: bool = True
+    plot_options: dict = {"lower_bound": 0.0, "upper_bound": 1.0}
 
     def __init__(
         self,
@@ -151,7 +152,7 @@ class PerceptualEvaluationSpeechQuality(Metric):
             >>> import torch
             >>> from torchmetrics.audio import PerceptualEvaluationSpeechQuality
             >>> metric = PerceptualEvaluationSpeechQuality()
-            >>> metric.update(torch.rand(10), torch.randint(2,(10,)))
+            >>> metric.update(torch.rand(10), torch.rand(10))
             >>> fig_, ax_ = metric.plot()
 
         .. plot::
@@ -163,7 +164,7 @@ class PerceptualEvaluationSpeechQuality(Metric):
             >>> metric = PerceptualEvaluationSpeechQuality()
             >>> values = [ ]
             >>> for _ in range(10):
-            ...     values.append(metric(torch.rand(10), torch.randint(2,(10,))))
+            ...     values.append(metric(torch.rand(10), torch.rand(10)))
             >>> fig_, ax_ = metric.plot(values)
         """
         val = val or self.compute()
