@@ -161,7 +161,7 @@ class PerceptualEvaluationSpeechQuality(Metric):
             >>> # Example plotting multiple values
             >>> import torch
             >>> from torchmetrics.audio import PerceptualEvaluationSpeechQuality
-            >>> metric = PerceptualEvaluationSpeechQuality()
+            >>> metric = PerceptualEvaluationSpeechQuality(8000, 'nb')
             >>> values = [ ]
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(10), torch.rand(10)))
