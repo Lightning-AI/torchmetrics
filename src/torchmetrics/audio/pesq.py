@@ -17,8 +17,7 @@ from torch import Tensor, tensor
 
 from torchmetrics.functional.audio.pesq import perceptual_evaluation_speech_quality
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.imports import _PESQ_AVAILABLE
-from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _PESQ_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
 
 __doctest_requires__ = {"PerceptualEvaluationSpeechQuality": ["pesq"]}
