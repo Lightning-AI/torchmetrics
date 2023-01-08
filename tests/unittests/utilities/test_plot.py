@@ -48,7 +48,7 @@ from torchmetrics.utilities.plot import plot_confusion_matrix, plot_single_or_mu
             lambda: torch.randint(3, (100,)),
             lambda: torch.randint(3, (100,)),
             id="multiclass and average=None",
-        )
+        ),
     ],
 )
 @pytest.mark.parametrize("num_vals", [1, 5, 10])
