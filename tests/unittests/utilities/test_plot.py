@@ -19,8 +19,8 @@ import numpy as np
 import pytest
 import torch
 
-from torchmetrics.functional.classification.accuracy import binary_accuracy, multiclass_accuracy
 from torchmetrics.functional.audio.pesq import perceptual_evaluation_speech_quality
+from torchmetrics.functional.classification.accuracy import binary_accuracy, multiclass_accuracy
 from torchmetrics.functional.classification.confusion_matrix import (
     binary_confusion_matrix,
     multiclass_confusion_matrix,
