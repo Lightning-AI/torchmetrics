@@ -60,7 +60,7 @@ class TestBLEUScore(TextTester):
             preds=preds,
             targets=targets,
             metric_class=BLEUScore,
-            sk_metric=compute_bleu_metric_nltk,
+            reference_metric=compute_bleu_metric_nltk,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
         )
@@ -73,7 +73,7 @@ class TestBLEUScore(TextTester):
             preds,
             targets,
             metric_functional=bleu_score,
-            sk_metric=compute_bleu_metric_nltk,
+            reference_metric=compute_bleu_metric_nltk,
             metric_args=metric_args,
         )
 

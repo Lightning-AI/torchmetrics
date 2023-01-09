@@ -12,24 +12,28 @@ ________________
 
 .. autoclass:: torchmetrics.AveragePrecision
     :noindex:
+    :exclude-members: update, compute
 
 BinaryAveragePrecision
 ^^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.BinaryAveragePrecision
     :noindex:
+    :exclude-members: update, compute
 
 MulticlassAveragePrecision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.MulticlassAveragePrecision
     :noindex:
+    :exclude-members: update, compute
 
 MultilabelAveragePrecision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.MultilabelAveragePrecision
     :noindex:
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________

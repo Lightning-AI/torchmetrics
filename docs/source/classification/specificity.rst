@@ -12,24 +12,28 @@ ________________
 
 .. autoclass:: torchmetrics.Specificity
     :noindex:
+    :exclude-members: update, compute
 
 BinarySpecificity
 ^^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.BinarySpecificity
     :noindex:
+    :exclude-members: update, compute
 
 MulticlassSpecificity
 ^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.MulticlassSpecificity
     :noindex:
+    :exclude-members: update, compute
 
 MultilabelSpecificity
 ^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.MultilabelSpecificity
     :noindex:
+    :exclude-members: update, compute
 
 
 Functional Interface

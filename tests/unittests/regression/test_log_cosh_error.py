@@ -68,7 +68,7 @@ class TestLogCoshError(MetricTester):
             preds=preds,
             target=target,
             metric_class=LogCoshError,
-            sk_metric=sk_log_cosh_error,
+            reference_metric=sk_log_cosh_error,
             metric_args={"num_outputs": num_outputs},
         )
 
@@ -77,7 +77,7 @@ class TestLogCoshError(MetricTester):
             preds=preds,
             target=target,
             metric_functional=log_cosh_error,
-            sk_metric=sk_log_cosh_error,
+            reference_metric=sk_log_cosh_error,
         )
 
     def test_log_cosh_error_differentiability(self, preds, target):

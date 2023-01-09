@@ -131,13 +131,13 @@ class FrechetInceptionDistance(Metric):
     .. math::
         FID = |\mu - \mu_w| + tr(\Sigma + \Sigma_w - 2(\Sigma \Sigma_w)^{\frac{1}{2}})
 
-    where :math:`\mathcal{N}(\mu, \Sigma)` is the multivariate normal distribution estimated from Inception v3 [1]
-    features calculated on real life images and :math:`\mathcal{N}(\mu_w, \Sigma_w)` is the multivariate normal
-    distribution estimated from Inception v3 features calculated on generated (fake) images. The metric was
-    originally proposed in [1].
+    where :math:`\mathcal{N}(\mu, \Sigma)` is the multivariate normal distribution estimated from Inception v3
+    (`fid ref1`_) features calculated on real life images and :math:`\mathcal{N}(\mu_w, \Sigma_w)` is the
+    multivariate normal distribution estimated from Inception v3 features calculated on generated (fake) images.
+    The metric was originally proposed in `fid ref1`_.
 
-    Using the default feature extraction (Inception v3 using the original weights from [2]), the input is
-    expected to be mini-batches of 3-channel RGB images of shape (``3 x H x W``). If argument ``normalize``
+    Using the default feature extraction (Inception v3 using the original weights from `fid ref2`_), the input is
+    expected to be mini-batches of 3-channel RGB images of shape ``(3 x H x W)``. If argument ``normalize``
     is ``True`` images are expected to be dtype ``float`` and have values in the ``[0, 1]`` range, else if
     ``normalize`` is set to ``False`` images are expected to have dtype ``uint8`` and take values in the ``[0, 255]``
     range. All images will be resized to 299 x 299 which is the size of the original training data. The boolian
@@ -151,6 +151,15 @@ class FrechetInceptionDistance(Metric):
         is installed. Either install as ``pip install torchmetrics[image]`` or
         ``pip install torch-fidelity``
 
+    As input to ``forward`` and ``update`` the metric accepts the following input
+
+    - ``imgs`` (:class:`~torch.Tensor`): tensor with images feed to the feature extractor with
+    - ``real`` (:class:`~bool`): bool indicating if ``imgs`` belong to the real or the fake distribution
+
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``fid`` (:class:`~torch.Tensor`): float scalar tensor with mean FID value over samples
+
     Args:
         feature:
             Either an integer or ``nn.Module``:
@@ -158,21 +167,12 @@ class FrechetInceptionDistance(Metric):
             - an integer will indicate the inceptionv3 feature layer to choose. Can be one of the following:
               64, 192, 768, 2048
             - an ``nn.Module`` for using a custom feature extractor. Expects that its forward method returns
-              an ``[N,d]`` matrix where ``N`` is the batch size and ``d`` is the feature size.
+              an ``(N,d)`` matrix where ``N`` is the batch size and ``d`` is the feature size.
 
         reset_real_features: Whether to also reset the real features. Since in many cases the real dataset does not
             change, the features can be cached them to avoid recomputing them which is costly. Set this to ``False`` if
             your dataset does not change.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
-
-    References:
-        [1] Rethinking the Inception Architecture for Computer Vision
-        Christian Szegedy, Vincent Vanhoucke, Sergey Ioffe, Jonathon Shlens, Zbigniew Wojna
-        https://arxiv.org/abs/1512.00567
-
-        [2] GANs Trained by a Two Time-Scale Update Rule Converge to a Local Nash Equilibrium,
-        Martin Heusel, Hubert Ramsauer, Thomas Unterthiner, Bernhard Nessler, Sepp Hochreiter
-        https://arxiv.org/abs/1706.08500
 
     Raises:
         ValueError:
@@ -259,12 +259,7 @@ class FrechetInceptionDistance(Metric):
         self.add_state("fake_features_num_samples", torch.tensor(0).long(), dist_reduce_fx="sum")
 
     def update(self, imgs: Tensor, real: bool) -> None:  # type: ignore
-        """Update the state with extracted features.
-
-        Args:
-            imgs: tensor with images feed to the feature extractor
-            real: bool indicating if ``imgs`` belong to the real or the fake distribution
-        """
+        """Update the state with extracted features."""
         imgs = (imgs * 255).byte() if self.normalize else imgs
         features = self.inception(imgs)
         self.orig_dtype = features.dtype

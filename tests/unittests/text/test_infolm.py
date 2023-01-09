@@ -128,7 +128,7 @@ class TestInfoLM(TextTester):
             preds=preds,
             targets=targets,
             metric_class=InfoLM,
-            sk_metric=reference_metric,
+            reference_metric=reference_metric,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
             check_scriptable=False,  # huggingface transformers are not usually scriptable
@@ -157,7 +157,7 @@ class TestInfoLM(TextTester):
             preds,
             targets,
             metric_functional=infolm,
-            sk_metric=reference_metric,
+            reference_metric=reference_metric,
             metric_args=metric_args,
         )
 

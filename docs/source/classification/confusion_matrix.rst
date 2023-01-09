@@ -17,24 +17,28 @@ ConfusionMatrix
 
 .. autoclass:: torchmetrics.ConfusionMatrix
     :noindex:
+    :exclude-members: update, compute
 
 BinaryConfusionMatrix
 ^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.BinaryConfusionMatrix
     :noindex:
+    :exclude-members: update, compute
 
 MulticlassConfusionMatrix
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.MulticlassConfusionMatrix
     :noindex:
+    :exclude-members: update, compute
 
 MultilabelConfusionMatrix
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.MultilabelConfusionMatrix
     :noindex:
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________
