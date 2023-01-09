@@ -177,7 +177,7 @@ class BinaryFairness(_AbstractGroupStatScores):
         >>> groups = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> metric = BinaryFairness(2)
         >>> metric(preds, groups, target)
-        ({'DP_0_1': tensor(0.)}, {'EO_0_1': tensor(0.)})
+        {'DP_0_1': tensor(0.), 'EO_0_1': tensor(0.)}
 
     Example (preds is float tensor):
         >>> from torchmetrics.classification import BinaryFairness
@@ -186,7 +186,7 @@ class BinaryFairness(_AbstractGroupStatScores):
         >>> groups = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> metric = BinaryFairness(2)
         >>> metric(preds, groups, target)
-        ({'DP_0_1': tensor(0.)}, {'EO_0_1': tensor(0.)})
+        {'DP_0_1': tensor(0.), 'EO_0_1': tensor(0.)}
     """
     is_differentiable = False
     higher_is_better = False
