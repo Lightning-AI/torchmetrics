@@ -84,7 +84,7 @@ class PerceptualEvaluationSpeechQuality(Metric):
     full_state_update: bool = False
     is_differentiable: bool = False
     higher_is_better: bool = True
-    plot_options: dict = {"lower_bound": 0.0, "upper_bound": 1.0}
+    plot_options: dict = {"lower_bound": 1.0, "upper_bound": 4.5}
 
     def __init__(
         self,
