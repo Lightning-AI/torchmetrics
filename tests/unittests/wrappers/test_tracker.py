@@ -15,14 +15,12 @@
 import pytest
 import torch
 
-from torchmetrics import (
-    Accuracy,
-    ConfusionMatrix,
-    MeanAbsoluteError,
-    MeanSquaredError,
-    MetricCollection,
-    Precision,
-    Recall,
+from torchmetrics import MeanAbsoluteError, MeanSquaredError, MetricCollection
+from torchmetrics.classification import (
+    MulticlassAccuracy,
+    MulticlassConfusionMatrix,
+    MulticlassPrecision,
+    MulticlassRecall,
 )
 from torchmetrics.wrappers import MetricTracker
 from unittests.helpers import seed_all
@@ -43,6 +41,11 @@ def test_raises_error_on_wrong_input():
     ):
         MetricTracker(MetricCollection([MeanAbsoluteError(), MeanSquaredError()]), maximize=[False, False, False])
 
+    with pytest.raises(
+        ValueError, match="Argument `maximize` should be a single bool when `metric` is a single Metric"
+    ):
+        MetricTracker(MeanAbsoluteError(), maximize=[False])
+
 
 @pytest.mark.parametrize(
     "method, method_input",
@@ -53,7 +56,7 @@ def test_raises_error_on_wrong_input():
     ],
 )
 def test_raises_error_if_increment_not_called(method, method_input):
-    tracker = MetricTracker(Accuracy(num_classes=10))
+    tracker = MetricTracker(MulticlassAccuracy(num_classes=10))
     with pytest.raises(ValueError, match=f"`{method}` cannot be called before .*"):
         if method_input is not None:
             getattr(tracker, method)(*method_input)
@@ -64,18 +67,30 @@ def test_raises_error_if_increment_not_called(method, method_input):
 @pytest.mark.parametrize(
     "base_metric, metric_input, maximize",
     [
-        (Accuracy(num_classes=10), (torch.randint(10, (50,)), torch.randint(10, (50,))), True),
-        (Precision(num_classes=10), (torch.randint(10, (50,)), torch.randint(10, (50,))), True),
-        (Recall(num_classes=10), (torch.randint(10, (50,)), torch.randint(10, (50,))), True),
+        (MulticlassAccuracy(num_classes=10), (torch.randint(10, (50,)), torch.randint(10, (50,))), True),
+        (MulticlassPrecision(num_classes=10), (torch.randint(10, (50,)), torch.randint(10, (50,))), True),
+        (MulticlassRecall(num_classes=10), (torch.randint(10, (50,)), torch.randint(10, (50,))), True),
         (MeanSquaredError(), (torch.randn(50), torch.randn(50)), False),
         (MeanAbsoluteError(), (torch.randn(50), torch.randn(50)), False),
         (
-            MetricCollection([Accuracy(num_classes=10), Precision(num_classes=10), Recall(num_classes=10)]),
+            MetricCollection(
+                [
+                    MulticlassAccuracy(num_classes=10),
+                    MulticlassPrecision(num_classes=10),
+                    MulticlassRecall(num_classes=10),
+                ]
+            ),
             (torch.randint(10, (50,)), torch.randint(10, (50,))),
             True,
         ),
         (
-            MetricCollection([Accuracy(num_classes=10), Precision(num_classes=10), Recall(num_classes=10)]),
+            MetricCollection(
+                [
+                    MulticlassAccuracy(num_classes=10),
+                    MulticlassPrecision(num_classes=10),
+                    MulticlassRecall(num_classes=10),
+                ]
+            ),
             (torch.randint(10, (50,)), torch.randint(10, (50,))),
             [True, True, True],
         ),
@@ -133,8 +148,8 @@ def test_tracker(base_metric, metric_input, maximize):
 @pytest.mark.parametrize(
     "base_metric",
     [
-        ConfusionMatrix(3),
-        MetricCollection([ConfusionMatrix(3), Accuracy(3)]),
+        MulticlassConfusionMatrix(3),
+        MetricCollection([MulticlassConfusionMatrix(3), MulticlassAccuracy(3)]),
     ],
 )
 def test_best_metric_for_not_well_defined_metric_collection(base_metric):
@@ -149,8 +164,8 @@ def test_best_metric_for_not_well_defined_metric_collection(base_metric):
     with pytest.warns(UserWarning, match="Encountered the following error when trying to get the best metric.*"):
         best = tracker.best_metric()
         if isinstance(best, dict):
-            assert best["Accuracy"] is not None
-            assert best["ConfusionMatrix"] is None
+            assert best["MulticlassAccuracy"] is not None
+            assert best["MulticlassConfusionMatrix"] is None
         else:
             assert best is None
 
@@ -158,10 +173,10 @@ def test_best_metric_for_not_well_defined_metric_collection(base_metric):
         idx, best = tracker.best_metric(return_step=True)
 
         if isinstance(best, dict):
-            assert best["Accuracy"] is not None
-            assert best["ConfusionMatrix"] is None
-            assert idx["Accuracy"] is not None
-            assert idx["ConfusionMatrix"] is None
+            assert best["MulticlassAccuracy"] is not None
+            assert best["MulticlassConfusionMatrix"] is None
+            assert idx["MulticlassAccuracy"] is not None
+            assert idx["MulticlassConfusionMatrix"] is None
         else:
             assert best is None
             assert idx is None

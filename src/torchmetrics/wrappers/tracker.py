@@ -41,9 +41,10 @@ class MetricTracker(ModuleList):
             better (``True``) or lower is better (``False``).
 
     Example (single metric):
-        >>> from torchmetrics import Accuracy, MetricTracker
+        >>> from torchmetrics import MetricTracker
+        >>> from torchmetrics.classification import MulticlassAccuracy
         >>> _ = torch.manual_seed(42)
-        >>> tracker = MetricTracker(Accuracy(num_classes=10))
+        >>> tracker = MetricTracker(MulticlassAccuracy(num_classes=10, average='micro'))
         >>> for epoch in range(5):
         ...     tracker.increment()
         ...     for batch_idx in range(5):
@@ -102,6 +103,8 @@ class MetricTracker(ModuleList):
             raise ValueError("Argument `maximize` should either be a single bool or list of bool")
         if isinstance(maximize, list) and isinstance(metric, MetricCollection) and len(maximize) != len(metric):
             raise ValueError("The len of argument `maximize` should match the length of the metric collection")
+        if isinstance(metric, Metric) and not isinstance(maximize, bool):
+            raise ValueError("Argument `maximize` should be a single bool when `metric` is a single Metric")
         self.maximize = maximize
 
         self._increment_called = False

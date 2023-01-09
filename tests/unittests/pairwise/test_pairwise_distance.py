@@ -46,8 +46,7 @@ _inputs2 = Input(
 )
 
 
-def _sk_metric(x, y, sk_fn, reduction):
-    """comparison function."""
+def _wrap_reduction(x, y, sk_fn, reduction):
     x = x.view(-1, extra_dim).numpy()
     y = y.view(-1, extra_dim).numpy()
     res = sk_fn(x, y)
@@ -86,7 +85,7 @@ class TestPairwise(MetricTester):
             preds=x,
             target=y,
             metric_functional=metric_functional,
-            sk_metric=partial(_sk_metric, sk_fn=sk_fn, reduction=reduction),
+            reference_metric=partial(_wrap_reduction, sk_fn=sk_fn, reduction=reduction),
             metric_args={"reduction": reduction},
         )
 
@@ -115,3 +114,20 @@ def test_error_on_wrong_shapes(metric):
 
     with pytest.raises(ValueError, match="Expected reduction to be one of .*"):
         metric(torch.randn(10, 5), torch.randn(10, 5), reduction=1)
+
+
+@pytest.mark.parametrize(
+    "metric_functional, sk_fn",
+    [
+        (pairwise_cosine_similarity, cosine_similarity),
+        (pairwise_euclidean_distance, euclidean_distances),
+        (pairwise_manhattan_distance, manhattan_distances),
+        (pairwise_linear_similarity, linear_kernel),
+    ],
+)
+def test_precison_case(metric_functional, sk_fn):
+    """test that metrics are robust towars cases where high precision is needed."""
+    x = torch.tensor([[772.0, 112.0], [772.20001, 112.0]])
+    res1 = metric_functional(x, zero_diagonal=False)
+    res2 = sk_fn(x)
+    assert torch.allclose(res1, torch.tensor(res2, dtype=torch.float32))

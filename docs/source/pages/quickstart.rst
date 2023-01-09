@@ -2,7 +2,7 @@
 Quick Start
 ###########
 
-TorchMetrics is a collection of 80+ PyTorch metrics implementations and an easy-to-use API to create custom metrics. It offers:
+TorchMetrics is a collection of 90+ PyTorch metrics implementations and an easy-to-use API to create custom metrics. It offers:
 
 * A standardized interface to increase reproducibility
 * Reduces Boilerplate
@@ -64,12 +64,14 @@ The code-snippet below shows a simple example for calculating the accuracy using
     preds = torch.randn(10, 5).softmax(dim=-1)
     target = torch.randint(5, (10,))
 
-    acc = torchmetrics.functional.accuracy(preds, target)
+    acc = torchmetrics.functional.accuracy(preds, target, task="multiclass", num_classes=5)
 
 Module metrics
 ~~~~~~~~~~~~~~
 
-Nearly all functional metrics have a corresponding class-based metric that calls it a functional counterpart underneath. The class-based metrics are characterized by having one or more internal metrics states (similar to the parameters of the PyTorch module) that allow them to offer additional functionalities:
+Nearly all functional metrics have a corresponding class-based metric that calls it a functional counterpart underneath.
+The class-based metrics are characterized by having one or more internal metrics states (similar to the parameters of
+the PyTorch module) that allow them to offer additional functionalities:
 
 * Accumulation of multiple batches
 * Automatic synchronization between multiple devices
@@ -84,7 +86,7 @@ The code below shows how to use the class-based interface:
     import torchmetrics
 
     # initialize metric
-    metric = torchmetrics.Accuracy()
+    metric = torchmetrics.Accuracy(task="multiclass", num_classes=5)
 
     n_batches = 10
     for i in range(n_batches):

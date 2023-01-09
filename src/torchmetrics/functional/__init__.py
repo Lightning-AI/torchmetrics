@@ -20,14 +20,15 @@ from torchmetrics.functional.classification.average_precision import average_pre
 from torchmetrics.functional.classification.calibration_error import calibration_error
 from torchmetrics.functional.classification.cohen_kappa import cohen_kappa
 from torchmetrics.functional.classification.confusion_matrix import confusion_matrix
-from torchmetrics.functional.classification.dice import dice, dice_score
+from torchmetrics.functional.classification.dice import dice
+from torchmetrics.functional.classification.exact_match import exact_match
 from torchmetrics.functional.classification.f_beta import f1_score, fbeta_score
 from torchmetrics.functional.classification.generalized_dice import generalized_dice_score
 from torchmetrics.functional.classification.hamming import hamming_distance
 from torchmetrics.functional.classification.hinge import hinge_loss
 from torchmetrics.functional.classification.jaccard import jaccard_index
 from torchmetrics.functional.classification.matthews_corrcoef import matthews_corrcoef
-from torchmetrics.functional.classification.precision_recall import precision, precision_recall, recall
+from torchmetrics.functional.classification.precision_recall import precision, recall
 from torchmetrics.functional.classification.precision_recall_curve import precision_recall_curve
 from torchmetrics.functional.classification.roc import roc
 from torchmetrics.functional.classification.specificity import specificity
@@ -43,6 +44,13 @@ from torchmetrics.functional.image.ssim import (
 )
 from torchmetrics.functional.image.tv import total_variation
 from torchmetrics.functional.image.uqi import universal_image_quality_index
+from torchmetrics.functional.nominal.cramers import cramers_v, cramers_v_matrix
+from torchmetrics.functional.nominal.pearson import (
+    pearsons_contingency_coefficient,
+    pearsons_contingency_coefficient_matrix,
+)
+from torchmetrics.functional.nominal.theils_u import theils_u, theils_u_matrix
+from torchmetrics.functional.nominal.tschuprows import tschuprows_t, tschuprows_t_matrix
 from torchmetrics.functional.pairwise.cosine import pairwise_cosine_similarity
 from torchmetrics.functional.pairwise.euclidean import pairwise_euclidean_distance
 from torchmetrics.functional.pairwise.linear import pairwise_linear_similarity
@@ -52,6 +60,7 @@ from torchmetrics.functional.regression.cosine_similarity import cosine_similari
 from torchmetrics.functional.regression.explained_variance import explained_variance
 from torchmetrics.functional.regression.kendall import kendall_rank_corrcoef
 from torchmetrics.functional.regression.kl_divergence import kl_divergence
+from torchmetrics.functional.regression.log_cosh import log_cosh_error
 from torchmetrics.functional.regression.log_mse import mean_squared_log_error
 from torchmetrics.functional.regression.mae import mean_absolute_error
 from torchmetrics.functional.regression.mape import mean_absolute_percentage_error
@@ -102,10 +111,12 @@ __all__ = [
     "cohen_kappa",
     "confusion_matrix",
     "cosine_similarity",
+    "cramers_v",
+    "cramers_v_matrix",
     "tweedie_deviance_score",
-    "dice_score",
     "dice",
     "error_relative_global_dimensionless_synthesis",
+    "exact_match",
     "explained_variance",
     "extended_edit_distance",
     "f1_score",
@@ -117,6 +128,7 @@ __all__ = [
     "jaccard_index",
     "kendall_rank_corrcoef",
     "kl_divergence",
+    "log_cosh_error",
     "match_error_rate",
     "matthews_corrcoef",
     "mean_absolute_error",
@@ -129,11 +141,12 @@ __all__ = [
     "pairwise_linear_similarity",
     "pairwise_manhattan_distance",
     "pearson_corrcoef",
+    "pearsons_contingency_coefficient",
+    "pearsons_contingency_coefficient_matrix",
     "permutation_invariant_training",
     "perplexity",
     "pit_permutate",
     "precision",
-    "precision_recall",
     "precision_recall_curve",
     "peak_signal_noise_ratio",
     "r2_score",
@@ -161,8 +174,12 @@ __all__ = [
     "structural_similarity_index_measure",
     "stat_scores",
     "symmetric_mean_absolute_percentage_error",
+    "theils_u",
+    "theils_u_matrix",
     "total_variation",
     "translation_edit_rate",
+    "tschuprows_t",
+    "tschuprows_t_matrix",
     "universal_image_quality_index",
     "spectral_angle_mapper",
     "weighted_mean_absolute_percentage_error",

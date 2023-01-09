@@ -147,7 +147,7 @@ def _check_shape_of_model_output(output: Tensor, input_ids: Tensor) -> None:
     invalid_out_shape = len(output.shape) != 3 or output.shape[0] != bs or output.shape[1] != seq_len
     if invalid_out_shape:
         raise ValueError(
-            "The model output must be `torch.Tensor` of a shape `[batch_size, seq_len, model_dim]` "
+            "The model output must be `Tensor` of a shape `[batch_size, seq_len, model_dim]` "
             f"i.e. [{bs}, {seq_len}. , `model_dim`], but got {output.shape}."
         )
 
@@ -249,7 +249,7 @@ class TextDataset(Dataset):
 
     @staticmethod
     def _set_of_tokens(input_ids: Tensor) -> Set:
-        """Return set of tokens from the `input_ids` `torch.Tensor`."""
+        """Return set of tokens from the `input_ids` :class:`~torch.Tensor`."""
         return set(input_ids.tolist())
 
 
@@ -265,10 +265,8 @@ class TokenizedDataset(TextDataset):
     ) -> None:
         """
         Args:
-            input_ids:
-                Input ids (`torch.Tensor`).
-            attention_mask:
-                Attention mask (`torch.Tensor`).
+            input_ids: Input indexes
+            attention_mask: Attention mask
             idf:
                 An indication of whether calculate token inverse document frequencies to weight the model embeddings.
             tokens_idf:

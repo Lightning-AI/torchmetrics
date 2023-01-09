@@ -45,8 +45,12 @@ from torchmetrics.functional.classification.confusion_matrix import (  # noqa: F
     multiclass_confusion_matrix,
     multilabel_confusion_matrix,
 )
-from torchmetrics.functional.classification.dice import dice, dice_score  # noqa: F401
-from torchmetrics.functional.classification.exact_match import multilabel_exact_match  # noqa: F401
+from torchmetrics.functional.classification.dice import dice  # noqa: F401
+from torchmetrics.functional.classification.exact_match import (  # noqa: F401
+    exact_match,
+    multiclass_exact_match,
+    multilabel_exact_match,
+)
 from torchmetrics.functional.classification.f_beta import (  # noqa: F401
     binary_f1_score,
     binary_fbeta_score,
@@ -89,7 +93,6 @@ from torchmetrics.functional.classification.precision_recall import (  # noqa: F
     multilabel_precision,
     multilabel_recall,
     precision,
-    precision_recall,
     recall,
 )
 from torchmetrics.functional.classification.precision_recall_curve import (  # noqa: F401

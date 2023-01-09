@@ -37,11 +37,12 @@ targets = [
 
 
 _METRICS = ["precision", "recall", "f1"]
-
+# 12 repeating layers, 128 embedding, 768-hidden, 12-heads, 11M parameters
+# ALBERT base model with no dropout, additional training data and longer training
 MODEL_NAME = "albert-base-v2"
 
 
-def _assert_list(preds: Any, targets: Any, threshold: float = 1e-8):
+def _assert_list(preds: Any, targets: Any, threshold: float = 1e-7):
     """Assert two lists are equal."""
     assert np.allclose(preds, targets, atol=threshold, equal_nan=True)
 
@@ -64,12 +65,11 @@ targets_batched = [targets[0:2], targets[2:]]
 @skip_on_connection_issues()
 def test_score_fn(preds, targets):
     """Tests for functional."""
-    original_score = original_bert_score(preds, targets, model_type=MODEL_NAME, num_layers=8, idf=False, batch_size=3)
+    args = dict(num_layers=8, idf=False, batch_size=3)
+    original_score = original_bert_score(preds, targets, model_type=MODEL_NAME, **args)
     original_score = _parse_original_bert_score(original_score)
 
-    metrics_score = metrics_bert_score(
-        preds, targets, model_name_or_path=MODEL_NAME, num_layers=8, idf=False, batch_size=3
-    )
+    metrics_score = metrics_bert_score(preds, targets, model_name_or_path=MODEL_NAME, **args)
 
     for metric in _METRICS:
         _assert_list(metrics_score[metric], original_score[metric])
@@ -83,12 +83,11 @@ def test_score_fn(preds, targets):
 @skip_on_connection_issues()
 def test_score_fn_with_idf(preds, targets):
     """Tests for functional with IDF rescaling."""
-    original_score = original_bert_score(preds, targets, model_type=MODEL_NAME, num_layers=12, idf=True, batch_size=3)
+    args = dict(num_layers=12, idf=True, batch_size=3)
+    original_score = original_bert_score(preds, targets, model_type=MODEL_NAME, **args)
     original_score = _parse_original_bert_score(original_score)
 
-    metrics_score = metrics_bert_score(
-        preds, targets, model_name_or_path=MODEL_NAME, num_layers=12, idf=True, batch_size=3
-    )
+    metrics_score = metrics_bert_score(preds, targets, model_name_or_path=MODEL_NAME, **args)
 
     for metric in _METRICS:
         _assert_list(metrics_score[metric], original_score[metric])
@@ -106,14 +105,11 @@ def test_score_fn_all_layers(preds, targets, device):
     if not torch.cuda.is_available() and device == "cuda":
         pytest.skip("Test requires GPU support")
 
-    original_score = original_bert_score(
-        preds, targets, model_type=MODEL_NAME, all_layers=True, idf=False, batch_size=3
-    )
+    args = dict(all_layers=True, idf=False, batch_size=3)
+    original_score = original_bert_score(preds, targets, model_type=MODEL_NAME, **args)
     original_score = _parse_original_bert_score(original_score)
 
-    metrics_score = metrics_bert_score(
-        preds, targets, model_name_or_path=MODEL_NAME, all_layers=True, idf=False, batch_size=3, device=device
-    )
+    metrics_score = metrics_bert_score(preds, targets, model_name_or_path=MODEL_NAME, device=device, **args)
 
     for metric in _METRICS:
         _assert_list(metrics_score[metric], original_score[metric])
@@ -127,12 +123,11 @@ def test_score_fn_all_layers(preds, targets, device):
 @skip_on_connection_issues()
 def test_score_fn_all_layers_with_idf(preds, targets):
     """Tests for functional and all layers with IDF rescaling."""
-    original_score = original_bert_score(preds, targets, model_type=MODEL_NAME, all_layers=True, idf=True, batch_size=3)
+    args = dict(all_layers=True, idf=True, batch_size=3)
+    original_score = original_bert_score(preds, targets, model_type=MODEL_NAME, **args)
     original_score = _parse_original_bert_score(original_score)
 
-    metrics_score = metrics_bert_score(
-        preds, targets, model_name_or_path=MODEL_NAME, all_layers=True, idf=True, batch_size=3
-    )
+    metrics_score = metrics_bert_score(preds, targets, model_name_or_path=MODEL_NAME, **args)
 
     for metric in _METRICS:
         _assert_list(metrics_score[metric], original_score[metric])
@@ -216,10 +211,11 @@ def test_score_fn_rescale_with_baseline(preds, targets):
 @skip_on_connection_issues()
 def test_score(preds, targets):
     """Tests for metric."""
-    original_score = original_bert_score(preds, targets, model_type=MODEL_NAME, num_layers=8, idf=False, batch_size=3)
+    args = dict(num_layers=8, idf=False, batch_size=3)
+    original_score = original_bert_score(preds, targets, model_type=MODEL_NAME, **args)
     original_score = _parse_original_bert_score(original_score)
 
-    scorer = BERTScore(model_name_or_path=MODEL_NAME, num_layers=8, idf=False, batch_size=3)
+    scorer = BERTScore(model_name_or_path=MODEL_NAME, **args)
     scorer.update(preds=preds, target=targets)
     metrics_score = scorer.compute()
 
@@ -235,10 +231,11 @@ def test_score(preds, targets):
 @skip_on_connection_issues()
 def test_score_with_idf(preds, targets):
     """Tests for metric with IDF rescaling."""
-    original_score = original_bert_score(preds, targets, model_type=MODEL_NAME, num_layers=8, idf=True, batch_size=3)
+    args = dict(num_layers=8, idf=True, batch_size=3)
+    original_score = original_bert_score(preds, targets, model_type=MODEL_NAME, **args)
     original_score = _parse_original_bert_score(original_score)
 
-    scorer = BERTScore(model_name_or_path=MODEL_NAME, num_layers=8, idf=True, batch_size=3)
+    scorer = BERTScore(model_name_or_path=MODEL_NAME, **args)
     scorer.update(preds=preds, target=targets)
     metrics_score = scorer.compute()
 
@@ -254,12 +251,11 @@ def test_score_with_idf(preds, targets):
 @skip_on_connection_issues()
 def test_score_all_layers(preds, targets):
     """Tests for metric and all layers."""
-    original_score = original_bert_score(
-        preds, targets, model_type=MODEL_NAME, all_layers=True, idf=False, batch_size=3
-    )
+    args = dict(all_layers=True, idf=False, batch_size=3)
+    original_score = original_bert_score(preds, targets, model_type=MODEL_NAME, **args)
     original_score = _parse_original_bert_score(original_score)
 
-    scorer = BERTScore(model_name_or_path=MODEL_NAME, all_layers=True, idf=False, batch_size=3)
+    scorer = BERTScore(model_name_or_path=MODEL_NAME, **args)
     scorer.update(preds=preds, target=targets)
     metrics_score = scorer.compute()
 
@@ -275,10 +271,11 @@ def test_score_all_layers(preds, targets):
 @skip_on_connection_issues()
 def test_score_all_layers_with_idf(preds, targets):
     """Tests for metric and all layers with IDF rescaling."""
-    original_score = original_bert_score(preds, targets, model_type=MODEL_NAME, all_layers=True, idf=True, batch_size=3)
+    args = dict(all_layers=True, idf=True, batch_size=3)
+    original_score = original_bert_score(preds, targets, model_type=MODEL_NAME, **args)
     original_score = _parse_original_bert_score(original_score)
 
-    scorer = BERTScore(model_name_or_path=MODEL_NAME, all_layers=True, idf=True, batch_size=3)
+    scorer = BERTScore(model_name_or_path=MODEL_NAME, **args)
     scorer.update(preds=preds, target=targets)
     metrics_score = scorer.compute()
 
@@ -294,12 +291,11 @@ def test_score_all_layers_with_idf(preds, targets):
 @skip_on_connection_issues()
 def test_accumulation(preds, targets):
     """Tests for metric works with accumulation."""
-    original_score = original_bert_score(
-        sum(preds, []), sum(targets, []), model_type=MODEL_NAME, num_layers=8, idf=False, batch_size=3
-    )
+    args = dict(num_layers=8, idf=False, batch_size=3)
+    original_score = original_bert_score(sum(preds, []), sum(targets, []), model_type=MODEL_NAME, **args)
     original_score = _parse_original_bert_score(original_score)
 
-    scorer = BERTScore(model_name_or_path=MODEL_NAME, num_layers=8, idf=False, batch_size=3)
+    scorer = BERTScore(model_name_or_path=MODEL_NAME, **args)
     for p, r in zip(preds, targets):
         scorer.update(preds=p, target=r)
     metrics_score = scorer.compute()

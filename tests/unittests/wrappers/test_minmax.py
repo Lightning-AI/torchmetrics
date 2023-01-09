@@ -5,7 +5,8 @@ import pytest
 import torch
 from torch import Tensor
 
-from torchmetrics import Accuracy, ConfusionMatrix, MeanSquaredError
+from torchmetrics import MeanSquaredError
+from torchmetrics.classification import BinaryAccuracy, BinaryConfusionMatrix, MulticlassAccuracy
 from torchmetrics.wrappers import MinMaxMetric
 from unittests.helpers import seed_all
 from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES, MetricTester
@@ -56,7 +57,7 @@ def compare_fn_ddp(preds, target, base_fn):
         (
             torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES).softmax(dim=-1),
             torch.randint(NUM_CLASSES, (NUM_BATCHES, BATCH_SIZE)),
-            Accuracy(num_classes=NUM_CLASSES),
+            MulticlassAccuracy(num_classes=NUM_CLASSES),
         ),
         (torch.randn(NUM_BATCHES, BATCH_SIZE), torch.randn(NUM_BATCHES, BATCH_SIZE), MeanSquaredError()),
     ],
@@ -96,7 +97,7 @@ class TestMinMaxWrapper(MetricTester):
 )
 def test_basic_example(preds, labels, raws, maxs, mins) -> None:
     """tests that both min and max versions of MinMaxMetric operate correctly after calling compute."""
-    acc = Accuracy()
+    acc = BinaryAccuracy()
     min_max_acc = MinMaxMetric(acc)
     labels = Tensor(labels).long()
 
@@ -117,7 +118,7 @@ def test_no_base_metric() -> None:
 
 def test_no_scalar_compute() -> None:
     """tests that an assertion error is thrown if the wrapped basemetric gives a non-scalar on compute."""
-    min_max_nsm = MinMaxMetric(ConfusionMatrix(num_classes=2))
+    min_max_nsm = MinMaxMetric(BinaryConfusionMatrix(num_classes=2))
 
     with pytest.raises(RuntimeError, match=r"Returned value from base metric should be a scalar .*"):
         min_max_nsm.compute()

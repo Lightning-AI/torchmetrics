@@ -1,0 +1,105 @@
+# Copyright The PyTorch Lightning team.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+from typing import Any, List, Union
+
+import torch
+from torch import Tensor
+from typing_extensions import Literal
+
+from torchmetrics.functional.multimodal.clip_score import _clip_score_update, _get_model_and_processor
+from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
+
+if not _TRANSFORMERS_AVAILABLE:
+    __doctest_skip__ = ["CLIPScore"]
+
+from torchmetrics import Metric
+
+
+class CLIPScore(Metric):
+    """`CLIP Score`_ is a reference free metric that can be used to evaluate the correlation between a generated
+    caption for an image and the actual content of the image. It has been found to be highly correlated with human
+    judgement. The metric is defined as:
+
+    .. math::
+        \text{CLIPScore(I, C)} = max(100 * cos(E_I, E_C), 0)
+
+    which corresponds to the cosine similarity between visual CLIP embedding :math:`E_i` for an image :math:`i` and
+    textual CLIP embedding :math:`E_C` for an caption :math:`C`. The score is bound between 0 and 100 and the closer
+    to 100 the better.
+
+    .. note:: Metric is not scriptable
+
+    Args:
+        model_name_or_path: string indicating the version of the CLIP model to use. Available models are
+            `"openai/clip-vit-base-patch16"`, `"openai/clip-vit-base-patch32"`, `"openai/clip-vit-large-patch14-336"`
+            and `"openai/clip-vit-large-patch14"`,
+
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+
+    Raises:
+        ModuleNotFoundError:
+            If transformers package is not installed or version is lower than 4.10.0
+
+    Example:
+        >>> import torch
+        >>> _ = torch.manual_seed(42)
+        >>> from torchmetrics.multimodal import CLIPScore
+        >>> metric = CLIPScore(model_name_or_path="openai/clip-vit-base-patch16")
+        >>> score = metric(torch.randint(255, (3, 224, 224)), "a photo of a cat")
+        >>> print(score.detach())
+        tensor(25.0936)
+    """
+
+    is_differentiable: bool = False
+    higher_is_better: bool = True
+    full_state_update: bool = True
+    score: Tensor
+    n_samples: Tensor
+
+    def __init__(
+        self,
+        model_name_or_path: Literal[
+            "openai/clip-vit-base-patch16",
+            "openai/clip-vit-base-patch32",
+            "openai/clip-vit-large-patch14-336",
+            "openai/clip-vit-large-patch14",
+        ] = "openai/clip-vit-large-patch14",
+        **kwargs: Any,
+    ) -> None:
+
+        super().__init__(**kwargs)
+        self.model, self.processor = _get_model_and_processor(model_name_or_path)
+        self.add_state("score", torch.tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("n_samples", torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
+
+    def update(self, images: Union[Tensor, List[Tensor]], text: Union[str, List[str]]) -> None:
+        """Updates CLIP score on a batch of images and text.
+
+        Args:
+            images: Either a single [N, C, H, W] tensor or a list of [C, H, W] tensors
+            text: Either a single caption or a list of captions
+
+        Raises:
+            ValueError:
+                If not all images have format [C, H, W]
+            ValueError:
+                If the number of images and captions do not match
+        """
+        score, n_samples = _clip_score_update(images, text, self.model, self.processor)
+        self.score += score.sum(0)
+        self.n_samples += n_samples
+
+    def compute(self) -> Tensor:
+        """Computes accumulated clip score."""
+        return torch.max(self.score / self.n_samples, torch.zeros_like(self.score))

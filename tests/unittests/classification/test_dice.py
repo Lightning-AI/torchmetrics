@@ -15,11 +15,11 @@ from functools import partial
 from typing import Optional
 
 import pytest
-from scipy.spatial.distance import dice as _sc_dice
+from scipy.spatial.distance import dice as sc_dice
 from torch import Tensor, tensor
 
 from torchmetrics import Dice
-from torchmetrics.functional import dice, dice_score
+from torchmetrics.functional import dice
 from torchmetrics.functional.classification.stat_scores import _del_column
 from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import DataType
@@ -39,7 +39,7 @@ from unittests.helpers.testers import MetricTester
 seed_all(42)
 
 
-def _sk_dice(
+def _scipy_dice(
     preds: Tensor,
     target: Tensor,
     ignore_index: Optional[int] = None,
@@ -62,21 +62,7 @@ def _sk_dice(
 
     sk_preds, sk_target = sk_preds.numpy(), sk_target.numpy()
 
-    return 1 - _sc_dice(sk_preds.reshape(-1), sk_target.reshape(-1))
-
-
-@pytest.mark.parametrize(
-    ["pred", "target", "expected"],
-    [
-        ([[0, 0], [1, 1]], [[0, 0], [1, 1]], 1.0),
-        ([[1, 1], [0, 0]], [[0, 0], [1, 1]], 0.0),
-        ([[1, 1], [1, 1]], [[1, 1], [0, 0]], 2 / 3),
-        ([[1, 1], [0, 0]], [[1, 1], [0, 0]], 1.0),
-    ],
-)
-def test_dice_score(pred, target, expected):
-    score = dice_score(tensor(pred), tensor(target))
-    assert score == expected
+    return 1 - sc_dice(sk_preds.reshape(-1), sk_target.reshape(-1))
 
 
 @pytest.mark.parametrize(
@@ -111,7 +97,7 @@ class TestDiceBinary(MetricTester):
             preds=preds,
             target=target,
             metric_class=Dice,
-            sk_metric=partial(_sk_dice, ignore_index=ignore_index),
+            reference_metric=partial(_scipy_dice, ignore_index=ignore_index),
             dist_sync_on_step=dist_sync_on_step,
             metric_args={"ignore_index": ignore_index},
         )
@@ -121,7 +107,7 @@ class TestDiceBinary(MetricTester):
             preds,
             target,
             metric_functional=dice,
-            sk_metric=partial(_sk_dice, ignore_index=ignore_index),
+            reference_metric=partial(_scipy_dice, ignore_index=ignore_index),
             metric_args={"ignore_index": ignore_index},
         )
 
@@ -150,7 +136,7 @@ class TestDiceMulti(MetricTester):
             preds=preds,
             target=target,
             metric_class=Dice,
-            sk_metric=partial(_sk_dice, ignore_index=ignore_index),
+            reference_metric=partial(_scipy_dice, ignore_index=ignore_index),
             dist_sync_on_step=dist_sync_on_step,
             metric_args={"ignore_index": ignore_index},
         )
@@ -160,6 +146,6 @@ class TestDiceMulti(MetricTester):
             preds,
             target,
             metric_functional=dice,
-            sk_metric=partial(_sk_dice, ignore_index=ignore_index),
+            reference_metric=partial(_scipy_dice, ignore_index=ignore_index),
             metric_args={"ignore_index": ignore_index},
         )

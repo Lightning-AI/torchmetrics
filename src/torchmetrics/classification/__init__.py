@@ -44,7 +44,7 @@ from torchmetrics.classification.calibration_error import (
 )
 from torchmetrics.classification.cohen_kappa import BinaryCohenKappa, CohenKappa, MulticlassCohenKappa
 from torchmetrics.classification.dice import Dice
-from torchmetrics.classification.exact_match import MultilabelExactMatch
+from torchmetrics.classification.exact_match import ExactMatch, MulticlassExactMatch, MultilabelExactMatch
 from torchmetrics.classification.f_beta import (
     BinaryF1Score,
     BinaryFBetaScore,
@@ -120,7 +120,6 @@ __all__ = [
     "BinaryAccuracy",
     "MulticlassAccuracy",
     "MultilabelAccuracy",
-    "AUC",
     "AUROC",
     "BinaryAUROC",
     "MulticlassAUROC",
@@ -139,6 +138,8 @@ __all__ = [
     "CohenKappa",
     "MulticlassCohenKappa",
     "Dice",
+    "ExactMatch",
+    "MulticlassExactMatch",
     "MultilabelExactMatch",
     "BinaryF1Score",
     "BinaryFBetaScore",
