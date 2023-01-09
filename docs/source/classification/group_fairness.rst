@@ -15,14 +15,14 @@ ________________
 BinaryFairness
 ^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.classification.group_fairness.BinaryFairness
+.. autoclass:: torchmetrics.classification.BinaryFairness
     :noindex:
     :exclude-members: update, compute
 
 BinaryGroupStatRates
 ^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: torchmetrics.classification.group_fairness.BinaryGroupStatRates
+.. autoclass:: torchmetrics.classification.BinaryGroupStatRates
     :noindex:
     :exclude-members: update, compute
 

@@ -11,18 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 
 import torch
 from typing_extensions import Literal
 
-from torchmetrics import Metric
 from torchmetrics.functional.classification.group_fairness import (
     _binary_groups_stat_scores,
     _compute_binary_demographic_parity,
     _compute_binary_equal_opportunity,
 )
 from torchmetrics.functional.classification.stat_scores import _binary_stat_scores_arg_validation
+from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 
 
@@ -71,7 +71,7 @@ class BinaryGroupStatRates(_AbstractGroupStatScores):
         The metric returns a dict with a group identifier as key and a tensor with the tp, fp, tn and fn rates as value.
 
     Example (preds is int tensor):
-        >>> from torchmetrics.classification.group_fairness import BinaryGroupStatRates
+        >>> from torchmetrics.classification import BinaryGroupStatRates
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> groups = torch.tensor([0, 1, 0, 1, 0, 1])
@@ -80,7 +80,7 @@ class BinaryGroupStatRates(_AbstractGroupStatScores):
         {'group_0': tensor([0., 0., 1., 0.]), 'group_1': tensor([1., 0., 0., 0.])}
 
     Example (preds is float tensor):
-        >>> from torchmetrics.classification.group_fairness import BinaryGroupStatRates
+        >>> from torchmetrics.classification import BinaryGroupStatRates
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0.11, 0.84, 0.22, 0.73, 0.33, 0.92])
         >>> groups = torch.tensor([0, 1, 0, 1, 0, 1])
@@ -171,7 +171,7 @@ class BinaryFairness(_AbstractGroupStatScores):
         The value is a tensor with the disparity rate.
 
     Example (preds is int tensor):
-        >>> from torchmetrics.classification.group_fairness import BinaryFairness
+        >>> from torchmetrics.classification import BinaryFairness
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> groups = torch.tensor([0, 1, 0, 1, 0, 1])
@@ -180,7 +180,7 @@ class BinaryFairness(_AbstractGroupStatScores):
         ({'DP_0_1': tensor(0.)}, {'EO_0_1': tensor(0.)})
 
     Example (preds is float tensor):
-        >>> from torchmetrics.classification.group_fairness import BinaryFairness
+        >>> from torchmetrics.classification import BinaryFairness
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0.11, 0.84, 0.22, 0.73, 0.33, 0.92])
         >>> groups = torch.tensor([0, 1, 0, 1, 0, 1])
@@ -241,7 +241,7 @@ class BinaryFairness(_AbstractGroupStatScores):
 
     def compute(
         self,
-    ) -> Union[Dict[str, torch.Tensor], Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]]:
+    ) -> Dict[str, torch.Tensor]:
         """Computes fairness criteria based on inputs passed in to ``update`` previously."""
         if self.task == "demographic_parity":
             return _compute_binary_demographic_parity(self.tp, self.fp, self.tn, self.fn)
@@ -250,6 +250,7 @@ class BinaryFairness(_AbstractGroupStatScores):
             return _compute_binary_equal_opportunity(self.tp, self.fp, self.tn, self.fn)
 
         if self.task == "all":
-            return _compute_binary_demographic_parity(
-                self.tp, self.fp, self.tn, self.fn
-            ), _compute_binary_equal_opportunity(self.tp, self.fp, self.tn, self.fn)
+            return {
+                **_compute_binary_demographic_parity(self.tp, self.fp, self.tn, self.fn),
+                **_compute_binary_equal_opportunity(self.tp, self.fp, self.tn, self.fn),
+            }
