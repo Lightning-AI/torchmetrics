@@ -24,12 +24,12 @@ def pesq_example():
     t = lambda: torch.randn(8000)
 
     # plot single value
-    metric = PerceptualEvaluationSpeechQuality(8000, 'nb')
+    metric = PerceptualEvaluationSpeechQuality(8000, "nb")
     metric.update(p(), t())
     fig, ax = metric.plot()
 
     # plot multiple values
-    metric = PerceptualEvaluationSpeechQuality(16000, 'wb')
+    metric = PerceptualEvaluationSpeechQuality(16000, "wb")
     vals = [metric(p(), t()) for _ in range(10)]
     fig, ax = metric.plot(vals)
 
