@@ -15,7 +15,7 @@ from typing import Optional
 
 import torch
 from torch import Tensor
-from typing_extensions import Literal
+from typing_extensions import Literal, Any
 
 from torchmetrics.functional.classification.stat_scores import (
     _binary_stat_scores_arg_validation,
