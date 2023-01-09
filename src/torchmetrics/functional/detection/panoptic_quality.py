@@ -18,15 +18,13 @@ from torch import Tensor
 
 
 def _nested_tuple(nested_list: List) -> Tuple:
-    """
-    Construct a nested tuple from a nested list.
+    """Construct a nested tuple from a nested list.
 
     Args:
         nested_list:  the nested list to convert to a nested tuple
 
     Returns:
         a nested tuple with the same content.
-
     """
     """Construct a nested tuple from a nested list."""
     return tuple(map(_nested_tuple, nested_list)) if isinstance(nested_list, list) else nested_list
@@ -45,16 +43,13 @@ def _totuple(t: torch.Tensor) -> Tuple:
 
 
 def _get_color_areas(img: torch.Tensor) -> Dict[Tuple, torch.Tensor]:
-    """
-    Counts all color occurrences.
+    """Counts all color occurrences.
 
     Args:
         img: the image tensor containing the colored pixels.
 
     Returns:
         a dictionary specifying the color value and the corresponding area
-
-
     """
     unique_keys, unique_keys_area = torch.unique(img, dim=0, return_counts=True)
     # dictionary indexed by color tuples
@@ -62,27 +57,23 @@ def _get_color_areas(img: torch.Tensor) -> Dict[Tuple, torch.Tensor]:
 
 
 def _is_set_int(value: Any) -> bool:
-    """
-    Check wheter value is a `Set[int]`
+    """Check wheter value is a `Set[int]`
 
     Args:
         value: the value to check
 
     Returns:
         True if the value is a Set[int], False otherwise
-
     """
     return isinstance(value, Set) and set(map(type, value)).issubset({int})
 
 
 def _validate_categories(things: Set[int], stuff: Set[int]) -> None:
-    """
-    Validate netrics arguments for `things` and `stuff`
+    """Validate netrics arguments for `things` and `stuff`
 
     Args:
         things: All possible IDs for things categories
         stuff: All possible IDs for stuff categories
-
     """
     if not _is_set_int(things):
         raise TypeError("Expected argument `things` to be of type `Set[int]`")
@@ -93,13 +84,11 @@ def _validate_categories(things: Set[int], stuff: Set[int]) -> None:
 
 
 def _validate_inputs(preds: torch.Tensor, target: torch.Tensor) -> None:
-    """
-    Validates the shapes of prediction and target tensors.
+    """Validates the shapes of prediction and target tensors.
 
     Args:
         preds: the prediction tensor
         target: the target tensor
-
     """
     if not isinstance(preds, torch.Tensor):
         raise TypeError("Expected argument `preds` to be of type `torch.Tensor`")
@@ -112,7 +101,7 @@ def _validate_inputs(preds: torch.Tensor, target: torch.Tensor) -> None:
 
 
 def _get_void_color(things: Set[int], stuff: Set[int]) -> Tuple[int, int]:
-    """Get an unused color ID
+    """Get an unused color ID.
 
     Args:
         things: All things IDs
@@ -126,8 +115,7 @@ def _get_void_color(things: Set[int], stuff: Set[int]) -> Tuple[int, int]:
 
 
 def _get_category_id_to_continous_id(things: Set[int], stuff: Set[int]) -> Dict[int, int]:
-    """
-    Converts original IDs to continuous IDs.
+    """Converts original IDs to continuous IDs.
 
     Args:
         things: all unique ids for things classes
@@ -135,7 +123,6 @@ def _get_category_id_to_continous_id(things: Set[int], stuff: Set[int]) -> Dict[
 
     Returns:
         A mapping from the original category IDs to continuous IDs
-
     """
     # things metrics are stored with a continous id in [0, len(things)[,
     thing_id_to_continuous_id = {thing_id: idx for idx, thing_id in enumerate(things)}
@@ -148,8 +135,7 @@ def _get_category_id_to_continous_id(things: Set[int], stuff: Set[int]) -> Dict[
 
 
 def _isin(arr: torch.Tensor, values: List) -> torch.Tensor:
-    """
-    Basic implementation of torch.isin to support pre 0.10 version.
+    """Basic implementation of torch.isin to support pre 0.10 version.
 
     Args:
         arr: the torch tensor to check for availablilities
@@ -158,8 +144,6 @@ def _isin(arr: torch.Tensor, values: List) -> torch.Tensor:
     Returns:
         a bool tensor of the same shape as :param:`arr` indicating for each
         position whether the element of the tensor is in :param:`values`
-
-
     """
     return (arr[..., None] == arr.new(values)).any(-1)
 
@@ -171,8 +155,7 @@ def _prepocess_image(
     void_color: Tuple[int, int],
     allow_unknown_category: bool,
 ) -> torch.Tensor:
-    """
-    Preprocesses the image for metric calculation
+    """Preprocesses the image for metric calculation.
 
     Args:
         things: All category IDs for things classes
@@ -183,7 +166,6 @@ def _prepocess_image(
 
     Returns:
         the preprocessed image tensor with combined height and width dimensions.
-
     """
     # flatten the height*width dimensions
     img = torch.flatten(img, 0, -2)
@@ -204,8 +186,7 @@ def _panoptic_quality_update(
     cat_id_to_continuous_id: Dict[int, int],
     void_color: Tuple[int, int],
 ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
-    """
-    Calculate stat scores (iou sum, true positives, false positives, false negatives) required to compute
+    """Calculate stat scores (iou sum, true positives, false positives, false negatives) required to compute
     accuracy.
 
     Args:
@@ -219,7 +200,6 @@ def _panoptic_quality_update(
         - True positives
         - False positives
         - False negatives
-
     """
     r"""Returns stat scores (iou sum, true positives, false positives, false negatives) required to compute
     accuracy."""
@@ -293,8 +273,7 @@ def _panoptic_quality_compute(
     false_positives: torch.Tensor,
     false_negatives: torch.Tensor,
 ) -> torch.Tensor:
-    """
-    Compute the final panoptic quality from interim values.
+    """Compute the final panoptic quality from interim values.
 
     Args:
         things: All category IDs for things classes
@@ -306,7 +285,6 @@ def _panoptic_quality_compute(
 
     Returns:
         panoptic quality
-
     """
     # TODO: exclude from mean categories that are never seen ?
     # TODO: per class metrics
@@ -324,12 +302,11 @@ def panoptic_quality(
     stuff: Set[int],
     allow_unknown_preds_category: bool = False,
 ) -> Tensor:
-    """
-    Computes the `Panoptic Quality (PQ) <https://arxiv.org/abs/1801.00868>`_ for panoptic segmentations. It is
+    """Computes the `Panoptic Quality (PQ) <https://arxiv.org/abs/1801.00868>`_ for panoptic segmentations. It is
     defined as:
 
     .. math::
-        PQ = \frac{IOU}{TP + 0.5\cdot FP + 0.5\cdot FN}
+        PQ = \frac{IOU}{TP + 0.5\\cdot FP + 0.5\\cdot FN}
 
     where IOU, TP, FP and FN are respectively the sum of the intersection over union for true positives,
     the number of true postitives, false positives and false negatives.
