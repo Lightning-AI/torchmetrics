@@ -109,10 +109,10 @@ class BinarySpecificityAtSensitivity(BinaryPrecisionRecallCurve):
 
     def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
         if self.thresholds is None:
-            state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]
+            state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]  # type: ignore
         else:
             state = self.confmat
-        return _binary_specificity_at_sensitivity_compute(state, self.thresholds, self.min_sensitivity)
+        return _binary_specificity_at_sensitivity_compute(state, self.thresholds, self.min_sensitivity)  # type: ignore
 
 
 class MulticlassSpecificityAtSensitivity(MulticlassPrecisionRecallCurve):
@@ -199,13 +199,13 @@ class MulticlassSpecificityAtSensitivity(MulticlassPrecisionRecallCurve):
         self.validate_args = validate_args
         self.min_sensitivity = min_sensitivity
 
-    def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
+    def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore
         if self.thresholds is None:
-            state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]
+            state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]  # type: ignore
         else:
             state = self.confmat
         return _multiclass_specificity_at_sensitivity_compute(
-            state, self.num_classes, self.thresholds, self.min_sensitivity
+            state, self.num_classes, self.thresholds, self.min_sensitivity  # type: ignore
         )
 
 
@@ -296,11 +296,11 @@ class MultilabelSpecificityAtSensitivity(MultilabelPrecisionRecallCurve):
 
     def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
         if self.thresholds is None:
-            state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]
+            state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]  # type: ignore
         else:
             state = self.confmat
         return _multilabel_specificity_at_sensitivity_compute(
-            state, self.num_labels, self.thresholds, self.ignore_index, self.min_sensitivity
+            state, self.num_labels, self.thresholds, self.ignore_index, self.min_sensitivity  # type: ignore
         )
 
 
@@ -325,7 +325,7 @@ class SpecificityAtSensitivity:
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,
-    ) -> Metric:
+    ) -> Metric:  # type: ignore
         if task == "binary":
             return BinarySpecificityAtSensitivity(min_sensitivity, thresholds, ignore_index, validate_args, **kwargs)
         if task == "multiclass":

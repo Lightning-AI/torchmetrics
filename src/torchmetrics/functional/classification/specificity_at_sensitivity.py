@@ -176,7 +176,7 @@ def _multiclass_specificity_at_sensitivity_compute(
     specificity = [_convert_fpr_to_specificity(fpr_) for fpr_ in fpr]
     if isinstance(state, Tensor):
         res = [
-            _specificity_at_sensitivity(sp, sn, thresholds, min_sensitivity) for sp, sn in zip(specificity, sensitivity)
+            _specificity_at_sensitivity(sp, sn, thresholds, min_sensitivity) for sp, sn in zip(specificity, sensitivity)   # type: ignore
         ]
     else:
         res = [
@@ -261,7 +261,7 @@ def multiclass_specificity_at_sensitivity(
         preds, target, num_classes, thresholds, ignore_index
     )
     state = _multiclass_precision_recall_curve_update(preds, target, num_classes, thresholds)
-    return _multiclass_specificity_at_sensitivity_compute(state, num_classes, thresholds, min_sensitivity)
+    return _multiclass_specificity_at_sensitivity_compute(state, num_classes, thresholds, min_sensitivity)  # type: ignore
 
 
 def _multilabel_specificity_at_sensitivity_arg_validation(
@@ -288,7 +288,7 @@ def _multilabel_specificity_at_sensitivity_compute(
     specificity = [_convert_fpr_to_specificity(fpr_) for fpr_ in fpr]
     if isinstance(state, Tensor):
         res = [
-            _specificity_at_sensitivity(sp, sn, thresholds, min_sensitivity) for sp, sn in zip(specificity, sensitivity)
+            _specificity_at_sensitivity(sp, sn, thresholds, min_sensitivity) for sp, sn in zip(specificity, sensitivity)  # type: ignore
         ]
     else:
         res = [
@@ -390,7 +390,7 @@ def specicity_at_sensitivity(
     num_labels: Optional[int] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Union[Tensor, Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
+) -> Union[Tensor, Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:  # type: ignore
     r"""Computes the higest possible specicity value given the minimum sensitivity thresholds provided. This is done
     by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the find
     the specificity for a given sensitivity level.
