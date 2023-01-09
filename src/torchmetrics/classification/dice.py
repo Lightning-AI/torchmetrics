@@ -18,9 +18,9 @@ from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.functional.classification.dice import _dice_compute
+from torchmetrics.metric import Metric
 from torchmetrics.utilities.enums import AverageMethod
 from torchmetrics.utilities.prints import rank_zero_warn
-from torchmetrics.metric import Metric
 
 
 class Dice(Metric):
