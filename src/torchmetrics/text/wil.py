@@ -73,7 +73,7 @@ class WordInfoLost(Metric):
         self.add_state("preds_total", tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, preds: Union[str, List[str]], target: Union[str, List[str]]) -> None:
-        """Store predictions/references for computing Word Information Lost scores."""
+        """Update state with predictions and targets."""
         errors, target_total, preds_total = _wil_update(preds, target)
         self.errors += errors
         self.target_total += target_total

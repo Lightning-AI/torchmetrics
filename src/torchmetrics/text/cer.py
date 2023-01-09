@@ -77,7 +77,7 @@ class CharErrorRate(Metric):
         self.add_state("total", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
 
     def update(self, preds: Union[str, List[str]], target: Union[str, List[str]]) -> None:  # type: ignore
-        """Store references/predictions for computing Character Error Rate scores."""
+        """Update state with predictions and targets."""
         errors, total = _cer_update(preds, target)
         self.errors += errors
         self.total += total

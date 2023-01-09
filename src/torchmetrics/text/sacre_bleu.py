@@ -103,7 +103,7 @@ class SacreBLEUScore(BLEUScore):
         self.tokenizer = _SacreBLEUTokenizer(tokenize, lowercase)
 
     def update(self, preds: Sequence[str], target: Sequence[Sequence[str]]) -> None:
-        """Compute Precision Scores."""
+        """Update state with predictions and targets."""
         self.preds_len, self.target_len = _bleu_score_update(
             preds,
             target,

@@ -93,7 +93,7 @@ class ExtendedEditDistance(Metric):
         preds: Union[str, Sequence[str]],
         target: Sequence[Union[str, Sequence[str]]],
     ) -> None:
-        """Update ExtendedEditDistance statistics."""
+        """Update state with predictions and targets."""
         self.sentence_eed = _eed_update(
             preds,
             target,

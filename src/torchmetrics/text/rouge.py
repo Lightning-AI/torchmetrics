@@ -137,7 +137,7 @@ class ROUGEScore(Metric):
     def update(
         self, preds: Union[str, Sequence[str]], target: Union[str, Sequence[str], Sequence[Sequence[str]]]
     ) -> None:
-        """Compute rouge scores."""
+        """Update state with predictions and targets."""
         if isinstance(target, list) and all(isinstance(tgt, str) for tgt in target):
             target = [target] if isinstance(preds, str) else [[tgt] for tgt in target]
 

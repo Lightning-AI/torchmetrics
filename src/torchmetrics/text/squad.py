@@ -102,7 +102,7 @@ class SQuAD(Metric):
         self.add_state(name="total", default=torch.tensor(0, dtype=torch.int), dist_reduce_fx="sum")
 
     def update(self, preds: PREDS_TYPE, target: TARGETS_TYPE) -> None:
-        """Compute F1 Score and Exact Match for a collection of predictions and references.
+        """Update state with predictions and targets."""
 
         Raises:
             KeyError:

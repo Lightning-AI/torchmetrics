@@ -130,7 +130,7 @@ class CHRFScore(Metric):
             self.add_state("sentence_chrf_score", [], dist_reduce_fx="cat")
 
     def update(self, preds: Sequence[str], target: Sequence[Sequence[str]]) -> None:
-        """Compute Precision Scores."""
+        """Update state with predictions and targets."""
         n_grams_dicts_tuple = _chrf_score_update(
             preds,
             target,

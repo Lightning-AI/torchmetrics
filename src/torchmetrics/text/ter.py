@@ -89,7 +89,7 @@ class TranslationEditRate(Metric):
             self.add_state("sentence_ter", [], dist_reduce_fx="cat")
 
     def update(self, preds: Union[str, Sequence[str]], target: Sequence[Union[str, Sequence[str]]]) -> None:
-        """Update TER statistics."""
+        """Update state with predictions and targets."""
         self.total_num_edits, self.total_tgt_len, self.sentence_ter = _ter_update(
             preds,
             target,

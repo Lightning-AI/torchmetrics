@@ -68,7 +68,7 @@ class Perplexity(Metric):
         self.add_state("count", default=tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
-        """Compute and store intermediate statistics for Perplexity."""
+        """Update state with predictions and targets."""
         total_log_probs, count = _perplexity_update(preds, target, self.ignore_index)
         self.total_log_probs += total_log_probs
         self.count += count

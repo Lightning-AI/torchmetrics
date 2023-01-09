@@ -77,7 +77,7 @@ class MatchErrorRate(Metric):
         preds: Union[str, List[str]],
         target: Union[str, List[str]],
     ) -> None:
-        """Store references/predictions for computing Match Error Rate scores."""
+        """Update state with predictions and targets."""
         errors, total = _mer_update(
             preds,
             target,
