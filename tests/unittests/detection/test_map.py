@@ -328,8 +328,8 @@ _pytest_condition = not (_TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0
 class TestMAP(MetricTester):
     """Test the MAP metric for object detection predictions.
 
-    Results are compared to original values from the pycocotools implementation.
-    A subset of the first 10 fake predictions of the official repo is used:
+    Results are compared to original values from the pycocotools implementation. A subset of the first 10 fake
+    predictions of the official repo is used:
     https://github.com/cocodataset/cocoapi/blob/master/results/instances_val2014_fakebbox100_results.json
     """
 
@@ -343,7 +343,7 @@ class TestMAP(MetricTester):
             preds=_inputs.preds,
             target=_inputs.target,
             metric_class=MeanAveragePrecision,
-            sk_metric=_compare_fn,
+            reference_metric=_compare_fn,
             dist_sync_on_step=False,
             check_batch=False,
             metric_args={"class_metrics": True, "compute_on_cpu": compute_on_cpu},
@@ -358,7 +358,7 @@ class TestMAP(MetricTester):
             preds=_inputs_masks.preds,
             target=_inputs_masks.target,
             metric_class=MeanAveragePrecision,
-            sk_metric=_compare_fn_segm,
+            reference_metric=_compare_fn_segm,
             dist_sync_on_step=False,
             check_batch=False,
             metric_args={"class_metrics": True, "compute_on_cpu": compute_on_cpu, "iou_type": "segm"},

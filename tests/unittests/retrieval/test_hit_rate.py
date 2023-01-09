@@ -75,7 +75,7 @@ class TestHitRate(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_class=RetrievalHitRate,
-            sk_metric=_hit_rate_at_k,
+            reference_metric=_hit_rate_at_k,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
         )
@@ -103,7 +103,7 @@ class TestHitRate(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_class=RetrievalHitRate,
-            sk_metric=_hit_rate_at_k,
+            reference_metric=_hit_rate_at_k,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
         )
@@ -115,7 +115,7 @@ class TestHitRate(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_functional=retrieval_hit_rate,
-            sk_metric=_hit_rate_at_k,
+            reference_metric=_hit_rate_at_k,
             metric_args={},
             k=k,
         )

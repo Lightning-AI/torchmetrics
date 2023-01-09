@@ -106,7 +106,7 @@ si_sdr_pit_scipy = partial(
 
 
 @pytest.mark.parametrize(
-    "preds, target, sk_metric, metric_func, eval_func",
+    "preds, target, ref_metric, metric_func, eval_func",
     [
         (inputs1.preds, inputs1.target, snr_pit_scipy, signal_noise_ratio, "max"),
         (inputs1.preds, inputs1.target, si_sdr_pit_scipy, scale_invariant_signal_distortion_ratio, "max"),
@@ -119,27 +119,27 @@ class TestPIT(MetricTester):
 
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_pit(self, preds, target, sk_metric, metric_func, eval_func, ddp, dist_sync_on_step):
+    def test_pit(self, preds, target, ref_metric, metric_func, eval_func, ddp, dist_sync_on_step):
         self.run_class_metric_test(
             ddp,
             preds,
             target,
             PermutationInvariantTraining,
-            sk_metric=partial(_average_metric, metric_func=sk_metric),
+            reference_metric=partial(_average_metric, metric_func=ref_metric),
             dist_sync_on_step=dist_sync_on_step,
             metric_args=dict(metric_func=metric_func, eval_func=eval_func),
         )
 
-    def test_pit_functional(self, preds, target, sk_metric, metric_func, eval_func):
+    def test_pit_functional(self, preds, target, ref_metric, metric_func, eval_func):
         self.run_functional_metric_test(
             preds=preds,
             target=target,
             metric_functional=permutation_invariant_training,
-            sk_metric=sk_metric,
+            reference_metric=ref_metric,
             metric_args=dict(metric_func=metric_func, eval_func=eval_func),
         )
 
-    def test_pit_differentiability(self, preds, target, sk_metric, metric_func, eval_func):
+    def test_pit_differentiability(self, preds, target, ref_metric, metric_func, eval_func):
         def pit_diff(preds, target, metric_func, eval_func):
             return permutation_invariant_training(preds, target, metric_func, eval_func)[0]
 
@@ -151,11 +151,11 @@ class TestPIT(MetricTester):
             metric_args={"metric_func": metric_func, "eval_func": eval_func},
         )
 
-    def test_pit_half_cpu(self, preds, target, sk_metric, metric_func, eval_func):
+    def test_pit_half_cpu(self, preds, target, ref_metric, metric_func, eval_func):
         pytest.xfail("PIT metric does not support cpu + half precision")
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-    def test_pit_half_gpu(self, preds, target, sk_metric, metric_func, eval_func):
+    def test_pit_half_gpu(self, preds, target, ref_metric, metric_func, eval_func):
         self.run_precision_test_gpu(
             preds=preds,
             target=target,

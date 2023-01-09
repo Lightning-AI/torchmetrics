@@ -24,9 +24,19 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
-    """Relative dimensionless global error synthesis (ERGAS) is used to calculate the accuracy of Pan sharpened
-    image considering normalized average error of each band of the result image
+    """Calculates `Relative dimensionless global error synthesis`_ (ERGAS) is used to calculate the accuracy of Pan
+    sharpened image considering normalized average error of each band of the result image
     (ErrorRelativeGlobalDimensionlessSynthesis).
+
+    As input to ``forward`` and ``update`` the metric accepts the following input
+
+    - ``preds`` (:class:`~torch.Tensor`): Predictions from model
+    - ``target`` (:class:`~torch.Tensor`): Ground truth values
+
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``ergas`` (:class:`~torch.Tensor`): if ``reduction!='none'`` returns float scalar tensor with average ERGAS
+      value over sample else returns tensor of shape ``(N,)`` with ERGAS values per sample
 
     Args:
         ratio: ratio of high resolution to low resolution
@@ -38,9 +48,6 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    Return:
-        Tensor with ErrorRelativeGlobalDimensionlessSynthesis score
-
     Example:
         >>> import torch
         >>> from torchmetrics import ErrorRelativeGlobalDimensionlessSynthesis
@@ -49,11 +56,6 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
         >>> ergas = ErrorRelativeGlobalDimensionlessSynthesis()
         >>> torch.round(ergas(preds, target))
         tensor(154.)
-
-    References:
-        [1] Qian Du; Nicholas H. Younan; Roger King; Vijay P. Shah, "On the Performance Evaluation of
-        Pan-Sharpening Techniques" in IEEE Geoscience and Remote Sensing Letters, vol. 4, no. 4, pp. 518-522,
-        15 October 2007, doi: 10.1109/LGRS.2007.896328.
     """
 
     higher_is_better: bool = False
@@ -82,12 +84,7 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
         self.reduction = reduction
 
     def update(self, preds: Tensor, target: Tensor) -> None:
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
+        """Update state with predictions and targets."""
         preds, target = _ergas_update(preds, target)
         self.preds.append(preds)
         self.target.append(target)

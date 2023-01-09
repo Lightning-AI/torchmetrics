@@ -72,7 +72,7 @@ class TestTER(TextTester):
             preds=preds,
             targets=targets,
             metric_class=TranslationEditRate,
-            sk_metric=nltk_metric,
+            reference_metric=nltk_metric,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
         )
@@ -96,7 +96,7 @@ class TestTER(TextTester):
             preds,
             targets,
             metric_functional=translation_edit_rate,
-            sk_metric=nltk_metric,
+            reference_metric=nltk_metric,
             metric_args=metric_args,
         )
 
