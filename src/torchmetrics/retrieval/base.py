@@ -35,8 +35,9 @@ class RetrievalMetric(Metric, ABC):
     .. note:: ``indexes``, ``preds`` and ``target`` must have the same dimension and will be flatten
     to single dimension once provided.
 
-    .. note:: Predictions will be first grouped by ``indexes`` and then the real metric, defined by overriding
-    the `_metric` method, will be computed as the mean of the scores over each query.
+    .. note::
+        Predictions will be first grouped by ``indexes`` and then the real metric, defined by overriding
+        the `_metric` method, will be computed as the mean of the scores over each query.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 

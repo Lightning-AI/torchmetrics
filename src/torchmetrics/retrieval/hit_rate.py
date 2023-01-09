@@ -31,10 +31,11 @@ class RetrievalHitRate(RetrievalMetric):
     - ``indexes`` (:class:`~torch.Tensor`): A long tensor of shape ``(N, ...)`` which indicate to which query a
       prediction belongs
 
-    .. note:: ``indexes``, ``preds`` and ``target`` must have the same dimension.
+    .. note:: All ``indexes``, ``preds`` and ``target`` must have the same dimension.
 
-    .. note:: Predictions will be first grouped by ``indexes`` and then the `Hit Rate` will be computed as the mean
-    of the `Hit Rate` over each query.
+    .. note::
+        Predictions will be first grouped by ``indexes`` and then the `Hit Rate` will be computed as the mean
+        of the `Hit Rate` over each query.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 

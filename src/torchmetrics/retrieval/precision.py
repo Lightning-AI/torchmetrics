@@ -31,10 +31,11 @@ class RetrievalPrecision(RetrievalMetric):
     - ``indexes`` (:class:`~torch.Tensor`): A long tensor of shape ``(N, ...)`` which indicate to which query a
       prediction belongs
 
-    .. note:: ``indexes``, ``preds`` and ``target`` must have the same dimension.
+    .. note:: All ``indexes``, ``preds`` and ``target`` must have the same dimension.
 
-    .. note:: Predictions will be first grouped by ``indexes`` and then `Precision` will be computed as the mean
-    of the `Precision` over each query.
+    .. note::
+        Predictions will be first grouped by ``indexes`` and then `Precision` will be computed as the mean
+        of the `Precision` over each query.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
