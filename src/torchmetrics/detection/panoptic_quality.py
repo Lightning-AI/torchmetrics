@@ -65,7 +65,6 @@ class PanopticQuality(Metric):
         ...                        [[0, 1], [7, 0], [1, 0], [1, 0]],
         ...                        [[0, 1], [7, 0], [7, 0], [7, 0]]])
         >>> panoptic_quality = PanopticQuality(things = {0, 1}, stuff = {6, 7})
-        >>> panoptic_quality = PanopticQuality(things = {0, 1}, stuff = {6, 7})
         >>> panoptic_quality(pred, target)
         tensor(0.5463, dtype=torch.float64)
     """
@@ -106,7 +105,7 @@ class PanopticQuality(Metric):
             If the category_id refer to a stuff, the instance_id is ignored.
 
         Raises:
-            ValueError:
+            TypeError:
                 If ``preds`` or ``target`` is not an ``torch.Tensor``
             ValueError:
                 If ``preds`` or ``target`` has different shape.
