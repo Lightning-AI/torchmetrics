@@ -41,8 +41,8 @@ class ExplainedVariance(Metric):
 
     - ``explained_variance`` (:class:`~torch.Tensor`): A tensor with the explained variance(s)
 
-      In the case of multioutput, as default the variances will be uniformly averaged over the additional dimensions.
-      Please see argument ``multioutput`` for changing this behavior.
+    In the case of multioutput, as default the variances will be uniformly averaged over the additional dimensions.
+    Please see argument ``multioutput`` for changing this behavior.
 
     Args:
         multioutput:

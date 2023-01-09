@@ -41,9 +41,6 @@ class SymmetricMeanAbsolutePercentageError(Metric):
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    Note:
-        The epsilon value is taken from `scikit-learn's implementation of SMAPE`_.
-
     Example:
         >>> from torchmetrics import SymmetricMeanAbsolutePercentageError
         >>> target = tensor([1, 10, 1e6])

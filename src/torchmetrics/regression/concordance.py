@@ -36,7 +36,8 @@ class ConcordanceCorrCoef(PearsonCorrCoef):
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``concordance`` (:class:`~torch.Tensor`): A float tensor with the concordance coefficient(s)
+    - ``concordance`` (:class:`~torch.Tensor`): A scalar float tensor with the concordance coefficient(s) for
+      non-multioutput input or a float tensor with shape ``(d,)`` for multioutput input
 
     Args:
         num_outputs: Number of outputs in multioutput setting

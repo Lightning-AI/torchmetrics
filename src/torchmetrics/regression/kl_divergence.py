@@ -53,7 +53,6 @@ class KLDivergence(Metric):
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-
     Raises:
         TypeError:
             If ``log_prob`` is not an ``bool``.

@@ -44,9 +44,6 @@ class MeanAbsolutePercentageError(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Note:
-        The epsilon value is taken from `scikit-learn's implementation of MAPE`_.
-
-    Note:
         MAPE output is a non-negative floating point. Best result is ``0.0`` . But it is important to note that,
         bad predictions, can lead to arbitarily large values. Especially when some ``target`` values are close to 0.
         This `MAPE implementation returns`_ a very large number instead of ``inf``.
