@@ -17,11 +17,9 @@ from torchmetrics.audio.snr import ScaleInvariantSignalNoiseRatio, SignalNoiseRa
 from torchmetrics.utilities.imports import _PESQ_AVAILABLE, _PYSTOI_AVAILABLE
 
 if _PESQ_AVAILABLE:
-    from torchmetrics.audio.pesq import PerceptualEvaluationSpeechQuality  # noqa: F401
+    from torchmetrics.audio.pesq import PerceptualEvaluationSpeechQuality
 
 if _PYSTOI_AVAILABLE:
     from torchmetrics.audio.stoi import ShortTimeObjectiveIntelligibility  # noqa: F401
 
-__all__ = [
-    "PerceptualEvaluationSpeechQuality"
-]
+__all__ = ["PerceptualEvaluationSpeechQuality"]
