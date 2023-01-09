@@ -21,3 +21,7 @@ if _PESQ_AVAILABLE:
 
 if _PYSTOI_AVAILABLE:
     from torchmetrics.audio.stoi import ShortTimeObjectiveIntelligibility  # noqa: F401
+
+__all__ = [
+    "PerceptualEvaluationSpeechQuality"
+]
