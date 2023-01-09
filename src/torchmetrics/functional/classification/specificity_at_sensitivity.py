@@ -176,7 +176,7 @@ def _multiclass_specificity_at_sensitivity_compute(
     specificity = [_convert_fpr_to_specificity(fpr_) for fpr_ in fpr]
     if isinstance(state, Tensor):
         res = [
-            _specificity_at_sensitivity(sp, sn, thresholds, min_sensitivity) for sp, sn in zip(specificity, sensitivity)   # type: ignore
+            _specificity_at_sensitivity(sp, sn, thresholds, min_sensitivity) for sp, sn in zip(specificity, sensitivity)  # type: ignore
         ]
     else:
         res = [
