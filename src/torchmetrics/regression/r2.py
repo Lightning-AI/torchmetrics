@@ -45,8 +45,8 @@ class R2Score(Metric):
     - ``r2score`` (:class:`~torch.Tensor`): A tensor with the r2 score(s)
 
 
-      Note: In the case of multioutput, as default the variances will be uniformly averaged over the additional dimensions.
-      Please see argument ``multioutput`` for changing this behavior.
+    In the case of multioutput, as default the variances will be uniformly averaged over the additional dimensions.
+    Please see argument ``multioutput`` for changing this behavior.
 
     Args:
         num_outputs: Number of outputs in multioutput setting

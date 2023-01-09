@@ -29,8 +29,10 @@ class LogCoshError(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~torch.Tensor`): Estimated labels with shape ``(batch_size,)`` or `(batch_size, num_outputs)``
-    - ``target`` (:class:`~torch.Tensor`): Ground truth labels with shape ``(batch_size,)`` or `(batch_size, num_outputs)``
+    - ``preds`` (:class:`~torch.Tensor`): Estimated labels with shape ``(batch_size,)``
+      or ``(batch_size, num_outputs)``
+    - ``target`` (:class:`~torch.Tensor`): Ground truth labels with shape ``(batch_size,)``
+      or ``(batch_size, num_outputs)``
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
 

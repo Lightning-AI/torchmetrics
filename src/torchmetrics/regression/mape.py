@@ -37,7 +37,8 @@ class MeanAbsolutePercentageError(Metric):
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``mean_abs_percentage_error`` (:class:`~torch.Tensor`): A tensor with the mean absolute percentage error over state
+    - ``mean_abs_percentage_error`` (:class:`~torch.Tensor`): A tensor with the mean absolute percentage error over
+      state
 
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
