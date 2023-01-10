@@ -176,8 +176,8 @@ def _multiclass_specificity_at_sensitivity_compute(
     specificity = [_convert_fpr_to_specificity(fpr_) for fpr_ in fpr]
     if isinstance(state, Tensor):
         res = [
-            _specificity_at_sensitivity(sp, sn, thresholds, min_sensitivity)
-            for sp, sn in zip(specificity, sensitivity)  # type: ignore
+            _specificity_at_sensitivity(sp, sn, thresholds, min_sensitivity)  # type: ignore
+            for sp, sn in zip(specificity, sensitivity)
         ]
     else:
         res = [
@@ -291,8 +291,8 @@ def _multilabel_specificity_at_sensitivity_compute(
     specificity = [_convert_fpr_to_specificity(fpr_) for fpr_ in fpr]
     if isinstance(state, Tensor):
         res = [
-            _specificity_at_sensitivity(sp, sn, thresholds, min_sensitivity)
-            for sp, sn in zip(specificity, sensitivity)  # type: ignore
+            _specificity_at_sensitivity(sp, sn, thresholds, min_sensitivity)  # type: ignore
+            for sp, sn in zip(specificity, sensitivity)
         ]
     else:
         res = [
@@ -394,7 +394,7 @@ def specicity_at_sensitivity(
     num_labels: Optional[int] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Union[Tensor, Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:  # type: ignore
+) -> Union[Tensor, Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
     r"""Computes the higest possible specicity value given the minimum sensitivity thresholds provided. This is done
     by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the find
     the specificity for a given sensitivity level.
@@ -405,17 +405,17 @@ def specicity_at_sensitivity(
     :func:`multilabel_specifity_at_sensitvity` for the specific details of each argument influence and examples.
     """
     if task == "binary":
-        return binary_specificity_at_sensitivity(
+        return binary_specificity_at_sensitivity(  # type: ignore
             preds, target, min_sensitivity, thresholds, ignore_index, validate_args
         )
     if task == "multiclass":
         assert isinstance(num_classes, int)
-        return multiclass_specificity_at_sensitivity(
+        return multiclass_specificity_at_sensitivity(  # type: ignore
             preds, target, num_classes, min_sensitivity, thresholds, ignore_index, validate_args
         )
     if task == "multilabel":
         assert isinstance(num_labels, int)
-        return multilabel_specificity_at_sensitivity(
+        return multilabel_specificity_at_sensitivity(  # type: ignore
             preds, target, num_labels, min_sensitivity, thresholds, ignore_index, validate_args
         )
     raise ValueError(
