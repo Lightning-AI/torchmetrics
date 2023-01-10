@@ -161,6 +161,7 @@ class MulticlassSpecificityAtSensitivity(MulticlassPrecisionRecallCurve):
         sensitivity level per class
         - thresholds: an 1d tensor of size (n_classes, ) with the corresponding threshold level per class
 
+
     Example:
         >>> from torchmetrics.classification import MulticlassSpecificityAtSensitivity
         >>> import torch
