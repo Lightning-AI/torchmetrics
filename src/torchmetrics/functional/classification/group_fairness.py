@@ -328,7 +328,7 @@ def binary_fairness(
     threshold: float = 0.5,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]:
+) -> Dict[str, torch.Tensor]:
     r"""This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'demographic_parity'``, ``'equal_opportunity'`` or ``all``. See the documentation of
     :func:`_compute_binary_demographic_parity` and :func:`_compute_binary_equal_opportunity` for the specific
