@@ -119,6 +119,10 @@ class Metric(Module, ABC):
                 f"Expected keyword argument `sync_on_compute` to be a `bool` but got {self.sync_on_compute}"
             )
 
+        if kwargs:
+            kwargs_ = [f"`{a}`" for a in sorted(kwargs)]
+            raise ValueError(f"Unexpected keyword arguments: {', '.join(kwargs_)}")
+
         # initialize
         self._update_signature = inspect.signature(self.update)
         self.update: Callable = self._wrap_update(self.update)  # type: ignore
