@@ -83,7 +83,7 @@ def _multi_target_sk_accuracy(preds, target, num_outputs):
 
 
 @pytest.mark.parametrize(
-    "base_metric_class, compare_metric, preds, target, num_outputs, metric_kwargs",
+    "base_metric_class, compare_metric, preds, target, num_outputs",
     [
         (
             R2Score,
@@ -91,15 +91,13 @@ def _multi_target_sk_accuracy(preds, target, num_outputs):
             _multi_target_regression_inputs.preds,
             _multi_target_regression_inputs.target,
             num_targets,
-            {},
         ),
         (
-            MulticlassAccuracy,
+            partial(MulticlassAccuracy, num_classes=NUM_CLASSES, average="micro"),
             partial(_multi_target_sk_accuracy, num_outputs=2),
             _multi_target_classification_inputs.preds,
             _multi_target_classification_inputs.target,
             num_targets,
-            dict(num_classes=NUM_CLASSES, average="micro"),
         ),
     ],
 )
@@ -109,7 +107,7 @@ class TestMultioutputWrapper(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_multioutput_wrapper(
-        self, base_metric_class, compare_metric, preds, target, num_outputs, metric_kwargs, ddp, dist_sync_on_step
+        self, base_metric_class, compare_metric, preds, target, num_outputs, ddp, dist_sync_on_step
     ):
         """Test that the multioutput wrapper properly slices and computes outputs along the output dimension for
         both classification and regression metrics."""
@@ -120,5 +118,5 @@ class TestMultioutputWrapper(MetricTester):
             _MultioutputMetric,
             compare_metric,
             dist_sync_on_step,
-            metric_args=dict(num_outputs=num_outputs, base_metric_class=base_metric_class, **metric_kwargs),
+            metric_args=dict(num_outputs=num_outputs, base_metric_class=base_metric_class),
         )
