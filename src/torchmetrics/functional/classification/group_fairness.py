@@ -362,10 +362,10 @@ def binary_fairness(
     transformed_group_stats = _groups_stat_transform(group_stats)
 
     if task == "demographic_parity":
-        return _compute_binary_demographic_parity(transformed_group_stats)
+        return _compute_binary_demographic_parity(**transformed_group_stats)
 
     if task == "equal_opportunity":
-        return _compute_binary_equal_opportunity(transformed_group_stats)
+        return _compute_binary_equal_opportunity(**transformed_group_stats)
 
     if task == "all":
         return {

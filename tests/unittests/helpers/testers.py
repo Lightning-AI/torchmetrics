@@ -663,3 +663,13 @@ def remove_ignore_index(target: Tensor, preds: Tensor, ignore_index: Optional[in
         idx = target == ignore_index
         target, preds = deepcopy(target[~idx]), deepcopy(preds[~idx])
     return target, preds
+
+
+def remove_ignore_index_groups(
+    target: Tensor, preds: Tensor, groups: Tensor, ignore_index: Optional[int]
+) -> Tuple[Tensor, Tensor, Tensor]:
+    """Version of the remove_ignore_index which includes groups."""
+    if ignore_index is not None:
+        idx = target == ignore_index
+        target, preds, groups = deepcopy(target[~idx]), deepcopy(preds[~idx]), deepcopy(groups[~idx])
+    return target, preds, groups

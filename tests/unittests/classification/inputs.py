@@ -32,6 +32,7 @@ def _logsoftmax(x: Tensor, dim: int = -1) -> Tensor:
 
 
 Input = namedtuple("Input", ["preds", "target"])
+GroupInput = namedtuple("GroupInput", ["preds", "target", "groups"])
 
 _input_binary_prob = Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE), target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE))
@@ -202,6 +203,34 @@ _multilabel_cases = (
             target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, EXTRA_DIM)),
         ),
         id="input[multi dim-logits]",
+    ),
+)
+
+
+_group_cases = (
+    pytest.param(
+        GroupInput(
+            preds=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
+            target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
+            groups=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
+        ),
+        id="input[single dim-labels]",
+    ),
+    pytest.param(
+        GroupInput(
+            preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
+            target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
+            groups=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
+        ),
+        id="input[single dim-probs]",
+    ),
+    pytest.param(
+        GroupInput(
+            preds=_inv_sigmoid(torch.rand(NUM_BATCHES, BATCH_SIZE)),
+            target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
+            groups=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
+        ),
+        id="input[single dim-logits]",
     ),
 )
 
