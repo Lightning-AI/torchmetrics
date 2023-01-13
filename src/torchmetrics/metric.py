@@ -52,7 +52,7 @@ class Metric(Module, ABC):
 
     Note:
         Metric state variables can either be ``torch.Tensors`` or an empty list which can we used
-        to store ``torch.Tensors``.
+        to store :class:`~torch.Tensor`.
 
     Note:
         Different metrics only override ``update()`` and not ``forward()``. A call to ``update()``
