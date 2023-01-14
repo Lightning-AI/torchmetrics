@@ -66,7 +66,7 @@ pesq_original_batch_16k_wb = partial(pesq_original_batch, fs=16000, mode="wb")
 
 
 @pytest.mark.parametrize(
-    "preds, target, sk_metric, fs, mode",
+    "preds, target, ref_metric, fs, mode",
     [
         (inputs_8k.preds, inputs_8k.target, pesq_original_batch_8k_nb, 8000, "nb"),
         (inputs_16k.preds, inputs_16k.target, pesq_original_batch_16k_nb, 16000, "nb"),
@@ -76,33 +76,33 @@ pesq_original_batch_16k_wb = partial(pesq_original_batch, fs=16000, mode="wb")
 class TestPESQ(MetricTester):
     atol = 1e-2
 
-    @pytest.mark.parametrize("n_processes", [1, 2])
+    @pytest.mark.parametrize("num_processes", [1, 2])
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_pesq(self, preds, target, sk_metric, fs, mode, n_processes, ddp, dist_sync_on_step):
-        if n_processes != 1 and ddp:
+    def test_pesq(self, preds, target, ref_metric, fs, mode, num_processes, ddp, dist_sync_on_step):
+        if num_processes != 1 and ddp:
             pytest.skip("Multiprocessing and ddp does not work together")
         self.run_class_metric_test(
             ddp,
             preds,
             target,
             PerceptualEvaluationSpeechQuality,
-            sk_metric=partial(average_metric, metric_func=sk_metric),
+            reference_metric=partial(average_metric, metric_func=ref_metric),
             dist_sync_on_step=dist_sync_on_step,
-            metric_args=dict(fs=fs, mode=mode, n_processes=n_processes),
+            metric_args=dict(fs=fs, mode=mode, n_processes=num_processes),
         )
 
-    @pytest.mark.parametrize("n_processes", [1, 2])
-    def test_pesq_functional(self, preds, target, sk_metric, fs, mode, n_processes):
+    @pytest.mark.parametrize("num_processes", [1, 2])
+    def test_pesq_functional(self, preds, target, ref_metric, fs, mode, num_processes):
         self.run_functional_metric_test(
             preds,
             target,
             perceptual_evaluation_speech_quality,
-            sk_metric,
-            metric_args=dict(fs=fs, mode=mode, n_processes=n_processes),
+            ref_metric,
+            metric_args=dict(fs=fs, mode=mode, n_processes=num_processes),
         )
 
-    def test_pesq_differentiability(self, preds, target, sk_metric, fs, mode):
+    def test_pesq_differentiability(self, preds, target, ref_metric, fs, mode):
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -111,11 +111,11 @@ class TestPESQ(MetricTester):
             metric_args=dict(fs=fs, mode=mode),
         )
 
-    def test_pesq_half_cpu(self, preds, target, sk_metric, fs, mode):
+    def test_pesq_half_cpu(self, preds, target, ref_metric, fs, mode):
         pytest.xfail("PESQ metric does not support cpu + half precision")
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-    def test_pesq_half_gpu(self, preds, target, sk_metric, fs, mode):
+    def test_pesq_half_gpu(self, preds, target, ref_metric, fs, mode):
         self.run_precision_test_gpu(
             preds=preds,
             target=target,

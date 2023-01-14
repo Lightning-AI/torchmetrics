@@ -119,6 +119,10 @@ class Metric(Module, ABC):
                 f"Expected keyword argument `sync_on_compute` to be a `bool` but got {self.sync_on_compute}"
             )
 
+        if kwargs:
+            kwargs_ = [f"`{a}`" for a in sorted(kwargs)]
+            raise ValueError(f"Unexpected keyword arguments: {', '.join(kwargs_)}")
+
         # initialize
         self._update_signature = inspect.signature(self.update)
         self.update: Callable = self._wrap_update(self.update)  # type: ignore
@@ -915,7 +919,6 @@ class CompositionalMetric(Metric):
             self.metric_b.update(*args, **self.metric_b._filter_kwargs(**kwargs))
 
     def compute(self) -> Any:
-
         # also some parsing for kwargs?
         if isinstance(self.metric_a, Metric):
             val_a = self.metric_a.compute()
@@ -934,7 +937,6 @@ class CompositionalMetric(Metric):
 
     @torch.jit.unused
     def forward(self, *args: Any, **kwargs: Any) -> Any:
-
         val_a = (
             self.metric_a(*args, **self.metric_a._filter_kwargs(**kwargs))
             if isinstance(self.metric_a, Metric)

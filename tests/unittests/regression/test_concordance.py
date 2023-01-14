@@ -49,7 +49,7 @@ _multi_target_inputs2 = Input(
 )
 
 
-def _sk_concordance(preds, target):
+def _scipy_concordance(preds, target):
     preds, target = preds.numpy(), target.numpy()
     if preds.ndim == 2:
         mean_pred = np.mean(preds, axis=0)
@@ -87,13 +87,13 @@ class TestConcordanceCorrCoef(MetricTester):
             preds,
             target,
             ConcordanceCorrCoef,
-            _sk_concordance,
+            _scipy_concordance,
             dist_sync_on_step,
             metric_args={"num_outputs": num_outputs},
         )
 
     def test_concordance_corrcoef_functional(self, preds, target):
-        self.run_functional_metric_test(preds, target, concordance_corrcoef, _sk_concordance)
+        self.run_functional_metric_test(preds, target, concordance_corrcoef, _scipy_concordance)
 
     def test_concordance_corrcoef_differentiability(self, preds, target):
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1

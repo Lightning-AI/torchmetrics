@@ -26,6 +26,16 @@ class SpectralDistortionIndex(Metric):
     """Computes Spectral Distortion Index (SpectralDistortionIndex_) also now as D_lambda is used to compare the
     spectral distortion between two images.
 
+    As input to ``forward`` and ``update`` the metric accepts the following input
+
+    - ``preds`` (:class:`~torch.Tensor`): Low resolution multispectral image of shape ``(N,C,H,W)``
+    - ``target``(:class:`~torch.Tensor`): High resolution fused image of shape ``(N,C,H,W)``
+
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``sdi`` (:class:`~torch.Tensor`): if ``reduction!='none'`` returns float scalar tensor with average SDI value
+      over sample else returns tensor of shape ``(N,)`` with SDI values per sample
+
     Args:
         p: Large spectral differences
         reduction: a method to reduce metric score over labels.
@@ -36,7 +46,6 @@ class SpectralDistortionIndex(Metric):
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-
     Example:
         >>> import torch
         >>> _ = torch.manual_seed(42)
@@ -46,12 +55,6 @@ class SpectralDistortionIndex(Metric):
         >>> sdi = SpectralDistortionIndex()
         >>> sdi(preds, target)
         tensor(0.0234)
-
-    References:
-        [1] Alparone, Luciano & Aiazzi, Bruno & Baronti, Stefano & Garzelli, Andrea & Nencini,
-        Filippo & Selva, Massimo. (2008). Multispectral and Panchromatic Data Fusion
-        Assessment Without Reference. ASPRS Journal of Photogrammetric Engineering
-        and Remote Sensing. 74. 193-200. 10.14358/PERS.74.2.193.
     """
 
     higher_is_better: bool = True
@@ -82,12 +85,7 @@ class SpectralDistortionIndex(Metric):
         self.add_state("target", default=[], dist_reduce_fx="cat")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
-        """Update state with preds and target.
-
-        Args:
-            preds: Low resolution multispectral image
-            target: High resolution fused image
-        """
+        """Update state with preds and target."""
         preds, target = _spectral_distortion_index_update(preds, target)
         self.preds.append(preds)
         self.target.append(target)
