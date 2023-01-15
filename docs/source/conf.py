@@ -327,7 +327,6 @@ def linkcode_resolve(domain, info):
     sub_module = sys.modules.get(module_name)
     if sub_module is None:
         return None
-    print(f"Domain: {domain}, info: {info}")
 
     obj = sub_module
     for part in full_name.split("."):
@@ -373,7 +372,6 @@ def linkcode_resolve(domain, info):
         version_str = f"v{torchmetrics.__version__}"
 
     link = f"https://github.com/{github_user}/{github_repo}/blob/{version_str}/src/torchmetrics/{file_name}{line_str}"
-    print(link)
     return link
 
 
