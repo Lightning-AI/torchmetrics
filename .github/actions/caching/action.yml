@@ -2,9 +2,6 @@ name: Complex caching
 description: some more complex caching - pip & conda & hf
 
 inputs:
-  os:
-    description: operation system
-    required: true
   python-version:
     description: Python version
     required: true
@@ -37,40 +34,30 @@ runs:
       cat requirements.txt
     shell: bash
 
-  - run: python -c "import time ; days = time.time() / 60 / 60 / 24 ; print(f'TIME_PERIOD={int(days / ${{ inputs.interval }})}')" >> $GITHUB_ENV
-    if: inputs.requires == 'latest'
-    shell: bash
-
   # Note: This uses an internal pip API and may not always work
   # https://github.com/actions/cache/blob/master/examples.md#multiple-oss-in-a-workflow
   - name: Determine caches
-    env:
-      PWD: $(pwd)
+    id: cache_dirs
     run: |
-      python -c "from pip._internal.locations import USER_CACHE_DIR; print('PIP_CACHE_DIR=' + USER_CACHE_DIR)" >> $GITHUB_ENV
-      python -c "import os ; print('TRANSFORMERS_CACHE=' + os.path.join('$PWD', 'ci-cache_huggingface'))" >> $GITHUB_ENV
+      pip_cache=$(python -c "from pip._internal.locations import USER_CACHE_DIR; print(USER_CACHE_DIR)")
+      echo "pip_cache=$pip_cache" >> $GITHUB_OUTPUT
+      hf_cache=$(python -c "import os ; print(os.path.join(os.getcwd(), 'ci-cache_huggingface'))")
+      echo "hf_cache=$hf_cache" >> $GITHUB_OUTPUT
+      echo "TRANSFORMERS_CACHE=$hf_cache" >> $GITHUB_ENV
     shell: bash
 
   - name: Cache pip
     uses: actions/cache@v3
     with:
-      path: $PIP_CACHE_DIR
-      key: ${{ inputs.os }}-py${{ inputs.python-version }}-pip-td${TIME_PERIOD}-${{ inputs.offset }}-${{ hashFiles('requirements.txt') }}
-      restore-keys: ${{ inputs.os }}-py${{ inputs.python-version }}-pip-td${TIME_PERIOD}-${{ inputs.offset }}-
-
-  - name: Cache conda
-    uses: actions/cache@v3
-    if: inputs.os == 'Linux'
-    with:
-      path: ~/conda_pkgs_dir
-      key: py${{ inputs.python-version }}-conda-td${TIME_PERIOD}-${{ inputs.offset }}
-      restore-keys: py${{ inputs.python-version }}-conda-td${TIME_PERIOD}-${{ inputs.offset }}
+      path: ${{ steps.cache_dirs.outputs.pip_cache }}
+      key: ${{ runner.os }}-py${{ inputs.python-version }}-pip-${{ inputs.requires }}-${{ inputs.offset }}-${{ hashFiles('requirements.txt') }}
+      restore-keys: ${{ runner.os }}-py${{ inputs.python-version }}-pip-${{ inputs.requires }}-${{ inputs.offset }}-
 
   - name: Cache HF
     uses: actions/cache@v3
     with:
-      path: $TRANSFORMERS_CACHE
-      key: ${{ inputs.os }}-py${{ inputs.python-version }}-cache-transformers
+      path: ${{ steps.cache_dirs.outputs.hf_cache }}
+      key: ${{ runner.os }}-py${{ inputs.python-version }}-cache-transformers
 
   - name: Post HF
     run: |
