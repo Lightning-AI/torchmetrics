@@ -321,58 +321,52 @@ def linkcode_resolve(domain, info):
     if domain != "py" or not info["module"]:
         return None
 
-    module_name = info["module"]
-    full_name = info["fullname"]
+    obj = _get_obj(info)
+    file_name = _get_file_name(obj)
 
-    sub_module = sys.modules.get(module_name)
-    if sub_module is None:
-        return None
-
-    obj = sub_module
-    for part in full_name.split("."):
-        try:
-            obj = getattr(obj, part)
-        except Exception:
-            return None
-
-    # strip decorators, which would resolve to the source of the decorator
-    # possibly an upstream bug in getsourcefile, bpo-1764286
-    try:
-        unwrap = inspect.unwrap
-    except AttributeError:
-        pass
-    else:
-        obj = unwrap(obj)
-
-    try:
-        file_name = inspect.getsourcefile(obj)
-    except Exception:
-        file_name = None
     if not file_name:
         return None
 
-    module = inspect.getmodule(obj)
-    if module is not None and not module.__name__.startswith("torchmetrics"):
-        return None
+    line_str = _get_line_str(obj)
+    version_str = _get_version_str()
 
+    link = f"https://github.com/{github_user}/{github_repo}/blob/{version_str}/src/torchmetrics/{file_name}{line_str}"
+    return link
+
+
+def _get_obj(info):
+    module_name = info["module"]
+    full_name = info["fullname"]
+    sub_module = sys.modules.get(module_name)
+    obj = sub_module
+    for part in full_name.split("."):
+        obj = getattr(obj, part)
+    # strip decorators, which would resolve to the source of the decorator
+    obj = inspect.unwrap(obj)
+    return obj
+
+
+def _get_file_name(obj):
     try:
-        source, line_number = inspect.getsourcelines(obj)
-    except Exception:
-        source, line_number = None, None
-    file_name = os.path.relpath(file_name, start=os.path.dirname(torchmetrics.__file__))
+        file_name = inspect.getsourcefile(obj)
+        file_name = os.path.relpath(file_name, start=os.path.dirname(torchmetrics.__file__))
+    except TypeError:  # This seems to happen when obj is a property
+        file_name = None
+    return file_name
 
-    if line_number and source:
-        line_str = "#L%d-L%d" % (line_number, line_number + len(source) - 1)
-    else:
-        line_str = ""
 
+def _get_line_str(obj):
+    source, line_number = inspect.getsourcelines(obj)
+    line_str = "#L%d-L%d" % (line_number, line_number + len(source) - 1)
+    return line_str
+
+
+def _get_version_str():
     if "dev" in torchmetrics.__version__:
         version_str = "master"
     else:
         version_str = f"v{torchmetrics.__version__}"
-
-    link = f"https://github.com/{github_user}/{github_repo}/blob/{version_str}/src/torchmetrics/{file_name}{line_str}"
-    return link
+    return version_str
 
 
 autosummary_generate = True
