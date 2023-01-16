@@ -39,8 +39,7 @@ runs:
   - name: Determine caches
     id: cache_dirs
     run: |
-      pip_cache=$(python -c "from pip._internal.locations import USER_CACHE_DIR; print(USER_CACHE_DIR)")
-      echo "pip_cache=$pip_cache" >> $GITHUB_OUTPUT
+      echo "pip_cache=$(pip cache dir)" >> $GITHUB_OUTPUT
       hf_cache=$(python -c "import os ; print(os.path.join(os.getcwd(), 'ci-cache_huggingface'))")
       echo "hf_cache=$hf_cache" >> $GITHUB_OUTPUT
       echo "TRANSFORMERS_CACHE=$hf_cache" >> $GITHUB_ENV
