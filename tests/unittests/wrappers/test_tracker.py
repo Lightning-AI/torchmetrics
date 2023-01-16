@@ -41,6 +41,11 @@ def test_raises_error_on_wrong_input():
     ):
         MetricTracker(MetricCollection([MeanAbsoluteError(), MeanSquaredError()]), maximize=[False, False, False])
 
+    with pytest.raises(
+        ValueError, match="Argument `maximize` should be a single bool when `metric` is a single Metric"
+    ):
+        MetricTracker(MeanAbsoluteError(), maximize=[False])
+
 
 @pytest.mark.parametrize(
     "method, method_input",
