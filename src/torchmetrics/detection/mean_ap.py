@@ -94,7 +94,7 @@ class BaseMetricResults(dict):
 class MAPMetricResults(BaseMetricResults):
     """Class to wrap the final mAP results."""
 
-    __slots__ = ("map", "map_50", "map_75", "map_small", "map_medium", "map_large")
+    __slots__ = ("map", "map_50", "map_75", "map_small", "map_medium", "map_large", "classes")
 
 
 class MARMetricResults(BaseMetricResults):
@@ -247,6 +247,7 @@ class MeanAveragePrecision(Metric):
         - map_75: (:class:`~torch.Tensor`) (-1 if 0.75 not in the list of iou thresholds)
         - map_per_class: (:class:`~torch.Tensor`) (-1 if class metrics are disabled)
         - mar_100_per_class: (:class:`~torch.Tensor`) (-1 if class metrics are disabled)
+        - classes (:class:`~torch.Tensor`)
 
     For an example on how to use this metric check the `torchmetrics mAP example`_.
 
@@ -330,7 +331,8 @@ class MeanAveragePrecision(Metric):
         >>> metric.update(preds, target)
         >>> from pprint import pprint
         >>> pprint(metric.compute())
-        {'map': tensor(0.6000),
+        {'classes': tensor(0, dtype=torch.int32),
+         'map': tensor(0.6000),
          'map_50': tensor(1.),
          'map_75': tensor(1.),
          'map_large': tensor(0.6000),
@@ -921,5 +923,5 @@ class MeanAveragePrecision(Metric):
         metrics.update(mar_val)
         metrics.map_per_class = map_per_class_values
         metrics[f"mar_{self.max_detection_thresholds[-1]}_per_class"] = mar_max_dets_per_class_values
-
+        metrics.classes = torch.tensor(classes, dtype=torch.int)
         return metrics
