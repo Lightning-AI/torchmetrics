@@ -282,6 +282,7 @@ def _compare_fn(preds, target) -> dict:
         "mar_large": Tensor([0.633]),
         "map_per_class": Tensor([0.725, 0.800, 0.454, -1.000, 0.650, 0.556]),
         "mar_100_per_class": Tensor([0.780, 0.800, 0.450, -1.000, 0.650, 0.580]),
+        "classes": Tensor([0, 1, 2, 3, 4, 49]),
     }
 
 
@@ -317,6 +318,7 @@ def _compare_fn_segm(preds, target) -> dict:
         "mar_large": Tensor([0.35]),
         "map_per_class": Tensor([0.4039604, -1.0, 0.3]),
         "mar_100_per_class": Tensor([0.4, -1.0, 0.3]),
+        "classes": Tensor([2, 3, 4]),
     }
 
 
