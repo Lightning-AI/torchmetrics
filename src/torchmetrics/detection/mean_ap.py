@@ -197,42 +197,41 @@ def _fix_empty_tensors(boxes: Tensor) -> Tensor:
 
 
 class MeanAveragePrecision(Metric):
-    r"""`Computes the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR) <https://jonathan-
-    hui.medium.com/map-mean-average-precision-for-object-detection-45c121a31173>`_ for object detection
-    predictions. Optionally, the mAP and mAR values can be calculated per class.
+    r"""Computes the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)`_ for object detection predictions.
+    Optionally, the mAP and mAR values can be calculated per class.
 
     Predicted boxes and targets have to be in Pascal VOC format
     (xmin-top left, ymin-top left, xmax-bottom right, ymax-bottom right).
     See the :meth:`update` method for more information about the input format to this metric.
 
-    As input to ``forward`` and ``update`` the metric accepts the following input.
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~List`) A list consisting of dictionaries each containing the key-values
+    - ``preds`` (:class:`~List`): A list consisting of dictionaries each containing the key-values
       (each dictionary corresponds to a single image). Parameters that should be provided per dict
 
-        - boxes: :class:`~torch.FloatTensor` of shape ``[num_boxes, 4]`` containing ``num_boxes`` detection
+        - boxes: (:class:`~torch.FloatTensor`) of shape ``(num_boxes, 4)`` containing ``num_boxes`` detection
           boxes of the format specified in the constructor.
-          By default, this method expects ``[xmin, ymin, xmax, ymax]`` in absolute image coordinates.
-        - scores: :class:`~torch.FloatTensor` of shape ``[num_boxes]`` containing detection scores for the boxes.
-        - labels: :class:`~torch.IntTensor` of shape ``[num_boxes]`` containing 0-indexed detection classes for
+          By default, this method expects ``(xmin, ymin, xmax, ymax)`` in absolute image coordinates.
+        - scores: :class:`~torch.FloatTensor` of shape ``(num_boxes)`` containing detection scores for the boxes.
+        - labels: :class:`~torch.IntTensor` of shape ``(num_boxes)`` containing 0-indexed detection classes for
           the boxes.
-        - masks: :class:`~torch.bool` of shape ``[num_boxes, image_height, image_width]`` containing boolean masks.
+        - masks: :class:`~torch.bool` of shape ``(num_boxes, image_height, image_width)`` containing boolean masks.
           Only required when `iou_type="segm"`.
 
     - ``target`` (:class:`~List`) A list consisting of dictionaries each containing the key-values
       (each dictionary corresponds to a single image). Parameters that should be provided per dict:
 
-        - boxes: :class:`~torch.FloatTensor` of shape ``[num_boxes, 4]`` containing ``num_boxes`` ground truth
+        - boxes: :class:`~torch.FloatTensor` of shape ``(num_boxes, 4)`` containing ``num_boxes`` ground truth
           boxes of the format specified in the constructor.
-          By default, this method expects ``[xmin, ymin, xmax, ymax]`` in absolute image coordinates.
-        - labels: :class:`~torch.IntTensor` of shape ``[num_boxes]`` containing 0-indexed ground truth
+          By default, this method expects ``(xmin, ymin, xmax, ymax)`` in absolute image coordinates.
+        - labels: :class:`~torch.IntTensor` of shape ``(num_boxes)`` containing 0-indexed ground truth
           classes for the boxes.
-        - masks: :class:`~torch.bool` of shape ``[num_boxes, image_height, image_width]`` containing boolean masks.
+        - masks: :class:`~torch.bool` of shape ``(num_boxes, image_height, image_width)`` containing boolean masks.
           Only required when `iou_type="segm"`.
 
-    As output of ``forward`` and ``compute`` the metric returns the following output.
+    As output of ``forward`` and ``compute`` the metric returns the following output:
 
-    - `map_dict`: A dictionary containing the following key-values:
+    - ``map_dict``: A dictionary containing the following key-values:
 
         - map: (:class:`~torch.Tensor`)
         - map_small: (:class:`~torch.Tensor`)
@@ -249,8 +248,7 @@ class MeanAveragePrecision(Metric):
         - map_per_class: (:class:`~torch.Tensor`) (-1 if class metrics are disabled)
         - mar_100_per_class: (:class:`~torch.Tensor`) (-1 if class metrics are disabled)
 
-    For an example on how to use this metric check the `torchmetrics examples
-    <https://github.com/Lightning-AI/metrics/blob/master/examples/detection_map.py>`_
+    For an example on how to use this metric check the `torchmetrics mAP example`_.
 
     .. note::
         ``map`` score is calculated with @[ IoU=self.iou_thresholds | area=all | max_dets=max_detection_thresholds ].
