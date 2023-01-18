@@ -14,6 +14,8 @@ ________________
 
 .. autoclass:: torchmetrics.ConcordanceCorrCoef
     :noindex:
+    :exclude-members: update, compute
+
 
 Functional Interface
 ____________________
