@@ -30,11 +30,18 @@ class MeanAbsolutePercentageError(Metric):
 
     Where :math:`y` is a tensor of target values, and :math:`\hat{y}` is a tensor of predictions.
 
+    As input to ``forward`` and ``update`` the metric accepts the following input:
+
+    - ``preds`` (:class:`~torch.Tensor`): Predictions from model
+    - ``target`` (:class:`~torch.Tensor`): Ground truth values
+
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``mean_abs_percentage_error`` (:class:`~torch.Tensor`): A tensor with the mean absolute percentage error over
+      state
+
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
-
-    Note:
-        The epsilon value is taken from `scikit-learn's implementation of MAPE`_.
 
     Note:
         MAPE output is a non-negative floating point. Best result is ``0.0`` . But it is important to note that,
@@ -65,12 +72,7 @@ class MeanAbsolutePercentageError(Metric):
         self.add_state("total", default=tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
+        """Update state with predictions and targets."""
         sum_abs_per_error, num_obs = _mean_absolute_percentage_error_update(preds, target)
 
         self.sum_abs_per_error += sum_abs_per_error

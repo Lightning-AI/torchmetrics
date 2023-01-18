@@ -14,6 +14,7 @@ ________________
 
 .. autoclass:: torchmetrics.R2Score
     :noindex:
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________
