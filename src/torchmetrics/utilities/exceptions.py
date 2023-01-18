@@ -16,5 +16,6 @@
 class TorchMetricsUserError(Exception):
     """Error used to inform users of a wrong combination of Metric API calls."""
 
+
 class MisConfigurationError(Exception):
     """Exception used to inform users of misuse of torchmetrics."""

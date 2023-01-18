@@ -35,7 +35,6 @@ from torchmetrics.utilities.compute import _safe_divide
 from torchmetrics.utilities.exceptions import MisConfigurationError
 
 
-
 def _accuracy_reduce(
     tp: Tensor,
     fp: Tensor,
