@@ -39,9 +39,10 @@ class MeanSquaredLogError(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics import MeanSquaredLogError
-        >>> target = torch.tensor([2.5, 5, 4, 8])
-        >>> preds = torch.tensor([3, 5, 2.5, 7])
+        >>> target = tensor([2.5, 5, 4, 8])
+        >>> preds = tensor([3, 5, 2.5, 7])
         >>> mean_squared_log_error = MeanSquaredLogError()
         >>> mean_squared_log_error(preds, target)
         tensor(0.0397)

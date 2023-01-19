@@ -52,6 +52,7 @@ class RetrievalMRR(RetrievalMetric):
             If ``ignore_index`` is not `None` or an integer.
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics import RetrievalMRR
         >>> indexes = tensor([0, 0, 0, 1, 1, 1, 1])
         >>> preds = tensor([0.2, 0.3, 0.5, 0.1, 0.3, 0.5, 0.2])

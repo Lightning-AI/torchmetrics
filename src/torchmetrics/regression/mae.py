@@ -39,9 +39,10 @@ class MeanAbsoluteError(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics import MeanAbsoluteError
-        >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
-        >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
+        >>> target = tensor([3.0, -0.5, 2.0, 7.0])
+        >>> preds = tensor([2.5, 0.0, 2.0, 8.0])
         >>> mean_absolute_error = MeanAbsoluteError()
         >>> mean_absolute_error(preds, target)
         tensor(0.5000)

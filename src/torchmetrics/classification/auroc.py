@@ -76,9 +76,10 @@ class BinaryAUROC(BinaryPrecisionRecallCurve):
         A single scalar with the auroc score
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics.classification import BinaryAUROC
-        >>> preds = torch.tensor([0, 0.5, 0.7, 0.8])
-        >>> target = torch.tensor([0, 1, 1, 0])
+        >>> preds = tensor([0, 0.5, 0.7, 0.8])
+        >>> target = tensor([0, 1, 1, 0])
         >>> metric = BinaryAUROC(thresholds=None)
         >>> metric(preds, target)
         tensor(0.5000)
@@ -162,12 +163,13 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
         If `average="macro"|"weighted"` then a single scalar is returned.
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics.classification import MulticlassAUROC
-        >>> preds = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
-        ...                       [0.05, 0.75, 0.05, 0.05, 0.05],
-        ...                       [0.05, 0.05, 0.75, 0.05, 0.05],
-        ...                       [0.05, 0.05, 0.05, 0.75, 0.05]])
-        >>> target = torch.tensor([0, 1, 3, 2])
+        >>> preds = tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
+        ...                 [0.05, 0.75, 0.05, 0.05, 0.05],
+        ...                 [0.05, 0.05, 0.75, 0.05, 0.05],
+        ...                 [0.05, 0.05, 0.05, 0.75, 0.05]])
+        >>> target = tensor([0, 1, 3, 2])
         >>> metric = MulticlassAUROC(num_classes=5, average="macro", thresholds=None)
         >>> metric(preds, target)
         tensor(0.5333)
@@ -262,12 +264,13 @@ class MultilabelAUROC(MultilabelPrecisionRecallCurve):
         If `average="micro|macro"|"weighted"` then a single scalar is returned.
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics.classification import MultilabelAUROC
-        >>> preds = torch.tensor([[0.75, 0.05, 0.35],
+        >>> preds = tensor([[0.75, 0.05, 0.35],
         ...                       [0.45, 0.75, 0.05],
         ...                       [0.05, 0.55, 0.75],
         ...                       [0.05, 0.65, 0.05]])
-        >>> target = torch.tensor([[1, 0, 1],
+        >>> target = tensor([[1, 0, 1],
         ...                        [0, 0, 0],
         ...                        [0, 1, 1],
         ...                        [1, 1, 1]])
@@ -324,18 +327,19 @@ class AUROC:
     each argument influence and examples.
 
     Legacy Example:
-        >>> preds = torch.tensor([0.13, 0.26, 0.08, 0.19, 0.34])
-        >>> target = torch.tensor([0, 0, 1, 1, 1])
+        >>> from torch import tensor
+        >>> preds = tensor([0.13, 0.26, 0.08, 0.19, 0.34])
+        >>> target = tensor([0, 0, 1, 1, 1])
         >>> auroc = AUROC(task="binary")
         >>> auroc(preds, target)
         tensor(0.5000)
 
-        >>> preds = torch.tensor([[0.90, 0.05, 0.05],
+        >>> preds = tensor([[0.90, 0.05, 0.05],
         ...                       [0.05, 0.90, 0.05],
         ...                       [0.05, 0.05, 0.90],
         ...                       [0.85, 0.05, 0.10],
         ...                       [0.10, 0.10, 0.80]])
-        >>> target = torch.tensor([0, 1, 1, 2, 2])
+        >>> target = tensor([0, 1, 1, 2, 2])
         >>> auroc = AUROC(task="multiclass", num_classes=3)
         >>> auroc(preds, target)
         tensor(0.7778)

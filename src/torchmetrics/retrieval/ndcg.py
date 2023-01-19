@@ -58,6 +58,7 @@ class RetrievalNormalizedDCG(RetrievalMetric):
             If ``k`` parameter is not `None` or an integer larger than 0.
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics import RetrievalNormalizedDCG
         >>> indexes = tensor([0, 0, 0, 1, 1, 1, 1])
         >>> preds = tensor([0.2, 0.3, 0.5, 0.1, 0.3, 0.5, 0.2])

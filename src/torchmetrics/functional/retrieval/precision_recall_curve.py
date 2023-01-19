@@ -57,6 +57,7 @@ def retrieval_precision_recall_curve(
             If ``adaptive_k`` is not boolean.
 
     Example:
+        >>> from torch import tensor
         >>> from  torchmetrics.functional import retrieval_precision_recall_curve
         >>> preds = tensor([0.2, 0.3, 0.5])
         >>> target = tensor([True, False, True])

@@ -45,9 +45,10 @@ class MeanSquaredError(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics import MeanSquaredError
-        >>> target = torch.tensor([2.5, 5.0, 4.0, 8.0])
-        >>> preds = torch.tensor([3.0, 5.0, 2.5, 7.0])
+        >>> target = tensor([2.5, 5.0, 4.0, 8.0])
+        >>> preds = tensor([3.0, 5.0, 2.5, 7.0])
         >>> mean_squared_error = MeanSquaredError()
         >>> mean_squared_error(preds, target)
         tensor(0.8750)
@@ -102,23 +103,23 @@ class MeanSquaredError(Metric):
         .. plot::
             :scale: 75
 
+            >>> from torch import randn
             >>> # Example plotting a single value
-            >>> import torch
             >>> from torchmetrics.regression import MeanSquaredError
             >>> metric = MeanSquaredError()
-            >>> metric.update(torch.randn(10,), torch.randn(10,))
+            >>> metric.update(randn(10,), randn(10,))
             >>> fig_, ax_ = metric.plot()
 
         .. plot::
             :scale: 75
 
+            >>> from torch import randn
             >>> # Example plotting multiple values
-            >>> import torch
             >>> from torchmetrics.regression import MeanSquaredError
             >>> metric = MeanSquaredError()
             >>> values = []
             >>> for _ in range(10):
-            ...     values.append(metric(torch.randn(10,), torch.randn(10,)))
+            ...     values.append(metric(randn(10,), randn(10,)))
             >>> fig, ax = metric.plot(values)
         """
         val = val or self.compute()

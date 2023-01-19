@@ -68,30 +68,27 @@ class BinaryAccuracy(BinaryStatScores):
         is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of a scalar value per sample.
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.classification import BinaryAccuracy
-        >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
-        >>> preds = torch.tensor([0, 0, 1, 1, 0, 1])
+        >>> target = tensor([0, 1, 0, 1, 0, 1])
+        >>> preds = tensor([0, 0, 1, 1, 0, 1])
         >>> metric = BinaryAccuracy()
         >>> metric(preds, target)
         tensor(0.6667)
 
     Example (preds is float tensor):
         >>> from torchmetrics.classification import BinaryAccuracy
-        >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
-        >>> preds = torch.tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
+        >>> target = tensor([0, 1, 0, 1, 0, 1])
+        >>> preds = tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
         >>> metric = BinaryAccuracy()
         >>> metric(preds, target)
         tensor(0.6667)
 
     Example (multidim tensors):
         >>> from torchmetrics.classification import BinaryAccuracy
-        >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
-        >>> preds = torch.tensor(
-        ...     [
-        ...         [[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
-        ...         [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]],
-        ...     ]
-        ... )
+        >>> target = tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
+        >>> preds = tensor([[[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
+        ...                 [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]]])
         >>> metric = BinaryAccuracy(multidim_average='samplewise')
         >>> metric(preds, target)
         tensor([0.3333, 0.1667])
@@ -129,23 +126,22 @@ class BinaryAccuracy(BinaryStatScores):
         .. plot::
             :scale: 75
 
+            >>> from torch import rand, randint
             >>> # Example plotting a single value
-            >>> import torch
             >>> from torchmetrics.classification import BinaryAccuracy
             >>> metric = BinaryAccuracy()
-            >>> metric.update(torch.rand(10), torch.randint(2,(10,)))
+            >>> metric.update(rand(10), randint(2,(10,)))
             >>> fig_, ax_ = metric.plot()
 
         .. plot::
             :scale: 75
 
             >>> # Example plotting multiple values
-            >>> import torch
             >>> from torchmetrics.classification import BinaryAccuracy
             >>> metric = BinaryAccuracy()
             >>> values = [ ]
             >>> for _ in range(10):
-            ...     values.append(metric(torch.rand(10), torch.randint(2,(10,))))
+            ...     values.append(metric(rand(10), randint(2,(10,))))
             >>> fig_, ax_ = metric.plot(values)
         """
         val = val or self.compute()
@@ -212,9 +208,10 @@ class MulticlassAccuracy(MulticlassStatScores):
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.classification import MulticlassAccuracy
-        >>> target = torch.tensor([2, 1, 0, 0])
-        >>> preds = torch.tensor([2, 1, 0, 1])
+        >>> target = tensor([2, 1, 0, 0])
+        >>> preds = tensor([2, 1, 0, 1])
         >>> metric = MulticlassAccuracy(num_classes=3)
         >>> metric(preds, target)
         tensor(0.8333)
@@ -224,13 +221,11 @@ class MulticlassAccuracy(MulticlassStatScores):
 
     Example (preds is float tensor):
         >>> from torchmetrics.classification import MulticlassAccuracy
-        >>> target = torch.tensor([2, 1, 0, 0])
-        >>> preds = torch.tensor([
-        ...   [0.16, 0.26, 0.58],
-        ...   [0.22, 0.61, 0.17],
-        ...   [0.71, 0.09, 0.20],
-        ...   [0.05, 0.82, 0.13],
-        ... ])
+        >>> target = tensor([2, 1, 0, 0])
+        >>> preds = tensor([[0.16, 0.26, 0.58],
+        ...                 [0.22, 0.61, 0.17],
+        ...                 [0.71, 0.09, 0.20],
+        ...                 [0.05, 0.82, 0.13]])
         >>> metric = MulticlassAccuracy(num_classes=3)
         >>> metric(preds, target)
         tensor(0.8333)
@@ -240,8 +235,8 @@ class MulticlassAccuracy(MulticlassStatScores):
 
     Example (multidim tensors):
         >>> from torchmetrics.classification import MulticlassAccuracy
-        >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
-        >>> preds = torch.tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
+        >>> target = tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
+        >>> preds = tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
         >>> metric = MulticlassAccuracy(num_classes=3, multidim_average='samplewise')
         >>> metric(preds, target)
         tensor([0.5000, 0.2778])
@@ -283,23 +278,23 @@ class MulticlassAccuracy(MulticlassStatScores):
         .. plot::
             :scale: 75
 
+            >>> from torch import randint
             >>> # Example plotting a single value per class
-            >>> import torch
             >>> from torchmetrics.classification import MulticlassAccuracy
             >>> metric = MulticlassAccuracy(num_classes=3, average=None)
-            >>> metric.update(torch.randint(3, (20,)), torch.randint(3, (20,)))
+            >>> metric.update(randint(3, (20,)), randint(3, (20,)))
             >>> fig_, ax_ = metric.plot()
 
         .. plot::
             :scale: 75
 
+            >>> from torch import randint
             >>> # Example plotting a multiple values per class
-            >>> import torch
             >>> from torchmetrics.classification import MulticlassAccuracy
             >>> metric = MulticlassAccuracy(num_classes=3, average=None)
             >>> values = []
             >>> for _ in range(20):
-            ...     values.append(metric(torch.randint(3, (20,)), torch.randint(3, (20,))))
+            ...     values.append(metric(randint(3, (20,)), randint(3, (20,))))
             >>> fig_, ax_ = metric.plot(values)
         """
         val = val or self.compute()
@@ -364,9 +359,10 @@ class MultilabelAccuracy(MultilabelStatScores):
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.classification import MultilabelAccuracy
-        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
-        >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
+        >>> target = tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = tensor([[0, 0, 1], [1, 0, 1]])
         >>> metric = MultilabelAccuracy(num_labels=3)
         >>> metric(preds, target)
         tensor(0.6667)
@@ -376,8 +372,8 @@ class MultilabelAccuracy(MultilabelStatScores):
 
     Example (preds is float tensor):
         >>> from torchmetrics.classification import MultilabelAccuracy
-        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
-        >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
+        >>> target = tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> metric = MultilabelAccuracy(num_labels=3)
         >>> metric(preds, target)
         tensor(0.6667)
@@ -387,8 +383,8 @@ class MultilabelAccuracy(MultilabelStatScores):
 
     Example (multidim tensors):
         >>> from torchmetrics.classification import MultilabelAccuracy
-        >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
-        >>> preds = torch.tensor(
+        >>> target = tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
+        >>> preds = tensor(
         ...     [
         ...         [[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
         ...         [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]],
@@ -429,15 +425,15 @@ class Accuracy:
     each argument influence and examples.
 
     Legacy Example:
-        >>> import torch
-        >>> target = torch.tensor([0, 1, 2, 3])
-        >>> preds = torch.tensor([0, 2, 1, 3])
+        >>> from torch import tensor
+        >>> target = tensor([0, 1, 2, 3])
+        >>> preds = tensor([0, 2, 1, 3])
         >>> accuracy = Accuracy(task="multiclass", num_classes=4)
         >>> accuracy(preds, target)
         tensor(0.5000)
 
-        >>> target = torch.tensor([0, 1, 2])
-        >>> preds = torch.tensor([[0.1, 0.9, 0], [0.3, 0.1, 0.6], [0.2, 0.5, 0.3]])
+        >>> target = tensor([0, 1, 2])
+        >>> preds = tensor([[0.1, 0.9, 0], [0.3, 0.1, 0.6], [0.2, 0.5, 0.3]])
         >>> accuracy = Accuracy(task="multiclass", num_classes=3, top_k=2)
         >>> accuracy(preds, target)
         tensor(0.6667)

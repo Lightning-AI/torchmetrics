@@ -44,9 +44,10 @@ class CosineSimilarity(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics import CosineSimilarity
-        >>> target = torch.tensor([[0, 1], [1, 1]])
-        >>> preds = torch.tensor([[0, 1], [0, 1]])
+        >>> target = tensor([[0, 1], [1, 1]])
+        >>> preds = tensor([[0, 1], [0, 1]])
         >>> cosine_similarity = CosineSimilarity(reduction = 'mean')
         >>> cosine_similarity(preds, target)
         tensor(0.8536)

@@ -61,17 +61,18 @@ class BinaryCohenKappa(BinaryConfusionMatrix):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.classification import BinaryCohenKappa
-        >>> target = torch.tensor([1, 1, 0, 0])
-        >>> preds = torch.tensor([0, 1, 0, 0])
+        >>> target = tensor([1, 1, 0, 0])
+        >>> preds = tensor([0, 1, 0, 0])
         >>> metric = BinaryCohenKappa()
         >>> metric(preds, target)
         tensor(0.5000)
 
     Example (preds is float tensor):
         >>> from torchmetrics.classification import BinaryCohenKappa
-        >>> target = torch.tensor([1, 1, 0, 0])
-        >>> preds = torch.tensor([0.35, 0.85, 0.48, 0.01])
+        >>> target = tensor([1, 1, 0, 0])
+        >>> preds = tensor([0.35, 0.85, 0.48, 0.01])
         >>> metric = BinaryCohenKappa()
         >>> metric(preds, target)
         tensor(0.5000)
@@ -134,22 +135,21 @@ class MulticlassCohenKappa(MulticlassConfusionMatrix):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (pred is integer tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.classification import MulticlassCohenKappa
-        >>> target = torch.tensor([2, 1, 0, 0])
-        >>> preds = torch.tensor([2, 1, 0, 1])
+        >>> target = tensor([2, 1, 0, 0])
+        >>> preds = tensor([2, 1, 0, 1])
         >>> metric = MulticlassCohenKappa(num_classes=3)
         >>> metric(preds, target)
         tensor(0.6364)
 
     Example (pred is float tensor):
         >>> from torchmetrics.classification import MulticlassCohenKappa
-        >>> target = torch.tensor([2, 1, 0, 0])
-        >>> preds = torch.tensor([
-        ...   [0.16, 0.26, 0.58],
-        ...   [0.22, 0.61, 0.17],
-        ...   [0.71, 0.09, 0.20],
-        ...   [0.05, 0.82, 0.13],
-        ... ])
+        >>> target = tensor([2, 1, 0, 0])
+        >>> preds = tensor([[0.16, 0.26, 0.58],
+        ...                 [0.22, 0.61, 0.17],
+        ...                 [0.71, 0.09, 0.20],
+        ...                 [0.05, 0.82, 0.13]])
         >>> metric = MulticlassCohenKappa(num_classes=3)
         >>> metric(preds, target)
         tensor(0.6364)
@@ -193,8 +193,9 @@ class CohenKappa:
     each argument influence and examples.
 
     Legacy Example:
-        >>> target = torch.tensor([1, 1, 0, 0])
-        >>> preds = torch.tensor([0, 1, 0, 0])
+        >>> from torch import tensor
+        >>> target = tensor([1, 1, 0, 0])
+        >>> preds = tensor([0, 1, 0, 0])
         >>> cohenkappa = CohenKappa(task="multiclass", num_classes=2)
         >>> cohenkappa(preds, target)
         tensor(0.5000)

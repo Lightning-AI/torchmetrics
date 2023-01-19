@@ -62,8 +62,8 @@ class PerceptualEvaluationSpeechQuality(Metric):
             If ``mode`` is not either ``"wb"`` or ``"nb"``
 
     Example:
-        >>> from torchmetrics.audio.pesq import PerceptualEvaluationSpeechQuality
         >>> import torch
+        >>> from torchmetrics.audio.pesq import PerceptualEvaluationSpeechQuality
         >>> g = torch.manual_seed(1)
         >>> preds = torch.randn(8000)
         >>> target = torch.randn(8000)

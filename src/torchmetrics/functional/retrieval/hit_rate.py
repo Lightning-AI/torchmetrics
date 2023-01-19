@@ -40,6 +40,7 @@ def retrieval_hit_rate(preds: Tensor, target: Tensor, k: Optional[int] = None) -
             If ``k`` parameter is not `None` or an integer larger than 0
 
     Example:
+        >>> from torch import tensor
         >>> preds = tensor([0.2, 0.3, 0.5])
         >>> target = tensor([True, False, True])
         >>> retrieval_hit_rate(preds, target, k=2)

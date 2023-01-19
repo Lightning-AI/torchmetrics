@@ -78,9 +78,10 @@ class BinaryROC(BinaryPrecisionRecallCurve):
         - thresholds: an 1d tensor of size (n_thresholds, ) with decreasing threshold values
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics.classification import BinaryROC
-        >>> preds = torch.tensor([0, 0.5, 0.7, 0.8])
-        >>> target = torch.tensor([0, 1, 1, 0])
+        >>> preds = tensor([0, 0.5, 0.7, 0.8])
+        >>> target = tensor([0, 1, 1, 0])
         >>> metric = BinaryROC(thresholds=None)
         >>> metric(preds, target)  # doctest: +NORMALIZE_WHITESPACE
         (tensor([0.0000, 0.5000, 0.5000, 0.5000, 1.0000]),
@@ -159,12 +160,13 @@ class MulticlassROC(MulticlassPrecisionRecallCurve):
           then a single 1d tensor of size (n_thresholds, ) is returned with shared threshold values for all classes.
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics.classification import MulticlassROC
-        >>> preds = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
-        ...                       [0.05, 0.75, 0.05, 0.05, 0.05],
-        ...                       [0.05, 0.05, 0.75, 0.05, 0.05],
-        ...                       [0.05, 0.05, 0.05, 0.75, 0.05]])
-        >>> target = torch.tensor([0, 1, 3, 2])
+        >>> preds = tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
+        ...                 [0.05, 0.75, 0.05, 0.05, 0.05],
+        ...                 [0.05, 0.05, 0.75, 0.05, 0.05],
+        ...                 [0.05, 0.05, 0.05, 0.75, 0.05]])
+        >>> target = tensor([0, 1, 3, 2])
         >>> metric = MulticlassROC(num_classes=5, thresholds=None)
         >>> fpr, tpr, thresholds = metric(preds, target)
         >>> fpr  # doctest: +NORMALIZE_WHITESPACE
@@ -256,15 +258,16 @@ class MultilabelROC(MultilabelPrecisionRecallCurve):
           then a single 1d tensor of size (n_thresholds, ) is returned with shared threshold values for all labels.
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics.classification import MultilabelROC
-        >>> preds = torch.tensor([[0.75, 0.05, 0.35],
-        ...                       [0.45, 0.75, 0.05],
-        ...                       [0.05, 0.55, 0.75],
-        ...                       [0.05, 0.65, 0.05]])
-        >>> target = torch.tensor([[1, 0, 1],
-        ...                        [0, 0, 0],
-        ...                        [0, 1, 1],
-        ...                        [1, 1, 1]])
+        >>> preds = tensor([[0.75, 0.05, 0.35],
+        ...                 [0.45, 0.75, 0.05],
+        ...                 [0.05, 0.55, 0.75],
+        ...                 [0.05, 0.65, 0.05]])
+        >>> target = tensor([[1, 0, 1],
+        ...                  [0, 0, 0],
+        ...                  [0, 1, 1],
+        ...                  [1, 1, 1]])
         >>> metric = MultilabelROC(num_labels=3, thresholds=None)
         >>> fpr, tpr, thresholds = metric(preds, target)
         >>> fpr  # doctest: +NORMALIZE_WHITESPACE
@@ -312,8 +315,9 @@ class ROC:
     influence and examples.
 
     Legacy Example:
-        >>> pred = torch.tensor([0.0, 1.0, 2.0, 3.0])
-        >>> target = torch.tensor([0, 1, 1, 1])
+        >>> from torch import tensor
+        >>> pred = tensor([0.0, 1.0, 2.0, 3.0])
+        >>> target = tensor([0, 1, 1, 1])
         >>> roc = ROC(task="binary")
         >>> fpr, tpr, thresholds = roc(pred, target)
         >>> fpr
@@ -323,11 +327,11 @@ class ROC:
         >>> thresholds
         tensor([1.0000, 0.9526, 0.8808, 0.7311, 0.5000])
 
-        >>> pred = torch.tensor([[0.75, 0.05, 0.05, 0.05],
-        ...                      [0.05, 0.75, 0.05, 0.05],
-        ...                      [0.05, 0.05, 0.75, 0.05],
-        ...                      [0.05, 0.05, 0.05, 0.75]])
-        >>> target = torch.tensor([0, 1, 3, 2])
+        >>> pred = tensor([[0.75, 0.05, 0.05, 0.05],
+        ...                [0.05, 0.75, 0.05, 0.05],
+        ...                [0.05, 0.05, 0.75, 0.05],
+        ...                [0.05, 0.05, 0.05, 0.75]])
+        >>> target = tensor([0, 1, 3, 2])
         >>> roc = ROC(task="multiclass", num_classes=4)
         >>> fpr, tpr, thresholds = roc(pred, target)
         >>> fpr
@@ -340,11 +344,11 @@ class ROC:
          tensor([1.0000, 0.7500, 0.0500]),
          tensor([1.0000, 0.7500, 0.0500])]
 
-        >>> pred = torch.tensor([[0.8191, 0.3680, 0.1138],
-        ...                      [0.3584, 0.7576, 0.1183],
-        ...                      [0.2286, 0.3468, 0.1338],
-        ...                      [0.8603, 0.0745, 0.1837]])
-        >>> target = torch.tensor([[1, 1, 0], [0, 1, 0], [0, 0, 0], [0, 1, 1]])
+        >>> pred = tensor([[0.8191, 0.3680, 0.1138],
+        ...                [0.3584, 0.7576, 0.1183],
+        ...                [0.2286, 0.3468, 0.1338],
+        ...                [0.8603, 0.0745, 0.1837]])
+        >>> target = tensor([[1, 1, 0], [0, 1, 0], [0, 0, 0], [0, 1, 1]])
         >>> roc = ROC(task='multilabel', num_labels=3)
         >>> fpr, tpr, thresholds = roc(pred, target)
         >>> fpr
