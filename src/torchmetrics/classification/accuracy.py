@@ -136,6 +136,7 @@ class BinaryAccuracy(BinaryStatScores):
         .. plot::
             :scale: 75
 
+            >>> from torch import rand, randint
             >>> # Example plotting multiple values
             >>> from torchmetrics.classification import BinaryAccuracy
             >>> metric = BinaryAccuracy()
