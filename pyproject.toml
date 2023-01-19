@@ -4,6 +4,15 @@ requires = [
     "wheel",
 ]
 
+
+[tool.check-manifest]
+ignore = [
+    "*.yml",
+    ".github",
+    ".github/*"
+]
+
+
 [tool.black]
 # https://github.com/psf/black
 line-length = 120
