@@ -30,10 +30,16 @@ class ExplainedVariance(Metric):
 
     Where :math:`y` is a tensor of target values, and :math:`\hat{y}` is a tensor of predictions.
 
-    Forward accepts
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (float tensor): ``(N,)`` or ``(N, ...)`` (multioutput)
-    - ``target`` (long tensor): ``(N,)`` or ``(N, ...)`` (multioutput)
+    - ``preds`` (:class:`~torch.Tensor`): Predictions from model in float tensor
+      with shape ``(N,)`` or ``(N, ...)`` (multioutput)
+    - ``target`` (:class:`~torch.Tensor`): Ground truth values in long tensor
+      with shape ``(N,)`` or ``(N, ...)`` (multioutput)
+
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``explained_variance`` (:class:`~torch.Tensor`): A tensor with the explained variance(s)
 
     In the case of multioutput, as default the variances will be uniformly averaged over the additional dimensions.
     Please see argument ``multioutput`` for changing this behavior.
@@ -95,12 +101,7 @@ class ExplainedVariance(Metric):
         self.add_state("n_obs", default=tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
+        """Update state with predictions and targets."""
         n_obs, sum_error, sum_squared_error, sum_target, sum_squared_target = _explained_variance_update(preds, target)
         self.n_obs = self.n_obs + n_obs
         self.sum_error = self.sum_error + sum_error
