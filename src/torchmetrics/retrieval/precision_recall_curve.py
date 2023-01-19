@@ -14,7 +14,7 @@
 from typing import Any, Optional, Tuple
 
 import torch
-from torch import Tensor, tensor
+from torch import Tensor
 
 from torchmetrics import Metric
 from torchmetrics.functional.retrieval.precision_recall_curve import retrieval_precision_recall_curve

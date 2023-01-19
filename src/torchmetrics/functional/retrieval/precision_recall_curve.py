@@ -14,7 +14,7 @@
 from typing import Optional, Tuple
 
 import torch
-from torch import Tensor, cumsum, tensor
+from torch import Tensor, cumsum
 from torch.nn.functional import pad
 
 from torchmetrics.utilities.checks import _check_retrieval_functional_inputs

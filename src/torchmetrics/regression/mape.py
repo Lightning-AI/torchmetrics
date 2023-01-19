@@ -13,7 +13,6 @@
 # limitations under the License.
 from typing import Any
 
-import torch
 from torch import Tensor, tensor
 
 from torchmetrics.functional.regression.mape import (

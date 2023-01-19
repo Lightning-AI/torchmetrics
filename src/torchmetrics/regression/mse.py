@@ -13,7 +13,6 @@
 # limitations under the License.
 from typing import Any, Optional, Sequence, Union
 
-import torch
 from torch import Tensor, tensor
 
 from torchmetrics.functional.regression.mse import _mean_squared_error_compute, _mean_squared_error_update

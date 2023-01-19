@@ -13,7 +13,6 @@
 # limitations under the License.
 from typing import Any, List
 
-import torch
 from torch import Tensor
 
 from torchmetrics.functional.regression.spearman import _spearman_corrcoef_compute, _spearman_corrcoef_update

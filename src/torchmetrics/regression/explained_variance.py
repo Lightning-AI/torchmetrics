@@ -13,7 +13,6 @@
 # limitations under the License.
 from typing import Any, Sequence, Union
 
-import torch
 from torch import Tensor, tensor
 
 from torchmetrics.functional.regression.explained_variance import (

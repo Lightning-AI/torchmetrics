@@ -13,7 +13,7 @@
 # limitations under the License.
 from typing import Any, Optional
 
-from torch import Tensor, tensor
+from torch import Tensor
 
 from torchmetrics.functional.retrieval.precision import retrieval_precision
 from torchmetrics.retrieval.base import RetrievalMetric
