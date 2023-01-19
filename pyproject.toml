@@ -25,7 +25,13 @@ norecursedirs = [
     "build",
     "docs",
 ]
-addopts = "--strict-markers --doctest-modules --color=yes --disable-pytest-warnings"
+addopts = [
+    "--strict-markers",
+    "--doctest-modules",
+    "--doctest-plus",
+    "--color=yes",
+    "--disable-pytest-warnings",
+]
 filterwarnings = [
     "error::FutureWarning",
 ]
