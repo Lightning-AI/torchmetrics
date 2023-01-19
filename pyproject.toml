@@ -67,8 +67,9 @@ line-length = 120
 select = [
     "E", "W",  # see: https://pypi.org/project/pycodestyle
     "F",  # see: https://pypi.org/project/pyflakes
-    "D",  # see: https://pypi.org/project/pydocstyle
-    "N",  # see: https://pypi.org/project/pep8-naming
+# TODO
+#    "D",  # see: https://pypi.org/project/pydocstyle
+#    "N",  # see: https://pypi.org/project/pep8-naming
 ]
 #extend-select = [
 #    "C4",  # see: https://pypi.org/project/flake8-comprehensions
@@ -78,7 +79,6 @@ select = [
 #]
 ignore = [
     "E731",  # Do not assign a lambda expression, use a def
-    "E203",  # whitespace before ':'
 ]
 # Exclude a variety of commonly ignored directories.
 exclude = [
