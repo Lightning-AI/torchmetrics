@@ -21,7 +21,7 @@ def _input_validator(preds: Sequence[Dict[str, Tensor]], targets: Sequence[Dict[
     if not isinstance(preds, Sequence):
         raise ValueError(f"Expected argument `preds` to be of type Sequence, but got {preds}")
     if not isinstance(targets, Sequence):
-        raise ValueError(f"Expected argument `target` to be of type Sequence, but got {target}")
+        raise ValueError(f"Expected argument `target` to be of type Sequence, but got {targets}")
     if len(preds) != len(targets):
         raise ValueError(
             f"Expected argument `preds` and `target` to have the same length, but got {len(preds)} and {len(targets)}"
