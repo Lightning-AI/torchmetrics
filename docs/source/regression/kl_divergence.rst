@@ -12,6 +12,7 @@ ________________
 
 .. autoclass:: torchmetrics.KLDivergence
     :noindex:
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________
