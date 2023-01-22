@@ -103,6 +103,8 @@ class MetricTracker(ModuleList):
             raise ValueError("Argument `maximize` should either be a single bool or list of bool")
         if isinstance(maximize, list) and isinstance(metric, MetricCollection) and len(maximize) != len(metric):
             raise ValueError("The len of argument `maximize` should match the length of the metric collection")
+        if isinstance(metric, Metric) and not isinstance(maximize, bool):
+            raise ValueError("Argument `maximize` should be a single bool when `metric` is a single Metric")
         self.maximize = maximize
 
         self._increment_called = False
