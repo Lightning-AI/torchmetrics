@@ -54,13 +54,11 @@ def _specificity_at_sensitivity(
         indices = sensitivity >= min_sensitivity
 
         # redefine specificity, sensitivity and threshold tensor based on indices
-        specificity, sensitivity, thresholds = (
-            specificity[indices], sensitivity[indices], thresholds[indices]
-        )
+        specificity, sensitivity, thresholds = (specificity[indices], sensitivity[indices], thresholds[indices])
 
         # get argmax
         idx = torch.argmax(specificity)
-        
+
         # get max_spec and best_threshold
         max_spec, best_threshold = specificity[idx], thresholds[idx]
 
