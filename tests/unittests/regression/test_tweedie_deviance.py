@@ -21,6 +21,7 @@ from torch import Tensor
 
 from torchmetrics.functional.regression.tweedie_deviance import tweedie_deviance_score
 from torchmetrics.regression.tweedie_deviance import TweedieDevianceScore
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_9
 from unittests.helpers import seed_all
 from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 
@@ -89,8 +90,8 @@ class TestDevianceScore(MetricTester):
 
     # Tweedie Deviance Score half + cpu does not work for power=[1,2] due to missing support in torch.log
     def test_deviance_scores_half_cpu(self, preds, targets, power):
-        if power in [1, 2]:
-            pytest.xfail(reason="TweedieDevianceScore metric does not support cpu + half precision for power=[1,2]")
+        if not _TORCH_GREATER_EQUAL_1_9:
+            pytest.xfail(reason="TweedieDevianceScore metric does not support cpu + half precision for older Pytorch")
         metric_args = {"power": power}
         self.run_precision_test_cpu(
             preds,
