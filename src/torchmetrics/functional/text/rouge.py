@@ -41,7 +41,7 @@ ALLOWED_ROUGE_KEYS: Dict[str, Union[int, str]] = {
 ALLOWED_ACCUMULATE_VALUES = ("avg", "best")
 
 
-def _is_internet_connection():
+def _is_internet_connection() -> bool:
     try:
         urllib.request.urlopen("https://torchmetrics.readthedocs.io/")
         return True
@@ -49,7 +49,7 @@ def _is_internet_connection():
         return False
 
 
-def _ensure_nltk_punkt_is_downloaded():
+def _ensure_nltk_punkt_is_downloaded() -> None:
     """Check whether `nltk` `punkt` is downloaded.
 
     If not, try to download if a machine is connected to the internet.
