@@ -55,7 +55,7 @@ class PerceptualEvaluationSpeechQuality(Metric):
 
     Raises:
         ModuleNotFoundError:
-            If ``peqs`` package is not installed
+            If ``pesq`` package is not installed
         ValueError:
             If ``fs`` is not either  ``8000`` or ``16000``
         ValueError:
