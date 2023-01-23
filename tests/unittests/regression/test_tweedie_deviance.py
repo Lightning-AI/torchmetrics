@@ -82,14 +82,15 @@ class TestDevianceScore(MetricTester):
             metric_args=dict(power=power),
         )
 
-    def test_pearson_corrcoef_differentiability(self, preds, targets, power):
+    def test_deviance_scores_differentiability(self, preds, targets, power):
         self.run_differentiability_test(
             preds, targets, metric_module=TweedieDevianceScore, metric_functional=tweedie_deviance_score
         )
 
-    # Tweedie Deviance Score half + cpu does not work due to missing support in torch.log
-    @pytest.mark.xfail(reason="TweedieDevianceScore metric does not support cpu + half precision")
-    def test_pearson_corrcoef_half_cpu(self, preds, targets, power):
+    # Tweedie Deviance Score half + cpu does not work for power=[1,2] due to missing support in torch.log
+    def test_deviance_scores_half_cpu(self, preds, targets, power):
+        if power in [1, 2]:
+            pytest.xfail(reason="TweedieDevianceScore metric does not support cpu + half precision for power=[1,2]")
         metric_args = {"power": power}
         self.run_precision_test_cpu(
             preds,
@@ -100,7 +101,7 @@ class TestDevianceScore(MetricTester):
         )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-    def test_pearson_corrcoef_half_gpu(self, preds, targets, power):
+    def test_deviance_scores_half_gpu(self, preds, targets, power):
         metric_args = {"power": power}
         self.run_precision_test_gpu(
             preds,
