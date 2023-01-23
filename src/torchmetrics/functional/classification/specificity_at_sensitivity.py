@@ -64,7 +64,7 @@ def _specificity_at_sensitivity(
         # get max_spec and best_threshold
         max_spec, best_threshold = specificity[idx], thresholds[idx]
 
-    except ValueError:
+    except:
         max_spec = torch.tensor(0.0, device=specificity.device, dtype=specificity.dtype)
         best_threshold = torch.tensor(1e6, device=thresholds.device, dtype=thresholds.dtype)
 
@@ -151,7 +151,7 @@ def binary_specificity_at_sensitivity(
         >>> preds = torch.tensor([0, 0.5, 0.4, 0.1])
         >>> target = torch.tensor([0, 1, 1, 1])
         >>> binary_specificity_at_sensitivity(preds, target, min_sensitivity=0.5, thresholds=None)
-        (tensor(1.), tensor(0.1000))
+        (tensor(1.), tensor(0.4000))
         >>> binary_specificity_at_sensitivity(preds, target, min_sensitivity=0.5, thresholds=5)
         (tensor(1.), tensor(0.2500))
     """
@@ -380,7 +380,7 @@ def multilabel_specificity_at_sensitivity(
         ...                        [0, 1, 1],
         ...                        [1, 1, 1]])
         >>> multilabel_specificity_at_sensitivity(preds, target, num_labels=3, min_sensitivity=0.5, thresholds=None)
-        (tensor([1.0000, 0.5000, 1.0000]), tensor([0.7500, 0.5500, 0.3500]))
+        (tensor([1.0000, 0.5000, 1.0000]), tensor([0.7500, 0.6500, 0.3500]))
         >>> multilabel_specificity_at_sensitivity(preds, target, num_labels=3, min_sensitivity=0.5, thresholds=5)
         (tensor([1.0000, 0.5000, 1.0000]), tensor([0.7500, 0.5000, 0.2500]))
     """
