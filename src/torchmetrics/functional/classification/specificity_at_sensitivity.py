@@ -50,9 +50,19 @@ def _specificity_at_sensitivity(
     min_sensitivity: float,
 ) -> Tuple[Tensor, Tensor]:
     try:
-        max_spec, _, best_threshold = max(
-            [(sp, sn, thresh) for sp, sn, thresh in zip(specificity, sensitivity, thresholds) if sn >= min_sensitivity]
+        # get indices where sensitivity is greater than min_sensitivity
+        indices = sensitivity >= min_sensitivity
+
+        # redefine specificity, sensitivity and threshold tensor based on indices
+        specificity, sensitivity, thresholds = (
+            specificity[indices], sensitivity[indices], thresholds[indices]
         )
+
+        # get argmax
+        idx = torch.argmax(specificity)
+        
+        # get max_spec and best_threshold
+        max_spec, best_threshold = specificity[idx], thresholds[idx]
 
     except ValueError:
         max_spec = torch.tensor(0.0, device=specificity.device, dtype=specificity.dtype)
