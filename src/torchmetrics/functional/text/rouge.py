@@ -50,11 +50,14 @@ def _is_internet_connection():
 
 
 def _ensure_nltk_punkt_is_downloaded():
-    """Check whether `nltk` `punkt` is downloaded. If not, try to download if a machine is connected to the internet."""
+    """Check whether `nltk` `punkt` is downloaded.
+
+    If not, try to download if a machine is connected to the internet.
+    """
     import nltk
 
     try:
-        nltk.data.find('tokenizers/punkt.zip')
+        nltk.data.find("tokenizers/punkt.zip")
     except LookupError:
         if _is_internet_connection():
             nltk.download("punkt", quiet=True, force=False)
