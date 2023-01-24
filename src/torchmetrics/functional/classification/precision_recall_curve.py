@@ -342,7 +342,7 @@ def _multiclass_precision_recall_curve_tensor_validation(
         )
     if target.is_floating_point():
         raise ValueError(
-            "Expected argument `target` to be an int or long tensor, but got tensor with dtype {target.dtype}"
+            f"Expected argument `target` to be an int or long tensor, but got tensor with dtype {target.dtype}"
         )
     if not preds.is_floating_point():
         raise ValueError(f"Expected `preds` to be a float tensor, but got {preds.dtype}")
