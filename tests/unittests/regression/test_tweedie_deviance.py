@@ -90,7 +90,7 @@ class TestDevianceScore(MetricTester):
 
     # Tweedie Deviance Score half + cpu does not work for power=[1,2] due to missing support in torch.log
     def test_deviance_scores_half_cpu(self, preds, targets, power):
-        if not _TORCH_GREATER_EQUAL_1_9:
+        if not _TORCH_GREATER_EQUAL_1_9 or power in [1, 2]:
             pytest.xfail(reason="TweedieDevianceScore metric does not support cpu + half precision for older Pytorch")
         metric_args = {"power": power}
         self.run_precision_test_cpu(
