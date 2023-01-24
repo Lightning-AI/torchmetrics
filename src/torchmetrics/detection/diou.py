@@ -27,8 +27,8 @@ else:
 
 
 class DistanceIntersectionOverUnion(IntersectionOverUnion):
-    r"""
-    Computes Distance Intersection Over Union (DIoU) <https://arxiv.org/abs/1911.08287v1>`_
+    r""" Computes Distance Intersection Over Union (DIoU) <https://arxiv.org/abs/1911.08287v1>`_
+
     Args:
         box_format:
             Input format of given boxes. Supported formats are ``[`xyxy`, `xywh`, `cxcywh`]``.
