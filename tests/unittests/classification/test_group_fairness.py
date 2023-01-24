@@ -16,7 +16,7 @@ from functools import partial
 import numpy as np
 import pytest
 import torch
-from fairlearn.metrics import demographic_parity_ratio, true_positive_rate_ratio
+from fairlearn.metrics import MetricFrame, selection_rate, true_positive_rate
 from scipy.special import expit as sigmoid
 
 from torchmetrics.classification.group_fairness import BinaryFairness
@@ -29,6 +29,9 @@ seed_all(42)
 
 
 def _fairlearn_binary(preds, target, groups, ignore_index):
+
+    metrics = {"dp": selection_rate, "eo": true_positive_rate}
+
     preds = preds.numpy()
     target = target.numpy()
     groups = groups.numpy()
@@ -40,11 +43,15 @@ def _fairlearn_binary(preds, target, groups, ignore_index):
 
     target, preds, groups = remove_ignore_index_groups(target, preds, groups, ignore_index)
 
-    dp = demographic_parity_ratio(target, preds, sensitive_features=groups)
-    eo = true_positive_rate_ratio(target, preds, sensitive_features=groups)
+    mf = MetricFrame(metrics=metrics, y_true=target, y_pred=preds, sensitive_features=groups)
 
-    # TODO: need to add groups here
-    return {"DP": dp, "EO": eo}
+    mf_group = mf.by_group
+    ratios = mf.ratio()
+
+    return {
+        f"DP_{mf_group['dp'].idxmin()}_{mf_group['dp'].idxmax()}": ratios["dp"],
+        f"EO_{mf_group['eo'].idxmin()}_{mf_group['eo'].idxmax()}": ratios["eo"],
+    }
 
 
 @pytest.mark.parametrize("input", _group_cases)
