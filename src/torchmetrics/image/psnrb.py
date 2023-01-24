@@ -29,6 +29,16 @@ class PeakSignalNoiseRatioWithBlockedEffect(Metric):
 
     Where :math:`\text{MSE}` denotes the `mean-squared-error`_ function.
 
+    As input to ``forward`` and ``update`` the metric accepts the following input
+
+    - ``preds`` (:class:`~torch.Tensor`): Predictions from model of shape ``(N,C,H,W)``
+    - ``target`` (:class:`~torch.Tensor`): Ground truth values of shape ``(N,C,H,W)``
+
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``psnrb`` (:class:`~torch.Tensor`): if ``reduction!='none'`` returns float scalar tensor with average PSNR value
+      over sample else returns tensor of shape ``(N,)`` with PSNR values per sample
+
     Args:
         data_range:
             the range of the data. If None, it is determined from the data (max - min).

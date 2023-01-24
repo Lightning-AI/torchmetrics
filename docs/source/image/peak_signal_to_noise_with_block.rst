@@ -1,5 +1,5 @@
 .. customcarditem::
-   :header: Peak Signal To Noise Ratio With Blocked Effectc
+   :header: Peak Signal To Noise Ratio With Blocked Effect
    :image: https://pl-flash-data.s3.amazonaws.com/assets/thumbnails/image_classification.svg
    :tags: Image
 
@@ -14,6 +14,7 @@ ________________
 
 .. autoclass:: torchmetrics.PeakSignalToNoiseRatioWithBlockedEffect
     :noindex:
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________
