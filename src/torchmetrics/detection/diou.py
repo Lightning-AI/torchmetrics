@@ -47,7 +47,7 @@ class DistanceIntersectionOverUnion(IntersectionOverUnion):
 
     def __init__(
         self,
-        box_format: str = "xyxy",
+        box_format: Literal['xyxy', 'xywh', 'cxcywh'] = "xyxy",
         iou_threshold: Optional[float] = None,
         class_metrics: bool = False,
         **kwargs: Any,
