@@ -44,9 +44,9 @@ ALLOWED_ACCUMULATE_VALUES = ("avg", "best")
 def _is_internet_connection() -> bool:
     try:
         urllib.request.urlopen("https://torchmetrics.readthedocs.io/")
-        return True
     except HTTPError:
         return False
+    return True
 
 
 def _ensure_nltk_punkt_is_downloaded() -> None:
