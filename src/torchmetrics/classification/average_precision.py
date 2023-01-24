@@ -13,7 +13,6 @@
 # limitations under the License.
 from typing import Any, List, Optional, Union
 
-import torch
 from torch import Tensor
 from typing_extensions import Literal
 
@@ -80,9 +79,10 @@ class BinaryAveragePrecision(BinaryPrecisionRecallCurve):
         A single scalar with the average precision score
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics.classification import BinaryAveragePrecision
-        >>> preds = torch.tensor([0, 0.5, 0.7, 0.8])
-        >>> target = torch.tensor([0, 1, 1, 0])
+        >>> preds = tensor([0, 0.5, 0.7, 0.8])
+        >>> target = tensor([0, 1, 1, 0])
         >>> metric = BinaryAveragePrecision(thresholds=None)
         >>> metric(preds, target)
         tensor(0.5833)
@@ -157,12 +157,13 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
         If `average="macro"|"weighted"` then a single scalar is returned.
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics.classification import MulticlassAveragePrecision
-        >>> preds = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
-        ...                       [0.05, 0.75, 0.05, 0.05, 0.05],
-        ...                       [0.05, 0.05, 0.75, 0.05, 0.05],
-        ...                       [0.05, 0.05, 0.05, 0.75, 0.05]])
-        >>> target = torch.tensor([0, 1, 3, 2])
+        >>> preds = tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
+        ...                 [0.05, 0.75, 0.05, 0.05, 0.05],
+        ...                 [0.05, 0.05, 0.75, 0.05, 0.05],
+        ...                 [0.05, 0.05, 0.05, 0.75, 0.05]])
+        >>> target = tensor([0, 1, 3, 2])
         >>> metric = MulticlassAveragePrecision(num_classes=5, average="macro", thresholds=None)
         >>> metric(preds, target)
         tensor(0.6250)
@@ -262,15 +263,16 @@ class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
         If `average="micro|macro"|"weighted"` then a single scalar is returned.
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics.classification import MultilabelAveragePrecision
-        >>> preds = torch.tensor([[0.75, 0.05, 0.35],
-        ...                       [0.45, 0.75, 0.05],
-        ...                       [0.05, 0.55, 0.75],
-        ...                       [0.05, 0.65, 0.05]])
-        >>> target = torch.tensor([[1, 0, 1],
-        ...                        [0, 0, 0],
-        ...                        [0, 1, 1],
-        ...                        [1, 1, 1]])
+        >>> preds = tensor([[0.75, 0.05, 0.35],
+        ...                 [0.45, 0.75, 0.05],
+        ...                 [0.05, 0.55, 0.75],
+        ...                 [0.05, 0.65, 0.05]])
+        >>> target = tensor([[1, 0, 1],
+        ...                  [0, 0, 0],
+        ...                  [0, 1, 1],
+        ...                  [1, 1, 1]])
         >>> metric = MultilabelAveragePrecision(num_labels=3, average="macro", thresholds=None)
         >>> metric(preds, target)
         tensor(0.7500)
@@ -331,17 +333,18 @@ class AveragePrecision:
     for the specific details of each argument influence and examples.
 
     Legacy Example:
-        >>> pred = torch.tensor([0, 0.1, 0.8, 0.4])
-        >>> target = torch.tensor([0, 1, 1, 1])
+        >>> from torch import tensor
+        >>> pred = tensor([0, 0.1, 0.8, 0.4])
+        >>> target = tensor([0, 1, 1, 1])
         >>> average_precision = AveragePrecision(task="binary")
         >>> average_precision(pred, target)
         tensor(1.)
 
-        >>> pred = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
-        ...                      [0.05, 0.75, 0.05, 0.05, 0.05],
-        ...                      [0.05, 0.05, 0.75, 0.05, 0.05],
-        ...                      [0.05, 0.05, 0.05, 0.75, 0.05]])
-        >>> target = torch.tensor([0, 1, 3, 2])
+        >>> pred = tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
+        ...                [0.05, 0.75, 0.05, 0.05, 0.05],
+        ...                [0.05, 0.05, 0.75, 0.05, 0.05],
+        ...                [0.05, 0.05, 0.05, 0.75, 0.05]])
+        >>> target = tensor([0, 1, 3, 2])
         >>> average_precision = AveragePrecision(task="multiclass", num_classes=5, average=None)
         >>> average_precision(pred, target)
         tensor([1.0000, 1.0000, 0.2500, 0.2500,    nan])

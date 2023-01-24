@@ -14,7 +14,7 @@
 from typing import Any, Optional, Tuple
 
 import torch
-from torch import Tensor, tensor
+from torch import Tensor
 
 from torchmetrics import Metric
 from torchmetrics.functional.retrieval.precision_recall_curve import retrieval_precision_recall_curve
@@ -101,6 +101,7 @@ class RetrievalPrecisionRecallCurve(Metric):
             If ``max_k`` parameter is not `None` or an integer larger than 0.
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics import RetrievalPrecisionRecallCurve
         >>> indexes = tensor([0, 0, 0, 0, 1, 1, 1])
         >>> preds = tensor([0.4, 0.01, 0.5, 0.6, 0.2, 0.3, 0.5])
@@ -256,6 +257,7 @@ class RetrievalRecallAtFixedPrecision(RetrievalPrecisionRecallCurve):
             If ``max_k`` parameter is not `None` or an integer larger than 0.
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics import RetrievalRecallAtFixedPrecision
         >>> indexes = tensor([0, 0, 0, 0, 1, 1, 1])
         >>> preds = tensor([0.4, 0.01, 0.5, 0.6, 0.2, 0.3, 0.5])

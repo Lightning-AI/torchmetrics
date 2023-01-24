@@ -13,7 +13,6 @@
 # limitations under the License.
 from typing import Any, Sequence, Union
 
-import torch
 from torch import Tensor, tensor
 
 from torchmetrics.functional.regression.explained_variance import (
@@ -60,15 +59,16 @@ class ExplainedVariance(Metric):
             If ``multioutput`` is not one of ``"raw_values"``, ``"uniform_average"`` or ``"variance_weighted"``.
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics import ExplainedVariance
-        >>> target = torch.tensor([3, -0.5, 2, 7])
-        >>> preds = torch.tensor([2.5, 0.0, 2, 8])
+        >>> target = tensor([3, -0.5, 2, 7])
+        >>> preds = tensor([2.5, 0.0, 2, 8])
         >>> explained_variance = ExplainedVariance()
         >>> explained_variance(preds, target)
         tensor(0.9572)
 
-        >>> target = torch.tensor([[0.5, 1], [-1, 1], [7, -6]])
-        >>> preds = torch.tensor([[0, 2], [-1, 2], [8, -5]])
+        >>> target = tensor([[0.5, 1], [-1, 1], [7, -6]])
+        >>> preds = tensor([[0, 2], [-1, 2], [8, -5]])
         >>> explained_variance = ExplainedVariance(multioutput='raw_values')
         >>> explained_variance(preds, target)
         tensor([0.9677, 1.0000])
