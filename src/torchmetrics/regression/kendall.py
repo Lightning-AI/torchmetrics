@@ -74,37 +74,34 @@ class KendallRankCorrCoef(Metric):
         ValueError: If ``t_test=True`` and ``alternative=None``
 
     Example (single output regression):
-        >>> import torch
+        >>> from torch import tensor
         >>> from torchmetrics.regression import KendallRankCorrCoef
-        >>> preds = torch.tensor([2.5, 0.0, 2, 8])
-        >>> target = torch.tensor([3, -0.5, 2, 1])
+        >>> preds = tensor([2.5, 0.0, 2, 8])
+        >>> target = tensor([3, -0.5, 2, 1])
         >>> kendall = KendallRankCorrCoef()
         >>> kendall(preds, target)
         tensor(0.3333)
 
     Example (multi output regression):
-        >>> import torch
         >>> from torchmetrics.regression import KendallRankCorrCoef
-        >>> preds = torch.tensor([[2.5, 0.0], [2, 8]])
-        >>> target = torch.tensor([[3, -0.5], [2, 1]])
+        >>> preds = tensor([[2.5, 0.0], [2, 8]])
+        >>> target = tensor([[3, -0.5], [2, 1]])
         >>> kendall = KendallRankCorrCoef(num_outputs=2)
         >>> kendall(preds, target)
         tensor([1., 1.])
 
     Example (single output regression with t-test):
-        >>> import torch
         >>> from torchmetrics.regression import KendallRankCorrCoef
-        >>> preds = torch.tensor([2.5, 0.0, 2, 8])
-        >>> target = torch.tensor([3, -0.5, 2, 1])
+        >>> preds = tensor([2.5, 0.0, 2, 8])
+        >>> target = tensor([3, -0.5, 2, 1])
         >>> kendall = KendallRankCorrCoef(t_test=True, alternative='two-sided')
         >>> kendall(preds, target)
         (tensor(0.3333), tensor(0.4969))
 
     Example (multi output regression with t-test):
-        >>> import torch
         >>> from torchmetrics.regression import KendallRankCorrCoef
-        >>> preds = torch.tensor([[2.5, 0.0], [2, 8]])
-        >>> target = torch.tensor([[3, -0.5], [2, 1]])
+        >>> preds = tensor([[2.5, 0.0], [2, 8]])
+        >>> target = tensor([[3, -0.5], [2, 1]])
         >>> kendall = KendallRankCorrCoef(t_test=True, alternative='two-sided', num_outputs=2)
         >>> kendall(preds, target)
         (tensor([1., 1.]), tensor([nan, nan]))
