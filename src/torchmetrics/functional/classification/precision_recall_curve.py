@@ -632,7 +632,7 @@ def _multilabel_precision_recall_curve_update(
     len_t = len(thresholds)
     # num_samples x num_labels x num_thresholds
     preds_t = (preds.unsqueeze(-1) >= thresholds.unsqueeze(0).unsqueeze(0)).long()
-    unique_mapping = preds_t + 2 * target.unsqueeze(-1)  # target.long().unsqueeze(-1)
+    unique_mapping = preds_t + 2 * target.unsqueeze(-1)
     unique_mapping += 4 * torch.arange(num_labels, device=preds.device).unsqueeze(0).unsqueeze(-1)
     unique_mapping += 4 * num_labels * torch.arange(len_t, device=preds.device)
     unique_mapping = unique_mapping[unique_mapping >= 0]
