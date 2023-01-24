@@ -13,7 +13,7 @@
 # limitations under the License.
 from typing import Any, Optional
 
-from torch import Tensor, tensor
+from torch import Tensor
 
 from torchmetrics.functional.retrieval.precision import retrieval_precision
 from torchmetrics.retrieval.base import RetrievalMetric
@@ -61,6 +61,7 @@ class RetrievalPrecision(RetrievalMetric):
             If ``adaptive_k`` is not boolean.
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics import RetrievalPrecision
         >>> indexes = tensor([0, 0, 0, 1, 1, 1, 1])
         >>> preds = tensor([0.2, 0.3, 0.5, 0.1, 0.3, 0.5, 0.2])
