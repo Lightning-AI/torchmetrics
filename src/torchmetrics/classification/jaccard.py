@@ -13,7 +13,6 @@
 # limitations under the License.
 from typing import Any, Optional
 
-import torch
 from torch import Tensor
 from typing_extensions import Literal
 
@@ -52,17 +51,18 @@ class BinaryJaccardIndex(BinaryConfusionMatrix):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.classification import BinaryJaccardIndex
-        >>> target = torch.tensor([1, 1, 0, 0])
-        >>> preds = torch.tensor([0, 1, 0, 0])
+        >>> target = tensor([1, 1, 0, 0])
+        >>> preds = tensor([0, 1, 0, 0])
         >>> metric = BinaryJaccardIndex()
         >>> metric(preds, target)
         tensor(0.5000)
 
     Example (preds is float tensor):
         >>> from torchmetrics.classification import BinaryJaccardIndex
-        >>> target = torch.tensor([1, 1, 0, 0])
-        >>> preds = torch.tensor([0.35, 0.85, 0.48, 0.01])
+        >>> target = tensor([1, 1, 0, 0])
+        >>> preds = tensor([0.35, 0.85, 0.48, 0.01])
         >>> metric = BinaryJaccardIndex()
         >>> metric(preds, target)
         tensor(0.5000)
@@ -120,22 +120,21 @@ class MulticlassJaccardIndex(MulticlassConfusionMatrix):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (pred is integer tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.classification import MulticlassJaccardIndex
-        >>> target = torch.tensor([2, 1, 0, 0])
-        >>> preds = torch.tensor([2, 1, 0, 1])
+        >>> target = tensor([2, 1, 0, 0])
+        >>> preds = tensor([2, 1, 0, 1])
         >>> metric = MulticlassJaccardIndex(num_classes=3)
         >>> metric(preds, target)
         tensor(0.6667)
 
     Example (pred is float tensor):
         >>> from torchmetrics.classification import MulticlassJaccardIndex
-        >>> target = torch.tensor([2, 1, 0, 0])
-        >>> preds = torch.tensor([
-        ...   [0.16, 0.26, 0.58],
-        ...   [0.22, 0.61, 0.17],
-        ...   [0.71, 0.09, 0.20],
-        ...   [0.05, 0.82, 0.13],
-        ... ])
+        >>> target = tensor([2, 1, 0, 0])
+        >>> preds = tensor([[0.16, 0.26, 0.58],
+        ...                 [0.22, 0.61, 0.17],
+        ...                 [0.71, 0.09, 0.20],
+        ...                 [0.05, 0.82, 0.13]])
         >>> metric = MulticlassJaccardIndex(num_classes=3)
         >>> metric(preds, target)
         tensor(0.6667)
@@ -200,17 +199,18 @@ class MultilabelJaccardIndex(MultilabelConfusionMatrix):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.classification import MultilabelJaccardIndex
-        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
-        >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
+        >>> target = tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = tensor([[0, 0, 1], [1, 0, 1]])
         >>> metric = MultilabelJaccardIndex(num_labels=3)
         >>> metric(preds, target)
         tensor(0.5000)
 
     Example (preds is float tensor):
         >>> from torchmetrics.classification import MultilabelJaccardIndex
-        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
-        >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
+        >>> target = tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> metric = MultilabelJaccardIndex(num_labels=3)
         >>> metric(preds, target)
         tensor(0.5000)
@@ -260,8 +260,9 @@ class JaccardIndex:
     the specific details of each argument influence and examples.
 
     Legacy Example:
-        >>> target = torch.randint(0, 2, (10, 25, 25))
-        >>> pred = torch.tensor(target)
+        >>> from torch import randint, tensor
+        >>> target = randint(0, 2, (10, 25, 25))
+        >>> pred = tensor(target)
         >>> pred[2:5, 7:13, 9:15] = 1 - pred[2:5, 7:13, 9:15]
         >>> jaccard = JaccardIndex(task="multiclass", num_classes=2)
         >>> jaccard(pred, target)
