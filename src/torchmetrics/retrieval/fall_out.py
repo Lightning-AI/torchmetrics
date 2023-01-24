@@ -33,15 +33,13 @@ class RetrievalFallOut(RetrievalMetric):
     - ``indexes`` (:class:`~torch.Tensor`): A long tensor of shape ``(N, ...)`` which indicate to which query a
       prediction belongs
 
-    .. note:: All ``indexes``, ``preds`` and ``target`` must have the same dimension.
-
-    .. note::
-        Predictions will be first grouped by ``indexes`` and then `Fall-out` will be computed as the mean
-        of the `Fall-out` over each query.
-
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
     - ``fo`` (:class:`~torch.Tensor`): A tensor with the computed metric
+
+    All ``indexes``, ``preds`` and ``target`` must have the same dimension and will be flatten at the beginning,
+    so that for example, a tensor of shape ``(N, M)`` is treated as ``(N * M, )``. Predictions will be first grouped by
+    ``indexes`` and then will be computed as the mean of the metric over each query.
 
     Args:
         empty_target_action:

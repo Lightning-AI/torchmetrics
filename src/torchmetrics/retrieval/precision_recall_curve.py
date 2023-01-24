@@ -55,14 +55,10 @@ def _retrieval_recall_at_fixed_precision(
 class RetrievalPrecisionRecallCurve(Metric):
     """Computes precision-recall pairs for different k (from 1 to `max_k`).
 
-    In a ranked retrieval context, appropriate sets of retrieved documents are naturally given by
-    the top k retrieved documents.
-
-    Recall is the fraction of relevant documents retrieved among all the relevant documents.
-    Precision is the fraction of relevant documents among all the retrieved documents.
-
-    For each such set, precision and recall values can be plotted to give a recall-precision
-    curve.
+    In a ranked retrieval context, appropriate sets of retrieved documents are naturally given by the top k retrieved
+    documents. Recall is the fraction of relevant documents retrieved among all the relevant documents. Precision is the
+    fraction of relevant documents among all the retrieved documents. For each such set, precision and recall values
+    can be plotted to give a recall-precision curve.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -71,12 +67,6 @@ class RetrievalPrecisionRecallCurve(Metric):
     - ``indexes`` (:class:`~torch.Tensor`): A long tensor of shape ``(N, ...)`` which indicate to which query a
       prediction belongs
 
-    .. note:: All ``indexes``, ``preds`` and ``target`` must have the same dimension.
-
-    .. note::
-        Predictions will be first grouped by ``indexes`` and then `RetrievalRecallAtFixedPrecision`
-        will be computed as the mean of the `RetrievalRecallAtFixedPrecision` over each query.
-
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
     - ``precisions`` (:class:`~torch.Tensor`): A tensor with the fraction of relevant documents among all the
@@ -84,6 +74,10 @@ class RetrievalPrecisionRecallCurve(Metric):
     - ``recalls`` (:class:`~torch.Tensor`): A tensor with the fraction of relevant documents retrieved among all the
       relevant documents
     - ``top_k`` (:class:`~torch.Tensor`): A tensor with k from 1 to `max_k`
+
+    All ``indexes``, ``preds`` and ``target`` must have the same dimension and will be flatten at the beginning,
+    so that for example, a tensor of shape ``(N, M)`` is treated as ``(N * M, )``. Predictions will be first grouped by
+    ``indexes`` and then will be computed as the mean of the metric over each query.
 
     Args:
         max_k: Calculate recall and precision for all possible top k from 1 to max_k
