@@ -29,7 +29,6 @@ seed_all(42)
 
 
 def _fairlearn_binary(preds, target, groups, ignore_index):
-
     metrics = {"dp": selection_rate, "eo": true_positive_rate}
 
     preds = preds.numpy()
