@@ -1,1 +1,2 @@
 netcal  # calibration_error
+fairlearn # group_fairness
