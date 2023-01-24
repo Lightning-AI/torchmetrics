@@ -103,11 +103,6 @@ class SQuAD(Metric):
 
     def update(self, preds: PREDS_TYPE, target: TARGETS_TYPE) -> None:
         """Update state with predictions and targets."""
-
-        Raises:
-            KeyError:
-                If the required keys are missing in either predictions or targets.
-        """
         preds_dict, target_dict = _squad_input_check(preds, target)
         f1_score, exact_match, total = _squad_update(preds_dict, target_dict)
         self.f1_score += f1_score
