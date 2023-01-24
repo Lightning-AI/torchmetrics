@@ -27,7 +27,7 @@ else:
 
 
 class DistanceIntersectionOverUnion(IntersectionOverUnion):
-    r""" Computes Distance Intersection Over Union (DIoU) <https://arxiv.org/abs/1911.08287v1>`_
+    r"""Computes Distance Intersection Over Union (DIoU) <https://arxiv.org/abs/1911.08287v1>`_
 
     Args:
         box_format:
@@ -47,7 +47,7 @@ class DistanceIntersectionOverUnion(IntersectionOverUnion):
 
     def __init__(
         self,
-        box_format: Literal['xyxy', 'xywh', 'cxcywh'] = "xyxy",
+        box_format: Literal["xyxy", "xywh", "cxcywh"] = "xyxy",
         iou_threshold: Optional[float] = None,
         class_metrics: bool = False,
         **kwargs: Any,
