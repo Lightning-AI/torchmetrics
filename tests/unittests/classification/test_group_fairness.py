@@ -43,8 +43,8 @@ def _fairlearn_binary(preds, target, groups, ignore_index):
     dp = demographic_parity_ratio(target, preds, sensitive_features=groups)
     eo = true_positive_rate_ratio(target, preds, sensitive_features=groups)
 
-    # TODO: need to create a Dict here
-    return dp, eo
+    # TODO: need to add groups here
+    return {"DP": dp, "EO": eo}
 
 
 @pytest.mark.parametrize("input", _group_cases)
