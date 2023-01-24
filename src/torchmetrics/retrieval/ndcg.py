@@ -13,7 +13,7 @@
 # limitations under the License.
 from typing import Any, Optional
 
-from torch import Tensor, tensor
+from torch import Tensor
 
 from torchmetrics.functional.retrieval.ndcg import retrieval_normalized_dcg
 from torchmetrics.retrieval.base import RetrievalMetric
@@ -64,6 +64,7 @@ class RetrievalNormalizedDCG(RetrievalMetric):
             If ``k`` parameter is not `None` or an integer larger than 0.
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics import RetrievalNormalizedDCG
         >>> indexes = tensor([0, 0, 0, 1, 1, 1, 1])
         >>> preds = tensor([0.2, 0.3, 0.5, 0.1, 0.3, 0.5, 0.2])

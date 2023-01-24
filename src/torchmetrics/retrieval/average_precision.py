@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torch import Tensor, tensor
+from torch import Tensor
 
 from torchmetrics.functional.retrieval.average_precision import retrieval_average_precision
 from torchmetrics.retrieval.base import RetrievalMetric
@@ -58,6 +58,7 @@ class RetrievalMAP(RetrievalMetric):
             If ``ignore_index`` is not `None` or an integer.
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics import RetrievalMAP
         >>> indexes = tensor([0, 0, 0, 1, 1, 1, 1])
         >>> preds = tensor([0.2, 0.3, 0.5, 0.1, 0.3, 0.5, 0.2])
