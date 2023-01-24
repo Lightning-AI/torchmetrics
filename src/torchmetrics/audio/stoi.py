@@ -58,8 +58,8 @@ class ShortTimeObjectiveIntelligibility(Metric):
             If ``pystoi`` package is not installed
 
     Example:
-        >>> from torchmetrics.audio.stoi import ShortTimeObjectiveIntelligibility
         >>> import torch
+        >>> from torchmetrics.audio.stoi import ShortTimeObjectiveIntelligibility
         >>> g = torch.manual_seed(1)
         >>> preds = torch.randn(8000)
         >>> target = torch.randn(8000)

@@ -13,7 +13,6 @@
 # limitations under the License.
 from typing import Any
 
-import torch
 from torch import Tensor, tensor
 
 from torchmetrics.functional.regression.mape import (
@@ -49,9 +48,10 @@ class MeanAbsolutePercentageError(Metric):
         This `MAPE implementation returns`_ a very large number instead of ``inf``.
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics import MeanAbsolutePercentageError
-        >>> target = torch.tensor([1, 10, 1e6])
-        >>> preds = torch.tensor([0.9, 15, 1.2e6])
+        >>> target = tensor([1, 10, 1e6])
+        >>> preds = tensor([0.9, 15, 1.2e6])
         >>> mean_abs_percentage_error = MeanAbsolutePercentageError()
         >>> mean_abs_percentage_error(preds, target)
         tensor(0.2667)
