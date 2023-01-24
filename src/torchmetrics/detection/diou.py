@@ -31,7 +31,7 @@ class DistanceIntersectionOverUnion(IntersectionOverUnion):
 
     Args:
         box_format:
-            Input format of given boxes. Supported formats are ``[`xyxy`, `xywh`, `cxcywh`]``.
+            Input format of given boxes. Supported formats are ``['xyxy', 'xywh', 'cxcywh']``.
         iou_thresholds:
             Optional IoU thresholds for evaluation. If set to `None` the threshold is ignored.
         class_metrics:
