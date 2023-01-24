@@ -46,10 +46,10 @@ class SignalNoiseRatio(Metric):
             if target and preds have a different shape
 
     Example:
-        >>> import torch
+        >>> from torch import tensor
         >>> from torchmetrics import SignalNoiseRatio
-        >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
-        >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
+        >>> target = tensor([3.0, -0.5, 2.0, 7.0])
+        >>> preds = tensor([2.5, 0.0, 2.0, 8.0])
         >>> snr = SignalNoiseRatio()
         >>> snr(preds, target)
         tensor(16.1805)
@@ -103,10 +103,10 @@ class ScaleInvariantSignalNoiseRatio(Metric):
             if target and preds have a different shape
 
     Example:
-        >>> import torch
+        >>> from torch import tensor
         >>> from torchmetrics import ScaleInvariantSignalNoiseRatio
-        >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
-        >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
+        >>> target = tensor([3.0, -0.5, 2.0, 7.0])
+        >>> preds = tensor([2.5, 0.0, 2.0, 8.0])
         >>> si_snr = ScaleInvariantSignalNoiseRatio()
         >>> si_snr(preds, target)
         tensor(15.0918)

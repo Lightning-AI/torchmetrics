@@ -13,7 +13,6 @@
 # limitations under the License.
 from typing import Any, Optional
 
-import torch
 from torch import Tensor
 from typing_extensions import Literal
 
@@ -72,9 +71,10 @@ class BinaryCalibrationError(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics.classification import BinaryCalibrationError
-        >>> preds = torch.tensor([0.25, 0.25, 0.55, 0.75, 0.75])
-        >>> target = torch.tensor([0, 0, 1, 1, 1])
+        >>> preds = tensor([0.25, 0.25, 0.55, 0.75, 0.75])
+        >>> target = tensor([0, 0, 1, 1, 1])
         >>> metric = BinaryCalibrationError(n_bins=2, norm='l1')
         >>> metric(preds, target)
         tensor(0.2900)
@@ -164,12 +164,13 @@ class MulticlassCalibrationError(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics.classification import MulticlassCalibrationError
-        >>> preds = torch.tensor([[0.25, 0.20, 0.55],
-        ...                       [0.55, 0.05, 0.40],
-        ...                       [0.10, 0.30, 0.60],
-        ...                       [0.90, 0.05, 0.05]])
-        >>> target = torch.tensor([0, 1, 2, 0])
+        >>> preds = tensor([[0.25, 0.20, 0.55],
+        ...                 [0.55, 0.05, 0.40],
+        ...                 [0.10, 0.30, 0.60],
+        ...                 [0.90, 0.05, 0.05]])
+        >>> target = tensor([0, 1, 2, 0])
         >>> metric = MulticlassCalibrationError(num_classes=3, n_bins=3, norm='l1')
         >>> metric(preds, target)
         tensor(0.2000)

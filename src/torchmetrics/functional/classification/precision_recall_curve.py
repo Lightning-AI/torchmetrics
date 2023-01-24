@@ -132,6 +132,12 @@ def _binary_precision_recall_curve_tensor_validation(
     """
     _check_same_shape(preds, target)
 
+    if target.is_floating_point():
+        raise ValueError(
+            "Expected argument `target` to be an int or long tensor with ground truth labels"
+            f" but got tensor with dtype {target.dtype}"
+        )
+
     if not preds.is_floating_point():
         raise ValueError(
             "Expected argument `preds` to be an floating tensor with probability/logit scores,"
@@ -333,6 +339,10 @@ def _multiclass_precision_recall_curve_tensor_validation(
     if not preds.ndim == target.ndim + 1:
         raise ValueError(
             f"Expected `preds` to have one more dimension than `target` but got {preds.ndim} and {target.ndim}"
+        )
+    if target.is_floating_point():
+        raise ValueError(
+            f"Expected argument `target` to be an int or long tensor, but got tensor with dtype {target.dtype}"
         )
     if not preds.is_floating_point():
         raise ValueError(f"Expected `preds` to be a float tensor, but got {preds.dtype}")
