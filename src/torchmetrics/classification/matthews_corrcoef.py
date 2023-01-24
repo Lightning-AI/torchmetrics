@@ -13,7 +13,6 @@
 # limitations under the License.
 from typing import Any, Optional
 
-import torch
 from torch import Tensor
 from typing_extensions import Literal
 
@@ -49,19 +48,20 @@ class BinaryMatthewsCorrCoef(BinaryConfusionMatrix):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.classification import BinaryMatthewsCorrCoef
-        >>> target = torch.tensor([1, 1, 0, 0])
-        >>> preds = torch.tensor([0, 1, 0, 0])
-        >>> bmcc = BinaryMatthewsCorrCoef()
-        >>> bmcc(preds, target)
+        >>> target = tensor([1, 1, 0, 0])
+        >>> preds = tensor([0, 1, 0, 0])
+        >>> metric = BinaryMatthewsCorrCoef()
+        >>> metric(preds, target)
         tensor(0.5774)
 
     Example (preds is float tensor):
         >>> from torchmetrics.classification import BinaryMatthewsCorrCoef
-        >>> target = torch.tensor([1, 1, 0, 0])
-        >>> preds = torch.tensor([0.35, 0.85, 0.48, 0.01])
-        >>> bmcc = BinaryMatthewsCorrCoef()
-        >>> bmcc(preds, target)
+        >>> target = tensor([1, 1, 0, 0])
+        >>> preds = tensor([0.35, 0.85, 0.48, 0.01])
+        >>> metric = BinaryMatthewsCorrCoef()
+        >>> metric(preds, target)
         tensor(0.5774)
     """
 
@@ -109,24 +109,23 @@ class MulticlassMatthewsCorrCoef(MulticlassConfusionMatrix):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (pred is integer tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.classification import MulticlassMatthewsCorrCoef
-        >>> target = torch.tensor([2, 1, 0, 0])
-        >>> preds = torch.tensor([2, 1, 0, 1])
-        >>> mcmcc = MulticlassMatthewsCorrCoef(num_classes=3)
-        >>> mcmcc(preds, target)
+        >>> target = tensor([2, 1, 0, 0])
+        >>> preds = tensor([2, 1, 0, 1])
+        >>> metric = MulticlassMatthewsCorrCoef(num_classes=3)
+        >>> metric(preds, target)
         tensor(0.7000)
 
     Example (pred is float tensor):
         >>> from torchmetrics.classification import MulticlassMatthewsCorrCoef
-        >>> target = torch.tensor([2, 1, 0, 0])
-        >>> preds = torch.tensor([
-        ...   [0.16, 0.26, 0.58],
-        ...   [0.22, 0.61, 0.17],
-        ...   [0.71, 0.09, 0.20],
-        ...   [0.05, 0.82, 0.13],
-        ... ])
-        >>> mcmcc = MulticlassMatthewsCorrCoef(num_classes=3)
-        >>> mcmcc(preds, target)
+        >>> target = tensor([2, 1, 0, 0])
+        >>> preds = tensor([[0.16, 0.26, 0.58],
+        ...                 [0.22, 0.61, 0.17],
+        ...                 [0.71, 0.09, 0.20],
+        ...                 [0.05, 0.82, 0.13]])
+        >>> metric = MulticlassMatthewsCorrCoef(num_classes=3)
+        >>> metric(preds, target)
         tensor(0.7000)
     """
 
@@ -175,19 +174,20 @@ class MultilabelMatthewsCorrCoef(MultilabelConfusionMatrix):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.classification import MultilabelMatthewsCorrCoef
-        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
-        >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
-        >>> mlmcc = MultilabelMatthewsCorrCoef(num_labels=3)
-        >>> mlmcc(preds, target)
+        >>> target = tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = tensor([[0, 0, 1], [1, 0, 1]])
+        >>> metric = MultilabelMatthewsCorrCoef(num_labels=3)
+        >>> metric(preds, target)
         tensor(0.3333)
 
     Example (preds is float tensor):
         >>> from torchmetrics.classification import MultilabelMatthewsCorrCoef
-        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
-        >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
-        >>> mlmcc = MultilabelMatthewsCorrCoef(num_labels=3)
-        >>> mlmcc(preds, target)
+        >>> target = tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
+        >>> metric = MultilabelMatthewsCorrCoef(num_labels=3)
+        >>> metric(preds, target)
         tensor(0.3333)
     """
 
@@ -219,8 +219,9 @@ class MatthewsCorrCoef:
     the specific details of each argument influence and examples.
 
     Legacy Example:
-        >>> target = torch.tensor([1, 1, 0, 0])
-        >>> preds = torch.tensor([0, 1, 0, 0])
+        >>> from torch import tensor
+        >>> target = tensor([1, 1, 0, 0])
+        >>> preds = tensor([0, 1, 0, 0])
         >>> matthews_corrcoef = MatthewsCorrCoef(task='binary')
         >>> matthews_corrcoef(preds, target)
         tensor(0.5774)

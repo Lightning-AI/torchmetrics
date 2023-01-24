@@ -13,7 +13,6 @@
 # limitations under the License.
 from typing import Any, List, Optional, Union
 
-import torch
 from torch import Tensor
 from typing_extensions import Literal
 
@@ -46,25 +45,24 @@ class BinaryAveragePrecision(BinaryPrecisionRecallCurve):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, ...)`` containing probabilities or logits for each
-      observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
+    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, ...)`` containing probabilities or logits for
+      each observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
       sigmoid per element.
-    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)`` containing ground truth labels, and therefore
-      only contain {0,1} values (except if `ignore_index` is specified). The value 1 always encodes the positive class.
-
-    .. note::
-       Additional dimension ``...`` will be flattened into the batch dimension.
-
-    .. note::
-       The implementation both supports calculating the metric in a non-binned but accurate version and a binned version
-       that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
-       non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
-       argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
-       size :math:`\mathcal{O}(n_{thresholds})` (constant memory).
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)`` containing ground truth labels, and
+      therefore only contain {0,1} values (except if `ignore_index` is specified). The value 1 always encodes the
+      positive class.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
     - ``bap`` (:class:`~torch.Tensor`): A single scalar with the average precision score
+
+    Additional dimension ``...`` will be flattened into the batch dimension.
+
+    The implementation both supports calculating the metric in a non-binned but accurate version and a binned version
+    that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
+    non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
+    argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
+    size :math:`\mathcal{O}(n_{thresholds})` (constant memory).
 
     Args:
         thresholds:
@@ -83,11 +81,12 @@ class BinaryAveragePrecision(BinaryPrecisionRecallCurve):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics.classification import BinaryAveragePrecision
-        >>> preds = torch.tensor([0, 0.5, 0.7, 0.8])
-        >>> target = torch.tensor([0, 1, 1, 0])
-        >>> bap = BinaryAveragePrecision(thresholds=None)
-        >>> bap(preds, target)
+        >>> preds = tensor([0, 0.5, 0.7, 0.8])
+        >>> target = tensor([0, 1, 1, 0])
+        >>> metric = BinaryAveragePrecision(thresholds=None)
+        >>> metric(preds, target)
         tensor(0.5833)
         >>> bap = BinaryAveragePrecision(thresholds=5)
         >>> bap(preds, target)
@@ -118,26 +117,24 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, C, ...)`` containing probabilities or logits for each
-      observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
-      softmax per sample.
-    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)`` containing ground truth labels, and therefore
-      only contain values in the [0, n_classes-1] range (except if `ignore_index` is specified).
-
-    .. note::
-       Additional dimension ``...`` will be flattened into the batch dimension.
-
-    .. note::
-       The implementation both supports calculating the metric in a non-binned but accurate version and a binned version
-       that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
-       non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
-       argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
-       size :math:`\mathcal{O}(n_{thresholds} \times n_{classes})` (constant memory).
+    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, C, ...)`` containing probabilities or logits
+      for each observation. If preds has values outside [0,1] range we consider the input to be logits and will auto
+      apply softmax per sample.
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)`` containing ground truth labels, and
+      therefore only contain values in the [0, n_classes-1] range (except if `ignore_index` is specified).
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
     - ``mcap`` (:class:`~torch.Tensor`): If `average=None|"none"` then a 1d tensor of shape (n_classes, ) will be
       returned with AP score per class. If `average="macro"|"weighted"` then a single scalar is returned.
+
+    Additional dimension ``...`` will be flattened into the batch dimension.
+
+    The implementation both supports calculating the metric in a non-binned but accurate version and a binned version
+    that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
+    non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
+    argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
+    size :math:`\mathcal{O}(n_{thresholds} \times n_{classes})` (constant memory).
 
     Args:
         num_classes: Integer specifing the number of classes
@@ -163,14 +160,15 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics.classification import MulticlassAveragePrecision
-        >>> preds = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
-        ...                       [0.05, 0.75, 0.05, 0.05, 0.05],
-        ...                       [0.05, 0.05, 0.75, 0.05, 0.05],
-        ...                       [0.05, 0.05, 0.05, 0.75, 0.05]])
-        >>> target = torch.tensor([0, 1, 3, 2])
-        >>> mcap = MulticlassAveragePrecision(num_classes=5, average="macro", thresholds=None)
-        >>> mcap(preds, target)
+        >>> preds = tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
+        ...                 [0.05, 0.75, 0.05, 0.05, 0.05],
+        ...                 [0.05, 0.05, 0.75, 0.05, 0.05],
+        ...                 [0.05, 0.05, 0.05, 0.75, 0.05]])
+        >>> target = tensor([0, 1, 3, 2])
+        >>> metric = MulticlassAveragePrecision(num_classes=5, average="macro", thresholds=None)
+        >>> metric(preds, target)
         tensor(0.6250)
         >>> mcap = MulticlassAveragePrecision(num_classes=5, average=None, thresholds=None)
         >>> mcap(preds, target)
@@ -225,26 +223,24 @@ class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, C, ...)`` containing probabilities or logits for each
-      observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
-      sigmoid per element.
+    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, C, ...)`` containing probabilities or logits
+      for each observation. If preds has values outside [0,1] range we consider the input to be logits and will auto
+      apply sigmoid per element.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)`` containing ground truth labels, and
       therefore only contain {0,1} values (except if `ignore_index` is specified).
-
-    .. note::
-       Additional dimension ``...`` will be flattened into the batch dimension.
-
-    .. note::
-       The implementation both supports calculating the metric in a non-binned but accurate version and a binned
-       version that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate
-       the non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the
-       `thresholds` argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
-       size :math:`\mathcal{O}(n_{thresholds} \times n_{labels})` (constant memory).
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
     - ``mlap`` (:class:`~torch.Tensor`): If `average=None|"none"` then a 1d tensor of shape (n_classes, ) will be
       returned with AP score per class. If `average="micro|macro"|"weighted"` then a single scalar is returned.
+
+    Additional dimension ``...`` will be flattened into the batch dimension.
+
+    The implementation both supports calculating the metric in a non-binned but accurate version and a binned
+    version that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate
+    the non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the
+    `thresholds` argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
+    size :math:`\mathcal{O}(n_{thresholds} \times n_{labels})` (constant memory).
 
     Args:
         num_labels: Integer specifing the number of labels
@@ -271,17 +267,18 @@ class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics.classification import MultilabelAveragePrecision
-        >>> preds = torch.tensor([[0.75, 0.05, 0.35],
-        ...                       [0.45, 0.75, 0.05],
-        ...                       [0.05, 0.55, 0.75],
-        ...                       [0.05, 0.65, 0.05]])
-        >>> target = torch.tensor([[1, 0, 1],
-        ...                        [0, 0, 0],
-        ...                        [0, 1, 1],
-        ...                        [1, 1, 1]])
-        >>> mlap = MultilabelAveragePrecision(num_labels=3, average="macro", thresholds=None)
-        >>> mlap(preds, target)
+        >>> preds = tensor([[0.75, 0.05, 0.35],
+        ...                 [0.45, 0.75, 0.05],
+        ...                 [0.05, 0.55, 0.75],
+        ...                 [0.05, 0.65, 0.05]])
+        >>> target = tensor([[1, 0, 1],
+        ...                  [0, 0, 0],
+        ...                  [0, 1, 1],
+        ...                  [1, 1, 1]])
+        >>> metric = MultilabelAveragePrecision(num_labels=3, average="macro", thresholds=None)
+        >>> metric(preds, target)
         tensor(0.7500)
         >>> mlap = MultilabelAveragePrecision(num_labels=3, average=None, thresholds=None)
         >>> mlap(preds, target)
@@ -340,17 +337,18 @@ class AveragePrecision:
     for the specific details of each argument influence and examples.
 
     Legacy Example:
-        >>> pred = torch.tensor([0, 0.1, 0.8, 0.4])
-        >>> target = torch.tensor([0, 1, 1, 1])
+        >>> from torch import tensor
+        >>> pred = tensor([0, 0.1, 0.8, 0.4])
+        >>> target = tensor([0, 1, 1, 1])
         >>> average_precision = AveragePrecision(task="binary")
         >>> average_precision(pred, target)
         tensor(1.)
 
-        >>> pred = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
-        ...                      [0.05, 0.75, 0.05, 0.05, 0.05],
-        ...                      [0.05, 0.05, 0.75, 0.05, 0.05],
-        ...                      [0.05, 0.05, 0.05, 0.75, 0.05]])
-        >>> target = torch.tensor([0, 1, 3, 2])
+        >>> pred = tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
+        ...                [0.05, 0.75, 0.05, 0.05, 0.05],
+        ...                [0.05, 0.05, 0.75, 0.05, 0.05],
+        ...                [0.05, 0.05, 0.05, 0.75, 0.05]])
+        >>> target = tensor([0, 1, 3, 2])
         >>> average_precision = AveragePrecision(task="multiclass", num_classes=5, average=None)
         >>> average_precision(pred, target)
         tensor([1.0000, 1.0000, 0.2500, 0.2500,    nan])

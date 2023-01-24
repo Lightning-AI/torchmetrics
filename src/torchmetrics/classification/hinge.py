@@ -222,21 +222,21 @@ class HingeLoss:
     each argument influence and examples.
 
     Legacy Example:
-        >>> import torch
-        >>> target = torch.tensor([0, 1, 1])
-        >>> preds = torch.tensor([0.5, 0.7, 0.1])
+        >>> from torch import tensor
+        >>> target = tensor([0, 1, 1])
+        >>> preds = tensor([0.5, 0.7, 0.1])
         >>> hinge = HingeLoss(task="binary")
         >>> hinge(preds, target)
         tensor(0.9000)
 
-        >>> target = torch.tensor([0, 1, 2])
-        >>> preds = torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
+        >>> target = tensor([0, 1, 2])
+        >>> preds = tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
         >>> hinge = HingeLoss(task="multiclass", num_classes=3)
         >>> hinge(preds, target)
         tensor(1.5551)
 
-        >>> target = torch.tensor([0, 1, 2])
-        >>> preds = torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
+        >>> target = tensor([0, 1, 2])
+        >>> preds = tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
         >>> hinge = HingeLoss(task="multiclass", num_classes=3, multiclass_mode="one-vs-all")
         >>> hinge(preds, target)
         tensor([1.3743, 1.1945, 1.2359])

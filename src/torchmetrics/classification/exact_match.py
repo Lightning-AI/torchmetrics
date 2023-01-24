@@ -45,9 +45,6 @@ class MulticlassExactMatch(Metric):
       probabilities/logits into an int tensor.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``.
 
-    .. note::
-       The influence of the additional dimension ``...`` (if present) will be determined by the
-       `multidim_average` argument.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
@@ -71,19 +68,20 @@ class MulticlassExactMatch(Metric):
             Set to ``False`` for faster computations.
 
     Example (multidim tensors):
+        >>> from torch import tensor
         >>> from torchmetrics.classification import MulticlassExactMatch
-        >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
-        >>> preds = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[2, 2], [2, 1], [1, 0]]])
-        >>> mcem = MulticlassExactMatch(num_classes=3, multidim_average='global')
-        >>> mcem(preds, target)
+        >>> target = tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
+        >>> preds = tensor([[[0, 1], [2, 1], [0, 2]], [[2, 2], [2, 1], [1, 0]]])
+        >>> metric = MulticlassExactMatch(num_classes=3, multidim_average='global')
+        >>> metric(preds, target)
         tensor(0.5000)
 
     Example (multidim tensors):
         >>> from torchmetrics.classification import MulticlassExactMatch
-        >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
-        >>> preds = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[2, 2], [2, 1], [1, 0]]])
-        >>> mcem = MulticlassExactMatch(num_classes=3, multidim_average='samplewise')
-        >>> mcem(preds, target)
+        >>> target = tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
+        >>> preds = tensor([[[0, 1], [2, 1], [0, 2]], [[2, 2], [2, 1], [1, 0]]])
+        >>> metric = MulticlassExactMatch(num_classes=3, multidim_average='samplewise')
+        >>> metric(preds, target)
         tensor([1., 0.])
     """
     is_differentiable = False
@@ -148,9 +146,6 @@ class MultilabelExactMatch(Metric):
       sigmoid per element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``.
 
-    .. note::
-       The influence of the additional dimension ``...`` (if present) will be determined by the
-       `multidim_average` argument.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
@@ -175,32 +170,29 @@ class MultilabelExactMatch(Metric):
             Set to ``False`` for faster computations.
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.classification import MultilabelExactMatch
-        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
-        >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
-        >>> mlem = MultilabelExactMatch(num_labels=3)
-        >>> mlem(preds, target)
+        >>> target = tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = tensor([[0, 0, 1], [1, 0, 1]])
+        >>> metric = MultilabelExactMatch(num_labels=3)
+        >>> metric(preds, target)
         tensor(0.5000)
 
     Example (preds is float tensor):
         >>> from torchmetrics.classification import MultilabelExactMatch
-        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
-        >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
-        >>> mlem = MultilabelExactMatch(num_labels=3)
-        >>> mlem(preds, target)
+        >>> target = tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
+        >>> metric = MultilabelExactMatch(num_labels=3)
+        >>> metric(preds, target)
         tensor(0.5000)
 
     Example (multidim tensors):
         >>> from torchmetrics.classification import MultilabelExactMatch
-        >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
-        >>> preds = torch.tensor(
-        ...     [
-        ...         [[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
-        ...         [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]],
-        ...     ]
-        ... )
-        >>> mlem = MultilabelExactMatch(num_labels=3, multidim_average='samplewise')
-        >>> mlem(preds, target)
+        >>> target = tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
+        >>> preds = tensor([[[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
+        ...                 [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]]])
+        >>> metric = MultilabelExactMatch(num_labels=3, multidim_average='samplewise')
+        >>> metric(preds, target)
         tensor([0., 0.])
     """
 
@@ -271,14 +263,15 @@ class ExactMatch:
     each argument influence and examples.
 
     Legacy Example:
-        >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
-        >>> preds = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[2, 2], [2, 1], [1, 0]]])
+        >>> from torch import tensor
+        >>> target = tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
+        >>> preds = tensor([[[0, 1], [2, 1], [0, 2]], [[2, 2], [2, 1], [1, 0]]])
         >>> metric = ExactMatch(task="multiclass", num_classes=3, multidim_average='global')
         >>> metric(preds, target)
         tensor(0.5000)
 
-        >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
-        >>> preds = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[2, 2], [2, 1], [1, 0]]])
+        >>> target = tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
+        >>> preds = tensor([[[0, 1], [2, 1], [0, 2]], [[2, 2], [2, 1], [1, 0]]])
         >>> metric = ExactMatch(task="multiclass", num_classes=3, multidim_average='samplewise')
         >>> metric(preds, target)
         tensor([1., 0.])

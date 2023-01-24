@@ -120,10 +120,10 @@ class Dice(Metric):
             If ``num_classes`` is set and ``ignore_index`` is not in the range ``[0, num_classes)``.
 
     Example:
-        >>> import torch
+        >>> from torch import tensor
         >>> from torchmetrics import Dice
-        >>> preds  = torch.tensor([2, 0, 2, 1])
-        >>> target = torch.tensor([1, 1, 2, 0])
+        >>> preds  = tensor([2, 0, 2, 1])
+        >>> target = tensor([1, 1, 2, 0])
         >>> dice = Dice(average='micro')
         >>> dice(preds, target)
         tensor(0.2500)

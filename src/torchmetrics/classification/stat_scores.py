@@ -92,9 +92,6 @@ class BinaryStatScores(_AbstractStatScores):
       per element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``
 
-    .. note::
-       The influence of the additional dimension ``...`` (if present) will be determined by the
-       `multidim_average` argument.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
@@ -121,32 +118,29 @@ class BinaryStatScores(_AbstractStatScores):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.classification import BinaryStatScores
-        >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
-        >>> preds = torch.tensor([0, 0, 1, 1, 0, 1])
-        >>> bss = BinaryStatScores()
-        >>> bss(preds, target)
+        >>> target = tensor([0, 1, 0, 1, 0, 1])
+        >>> preds = tensor([0, 0, 1, 1, 0, 1])
+        >>> metric = BinaryStatScores()
+        >>> metric(preds, target)
         tensor([2, 1, 2, 1, 3])
 
     Example (preds is float tensor):
         >>> from torchmetrics.classification import BinaryStatScores
-        >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
-        >>> preds = torch.tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
-        >>> bss = BinaryStatScores()
-        >>> bss(preds, target)
+        >>> target = tensor([0, 1, 0, 1, 0, 1])
+        >>> preds = tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
+        >>> metric = BinaryStatScores()
+        >>> metric(preds, target)
         tensor([2, 1, 2, 1, 3])
 
     Example (multidim tensors):
         >>> from torchmetrics.classification import BinaryStatScores
-        >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
-        >>> preds = torch.tensor(
-        ...     [
-        ...         [[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
-        ...         [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]],
-        ...     ]
-        ... )
-        >>> bss = BinaryStatScores(multidim_average='samplewise')
-        >>> bss(preds, target)
+        >>> target = tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
+        >>> preds = tensor([[[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
+        ...                 [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]]])
+        >>> metric = BinaryStatScores(multidim_average='samplewise')
+        >>> metric(preds, target)
         tensor([[2, 3, 0, 1, 3],
                 [0, 2, 1, 3, 3]])
     """
@@ -197,9 +191,6 @@ class MulticlassStatScores(_AbstractStatScores):
       probabilities/logits into an int tensor.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``
 
-    .. note::
-       The influence of the additional dimension ``...`` (if present) will be determined by the
-       `multidim_average` argument.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
@@ -240,11 +231,12 @@ class MulticlassStatScores(_AbstractStatScores):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.classification import MulticlassStatScores
-        >>> target = torch.tensor([2, 1, 0, 0])
-        >>> preds = torch.tensor([2, 1, 0, 1])
-        >>> mcss = MulticlassStatScores(num_classes=3, average='micro')
-        >>> mcss(preds, target)
+        >>> target = tensor([2, 1, 0, 0])
+        >>> preds = tensor([2, 1, 0, 1])
+        >>> metric = MulticlassStatScores(num_classes=3, average='micro')
+        >>> metric(preds, target)
         tensor([3, 1, 7, 1, 4])
         >>> mcss = MulticlassStatScores(num_classes=3, average=None)
         >>> mcss(preds, target)
@@ -254,15 +246,13 @@ class MulticlassStatScores(_AbstractStatScores):
 
     Example (preds is float tensor):
         >>> from torchmetrics.classification import MulticlassStatScores
-        >>> target = torch.tensor([2, 1, 0, 0])
-        >>> preds = torch.tensor([
-        ...   [0.16, 0.26, 0.58],
-        ...   [0.22, 0.61, 0.17],
-        ...   [0.71, 0.09, 0.20],
-        ...   [0.05, 0.82, 0.13],
-        ... ])
-        >>> mcss = MulticlassStatScores(num_classes=3, average='micro')
-        >>> mcss(preds, target)
+        >>> target = tensor([2, 1, 0, 0])
+        >>> preds = tensor([[0.16, 0.26, 0.58],
+        ...                 [0.22, 0.61, 0.17],
+        ...                 [0.71, 0.09, 0.20],
+        ...                 [0.05, 0.82, 0.13]])
+        >>> metric = MulticlassStatScores(num_classes=3, average='micro')
+        >>> metric(preds, target)
         tensor([3, 1, 7, 1, 4])
         >>> mcss = MulticlassStatScores(num_classes=3, average=None)
         >>> mcss(preds, target)
@@ -272,10 +262,10 @@ class MulticlassStatScores(_AbstractStatScores):
 
     Example (multidim tensors):
         >>> from torchmetrics.classification import MulticlassStatScores
-        >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
-        >>> preds = torch.tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
-        >>> mcss = MulticlassStatScores(num_classes=3, multidim_average="samplewise", average='micro')
-        >>> mcss(preds, target)
+        >>> target = tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
+        >>> preds = tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
+        >>> metric = MulticlassStatScores(num_classes=3, multidim_average="samplewise", average='micro')
+        >>> metric(preds, target)
         tensor([[3, 3, 9, 3, 6],
                 [2, 4, 8, 4, 6]])
         >>> mcss = MulticlassStatScores(num_classes=3, multidim_average="samplewise", average=None)
@@ -344,9 +334,6 @@ class MultilabelStatScores(_AbstractStatScores):
       per element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``
 
-    .. note::
-       The influence of the additional dimension ``...`` (if present) will be determined by the
-       `multidim_average` argument.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
@@ -386,11 +373,12 @@ class MultilabelStatScores(_AbstractStatScores):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.classification import MultilabelStatScores
-        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
-        >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
-        >>> mlss = MultilabelStatScores(num_labels=3, average='micro')
-        >>> mlss(preds, target)
+        >>> target = tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = tensor([[0, 0, 1], [1, 0, 1]])
+        >>> metric = MultilabelStatScores(num_labels=3, average='micro')
+        >>> metric(preds, target)
         tensor([2, 1, 2, 1, 3])
         >>> mlss = MultilabelStatScores(num_labels=3, average=None)
         >>> mlss(preds, target)
@@ -400,10 +388,10 @@ class MultilabelStatScores(_AbstractStatScores):
 
     Example (preds is float tensor):
         >>> from torchmetrics.classification import MultilabelStatScores
-        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
-        >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
-        >>> mlss = MultilabelStatScores(num_labels=3, average='micro')
-        >>> mlss(preds, target)
+        >>> target = tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
+        >>> metric = MultilabelStatScores(num_labels=3, average='micro')
+        >>> metric(preds, target)
         tensor([2, 1, 2, 1, 3])
         >>> mlss = MultilabelStatScores(num_labels=3, average=None)
         >>> mlss(preds, target)
@@ -413,15 +401,11 @@ class MultilabelStatScores(_AbstractStatScores):
 
     Example (multidim tensors):
         >>> from torchmetrics.classification import MultilabelStatScores
-        >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
-        >>> preds = torch.tensor(
-        ...     [
-        ...         [[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
-        ...         [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]],
-        ...     ]
-        ... )
-        >>> mlss = MultilabelStatScores(num_labels=3, multidim_average='samplewise', average='micro')
-        >>> mlss(preds, target)
+        >>> target = tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
+        >>> preds = tensor([[[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
+        ...                 [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]]])
+        >>> metric = MultilabelStatScores(num_labels=3, multidim_average='samplewise', average='micro')
+        >>> metric(preds, target)
         tensor([[2, 3, 0, 1, 3],
                 [0, 2, 1, 3, 3]])
         >>> mlss = MultilabelStatScores(num_labels=3, multidim_average='samplewise', average=None)
@@ -486,8 +470,9 @@ class StatScores:
     details of each argument influence and examples.
 
     Legacy Example:
-        >>> preds  = torch.tensor([1, 0, 2, 1])
-        >>> target = torch.tensor([1, 1, 2, 0])
+        >>> from torch import tensor
+        >>> preds  = tensor([1, 0, 2, 1])
+        >>> target = tensor([1, 1, 2, 0])
         >>> stat_scores = StatScores(task="multiclass", num_classes=3, average='micro')
         >>> stat_scores(preds, target)
         tensor([2, 2, 6, 2, 4])

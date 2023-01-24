@@ -312,19 +312,19 @@ class MeanAveragePrecision(Metric):
             If any score is not type float and of length 1
 
     Example:
-        >>> import torch
+        >>> from torch import tensor
         >>> from torchmetrics.detection.mean_ap import MeanAveragePrecision
         >>> preds = [
         ...   dict(
-        ...     boxes=torch.tensor([[258.0, 41.0, 606.0, 285.0]]),
-        ...     scores=torch.tensor([0.536]),
-        ...     labels=torch.tensor([0]),
+        ...     boxes=tensor([[258.0, 41.0, 606.0, 285.0]]),
+        ...     scores=tensor([0.536]),
+        ...     labels=tensor([0]),
         ...   )
         ... ]
         >>> target = [
         ...   dict(
-        ...     boxes=torch.tensor([[214.0, 41.0, 562.0, 285.0]]),
-        ...     labels=torch.tensor([0]),
+        ...     boxes=tensor([[214.0, 41.0, 562.0, 285.0]]),
+        ...     labels=tensor([0]),
         ...   )
         ... ]
         >>> metric = MeanAveragePrecision()

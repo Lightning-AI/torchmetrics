@@ -13,7 +13,6 @@
 # limitations under the License.
 from typing import Any, List, Optional, Tuple, Union
 
-import torch
 from torch import Tensor
 from typing_extensions import Literal
 
@@ -81,9 +80,10 @@ class BinaryRecallAtFixedPrecision(BinaryPrecisionRecallCurve):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics.classification import BinaryRecallAtFixedPrecision
-        >>> preds = torch.tensor([0, 0.5, 0.7, 0.8])
-        >>> target = torch.tensor([0, 1, 1, 0])
+        >>> preds = tensor([0, 0.5, 0.7, 0.8])
+        >>> target = tensor([0, 1, 1, 0])
         >>> metric = BinaryRecallAtFixedPrecision(min_precision=0.5, thresholds=None)
         >>> metric(preds, target)
         (tensor(1.), tensor(0.5000))
@@ -167,14 +167,15 @@ class MulticlassRecallAtFixedPrecision(MulticlassPrecisionRecallCurve):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics.classification import MulticlassRecallAtFixedPrecision
-        >>> preds = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
-        ...                       [0.05, 0.75, 0.05, 0.05, 0.05],
-        ...                       [0.05, 0.05, 0.75, 0.05, 0.05],
-        ...                       [0.05, 0.05, 0.05, 0.75, 0.05]])
-        >>> target = torch.tensor([0, 1, 3, 2])
-        >>> mcrafp = MulticlassRecallAtFixedPrecision(num_classes=5, min_precision=0.5, thresholds=None)
-        >>> mcrafp(preds, target)
+        >>> preds = tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
+        ...                 [0.05, 0.75, 0.05, 0.05, 0.05],
+        ...                 [0.05, 0.05, 0.75, 0.05, 0.05],
+        ...                 [0.05, 0.05, 0.05, 0.75, 0.05]])
+        >>> target = tensor([0, 1, 3, 2])
+        >>> metric = MulticlassRecallAtFixedPrecision(num_classes=5, min_precision=0.5, thresholds=None)
+        >>> metric(preds, target)
         (tensor([1., 1., 0., 0., 0.]), tensor([7.5000e-01, 7.5000e-01, 1.0000e+06, 1.0000e+06, 1.0000e+06]))
         >>> mcrafp = MulticlassRecallAtFixedPrecision(num_classes=5, min_precision=0.5, thresholds=5)
         >>> mcrafp(preds, target)
@@ -261,17 +262,18 @@ class MultilabelRecallAtFixedPrecision(MultilabelPrecisionRecallCurve):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics.classification import MultilabelRecallAtFixedPrecision
-        >>> preds = torch.tensor([[0.75, 0.05, 0.35],
-        ...                       [0.45, 0.75, 0.05],
-        ...                       [0.05, 0.55, 0.75],
-        ...                       [0.05, 0.65, 0.05]])
-        >>> target = torch.tensor([[1, 0, 1],
-        ...                        [0, 0, 0],
-        ...                        [0, 1, 1],
-        ...                        [1, 1, 1]])
-        >>> mlrafp = MultilabelRecallAtFixedPrecision(num_labels=3, min_precision=0.5, thresholds=None)
-        >>> mlrafp(preds, target)
+        >>> preds = tensor([[0.75, 0.05, 0.35],
+        ...                 [0.45, 0.75, 0.05],
+        ...                 [0.05, 0.55, 0.75],
+        ...                 [0.05, 0.65, 0.05]])
+        >>> target = tensor([[1, 0, 1],
+        ...                  [0, 0, 0],
+        ...                  [0, 1, 1],
+        ...                  [1, 1, 1]])
+        >>> metric = MultilabelRecallAtFixedPrecision(num_labels=3, min_precision=0.5, thresholds=None)
+        >>> metric(preds, target)
         (tensor([1., 1., 1.]), tensor([0.0500, 0.5500, 0.0500]))
         >>> mlrafp = MultilabelRecallAtFixedPrecision(num_labels=3, min_precision=0.5, thresholds=5)
         >>> mlrafp(preds, target)

@@ -13,7 +13,6 @@
 # limitations under the License.
 from typing import Any, Optional
 
-import torch
 from torch import Tensor
 from typing_extensions import Literal
 
@@ -37,14 +36,11 @@ class BinarySpecificity(BinaryStatScores):
       element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``
 
-    .. note::
-       The influence of the additional dimension ``...`` (if present) will be determined by the
-       `multidim_average` argument.
-
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``bs`` (:class:`~torch.Tensor`): If ``multidim_average`` is set to ``global``, the metric returns a scalar value. If ``multidim_average``
-      is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of a scalar value per sample.
+    - ``bs`` (:class:`~torch.Tensor`): If ``multidim_average`` is set to ``global``, the metric returns a scalar value.
+      If ``multidim_average`` is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of a scalar value
+      per sample.
 
     Args:
         threshold: Threshold for transforming probability to binary {0,1} predictions
@@ -61,32 +57,29 @@ class BinarySpecificity(BinaryStatScores):
             Set to ``False`` for faster computations.
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.classification import BinarySpecificity
-        >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
-        >>> preds = torch.tensor([0, 0, 1, 1, 0, 1])
-        >>> bs = BinarySpecificity()
-        >>> bs(preds, target)
+        >>> target = tensor([0, 1, 0, 1, 0, 1])
+        >>> preds = tensor([0, 0, 1, 1, 0, 1])
+        >>> metric = BinarySpecificity()
+        >>> metric(preds, target)
         tensor(0.6667)
 
     Example (preds is float tensor):
         >>> from torchmetrics.classification import BinarySpecificity
-        >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
-        >>> preds = torch.tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
-        >>> bs = BinarySpecificity()
-        >>> bs(preds, target)
+        >>> target = tensor([0, 1, 0, 1, 0, 1])
+        >>> preds = tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
+        >>> metric = BinarySpecificity()
+        >>> metric(preds, target)
         tensor(0.6667)
 
     Example (multidim tensors):
         >>> from torchmetrics.classification import BinarySpecificity
-        >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
-        >>> preds = torch.tensor(
-        ...     [
-        ...         [[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
-        ...         [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]],
-        ...     ]
-        ... )
-        >>> bs = BinarySpecificity(multidim_average='samplewise')
-        >>> bs(preds, target)
+        >>> target = tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
+        >>> preds = tensor([[[0.59, 0.91], [0.91, 0.99],  [0.63, 0.04]],
+        ...                 [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]]])
+        >>> metric = BinarySpecificity(multidim_average='samplewise')
+        >>> metric(preds, target)
         tensor([0.0000, 0.3333])
     """
 
@@ -110,13 +103,10 @@ class MulticlassSpecificity(MulticlassStatScores):
       probabilities/logits into an int tensor.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``
 
-    .. note::
-       The influence of the additional dimension ``...`` (if present) will be determined by the
-       `multidim_average` argument.
-
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``mcs`` (:class:`~torch.Tensor`): The returned shape depends on the ``average`` and ``multidim_average`` arguments:
+    - ``mcs`` (:class:`~torch.Tensor`): The returned shape depends on the ``average`` and ``multidim_average``
+      arguments:
         - If ``multidim_average`` is set to ``global``:
 
           - If ``average='micro'/'macro'/'weighted'``, the output will be a scalar tensor
@@ -153,11 +143,12 @@ class MulticlassSpecificity(MulticlassStatScores):
             Set to ``False`` for faster computations.
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.classification import MulticlassSpecificity
-        >>> target = torch.tensor([2, 1, 0, 0])
-        >>> preds = torch.tensor([2, 1, 0, 1])
-        >>> mcs = MulticlassSpecificity(num_classes=3)
-        >>> mcs(preds, target)
+        >>> target = tensor([2, 1, 0, 0])
+        >>> preds = tensor([2, 1, 0, 1])
+        >>> metric = MulticlassSpecificity(num_classes=3)
+        >>> metric(preds, target)
         tensor(0.8889)
         >>> mcs = MulticlassSpecificity(num_classes=3, average=None)
         >>> mcs(preds, target)
@@ -165,15 +156,13 @@ class MulticlassSpecificity(MulticlassStatScores):
 
     Example (preds is float tensor):
         >>> from torchmetrics.classification import MulticlassSpecificity
-        >>> target = torch.tensor([2, 1, 0, 0])
-        >>> preds = torch.tensor([
-        ...   [0.16, 0.26, 0.58],
-        ...   [0.22, 0.61, 0.17],
-        ...   [0.71, 0.09, 0.20],
-        ...   [0.05, 0.82, 0.13],
-        ... ])
-        >>> mcs = MulticlassSpecificity(num_classes=3)
-        >>> mcs(preds, target)
+        >>> target = tensor([2, 1, 0, 0])
+        >>> preds = tensor([[0.16, 0.26, 0.58],
+        ...                 [0.22, 0.61, 0.17],
+        ...                 [0.71, 0.09, 0.20],
+        ...                 [0.05, 0.82, 0.13]])
+        >>> metric = MulticlassSpecificity(num_classes=3)
+        >>> metric(preds, target)
         tensor(0.8889)
         >>> mcs = MulticlassSpecificity(num_classes=3, average=None)
         >>> mcs(preds, target)
@@ -181,10 +170,10 @@ class MulticlassSpecificity(MulticlassStatScores):
 
     Example (multidim tensors):
         >>> from torchmetrics.classification import MulticlassSpecificity
-        >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
-        >>> preds = torch.tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
-        >>> mcs = MulticlassSpecificity(num_classes=3, multidim_average='samplewise')
-        >>> mcs(preds, target)
+        >>> target = tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
+        >>> preds = tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
+        >>> metric = MulticlassSpecificity(num_classes=3, multidim_average='samplewise')
+        >>> metric(preds, target)
         tensor([0.7500, 0.6556])
         >>> mcs = MulticlassSpecificity(num_classes=3, multidim_average='samplewise', average=None)
         >>> mcs(preds, target)
@@ -212,13 +201,11 @@ class MultilabelSpecificity(MultilabelStatScores):
       per element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``
 
-    .. note::
-       The influence of the additional dimension ``...`` (if present) will be determined by the
-       `multidim_average` argument.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``mls`` (:class:`~torch.Tensor`): The returned shape depends on the ``average`` and ``multidim_average`` arguments:
+    - ``mls`` (:class:`~torch.Tensor`): The returned shape depends on the ``average`` and ``multidim_average``
+      arguments:
         - If ``multidim_average`` is set to ``global``
           - If ``average='micro'/'macro'/'weighted'``, the output will be a scalar tensor
           - If ``average=None/'none'``, the shape will be ``(C,)``
@@ -249,11 +236,12 @@ class MultilabelSpecificity(MultilabelStatScores):
             Set to ``False`` for faster computations.
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.classification import MultilabelSpecificity
-        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
-        >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
-        >>> mls = MultilabelSpecificity(num_labels=3)
-        >>> mls(preds, target)
+        >>> target = tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = tensor([[0, 0, 1], [1, 0, 1]])
+        >>> metric = MultilabelSpecificity(num_labels=3)
+        >>> metric(preds, target)
         tensor(0.6667)
         >>> mls = MultilabelSpecificity(num_labels=3, average=None)
         >>> mls(preds, target)
@@ -261,10 +249,10 @@ class MultilabelSpecificity(MultilabelStatScores):
 
     Example (preds is float tensor):
         >>> from torchmetrics.classification import MultilabelSpecificity
-        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
-        >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
-        >>> mls = MultilabelSpecificity(num_labels=3)
-        >>> mls(preds, target)
+        >>> target = tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
+        >>> metric = MultilabelSpecificity(num_labels=3)
+        >>> metric(preds, target)
         tensor(0.6667)
         >>> mls = MultilabelSpecificity(num_labels=3, average=None)
         >>> mls(preds, target)
@@ -272,15 +260,11 @@ class MultilabelSpecificity(MultilabelStatScores):
 
     Example (multidim tensors):
         >>> from torchmetrics.classification import MultilabelSpecificity
-        >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
-        >>> preds = torch.tensor(
-        ...     [
-        ...         [[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
-        ...         [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]],
-        ...     ]
-        ... )
-        >>> mls = MultilabelSpecificity(num_labels=3, multidim_average='samplewise')
-        >>> mls(preds, target)
+        >>> target = tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
+        >>> preds = tensor([[[0.59, 0.91], [0.91, 0.99],  [0.63, 0.04]],
+        ...                 [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]]])
+        >>> metric = MultilabelSpecificity(num_labels=3, multidim_average='samplewise')
+        >>> metric(preds, target)
         tensor([0.0000, 0.3333])
         >>> mls = MultilabelSpecificity(num_labels=3, multidim_average='samplewise', average=None)
         >>> mls(preds, target)
@@ -307,8 +291,9 @@ class Specificity:
     details of each argument influence and examples.
 
     Legacy Example:
-        >>> preds  = torch.tensor([2, 0, 2, 1])
-        >>> target = torch.tensor([1, 1, 2, 0])
+        >>> from torch import tensor
+        >>> preds  = tensor([2, 0, 2, 1])
+        >>> target = tensor([1, 1, 2, 0])
         >>> specificity = Specificity(task="multiclass", average='macro', num_classes=3)
         >>> specificity(preds, target)
         tensor(0.6111)

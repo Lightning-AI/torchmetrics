@@ -13,7 +13,6 @@
 # limitations under the License.
 from typing import Any, Optional
 
-import torch
 from torch import Tensor
 from typing_extensions import Literal
 
@@ -54,18 +53,18 @@ class BinaryCalibrationError(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, ...)`` containing probabilities or logits for each
-      observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
+    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, ...)`` containing probabilities or logits for
+      each observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
       sigmoid per element.
-    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)`` containing ground truth labels, and therefore
-      only contain {0,1} values (except if `ignore_index` is specified). The value 1 always encodes the positive class.
-
-    .. note::
-       Additional dimension ``...`` will be flattened into the batch dimension.
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)`` containing ground truth labels, and
+      therefore only contain {0,1} values (except if `ignore_index` is specified). The value 1 always encodes the
+      positive class.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
     - ``bce`` (:class:`~torch.Tensor`): A scalar tensor containing the calibration error
+
+    Additional dimension ``...`` will be flattened into the batch dimension.
 
     Args:
         n_bins: Number of bins to use when computing the metric.
@@ -77,11 +76,12 @@ class BinaryCalibrationError(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics.classification import BinaryCalibrationError
-        >>> preds = torch.tensor([0.25, 0.25, 0.55, 0.75, 0.75])
-        >>> target = torch.tensor([0, 0, 1, 1, 1])
-        >>> bce = BinaryCalibrationError(n_bins=2, norm='l1')
-        >>> bce(preds, target)
+        >>> preds = tensor([0.25, 0.25, 0.55, 0.75, 0.75])
+        >>> target = tensor([0, 0, 1, 1, 1])
+        >>> metric = BinaryCalibrationError(n_bins=2, norm='l1')
+        >>> metric(preds, target)
         tensor(0.2900)
         >>> bce = BinaryCalibrationError(n_bins=2, norm='l2')
         >>> bce(preds, target)
@@ -150,11 +150,11 @@ class MulticlassCalibrationError(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, C, ...)`` containing probabilities or logits for each
-      observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
+    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, C, ...)`` containing probabilities or logits for
+      each observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
       softmax per sample.
-    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)`` containing ground truth labels, and therefore
-      only contain values in the [0, n_classes-1] range (except if `ignore_index` is specified).
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)`` containing ground truth labels, and
+      therefore only contain values in the [0, n_classes-1] range (except if `ignore_index` is specified).
 
     .. note::
        Additional dimension ``...`` will be flattened into the batch dimension.
@@ -174,14 +174,15 @@ class MulticlassCalibrationError(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics.classification import MulticlassCalibrationError
-        >>> preds = torch.tensor([[0.25, 0.20, 0.55],
-        ...                       [0.55, 0.05, 0.40],
-        ...                       [0.10, 0.30, 0.60],
-        ...                       [0.90, 0.05, 0.05]])
-        >>> target = torch.tensor([0, 1, 2, 0])
-        >>> mcce = MulticlassCalibrationError(num_classes=3, n_bins=3, norm='l1')
-        >>> mcce(preds, target)
+        >>> preds = tensor([[0.25, 0.20, 0.55],
+        ...                 [0.55, 0.05, 0.40],
+        ...                 [0.10, 0.30, 0.60],
+        ...                 [0.90, 0.05, 0.05]])
+        >>> target = tensor([0, 1, 2, 0])
+        >>> metric = MulticlassCalibrationError(num_classes=3, n_bins=3, norm='l1')
+        >>> metric(preds, target)
         tensor(0.2000)
         >>> mcce = MulticlassCalibrationError(num_classes=3, n_bins=3, norm='l2')
         >>> mcce(preds, target)

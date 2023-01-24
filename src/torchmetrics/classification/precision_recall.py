@@ -13,7 +13,6 @@
 # limitations under the License.
 from typing import Any, Optional
 
-import torch
 from torch import Tensor
 from typing_extensions import Literal
 
@@ -37,9 +36,6 @@ class BinaryPrecision(BinaryStatScores):
       element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``.
 
-    .. note::
-       The influence of the additional dimension ``...`` (if present) will be determined by the
-       `multidim_average` argument.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
@@ -62,32 +58,29 @@ class BinaryPrecision(BinaryStatScores):
             Set to ``False`` for faster computations.
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.classification import BinaryPrecision
-        >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
-        >>> preds = torch.tensor([0, 0, 1, 1, 0, 1])
-        >>> bp = BinaryPrecision()
-        >>> bp(preds, target)
+        >>> target = tensor([0, 1, 0, 1, 0, 1])
+        >>> preds = tensor([0, 0, 1, 1, 0, 1])
+        >>> metric = BinaryPrecision()
+        >>> metric(preds, target)
         tensor(0.6667)
 
     Example (preds is float tensor):
         >>> from torchmetrics.classification import BinaryPrecision
-        >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
-        >>> preds = torch.tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
-        >>> bp = BinaryPrecision()
-        >>> bp(preds, target)
+        >>> target = tensor([0, 1, 0, 1, 0, 1])
+        >>> preds = tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
+        >>> metric = BinaryPrecision()
+        >>> metric(preds, target)
         tensor(0.6667)
 
     Example (multidim tensors):
         >>> from torchmetrics.classification import BinaryPrecision
-        >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
-        >>> preds = torch.tensor(
-        ...     [
-        ...         [[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
-        ...         [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]],
-        ...     ]
-        ... )
-        >>> bp = BinaryPrecision(multidim_average='samplewise')
-        >>> bp(preds, target)
+        >>> target = tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
+        >>> preds = tensor([[[0.59, 0.91], [0.91, 0.99],  [0.63, 0.04]],
+        ...                 [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]]])
+        >>> metric = BinaryPrecision(multidim_average='samplewise')
+        >>> metric(preds, target)
         tensor([0.4000, 0.0000])
     """
     is_differentiable: bool = False
@@ -116,9 +109,6 @@ class MulticlassPrecision(MulticlassStatScores):
       probabilities/logits into an int tensor.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``.
 
-    .. note::
-       The influence of the additional dimension ``...`` (if present) will be determined by the
-       `multidim_average` argument.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
@@ -160,11 +150,12 @@ class MulticlassPrecision(MulticlassStatScores):
             Set to ``False`` for faster computations.
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.classification import MulticlassPrecision
-        >>> target = torch.tensor([2, 1, 0, 0])
-        >>> preds = torch.tensor([2, 1, 0, 1])
-        >>> mcp = MulticlassPrecision(num_classes=3)
-        >>> mcp(preds, target)
+        >>> target = tensor([2, 1, 0, 0])
+        >>> preds = tensor([2, 1, 0, 1])
+        >>> metric = MulticlassPrecision(num_classes=3)
+        >>> metric(preds, target)
         tensor(0.8333)
         >>> mcp = MulticlassPrecision(num_classes=3, average=None)
         >>> mcp(preds, target)
@@ -172,15 +163,13 @@ class MulticlassPrecision(MulticlassStatScores):
 
     Example (preds is float tensor):
         >>> from torchmetrics.classification import MulticlassPrecision
-        >>> target = torch.tensor([2, 1, 0, 0])
-        >>> preds = torch.tensor([
-        ...   [0.16, 0.26, 0.58],
-        ...   [0.22, 0.61, 0.17],
-        ...   [0.71, 0.09, 0.20],
-        ...   [0.05, 0.82, 0.13],
-        ... ])
-        >>> mcp = MulticlassPrecision(num_classes=3)
-        >>> mcp(preds, target)
+        >>> target = tensor([2, 1, 0, 0])
+        >>> preds = tensor([[0.16, 0.26, 0.58],
+        ...                 [0.22, 0.61, 0.17],
+        ...                 [0.71, 0.09, 0.20],
+        ...                 [0.05, 0.82, 0.13]])
+        >>> metric = MulticlassPrecision(num_classes=3)
+        >>> metric(preds, target)
         tensor(0.8333)
         >>> mcp = MulticlassPrecision(num_classes=3, average=None)
         >>> mcp(preds, target)
@@ -188,10 +177,10 @@ class MulticlassPrecision(MulticlassStatScores):
 
     Example (multidim tensors):
         >>> from torchmetrics.classification import MulticlassPrecision
-        >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
-        >>> preds = torch.tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
-        >>> mcp = MulticlassPrecision(num_classes=3, multidim_average='samplewise')
-        >>> mcp(preds, target)
+        >>> target = tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
+        >>> preds = tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
+        >>> metric = MulticlassPrecision(num_classes=3, multidim_average='samplewise')
+        >>> metric(preds, target)
         tensor([0.3889, 0.2778])
         >>> mcp = MulticlassPrecision(num_classes=3, multidim_average='samplewise', average=None)
         >>> mcp(preds, target)
@@ -225,9 +214,6 @@ class MultilabelPrecision(MultilabelStatScores):
       in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``.
 
-    .. note::
-       The influence of the additional dimension ``...`` (if present) will be determined by the
-       `multidim_average` argument.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
@@ -268,11 +254,12 @@ class MultilabelPrecision(MultilabelStatScores):
             Set to ``False`` for faster computations.
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.classification import MultilabelPrecision
-        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
-        >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
-        >>> mlp = MultilabelPrecision(num_labels=3)
-        >>> mlp(preds, target)
+        >>> target = tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = tensor([[0, 0, 1], [1, 0, 1]])
+        >>> metric = MultilabelPrecision(num_labels=3)
+        >>> metric(preds, target)
         tensor(0.5000)
         >>> mlp = MultilabelPrecision(num_labels=3, average=None)
         >>> mlp(preds, target)
@@ -280,10 +267,10 @@ class MultilabelPrecision(MultilabelStatScores):
 
     Example (preds is float tensor):
         >>> from torchmetrics.classification import MultilabelPrecision
-        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
-        >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
-        >>> mlp = MultilabelPrecision(num_labels=3)
-        >>> mlp(preds, target)
+        >>> target = tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
+        >>> metric = MultilabelPrecision(num_labels=3)
+        >>> metric(preds, target)
         tensor(0.5000)
         >>> mlp = MultilabelPrecision(num_labels=3, average=None)
         >>> mlp(preds, target)
@@ -291,15 +278,11 @@ class MultilabelPrecision(MultilabelStatScores):
 
     Example (multidim tensors):
         >>> from torchmetrics.classification import MultilabelPrecision
-        >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
-        >>> preds = torch.tensor(
-        ...     [
-        ...         [[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
-        ...         [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]],
-        ...     ]
-        ... )
-        >>> mlp = MultilabelPrecision(num_labels=3, multidim_average='samplewise')
-        >>> mlp(preds, target)
+        >>> target = tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
+        >>> preds = tensor([[[0.59, 0.91], [0.91, 0.99],  [0.63, 0.04]],
+        ...                 [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]]])
+        >>> metric = MultilabelPrecision(num_labels=3, multidim_average='samplewise')
+        >>> metric(preds, target)
         tensor([0.3333, 0.0000])
         >>> mlp = MultilabelPrecision(num_labels=3, multidim_average='samplewise', average=None)
         >>> mlp(preds, target)
@@ -332,9 +315,6 @@ class BinaryRecall(BinaryStatScores):
       sigmoid per element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``
 
-    .. note::
-       The influence of the additional dimension ``...`` (if present) will be determined by the
-       `multidim_average` argument.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
@@ -357,32 +337,29 @@ class BinaryRecall(BinaryStatScores):
             Set to ``False`` for faster computations.
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.classification import BinaryRecall
-        >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
-        >>> preds = torch.tensor([0, 0, 1, 1, 0, 1])
-        >>> br = BinaryRecall()
-        >>> br(preds, target)
+        >>> target = tensor([0, 1, 0, 1, 0, 1])
+        >>> preds = tensor([0, 0, 1, 1, 0, 1])
+        >>> metric = BinaryRecall()
+        >>> metric(preds, target)
         tensor(0.6667)
 
     Example (preds is float tensor):
         >>> from torchmetrics.classification import BinaryRecall
-        >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
-        >>> preds = torch.tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
-        >>> br = BinaryRecall()
-        >>> br(preds, target)
+        >>> target = tensor([0, 1, 0, 1, 0, 1])
+        >>> preds = tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
+        >>> metric = BinaryRecall()
+        >>> metric(preds, target)
         tensor(0.6667)
 
     Example (multidim tensors):
         >>> from torchmetrics.classification import BinaryRecall
-        >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
-        >>> preds = torch.tensor(
-        ...     [
-        ...         [[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
-        ...         [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]],
-        ...     ]
-        ... )
-        >>> br = BinaryRecall(multidim_average='samplewise')
-        >>> br(preds, target)
+        >>> target = tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
+        >>> preds = tensor([[[0.59, 0.91], [0.91, 0.99],  [0.63, 0.04]],
+        ...                 [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]]])
+        >>> metric = BinaryRecall(multidim_average='samplewise')
+        >>> metric(preds, target)
         tensor([0.6667, 0.0000])
     """
     is_differentiable: bool = False
@@ -411,9 +388,6 @@ class MulticlassRecall(MulticlassStatScores):
       probabilities/logits into an int tensor.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``
 
-    .. note::
-       The influence of the additional dimension ``...`` (if present) will be determined by the
-       `multidim_average` argument.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
@@ -455,11 +429,12 @@ class MulticlassRecall(MulticlassStatScores):
             Set to ``False`` for faster computations.
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.classification import MulticlassRecall
-        >>> target = torch.tensor([2, 1, 0, 0])
-        >>> preds = torch.tensor([2, 1, 0, 1])
-        >>> mcr = MulticlassRecall(num_classes=3)
-        >>> mcr(preds, target)
+        >>> target = tensor([2, 1, 0, 0])
+        >>> preds = tensor([2, 1, 0, 1])
+        >>> metric = MulticlassRecall(num_classes=3)
+        >>> metric(preds, target)
         tensor(0.8333)
         >>> mcr = MulticlassRecall(num_classes=3, average=None)
         >>> mcr(preds, target)
@@ -467,15 +442,13 @@ class MulticlassRecall(MulticlassStatScores):
 
     Example (preds is float tensor):
         >>> from torchmetrics.classification import MulticlassRecall
-        >>> target = torch.tensor([2, 1, 0, 0])
-        >>> preds = torch.tensor([
-        ...   [0.16, 0.26, 0.58],
-        ...   [0.22, 0.61, 0.17],
-        ...   [0.71, 0.09, 0.20],
-        ...   [0.05, 0.82, 0.13],
-        ... ])
-        >>> mcr = MulticlassRecall(num_classes=3)
-        >>> mcr(preds, target)
+        >>> target = tensor([2, 1, 0, 0])
+        >>> preds = tensor([[0.16, 0.26, 0.58],
+        ...                 [0.22, 0.61, 0.17],
+        ...                 [0.71, 0.09, 0.20],
+        ...                 [0.05, 0.82, 0.13]])
+        >>> metric = MulticlassRecall(num_classes=3)
+        >>> metric(preds, target)
         tensor(0.8333)
         >>> mcr = MulticlassRecall(num_classes=3, average=None)
         >>> mcr(preds, target)
@@ -483,10 +456,10 @@ class MulticlassRecall(MulticlassStatScores):
 
     Example (multidim tensors):
         >>> from torchmetrics.classification import MulticlassRecall
-        >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
-        >>> preds = torch.tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
-        >>> mcr = MulticlassRecall(num_classes=3, multidim_average='samplewise')
-        >>> mcr(preds, target)
+        >>> target = tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
+        >>> preds = tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
+        >>> metric = MulticlassRecall(num_classes=3, multidim_average='samplewise')
+        >>> metric(preds, target)
         tensor([0.5000, 0.2778])
         >>> mcr = MulticlassRecall(num_classes=3, multidim_average='samplewise', average=None)
         >>> mcr(preds, target)
@@ -519,9 +492,6 @@ class MultilabelRecall(MultilabelStatScores):
       per element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``
 
-    .. note::
-       The influence of the additional dimension ``...`` (if present) will be determined by the
-       `multidim_average` argument.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
@@ -562,11 +532,12 @@ class MultilabelRecall(MultilabelStatScores):
             Set to ``False`` for faster computations.
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.classification import MultilabelRecall
-        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
-        >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
-        >>> mlr = MultilabelRecall(num_labels=3)
-        >>> mlr(preds, target)
+        >>> target = tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = tensor([[0, 0, 1], [1, 0, 1]])
+        >>> metric = MultilabelRecall(num_labels=3)
+        >>> metric(preds, target)
         tensor(0.6667)
         >>> mlr = MultilabelRecall(num_labels=3, average=None)
         >>> mlr(preds, target)
@@ -574,10 +545,10 @@ class MultilabelRecall(MultilabelStatScores):
 
     Example (preds is float tensor):
         >>> from torchmetrics.classification import MultilabelRecall
-        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
-        >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
-        >>> mlr = MultilabelRecall(num_labels=3)
-        >>> mlr(preds, target)
+        >>> target = tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
+        >>> metric = MultilabelRecall(num_labels=3)
+        >>> metric(preds, target)
         tensor(0.6667)
         >>> mlr = MultilabelRecall(num_labels=3, average=None)
         >>> mlr(preds, target)
@@ -585,15 +556,11 @@ class MultilabelRecall(MultilabelStatScores):
 
     Example (multidim tensors):
         >>> from torchmetrics.classification import MultilabelRecall
-        >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
-        >>> preds = torch.tensor(
-        ...     [
-        ...         [[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
-        ...         [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]],
-        ...     ]
-        ... )
-        >>> mlr = MultilabelRecall(num_labels=3, multidim_average='samplewise')
-        >>> mlr(preds, target)
+        >>> target = tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
+        >>> preds = tensor([[[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
+        ...                 [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]]])
+        >>> metric = MultilabelRecall(num_labels=3, multidim_average='samplewise')
+        >>> metric(preds, target)
         tensor([0.6667, 0.0000])
         >>> mlr = MultilabelRecall(num_labels=3, multidim_average='samplewise', average=None)
         >>> mlr(preds, target)
@@ -625,9 +592,9 @@ class Precision:
     each argument influence and examples.
 
     Legacy Example:
-        >>> import torch
-        >>> preds  = torch.tensor([2, 0, 2, 1])
-        >>> target = torch.tensor([1, 1, 2, 0])
+        >>> from torch import tensor
+        >>> preds  = tensor([2, 0, 2, 1])
+        >>> target = tensor([1, 1, 2, 0])
         >>> precision = Precision(task="multiclass", average='macro', num_classes=3)
         >>> precision(preds, target)
         tensor(0.1667)
@@ -679,9 +646,9 @@ class Recall:
     each argument influence and examples.
 
     Legacy Example:
-        >>> import torch
-        >>> preds  = torch.tensor([2, 0, 2, 1])
-        >>> target = torch.tensor([1, 1, 2, 0])
+        >>> from torch import tensor
+        >>> preds  = tensor([2, 0, 2, 1])
+        >>> target = tensor([1, 1, 2, 0])
         >>> recall = Recall(task="multiclass", average='macro', num_classes=3)
         >>> recall(preds, target)
         tensor(0.3333)
