@@ -63,10 +63,10 @@ class KLDivergence(Metric):
         Half precision is only support on GPU for this metric
 
     Example:
-        >>> import torch
+        >>> from torch import tensor
         >>> from torchmetrics.functional import kl_divergence
-        >>> p = torch.tensor([[0.36, 0.48, 0.16]])
-        >>> q = torch.tensor([[1/3, 1/3, 1/3]])
+        >>> p = tensor([[0.36, 0.48, 0.16]])
+        >>> q = tensor([[1/3, 1/3, 1/3]])
         >>> kl_divergence(p, q)
         tensor(0.0853)
     """
