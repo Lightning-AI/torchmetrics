@@ -41,7 +41,7 @@ seed_all(42)
 
 def specificity_at_sensitivity_x_multilabel(predictions, targets, min_sensitivity):
     # get fpr, tpr and thresholds
-    fpr, sensitivity, thresholds = sk_roc_curve(targets, predictions, pos_label=1.0)
+    fpr, sensitivity, thresholds = sk_roc_curve(targets, predictions, pos_label=1.0, drop_intermediate=False)
     # check if fpr is filled with nan (All positive samples),
     # replace nan with zero tensor
     if np.isnan(fpr).all():
@@ -50,9 +50,17 @@ def specificity_at_sensitivity_x_multilabel(predictions, targets, min_sensitivit
     # convert fpr to specificity (specificity = 1 - fpr)
     specificity = _convert_fpr_to_specificity(fpr)
     try:
-        max_spec, _, best_threshold = max(
-            [(sp, sn, thresh) for sp, sn, thresh in zip(specificity, sensitivity, thresholds) if sn >= min_sensitivity]
-        )
+        # get indices where sensitivity is greater than min_sensitivity
+        indices = sensitivity >= min_sensitivity
+
+        # redefine specificity, sensitivity and threshold tensor based on indices
+        specificity, sensitivity, thresholds = specificity[indices], sensitivity[indices], thresholds[indices]
+
+        # get argmax
+        idx = np.argmax(specificity)
+
+        # get max_spec and best_threshold
+        max_spec, best_threshold = specificity[idx], thresholds[idx]
     except ValueError:
         max_spec, best_threshold = 0.0, 1e6
 
