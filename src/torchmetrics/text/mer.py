@@ -22,7 +22,7 @@ from torchmetrics.metric import Metric
 
 
 class MatchErrorRate(Metric):
-    r"""Match Error Rate (MER_) is a common metric of the performance of an automatic speech recognition system.
+    r"""Match Error Rate (`MER`_) is a common metric of the performance of an automatic speech recognition system.
 
     This value indicates the percentage of words that were incorrectly predicted and inserted.
     The lower the value, the better the performance of the ASR system with a MatchErrorRate of 0 being a perfect score.
@@ -38,18 +38,23 @@ class MatchErrorRate(Metric):
         - :math:`C` is the number of correct words,
         - :math:`N` is the number of words in the reference (:math:`N=S+D+C`).
 
+    As input to ``forward`` and ``update`` the metric accepts the following input:
+
+    - ``preds`` (:class:`~List`): Transcription(s) to score as a string or list of strings
+    - ``target`` (:class:`~List`): Reference(s) for each speech input as a string or list of strings
+
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``mer`` (:class:`~torch.Tensor`): A tensor with the match error rate
 
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    Returns:
-        Match error rate score
-
     Examples:
         >>> preds = ["this is the prediction", "there is an other sample"]
         >>> target = ["this is the reference", "there is another one"]
-        >>> metric = MatchErrorRate()
-        >>> metric(preds, target)
+        >>> mer = MatchErrorRate()
+        >>> mer(preds, target)
         tensor(0.4444)
     """
     is_differentiable: bool = False
@@ -72,12 +77,7 @@ class MatchErrorRate(Metric):
         preds: Union[str, List[str]],
         target: Union[str, List[str]],
     ) -> None:
-        """Store references/predictions for computing Match Error Rate scores.
-
-        Args:
-            preds: Transcription(s) to score as a string or list of strings
-            target: Reference(s) for each speech input as a string or list of strings
-        """
+        """Update state with predictions and targets."""
         errors, total = _mer_update(
             preds,
             target,
@@ -86,9 +86,5 @@ class MatchErrorRate(Metric):
         self.total += total
 
     def compute(self) -> Tensor:
-        """Calculate the Match error rate.
-
-        Returns:
-            Match error rate
-        """
+        """Calculate the Match error rate."""
         return _mer_compute(self.errors, self.total)
