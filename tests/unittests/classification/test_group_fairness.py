@@ -48,8 +48,8 @@ def _fairlearn_binary(preds, target, groups, ignore_index):
     ratios = mf.ratio()
 
     return {
-        f"DP_{mf_group['dp'].idxmin()}_{mf_group['dp'].idxmax()}": ratios["dp"],
-        f"EO_{mf_group['eo'].idxmin()}_{mf_group['eo'].idxmax()}": ratios["eo"],
+        f"DP_{mf_group['dp'].idxmin()}_{mf_group['dp'].idxmax()}": torch.tensor(ratios["dp"], dtype=torch.float),
+        f"EO_{mf_group['eo'].idxmin()}_{mf_group['eo'].idxmax()}": torch.tensor(ratios["eo"], dtype=torch.float),
     }
 
 
