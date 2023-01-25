@@ -46,10 +46,6 @@ class BinaryAccuracy(BinaryStatScores):
       per element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``
 
-    .. note::
-       The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-       argument.
-
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
     - ``ba`` (:class:`~torch.Tensor`): If ``multidim_average`` is set to ``global``, the metric returns a scalar value.
@@ -184,9 +180,6 @@ class MulticlassAccuracy(MulticlassStatScores):
 
           - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
           - If ``average=None/'none'``, the shape will be ``(N, C)``
-
-    The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
 
     Args:
         num_classes: Integer specifing the number of classes
@@ -324,10 +317,6 @@ class MultilabelAccuracy(MultilabelStatScores):
       point tensor with values outside [0,1] range we consider the input to be logits and will auto apply sigmoid per
       element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``
-
-    .. note::
-       The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-       argument.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 

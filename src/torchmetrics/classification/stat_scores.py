@@ -334,7 +334,6 @@ class MultilabelStatScores(_AbstractStatScores):
       per element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``
 
-
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
     - ``mlss`` (:class:`~torch.Tensor`): A tensor of shape ``(..., 5)``, where the last dimension corresponds
