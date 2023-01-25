@@ -21,7 +21,7 @@ from torchmetrics.metric import Metric
 
 
 class WordErrorRate(Metric):
-    r"""Word error rate (WordErrorRate_) is a common metric of the performance of an automatic speech recognition
+    r"""Word error rate (`WordErrorRate`_) is a common metric of the performance of an automatic speech recognition
     system. This value indicates the percentage of words that were incorrectly predicted. The lower the value, the
     better the performance of the ASR system with a WER of 0 being a perfect score. Word error rate can then be
     computed as:
@@ -30,25 +30,31 @@ class WordErrorRate(Metric):
         WER = \frac{S + D + I}{N} = \frac{S + D + I}{S + D + C}
 
     where:
-        - :math:`S` is the number of substitutions,
-        - :math:`D` is the number of deletions,
-        - :math:`I` is the number of insertions,
-        - :math:`C` is the number of correct words,
-        - :math:`N` is the number of words in the reference (:math:`N=S+D+C`).
+    - :math:`S` is the number of substitutions,
+    - :math:`D` is the number of deletions,
+    - :math:`I` is the number of insertions,
+    - :math:`C` is the number of correct words,
+    - :math:`N` is the number of words in the reference (:math:`N=S+D+C`).
 
     Compute WER score of transcribed segments against references.
+
+    As input to ``forward`` and ``update`` the metric accepts the following input:
+
+    - ``preds`` (:class:`~List`): Transcription(s) to score as a string or list of strings
+    - ``target`` (:class:`~List`): Reference(s) for each speech input as a string or list of strings
+
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
+    -  ``wer`` (:class:`~torch.Tensor`): A tensor with the Word Error Rate score
 
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    Returns:
-        Word error rate score
-
     Examples:
         >>> preds = ["this is the prediction", "there is an other sample"]
         >>> target = ["this is the reference", "there is another one"]
-        >>> metric = WordErrorRate()
-        >>> metric(preds, target)
+        >>> wer = WordErrorRate()
+        >>> wer(preds, target)
         tensor(0.5000)
     """
     is_differentiable: bool = False
@@ -67,20 +73,11 @@ class WordErrorRate(Metric):
         self.add_state("total", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
 
     def update(self, preds: Union[str, List[str]], target: Union[str, List[str]]) -> None:  # type: ignore
-        """Store references/predictions for computing Word Error Rate scores.
-
-        Args:
-            preds: Transcription(s) to score as a string or list of strings
-            target: Reference(s) for each speech input as a string or list of strings
-        """
+        """Update state with predictions and targets."""
         errors, total = _wer_update(preds, target)
         self.errors += errors
         self.total += total
 
     def compute(self) -> Tensor:
-        """Calculate the word error rate.
-
-        Returns:
-            Word error rate score
-        """
+        """Calculate the word error rate."""
         return _wer_compute(self.errors, self.total)
