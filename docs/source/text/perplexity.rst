@@ -14,6 +14,7 @@ ________________
 
 .. autoclass:: torchmetrics.text.perplexity.Perplexity
     :noindex:
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________
