@@ -14,6 +14,7 @@ ________________
 
 .. autoclass:: torchmetrics.BLEUScore
     :noindex:
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________

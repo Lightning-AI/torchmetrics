@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Any, List, Tuple
+from typing import Any, Callable, List, Tuple
 
 import torch
 from torch import Tensor
@@ -132,3 +132,12 @@ class MultioutputWrapper(Metric):
         """Reset all underlying metrics."""
         for metric in self.metrics:
             metric.reset()
+        super().reset()
+
+    def _wrap_update(self, update: Callable) -> Callable:
+        """Overwrite to do nothing."""
+        return update
+
+    def _wrap_compute(self, compute: Callable) -> Callable:
+        """Overwrite to do nothing."""
+        return compute
