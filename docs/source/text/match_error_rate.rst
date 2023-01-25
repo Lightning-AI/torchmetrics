@@ -14,6 +14,7 @@ ________________
 
 .. autoclass:: torchmetrics.MatchErrorRate
     :noindex:
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________
