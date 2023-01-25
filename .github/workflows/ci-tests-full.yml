@@ -79,7 +79,7 @@ jobs:
     - name: Set PyTorch version
       if: inputs.requires != 'oldest'
       run: |
-        pip install packaging
+        pip install packaging -q
         python ./requirements/adjust-versions.py requirements.txt ${{ matrix.pytorch-version }}
 
     - name: full chashing

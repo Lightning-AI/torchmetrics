@@ -56,8 +56,8 @@ class SignalDistortionRatio(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
-        >>> from torchmetrics.audio import SignalDistortionRatio
         >>> import torch
+        >>> from torchmetrics.audio import SignalDistortionRatio
         >>> g = torch.manual_seed(1)
         >>> preds = torch.randn(8000)
         >>> target = torch.randn(8000)
@@ -134,10 +134,10 @@ class ScaleInvariantSignalDistortionRatio(Metric):
             if target and preds have a different shape
 
     Example:
-        >>> import torch
+        >>> from torch import tensor
         >>> from torchmetrics import ScaleInvariantSignalDistortionRatio
-        >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
-        >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
+        >>> target = tensor([3.0, -0.5, 2.0, 7.0])
+        >>> preds = tensor([2.5, 0.0, 2.0, 8.0])
         >>> si_sdr = ScaleInvariantSignalDistortionRatio()
         >>> si_sdr(preds, target)
         tensor(18.4030)
