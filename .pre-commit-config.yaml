@@ -13,11 +13,11 @@
 # limitations under the License.
 
 default_language_version:
-  python: python3.8
+  python: python3
 
 ci:
   autofix_prs: true
-  autoupdate_commit_msg: '[pre-commit.ci] pre-commit suggestions'
+  autoupdate_commit_msg: "[pre-commit.ci] pre-commit suggestions"
   autoupdate_schedule: quarterly
   # submodules: true
 
@@ -34,7 +34,7 @@ repos:
       - id: check-executables-have-shebangs
       - id: check-case-conflict
       - id: check-added-large-files
-        args: ['--maxkb=100', '--enforce-all']
+        args: ["--maxkb=100", "--enforce-all"]
       - id: detect-private-key
 
   - repo: https://github.com/asottile/pyupgrade
@@ -72,10 +72,10 @@ repos:
           - mdformat-black
           - mdformat_frontmatter
         exclude: |
-            (?x)^(
-                CHANGELOG.md|
-                docs/paper_JOSS/paper.md
-            )$
+          (?x)^(
+              CHANGELOG.md|
+              docs/paper_JOSS/paper.md
+          )$
 
   - repo: https://github.com/asottile/yesqa
     rev: v1.4.0
@@ -83,7 +83,7 @@ repos:
       - id: yesqa
 
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: 'v0.0.226'
+    rev: "v0.0.226"
     hooks:
       - id: ruff
         # Respect `exclude` and `extend-exclude` settings.
