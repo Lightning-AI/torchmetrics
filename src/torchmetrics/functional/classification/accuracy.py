@@ -32,6 +32,7 @@ from torchmetrics.functional.classification.stat_scores import (
     _multilabel_stat_scores_update,
 )
 from torchmetrics.utilities.compute import _safe_divide
+from torchmetrics.utilities.exceptions import MisConfigurationError
 
 
 def _accuracy_reduce(
@@ -416,18 +417,21 @@ def accuracy(
     """
 
     if task not in ["binary", "multiclass", "multilabel"]:
-        MisConfigurationError(f"Expected argument `task` must be one of (`'binary'`, `'multiclass'`, `'multilabel'`). Got {task}")
+        raise MisConfigurationError(f"Expected argument `task` must be one of (`'binary'`, `'multiclass'`, `'multilabel'`). Got {task}")
     
     if task == "binary":
         return binary_accuracy(preds, target, threshold, multidim_average, ignore_index)
     if task == "multiclass":
-        assert isinstance(num_classes, int)
-        assert isinstance(top_k, int)
+        if not isinstance(num_classes, int):
+            raise MisConfigurationError(f"Optional arg `num_classes` must be type `int` when task is {task}. Got {type(num_classes)}")
+        if not isinstance(top_k, int):
+            raise MisConfigurationError(f"Optional arg `top_k` must be type `int` when task is {task}. Got {type(top_k)}")
         return multiclass_accuracy(
             preds, target, num_classes, average, top_k, multidim_average, ignore_index
         )
     if task == "multilabel":
-        assert isinstance(num_labels, int)
+        if not isinstance(num_labels, int):
+            raise MisConfigurationError(f"Optional arg `num_labels` must be type `int` when task is {task}. Got {type(num_labels)}")
         return multilabel_accuracy(
             preds, target, num_labels, threshold, average, multidim_average, ignore_index
         )
