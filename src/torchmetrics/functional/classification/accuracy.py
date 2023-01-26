@@ -32,7 +32,6 @@ from torchmetrics.functional.classification.stat_scores import (
     _multilabel_stat_scores_update,
 )
 from torchmetrics.utilities.compute import _safe_divide
-from torchmetrics.utilities.exceptions import MisConfigurationError
 
 
 def _accuracy_reduce(
