@@ -49,22 +49,23 @@ def _specificity_at_sensitivity(
     thresholds: Tensor,
     min_sensitivity: float,
 ) -> Tuple[Tensor, Tensor]:
-    try:
-        # get indices where sensitivity is greater than min_sensitivity
-        indices = sensitivity >= min_sensitivity
 
+    # get indices where sensitivity is greater than min_sensitivity
+    indices = sensitivity >= min_sensitivity
+
+    # if no indices are found, max_spec, best_threshold = 0.0, 1e6
+    if not indices.any():
+        max_spec = torch.tensor(0.0, device=specificity.device, dtype=specificity.dtype)
+        best_threshold = torch.tensor(1e6, device=thresholds.device, dtype=thresholds.dtype)
+    else:
         # redefine specificity, sensitivity and threshold tensor based on indices
-        specificity, sensitivity, thresholds = (specificity[indices], sensitivity[indices], thresholds[indices])
+        specificity, sensitivity, thresholds = specificity[indices], sensitivity[indices], thresholds[indices]
 
         # get argmax
         idx = torch.argmax(specificity)
 
         # get max_spec and best_threshold
         max_spec, best_threshold = specificity[idx], thresholds[idx]
-
-    except:
-        max_spec = torch.tensor(0.0, device=specificity.device, dtype=specificity.dtype)
-        best_threshold = torch.tensor(1e6, device=thresholds.device, dtype=thresholds.dtype)
 
     return max_spec, best_threshold
 

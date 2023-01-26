@@ -49,10 +49,14 @@ def specificity_at_sensitivity_x_multilabel(predictions, targets, min_sensitivit
 
     # convert fpr to specificity (specificity = 1 - fpr)
     specificity = _convert_fpr_to_specificity(fpr)
-    try:
-        # get indices where sensitivity is greater than min_sensitivity
-        indices = sensitivity >= min_sensitivity
 
+    # get indices where sensitivity is greater than min_sensitivity
+    indices = sensitivity >= min_sensitivity
+
+    # if no indices are found, max_spec, best_threshold = 0.0, 1e6
+    if not indices.any():
+        max_spec, best_threshold = 0.0, 1e6
+    else:
         # redefine specificity, sensitivity and threshold tensor based on indices
         specificity, sensitivity, thresholds = specificity[indices], sensitivity[indices], thresholds[indices]
 
@@ -61,8 +65,6 @@ def specificity_at_sensitivity_x_multilabel(predictions, targets, min_sensitivit
 
         # get max_spec and best_threshold
         max_spec, best_threshold = specificity[idx], thresholds[idx]
-    except ValueError:
-        max_spec, best_threshold = 0.0, 1e6
 
     return float(max_spec), float(best_threshold)
 
@@ -283,7 +285,7 @@ class TestMulticlassSpecificityAtSensitivity(MetricTester):
         if (preds < 0).any():
             preds = preds.softmax(dim=-1)
         for pred, true in zip(preds, target):
-            pred = torch.tensor(np.round(pred.numpy(), 1)) + 1e-6  # rounding will simulate binning
+            pred = torch.tensor(np.round(pred.detach().numpy(), 1)) + 1e-6  # rounding will simulate binning
             r1, _ = multiclass_specificity_at_sensitivity(
                 pred, true, num_classes=NUM_CLASSES, min_sensitivity=min_sensitivity, thresholds=None
             )
@@ -401,7 +403,7 @@ class TestMultilabelSpecificityAtSensitivity(MetricTester):
         if (preds < 0).any():
             preds = sigmoid(preds)
         for pred, true in zip(preds, target):
-            pred = torch.tensor(np.round(pred.numpy(), 1)) + 1e-6  # rounding will simulate binning
+            pred = torch.tensor(np.round(pred.detach().numpy(), 1)) + 1e-6  # rounding will simulate binning
             r1, _ = multilabel_specificity_at_sensitivity(
                 pred, true, num_labels=NUM_CLASSES, min_sensitivity=min_sensitivity, thresholds=None
             )
