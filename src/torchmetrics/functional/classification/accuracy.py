@@ -90,7 +90,6 @@ def binary_accuracy(
     threshold: float = 0.5,
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
-    
 ) -> Tensor:
     r"""Computes `Accuracy`_ for binary tasks:
 
@@ -170,7 +169,6 @@ def multiclass_accuracy(
     top_k: int = 1,
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
-    
 ) -> Tensor:
     r"""Computes `Accuracy`_ for multiclass tasks:
 
@@ -262,7 +260,7 @@ def multiclass_accuracy(
         tensor([[1.0000, 0.0000, 0.5000],
                 [0.0000, 0.3333, 0.5000]])
     """
-    
+
     # validate args
     _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index)
     _multiclass_stat_scores_tensor_validation(preds, target, num_classes, multidim_average, ignore_index)
@@ -281,7 +279,6 @@ def multilabel_accuracy(
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
-    
 ) -> Tensor:
     r"""Computes `Accuracy`_ for multilabel tasks:
 
@@ -389,7 +386,6 @@ def accuracy(
     multidim_average: Optional[Literal["global", "samplewise"]] = "global",
     top_k: Optional[int] = 1,
     ignore_index: Optional[int] = None,
-    
 ) -> Tensor:
     r"""Computes `Accuracy`_
 
