@@ -21,10 +21,11 @@ from torchmetrics.metric import Metric
 
 
 class WordInfoPreserved(Metric):
-    r"""Word Information Preserved (WIP_) is a metric of the performance of an automatic speech recognition system.
-    This value indicates the percentage of words that were correctly predicted between a set of ground-truth
-    sentences and a set of hypothesis sentences. The higher the value, the better the performance of the ASR system
-    with a WordInfoPreserved of 1 being a perfect score. Word Information Preserved rate can then be computed as:
+    r"""Word Information Preserved (`WIP`_) is a metric of the performance of an automatic speech recognition
+    system. This value indicates the percentage of words that were correctly predicted between a set of ground-
+    truth sentences and a set of hypothesis sentences. The higher the value, the better the performance of the ASR
+    system with a WordInfoPreserved of 1 being a perfect score. Word Information Preserved rate can then be
+    computed as:
 
     .. math::
         wip = \frac{C}{N} + \frac{C}{P}
@@ -35,16 +36,24 @@ class WordInfoPreserved(Metric):
         - :math:`N` is the number of words in the reference
         - :math:`P` is the number of words in the prediction
 
+    As input to ``forward`` and ``update`` the metric accepts the following input:
+
+    - ``preds`` (:class:`~List`): Transcription(s) to score as a string or list of strings
+    - ``target`` (:class:`~List`): Reference(s) for each speech input as a string or list of strings
+
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``wip`` (:class:`~torch.Tensor`): A tensor with the Word Information Preserved score
+
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
-
 
     Examples:
         >>> from torchmetrics import WordInfoPreserved
         >>> preds = ["this is the prediction", "there is an other sample"]
         >>> target = ["this is the reference", "there is another one"]
-        >>> metric = WordInfoPreserved()
-        >>> metric(preds, target)
+        >>> wip = WordInfoPreserved()
+        >>> wip(preds, target)
         tensor(0.3472)
     """
     is_differentiable: bool = False
@@ -65,21 +74,12 @@ class WordInfoPreserved(Metric):
         self.add_state("preds_total", tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, preds: Union[str, List[str]], target: Union[str, List[str]]) -> None:
-        """Store predictions/references for computing word Information Preserved scores.
-
-        Args:
-            preds: Transcription(s) to score as a string or list of strings
-            target: Reference(s) for each speech input as a string or list of strings
-        """
+        """Update state with predictions and targets."""
         errors, target_total, preds_total = _wip_update(preds, target)
         self.errors += errors
         self.target_total += target_total
         self.preds_total += preds_total
 
     def compute(self) -> Tensor:
-        """Calculate the word Information Preserved.
-
-        Returns:
-            word Information Preserved score
-        """
+        """Calculate the Word Information Preserved."""
         return _wip_compute(self.errors, self.target_total, self.preds_total)
