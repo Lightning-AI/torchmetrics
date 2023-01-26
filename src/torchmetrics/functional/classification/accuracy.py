@@ -90,7 +90,7 @@ def binary_accuracy(
     threshold: float = 0.5,
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
-    validate_args: bool = True,
+    
 ) -> Tensor:
     r"""Computes `Accuracy`_ for binary tasks:
 
@@ -153,9 +153,10 @@ def binary_accuracy(
         >>> binary_accuracy(preds, target, multidim_average='samplewise')
         tensor([0.3333, 0.1667])
     """
-    if validate_args:
-        _binary_stat_scores_arg_validation(threshold, multidim_average, ignore_index)
-        _binary_stat_scores_tensor_validation(preds, target, multidim_average, ignore_index)
+
+    # validate args
+    _binary_stat_scores_arg_validation(threshold, multidim_average, ignore_index)
+    _binary_stat_scores_tensor_validation(preds, target, multidim_average, ignore_index)
     preds, target = _binary_stat_scores_format(preds, target, threshold, ignore_index)
     tp, fp, tn, fn = _binary_stat_scores_update(preds, target, multidim_average)
     return _accuracy_reduce(tp, fp, tn, fn, average="binary", multidim_average=multidim_average)
@@ -169,7 +170,7 @@ def multiclass_accuracy(
     top_k: int = 1,
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
-    validate_args: bool = True,
+    
 ) -> Tensor:
     r"""Computes `Accuracy`_ for multiclass tasks:
 
@@ -261,9 +262,10 @@ def multiclass_accuracy(
         tensor([[1.0000, 0.0000, 0.5000],
                 [0.0000, 0.3333, 0.5000]])
     """
-    if validate_args:
-        _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index)
-        _multiclass_stat_scores_tensor_validation(preds, target, num_classes, multidim_average, ignore_index)
+    
+    # validate args
+    _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index)
+    _multiclass_stat_scores_tensor_validation(preds, target, num_classes, multidim_average, ignore_index)
     preds, target = _multiclass_stat_scores_format(preds, target, top_k)
     tp, fp, tn, fn = _multiclass_stat_scores_update(
         preds, target, num_classes, top_k, average, multidim_average, ignore_index
@@ -279,7 +281,7 @@ def multilabel_accuracy(
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
-    validate_args: bool = True,
+    
 ) -> Tensor:
     r"""Computes `Accuracy`_ for multilabel tasks:
 
@@ -367,9 +369,10 @@ def multilabel_accuracy(
         tensor([[0.5000, 0.5000, 0.0000],
                 [0.0000, 0.0000, 0.5000]])
     """
-    if validate_args:
-        _multilabel_stat_scores_arg_validation(num_labels, threshold, average, multidim_average, ignore_index)
-        _multilabel_stat_scores_tensor_validation(preds, target, num_labels, multidim_average, ignore_index)
+
+    # validate args
+    _multilabel_stat_scores_arg_validation(num_labels, threshold, average, multidim_average, ignore_index)
+    _multilabel_stat_scores_tensor_validation(preds, target, num_labels, multidim_average, ignore_index)
     preds, target = _multilabel_stat_scores_format(preds, target, num_labels, threshold, ignore_index)
     tp, fp, tn, fn = _multilabel_stat_scores_update(preds, target, multidim_average)
     return _accuracy_reduce(tp, fp, tn, fn, average=average, multidim_average=multidim_average, multilabel=True)
@@ -386,7 +389,7 @@ def accuracy(
     multidim_average: Optional[Literal["global", "samplewise"]] = "global",
     top_k: Optional[int] = 1,
     ignore_index: Optional[int] = None,
-    validate_args: bool = True,
+    
 ) -> Tensor:
     r"""Computes `Accuracy`_
 
@@ -412,20 +415,20 @@ def accuracy(
         >>> accuracy(preds, target, task="multiclass", num_classes=3, top_k=2)
         tensor(0.6667)
     """
-    assert multidim_average is not None
+
+    if task not in ["binary", "multiclass", "multilabel"]:
+        MisConfigurationError(f"Expected argument `task` must be one of (`'binary'`, `'multiclass'`, `'multilabel'`). Got {task}")
+    
     if task == "binary":
-        return binary_accuracy(preds, target, threshold, multidim_average, ignore_index, validate_args)
+        return binary_accuracy(preds, target, threshold, multidim_average, ignore_index)
     if task == "multiclass":
         assert isinstance(num_classes, int)
         assert isinstance(top_k, int)
         return multiclass_accuracy(
-            preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args
+            preds, target, num_classes, average, top_k, multidim_average, ignore_index
         )
     if task == "multilabel":
         assert isinstance(num_labels, int)
         return multilabel_accuracy(
-            preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
+            preds, target, num_labels, threshold, average, multidim_average, ignore_index
         )
-    raise ValueError(
-        f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-    )
