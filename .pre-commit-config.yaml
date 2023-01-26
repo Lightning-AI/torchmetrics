@@ -86,8 +86,4 @@ repos:
     rev: v0.0.233
     hooks:
       - id: ruff
-        # Respect `exclude` and `extend-exclude` settings.
-        args:
-          - "--fix"
-          - "--respect-gitignore"
-          - "--force-exclude"
+        args: "--fix"
