@@ -364,7 +364,7 @@ def multilabel_specificity_at_sensitivity(
         (tuple): a tuple of either 2 tensors or 2 lists containing
 
         - specificity: an 1d tensor of size (n_classes, ) with the maximum recall for the given precision
-        level per class
+            level per class
         - thresholds: an 1d tensor of size (n_classes, ) with the corresponding threshold level per class
 
     Example:
