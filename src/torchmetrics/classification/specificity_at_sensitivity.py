@@ -79,9 +79,9 @@ class BinarySpecificityAtSensitivity(BinaryPrecisionRecallCurve):
 
     Example:
         >>> from torchmetrics.classification import BinarySpecificityAtSensitivity
-        >>> import torch
-        >>> preds = torch.tensor([0, 0.5, 0.4, 0.1])
-        >>> target = torch.tensor([0, 1, 1, 1])
+        >>> from torch import tensor
+        >>> preds = tensor([0, 0.5, 0.4, 0.1])
+        >>> target = tensor([0, 1, 1, 1])
         >>> metric = BinarySpecificityAtSensitivity(min_sensitivity=0.5, thresholds=None)
         >>> metric(preds, target)
         (tensor(1.), tensor(0.4000))
@@ -164,12 +164,12 @@ class MulticlassSpecificityAtSensitivity(MulticlassPrecisionRecallCurve):
 
     Example:
         >>> from torchmetrics.classification import MulticlassSpecificityAtSensitivity
-        >>> import torch
-        >>> preds = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
-        ...                       [0.05, 0.75, 0.05, 0.05, 0.05],
-        ...                       [0.05, 0.05, 0.75, 0.05, 0.05],
-        ...                       [0.05, 0.05, 0.05, 0.75, 0.05]])
-        >>> target = torch.tensor([0, 1, 3, 2])
+        >>> from torch import tensor
+        >>> preds = tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
+        ...                 [0.05, 0.75, 0.05, 0.05, 0.05],
+        ...                 [0.05, 0.05, 0.75, 0.05, 0.05],
+        ...                 [0.05, 0.05, 0.05, 0.75, 0.05]])
+        >>> target = tensor([0, 1, 3, 2])
         >>> metric = MulticlassSpecificityAtSensitivity(num_classes=5, min_sensitivity=0.5, thresholds=None)
         >>> metric(preds, target)
         (tensor([1., 1., 0., 0., 0.]), tensor([7.5000e-01, 7.5000e-01, 5.0000e-02, 5.0000e-02, 1.0000e+06]))
@@ -258,15 +258,15 @@ class MultilabelSpecificityAtSensitivity(MultilabelPrecisionRecallCurve):
 
     Example:
         >>> from torchmetrics.classification import MultilabelSpecificityAtSensitivity
-        >>> import torch
-        >>> preds = torch.tensor([[0.75, 0.05, 0.35],
-        ...                       [0.45, 0.75, 0.05],
-        ...                       [0.05, 0.55, 0.75],
-        ...                       [0.05, 0.65, 0.05]])
-        >>> target = torch.tensor([[1, 0, 1],
-        ...                        [0, 0, 0],
-        ...                        [0, 1, 1],
-        ...                        [1, 1, 1]])
+        >>> from torch import tensor
+        >>> preds = tensor([[0.75, 0.05, 0.35],
+        ...                 [0.45, 0.75, 0.05],
+        ...                 [0.05, 0.55, 0.75],
+        ...                 [0.05, 0.65, 0.05]])
+        >>> target = tensor([[1, 0, 1],
+        ...                  [0, 0, 0],
+        ...                  [0, 1, 1],
+        ...                  [1, 1, 1]])
         >>> metric = MultilabelSpecificityAtSensitivity(num_labels=3, min_sensitivity=0.5, thresholds=None)
         >>> metric(preds, target)
         (tensor([1.0000, 0.5000, 1.0000]), tensor([0.7500, 0.6500, 0.3500]))
