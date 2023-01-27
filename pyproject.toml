@@ -74,7 +74,7 @@ select = [
     "F",  # see: https://pypi.org/project/pyflakes
 # TODO
 #    "D",  # see: https://pypi.org/project/pydocstyle
-#    "N",  # see: https://pypi.org/project/pep8-naming
+    "N",  # see: https://pypi.org/project/pep8-naming
 ]
 #extend-select = [
 #    "C4",  # see: https://pypi.org/project/flake8-comprehensions
