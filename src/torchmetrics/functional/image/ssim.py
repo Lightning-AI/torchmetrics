@@ -33,10 +33,7 @@ def _ssim_check_inputs(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
     """
 
     if preds.dtype != target.dtype:
-        raise TypeError(
-            "Expected `preds` and `target` to have the same data type."
-            f" Got preds: {preds.dtype} and target: {target.dtype}."
-        )
+        target = target.to(preds.dtype)
     _check_same_shape(preds, target)
     if len(preds.shape) not in (4, 5):
         raise ValueError(
