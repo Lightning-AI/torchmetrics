@@ -46,9 +46,19 @@ _DICT_STATES_TYPES = Tuple[
 class CHRFScore(Metric):
     """Calculate `chrf score`_ of machine translated text with one or more references.
 
-    This implementation supports both ChrF score computation introduced in [1] and chrF++ score introduced
-    in `chrF++ score_`. This implementation follows the implmenetaions from https://github.com/m-popovic/chrF and
+    This implementation supports both ChrF score computation introduced in `chrF score`_ and `chrF++ score`_ introduced
+    in `chrF++ score`_. This implementation follows the implmenetaions from https://github.com/m-popovic/chrF and
     https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/chrf.py.
+
+    As input to ``forward`` and ``update`` the metric accepts the following input:
+
+    - ``preds`` (:class:`~Sequence`): An iterable of hypothesis corpus
+    - ``target`` (:class:`~Sequence`): An iterable of iterables of reference corpus
+
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``chrf`` (:class:`~torch.Tensor`): If `return_sentence_level_score=True` return a list of sentence-level
+      chrF/chrF++ scores, else return a corpus-level chrF/chrF++ score
 
     Args:
         n_char_order: A character n-gram order. If ``n_char_order=6``, the metrics refers to the official chrF/chrF++.
@@ -72,14 +82,9 @@ class CHRFScore(Metric):
         >>> from torchmetrics import CHRFScore
         >>> preds = ['the cat is on the mat']
         >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
-        >>> metric = CHRFScore()
-        >>> metric(preds, target)
+        >>> chrf = CHRFScore()
+        >>> chrf(preds, target)
         tensor(0.8640)
-
-    References:
-        [1] chrF: character n-gram F-score for automatic MT evaluation by Maja Popović `chrF score`_
-
-        [2] chrF++: words helping character n-grams by Maja Popović `chrF++ score`_
     """
 
     is_differentiable: bool = False
@@ -125,12 +130,7 @@ class CHRFScore(Metric):
             self.add_state("sentence_chrf_score", [], dist_reduce_fx="cat")
 
     def update(self, preds: Sequence[str], target: Sequence[Sequence[str]]) -> None:
-        """Compute Precision Scores.
-
-        Args:
-            preds: An iterable of hypothesis corpus.
-            target: An iterable of iterables of reference corpus.
-        """
+        """Update state with predictions and targets."""
         n_grams_dicts_tuple = _chrf_score_update(
             preds,
             target,
@@ -148,12 +148,7 @@ class CHRFScore(Metric):
             self.sentence_chrf_score = n_grams_dicts_tuple[-1]
 
     def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-        """Calculate chrF/chrF++ score.
-
-        Return:
-            A corpus-level chrF/chrF++ score.
-            (Optionally) A list of sentence-level chrF/chrF++ scores if `return_sentence_level_score=True`.
-        """
+        """Calculate chrF/chrF++ score."""
         if self.sentence_chrf_score is not None:
             return (
                 _chrf_score_compute(*self._convert_states_to_dicts(), self.n_order, self.beta),
@@ -162,7 +157,7 @@ class CHRFScore(Metric):
         return _chrf_score_compute(*self._convert_states_to_dicts(), self.n_order, self.beta)
 
     def _convert_states_to_dicts(self) -> _DICT_STATES_TYPES:
-        """Convert global metric states to the n-gram dictionaries to be passed in `_chrf_score_update`."""
+        """Convert global metric states to the n-gram dictionaries to be passed in ``_chrf_score_update``."""
         n_grams_dicts: Dict[str, Dict[int, Tensor]] = {
             name: n_gram_dict
             for name, n_gram_dict in zip(
