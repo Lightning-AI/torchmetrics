@@ -64,7 +64,6 @@ def compute_iou(
     iou_type: str = "bbox",
 ) -> Tensor:
     """Compute IOU between detections and ground-truth using the specified iou_type."""
-
     if iou_type == "bbox":
         return box_iou(torch.stack(det), torch.stack(gt))
     elif iou_type == "segm":
@@ -125,8 +124,7 @@ class COCOMetricResults(BaseMetricResults):
 
 
 def _segm_iou(det: List[Tuple[np.ndarray, np.ndarray]], gt: List[Tuple[np.ndarray, np.ndarray]]) -> Tensor:
-    """
-    Compute IOU between detections and ground-truths using mask-IOU. Based on pycocotools toolkit for mask_utils
+    """Compute IOU between detections and ground-truths using mask-IOU. Based on pycocotools toolkit for mask_utils
     Args:
        det: A list of detection masks as ``[(RLE_SIZE, RLE_COUNTS)]``, where ``RLE_SIZE`` is (width, height) dimension
            of the input and RLE_COUNTS is its RLE representation;
@@ -135,7 +133,6 @@ def _segm_iou(det: List[Tuple[np.ndarray, np.ndarray]], gt: List[Tuple[np.ndarra
            of the input and RLE_COUNTS is its RLE representation;
 
     """
-
     det_coco_format = [{"size": i[0], "counts": i[1]} for i in det]
     gt_coco_format = [{"size": i[0], "counts": i[1]} for i in gt]
 
@@ -145,7 +142,7 @@ def _segm_iou(det: List[Tuple[np.ndarray, np.ndarray]], gt: List[Tuple[np.ndarra
 def _input_validator(
     preds: Sequence[Dict[str, Tensor]], targets: Sequence[Dict[str, Tensor]], iou_type: str = "bbox"
 ) -> None:
-    """Ensure the correct input format of `preds` and `targets`"""
+    """Ensure the correct input format of `preds` and `targets`."""
     if not isinstance(preds, Sequence):
         raise ValueError("Expected argument `preds` to be of type Sequence")
     if not isinstance(targets, Sequence):
@@ -190,7 +187,6 @@ def _input_validator(
 
 def _fix_empty_tensors(boxes: Tensor) -> Tensor:
     """Empty tensors can cause problems in DDP mode, this methods corrects them."""
-
     if boxes.numel() == 0 and boxes.ndim == 1:
         return boxes.unsqueeze(0)
     return boxes
@@ -425,7 +421,6 @@ class MeanAveragePrecision(Metric):
 
     def _move_list_states_to_cpu(self) -> None:
         """Move list states to cpu to save GPU memory."""
-
         for key in self._defaults:
             current_val = getattr(self, key)
             current_to_cpu = []
@@ -472,7 +467,6 @@ class MeanAveragePrecision(Metric):
             max_det:
                 Maximum number of evaluated detection bounding boxes
         """
-
         # if self.iou_type == "bbox":
         gt = self.groundtruths[idx]
         det = self.detections[idx]
@@ -576,7 +570,6 @@ class MeanAveragePrecision(Metric):
             ious:
                 IoU results for image and class.
         """
-
         gt = self.groundtruths[idx]
         det = self.detections[idx]
         gt_label_mask = (self.groundtruth_labels[idx] == class_id).nonzero().squeeze(1)

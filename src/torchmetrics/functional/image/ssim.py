@@ -31,7 +31,6 @@ def _ssim_check_inputs(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
         preds: Predicted tensor
         target: Ground truth tensor
     """
-
     if preds.dtype != target.dtype:
         target = target.to(preds.dtype)
     _check_same_shape(preds, target)

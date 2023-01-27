@@ -34,7 +34,6 @@ def _mean_absolute_percentage_error_update(
         epsilon: Specifies the lower bound for target values. Any target value below epsilon
             is set to epsilon (avoids ``ZeroDivisionError``).
     """
-
     _check_same_shape(preds, target)
 
     abs_diff = torch.abs(preds - target)
@@ -62,7 +61,6 @@ def _mean_absolute_percentage_error_compute(sum_abs_per_error: Tensor, num_obs: 
         >>> _mean_absolute_percentage_error_compute(sum_abs_per_error, num_obs)
         tensor(0.2667)
     """
-
     return sum_abs_per_error / num_obs
 
 

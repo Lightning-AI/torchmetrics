@@ -921,7 +921,6 @@ def _stat_scores_update(
             as ``-1``.
         mode: Mode of the input tensors
     """
-
     _negative_index_dropped = False
 
     if ignore_index is not None and ignore_index < 0 and mode is not None:

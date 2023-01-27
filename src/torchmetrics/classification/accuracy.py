@@ -121,7 +121,6 @@ class BinaryAccuracy(BinaryStatScores):
                 If `matplotlib` is not installed
 
         Examples:
-
         .. plot::
             :scale: 75
 
@@ -273,7 +272,6 @@ class MulticlassAccuracy(MulticlassStatScores):
                 If `matplotlib` is not installed
 
         Examples:
-
         .. plot::
             :scale: 75
 
@@ -410,7 +408,7 @@ class MultilabelAccuracy(MultilabelStatScores):
 
 
 class Accuracy:
-    r"""Computes `Accuracy`_
+    r"""Computes `Accuracy`_.
 
     .. math::
         \text{Accuracy} = \frac{1}{N}\sum_i^N 1(y_i = \hat{y}_i)

@@ -62,7 +62,6 @@ def _spearman_corrcoef_update(preds: Tensor, target: Tensor, num_outputs: int) -
         preds: Predicted tensor
         target: Ground truth tensor
     """
-
     if not (preds.is_floating_point() and target.is_floating_point()):
         raise TypeError(
             "Expected `preds` and `target` both to be floating point tensors, but got {pred.dtype} and {target.dtype}"

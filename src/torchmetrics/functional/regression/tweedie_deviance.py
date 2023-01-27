@@ -97,7 +97,6 @@ def _tweedie_deviance_score_compute(sum_deviance_score: Tensor, num_observations
         >>> _tweedie_deviance_score_compute(sum_deviance_score, num_observations)
         tensor(1.2083)
     """
-
     return sum_deviance_score / num_observations
 
 

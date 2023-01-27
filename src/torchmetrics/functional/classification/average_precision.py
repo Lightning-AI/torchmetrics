@@ -140,7 +140,6 @@ def binary_average_precision(
         >>> binary_average_precision(preds, target, thresholds=5)
         tensor(0.6667)
     """
-
     if validate_args:
         _binary_precision_recall_curve_arg_validation(thresholds, ignore_index)
         _binary_precision_recall_curve_tensor_validation(preds, target, ignore_index)

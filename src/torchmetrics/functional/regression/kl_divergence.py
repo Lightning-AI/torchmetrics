@@ -67,7 +67,6 @@ def _kld_compute(measures: Tensor, total: Tensor, reduction: Literal["mean", "su
         >>> _kld_compute(measures, total)
         tensor(0.0853)
     """
-
     if reduction == "sum":
         return measures.sum()
     if reduction == "mean":
@@ -80,7 +79,7 @@ def _kld_compute(measures: Tensor, total: Tensor, reduction: Literal["mean", "su
 def kl_divergence(
     p: Tensor, q: Tensor, log_prob: bool = False, reduction: Literal["mean", "sum", "none", None] = "mean"
 ) -> Tensor:
-    r"""Computes `KL divergence`_
+    r"""Computes `KL divergence`_.
 
     .. math::
         D_{KL}(P||Q) = \sum_{x\in\mathcal{X}} P(x) \log\frac{P(x)}{Q{x}}

@@ -27,7 +27,6 @@ def _explained_variance_update(preds: Tensor, target: Tensor) -> Tuple[int, Tens
         preds: Predicted tensor
         target: Ground truth tensor
     """
-
     _check_same_shape(preds, target)
 
     n_obs = preds.size(0)
@@ -71,7 +70,6 @@ def _explained_variance_compute(
         >>> _explained_variance_compute(n_obs, sum_error, ss_error, sum_target, ss_target, multioutput='raw_values')
         tensor([0.9677, 1.0000])
     """
-
     diff_avg = sum_error / n_obs
     numerator = sum_squared_error / n_obs - (diff_avg * diff_avg)
 

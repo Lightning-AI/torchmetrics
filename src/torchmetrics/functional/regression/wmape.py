@@ -31,7 +31,6 @@ def _weighted_mean_absolute_percentage_error_update(
         preds: Predicted tensor
         target: Ground truth tensor
     """
-
     _check_same_shape(preds, target)
 
     sum_abs_error = (preds - target).abs().sum()

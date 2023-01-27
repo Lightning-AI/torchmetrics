@@ -31,7 +31,6 @@ def _spectral_distortion_index_update(preds: Tensor, target: Tensor) -> Tuple[Te
         preds: Low resolution multispectral image
         target: High resolution fused image
     """
-
     if preds.dtype != target.dtype:
         raise TypeError(
             f"Expected `ms` and `fused` to have the same data type. Got ms: {preds.dtype} and fused: {target.dtype}."
@@ -50,7 +49,7 @@ def _spectral_distortion_index_compute(
     p: int = 1,
     reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
 ) -> Tensor:
-    """Computes Spectral Distortion Index (SpectralDistortionIndex_)
+    """Computes Spectral Distortion Index (SpectralDistortionIndex_).
 
     Args:
         preds: Low resolution multispectral image

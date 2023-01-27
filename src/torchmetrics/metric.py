@@ -156,7 +156,8 @@ class Metric(Module, ABC):
     @property
     def update_count(self) -> int:
         """Get the number of times `update` and/or `forward` has been called since initialization or last
-        `reset`."""
+        `reset`.
+        """
         return self._update_count
 
     def add_state(
@@ -557,7 +558,8 @@ class Metric(Module, ABC):
     @abstractmethod
     def compute(self) -> Any:
         """Override this method to compute the final metric value from state variables synchronized across the
-        distributed backend."""
+        distributed backend.
+        """
 
     def plot(self, *_: Any, **__: Any) -> None:
         """Override this method plot the metric value."""
@@ -636,13 +638,14 @@ class Metric(Module, ABC):
     def set_dtype(self, dst_type: Union[str, torch.dtype]) -> "Metric":
         """Special version of `type` for transferring all metric states to specific dtype
         Arguments:
-            dst_type (type or string): the desired type
+            dst_type (type or string): the desired type.
         """
         return super().type(dst_type)
 
     def _apply(self, fn: Callable) -> Module:
         """Overwrite _apply function such that we can also move metric states to the correct device when `.to`,
-        `.cuda`, etc methods are called."""
+        `.cuda`, etc methods are called.
+        """
         this = super()._apply(fn)
         # Also apply fn to metric states and defaults
         for key, value in this._defaults.items():
@@ -709,7 +712,6 @@ class Metric(Module, ABC):
         error_msgs: List[str],
     ) -> None:
         """Loads metric states from state_dict."""
-
         for key in self._defaults:
             name = prefix + key
             if name in state_dict:
@@ -720,7 +722,6 @@ class Metric(Module, ABC):
 
     def _filter_kwargs(self, **kwargs: Any) -> Dict[str, Any]:
         """filter kwargs such that they match the update signature of the metric."""
-
         # filter all parameters based on update signature except those of
         # type VAR_POSITIONAL (*args) and VAR_KEYWORD (**kwargs)
         _params = (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD)
@@ -884,14 +885,13 @@ class CompositionalMetric(Metric):
         metric_a: Union[Metric, int, float, Tensor],
         metric_b: Union[Metric, int, float, Tensor, None],
     ) -> None:
-        """
-        Args:
-            operator: the operator taking in one (if metric_b is None)
-                or two arguments. Will be applied to outputs of metric_a.compute()
-                and (optionally if metric_b is not None) metric_b.compute()
-            metric_a: first metric whose compute() result is the first argument of operator
-            metric_b: second metric whose compute() result is the second argument of operator.
-                For operators taking in only one input, this should be None
+        """Args:
+        operator: the operator taking in one (if metric_b is None)
+        or two arguments. Will be applied to outputs of metric_a.compute()
+        and (optionally if metric_b is not None) metric_b.compute()
+        metric_a: first metric whose compute() result is the first argument of operator
+        metric_b: second metric whose compute() result is the second argument of operator.
+        For operators taking in only one input, this should be None.
         """
         super().__init__()
 

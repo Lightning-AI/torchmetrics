@@ -358,7 +358,6 @@ class TestMAP(MetricTester):
     @pytest.mark.parametrize("ddp", [False])
     def test_map_segm(self, compute_on_cpu, ddp):
         """Test modular implementation for correctness."""
-
         self.run_class_metric_test(
             ddp=ddp,
             preds=_inputs_masks.preds,

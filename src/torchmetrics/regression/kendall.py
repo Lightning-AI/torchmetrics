@@ -146,7 +146,8 @@ class KendallRankCorrCoef(Metric):
 
     def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
         """Compute Kendall rank correlation coefficient, and optionally p-value of corresponding statistical
-        test."""
+        test.
+        """
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         tau, p_value = _kendall_corrcoef_compute(preds, target, self.variant, self.alternative)

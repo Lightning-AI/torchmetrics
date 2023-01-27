@@ -26,7 +26,6 @@ def _mean_squared_log_error_update(preds: Tensor, target: Tensor) -> Tuple[Tenso
         preds: Predicted tensor
         target: Ground truth tensor
     """
-
     _check_same_shape(preds, target)
     sum_squared_log_error = torch.sum(torch.pow(torch.log1p(preds) - torch.log1p(target), 2))
     n_obs = target.numel()
@@ -48,7 +47,6 @@ def _mean_squared_log_error_compute(sum_squared_log_error: Tensor, n_obs: int) -
         >>> _mean_squared_log_error_compute(sum_squared_log_error, n_obs)
         tensor(0.0207)
     """
-
     return sum_squared_log_error / n_obs
 
 

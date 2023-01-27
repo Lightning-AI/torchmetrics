@@ -50,7 +50,6 @@ def _gaussian_kernel_2d(
                   [0.0133, 0.0596, 0.0983, 0.0596, 0.0133],
                   [0.0030, 0.0133, 0.0219, 0.0133, 0.0030]]]])
     """
-
     gaussian_kernel_x = _gaussian(kernel_size[0], sigma[0], dtype, device)
     gaussian_kernel_y = _gaussian(kernel_size[1], sigma[1], dtype, device)
     kernel = torch.matmul(gaussian_kernel_x.t(), gaussian_kernel_y)  # (kernel_size, 1) * (1, kernel_size)
@@ -70,7 +69,6 @@ def _gaussian_kernel_3d(
         dtype: data type of the output tensor
         device: device of the output tensor
     """
-
     gaussian_kernel_x = _gaussian(kernel_size[0], sigma[0], dtype, device)
     gaussian_kernel_y = _gaussian(kernel_size[1], sigma[1], dtype, device)
     gaussian_kernel_z = _gaussian(kernel_size[2], sigma[2], dtype, device)

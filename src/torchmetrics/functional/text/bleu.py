@@ -33,7 +33,6 @@ def _count_ngram(ngram_input_list: Sequence[str], n_gram: int) -> Counter:
     Return:
         ngram_counter: a collections.Counter object of ngram
     """
-
     ngram_counter: Counter = Counter()
 
     for i in range(1, n_gram + 1):

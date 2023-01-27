@@ -302,7 +302,6 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
 
     def compute(self) -> Tensor:
         """Computes MS-SSIM over state."""
-
         if self.reduction in ("none", None):
             return dim_zero_cat(self.similarity)
         elif self.reduction == "sum":

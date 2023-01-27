@@ -54,7 +54,7 @@ def _accuracy_reduce(
             - `"pred"` will divide by the sum of the row dimension.
             - `"all"` will divide by the sum of the full matrix
             - `"none"` or `None` will apply no reduction
-        multilabel: bool indicating if reduction is for multilabel tasks
+        multilabel: bool indicating if reduction is for multilabel tasks.
 
     Returns:
         Accuracy score
@@ -372,7 +372,7 @@ def accuracy(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes `Accuracy`_
+    r"""Computes `Accuracy`_.
 
     .. math::
         \text{Accuracy} = \frac{1}{N}\sum_i^N 1(y_i = \hat{y}_i)

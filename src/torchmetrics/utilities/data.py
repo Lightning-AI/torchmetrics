@@ -237,7 +237,6 @@ def _flexible_bincount(x: Tensor) -> Tensor:
     Returns:
         Number of occurrences for each unique element in x
     """
-
     # make sure elements in x start from 0
     x = x - x.min()
     unique_x = torch.unique(x)

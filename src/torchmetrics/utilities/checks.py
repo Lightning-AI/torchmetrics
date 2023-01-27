@@ -75,7 +75,6 @@ def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> Tuple[Da
     It returns the name of the case in which the inputs fall, and the implied number of classes (from the ``C`` dim for
     multi-class data, or extra dim(s) for multi-label data).
     """
-
     preds_float = preds.is_floating_point()
 
     if preds.ndim == target.ndim:
@@ -123,7 +122,6 @@ def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> Tuple[Da
 
 def _check_num_classes_binary(num_classes: int, multiclass: Optional[bool]) -> None:
     """This checks that the consistency of `num_classes` with the data and `multiclass` param for binary data."""
-
     if num_classes > 2:
         raise ValueError("Your data is binary, but `num_classes` is larger than 2.")
     if num_classes == 2 and not multiclass:
@@ -147,8 +145,8 @@ def _check_num_classes_mc(
     implied_classes: int,
 ) -> None:
     """This checks that the consistency of `num_classes` with the data and `multiclass` param for (multi-
-    dimensional) multi-class data."""
-
+    dimensional) multi-class data.
+    """
     if num_classes == 1 and multiclass is not False:
         raise ValueError(
             "You have set `num_classes=1`, but predictions are integers."
@@ -172,8 +170,8 @@ def _check_num_classes_mc(
 
 def _check_num_classes_ml(num_classes: int, multiclass: Optional[bool], implied_classes: int) -> None:
     """This checks that the consistency of ``num_classes`` with the data and ``multiclass`` param for multi-label
-    data."""
-
+    data.
+    """
     if multiclass and num_classes != 2:
         raise ValueError(
             "Your have set `multiclass=True`, but `num_classes` is not equal to 2."
@@ -262,7 +260,6 @@ def _check_classification_inputs(
         case: The case the inputs fall in, one of 'binary', 'multi-class', 'multi-label' or
             'multi-dim multi-class'
     """
-
     # Basic validation (that does not need case/type information)
     _basic_input_validation(preds, target, threshold, multiclass, ignore_index)
 

@@ -32,10 +32,9 @@ class _MetricVariant(EnumStr):
 
     @classmethod
     def from_str(cls, value: Literal["a", "b", "c"]) -> "_MetricVariant":  # type: ignore[override]
-        """
-        Raises:
-            ValueError:
-                If required metric variant is not among the supported options.
+        """Raises:
+        ValueError:
+        If required metric variant is not among the supported options.
         """
         _allowed_variants = [im.lower() for im in _MetricVariant._member_names_]
 
@@ -54,10 +53,9 @@ class _TestAlternative(EnumStr):
 
     @classmethod
     def from_str(cls, value: Literal["two-sided", "less", "greater"]) -> "_TestAlternative":  # type: ignore[override]
-        """
-        Raises:
-            ValueError:
-                If required test alternative is not among the supported options.
+        """Raises:
+        ValueError:
+        If required test alternative is not among the supported options.
         """
         _allowed_alternatives = [im.lower().replace("_", "-") for im in _TestAlternative._member_names_]
 

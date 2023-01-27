@@ -29,7 +29,6 @@ def _ergas_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
         preds: Predicted tensor
         target: Ground truth tensor
     """
-
     if preds.dtype != target.dtype:
         raise TypeError(
             "Expected `preds` and `target` to have the same data type."

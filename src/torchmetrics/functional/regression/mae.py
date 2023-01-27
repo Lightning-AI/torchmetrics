@@ -50,7 +50,6 @@ def _mean_absolute_error_compute(sum_abs_error: Tensor, n_obs: int) -> Tensor:
         >>> _mean_absolute_error_compute(sum_abs_error, n_obs)
         tensor(0.2500)
     """
-
     return sum_abs_error / n_obs
 
 

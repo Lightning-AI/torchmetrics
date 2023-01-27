@@ -32,7 +32,7 @@ def _confusion_matrix_reduce(
             - `"true"` will divide by the sum of the column dimension.
             - `"pred"` will divide by the sum of the row dimension.
             - `"all"` will divide by the sum of the full matrix
-            - `"none"` or `None` will apply no reduction
+            - `"none"` or `None` will apply no reduction.
 
     Returns:
         Normalized confusion matrix
