@@ -362,7 +362,7 @@ def _get_line_str(obj):
 
 
 def _get_version_str():
-    if "dev" in torchmetrics.__version__:
+    if any(s in torchmetrics.__version__ for s in ("dev", "rc")):
         version_str = "master"
     else:
         version_str = f"v{torchmetrics.__version__}"
