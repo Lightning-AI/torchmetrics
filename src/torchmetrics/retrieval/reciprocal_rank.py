@@ -22,16 +22,21 @@ class RetrievalMRR(RetrievalMetric):
 
     Works with binary target data. Accepts float predictions from a model output.
 
-    Forward accepts
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (float tensor): ``(N, ...)``
-    - ``target`` (long or bool tensor): ``(N, ...)``
-    - ``indexes`` (long tensor): ``(N, ...)``
+    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, ...)``
+    - ``target`` (:class:`~torch.Tensor`): A long or bool tensor of shape ``(N, ...)``
+    - ``indexes`` (:class:`~torch.Tensor`): A long tensor of shape ``(N, ...)`` which indicate to which query a
+      prediction belongs
 
-    ``indexes``, ``preds`` and ``target`` must have the same dimension.
-    ``indexes`` indicate to which query a prediction belongs.
-    Predictions will be first grouped by ``indexes`` and then `MRR` will be computed as the mean
-    of the `Reciprocal Rank` over each query.
+    As output to ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``mrr`` (:class:`~torch.Tensor`): A single-value tensor with the reciprocal rank (RR) of the predictions
+      ``preds`` w.r.t. the labels ``target``
+
+    All ``indexes``, ``preds`` and ``target`` must have the same dimension and will be flatten at the beginning,
+    so that for example, a tensor of shape ``(N, M)`` is treated as ``(N * M, )``. Predictions will be first grouped by
+    ``indexes`` and then will be computed as the mean of the metric over each query.
 
     Args:
         empty_target_action:
