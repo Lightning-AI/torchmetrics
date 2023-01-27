@@ -72,8 +72,7 @@ line-length = 120
 select = [
     "E", "W",  # see: https://pypi.org/project/pycodestyle
     "F",  # see: https://pypi.org/project/pyflakes
-# TODO
-#    "D",  # see: https://pypi.org/project/pydocstyle
+    "D",  # see: https://pypi.org/project/pydocstyle
     "N",  # see: https://pypi.org/project/pep8-naming
 ]
 extend-select = [
@@ -85,6 +84,7 @@ extend-select = [
 ignore = [
     "E731",  # Do not assign a lambda expression, use a def
     "F401",  # Imports of __all__
+    "D100",  # Missing docstring in public module
 ]
 # Exclude a variety of commonly ignored directories.
 exclude = [
@@ -105,6 +105,7 @@ unfixable = ["F401"]
 "setup.py" = ["D100", "SIM115"]
 "__about__.py" = ["D100"]
 "__init__.py" = ["D100"]
+"test_*" = ["D101", "D102", "D103"]
 
 [tool.ruff.pydocstyle]
 # Use Google-style docstrings.
