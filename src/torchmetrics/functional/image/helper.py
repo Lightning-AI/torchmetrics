@@ -1,8 +1,8 @@
 from typing import Sequence, Union
 
 import torch
-import torch.nn.functional as F
 from torch import Tensor
+from torch.nn import functional as F  # noqa: N812
 
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_10
