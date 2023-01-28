@@ -103,9 +103,10 @@ def binary_hinge_loss(
             Set to ``False`` for faster computations.
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics.functional.classification import binary_hinge_loss
-        >>> preds = torch.tensor([0.25, 0.25, 0.55, 0.75, 0.75])
-        >>> target = torch.tensor([0, 0, 1, 1, 1])
+        >>> preds = tensor([0.25, 0.25, 0.55, 0.75, 0.75])
+        >>> target = tensor([0, 0, 1, 1, 1])
         >>> binary_hinge_loss(preds, target)
         tensor(0.6900)
         >>> binary_hinge_loss(preds, target, squared=True)
@@ -219,12 +220,13 @@ def multiclass_hinge_loss(
             Set to ``False`` for faster computations.
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics.functional.classification import multiclass_hinge_loss
-        >>> preds = torch.tensor([[0.25, 0.20, 0.55],
-        ...                       [0.55, 0.05, 0.40],
-        ...                       [0.10, 0.30, 0.60],
-        ...                       [0.90, 0.05, 0.05]])
-        >>> target = torch.tensor([0, 1, 2, 0])
+        >>> preds = tensor([[0.25, 0.20, 0.55],
+        ...                 [0.55, 0.05, 0.40],
+        ...                 [0.10, 0.30, 0.60],
+        ...                 [0.90, 0.05, 0.05]])
+        >>> target = tensor([0, 1, 2, 0])
         >>> multiclass_hinge_loss(preds, target, num_classes=3)
         tensor(0.9125)
         >>> multiclass_hinge_loss(preds, target, num_classes=3, squared=True)
@@ -258,19 +260,19 @@ def hinge_loss(
     each argument influence and examples.
 
     Legacy Example:
-        >>> import torch
-        >>> target = torch.tensor([0, 1, 1])
-        >>> preds = torch.tensor([0.5, 0.7, 0.1])
+        >>> from torch import tensor
+        >>> target = tensor([0, 1, 1])
+        >>> preds = tensor([0.5, 0.7, 0.1])
         >>> hinge_loss(preds, target, task="binary")
         tensor(0.9000)
 
-        >>> target = torch.tensor([0, 1, 2])
-        >>> preds = torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
+        >>> target = tensor([0, 1, 2])
+        >>> preds = tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
         >>> hinge_loss(preds, target, task="multiclass", num_classes=3)
         tensor(1.5551)
 
-        >>> target = torch.tensor([0, 1, 2])
-        >>> preds = torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
+        >>> target = tensor([0, 1, 2])
+        >>> preds = tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
         >>> hinge_loss(preds, target, task="multiclass", num_classes=3, multiclass_mode="one-vs-all")
         tensor([1.3743, 1.1945, 1.2359])
     """
