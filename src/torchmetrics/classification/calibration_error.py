@@ -129,9 +129,9 @@ class BinaryCalibrationError(Metric):
 
 
 class MulticlassCalibrationError(Metric):
-    r"""`Computes the Top-label Calibration Error`_ for multiclass tasks. The expected calibration error can be used
-    to quantify how well a given model is calibrated e.g. how well the predicted output probabilities of the model
-    matches the actual probabilities of the ground truth distribution.
+    r"""`Top-label Calibration Error`_ for multiclass tasks. The expected calibration error can be used to quantify
+    how well a given model is calibrated e.g. how well the predicted output probabilities of the model matches the
+    actual probabilities of the ground truth distribution.
 
     Three different norms are implemented, each corresponding to variations on the calibration error metric.
 
