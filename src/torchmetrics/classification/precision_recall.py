@@ -30,15 +30,19 @@ class BinaryPrecision(BinaryStatScores):
     Where :math:`\text{TP}` and :math:`\text{FP}` represent the number of true positives and
     false positives respecitively.
 
-    Accepts the following input tensors:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (int or float tensor): ``(N, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
-      we convert to int tensor with thresholding using the value in ``threshold``.
-    - ``target`` (int tensor): ``(N, ...)``
+    - ``preds`` (:class:`~torch.Tensor`): A int or float tensor of shape ``(N, ...)``. If preds is a floating point
+      tensor with values outside [0,1] range we consider the input to be logits and will auto apply sigmoid per
+      element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``.
 
-    The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
+
+    As output to ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``bp`` (:class:`~torch.Tensor`): If ``multidim_average`` is set to ``global``, the metric returns a scalar
+      value. If ``multidim_average`` is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of a
+      scalar value per sample.
 
     Args:
         threshold: Threshold for transforming probability to binary {0,1} predictions
@@ -53,10 +57,6 @@ class BinaryPrecision(BinaryStatScores):
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
-
-    Returns:
-        If ``multidim_average`` is set to ``global``, the metric returns a scalar value. If ``multidim_average``
-        is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of a scalar value per sample.
 
     Example (preds is int tensor):
         >>> from torchmetrics.classification import BinaryPrecision
@@ -106,15 +106,28 @@ class MulticlassPrecision(MulticlassStatScores):
     Where :math:`\text{TP}` and :math:`\text{FP}` represent the number of true positives and
     false positives respecitively.
 
-    Accepts the following input tensors:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds``: ``(N, ...)`` (int tensor) or ``(N, C, ..)`` (float tensor). If preds is a floating point
-      we apply ``torch.argmax`` along the ``C`` dimension to automatically convert probabilities/logits into
-      an int tensor.
-    - ``target`` (int tensor): ``(N, ...)``
+    - ``preds`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)`` or float tensor of shape ``(N, C, ..)``.
+      If preds is a floating point we apply ``torch.argmax`` along the ``C`` dimension to automatically convert
+      probabilities/logits into an int tensor.
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``.
 
-    The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
+
+    As output to ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``mcp`` (:class:`~torch.Tensor`): The returned shape depends on the ``average`` and ``multidim_average``
+      arguments:
+
+        - If ``multidim_average`` is set to ``global``:
+
+          - If ``average='micro'/'macro'/'weighted'``, the output will be a scalar tensor
+          - If ``average=None/'none'``, the shape will be ``(C,)``
+
+        - If ``multidim_average`` is set to ``samplewise``:
+
+          - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
+          - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Args:
         num_classes: Integer specifing the number of classes
@@ -140,19 +153,6 @@ class MulticlassPrecision(MulticlassStatScores):
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 
-    Returns:
-        The returned shape depends on the ``average`` and ``multidim_average`` arguments:
-
-        - If ``multidim_average`` is set to ``global``:
-
-          - If ``average='micro'/'macro'/'weighted'``, the output will be a scalar tensor
-          - If ``average=None/'none'``, the shape will be ``(C,)``
-
-        - If ``multidim_average`` is set to ``samplewise``:
-
-          - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
-          - If ``average=None/'none'``, the shape will be ``(N, C)``
-
     Example (preds is int tensor):
         >>> from torchmetrics.classification import MulticlassPrecision
         >>> target = torch.tensor([2, 1, 0, 0])
@@ -160,8 +160,8 @@ class MulticlassPrecision(MulticlassStatScores):
         >>> metric = MulticlassPrecision(num_classes=3)
         >>> metric(preds, target)
         tensor(0.8333)
-        >>> metric = MulticlassPrecision(num_classes=3, average=None)
-        >>> metric(preds, target)
+        >>> mcp = MulticlassPrecision(num_classes=3, average=None)
+        >>> mcp(preds, target)
         tensor([1.0000, 0.5000, 1.0000])
 
     Example (preds is float tensor):
@@ -176,8 +176,8 @@ class MulticlassPrecision(MulticlassStatScores):
         >>> metric = MulticlassPrecision(num_classes=3)
         >>> metric(preds, target)
         tensor(0.8333)
-        >>> metric = MulticlassPrecision(num_classes=3, average=None)
-        >>> metric(preds, target)
+        >>> mcp = MulticlassPrecision(num_classes=3, average=None)
+        >>> mcp(preds, target)
         tensor([1.0000, 0.5000, 1.0000])
 
     Example (multidim tensors):
@@ -187,8 +187,8 @@ class MulticlassPrecision(MulticlassStatScores):
         >>> metric = MulticlassPrecision(num_classes=3, multidim_average='samplewise')
         >>> metric(preds, target)
         tensor([0.3889, 0.2778])
-        >>> metric = MulticlassPrecision(num_classes=3, multidim_average='samplewise', average=None)
-        >>> metric(preds, target)
+        >>> mcp = MulticlassPrecision(num_classes=3, multidim_average='samplewise', average=None)
+        >>> mcp(preds, target)
         tensor([[0.6667, 0.0000, 0.5000],
                 [0.0000, 0.5000, 0.3333]])
     """
@@ -211,15 +211,29 @@ class MultilabelPrecision(MultilabelStatScores):
     Where :math:`\text{TP}` and :math:`\text{FP}` represent the number of true positives and
     false positives respecitively.
 
-    Accepts the following input tensors:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (int or float tensor): ``(N, C, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
-      we convert to int tensor with thresholding using the value in ``threshold``.
-    - ``target`` (int tensor): ``(N, C, ...)``
+    - ``preds`` (:class:`~torch.Tensor`): An int tensor or float tensor of shape ``(N, C, ...)``.
+      If preds is a floating point tensor with values outside [0,1] range we consider the input to be logits and
+      will auto apply sigmoid per element. Addtionally, we convert to int tensor with thresholding using the value
+      in ``threshold``.
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``.
 
-    The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
+
+    As output to ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``mlp`` (:class:`~torch.Tensor`): The returned shape depends on the ``average`` and ``multidim_average``
+      arguments:
+
+        - If ``multidim_average`` is set to ``global``:
+
+          - If ``average='micro'/'macro'/'weighted'``, the output will be a scalar tensor
+          - If ``average=None/'none'``, the shape will be ``(C,)``
+
+        - If ``multidim_average`` is set to ``samplewise``:
+
+          - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
+          - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Args:
         num_labels: Integer specifing the number of labels
@@ -244,19 +258,6 @@ class MultilabelPrecision(MultilabelStatScores):
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 
-    Returns:
-        The returned shape depends on the ``average`` and ``multidim_average`` arguments:
-
-        - If ``multidim_average`` is set to ``global``:
-
-          - If ``average='micro'/'macro'/'weighted'``, the output will be a scalar tensor
-          - If ``average=None/'none'``, the shape will be ``(C,)``
-
-        - If ``multidim_average`` is set to ``samplewise``:
-
-          - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
-          - If ``average=None/'none'``, the shape will be ``(N, C)``
-
     Example (preds is int tensor):
         >>> from torchmetrics.classification import MultilabelPrecision
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
@@ -264,8 +265,8 @@ class MultilabelPrecision(MultilabelStatScores):
         >>> metric = MultilabelPrecision(num_labels=3)
         >>> metric(preds, target)
         tensor(0.5000)
-        >>> metric = MultilabelPrecision(num_labels=3, average=None)
-        >>> metric(preds, target)
+        >>> mlp = MultilabelPrecision(num_labels=3, average=None)
+        >>> mlp(preds, target)
         tensor([1.0000, 0.0000, 0.5000])
 
     Example (preds is float tensor):
@@ -275,8 +276,8 @@ class MultilabelPrecision(MultilabelStatScores):
         >>> metric = MultilabelPrecision(num_labels=3)
         >>> metric(preds, target)
         tensor(0.5000)
-        >>> metric = MultilabelPrecision(num_labels=3, average=None)
-        >>> metric(preds, target)
+        >>> mlp = MultilabelPrecision(num_labels=3, average=None)
+        >>> mlp(preds, target)
         tensor([1.0000, 0.0000, 0.5000])
 
     Example (multidim tensors):
@@ -291,8 +292,8 @@ class MultilabelPrecision(MultilabelStatScores):
         >>> metric = MultilabelPrecision(num_labels=3, multidim_average='samplewise')
         >>> metric(preds, target)
         tensor([0.3333, 0.0000])
-        >>> metric = MultilabelPrecision(num_labels=3, multidim_average='samplewise', average=None)
-        >>> metric(preds, target)
+        >>> mlp = MultilabelPrecision(num_labels=3, multidim_average='samplewise', average=None)
+        >>> mlp(preds, target)
         tensor([[0.5000, 0.5000, 0.0000],
                 [0.0000, 0.0000, 0.0000]])
     """
@@ -315,15 +316,19 @@ class BinaryRecall(BinaryStatScores):
     Where :math:`\text{TP}` and :math:`\text{FN}` represent the number of true positives and
     false negatives respecitively.
 
-    Accepts the following input tensors:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (int or float tensor): ``(N, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
-      we convert to int tensor with thresholding using the value in ``threshold``.
-    - ``target`` (int tensor): ``(N, ...)``
+    - ``preds`` (:class:`~torch.Tensor`): An int tensor or float tensor of shape ``(N, ...)``. If preds is a
+      floating point tensor with values outside [0,1] range we consider the input to be logits and will auto apply
+      sigmoid per element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``
 
-    The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
+
+    As output to ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``br`` (:class:`~torch.Tensor`): If ``multidim_average`` is set to ``global``, the metric returns a scalar
+      value. If ``multidim_average`` is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of
+      a scalar value per sample.
 
     Args:
         threshold: Threshold for transforming probability to binary {0,1} predictions
@@ -338,10 +343,6 @@ class BinaryRecall(BinaryStatScores):
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
-
-    Returns:
-        If ``multidim_average`` is set to ``global``, the metric returns a scalar value. If ``multidim_average``
-        is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of a scalar value per sample.
 
     Example (preds is int tensor):
         >>> from torchmetrics.classification import BinaryRecall
@@ -391,15 +392,28 @@ class MulticlassRecall(MulticlassStatScores):
     Where :math:`\text{TP}` and :math:`\text{FN}` represent the number of true positives and
     false negatives respecitively.
 
-    Accepts the following input tensors:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds``: ``(N, ...)`` (int tensor) or ``(N, C, ..)`` (float tensor). If preds is a floating point
-      we apply ``torch.argmax`` along the ``C`` dimension to automatically convert probabilities/logits into
-      an int tensor.
-    - ``target`` (int tensor): ``(N, ...)``
+    - ``preds`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)`` or float tensor of shape ``(N, C, ..)``
+      If preds is a floating point we apply ``torch.argmax`` along the ``C`` dimension to automatically convert
+      probabilities/logits into an int tensor.
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``
 
-    The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
+
+    As output to ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``mcr`` (:class:`~torch.Tensor`): The returned shape depends on the ``average`` and ``multidim_average``
+      arguments:
+
+        - If ``multidim_average`` is set to ``global``:
+
+          - If ``average='micro'/'macro'/'weighted'``, the output will be a scalar tensor
+          - If ``average=None/'none'``, the shape will be ``(C,)``
+
+        - If ``multidim_average`` is set to ``samplewise``:
+
+          - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
+          - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Args:
         num_classes: Integer specifing the number of classes
@@ -425,19 +439,6 @@ class MulticlassRecall(MulticlassStatScores):
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 
-    Returns:
-        The returned shape depends on the ``average`` and ``multidim_average`` arguments:
-
-        - If ``multidim_average`` is set to ``global``:
-
-          - If ``average='micro'/'macro'/'weighted'``, the output will be a scalar tensor
-          - If ``average=None/'none'``, the shape will be ``(C,)``
-
-        - If ``multidim_average`` is set to ``samplewise``:
-
-          - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
-          - If ``average=None/'none'``, the shape will be ``(N, C)``
-
     Example (preds is int tensor):
         >>> from torchmetrics.classification import MulticlassRecall
         >>> target = torch.tensor([2, 1, 0, 0])
@@ -445,8 +446,8 @@ class MulticlassRecall(MulticlassStatScores):
         >>> metric = MulticlassRecall(num_classes=3)
         >>> metric(preds, target)
         tensor(0.8333)
-        >>> metric = MulticlassRecall(num_classes=3, average=None)
-        >>> metric(preds, target)
+        >>> mcr = MulticlassRecall(num_classes=3, average=None)
+        >>> mcr(preds, target)
         tensor([0.5000, 1.0000, 1.0000])
 
     Example (preds is float tensor):
@@ -461,8 +462,8 @@ class MulticlassRecall(MulticlassStatScores):
         >>> metric = MulticlassRecall(num_classes=3)
         >>> metric(preds, target)
         tensor(0.8333)
-        >>> metric = MulticlassRecall(num_classes=3, average=None)
-        >>> metric(preds, target)
+        >>> mcr = MulticlassRecall(num_classes=3, average=None)
+        >>> mcr(preds, target)
         tensor([0.5000, 1.0000, 1.0000])
 
     Example (multidim tensors):
@@ -472,8 +473,8 @@ class MulticlassRecall(MulticlassStatScores):
         >>> metric = MulticlassRecall(num_classes=3, multidim_average='samplewise')
         >>> metric(preds, target)
         tensor([0.5000, 0.2778])
-        >>> metric = MulticlassRecall(num_classes=3, multidim_average='samplewise', average=None)
-        >>> metric(preds, target)
+        >>> mcr = MulticlassRecall(num_classes=3, multidim_average='samplewise', average=None)
+        >>> mcr(preds, target)
         tensor([[1.0000, 0.0000, 0.5000],
                 [0.0000, 0.3333, 0.5000]])
     """
@@ -496,15 +497,28 @@ class MultilabelRecall(MultilabelStatScores):
     Where :math:`\text{TP}` and :math:`\text{FN}` represent the number of true positives and
     false negatives respecitively.
 
-    Accepts the following input tensors:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (int or float tensor): ``(N, C, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
-      we convert to int tensor with thresholding using the value in ``threshold``.
-    - ``target`` (int tensor): ``(N, C, ...)``
+    - ``preds`` (:class:`~torch.Tensor`): An int or float tensor of shape ``(N, C, ...)``. If preds is a floating
+      point tensor with values outside [0,1] range we consider the input to be logits and will auto apply sigmoid
+      per element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``
 
-    The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
+
+    As output to ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``mlr`` (:class:`~torch.Tensor`): The returned shape depends on the ``average`` and ``multidim_average``
+      arguments:
+
+        - If ``multidim_average`` is set to ``global``:
+
+          - If ``average='micro'/'macro'/'weighted'``, the output will be a scalar tensor
+          - If ``average=None/'none'``, the shape will be ``(C,)``
+
+        - If ``multidim_average`` is set to ``samplewise``:
+
+          - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
+          - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Args:
         num_labels: Integer specifing the number of labels
@@ -529,19 +543,6 @@ class MultilabelRecall(MultilabelStatScores):
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 
-    Returns:
-        The returned shape depends on the ``average`` and ``multidim_average`` arguments:
-
-        - If ``multidim_average`` is set to ``global``:
-
-          - If ``average='micro'/'macro'/'weighted'``, the output will be a scalar tensor
-          - If ``average=None/'none'``, the shape will be ``(C,)``
-
-        - If ``multidim_average`` is set to ``samplewise``:
-
-          - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
-          - If ``average=None/'none'``, the shape will be ``(N, C)``
-
     Example (preds is int tensor):
         >>> from torchmetrics.classification import MultilabelRecall
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
@@ -549,8 +550,8 @@ class MultilabelRecall(MultilabelStatScores):
         >>> metric = MultilabelRecall(num_labels=3)
         >>> metric(preds, target)
         tensor(0.6667)
-        >>> metric = MultilabelRecall(num_labels=3, average=None)
-        >>> metric(preds, target)
+        >>> mlr = MultilabelRecall(num_labels=3, average=None)
+        >>> mlr(preds, target)
         tensor([1., 0., 1.])
 
     Example (preds is float tensor):
@@ -560,8 +561,8 @@ class MultilabelRecall(MultilabelStatScores):
         >>> metric = MultilabelRecall(num_labels=3)
         >>> metric(preds, target)
         tensor(0.6667)
-        >>> metric = MultilabelRecall(num_labels=3, average=None)
-        >>> metric(preds, target)
+        >>> mlr = MultilabelRecall(num_labels=3, average=None)
+        >>> mlr(preds, target)
         tensor([1., 0., 1.])
 
     Example (multidim tensors):
@@ -576,8 +577,8 @@ class MultilabelRecall(MultilabelStatScores):
         >>> metric = MultilabelRecall(num_labels=3, multidim_average='samplewise')
         >>> metric(preds, target)
         tensor([0.6667, 0.0000])
-        >>> metric = MultilabelRecall(num_labels=3, multidim_average='samplewise', average=None)
-        >>> metric(preds, target)
+        >>> mlr = MultilabelRecall(num_labels=3, multidim_average='samplewise', average=None)
+        >>> mlr(preds, target)
         tensor([[1., 1., 0.],
                 [0., 0., 0.]])
     """

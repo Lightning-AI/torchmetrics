@@ -95,9 +95,6 @@ def binary_fbeta_score(
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, ...)``
 
-    The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
-
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
@@ -189,9 +186,6 @@ def multiclass_fbeta_score(
       we apply ``torch.argmax`` along the ``C`` dimension to automatically convert probabilities/logits into
       an int tensor.
     - ``target`` (int tensor): ``(N, ...)``
-
-    The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
 
     Args:
         preds: Tensor with predictions
@@ -313,9 +307,6 @@ def multilabel_fbeta_score(
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, C, ...)``
 
-    The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
-
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
@@ -416,9 +407,6 @@ def binary_f1_score(
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, ...)``
 
-    The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
-
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
@@ -497,9 +485,6 @@ def multiclass_f1_score(
       we apply ``torch.argmax`` along the ``C`` dimension to automatically convert probabilities/logits into
       an int tensor.
     - ``target`` (int tensor): ``(N, ...)``
-
-    The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
 
     Args:
         preds: Tensor with predictions
@@ -607,9 +592,6 @@ def multilabel_f1_score(
       [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, C, ...)``
-
-    The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
 
     Args:
         preds: Tensor with predictions
