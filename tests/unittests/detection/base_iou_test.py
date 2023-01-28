@@ -152,7 +152,7 @@ class BaseTestIntersectionOverUnion(ABC):
     def test_fn(self, compute_on_cpu: bool, ddp: bool):
         preds = _preds[0]
         target = _target[0]
-        result = self.metric_fn(preds, target)
+        self.metric_fn(preds, target)
 
     def test_error_on_wrong_input(self, compute_on_cpu: bool, ddp: bool):
         """Test class input validation."""
