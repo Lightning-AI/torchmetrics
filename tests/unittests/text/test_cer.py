@@ -39,7 +39,7 @@ class TestCharErrorRate(TextTester):
             preds=preds,
             targets=targets,
             metric_class=CharErrorRate,
-            sk_metric=compare_fn,
+            reference_metric=compare_fn,
             dist_sync_on_step=dist_sync_on_step,
         )
 
@@ -49,7 +49,7 @@ class TestCharErrorRate(TextTester):
             preds,
             targets,
             metric_functional=char_error_rate,
-            sk_metric=compare_fn,
+            reference_metric=compare_fn,
         )
 
     def test_cer_differentiability(self, preds, targets):

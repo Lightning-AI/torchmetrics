@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torch import Tensor, tensor
+from torch import Tensor
 
 from torchmetrics.functional.retrieval.average_precision import retrieval_average_precision
 from torchmetrics.retrieval.base import RetrievalMetric
@@ -22,16 +22,21 @@ class RetrievalMAP(RetrievalMetric):
 
     Works with binary target data. Accepts float predictions from a model output.
 
-    Forward accepts
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (float tensor): ``(N, ...)``
-    - ``target`` (long or bool tensor): ``(N, ...)``
-    - ``indexes`` (long tensor): ``(N, ...)``
+    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, ...)``
+    - ``target`` (:class:`~torch.Tensor`): A long or bool tensor of shape ``(N, ...)``
+    - ``indexes`` (:class:`~torch.Tensor`): A long tensor of shape ``(N, ...)`` which indicate to which query a
+      prediction belongs
 
-    ``indexes``, ``preds`` and ``target`` must have the same dimension.
-    ``indexes`` indicate to which query a prediction belongs.
-    Predictions will be first grouped by ``indexes`` and then `MAP` will be computed as the mean
-    of the `Average Precisions` over each query.
+    As output to ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``rmap`` (:class:`~torch.Tensor`): A tensor with the mean average precision of the predictions ``preds``
+      w.r.t. the labels ``target``
+
+    All ``indexes``, ``preds`` and ``target`` must have the same dimension and will be flatten at the beginning,
+    so that for example, a tensor of shape ``(N, M)`` is treated as ``(N * M, )``. Predictions will be first grouped by
+    ``indexes`` and then will be computed as the mean of the metric over each query.
 
     Args:
         empty_target_action:
@@ -53,6 +58,7 @@ class RetrievalMAP(RetrievalMetric):
             If ``ignore_index`` is not `None` or an integer.
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics import RetrievalMAP
         >>> indexes = tensor([0, 0, 0, 1, 1, 1, 1])
         >>> preds = tensor([0.2, 0.3, 0.5, 0.1, 0.3, 0.5, 0.2])

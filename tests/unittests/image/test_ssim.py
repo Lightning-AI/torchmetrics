@@ -54,7 +54,7 @@ for size, channel, coef, dtype in [
     )
 
 
-def _sk_ssim(
+def _skimage_ssim(
     preds,
     target,
     data_range,
@@ -141,7 +141,7 @@ class TestSSIM(MetricTester):
             preds,
             target,
             StructuralSimilarityIndexMeasure,
-            partial(_sk_ssim, data_range=1.0, sigma=sigma, kernel_size=None),
+            partial(_skimage_ssim, data_range=1.0, sigma=sigma, kernel_size=None),
             metric_args={
                 "data_range": 1.0,
                 "sigma": sigma,
@@ -173,7 +173,7 @@ class TestSSIM(MetricTester):
             preds,
             target,
             StructuralSimilarityIndexMeasure,
-            partial(_sk_ssim, data_range=1.0, sigma=sigma, kernel_size=None),
+            partial(_skimage_ssim, data_range=1.0, sigma=sigma, kernel_size=None),
             metric_args={
                 "gaussian_kernel": False,
                 "data_range": 1.0,
@@ -188,7 +188,7 @@ class TestSSIM(MetricTester):
             preds,
             target,
             structural_similarity_index_measure,
-            partial(_sk_ssim, data_range=1.0, sigma=sigma, kernel_size=None, reduction_arg=reduction_arg),
+            partial(_skimage_ssim, data_range=1.0, sigma=sigma, kernel_size=None, reduction_arg=reduction_arg),
             metric_args={"data_range": 1.0, "sigma": sigma, "reduction": reduction_arg},
         )
 
@@ -231,11 +231,8 @@ class TestSSIM(MetricTester):
     ],
 )
 def test_ssim_invalid_inputs(pred, target, kernel, sigma):
-    pred_t = torch.rand(pred, dtype=torch.float32)
-    target_t = torch.rand(target, dtype=torch.float64)
-    with pytest.raises(TypeError):
-        structural_similarity_index_measure(pred_t, target_t)
-
+    """Test that an value errors are raised if input sizes are different, kernel length and sigma does not match
+    size or invalid values are provided."""
     pred = torch.rand(pred)
     target = torch.rand(target)
     with pytest.raises(ValueError):

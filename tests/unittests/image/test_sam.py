@@ -16,11 +16,12 @@ from functools import partial
 
 import pytest
 import torch
+from torch import Tensor
+from torch.nn import functional as F  # noqa: N812
 
 from torchmetrics.functional.image.sam import spectral_angle_mapper
 from torchmetrics.image.sam import SpectralAngleMapper
 from unittests.helpers import seed_all
-from unittests.helpers.reference_metrics import _sk_sam
 from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 
 seed_all(42)
@@ -39,6 +40,27 @@ for size, channel, dtype in [
     _inputs.append(Input(preds=preds, target=target))
 
 
+def _baseline_sam(
+    preds: Tensor,
+    target: Tensor,
+    reduction: str = "elementwise_mean",
+) -> Tensor:
+    """Reference implementation of spectral angle mapper."""
+    reduction_options = ("elementwise_mean", "sum", "none")
+    if reduction not in reduction_options:
+        raise ValueError(f"reduction has to be one of {reduction_options}, got: {reduction}.")
+    similarity = F.cosine_similarity(preds, target)
+    sam_score = torch.clamp(similarity, -1, 1).acos()
+    # reduction
+    if reduction == "sum":
+        to_return = torch.sum(sam_score)
+    elif reduction == "elementwise_mean":
+        to_return = torch.mean(sam_score)
+    else:
+        to_return = sam_score
+    return to_return
+
+
 @pytest.mark.parametrize("reduction", ["sum", "elementwise_mean"])
 @pytest.mark.parametrize(
     "preds, target",
@@ -53,7 +75,7 @@ class TestSpectralAngleMapper(MetricTester):
             preds,
             target,
             SpectralAngleMapper,
-            partial(_sk_sam, reduction=reduction),
+            partial(_baseline_sam, reduction=reduction),
             dist_sync_on_step,
             metric_args=dict(reduction=reduction),
         )
@@ -63,7 +85,7 @@ class TestSpectralAngleMapper(MetricTester):
             preds,
             target,
             spectral_angle_mapper,
-            partial(_sk_sam, reduction=reduction),
+            partial(_baseline_sam, reduction=reduction),
             metric_args=dict(reduction=reduction),
         )
 

@@ -14,8 +14,8 @@
 from typing import Any, List, Optional
 
 import torch
-import torch.nn.functional as F
 from torch import Tensor
+from torch.nn import functional as F  # noqa: N812
 from typing_extensions import Literal
 
 

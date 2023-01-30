@@ -2,9 +2,6 @@ name: Unittesting and coverage
 description: pull data samples -> unittests
 
 inputs:
-  os:
-    description: operation system
-    required: true
   python-version:
     description: Python version
     required: true
@@ -38,8 +35,10 @@ runs:
       pip list
     shell: ${{ inputs.shell-type }}
 
-  - run: echo "PYTEST_ARTEFACT=test-results-${{ inputs.os }}-py${{ inputs.python-version }}-pt{{ inputs.pytorch-version }}-${{ inputs.requires }}" >> $GITHUB_ENV
-    shell: bash
+  - run: |
+      echo "artifact=test-results-${{ runner.os }}-py${{ inputs.python-version }}-pt{{ inputs.pytorch-version }}-${{ inputs.requires }}" >> $GITHUB_OUTPUT
+    id: location
+    shell: ${{ inputs.shell-type }}
 
   - name: Pull testing data from S3
     working-directory: ./tests
@@ -64,15 +63,15 @@ runs:
         --durations=50 \
         --reruns 3 \
         --reruns-delay 1 \
-        --junitxml="$PYTEST_ARTEFACT.xml" \
+        --junitxml="${{ steps.location.outputs.artifact }}.xml" \
         ${{ inputs.test-timeout }}
     shell: ${{ inputs.shell-type }}
 
   - name: Upload pytest results
     uses: actions/upload-artifact@v2
     with:
-      name: ${{env.PYTEST_ARTEFACT}}
-      path: "test/${{env.PYTEST_ARTEFACT}}.xml"
+      name: ${{ steps.location.outputs.artifact }}
+      path: "test/${{ steps.location.outputs.artifact }}.xml"
     if: failure()
 
   - name: Statistics

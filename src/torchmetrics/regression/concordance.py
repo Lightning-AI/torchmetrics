@@ -27,9 +27,17 @@ class ConcordanceCorrCoef(PearsonCorrCoef):
     where :math:`\mu_x, \mu_y` is the means for the two variables, :math:`\sigma_x^2, \sigma_y^2` are the corresponding
     variances and \rho is the pearson correlation coefficient between the two variables.
 
-    Forward accepts
-    - ``preds`` (float tensor): either single output tensor with shape ``(N,)`` or multioutput tensor of shape ``(N,d)``
-    - ``target``(float tensor): either single output tensor with shape ``(N,)`` or multioutput tensor of shape ``(N,d)``
+    As input to ``forward`` and ``update`` the metric accepts the following input:
+
+    - ``preds`` (:class:`~torch.Tensor`): either single output float tensor with shape ``(N,)`` or multioutput
+      float tensor of shape ``(N,d)``
+    - ``target`` (:class:`~torch.Tensor`): either single output float tensor with shape ``(N,)`` or multioutput
+      float tensor of shape ``(N,d)``
+
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``concordance`` (:class:`~torch.Tensor`): A scalar float tensor with the concordance coefficient(s) for
+      non-multioutput input or a float tensor with shape ``(d,)`` for multioutput input
 
     Args:
         num_outputs: Number of outputs in multioutput setting
@@ -37,18 +45,17 @@ class ConcordanceCorrCoef(PearsonCorrCoef):
 
     Example (single output regression):
         >>> from torchmetrics import ConcordanceCorrCoef
-        >>> import torch
-        >>> target = torch.tensor([3, -0.5, 2, 7])
-        >>> preds = torch.tensor([2.5, 0.0, 2, 8])
+        >>> from torch import tensor
+        >>> target = tensor([3, -0.5, 2, 7])
+        >>> preds = tensor([2.5, 0.0, 2, 8])
         >>> concordance = ConcordanceCorrCoef()
         >>> concordance(preds, target)
         tensor(0.9777)
 
     Example (multi output regression):
         >>> from torchmetrics import ConcordanceCorrCoef
-        >>> import torch
-        >>> target = torch.tensor([[3, -0.5], [2, 7]])
-        >>> preds = torch.tensor([[2.5, 0.0], [2, 8]])
+        >>> target = tensor([[3, -0.5], [2, 7]])
+        >>> preds = tensor([[2.5, 0.0], [2, 8]])
         >>> concordance = ConcordanceCorrCoef(num_outputs=2)
         >>> concordance(preds, target)
         tensor([0.7273, 0.9887])

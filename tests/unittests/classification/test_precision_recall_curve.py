@@ -37,7 +37,7 @@ from unittests.helpers.testers import NUM_CLASSES, MetricTester, inject_ignore_i
 seed_all(42)
 
 
-def _sk_precision_recall_curve_binary(preds, target, ignore_index=None):
+def _sklearn_precision_recall_curve_binary(preds, target, ignore_index=None):
     preds = preds.flatten().numpy()
     target = target.flatten().numpy()
     if np.issubdtype(preds.dtype, np.floating):
@@ -60,7 +60,7 @@ class TestBinaryPrecisionRecallCurve(MetricTester):
             preds=preds,
             target=target,
             metric_class=BinaryPrecisionRecallCurve,
-            sk_metric=partial(_sk_precision_recall_curve_binary, ignore_index=ignore_index),
+            reference_metric=partial(_sklearn_precision_recall_curve_binary, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "ignore_index": ignore_index,
@@ -76,7 +76,7 @@ class TestBinaryPrecisionRecallCurve(MetricTester):
             preds=preds,
             target=target,
             metric_functional=binary_precision_recall_curve,
-            sk_metric=partial(_sk_precision_recall_curve_binary, ignore_index=ignore_index),
+            reference_metric=partial(_sklearn_precision_recall_curve_binary, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "ignore_index": ignore_index,
@@ -132,8 +132,18 @@ class TestBinaryPrecisionRecallCurve(MetricTester):
             assert torch.allclose(r1, r2)
             assert torch.allclose(t1, t2)
 
+    def test_binary_error_on_wrong_dtypes(self, input):
+        """Test that error are raised on wrong dtype."""
+        preds, target = input
 
-def _sk_precision_recall_curve_multiclass(preds, target, ignore_index=None):
+        with pytest.raises(ValueError, match="Expected argument `target` to be an int or long tensor with ground.*"):
+            binary_precision_recall_curve(preds[0], target[0].to(torch.float32))
+
+        with pytest.raises(ValueError, match="Expected argument `preds` to be an floating tensor with probability.*"):
+            binary_precision_recall_curve(preds[0].long(), target[0])
+
+
+def _sklearn_precision_recall_curve_multiclass(preds, target, ignore_index=None):
     preds = np.moveaxis(preds.numpy(), 1, -1).reshape((-1, preds.shape[1]))
     target = target.numpy().flatten()
     if not ((0 < preds) & (preds < 1)).all():
@@ -167,7 +177,7 @@ class TestMulticlassPrecisionRecallCurve(MetricTester):
             preds=preds,
             target=target,
             metric_class=MulticlassPrecisionRecallCurve,
-            sk_metric=partial(_sk_precision_recall_curve_multiclass, ignore_index=ignore_index),
+            reference_metric=partial(_sklearn_precision_recall_curve_multiclass, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_classes": NUM_CLASSES,
@@ -184,7 +194,7 @@ class TestMulticlassPrecisionRecallCurve(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multiclass_precision_recall_curve,
-            sk_metric=partial(_sk_precision_recall_curve_multiclass, ignore_index=ignore_index),
+            reference_metric=partial(_sklearn_precision_recall_curve_multiclass, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_classes": NUM_CLASSES,
@@ -243,11 +253,21 @@ class TestMulticlassPrecisionRecallCurve(MetricTester):
                 assert torch.allclose(r1[i], r2[i])
                 assert torch.allclose(t1[i], t2)
 
+    def test_multiclass_error_on_wrong_dtypes(self, input):
+        """Test that error are raised on wrong dtype."""
+        preds, target = input
 
-def _sk_precision_recall_curve_multilabel(preds, target, ignore_index=None):
+        with pytest.raises(ValueError, match="Expected argument `target` to be an int or long tensor, but got.*"):
+            multiclass_precision_recall_curve(preds[0], target[0].to(torch.float32), num_classes=NUM_CLASSES)
+
+        with pytest.raises(ValueError, match="Expected `preds` to be a float tensor, but got.*"):
+            multiclass_precision_recall_curve(preds[0].long(), target[0], num_classes=NUM_CLASSES)
+
+
+def _sklearn_precision_recall_curve_multilabel(preds, target, ignore_index=None):
     precision, recall, thresholds = [], [], []
     for i in range(NUM_CLASSES):
-        res = _sk_precision_recall_curve_binary(preds[:, i], target[:, i], ignore_index)
+        res = _sklearn_precision_recall_curve_binary(preds[:, i], target[:, i], ignore_index)
         precision.append(res[0])
         recall.append(res[1])
         thresholds.append(res[2])
@@ -269,7 +289,7 @@ class TestMultilabelPrecisionRecallCurve(MetricTester):
             preds=preds,
             target=target,
             metric_class=MultilabelPrecisionRecallCurve,
-            sk_metric=partial(_sk_precision_recall_curve_multilabel, ignore_index=ignore_index),
+            reference_metric=partial(_sklearn_precision_recall_curve_multilabel, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_labels": NUM_CLASSES,
@@ -286,7 +306,7 @@ class TestMultilabelPrecisionRecallCurve(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multilabel_precision_recall_curve,
-            sk_metric=partial(_sk_precision_recall_curve_multilabel, ignore_index=ignore_index),
+            reference_metric=partial(_sklearn_precision_recall_curve_multilabel, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_labels": NUM_CLASSES,
@@ -344,6 +364,16 @@ class TestMultilabelPrecisionRecallCurve(MetricTester):
                 assert torch.allclose(p1[i], p2[i])
                 assert torch.allclose(r1[i], r2[i])
                 assert torch.allclose(t1[i], t2)
+
+    def test_multilabel_error_on_wrong_dtypes(self, input):
+        """Test that error are raised on wrong dtype."""
+        preds, target = input
+
+        with pytest.raises(ValueError, match="Expected argument `target` to be an int or long tensor with ground.*"):
+            multilabel_precision_recall_curve(preds[0], target[0].to(torch.float32), num_labels=NUM_CLASSES)
+
+        with pytest.raises(ValueError, match="Expected argument `preds` to be an floating tensor with probability.*"):
+            multilabel_precision_recall_curve(preds[0].long(), target[0], num_labels=NUM_CLASSES)
 
 
 @pytest.mark.parametrize(

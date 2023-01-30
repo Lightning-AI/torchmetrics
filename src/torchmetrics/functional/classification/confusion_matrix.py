@@ -195,17 +195,18 @@ def binary_confusion_matrix(
         A ``[2, 2]`` tensor
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.functional.classification import binary_confusion_matrix
-        >>> target = torch.tensor([1, 1, 0, 0])
-        >>> preds = torch.tensor([0, 1, 0, 0])
+        >>> target = tensor([1, 1, 0, 0])
+        >>> preds = tensor([0, 1, 0, 0])
         >>> binary_confusion_matrix(preds, target)
         tensor([[2, 0],
                 [1, 1]])
 
     Example (preds is float tensor):
         >>> from torchmetrics.functional.classification import binary_confusion_matrix
-        >>> target = torch.tensor([1, 1, 0, 0])
-        >>> preds = torch.tensor([0.35, 0.85, 0.48, 0.01])
+        >>> target = tensor([1, 1, 0, 0])
+        >>> preds = tensor([0.35, 0.85, 0.48, 0.01])
         >>> binary_confusion_matrix(preds, target)
         tensor([[2, 0],
                 [1, 1]])
@@ -379,9 +380,10 @@ def multiclass_confusion_matrix(
         A ``[num_classes, num_classes]`` tensor
 
     Example (pred is integer tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.functional.classification import multiclass_confusion_matrix
-        >>> target = torch.tensor([2, 1, 0, 0])
-        >>> preds = torch.tensor([2, 1, 0, 1])
+        >>> target = tensor([2, 1, 0, 0])
+        >>> preds = tensor([2, 1, 0, 1])
         >>> multiclass_confusion_matrix(preds, target, num_classes=3)
         tensor([[1, 1, 0],
                 [0, 1, 0],
@@ -389,13 +391,11 @@ def multiclass_confusion_matrix(
 
     Example (pred is float tensor):
         >>> from torchmetrics.functional.classification import multiclass_confusion_matrix
-        >>> target = torch.tensor([2, 1, 0, 0])
-        >>> preds = torch.tensor([
-        ...   [0.16, 0.26, 0.58],
-        ...   [0.22, 0.61, 0.17],
-        ...   [0.71, 0.09, 0.20],
-        ...   [0.05, 0.82, 0.13],
-        ... ])
+        >>> target = tensor([2, 1, 0, 0])
+        >>> preds = tensor([[0.16, 0.26, 0.58],
+        ...                 [0.22, 0.61, 0.17],
+        ...                 [0.71, 0.09, 0.20],
+        ...                 [0.05, 0.82, 0.13]])
         >>> multiclass_confusion_matrix(preds, target, num_classes=3)
         tensor([[1, 1, 0],
                 [0, 1, 0],
@@ -566,9 +566,10 @@ def multilabel_confusion_matrix(
         A ``[num_labels, 2, 2]`` tensor
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.functional.classification import multilabel_confusion_matrix
-        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
-        >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
+        >>> target = tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = tensor([[0, 0, 1], [1, 0, 1]])
         >>> multilabel_confusion_matrix(preds, target, num_labels=3)
         tensor([[[1, 0], [0, 1]],
                 [[1, 0], [1, 0]],
@@ -576,8 +577,8 @@ def multilabel_confusion_matrix(
 
     Example (preds is float tensor):
         >>> from torchmetrics.functional.classification import multilabel_confusion_matrix
-        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
-        >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
+        >>> target = tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> multilabel_confusion_matrix(preds, target, num_labels=3)
         tensor([[[1, 0], [0, 1]],
                 [[1, 0], [1, 0]],
@@ -610,24 +611,25 @@ def confusion_matrix(
     the specific details of each argument influence and examples.
 
     Legacy Example:
+        >>> from torch import tensor
         >>> from torchmetrics import ConfusionMatrix
-        >>> target = torch.tensor([1, 1, 0, 0])
-        >>> preds = torch.tensor([0, 1, 0, 0])
+        >>> target = tensor([1, 1, 0, 0])
+        >>> preds = tensor([0, 1, 0, 0])
         >>> confmat = ConfusionMatrix(task="binary")
         >>> confmat(preds, target)
         tensor([[2, 0],
                 [1, 1]])
 
-        >>> target = torch.tensor([2, 1, 0, 0])
-        >>> preds = torch.tensor([2, 1, 0, 1])
+        >>> target = tensor([2, 1, 0, 0])
+        >>> preds = tensor([2, 1, 0, 1])
         >>> confmat = ConfusionMatrix(task="multiclass", num_classes=3)
         >>> confmat(preds, target)
         tensor([[1, 1, 0],
                 [0, 1, 0],
                 [0, 0, 1]])
 
-        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
-        >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
+        >>> target = tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = tensor([[0, 0, 1], [1, 0, 1]])
         >>> confmat = ConfusionMatrix(task="multilabel", num_labels=3)
         >>> confmat(preds, target)
         tensor([[[1, 0], [0, 1]],

@@ -14,18 +14,21 @@ ________________
 
 .. autoclass:: torchmetrics.CalibrationError
     :noindex:
+    :exclude-members: update, compute
 
 BinaryCalibrationError
 ^^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.BinaryCalibrationError
     :noindex:
+    :exclude-members: update, compute
 
 MulticlassCalibrationError
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.MulticlassCalibrationError
     :noindex:
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________

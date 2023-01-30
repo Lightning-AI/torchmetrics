@@ -40,9 +40,9 @@ def _symmetric_toeplitz(vector: Tensor) -> Tensor:
         vector: shape [..., L]
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics.functional.audio.sdr import _symmetric_toeplitz
-        >>> import torch
-        >>> v = torch.tensor([0, 1, 2, 3, 4])
+        >>> v = tensor([0, 1, 2, 3, 4])
         >>> _symmetric_toeplitz(v)
         tensor([[0, 1, 2, 3, 4],
                 [1, 0, 1, 2, 3],
@@ -130,8 +130,8 @@ def signal_distortion_ratio(
             If ``preds`` and ``target`` does not have the same shape
 
     Example:
-        >>> from torchmetrics.functional.audio import signal_distortion_ratio
         >>> import torch
+        >>> from torchmetrics.functional.audio import signal_distortion_ratio
         >>> g = torch.manual_seed(1)
         >>> preds = torch.randn(8000)
         >>> target = torch.randn(8000)

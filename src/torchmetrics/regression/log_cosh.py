@@ -27,6 +27,17 @@ class LogCoshError(Metric):
 
     Where :math:`y` is a tensor of target values, and :math:`\hat{y}` is a tensor of predictions.
 
+    As input to ``forward`` and ``update`` the metric accepts the following input:
+
+    - ``preds`` (:class:`~torch.Tensor`): Estimated labels with shape ``(batch_size,)``
+      or ``(batch_size, num_outputs)``
+    - ``target`` (:class:`~torch.Tensor`): Ground truth labels with shape ``(batch_size,)``
+      or ``(batch_size, num_outputs)``
+
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``log_cosh_error`` (:class:`~torch.Tensor`): A tensor with the log cosh error
+
     Args:
         num_outputs: Number of outputs in multioutput setting
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
@@ -65,10 +76,6 @@ class LogCoshError(Metric):
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets.
-
-        Args:
-            preds: estimated labels with shape ``(batch_size,)`` or `(batch_size, num_outputs)``
-            target: ground truth labels with shape ``(batch_size,)`` or `(batch_size, num_outputs)``
 
         Raises:
             ValueError:
