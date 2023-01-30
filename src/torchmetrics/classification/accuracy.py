@@ -18,6 +18,7 @@ from typing_extensions import Literal
 
 from torchmetrics.functional.classification.accuracy import _accuracy_reduce
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.exceptions import MisConfigurationError
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
 
@@ -451,15 +452,27 @@ class Accuracy:
         **kwargs: Any,
     ) -> Metric:
         kwargs.update(dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args))
+
+        if task not in ["binary", "multiclass", "multilabel"]:
+            raise MisConfigurationError(
+                f"Expected argument `task` must be one of (`'binary'`, `'multiclass'`, `'multilabel'`). Got `{task}`"
+            )
+
         if task == "binary":
             return BinaryAccuracy(threshold, **kwargs)
         if task == "multiclass":
-            assert isinstance(num_classes, int)
-            assert isinstance(top_k, int)
+            if not isinstance(num_classes, int):
+                raise MisConfigurationError(
+                    f"Optional arg `num_classes` must be type `int` when task is {task}. Got {type(num_classes)}"
+                )
+            if not isinstance(top_k, int):
+                raise MisConfigurationError(
+                    f"Optional arg `top_k` must be type `int` when task is {task}. Got {type(top_k)}"
+                )
             return MulticlassAccuracy(num_classes, top_k, average, **kwargs)
         if task == "multilabel":
-            assert isinstance(num_labels, int)
+            if not isinstance(num_labels, int):
+                raise MisConfigurationError(
+                    f"Optional arg `num_labels` must be type `int` when task is {task}. Got {type(num_labels)}"
+                )
             return MultilabelAccuracy(num_labels, threshold, average, **kwargs)
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-        )
