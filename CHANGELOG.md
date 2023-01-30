@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added support for `SpecificityAtSensitivity` Metric ([#1432](https://github.com/Lightning-AI/metrics/pull/1432))
+
 - Added support for plotting of metrics through `.plot()` method ([#1328](https://github.com/Lightning-AI/metrics/pull/1328))
 
 
@@ -40,6 +42,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed type checking on the `maximize` parameter at the initialization of `MetricTracker` ([#1428](https://github.com/Lightning-AI/metrics/issues/1428))
 
 - Fixed mixed precision autocast for `SSIM` metric ([#1454](https://github.com/Lightning-AI/metrics/pull/1454))
+
+- Fix checking for `nltk.punkt` in `RougeScore` if a machine is not online ([#1456](https://github.com/Lightning-AI/metrics/pull/1456))
+
 
 - Fixed wrongly reset method in `MultioutputWrapper` ([#1460](https://github.com/Lightning-AI/metrics/issues/1460))
 
