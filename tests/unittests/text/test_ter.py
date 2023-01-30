@@ -11,7 +11,7 @@ from unittests.text.helpers import TextTester
 from unittests.text.inputs import _inputs_multiple_references, _inputs_single_sentence_multiple_references
 
 if _SACREBLEU_AVAILABLE:
-    from sacrebleu.metrics import TER as SacreTER
+    from sacrebleu.metrics import TER as SacreTER  # noqa: N811
 
 
 def sacrebleu_ter_fn(
