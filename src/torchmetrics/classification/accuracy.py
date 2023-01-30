@@ -450,7 +450,9 @@ class Accuracy:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
-        kwargs.update({"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args})
+        kwargs.update(
+            {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
+        )
         if task == "binary":
             return BinaryAccuracy(threshold, **kwargs)
         if task == "multiclass":

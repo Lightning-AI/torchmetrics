@@ -173,7 +173,7 @@ def _squad_update(
                 if qa["id"] not in preds:
                     rank_zero_warn(f"Unanswered question {qa['id']} will receive score 0.")
                     continue
-                ground_truths = list(map(lambda x: x["text"], qa["answers"]))
+                ground_truths = [x["text"] for x in qa["answers"]]
                 pred = preds[qa["id"]]
                 exact_match += _metric_max_over_ground_truths(_compute_exact_match_score, pred, ground_truths)
                 f1 += _metric_max_over_ground_truths(_compute_f1_score, pred, ground_truths)
