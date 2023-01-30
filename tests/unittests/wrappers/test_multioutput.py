@@ -118,7 +118,7 @@ class TestMultioutputWrapper(MetricTester):
             _MultioutputMetric,
             compare_metric,
             dist_sync_on_step,
-            metric_args=dict(num_outputs=num_outputs, base_metric_class=base_metric_class),
+            metric_args={"num_outputs": num_outputs, "base_metric_class": base_metric_class},
         )
 
 

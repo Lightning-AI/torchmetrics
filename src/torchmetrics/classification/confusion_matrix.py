@@ -397,7 +397,7 @@ class ConfusionMatrix:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
-        kwargs.update(dict(normalize=normalize, ignore_index=ignore_index, validate_args=validate_args))
+        kwargs.update({"normalize": normalize, "ignore_index": ignore_index, "validate_args": validate_args})
         if task == "binary":
             return BinaryConfusionMatrix(threshold, **kwargs)
         if task == "multiclass":
