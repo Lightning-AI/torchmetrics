@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import contextlib
 import os
 import pickle
 import sys
@@ -28,10 +29,8 @@ from torchmetrics import Metric
 from torchmetrics.detection.mean_ap import MAPMetricResults
 from torchmetrics.utilities.data import _flatten, apply_to_collection
 
-try:
+with contextlib.suppress(RuntimeError):
     set_start_method("spawn")
-except RuntimeError:
-    pass
 
 NUM_PROCESSES = torch.cuda.device_count() if torch.cuda.is_available() else 2
 NUM_BATCHES = 2 * NUM_PROCESSES  # Need to be divisible with the number of processes
