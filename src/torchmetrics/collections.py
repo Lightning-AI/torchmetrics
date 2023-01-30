@@ -247,7 +247,7 @@ class MetricCollection(ModuleDict):
         if metric1._defaults.keys() != metric2._defaults.keys():
             return False
 
-        for key in metric1._defaults.keys():
+        for key in metric1._defaults:
             state1 = getattr(metric1, key)
             state2 = getattr(metric2, key)
 

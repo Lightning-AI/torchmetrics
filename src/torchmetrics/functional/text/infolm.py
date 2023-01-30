@@ -119,9 +119,8 @@ class _InformationMeasure:
         if self.information_measure in [_IMEnum.ALPHA_DIVERGENCE, _IMEnum.AB_DIVERGENCE, _IMEnum.RENYI_DIVERGENCE]:
             if not isinstance(alpha, float):
                 raise ValueError(f"Parameter `alpha` is expected to be defined for {information_measure}.")
-        if self.information_measure in [_IMEnum.BETA_DIVERGENCE, _IMEnum.AB_DIVERGENCE]:
-            if not isinstance(beta, float):
-                raise ValueError(f"Parameter `beta` is expected to be defined for {information_measure}.")
+        if self.information_measure in [_IMEnum.BETA_DIVERGENCE, _IMEnum.AB_DIVERGENCE] and not isinstance(beta, float):
+            raise ValueError(f"Parameter `beta` is expected to be defined for {information_measure}.")
         if self.information_measure == _IMEnum.ALPHA_DIVERGENCE and (not isinstance(alpha, float) or alpha in [0, 1]):
             raise ValueError(
                 f"Parameter `alpha` is expected to be float differened from 0 and 1 for {information_measure}."

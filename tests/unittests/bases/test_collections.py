@@ -188,7 +188,7 @@ def test_metric_collection_prefix_postfix_args(prefix, postfix):
     for k, _ in new_metric_collection.items():
         assert "new_prefix_" in k
 
-    for k in new_metric_collection.keys():
+    for k in new_metric_collection:
         assert "new_prefix_" in k
 
     for k, _ in new_metric_collection.items(keep_base=True):
@@ -438,7 +438,7 @@ class TestComputeGroups:
             # compare results for correctness
             res_cg = m.compute()
             res_without_cg = m2.compute()
-            for key in res_cg.keys():
+            for key in res_cg:
                 assert torch.allclose(res_cg[key], res_without_cg[key])
 
             m.reset()
@@ -471,7 +471,7 @@ class TestComputeGroups:
                 for metric_cg, metric_no_cg in zip(m.values(), m2.values()):
                     _compare(metric_cg, metric_no_cg)
             if method == "keys":
-                for key in m.keys():
+                for key in m:
                     metric_cg, metric_no_cg = m[key], m2[key]
                     _compare(metric_cg, metric_no_cg)
 

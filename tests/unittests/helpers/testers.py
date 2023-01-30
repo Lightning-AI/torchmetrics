@@ -215,7 +215,7 @@ def _class_test(
             target_ = target[i].cpu() if isinstance(target, Tensor) else target[i]
             ref_batch_result = reference_metric(preds_, target_, **batch_kwargs_update)
             if isinstance(batch_result, dict):
-                for key in batch_result.keys():
+                for key in batch_result:
                     _assert_allclose(batch_result, ref_batch_result[key].numpy(), atol=atol, key=key)
             else:
                 _assert_allclose(batch_result, ref_batch_result, atol=atol)
@@ -230,7 +230,7 @@ def _class_test(
     # check on all batches on all ranks
     result = metric.compute()
     if isinstance(result, dict):
-        for key in result.keys():
+        for key in result:
             _assert_tensor(result, key=key)
     else:
         _assert_tensor(result)
@@ -252,7 +252,7 @@ def _class_test(
 
     # assert after aggregation
     if isinstance(sk_result, dict):
-        for key in sk_result.keys():
+        for key in sk_result:
             _assert_allclose(result, sk_result[key].numpy(), atol=atol, key=key)
     else:
         _assert_allclose(result, sk_result, atol=atol)
