@@ -19,77 +19,91 @@ from typing_extensions import Literal
 
 from torchmetrics.functional.classification.precision_recall_curve import (
     _binary_precision_recall_curve_arg_validation,
-    _binary_precision_recall_curve_compute,
     _binary_precision_recall_curve_format,
     _binary_precision_recall_curve_tensor_validation,
     _binary_precision_recall_curve_update,
     _multiclass_precision_recall_curve_arg_validation,
-    _multiclass_precision_recall_curve_compute,
     _multiclass_precision_recall_curve_format,
     _multiclass_precision_recall_curve_tensor_validation,
     _multiclass_precision_recall_curve_update,
     _multilabel_precision_recall_curve_arg_validation,
-    _multilabel_precision_recall_curve_compute,
     _multilabel_precision_recall_curve_format,
     _multilabel_precision_recall_curve_tensor_validation,
     _multilabel_precision_recall_curve_update,
 )
+from torchmetrics.functional.classification.roc import (
+    _binary_roc_compute,
+    _multiclass_roc_compute,
+    _multilabel_roc_compute,
+)
 
 
-def _recall_at_precision(
-    precision: Tensor,
-    recall: Tensor,
+def _convert_fpr_to_specificity(fpr: Tensor) -> Tensor:
+    """Converts fprs to specificity."""
+    return 1 - fpr
+
+
+def _specificity_at_sensitivity(
+    specificity: Tensor,
+    sensitivity: Tensor,
     thresholds: Tensor,
-    min_precision: float,
+    min_sensitivity: float,
 ) -> Tuple[Tensor, Tensor]:
-    try:
-        max_recall, _, best_threshold = max(
-            (r, p, t) for p, r, t in zip(precision, recall, thresholds) if p >= min_precision
-        )
 
-    except ValueError:
-        max_recall = torch.tensor(0.0, device=recall.device, dtype=recall.dtype)
-        best_threshold = torch.tensor(0)
+    # get indices where sensitivity is greater than min_sensitivity
+    indices = sensitivity >= min_sensitivity
 
-    if max_recall == 0.0:
+    # if no indices are found, max_spec, best_threshold = 0.0, 1e6
+    if not indices.any():
+        max_spec = torch.tensor(0.0, device=specificity.device, dtype=specificity.dtype)
         best_threshold = torch.tensor(1e6, device=thresholds.device, dtype=thresholds.dtype)
+    else:
+        # redefine specificity, sensitivity and threshold tensor based on indices
+        specificity, sensitivity, thresholds = specificity[indices], sensitivity[indices], thresholds[indices]
 
-    return max_recall, best_threshold
+        # get argmax
+        idx = torch.argmax(specificity)
+
+        # get max_spec and best_threshold
+        max_spec, best_threshold = specificity[idx], thresholds[idx]
+
+    return max_spec, best_threshold
 
 
-def _binary_recall_at_fixed_precision_arg_validation(
-    min_precision: float,
+def _binary_specificity_at_sensitivity_arg_validation(
+    min_sensitivity: float,
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
 ) -> None:
     _binary_precision_recall_curve_arg_validation(thresholds, ignore_index)
-    if not isinstance(min_precision, float) and not (0 <= min_precision <= 1):
+    if not isinstance(min_sensitivity, float) and not (0 <= min_sensitivity <= 1):
         raise ValueError(
-            f"Expected argument `min_precision` to be an float in the [0,1] range, but got {min_precision}"
+            f"Expected argument `min_sensitivity` to be an float in the [0,1] range, but got {min_sensitivity}"
         )
 
 
-def _binary_recall_at_fixed_precision_compute(
+def _binary_specificity_at_sensitivity_compute(
     state: Union[Tensor, Tuple[Tensor, Tensor]],
     thresholds: Optional[Tensor],
-    min_precision: float,
+    min_sensitivity: float,
     pos_label: int = 1,
 ) -> Tuple[Tensor, Tensor]:
-    precision, recall, thresholds = _binary_precision_recall_curve_compute(state, thresholds, pos_label)
-    return _recall_at_precision(precision, recall, thresholds, min_precision)
+    fpr, sensitivity, thresholds = _binary_roc_compute(state, thresholds, pos_label)
+    specificity = _convert_fpr_to_specificity(fpr)
+    return _specificity_at_sensitivity(specificity, sensitivity, thresholds, min_sensitivity)
 
 
-def binary_recall_at_fixed_precision(
+def binary_specificity_at_sensitivity(
     preds: Tensor,
     target: Tensor,
-    min_precision: float,
+    min_sensitivity: float,
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tuple[Tensor, Tensor]:
-    r"""Computes the highest possible recall value given the minimum precision thresholds provided for binary tasks.
-    This is done by first calculating the precision-recall curve for different thresholds and the find the recall
-    for a given precision level.
+    r"""Computes the higest possible specificity value given the minimum sensitivity thresholds provided for binary
+    tasks. This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different
+    thresholds and the find the specificity for a given sensitivity level.
 
     Accepts the following input tensors:
 
@@ -97,7 +111,7 @@ def binary_recall_at_fixed_precision(
       observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
       sigmoid per element.
     - ``target`` (int tensor): ``(N, ...)``. Target should be a tensor containing ground truth labels, and therefore
-      only contain {0,1} values (except if `ignore_index` is specified). The value 1 always encodes the positive class.
+      only contain {0,1} values (except if `ignore_index` is specified).
 
     Additional dimension ``...`` will be flattened into the batch dimension.
 
@@ -110,7 +124,7 @@ def binary_recall_at_fixed_precision(
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        min_precision: float value specifying minimum precision threshold.
+        min_sensitivity: float value specifying minimum sensitivity threshold.
         thresholds:
             Can be one of:
 
@@ -128,67 +142,74 @@ def binary_recall_at_fixed_precision(
     Returns:
         (tuple): a tuple of 2 tensors containing:
 
-        - recall: an scalar tensor with the maximum recall for the given precision level
-        - threshold: an scalar tensor with the corresponding threshold level
+        - specificity: a scalar tensor with the maximum specificity for the given sensitivity level
+        - threshold: a scalar tensor with the corresponding threshold level
 
     Example:
-        >>> from torchmetrics.functional.classification import binary_recall_at_fixed_precision
-        >>> preds = torch.tensor([0, 0.5, 0.7, 0.8])
-        >>> target = torch.tensor([0, 1, 1, 0])
-        >>> binary_recall_at_fixed_precision(preds, target, min_precision=0.5, thresholds=None)
-        (tensor(1.), tensor(0.5000))
-        >>> binary_recall_at_fixed_precision(preds, target, min_precision=0.5, thresholds=5)
-        (tensor(1.), tensor(0.5000))
+        >>> from torchmetrics.functional.classification import binary_specificity_at_sensitivity
+        >>> preds = torch.tensor([0, 0.5, 0.4, 0.1])
+        >>> target = torch.tensor([0, 1, 1, 1])
+        >>> binary_specificity_at_sensitivity(preds, target, min_sensitivity=0.5, thresholds=None)
+        (tensor(1.), tensor(0.4000))
+        >>> binary_specificity_at_sensitivity(preds, target, min_sensitivity=0.5, thresholds=5)
+        (tensor(1.), tensor(0.2500))
     """
     if validate_args:
-        _binary_recall_at_fixed_precision_arg_validation(min_precision, thresholds, ignore_index)
+        _binary_specificity_at_sensitivity_arg_validation(min_sensitivity, thresholds, ignore_index)
         _binary_precision_recall_curve_tensor_validation(preds, target, ignore_index)
     preds, target, thresholds = _binary_precision_recall_curve_format(preds, target, thresholds, ignore_index)
     state = _binary_precision_recall_curve_update(preds, target, thresholds)
-    return _binary_recall_at_fixed_precision_compute(state, thresholds, min_precision)
+    return _binary_specificity_at_sensitivity_compute(state, thresholds, min_sensitivity)
 
 
-def _multiclass_recall_at_fixed_precision_arg_validation(
+def _multiclass_specificity_at_sensitivity_arg_validation(
     num_classes: int,
-    min_precision: float,
+    min_sensitivity: float,
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
 ) -> None:
     _multiclass_precision_recall_curve_arg_validation(num_classes, thresholds, ignore_index)
-    if not isinstance(min_precision, float) and not (0 <= min_precision <= 1):
+    if not isinstance(min_sensitivity, float) and not (0 <= min_sensitivity <= 1):
         raise ValueError(
-            f"Expected argument `min_precision` to be an float in the [0,1] range, but got {min_precision}"
+            f"Expected argument `min_sensitivity` to be an float in the [0,1] range, but got {min_sensitivity}"
         )
 
 
-def _multiclass_recall_at_fixed_precision_arg_compute(
+def _multiclass_specificity_at_sensitivity_compute(
     state: Union[Tensor, Tuple[Tensor, Tensor]],
     num_classes: int,
     thresholds: Optional[Tensor],
-    min_precision: float,
-) -> Tuple[Tensor, Tensor]:
-    precision, recall, thresholds = _multiclass_precision_recall_curve_compute(state, num_classes, thresholds)
+    min_sensitivity: float,
+) -> Union[Tensor, Tuple[Tensor, Tensor], Tuple[List[Tensor], List[Tensor]]]:
+    fpr, sensitivity, thresholds = _multiclass_roc_compute(state, num_classes, thresholds)
+    specificity = [_convert_fpr_to_specificity(fpr_) for fpr_ in fpr]
     if isinstance(state, Tensor):
-        res = [_recall_at_precision(p, r, thresholds, min_precision) for p, r in zip(precision, recall)]
+        res = [
+            _specificity_at_sensitivity(sp, sn, thresholds, min_sensitivity)  # type: ignore
+            for sp, sn in zip(specificity, sensitivity)
+        ]
     else:
-        res = [_recall_at_precision(p, r, t, min_precision) for p, r, t in zip(precision, recall, thresholds)]
-    recall = torch.stack([r[0] for r in res])
+        res = [
+            _specificity_at_sensitivity(sp, sn, t, min_sensitivity)
+            for sp, sn, t in zip(specificity, sensitivity, thresholds)
+        ]
+    specificity = torch.stack([r[0] for r in res])
     thresholds = torch.stack([r[1] for r in res])
-    return recall, thresholds
+    return specificity, thresholds
 
 
-def multiclass_recall_at_fixed_precision(
+def multiclass_specificity_at_sensitivity(
     preds: Tensor,
     target: Tensor,
     num_classes: int,
-    min_precision: float,
+    min_sensitivity: float,
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tuple[Tensor, Tensor]:
-    r"""Computes the highest possible recall value given the minimum precision thresholds provided for multiclass
-    tasks. This is done by first calculating the precision-recall curve for different thresholds and the find the
-    recall for a given precision level.
+    r"""Computes the higest possible specificity value given the minimum sensitivity thresholds provided for
+    multiclass tasks. This is done by first calculating the Receiver Operating Characteristic (ROC) curve for
+    different thresholds and the find the specificity for a given sensitivity level.
 
     Accepts the following input tensors:
 
@@ -210,7 +231,7 @@ def multiclass_recall_at_fixed_precision(
         preds: Tensor with predictions
         target: Tensor with true labels
         num_classes: Integer specifing the number of classes
-        min_precision: float value specifying minimum precision threshold.
+        min_sensitivity: float value specifying minimum sensitivity threshold.
         thresholds:
             Can be one of:
 
@@ -232,71 +253,78 @@ def multiclass_recall_at_fixed_precision(
         - thresholds: an 1d tensor of size (n_classes, ) with the corresponding threshold level per class
 
     Example:
-        >>> from torchmetrics.functional.classification import multiclass_recall_at_fixed_precision
+        >>> from torchmetrics.functional.classification import multiclass_specificity_at_sensitivity
         >>> preds = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
         ...                       [0.05, 0.75, 0.05, 0.05, 0.05],
         ...                       [0.05, 0.05, 0.75, 0.05, 0.05],
         ...                       [0.05, 0.05, 0.05, 0.75, 0.05]])
         >>> target = torch.tensor([0, 1, 3, 2])
-        >>> multiclass_recall_at_fixed_precision(preds, target, num_classes=5, min_precision=0.5, thresholds=None)
-        (tensor([1., 1., 0., 0., 0.]), tensor([7.5000e-01, 7.5000e-01, 1.0000e+06, 1.0000e+06, 1.0000e+06]))
-        >>> multiclass_recall_at_fixed_precision(preds, target, num_classes=5, min_precision=0.5, thresholds=5)
-        (tensor([1., 1., 0., 0., 0.]), tensor([7.5000e-01, 7.5000e-01, 1.0000e+06, 1.0000e+06, 1.0000e+06]))
+        >>> multiclass_specificity_at_sensitivity(preds, target, num_classes=5, min_sensitivity=0.5, thresholds=None)
+        (tensor([1., 1., 0., 0., 0.]), tensor([7.5000e-01, 7.5000e-01, 5.0000e-02, 5.0000e-02, 1.0000e+06]))
+        >>> multiclass_specificity_at_sensitivity(preds, target, num_classes=5, min_sensitivity=0.5, thresholds=5)
+        (tensor([1., 1., 0., 0., 0.]), tensor([7.5000e-01, 7.5000e-01, 0.0000e+00, 0.0000e+00, 1.0000e+06]))
     """
     if validate_args:
-        _multiclass_recall_at_fixed_precision_arg_validation(num_classes, min_precision, thresholds, ignore_index)
+        _multiclass_specificity_at_sensitivity_arg_validation(num_classes, min_sensitivity, thresholds, ignore_index)
         _multiclass_precision_recall_curve_tensor_validation(preds, target, num_classes, ignore_index)
     preds, target, thresholds = _multiclass_precision_recall_curve_format(
         preds, target, num_classes, thresholds, ignore_index
     )
     state = _multiclass_precision_recall_curve_update(preds, target, num_classes, thresholds)
-    return _multiclass_recall_at_fixed_precision_arg_compute(state, num_classes, thresholds, min_precision)
+    return _multiclass_specificity_at_sensitivity_compute(
+        state, num_classes, thresholds, min_sensitivity
+    )  # type: ignore
 
 
-def _multilabel_recall_at_fixed_precision_arg_validation(
+def _multilabel_specificity_at_sensitivity_arg_validation(
     num_labels: int,
-    min_precision: float,
+    min_sensitivity: float,
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
 ) -> None:
     _multilabel_precision_recall_curve_arg_validation(num_labels, thresholds, ignore_index)
-    if not isinstance(min_precision, float) and not (0 <= min_precision <= 1):
+    if not isinstance(min_sensitivity, float) and not (0 <= min_sensitivity <= 1):
         raise ValueError(
-            f"Expected argument `min_precision` to be an float in the [0,1] range, but got {min_precision}"
+            f"Expected argument `min_sensitivity` to be an float in the [0,1] range, but got {min_sensitivity}"
         )
 
 
-def _multilabel_recall_at_fixed_precision_arg_compute(
+def _multilabel_specificity_at_sensitivity_compute(
     state: Union[Tensor, Tuple[Tensor, Tensor]],
     num_labels: int,
     thresholds: Optional[Tensor],
     ignore_index: Optional[int],
-    min_precision: float,
+    min_sensitivity: float,
 ) -> Tuple[Tensor, Tensor]:
-    precision, recall, thresholds = _multilabel_precision_recall_curve_compute(
-        state, num_labels, thresholds, ignore_index
-    )
+    fpr, sensitivity, thresholds = _multilabel_roc_compute(state, num_labels, thresholds, ignore_index)
+    specificity = [_convert_fpr_to_specificity(fpr_) for fpr_ in fpr]
     if isinstance(state, Tensor):
-        res = [_recall_at_precision(p, r, thresholds, min_precision) for p, r in zip(precision, recall)]
+        res = [
+            _specificity_at_sensitivity(sp, sn, thresholds, min_sensitivity)  # type: ignore
+            for sp, sn in zip(specificity, sensitivity)
+        ]
     else:
-        res = [_recall_at_precision(p, r, t, min_precision) for p, r, t in zip(precision, recall, thresholds)]
-    recall = torch.stack([r[0] for r in res])
+        res = [
+            _specificity_at_sensitivity(sp, sn, t, min_sensitivity)
+            for sp, sn, t in zip(specificity, sensitivity, thresholds)
+        ]
+    specificity = torch.stack([r[0] for r in res])
     thresholds = torch.stack([r[1] for r in res])
-    return recall, thresholds
+    return specificity, thresholds
 
 
-def multilabel_recall_at_fixed_precision(
+def multilabel_specificity_at_sensitivity(
     preds: Tensor,
     target: Tensor,
     num_labels: int,
-    min_precision: float,
+    min_sensitivity: float,
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tuple[Tensor, Tensor]:
-    r"""Computes the highest possible recall value given the minimum precision thresholds provided for multilabel
-    tasks. This is done by first calculating the precision-recall curve for different thresholds and the find the
-    recall for a given precision level.
+    r"""Computes the higest possible specificity value given the minimum sensitivity thresholds provided for
+    multilabel tasks. This is done by first calculating the Receiver Operating Characteristic (ROC) curve for
+    different thresholds and the find the specificity for a given sensitivity level.
 
     Accepts the following input tensors:
 
@@ -318,7 +346,7 @@ def multilabel_recall_at_fixed_precision(
         preds: Tensor with predictions
         target: Tensor with true labels
         num_labels: Integer specifing the number of labels
-        min_precision: float value specifying minimum precision threshold.
+        min_sensitivity: float value specifying minimum sensitivity threshold.
         thresholds:
             Can be one of:
 
@@ -336,11 +364,12 @@ def multilabel_recall_at_fixed_precision(
     Returns:
         (tuple): a tuple of either 2 tensors or 2 lists containing
 
-        - recall: an 1d tensor of size (n_classes, ) with the maximum recall for the given precision level per class
+        - specificity: an 1d tensor of size (n_classes, ) with the maximum recall for the given precision
+            level per class
         - thresholds: an 1d tensor of size (n_classes, ) with the corresponding threshold level per class
 
     Example:
-        >>> from torchmetrics.functional.classification import multilabel_recall_at_fixed_precision
+        >>> from torchmetrics.functional.classification import multilabel_specificity_at_sensitivity
         >>> preds = torch.tensor([[0.75, 0.05, 0.35],
         ...                       [0.45, 0.75, 0.05],
         ...                       [0.05, 0.55, 0.75],
@@ -349,52 +378,54 @@ def multilabel_recall_at_fixed_precision(
         ...                        [0, 0, 0],
         ...                        [0, 1, 1],
         ...                        [1, 1, 1]])
-        >>> multilabel_recall_at_fixed_precision(preds, target, num_labels=3, min_precision=0.5, thresholds=None)
-        (tensor([1., 1., 1.]), tensor([0.0500, 0.5500, 0.0500]))
-        >>> multilabel_recall_at_fixed_precision(preds, target, num_labels=3, min_precision=0.5, thresholds=5)
-        (tensor([1., 1., 1.]), tensor([0.0000, 0.5000, 0.0000]))
+        >>> multilabel_specificity_at_sensitivity(preds, target, num_labels=3, min_sensitivity=0.5, thresholds=None)
+        (tensor([1.0000, 0.5000, 1.0000]), tensor([0.7500, 0.6500, 0.3500]))
+        >>> multilabel_specificity_at_sensitivity(preds, target, num_labels=3, min_sensitivity=0.5, thresholds=5)
+        (tensor([1.0000, 0.5000, 1.0000]), tensor([0.7500, 0.5000, 0.2500]))
     """
     if validate_args:
-        _multilabel_recall_at_fixed_precision_arg_validation(num_labels, min_precision, thresholds, ignore_index)
+        _multilabel_specificity_at_sensitivity_arg_validation(num_labels, min_sensitivity, thresholds, ignore_index)
         _multilabel_precision_recall_curve_tensor_validation(preds, target, num_labels, ignore_index)
     preds, target, thresholds = _multilabel_precision_recall_curve_format(
         preds, target, num_labels, thresholds, ignore_index
     )
     state = _multilabel_precision_recall_curve_update(preds, target, num_labels, thresholds)
-    return _multilabel_recall_at_fixed_precision_arg_compute(state, num_labels, thresholds, ignore_index, min_precision)
+    return _multilabel_specificity_at_sensitivity_compute(state, num_labels, thresholds, ignore_index, min_sensitivity)
 
 
-def recall_at_fixed_precision(
+def specicity_at_sensitivity(
     preds: Tensor,
     target: Tensor,
     task: Literal["binary", "multiclass", "multilabel"],
-    min_precision: float,
+    min_sensitivity: float,
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     num_classes: Optional[int] = None,
     num_labels: Optional[int] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tensor, Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    r"""Computes the highest possible recall value given the minimum precision thresholds provided. This is done by
-    first calculating the precision-recall curve for different thresholds and the find the recall for a given
-    precision level.
+    r"""Computes the higest possible specicity value given the minimum sensitivity thresholds provided. This is done
+    by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the find
+    the specificity for a given sensitivity level.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
-    :func:`binary_recall_at_fixed_precision`, :func:`multiclass_recall_at_fixed_precision` and
-    :func:`multilabel_recall_at_fixed_precision` for the specific details of each argument influence and examples.
+    :func:`binary_specificity_at_sensitivity`, :func:`multiclass_specicity_at_sensitivity` and
+    :func:`multilabel_specifity_at_sensitvity` for the specific details of each argument influence and examples.
     """
     if task == "binary":
-        return binary_recall_at_fixed_precision(preds, target, min_precision, thresholds, ignore_index, validate_args)
+        return binary_specificity_at_sensitivity(  # type: ignore
+            preds, target, min_sensitivity, thresholds, ignore_index, validate_args
+        )
     if task == "multiclass":
         assert isinstance(num_classes, int)
-        return multiclass_recall_at_fixed_precision(
-            preds, target, num_classes, min_precision, thresholds, ignore_index, validate_args
+        return multiclass_specificity_at_sensitivity(  # type: ignore
+            preds, target, num_classes, min_sensitivity, thresholds, ignore_index, validate_args
         )
     if task == "multilabel":
         assert isinstance(num_labels, int)
-        return multilabel_recall_at_fixed_precision(
-            preds, target, num_labels, min_precision, thresholds, ignore_index, validate_args
+        return multilabel_specificity_at_sensitivity(  # type: ignore
+            preds, target, num_labels, min_sensitivity, thresholds, ignore_index, validate_args
         )
     raise ValueError(
         f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"

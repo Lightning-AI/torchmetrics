@@ -330,7 +330,7 @@ class TextTester(MetricTester):
                     key=key,
                     **kwargs_update,
                 ),
-                [(rank, self.poolSize) for rank in range(self.poolSize)],
+                [(rank, self.pool_size) for rank in range(self.pool_size)],
             )
         else:
             device = "cuda" if (torch.cuda.is_available() and torch.cuda.device_count() > 0) else "cpu"

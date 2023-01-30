@@ -42,7 +42,7 @@
 .. _Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR): https://jonathan-hui.medium.com/map-mean-average-precision-for-object-detection-45c121a31173
 .. _Tweedie Deviance Score: https://en.wikipedia.org/wiki/Tweedie_distribution#The_Tweedie_deviance
 .. _Permutation Invariant Training of Deep Models: https://ieeexplore.ieee.org/document/7952154
-.. _Computes the Top-label Calibration Error: https://arxiv.org/pdf/1909.10155.pdf
+.. _Top-label Calibration Error: https://arxiv.org/pdf/1909.10155.pdf
 .. _Gradient Computation of Image: https://en.wikipedia.org/wiki/Image_gradient
 .. _R2 Score_Coefficient Determination: https://en.wikipedia.org/wiki/Coefficient_of_determination
 .. _Rank of element tensor: https://github.com/scipy/scipy/blob/v1.6.2/scipy/stats/stats.py#L4140-L4303
@@ -51,6 +51,8 @@
 .. _Bert_score Evaluating Text Generation: https://arxiv.org/abs/1904.09675
 .. _BLEU score: https://en.wikipedia.org/wiki/BLEU
 .. _BLEU: http://www.aclweb.org/anthology/P02-1040.pdf
+.. _SacreBLEU: https://github.com/mjpost/sacrebleu
+.. _SacreBleu_ter: https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/ter.py
 .. _Machine Translation Evolution: https://aclanthology.org/P04-1077.pdf
 .. _Rouge score_Text Normalizition: https://github.com/google-research/google-research/blob/master/rouge/tokenize.py
 .. _Calculate Rouge Score: https://en.wikipedia.org/wiki/ROUGE_(metric)
