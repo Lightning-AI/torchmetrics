@@ -20,9 +20,15 @@ from scipy.special import expit as sigmoid
 from sklearn.metrics import accuracy_score as sk_accuracy
 from sklearn.metrics import confusion_matrix as sk_confusion_matrix
 
-from torchmetrics.classification.accuracy import BinaryAccuracy, MulticlassAccuracy, MultilabelAccuracy
-from torchmetrics.functional.classification.accuracy import binary_accuracy, multiclass_accuracy, multilabel_accuracy
-from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
+from torchmetrics.classification.accuracy import Accuracy, BinaryAccuracy, MulticlassAccuracy, MultilabelAccuracy
+from torchmetrics.functional.classification.accuracy import (
+    accuracy,
+    binary_accuracy,
+    multiclass_accuracy,
+    multilabel_accuracy,
+)
+from torchmetrics.utilities.exceptions import MisConfigurationError
+from unittests.classification.inputs import _binary_cases, _input_binary, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
 from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index, remove_ignore_index
 
@@ -58,6 +64,53 @@ def _sklearn_accuracy_binary(preds, target, ignore_index, multidim_average):
             true, pred = remove_ignore_index(true, pred, ignore_index)
             res.append(_sklearn_accuracy(true, pred))
         return np.stack(res)
+
+
+class TestAccuracy(MetricTester):
+    def test_accuracy(self):
+        preds, target = _input_binary
+        task = "NotValidTask"
+        ignore_index = None
+        multidim_average = "global"
+
+        with pytest.raises(MisConfigurationError):
+            self.run_class_metric_test(
+                ddp=False,
+                preds=preds,
+                target=target,
+                metric_class=Accuracy,
+                reference_metric=partial(
+                    _sklearn_accuracy_binary, ignore_index=ignore_index, multidim_average=multidim_average
+                ),
+                metric_args={
+                    "threshold": THRESHOLD,
+                    "task": task,
+                    "ignore_index": ignore_index,
+                    "multidim_average": multidim_average,
+                },
+            )
+
+    def test_accuracy_functional(self):
+        preds, target = _input_binary
+        task = "NotValidTask"
+        ignore_index = None
+        multidim_average = "global"
+
+        with pytest.raises(MisConfigurationError):
+            self.run_functional_metric_test(
+                preds=preds,
+                target=target,
+                metric_functional=accuracy,
+                reference_metric=partial(
+                    _sklearn_accuracy_binary, ignore_index=ignore_index, multidim_average=multidim_average
+                ),
+                metric_args={
+                    "threshold": THRESHOLD,
+                    "task": task,
+                    "ignore_index": ignore_index,
+                    "multidim_average": multidim_average,
+                },
+            )
 
 
 @pytest.mark.parametrize("input", _binary_cases)
