@@ -38,15 +38,20 @@ class MulticlassExactMatch(Metric):
     r"""Computes Exact match (also known as subset accuracy) for multiclass tasks. Exact Match is a stricter version
     of accuracy where all labels have to match exactly for the sample to be correctly classified.
 
-    Accepts the following input tensors:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds``: ``(N, ...)`` (int tensor) or ``(N, C, ..)`` (float tensor). If preds is a floating point
-      we apply ``torch.argmax`` along the ``C`` dimension to automatically convert probabilities/logits into
-      an int tensor.
-    - ``target`` (int tensor): ``(N, ...)``
+    - ``preds`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)`` or float tensor of shape ``(N, C, ..)``.
+      If preds is a floating point we apply ``torch.argmax`` along the ``C`` dimension to automatically convert
+      probabilities/logits into an int tensor.
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``.
 
-    The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
+
+    As output to ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``mcem`` (:class:`~torch.Tensor`): A tensor whose returned shape depends on the ``multidim_average`` argument:
+
+        - If ``multidim_average`` is set to ``global`` the output will be a scalar tensor
+        - If ``multidim_average`` is set to ``samplewise`` the output will be a tensor of shape ``(N,)``
 
     Args:
         num_classes: Integer specifing the number of labels
@@ -61,12 +66,6 @@ class MulticlassExactMatch(Metric):
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
-
-    Returns:
-        The returned shape depends on the ``multidim_average`` argument:
-
-        - If ``multidim_average`` is set to ``global`` the output will be a scalar tensor
-        - If ``multidim_average`` is set to ``samplewise`` the output will be a tensor of shape ``(N,)``
 
     Example (multidim tensors):
         >>> from torch import tensor
@@ -140,15 +139,20 @@ class MultilabelExactMatch(Metric):
     r"""Computes Exact match (also known as subset accuracy) for multilabel tasks. Exact Match is a stricter version
     of accuracy where all labels have to match exactly for the sample to be correctly classified.
 
-    As input to 'update' the metric accepts the following input:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (int or float tensor): ``(N, C, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
-      we convert to int tensor with thresholding using the value in ``threshold``.
-    - ``target`` (int tensor): ``(N, C, ...)``
+    - ``preds`` (:class:`~torch.Tensor`): An int tensor or float tensor of shape ``(N, C, ..)``. If preds is a
+      floating point tensor with values outside [0,1] range we consider the input to be logits and will auto apply
+      sigmoid per element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``.
 
-    The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
+
+    As output to ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``mlem`` (:class:`~torch.Tensor`): A tensor whose returned shape depends on the ``multidim_average`` argument:
+
+        - If ``multidim_average`` is set to ``global`` the output will be a scalar tensor
+        - If ``multidim_average`` is set to ``samplewise`` the output will be a tensor of shape ``(N,)``
 
     Args:
         num_labels: Integer specifing the number of labels
@@ -164,12 +168,6 @@ class MultilabelExactMatch(Metric):
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
-
-    Returns:
-        The returned shape depends on the ``multidim_average`` argument:
-
-        - If ``multidim_average`` is set to ``global`` the output will be a scalar tensor
-        - If ``multidim_average`` is set to ``samplewise`` the output will be a tensor of shape ``(N,)``
 
     Example (preds is int tensor):
         >>> from torch import tensor

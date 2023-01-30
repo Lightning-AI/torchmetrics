@@ -35,24 +35,35 @@ class BinaryROC(BinaryPrecisionRecallCurve):
     of true positive rate (TPR) and false positive rate (FPR) values evaluated at different thresholds, such that
     the tradeoff between the two values can be seen.
 
-    Accepts the following input tensors:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (float tensor): ``(N, ...)``. Preds should be a tensor containing probabilities or logits for each
-      observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
-      sigmoid per element.
-    - ``target`` (int tensor): ``(N, ...)``. Target should be a tensor containing ground truth labels, and therefore
-      only contain {0,1} values (except if `ignore_index` is specified). The value 1 always encodes the positive class.
+    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, ...)``. Preds should be a tensor containing
+      probabilities or logits for each observation. If preds has values outside [0,1] range we consider the input
+      to be logits and will auto apply sigmoid per element.
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``. Target should be a tensor containing
+      ground truth labels, and therefore only contain {0,1} values (except if `ignore_index` is specified). The value
+      1 always encodes the positive class.
 
-    Additional dimension ``...`` will be flattened into the batch dimension.
+    .. note::
+       Additional dimension ``...`` will be flattened into the batch dimension.
 
-    The implementation both supports calculating the metric in a non-binned but accurate version and a binned version
-    that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
-    non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
-    argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
-    size :math:`\mathcal{O}(n_{thresholds})` (constant memory).
+    As output to ``forward`` and ``compute`` the metric returns a tuple of 3 tensors containing:
 
-    Note that outputted thresholds will be in reversed order to ensure that they corresponds to both fpr and tpr which
-    are sorted in reversed order during their calculation, such that they are monotome increasing.
+    - ``fpr`` (:class:`~torch.Tensor`): A 1d tensor of size ``(n_thresholds+1, )`` with false positive rate values
+    - ``tpr`` (:class:`~torch.Tensor`): A 1d tensor of size ``(n_thresholds+1, )`` with true positive rate values
+    - ``thresholds`` (:class:`~torch.Tensor`): A 1d tensor of size ``(n_thresholds, )`` with decreasing threshold
+      values
+
+    .. note::
+       The implementation both supports calculating the metric in a non-binned but accurate version and a
+       binned version that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will
+       activate the non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the
+       `thresholds` argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
+       size :math:`\mathcal{O}(n_{thresholds})` (constant memory).
+
+    .. note::
+       The outputted thresholds will be in reversed order to ensure that they corresponds to both fpr and
+       tpr which are sorted in reversed order during their calculation, such that they are monotome increasing.
 
     Args:
         thresholds:
@@ -70,13 +81,6 @@ class BinaryROC(BinaryPrecisionRecallCurve):
             Set to ``False`` for faster computations.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    Returns:
-        (tuple): a tuple of 3 tensors containing:
-
-        - fpr: an 1d tensor of size (n_thresholds+1, ) with false positive rate values
-        - tpr: an 1d tensor of size (n_thresholds+1, ) with true positive rate values
-        - thresholds: an 1d tensor of size (n_thresholds, ) with decreasing threshold values
-
     Example:
         >>> from torch import tensor
         >>> from torchmetrics.classification import BinaryROC
@@ -87,8 +91,8 @@ class BinaryROC(BinaryPrecisionRecallCurve):
         (tensor([0.0000, 0.5000, 0.5000, 0.5000, 1.0000]),
          tensor([0.0000, 0.0000, 0.5000, 1.0000, 1.0000]),
          tensor([1.0000, 0.8000, 0.7000, 0.5000, 0.0000]))
-        >>> metric = BinaryROC(thresholds=5)
-        >>> metric(preds, target)  # doctest: +NORMALIZE_WHITESPACE
+        >>> broc = BinaryROC(thresholds=5)
+        >>> broc(preds, target)  # doctest: +NORMALIZE_WHITESPACE
         (tensor([0.0000, 0.5000, 0.5000, 0.5000, 1.0000]),
          tensor([0., 0., 1., 1., 1.]),
          tensor([1.0000, 0.7500, 0.5000, 0.2500, 0.0000]))
@@ -110,24 +114,43 @@ class MulticlassROC(MulticlassPrecisionRecallCurve):
     of true positive rate (TPR) and false positive rate (FPR) values evaluated at different thresholds, such that
     the tradeoff between the two values can be seen.
 
-    Accepts the following input tensors:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (float tensor): ``(N, C, ...)``. Preds should be a tensor containing probabilities or logits for each
-      observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
-      softmax per sample.
-    - ``target`` (int tensor): ``(N, ...)``. Target should be a tensor containing ground truth labels, and therefore
-      only contain values in the [0, n_classes-1] range (except if `ignore_index` is specified).
+    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, C, ...)``. Preds should be a tensor
+      containing probabilities or logits for each observation. If preds has values outside [0,1] range we consider
+      the input to be logits and will auto apply softmax per sample.
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``. Target should be a tensor containing
+      ground truth labels, and therefore only contain values in the [0, n_classes-1] range (except if `ignore_index`
+      is specified).
 
-    Additional dimension ``...`` will be flattened into the batch dimension.
+    .. note::
+       Additional dimension ``...`` will be flattened into the batch dimension.
 
-    The implementation both supports calculating the metric in a non-binned but accurate version and a binned version
-    that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
-    non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
-    argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
-    size :math:`\mathcal{O}(n_{thresholds} \times n_{classes})` (constant memory).
+    As output to ``forward`` and ``compute`` the metric returns a tuple of either 3 tensors or 3 lists containing
 
-    Note that outputted thresholds will be in reversed order to ensure that they corresponds to both fpr and tpr which
-    are sorted in reversed order during their calculation, such that they are monotome increasing.
+    - ``fpr`` (:class:`~torch.Tensor`): if `thresholds=None` a list for each class is returned with an 1d tensor of
+      size ``(n_thresholds+1, )`` with false positive rate values (length may differ between classes). If `thresholds`
+      is set to something else, then a single 2d tensor of size ``(n_classes, n_thresholds+1)`` with false positive rate
+      values is returned.
+    - ``tpr`` (:class:`~torch.Tensor`): if `thresholds=None` a list for each class is returned with an 1d tensor of
+      size ``(n_thresholds+1, )`` with true positive rate values (length may differ between classes). If `thresholds` is
+      set to something else, then a single 2d tensor of size ``(n_classes, n_thresholds+1)`` with true positive rate
+      values is returned.
+    - ``thresholds`` (:class:`~torch.Tensor`): if `thresholds=None` a list for each class is returned with an 1d
+      tensor of size ``(n_thresholds, )`` with decreasing threshold values (length may differ between classes). If
+      `threshold` is set to something else, then a single 1d tensor of size ``(n_thresholds, )`` is returned with shared
+      threshold values for all classes.
+
+    .. note::
+       The implementation both supports calculating the metric in a non-binned but accurate version and a
+       binned version that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will
+       activate the non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the
+       `thresholds` argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
+       size :math:`\mathcal{O}(n_{thresholds} \times n_{classes})` (constant memory).
+
+    .. note::
+       Note that outputted thresholds will be in reversed order to ensure that they corresponds to both fpr
+       and tpr which are sorted in reversed order during their calculation, such that they are monotome increasing.
 
     Args:
         num_classes: Integer specifing the number of classes
@@ -145,19 +168,6 @@ class MulticlassROC(MulticlassPrecisionRecallCurve):
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
-
-    Returns:
-        (tuple): a tuple of either 3 tensors or 3 lists containing
-
-        - fpr: if `thresholds=None` a list for each class is returned with an 1d tensor of size (n_thresholds+1, )
-          with false positive rate values (length may differ between classes). If `thresholds` is set to something else,
-          then a single 2d tensor of size (n_classes, n_thresholds+1) with false positive rate values is returned.
-        - tpr: if `thresholds=None` a list for each class is returned with an 1d tensor of size (n_thresholds+1, )
-          with true positive rate values (length may differ between classes). If `thresholds` is set to something else,
-          then a single 2d tensor of size (n_classes, n_thresholds+1) with true positive rate values is returned.
-        - thresholds: if `thresholds=None` a list for each class is returned with an 1d tensor of size (n_thresholds, )
-          with decreasing threshold values (length may differ between classes). If `threshold` is set to something else,
-          then a single 1d tensor of size (n_thresholds, ) is returned with shared threshold values for all classes.
 
     Example:
         >>> from torch import tensor
@@ -177,8 +187,8 @@ class MulticlassROC(MulticlassPrecisionRecallCurve):
         >>> thresholds  # doctest: +NORMALIZE_WHITESPACE
         [tensor([1.0000, 0.7500, 0.0500]), tensor([1.0000, 0.7500, 0.0500]),
          tensor([1.0000, 0.7500, 0.0500]), tensor([1.0000, 0.7500, 0.0500]), tensor([1.0000, 0.0500])]
-        >>> metric = MulticlassROC(num_classes=5, thresholds=5)
-        >>> metric(preds, target)  # doctest: +NORMALIZE_WHITESPACE
+        >>> mcroc = MulticlassROC(num_classes=5, thresholds=5)
+        >>> mcroc(preds, target)  # doctest: +NORMALIZE_WHITESPACE
         (tensor([[0.0000, 0.0000, 0.0000, 0.0000, 1.0000],
                  [0.0000, 0.0000, 0.0000, 0.0000, 1.0000],
                  [0.0000, 0.3333, 0.3333, 0.3333, 1.0000],
@@ -208,24 +218,42 @@ class MultilabelROC(MultilabelPrecisionRecallCurve):
     of true positive rate (TPR) and false positive rate (FPR) values evaluated at different thresholds, such that
     the tradeoff between the two values can be seen.
 
-    Accepts the following input tensors:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (float tensor): ``(N, C, ...)``. Preds should be a tensor containing probabilities or logits for each
-      observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
-      sigmoid per element.
-    - ``target`` (int tensor): ``(N, C, ...)``. Target should be a tensor containing ground truth labels, and therefore
-      only contain {0,1} values (except if `ignore_index` is specified).
+    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, C, ...)``. Preds should be a tensor
+      containing probabilities or logits for each observation. If preds has values outside [0,1] range we consider
+      the input to be logits and will auto apply sigmoid per element.
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``. Target should be a tensor
+      containing ground truth labels, and therefore only contain {0,1} values (except if `ignore_index` is specified).
 
-    Additional dimension ``...`` will be flattened into the batch dimension.
+    .. note::
+       Additional dimension ``...`` will be flattened into the batch dimension.
 
-    The implementation both supports calculating the metric in a non-binned but accurate version and a binned version
-    that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
-    non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
-    argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
-    size :math:`\mathcal{O}(n_{thresholds} \times n_{labels})` (constant memory).
+    As output to ``forward`` and ``compute`` the metric returns a tuple of either 3 tensors or 3 lists containing
 
-    Note that outputted thresholds will be in reversed order to ensure that they corresponds to both fpr and tpr which
-    are sorted in reversed order during their calculation, such that they are monotome increasing.
+    - ``fpr`` (:class:`~torch.Tensor`): if `thresholds=None` a list for each label is returned with an 1d tensor of
+      size ``(n_thresholds+1, )`` with false positive rate values (length may differ between labels). If `thresholds` is
+      set to something else, then a single 2d tensor of size ``(n_labels, n_thresholds+1)`` with false positive rate
+      values is returned.
+    - ``tpr`` (:class:`~torch.Tensor`): if `thresholds=None` a list for each label is returned with an 1d tensor of
+      size ``(n_thresholds+1, )`` with true positive rate values (length may differ between labels). If `thresholds` is
+      set to something else, then a single 2d tensor of size ``(n_labels, n_thresholds+1)`` with true positive rate
+      values is returned.
+    - ``thresholds`` (:class:`~torch.Tensor`): if `thresholds=None` a list for each label is returned with an 1d
+      tensor of size ``(n_thresholds, )`` with decreasing threshold values (length may differ between labels). If
+      `threshold` is set to something else, then a single 1d tensor of size ``(n_thresholds, )`` is returned with shared
+      threshold values for all labels.
+
+    .. note::
+       The implementation both supports calculating the metric in a non-binned but accurate version and a
+       binned version that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will
+       activate the non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the
+       `thresholds` argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
+       size :math:`\mathcal{O}(n_{thresholds} \times n_{labels})` (constant memory).
+
+    .. note::
+       The outputted thresholds will be in reversed order to ensure that they corresponds to both fpr and tpr
+       which are sorted in reversed order during their calculation, such that they are monotome increasing.
 
     Args:
         num_labels: Integer specifing the number of labels
@@ -243,19 +271,6 @@ class MultilabelROC(MultilabelPrecisionRecallCurve):
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
-
-    Returns:
-        (tuple): a tuple of either 3 tensors or 3 lists containing
-
-        - fpr: if `thresholds=None` a list for each label is returned with an 1d tensor of size (n_thresholds+1, )
-          with false positive rate values (length may differ between labels). If `thresholds` is set to something else,
-          then a single 2d tensor of size (n_labels, n_thresholds+1) with false positive rate values is returned.
-        - tpr: if `thresholds=None` a list for each label is returned with an 1d tensor of size (n_thresholds+1, )
-          with true positive rate values (length may differ between labels). If `thresholds` is set to something else,
-          then a single 2d tensor of size (n_labels, n_thresholds+1) with true positive rate values is returned.
-        - thresholds: if `thresholds=None` a list for each label is returned with an 1d tensor of size (n_thresholds, )
-          with decreasing threshold values (length may differ between labels). If `threshold` is set to something else,
-          then a single 1d tensor of size (n_thresholds, ) is returned with shared threshold values for all labels.
 
     Example:
         >>> from torch import tensor
@@ -282,8 +297,8 @@ class MultilabelROC(MultilabelPrecisionRecallCurve):
         [tensor([1.0000, 0.7500, 0.4500, 0.0500]),
          tensor([1.0000, 0.7500, 0.6500, 0.5500, 0.0500]),
          tensor([1.0000, 0.7500, 0.3500, 0.0500])]
-        >>> metric = MultilabelROC(num_labels=3, thresholds=5)
-        >>> metric(preds, target)  # doctest: +NORMALIZE_WHITESPACE
+        >>> mlroc = MultilabelROC(num_labels=3, thresholds=5)
+        >>> mlroc(preds, target)  # doctest: +NORMALIZE_WHITESPACE
         (tensor([[0.0000, 0.0000, 0.0000, 0.5000, 1.0000],
                  [0.0000, 0.5000, 0.5000, 0.5000, 1.0000],
                  [0.0000, 0.0000, 0.0000, 0.0000, 1.0000]]),

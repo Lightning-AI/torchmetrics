@@ -16,7 +16,7 @@ from typing import List, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor, tensor
-from torch.nn import functional as F
+from torch.nn import functional as F  # noqa: N812
 from typing_extensions import Literal
 
 from torchmetrics.utilities.checks import _check_same_shape

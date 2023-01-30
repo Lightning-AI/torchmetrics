@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import re
+import urllib.request
 from collections import Counter
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
+from urllib.request import HTTPError
 
 import torch
 from torch import Tensor, tensor
@@ -39,13 +41,40 @@ ALLOWED_ROUGE_KEYS: Dict[str, Union[int, str]] = {
 ALLOWED_ACCUMULATE_VALUES = ("avg", "best")
 
 
+def _is_internet_connection() -> bool:
+    try:
+        urllib.request.urlopen("https://torchmetrics.readthedocs.io/")
+    except HTTPError:
+        return False
+    return True
+
+
+def _ensure_nltk_punkt_is_downloaded() -> None:
+    """Check whether `nltk` `punkt` is downloaded.
+
+    If not, try to download if a machine is connected to the internet.
+    """
+    import nltk
+
+    try:
+        nltk.data.find("tokenizers/punkt.zip")
+    except LookupError:
+        if _is_internet_connection():
+            nltk.download("punkt", quiet=True, force=False)
+        else:
+            raise OSError(
+                "`nltk` resource `punkt` is not available on a disk and cannot be downloaded as a machine is not "
+                "connected to the internet."
+            )
+
+
 def _split_sentence(x: str) -> Sequence[str]:
     """The sentence is split to get rougeLsum scores matching published rougeL scores for BART and PEGASUS."""
     if not _NLTK_AVAILABLE:
         raise ModuleNotFoundError("ROUGE-Lsum calculation requires that `nltk` is installed. Use `pip install nltk`.")
     import nltk
 
-    nltk.download("punkt", quiet=True, force=False)
+    _ensure_nltk_punkt_is_downloaded()
 
     re.sub("<n>", "", x)  # remove pegasus newline char
     return nltk.sent_tokenize(x)

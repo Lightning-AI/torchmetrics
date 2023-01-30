@@ -354,7 +354,7 @@ class MetricTester:
     """
 
     atol: float = 1e-8
-    poolSize: int
+    pool_size: int
     pool: Pool
 
     def setup_class(self):
@@ -362,9 +362,9 @@ class MetricTester:
 
         This will spawn the pool of workers that are used for metric testing and setup_ddp
         """
-        self.poolSize = NUM_PROCESSES
-        self.pool = Pool(processes=self.poolSize)
-        self.pool.starmap(setup_ddp, [(rank, self.poolSize) for rank in range(self.poolSize)])
+        self.pool_size = NUM_PROCESSES
+        self.pool = Pool(processes=self.pool_size)
+        self.pool.starmap(setup_ddp, [(rank, self.pool_size) for rank in range(self.pool_size)])
 
     def teardown_class(self):
         """Close pool of workers."""
@@ -462,7 +462,7 @@ class MetricTester:
                     check_scriptable=check_scriptable,
                     **kwargs_update,
                 ),
-                [(rank, self.poolSize) for rank in range(self.poolSize)],
+                [(rank, self.pool_size) for rank in range(self.pool_size)],
             )
         else:
             device = "cuda" if torch.cuda.is_available() else "cpu"

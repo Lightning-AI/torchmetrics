@@ -15,7 +15,7 @@ from typing import Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor
-from torch.nn import functional as F
+from torch.nn import functional as F  # noqa: N812
 from typing_extensions import Literal
 
 from torchmetrics.functional.image.helper import _gaussian_kernel_2d
