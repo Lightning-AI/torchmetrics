@@ -414,6 +414,7 @@ class MetricCollection(ModuleDict):
             od[self._set_name(k)] = v
         return od
 
+    # TODO: redefine this as native python dict
     def keys(self, keep_base: bool = False) -> Iterable[Hashable]:
         r"""Return an iterable of the ModuleDict key.
 
