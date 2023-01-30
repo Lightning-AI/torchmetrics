@@ -86,7 +86,7 @@ class TestErrorRelativeGlobalDimensionlessSynthesis(MetricTester):
             ErrorRelativeGlobalDimensionlessSynthesis,
             partial(_baseline_ergas, ratio=ratio, reduction=reduction),
             dist_sync_on_step,
-            metric_args=dict(ratio=ratio, reduction=reduction),
+            metric_args={"ratio": ratio, "reduction": reduction},
         )
 
     def test_ergas_functional(self, reduction, preds, target, ratio):
@@ -95,7 +95,7 @@ class TestErrorRelativeGlobalDimensionlessSynthesis(MetricTester):
             target,
             error_relative_global_dimensionless_synthesis,
             partial(_baseline_ergas, ratio=ratio, reduction=reduction),
-            metric_args=dict(ratio=ratio, reduction=reduction),
+            metric_args={"ratio": ratio, "reduction": reduction},
         )
 
     # ERGAS half + cpu does not work due to missing support in torch.log

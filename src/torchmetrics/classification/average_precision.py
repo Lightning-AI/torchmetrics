@@ -356,7 +356,7 @@ class AveragePrecision:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
-        kwargs.update(dict(thresholds=thresholds, ignore_index=ignore_index, validate_args=validate_args))
+        kwargs.update({"thresholds": thresholds, "ignore_index": ignore_index, "validate_args": validate_args})
         if task == "binary":
             return BinaryAveragePrecision(**kwargs)
         if task == "multiclass":

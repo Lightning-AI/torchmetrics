@@ -237,7 +237,7 @@ class MatthewsCorrCoef:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
-        kwargs.update(dict(ignore_index=ignore_index, validate_args=validate_args))
+        kwargs.update({"ignore_index": ignore_index, "validate_args": validate_args})
         if task == "binary":
             return BinaryMatthewsCorrCoef(threshold, **kwargs)
         if task == "multiclass":

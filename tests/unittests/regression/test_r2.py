@@ -78,7 +78,7 @@ class TestR2Score(MetricTester):
             R2Score,
             partial(ref_metric, adjusted=adjusted, multioutput=multioutput),
             dist_sync_on_step,
-            metric_args=dict(adjusted=adjusted, multioutput=multioutput, num_outputs=num_outputs),
+            metric_args={"adjusted": adjusted, "multioutput": multioutput, "num_outputs": num_outputs},
         )
 
     def test_r2_functional(self, adjusted, multioutput, preds, target, ref_metric, num_outputs):
@@ -88,7 +88,7 @@ class TestR2Score(MetricTester):
             target,
             r2_score,
             partial(ref_metric, adjusted=adjusted, multioutput=multioutput),
-            metric_args=dict(adjusted=adjusted, multioutput=multioutput),
+            metric_args={"adjusted": adjusted, "multioutput": multioutput},
         )
 
     def test_r2_differentiability(self, adjusted, multioutput, preds, target, ref_metric, num_outputs):
@@ -97,7 +97,7 @@ class TestR2Score(MetricTester):
             target=target,
             metric_module=partial(R2Score, num_outputs=num_outputs),
             metric_functional=r2_score,
-            metric_args=dict(adjusted=adjusted, multioutput=multioutput),
+            metric_args={"adjusted": adjusted, "multioutput": multioutput},
         )
 
     def test_r2_half_cpu(self, adjusted, multioutput, preds, target, ref_metric, num_outputs):

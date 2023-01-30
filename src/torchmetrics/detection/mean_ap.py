@@ -799,7 +799,7 @@ class MeanAveragePrecision(Metric):
             recalls:
                 Recall values for different thresholds
         """
-        results = dict(precision=precisions, recall=recalls)
+        results = {"precision": precisions, "recall": recalls}
         map_metrics = MAPMetricResults()
         map_metrics.map = self._summarize(results, True)
         last_max_det_thr = self.max_detection_thresholds[-1]
