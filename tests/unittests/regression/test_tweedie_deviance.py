@@ -71,7 +71,7 @@ class TestDevianceScore(MetricTester):
             TweedieDevianceScore,
             partial(_sklearn_deviance, power=power),
             dist_sync_on_step,
-            metric_args=dict(power=power),
+            metric_args={"power": power},
         )
 
     def test_deviance_scores_functional(self, preds, targets, power):
@@ -80,7 +80,7 @@ class TestDevianceScore(MetricTester):
             targets,
             tweedie_deviance_score,
             partial(_sklearn_deviance, power=power),
-            metric_args=dict(power=power),
+            metric_args={"power": power},
         )
 
     def test_deviance_scores_differentiability(self, preds, targets, power):
