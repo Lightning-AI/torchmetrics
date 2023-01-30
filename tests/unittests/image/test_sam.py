@@ -16,8 +16,8 @@ from functools import partial
 
 import pytest
 import torch
-import torch.nn.functional as F
 from torch import Tensor
+from torch.nn import functional as F  # noqa: N812
 
 from torchmetrics.functional.image.sam import spectral_angle_mapper
 from torchmetrics.image.sam import SpectralAngleMapper
