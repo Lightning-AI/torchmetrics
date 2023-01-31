@@ -455,7 +455,7 @@ class Accuracy:
         kwargs.update(
             {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
         )
-        
+
         if task not in ["binary", "multiclass", "multilabel"]:
             raise MisConfigurationError(
                 f"Expected argument `task` must be one of (`'binary'`, `'multiclass'`, `'multilabel'`). Got `{task}`"
