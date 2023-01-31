@@ -16,11 +16,11 @@ from collections import namedtuple
 import numpy as np
 import pytest
 import torch
-from tests.helpers import seed_all
-from tests.helpers.testers import MetricTester
 
 from torchmetrics.detection.panoptic_quality import PanopticQuality
 from torchmetrics.functional.detection.panoptic_quality import panoptic_quality
+from unittests.helpers import seed_all
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
