@@ -111,10 +111,7 @@ def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> Tuple[Da
 
         implied_classes = preds.shape[1] if preds.numel() > 0 else 0
 
-        if preds.ndim == 2:
-            case = DataType.MULTICLASS
-        else:
-            case = DataType.MULTIDIM_MULTICLASS
+        case = DataType.MULTICLASS if preds.ndim == 2 else DataType.MULTIDIM_MULTICLASS
     else:
         raise ValueError(
             "Either `preds` and `target` both should have the (same) shape (N, ...), or `target` should be (N, ...)"
@@ -621,7 +618,7 @@ def _allclose_recursive(res1: Any, res2: Any, atol: float = 1e-6) -> bool:
     elif isinstance(res1, Sequence):
         return all(_allclose_recursive(r1, r2) for r1, r2 in zip(res1, res2))
     elif isinstance(res1, Mapping):
-        return all(_allclose_recursive(res1[k], res2[k]) for k in res1.keys())
+        return all(_allclose_recursive(res1[k], res2[k]) for k in res1)
     return res1 == res2
 
 

@@ -476,7 +476,7 @@ _gpu_test_condition = not torch.cuda.is_available()
 
 def _move_to_gpu(input):
     for x in input:
-        for key in x.keys():
+        for key in x:
             if torch.is_tensor(x[key]):
                 x[key] = x[key].to("cuda")
     return input

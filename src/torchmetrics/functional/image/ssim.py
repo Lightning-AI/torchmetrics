@@ -142,10 +142,7 @@ def _ssim_update(
 
     input_list = torch.cat((preds, target, preds * preds, target * target, preds * target))  # (5 * B, C, H, W)
 
-    if is_3d:
-        outputs = F.conv3d(input_list, kernel, groups=channel)
-    else:
-        outputs = F.conv2d(input_list, kernel, groups=channel)
+    outputs = F.conv3d(input_list, kernel, groups=channel) if is_3d else F.conv2d(input_list, kernel, groups=channel)
 
     output_list = outputs.split(preds.shape[0])
 

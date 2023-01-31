@@ -126,10 +126,7 @@ class PeakSignalNoiseRatio(Metric):
 
     def compute(self) -> Tensor:
         """Compute peak signal-to-noise ratio over state."""
-        if self.data_range is not None:
-            data_range = self.data_range
-        else:
-            data_range = self.max_target - self.min_target
+        data_range = self.data_range if self.data_range is not None else self.max_target - self.min_target
 
         if self.dim is None:
             sum_squared_error = self.sum_squared_error

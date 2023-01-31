@@ -131,7 +131,7 @@ def _binary_confusion_matrix_format(
         target = target[idx]
 
     if preds.is_floating_point():
-        if not torch.all((0 <= preds) * (preds <= 1)):
+        if not torch.all((preds >= 0) * (preds <= 1)):
             # preds is logits, convert with sigmoid
             preds = preds.sigmoid()
         if convert_to_labels:
@@ -276,10 +276,7 @@ def _multiclass_confusion_matrix_tensor_validation(
         )
 
     num_unique_values = len(torch.unique(target))
-    if ignore_index is None:
-        check = num_unique_values > num_classes
-    else:
-        check = num_unique_values > num_classes + 1
+    check = num_unique_values > num_classes if ignore_index is None else num_unique_values > num_classes + 1
     if check:
         raise RuntimeError(
             "Detected more unique values in `target` than `num_classes`. Expected only "
@@ -311,10 +308,7 @@ def _multiclass_confusion_matrix_format(
     if preds.ndim == target.ndim + 1 and convert_to_labels:
         preds = preds.argmax(dim=1)
 
-    if convert_to_labels:
-        preds = preds.flatten()
-    else:
-        preds = torch.movedim(preds, 1, -1).reshape(-1, preds.shape[1])
+    preds = preds.flatten() if convert_to_labels else torch.movedim(preds, 1, -1).reshape(-1, preds.shape[1])
     target = target.flatten()
 
     if ignore_index is not None:
@@ -489,7 +483,7 @@ def _multilabel_confusion_matrix_format(
     - Mask all elements that should be ignored with negative numbers for later filtration
     """
     if preds.is_floating_point():
-        if not torch.all((0 <= preds) * (preds <= 1)):
+        if not torch.all((preds >= 0) * (preds <= 1)):
             preds = preds.sigmoid()
         if should_threshold:
             preds = preds > threshold
