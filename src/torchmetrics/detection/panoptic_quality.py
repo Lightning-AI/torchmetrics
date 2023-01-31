@@ -66,6 +66,14 @@ class PanopticQuality(Metric):
         >>> panoptic_quality(pred, target)
         tensor(0.5463, dtype=torch.float64)
     """
+    is_differentiable: bool = False
+    higher_is_better: bool = True
+    full_state_update: bool = False
+
+    iou_sum: Tensor
+    true_positives: Tensor
+    false_positives: Tensor
+    false_negatives: Tensor
 
     def __init__(
         self,
