@@ -12,24 +12,28 @@ ________________
 
 .. autoclass:: torchmetrics.PrecisionRecallCurve
     :noindex:
+    :exclude-members: update, compute
 
 BinaryPrecisionRecallCurve
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.BinaryPrecisionRecallCurve
     :noindex:
+    :exclude-members: update, compute
 
 MulticlassPrecisionRecallCurve
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.MulticlassPrecisionRecallCurve
     :noindex:
+    :exclude-members: update, compute
 
 MultilabelPrecisionRecallCurve
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.MultilabelPrecisionRecallCurve
     :noindex:
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________

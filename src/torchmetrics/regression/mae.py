@@ -13,7 +13,6 @@
 # limitations under the License.
 from typing import Any
 
-import torch
 from torch import Tensor, tensor
 
 from torchmetrics.functional.regression.mae import _mean_absolute_error_compute, _mean_absolute_error_update
@@ -27,13 +26,23 @@ class MeanAbsoluteError(Metric):
 
     Where :math:`y` is a tensor of target values, and :math:`\hat{y}` is a tensor of predictions.
 
+    As input to ``forward`` and ``update`` the metric accepts the following input:
+
+    - ``preds`` (:class:`~torch.Tensor`): Predictions from model
+    - ``target`` (:class:`~torch.Tensor`): Ground truth values
+
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``mean_absolute_error`` (:class:`~torch.Tensor`): A tensor with the mean absolute error over the state
+
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics import MeanAbsoluteError
-        >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
-        >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
+        >>> target = tensor([3.0, -0.5, 2.0, 7.0])
+        >>> preds = tensor([2.5, 0.0, 2.0, 8.0])
         >>> mean_absolute_error = MeanAbsoluteError()
         >>> mean_absolute_error(preds, target)
         tensor(0.5000)
@@ -54,12 +63,7 @@ class MeanAbsoluteError(Metric):
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
+        """Update state with predictions and targets."""
         sum_abs_error, n_obs = _mean_absolute_error_update(preds, target)
 
         self.sum_abs_error += sum_abs_error

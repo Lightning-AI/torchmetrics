@@ -120,7 +120,7 @@ class TestTheilsU(MetricTester):
             preds=preds,
             target=target,
             metric_class=TheilsU,
-            sk_metric=reference_metric,
+            reference_metric=reference_metric,
             metric_args=metric_args,
         )
 
@@ -135,7 +135,7 @@ class TestTheilsU(MetricTester):
             nan_replace_value=nan_replace_value,
         )
         self.run_functional_metric_test(
-            preds, target, metric_functional=theils_u, sk_metric=reference_metric, metric_args=metric_args
+            preds, target, metric_functional=theils_u, reference_metric=reference_metric, metric_args=metric_args
         )
 
     def test_theils_u_differentiability(self, preds, target, nan_strategy, nan_replace_value):

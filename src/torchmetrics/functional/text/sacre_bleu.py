@@ -157,10 +157,7 @@ class _SacreBLEUTokenizer:
         Return:
             whether the input char is a Chinese character.
         """
-        for start, end in _UCODE_RANGES:
-            if start <= uchar <= end:
-                return True
-        return False
+        return any(start <= uchar <= end for start, end in _UCODE_RANGES)
 
     @classmethod
     def _tokenize_base(cls, line: str) -> str:

@@ -119,23 +119,23 @@ class RetrievalPrecisionRecallCurveTester(MetricTester):
         preds: Tensor,
         target: Tensor,
         metric_class: Metric,
-        sk_metric: Callable,
+        reference_metric: Callable,
         dist_sync_on_step: bool,
         metric_args: dict,
         reverse: bool = False,
     ):
-        _sk_metric_adapted = partial(sk_metric, reverse=reverse, **metric_args)
+        _ref_metric_adapted = partial(reference_metric, reverse=reverse, **metric_args)
 
         super().run_class_metric_test(
             ddp=ddp,
             preds=preds,
             target=target,
             metric_class=metric_class,
-            sk_metric=_sk_metric_adapted,
+            reference_metric=_ref_metric_adapted,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
             fragment_kwargs=True,
-            indexes=indexes,  # every additional argument will be passed to metric_class and _sk_metric_adapted
+            indexes=indexes,  # every additional argument will be passed to metric_class and _ref_metric_adapted
         )
 
 
@@ -161,12 +161,12 @@ class TestRetrievalPrecisionRecallCurve(RetrievalPrecisionRecallCurveTester):
         max_k,
         adaptive_k,
     ):
-        metric_args = dict(
-            max_k=max_k,
-            adaptive_k=adaptive_k,
-            empty_target_action=empty_target_action,
-            ignore_index=ignore_index,
-        )
+        metric_args = {
+            "max_k": max_k,
+            "adaptive_k": adaptive_k,
+            "empty_target_action": empty_target_action,
+            "ignore_index": ignore_index,
+        }
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -174,7 +174,7 @@ class TestRetrievalPrecisionRecallCurve(RetrievalPrecisionRecallCurveTester):
             preds=preds,
             target=target,
             metric_class=RetrievalPrecisionRecallCurve,
-            sk_metric=_compute_precision_recall_curve,
+            reference_metric=_compute_precision_recall_curve,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
         )

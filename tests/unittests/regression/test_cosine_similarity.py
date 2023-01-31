@@ -41,7 +41,7 @@ _multi_target_inputs = Input(
 )
 
 
-def _multi_target_sk_metric(preds, target, reduction, sk_fn=sk_cosine):
+def _multi_target_ref_metric(preds, target, reduction, sk_fn=sk_cosine):
     sk_preds = preds.view(-1, num_targets).numpy()
     sk_target = target.view(-1, num_targets).numpy()
     result_array = sk_fn(sk_target, sk_preds)
@@ -57,7 +57,7 @@ def _multi_target_sk_metric(preds, target, reduction, sk_fn=sk_cosine):
     return to_return
 
 
-def _single_target_sk_metric(preds, target, reduction, sk_fn=sk_cosine):
+def _single_target_ref_metric(preds, target, reduction, sk_fn=sk_cosine):
     sk_preds = preds.view(-1).numpy()
     sk_target = target.view(-1).numpy()
     result_array = sk_fn(np.expand_dims(sk_preds, axis=0), np.expand_dims(sk_target, axis=0))
@@ -75,33 +75,33 @@ def _single_target_sk_metric(preds, target, reduction, sk_fn=sk_cosine):
 
 @pytest.mark.parametrize("reduction", ["sum", "mean"])
 @pytest.mark.parametrize(
-    "preds, target, sk_metric",
+    "preds, target, ref_metric",
     [
-        (_single_target_inputs.preds, _single_target_inputs.target, _single_target_sk_metric),
-        (_multi_target_inputs.preds, _multi_target_inputs.target, _multi_target_sk_metric),
+        (_single_target_inputs.preds, _single_target_inputs.target, _single_target_ref_metric),
+        (_multi_target_inputs.preds, _multi_target_inputs.target, _multi_target_ref_metric),
     ],
 )
 class TestCosineSimilarity(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_cosine_similarity(self, reduction, preds, target, sk_metric, ddp, dist_sync_on_step):
+    def test_cosine_similarity(self, reduction, preds, target, ref_metric, ddp, dist_sync_on_step):
         self.run_class_metric_test(
             ddp,
             preds,
             target,
             CosineSimilarity,
-            partial(sk_metric, reduction=reduction),
+            partial(ref_metric, reduction=reduction),
             dist_sync_on_step,
-            metric_args=dict(reduction=reduction),
+            metric_args={"reduction": reduction},
         )
 
-    def test_cosine_similarity_functional(self, reduction, preds, target, sk_metric):
+    def test_cosine_similarity_functional(self, reduction, preds, target, ref_metric):
         self.run_functional_metric_test(
             preds,
             target,
             cosine_similarity,
-            partial(sk_metric, reduction=reduction),
-            metric_args=dict(reduction=reduction),
+            partial(ref_metric, reduction=reduction),
+            metric_args={"reduction": reduction},
         )
 
 

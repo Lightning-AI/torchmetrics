@@ -27,7 +27,7 @@ from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inje
 seed_all(42)
 
 
-def _sk_exact_match_multiclass(preds, target, ignore_index, multidim_average):
+def _baseline_exact_match_multiclass(preds, target, ignore_index, multidim_average):
     if preds.ndim == target.ndim + 1:
         preds = torch.argmax(preds, 1)
     preds = preds.numpy()
@@ -62,8 +62,8 @@ class TestMulticlassExactMatch(MetricTester):
             preds=preds,
             target=target,
             metric_class=MulticlassExactMatch,
-            sk_metric=partial(
-                _sk_exact_match_multiclass,
+            reference_metric=partial(
+                _baseline_exact_match_multiclass,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
             ),
@@ -87,8 +87,8 @@ class TestMulticlassExactMatch(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multiclass_exact_match,
-            sk_metric=partial(
-                _sk_exact_match_multiclass,
+            reference_metric=partial(
+                _baseline_exact_match_multiclass,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
             ),
@@ -138,11 +138,11 @@ class TestMulticlassExactMatch(MetricTester):
         )
 
 
-def _sk_exact_match_multilabel(preds, target, ignore_index, multidim_average):
+def _baseline_exact_match_multilabel(preds, target, ignore_index, multidim_average):
     preds = preds.numpy()
     target = target.numpy()
     if np.issubdtype(preds.dtype, np.floating):
-        if not ((0 < preds) & (preds < 1)).all():
+        if not ((preds > 0) & (preds < 1)).all():
             preds = sigmoid(preds)
         preds = (preds >= THRESHOLD).astype(np.uint8)
     preds = preds.reshape(*preds.shape[:2], -1)
@@ -182,8 +182,8 @@ class TestMultilabelExactMatch(MetricTester):
             preds=preds,
             target=target,
             metric_class=MultilabelExactMatch,
-            sk_metric=partial(
-                _sk_exact_match_multilabel,
+            reference_metric=partial(
+                _baseline_exact_match_multilabel,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
             ),
@@ -208,8 +208,8 @@ class TestMultilabelExactMatch(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multilabel_exact_match,
-            sk_metric=partial(
-                _sk_exact_match_multilabel,
+            reference_metric=partial(
+                _baseline_exact_match_multilabel,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
             ),

@@ -70,7 +70,7 @@ mireval_snr_nozeromean = partial(bss_eval_images_snr, metric_func=mir_eval_bss_e
 
 
 @pytest.mark.parametrize(
-    "preds, target, sk_metric, zero_mean",
+    "preds, target, ref_metric, zero_mean",
     [
         (inputs.preds, inputs.target, mireval_snr_zeromean, True),
         (inputs.preds, inputs.target, mireval_snr_nozeromean, False),
@@ -81,27 +81,27 @@ class TestSNR(MetricTester):
 
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_snr(self, preds, target, sk_metric, zero_mean, ddp, dist_sync_on_step):
+    def test_snr(self, preds, target, ref_metric, zero_mean, ddp, dist_sync_on_step):
         self.run_class_metric_test(
             ddp,
             preds,
             target,
             SignalNoiseRatio,
-            sk_metric=partial(average_metric, metric_func=sk_metric),
+            reference_metric=partial(average_metric, metric_func=ref_metric),
             dist_sync_on_step=dist_sync_on_step,
-            metric_args=dict(zero_mean=zero_mean),
+            metric_args={"zero_mean": zero_mean},
         )
 
-    def test_snr_functional(self, preds, target, sk_metric, zero_mean):
+    def test_snr_functional(self, preds, target, ref_metric, zero_mean):
         self.run_functional_metric_test(
             preds,
             target,
             signal_noise_ratio,
-            sk_metric,
-            metric_args=dict(zero_mean=zero_mean),
+            ref_metric,
+            metric_args={"zero_mean": zero_mean},
         )
 
-    def test_snr_differentiability(self, preds, target, sk_metric, zero_mean):
+    def test_snr_differentiability(self, preds, target, ref_metric, zero_mean):
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -110,11 +110,11 @@ class TestSNR(MetricTester):
             metric_args={"zero_mean": zero_mean},
         )
 
-    def test_snr_half_cpu(self, preds, target, sk_metric, zero_mean):
+    def test_snr_half_cpu(self, preds, target, ref_metric, zero_mean):
         pytest.xfail("SNR metric does not support cpu + half precision")
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-    def test_snr_half_gpu(self, preds, target, sk_metric, zero_mean):
+    def test_snr_half_gpu(self, preds, target, ref_metric, zero_mean):
         self.run_precision_test_gpu(
             preds=preds,
             target=target,

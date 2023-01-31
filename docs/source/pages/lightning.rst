@@ -32,9 +32,9 @@ The example below shows how to use a metric in your `LightningModule <https://py
 
     class MyModel(LightningModule):
 
-        def __init__(self):
+        def __init__(self, num_classes):
             ...
-            self.accuracy = torchmetrics.Accuracy(task='multiclass')
+            self.accuracy = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
 
         def training_step(self, batch, batch_idx):
             x, y = batch
@@ -78,10 +78,10 @@ value by calling ``.compute()``.
 
     class MyModule(LightningModule):
 
-        def __init__(self):
+        def __init__(self, num_classes):
             ...
-            self.train_acc = torchmetrics.Accuracy(task='multiclass')
-            self.valid_acc = torchmetrics.Accuracy(task='multiclass')
+            self.train_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
+            self.valid_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
 
         def training_step(self, batch, batch_idx):
             x, y = batch
@@ -105,8 +105,8 @@ of the metrics.
 
         def __init__(self):
             ...
-            self.train_acc = torchmetrics.Accuracy(task='multiclass')
-            self.valid_acc = torchmetrics.Accuracy(task='multiclass')
+            self.train_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
+            self.valid_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
 
         def training_step(self, batch, batch_idx):
             x, y = batch
@@ -141,9 +141,9 @@ mixed as it can lead to wrong results.
 
         class MyModule(LightningModule):
 
-            def __init__(self):
+            def __init__(self, num_classes):
                 ...
-                self.valid_acc = torchmetrics.Accuracy(task='multiclass')
+                self.valid_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
 
             def validation_step(self, batch, batch_idx):
                 logits = self(x)
@@ -185,9 +185,9 @@ The following contains a list of pitfalls to be aware of:
 
     class MyModule(LightningModule):
 
-        def __init__(self):
+        def __init__(self, num_classes):
             ...
-            self.val_acc = nn.ModuleList([torchmetrics.Accuracy(task='multiclass') for _ in range(2)])
+            self.val_acc = nn.ModuleList([torchmetrics.Accuracy(task="multiclass", num_classes=num_classes) for _ in range(2)])
 
         def val_dataloader(self):
             return [DataLoader(...), DataLoader(...)]

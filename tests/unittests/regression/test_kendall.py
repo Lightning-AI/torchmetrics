@@ -47,7 +47,7 @@ _multi_inputs3 = Input(
 )
 
 
-def _sk_metric(preds, target, alternative, variant):
+def _scipy_kendall(preds, target, alternative, variant):
     metric_args = {}
     if _SCIPY_GREATER_EQUAL_1_8:
         metric_args = {"alternative": alternative or "two-sided"}  # scipy cannot accept `None`
@@ -86,8 +86,8 @@ class TestKendallRankCorrCoef(MetricTester):
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
     def test_kendall_rank_corrcoef(self, preds, target, alternative, variant, ddp, dist_sync_on_step):
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
-        t_test = True if alternative is not None else False
-        _sk_kendall_tau = partial(_sk_metric, alternative=alternative, variant=variant)
+        t_test = bool(alternative is not None)
+        _sk_kendall_tau = partial(_scipy_kendall, alternative=alternative, variant=variant)
         alternative = _adjust_alternative_to_scipy(alternative)
 
         self.run_class_metric_test(
@@ -101,10 +101,10 @@ class TestKendallRankCorrCoef(MetricTester):
         )
 
     def test_kendall_rank_corrcoef_functional(self, preds, target, alternative, variant):
-        t_test = True if alternative is not None else False
+        t_test = bool(alternative is not None)
         alternative = _adjust_alternative_to_scipy(alternative)
         metric_args = {"t_test": t_test, "alternative": alternative, "variant": variant}
-        _sk_kendall_tau = partial(_sk_metric, alternative=alternative, variant=variant)
+        _sk_kendall_tau = partial(_scipy_kendall, alternative=alternative, variant=variant)
         self.run_functional_metric_test(preds, target, kendall_rank_corrcoef, _sk_kendall_tau, metric_args=metric_args)
 
     def test_kendall_rank_corrcoef_differentiability(self, preds, target, alternative, variant):

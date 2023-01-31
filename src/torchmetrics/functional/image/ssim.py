@@ -15,7 +15,7 @@ from typing import List, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor
-from torch.nn import functional as F
+from torch.nn import functional as F  # noqa: N812
 from typing_extensions import Literal
 
 from torchmetrics.functional.image.helper import _gaussian_kernel_2d, _gaussian_kernel_3d, _reflection_pad_3d
@@ -33,10 +33,7 @@ def _ssim_check_inputs(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
     """
 
     if preds.dtype != target.dtype:
-        raise TypeError(
-            "Expected `preds` and `target` to have the same data type."
-            f" Got preds: {preds.dtype} and target: {target.dtype}."
-        )
+        target = target.to(preds.dtype)
     _check_same_shape(preds, target)
     if len(preds.shape) not in (4, 5):
         raise ValueError(
@@ -145,10 +142,7 @@ def _ssim_update(
 
     input_list = torch.cat((preds, target, preds * preds, target * target, preds * target))  # (5 * B, C, H, W)
 
-    if is_3d:
-        outputs = F.conv3d(input_list, kernel, groups=channel)
-    else:
-        outputs = F.conv2d(input_list, kernel, groups=channel)
+    outputs = F.conv3d(input_list, kernel, groups=channel) if is_3d else F.conv2d(input_list, kernel, groups=channel)
 
     output_list = outputs.split(preds.shape[0])
 

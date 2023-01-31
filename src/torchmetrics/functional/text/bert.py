@@ -203,8 +203,8 @@ def _load_baseline(
         baseline = _read_csv_from_url(baseline_url)
     # Read default baseline from the original `bert-score` package https://github.com/Tiiiger/bert_score
     elif lang and model_name_or_path:
-        _URL_BASE = "https://raw.githubusercontent.com/Tiiiger/bert_score/master/bert_score/rescale_baseline"
-        baseline_url = f"{_URL_BASE}/{lang}/{model_name_or_path}.tsv"
+        url_base = "https://raw.githubusercontent.com/Tiiiger/bert_score/master/bert_score/rescale_baseline"
+        baseline_url = f"{url_base}/{lang}/{model_name_or_path}.tsv"
         baseline = _read_csv_from_url(baseline_url)
     else:
         baseline = None

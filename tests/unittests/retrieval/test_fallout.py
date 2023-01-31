@@ -70,7 +70,7 @@ class TestFallOut(RetrievalMetricTester):
         ignore_index: int,
         k: int,
     ):
-        metric_args = dict(empty_target_action=empty_target_action, k=k, ignore_index=ignore_index)
+        metric_args = {"empty_target_action": empty_target_action, "k": k, "ignore_index": ignore_index}
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -78,7 +78,7 @@ class TestFallOut(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_class=RetrievalFallOut,
-            sk_metric=_fallout_at_k,
+            reference_metric=_fallout_at_k,
             dist_sync_on_step=dist_sync_on_step,
             reverse=True,
             metric_args=metric_args,
@@ -99,7 +99,7 @@ class TestFallOut(RetrievalMetricTester):
         empty_target_action: str,
         k: int,
     ):
-        metric_args = dict(empty_target_action=empty_target_action, k=k, ignore_index=-100)
+        metric_args = {"empty_target_action": empty_target_action, "k": k, "ignore_index": -100}
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -107,7 +107,7 @@ class TestFallOut(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_class=RetrievalFallOut,
-            sk_metric=_fallout_at_k,
+            reference_metric=_fallout_at_k,
             dist_sync_on_step=dist_sync_on_step,
             reverse=True,
             metric_args=metric_args,
@@ -120,7 +120,7 @@ class TestFallOut(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_functional=retrieval_fall_out,
-            sk_metric=_fallout_at_k,
+            reference_metric=_fallout_at_k,
             reverse=True,
             metric_args={},
             k=k,
