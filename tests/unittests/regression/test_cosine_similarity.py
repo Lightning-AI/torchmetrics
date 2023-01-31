@@ -92,7 +92,7 @@ class TestCosineSimilarity(MetricTester):
             CosineSimilarity,
             partial(ref_metric, reduction=reduction),
             dist_sync_on_step,
-            metric_args=dict(reduction=reduction),
+            metric_args={"reduction": reduction},
         )
 
     def test_cosine_similarity_functional(self, reduction, preds, target, ref_metric):
@@ -101,7 +101,7 @@ class TestCosineSimilarity(MetricTester):
             target,
             cosine_similarity,
             partial(ref_metric, reduction=reduction),
-            metric_args=dict(reduction=reduction),
+            metric_args={"reduction": reduction},
         )
 
 

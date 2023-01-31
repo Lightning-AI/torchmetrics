@@ -92,10 +92,10 @@ def _compute_metrics(hits_or_lcs: int, pred_len: int, target_len: int) -> Dict[s
     precision = hits_or_lcs / pred_len
     recall = hits_or_lcs / target_len
     if precision == recall == 0.0:
-        return dict(precision=tensor(0.0), recall=tensor(0.0), fmeasure=tensor(0.0))
+        return {"precision": tensor(0.0), "recall": tensor(0.0), "fmeasure": tensor(0.0)}
 
     fmeasure = 2 * precision * recall / (precision + recall)
-    return dict(precision=tensor(precision), recall=tensor(recall), fmeasure=tensor(fmeasure))
+    return {"precision": tensor(precision), "recall": tensor(recall), "fmeasure": tensor(fmeasure)}
 
 
 def _lcs(
@@ -162,7 +162,7 @@ def _union_lcs(pred_tokens_list: Sequence[Sequence[str]], target_tokens: Sequenc
 
     def find_union(lcs_tables: Sequence[Sequence[int]]) -> Sequence[int]:
         """Find union LCS given a list of LCS."""
-        return sorted(list(set().union(*lcs_tables)))
+        return sorted(set().union(*lcs_tables))
 
     lcs_tables = [lcs_ind(pred_tokens, target_tokens) for pred_tokens in pred_tokens_list]
     union_lcs = [target_tokens[i] for i in find_union(lcs_tables)]
@@ -224,7 +224,7 @@ def _rouge_n_score(pred: Sequence[str], target: Sequence[str], n_gram: int) -> D
     pred_ngrams, target_ngrams = _create_ngrams(pred, n_gram), _create_ngrams(target, n_gram)
     pred_len, target_len = sum(pred_ngrams.values()), sum(target_ngrams.values())
     if 0 in (pred_len, target_len):
-        return dict(precision=tensor(0.0), recall=tensor(0.0), fmeasure=tensor(0.0))
+        return {"precision": tensor(0.0), "recall": tensor(0.0), "fmeasure": tensor(0.0)}
 
     # It is sufficient to take a set(pred_tokenized) for hits count as we consider intersenction of pred & target
     hits = sum(min(pred_ngrams[w], target_ngrams[w]) for w in set(pred_ngrams))
@@ -240,7 +240,7 @@ def _rouge_l_score(pred: Sequence[str], target: Sequence[str]) -> Dict[str, Tens
     """
     pred_len, target_len = len(pred), len(target)
     if 0 in (pred_len, target_len):
-        return dict(precision=tensor(0.0), recall=tensor(0.0), fmeasure=tensor(0.0))
+        return {"precision": tensor(0.0), "recall": tensor(0.0), "fmeasure": tensor(0.0)}
 
     lcs: int = _lcs(pred, target)  # type: ignore
     return _compute_metrics(lcs, pred_len, target_len)
@@ -261,7 +261,7 @@ def _rouge_lsum_score(pred: Sequence[Sequence[str]], target: Sequence[Sequence[s
     pred_len = sum(map(len, pred))
     target_len = sum(map(len, target))
     if 0 in (pred_len, target_len):
-        return dict(precision=tensor(0.0), recall=tensor(0.0), fmeasure=tensor(0.0))
+        return {"precision": tensor(0.0), "recall": tensor(0.0), "fmeasure": tensor(0.0)}
 
     # Get token counts
     def _get_token_counts(sentences: Sequence[Sequence[str]]) -> Counter:
