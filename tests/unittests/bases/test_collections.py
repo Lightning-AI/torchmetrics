@@ -189,7 +189,7 @@ def test_metric_collection_prefix_postfix_args(prefix, postfix):
         assert "new_prefix_" in k
 
     # todo: this shall be to iterate as native dictionary
-    for k in new_metric_collection.keys():
+    for k in new_metric_collection:
         assert "new_prefix_" in k
 
     for k, _ in new_metric_collection.items(keep_base=True):
