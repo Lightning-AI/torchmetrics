@@ -134,7 +134,7 @@ class MetricTracker(ModuleList):
         self._check_for_increment("compute")
         return self[-1].compute()
 
-    def compute_all(self) -> Tensor:
+    def compute_all(self) -> Union[Tensor, Dict[str, Tensor]]:
         """Compute the metric value for all tracked metrics."""
         self._check_for_increment("compute_all")
         # The i!=0 accounts for the self._base_metric should be ignored
