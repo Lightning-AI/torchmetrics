@@ -29,10 +29,10 @@ from torchmetrics.metric import Metric
 
 
 class PanopticQuality(Metric):
-    r"""Computes the `Panoptic Quality (PQ)`_ for panoptic segmentations. It is defined as:
+    r"""Computes the `Panoptic Quality`_ for panoptic segmentations. It is defined as:
 
     .. math::
-        PQ = \frac{IOU}{TP + 0.5\\cdot FP + 0.5\\cdot FN}
+        PQ = \frac{IOU}{TP + 0.5 FP + 0.5 FN}
 
     where IOU, TP, FP and FN are respectively the sum of the intersection over union for true positives, the number of
     true postitives, false positives and false negatives. This metric is inspired by the PQ implementation of
