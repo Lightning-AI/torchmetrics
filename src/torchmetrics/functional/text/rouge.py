@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import re
+import urllib.request
 from collections import Counter
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
+from urllib.request import HTTPError
 
 import torch
 from torch import Tensor, tensor
@@ -39,13 +41,40 @@ ALLOWED_ROUGE_KEYS: Dict[str, Union[int, str]] = {
 ALLOWED_ACCUMULATE_VALUES = ("avg", "best")
 
 
+def _is_internet_connection() -> bool:
+    try:
+        urllib.request.urlopen("https://torchmetrics.readthedocs.io/")
+    except HTTPError:
+        return False
+    return True
+
+
+def _ensure_nltk_punkt_is_downloaded() -> None:
+    """Check whether `nltk` `punkt` is downloaded.
+
+    If not, try to download if a machine is connected to the internet.
+    """
+    import nltk
+
+    try:
+        nltk.data.find("tokenizers/punkt.zip")
+    except LookupError:
+        if _is_internet_connection():
+            nltk.download("punkt", quiet=True, force=False)
+        else:
+            raise OSError(
+                "`nltk` resource `punkt` is not available on a disk and cannot be downloaded as a machine is not "
+                "connected to the internet."
+            )
+
+
 def _split_sentence(x: str) -> Sequence[str]:
     """The sentence is split to get rougeLsum scores matching published rougeL scores for BART and PEGASUS."""
     if not _NLTK_AVAILABLE:
         raise ModuleNotFoundError("ROUGE-Lsum calculation requires that `nltk` is installed. Use `pip install nltk`.")
     import nltk
 
-    nltk.download("punkt", quiet=True, force=False)
+    _ensure_nltk_punkt_is_downloaded()
 
     re.sub("<n>", "", x)  # remove pegasus newline char
     return nltk.sent_tokenize(x)
@@ -63,10 +92,10 @@ def _compute_metrics(hits_or_lcs: int, pred_len: int, target_len: int) -> Dict[s
     precision = hits_or_lcs / pred_len
     recall = hits_or_lcs / target_len
     if precision == recall == 0.0:
-        return dict(precision=tensor(0.0), recall=tensor(0.0), fmeasure=tensor(0.0))
+        return {"precision": tensor(0.0), "recall": tensor(0.0), "fmeasure": tensor(0.0)}
 
     fmeasure = 2 * precision * recall / (precision + recall)
-    return dict(precision=tensor(precision), recall=tensor(recall), fmeasure=tensor(fmeasure))
+    return {"precision": tensor(precision), "recall": tensor(recall), "fmeasure": tensor(fmeasure)}
 
 
 def _lcs(
@@ -133,7 +162,7 @@ def _union_lcs(pred_tokens_list: Sequence[Sequence[str]], target_tokens: Sequenc
 
     def find_union(lcs_tables: Sequence[Sequence[int]]) -> Sequence[int]:
         """Find union LCS given a list of LCS."""
-        return sorted(list(set().union(*lcs_tables)))
+        return sorted(set().union(*lcs_tables))
 
     lcs_tables = [lcs_ind(pred_tokens, target_tokens) for pred_tokens in pred_tokens_list]
     union_lcs = [target_tokens[i] for i in find_union(lcs_tables)]
@@ -195,7 +224,7 @@ def _rouge_n_score(pred: Sequence[str], target: Sequence[str], n_gram: int) -> D
     pred_ngrams, target_ngrams = _create_ngrams(pred, n_gram), _create_ngrams(target, n_gram)
     pred_len, target_len = sum(pred_ngrams.values()), sum(target_ngrams.values())
     if 0 in (pred_len, target_len):
-        return dict(precision=tensor(0.0), recall=tensor(0.0), fmeasure=tensor(0.0))
+        return {"precision": tensor(0.0), "recall": tensor(0.0), "fmeasure": tensor(0.0)}
 
     # It is sufficient to take a set(pred_tokenized) for hits count as we consider intersenction of pred & target
     hits = sum(min(pred_ngrams[w], target_ngrams[w]) for w in set(pred_ngrams))
@@ -211,7 +240,7 @@ def _rouge_l_score(pred: Sequence[str], target: Sequence[str]) -> Dict[str, Tens
     """
     pred_len, target_len = len(pred), len(target)
     if 0 in (pred_len, target_len):
-        return dict(precision=tensor(0.0), recall=tensor(0.0), fmeasure=tensor(0.0))
+        return {"precision": tensor(0.0), "recall": tensor(0.0), "fmeasure": tensor(0.0)}
 
     lcs: int = _lcs(pred, target)  # type: ignore
     return _compute_metrics(lcs, pred_len, target_len)
@@ -232,7 +261,7 @@ def _rouge_lsum_score(pred: Sequence[Sequence[str]], target: Sequence[Sequence[s
     pred_len = sum(map(len, pred))
     target_len = sum(map(len, target))
     if 0 in (pred_len, target_len):
-        return dict(precision=tensor(0.0), recall=tensor(0.0), fmeasure=tensor(0.0))
+        return {"precision": tensor(0.0), "recall": tensor(0.0), "fmeasure": tensor(0.0)}
 
     # Get token counts
     def _get_token_counts(sentences: Sequence[Sequence[str]]) -> Counter:

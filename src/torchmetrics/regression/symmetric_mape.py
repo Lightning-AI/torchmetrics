@@ -25,19 +25,21 @@ from torchmetrics.metric import Metric
 class SymmetricMeanAbsolutePercentageError(Metric):
     r"""Computes symmetric mean absolute percentage error (`SMAPE`_).
 
-    .. math:: \text{SMAPE} = \frac{2}{n}\sum_1^n max(\frac{|   y_i - \hat{y_i} |}{| y_i | + | \hat{y_i} |, \epsilon})
+    .. math:: \text{SMAPE} = \frac{2}{n}\sum_1^n\frac{|   y_i - \hat{y_i} |}{\max(| y_i | + | \hat{y_i} |, \epsilon)}
 
     Where :math:`y` is a tensor of target values, and :math:`\hat{y}` is a tensor of predictions.
 
+    As input to ``forward`` and ``update`` the metric accepts the following input:
+
+    - ``preds`` (:class:`~torch.Tensor`): Predictions from model
+    - ``target`` (:class:`~torch.Tensor`): Ground truth values
+
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``smape`` (:class:`~torch.Tensor`): A tensor with non-negative floating point smape value between 0 and 1
+
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
-
-    Note:
-        The epsilon value is taken from `scikit-learn's implementation of SMAPE`_.
-
-    Note:
-        SMAPE output is a non-negative floating point between 0 and 1. Best result is 0.0 .
-
 
     Example:
         >>> from torchmetrics import SymmetricMeanAbsolutePercentageError
@@ -63,12 +65,7 @@ class SymmetricMeanAbsolutePercentageError(Metric):
         self.add_state("total", default=tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
+        """Update state with predictions and targets."""
         sum_abs_per_error, num_obs = _symmetric_mean_absolute_percentage_error_update(preds, target)
 
         self.sum_abs_per_error += sum_abs_per_error

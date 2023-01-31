@@ -50,7 +50,7 @@ _inputs = Input(
         ]
     ),
 )
-_args = dict(things={0, 1}, stuff={6, 7})
+_args = {"things": {0, 1}, "stuff": {6, 7}}
 
 
 def _compare_fn(preds, target) -> dict:

@@ -80,12 +80,12 @@ class MetricCollection(ModuleDict):
             If ``postfix`` is set and it is not a string.
 
     Example (input as list):
-        >>> import torch
+        >>> from torch import tensor
         >>> from pprint import pprint
         >>> from torchmetrics import MetricCollection, MeanSquaredError
         >>> from torchmetrics.classification import MulticlassAccuracy, MulticlassPrecision, MulticlassRecall
-        >>> target = torch.tensor([0, 2, 0, 2, 0, 1, 0, 2])
-        >>> preds = torch.tensor([2, 1, 2, 0, 1, 2, 2, 2])
+        >>> target = tensor([0, 2, 0, 2, 0, 1, 0, 2])
+        >>> preds = tensor([2, 1, 2, 0, 1, 2, 2, 2])
         >>> metrics = MetricCollection([MulticlassAccuracy(num_classes=3, average='micro'),
         ...                             MulticlassPrecision(num_classes=3, average='macro'),
         ...                             MulticlassRecall(num_classes=3, average='macro')])
@@ -247,7 +247,7 @@ class MetricCollection(ModuleDict):
         if metric1._defaults.keys() != metric2._defaults.keys():
             return False
 
-        for key in metric1._defaults.keys():
+        for key in metric1._defaults:
             state1 = getattr(metric1, key)
             state2 = getattr(metric2, key)
 
@@ -414,6 +414,7 @@ class MetricCollection(ModuleDict):
             od[self._set_name(k)] = v
         return od
 
+    # TODO: redefine this as native python dict
     def keys(self, keep_base: bool = False) -> Iterable[Hashable]:
         r"""Return an iterable of the ModuleDict key.
 

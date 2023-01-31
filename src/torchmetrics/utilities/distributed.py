@@ -14,8 +14,8 @@
 from typing import Any, List, Optional
 
 import torch
-import torch.nn.functional as F
 from torch import Tensor
+from torch.nn import functional as F  # noqa: N812
 from typing_extensions import Literal
 
 
@@ -70,10 +70,7 @@ def class_reduce(
 
     """
     valid_reduction = ("micro", "macro", "weighted", "none", None)
-    if class_reduction == "micro":
-        fraction = torch.sum(num) / torch.sum(denom)
-    else:
-        fraction = num / denom
+    fraction = torch.sum(num) / torch.sum(denom) if class_reduction == "micro" else num / denom
 
     # We need to take care of instances where the denom can be 0
     # for some (or all) classes which will produce nans

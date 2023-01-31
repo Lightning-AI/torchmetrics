@@ -33,10 +33,16 @@ class R2Score(Metric):
 
     where the parameter :math:`k` (the number of independent regressors) should be provided as the `adjusted` argument.
 
-    Forward accepts
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (float tensor): ``(N,)`` or ``(N, M)`` (multioutput)
-    - ``target`` (float tensor): ``(N,)`` or ``(N, M)`` (multioutput)
+    - ``preds`` (:class:`~torch.Tensor`): Predictions from model in float tensor with shape ``(N,)``
+      or ``(N, M)`` (multioutput)
+    - ``target`` (:class:`~torch.Tensor`): Ground truth values in float tensor with shape ``(N,)``
+      or ``(N, M)`` (multioutput)
+
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``r2score`` (:class:`~torch.Tensor`): A tensor with the r2 score(s)
 
     In the case of multioutput, as default the variances will be uniformly averaged over the additional dimensions.
     Please see argument ``multioutput`` for changing this behavior.
@@ -107,12 +113,7 @@ class R2Score(Metric):
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
+        """Update state with predictions and targets."""
         sum_squared_error, sum_error, residual, total = _r2_score_update(preds, target)
 
         self.sum_squared_error += sum_squared_error

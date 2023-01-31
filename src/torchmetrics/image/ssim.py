@@ -60,8 +60,8 @@ class StructuralSimilarityIndexMeasure(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
-        >>> from torchmetrics import StructuralSimilarityIndexMeasure
         >>> import torch
+        >>> from torchmetrics import StructuralSimilarityIndexMeasure
         >>> preds = torch.rand([3, 3, 256, 256])
         >>> target = preds * 0.75
         >>> ssim = StructuralSimilarityIndexMeasure(data_range=1.0)

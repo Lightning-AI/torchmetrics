@@ -62,20 +62,20 @@ def perceptual_evaluation_speech_quality(
 
     Raises:
         ModuleNotFoundError:
-            If ``peqs`` package is not installed
+            If ``pesq`` package is not installed
         ValueError:
             If ``fs`` is not either  ``8000`` or ``16000``
         ValueError:
             If ``mode`` is not either ``"wb"`` or ``"nb"``
         RuntimeError:
-            If ``preds`` and ``target`` does not have the same shape
+            If ``preds`` and ``target`` do not have the same shape
 
     Example:
+        >>> from torch import randn
         >>> from torchmetrics.functional.audio.pesq import perceptual_evaluation_speech_quality
-        >>> import torch
         >>> g = torch.manual_seed(1)
-        >>> preds = torch.randn(8000)
-        >>> target = torch.randn(8000)
+        >>> preds = randn(8000)
+        >>> target = randn(8000)
         >>> perceptual_evaluation_speech_quality(preds, target, 8000, 'nb')
         tensor(2.2076)
         >>> perceptual_evaluation_speech_quality(preds, target, 16000, 'wb')
