@@ -12,6 +12,7 @@ ________________
 
 .. autoclass:: torchmetrics.PanopticQuality
     :noindex:
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________
