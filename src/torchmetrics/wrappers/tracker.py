@@ -158,10 +158,10 @@ class MetricTracker(ModuleList):
     ) -> Union[
         None,
         float,
-        Tuple[int, float],
+        Tuple[float, int],
         Tuple[None, None],
         Dict[str, Union[float, None]],
-        Tuple[Dict[str, Union[int, None]], Dict[str, Union[float, None]]],
+        Tuple[Dict[str, Union[float, None]], Dict[str, Union[int, None]]],
     ]:
         """Returns the highest metric out of all tracked.
 
