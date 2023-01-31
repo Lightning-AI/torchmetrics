@@ -14,7 +14,6 @@
 
 from typing import Any, Optional
 
-import torch
 from torch import Tensor, tensor
 
 from torchmetrics.functional.regression.minkowski import _minkowski_distance_compute, _minkowski_distance_update
@@ -23,9 +22,12 @@ from torchmetrics.utilities.exceptions import TorchMetricsUserError
 
 
 class MinkowskiDistance(Metric):
-    r"""Computes `Minkowski Distance`
+    r"""Computes `Minkowski Distance`.
 
     .. math:: d_{\text{Minkowski}} = \\sum_{i}^N (| y_i - \\hat{y_i} |^p)^\frac{1}{p}
+
+    This metric can be seen as generalized version of the standard euclidean distance which corresponds to minkowski
+    distance with p=2.
 
     where
         :math:`y` is a tensor of target values,
@@ -37,10 +39,9 @@ class MinkowskiDistance(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
-        >>> import torch
         >>> from torchmetrics import MinkowskiDistance
-        >>> target = torch.tensor([1.0, 2.8, 3.5, 4.5])
-        >>> preds = torch.tensor([6.1, 2.11, 3.1, 5.6])
+        >>> target = tensor([1.0, 2.8, 3.5, 4.5])
+        >>> preds = tensor([6.1, 2.11, 3.1, 5.6])
         >>> minkowski_distance = MinkowskiDistance(3)
         >>> minkowski_distance(preds, target)
         tensor(5.1220)
@@ -53,16 +54,17 @@ class MinkowskiDistance(Metric):
 
     def __init__(self, p: float, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        if not isinstance(p, (float, int)) and p < 0:
+        if not (isinstance(p, (float, int)) and p > 0):
             raise TorchMetricsUserError(f"Argument `p` must be a float or int greater than 0, but got {p}")
 
         self.p = p
         self.add_state("minkowski_dist_sum", default=tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, targets: Tensor) -> None:
+        """Update state with predictions and targets."""
         minkowski_dist_sum = _minkowski_distance_update(preds, targets, self.p)
-
         self.minkowski_dist_sum += minkowski_dist_sum
 
     def compute(self) -> Tensor:
+        """Computes metric."""
         return _minkowski_distance_compute(self.minkowski_dist_sum, self.p)
