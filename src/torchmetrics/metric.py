@@ -301,7 +301,7 @@ class Metric(Module, ABC):
         This can be done when the global metric state is a sinple reduction of batch states.
         """
         # store global state and reset to default
-        global_state = {attr: getattr(self, attr) for attr in self._defaults.keys()}
+        global_state = {attr: getattr(self, attr) for attr in self._defaults}
         _update_count = self._update_count
         self.reset()
 
@@ -339,7 +339,7 @@ class Metric(Module, ABC):
         Args:
             incoming_state: a dict containing a metric state similar metric itself
         """
-        for attr in self._defaults.keys():
+        for attr in self._defaults:
             local_state = getattr(self, attr)
             global_state = incoming_state[attr]
             reduce_fn = self._reductions[attr]
@@ -420,7 +420,7 @@ class Metric(Module, ABC):
 
     def _move_list_states_to_cpu(self) -> None:
         """Move list states to cpu to save GPU memory."""
-        for key in self._defaults.keys():
+        for key in self._defaults:
             current_val = getattr(self, key)
             if isinstance(current_val, Sequence):
                 setattr(self, key, [cur_v.to("cpu") for cur_v in current_val])
@@ -726,7 +726,7 @@ class Metric(Module, ABC):
         _params = (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD)
         _sign_params = self._update_signature.parameters
         filtered_kwargs = {
-            k: v for k, v in kwargs.items() if (k in _sign_params.keys() and _sign_params[k].kind not in _params)
+            k: v for k, v in kwargs.items() if (k in _sign_params and _sign_params[k].kind not in _params)
         }
 
         exists_var_keyword = any(v.kind == inspect.Parameter.VAR_KEYWORD for v in _sign_params.values())
@@ -920,15 +920,9 @@ class CompositionalMetric(Metric):
 
     def compute(self) -> Any:
         # also some parsing for kwargs?
-        if isinstance(self.metric_a, Metric):
-            val_a = self.metric_a.compute()
-        else:
-            val_a = self.metric_a
+        val_a = self.metric_a.compute() if isinstance(self.metric_a, Metric) else self.metric_a
 
-        if isinstance(self.metric_b, Metric):
-            val_b = self.metric_b.compute()
-        else:
-            val_b = self.metric_b
+        val_b = self.metric_b.compute() if isinstance(self.metric_b, Metric) else self.metric_b
 
         if val_b is None:
             return self.op(val_a)

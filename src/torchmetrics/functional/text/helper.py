@@ -130,7 +130,7 @@ class _LevenshteinEditDistance:
         length_ratio = self.reference_len / prediction_len if prediction_tokens else 1.0
 
         # Ensure to not end up with zero overlaip with previous role
-        beam_width = math.ceil(length_ratio / 2 + _BEAM_WIDTH) if _BEAM_WIDTH < length_ratio / 2 else _BEAM_WIDTH
+        beam_width = math.ceil(length_ratio / 2 + _BEAM_WIDTH) if length_ratio / 2 > _BEAM_WIDTH else _BEAM_WIDTH
 
         # Calculate the Levenshtein distance
         for i in range(prediction_start + 1, prediction_len + 1):

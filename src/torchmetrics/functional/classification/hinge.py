@@ -153,7 +153,7 @@ def _multiclass_hinge_loss_update(
     squared: bool,
     multiclass_mode: Literal["crammer-singer", "one-vs-all"] = "crammer-singer",
 ) -> Tuple[Tensor, Tensor]:
-    if not torch.all((0 <= preds) * (preds <= 1)):
+    if not torch.all((preds >= 0) * (preds <= 1)):
         preds = preds.softmax(1)
 
     target = to_onehot(target, max(2, preds.shape[1])).bool()
