@@ -16,7 +16,7 @@ from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Union
 import torch
 from torch import Tensor
 
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_12
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_12, _XLA_AVAILABLE
 
 METRIC_EPS = 1e-6
 
@@ -220,7 +220,7 @@ def _bincount(x: Tensor, minlength: Optional[int] = None) -> Tensor:
     """
     if minlength is None:
         minlength = len(torch.unique(x))
-    if torch.are_deterministic_algorithms_enabled() or _TORCH_GREATER_EQUAL_1_12 and x.is_mps:
+    if torch.are_deterministic_algorithms_enabled() or _XLA_AVAILABLE or _TORCH_GREATER_EQUAL_1_12 and x.is_mps:
         output = torch.zeros(minlength, device=x.device, dtype=torch.long)
         for i in range(minlength):
             output[i] = (x == i).sum()
