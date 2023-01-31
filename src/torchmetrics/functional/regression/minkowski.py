@@ -73,7 +73,7 @@ def minkowski_distance(preds: Tensor, targets: Tensor, p: float) -> Tensor:
         >>> from torchmetrics.functional import minkowski_distance
         >>> x = torch.tensor([1.0, 2.8, 3.5, 4.5])
         >>> y = torch.tensor([6.1, 2.11, 3.1, 5.6])
-        >>> minkowski_distance(x, y)
+        >>> minkowski_distance(x, y, p=3)
         tensor(5.1220)
     """
     minkowski_dist_sum = _minkowski_distance_update(preds, targets, p)
