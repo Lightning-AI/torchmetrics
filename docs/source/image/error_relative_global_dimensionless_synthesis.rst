@@ -3,6 +3,8 @@
    :image: https://pl-flash-data.s3.amazonaws.com/assets/thumbnails/image_classification.svg
    :tags: Image
 
+.. include:: ../links.rst
+
 ############################################
 Error Relative Global Dim. Synthesis (ERGAS)
 ############################################
@@ -12,6 +14,8 @@ ________________
 
 .. autoclass:: torchmetrics.image.ergas.ErrorRelativeGlobalDimensionlessSynthesis
     :noindex:
+    :exclude-members: update, compute
+
 
 Functional Interface
 ____________________

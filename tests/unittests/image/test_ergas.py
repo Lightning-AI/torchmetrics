@@ -13,14 +13,15 @@
 # limitations under the License.
 from collections import namedtuple
 from functools import partial
+from typing import Union
 
 import pytest
 import torch
+from torch import Tensor
 
 from torchmetrics.functional.image.ergas import error_relative_global_dimensionless_synthesis
 from torchmetrics.image.ergas import ErrorRelativeGlobalDimensionlessSynthesis
 from unittests.helpers import seed_all
-from unittests.helpers.reference_metrics import _sk_ergas
 from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 
 seed_all(42)
@@ -38,6 +39,37 @@ for size, channel, coef, ratio, dtype in [
     _inputs.append(Input(preds=preds, target=preds * coef, ratio=ratio))
 
 
+def _baseline_ergas(
+    preds: Tensor,
+    target: Tensor,
+    ratio: Union[int, float] = 4,
+    reduction: str = "elementwise_mean",
+) -> Tensor:
+    """Reference implementation of Erreur Relative Globale Adimensionnelle de Synthèse."""
+    reduction_options = ("elementwise_mean", "sum", "none")
+    if reduction not in reduction_options:
+        raise ValueError(f"reduction has to be one of {reduction_options}, got: {reduction}.")
+    # reshape to (batch_size, channel, height*width)
+    b, c, h, w = preds.shape
+    sk_preds = preds.reshape(b, c, h * w)
+    sk_target = target.reshape(b, c, h * w)
+    # compute rmse per band
+    diff = sk_preds - sk_target
+    sum_squared_error = torch.sum(diff * diff, dim=2)
+    rmse_per_band = torch.sqrt(sum_squared_error / (h * w))
+    mean_target = torch.mean(sk_target, dim=2)
+    # compute ergas score
+    ergas_score = 100 * ratio * torch.sqrt(torch.sum((rmse_per_band / mean_target) ** 2, dim=1) / c)
+    # reduction
+    if reduction == "sum":
+        to_return = torch.sum(ergas_score)
+    elif reduction == "elementwise_mean":
+        to_return = torch.mean(ergas_score)
+    else:
+        to_return = ergas_score
+    return to_return
+
+
 @pytest.mark.parametrize("reduction", ["sum", "elementwise_mean"])
 @pytest.mark.parametrize(
     "preds, target, ratio",
@@ -52,9 +84,9 @@ class TestErrorRelativeGlobalDimensionlessSynthesis(MetricTester):
             preds,
             target,
             ErrorRelativeGlobalDimensionlessSynthesis,
-            partial(_sk_ergas, ratio=ratio, reduction=reduction),
+            partial(_baseline_ergas, ratio=ratio, reduction=reduction),
             dist_sync_on_step,
-            metric_args=dict(ratio=ratio, reduction=reduction),
+            metric_args={"ratio": ratio, "reduction": reduction},
         )
 
     def test_ergas_functional(self, reduction, preds, target, ratio):
@@ -62,8 +94,8 @@ class TestErrorRelativeGlobalDimensionlessSynthesis(MetricTester):
             preds,
             target,
             error_relative_global_dimensionless_synthesis,
-            partial(_sk_ergas, ratio=ratio, reduction=reduction),
-            metric_args=dict(ratio=ratio, reduction=reduction),
+            partial(_baseline_ergas, ratio=ratio, reduction=reduction),
+            metric_args={"ratio": ratio, "reduction": reduction},
         )
 
     # ERGAS half + cpu does not work due to missing support in torch.log

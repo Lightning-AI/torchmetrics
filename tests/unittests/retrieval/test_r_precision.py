@@ -35,8 +35,8 @@ seed_all(42)
 def _r_precision(target: np.ndarray, preds: np.ndarray):
     """Didn't find a reliable implementation of R-Precision in Information Retrieval, so, reimplementing here.
 
-    A good explanation can be found
-    `here <https://web.stanford.edu/class/cs276/handouts/EvaluationNew-handout-1-per.pdf>_`.
+    A good explanation can be found `here
+    <https://web.stanford.edu/class/cs276/handouts/EvaluationNew-handout-1-per.pdf>_`.
     """
     assert target.shape == preds.shape
     assert len(target.shape) == 1  # works only with single dimension inputs
@@ -64,7 +64,7 @@ class TestRPrecision(RetrievalMetricTester):
         empty_target_action: str,
         ignore_index: int,
     ):
-        metric_args = dict(empty_target_action=empty_target_action, ignore_index=ignore_index)
+        metric_args = {"empty_target_action": empty_target_action, "ignore_index": ignore_index}
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -72,7 +72,7 @@ class TestRPrecision(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_class=RetrievalRPrecision,
-            sk_metric=_r_precision,
+            reference_metric=_r_precision,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
         )
@@ -90,7 +90,7 @@ class TestRPrecision(RetrievalMetricTester):
         dist_sync_on_step: bool,
         empty_target_action: str,
     ):
-        metric_args = dict(empty_target_action=empty_target_action, ignore_index=-100)
+        metric_args = {"empty_target_action": empty_target_action, "ignore_index": -100}
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -98,7 +98,7 @@ class TestRPrecision(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_class=RetrievalRPrecision,
-            sk_metric=_r_precision,
+            reference_metric=_r_precision,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
         )
@@ -109,7 +109,7 @@ class TestRPrecision(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_functional=retrieval_r_precision,
-            sk_metric=_r_precision,
+            reference_metric=_r_precision,
             metric_args={},
         )
 

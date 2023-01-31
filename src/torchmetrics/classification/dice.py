@@ -37,6 +37,18 @@ class Dice(Metric):
     ``average`` parameter, and additionally by the ``mdmc_average`` parameter in the
     multi-dimensional multi-class case.
 
+    As input to ``forward`` and ``update`` the metric accepts the following input:
+
+    - ``preds`` (:class:`~torch.Tensor`): Predictions from model (probabilities, logits or labels)
+    - ``target`` (:class:`~torch.Tensor`): Ground truth values
+
+    As output to ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``dice`` (:class:`~torch.Tensor`): A tensor containing the dice score.
+
+        - If ``average in ['micro', 'macro', 'weighted', 'samples']``, a one-element tensor will be returned
+        - If ``average in ['none', None]``, the shape will be ``(C,)``, where ``C`` stands  for the number of classes
+
     Args:
         num_classes:
             Number of classes. Necessary for ``'macro'``, ``'weighted'`` and ``None`` average methods.
@@ -58,8 +70,9 @@ class Dice(Metric):
             - ``'samples'``: Calculate the metric for each sample, and average the metrics
               across samples (with equal weights for each sample).
 
-            .. note:: What is considered a sample in the multi-dimensional multi-class case
-                depends on the value of ``mdmc_average``.
+            .. note::
+               What is considered a sample in the multi-dimensional multi-class case
+               depends on the value of ``mdmc_average``.
 
         mdmc_average:
             Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
@@ -107,10 +120,10 @@ class Dice(Metric):
             If ``num_classes`` is set and ``ignore_index`` is not in the range ``[0, num_classes)``.
 
     Example:
-        >>> import torch
+        >>> from torch import tensor
         >>> from torchmetrics import Dice
-        >>> preds  = torch.tensor([2, 0, 2, 1])
-        >>> target = torch.tensor([1, 1, 2, 0])
+        >>> preds  = tensor([2, 0, 2, 1])
+        >>> target = tensor([1, 1, 2, 0])
         >>> dice = Dice(average='micro')
         >>> dice(preds, target)
         tensor(0.2500)
@@ -183,12 +196,7 @@ class Dice(Metric):
 
     @no_type_check
     def update(self, preds: Tensor, target: Tensor) -> None:
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model (probabilities, logits or labels)
-            target: Ground truth values
-        """
+        """Update state with predictions and targets."""
         tp, fp, tn, fn = _stat_scores_update(
             preds,
             target,
@@ -224,14 +232,6 @@ class Dice(Metric):
 
     @no_type_check
     def compute(self) -> Tensor:
-        """Computes the dice score based on inputs passed in to ``update`` previously.
-
-        Return:
-            The shape of the returned tensor depends on the ``average`` parameter:
-
-            - If ``average in ['micro', 'macro', 'weighted', 'samples']``, a one-element tensor will be returned
-            - If ``average in ['none', None]``, the shape will be ``(C,)``, where ``C`` stands  for the number
-              of classes
-        """
+        """Computes metric."""
         tp, fp, _, fn = self._get_final_stats()
         return _dice_compute(tp, fp, fn, self.average, self.mdmc_reduce, self.zero_division)

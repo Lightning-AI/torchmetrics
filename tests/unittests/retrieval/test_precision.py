@@ -39,8 +39,8 @@ seed_all(42)
 def _precision_at_k(target: np.ndarray, preds: np.ndarray, k: int = None, adaptive_k: bool = False):
     """Didn't find a reliable implementation of Precision in Information Retrieval, so, reimplementing here.
 
-    A good explanation can be found
-    `here <https://web.stanford.edu/class/cs276/handouts/EvaluationNew-handout-1-per.pdf>_`.
+    A good explanation can be found `here
+    <https://web.stanford.edu/class/cs276/handouts/EvaluationNew-handout-1-per.pdf>_`.
     """
     assert target.shape == preds.shape
     assert len(target.shape) == 1  # works only with single dimension inputs
@@ -75,9 +75,12 @@ class TestPrecision(RetrievalMetricTester):
         k: int,
         adaptive_k: bool,
     ):
-        metric_args = dict(
-            empty_target_action=empty_target_action, k=k, ignore_index=ignore_index, adaptive_k=adaptive_k
-        )
+        metric_args = {
+            "empty_target_action": empty_target_action,
+            "k": k,
+            "ignore_index": ignore_index,
+            "adaptive_k": adaptive_k,
+        }
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -85,7 +88,7 @@ class TestPrecision(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_class=RetrievalPrecision,
-            sk_metric=_precision_at_k,
+            reference_metric=_precision_at_k,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
         )
@@ -107,7 +110,12 @@ class TestPrecision(RetrievalMetricTester):
         k: int,
         adaptive_k: bool,
     ):
-        metric_args = dict(empty_target_action=empty_target_action, k=k, ignore_index=-100, adaptive_k=adaptive_k)
+        metric_args = {
+            "empty_target_action": empty_target_action,
+            "k": k,
+            "ignore_index": -100,
+            "adaptive_k": adaptive_k,
+        }
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -115,7 +123,7 @@ class TestPrecision(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_class=RetrievalPrecision,
-            sk_metric=_precision_at_k,
+            reference_metric=_precision_at_k,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
         )
@@ -128,7 +136,7 @@ class TestPrecision(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_functional=retrieval_precision,
-            sk_metric=_precision_at_k,
+            reference_metric=_precision_at_k,
             metric_args={},
             k=k,
             adaptive_k=adaptive_k,

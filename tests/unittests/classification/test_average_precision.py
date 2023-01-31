@@ -38,12 +38,11 @@ from unittests.helpers.testers import NUM_CLASSES, MetricTester, inject_ignore_i
 seed_all(42)
 
 
-def _sk_average_precision_binary(preds, target, ignore_index=None):
+def _sklearn_avg_precision_binary(preds, target, ignore_index=None):
     preds = preds.flatten().numpy()
     target = target.flatten().numpy()
-    if np.issubdtype(preds.dtype, np.floating):
-        if not ((0 < preds) & (preds < 1)).all():
-            preds = sigmoid(preds)
+    if np.issubdtype(preds.dtype, np.floating) and not ((preds > 0) & (preds < 1)).all():
+        preds = sigmoid(preds)
     target, preds = remove_ignore_index(target, preds, ignore_index)
     return sk_average_precision_score(target, preds)
 
@@ -61,7 +60,7 @@ class TestBinaryAveragePrecision(MetricTester):
             preds=preds,
             target=target,
             metric_class=BinaryAveragePrecision,
-            sk_metric=partial(_sk_average_precision_binary, ignore_index=ignore_index),
+            reference_metric=partial(_sklearn_avg_precision_binary, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "ignore_index": ignore_index,
@@ -77,7 +76,7 @@ class TestBinaryAveragePrecision(MetricTester):
             preds=preds,
             target=target,
             metric_functional=binary_average_precision,
-            sk_metric=partial(_sk_average_precision_binary, ignore_index=ignore_index),
+            reference_metric=partial(_sklearn_avg_precision_binary, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "ignore_index": ignore_index,
@@ -132,10 +131,10 @@ class TestBinaryAveragePrecision(MetricTester):
             assert torch.allclose(ap1, ap2)
 
 
-def _sk_average_precision_multiclass(preds, target, average="macro", ignore_index=None):
+def _sklearn_avg_precision_multiclass(preds, target, average="macro", ignore_index=None):
     preds = np.moveaxis(preds.numpy(), 1, -1).reshape((-1, preds.shape[1]))
     target = target.numpy().flatten()
-    if not ((0 < preds) & (preds < 1)).all():
+    if not ((preds > 0) & (preds < 1)).all():
         preds = softmax(preds, 1)
     target, preds = remove_ignore_index(target, preds, ignore_index)
 
@@ -169,7 +168,7 @@ class TestMulticlassAveragePrecision(MetricTester):
             preds=preds,
             target=target,
             metric_class=MulticlassAveragePrecision,
-            sk_metric=partial(_sk_average_precision_multiclass, average=average, ignore_index=ignore_index),
+            reference_metric=partial(_sklearn_avg_precision_multiclass, average=average, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_classes": NUM_CLASSES,
@@ -188,7 +187,7 @@ class TestMulticlassAveragePrecision(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multiclass_average_precision,
-            sk_metric=partial(_sk_average_precision_multiclass, average=average, ignore_index=ignore_index),
+            reference_metric=partial(_sklearn_avg_precision_multiclass, average=average, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_classes": NUM_CLASSES,
@@ -210,7 +209,7 @@ class TestMulticlassAveragePrecision(MetricTester):
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multiclass_average_precision_dtype_cpu(self, input, dtype):
         preds, target = input
-        if dtype == torch.half and not ((0 < preds) & (preds < 1)).all():
+        if dtype == torch.half and not ((preds > 0) & (preds < 1)).all():
             pytest.xfail(reason="half support for torch.softmax on cpu not implemented")
         self.run_precision_test_cpu(
             preds=preds,
@@ -248,12 +247,12 @@ class TestMulticlassAveragePrecision(MetricTester):
             assert torch.allclose(ap1, ap2)
 
 
-def _sk_average_precision_multilabel(preds, target, average="macro", ignore_index=None):
+def _sklearn_avg_precision_multilabel(preds, target, average="macro", ignore_index=None):
     if average == "micro":
-        return _sk_average_precision_binary(preds.flatten(), target.flatten(), ignore_index)
+        return _sklearn_avg_precision_binary(preds.flatten(), target.flatten(), ignore_index)
     res = []
     for i in range(NUM_CLASSES):
-        res.append(_sk_average_precision_binary(preds[:, i], target[:, i], ignore_index))
+        res.append(_sklearn_avg_precision_binary(preds[:, i], target[:, i], ignore_index))
     if average == "macro":
         return np.array(res)[~np.isnan(res)].mean()
     if average == "weighted":
@@ -279,7 +278,7 @@ class TestMultilabelAveragePrecision(MetricTester):
             preds=preds,
             target=target,
             metric_class=MultilabelAveragePrecision,
-            sk_metric=partial(_sk_average_precision_multilabel, average=average, ignore_index=ignore_index),
+            reference_metric=partial(_sklearn_avg_precision_multilabel, average=average, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_labels": NUM_CLASSES,
@@ -298,7 +297,7 @@ class TestMultilabelAveragePrecision(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multilabel_average_precision,
-            sk_metric=partial(_sk_average_precision_multilabel, average=average, ignore_index=ignore_index),
+            reference_metric=partial(_sklearn_avg_precision_multilabel, average=average, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_labels": NUM_CLASSES,
@@ -320,7 +319,7 @@ class TestMultilabelAveragePrecision(MetricTester):
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multilabel_average_precision_dtype_cpu(self, input, dtype):
         preds, target = input
-        if dtype == torch.half and not ((0 < preds) & (preds < 1)).all():
+        if dtype == torch.half and not ((preds > 0) & (preds < 1)).all():
             pytest.xfail(reason="half support for torch.softmax on cpu not implemented")
         self.run_precision_test_cpu(
             preds=preds,

@@ -67,7 +67,7 @@ class TestHitRate(RetrievalMetricTester):
         ignore_index: int,
         k: int,
     ):
-        metric_args = dict(empty_target_action=empty_target_action, k=k, ignore_index=ignore_index)
+        metric_args = {"empty_target_action": empty_target_action, "k": k, "ignore_index": ignore_index}
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -75,7 +75,7 @@ class TestHitRate(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_class=RetrievalHitRate,
-            sk_metric=_hit_rate_at_k,
+            reference_metric=_hit_rate_at_k,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
         )
@@ -95,7 +95,7 @@ class TestHitRate(RetrievalMetricTester):
         empty_target_action: str,
         k: int,
     ):
-        metric_args = dict(empty_target_action=empty_target_action, k=k, ignore_index=-100)
+        metric_args = {"empty_target_action": empty_target_action, "k": k, "ignore_index": -100}
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -103,7 +103,7 @@ class TestHitRate(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_class=RetrievalHitRate,
-            sk_metric=_hit_rate_at_k,
+            reference_metric=_hit_rate_at_k,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
         )
@@ -115,7 +115,7 @@ class TestHitRate(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_functional=retrieval_hit_rate,
-            sk_metric=_hit_rate_at_k,
+            reference_metric=_hit_rate_at_k,
             metric_args={},
             k=k,
         )

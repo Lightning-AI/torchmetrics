@@ -66,9 +66,6 @@ def multiclass_exact_match(
       an int tensor.
     - ``target`` (int tensor): ``(N, ...)``
 
-    The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
-
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
@@ -92,16 +89,17 @@ def multiclass_exact_match(
         - If ``multidim_average`` is set to ``samplewise`` the output will be a tensor of shape ``(N,)``
 
     Example (multidim tensors):
+        >>> from torch import tensor
         >>> from torchmetrics.functional.classification import multiclass_exact_match
-        >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
-        >>> preds = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[2, 2], [2, 1], [1, 0]]])
+        >>> target = tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
+        >>> preds = tensor([[[0, 1], [2, 1], [0, 2]], [[2, 2], [2, 1], [1, 0]]])
         >>> multiclass_exact_match(preds, target, num_classes=3, multidim_average='global')
         tensor(0.5000)
 
     Example (multidim tensors):
         >>> from torchmetrics.functional.classification import multiclass_exact_match
-        >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
-        >>> preds = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[2, 2], [2, 1], [1, 0]]])
+        >>> target = tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
+        >>> preds = tensor([[[0, 1], [2, 1], [0, 2]], [[2, 2], [2, 1], [1, 0]]])
         >>> multiclass_exact_match(preds, target, num_classes=3, multidim_average='samplewise')
         tensor([1., 0.])
     """
@@ -146,9 +144,6 @@ def multilabel_exact_match(
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, C, ...)``
 
-    The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
-
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
@@ -173,28 +168,25 @@ def multilabel_exact_match(
         - If ``multidim_average`` is set to ``samplewise`` the output will be a tensor of shape ``(N,)``
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.functional.classification import multilabel_exact_match
-        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
-        >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
+        >>> target = tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = tensor([[0, 0, 1], [1, 0, 1]])
         >>> multilabel_exact_match(preds, target, num_labels=3)
         tensor(0.5000)
 
     Example (preds is float tensor):
         >>> from torchmetrics.functional.classification import multilabel_exact_match
-        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
-        >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
+        >>> target = tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> multilabel_exact_match(preds, target, num_labels=3)
         tensor(0.5000)
 
     Example (multidim tensors):
         >>> from torchmetrics.functional.classification import multilabel_exact_match
-        >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
-        >>> preds = torch.tensor(
-        ...     [
-        ...         [[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
-        ...         [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]],
-        ...     ]
-        ... )
+        >>> target = tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
+        >>> preds = tensor([[[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
+        ...                 [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]]])
         >>> multilabel_exact_match(preds, target, num_labels=3, multidim_average='samplewise')
         tensor([0., 0.])
     """
@@ -226,13 +218,14 @@ def exact_match(
     :func:`multiclass_exact_match` and :func:`multilabel_exact_match` for the specific details of
     each argument influence and examples.
     Legacy Example:
-        >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
-        >>> preds = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[2, 2], [2, 1], [1, 0]]])
+        >>> from torch import tensor
+        >>> target = tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
+        >>> preds = tensor([[[0, 1], [2, 1], [0, 2]], [[2, 2], [2, 1], [1, 0]]])
         >>> exact_match(preds, target, task="multiclass", num_classes=3, multidim_average='global')
         tensor(0.5000)
 
-        >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
-        >>> preds = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[2, 2], [2, 1], [1, 0]]])
+        >>> target = tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
+        >>> preds = tensor([[[0, 1], [2, 1], [0, 2]], [[2, 2], [2, 1], [1, 0]]])
         >>> exact_match(preds, target, task="multiclass", num_classes=3, multidim_average='samplewise')
         tensor([1., 0.])
     """

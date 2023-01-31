@@ -49,7 +49,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
     pre-defined network. This measure has been shown to match human perception well. A low LPIPS score means that
     image patches are perceptual similar.
 
-    Both input image patches are expected to have shape `[N, 3, H, W]`.
+    Both input image patches are expected to have shape ``(N, 3, H, W)``.
     The minimum size of `H, W` depends on the chosen backbone (see `net_type` arg).
 
     .. note:: using this metrics requires you to have ``lpips`` package installed. Either install
@@ -57,6 +57,15 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
 
     .. note:: this metric is not scriptable when using ``torch<1.8``. Please update your pytorch installation
         if this is a issue.
+
+    As input to ``forward`` and ``update`` the metric accepts the following input
+
+    - ``img1`` (:class:`~torch.Tensor`): tensor with images of shape ``(N, 3, H, W)``
+    - ``img2`` (:class:`~torch.Tensor`): tensor with images of shape ``(N, 3, H, W)``
+
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``lpips`` (:class:`~torch.Tensor`): returns float scalar tensor with average LPIPS value over samples
 
     Args:
         net_type: str indicating backbone network type to use. Choose between `'alex'`, `'vgg'` or `'squeeze'`
@@ -128,12 +137,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
         self.add_state("total", torch.tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, img1: Tensor, img2: Tensor) -> None:  # type: ignore
-        """Update internal states with lpips score.
-
-        Args:
-            img1: tensor with images of shape ``[N, 3, H, W]``
-            img2: tensor with images of shape ``[N, 3, H, W]``
-        """
+        """Update internal states with lpips score."""
         if not (_valid_img(img1, self.normalize) and _valid_img(img2, self.normalize)):
             raise ValueError(
                 "Expected both input arguments to be normalized tensors with shape [N, 3, H, W]."

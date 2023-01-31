@@ -70,7 +70,7 @@ class TestMRR(RetrievalMetricTester):
         empty_target_action: str,
         ignore_index: int,
     ):
-        metric_args = dict(empty_target_action=empty_target_action, ignore_index=ignore_index)
+        metric_args = {"empty_target_action": empty_target_action, "ignore_index": ignore_index}
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -78,7 +78,7 @@ class TestMRR(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_class=RetrievalMRR,
-            sk_metric=_reciprocal_rank,
+            reference_metric=_reciprocal_rank,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
         )
@@ -96,7 +96,7 @@ class TestMRR(RetrievalMetricTester):
         dist_sync_on_step: bool,
         empty_target_action: str,
     ):
-        metric_args = dict(empty_target_action=empty_target_action, ignore_index=-100)
+        metric_args = {"empty_target_action": empty_target_action, "ignore_index": -100}
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -104,7 +104,7 @@ class TestMRR(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_class=RetrievalMRR,
-            sk_metric=_reciprocal_rank,
+            reference_metric=_reciprocal_rank,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
         )
@@ -115,7 +115,7 @@ class TestMRR(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_functional=retrieval_reciprocal_rank,
-            sk_metric=_reciprocal_rank,
+            reference_metric=_reciprocal_rank,
             metric_args={},
         )
 

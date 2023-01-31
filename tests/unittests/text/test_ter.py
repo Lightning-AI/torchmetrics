@@ -11,7 +11,7 @@ from unittests.text.helpers import TextTester
 from unittests.text.inputs import _inputs_multiple_references, _inputs_single_sentence_multiple_references
 
 if _SACREBLEU_AVAILABLE:
-    from sacrebleu.metrics import TER as SacreTER
+    from sacrebleu.metrics import TER as SacreTER  # noqa: N811
 
 
 def sacrebleu_ter_fn(
@@ -72,7 +72,7 @@ class TestTER(TextTester):
             preds=preds,
             targets=targets,
             metric_class=TranslationEditRate,
-            sk_metric=nltk_metric,
+            reference_metric=nltk_metric,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
         )
@@ -96,7 +96,7 @@ class TestTER(TextTester):
             preds,
             targets,
             metric_functional=translation_edit_rate,
-            sk_metric=nltk_metric,
+            reference_metric=nltk_metric,
             metric_args=metric_args,
         )
 

@@ -14,24 +14,28 @@ ________________
 
 .. autoclass:: torchmetrics.AUROC
     :noindex:
+    :exclude-members: update, compute
 
 BinaryAUROC
 ^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.BinaryAUROC
     :noindex:
+    :exclude-members: update, compute
 
 MulticlassAUROC
 ^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.MulticlassAUROC
     :noindex:
+    :exclude-members: update, compute
 
 MultilabelAUROC
 ^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.MultilabelAUROC
     :noindex:
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________
