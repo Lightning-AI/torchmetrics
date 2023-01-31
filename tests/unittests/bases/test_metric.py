@@ -151,8 +151,8 @@ def test_compute():
             return self.x
 
     a = A()
-    assert 0 == a.compute()
-    assert 0 == a.x
+    assert a.compute() == 0
+    assert a.x == 0
     a.update(1)
     assert a._computed is None
     assert a.compute() == 1
