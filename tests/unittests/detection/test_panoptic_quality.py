@@ -66,7 +66,7 @@ class TestPanopticQuality(MetricTester):
             preds=_inputs.preds,
             target=_inputs.target,
             metric_class=PanopticQuality,
-            sk_metric=_compare_fn,
+            reference_metric=_compare_fn,
             dist_sync_on_step=dist_sync_on_step,
             check_batch=False,
             metric_args=_args,
@@ -77,7 +77,7 @@ class TestPanopticQuality(MetricTester):
             _inputs.preds,
             _inputs.target,
             metric_functional=panoptic_quality,
-            sk_metric=_compare_fn,
+            reference_metric=_compare_fn,
             metric_args=_args,
         )
 
@@ -91,35 +91,30 @@ def test_empty_metric():
 def test_error_on_wrong_input():
     """Test class input validation."""
 
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError, match="Expected argument `things` to be of type.*"):
         PanopticQuality(things=[0], stuff={1})
 
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError, match="Expected argument `stuff` to be of type.*"):
         PanopticQuality(things={0}, stuff={"sky"})
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Expected arguments `things` and `stuffs` to have distinct keys.*"):
         PanopticQuality(things={0}, stuff={0})
 
     metric = PanopticQuality(things={0, 1, 3}, stuff={6, 8}, allow_unknown_preds_category=True)
     valid_image = torch.randint(low=0, high=9, size=(400, 300, 2))
     metric.update(valid_image, valid_image)
 
-    with pytest.raises(ValueError):
-        metric.update([], valid_image)  # type: ignore
+    with pytest.raises(TypeError, match="Expected argument `preds` to be of type `torch.Tensor`.*"):
+        metric.update([], valid_image)
 
-    with pytest.raises(ValueError):
-        metric.update(valid_image, [])  # type: ignore
+    with pytest.raises(TypeError, match="Expected argument `target` to be of type `torch.Tensor`.*"):
+        metric.update(valid_image, [])
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Expected argument `preds` and `target` to have the same shape.*"):
         preds = torch.randint(low=0, high=9, size=(400, 300, 2))
         target = torch.randint(low=0, high=9, size=(30, 40, 2))
         metric.update(preds, target)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Expected argument `preds` to have shape.*"):
         preds = torch.randint(low=0, high=9, size=(400, 300))
         metric.update(preds, preds)
-
-
-if __name__ == "__main__":
-    test = TestPanopticQuality()
-    test.test_panoptic_quality_class(False, False)

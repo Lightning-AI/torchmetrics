@@ -76,11 +76,11 @@ def _validate_categories(things: Set[int], stuff: Set[int]) -> None:
         stuff: All possible IDs for stuff categories
     """
     if not _is_set_int(things):
-        raise TypeError("Expected argument `things` to be of type `Set[int]`")
+        raise TypeError(f"Expected argument `things` to be of type `Set[int]`, but got {things}")
     if not _is_set_int(stuff):
-        raise TypeError("Expected argument `stuff` to be of type `Set[int]`")
+        raise TypeError(f"Expected argument `stuff` to be of type `Set[int]`, but got {stuff}")
     if stuff & things:
-        raise ValueError("Expected arguments `things` and `stuffs` to have distinct keys.")
+        raise ValueError("Expected arguments `things` and `stuffs` to have distinct keys, but got {things} and {stuff}")
 
 
 def _validate_inputs(preds: torch.Tensor, target: torch.Tensor) -> None:
@@ -91,13 +91,15 @@ def _validate_inputs(preds: torch.Tensor, target: torch.Tensor) -> None:
         target: the target tensor
     """
     if not isinstance(preds, torch.Tensor):
-        raise TypeError("Expected argument `preds` to be of type `torch.Tensor`")
+        raise TypeError(f"Expected argument `preds` to be of type `torch.Tensor`, but got {type(preds)}")
     if not isinstance(target, torch.Tensor):
-        raise TypeError("Expected argument `target` to be of type `torch.Tensor`")
+        raise TypeError(f"Expected argument `target` to be of type `torch.Tensor`, but got {type(target)}")
     if preds.shape != target.shape:
-        raise ValueError("Expected argument `preds` and `target` to have the same shape")
+        raise ValueError(
+            f"Expected argument `preds` and `target` to have the same shape, but got {preds.shape} and {target.shape}"
+        )
     if preds.dim() != 3 or preds.shape[-1] != 2:
-        raise ValueError("Expected argument `preds` to have shape [height, width, 2]")
+        raise ValueError(f"Expected argument `preds` to have shape [height, width, 2], but got {preds.shape}")
 
 
 def _get_void_color(things: Set[int], stuff: Set[int]) -> Tuple[int, int]:
@@ -302,7 +304,7 @@ def panoptic_quality(
     stuff: Set[int],
     allow_unknown_preds_category: bool = False,
 ) -> Tensor:
-    """Computes the `Panoptic Quality (PQ)`_ for panoptic segmentations. It is defined as:
+    r"""Computes the `Panoptic Quality (PQ)`_ for panoptic segmentations. It is defined as:
 
     .. math::
         PQ = \frac{IOU}{TP + 0.5\\cdot FP + 0.5\\cdot FN}
