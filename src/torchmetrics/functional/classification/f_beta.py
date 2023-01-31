@@ -55,10 +55,7 @@ def _fbeta_reduce(
         fbeta_score = _safe_divide((1 + beta2) * tp, (1 + beta2) * tp + beta2 * fn + fp)
         if average is None or average == "none":
             return fbeta_score
-        if average == "weighted":
-            weights = tp + fn
-        else:
-            weights = torch.ones_like(fbeta_score)
+        weights = tp + fn if average == "weighted" else torch.ones_like(fbeta_score)
         return _safe_divide(weights * fbeta_score, weights.sum(-1, keepdim=True)).sum(-1)
 
 
@@ -95,9 +92,6 @@ def binary_fbeta_score(
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, ...)``
 
-    The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
-
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
@@ -120,28 +114,25 @@ def binary_fbeta_score(
         is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of a scalar value per sample.
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.functional.classification import binary_fbeta_score
-        >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
-        >>> preds = torch.tensor([0, 0, 1, 1, 0, 1])
+        >>> target = tensor([0, 1, 0, 1, 0, 1])
+        >>> preds = tensor([0, 0, 1, 1, 0, 1])
         >>> binary_fbeta_score(preds, target, beta=2.0)
         tensor(0.6667)
 
     Example (preds is float tensor):
         >>> from torchmetrics.functional.classification import binary_fbeta_score
-        >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
-        >>> preds = torch.tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
+        >>> target = tensor([0, 1, 0, 1, 0, 1])
+        >>> preds = tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
         >>> binary_fbeta_score(preds, target, beta=2.0)
         tensor(0.6667)
 
     Example (multidim tensors):
         >>> from torchmetrics.functional.classification import binary_fbeta_score
-        >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
-        >>> preds = torch.tensor(
-        ...     [
-        ...         [[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
-        ...         [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]],
-        ...     ]
-        ... )
+        >>> target = tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
+        >>> preds = tensor([[[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
+        ...                 [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]]])
         >>> binary_fbeta_score(preds, target, beta=2.0, multidim_average='samplewise')
         tensor([0.5882, 0.0000])
     """
@@ -190,9 +181,6 @@ def multiclass_fbeta_score(
       an int tensor.
     - ``target`` (int tensor): ``(N, ...)``
 
-    The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
-
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
@@ -234,9 +222,10 @@ def multiclass_fbeta_score(
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.functional.classification import multiclass_fbeta_score
-        >>> target = torch.tensor([2, 1, 0, 0])
-        >>> preds = torch.tensor([2, 1, 0, 1])
+        >>> target = tensor([2, 1, 0, 0])
+        >>> preds = tensor([2, 1, 0, 1])
         >>> multiclass_fbeta_score(preds, target, beta=2.0, num_classes=3)
         tensor(0.7963)
         >>> multiclass_fbeta_score(preds, target, beta=2.0, num_classes=3, average=None)
@@ -244,13 +233,11 @@ def multiclass_fbeta_score(
 
     Example (preds is float tensor):
         >>> from torchmetrics.functional.classification import multiclass_fbeta_score
-        >>> target = torch.tensor([2, 1, 0, 0])
-        >>> preds = torch.tensor([
-        ...   [0.16, 0.26, 0.58],
-        ...   [0.22, 0.61, 0.17],
-        ...   [0.71, 0.09, 0.20],
-        ...   [0.05, 0.82, 0.13],
-        ... ])
+        >>> target = tensor([2, 1, 0, 0])
+        >>> preds = tensor([[0.16, 0.26, 0.58],
+        ...                 [0.22, 0.61, 0.17],
+        ...                 [0.71, 0.09, 0.20],
+        ...                 [0.05, 0.82, 0.13]])
         >>> multiclass_fbeta_score(preds, target, beta=2.0, num_classes=3)
         tensor(0.7963)
         >>> multiclass_fbeta_score(preds, target, beta=2.0, num_classes=3, average=None)
@@ -258,8 +245,8 @@ def multiclass_fbeta_score(
 
     Example (multidim tensors):
         >>> from torchmetrics.functional.classification import multiclass_fbeta_score
-        >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
-        >>> preds = torch.tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
+        >>> target = tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
+        >>> preds = tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
         >>> multiclass_fbeta_score(preds, target, beta=2.0, num_classes=3, multidim_average='samplewise')
         tensor([0.4697, 0.2706])
         >>> multiclass_fbeta_score(preds, target, beta=2.0, num_classes=3, multidim_average='samplewise', average=None)
@@ -313,9 +300,6 @@ def multilabel_fbeta_score(
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, C, ...)``
 
-    The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
-
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
@@ -356,9 +340,10 @@ def multilabel_fbeta_score(
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.functional.classification import multilabel_fbeta_score
-        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
-        >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
+        >>> target = tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = tensor([[0, 0, 1], [1, 0, 1]])
         >>> multilabel_fbeta_score(preds, target, beta=2.0, num_labels=3)
         tensor(0.6111)
         >>> multilabel_fbeta_score(preds, target, beta=2.0, num_labels=3, average=None)
@@ -366,8 +351,8 @@ def multilabel_fbeta_score(
 
     Example (preds is float tensor):
         >>> from torchmetrics.functional.classification import multilabel_fbeta_score
-        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
-        >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
+        >>> target = tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> multilabel_fbeta_score(preds, target, beta=2.0, num_labels=3)
         tensor(0.6111)
         >>> multilabel_fbeta_score(preds, target, beta=2.0, num_labels=3, average=None)
@@ -375,13 +360,9 @@ def multilabel_fbeta_score(
 
     Example (multidim tensors):
         >>> from torchmetrics.functional.classification import multilabel_fbeta_score
-        >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
-        >>> preds = torch.tensor(
-        ...     [
-        ...         [[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
-        ...         [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]],
-        ...     ]
-        ... )
+        >>> target = tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
+        >>> preds = tensor([[[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
+        ...                 [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]]])
         >>> multilabel_fbeta_score(preds, target, num_labels=3, beta=2.0, multidim_average='samplewise')
         tensor([0.5556, 0.0000])
         >>> multilabel_fbeta_score(preds, target, num_labels=3, beta=2.0, multidim_average='samplewise', average=None)
@@ -416,9 +397,6 @@ def binary_f1_score(
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, ...)``
 
-    The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
-
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
@@ -440,28 +418,25 @@ def binary_f1_score(
         is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of a scalar value per sample.
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.functional.classification import binary_f1_score
-        >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
-        >>> preds = torch.tensor([0, 0, 1, 1, 0, 1])
+        >>> target = tensor([0, 1, 0, 1, 0, 1])
+        >>> preds = tensor([0, 0, 1, 1, 0, 1])
         >>> binary_f1_score(preds, target)
         tensor(0.6667)
 
     Example (preds is float tensor):
         >>> from torchmetrics.functional.classification import binary_f1_score
-        >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
-        >>> preds = torch.tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
+        >>> target = tensor([0, 1, 0, 1, 0, 1])
+        >>> preds = tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
         >>> binary_f1_score(preds, target)
         tensor(0.6667)
 
     Example (multidim tensors):
         >>> from torchmetrics.functional.classification import binary_f1_score
-        >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
-        >>> preds = torch.tensor(
-        ...     [
-        ...         [[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
-        ...         [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]],
-        ...     ]
-        ... )
+        >>> target = tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
+        >>> preds = tensor([[[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
+        ...                 [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]]])
         >>> binary_f1_score(preds, target, multidim_average='samplewise')
         tensor([0.5000, 0.0000])
     """
@@ -497,9 +472,6 @@ def multiclass_f1_score(
       we apply ``torch.argmax`` along the ``C`` dimension to automatically convert probabilities/logits into
       an int tensor.
     - ``target`` (int tensor): ``(N, ...)``
-
-    The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
 
     Args:
         preds: Tensor with predictions
@@ -541,9 +513,10 @@ def multiclass_f1_score(
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.functional.classification import multiclass_f1_score
-        >>> target = torch.tensor([2, 1, 0, 0])
-        >>> preds = torch.tensor([2, 1, 0, 1])
+        >>> target = tensor([2, 1, 0, 0])
+        >>> preds = tensor([2, 1, 0, 1])
         >>> multiclass_f1_score(preds, target, num_classes=3)
         tensor(0.7778)
         >>> multiclass_f1_score(preds, target, num_classes=3, average=None)
@@ -551,13 +524,11 @@ def multiclass_f1_score(
 
     Example (preds is float tensor):
         >>> from torchmetrics.functional.classification import multiclass_f1_score
-        >>> target = torch.tensor([2, 1, 0, 0])
-        >>> preds = torch.tensor([
-        ...   [0.16, 0.26, 0.58],
-        ...   [0.22, 0.61, 0.17],
-        ...   [0.71, 0.09, 0.20],
-        ...   [0.05, 0.82, 0.13],
-        ... ])
+        >>> target = tensor([2, 1, 0, 0])
+        >>> preds = tensor([[0.16, 0.26, 0.58],
+        ...                 [0.22, 0.61, 0.17],
+        ...                 [0.71, 0.09, 0.20],
+        ...                 [0.05, 0.82, 0.13]])
         >>> multiclass_f1_score(preds, target, num_classes=3)
         tensor(0.7778)
         >>> multiclass_f1_score(preds, target, num_classes=3, average=None)
@@ -565,8 +536,8 @@ def multiclass_f1_score(
 
     Example (multidim tensors):
         >>> from torchmetrics.functional.classification import multiclass_f1_score
-        >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
-        >>> preds = torch.tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
+        >>> target = tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
+        >>> preds = tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
         >>> multiclass_f1_score(preds, target, num_classes=3, multidim_average='samplewise')
         tensor([0.4333, 0.2667])
         >>> multiclass_f1_score(preds, target, num_classes=3, multidim_average='samplewise', average=None)
@@ -608,9 +579,6 @@ def multilabel_f1_score(
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, C, ...)``
 
-    The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
-
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
@@ -650,9 +618,10 @@ def multilabel_f1_score(
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.functional.classification import multilabel_f1_score
-        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
-        >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
+        >>> target = tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = tensor([[0, 0, 1], [1, 0, 1]])
         >>> multilabel_f1_score(preds, target, num_labels=3)
         tensor(0.5556)
         >>> multilabel_f1_score(preds, target, num_labels=3, average=None)
@@ -660,8 +629,8 @@ def multilabel_f1_score(
 
     Example (preds is float tensor):
         >>> from torchmetrics.functional.classification import multilabel_f1_score
-        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
-        >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
+        >>> target = tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> multilabel_f1_score(preds, target, num_labels=3)
         tensor(0.5556)
         >>> multilabel_f1_score(preds, target, num_labels=3, average=None)
@@ -669,13 +638,9 @@ def multilabel_f1_score(
 
     Example (multidim tensors):
         >>> from torchmetrics.functional.classification import multilabel_f1_score
-        >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
-        >>> preds = torch.tensor(
-        ...     [
-        ...         [[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
-        ...         [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]],
-        ...     ]
-        ... )
+        >>> target = tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
+        >>> preds = tensor([[[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
+        ...                 [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]]])
         >>> multilabel_f1_score(preds, target, num_labels=3, multidim_average='samplewise')
         tensor([0.4444, 0.0000])
         >>> multilabel_f1_score(preds, target, num_labels=3, multidim_average='samplewise', average=None)
@@ -721,8 +686,9 @@ def fbeta_score(
     details of each argument influence and examples.
 
     Legacy Example:
-        >>> target = torch.tensor([0, 1, 2, 0, 1, 2])
-        >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])
+        >>> from torch import tensor
+        >>> target = tensor([0, 1, 2, 0, 1, 2])
+        >>> preds = tensor([0, 2, 1, 0, 0, 1])
         >>> fbeta_score(preds, target, task="multiclass", num_classes=3, beta=0.5)
         tensor(0.3333)
     """
@@ -769,8 +735,9 @@ def f1_score(
     details of each argument influence and examples.
 
     Legacy Example:
-        >>> target = torch.tensor([0, 1, 2, 0, 1, 2])
-        >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])
+        >>> from torch import tensor
+        >>> target = tensor([0, 1, 2, 0, 1, 2])
+        >>> preds = tensor([0, 2, 1, 0, 0, 1])
         >>> f1_score(preds, target, task="multiclass", num_classes=3)
         tensor(0.3333)
     """

@@ -77,10 +77,7 @@ def _psnr_update(
     diff = preds - target
     sum_squared_error = torch.sum(diff * diff, dim=dim)
 
-    if isinstance(dim, int):
-        dim_list = [dim]
-    else:
-        dim_list = list(dim)
+    dim_list = [dim] if isinstance(dim, int) else list(dim)
     if not dim_list:
         n_obs = tensor(target.numel(), device=target.device)
     else:

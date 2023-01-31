@@ -52,7 +52,6 @@ jobs:
     - name: full chashing
       uses: ./.github/actions/caching
       with:
-        os: ${{ runner.os }}
         requires: ${{ matrix.requires }}
         python-version: ${{ matrix.python-version }}
         offset: "integrate"

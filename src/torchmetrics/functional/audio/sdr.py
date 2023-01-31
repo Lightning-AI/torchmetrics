@@ -40,9 +40,9 @@ def _symmetric_toeplitz(vector: Tensor) -> Tensor:
         vector: shape [..., L]
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics.functional.audio.sdr import _symmetric_toeplitz
-        >>> import torch
-        >>> v = torch.tensor([0, 1, 2, 3, 4])
+        >>> v = tensor([0, 1, 2, 3, 4])
         >>> _symmetric_toeplitz(v)
         tensor([[0, 1, 2, 3, 4],
                 [1, 0, 1, 2, 3],
@@ -130,8 +130,8 @@ def signal_distortion_ratio(
             If ``preds`` and ``target`` does not have the same shape
 
     Example:
-        >>> from torchmetrics.functional.audio import signal_distortion_ratio
         >>> import torch
+        >>> from torchmetrics.functional.audio import signal_distortion_ratio
         >>> g = torch.manual_seed(1)
         >>> preds = torch.randn(8000)
         >>> target = torch.randn(8000)
@@ -177,15 +177,14 @@ def signal_distortion_ratio(
         # use preconditioned conjugate gradient
         sol = toeplitz_conjugate_gradient(r_0, b, n_iter=use_cg_iter)
     else:
-        if use_cg_iter is not None:
-            if not _FAST_BSS_EVAL_AVAILABLE:
-                warnings.warn(
-                    "The `use_cg_iter` parameter of `SDR` requires that `fast-bss-eval` is installed. "
-                    "To make this this warning disappear, you could install `fast-bss-eval` using "
-                    "`pip install fast-bss-eval` or set `use_cg_iter=None`. For this time, the solver "
-                    "provided by Pytorch is used.",
-                    UserWarning,
-                )
+        if use_cg_iter is not None and not _FAST_BSS_EVAL_AVAILABLE:
+            warnings.warn(
+                "The `use_cg_iter` parameter of `SDR` requires that `fast-bss-eval` is installed. "
+                "To make this this warning disappear, you could install `fast-bss-eval` using "
+                "`pip install fast-bss-eval` or set `use_cg_iter=None`. For this time, the solver "
+                "provided by Pytorch is used.",
+                UserWarning,
+            )
         # regular matrix solver
         r = _symmetric_toeplitz(r_0)  # the auto-correlation of the L shifts of `target`
         sol = solve(r, b)

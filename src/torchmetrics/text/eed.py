@@ -22,9 +22,18 @@ from torchmetrics.metric import Metric
 
 
 class ExtendedEditDistance(Metric):
-    """Computes extended edit distance score (`ExtendedEditDistance`_) [1] for strings or list of strings.
+    """Computes extended edit distance score (`ExtendedEditDistance`_) for strings or list of strings.
 
     The metric utilises the Levenshtein distance and extends it by adding a jump operation.
+
+    As input to ``forward`` and ``update`` the metric accepts the following input:
+
+    - ``preds`` (:class:`~Sequence`): An iterable of hypothesis corpus
+    - ``target`` (:class:`~Sequence`): An iterable of iterables of reference corpus
+
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``eed`` (:class:`~torch.Tensor`): A tensor with the extended edit distance score
 
     Args:
         language: Language used in sentences. Only supports English (en) and Japanese (ja) for now.
@@ -35,20 +44,13 @@ class ExtendedEditDistance(Metric):
         insertion: penalty for insertion or substitution of character
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    Return:
-        Extended edit distance score as a tensor
-
     Example:
         >>> from torchmetrics import ExtendedEditDistance
         >>> preds = ["this is the prediction", "here is an other sample"]
         >>> target = ["this is the reference", "here is another one"]
-        >>> metric = ExtendedEditDistance()
-        >>> metric(preds=preds, target=target)
+        >>> eed = ExtendedEditDistance()
+        >>> eed(preds=preds, target=target)
         tensor(0.3078)
-
-    References:
-        [1] P. Stanchev, W. Wang, and H. Ney, “EED: Extended Edit Distance Measure for Machine Translation”, submitted
-        to WMT 2019. `ExtendedEditDistance`_
     """
 
     higher_is_better: bool = False
@@ -91,12 +93,7 @@ class ExtendedEditDistance(Metric):
         preds: Union[str, Sequence[str]],
         target: Sequence[Union[str, Sequence[str]]],
     ) -> None:
-        """Update ExtendedEditDistance statistics.
-
-        Args:
-            preds: An iterable of hypothesis corpus
-            target: An iterable of iterables of reference corpus
-        """
+        """Update state with predictions and targets."""
         self.sentence_eed = _eed_update(
             preds,
             target,
@@ -109,11 +106,7 @@ class ExtendedEditDistance(Metric):
         )
 
     def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-        """Calculate extended edit distance score.
-
-        Return:
-            Extended edit distance score as tensor
-        """
+        """Calculate extended edit distance score."""
         average = _eed_compute(self.sentence_eed)
 
         if self.return_sentence_level_score:
