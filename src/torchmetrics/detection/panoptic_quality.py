@@ -29,25 +29,22 @@ from torchmetrics.metric import Metric
 
 
 class PanopticQuality(Metric):
-    r"""Computes the `Panoptic Quality (PQ) <https://arxiv.org/abs/1801.00868>`_ for panoptic segmentations. It is
-    defined as:
+    r"""Computes the `Panoptic Quality (PQ)`_ for panoptic segmentations. It is defined as:
 
     .. math::
-        PQ = \frac{IOU}{TP + 0.5\cdot FP + 0.5\cdot FN}
+        PQ = \frac{IOU}{TP + 0.5\\cdot FP + 0.5\\cdot FN}
 
-    where IOU, TP, FP and FN are respectively the sum of the intersection over union for true positives,
-    the number of true postitives, false positives and false negatives.
-
-    .. note::
-        This metric is inspired by the PQ implementation of panopticapi
-        `<https://github.com/cocodataset/panopticapi/blob/master/panopticapi/evaluation.py>`,
-        , a standard implementation for the PQ metric for object detection.
+    where IOU, TP, FP and FN are respectively the sum of the intersection over union for true positives, the number of
+    true postitives, false positives and false negatives. This metric is inspired by the PQ implementation of
+    panopticapi, a standard implementation for the PQ metric for object detection.
 
     Args:
-        ``things``:
+        things:
             Set of ``category_id`` for countable things.
-        ``stuffs``:
+        stuffs:
             Set of ``category_id`` for uncountable stuffs.
+        allow_unknown_preds_category:
+            Bool indication if unknown categories in preds is allowed
 
     Raises:
         ValueError:
@@ -127,7 +124,6 @@ class PanopticQuality(Metric):
 
     def compute(self) -> float:
         """Computes panoptic quality based on inputs passed in to ``update`` previously."""
-        results = _panoptic_quality_compute(
+        return _panoptic_quality_compute(
             self.things, self.stuff, self.iou_sum, self.true_positives, self.false_positives, self.false_negatives
         )
-        return results["all"]["pq"]

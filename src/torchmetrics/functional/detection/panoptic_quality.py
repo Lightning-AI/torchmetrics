@@ -302,29 +302,29 @@ def panoptic_quality(
     stuff: Set[int],
     allow_unknown_preds_category: bool = False,
 ) -> Tensor:
-    """Computes the `Panoptic Quality (PQ) <https://arxiv.org/abs/1801.00868>`_ for panoptic segmentations. It is
-    defined as:
+    """Computes the `Panoptic Quality (PQ)`_ for panoptic segmentations. It is defined as:
 
     .. math::
         PQ = \frac{IOU}{TP + 0.5\\cdot FP + 0.5\\cdot FN}
 
-    where IOU, TP, FP and FN are respectively the sum of the intersection over union for true positives,
-    the number of true postitives, false positives and false negatives.
-
-    .. note::
-        This metric is inspired by the PQ implementation of panopticapi
-        `<https://github.com/cocodataset/panopticapi/blob/master/panopticapi/evaluation.py>`,
-        , a standard implementation for the PQ metric for object detection.
+    where IOU, TP, FP and FN are respectively the sum of the intersection over union for true positives, the number of
+    true postitives, false positives and false negatives. This metric is inspired by the PQ implementation of
+    panopticapi, a standard implementation for the PQ metric for object detection.
 
     Args:
-        preds: ``torch.IntTensor`` panoptic detection of shape [height, width, 2] containing
-            the pair (category_id, instance_id) for each pixel of the image.
-            If the category_id refer to a stuff, the instance_id is ignored.
-        target: ``torch.IntTensor`` ground truth of shape [height, width, 2] containing
-            the pair (category_id, instance_id) for each pixel of the image.
-            If the category_id refer to a stuff, the instance_id is ignored.
-        things: Set of ``category_id`` for countable things.
-        stuffs: Set of ``category_id`` for uncountable stuffs.
+        preds:
+            torch tensor with panoptic detection of shape [height, width, 2] containing the pair
+            (category_id, instance_id) for each pixel of the image. If the category_id refer to a stuff, the
+            instance_id is ignored.
+        target:
+            torch tensor with ground truth of shape [height, width, 2] containing the pair (category_id, instance_id)
+            for each pixel of the image. If the category_id refer to a stuff, the instance_id is ignored.
+        things:
+            Set of ``category_id`` for countable things.
+        stuffs:
+            Set of ``category_id`` for uncountable stuffs.
+        allow_unknown_preds_category:
+            Bool indication if unknown categories in preds is allowed
 
     Raises:
         ValueError:

@@ -126,3 +126,4 @@
 .. _kid ref2: https://arxiv.org/abs/1706.08500
 .. _Spectral Angle Mapper: https://ntrs.nasa.gov/citations/19940012238
 .. _Multilabel coverage error: https://link.springer.com/chapter/10.1007/978-0-387-09823-4_34
+.. _Panoptic Quality (PQ): https://arxiv.org/abs/1801.00868
