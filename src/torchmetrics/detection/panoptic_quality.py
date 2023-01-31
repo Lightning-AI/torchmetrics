@@ -15,6 +15,7 @@
 from typing import Any, Set
 
 import torch
+from torch import Tensor
 
 from torchmetrics.functional.detection.panoptic_quality import (
     _get_category_id_to_continous_id,
@@ -89,7 +90,7 @@ class PanopticQuality(Metric):
         self.add_state("false_positives", default=torch.zeros(n_categories, dtype=torch.int), dist_reduce_fx="sum")
         self.add_state("false_negatives", default=torch.zeros(n_categories, dtype=torch.int), dist_reduce_fx="sum")
 
-    def update(self, preds: torch.Tensor, target: torch.Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
         r"""Update state with predictions and targets.
 
         Args:
@@ -122,7 +123,7 @@ class PanopticQuality(Metric):
         self.false_positives += false_positives
         self.false_negatives += false_negatives
 
-    def compute(self) -> float:
+    def compute(self) -> Tensor:
         """Computes panoptic quality based on inputs passed in to ``update`` previously."""
         return _panoptic_quality_compute(
             self.things, self.stuff, self.iou_sum, self.true_positives, self.false_positives, self.false_negatives
