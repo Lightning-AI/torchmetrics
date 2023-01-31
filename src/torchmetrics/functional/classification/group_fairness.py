@@ -78,8 +78,8 @@ def _binary_groups_stat_scores(
 
     split_sizes = _flexible_bincount(indexes).detach().cpu().tolist()
 
-    group_preds = [mini_preds for mini_preds in torch.split(preds, split_sizes, dim=0)]
-    group_target = [mini_target for mini_target in torch.split(target, split_sizes, dim=0)]
+    group_preds = list(torch.split(preds, split_sizes, dim=0))
+    group_target = list(torch.split(target, split_sizes, dim=0))
 
     group_stats = [_binary_stat_scores_update(group_p, group_t) for group_p, group_t in zip(group_preds, group_target)]
 
