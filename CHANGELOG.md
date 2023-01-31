@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
 
+## [0.11.2] - 2023-02-DD
+
+### Fixed
+
+-
+
+
 ## [0.11.1] - 2023-01-30
 
 ### Fixed
