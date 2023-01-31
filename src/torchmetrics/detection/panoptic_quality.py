@@ -81,7 +81,7 @@ class PanopticQuality(Metric):
         stuff: Set[int],
         allow_unknown_preds_category: bool = False,
         **kwargs: Any,
-    ):  # type: ignore
+    ):
         super().__init__(**kwargs)
 
         _validate_categories(things, stuff)
