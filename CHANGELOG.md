@@ -40,10 +40,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fix compatibility between XLA in `_bincount` function ([#1471](https://github.com/Lightning-AI/metrics/pull/1471))
+- Fixed compatibility between XLA in `_bincount` function ([#1471](https://github.com/Lightning-AI/metrics/pull/1471))
 
 
--
+- Fixed type hints in methods belonging to `MetricTracker` wrapper ([#1472](https://github.com/Lightning-AI/metrics/pull/1472))
 
 
 ## [0.11.1] - 2023-01-30
