@@ -74,14 +74,14 @@ def pairwise_minkowski_distance(
         >>> from torchmetrics.functional import pairwise_minkowski_distance
         >>> x = torch.tensor([[2, 3], [3, 5], [5, 8]], dtype=torch.float32)
         >>> y = torch.tensor([[1, 0], [2, 1]], dtype=torch.float32)
-        >>> pairwise_euclidean_distance(x, y, p=4)
-        tensor([[3.1623, 2.0000],
-                [5.3852, 4.1231],
-                [8.9443, 7.6158]])
-        >>> pairwise_euclidean_distance(x, p=4)
-        tensor([[0.0000, 2.2361, 5.8310],
-                [2.2361, 0.0000, 3.6056],
-                [5.8310, 3.6056, 0.0000]])
+        >>> pairwise_minkowski_distance(x, y, p=4)
+        tensor([[3.0092, 2.0000],
+                [5.0317, 4.0039],
+                [8.1222, 7.0583]])
+        >>> pairwise_minkowski_distance(x, p=4)
+        tensor([[0.0000, 2.0305, 5.1547],
+                [2.0305, 0.0000, 3.1383],
+                [5.1547, 3.1383, 0.0000]])
     """
     distance = _pairwise_minkowski_distance_update(x, y, p, zero_diagonal)
     return _reduce_distance_matrix(distance, reduction)
