@@ -59,7 +59,7 @@ class TestMinkowskiDistance(MetricTester):
             preds=preds,
             target=target,
             metric_class=MinkowskiDistance,
-            sk_metric=partial(sk_metric, p=p),
+            reference_metric=partial(sk_metric, p=p),
             dist_sync_on_step=dist_sync_on_step,
             metric_args={"p": p},
         )
@@ -69,7 +69,7 @@ class TestMinkowskiDistance(MetricTester):
             preds=preds,
             target=target,
             metric_functional=minkowski_distance,
-            sk_metric=partial(sk_metric, p=p),
+            reference_metric=partial(sk_metric, p=p),
             metric_args={"p": p},
         )
 
