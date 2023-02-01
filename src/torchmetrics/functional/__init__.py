@@ -54,6 +54,7 @@ from torchmetrics.functional.pairwise.cosine import pairwise_cosine_similarity
 from torchmetrics.functional.pairwise.euclidean import pairwise_euclidean_distance
 from torchmetrics.functional.pairwise.linear import pairwise_linear_similarity
 from torchmetrics.functional.pairwise.manhattan import pairwise_manhattan_distance
+from torchmetrics.functional.pairwise.minkowski import pairwise_minkowski_distance
 from torchmetrics.functional.regression.concordance import concordance_corrcoef
 from torchmetrics.functional.regression.cosine_similarity import cosine_similarity
 from torchmetrics.functional.regression.explained_variance import explained_variance
@@ -140,6 +141,7 @@ __all__ = [
     "pairwise_euclidean_distance",
     "pairwise_linear_similarity",
     "pairwise_manhattan_distance",
+    "pairwise_minkowski_distance",
     "pearson_corrcoef",
     "pearsons_contingency_coefficient",
     "pearsons_contingency_coefficient_matrix",

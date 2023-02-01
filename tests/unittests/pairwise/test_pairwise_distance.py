@@ -16,13 +16,20 @@ from functools import partial
 
 import pytest
 import torch
-from sklearn.metrics.pairwise import cosine_similarity, euclidean_distances, linear_kernel, manhattan_distances
+from sklearn.metrics.pairwise import (
+    cosine_similarity,
+    euclidean_distances,
+    linear_kernel,
+    manhattan_distances,
+    pairwise_distances,
+)
 
 from torchmetrics.functional import (
     pairwise_cosine_similarity,
     pairwise_euclidean_distance,
     pairwise_linear_similarity,
     pairwise_manhattan_distance,
+    pairwise_minkowski_distance,
 )
 from unittests.helpers import seed_all
 from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
@@ -67,10 +74,20 @@ def _wrap_reduction(x, y, sk_fn, reduction):
 @pytest.mark.parametrize(
     "metric_functional, sk_fn",
     [
-        (pairwise_cosine_similarity, cosine_similarity),
-        (pairwise_euclidean_distance, euclidean_distances),
-        (pairwise_manhattan_distance, manhattan_distances),
-        (pairwise_linear_similarity, linear_kernel),
+        pytest.param(pairwise_cosine_similarity, cosine_similarity, id="cosine"),
+        pytest.param(pairwise_euclidean_distance, euclidean_distances, id="euclidean"),
+        pytest.param(pairwise_manhattan_distance, manhattan_distances, id="manhatten"),
+        pytest.param(pairwise_linear_similarity, linear_kernel, id="linear"),
+        pytest.param(
+            partial(pairwise_minkowski_distance, p=3),
+            partial(pairwise_distances, metric="minkowski", p=3),
+            id="minkowski-3",
+        ),
+        pytest.param(
+            partial(pairwise_minkowski_distance, p=4),
+            partial(pairwise_distances, metric="minkowski", p=4),
+            id="minkowski-4",
+        ),
     ],
 )
 @pytest.mark.parametrize("reduction", ["sum", "mean", None])
@@ -102,7 +119,13 @@ class TestPairwise(MetricTester):
 
 
 @pytest.mark.parametrize(
-    "metric", [pairwise_cosine_similarity, pairwise_euclidean_distance, pairwise_manhattan_distance]
+    "metric",
+    [
+        pairwise_cosine_similarity,
+        pairwise_euclidean_distance,
+        pairwise_manhattan_distance,
+        partial(pairwise_minkowski_distance, p=3),
+    ],
 )
 def test_error_on_wrong_shapes(metric):
     """Test errors are raised on wrong input."""
@@ -123,6 +146,7 @@ def test_error_on_wrong_shapes(metric):
         (pairwise_euclidean_distance, euclidean_distances),
         (pairwise_manhattan_distance, manhattan_distances),
         (pairwise_linear_similarity, linear_kernel),
+        (partial(pairwise_minkowski_distance, p=3), partial(pairwise_distances, metric="minkowski", p=3)),
     ],
 )
 def test_precison_case(metric_functional, sk_fn):
