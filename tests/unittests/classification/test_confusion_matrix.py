@@ -40,7 +40,7 @@ def _sklearn_confusion_matrix_binary(preds, target, normalize=None, ignore_index
     preds = preds.view(-1).numpy()
     target = target.view(-1).numpy()
     if np.issubdtype(preds.dtype, np.floating):
-        if not ((0 < preds) & (preds < 1)).all():
+        if not ((preds > 0) & (preds < 1)).all():
             preds = sigmoid(preds)
         preds = (preds >= THRESHOLD).astype(np.uint8)
     target, preds = remove_ignore_index(target, preds, ignore_index)
@@ -222,7 +222,7 @@ def _sklearn_confusion_matrix_multilabel(preds, target, normalize=None, ignore_i
     preds = preds.numpy()
     target = target.numpy()
     if np.issubdtype(preds.dtype, np.floating):
-        if not ((0 < preds) & (preds < 1)).all():
+        if not ((preds > 0) & (preds < 1)).all():
             preds = sigmoid(preds)
         preds = (preds >= THRESHOLD).astype(np.uint8)
     preds = np.moveaxis(preds, 1, -1).reshape((-1, preds.shape[1]))

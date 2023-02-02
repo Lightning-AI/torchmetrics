@@ -44,10 +44,7 @@ def _cohen_kappa_reduce(confmat: Tensor, weights: Optional[Literal["linear", "qu
     elif weights in ("linear", "quadratic"):
         w_mat = torch.zeros_like(confmat)
         w_mat += torch.arange(n_classes, dtype=w_mat.dtype, device=w_mat.device)
-        if weights == "linear":
-            w_mat = torch.abs(w_mat - w_mat.T)
-        else:
-            w_mat = torch.pow(w_mat - w_mat.T, 2.0)
+        w_mat = torch.abs(w_mat - w_mat.T) if weights == "linear" else torch.pow(w_mat - w_mat.T, 2.0)
     else:
         raise ValueError(
             f"Received {weights} for argument ``weights`` but should be either" " None, 'linear' or 'quadratic'"
