@@ -184,6 +184,7 @@ def metric_ddp(rank, world_size):
     n_epochs = 5
     # this shows iteration over multiple training epochs
     for n in range(n_epochs):
+
         # this will be replaced by a DataLoader with a DistributedSampler
         n_batches = 10
         for i in range(n_batches):
