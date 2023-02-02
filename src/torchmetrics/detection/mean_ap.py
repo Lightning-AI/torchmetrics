@@ -426,7 +426,7 @@ class MeanAveragePrecision(Metric):
     def _move_list_states_to_cpu(self) -> None:
         """Move list states to cpu to save GPU memory."""
 
-        for key in self._defaults.keys():
+        for key in self._defaults:
             current_val = getattr(self, key)
             current_to_cpu = []
             if isinstance(current_val, Sequence):
@@ -799,7 +799,7 @@ class MeanAveragePrecision(Metric):
             recalls:
                 Recall values for different thresholds
         """
-        results = dict(precision=precisions, recall=recalls)
+        results = {"precision": precisions, "recall": recalls}
         map_metrics = MAPMetricResults()
         map_metrics.map = self._summarize(results, True)
         last_max_det_thr = self.max_detection_thresholds[-1]

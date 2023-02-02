@@ -130,7 +130,7 @@ def _squad_input_check(
             )
 
     preds_dict = {prediction["id"]: prediction["prediction_text"] for prediction in preds}
-    _fn_answer = lambda tgt: dict(answers=[dict(text=txt) for txt in tgt["answers"]["text"]], id=tgt["id"])
+    _fn_answer = lambda tgt: {"answers": [{"text": txt} for txt in tgt["answers"]["text"]], "id": tgt["id"]}
     targets_dict = [{"paragraphs": [{"qas": [_fn_answer(target) for target in targets]}]}]
     return preds_dict, targets_dict
 
@@ -173,7 +173,7 @@ def _squad_update(
                 if qa["id"] not in preds:
                     rank_zero_warn(f"Unanswered question {qa['id']} will receive score 0.")
                     continue
-                ground_truths = list(map(lambda x: x["text"], qa["answers"]))
+                ground_truths = [x["text"] for x in qa["answers"]]
                 pred = preds[qa["id"]]
                 exact_match += _metric_max_over_ground_truths(_compute_exact_match_score, pred, ground_truths)
                 f1 += _metric_max_over_ground_truths(_compute_f1_score, pred, ground_truths)

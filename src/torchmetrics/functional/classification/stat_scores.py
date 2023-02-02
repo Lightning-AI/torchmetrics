@@ -98,7 +98,7 @@ def _binary_stat_scores_format(
     - Mask all datapoints that should be ignored with negative values
     """
     if preds.is_floating_point():
-        if not torch.all((0 <= preds) * (preds <= 1)):
+        if not torch.all((preds >= 0) * (preds <= 1)):
             # preds is logits, convert with sigmoid
             preds = preds.sigmoid()
         preds = preds > threshold
@@ -298,10 +298,7 @@ def _multiclass_stat_scores_tensor_validation(
         )
 
     num_unique_values = len(torch.unique(target))
-    if ignore_index is None:
-        check = num_unique_values > num_classes
-    else:
-        check = num_unique_values > num_classes + 1
+    check = num_unique_values > num_classes if ignore_index is None else num_unique_values > num_classes + 1
     if check:
         raise RuntimeError(
             "Detected more unique values in `target` than `num_classes`. Expected only "
@@ -331,10 +328,7 @@ def _multiclass_stat_scores_format(
     # Apply argmax if we have one more dimension
     if preds.ndim == target.ndim + 1 and top_k == 1:
         preds = preds.argmax(dim=1)
-    if top_k != 1:
-        preds = preds.reshape(*preds.shape[:2], -1)
-    else:
-        preds = preds.reshape(preds.shape[0], -1)
+    preds = preds.reshape(*preds.shape[:2], -1) if top_k != 1 else preds.reshape(preds.shape[0], -1)
     target = target.reshape(target.shape[0], -1)
     return preds, target
 
@@ -645,7 +639,7 @@ def _multilabel_stat_scores_format(
     - Mask all elements that should be ignored with negative numbers for later filtration
     """
     if preds.is_floating_point():
-        if not torch.all((0 <= preds) * (preds <= 1)):
+        if not torch.all((preds >= 0) * (preds <= 1)):
             preds = preds.sigmoid()
         preds = preds > threshold
     preds = preds.reshape(*preds.shape[:2], -1)
@@ -1027,10 +1021,7 @@ def _reduce_stat_scores(
     zero_div_mask = denominator == 0
     ignore_mask = denominator < 0
 
-    if weights is None:
-        weights = torch.ones_like(denominator)
-    else:
-        weights = weights.float()
+    weights = torch.ones_like(denominator) if weights is None else weights.float()
 
     numerator = torch.where(
         zero_div_mask, tensor(zero_division, dtype=numerator.dtype, device=numerator.device), numerator

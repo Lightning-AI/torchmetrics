@@ -16,7 +16,7 @@ from typing import List, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor, tensor
-from torch.nn import functional as F
+from torch.nn import functional as F  # noqa: N812
 from typing_extensions import Literal
 
 from torchmetrics.utilities.checks import _check_same_shape
@@ -56,10 +56,7 @@ def _binary_clf_curve(
         preds = preds[desc_score_indices]
         target = target[desc_score_indices]
 
-        if sample_weights is not None:
-            weight = sample_weights[desc_score_indices]
-        else:
-            weight = 1.0
+        weight = sample_weights[desc_score_indices] if sample_weights is not None else 1.0
 
         # pred typically has many tied values. Here we extract
         # the indices associated with the distinct values. We also
@@ -177,7 +174,7 @@ def _binary_precision_recall_curve_format(
         preds = preds[idx]
         target = target[idx]
 
-    if not torch.all((0 <= preds) * (preds <= 1)):
+    if not torch.all((preds >= 0) * (preds <= 1)):
         preds = preds.sigmoid()
 
     thresholds = _adjust_threshold_arg(thresholds, preds.device)
@@ -358,10 +355,7 @@ def _multiclass_precision_recall_curve_tensor_validation(
         )
 
     num_unique_values = len(torch.unique(target))
-    if ignore_index is None:
-        check = num_unique_values > num_classes
-    else:
-        check = num_unique_values > num_classes + 1
+    check = num_unique_values > num_classes if ignore_index is None else num_unique_values > num_classes + 1
     if check:
         raise RuntimeError(
             "Detected more unique values in `target` than `num_classes`. Expected only "
@@ -392,7 +386,7 @@ def _multiclass_precision_recall_curve_format(
         preds = preds[idx]
         target = target[idx]
 
-    if not torch.all((0 <= preds) * (preds <= 1)):
+    if not torch.all((preds >= 0) * (preds <= 1)):
         preds = preds.softmax(1)
 
     thresholds = _adjust_threshold_arg(thresholds, preds.device)
@@ -601,7 +595,7 @@ def _multilabel_precision_recall_curve_format(
     """
     preds = preds.transpose(0, 1).reshape(num_labels, -1).T
     target = target.transpose(0, 1).reshape(num_labels, -1).T
-    if not torch.all((0 <= preds) * (preds <= 1)):
+    if not torch.all((preds >= 0) * (preds <= 1)):
         preds = preds.sigmoid()
 
     thresholds = _adjust_threshold_arg(thresholds, preds.device)

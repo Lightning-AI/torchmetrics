@@ -89,7 +89,7 @@ class TestSNR(MetricTester):
             SignalNoiseRatio,
             reference_metric=partial(average_metric, metric_func=ref_metric),
             dist_sync_on_step=dist_sync_on_step,
-            metric_args=dict(zero_mean=zero_mean),
+            metric_args={"zero_mean": zero_mean},
         )
 
     def test_snr_functional(self, preds, target, ref_metric, zero_mean):
@@ -98,7 +98,7 @@ class TestSNR(MetricTester):
             target,
             signal_noise_ratio,
             ref_metric,
-            metric_args=dict(zero_mean=zero_mean),
+            metric_args={"zero_mean": zero_mean},
         )
 
     def test_snr_differentiability(self, preds, target, ref_metric, zero_mean):

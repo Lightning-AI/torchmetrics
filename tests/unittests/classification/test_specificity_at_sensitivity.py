@@ -72,9 +72,8 @@ def specificity_at_sensitivity_x_multilabel(predictions, targets, min_sensitivit
 def _sklearn_specificity_at_sensitivity_binary(preds, target, min_sensitivity, ignore_index=None):
     preds = preds.flatten().numpy()
     target = target.flatten().numpy()
-    if np.issubdtype(preds.dtype, np.floating):
-        if not ((0 < preds) & (preds < 1)).all():
-            preds = sigmoid(preds)
+    if np.issubdtype(preds.dtype, np.floating) and not ((preds > 0) & (preds < 1)).all():
+        preds = sigmoid(preds)
     target, preds = remove_ignore_index(target, preds, ignore_index)
     return specificity_at_sensitivity_x_multilabel(preds, target, min_sensitivity)
 
@@ -176,7 +175,7 @@ class TestBinarySpecificityAtSensitivity(MetricTester):
 def _sklearn_specificity_at_sensitivity_multiclass(preds, target, min_sensitivity, ignore_index=None):
     preds = np.moveaxis(preds.numpy(), 1, -1).reshape((-1, preds.shape[1]))
     target = target.numpy().flatten()
-    if not ((0 < preds) & (preds < 1)).all():
+    if not ((preds > 0) & (preds < 1)).all():
         preds = softmax(preds, 1)
     target, preds = remove_ignore_index(target, preds, ignore_index)
 
@@ -255,7 +254,7 @@ class TestMulticlassSpecificityAtSensitivity(MetricTester):
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multiclass_specificity_at_sensitivity_dtype_cpu(self, input, dtype):
         preds, target = input
-        if dtype == torch.half and not ((0 < preds) & (preds < 1)).all():
+        if dtype == torch.half and not ((preds > 0) & (preds < 1)).all():
             pytest.xfail(reason="half support for torch.softmax on cpu not implemented")
         self.run_precision_test_cpu(
             preds=preds,
@@ -373,7 +372,7 @@ class TestMultilabelSpecificityAtSensitivity(MetricTester):
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multilabel_specificity_at_sensitivity_dtype_cpu(self, input, dtype):
         preds, target = input
-        if dtype == torch.half and not ((0 < preds) & (preds < 1)).all():
+        if dtype == torch.half and not ((preds > 0) & (preds < 1)).all():
             pytest.xfail(reason="half support for torch.softmax on cpu not implemented")
         self.run_precision_test_cpu(
             preds=preds,

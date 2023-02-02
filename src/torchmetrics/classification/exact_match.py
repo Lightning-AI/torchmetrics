@@ -288,7 +288,9 @@ class ExactMatch:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
-        kwargs.update(dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args))
+        kwargs.update(
+            {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
+        )
         if task == "multiclass":
             assert isinstance(num_classes, int)
             return MulticlassExactMatch(num_classes, **kwargs)

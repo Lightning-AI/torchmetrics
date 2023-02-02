@@ -97,10 +97,7 @@ class BinaryAveragePrecision(BinaryPrecisionRecallCurve):
     full_state_update: bool = False
 
     def compute(self) -> Tensor:
-        if self.thresholds is None:
-            state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]
-        else:
-            state = self.confmat
+        state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _binary_average_precision_compute(state, self.thresholds)
 
 
@@ -203,10 +200,7 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
         self.validate_args = validate_args
 
     def compute(self) -> Tensor:
-        if self.thresholds is None:
-            state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]
-        else:
-            state = self.confmat
+        state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _multiclass_average_precision_compute(state, self.num_classes, self.average, self.thresholds)
 
 
@@ -312,10 +306,7 @@ class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
         self.validate_args = validate_args
 
     def compute(self) -> Tensor:
-        if self.thresholds is None:
-            state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]
-        else:
-            state = self.confmat
+        state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _multilabel_average_precision_compute(
             state, self.num_labels, self.average, self.thresholds, self.ignore_index
         )
@@ -365,7 +356,7 @@ class AveragePrecision:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
-        kwargs.update(dict(thresholds=thresholds, ignore_index=ignore_index, validate_args=validate_args))
+        kwargs.update({"thresholds": thresholds, "ignore_index": ignore_index, "validate_args": validate_args})
         if task == "binary":
             return BinaryAveragePrecision(**kwargs)
         if task == "multiclass":

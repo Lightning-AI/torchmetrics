@@ -16,7 +16,7 @@ from functools import partial
 
 import pytest
 import torch
-from lpips import LPIPS as LPIPS_reference
+from lpips import LPIPS as LPIPS_reference  # noqa: N811
 from torch import Tensor
 
 from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity

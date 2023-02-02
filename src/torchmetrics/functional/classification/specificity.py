@@ -52,10 +52,7 @@ def _specificity_reduce(
         specificity_score = _safe_divide(tn, tn + fp)
         if average is None or average == "none":
             return specificity_score
-        if average == "weighted":
-            weights = tp + fn
-        else:
-            weights = torch.ones_like(specificity_score)
+        weights = tp + fn if average == "weighted" else torch.ones_like(specificity_score)
         return _safe_divide(weights * specificity_score, weights.sum(-1, keepdim=True)).sum(-1)
 
 
