@@ -20,5 +20,5 @@ jobs:
   check-package:
     uses: Lightning-AI/utilities/.github/workflows/check-package.yml@v0.5.0
     with:
-      import-name: "torchmetrics"
-      pypi-name: "torchmetrics"
+      artifact-name: dist-packages-${{ github.sha }}
+      import-name: "lightning_utilities"
