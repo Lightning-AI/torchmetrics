@@ -19,6 +19,7 @@ from typing_extensions import Literal
 from torchmetrics.classification.stat_scores import BinaryStatScores, MulticlassStatScores, MultilabelStatScores
 from torchmetrics.functional.classification.precision_recall import _precision_recall_reduce
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.enums import ClassificationTask
 
 
 class BinaryPrecision(BinaryStatScores):
@@ -620,13 +621,13 @@ class Precision:
         kwargs.update(
             {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
         )
-        if task == "binary":
+        if task == ClassificationTask.BINARY:
             return BinaryPrecision(threshold, **kwargs)
-        if task == "multiclass":
+        if task == ClassificationTask.MULTICLASS:
             assert isinstance(num_classes, int)
             assert isinstance(top_k, int)
             return MulticlassPrecision(num_classes, top_k, average, **kwargs)
-        if task == "multilabel":
+        if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelPrecision(num_labels, threshold, average, **kwargs)
         raise ValueError(
@@ -676,13 +677,13 @@ class Recall:
         kwargs.update(
             {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
         )
-        if task == "binary":
+        if task == ClassificationTask.BINARY:
             return BinaryRecall(threshold, **kwargs)
-        if task == "multiclass":
+        if task == ClassificationTask.MULTICLASS:
             assert isinstance(num_classes, int)
             assert isinstance(top_k, int)
             return MulticlassRecall(num_classes, top_k, average, **kwargs)
-        if task == "multilabel":
+        if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelRecall(num_labels, threshold, average, **kwargs)
         raise ValueError(

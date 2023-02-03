@@ -32,6 +32,7 @@ from torchmetrics.functional.classification.stat_scores import (
     _multilabel_stat_scores_update,
 )
 from torchmetrics.utilities.compute import _safe_divide
+from torchmetrics.utilities.enums import ClassificationTask
 
 
 def _accuracy_reduce(
@@ -397,15 +398,15 @@ def accuracy(
         tensor(0.6667)
     """
     assert multidim_average is not None
-    if task == "binary":
+    if task == ClassificationTask.BINARY:
         return binary_accuracy(preds, target, threshold, multidim_average, ignore_index, validate_args)
-    if task == "multiclass":
+    if task == ClassificationTask.MULTICLASS:
         assert isinstance(num_classes, int)
         assert isinstance(top_k, int)
         return multiclass_accuracy(
             preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args
         )
-    if task == "multilabel":
+    if task == ClassificationTask.MULTILABEL:
         assert isinstance(num_labels, int)
         return multilabel_accuracy(
             preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args

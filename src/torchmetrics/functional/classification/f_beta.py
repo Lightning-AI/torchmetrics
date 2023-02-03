@@ -32,6 +32,7 @@ from torchmetrics.functional.classification.stat_scores import (
     _multilabel_stat_scores_update,
 )
 from torchmetrics.utilities.compute import _safe_divide
+from torchmetrics.utilities.enums import ClassificationTask
 
 
 def _fbeta_reduce(
@@ -693,15 +694,15 @@ def fbeta_score(
         tensor(0.3333)
     """
     assert multidim_average is not None
-    if task == "binary":
+    if task == ClassificationTask.BINARY:
         return binary_fbeta_score(preds, target, beta, threshold, multidim_average, ignore_index, validate_args)
-    if task == "multiclass":
+    if task == ClassificationTask.MULTICLASS:
         assert isinstance(num_classes, int)
         assert isinstance(top_k, int)
         return multiclass_fbeta_score(
             preds, target, beta, num_classes, average, top_k, multidim_average, ignore_index, validate_args
         )
-    if task == "multilabel":
+    if task == ClassificationTask.MULTILABEL:
         assert isinstance(num_labels, int)
         return multilabel_fbeta_score(
             preds, target, beta, num_labels, threshold, average, multidim_average, ignore_index, validate_args
@@ -742,15 +743,15 @@ def f1_score(
         tensor(0.3333)
     """
     assert multidim_average is not None
-    if task == "binary":
+    if task == ClassificationTask.BINARY:
         return binary_f1_score(preds, target, threshold, multidim_average, ignore_index, validate_args)
-    if task == "multiclass":
+    if task == ClassificationTask.MULTICLASS:
         assert isinstance(num_classes, int)
         assert isinstance(top_k, int)
         return multiclass_f1_score(
             preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args
         )
-    if task == "multilabel":
+    if task == ClassificationTask.MULTILABEL:
         assert isinstance(num_labels, int)
         return multilabel_f1_score(
             preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args

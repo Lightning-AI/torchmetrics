@@ -19,7 +19,7 @@ from typing_extensions import Literal
 
 from torchmetrics.utilities.checks import _check_same_shape, _input_format_classification
 from torchmetrics.utilities.data import _bincount, select_topk
-from torchmetrics.utilities.enums import AverageMethod, DataType, MDMCAverageMethod
+from torchmetrics.utilities.enums import AverageMethod, ClassificationTask, DataType, MDMCAverageMethod
 
 
 def _binary_stat_scores_arg_validation(
@@ -1083,15 +1083,15 @@ def stat_scores(
                 [1, 0, 3, 0, 1]])
     """
     assert multidim_average is not None
-    if task == "binary":
+    if task == ClassificationTask.BINARY:
         return binary_stat_scores(preds, target, threshold, multidim_average, ignore_index, validate_args)
-    if task == "multiclass":
+    if task == ClassificationTask.MULTICLASS:
         assert isinstance(num_classes, int)
         assert isinstance(top_k, int)
         return multiclass_stat_scores(
             preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args
         )
-    if task == "multilabel":
+    if task == ClassificationTask.MULTILABEL:
         assert isinstance(num_labels, int)
         return multilabel_stat_scores(
             preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args

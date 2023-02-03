@@ -19,6 +19,7 @@ from typing_extensions import Literal
 from torchmetrics.classification import BinaryConfusionMatrix, MulticlassConfusionMatrix, MultilabelConfusionMatrix
 from torchmetrics.functional.classification.matthews_corrcoef import _matthews_corrcoef_reduce
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.enums import ClassificationTask
 
 
 class BinaryMatthewsCorrCoef(BinaryConfusionMatrix):
@@ -238,12 +239,12 @@ class MatthewsCorrCoef:
         **kwargs: Any,
     ) -> Metric:
         kwargs.update({"ignore_index": ignore_index, "validate_args": validate_args})
-        if task == "binary":
+        if task == ClassificationTask.BINARY:
             return BinaryMatthewsCorrCoef(threshold, **kwargs)
-        if task == "multiclass":
+        if task == ClassificationTask.MULTICLASS:
             assert isinstance(num_classes, int)
             return MulticlassMatthewsCorrCoef(num_classes, **kwargs)
-        if task == "multilabel":
+        if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelMatthewsCorrCoef(num_labels, threshold, **kwargs)
         raise ValueError(

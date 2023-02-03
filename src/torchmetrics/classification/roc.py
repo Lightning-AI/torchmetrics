@@ -28,6 +28,7 @@ from torchmetrics.functional.classification.roc import (
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
+from torchmetrics.utilities.enums import ClassificationTask
 
 
 class BinaryROC(BinaryPrecisionRecallCurve):
@@ -382,12 +383,12 @@ class ROC:
         **kwargs: Any,
     ) -> Metric:
         kwargs.update({"thresholds": thresholds, "ignore_index": ignore_index, "validate_args": validate_args})
-        if task == "binary":
+        if task == ClassificationTask.BINARY:
             return BinaryROC(**kwargs)
-        if task == "multiclass":
+        if task == ClassificationTask.MULTICLASS:
             assert isinstance(num_classes, int)
             return MulticlassROC(num_classes, **kwargs)
-        if task == "multilabel":
+        if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelROC(num_labels, **kwargs)
         raise ValueError(

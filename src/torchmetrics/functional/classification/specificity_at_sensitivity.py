@@ -36,6 +36,7 @@ from torchmetrics.functional.classification.roc import (
     _multiclass_roc_compute,
     _multilabel_roc_compute,
 )
+from torchmetrics.utilities.enums import ClassificationTask
 
 
 def _convert_fpr_to_specificity(fpr: Tensor) -> Tensor:
@@ -413,16 +414,16 @@ def specicity_at_sensitivity(
     :func:`binary_specificity_at_sensitivity`, :func:`multiclass_specicity_at_sensitivity` and
     :func:`multilabel_specifity_at_sensitvity` for the specific details of each argument influence and examples.
     """
-    if task == "binary":
+    if task == ClassificationTask.BINARY:
         return binary_specificity_at_sensitivity(  # type: ignore
             preds, target, min_sensitivity, thresholds, ignore_index, validate_args
         )
-    if task == "multiclass":
+    if task == ClassificationTask.MULTICLASS:
         assert isinstance(num_classes, int)
         return multiclass_specificity_at_sensitivity(  # type: ignore
             preds, target, num_classes, min_sensitivity, thresholds, ignore_index, validate_args
         )
-    if task == "multilabel":
+    if task == ClassificationTask.MULTILABEL:
         assert isinstance(num_labels, int)
         return multilabel_specificity_at_sensitivity(  # type: ignore
             preds, target, num_labels, min_sensitivity, thresholds, ignore_index, validate_args

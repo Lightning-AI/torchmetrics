@@ -29,6 +29,7 @@ from torchmetrics.functional.classification.calibration_error import (
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
+from torchmetrics.utilities.enums import ClassificationTask
 
 
 class BinaryCalibrationError(Metric):
@@ -268,9 +269,9 @@ class CalibrationError:
         **kwargs: Any,
     ) -> Metric:
         kwargs.update({"n_bins": n_bins, "norm": norm, "ignore_index": ignore_index, "validate_args": validate_args})
-        if task == "binary":
+        if task == ClassificationTask.BINARY:
             return BinaryCalibrationError(**kwargs)
-        if task == "multiclass":
+        if task == ClassificationTask.MULTICLASS:
             assert isinstance(num_classes, int)
             return MulticlassCalibrationError(num_classes, **kwargs)
         raise ValueError(

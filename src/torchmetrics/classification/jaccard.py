@@ -23,6 +23,7 @@ from torchmetrics.functional.classification.jaccard import (
     _multilabel_jaccard_index_arg_validation,
 )
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.enums import ClassificationTask
 
 
 class BinaryJaccardIndex(BinaryConfusionMatrix):
@@ -296,12 +297,12 @@ class JaccardIndex:
         **kwargs: Any,
     ) -> Metric:
         kwargs.update({"ignore_index": ignore_index, "validate_args": validate_args})
-        if task == "binary":
+        if task == ClassificationTask.BINARY:
             return BinaryJaccardIndex(threshold, **kwargs)
-        if task == "multiclass":
+        if task == ClassificationTask.MULTICLASS:
             assert isinstance(num_classes, int)
             return MulticlassJaccardIndex(num_classes, average, **kwargs)
-        if task == "multilabel":
+        if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelJaccardIndex(num_labels, threshold, average, **kwargs)
         raise ValueError(

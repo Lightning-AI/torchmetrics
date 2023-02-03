@@ -18,6 +18,7 @@ from typing_extensions import Literal
 
 from torchmetrics.functional.classification.accuracy import _accuracy_reduce
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.enums import ClassificationTask
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
 
@@ -453,13 +454,13 @@ class Accuracy:
         kwargs.update(
             {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
         )
-        if task == "binary":
+        if task == ClassificationTask.BINARY:
             return BinaryAccuracy(threshold, **kwargs)
-        if task == "multiclass":
+        if task == ClassificationTask.MULTICLASS:
             assert isinstance(num_classes, int)
             assert isinstance(top_k, int)
             return MulticlassAccuracy(num_classes, top_k, average, **kwargs)
-        if task == "multilabel":
+        if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelAccuracy(num_labels, threshold, average, **kwargs)
         raise ValueError(

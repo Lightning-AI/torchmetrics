@@ -31,6 +31,7 @@ from torchmetrics.functional.classification.auroc import (
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
+from torchmetrics.utilities.enums import ClassificationTask
 
 
 class BinaryAUROC(BinaryPrecisionRecallCurve):
@@ -353,12 +354,12 @@ class AUROC:
         **kwargs: Any,
     ) -> Metric:
         kwargs.update({"thresholds": thresholds, "ignore_index": ignore_index, "validate_args": validate_args})
-        if task == "binary":
+        if task == ClassificationTask.BINARY:
             return BinaryAUROC(max_fpr, **kwargs)
-        if task == "multiclass":
+        if task == ClassificationTask.MULTICLASS:
             assert isinstance(num_classes, int)
             return MulticlassAUROC(num_classes, average, **kwargs)
-        if task == "multilabel":
+        if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelAUROC(num_labels, average, **kwargs)
         raise ValueError(
