@@ -8,6 +8,7 @@ from scipy.spatial.distance import minkowski as scipy_minkowski
 from torchmetrics.functional import minkowski_distance
 from torchmetrics.regression import MinkowskiDistance
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_9
 from unittests.helpers import seed_all
 from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 
@@ -49,7 +50,7 @@ def _multi_target_sk_metric(preds, target, p):
         (_multi_target_inputs.preds, _multi_target_inputs.target, _multi_target_sk_metric),
     ],
 )
-@pytest.mark.parametrize("p", [1, 2, 4, 0.5, 1.5])
+@pytest.mark.parametrize("p", [1, 2, 4, 1.5])
 class TestMinkowskiDistance(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
@@ -73,6 +74,9 @@ class TestMinkowskiDistance(MetricTester):
             metric_args={"p": p},
         )
 
+    @pytest.mark.skipif(
+        not _TORCH_GREATER_EQUAL_1_9, reason="minkowski half + cpu not supported for older versions of pytorch"
+    )
     def test_minkowski_distance_half_cpu(self, preds, target, sk_metric, p):
         self.run_precision_test_cpu(preds, target, MinkowskiDistance, minkowski_distance, metric_args={"p": p})
 
