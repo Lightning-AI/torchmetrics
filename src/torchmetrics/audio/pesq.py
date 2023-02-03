@@ -164,7 +164,7 @@ class PerceptualEvaluationSpeechQuality(Metric):
             >>> metric = PerceptualEvaluationSpeechQuality(8000, 'nb')
             >>> values = [ ]
             >>> for _ in range(10):
-            ...     values.append(metric(torch.rand(10), torch.rand(10)))
+            ...     values.append(metric(torch.rand(8000), torch.rand(8000)))
             >>> fig_, ax_ = metric.plot(values)
         """
         val = val or self.compute()
