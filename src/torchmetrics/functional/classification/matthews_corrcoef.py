@@ -31,6 +31,7 @@ from torchmetrics.functional.classification.confusion_matrix import (
     _multilabel_confusion_matrix_tensor_validation,
     _multilabel_confusion_matrix_update,
 )
+from torchmetrics.utilities.enums import ClassificationTask
 
 
 def _matthews_corrcoef_reduce(confmat: Tensor) -> Tensor:
@@ -235,12 +236,12 @@ def matthews_corrcoef(
         >>> matthews_corrcoef(preds, target, task="multiclass", num_classes=2)
         tensor(0.5774)
     """
-    if task == "binary":
+    if task == ClassificationTask.BINARY:
         return binary_matthews_corrcoef(preds, target, threshold, ignore_index, validate_args)
-    if task == "multiclass":
+    if task == ClassificationTask.MULTICLASS:
         assert isinstance(num_classes, int)
         return multiclass_matthews_corrcoef(preds, target, num_classes, ignore_index, validate_args)
-    if task == "multilabel":
+    if task == ClassificationTask.MULTILABEL:
         assert isinstance(num_labels, int)
         return multilabel_matthews_corrcoef(preds, target, num_labels, threshold, ignore_index, validate_args)
     raise ValueError(

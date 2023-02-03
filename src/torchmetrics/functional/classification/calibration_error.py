@@ -23,6 +23,7 @@ from torchmetrics.functional.classification.confusion_matrix import (
     _multiclass_confusion_matrix_format,
     _multiclass_confusion_matrix_tensor_validation,
 )
+from torchmetrics.utilities.enums import ClassificationTask
 
 
 def _binning_bucketize(
@@ -348,9 +349,9 @@ def calibration_error(
     each argument influence and examples.
     """
     assert norm is not None
-    if task == "binary":
+    if task == ClassificationTask.BINARY:
         return binary_calibration_error(preds, target, n_bins, norm, ignore_index, validate_args)
-    if task == "multiclass":
+    if task == ClassificationTask.MULTICLASS:
         assert isinstance(num_classes, int)
         return multiclass_calibration_error(preds, target, num_classes, n_bins, norm, ignore_index, validate_args)
     raise ValueError(f"Expected argument `task` to either be `'binary'` or `'multiclass'` but got {task}")

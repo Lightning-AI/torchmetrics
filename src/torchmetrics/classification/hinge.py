@@ -29,6 +29,7 @@ from torchmetrics.functional.classification.hinge import (
     _multiclass_hinge_loss_update,
 )
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.enums import ClassificationTask
 
 
 class BinaryHingeLoss(Metric):
@@ -253,9 +254,9 @@ class HingeLoss:
         **kwargs: Any,
     ) -> Metric:
         kwargs.update({"ignore_index": ignore_index, "validate_args": validate_args})
-        if task == "binary":
+        if task == ClassificationTask.BINARY:
             return BinaryHingeLoss(squared, **kwargs)
-        if task == "multiclass":
+        if task == ClassificationTask.MULTICLASS:
             assert isinstance(num_classes, int)
             return MulticlassHingeLoss(num_classes, squared, multiclass_mode, **kwargs)
         raise ValueError(

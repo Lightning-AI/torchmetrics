@@ -26,6 +26,7 @@ from torchmetrics.functional.classification.stat_scores import (
     _multilabel_stat_scores_tensor_validation,
 )
 from torchmetrics.utilities.compute import _safe_divide
+from torchmetrics.utilities.enums import ClassificationTask
 
 
 def _exact_match_reduce(
@@ -229,7 +230,7 @@ def exact_match(
         >>> exact_match(preds, target, task="multiclass", num_classes=3, multidim_average='samplewise')
         tensor([1., 0.])
     """
-    if task == "multiclass":
+    if task == ClassificationTask.MULTICLASS:
         assert num_classes is not None
         return multiclass_exact_match(preds, target, num_classes, multidim_average, ignore_index, validate_args)
     if task == "multilalbe":

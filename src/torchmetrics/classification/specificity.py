@@ -19,6 +19,7 @@ from typing_extensions import Literal
 from torchmetrics.classification.stat_scores import BinaryStatScores, MulticlassStatScores, MultilabelStatScores
 from torchmetrics.functional.classification.specificity import _specificity_reduce
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.enums import ClassificationTask
 
 
 class BinarySpecificity(BinaryStatScores):
@@ -324,13 +325,13 @@ class Specificity:
         kwargs.update(
             {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
         )
-        if task == "binary":
+        if task == ClassificationTask.BINARY:
             return BinarySpecificity(threshold, **kwargs)
-        if task == "multiclass":
+        if task == ClassificationTask.MULTICLASS:
             assert isinstance(num_classes, int)
             assert isinstance(top_k, int)
             return MulticlassSpecificity(num_classes, top_k, average, **kwargs)
-        if task == "multilabel":
+        if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelSpecificity(num_labels, threshold, average, **kwargs)
         raise ValueError(

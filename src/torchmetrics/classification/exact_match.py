@@ -32,6 +32,7 @@ from torchmetrics.functional.classification.stat_scores import (
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
+from torchmetrics.utilities.enums import ClassificationTask
 
 
 class MulticlassExactMatch(Metric):
@@ -291,10 +292,10 @@ class ExactMatch:
         kwargs.update(
             {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
         )
-        if task == "multiclass":
+        if task == ClassificationTask.MULTICLASS:
             assert isinstance(num_classes, int)
             return MulticlassExactMatch(num_classes, **kwargs)
-        if task == "multilabel":
+        if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelExactMatch(num_labels, threshold, **kwargs)
         raise ValueError(f"Expected argument `task` to either be `'multiclass'` or `'multilabel'` but got {task}")
