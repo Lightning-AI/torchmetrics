@@ -81,3 +81,15 @@ class MDMCAverageMethod(EnumStr):
 
     GLOBAL = "global"
     SAMPLEWISE = "samplewise"
+
+
+class ClassificationTask(EnumStr):
+    """Enum to represent the different tasks in classification metrics.
+
+    >>> "binary" in list(ClassificationTask)
+    True
+    """
+
+    BINARY = "binary"
+    MULTICLASS = "multiclass"
+    MULTILABEL = "multilabel"
