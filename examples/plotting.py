@@ -35,6 +35,7 @@ def pesq_example():
 
     return fig, ax
 
+
 def pit_example():
     from torchmetrics.audio.pit import PermutationInvariantTraining
     from torchmetrics.functional import scale_invariant_signal_noise_ratio
@@ -43,12 +44,12 @@ def pit_example():
     t = lambda: torch.randn(3, 2, 5)
 
     # plot single value
-    metric = PermutationInvariantTraining(scale_invariant_signal_noise_ratio, 'max')
+    metric = PermutationInvariantTraining(scale_invariant_signal_noise_ratio, "max")
     metric.update(p(), t())
     fig, ax = metric.plot()
 
     # plot multiple values
-    metric = PermutationInvariantTraining(scale_invariant_signal_noise_ratio, 'max')
+    metric = PermutationInvariantTraining(scale_invariant_signal_noise_ratio, "max")
     vals = [metric(p(), t()) for _ in range(10)]
     fig, ax = metric.plot(vals)
 

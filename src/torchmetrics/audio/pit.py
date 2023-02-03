@@ -24,6 +24,7 @@ from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["PermutationInvariantTraining.plot"]
 
+
 class PermutationInvariantTraining(Metric):
     """Calculates `Permutation invariant training`_ (PIT) that can evaluate models for speaker independent multi-
     talker speech separation in a permutation invariant way.
@@ -97,7 +98,7 @@ class PermutationInvariantTraining(Metric):
         return self.sum_pit_metric / self.total
 
     def plot(
-            self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
         Args:
