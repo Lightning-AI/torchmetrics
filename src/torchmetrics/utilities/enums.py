@@ -11,41 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from enum import Enum
-from typing import Optional, Union
+
+from lightning_utilities.core.enums import StrEnum
 
 
-class EnumStr(str, Enum):
-    """Type of any enumerator with allowed comparison to string invariant to cases.
-
-    Example:
-        >>> class MyEnum(EnumStr):
-        ...     ABC = 'abc'
-        >>> MyEnum.from_str('Abc')
-        <MyEnum.ABC: 'abc'>
-        >>> {MyEnum.ABC: 123}
-        {<MyEnum.ABC: 'abc'>: 123}
-    """
-
-    @classmethod
-    def from_str(cls, value: str) -> Optional["EnumStr"]:
-        statuses = [status for status in dir(cls) if not status.startswith("_")]
-        for st in statuses:
-            if st.lower() == value.lower():
-                return getattr(cls, st)
-        return None
-
-    def __eq__(self, other: Union[str, "EnumStr", None]) -> bool:  # type: ignore
-        other = other.value if isinstance(other, Enum) else str(other)
-        return self.value.lower() == other.lower()
-
-    def __hash__(self) -> int:
-        # re-enable hashtable so it can be used as a dict key or in a set
-        # example: set(EnumStr)
-        return hash(self.name)
-
-
-class DataType(EnumStr):
+class DataType(StrEnum):
     """Enum to represent data type.
 
     >>> "Binary" in list(DataType)
@@ -58,7 +28,7 @@ class DataType(EnumStr):
     MULTIDIM_MULTICLASS = "multi-dim multi-class"
 
 
-class AverageMethod(EnumStr):
+class AverageMethod(StrEnum):
     """Enum to represent average method.
 
     >>> None in list(AverageMethod)
@@ -76,14 +46,14 @@ class AverageMethod(EnumStr):
     SAMPLES = "samples"
 
 
-class MDMCAverageMethod(EnumStr):
+class MDMCAverageMethod(StrEnum):
     """Enum to represent multi-dim multi-class average method."""
 
     GLOBAL = "global"
     SAMPLEWISE = "samplewise"
 
 
-class ClassificationTask(EnumStr):
+class ClassificationTask(StrEnum):
     """Enum to represent the different tasks in classification metrics.
 
     >>> "binary" in list(ClassificationTask)
