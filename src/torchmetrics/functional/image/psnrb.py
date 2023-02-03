@@ -20,10 +20,7 @@ from typing_extensions import Literal
 from torchmetrics.utilities import rank_zero_warn, reduce
 
 
-def _compute_bef(
-    self, target: Tensor, dim: Optional[Union[int, Tuple[int, ...]]] = None, block_size=8
-) -> Tuple[Tensor, Tensor]:
-
+def _compute_bef(target: Tensor, dim: Optional[Union[int, Tuple[int, ...]]] = None, block_size=8) -> Tensor:
     if dim == 3:
         height, width, channels = target.Size
     elif dim == 2:
@@ -82,6 +79,7 @@ def _compute_bef(
 
 def _psnrb_compute(
     sum_squared_error: Tensor,
+    bef: Tensor,
     n_obs: Tensor,
     data_range: Tensor,
     base: float = 10.0,
@@ -109,7 +107,6 @@ def _psnrb_compute(
         >>> _psnrb_compute(sum_squared_error, n_obs, data_range)
         tensor(2.5527)
     """
-    bef = _compute_bef()
     sum_squared_error = sum_squared_error / n_obs + bef
     psnr_base_e = 2 * torch.log(data_range) - torch.log(sum_squared_error)
     psnr_vals = psnr_base_e * (10 / torch.log(tensor(base)))
@@ -117,10 +114,8 @@ def _psnrb_compute(
 
 
 def _psnrb_update(
-    preds: Tensor,
-    target: Tensor,
-    dim: Optional[Union[int, Tuple[int, ...]]] = None,
-) -> Tuple[Tensor, Tensor]:
+    preds: Tensor, target: Tensor, dim: Optional[Union[int, Tuple[int, ...]]] = None, block_size: int = 8
+) -> Tuple[Tensor, Tensor, Tensor]:
     """Updates and returns variables required to compute peak signal-to-noise ratio.
 
     Args:
@@ -133,6 +128,7 @@ def _psnrb_update(
     if dim is None:
         sum_squared_error = torch.sum(torch.pow(preds - target, 2))
         n_obs = tensor(target.numel(), device=target.device)
+        bef = _compute_bef(preds, dim=0, block_size=block_size)
         return sum_squared_error, n_obs
 
     diff = preds - target
@@ -148,18 +144,25 @@ def _psnrb_update(
         n_obs = tensor(target.size(), device=target.device)[dim_list].prod()
         n_obs = n_obs.expand_as(sum_squared_error)
 
-    return sum_squared_error, n_obs
+    bef = _compute_bef(preds, dim=dim, block_size=block_size)
+
+    return sum_squared_error, bef, n_obs
 
 
 def peak_signal_noise_ratio_with_blocked_effect(
     preds: Tensor,
     target: Tensor,
+    block_size: int = 8,
     data_range: Optional[float] = None,
     base: float = 10.0,
     reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
     dim: Optional[Union[int, Tuple[int, ...]]] = None,
 ) -> Tensor:
-    """Computes the peak signal-to-noise ratio.
+    """Computes `Peak Signal to Noise Ratio With Blocked Effect` (PSNRB) metrics, which is defined as.
+
+    .. math:: \text{PSNRB}(I, J) = 10 * \\log_{10} \\left(\frac{\\max(I)^2}{\text{MSE}(I, J)-\text{B}(I, J)}\right)
+
+    Where :math:`\text{MSE}` denotes the `mean-squared-error`_ function.
 
     Args:
         preds: estimated signal
@@ -185,10 +188,10 @@ def peak_signal_noise_ratio_with_blocked_effect(
             If ``dim`` is not ``None`` and ``data_range`` is not provided.
 
     Example:
-        >>> from torchmetrics.functional import peak_signal_noise_ratio
+        >>> from torchmetrics.functional import peak_signal_noise_ratio_with_blocked_effect
         >>> pred = torch.tensor([[0.0, 1.0], [2.0, 3.0]])
         >>> target = torch.tensor([[3.0, 2.0], [1.0, 0.0]])
-        >>> peak_signal_noise_ratio(pred, target)
+        >>> peak_signal_noise_ratio_with_blocked_effect(pred, target)
         tensor(2.5527)
 
     .. note::
@@ -206,5 +209,5 @@ def peak_signal_noise_ratio_with_blocked_effect(
         data_range = target.max() - target.min()
     else:
         data_range = tensor(float(data_range))
-    sum_squared_error, n_obs = _psnrb_update(preds, target, dim=dim)
-    return _psnrb_compute(sum_squared_error, n_obs, data_range, base=base, reduction=reduction)
+    sum_squared_error, bef, n_obs = _psnrb_update(preds, target, dim=dim, block_size=block_size)
+    return _psnrb_compute(sum_squared_error, bef, n_obs, data_range, base=base, reduction=reduction)
