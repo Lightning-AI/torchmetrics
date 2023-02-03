@@ -20,6 +20,8 @@ import pytest
 import torch
 
 from torchmetrics.functional.audio.pesq import perceptual_evaluation_speech_quality
+from torchmetrics.functional.audio.pit import permutation_invariant_training
+from torchmetrics.functional import scale_invariant_signal_noise_ratio
 from torchmetrics.functional.classification.accuracy import binary_accuracy, multiclass_accuracy
 from torchmetrics.functional.classification.confusion_matrix import (
     binary_confusion_matrix,
@@ -55,6 +57,12 @@ from torchmetrics.utilities.plot import plot_confusion_matrix, plot_single_or_mu
             lambda: torch.randn(8000),
             lambda: torch.randn(8000),
             id="perceptual_evaluation_speech_quality",
+        ),
+        pytest.param(
+            partial(permutation_invariant_training, scale_invariant_signal_noise_ratio, 'max'),
+            lambda: torch.randn(3, 2, 5),
+            lambda: torch.randn(3, 2, 5),
+            id="permutation_invariant_training",
         ),
     ],
 )
