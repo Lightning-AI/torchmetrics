@@ -18,6 +18,7 @@ from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.functional.pairwise.helpers import _check_input, _reduce_distance_matrix
+from torchmetrics.utilities.exceptions import TorchMetricsUserError
 
 
 def _pairwise_minkowski_distance_update(
@@ -31,6 +32,8 @@ def _pairwise_minkowski_distance_update(
         zero_diagonal: determines if the diagonal of the distance matrix should be set to zero
     """
     x, y, zero_diagonal = _check_input(x, y, zero_diagonal)
+    if not (isinstance(p, (float, int)) and p >= 1):
+        raise TorchMetricsUserError(f"Argument ``p`` must be a float or int greater than 1, but got {p}")
     # upcast to float64 to prevent precision issues
     _orig_dtype = x.dtype
     x = x.to(torch.float64)
@@ -60,7 +63,7 @@ def pairwise_minkowski_distance(
     Args:
         x: Tensor with shape ``[N, d]``
         y: Tensor with shape ``[M, d]``, optional
-        p: Integer or float to use for the exponents in the calculation
+        p: int or float larger than 1, exponent to which the difference between preds and target is to be raised
         reduction: reduction to apply along the last dimension. Choose between `'mean'`, `'sum'`
             (applied along column dimension) or  `'none'`, `None` for no reduction
         zero_diagonal: if the diagonal of the distance matrix should be set to 0. If only `x` is given

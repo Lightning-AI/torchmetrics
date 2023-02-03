@@ -92,5 +92,5 @@ def test_error_on_different_shape():
 
 
 def test_error_on_wrong_p_arg():
-    with pytest.raises(TorchMetricsUserError, match="Argument `p` must be a float.*"):
+    with pytest.raises(TorchMetricsUserError, match="Argument ``p`` must be a float.*"):
         MinkowskiDistance(p=-10)

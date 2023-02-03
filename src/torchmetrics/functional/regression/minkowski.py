@@ -30,8 +30,8 @@ def _minkowski_distance_update(preds: Tensor, targets: Tensor, p: float) -> Tens
     """
     _check_same_shape(preds, targets)
 
-    if not (isinstance(p, (float, int)) and p > 0):
-        raise TorchMetricsUserError(f"Argument ``p`` must be a float or int greater than 0, but got {p}")
+    if not (isinstance(p, (float, int)) and p >= 1):
+        raise TorchMetricsUserError(f"Argument ``p`` must be a float or int greater than 1, but got {p}")
 
     difference = torch.abs(preds - targets)
     mink_dist_sum = torch.sum(torch.pow(difference, p))
@@ -57,14 +57,17 @@ def _minkowski_distance_compute(distance: Tensor, p: float) -> Tensor:
 
 
 def minkowski_distance(preds: Tensor, targets: Tensor, p: float) -> Tensor:
-    """Computes the Minkowski distance. This metric can be seen as generalized version of the standard euclidean
-    distance which corresponds to minkowski distance with p=2.
+    r"""Computes the `Minkowski distance`_ :
+
+    .. math:: d_{\text{Minkowski}} = \\sum_{i}^N (| y_i - \\hat{y_i} |^p)^\frac{1}{p}
+
+    This metric can be seen as generalized version of the standard euclidean distance which corresponds to minkowski
+    distance with p=2.
 
     Args:
         preds: estimated labels of type Tensor
         target: ground truth labels of type Tensor
-        p: non-negative numeric (int or float) exponent to which the difference
-           between preds and target is to be raised
+        p: int or float larger than 1, exponent to which the difference between preds and target is to be raised
 
     Return:
         Tensor with the Minkowski distance

@@ -22,7 +22,7 @@ from torchmetrics.utilities.exceptions import TorchMetricsUserError
 
 
 class MinkowskiDistance(Metric):
-    r"""Computes `Minkowski Distance`.
+    r"""Computes `Minkowski Distance`_ :
 
     .. math:: d_{\text{Minkowski}} = \\sum_{i}^N (| y_i - \\hat{y_i} |^p)^\frac{1}{p}
 
@@ -35,7 +35,7 @@ class MinkowskiDistance(Metric):
         :math: `\\p` is a non-negative integer or floating-point number
 
     Args:
-        p: A non-negative number acting as the exponent in the calculation
+        p: int or float larger than 1, exponent to which the difference between preds and target is to be raised
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
@@ -54,8 +54,8 @@ class MinkowskiDistance(Metric):
 
     def __init__(self, p: float, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        if not (isinstance(p, (float, int)) and p > 0):
-            raise TorchMetricsUserError(f"Argument `p` must be a float or int greater than 0, but got {p}")
+        if not (isinstance(p, (float, int)) and p >= 1):
+            raise TorchMetricsUserError(f"Argument ``p`` must be a float or int greater than 1, but got {p}")
 
         self.p = p
         self.add_state("minkowski_dist_sum", default=tensor(0.0), dist_reduce_fx="sum")
