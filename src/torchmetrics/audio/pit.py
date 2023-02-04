@@ -128,8 +128,8 @@ class PermutationInvariantTraining(Metric):
             >>> from torchmetrics.functional import scale_invariant_signal_noise_ratio
             >>> preds = torch.randn(3, 2, 5) # [batch, spk, time]
             >>> target = torch.randn(3, 2, 5) # [batch, spk, time]
-            >>> pit = PermutationInvariantTraining(scale_invariant_signal_noise_ratio, 'max')
-            >>> metric = pit(preds, target)
+            >>> metric = PermutationInvariantTraining(scale_invariant_signal_noise_ratio, 'max')
+            >>> metric.update(preds, target)
             >>> fig_, ax_ = metric.plot()
 
         .. plot::
@@ -141,10 +141,10 @@ class PermutationInvariantTraining(Metric):
             >>> from torchmetrics.functional import scale_invariant_signal_noise_ratio
             >>> preds = torch.randn(3, 2, 5) # [batch, spk, time]
             >>> target = torch.randn(3, 2, 5) # [batch, spk, time]
-            >>> pit = PermutationInvariantTraining(scale_invariant_signal_noise_ratio, 'max')
+            >>> metric = PermutationInvariantTraining(scale_invariant_signal_noise_ratio, 'max')
             >>> values = [ ]
             >>> for _ in range(10):
-            ...     values.append(pit(preds, target))
+            ...     values.append(metric(preds, target))
             >>> fig_, ax_ = metric.plot(values)
         """
         val = val or self.compute()
