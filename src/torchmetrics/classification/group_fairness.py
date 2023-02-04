@@ -75,7 +75,7 @@ class BinaryGroupStatRates(_AbstractGroupStatScores):
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> groups = torch.tensor([0, 1, 0, 1, 0, 1])
-        >>> metric = BinaryGroupStatRates(2)
+        >>> metric = BinaryGroupStatRates(num_groups=2)
         >>> metric(preds, target, groups)
         {'group_0': tensor([0., 0., 1., 0.]), 'group_1': tensor([1., 0., 0., 0.])}
 
