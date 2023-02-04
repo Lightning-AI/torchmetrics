@@ -57,7 +57,7 @@ from torchmetrics.utilities.plot import plot_confusion_matrix, plot_single_or_mu
             lambda: torch.randn(8000),
             lambda: torch.randn(8000),
             id="perceptual_evaluation_speech_quality",
-        )
+        ),
     ],
 )
 @pytest.mark.parametrize("num_vals", [1, 5, 10])
@@ -69,6 +69,7 @@ def test_single_multi_val_plotter(metric, preds, target, num_vals):
     fig, ax = plot_single_or_multi_val(vals)
     assert isinstance(fig, plt.Figure)
     assert isinstance(ax, matplotlib.axes.Axes)
+
 
 @pytest.mark.parametrize(
     "metric, preds, target",
