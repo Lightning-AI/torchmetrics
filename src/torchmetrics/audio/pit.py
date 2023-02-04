@@ -101,19 +101,25 @@ class PermutationInvariantTraining(Metric):
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
+
         Args:
             val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
                 If no value is provided, will automatically call `metric.compute` and plot that result.
             ax: An matplotlib axis object. If provided will add plot to that axis
+
         Returns:
             fig: Figure object
             ax: Axes object
+
         Raises:
             ModuleNotFoundError:
                 If `matplotlib` is not installed
+
         Examples:
+
         .. plot::
             :scale: 75
+
             >>> # Example plotting a single value
             >>> import torch
             >>> from torchmetrics.audio.pit import PermutationInvariantTraining
@@ -123,11 +129,13 @@ class PermutationInvariantTraining(Metric):
             >>> pit = PermutationInvariantTraining(scale_invariant_signal_noise_ratio, 'max')
             >>> metric = pit(preds, target)
             >>> fig_, ax_ = metric.plot()
+
         .. plot::
             :scale: 75
+
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics.audio.pesq import PerceptualEvaluationSpeechQuality
+            >>> from torchmetrics.audio.pit import PermutationInvariantTraining
             >>> from torchmetrics.functional import scale_invariant_signal_noise_ratio
             >>> preds = torch.randn(3, 2, 5) # [batch, spk, time]
             >>> target = torch.randn(3, 2, 5) # [batch, spk, time]
