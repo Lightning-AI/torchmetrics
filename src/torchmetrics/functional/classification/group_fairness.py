@@ -98,10 +98,10 @@ def _groups_stat_transform(
 ) -> Dict[str, torch.Tensor]:
     """Transform group statistics by creating a tensor for each statistic."""
     return {
-        "tp": torch.cat([stat[0].unsqueeze(0) for stat in group_stats]),
-        "fp": torch.cat([stat[1].unsqueeze(0) for stat in group_stats]),
-        "tn": torch.cat([stat[2].unsqueeze(0) for stat in group_stats]),
-        "fn": torch.cat([stat[3].unsqueeze(0) for stat in group_stats]),
+        "tp": torch.stack([stat[0] for stat in group_stats]),
+        "fp": torch.stack([stat[1] for stat in group_stats]),
+        "tn": torch.stack([stat[2] for stat in group_stats]),
+        "fn": torch.stack([stat[3] for stat in group_stats]),
     }
 
 
