@@ -57,13 +57,7 @@ from torchmetrics.utilities.plot import plot_confusion_matrix, plot_single_or_mu
             lambda: torch.randn(8000),
             lambda: torch.randn(8000),
             id="perceptual_evaluation_speech_quality",
-        ),
-        pytest.param(
-            partial(permutation_invariant_training, scale_invariant_signal_noise_ratio, "max"),
-            lambda: torch.randn(3, 2, 5),
-            lambda: torch.randn(3, 2, 5),
-            id="permutation_invariant_training",
-        ),
+        )
     ],
 )
 @pytest.mark.parametrize("num_vals", [1, 5, 10])
@@ -71,6 +65,27 @@ def test_single_multi_val_plotter(metric, preds, target, num_vals):
     vals = []
     for i in range(num_vals):
         vals.append(metric(preds(), target()))
+    vals = vals[0] if i == 1 else vals
+    fig, ax = plot_single_or_multi_val(vals)
+    assert isinstance(fig, plt.Figure)
+    assert isinstance(ax, matplotlib.axes.Axes)
+
+@pytest.mark.parametrize(
+    "metric, preds, target",
+    [
+        pytest.param(
+            partial(permutation_invariant_training, metric_func=scale_invariant_signal_noise_ratio, eval_func="max"),
+            lambda: torch.randn(3, 2, 5),
+            lambda: torch.randn(3, 2, 5),
+            id="permutation_invariant_training",
+        )
+    ],
+)
+@pytest.mark.parametrize("num_vals", [1, 5, 10])
+def test_single_multi_val_plotter_pit(metric, preds, target, num_vals):
+    vals = []
+    for i in range(num_vals):
+        vals.append(metric(preds(), target())[0])
     vals = vals[0] if i == 1 else vals
     fig, ax = plot_single_or_multi_val(vals)
     assert isinstance(fig, plt.Figure)
