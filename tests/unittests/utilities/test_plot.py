@@ -19,107 +19,110 @@ import numpy as np
 import pytest
 import torch
 
-from torchmetrics.functional.classification.accuracy import binary_accuracy, multiclass_accuracy
-from torchmetrics.functional.classification.confusion_matrix import (
-    binary_confusion_matrix,
-    multiclass_confusion_matrix,
-    multilabel_confusion_matrix,
+from torchmetrics.aggregation import MaxMetric, MeanMetric, MinMetric, SumMetric
+from torchmetrics.classification import (
+    BinaryAccuracy,
+    BinaryConfusionMatrix,
+    MulticlassAccuracy,
+    MulticlassConfusionMatrix,
+    MultilabelConfusionMatrix,
 )
-from torchmetrics.utilities.plot import plot_confusion_matrix, plot_single_or_multi_val
+from torchmetrics.regression import MeanSquaredError
+
+_rand_input = lambda: torch.rand(
+    10,
+)
+_binary_randint_input = lambda: torch.randint(2, (10,))
+_multiclass_randint_input = lambda: torch.randint(3, (10,))
+_multilabel_randint_input = lambda: torch.randint(2, (10, 3))
 
 
 @pytest.mark.parametrize(
-    "metric, preds, target",
+    "metric_class, preds, target",
     [
         pytest.param(
-            binary_accuracy,
-            lambda: torch.rand(100),
-            lambda: torch.randint(2, (100,)),
-            id="binary",
+            BinaryAccuracy,
+            _rand_input,
+            _binary_randint_input,
+            id="binary accuracy",
         ),
         pytest.param(
-            partial(multiclass_accuracy, num_classes=3),
-            lambda: torch.randint(3, (100,)),
-            lambda: torch.randint(3, (100,)),
-            id="multiclass",
+            partial(MulticlassAccuracy, num_classes=3),
+            _multiclass_randint_input,
+            _multiclass_randint_input,
+            id="multiclass accuracy",
         ),
         pytest.param(
-            partial(multiclass_accuracy, num_classes=3, average=None),
-            lambda: torch.randint(3, (100,)),
-            lambda: torch.randint(3, (100,)),
-            id="multiclass and average=None",
+            partial(MulticlassAccuracy, num_classes=3, average=None),
+            _multiclass_randint_input,
+            _multiclass_randint_input,
+            id="multiclass accuracy and average=None",
         ),
+        pytest.param(
+            MeanSquaredError,
+            _rand_input,
+            _rand_input,
+            id="mean squared error",
+        ),
+        pytest.param(SumMetric, _rand_input, _rand_input, id="sum metric"),
+        pytest.param(MeanMetric, _rand_input, _rand_input, id="mean metric"),
+        pytest.param(MinMetric, _rand_input, _rand_input, id="min metric"),
+        pytest.param(MaxMetric, _rand_input, _rand_input, id="min metric"),
     ],
 )
-@pytest.mark.parametrize("num_vals", [1, 5, 10])
-def test_single_multi_val_plotter(metric, preds, target, num_vals):
-    vals = []
-    for i in range(num_vals):
-        vals.append(metric(preds(), target()))
-    vals = vals[0] if i == 1 else vals
-    fig, ax = plot_single_or_multi_val(vals)
+@pytest.mark.parametrize("num_vals", [1, 5])
+def test_single_multi_val_plot_methods(metric_class, preds, target, num_vals):
+    """Test the plot method of metrics that only output a single tensor scalar."""
+    metric = metric_class()
+
+    if num_vals == 1:
+        metric.update(preds(), target())
+        fig, ax = metric.plot()
+    else:
+        vals = []
+        for _ in range(num_vals):
+            vals.append(metric(preds(), target()))
+        fig, ax = metric.plot(vals)
+
     assert isinstance(fig, plt.Figure)
     assert isinstance(ax, matplotlib.axes.Axes)
 
 
 @pytest.mark.parametrize(
-    "metric, preds, target",
+    "metric_class, preds, target, labels",
     [
         pytest.param(
-            binary_confusion_matrix,
-            torch.rand(
-                100,
-            ),
-            torch.randint(2, (100,)),
-            id="binary",
-        ),
-        pytest.param(
-            partial(multiclass_confusion_matrix, num_classes=3),
-            torch.randint(3, (100,)),
-            torch.randint(3, (100,)),
-            id="multiclass",
-        ),
-        pytest.param(
-            partial(multilabel_confusion_matrix, num_labels=3),
-            torch.randint(2, (100, 3)),
-            torch.randint(2, (100, 3)),
-            id="multilabel",
-        ),
-    ],
-)
-def test_confusion_matrix_plotter(metric, preds, target):
-    confmat = metric(preds, target)
-    fig, axs = plot_confusion_matrix(confmat)
-    assert isinstance(fig, plt.Figure)
-    cond1 = isinstance(axs, matplotlib.axes.Axes)
-    cond2 = isinstance(axs, np.ndarray) and all(isinstance(a, matplotlib.axes.Axes) for a in axs)
-    assert cond1 or cond2
-
-
-@pytest.mark.parametrize(
-    "metric, preds, target, labels",
-    [
-        pytest.param(
-            binary_confusion_matrix,
-            torch.rand(
-                100,
-            ),
-            torch.randint(2, (100,)),
+            BinaryConfusionMatrix,
+            _rand_input,
+            _binary_randint_input,
             ["cat", "dog"],
-            id="binary",
+            id="binary confusion matrix",
         ),
         pytest.param(
-            partial(multiclass_confusion_matrix, num_classes=3),
-            torch.randint(3, (100,)),
-            torch.randint(3, (100,)),
+            partial(MulticlassConfusionMatrix, num_classes=3),
+            _multiclass_randint_input,
+            _multiclass_randint_input,
             ["cat", "dog", "bird"],
-            id="multiclass",
+            id="multiclass confusion matrix",
+        ),
+        pytest.param(
+            partial(MultilabelConfusionMatrix, num_labels=3),
+            _multilabel_randint_input,
+            _multilabel_randint_input,
+            ["cat", "dog", "bird"],
+            id="multilabel confusion matrix",
         ),
     ],
 )
-def test_confusion_matrix_plotter_with_labels(metric, preds, target, labels):
-    confmat = metric(preds, target)
-    fig, axs = plot_confusion_matrix(confmat, labels=labels)
+@pytest.mark.parametrize("use_labels", [False])
+def test_confusion_matrix_plotter(metric_class, preds, target, labels, use_labels):
+    """Test confusion matrix that uses specialized plot function."""
+    metric = metric_class()
+    metric.update(preds(), target())
+    if use_labels:
+        fig, axs = metric.plot()
+    else:
+        fig, axs = metric.plot(labels=labels)
     assert isinstance(fig, plt.Figure)
     cond1 = isinstance(axs, matplotlib.axes.Axes)
     cond2 = isinstance(axs, np.ndarray) and all(isinstance(a, matplotlib.axes.Axes) for a in axs)

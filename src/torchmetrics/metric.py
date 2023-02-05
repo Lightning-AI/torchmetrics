@@ -78,6 +78,7 @@ class Metric(Module, ABC):
     is_differentiable: Optional[bool] = None
     higher_is_better: Optional[bool] = None
     full_state_update: Optional[bool] = None
+    plot_options: Dict[str, Union[str, float]] = {}
 
     def __init__(
         self,
