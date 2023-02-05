@@ -93,7 +93,7 @@ from torchmetrics.utilities.plot import plot_confusion_matrix, plot_single_or_mu
             lambda: torch.randn(8000),
             lambda: torch.randn(8000),
             id="short_time_objective_intelligibility",
-        )
+        ),
     ],
 )
 @pytest.mark.parametrize("num_vals", [1, 5, 10])
