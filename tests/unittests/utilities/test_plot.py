@@ -18,7 +18,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 import torch
-from torchmetrics.functional.image.d_lambda import spectral_distortion_index
 
 from torchmetrics.functional.classification.accuracy import binary_accuracy, multiclass_accuracy
 from torchmetrics.functional.classification.confusion_matrix import (
@@ -26,6 +25,7 @@ from torchmetrics.functional.classification.confusion_matrix import (
     multiclass_confusion_matrix,
     multilabel_confusion_matrix,
 )
+from torchmetrics.functional.image.d_lambda import spectral_distortion_index
 from torchmetrics.utilities.plot import plot_confusion_matrix, plot_single_or_multi_val
 
 
