@@ -180,23 +180,21 @@ class MaxMetric(BaseAggregator):
         .. plot::
             :scale: 75
 
-            >>> from torch import rand, randint
             >>> # Example plotting a single value
-            >>> from torchmetrics.classification import BinaryAccuracy
+            >>> from torchmetrics import MaxMetric
             >>> metric = BinaryAccuracy()
-            >>> metric.update(rand(10), randint(2,(10,)))
+            >>> metric.update([1, 2, 3])
             >>> fig_, ax_ = metric.plot()
 
         .. plot::
             :scale: 75
 
-            >>> from torch import rand, randint
             >>> # Example plotting multiple values
-            >>> from torchmetrics.classification import BinaryAccuracy
+            >>> from torchmetrics.classification import MaxMetric
             >>> metric = BinaryAccuracy()
             >>> values = [ ]
-            >>> for _ in range(10):
-            ...     values.append(metric(rand(10), randint(2,(10,))))
+            >>> for i in range(10):
+            ...     values.append(metric(i))
             >>> fig_, ax_ = metric.plot(values)
         """
         val = val or self.compute()
@@ -289,23 +287,21 @@ class MinMetric(BaseAggregator):
         .. plot::
             :scale: 75
 
-            >>> from torch import rand, randint
             >>> # Example plotting a single value
-            >>> from torchmetrics.classification import BinaryAccuracy
-            >>> metric = BinaryAccuracy()
-            >>> metric.update(rand(10), randint(2,(10,)))
+            >>> from torchmetrics import MinMetric
+            >>> metric = MinMetric()
+            >>> metric.update([1, 2, 3])
             >>> fig_, ax_ = metric.plot()
 
         .. plot::
             :scale: 75
 
-            >>> from torch import rand, randint
             >>> # Example plotting multiple values
-            >>> from torchmetrics.classification import BinaryAccuracy
-            >>> metric = BinaryAccuracy()
+            >>> from torchmetrics import MinMetric
+            >>> metric = MinMetric()
             >>> values = [ ]
-            >>> for _ in range(10):
-            ...     values.append(metric(rand(10), randint(2,(10,))))
+            >>> for i in range(10):
+            ...     values.append(metric(i))
             >>> fig_, ax_ = metric.plot(values)
         """
         val = val or self.compute()
@@ -396,11 +392,10 @@ class SumMetric(BaseAggregator):
         .. plot::
             :scale: 75
 
-            >>> from torch import rand, randint
             >>> # Example plotting a single value
-            >>> from torchmetrics.classification import BinaryAccuracy
-            >>> metric = BinaryAccuracy()
-            >>> metric.update(rand(10), randint(2,(10,)))
+            >>> from torchmetrics import SumMetric
+            >>> metric = SumMetric()
+            >>> metric.update([1, 2, 3])
             >>> fig_, ax_ = metric.plot()
 
         .. plot::
@@ -411,8 +406,8 @@ class SumMetric(BaseAggregator):
             >>> from torchmetrics.classification import BinaryAccuracy
             >>> metric = BinaryAccuracy()
             >>> values = [ ]
-            >>> for _ in range(10):
-            ...     values.append(metric(rand(10), randint(2,(10,))))
+            >>> for i in range(10):
+            ...     values.append(metric([i, i+1]))
             >>> fig_, ax_ = metric.plot(values)
         """
         val = val or self.compute()
@@ -579,23 +574,21 @@ class MeanMetric(BaseAggregator):
         .. plot::
             :scale: 75
 
-            >>> from torch import rand, randint
             >>> # Example plotting a single value
-            >>> from torchmetrics.classification import BinaryAccuracy
-            >>> metric = BinaryAccuracy()
-            >>> metric.update(rand(10), randint(2,(10,)))
+            >>> from torchmetrics import MeanMetric
+            >>> metric = MeanMetric()
+            >>> metric.update([1, 2, 3])
             >>> fig_, ax_ = metric.plot()
 
         .. plot::
             :scale: 75
 
-            >>> from torch import rand, randint
             >>> # Example plotting multiple values
-            >>> from torchmetrics.classification import BinaryAccuracy
-            >>> metric = BinaryAccuracy()
+            >>> from torchmetrics import MeanMetric
+            >>> metric = MeanMetric()
             >>> values = [ ]
-            >>> for _ in range(10):
-            ...     values.append(metric(rand(10), randint(2,(10,))))
+            >>> for i in range(10):
+            ...     values.append(metric([i, i+1]))
             >>> fig_, ax_ = metric.plot(values)
         """
         val = val or self.compute()
