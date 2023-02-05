@@ -19,7 +19,8 @@ import numpy as np
 import pytest
 import torch
 
-from torchmetrics.functional import scale_invariant_signal_noise_ratio
+from torchmetrics.functional import scale_invariant_signal_noise_ratio, signal_distortion_ratio, \
+    scale_invariant_signal_distortion_ratio
 from torchmetrics.functional.audio.pesq import perceptual_evaluation_speech_quality
 from torchmetrics.functional.audio.pit import permutation_invariant_training
 from torchmetrics.functional.classification.accuracy import binary_accuracy, multiclass_accuracy
@@ -58,6 +59,18 @@ from torchmetrics.utilities.plot import plot_confusion_matrix, plot_single_or_mu
             lambda: torch.randn(8000),
             id="perceptual_evaluation_speech_quality",
         ),
+        pytest.param(
+            partial(signal_distortion_ratio),
+            lambda: torch.randn(8000),
+            lambda: torch.randn(8000),
+            id="signal_distortion_ratio",
+        ),
+        pytest.param(
+            partial(scale_invariant_signal_distortion_ratio),
+            lambda: torch.randn(5),
+            lambda: torch.randn(5),
+            id="scale_invariant_signal_distortion_ratio",
+        )
     ],
 )
 @pytest.mark.parametrize("num_vals", [1, 5, 10])
@@ -69,7 +82,6 @@ def test_single_multi_val_plotter(metric, preds, target, num_vals):
     fig, ax = plot_single_or_multi_val(vals)
     assert isinstance(fig, plt.Figure)
     assert isinstance(ax, matplotlib.axes.Axes)
-
 
 @pytest.mark.parametrize(
     "metric, preds, target",

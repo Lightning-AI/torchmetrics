@@ -11,14 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional
+from typing import Any, Optional, Sequence, Union
 
 from torch import Tensor, tensor
 
 from torchmetrics.functional.audio.sdr import scale_invariant_signal_distortion_ratio, signal_distortion_ratio
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
 
 __doctest_requires__ = {"SignalDistortionRatio": ["fast_bss_eval"]}
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["SignalDistortionRatio.plot", "ScaleInvariantSignalDistortionRatio.plot"]
 
 
 class SignalDistortionRatio(Metric):
@@ -79,6 +84,7 @@ class SignalDistortionRatio(Metric):
     full_state_update: bool = False
     is_differentiable: bool = True
     higher_is_better: bool = True
+    plot_options: dict = {"lower_bound": 1.0, "upper_bound": 4.5}
 
     def __init__(
         self,
@@ -110,6 +116,55 @@ class SignalDistortionRatio(Metric):
     def compute(self) -> Tensor:
         """Computes metric."""
         return self.sum_sdr / self.total
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            fig: Figure object
+            ax: Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        Examples:
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> import torch
+            >>> from torchmetrics.audio.sdr import SignalDistortionRatio
+            >>> metric = SignalDistortionRatio()
+            >>> metric.update(torch.rand(8000), torch.rand(8000))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics.audio.sdr import SignalDistortionRatio
+            >>> metric = SignalDistortionRatio()
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(torch.rand(8000), torch.rand(8000)))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        val = val or self.compute()
+        fig, ax = plot_single_or_multi_val(
+            val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
+        )
+        return fig, ax
+
 
 
 class ScaleInvariantSignalDistortionRatio(Metric):
@@ -147,6 +202,7 @@ class ScaleInvariantSignalDistortionRatio(Metric):
     higher_is_better = True
     sum_si_sdr: Tensor
     total: Tensor
+    plot_options: dict = {"lower_bound": 1.0, "upper_bound": 4.5}
 
     def __init__(
         self,
@@ -169,3 +225,56 @@ class ScaleInvariantSignalDistortionRatio(Metric):
     def compute(self) -> Tensor:
         """Computes metric."""
         return self.sum_si_sdr / self.total
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            fig: Figure object
+            ax: Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        Examples:
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> import torch
+            >>> from torchmetrics.audio.sdr import ScaleInvariantSignalDistortionRatio
+            >>> target = torch.randn(5)
+            >>> preds = torch.randn(5)
+            >>> metric = ScaleInvariantSignalDistortionRatio()
+            >>> metric.update(preds, target)
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics.audio.sdr import ScaleInvariantSignalDistortionRatio
+            >>> target = torch.randn(5)
+            >>> preds = torch.randn(5)
+            >>> metric = ScaleInvariantSignalDistortionRatio()
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(preds, target))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        val = val or self.compute()
+        fig, ax = plot_single_or_multi_val(
+            val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
+        )
+        return fig, ax
+
