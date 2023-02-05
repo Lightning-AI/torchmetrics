@@ -25,6 +25,7 @@ from torchmetrics.functional import (
     signal_distortion_ratio,
     signal_noise_ratio,
 )
+from torchmetrics.functional.audio import short_time_objective_intelligibility
 from torchmetrics.functional.audio.pesq import perceptual_evaluation_speech_quality
 from torchmetrics.functional.audio.pit import permutation_invariant_training
 from torchmetrics.functional.classification.accuracy import binary_accuracy, multiclass_accuracy
@@ -87,6 +88,12 @@ from torchmetrics.utilities.plot import plot_confusion_matrix, plot_single_or_mu
             lambda: torch.randn(4),
             id="scale_invariant_signal_noise_ratio",
         ),
+        pytest.param(
+            partial(short_time_objective_intelligibility, fs=8000, extended=False),
+            lambda: torch.randn(8000),
+            lambda: torch.randn(8000),
+            id="short_time_objective_intelligibility",
+        )
     ],
 )
 @pytest.mark.parametrize("num_vals", [1, 5, 10])
