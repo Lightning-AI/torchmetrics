@@ -41,6 +41,11 @@ def test_raises_error_on_wrong_input():
     ):
         MetricTracker(MetricCollection([MeanAbsoluteError(), MeanSquaredError()]), maximize=[False, False, False])
 
+    with pytest.raises(
+        ValueError, match="Argument `maximize` should be a single bool when `metric` is a single Metric"
+    ):
+        MetricTracker(MeanAbsoluteError(), maximize=[False])
+
 
 @pytest.mark.parametrize(
     "method, method_input",
@@ -165,7 +170,7 @@ def test_best_metric_for_not_well_defined_metric_collection(base_metric):
             assert best is None
 
     with pytest.warns(UserWarning, match="Encountered the following error when trying to get the best metric.*"):
-        idx, best = tracker.best_metric(return_step=True)
+        best, idx = tracker.best_metric(return_step=True)
 
         if isinstance(best, dict):
             assert best["MulticlassAccuracy"] is not None

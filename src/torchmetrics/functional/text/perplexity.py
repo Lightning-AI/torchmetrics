@@ -15,8 +15,8 @@
 from typing import Optional, Tuple
 
 import torch
-import torch.nn.functional as F
 from torch import Tensor
+from torch.nn import functional as F  # noqa: N812
 
 _TORCH_FLOAT_OR_DOUBLE = (torch.float32, torch.float64)
 

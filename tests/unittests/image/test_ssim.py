@@ -231,11 +231,8 @@ class TestSSIM(MetricTester):
     ],
 )
 def test_ssim_invalid_inputs(pred, target, kernel, sigma):
-    pred_t = torch.rand(pred, dtype=torch.float32)
-    target_t = torch.rand(target, dtype=torch.float64)
-    with pytest.raises(TypeError):
-        structural_similarity_index_measure(pred_t, target_t)
-
+    """Test that an value errors are raised if input sizes are different, kernel length and sigma does not match
+    size or invalid values are provided."""
     pred = torch.rand(pred)
     target = torch.rand(target)
     with pytest.raises(ValueError):

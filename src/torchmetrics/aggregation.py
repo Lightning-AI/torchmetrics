@@ -118,11 +118,11 @@ class MaxMetric(BaseAggregator):
             If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore`` or a float
 
     Example:
-        >>> import torch
+        >>> from torch import tensor
         >>> from torchmetrics import MaxMetric
         >>> metric = MaxMetric()
         >>> metric.update(1)
-        >>> metric.update(torch.tensor([2, 3]))
+        >>> metric.update(tensor([2, 3]))
         >>> metric.compute()
         tensor(3.)
     """
@@ -179,11 +179,11 @@ class MinMetric(BaseAggregator):
             If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore`` or a float
 
     Example:
-        >>> import torch
+        >>> from torch import tensor
         >>> from torchmetrics import MinMetric
         >>> metric = MinMetric()
         >>> metric.update(1)
-        >>> metric.update(torch.tensor([2, 3]))
+        >>> metric.update(tensor([2, 3]))
         >>> metric.compute()
         tensor(1.)
     """
@@ -240,11 +240,11 @@ class SumMetric(BaseAggregator):
             If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore`` or a float
 
     Example:
-        >>> import torch
+        >>> from torch import tensor
         >>> from torchmetrics import SumMetric
         >>> metric = SumMetric()
         >>> metric.update(1)
-        >>> metric.update(torch.tensor([2, 3]))
+        >>> metric.update(tensor([2, 3]))
         >>> metric.compute()
         tensor(6.)
     """
@@ -299,11 +299,11 @@ class CatMetric(BaseAggregator):
             If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore`` or a float
 
     Example:
-        >>> import torch
+        >>> from torch import tensor
         >>> from torchmetrics import CatMetric
         >>> metric = CatMetric()
         >>> metric.update(1)
-        >>> metric.update(torch.tensor([2, 3]))
+        >>> metric.update(tensor([2, 3]))
         >>> metric.compute()
         tensor([1., 2., 3.])
     """

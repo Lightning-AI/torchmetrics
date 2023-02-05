@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import contextlib
 import os
 import pickle
 import sys
@@ -28,10 +29,8 @@ from torchmetrics import Metric
 from torchmetrics.detection.mean_ap import MAPMetricResults
 from torchmetrics.utilities.data import _flatten, apply_to_collection
 
-try:
+with contextlib.suppress(RuntimeError):
     set_start_method("spawn")
-except RuntimeError:
-    pass
 
 NUM_PROCESSES = torch.cuda.device_count() if torch.cuda.is_available() else 2
 NUM_BATCHES = 2 * NUM_PROCESSES  # Need to be divisible with the number of processes
@@ -215,7 +214,7 @@ def _class_test(
             target_ = target[i].cpu() if isinstance(target, Tensor) else target[i]
             ref_batch_result = reference_metric(preds_, target_, **batch_kwargs_update)
             if isinstance(batch_result, dict):
-                for key in batch_result.keys():
+                for key in batch_result:
                     _assert_allclose(batch_result, ref_batch_result[key].numpy(), atol=atol, key=key)
             else:
                 _assert_allclose(batch_result, ref_batch_result, atol=atol)
@@ -230,7 +229,7 @@ def _class_test(
     # check on all batches on all ranks
     result = metric.compute()
     if isinstance(result, dict):
-        for key in result.keys():
+        for key in result:
             _assert_tensor(result, key=key)
     else:
         _assert_tensor(result)
@@ -252,7 +251,7 @@ def _class_test(
 
     # assert after aggregation
     if isinstance(sk_result, dict):
-        for key in sk_result.keys():
+        for key in sk_result:
             _assert_allclose(result, sk_result[key].numpy(), atol=atol, key=key)
     else:
         _assert_allclose(result, sk_result, atol=atol)
@@ -354,7 +353,7 @@ class MetricTester:
     """
 
     atol: float = 1e-8
-    poolSize: int
+    pool_size: int
     pool: Pool
 
     def setup_class(self):
@@ -362,9 +361,9 @@ class MetricTester:
 
         This will spawn the pool of workers that are used for metric testing and setup_ddp
         """
-        self.poolSize = NUM_PROCESSES
-        self.pool = Pool(processes=self.poolSize)
-        self.pool.starmap(setup_ddp, [(rank, self.poolSize) for rank in range(self.poolSize)])
+        self.pool_size = NUM_PROCESSES
+        self.pool = Pool(processes=self.pool_size)
+        self.pool.starmap(setup_ddp, [(rank, self.pool_size) for rank in range(self.pool_size)])
 
     def teardown_class(self):
         """Close pool of workers."""
@@ -462,7 +461,7 @@ class MetricTester:
                     check_scriptable=check_scriptable,
                     **kwargs_update,
                 ),
-                [(rank, self.poolSize) for rank in range(self.poolSize)],
+                [(rank, self.pool_size) for rank in range(self.pool_size)],
             )
         else:
             device = "cuda" if torch.cuda.is_available() else "cpu"
