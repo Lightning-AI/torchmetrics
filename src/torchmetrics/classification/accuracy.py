@@ -436,7 +436,7 @@ class MultilabelAccuracy(MultilabelStatScores):
             >>> # Example plotting a single value
             >>> from torchmetrics.classification import MultilabelAccuracy
             >>> metric = MultilabelAccuracy(num_labels=3)
-            >>> metric.update(torch.randint(2, (20, 3)), torch.randint(2, (20, 3)))
+            >>> metric.update(randint(2, (20, 3)), randint(2, (20, 3)))
             >>> fig_, ax_ = metric.plot()
 
         .. plot::
@@ -448,7 +448,7 @@ class MultilabelAccuracy(MultilabelStatScores):
             >>> metric = MultilabelAccuracy(num_labels=3)
             >>> values = [ ]
             >>> for _ in range(10):
-            ...     values.append(metric(torch.randint(2, (20, 3)), torch.randint(2, (20, 3))))
+            ...     values.append(metric(randint(2, (20, 3)), randint(2, (20, 3))))
             >>> fig_, ax_ = metric.plot(values)
         """
         val = val or self.compute()
