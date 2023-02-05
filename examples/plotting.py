@@ -94,6 +94,44 @@ def si_sdr_example():
     return fig, ax
 
 
+def snr_example():
+    from torchmetrics.audio.snr import SignalNoiseRatio
+
+    p = lambda: torch.randn(4)
+    t = lambda: torch.randn(4)
+
+    # plot single value
+    metric = SignalNoiseRatio()
+    metric.update(p(), t())
+    fig, ax = metric.plot()
+
+    # plot multiple values
+    metric = SignalNoiseRatio()
+    vals = [metric(p(), t()) for _ in range(10)]
+    fig, ax = metric.plot(vals)
+
+    return fig, ax
+
+
+def si_snr_example():
+    from torchmetrics.audio.snr import ScaleInvariantSignalNoiseRatio
+
+    p = lambda: torch.randn(4)
+    t = lambda: torch.randn(4)
+
+    # plot single value
+    metric = ScaleInvariantSignalNoiseRatio()
+    metric.update(p(), t())
+    fig, ax = metric.plot()
+
+    # plot multiple values
+    metric = ScaleInvariantSignalNoiseRatio()
+    vals = [metric(p(), t()) for _ in range(10)]
+    fig, ax = metric.plot(vals)
+
+    return fig, ax
+
+
 def accuracy_example():
     from torchmetrics.classification import MulticlassAccuracy
 
@@ -163,6 +201,8 @@ if __name__ == "__main__":
         "pit": pit_example,
         "sdr": sdr_example,
         "si-sdr": si_sdr_example,
+        "snr": snr_example,
+        "si-snr": si_snr_example,
         "mean_squared_error": mean_squared_error_example,
         "confusion_matrix": confusion_matrix_example,
     }
