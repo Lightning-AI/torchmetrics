@@ -18,6 +18,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 import torch
+from torchmetrics.functional.image.d_lambda import spectral_distortion_index
 
 from torchmetrics.functional.classification.accuracy import binary_accuracy, multiclass_accuracy
 from torchmetrics.functional.classification.confusion_matrix import (
@@ -48,6 +49,12 @@ from torchmetrics.utilities.plot import plot_confusion_matrix, plot_single_or_mu
             lambda: torch.randint(3, (100,)),
             lambda: torch.randint(3, (100,)),
             id="multiclass and average=None",
+        ),
+        pytest.param(
+            partial(spectral_distortion_index),
+            lambda: torch.rand([16, 3, 16, 16]),
+            lambda: torch.rand([16, 3, 16, 16]),
+            id="spectral distortion index",
         ),
     ],
 )
