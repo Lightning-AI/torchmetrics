@@ -132,6 +132,25 @@ def si_snr_example():
     return fig, ax
 
 
+def stoi_example():
+    from torchmetrics.audio.stoi import ShortTimeObjectiveIntelligibility
+
+    p = lambda: torch.randn(8000)
+    t = lambda: torch.randn(8000)
+
+    # plot single value
+    metric = ShortTimeObjectiveIntelligibility(8000, False)
+    metric.update(p(), t())
+    fig, ax = metric.plot()
+
+    # plot multiple values
+    metric = ShortTimeObjectiveIntelligibility(8000, False)
+    vals = [metric(p(), t()) for _ in range(10)]
+    fig, ax = metric.plot(vals)
+
+    return fig, ax
+
+
 def accuracy_example():
     from torchmetrics.classification import MulticlassAccuracy
 
@@ -203,6 +222,7 @@ if __name__ == "__main__":
         "si-sdr": si_sdr_example,
         "snr": snr_example,
         "si-snr": si_snr_example,
+        "stoi": stoi_example,
         "mean_squared_error": mean_squared_error_example,
         "confusion_matrix": confusion_matrix_example,
     }
