@@ -407,8 +407,7 @@ class MultilabelAccuracy(MultilabelStatScores):
         return _accuracy_reduce(
             tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average, multilabel=True
         )
-    
-    
+
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
@@ -456,7 +455,6 @@ class MultilabelAccuracy(MultilabelStatScores):
             val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
         )
         return fig, ax
-
 
 
 class Accuracy:
