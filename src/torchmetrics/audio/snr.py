@@ -23,6 +23,7 @@ from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["SignalNoiseRatio.plot", "ScaleInvariantSignalNoiseRatio.plot"]
 
+
 class SignalNoiseRatio(Metric):
     r"""Calculates `Signal-to-noise ratio`_ (SNR_) meric for evaluating quality of audio. It is defined as:
 
