@@ -55,6 +55,7 @@ def pit_example():
 
     return fig, ax
 
+
 def sdr_example():
     from torchmetrics.audio.sdr import SignalDistortionRatio
 
@@ -72,6 +73,7 @@ def sdr_example():
     fig, ax = metric.plot(vals)
 
     return fig, ax
+
 
 def si_sdr_example():
     from torchmetrics.audio.sdr import ScaleInvariantSignalDistortionRatio

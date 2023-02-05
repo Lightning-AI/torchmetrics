@@ -166,7 +166,6 @@ class SignalDistortionRatio(Metric):
         return fig, ax
 
 
-
 class ScaleInvariantSignalDistortionRatio(Metric):
     """`Scale-invariant signal-to-distortion ratio`_ (SI-SDR). The SI-SDR value is in general considered an overall
     measure of how good a source sound.
@@ -277,4 +276,3 @@ class ScaleInvariantSignalDistortionRatio(Metric):
             val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
         )
         return fig, ax
-
