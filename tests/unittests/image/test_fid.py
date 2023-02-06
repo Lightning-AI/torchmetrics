@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -92,7 +92,8 @@ def test_fid_raises_errors_and_warnings():
 @pytest.mark.parametrize("feature", [64, 192, 768, 2048])
 def test_fid_same_input(feature):
     """if real and fake are update on the same data the fid score should be
-    0."""
+    0.
+    """
     metric = FrechetInceptionDistance(feature=feature)
 
     for _ in range(2):

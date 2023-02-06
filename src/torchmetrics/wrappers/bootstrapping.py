@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ def _bootstrap_sampler(
 
 
 class BootStrapper(Metric):
-    r"""Using `Turn a Metric into a Bootstrapped`_
+    r"""Using `Turn a Metric into a Bootstrapped`_.
 
     That can automate the process of getting confidence intervals for metric values. This wrapper
     class basically keeps multiple copies of the same base metric in memory and whenever ``update`` or
@@ -115,7 +115,7 @@ class BootStrapper(Metric):
         self.sampling_strategy = sampling_strategy
 
     def update(self, *args: Any, **kwargs: Any) -> None:
-        """Updates the state of the base metric.
+        """Update the state of the base metric.
 
         Any tensor passed in will be bootstrapped along dimension 0.
         """
@@ -134,7 +134,7 @@ class BootStrapper(Metric):
             self.metrics[idx].update(*new_args, **new_kwargs)
 
     def compute(self) -> Dict[str, Tensor]:
-        """Computes the bootstrapped metric values.
+        """Compute the bootstrapped metric values.
 
         Always returns a dict of tensors, which can contain the following keys: ``mean``, ``std``, ``quantile`` and
         ``raw`` depending on how the class was initialized.

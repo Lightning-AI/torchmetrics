@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -299,7 +299,7 @@ class MetricCollection(ModuleDict):
         """Make a copy of the metric collection
         Args:
             prefix: a string to append in front of the metric keys
-            postfix: a string to append after the keys of the output dict
+            postfix: a string to append after the keys of the output dict.
 
         """
         mc = deepcopy(self)

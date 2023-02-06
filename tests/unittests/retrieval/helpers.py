@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -79,7 +79,6 @@ def _compute_sklearn_metric(
     **kwargs,
 ) -> Tensor:
     """Compute metric with multiple iterations over every query predictions set."""
-
     if indexes is None:
         indexes = np.full_like(preds, fill_value=0, dtype=np.int64)
     if isinstance(indexes, Tensor):

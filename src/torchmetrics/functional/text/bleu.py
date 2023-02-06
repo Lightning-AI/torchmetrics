@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,7 +33,6 @@ def _count_ngram(ngram_input_list: Sequence[str], n_gram: int) -> Counter:
     Return:
         ngram_counter: a collections.Counter object of ngram
     """
-
     ngram_counter: Counter = Counter()
 
     for i in range(1, n_gram + 1):
@@ -66,7 +65,7 @@ def _bleu_score_update(
     n_gram: int = 4,
     tokenizer: Callable[[str], Sequence[str]] = _tokenize_fn,
 ) -> Tuple[Tensor, Tensor]:
-    """Updates and returns variables required to compute the BLEU score.
+    """Update and returns variables required to compute the BLEU score.
 
     Args:
         preds: An iterable of machine translated corpus
@@ -112,7 +111,7 @@ def _bleu_score_compute(
     weights: Sequence[float],
     smooth: bool,
 ) -> Tensor:
-    """Computes the BLEU score.
+    """Compute the BLEU score.
 
     Args:
         preds_len: count of words in a candidate translation

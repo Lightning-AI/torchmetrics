@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class BinarySpecificityAtSensitivity(BinaryPrecisionRecallCurve):
-    r"""Computes the higest possible specificity value given the minimum sensitivity thresholds provided. This is
+    r"""Compute the higest possible specificity value given the minimum sensitivity thresholds provided. This is
     done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the
     find the specificity for a given sensitivity level.
 
@@ -116,7 +116,7 @@ class BinarySpecificityAtSensitivity(BinaryPrecisionRecallCurve):
 
 
 class MulticlassSpecificityAtSensitivity(MulticlassPrecisionRecallCurve):
-    r"""Computes the higest possible specificity value given the minimum sensitivity thresholds provided. This is
+    r"""Compute the higest possible specificity value given the minimum sensitivity thresholds provided. This is
     done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the
     find the specificity for a given sensitivity level.
 
@@ -211,7 +211,7 @@ class MulticlassSpecificityAtSensitivity(MulticlassPrecisionRecallCurve):
 
 
 class MultilabelSpecificityAtSensitivity(MultilabelPrecisionRecallCurve):
-    r"""Computes the higest possible specificity value given the minimum sensitivity thresholds provided. This is
+    r"""Compute the higest possible specificity value given the minimum sensitivity thresholds provided. This is
     done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the
     find the specificity for a given sensitivity level.
 
@@ -306,7 +306,7 @@ class MultilabelSpecificityAtSensitivity(MultilabelPrecisionRecallCurve):
 
 
 class SpecificityAtSensitivity:
-    r"""Computes the higest possible specificity value given the minimum sensitivity thresholds provided. This is
+    r"""Compute the higest possible specificity value given the minimum sensitivity thresholds provided. This is
     done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the
     find the specificity for a given sensitivity level.
 

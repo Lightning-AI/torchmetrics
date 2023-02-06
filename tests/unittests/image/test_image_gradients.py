@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -37,8 +37,8 @@ def test_invalid_input_ndims(batch_size=1, height=5, width=5, channels=1):
 
 def test_multi_batch_image_gradients(batch_size=5, height=5, width=5, channels=1):
     """Test whether the module correctly calculates gradients for known input with non-unity batch size.Example
-    input-output pair taken from TF's implementation of i mage-gradients."""
-
+    input-output pair taken from TF's implementation of i mage-gradients.
+    """
     single_channel_img = torch.arange(0, 1 * height * width * channels, dtype=torch.float32)
     single_channel_img = torch.reshape(single_channel_img, (channels, height, width))
     image = torch.stack([single_channel_img for _ in range(batch_size)], dim=0)

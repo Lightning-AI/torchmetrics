@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -44,11 +44,11 @@ repos:
         args: [--py36-plus]
         name: Upgrade code
 
-  - repo: https://github.com/PyCQA/docformatter
-    rev: v1.5.1
-    hooks:
-      - id: docformatter
-        args: [--in-place, --wrap-summaries=115, --wrap-descriptions=120]
+#  - repo: https://github.com/PyCQA/docformatter
+#    rev: v1.5.1
+#    hooks:
+#      - id: docformatter
+#        args: [--in-place, --wrap-summaries=115, --wrap-descriptions=120]
 
   - repo: https://github.com/PyCQA/isort
     rev: 5.12.0

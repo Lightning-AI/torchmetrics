@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -34,7 +34,8 @@ _target = torch.randint(10, (10, 32))
 
 class TestBootStrapper(BootStrapper):
     """For testing purpose, we subclass the bootstrapper class so we can get the exact permutation the class is
-    creating."""
+    creating.
+    """
 
     def update(self, *args) -> None:
         self.out = []
