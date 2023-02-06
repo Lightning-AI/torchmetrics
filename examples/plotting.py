@@ -202,7 +202,7 @@ if __name__ == "__main__":
         "peak_signal_noise_ratio": peak_signal_noise_ratio,
         "spectral_angle_mapper": spectral_angle_mapper,
         "structural_similarity_index_measure": structural_similarity_index_measure,
-        "multiscale_structural_similarity_index_measure": multiscale_structural_similarity_index_measure
+        "multiscale_structural_similarity_index_measure": multiscale_structural_similarity_index_measure,
     }
 
     parser = argparse.ArgumentParser(description="Example script for plotting metrics.")

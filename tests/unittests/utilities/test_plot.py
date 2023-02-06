@@ -19,8 +19,12 @@ import numpy as np
 import pytest
 import torch
 
-from torchmetrics.functional import peak_signal_noise_ratio, spectral_angle_mapper, structural_similarity_index_measure, \
-    multiscale_structural_similarity_index_measure
+from torchmetrics.functional import (
+    multiscale_structural_similarity_index_measure,
+    peak_signal_noise_ratio,
+    spectral_angle_mapper,
+    structural_similarity_index_measure,
+)
 from torchmetrics.functional.classification.accuracy import binary_accuracy, multiclass_accuracy
 from torchmetrics.functional.classification.confusion_matrix import (
     binary_confusion_matrix,
