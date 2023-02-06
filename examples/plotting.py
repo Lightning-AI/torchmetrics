@@ -154,6 +154,44 @@ def spectral_angle_mapper():
     return fig, ax
 
 
+def structural_similarity_index_measure():
+    from torchmetrics.image.ssim import StructuralSimilarityIndexMeasure
+
+    p = lambda: torch.rand([3, 3, 256, 256], generator=torch.manual_seed(42))
+    t = lambda: p() * 0.75
+
+    # plot single value
+    metric = StructuralSimilarityIndexMeasure()
+    metric.update(p(), t())
+    fig, ax = metric.plot()
+
+    # plot multiple values
+    metric = StructuralSimilarityIndexMeasure()
+    vals = [metric(p(), t()) for _ in range(10)]
+    fig, ax = metric.plot(vals)
+
+    return fig, ax
+
+
+def multiscale_structural_similarity_index_measure():
+    from torchmetrics.image.ssim import MultiScaleStructuralSimilarityIndexMeasure
+
+    p = lambda: torch.rand([3, 3, 256, 256], generator=torch.manual_seed(42))
+    t = lambda: p() * 0.75
+
+    # plot single value
+    metric = MultiScaleStructuralSimilarityIndexMeasure()
+    metric.update(p(), t())
+    fig, ax = metric.plot()
+
+    # plot multiple values
+    metric = MultiScaleStructuralSimilarityIndexMeasure()
+    vals = [metric(p(), t()) for _ in range(10)]
+    fig, ax = metric.plot(vals)
+
+    return fig, ax
+
+
 if __name__ == "__main__":
     metrics_func = {
         "accuracy": accuracy_example,
@@ -163,6 +201,8 @@ if __name__ == "__main__":
         "error_relative_global_dimensionless_synthesis": error_relative_global_dimensionless_synthesis,
         "peak_signal_noise_ratio": peak_signal_noise_ratio,
         "spectral_angle_mapper": spectral_angle_mapper,
+        "structural_similarity_index_measure": structural_similarity_index_measure,
+        "multiscale_structural_similarity_index_measure": multiscale_structural_similarity_index_measure
     }
 
     parser = argparse.ArgumentParser(description="Example script for plotting metrics.")
