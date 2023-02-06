@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -76,7 +76,7 @@ def test_metrics_reset(tmpdir):
             for stage in ["train", "val", "test"]:
                 acc = BinaryAccuracy()
                 acc.reset = mock.Mock(side_effect=acc.reset)
-                ap = BinaryAveragePrecision(num_classes=1, pos_label=1)
+                ap = BinaryAveragePrecision()
                 ap.reset = mock.Mock(side_effect=ap.reset)
                 self.add_module(f"acc_{stage}", acc)
                 self.add_module(f"ap_{stage}", ap)

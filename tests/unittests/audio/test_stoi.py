@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -86,7 +86,7 @@ class TestSTOI(MetricTester):
             ShortTimeObjectiveIntelligibility,
             reference_metric=partial(average_metric, metric_func=ref_metric),
             dist_sync_on_step=dist_sync_on_step,
-            metric_args=dict(fs=fs, extended=extended),
+            metric_args={"fs": fs, "extended": extended},
         )
 
     def test_stoi_functional(self, preds, target, ref_metric, fs, extended):
@@ -95,7 +95,7 @@ class TestSTOI(MetricTester):
             target,
             short_time_objective_intelligibility,
             ref_metric,
-            metric_args=dict(fs=fs, extended=extended),
+            metric_args={"fs": fs, "extended": extended},
         )
 
     def test_stoi_differentiability(self, preds, target, ref_metric, fs, extended):
@@ -104,7 +104,7 @@ class TestSTOI(MetricTester):
             target=target,
             metric_module=ShortTimeObjectiveIntelligibility,
             metric_functional=short_time_objective_intelligibility,
-            metric_args=dict(fs=fs, extended=extended),
+            metric_args={"fs": fs, "extended": extended},
         )
 
     def test_stoi_half_cpu(self, preds, target, ref_metric, fs, extended):
@@ -117,7 +117,7 @@ class TestSTOI(MetricTester):
             target=target,
             metric_module=ShortTimeObjectiveIntelligibility,
             metric_functional=partial(short_time_objective_intelligibility, fs=fs, extended=extended),
-            metric_args=dict(fs=fs, extended=extended),
+            metric_args={"fs": fs, "extended": extended},
         )
 
 

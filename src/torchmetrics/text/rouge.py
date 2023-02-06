@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,7 +31,18 @@ __doctest_requires__ = {("ROUGEScore",): ["nltk"]}
 class ROUGEScore(Metric):
     """`Calculate Rouge Score`_, used for automatic summarization.
 
-    This implementation should imitate the behaviour of the `rouge-score` package `Python ROUGE Implementation`
+    This implementation should imitate the behaviour of the ``rouge-score`` package `Python ROUGE Implementation`
+
+    As input to ``forward`` and ``update`` the metric accepts the following input:
+
+    - ``preds`` (:class:`~Sequence`): An iterable of predicted sentences or a single predicted sentence
+    - ``target`` (:class:`~Sequence`): An iterable of target sentences
+      or an iterable of interables of target sentences
+      or a single target sentence
+
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``rouge`` (:class:`~Dict`): A dictionary of tensor rouge scores for each input str rouge key
 
     Args:
         use_stemmer: Use Porter stemmer to strip word suffixes to improve matching.
@@ -40,7 +51,7 @@ class ROUGEScore(Metric):
             This function must take a ``str`` and return a ``str``.
         tokenizer:
             A user's own tokenizer function. If this is ``None``, spliting by spaces is default
-            This function must take a `str` and return ``Sequence[str]``
+            This function must take a ``str`` and return ``Sequence[str]``
         accumulate:
             Useful in case of multi-reference rouge score.
 
@@ -77,9 +88,6 @@ class ROUGEScore(Metric):
             If the python packages ``nltk`` is not installed.
         ValueError:
             If any of the ``rouge_keys`` does not belong to the allowed set of keys.
-
-    References:
-        [1] ROUGE: A Package for Automatic Evaluation of Summaries by Chin-Yew Lin `Rouge Detail`_
     """
 
     is_differentiable: bool = False
@@ -129,12 +137,7 @@ class ROUGEScore(Metric):
     def update(
         self, preds: Union[str, Sequence[str]], target: Union[str, Sequence[str], Sequence[Sequence[str]]]
     ) -> None:
-        """Compute rouge scores.
-
-        Args:
-            preds: An iterable of predicted sentences or a single predicted sentence.
-            target: An iterable of target sentences or an iterable of target sentences or a single target sentence.
-        """
+        """Update state with predictions and targets."""
         if isinstance(target, list) and all(isinstance(tgt, str) for tgt in target):
             target = [target] if isinstance(preds, str) else [[tgt] for tgt in target]
 
@@ -159,11 +162,7 @@ class ROUGEScore(Metric):
                     getattr(self, f"rouge{rouge_key}_{tp}").append(value.to(self.device))
 
     def compute(self) -> Dict[str, Tensor]:
-        """Calculate (Aggregate and provide confidence intervals) ROUGE score.
-
-        Return:
-            Python dictionary of rouge scores for each input rouge key.
-        """
+        """Calculate (Aggregate and provide confidence intervals) ROUGE score."""
         update_output = {}
         for rouge_key in self.rouge_keys_values:
             for tp in ["fmeasure", "precision", "recall"]:

@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ __doctest_requires__ = {"PerceptualEvaluationSpeechQuality": ["pesq"]}
 
 
 class PerceptualEvaluationSpeechQuality(Metric):
-    """Calculates `Perceptual Evaluation of Speech Quality`_ (PESQ). It's a recognized industry standard for audio
+    """Calculate `Perceptual Evaluation of Speech Quality`_ (PESQ). It's a recognized industry standard for audio
     quality that takes into considerations characteristics such as: audio sharpness, call volume, background noise,
     clipping, audio interference ect. PESQ returns a score between -0.5 and 4.5 with the higher scores indicating a
     better quality.
@@ -55,15 +55,15 @@ class PerceptualEvaluationSpeechQuality(Metric):
 
     Raises:
         ModuleNotFoundError:
-            If ``peqs`` package is not installed
+            If ``pesq`` package is not installed
         ValueError:
             If ``fs`` is not either  ``8000`` or ``16000``
         ValueError:
             If ``mode`` is not either ``"wb"`` or ``"nb"``
 
     Example:
-        >>> from torchmetrics.audio.pesq import PerceptualEvaluationSpeechQuality
         >>> import torch
+        >>> from torchmetrics.audio.pesq import PerceptualEvaluationSpeechQuality
         >>> g = torch.manual_seed(1)
         >>> preds = torch.randn(8000)
         >>> target = torch.randn(8000)
@@ -117,5 +117,5 @@ class PerceptualEvaluationSpeechQuality(Metric):
         self.total += pesq_batch.numel()
 
     def compute(self) -> Tensor:
-        """Computes metric."""
+        """Compute metric."""
         return self.sum_pesq / self.total

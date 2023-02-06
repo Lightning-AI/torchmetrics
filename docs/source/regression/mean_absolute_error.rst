@@ -14,6 +14,7 @@ ________________
 
 .. autoclass:: torchmetrics.MeanAbsoluteError
     :noindex:
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________

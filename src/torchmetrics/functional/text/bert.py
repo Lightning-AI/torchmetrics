@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -54,6 +54,7 @@ def _get_embeddings_and_idf_scale(
     user_forward_fn: Callable[[Module, Dict[str, Tensor]], Tensor] = None,
 ) -> Tuple[Tensor, Tensor]:
     """Calculate sentence embeddings and the inverse-document-frequency scaling factor.
+
     Args:
         dataloader: dataloader instance.
         target_len: A length of the longest sequence in the data. Used for padding the model output.
@@ -158,7 +159,7 @@ def _get_precision_recall_f1(
 
 
 def _get_hash(model_name_or_path: Optional[str] = None, num_layers: Optional[int] = None, idf: bool = False) -> str:
-    """Compute `BERT_score`_ (copied and adjusted)"""
+    """Compute `BERT_score`_ (copied and adjusted)."""
     msg = f"{model_name_or_path}_L{num_layers}{'_idf' if idf else '_no-idf'}"
     return msg
 
@@ -203,8 +204,8 @@ def _load_baseline(
         baseline = _read_csv_from_url(baseline_url)
     # Read default baseline from the original `bert-score` package https://github.com/Tiiiger/bert_score
     elif lang and model_name_or_path:
-        _URL_BASE = "https://raw.githubusercontent.com/Tiiiger/bert_score/master/bert_score/rescale_baseline"
-        baseline_url = f"{_URL_BASE}/{lang}/{model_name_or_path}.tsv"
+        url_base = "https://raw.githubusercontent.com/Tiiiger/bert_score/master/bert_score/rescale_baseline"
+        baseline_url = f"{url_base}/{lang}/{model_name_or_path}.tsv"
         baseline = _read_csv_from_url(baseline_url)
     else:
         baseline = None

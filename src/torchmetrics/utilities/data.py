@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Union
 import torch
 from torch import Tensor
 
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_12
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_12, _XLA_AVAILABLE
 
 METRIC_EPS = 1e-6
 
@@ -71,7 +71,7 @@ def to_onehot(
     label_tensor: Tensor,
     num_classes: Optional[int] = None,
 ) -> Tensor:
-    """Converts a dense label tensor to one-hot format.
+    """Convert  a dense label tensor to one-hot format.
 
     Args:
         label_tensor: dense label tensor, with shape [N, d1, d2, ...]
@@ -128,7 +128,7 @@ def select_topk(prob_tensor: Tensor, topk: int = 1, dim: int = 1) -> Tensor:
 
 
 def to_categorical(x: Tensor, argmax_dim: int = 1) -> Tensor:
-    """Converts a tensor of probabilities to a dense label tensor.
+    """Convert  a tensor of probabilities to a dense label tensor.
 
     Args:
         x: probabilities to get the categorical label [N, d1, d2, ...]
@@ -220,7 +220,7 @@ def _bincount(x: Tensor, minlength: Optional[int] = None) -> Tensor:
     """
     if minlength is None:
         minlength = len(torch.unique(x))
-    if torch.are_deterministic_algorithms_enabled() or _TORCH_GREATER_EQUAL_1_12 and x.is_mps:
+    if torch.are_deterministic_algorithms_enabled() or _XLA_AVAILABLE or _TORCH_GREATER_EQUAL_1_12 and x.is_mps:
         output = torch.zeros(minlength, device=x.device, dtype=torch.long)
         for i in range(minlength):
             output[i] = (x == i).sum()
@@ -237,7 +237,6 @@ def _flexible_bincount(x: Tensor) -> Tensor:
     Returns:
         Number of occurrences for each unique element in x
     """
-
     # make sure elements in x start from 0
     x = x - x.min()
     unique_x = torch.unique(x)

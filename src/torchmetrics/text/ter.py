@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,9 +24,18 @@ from torchmetrics.metric import Metric
 class TranslationEditRate(Metric):
     """Calculate Translation edit rate (`TER`_)  of machine translated text with one or more references.
 
-    This implementation follows the implmenetaions from
-    https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/ter.py. The `sacrebleu` implmenetation is a
+    This implementation follows the one from `SacreBleu_ter`_, which is a
     near-exact reimplementation of the Tercom algorithm, produces identical results on all "sane" outputs.
+
+    As input to ``forward`` and ``update`` the metric accepts the following input:
+
+    - ``preds`` (:class:`~Sequence`): An iterable of hypothesis corpus
+    - ``target`` (:class:`~Sequence`): An iterable of iterables of reference corpus
+
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``ter`` (:class:`~torch.Tensor`): if ``return_sentence_level_score=True`` return a corpus-level translation
+      edit rate with a list of sentence-level translation_edit_rate, else return a corpus-level translation edit rate
 
     Args:
         normalize: An indication whether a general tokenization to be applied.
@@ -39,13 +48,9 @@ class TranslationEditRate(Metric):
     Example:
         >>> preds = ['the cat is on the mat']
         >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
-        >>> metric = TranslationEditRate()
-        >>> metric(preds, target)
+        >>> ter = TranslationEditRate()
+        >>> ter(preds, target)
         tensor(0.1538)
-
-    References:
-        [1] A Study of Translation Edit Rate with Targeted Human Annotation
-        by Mathew Snover, Bonnie Dorr, Richard Schwartz, Linnea Micciulla and John Makhoul `TER`_
     """
 
     is_differentiable: bool = False
@@ -84,12 +89,7 @@ class TranslationEditRate(Metric):
             self.add_state("sentence_ter", [], dist_reduce_fx="cat")
 
     def update(self, preds: Union[str, Sequence[str]], target: Sequence[Union[str, Sequence[str]]]) -> None:
-        """Update TER statistics.
-
-        Args:
-            preds: An iterable of hypothesis corpus.
-            target: An iterable of iterables of reference corpus.
-        """
+        """Update state with predictions and targets."""
         self.total_num_edits, self.total_tgt_len, self.sentence_ter = _ter_update(
             preds,
             target,
@@ -100,12 +100,7 @@ class TranslationEditRate(Metric):
         )
 
     def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-        """Calculate the translate error rate (TER).
-
-        Return:
-            A corpus-level translation edit rate (TER).
-            (Optionally) A list of sentence-level translation_edit_rate (TER) if ``return_sentence_level_score=True``.
-        """
+        """Calculate the translate error rate (TER)."""
         ter = _ter_compute(self.total_num_edits, self.total_tgt_len)
         if self.sentence_ter is not None:
             return ter, torch.cat(self.sentence_ter)

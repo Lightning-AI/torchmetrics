@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +13,6 @@
 # limitations under the License.
 from typing import Any, List, Optional, Union
 
-import torch
 from torch import Tensor
 from typing_extensions import Literal
 
@@ -34,7 +33,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class BinaryAveragePrecision(BinaryPrecisionRecallCurve):
-    r"""Computes the average precision (AP) score for binary tasks. The AP score summarizes a precision-recall curve
+    r"""Compute the average precision (AP) score for binary tasks. The AP score summarizes a precision-recall curve
     as an weighted mean of precisions at each threshold, with the difference in recall from the previous threshold
     as weight:
 
@@ -44,13 +43,18 @@ class BinaryAveragePrecision(BinaryPrecisionRecallCurve):
     where :math:`P_n, R_n` is the respective precision and recall at threshold index :math:`n`. This value is
     equivalent to the area under the precision-recall curve (AUPRC).
 
-    Accepts the following input tensors:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (float tensor): ``(N, ...)``. Preds should be a tensor containing probabilities or logits for each
-      observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
+    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, ...)`` containing probabilities or logits for
+      each observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
       sigmoid per element.
-    - ``target`` (int tensor): ``(N, ...)``. Target should be a tensor containing ground truth labels, and therefore
-      only contain {0,1} values (except if `ignore_index` is specified). The value 1 always encodes the positive class.
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)`` containing ground truth labels, and
+      therefore only contain {0,1} values (except if `ignore_index` is specified). The value 1 always encodes the
+      positive class.
+
+    As output to ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``bap`` (:class:`~torch.Tensor`): A single scalar with the average precision score
 
     Additional dimension ``...`` will be flattened into the batch dimension.
 
@@ -76,18 +80,16 @@ class BinaryAveragePrecision(BinaryPrecisionRecallCurve):
             Set to ``False`` for faster computations.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    Returns:
-        A single scalar with the average precision score
-
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics.classification import BinaryAveragePrecision
-        >>> preds = torch.tensor([0, 0.5, 0.7, 0.8])
-        >>> target = torch.tensor([0, 1, 1, 0])
+        >>> preds = tensor([0, 0.5, 0.7, 0.8])
+        >>> target = tensor([0, 1, 1, 0])
         >>> metric = BinaryAveragePrecision(thresholds=None)
         >>> metric(preds, target)
         tensor(0.5833)
-        >>> metric = BinaryAveragePrecision(thresholds=5)
-        >>> metric(preds, target)
+        >>> bap = BinaryAveragePrecision(thresholds=5)
+        >>> bap(preds, target)
         tensor(0.6667)
     """
     is_differentiable: bool = False
@@ -95,15 +97,12 @@ class BinaryAveragePrecision(BinaryPrecisionRecallCurve):
     full_state_update: bool = False
 
     def compute(self) -> Tensor:
-        if self.thresholds is None:
-            state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]
-        else:
-            state = self.confmat
+        state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _binary_average_precision_compute(state, self.thresholds)
 
 
 class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
-    r"""Computes the average precision (AP) score for binary tasks. The AP score summarizes a precision-recall curve
+    r"""Compute the average precision (AP) score for binary tasks. The AP score summarizes a precision-recall curve
     as an weighted mean of precisions at each threshold, with the difference in recall from the previous threshold
     as weight:
 
@@ -113,13 +112,18 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
     where :math:`P_n, R_n` is the respective precision and recall at threshold index :math:`n`. This value is
     equivalent to the area under the precision-recall curve (AUPRC).
 
-    Accepts the following input tensors:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (float tensor): ``(N, C, ...)``. Preds should be a tensor containing probabilities or logits for each
-      observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
-      softmax per sample.
-    - ``target`` (int tensor): ``(N, ...)``. Target should be a tensor containing ground truth labels, and therefore
-      only contain values in the [0, n_classes-1] range (except if `ignore_index` is specified).
+    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, C, ...)`` containing probabilities or logits
+      for each observation. If preds has values outside [0,1] range we consider the input to be logits and will auto
+      apply softmax per sample.
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)`` containing ground truth labels, and
+      therefore only contain values in the [0, n_classes-1] range (except if `ignore_index` is specified).
+
+    As output to ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``mcap`` (:class:`~torch.Tensor`): If `average=None|"none"` then a 1d tensor of shape (n_classes, ) will be
+      returned with AP score per class. If `average="macro"|"weighted"` then a single scalar is returned.
 
     Additional dimension ``...`` will be flattened into the batch dimension.
 
@@ -135,8 +139,8 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
             Defines the reduction that is applied over classes. Should be one of the following:
 
             - ``macro``: Calculate score for each class and average them
-            - ``weighted``: Calculates score for each class and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates score for each class and applies no reduction
+            - ``weighted``: calculates score for each class and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates score for each class and applies no reduction
         thresholds:
             Can be one of:
 
@@ -152,28 +156,25 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
             Set to ``False`` for faster computations.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    Returns:
-        If `average=None|"none"` then a 1d tensor of shape (n_classes, ) will be returned with AP score per class.
-        If `average="macro"|"weighted"` then a single scalar is returned.
-
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics.classification import MulticlassAveragePrecision
-        >>> preds = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
-        ...                       [0.05, 0.75, 0.05, 0.05, 0.05],
-        ...                       [0.05, 0.05, 0.75, 0.05, 0.05],
-        ...                       [0.05, 0.05, 0.05, 0.75, 0.05]])
-        >>> target = torch.tensor([0, 1, 3, 2])
+        >>> preds = tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
+        ...                 [0.05, 0.75, 0.05, 0.05, 0.05],
+        ...                 [0.05, 0.05, 0.75, 0.05, 0.05],
+        ...                 [0.05, 0.05, 0.05, 0.75, 0.05]])
+        >>> target = tensor([0, 1, 3, 2])
         >>> metric = MulticlassAveragePrecision(num_classes=5, average="macro", thresholds=None)
         >>> metric(preds, target)
         tensor(0.6250)
-        >>> metric = MulticlassAveragePrecision(num_classes=5, average=None, thresholds=None)
-        >>> metric(preds, target)
+        >>> mcap = MulticlassAveragePrecision(num_classes=5, average=None, thresholds=None)
+        >>> mcap(preds, target)
         tensor([1.0000, 1.0000, 0.2500, 0.2500,    nan])
-        >>> metric = MulticlassAveragePrecision(num_classes=5, average="macro", thresholds=5)
-        >>> metric(preds, target)
+        >>> mcap = MulticlassAveragePrecision(num_classes=5, average="macro", thresholds=5)
+        >>> mcap(preds, target)
         tensor(0.5000)
-        >>> metric = MulticlassAveragePrecision(num_classes=5, average=None, thresholds=5)
-        >>> metric(preds, target)
+        >>> mcap = MulticlassAveragePrecision(num_classes=5, average=None, thresholds=5)
+        >>> mcap(preds, target)
         tensor([1.0000, 1.0000, 0.2500, 0.2500, -0.0000])
     """
 
@@ -199,15 +200,12 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
         self.validate_args = validate_args
 
     def compute(self) -> Tensor:
-        if self.thresholds is None:
-            state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]
-        else:
-            state = self.confmat
+        state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _multiclass_average_precision_compute(state, self.num_classes, self.average, self.thresholds)
 
 
 class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
-    r"""Computes the average precision (AP) score for binary tasks. The AP score summarizes a precision-recall curve
+    r"""Compute the average precision (AP) score for binary tasks. The AP score summarizes a precision-recall curve
     as an weighted mean of precisions at each threshold, with the difference in recall from the previous threshold
     as weight:
 
@@ -217,20 +215,25 @@ class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
     where :math:`P_n, R_n` is the respective precision and recall at threshold index :math:`n`. This value is
     equivalent to the area under the precision-recall curve (AUPRC).
 
-    Accepts the following input tensors:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (float tensor): ``(N, C, ...)``. Preds should be a tensor containing probabilities or logits for each
-      observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
-      sigmoid per element.
-    - ``target`` (int tensor): ``(N, C, ...)``. Target should be a tensor containing ground truth labels, and therefore
-      only contain {0,1} values (except if `ignore_index` is specified).
+    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, C, ...)`` containing probabilities or logits
+      for each observation. If preds has values outside [0,1] range we consider the input to be logits and will auto
+      apply sigmoid per element.
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)`` containing ground truth labels, and
+      therefore only contain {0,1} values (except if `ignore_index` is specified).
+
+    As output to ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``mlap`` (:class:`~torch.Tensor`): If `average=None|"none"` then a 1d tensor of shape (n_classes, ) will be
+      returned with AP score per class. If `average="micro|macro"|"weighted"` then a single scalar is returned.
 
     Additional dimension ``...`` will be flattened into the batch dimension.
 
-    The implementation both supports calculating the metric in a non-binned but accurate version and a binned version
-    that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
-    non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
-    argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
+    The implementation both supports calculating the metric in a non-binned but accurate version and a binned
+    version that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate
+    the non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the
+    `thresholds` argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
     size :math:`\mathcal{O}(n_{thresholds} \times n_{labels})` (constant memory).
 
     Args:
@@ -240,8 +243,8 @@ class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
 
             - ``micro``: Sum score over all labels
             - ``macro``: Calculate score for each label and average them
-            - ``weighted``: Calculates score for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates score for each label and applies no reduction
+            - ``weighted``: calculates score for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates score for each label and applies no reduction
         thresholds:
             Can be one of:
 
@@ -257,31 +260,28 @@ class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
             Set to ``False`` for faster computations.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    Returns:
-        If `average=None|"none"` then a 1d tensor of shape (n_classes, ) will be returned with AP score per class.
-        If `average="micro|macro"|"weighted"` then a single scalar is returned.
-
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics.classification import MultilabelAveragePrecision
-        >>> preds = torch.tensor([[0.75, 0.05, 0.35],
-        ...                       [0.45, 0.75, 0.05],
-        ...                       [0.05, 0.55, 0.75],
-        ...                       [0.05, 0.65, 0.05]])
-        >>> target = torch.tensor([[1, 0, 1],
-        ...                        [0, 0, 0],
-        ...                        [0, 1, 1],
-        ...                        [1, 1, 1]])
+        >>> preds = tensor([[0.75, 0.05, 0.35],
+        ...                 [0.45, 0.75, 0.05],
+        ...                 [0.05, 0.55, 0.75],
+        ...                 [0.05, 0.65, 0.05]])
+        >>> target = tensor([[1, 0, 1],
+        ...                  [0, 0, 0],
+        ...                  [0, 1, 1],
+        ...                  [1, 1, 1]])
         >>> metric = MultilabelAveragePrecision(num_labels=3, average="macro", thresholds=None)
         >>> metric(preds, target)
         tensor(0.7500)
-        >>> metric = MultilabelAveragePrecision(num_labels=3, average=None, thresholds=None)
-        >>> metric(preds, target)
+        >>> mlap = MultilabelAveragePrecision(num_labels=3, average=None, thresholds=None)
+        >>> mlap(preds, target)
         tensor([0.7500, 0.5833, 0.9167])
-        >>> metric = MultilabelAveragePrecision(num_labels=3, average="macro", thresholds=5)
-        >>> metric(preds, target)
+        >>> mlap = MultilabelAveragePrecision(num_labels=3, average="macro", thresholds=5)
+        >>> mlap(preds, target)
         tensor(0.7778)
-        >>> metric = MultilabelAveragePrecision(num_labels=3, average=None, thresholds=5)
-        >>> metric(preds, target)
+        >>> mlap = MultilabelAveragePrecision(num_labels=3, average=None, thresholds=5)
+        >>> mlap(preds, target)
         tensor([0.7500, 0.6667, 0.9167])
     """
     is_differentiable: bool = False
@@ -306,17 +306,14 @@ class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
         self.validate_args = validate_args
 
     def compute(self) -> Tensor:
-        if self.thresholds is None:
-            state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]
-        else:
-            state = self.confmat
+        state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _multilabel_average_precision_compute(
             state, self.num_labels, self.average, self.thresholds, self.ignore_index
         )
 
 
 class AveragePrecision:
-    r"""Computes the average precision (AP) score. The AP score summarizes a precision-recall curve as an weighted
+    r"""Compute the average precision (AP) score. The AP score summarizes a precision-recall curve as an weighted
     mean of precisions at each threshold, with the difference in recall from the previous threshold as weight:
 
     .. math::
@@ -331,17 +328,18 @@ class AveragePrecision:
     for the specific details of each argument influence and examples.
 
     Legacy Example:
-        >>> pred = torch.tensor([0, 0.1, 0.8, 0.4])
-        >>> target = torch.tensor([0, 1, 1, 1])
+        >>> from torch import tensor
+        >>> pred = tensor([0, 0.1, 0.8, 0.4])
+        >>> target = tensor([0, 1, 1, 1])
         >>> average_precision = AveragePrecision(task="binary")
         >>> average_precision(pred, target)
         tensor(1.)
 
-        >>> pred = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
-        ...                      [0.05, 0.75, 0.05, 0.05, 0.05],
-        ...                      [0.05, 0.05, 0.75, 0.05, 0.05],
-        ...                      [0.05, 0.05, 0.05, 0.75, 0.05]])
-        >>> target = torch.tensor([0, 1, 3, 2])
+        >>> pred = tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
+        ...                [0.05, 0.75, 0.05, 0.05, 0.05],
+        ...                [0.05, 0.05, 0.75, 0.05, 0.05],
+        ...                [0.05, 0.05, 0.05, 0.75, 0.05]])
+        >>> target = tensor([0, 1, 3, 2])
         >>> average_precision = AveragePrecision(task="multiclass", num_classes=5, average=None)
         >>> average_precision(pred, target)
         tensor([1.0000, 1.0000, 0.2500, 0.2500,    nan])
@@ -358,7 +356,7 @@ class AveragePrecision:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
-        kwargs.update(dict(thresholds=thresholds, ignore_index=ignore_index, validate_args=validate_args))
+        kwargs.update({"thresholds": thresholds, "ignore_index": ignore_index, "validate_args": validate_args})
         if task == "binary":
             return BinaryAveragePrecision(**kwargs)
         if task == "multiclass":

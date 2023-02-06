@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ from torchmetrics.metric import Metric
 
 
 class SignalNoiseRatio(Metric):
-    r"""Calculates `Signal-to-noise ratio`_ (SNR_) meric for evaluating quality of audio. It is defined as:
+    r"""Calculate `Signal-to-noise ratio`_ (SNR_) meric for evaluating quality of audio. It is defined as:
 
     .. math::
         \text{SNR} = \frac{P_{signal}}{P_{noise}}
@@ -46,10 +46,10 @@ class SignalNoiseRatio(Metric):
             if target and preds have a different shape
 
     Example:
-        >>> import torch
+        >>> from torch import tensor
         >>> from torchmetrics import SignalNoiseRatio
-        >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
-        >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
+        >>> target = tensor([3.0, -0.5, 2.0, 7.0])
+        >>> preds = tensor([2.5, 0.0, 2.0, 8.0])
         >>> snr = SignalNoiseRatio()
         >>> snr(preds, target)
         tensor(16.1805)
@@ -79,12 +79,12 @@ class SignalNoiseRatio(Metric):
         self.total += snr_batch.numel()
 
     def compute(self) -> Tensor:
-        """Computes metric."""
+        """Compute metric."""
         return self.sum_snr / self.total
 
 
 class ScaleInvariantSignalNoiseRatio(Metric):
-    """Calculates `Scale-invariant signal-to-noise ratio`_ (SI-SNR) metric for evaluating quality of audio.
+    """Calculate `Scale-invariant signal-to-noise ratio`_ (SI-SNR) metric for evaluating quality of audio.
 
     As input to `forward` and `update` the metric accepts the following input
 
@@ -103,10 +103,10 @@ class ScaleInvariantSignalNoiseRatio(Metric):
             if target and preds have a different shape
 
     Example:
-        >>> import torch
+        >>> from torch import tensor
         >>> from torchmetrics import ScaleInvariantSignalNoiseRatio
-        >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
-        >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
+        >>> target = tensor([3.0, -0.5, 2.0, 7.0])
+        >>> preds = tensor([2.5, 0.0, 2.0, 8.0])
         >>> si_snr = ScaleInvariantSignalNoiseRatio()
         >>> si_snr(preds, target)
         tensor(15.0918)
@@ -134,5 +134,5 @@ class ScaleInvariantSignalNoiseRatio(Metric):
         self.total += si_snr_batch.numel()
 
     def compute(self) -> Tensor:
-        """Computes metric."""
+        """Compute metric."""
         return self.sum_si_snr / self.total

@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import contextlib
 import pickle
 import sys
 from functools import partial, wraps
@@ -24,10 +25,8 @@ from torch.multiprocessing import set_start_method
 from torchmetrics import Metric
 from unittests.helpers.testers import MetricTester, _assert_allclose, _assert_requires_grad, _assert_tensor
 
-try:
+with contextlib.suppress(RuntimeError):
     set_start_method("spawn")
-except RuntimeError:
-    pass
 
 
 TEXT_METRIC_INPUT = Union[Sequence[str], Sequence[Sequence[str]], Sequence[Sequence[Sequence[str]]]]
@@ -330,7 +329,7 @@ class TextTester(MetricTester):
                     key=key,
                     **kwargs_update,
                 ),
-                [(rank, self.poolSize) for rank in range(self.poolSize)],
+                [(rank, self.pool_size) for rank in range(self.pool_size)],
             )
         else:
             device = "cuda" if (torch.cuda.is_available() and torch.cuda.device_count() > 0) else "cpu"

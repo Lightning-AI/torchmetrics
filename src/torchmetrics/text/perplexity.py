@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,10 +24,19 @@ class Perplexity(Metric):
     r"""Perplexity measures how well a language model predicts a text sample. It's calculated as the average number
     of bits per word a model needs to represent the sample.
 
+    As input to ``forward`` and ``update`` the metric accepts the following input:
+
+    - ``preds`` (:class:`~torch.Tensor`): Probabilities assigned to each token in a sequence with shape
+        [batch_size, seq_len, vocab_size]
+    - ``target`` (:class:`~torch.Tensor`): Ground truth values with a shape [batch_size, seq_len]
+
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``perp`` (:class:`~torch.Tensor`): A tensor with the perplexity score
+
     Args:
-        ignore_index:
-            Integer specifying a target class to ignore. If given, this class index does not contribute
-            to the returned score.
+        ignore_index: Integer specifying a target class to ignore.
+            If given, this class index does not contribute to the returned score.
         kwargs:
             Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
@@ -36,8 +45,8 @@ class Perplexity(Metric):
         >>> preds = torch.rand(2, 8, 5, generator=torch.manual_seed(22))
         >>> target = torch.randint(5, (2, 8), generator=torch.manual_seed(22))
         >>> target[0, 6:] = -100
-        >>> metric = Perplexity(ignore_index=-100)
-        >>> metric(preds, target)
+        >>> perp = Perplexity(ignore_index=-100)
+        >>> perp(preds, target)
         tensor(5.2545)
     """
     is_differentiable = True
@@ -59,22 +68,11 @@ class Perplexity(Metric):
         self.add_state("count", default=tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
-        """Compute and store intermediate statistics for Perplexity.
-
-        Args:
-            preds:
-                Probabilities assigned to each token in a sequence with shape [batch_size, seq_len, vocab_size].
-            target:
-                Ground truth values with a shape [batch_size, seq_len].
-        """
+        """Update state with predictions and targets."""
         total_log_probs, count = _perplexity_update(preds, target, self.ignore_index)
         self.total_log_probs += total_log_probs
         self.count += count
 
     def compute(self) -> Tensor:
-        """Compute the Perplexity.
-
-        Returns:
-           Perplexity
-        """
+        """Compute the Perplexity."""
         return _perplexity_compute(self.total_log_probs, self.count)

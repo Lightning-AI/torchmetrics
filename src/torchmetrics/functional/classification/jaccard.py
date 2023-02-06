@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -89,7 +89,7 @@ def binary_jaccard_index(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculates the Jaccard index for binary tasks. The `Jaccard index`_ (also known as the intersetion over
+    r"""Calculate the Jaccard index for binary tasks. The `Jaccard index`_ (also known as the intersetion over
     union or jaccard similarity coefficient) is an statistic that can be used to determine the similarity and
     diversity of a sample set. It is defined as the size of the intersection divided by the union of the sample
     sets:
@@ -114,16 +114,17 @@ def binary_jaccard_index(
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.functional.classification import binary_jaccard_index
-        >>> target = torch.tensor([1, 1, 0, 0])
-        >>> preds = torch.tensor([0, 1, 0, 0])
+        >>> target = tensor([1, 1, 0, 0])
+        >>> preds = tensor([0, 1, 0, 0])
         >>> binary_jaccard_index(preds, target)
         tensor(0.5000)
 
     Example (preds is float tensor):
         >>> from torchmetrics.functional.classification import binary_jaccard_index
-        >>> target = torch.tensor([1, 1, 0, 0])
-        >>> preds = torch.tensor([0.35, 0.85, 0.48, 0.01])
+        >>> target = tensor([1, 1, 0, 0])
+        >>> preds = tensor([0.35, 0.85, 0.48, 0.01])
         >>> binary_jaccard_index(preds, target)
         tensor(0.5000)
     """
@@ -154,7 +155,7 @@ def multiclass_jaccard_index(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculates the Jaccard index for multiclass tasks. The `Jaccard index`_ (also known as the intersetion over
+    r"""Calculate the Jaccard index for multiclass tasks. The `Jaccard index`_ (also known as the intersetion over
     union or jaccard similarity coefficient) is an statistic that can be used to determine the similarity and
     diversity of a sample set. It is defined as the size of the intersection divided by the union of the sample
     sets:
@@ -177,8 +178,8 @@ def multiclass_jaccard_index(
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
 
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
@@ -187,21 +188,20 @@ def multiclass_jaccard_index(
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (pred is integer tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.functional.classification import multiclass_jaccard_index
-        >>> target = torch.tensor([2, 1, 0, 0])
-        >>> preds = torch.tensor([2, 1, 0, 1])
+        >>> target = tensor([2, 1, 0, 0])
+        >>> preds = tensor([2, 1, 0, 1])
         >>> multiclass_jaccard_index(preds, target, num_classes=3)
         tensor(0.6667)
 
     Example (pred is float tensor):
         >>> from torchmetrics.functional.classification import multiclass_jaccard_index
-        >>> target = torch.tensor([2, 1, 0, 0])
-        >>> preds = torch.tensor([
-        ...   [0.16, 0.26, 0.58],
-        ...   [0.22, 0.61, 0.17],
-        ...   [0.71, 0.09, 0.20],
-        ...   [0.05, 0.82, 0.13],
-        ... ])
+        >>> target = tensor([2, 1, 0, 0])
+        >>> preds = tensor([[0.16, 0.26, 0.58],
+        ...                 [0.22, 0.61, 0.17],
+        ...                 [0.71, 0.09, 0.20],
+        ...                 [0.05, 0.82, 0.13]])
         >>> multiclass_jaccard_index(preds, target, num_classes=3)
         tensor(0.6667)
     """
@@ -234,7 +234,7 @@ def multilabel_jaccard_index(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculates the Jaccard index for multilabel tasks. The `Jaccard index`_ (also known as the intersetion over
+    r"""Calculate the Jaccard index for multilabel tasks. The `Jaccard index`_ (also known as the intersetion over
     union or jaccard similarity coefficient) is an statistic that can be used to determine the similarity and
     diversity of a sample set. It is defined as the size of the intersection divided by the union of the sample
     sets:
@@ -258,8 +258,8 @@ def multilabel_jaccard_index(
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
 
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
@@ -268,16 +268,17 @@ def multilabel_jaccard_index(
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.functional.classification import multilabel_jaccard_index
-        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
-        >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
+        >>> target = tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = tensor([[0, 0, 1], [1, 0, 1]])
         >>> multilabel_jaccard_index(preds, target, num_labels=3)
         tensor(0.5000)
 
     Example (preds is float tensor):
         >>> from torchmetrics.functional.classification import multilabel_jaccard_index
-        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
-        >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
+        >>> target = tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> multilabel_jaccard_index(preds, target, num_labels=3)
         tensor(0.5000)
     """
@@ -300,7 +301,7 @@ def jaccard_index(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculates the Jaccard index. The `Jaccard index`_ (also known as the intersetion over
+    r"""Calculate the Jaccard index. The `Jaccard index`_ (also known as the intersetion over
     union or jaccard similarity coefficient) is an statistic that can be used to determine the similarity and
     diversity of a sample set. It is defined as the size of the intersection divided by the union of the sample
     sets:
@@ -313,8 +314,9 @@ def jaccard_index(
     the specific details of each argument influence and examples.
 
     Legacy Example:
-        >>> target = torch.randint(0, 2, (10, 25, 25))
-        >>> pred = torch.tensor(target)
+        >>> from torch import randint, tensor
+        >>> target = randint(0, 2, (10, 25, 25))
+        >>> pred = tensor(target)
         >>> pred[2:5, 7:13, 9:15] = 1 - pred[2:5, 7:13, 9:15]
         >>> jaccard_index(pred, target, task="multiclass", num_classes=2)
         tensor(0.9660)

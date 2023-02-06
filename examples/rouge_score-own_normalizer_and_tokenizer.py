@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,7 +33,9 @@ class UserNormalizer:
         self.pattern = r"[^a-z0-9]+"
 
     def __call__(self, text: str) -> str:
-        """The `__call__` method must be defined for this class. To ensure the functionality, the `__call__` method
+        """Call method to normalize user input.
+
+        The `__call__` method must be defined for this class. To ensure the functionality, the `__call__` method
         should obey the input/output arguments structure described below.
 
         Args:
@@ -56,7 +58,9 @@ class UserTokenizer:
     pattern = r"\s+"
 
     def __call__(self, text: str) -> Sequence[str]:
-        """The `__call__` method must be defined for this class. To ensure the functionality, the `__call__` method
+        """Call method to tokenize user input.
+
+        The `__call__` method must be defined for this class. To ensure the functionality, the `__call__` method
         should obey the input/output arguments structure described below.
 
         Args:

@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -74,7 +74,7 @@ def binary_hinge_loss(
     ignore_index: Optional[int] = None,
     validate_args: bool = False,
 ) -> Tensor:
-    r"""Computes the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs) for binary tasks. It is
+    r"""Compute the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs) for binary tasks. It is
     defined as:
 
     .. math::
@@ -103,9 +103,10 @@ def binary_hinge_loss(
             Set to ``False`` for faster computations.
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics.functional.classification import binary_hinge_loss
-        >>> preds = torch.tensor([0.25, 0.25, 0.55, 0.75, 0.75])
-        >>> target = torch.tensor([0, 0, 1, 1, 1])
+        >>> preds = tensor([0.25, 0.25, 0.55, 0.75, 0.75])
+        >>> target = tensor([0, 0, 1, 1, 1])
         >>> binary_hinge_loss(preds, target)
         tensor(0.6900)
         >>> binary_hinge_loss(preds, target, squared=True)
@@ -152,7 +153,7 @@ def _multiclass_hinge_loss_update(
     squared: bool,
     multiclass_mode: Literal["crammer-singer", "one-vs-all"] = "crammer-singer",
 ) -> Tuple[Tensor, Tensor]:
-    if not torch.all((0 <= preds) * (preds <= 1)):
+    if not torch.all((preds >= 0) * (preds <= 1)):
         preds = preds.softmax(1)
 
     target = to_onehot(target, max(2, preds.shape[1])).bool()
@@ -184,7 +185,7 @@ def multiclass_hinge_loss(
     ignore_index: Optional[int] = None,
     validate_args: bool = False,
 ) -> Tensor:
-    r"""Computes the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs) for multiclass tasks.
+    r"""Compute the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs) for multiclass tasks.
 
     The metric can be computed in two ways. Either, the definition by Crammer and Singer is used:
 
@@ -219,12 +220,13 @@ def multiclass_hinge_loss(
             Set to ``False`` for faster computations.
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics.functional.classification import multiclass_hinge_loss
-        >>> preds = torch.tensor([[0.25, 0.20, 0.55],
-        ...                       [0.55, 0.05, 0.40],
-        ...                       [0.10, 0.30, 0.60],
-        ...                       [0.90, 0.05, 0.05]])
-        >>> target = torch.tensor([0, 1, 2, 0])
+        >>> preds = tensor([[0.25, 0.20, 0.55],
+        ...                 [0.55, 0.05, 0.40],
+        ...                 [0.10, 0.30, 0.60],
+        ...                 [0.90, 0.05, 0.05]])
+        >>> target = tensor([0, 1, 2, 0])
         >>> multiclass_hinge_loss(preds, target, num_classes=3)
         tensor(0.9125)
         >>> multiclass_hinge_loss(preds, target, num_classes=3, squared=True)
@@ -250,7 +252,7 @@ def hinge_loss(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs).
+    r"""Compute the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs).
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'`` or ``'multiclass'``. See the documentation of
@@ -258,19 +260,19 @@ def hinge_loss(
     each argument influence and examples.
 
     Legacy Example:
-        >>> import torch
-        >>> target = torch.tensor([0, 1, 1])
-        >>> preds = torch.tensor([0.5, 0.7, 0.1])
+        >>> from torch import tensor
+        >>> target = tensor([0, 1, 1])
+        >>> preds = tensor([0.5, 0.7, 0.1])
         >>> hinge_loss(preds, target, task="binary")
         tensor(0.9000)
 
-        >>> target = torch.tensor([0, 1, 2])
-        >>> preds = torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
+        >>> target = tensor([0, 1, 2])
+        >>> preds = tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
         >>> hinge_loss(preds, target, task="multiclass", num_classes=3)
         tensor(1.5551)
 
-        >>> target = torch.tensor([0, 1, 2])
-        >>> preds = torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
+        >>> target = tensor([0, 1, 2])
+        >>> preds = tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
         >>> hinge_loss(preds, target, task="multiclass", num_classes=3, multiclass_mode="one-vs-all")
         tensor([1.3743, 1.1945, 1.2359])
     """

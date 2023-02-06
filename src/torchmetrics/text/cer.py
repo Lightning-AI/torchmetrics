@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,7 +22,8 @@ from torchmetrics.metric import Metric
 
 
 class CharErrorRate(Metric):
-    r"""Character Error Rate (CER_) is a metric of the performance of an automatic speech recognition (ASR) system.
+    r"""Character Error Rate (`CER`_) is a metric of the performance of an automatic speech recognition (ASR)
+    system.
 
     This value indicates the percentage of characters that were incorrectly predicted.
     The lower the value, the better the performance of the ASR system with a CharErrorRate of 0 being
@@ -41,17 +42,23 @@ class CharErrorRate(Metric):
 
     Compute CharErrorRate score of transcribed segments against references.
 
+    As input to ``forward`` and ``update`` the metric accepts the following input:
+
+    - ``preds`` (:class:`~str`): Transcription(s) to score as a string or list of strings
+    - ``target`` (:class:`~str`): Reference(s) for each speech input as a string or list of strings
+
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
+    -  ``cer`` (:class:`~torch.Tensor`): A tensor with the Character Error Rate score
+
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
-
-    Returns:
-        Character error rate score
 
     Examples:
         >>> preds = ["this is the prediction", "there is an other sample"]
         >>> target = ["this is the reference", "there is another one"]
-        >>> metric = CharErrorRate()
-        >>> metric(preds, target)
+        >>> cer = CharErrorRate()
+        >>> cer(preds, target)
         tensor(0.3415)
     """
     is_differentiable: bool = False
@@ -70,20 +77,11 @@ class CharErrorRate(Metric):
         self.add_state("total", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
 
     def update(self, preds: Union[str, List[str]], target: Union[str, List[str]]) -> None:  # type: ignore
-        """Store references/predictions for computing Character Error Rate scores.
-
-        Args:
-            preds: Transcription(s) to score as a string or list of strings
-            target: Reference(s) for each speech input as a string or list of strings
-        """
+        """Update state with predictions and targets."""
         errors, total = _cer_update(preds, target)
         self.errors += errors
         self.total += total
 
     def compute(self) -> Tensor:
-        """Calculate the character error rate.
-
-        Returns:
-           Character error rate score
-        """
+        """Calculate the character error rate."""
         return _cer_compute(self.errors, self.total)

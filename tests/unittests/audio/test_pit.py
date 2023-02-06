@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -127,7 +127,7 @@ class TestPIT(MetricTester):
             PermutationInvariantTraining,
             reference_metric=partial(_average_metric, metric_func=ref_metric),
             dist_sync_on_step=dist_sync_on_step,
-            metric_args=dict(metric_func=metric_func, eval_func=eval_func),
+            metric_args={"metric_func": metric_func, "eval_func": eval_func},
         )
 
     def test_pit_functional(self, preds, target, ref_metric, metric_func, eval_func):
@@ -136,7 +136,7 @@ class TestPIT(MetricTester):
             target=target,
             metric_functional=permutation_invariant_training,
             reference_metric=ref_metric,
-            metric_args=dict(metric_func=metric_func, eval_func=eval_func),
+            metric_args={"metric_func": metric_func, "eval_func": eval_func},
         )
 
     def test_pit_differentiability(self, preds, target, ref_metric, metric_func, eval_func):

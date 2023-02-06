@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -75,9 +75,12 @@ class TestPrecision(RetrievalMetricTester):
         k: int,
         adaptive_k: bool,
     ):
-        metric_args = dict(
-            empty_target_action=empty_target_action, k=k, ignore_index=ignore_index, adaptive_k=adaptive_k
-        )
+        metric_args = {
+            "empty_target_action": empty_target_action,
+            "k": k,
+            "ignore_index": ignore_index,
+            "adaptive_k": adaptive_k,
+        }
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -107,7 +110,12 @@ class TestPrecision(RetrievalMetricTester):
         k: int,
         adaptive_k: bool,
     ):
-        metric_args = dict(empty_target_action=empty_target_action, k=k, ignore_index=-100, adaptive_k=adaptive_k)
+        metric_args = {
+            "empty_target_action": empty_target_action,
+            "k": k,
+            "ignore_index": -100,
+            "adaptive_k": adaptive_k,
+        }
 
         self.run_class_metric_test(
             ddp=ddp,

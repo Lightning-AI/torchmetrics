@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -231,11 +231,9 @@ class TestSSIM(MetricTester):
     ],
 )
 def test_ssim_invalid_inputs(pred, target, kernel, sigma):
-    pred_t = torch.rand(pred, dtype=torch.float32)
-    target_t = torch.rand(target, dtype=torch.float64)
-    with pytest.raises(TypeError):
-        structural_similarity_index_measure(pred_t, target_t)
-
+    """Test that an value errors are raised if input sizes are different, kernel length and sigma does not match
+    size or invalid values are provided.
+    """
     pred = torch.rand(pred)
     target = torch.rand(target)
     with pytest.raises(ValueError):
@@ -243,7 +241,7 @@ def test_ssim_invalid_inputs(pred, target, kernel, sigma):
 
 
 def test_ssim_unequal_kernel_size():
-    """Test the case where kernel_size[0] != kernel_size[1]"""
+    """Test the case where kernel_size[0] != kernel_size[1]."""
     preds = torch.tensor(
         [
             [

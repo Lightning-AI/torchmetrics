@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -64,7 +64,7 @@ def _ce_compute(
     norm: str = "l1",
     debias: bool = False,
 ) -> Tensor:
-    """Computes the calibration error given the provided bin boundaries and norm.
+    """Compute the calibration error given the provided bin boundaries and norm.
 
     Args:
         confidences: The confidence (i.e. predicted prob) of the top1 prediction.
@@ -143,9 +143,9 @@ def binary_calibration_error(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""`Computes the Top-label Calibration Error`_ for binary tasks. The expected calibration error can be used to
-    quantify how well a given model is calibrated e.g. how well the predicted output probabilities of the model
-    matches the actual probabilities of the ground truth distribution.
+    r"""`Top-label Calibration Error`_ for binary tasks. The expected calibration error can be used to quantify how
+    well a given model is calibrated e.g. how well the predicted output probabilities of the model matches the
+    actual probabilities of the ground truth distribution.
 
     Three different norms are implemented, each corresponding to variations on the calibration error metric.
 
@@ -235,7 +235,7 @@ def _multiclass_calibration_error_update(
     preds: Tensor,
     target: Tensor,
 ) -> Tensor:
-    if not torch.all((0 <= preds) * (preds <= 1)):
+    if not torch.all((preds >= 0) * (preds <= 1)):
         preds = preds.softmax(1)
     confidences, predictions = preds.max(dim=1)
     accuracies = predictions.eq(target)
@@ -251,9 +251,9 @@ def multiclass_calibration_error(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""`Computes the Top-label Calibration Error`_ for multiclass tasks. The expected calibration error can be used
-    to quantify how well a given model is calibrated e.g. how well the predicted output probabilities of the model
-    matches the actual probabilities of the ground truth distribution.
+    r"""`Top-label Calibration Error`_ for multiclass tasks. The expected calibration error can be used to quantify
+    how well a given model is calibrated e.g. how well the predicted output probabilities of the model matches the
+    actual probabilities of the ground truth distribution.
 
     Three different norms are implemented, each corresponding to variations on the calibration error metric.
 
@@ -323,8 +323,8 @@ def calibration_error(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""`Computes the Top-label Calibration Error`_. The expected calibration error can be used to quantify how well
-    a given model is calibrated e.g. how well the predicted output probabilities of the model matches the actual
+    r"""`Top-label Calibration Error`_. The expected calibration error can be used to quantify how well a given
+    model is calibrated e.g. how well the predicted output probabilities of the model matches the actual
     probabilities of the ground truth distribution.
 
     Three different norms are implemented, each corresponding to variations on the calibration error metric.

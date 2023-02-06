@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -43,6 +43,12 @@ def test_error_on_wrong_input():
 
     with pytest.raises(ValueError, match="Expected keyword argument `compute_on_cpu` to be an `bool` bu.*"):
         DummyMetric(compute_on_cpu=None)
+
+    with pytest.raises(ValueError, match="Unexpected keyword arguments: `foo`"):
+        DummyMetric(foo=True)
+
+    with pytest.raises(ValueError, match="Unexpected keyword arguments: `bar`, `foo`"):
+        DummyMetric(foo=True, bar=42)
 
 
 def test_inherit():
@@ -145,8 +151,8 @@ def test_compute():
             return self.x
 
     a = A()
-    assert 0 == a.compute()
-    assert 0 == a.x
+    assert a.compute() == 0
+    assert a.x == 0
     a.update(1)
     assert a._computed is None
     assert a.compute() == 1

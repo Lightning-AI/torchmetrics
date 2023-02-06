@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class SpectralDistortionIndex(Metric):
-    """Computes Spectral Distortion Index (SpectralDistortionIndex_) also now as D_lambda is used to compare the
+    """Compute Spectral Distortion Index (SpectralDistortionIndex_) also now as D_lambda is used to compare the
     spectral distortion between two images.
 
     As input to ``forward`` and ``update`` the metric accepts the following input
@@ -77,9 +77,9 @@ class SpectralDistortionIndex(Metric):
         if not isinstance(p, int) or p <= 0:
             raise ValueError(f"Expected `p` to be a positive integer. Got p: {p}.")
         self.p = p
-        ALLOWED_REDUCTION = ("elementwise_mean", "sum", "none")
-        if reduction not in ALLOWED_REDUCTION:
-            raise ValueError(f"Expected argument `reduction` be one of {ALLOWED_REDUCTION} but got {reduction}")
+        allowed_reductions = ("elementwise_mean", "sum", "none")
+        if reduction not in allowed_reductions:
+            raise ValueError(f"Expected argument `reduction` be one of {allowed_reductions} but got {reduction}")
         self.reduction = reduction
         self.add_state("preds", default=[], dist_reduce_fx="cat")
         self.add_state("target", default=[], dist_reduce_fx="cat")
@@ -91,7 +91,7 @@ class SpectralDistortionIndex(Metric):
         self.target.append(target)
 
     def compute(self) -> Tensor:
-        """Computes and returns spectral distortion index."""
+        """Compute and returns spectral distortion index."""
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         return _spectral_distortion_index_compute(preds, target, self.p, self.reduction)

@@ -14,3 +14,4 @@ ________________
 
 .. autoclass:: torchmetrics.MetricTracker
     :noindex:
+    :exclude-members: update, compute

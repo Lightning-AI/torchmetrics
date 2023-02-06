@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -161,12 +161,12 @@ class TestRetrievalPrecisionRecallCurve(RetrievalPrecisionRecallCurveTester):
         max_k,
         adaptive_k,
     ):
-        metric_args = dict(
-            max_k=max_k,
-            adaptive_k=adaptive_k,
-            empty_target_action=empty_target_action,
-            ignore_index=ignore_index,
-        )
+        metric_args = {
+            "max_k": max_k,
+            "adaptive_k": adaptive_k,
+            "empty_target_action": empty_target_action,
+            "ignore_index": ignore_index,
+        }
 
         self.run_class_metric_test(
             ddp=ddp,

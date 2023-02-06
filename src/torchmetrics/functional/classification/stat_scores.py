@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -98,7 +98,7 @@ def _binary_stat_scores_format(
     - Mask all datapoints that should be ignored with negative values
     """
     if preds.is_floating_point():
-        if not torch.all((0 <= preds) * (preds <= 1)):
+        if not torch.all((preds >= 0) * (preds <= 1)):
             # preds is logits, convert with sigmoid
             preds = preds.sigmoid()
         preds = preds > threshold
@@ -119,7 +119,7 @@ def _binary_stat_scores_update(
     target: Tensor,
     multidim_average: Literal["global", "samplewise"] = "global",
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-    """Computes the statistics."""
+    """Compute the statistics."""
     sum_dim = [0, 1] if multidim_average == "global" else 1
     tp = ((target == preds) & (target == 1)).sum(sum_dim).squeeze()
     fn = ((target != preds) & (target == 1)).sum(sum_dim).squeeze()
@@ -143,7 +143,7 @@ def binary_stat_scores(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes the number of true positives, false positives, true negatives, false negatives and the support for
+    r"""Compute the number of true positives, false positives, true negatives, false negatives and the support for
     binary tasks. Related to `Type I and Type II errors`_.
 
     Accepts the following input tensors:
@@ -152,9 +152,6 @@ def binary_stat_scores(
       [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, ...)``
-
-    The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
 
     Args:
         preds: Tensor with predictions
@@ -181,28 +178,25 @@ def binary_stat_scores(
         - If ``multidim_average`` is set to ``samplewise``, the shape will be ``(N, 5)``
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.functional.classification import binary_stat_scores
-        >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
-        >>> preds = torch.tensor([0, 0, 1, 1, 0, 1])
+        >>> target = tensor([0, 1, 0, 1, 0, 1])
+        >>> preds = tensor([0, 0, 1, 1, 0, 1])
         >>> binary_stat_scores(preds, target)
         tensor([2, 1, 2, 1, 3])
 
     Example (preds is float tensor):
         >>> from torchmetrics.functional.classification import binary_stat_scores
-        >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
-        >>> preds = torch.tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
+        >>> target = tensor([0, 1, 0, 1, 0, 1])
+        >>> preds = tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
         >>> binary_stat_scores(preds, target)
         tensor([2, 1, 2, 1, 3])
 
     Example (multidim tensors):
         >>> from torchmetrics.functional.classification import binary_stat_scores
-        >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
-        >>> preds = torch.tensor(
-        ...     [
-        ...         [[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
-        ...         [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]],
-        ...     ]
-        ... )
+        >>> target = tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
+        >>> preds = tensor([[[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
+        ...                 [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]]])
         >>> binary_stat_scores(preds, target, multidim_average='samplewise')
         tensor([[2, 3, 0, 1, 3],
                 [0, 2, 1, 3, 3]])
@@ -304,10 +298,7 @@ def _multiclass_stat_scores_tensor_validation(
         )
 
     num_unique_values = len(torch.unique(target))
-    if ignore_index is None:
-        check = num_unique_values > num_classes
-    else:
-        check = num_unique_values > num_classes + 1
+    check = num_unique_values > num_classes if ignore_index is None else num_unique_values > num_classes + 1
     if check:
         raise RuntimeError(
             "Detected more unique values in `target` than `num_classes`. Expected only "
@@ -337,10 +328,7 @@ def _multiclass_stat_scores_format(
     # Apply argmax if we have one more dimension
     if preds.ndim == target.ndim + 1 and top_k == 1:
         preds = preds.argmax(dim=1)
-    if top_k != 1:
-        preds = preds.reshape(*preds.shape[:2], -1)
-    else:
-        preds = preds.reshape(preds.shape[0], -1)
+    preds = preds.reshape(*preds.shape[:2], -1) if top_k != 1 else preds.reshape(preds.shape[0], -1)
     target = target.reshape(target.shape[0], -1)
     return preds, target
 
@@ -354,7 +342,7 @@ def _multiclass_stat_scores_update(
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-    """Computes the statistics.
+    """Compute the statistics.
 
     - If ``multidim_average`` is equal to samplewise or ``top_k`` is not 1, we transform both preds and
     target into one hot format.
@@ -459,7 +447,7 @@ def multiclass_stat_scores(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes the number of true positives, false positives, true negatives, false negatives and the support for
+    r"""Compute the number of true positives, false positives, true negatives, false negatives and the support for
     multiclass tasks. Related to `Type I and Type II errors`_.
 
     Accepts the following input tensors:
@@ -468,9 +456,6 @@ def multiclass_stat_scores(
       we apply ``torch.argmax`` along the ``C`` dimension to automatically convert probabilities/logits into
       an int tensor.
     - ``target`` (int tensor): ``(N, ...)``
-
-    The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
 
     Args:
         preds: Tensor with predictions
@@ -481,8 +466,8 @@ def multiclass_stat_scores(
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
         top_k:
             Number of highest probability or logit score predictions considered to find the correct label.
             Only works when ``preds`` contain probabilities/logits.
@@ -514,9 +499,10 @@ def multiclass_stat_scores(
           - If ``average=None/'none'``, the shape will be ``(N, C, 5)``
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.functional.classification import multiclass_stat_scores
-        >>> target = torch.tensor([2, 1, 0, 0])
-        >>> preds = torch.tensor([2, 1, 0, 1])
+        >>> target = tensor([2, 1, 0, 0])
+        >>> preds = tensor([2, 1, 0, 1])
         >>> multiclass_stat_scores(preds, target, num_classes=3, average='micro')
         tensor([3, 1, 7, 1, 4])
         >>> multiclass_stat_scores(preds, target, num_classes=3, average=None)
@@ -526,13 +512,11 @@ def multiclass_stat_scores(
 
     Example (preds is float tensor):
         >>> from torchmetrics.functional.classification import multiclass_stat_scores
-        >>> target = torch.tensor([2, 1, 0, 0])
-        >>> preds = torch.tensor([
-        ...   [0.16, 0.26, 0.58],
-        ...   [0.22, 0.61, 0.17],
-        ...   [0.71, 0.09, 0.20],
-        ...   [0.05, 0.82, 0.13],
-        ... ])
+        >>> target = tensor([2, 1, 0, 0])
+        >>> preds = tensor([[0.16, 0.26, 0.58],
+        ...                 [0.22, 0.61, 0.17],
+        ...                 [0.71, 0.09, 0.20],
+        ...                 [0.05, 0.82, 0.13]])
         >>> multiclass_stat_scores(preds, target, num_classes=3, average='micro')
         tensor([3, 1, 7, 1, 4])
         >>> multiclass_stat_scores(preds, target, num_classes=3, average=None)
@@ -542,8 +526,8 @@ def multiclass_stat_scores(
 
     Example (multidim tensors):
         >>> from torchmetrics.functional.classification import multiclass_stat_scores
-        >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
-        >>> preds = torch.tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
+        >>> target = tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
+        >>> preds = tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
         >>> multiclass_stat_scores(preds, target, num_classes=3, multidim_average='samplewise', average='micro')
         tensor([[3, 3, 9, 3, 6],
                 [2, 4, 8, 4, 6]])
@@ -655,7 +639,7 @@ def _multilabel_stat_scores_format(
     - Mask all elements that should be ignored with negative numbers for later filtration
     """
     if preds.is_floating_point():
-        if not torch.all((0 <= preds) * (preds <= 1)):
+        if not torch.all((preds >= 0) * (preds <= 1)):
             preds = preds.sigmoid()
         preds = preds > threshold
     preds = preds.reshape(*preds.shape[:2], -1)
@@ -672,7 +656,7 @@ def _multilabel_stat_scores_format(
 def _multilabel_stat_scores_update(
     preds: Tensor, target: Tensor, multidim_average: Literal["global", "samplewise"] = "global"
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-    """Computes the statistics."""
+    """Compute the statistics."""
     sum_dim = [0, -1] if multidim_average == "global" else [-1]
     tp = ((target == preds) & (target == 1)).sum(sum_dim).squeeze()
     fn = ((target != preds) & (target == 1)).sum(sum_dim).squeeze()
@@ -716,7 +700,7 @@ def multilabel_stat_scores(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes the number of true positives, false positives, true negatives, false negatives and the support for
+    r"""Compute the number of true positives, false positives, true negatives, false negatives and the support for
     multilabel tasks. Related to `Type I and Type II errors`_.
 
     Accepts the following input tensors:
@@ -725,9 +709,6 @@ def multilabel_stat_scores(
       [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, C, ...)``
-
-    The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
 
     Args:
         preds: Tensor with predictions
@@ -739,8 +720,8 @@ def multilabel_stat_scores(
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
 
         multidim_average:
             Defines how additionally dimensions ``...`` should be handled. Should be one of the following:
@@ -770,9 +751,10 @@ def multilabel_stat_scores(
           - If ``average=None/'none'``, the shape will be ``(N, C, 5)``
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.functional.classification import multilabel_stat_scores
-        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
-        >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
+        >>> target = tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = tensor([[0, 0, 1], [1, 0, 1]])
         >>> multilabel_stat_scores(preds, target, num_labels=3, average='micro')
         tensor([2, 1, 2, 1, 3])
         >>> multilabel_stat_scores(preds, target, num_labels=3, average=None)
@@ -782,8 +764,8 @@ def multilabel_stat_scores(
 
     Example (preds is float tensor):
         >>> from torchmetrics.functional.classification import multilabel_stat_scores
-        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
-        >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
+        >>> target = tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> multilabel_stat_scores(preds, target, num_labels=3, average='micro')
         tensor([2, 1, 2, 1, 3])
         >>> multilabel_stat_scores(preds, target, num_labels=3, average=None)
@@ -793,13 +775,9 @@ def multilabel_stat_scores(
 
     Example (multidim tensors):
         >>> from torchmetrics.functional.classification import multilabel_stat_scores
-        >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
-        >>> preds = torch.tensor(
-        ...     [
-        ...         [[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
-        ...         [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]],
-        ...     ]
-        ... )
+        >>> target = tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
+        >>> preds = tensor([[[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
+        ...                 [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]]])
         >>> multilabel_stat_scores(preds, target, num_labels=3, multidim_average='samplewise', average='micro')
         tensor([[2, 3, 0, 1, 3],
                 [0, 2, 1, 3, 3]])
@@ -918,7 +896,7 @@ def _stat_scores_update(
     ignore_index: Optional[int] = None,
     mode: DataType = None,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-    """Updates and returns the number of true positives, false positives, true negatives, false negatives. Raises
+    """Update and returns the number of true positives, false positives, true negatives, false negatives. Raises
     ValueError if:
 
         - The `ignore_index` is not valid
@@ -943,7 +921,6 @@ def _stat_scores_update(
             as ``-1``.
         mode: Mode of the input tensors
     """
-
     _negative_index_dropped = False
 
     if ignore_index is not None and ignore_index < 0 and mode is not None:
@@ -993,7 +970,7 @@ def _stat_scores_update(
 
 
 def _stat_scores_compute(tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor) -> Tensor:
-    """Computes the number of true positives, false positives, true negatives, false negatives. Concatenates the
+    """Compute the number of true positives, false positives, true negatives, false negatives. Concatenates the
     input tensors along with the support into one output.
 
     Args:
@@ -1043,10 +1020,7 @@ def _reduce_stat_scores(
     zero_div_mask = denominator == 0
     ignore_mask = denominator < 0
 
-    if weights is None:
-        weights = torch.ones_like(denominator)
-    else:
-        weights = weights.float()
+    weights = torch.ones_like(denominator) if weights is None else weights.float()
 
     numerator = torch.where(
         zero_div_mask, tensor(zero_division, dtype=numerator.dtype, device=numerator.device), numerator
@@ -1089,7 +1063,7 @@ def stat_scores(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes the number of true positives, false positives, true negatives, false negatives and the support.
+    r"""Compute the number of true positives, false positives, true negatives, false negatives and the support.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
@@ -1097,8 +1071,9 @@ def stat_scores(
     details of each argument influence and examples.
 
     Legacy Example:
-        >>> preds  = torch.tensor([1, 0, 2, 1])
-        >>> target = torch.tensor([1, 1, 2, 0])
+        >>> from torch import tensor
+        >>> preds  = tensor([1, 0, 2, 1])
+        >>> target = tensor([1, 1, 2, 0])
         >>> stat_scores(preds, target, task='multiclass', num_classes=3, average='micro')
         tensor([2, 2, 6, 2, 4])
         >>> stat_scores(preds, target, task='multiclass', num_classes=3, average=None)

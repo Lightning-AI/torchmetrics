@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ from typing import List, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor, tensor
-from torch.nn import functional as F
+from torch.nn import functional as F  # noqa: N812
 from typing_extensions import Literal
 
 from torchmetrics.utilities.checks import _check_same_shape
@@ -30,7 +30,7 @@ def _binary_clf_curve(
     sample_weights: Optional[Sequence] = None,
     pos_label: int = 1,
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    """Calculates the tps and false positives for all unique thresholds in the preds tensor. Adapted from
+    """Calculate the TPs and false positives for all unique thresholds in the preds tensor. Adapted from
     https://github.com/scikit-learn/scikit-learn/blob/main/sklearn/metrics/_ranking.py.
 
     Args:
@@ -56,10 +56,7 @@ def _binary_clf_curve(
         preds = preds[desc_score_indices]
         target = target[desc_score_indices]
 
-        if sample_weights is not None:
-            weight = sample_weights[desc_score_indices]
-        else:
-            weight = 1.0
+        weight = sample_weights[desc_score_indices] if sample_weights is not None else 1.0
 
         # pred typically has many tied values. Here we extract
         # the indices associated with the distinct values. We also
@@ -132,6 +129,12 @@ def _binary_precision_recall_curve_tensor_validation(
     """
     _check_same_shape(preds, target)
 
+    if target.is_floating_point():
+        raise ValueError(
+            "Expected argument `target` to be an int or long tensor with ground truth labels"
+            f" but got tensor with dtype {target.dtype}"
+        )
+
     if not preds.is_floating_point():
         raise ValueError(
             "Expected argument `preds` to be an floating tensor with probability/logit scores,"
@@ -171,7 +174,7 @@ def _binary_precision_recall_curve_format(
         preds = preds[idx]
         target = target[idx]
 
-    if not torch.all((0 <= preds) * (preds <= 1)):
+    if not torch.all((preds >= 0) * (preds <= 1)):
         preds = preds.sigmoid()
 
     thresholds = _adjust_threshold_arg(thresholds, preds.device)
@@ -202,7 +205,7 @@ def _binary_precision_recall_curve_compute(
     thresholds: Optional[Tensor],
     pos_label: int = 1,
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    """Computes the final pr-curve.
+    """Compute the final pr-curve.
 
     If state is a single tensor, then we calculate the pr-curve from a multi threshold confusion matrix. If state is
     original input, then we dynamically compute the binary classification curve.
@@ -241,7 +244,7 @@ def binary_precision_recall_curve(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    r"""Computes the precision-recall curve for binary tasks. The curve consist of multiple pairs of precision and
+    r"""Compute the precision-recall curve for binary tasks. The curve consist of multiple pairs of precision and
     recall values evaluated at different thresholds, such that the tradeoff between the two values can been seen.
 
     Accepts the following input tensors:
@@ -334,6 +337,10 @@ def _multiclass_precision_recall_curve_tensor_validation(
         raise ValueError(
             f"Expected `preds` to have one more dimension than `target` but got {preds.ndim} and {target.ndim}"
         )
+    if target.is_floating_point():
+        raise ValueError(
+            f"Expected argument `target` to be an int or long tensor, but got tensor with dtype {target.dtype}"
+        )
     if not preds.is_floating_point():
         raise ValueError(f"Expected `preds` to be a float tensor, but got {preds.dtype}")
     if preds.shape[1] != num_classes:
@@ -348,10 +355,7 @@ def _multiclass_precision_recall_curve_tensor_validation(
         )
 
     num_unique_values = len(torch.unique(target))
-    if ignore_index is None:
-        check = num_unique_values > num_classes
-    else:
-        check = num_unique_values > num_classes + 1
+    check = num_unique_values > num_classes if ignore_index is None else num_unique_values > num_classes + 1
     if check:
         raise RuntimeError(
             "Detected more unique values in `target` than `num_classes`. Expected only "
@@ -382,7 +386,7 @@ def _multiclass_precision_recall_curve_format(
         preds = preds[idx]
         target = target[idx]
 
-    if not torch.all((0 <= preds) * (preds <= 1)):
+    if not torch.all((preds >= 0) * (preds <= 1)):
         preds = preds.softmax(1)
 
     thresholds = _adjust_threshold_arg(thresholds, preds.device)
@@ -418,7 +422,7 @@ def _multiclass_precision_recall_curve_compute(
     num_classes: int,
     thresholds: Optional[Tensor],
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    """Computes the final pr-curve.
+    """Compute the final pr-curve.
 
     If state is a single tensor, then we calculate the pr-curve from a multi threshold confusion matrix. If state is
     original input, then we dynamically compute the binary classification curve in an iterative way.
@@ -450,7 +454,7 @@ def multiclass_precision_recall_curve(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    r"""Computes the precision-recall curve for multiclass tasks. The curve consist of multiple pairs of precision
+    r"""Compute the precision-recall curve for multiclass tasks. The curve consist of multiple pairs of precision
     and recall values evaluated at different thresholds, such that the tradeoff between the two values can been
     seen.
 
@@ -591,7 +595,7 @@ def _multilabel_precision_recall_curve_format(
     """
     preds = preds.transpose(0, 1).reshape(num_labels, -1).T
     target = target.transpose(0, 1).reshape(num_labels, -1).T
-    if not torch.all((0 <= preds) * (preds <= 1)):
+    if not torch.all((preds >= 0) * (preds <= 1)):
         preds = preds.sigmoid()
 
     thresholds = _adjust_threshold_arg(thresholds, preds.device)
@@ -636,7 +640,7 @@ def _multilabel_precision_recall_curve_compute(
     thresholds: Optional[Tensor],
     ignore_index: Optional[int] = None,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    """Computes the final pr-curve.
+    """Compute the final pr-curve.
 
     If state is a single tensor, then we calculate the pr-curve from a multi threshold confusion matrix. If state is
     original input, then we dynamically compute the binary classification curve in an iterative way.
@@ -674,7 +678,7 @@ def multilabel_precision_recall_curve(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    r"""Computes the precision-recall curve for multilabel tasks. The curve consist of multiple pairs of precision
+    r"""Compute the precision-recall curve for multilabel tasks. The curve consist of multiple pairs of precision
     and recall values evaluated at different thresholds, such that the tradeoff between the two values can been
     seen.
 
@@ -778,7 +782,7 @@ def precision_recall_curve(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    r"""Computes the precision-recall curve. The curve consist of multiple pairs of precision and recall values
+    r"""Compute the precision-recall curve. The curve consist of multiple pairs of precision and recall values
     evaluated at different thresholds, such that the tradeoff between the two values can been seen.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the

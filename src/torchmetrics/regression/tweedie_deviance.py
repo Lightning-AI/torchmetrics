@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ from torchmetrics.metric import Metric
 
 
 class TweedieDevianceScore(Metric):
-    r"""Computes the `Tweedie Deviance Score`_ between targets and predictions:
+    r"""Compute the `Tweedie Deviance Score`_ between targets and predictions:
 
     .. math::
         deviance\_score(\hat{y},y) =
@@ -39,10 +39,14 @@ class TweedieDevianceScore(Metric):
     where :math:`y` is a tensor of targets values, :math:`\hat{y}` is a tensor of predictions, and
     :math:`p` is the `power`.
 
-    Forward accepts
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (float tensor): ``(N,...)``
-    - ``targets`` (float tensor): ``(N,...)``
+    - ``preds`` (:class:`~torch.Tensor`): Predicted float tensor with shape ``(N,...)``
+    - ``target`` (:class:`~torch.Tensor`): Ground truth float tensor with shape ``(N,...)``
+
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``deviance_score`` (:class:`~torch.Tensor`): A tensor with the deviance score
 
     Args:
         power:
@@ -86,12 +90,7 @@ class TweedieDevianceScore(Metric):
         self.add_state("num_observations", torch.tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, targets: Tensor) -> None:
-        """Update metric states with predictions and targets.
-
-        Args:
-            preds: Predicted tensor with shape ``(N,d)``
-            targets: Ground truth tensor with shape ``(N,d)``
-        """
+        """Update metric states with predictions and targets."""
         sum_deviance_score, num_observations = _tweedie_deviance_score_update(preds, targets, self.power)
 
         self.sum_deviance_score += sum_deviance_score

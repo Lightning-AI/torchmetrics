@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ __doctest_requires__ = {"ShortTimeObjectiveIntelligibility": ["pystoi"]}
 
 
 class ShortTimeObjectiveIntelligibility(Metric):
-    r"""Calculates STOI (Short-Time Objective Intelligibility) metric for evaluating speech signals. Intelligibility
+    r"""Calculate STOI (Short-Time Objective Intelligibility) metric for evaluating speech signals. Intelligibility
     measure which is highly correlated with the intelligibility of degraded speech signals, e.g., due to additive
     noise, single-/multi-channel noise reduction, binary masking and vocoded speech as in CI simulations. The STOI-
     measure is intrusive, i.e., a function of the clean and degraded speech signals. STOI may be a good alternative
@@ -58,8 +58,8 @@ class ShortTimeObjectiveIntelligibility(Metric):
             If ``pystoi`` package is not installed
 
     Example:
-        >>> from torchmetrics.audio.stoi import ShortTimeObjectiveIntelligibility
         >>> import torch
+        >>> from torchmetrics.audio.stoi import ShortTimeObjectiveIntelligibility
         >>> g = torch.manual_seed(1)
         >>> preds = torch.randn(8000)
         >>> target = torch.randn(8000)
@@ -101,5 +101,5 @@ class ShortTimeObjectiveIntelligibility(Metric):
         self.total += stoi_batch.numel()
 
     def compute(self) -> Tensor:
-        """Computes metric."""
+        """Compute metric."""
         return self.sum_stoi / self.total

@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ else:
 def short_time_objective_intelligibility(
     preds: Tensor, target: Tensor, fs: int, extended: bool = False, keep_same_device: bool = False
 ) -> Tensor:
-    r"""Calculates STOI (Short-Time Objective Intelligibility) metric for evaluating speech signals. Intelligibility
+    r"""Calculate STOI (Short-Time Objective Intelligibility) metric for evaluating speech signals. Intelligibility
     measure which is highly correlated with the intelligibility of degraded speech signals, e.g., due to additive
     noise, single-/multi-channel noise reduction, binary masking and vocoded speech as in CI simulations. The STOI-
     measure is intrusive, i.e., a function of the clean and degraded speech signals. STOI may be a good alternative
@@ -61,8 +61,8 @@ def short_time_objective_intelligibility(
             If ``preds`` and ``target`` does not have the same shape
 
     Example:
-        >>> from torchmetrics.functional.audio.stoi import short_time_objective_intelligibility
         >>> import torch
+        >>> from torchmetrics.functional.audio.stoi import short_time_objective_intelligibility
         >>> g = torch.manual_seed(1)
         >>> preds = torch.randn(8000)
         >>> target = torch.randn(8000)

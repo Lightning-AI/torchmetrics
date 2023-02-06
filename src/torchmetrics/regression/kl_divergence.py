@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class KLDivergence(Metric):
-    r"""Computes the `KL divergence`_:
+    r"""Compute the `KL divergence`_:
 
     .. math::
         D_{KL}(P||Q) = \sum_{x\in\mathcal{X}} P(x) \log\frac{P(x)}{Q{x}}
@@ -32,9 +32,16 @@ class KLDivergence(Metric):
     over data and :math:`Q` is often a prior or approximation of :math:`P`. It should be noted that the KL divergence
     is a non-symetrical metric i.e. :math:`D_{KL}(P||Q) \neq D_{KL}(Q||P)`.
 
+    As input to ``forward`` and ``update`` the metric accepts the following input:
+
+    - ``p`` (:class:`~torch.Tensor`): a data distribution with shape ``(N, d)``
+    - ``q`` (:class:`~torch.Tensor`): prior or approximate distribution with shape ``(N, d)``
+
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``kl_divergence`` (:class:`~torch.Tensor`): A tensor with the KL divergence
+
     Args:
-        p: data distribution with shape ``[N, d]``
-        q: prior or approximate distribution with shape ``[N, d]``
         log_prob: bool indicating if input is log-probabilities or probabilities. If given as probabilities,
             will normalize to make sure the distributes sum to 1.
         reduction:
@@ -46,7 +53,6 @@ class KLDivergence(Metric):
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-
     Raises:
         TypeError:
             If ``log_prob`` is not an ``bool``.
@@ -57,10 +63,10 @@ class KLDivergence(Metric):
         Half precision is only support on GPU for this metric
 
     Example:
-        >>> import torch
+        >>> from torch import tensor
         >>> from torchmetrics.functional import kl_divergence
-        >>> p = torch.tensor([[0.36, 0.48, 0.16]])
-        >>> q = torch.tensor([[1/3, 1/3, 1/3]])
+        >>> p = tensor([[0.36, 0.48, 0.16]])
+        >>> q = tensor([[1/3, 1/3, 1/3]])
         >>> kl_divergence(p, q)
         tensor(0.0853)
     """

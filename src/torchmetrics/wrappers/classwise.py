@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -41,7 +41,6 @@ class ClasswiseWrapper(Metric):
         'multiclassaccuracy_2': tensor(0.)}
 
     Example (labels as list of strings):
-        >>> import torch
         >>> from torchmetrics import ClasswiseWrapper
         >>> from torchmetrics.classification import MulticlassAccuracy
         >>> metric = ClasswiseWrapper(
@@ -56,7 +55,6 @@ class ClasswiseWrapper(Metric):
         'multiclassaccuracy_dog': tensor(0.)}
 
     Example (in metric collection):
-        >>> import torch
         >>> from torchmetrics import ClasswiseWrapper, MetricCollection
         >>> from torchmetrics.classification import MulticlassAccuracy, MulticlassRecall
         >>> labels = ["horse", "fish", "dog"]

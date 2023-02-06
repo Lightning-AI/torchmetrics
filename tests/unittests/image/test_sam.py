@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@ from functools import partial
 
 import pytest
 import torch
-import torch.nn.functional as F
 from torch import Tensor
+from torch.nn import functional as F  # noqa: N812
 
 from torchmetrics.functional.image.sam import spectral_angle_mapper
 from torchmetrics.image.sam import SpectralAngleMapper
@@ -77,7 +77,7 @@ class TestSpectralAngleMapper(MetricTester):
             SpectralAngleMapper,
             partial(_baseline_sam, reduction=reduction),
             dist_sync_on_step,
-            metric_args=dict(reduction=reduction),
+            metric_args={"reduction": reduction},
         )
 
     def test_sam_functional(self, reduction, preds, target):
@@ -86,7 +86,7 @@ class TestSpectralAngleMapper(MetricTester):
             target,
             spectral_angle_mapper,
             partial(_baseline_sam, reduction=reduction),
-            metric_args=dict(reduction=reduction),
+            metric_args={"reduction": reduction},
         )
 
     # SAM half + cpu does not work due to missing support in torch.log
