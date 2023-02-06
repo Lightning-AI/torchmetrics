@@ -59,13 +59,13 @@ def _psnr_update(
     target: Tensor,
     dim: Optional[Union[int, Tuple[int, ...]]] = None,
 ) -> Tuple[Tensor, Tensor]:
-    """Update and returns variables required to compute peak signal-to-noise ratio.
+    """Update and return variables required to compute peak signal-to-noise ratio.
 
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
-        dim: Dimensions to reduce PSNR scores over provided as either an integer or a list of integers. Default is
-            None meaning scores will be reduced across all dimensions.
+        dim: Dimensions to reduce PSNR scores over provided as either an integer or a list of integers.
+            Default is None meaning scores will be reduced across all dimensions.
     """
     if dim is None:
         sum_squared_error = torch.sum(torch.pow(preds - target, 2))
