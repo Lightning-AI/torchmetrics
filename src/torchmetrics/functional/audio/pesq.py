@@ -71,11 +71,11 @@ def perceptual_evaluation_speech_quality(
             If ``preds`` and ``target`` do not have the same shape
 
     Example:
+        >>> from torch import randn
         >>> from torchmetrics.functional.audio.pesq import perceptual_evaluation_speech_quality
-        >>> import torch
         >>> g = torch.manual_seed(1)
-        >>> preds = torch.randn(8000)
-        >>> target = torch.randn(8000)
+        >>> preds = randn(8000)
+        >>> target = randn(8000)
         >>> perceptual_evaluation_speech_quality(preds, target, 8000, 'nb')
         tensor(2.2076)
         >>> perceptual_evaluation_speech_quality(preds, target, 16000, 'wb')

@@ -70,7 +70,7 @@ class TestKLDivergence(MetricTester):
             KLDivergence,
             partial(_wrap_reduction, log_prob=log_prob, reduction=reduction),
             dist_sync_on_step,
-            metric_args=dict(log_prob=log_prob, reduction=reduction),
+            metric_args={"log_prob": log_prob, "reduction": reduction},
         )
 
     def test_kldivergence_functional(self, reduction, p, q, log_prob):
@@ -80,7 +80,7 @@ class TestKLDivergence(MetricTester):
             q,
             kl_divergence,
             partial(_wrap_reduction, log_prob=log_prob, reduction=reduction),
-            metric_args=dict(log_prob=log_prob, reduction=reduction),
+            metric_args={"log_prob": log_prob, "reduction": reduction},
         )
 
     def test_kldivergence_differentiability(self, reduction, p, q, log_prob):
@@ -89,7 +89,7 @@ class TestKLDivergence(MetricTester):
             q,
             metric_module=KLDivergence,
             metric_functional=kl_divergence,
-            metric_args=dict(log_prob=log_prob, reduction=reduction),
+            metric_args={"log_prob": log_prob, "reduction": reduction},
         )
 
     # KLDivergence half + cpu does not work due to missing support in torch.clamp

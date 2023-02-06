@@ -27,8 +27,8 @@ else:
 
 
 class CompleteIntersectionOverUnion(IntersectionOverUnion):
-    r"""
-    Computes Complete Intersection Over Union (CIoU) <https://arxiv.org/abs/2005.03572>`_
+    r"""Computes Complete Intersection Over Union (CIoU) <https://arxiv.org/abs/2005.03572>`_
+
     Args:
         box_format:
             Input format of given boxes. Supported formats are ``[`xyxy`, `xywh`, `cxcywh`]``.

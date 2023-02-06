@@ -102,9 +102,9 @@ def kl_divergence(
             - ``'none'`` or ``None``: Returns score per sample
 
     Example:
-        >>> import torch
-        >>> p = torch.tensor([[0.36, 0.48, 0.16]])
-        >>> q = torch.tensor([[1/3, 1/3, 1/3]])
+        >>> from torch import tensor
+        >>> p = tensor([[0.36, 0.48, 0.16]])
+        >>> q = tensor([[1/3, 1/3, 1/3]])
         >>> kl_divergence(p, q)
         tensor(0.0853)
     """

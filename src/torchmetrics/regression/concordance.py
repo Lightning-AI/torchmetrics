@@ -45,18 +45,17 @@ class ConcordanceCorrCoef(PearsonCorrCoef):
 
     Example (single output regression):
         >>> from torchmetrics import ConcordanceCorrCoef
-        >>> import torch
-        >>> target = torch.tensor([3, -0.5, 2, 7])
-        >>> preds = torch.tensor([2.5, 0.0, 2, 8])
+        >>> from torch import tensor
+        >>> target = tensor([3, -0.5, 2, 7])
+        >>> preds = tensor([2.5, 0.0, 2, 8])
         >>> concordance = ConcordanceCorrCoef()
         >>> concordance(preds, target)
         tensor(0.9777)
 
     Example (multi output regression):
         >>> from torchmetrics import ConcordanceCorrCoef
-        >>> import torch
-        >>> target = torch.tensor([[3, -0.5], [2, 7]])
-        >>> preds = torch.tensor([[2.5, 0.0], [2, 8]])
+        >>> target = tensor([[3, -0.5], [2, 7]])
+        >>> preds = tensor([[2.5, 0.0], [2, 8]])
         >>> concordance = ConcordanceCorrCoef(num_outputs=2)
         >>> concordance(preds, target)
         tensor([0.7273, 0.9887])

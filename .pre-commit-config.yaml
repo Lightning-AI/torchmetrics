@@ -13,11 +13,11 @@
 # limitations under the License.
 
 default_language_version:
-  python: python3.9
+  python: python3
 
 ci:
   autofix_prs: true
-  autoupdate_commit_msg: '[pre-commit.ci] pre-commit suggestions'
+  autoupdate_commit_msg: "[pre-commit.ci] pre-commit suggestions"
   autoupdate_schedule: quarterly
   # submodules: true
 
@@ -34,7 +34,7 @@ repos:
       - id: check-executables-have-shebangs
       - id: check-case-conflict
       - id: check-added-large-files
-        args: ['--maxkb=100', '--enforce-all']
+        args: ["--maxkb=100", "--enforce-all"]
       - id: detect-private-key
 
   - repo: https://github.com/asottile/pyupgrade
@@ -51,7 +51,7 @@ repos:
         args: [--in-place, --wrap-summaries=115, --wrap-descriptions=120]
 
   - repo: https://github.com/PyCQA/isort
-    rev: 5.11.4
+    rev: 5.12.0
     hooks:
       - id: isort
         name: imports
@@ -72,18 +72,20 @@ repos:
           - mdformat-black
           - mdformat_frontmatter
         exclude: |
-            (?x)^(
-                CHANGELOG.md|
-                docs/paper_JOSS/paper.md
-            )$
+          (?x)^(
+              CHANGELOG.md|
+              docs/paper_JOSS/paper.md
+          )$
 
   - repo: https://github.com/asottile/yesqa
     rev: v1.4.0
     hooks:
       - id: yesqa
+        additional_dependencies:
+          - pep8-naming
 
-  - repo: https://github.com/PyCQA/flake8
-    rev: 6.0.0
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: v0.0.237
     hooks:
-      - id: flake8
-        name: PEP8
+      - id: ruff
+        args: ["--fix"]

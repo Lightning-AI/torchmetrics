@@ -259,19 +259,19 @@ class MeanAveragePrecision(Metric):
             If any score is not type float and of length 1
 
     Example:
-        >>> import torch
+        >>> from torch import tensor
         >>> from torchmetrics.detection.mean_ap import MeanAveragePrecision
         >>> preds = [
         ...   dict(
-        ...     boxes=torch.tensor([[258.0, 41.0, 606.0, 285.0]]),
-        ...     scores=torch.tensor([0.536]),
-        ...     labels=torch.tensor([0]),
+        ...     boxes=tensor([[258.0, 41.0, 606.0, 285.0]]),
+        ...     scores=tensor([0.536]),
+        ...     labels=tensor([0]),
         ...   )
         ... ]
         >>> target = [
         ...   dict(
-        ...     boxes=torch.tensor([[214.0, 41.0, 562.0, 285.0]]),
-        ...     labels=torch.tensor([0]),
+        ...     boxes=tensor([[214.0, 41.0, 562.0, 285.0]]),
+        ...     labels=tensor([0]),
         ...   )
         ... ]
         >>> metric = MeanAveragePrecision()
@@ -373,7 +373,7 @@ class MeanAveragePrecision(Metric):
     def _move_list_states_to_cpu(self) -> None:
         """Move list states to cpu to save GPU memory."""
 
-        for key in self._defaults.keys():
+        for key in self._defaults:
             current_val = getattr(self, key)
             current_to_cpu = []
             if isinstance(current_val, Sequence):
@@ -746,7 +746,7 @@ class MeanAveragePrecision(Metric):
             recalls:
                 Recall values for different thresholds
         """
-        results = dict(precision=precisions, recall=recalls)
+        results = {"precision": precisions, "recall": recalls}
         map_metrics = MAPMetricResults()
         map_metrics.map = self._summarize(results, True)
         last_max_det_thr = self.max_detection_thresholds[-1]

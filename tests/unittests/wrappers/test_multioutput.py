@@ -5,10 +5,10 @@ import pytest
 import torch
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import r2_score as sk_r2score
-from torch import Tensor
+from torch import Tensor, tensor
 
 from torchmetrics import Metric
-from torchmetrics.classification import MulticlassAccuracy
+from torchmetrics.classification import ConfusionMatrix, MulticlassAccuracy
 from torchmetrics.regression import R2Score
 from torchmetrics.wrappers.multioutput import MultioutputWrapper
 from unittests.helpers import seed_all
@@ -118,5 +118,19 @@ class TestMultioutputWrapper(MetricTester):
             _MultioutputMetric,
             compare_metric,
             dist_sync_on_step,
-            metric_args=dict(num_outputs=num_outputs, base_metric_class=base_metric_class),
+            metric_args={"num_outputs": num_outputs, "base_metric_class": base_metric_class},
         )
+
+
+def test_reset_called_correctly():
+    """Check that underlying metric is being correctly reset when calling forward."""
+    base_metric = ConfusionMatrix(task="multiclass", num_classes=2)
+    cf = MultioutputWrapper(base_metric, num_outputs=2)
+
+    res = cf(tensor([[0, 0]]), tensor([[0, 0]]))
+    assert torch.allclose(res[0], tensor([[1, 0], [0, 0]]))
+    assert torch.allclose(res[1], tensor([[1, 0], [0, 0]]))
+    cf.reset()
+    res = cf(tensor([[1, 1]]), tensor([[0, 0]]))
+    assert torch.allclose(res[0], tensor([[0, 1], [0, 0]]))
+    assert torch.allclose(res[1], tensor([[0, 1], [0, 0]]))
