@@ -18,6 +18,8 @@ from torch.utils.data import Dataset
 
 
 class RandomDictStringDataset(Dataset):
+    """Class for creating a dictionary of random strings."""
+
     def __init__(self, size, length):
         self.len = length
         self.data = torch.randn(length, size)

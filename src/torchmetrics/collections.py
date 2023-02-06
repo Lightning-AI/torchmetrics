@@ -466,6 +466,7 @@ class MetricCollection(ModuleDict):
         raise ValueError(f"Expected input `{name}` to be a string, but got {type(arg)}")
 
     def __repr__(self) -> str:
+        """Returns the representation of the metric collection including all metrics in the collection."""
         repr_str = super().__repr__()[:-2]
         if self.prefix:
             repr_str += f",\n  prefix={self.prefix}{',' if self.postfix else ''}"

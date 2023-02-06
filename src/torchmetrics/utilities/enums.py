@@ -36,10 +36,12 @@ class EnumStr(str, Enum):
         return None
 
     def __eq__(self, other: Union[str, "EnumStr", None]) -> bool:  # type: ignore
+        """Check if two Enums are equal."""
         other = other.value if isinstance(other, Enum) else str(other)
         return self.value.lower() == other.lower()
 
     def __hash__(self) -> int:
+        """Returns a unique hash for this enum."""
         # re-enable hashtable so it can be used as a dict key or in a set
         # example: set(EnumStr)
         return hash(self.name)

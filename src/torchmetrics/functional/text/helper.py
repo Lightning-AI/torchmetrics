@@ -318,10 +318,7 @@ def _validate_inputs(
 
     # Ensure reference corpus is properly of a type Sequence[Sequence[str]]
     if all(isinstance(ref, str) for ref in reference_corpus):
-        if len(hypothesis_corpus) == 1:
-            reference_corpus = [reference_corpus]  # type: ignore
-        else:
-            reference_corpus = [[ref] for ref in reference_corpus]  # type: ignore
+        reference_corpus = [reference_corpus] if len(hypothesis_corpus) == 1 else [[ref] for ref in reference_corpus]
 
     if hypothesis_corpus and all(ref for ref in reference_corpus) and len(reference_corpus) != len(hypothesis_corpus):
         raise ValueError(f"Corpus has different size {len(reference_corpus)} != {len(hypothesis_corpus)}")
