@@ -26,8 +26,8 @@ from torchmetrics.utilities.enums import EnumStr
 class _MetricVariant(EnumStr):
     """Enumerate for metric variants."""
 
-    @property
-    def _name(self) -> str:
+    @staticmethod
+    def _name() -> str:
         return "variant"
 
     A = "a"
@@ -38,8 +38,8 @@ class _MetricVariant(EnumStr):
 class _TestAlternative(EnumStr):
     """Enumerate for test altenative options."""
 
-    @property
-    def _name(self) -> str:
+    @staticmethod
+    def _name() -> str:
         return "alternative"
 
     TWO_SIDED = "two-sided"

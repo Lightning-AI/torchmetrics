@@ -17,24 +17,33 @@ from lightning_utilities.core.enums import StrEnum as StrEnum
 
 
 class EnumStr(StrEnum):
-    @property
-    def _name(self) -> str:
+    @staticmethod
+    def _name() -> str:
         return "Task"
 
     @classmethod
-    def from_str(cls, value: str) -> Optional["EnumStr"]:
+    def from_str(cls, value: str) -> "EnumStr":
         """Load from string.
 
         Raises:
             ValueError:
                 If required information measure is not among the supported options.
-        """
-        _allowed_im = [im.lower() for im in cls._member_names_]
 
+        >>> class MyEnum(EnumStr):
+        ...     a = "aaa"
+        ...     b = "bbb"
+        >>> MyEnum.from_str("a")
+        <MyEnum.a: 'aaa'>
+        >>> MyEnum.from_str("c")
+        Traceback (most recent call last):
+          ...
+        ValueError: Invalid Task: expected one of ['a', 'b'], but got c.
+        """
         enum_key = super().from_str(value)
-        if enum_key is not None and enum_key in _allowed_im:
+        if enum_key is not None:
             return enum_key
-        raise ValueError(f"Invalid {cls._name}: expected one of {_allowed_im}, but got {enum_key}.")
+        _allowed_im = [m.lower() for m in cls._member_names_]
+        raise ValueError(f"Invalid {cls._name()}: expected one of {_allowed_im}, but got {value}.")
 
 
 class DataType(EnumStr):
@@ -44,8 +53,8 @@ class DataType(EnumStr):
     True
     """
 
-    @property
-    def _name(self) -> str:
+    @staticmethod
+    def _name() -> str:
         return "Data type"
 
     BINARY = "binary"
@@ -65,8 +74,8 @@ class AverageMethod(EnumStr):
     True
     """
 
-    @property
-    def _name(self) -> str:
+    @staticmethod
+    def _name() -> str:
         return "Average method"
 
     MICRO = "micro"
@@ -79,8 +88,8 @@ class AverageMethod(EnumStr):
 class MDMCAverageMethod(EnumStr):
     """Enum to represent multi-dim multi-class average method."""
 
-    @property
-    def _name(self) -> str:
+    @staticmethod
+    def _name() -> str:
         return "MDMC Average method"
 
     GLOBAL = "global"
@@ -94,8 +103,8 @@ class ClassificationTask(EnumStr):
     True
     """
 
-    @property
-    def _name(self) -> str:
+    @staticmethod
+    def _name() -> str:
         return "Classification"
 
     BINARY = "binary"
