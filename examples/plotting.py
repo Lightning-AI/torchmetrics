@@ -97,12 +97,32 @@ def spectral_distortion_index_example():
     return fig, ax
 
 
+def error_relative_global_dimensionless_synthesis():
+    from torchmetrics.image.ergas import ErrorRelativeGlobalDimensionlessSynthesis
+
+    p = lambda: torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42))
+    t = lambda: torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42))
+
+    # plot single value
+    metric = ErrorRelativeGlobalDimensionlessSynthesis()
+    metric.update(p(), t())
+    fig, ax = metric.plot()
+
+    # plot multiple values
+    metric = ErrorRelativeGlobalDimensionlessSynthesis()
+    vals = [metric(p(), t()) for _ in range(10)]
+    fig, ax = metric.plot(vals)
+
+    return fig, ax
+
+
 if __name__ == "__main__":
     metrics_func = {
         "accuracy": accuracy_example,
         "mean_squared_error": mean_squared_error_example,
         "confusion_matrix": confusion_matrix_example,
         "spectral_distortion_index": spectral_distortion_index_example,
+        "error_relative_global_dimensionless_synthesis": error_relative_global_dimensionless_synthesis,
     }
 
     parser = argparse.ArgumentParser(description="Example script for plotting metrics.")

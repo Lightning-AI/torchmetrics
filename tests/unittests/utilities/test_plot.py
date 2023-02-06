@@ -26,6 +26,7 @@ from torchmetrics.functional.classification.confusion_matrix import (
     multilabel_confusion_matrix,
 )
 from torchmetrics.functional.image.d_lambda import spectral_distortion_index
+from torchmetrics.functional.image.ergas import error_relative_global_dimensionless_synthesis
 from torchmetrics.utilities.plot import plot_confusion_matrix, plot_single_or_multi_val
 
 
@@ -55,6 +56,12 @@ from torchmetrics.utilities.plot import plot_confusion_matrix, plot_single_or_mu
             lambda: torch.rand([16, 3, 16, 16]),
             lambda: torch.rand([16, 3, 16, 16]),
             id="spectral distortion index",
+        ),
+        pytest.param(
+            partial(error_relative_global_dimensionless_synthesis),
+            lambda: torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42)),
+            lambda: torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42)),
+            id="error relative global dimensionless synthesis",
         ),
     ],
 )
