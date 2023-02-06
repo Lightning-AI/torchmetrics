@@ -32,8 +32,8 @@ else:
 
 
 class IntersectionOverUnion(Metric):
-    r"""
-    Computes Intersection Over Union (IoU)
+    r"""Computes Intersection Over Union (IoU)
+
     Args:
         box_format:
             Input format of given boxes. Supported formats are ``[`xyxy`, `xywh`, `cxcywh`]``.
@@ -97,6 +97,7 @@ class IntersectionOverUnion(Metric):
 
     def update(self, preds: List[Dict[str, Tensor]], target: List[Dict[str, Tensor]]) -> None:  # type: ignore
         """Add detections and ground truth to the metric.
+
         Args:
             preds: A list consisting of dictionaries each containing the key-values
             (each dictionary corresponds to a single image):
@@ -116,6 +117,7 @@ class IntersectionOverUnion(Metric):
                 [xmin, ymin, xmax, ymax] in absolute image coordinates.
             - ``labels``: ``torch.IntTensor`` of shape
                 [num_boxes] containing 1-indexed ground truth classes for the boxes.
+
         Raises:
             ValueError:
                 If ``preds`` is not of type List[Dict[str, Tensor]]
@@ -166,7 +168,6 @@ class IntersectionOverUnion(Metric):
 
     def compute(self) -> dict:
         """Computes IoU based on inputs passed in to ``update`` previously."""
-
         aggregated_iou = dim_zero_cat(
             [self.iou_compute_fn.__func__(iou, lbl_eq) for iou, lbl_eq in zip(self.results, self.labels_eq)]
         )

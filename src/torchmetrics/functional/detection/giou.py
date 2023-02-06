@@ -43,9 +43,9 @@ def generalized_intersection_over_union(
     replacement_val: float = 0,
     aggregate: bool = True,
 ) -> torch.Tensor:
-    r"""
-    Computes `Generalized Intersection over Union <https://arxiv.org/abs/1902.09630>`_ between two sets of boxes.
+    r"""Computes `Generalized Intersection over Union <https://arxiv.org/abs/1902.09630>`_ between two sets of boxes.
     Both sets of boxes are expected to be in (x1, y1, x2, y2) format with 0 <= x1 < x2 and 0 <= y1 < y2.
+
     Args:
         preds:
             The input tensor containing the predicted bounding boxes.
@@ -57,6 +57,7 @@ def generalized_intersection_over_union(
             Value to replace values under the threshold with.
         aggregate:
             Return the average value instead of the complete IoU matrix.
+
     Example:
         >>> from torchmetrics.functional.detection import generalized_intersection_over_union
         >>> preds = torch.Tensor([[100, 100, 200, 200]])

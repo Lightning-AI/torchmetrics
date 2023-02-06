@@ -20,8 +20,7 @@ from torchmetrics.functional.detection.giou import _giou_compute, _giou_update
 
 
 class GeneralizedIntersectionOverUnion(IntersectionOverUnion):
-    r"""
-    Computes Generalized Intersection Over Union (GIoU) <https://arxiv.org/abs/1902.09630>`_
+    r"""Computes Generalized Intersection Over Union (GIoU) <https://arxiv.org/abs/1902.09630>`_
     Args:
         box_format:
             Input format of given boxes. Supported formats are ``[`xyxy`, `xywh`, `cxcywh`]``.
