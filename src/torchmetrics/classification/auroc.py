@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Union
+from typing import Any, List, Optional, Union, Sequence
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -31,6 +31,8 @@ from torchmetrics.functional.classification.auroc import (
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
 
 
 class BinaryAUROC(BinaryPrecisionRecallCurve):
@@ -187,6 +189,7 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
+    plot_options = {"lower_bound": 0.0, "upper_bound": 1.0, "legend_name": "Class"}
 
     def __init__(
         self,
@@ -208,6 +211,42 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
     def compute(self) -> Tensor:
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _multiclass_auroc_compute(state, self.num_classes, self.average, self.thresholds)
+    
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            fig: Figure object
+            ax: Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        Example:
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import randn, randint
+            >>> # Example plotting a combined value across all classes
+            >>> from torchmetrics.classification import MulticlassAUROC
+            >>> metric = MulticlassAUROC(num_classes=3, average="macro")
+            >>> metric.update(randn(20, 3)), randint(3, (20,)))
+            >>> fig_, ax_ = metric.plot()
+        """
+        val = val or self.compute()
+        fig, ax = plot_single_or_multi_val(
+            val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
+        )
+        return fig, ax
 
 
 class MultilabelAUROC(MultilabelPrecisionRecallCurve):
