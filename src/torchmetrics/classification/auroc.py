@@ -279,7 +279,7 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
             >>> # Example plotting a combined value across all classes
             >>> from torchmetrics.classification import MulticlassAUROC
             >>> metric = MulticlassAUROC(num_classes=3, average="macro")
-            >>> metric.update(randn(20, 3)), randint(3, (20,)))
+            >>> metric.update(randn(20, 3), randint(3, (20,)))
             >>> fig_, ax_ = metric.plot()
         """
         val = val or self.compute()
