@@ -11,19 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Literal, Optional
 
 from torch import Tensor
 
 from torchmetrics.detection.iou import IntersectionOverUnion
 from torchmetrics.functional.detection.ciou import _ciou_compute, _ciou_update
-from torchmetrics.utilities.imports import _TORCHVISION_GREATER_EQUAL_0_8, _TORCHVISION_GREATER_EQUAL_0_13
-
-if _TORCHVISION_GREATER_EQUAL_0_8:
-    from torchvision.ops import box_convert
-else:
-    box_convert = None
-    __doctest_skip__ = ["CompleteIntersectionOverUnion"]
+from torchmetrics.utilities.imports import _TORCHVISION_GREATER_EQUAL_0_13
 
 
 class CompleteIntersectionOverUnion(IntersectionOverUnion):
@@ -47,7 +41,7 @@ class CompleteIntersectionOverUnion(IntersectionOverUnion):
 
     def __init__(
         self,
-        box_format: str = "xyxy",
+        box_format: Literal["xyxy", "xywh", "cxcywh"] = "xyxy",
         iou_threshold: Optional[float] = None,
         class_metrics: bool = False,
         **kwargs: Any,

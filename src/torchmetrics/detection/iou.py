@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections import defaultdict
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Literal, Optional
 
 import torch
 from torch import Tensor
 
 from torchmetrics.detection.helpers import _fix_empty_tensors, _input_validator
-from torchmetrics.functional.detection.iou import _iou_compute, _iou_update, intersection_over_union
+from torchmetrics.functional.detection.iou import _iou_compute, _iou_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat, dim_zero_mean
 
@@ -29,7 +29,6 @@ if _TORCHVISION_GREATER_EQUAL_0_8:
     from torchvision.ops import box_convert
 else:
     box_convert = None
-    __doctest_skip__ = ["IntersectionOverUnion"]
 
 
 class IntersectionOverUnion(Metric):
@@ -66,7 +65,7 @@ class IntersectionOverUnion(Metric):
 
     def __init__(
         self,
-        box_format: str = "xyxy",
+        box_format: Literal["xyxy", "xywh", "cxcywh"] = "xyxy",
         iou_threshold: Optional[float] = None,
         class_metrics: bool = False,
         respect_labels: bool = True,

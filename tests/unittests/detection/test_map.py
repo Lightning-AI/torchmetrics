@@ -40,7 +40,9 @@ def _create_inputs_masks() -> Input:
         preds=[
             [
                 {
-                    "masks": _mask_unsqueeze_bool(inputs_json["preds"][0]), "scores": Tensor([0.236]), "labels": IntTensor([4])
+                    "masks": _mask_unsqueeze_bool(inputs_json["preds"][0]),
+                    "scores": Tensor([0.236]),
+                    "labels": IntTensor([4]),
                 },
                 {
                     "masks": _masks_stack_bool([inputs_json["preds"][1], inputs_json["preds"][2]]),

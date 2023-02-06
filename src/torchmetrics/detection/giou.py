@@ -11,19 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional
+from typing import Callable
 
 from torch import Tensor
 
 from torchmetrics.detection.iou import IntersectionOverUnion
 from torchmetrics.functional.detection.giou import _giou_compute, _giou_update
-from torchmetrics.utilities.imports import _TORCHVISION_GREATER_EQUAL_0_8
-
-if _TORCHVISION_GREATER_EQUAL_0_8:
-    from torchvision.ops import box_convert
-else:
-    box_convert = None
-    __doctest_skip__ = ["GeneralizedIntersectionOverUnion"]
 
 
 class GeneralizedIntersectionOverUnion(IntersectionOverUnion):
@@ -44,12 +37,3 @@ class GeneralizedIntersectionOverUnion(IntersectionOverUnion):
     iou_compute_fn: Callable[[Tensor, bool], Tensor] = _giou_compute
     type: str = "giou"
     invalid_val: float = -1
-
-    def __init__(
-        self,
-        box_format: str = "xyxy",
-        iou_threshold: Optional[float] = None,
-        class_metrics: bool = False,
-        **kwargs: Any,
-    ) -> None:
-        super().__init__(box_format, iou_threshold, class_metrics, **kwargs)
