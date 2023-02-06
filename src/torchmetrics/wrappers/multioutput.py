@@ -56,7 +56,6 @@ class MultioutputWrapper(Metric):
             for certain classification metrics that can't handle additional 1-item dimensions.
 
     Example:
-
          >>> # Mimic R2Score in `multioutput`, `raw_values` mode:
          >>> import torch
          >>> from torchmetrics import MultioutputWrapper, R2Score

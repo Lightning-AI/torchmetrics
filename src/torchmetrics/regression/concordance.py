@@ -18,8 +18,8 @@ from torchmetrics.regression.pearson import PearsonCorrCoef, _final_aggregation
 
 
 class ConcordanceCorrCoef(PearsonCorrCoef):
-    r"""Computes concordance correlation coefficient that measures the agreement between two variables. It is
-    defined as.
+    r"""Compute concordance correlation coefficient that measures the agreement between two variables. It is defined
+    as.
 
     .. math::
         \rho_c = \frac{2 \rho \sigma_x \sigma_y}{\sigma_x^2 + \sigma_y^2 + (\mu_x - \mu_y)^2}
@@ -62,7 +62,7 @@ class ConcordanceCorrCoef(PearsonCorrCoef):
     """
 
     def compute(self) -> Tensor:
-        """Computes final concordance correlation coefficient over metric states."""
+        """Compute final concordance correlation coefficient over metric states."""
         if (self.num_outputs == 1 and self.mean_x.numel() > 1) or (self.num_outputs > 1 and self.mean_x.ndim > 1):
             mean_x, mean_y, var_x, var_y, corr_xy, n_total = _final_aggregation(
                 self.mean_x, self.mean_y, self.var_x, self.var_y, self.corr_xy, self.n_total

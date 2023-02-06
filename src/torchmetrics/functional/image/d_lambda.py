@@ -24,14 +24,13 @@ from torchmetrics.utilities.distributed import reduce
 
 
 def _spectral_distortion_index_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
-    """Updates and returns variables required to compute Spectral Distortion Index. Checks for same shape and type
+    """Update and returns variables required to compute Spectral Distortion Index. Checks for same shape and type
     of the input tensors.
 
     Args:
         preds: Low resolution multispectral image
         target: High resolution fused image
     """
-
     if preds.dtype != target.dtype:
         raise TypeError(
             f"Expected `ms` and `fused` to have the same data type. Got ms: {preds.dtype} and fused: {target.dtype}."
@@ -50,7 +49,7 @@ def _spectral_distortion_index_compute(
     p: int = 1,
     reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
 ) -> Tensor:
-    """Computes Spectral Distortion Index (SpectralDistortionIndex_)
+    """Compute Spectral Distortion Index (SpectralDistortionIndex_).
 
     Args:
         preds: Low resolution multispectral image
@@ -94,7 +93,7 @@ def spectral_distortion_index(
     p: int = 1,
     reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
 ) -> Tensor:
-    """Calculates `Spectral Distortion Index`_ (SpectralDistortionIndex_) also known as D_lambda that is used to
+    """Calculate `Spectral Distortion Index`_ (SpectralDistortionIndex_) also known as D_lambda that is used to
     compare the spectral distortion between two images.
 
     Args:

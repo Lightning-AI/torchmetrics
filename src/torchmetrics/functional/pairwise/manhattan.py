@@ -22,7 +22,7 @@ from torchmetrics.functional.pairwise.helpers import _check_input, _reduce_dista
 def _pairwise_manhattan_distance_update(
     x: Tensor, y: Optional[Tensor] = None, zero_diagonal: Optional[bool] = None
 ) -> Tensor:
-    """Calculates the pairwise manhattan similarity matrix.
+    """Calculate the pairwise manhattan similarity matrix.
 
     Args:
         x: tensor of shape ``[N,d]``
@@ -43,7 +43,7 @@ def pairwise_manhattan_distance(
     reduction: Literal["mean", "sum", "none", None] = None,
     zero_diagonal: Optional[bool] = None,
 ) -> Tensor:
-    r"""Calculates pairwise manhattan distance:
+    r"""Calculate pairwise manhattan distance:
 
     .. math::
         d_{man}(x,y) = ||x-y||_1 = \sum_{d=1}^D |x_d - y_d|

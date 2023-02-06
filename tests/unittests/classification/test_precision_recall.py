@@ -332,7 +332,6 @@ def test_top_k(
     expected_recall: Tensor,
 ):
     """A simple test to check that top_k works as expected."""
-
     class_metric = metric_class(top_k=k, average=average, num_classes=3)
     class_metric.update(preds, target)
 
