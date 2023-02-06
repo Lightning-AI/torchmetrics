@@ -136,7 +136,7 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
         .. plot::
             :scale: 75
 
-            >>> # Example plotting multiple value
+            >>> # Example plotting multiple values
             >>> import torch
             >>> from torchmetrics import ErrorRelativeGlobalDimensionlessSynthesis
             >>> preds = torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42))

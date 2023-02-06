@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List
+from typing import Any, List, Optional, Union, Sequence
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -20,6 +20,11 @@ from torchmetrics.functional.image.sam import _sam_compute, _sam_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["SpectralAngleMapper.plot"]
 
 
 class SpectralAngleMapper(Metric):
@@ -62,6 +67,7 @@ class SpectralAngleMapper(Metric):
     higher_is_better: bool = False
     is_differentiable: bool = True
     full_state_update: bool = False
+    plot_options = {"lower_bound": 0.0, "upper_bound": 1.0}
 
     preds: List[Tensor]
     target: List[Tensor]
@@ -92,3 +98,55 @@ class SpectralAngleMapper(Metric):
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         return _sam_compute(preds, target, self.reduction)
+
+    def plot(
+            self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            fig: Figure object
+            ax: Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        Examples:
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting single value
+            >>> import torch
+            >>> from torchmetrics import SpectralAngleMapper
+            >>> preds = torch.rand([16, 3, 16, 16], generator=torch.manual_seed(42))
+            >>> target = torch.rand([16, 3, 16, 16], generator=torch.manual_seed(123))
+            >>> metric = SpectralAngleMapper()
+            >>> metric.update(preds, target)
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics import SpectralAngleMapper
+            >>> preds = torch.rand([16, 3, 16, 16], generator=torch.manual_seed(42))
+            >>> target = torch.rand([16, 3, 16, 16], generator=torch.manual_seed(123))
+            >>> metric = SpectralAngleMapper()
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(preds, target))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        val = val or self.compute()
+        fig, ax = plot_single_or_multi_val(
+            val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
+        )
+        return fig, ax

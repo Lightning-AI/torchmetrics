@@ -177,7 +177,7 @@ class PeakSignalNoiseRatio(Metric):
         .. plot::
             :scale: 75
 
-            >>> # Example plotting multiple value
+            >>> # Example plotting multiple values
             >>> import torch
             >>> from torchmetrics import PeakSignalNoiseRatio
             >>> metric = PeakSignalNoiseRatio()

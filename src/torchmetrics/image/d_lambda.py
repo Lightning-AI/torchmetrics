@@ -138,7 +138,7 @@ class SpectralDistortionIndex(Metric):
         .. plot::
             :scale: 75
 
-            >>> # Example plotting multiple value
+            >>> # Example plotting multiple values
             >>> import torch
             >>> _ = torch.manual_seed(42)
             >>> from torchmetrics import SpectralDistortionIndex

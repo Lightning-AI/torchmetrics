@@ -135,6 +135,25 @@ def peak_signal_noise_ratio():
     return fig, ax
 
 
+def spectral_angle_mapper():
+    from torchmetrics.image.sam import SpectralAngleMapper
+
+    p = lambda: torch.rand([16, 3, 16, 16], generator=torch.manual_seed(42))
+    t = lambda: torch.rand([16, 3, 16, 16], generator=torch.manual_seed(123))
+
+    # plot single value
+    metric = SpectralAngleMapper()
+    metric.update(p(), t())
+    fig, ax = metric.plot()
+
+    # plot multiple values
+    metric = SpectralAngleMapper()
+    vals = [metric(p(), t()) for _ in range(10)]
+    fig, ax = metric.plot(vals)
+
+    return fig, ax
+
+
 if __name__ == "__main__":
     metrics_func = {
         "accuracy": accuracy_example,
@@ -143,6 +162,7 @@ if __name__ == "__main__":
         "spectral_distortion_index": spectral_distortion_index_example,
         "error_relative_global_dimensionless_synthesis": error_relative_global_dimensionless_synthesis,
         "peak_signal_noise_ratio": peak_signal_noise_ratio,
+        "spectral_angle_mapper": spectral_angle_mapper
     }
 
     parser = argparse.ArgumentParser(description="Example script for plotting metrics.")
