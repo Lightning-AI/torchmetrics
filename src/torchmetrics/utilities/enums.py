@@ -115,7 +115,7 @@ class ClassificationTask(EnumStr):
 class ClassificationTaskNoBinary(EnumStr):
     """Enum to represent the different tasks in classification metrics.
 
-    >>> "binary" in list(ClassificationTask)
+    >>> "binary" in list(ClassificationTaskNoBinary)
     False
     """
 
@@ -130,7 +130,7 @@ class ClassificationTaskNoBinary(EnumStr):
 class ClassificationTaskNoMultilabel(EnumStr):
     """Enum to represent the different tasks in classification metrics.
 
-    >>> "multilabel" in list(ClassificationTask)
+    >>> "multilabel" in list(ClassificationTaskNoMultilabel)
     False
     """
 
