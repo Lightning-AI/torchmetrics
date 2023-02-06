@@ -23,7 +23,7 @@ from torchmetrics.utilities import rank_zero_warn
 
 
 class PeakSignalNoiseRatio(Metric):
-    r"""Computes `Computes Peak Signal-to-Noise Ratio`_ (PSNR):
+    r"""`Compute Peak Signal-to-Noise Ratio`_ (PSNR):
 
     .. math:: \text{PSNR}(I, J) = 10 * \log_{10} \left(\frac{\max(I)^2}{\text{MSE}(I, J)}\right)
 
@@ -126,10 +126,7 @@ class PeakSignalNoiseRatio(Metric):
 
     def compute(self) -> Tensor:
         """Compute peak signal-to-noise ratio over state."""
-        if self.data_range is not None:
-            data_range = self.data_range
-        else:
-            data_range = self.max_target - self.min_target
+        data_range = self.data_range if self.data_range is not None else self.max_target - self.min_target
 
         if self.dim is None:
             sum_squared_error = self.sum_squared_error

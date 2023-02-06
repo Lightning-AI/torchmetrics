@@ -64,7 +64,7 @@ def _ce_compute(
     norm: str = "l1",
     debias: bool = False,
 ) -> Tensor:
-    """Computes the calibration error given the provided bin boundaries and norm.
+    """Compute the calibration error given the provided bin boundaries and norm.
 
     Args:
         confidences: The confidence (i.e. predicted prob) of the top1 prediction.
@@ -235,7 +235,7 @@ def _multiclass_calibration_error_update(
     preds: Tensor,
     target: Tensor,
 ) -> Tensor:
-    if not torch.all((0 <= preds) * (preds <= 1)):
+    if not torch.all((preds >= 0) * (preds <= 1)):
         preds = preds.softmax(1)
     confidences, predictions = preds.max(dim=1)
     accuracies = predictions.eq(target)

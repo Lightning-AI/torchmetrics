@@ -23,7 +23,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class TotalVariation(Metric):
-    """Computes Total Variation loss (`TV`_).
+    """Compute Total Variation loss (`TV`_).
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 
@@ -84,8 +84,5 @@ class TotalVariation(Metric):
 
     def compute(self) -> Tensor:
         """Compute final total variation."""
-        if self.reduction is None or self.reduction == "none":
-            score = dim_zero_cat(self.score)
-        else:
-            score = self.score
+        score = dim_zero_cat(self.score) if self.reduction is None or self.reduction == "none" else self.score
         return _total_variation_compute(score, self.num_elements, self.reduction)

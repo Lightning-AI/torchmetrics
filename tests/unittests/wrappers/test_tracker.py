@@ -154,7 +154,8 @@ def test_tracker(base_metric, metric_input, maximize):
 )
 def test_best_metric_for_not_well_defined_metric_collection(base_metric):
     """Test that if user tries to compute the best metric for a metric that does not have a well defined best, we
-    throw an warning and return None."""
+    throw an warning and return None.
+    """
     tracker = MetricTracker(base_metric)
     for _ in range(3):
         tracker.increment()
@@ -170,7 +171,7 @@ def test_best_metric_for_not_well_defined_metric_collection(base_metric):
             assert best is None
 
     with pytest.warns(UserWarning, match="Encountered the following error when trying to get the best metric.*"):
-        idx, best = tracker.best_metric(return_step=True)
+        best, idx = tracker.best_metric(return_step=True)
 
         if isinstance(best, dict):
             assert best["MulticlassAccuracy"] is not None

@@ -34,7 +34,8 @@ _target = torch.randint(10, (10, 32))
 
 class TestBootStrapper(BootStrapper):
     """For testing purpose, we subclass the bootstrapper class so we can get the exact permutation the class is
-    creating."""
+    creating.
+    """
 
     def update(self, *args) -> None:
         self.out = []
@@ -90,7 +91,7 @@ def test_bootstrap(device, sampling_strategy, metric, ref_metric):
         pytest.skip("Test with device='cuda' requires gpu")
 
     _kwargs = {"base_metric": metric, "mean": True, "std": True, "raw": True, "sampling_strategy": sampling_strategy}
-    _kwargs.update(dict(quantile=torch.tensor([0.05, 0.95], device=device)))
+    _kwargs.update({"quantile": torch.tensor([0.05, 0.95], device=device)})
 
     bootstrapper = TestBootStrapper(**_kwargs)
     bootstrapper.to(device)

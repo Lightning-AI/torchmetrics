@@ -22,7 +22,7 @@ from torchmetrics.metric import Metric
 
 
 class BinarySpecificity(BinaryStatScores):
-    r"""Computes `Specificity`_ for binary tasks:
+    r"""Compute `Specificity`_ for binary tasks:
 
     .. math:: \text{Specificity} = \frac{\text{TN}}{\text{TN} + \text{FP}}
 
@@ -89,7 +89,7 @@ class BinarySpecificity(BinaryStatScores):
 
 
 class MulticlassSpecificity(MulticlassStatScores):
-    r"""Computes `Specificity`_ for multiclass tasks:
+    r"""Compute `Specificity`_ for multiclass tasks:
 
     .. math:: \text{Specificity} = \frac{\text{TN}}{\text{TN} + \text{FP}}
 
@@ -125,8 +125,8 @@ class MulticlassSpecificity(MulticlassStatScores):
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
 
         top_k:
             Number of highest probability or logit score predictions considered to find the correct label.
@@ -188,7 +188,7 @@ class MulticlassSpecificity(MulticlassStatScores):
 
 
 class MultilabelSpecificity(MultilabelStatScores):
-    r"""Computes `Specificity`_ for multilabel tasks.
+    r"""Compute `Specificity`_ for multilabel tasks.
 
     .. math:: \text{Specificity} = \frac{\text{TN}}{\text{TN} + \text{FP}}
 
@@ -226,8 +226,8 @@ class MultilabelSpecificity(MultilabelStatScores):
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
 
         multidim_average: Defines how additionally dimensions ``...`` should be handled. Should be one of the following:
 
@@ -283,7 +283,7 @@ class MultilabelSpecificity(MultilabelStatScores):
 
 
 class Specificity:
-    r"""Computes `Specificity`_.
+    r"""Compute `Specificity`_.
 
     .. math:: \text{Specificity} = \frac{\text{TN}}{\text{TN} + \text{FP}}
 
@@ -321,7 +321,9 @@ class Specificity:
         **kwargs: Any,
     ) -> Metric:
         assert multidim_average is not None
-        kwargs.update(dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args))
+        kwargs.update(
+            {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
+        )
         if task == "binary":
             return BinarySpecificity(threshold, **kwargs)
         if task == "multiclass":

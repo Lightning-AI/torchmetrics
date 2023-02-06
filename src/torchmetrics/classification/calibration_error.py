@@ -267,7 +267,7 @@ class CalibrationError:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
-        kwargs.update(dict(n_bins=n_bins, norm=norm, ignore_index=ignore_index, validate_args=validate_args))
+        kwargs.update({"n_bins": n_bins, "norm": norm, "ignore_index": ignore_index, "validate_args": validate_args})
         if task == "binary":
             return BinaryCalibrationError(**kwargs)
         if task == "multiclass":

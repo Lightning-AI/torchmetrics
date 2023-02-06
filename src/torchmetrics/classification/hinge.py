@@ -32,7 +32,7 @@ from torchmetrics.metric import Metric
 
 
 class BinaryHingeLoss(Metric):
-    r"""Computes the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs) for binary tasks. It is
+    r"""Compute the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs) for binary tasks. It is
     defined as:
 
     .. math::
@@ -112,7 +112,7 @@ class BinaryHingeLoss(Metric):
 
 
 class MulticlassHingeLoss(Metric):
-    r"""Computes the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs) for multiclass tasks.
+    r"""Compute the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs) for multiclass tasks.
 
     The metric can be computed in two ways. Either, the definition by Crammer and Singer is used:
 
@@ -214,7 +214,7 @@ class MulticlassHingeLoss(Metric):
 
 
 class HingeLoss:
-    r"""Computes the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs).
+    r"""Compute the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs).
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'`` or ``'multiclass'``. See the documentation of
@@ -252,7 +252,7 @@ class HingeLoss:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
-        kwargs.update(dict(ignore_index=ignore_index, validate_args=validate_args))
+        kwargs.update({"ignore_index": ignore_index, "validate_args": validate_args})
         if task == "binary":
             return BinaryHingeLoss(squared, **kwargs)
         if task == "multiclass":

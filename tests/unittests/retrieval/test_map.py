@@ -48,7 +48,7 @@ class TestMAP(RetrievalMetricTester):
         empty_target_action: str,
         ignore_index: int,
     ):
-        metric_args = dict(empty_target_action=empty_target_action, ignore_index=ignore_index)
+        metric_args = {"empty_target_action": empty_target_action, "ignore_index": ignore_index}
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -74,7 +74,7 @@ class TestMAP(RetrievalMetricTester):
         dist_sync_on_step: bool,
         empty_target_action: str,
     ):
-        metric_args = dict(empty_target_action=empty_target_action, ignore_index=-100)
+        metric_args = {"empty_target_action": empty_target_action, "ignore_index": -100}
 
         self.run_class_metric_test(
             ddp=ddp,

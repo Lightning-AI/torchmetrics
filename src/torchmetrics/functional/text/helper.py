@@ -93,7 +93,6 @@ class _LevenshteinEditDistance:
         Return:
             A tuple of a calculated edit distance and a trace of executed operations.
         """
-
         # Use cached edit distance for already computed words
         start_position, cached_edit_distance = self._find_cache(prediction_tokens)
         # Calculate the rest of the edit distance matrix
@@ -130,7 +129,7 @@ class _LevenshteinEditDistance:
         length_ratio = self.reference_len / prediction_len if prediction_tokens else 1.0
 
         # Ensure to not end up with zero overlaip with previous role
-        beam_width = math.ceil(length_ratio / 2 + _BEAM_WIDTH) if _BEAM_WIDTH < length_ratio / 2 else _BEAM_WIDTH
+        beam_width = math.ceil(length_ratio / 2 + _BEAM_WIDTH) if length_ratio / 2 > _BEAM_WIDTH else _BEAM_WIDTH
 
         # Calculate the Levenshtein distance
         for i in range(prediction_start + 1, prediction_len + 1):

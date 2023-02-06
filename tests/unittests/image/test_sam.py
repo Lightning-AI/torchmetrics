@@ -77,7 +77,7 @@ class TestSpectralAngleMapper(MetricTester):
             SpectralAngleMapper,
             partial(_baseline_sam, reduction=reduction),
             dist_sync_on_step,
-            metric_args=dict(reduction=reduction),
+            metric_args={"reduction": reduction},
         )
 
     def test_sam_functional(self, reduction, preds, target):
@@ -86,7 +86,7 @@ class TestSpectralAngleMapper(MetricTester):
             target,
             spectral_angle_mapper,
             partial(_baseline_sam, reduction=reduction),
-            metric_args=dict(reduction=reduction),
+            metric_args={"reduction": reduction},
         )
 
     # SAM half + cpu does not work due to missing support in torch.log

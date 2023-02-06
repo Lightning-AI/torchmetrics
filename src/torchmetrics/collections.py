@@ -247,7 +247,7 @@ class MetricCollection(ModuleDict):
         if metric1._defaults.keys() != metric2._defaults.keys():
             return False
 
-        for key in metric1._defaults.keys():
+        for key in metric1._defaults:
             state1 = getattr(metric1, key)
             state2 = getattr(metric2, key)
 
@@ -299,7 +299,7 @@ class MetricCollection(ModuleDict):
         """Make a copy of the metric collection
         Args:
             prefix: a string to append in front of the metric keys
-            postfix: a string to append after the keys of the output dict
+            postfix: a string to append after the keys of the output dict.
 
         """
         mc = deepcopy(self)
@@ -414,6 +414,7 @@ class MetricCollection(ModuleDict):
             od[self._set_name(k)] = v
         return od
 
+    # TODO: redefine this as native python dict
     def keys(self, keep_base: bool = False) -> Iterable[Hashable]:
         r"""Return an iterable of the ModuleDict key.
 

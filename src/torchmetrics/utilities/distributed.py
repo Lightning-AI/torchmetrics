@@ -47,11 +47,10 @@ def class_reduce(
     weights: Tensor,
     class_reduction: Literal["micro", "macro", "weighted", "none", None] = "none",
 ) -> Tensor:
-    """
-    Function used to reduce classification metrics of the form ``num / denom * weights``.
+    """Reduce classification metrics of the form ``num / denom * weights``.
     For example for calculating standard accuracy the num would be number of
     true positives per class, denom would be the support per class, and weights
-    would be a tensor of 1s
+    would be a tensor of 1s.
 
     Args:
         num: numerator tensor
@@ -70,10 +69,7 @@ def class_reduce(
 
     """
     valid_reduction = ("micro", "macro", "weighted", "none", None)
-    if class_reduction == "micro":
-        fraction = torch.sum(num) / torch.sum(denom)
-    else:
-        fraction = num / denom
+    fraction = torch.sum(num) / torch.sum(denom) if class_reduction == "micro" else num / denom
 
     # We need to take care of instances where the denom can be 0
     # for some (or all) classes which will produce nans

@@ -38,7 +38,7 @@ class NoTrainLpips(_LPIPS):
 
 
 def _valid_img(img: Tensor, normalize: bool) -> bool:
-    """check that input is a valid image to the network."""
+    """Check that input is a valid image to the network."""
     value_check = img.max() <= 1.0 and img.min() >= 0.0 if normalize else img.min() >= -1
     return img.ndim == 4 and img.shape[1] == 3 and value_check
 

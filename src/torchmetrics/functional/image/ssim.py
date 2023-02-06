@@ -24,14 +24,13 @@ from torchmetrics.utilities.distributed import reduce
 
 
 def _ssim_check_inputs(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
-    """Updates and returns variables required to compute Structural Similarity Index Measure. Checks for same shape
+    """Update and returns variables required to compute Structural Similarity Index Measure. Checks for same shape
     and type of the input tensors.
 
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
     """
-
     if preds.dtype != target.dtype:
         target = target.to(preds.dtype)
     _check_same_shape(preds, target)
@@ -55,7 +54,7 @@ def _ssim_update(
     return_full_image: bool = False,
     return_contrast_sensitivity: bool = False,
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    """Computes Structual Similarity Index Measure.
+    """Compute Structual Similarity Index Measure.
 
     Args:
         preds: estimated image
@@ -142,10 +141,7 @@ def _ssim_update(
 
     input_list = torch.cat((preds, target, preds * preds, target * target, preds * target))  # (5 * B, C, H, W)
 
-    if is_3d:
-        outputs = F.conv3d(input_list, kernel, groups=channel)
-    else:
-        outputs = F.conv2d(input_list, kernel, groups=channel)
+    outputs = F.conv3d(input_list, kernel, groups=channel) if is_3d else F.conv2d(input_list, kernel, groups=channel)
 
     output_list = outputs.split(preds.shape[0])
 
@@ -213,7 +209,7 @@ def structural_similarity_index_measure(
     return_full_image: bool = False,
     return_contrast_sensitivity: bool = False,
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    """Computes Structual Similarity Index Measure.
+    """Compute Structual Similarity Index Measure.
 
     Args:
         preds: estimated image
@@ -328,7 +324,7 @@ def _multiscale_ssim_update(
     ),
     normalize: Optional[Literal["relu", "simple"]] = None,
 ) -> Tensor:
-    """Computes Multi-Scale Structual Similarity Index Measure.
+    """Compute Multi-Scale Structual Similarity Index Measure.
 
     Adapted from: https://github.com/jorge-pessoa/pytorch-msssim/blob/master/pytorch_msssim/__init__.py.
 
@@ -448,7 +444,7 @@ def multiscale_structural_similarity_index_measure(
     betas: Tuple[float, ...] = (0.0448, 0.2856, 0.3001, 0.2363, 0.1333),
     normalize: Optional[Literal["relu", "simple"]] = "relu",
 ) -> Tensor:
-    """Computes `MultiScaleSSIM`_, Multi-scale Structual Similarity Index Measure, which is a generalization of
+    """Compute `MultiScaleSSIM`_, Multi-scale Structual Similarity Index Measure, which is a generalization of
     Structual Similarity Index Measure by incorporating image details at different resolution scores.
 
     Args:

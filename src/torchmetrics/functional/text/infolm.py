@@ -66,10 +66,9 @@ class _IMEnum(EnumStr):
 
     @classmethod
     def from_str(cls, value: str) -> Optional["EnumStr"]:
-        """
-        Raises:
-            ValueError:
-                If required information measure is not among the supported options.
+        """Raises:
+        ValueError:
+        If required information measure is not among the supported options.
         """
         _allowed_im = [im.lower() for im in _IMEnum._member_names_]
 
@@ -116,12 +115,11 @@ class _InformationMeasure:
         beta: Optional[float] = None,
     ) -> None:
         self.information_measure = _IMEnum.from_str(information_measure)
-        if self.information_measure in [_IMEnum.ALPHA_DIVERGENCE, _IMEnum.AB_DIVERGENCE, _IMEnum.RENYI_DIVERGENCE]:
-            if not isinstance(alpha, float):
-                raise ValueError(f"Parameter `alpha` is expected to be defined for {information_measure}.")
-        if self.information_measure in [_IMEnum.BETA_DIVERGENCE, _IMEnum.AB_DIVERGENCE]:
-            if not isinstance(beta, float):
-                raise ValueError(f"Parameter `beta` is expected to be defined for {information_measure}.")
+        _bad_measures = (_IMEnum.ALPHA_DIVERGENCE, _IMEnum.AB_DIVERGENCE, _IMEnum.RENYI_DIVERGENCE)
+        if self.information_measure in _bad_measures and not isinstance(alpha, float):
+            raise ValueError(f"Parameter `alpha` is expected to be defined for {information_measure}.")
+        if self.information_measure in [_IMEnum.BETA_DIVERGENCE, _IMEnum.AB_DIVERGENCE] and not isinstance(beta, float):
+            raise ValueError(f"Parameter `beta` is expected to be defined for {information_measure}.")
         if self.information_measure == _IMEnum.ALPHA_DIVERGENCE and (not isinstance(alpha, float) or alpha in [0, 1]):
             raise ValueError(
                 f"Parameter `alpha` is expected to be float differened from 0 and 1 for {information_measure}."
@@ -130,12 +128,13 @@ class _InformationMeasure:
             raise ValueError(
                 f"Parameter `beta` is expected to be float differened from 0 and -1 for {information_measure}."
             )
-        if self.information_measure == _IMEnum.AB_DIVERGENCE:
-            if any(not isinstance(p, float) for p in [alpha, beta]) or 0 in [alpha, beta, alpha + beta]:  # type: ignore
-                raise ValueError(
-                    "Parameters `alpha`, `beta` and their sum are expected to be differened from 0 for "
-                    f"{information_measure}."
-                )
+        if self.information_measure == _IMEnum.AB_DIVERGENCE and (
+            any(not isinstance(p, float) for p in [alpha, beta]) or 0 in [alpha, beta, alpha + beta]  # type: ignore
+        ):
+            raise ValueError(
+                "Parameters `alpha`, `beta` and their sum are expected to be differened from 0 for "
+                f"{information_measure}."
+            )
         if self.information_measure == _IMEnum.RENYI_DIVERGENCE and (not isinstance(alpha, float) or alpha == 1):
             raise ValueError(f"Parameter `alpha` is expected to be float differened from 1 for {information_measure}.")
 
@@ -425,6 +424,7 @@ def _get_data_distribution(
     verbose: bool,
 ) -> Tensor:
     """Calculate a discrete probability distribution according to the methodology described in `InfoLM`_.
+
     Args:
         model:
             Initialized model from HuggingFace's `transformers package.
@@ -547,8 +547,7 @@ def infolm(
     verbose: bool = True,
     return_sentence_level_score: bool = False,
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    """
-    Calculate `InfoLM`_ [1] - i.e. calculate a distance/divergence between predicted and reference sentence discrete
+    """Calculate `InfoLM`_ [1] - i.e. calculate a distance/divergence between predicted and reference sentence discrete
     distribution using one of the following information measures:
 
         - `KL divergence`_

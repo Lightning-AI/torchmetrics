@@ -123,7 +123,8 @@ def test_metric_collection_wrong_input(tmpdir):
 
 def test_metric_collection_args_kwargs(tmpdir):
     """Check that args and kwargs gets passed correctly in metric collection, Checks both update and forward
-    method."""
+    method.
+    """
     m1 = DummyMetricSum()
     m2 = DummyMetricDiff()
 
@@ -188,8 +189,11 @@ def test_metric_collection_prefix_postfix_args(prefix, postfix):
     for k, _ in new_metric_collection.items():
         assert "new_prefix_" in k
 
-    for k in new_metric_collection.keys():
+    for k in new_metric_collection.keys(keep_base=False):
         assert "new_prefix_" in k
+
+    for k in new_metric_collection:
+        assert "new_prefix_" not in k
 
     for k, _ in new_metric_collection.items(keep_base=True):
         assert "new_prefix_" not in k
@@ -438,7 +442,7 @@ class TestComputeGroups:
             # compare results for correctness
             res_cg = m.compute()
             res_without_cg = m2.compute()
-            for key in res_cg.keys():
+            for key in res_cg:
                 assert torch.allclose(res_cg[key], res_without_cg[key])
 
             m.reset()
@@ -447,7 +451,8 @@ class TestComputeGroups:
     @pytest.mark.parametrize("method", ["items", "values", "keys"])
     def test_check_compute_groups_items_and_values(self, metrics, expected, preds, target, method):
         """Check that whenever user call a methods that give access to the indivitual metric that state are copied
-        instead of just passed by reference."""
+        instead of just passed by reference.
+        """
         m = MetricCollection(deepcopy(metrics), compute_groups=True)
         m2 = MetricCollection(deepcopy(metrics), compute_groups=False)
 
@@ -471,7 +476,7 @@ class TestComputeGroups:
                 for metric_cg, metric_no_cg in zip(m.values(), m2.values()):
                     _compare(metric_cg, metric_no_cg)
             if method == "keys":
-                for key in m.keys():
+                for key in m:
                     metric_cg, metric_no_cg = m[key], m2[key]
                     _compare(metric_cg, metric_no_cg)
 
