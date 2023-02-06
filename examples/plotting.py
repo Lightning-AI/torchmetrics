@@ -162,7 +162,7 @@ if __name__ == "__main__":
         "spectral_distortion_index": spectral_distortion_index_example,
         "error_relative_global_dimensionless_synthesis": error_relative_global_dimensionless_synthesis,
         "peak_signal_noise_ratio": peak_signal_noise_ratio,
-        "spectral_angle_mapper": spectral_angle_mapper
+        "spectral_angle_mapper": spectral_angle_mapper,
     }
 
     parser = argparse.ArgumentParser(description="Example script for plotting metrics.")
