@@ -397,7 +397,7 @@ def _errors_test_class_metric(
     """
     metric_args = metric_args or {}
     kwargs_update = kwargs_update or {}
-    with pytest.raises(exception_type, match=message):
+    with pytest.raises(exception_type, match=message):  # noqa: PT012
         metric = metric_class(**metric_args)
         metric(preds, target, indexes=indexes, **kwargs_update)
 

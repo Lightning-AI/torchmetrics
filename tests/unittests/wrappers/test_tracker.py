@@ -57,7 +57,7 @@ def test_raises_error_on_wrong_input():
 )
 def test_raises_error_if_increment_not_called(method, method_input):
     tracker = MetricTracker(MulticlassAccuracy(num_classes=10))
-    with pytest.raises(ValueError, match=f"`{method}` cannot be called before .*"):
+    with pytest.raises(ValueError, match=f"`{method}` cannot be called before .*"):  # noqa: PT012
         if method_input is not None:
             getattr(tracker, method)(*method_input)
         else:

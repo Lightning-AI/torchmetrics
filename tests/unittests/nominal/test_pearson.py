@@ -44,7 +44,7 @@ _input_logits = Input(
 
 
 @pytest.fixture()
-def _matrix_input():
+def pearson_matrix_input():
     matrix = torch.cat(
         [
             torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES * BATCH_SIZE, 1), dtype=torch.float),
@@ -123,7 +123,7 @@ class TestPearsonsContingencyCoefficient(MetricTester):
 @pytest.mark.skipif(  # TODO: testing on CUDA fails with pandas 1.3.5, and newer is not available for python 3.7
     torch.cuda.is_available(), reason="Tests fail on CUDA with the most up-to-date available pandas"
 )
-def test_pearsons_contingency_coefficient_matrix(_matrix_input):
-    tm_score = pearsons_contingency_coefficient_matrix(_matrix_input)
-    reference_score = _pd_pearsons_t_matrix(_matrix_input)
+def test_pearsons_contingency_coefficient_matrix(pearson_matrix_input):
+    tm_score = pearsons_contingency_coefficient_matrix(pearson_matrix_input)
+    reference_score = _pd_pearsons_t_matrix(pearson_matrix_input)
     assert torch.allclose(tm_score, reference_score)
