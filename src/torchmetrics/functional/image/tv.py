@@ -18,7 +18,7 @@ from typing_extensions import Literal
 
 
 def _total_variation_update(img: Tensor) -> Tuple[Tensor, int]:
-    """Computes total variation statistics on current batch."""
+    """Compute total variation statistics on current batch."""
     if img.ndim != 4:
         raise RuntimeError(f"Expected input `img` to be an 4D tensor, but got {img.shape}")
     diff1 = img[..., 1:, :] - img[..., :-1, :]
@@ -45,7 +45,7 @@ def _total_variation_compute(
 
 
 def total_variation(img: Tensor, reduction: Literal["mean", "sum", "none", None] = "sum") -> Tensor:
-    """Computes total variation loss.
+    """Compute total variation loss.
 
     Args:
         img: A `Tensor` of shape `(N, C, H, W)` consisting of images

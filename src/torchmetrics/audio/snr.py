@@ -20,7 +20,7 @@ from torchmetrics.metric import Metric
 
 
 class SignalNoiseRatio(Metric):
-    r"""Calculates `Signal-to-noise ratio`_ (SNR_) meric for evaluating quality of audio. It is defined as:
+    r"""Calculate `Signal-to-noise ratio`_ (SNR_) meric for evaluating quality of audio. It is defined as:
 
     .. math::
         \text{SNR} = \frac{P_{signal}}{P_{noise}}
@@ -79,12 +79,12 @@ class SignalNoiseRatio(Metric):
         self.total += snr_batch.numel()
 
     def compute(self) -> Tensor:
-        """Computes metric."""
+        """Compute metric."""
         return self.sum_snr / self.total
 
 
 class ScaleInvariantSignalNoiseRatio(Metric):
-    """Calculates `Scale-invariant signal-to-noise ratio`_ (SI-SNR) metric for evaluating quality of audio.
+    """Calculate `Scale-invariant signal-to-noise ratio`_ (SI-SNR) metric for evaluating quality of audio.
 
     As input to `forward` and `update` the metric accepts the following input
 
@@ -134,5 +134,5 @@ class ScaleInvariantSignalNoiseRatio(Metric):
         self.total += si_snr_batch.numel()
 
     def compute(self) -> Tensor:
-        """Computes metric."""
+        """Compute metric."""
         return self.sum_si_snr / self.total

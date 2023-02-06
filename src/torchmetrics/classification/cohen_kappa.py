@@ -26,7 +26,7 @@ from torchmetrics.metric import Metric
 
 
 class BinaryCohenKappa(BinaryConfusionMatrix):
-    r"""Calculates `Cohen's kappa score`_ that measures inter-annotator agreement for binary tasks. It is defined
+    r"""Calculate `Cohen's kappa score`_ that measures inter-annotator agreement for binary tasks. It is defined
     as.
 
     .. math::
@@ -105,7 +105,7 @@ class BinaryCohenKappa(BinaryConfusionMatrix):
 
 
 class MulticlassCohenKappa(MulticlassConfusionMatrix):
-    r"""Calculates `Cohen's kappa score`_ that measures inter-annotator agreement for multiclass tasks. It is
+    r"""Calculate `Cohen's kappa score`_ that measures inter-annotator agreement for multiclass tasks. It is
     defined as.
 
     .. math::
@@ -187,7 +187,7 @@ class MulticlassCohenKappa(MulticlassConfusionMatrix):
 
 
 class CohenKappa:
-    r"""Calculates `Cohen's kappa score`_ that measures inter-annotator agreement. It is defined as.
+    r"""Calculate `Cohen's kappa score`_ that measures inter-annotator agreement. It is defined as.
 
     .. math::
         \kappa = (p_o - p_e) / (1 - p_e)

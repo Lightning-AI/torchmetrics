@@ -24,14 +24,13 @@ from torchmetrics.utilities.distributed import reduce
 
 
 def _uqi_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
-    """Updates and returns variables required to compute Universal Image Quality Index. Checks for same shape and
+    """Update and returns variables required to compute Universal Image Quality Index. Checks for same shape and
     type of the input tensors.
 
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
     """
-
     if preds.dtype != target.dtype:
         raise TypeError(
             "Expected `preds` and `target` to have the same data type."
@@ -55,7 +54,7 @@ def _uqi_compute(
     data_range: Optional[float] = None,
     return_contrast_sensitivity: bool = False,
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    """Computes Universal Image Quality Index.
+    """Compute Universal Image Quality Index.
 
     Args:
         preds: estimated image

@@ -22,7 +22,7 @@ from torchmetrics.utilities.data import _flexible_bincount, dim_zero_cat
 
 
 class RetrievalFallOut(RetrievalMetric):
-    """Computes `Fall-out`_.
+    """Compute `Fall-out`_.
 
     Works with binary target data. Accepts float predictions from a model output.
 

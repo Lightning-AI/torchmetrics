@@ -33,8 +33,7 @@ _MAX_LEN = 6
 
 
 class UserTokenizer:
-    """The `UserTokenizer` class is required to be defined when a non-default model (i.e. not one from
-    `transformers`) is used.
+    """The `UserTokenizer` class is required to be defined when a non-default model is used.
 
     The user's defined tokenizer is expected to return either token IDs or token embeddings that are fed into the model.
     The tokenizer vocabulary should contain some special tokens, such as a `<pad>` token so that a tokenization will run
@@ -55,7 +54,9 @@ class UserTokenizer:
         }
 
     def __call__(self, sentences: Union[str, List[str]], max_len: int = _MAX_LEN) -> Dict[str, Tensor]:
-        """The `__call__` method must be defined for this class. To ensure the functionality, the `__call__` method
+        """Call method to tokenize user input.
+
+        The `__call__` method must be defined for this class. To ensure the functionality, the `__call__` method
         should obey the input/output arguments structure described below.
 
         Args:
@@ -104,8 +105,8 @@ def user_forward_fn(model: Module, batch: Dict[str, Tensor]) -> Tensor:
     input/output argument structure described below.
 
     Args:
-        model:
-        batch:
+        model: a torch.nn.module that implements a forward pass
+        batch: a batch of inputs to pass through the model
 
     Return:
         The model output.
