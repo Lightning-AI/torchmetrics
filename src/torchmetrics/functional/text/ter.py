@@ -510,6 +510,7 @@ def _ter_update(
 
 def _ter_compute(total_num_edits: Tensor, total_tgt_length: Tensor) -> Tensor:
     """Compute TER based on pre-computed a total number of edits and a total average reference length.
+
     Args:
         total_num_edits: A total number of required edits to match hypothesis and reference sentences.
         total_tgt_length: A total average length of reference sentences.

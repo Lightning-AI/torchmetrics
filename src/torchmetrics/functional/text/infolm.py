@@ -66,10 +66,9 @@ class _IMEnum(EnumStr):
 
     @classmethod
     def from_str(cls, value: str) -> Optional["EnumStr"]:
-        """
-        Raises:
-            ValueError:
-                If required information measure is not among the supported options.
+        """Raises:
+        ValueError:
+        If required information measure is not among the supported options.
         """
         _allowed_im = [im.lower() for im in _IMEnum._member_names_]
 
@@ -425,6 +424,7 @@ def _get_data_distribution(
     verbose: bool,
 ) -> Tensor:
     """Calculate a discrete probability distribution according to the methodology described in `InfoLM`_.
+
     Args:
         model:
             Initialized model from HuggingFace's `transformers package.
@@ -547,8 +547,7 @@ def infolm(
     verbose: bool = True,
     return_sentence_level_score: bool = False,
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    """
-    Calculate `InfoLM`_ [1] - i.e. calculate a distance/divergence between predicted and reference sentence discrete
+    """Calculate `InfoLM`_ [1] - i.e. calculate a distance/divergence between predicted and reference sentence discrete
     distribution using one of the following information measures:
 
         - `KL divergence`_

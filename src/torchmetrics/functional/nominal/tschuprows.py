@@ -36,7 +36,7 @@ def _tschuprows_t_update(
     nan_strategy: Literal["replace", "drop"] = "replace",
     nan_replace_value: Optional[Union[int, float]] = 0.0,
 ) -> Tensor:
-    """Computes the bins to update the confusion matrix with for Tschuprow's T calculation.
+    """Compute the bins to update the confusion matrix with for Tschuprow's T calculation.
 
     Args:
         preds: 1D or 2D tensor of categorical (nominal) data

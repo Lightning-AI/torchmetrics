@@ -18,7 +18,7 @@ from torchmetrics.retrieval.base import RetrievalMetric
 
 
 class RetrievalRPrecision(RetrievalMetric):
-    """Computes `IR R-Precision`_.
+    """Compute `IR R-Precision`_.
 
     Works with binary target data. Accepts float predictions from a model output.
 
