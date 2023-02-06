@@ -95,7 +95,7 @@ def _psnrb_compute(
         data_range: the range of the data. If None, it is determined from the data (max - min).
            ``data_range`` must be given when ``dim`` is not None.
         base: a base of a logarithm to use
-        reduction: a method to reduce metric score over labels.
+        reduction: a method to reduce metric scores over labels:
 
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
@@ -163,7 +163,7 @@ def peak_signal_noise_ratio_with_blocked_effect(
         data_range: the range of the data. If None, it is determined from the data (max - min).
             ``data_range`` must be given when ``dim`` is not None.
         base: a base of a logarithm to use
-        reduction: a method to reduce metric score over labels.
+        reduction: a method to reduce metric score over labels:
 
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum

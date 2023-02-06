@@ -44,7 +44,7 @@ class PeakSignalNoiseRatioWithBlockedEffect(Metric):
             the range of the data. If None, it is determined from the data (max - min).
             The ``data_range`` must be given when ``dim`` is not None.
         base: a base of a logarithm to use.
-        reduction: a method to reduce metric score over labels.
+        reduction: a method to reduce metric scores over labels:
 
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
