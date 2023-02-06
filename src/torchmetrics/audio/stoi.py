@@ -23,7 +23,7 @@ from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or
 __doctest_requires__ = {"ShortTimeObjectiveIntelligibility": ["pystoi"]}
 
 if not _MATPLOTLIB_AVAILABLE:
-    __doctest_skip__ = ["SignalNoiseRatio.plot", "ScaleInvariantSignalNoiseRatio.plot"]
+    __doctest_skip__ = ["ShortTimeObjectiveIntelligibility.plot"]
 
 
 class ShortTimeObjectiveIntelligibility(Metric):
