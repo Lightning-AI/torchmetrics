@@ -566,8 +566,8 @@ def test_class_metrics_with_missing_gt():
     """
     # Example source: Issue https://github.com/Lightning-AI/metrics/issues/1184
     preds = [
-        dict(
-            boxes=torch.Tensor(
+        {
+            "boxes": torch.Tensor(
                 [
                     [0, 0, 20, 20],
                     [30, 30, 50, 50],
@@ -575,16 +575,16 @@ def test_class_metrics_with_missing_gt():
                     [100, 100, 120, 120],  # FP
                 ]
             ),
-            scores=torch.Tensor([0.6, 0.6, 0.6, 0.6]),
-            labels=torch.IntTensor([0, 1, 2, 3]),
-        )
+            "scores": torch.Tensor([0.6, 0.6, 0.6, 0.6]),
+            "labels": torch.IntTensor([0, 1, 2, 3]),
+        }
     ]
 
     targets = [
-        dict(
-            boxes=torch.Tensor([[0, 0, 20, 20], [30, 30, 50, 50]]),
-            labels=torch.IntTensor([0, 1]),
-        )
+        {
+            "boxes": torch.Tensor([[0, 0, 20, 20], [30, 30, 50, 50]]),
+            "labels": torch.IntTensor([0, 1]),
+        }
     ]
 
     metric = MeanAveragePrecision(class_metrics=True)
