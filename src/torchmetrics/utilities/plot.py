@@ -189,14 +189,18 @@ def plot_confusion_matrix(
             "Expected number of elements in arg `labels` to match number of labels in confmat but "
             f"got {len(labels)} and {n_classes}"
         )
-    labels: Union[List[int], List[str]] = labels if labels is not None else np.arange(n_classes).tolist()
+    if confmat.ndim == 3:
+        fig_label = labels if confmat.ndim == 3 and labels is not None else np.arange(nb)
+        labels = np.arange(n_classes).tolist()
+    else:
+        labels: Union[List[int], List[str]] = labels if labels is not None else np.arange(n_classes).tolist()
 
     fig, axs = plt.subplots(nrows=rows, ncols=cols)
     axs = trim_axs(axs, nb)
     for i in range(nb):
         if rows != 1 and cols != 1:
             ax = axs[i]
-            ax.set_title(f"Label {i}", fontsize=15)
+            ax.set_title(f"Label {fig_label[i]}", fontsize=15)
         else:
             ax = axs
         ax.imshow(confmat[i].cpu().detach() if confmat.ndim == 3 else confmat.cpu().detach())

@@ -64,10 +64,10 @@ _multilabel_randint_input = lambda: torch.randint(2, (10, 3))
             _rand_input,
             id="mean squared error",
         ),
-        pytest.param(SumMetric, _rand_input, _rand_input, id="sum metric"),
-        pytest.param(MeanMetric, _rand_input, _rand_input, id="mean metric"),
-        pytest.param(MinMetric, _rand_input, _rand_input, id="min metric"),
-        pytest.param(MaxMetric, _rand_input, _rand_input, id="min metric"),
+        pytest.param(SumMetric, _rand_input, None, id="sum metric"),
+        pytest.param(MeanMetric, _rand_input, None, id="mean metric"),
+        pytest.param(MinMetric, _rand_input, None, id="min metric"),
+        pytest.param(MaxMetric, _rand_input, None, id="min metric"),
     ],
 )
 @pytest.mark.parametrize("num_vals", [1, 5])
@@ -75,13 +75,15 @@ def test_single_multi_val_plot_methods(metric_class, preds, target, num_vals):
     """Test the plot method of metrics that only output a single tensor scalar."""
     metric = metric_class()
 
+    input = (lambda: (preds(),)) if target is None else lambda: (preds(), target())
+
     if num_vals == 1:
-        metric.update(preds(), target())
+        metric.update(*input())
         fig, ax = metric.plot()
     else:
         vals = []
         for _ in range(num_vals):
-            vals.append(metric(preds(), target()))
+            vals.append(metric(*input()))
         fig, ax = metric.plot(vals)
 
     assert isinstance(fig, plt.Figure)
@@ -114,15 +116,13 @@ def test_single_multi_val_plot_methods(metric_class, preds, target, num_vals):
         ),
     ],
 )
-@pytest.mark.parametrize("use_labels", [False])
+@pytest.mark.parametrize("use_labels", [False, True])
 def test_confusion_matrix_plotter(metric_class, preds, target, labels, use_labels):
     """Test confusion matrix that uses specialized plot function."""
     metric = metric_class()
     metric.update(preds(), target())
-    if use_labels:
-        fig, axs = metric.plot()
-    else:
-        fig, axs = metric.plot(labels=labels)
+    labels = labels if use_labels else None
+    fig, axs = metric.plot(add_text=True, labels=labels)
     assert isinstance(fig, plt.Figure)
     cond1 = isinstance(axs, matplotlib.axes.Axes)
     cond2 = isinstance(axs, np.ndarray) and all(isinstance(a, matplotlib.axes.Axes) for a in axs)
