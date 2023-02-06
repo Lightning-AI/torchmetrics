@@ -129,7 +129,6 @@ def _psnrb_update(
         dim: Dimensions to reduce PSNR scores over provided as either an integer or a list of integers. Default is
             None meaning scores will be reduced across all dimensions.
     """
-
     if dim is None:
         sum_squared_error = torch.sum(torch.pow(preds - target, 2))
         n_obs = tensor(target.numel(), device=target.device)
@@ -138,10 +137,7 @@ def _psnrb_update(
     diff = preds - target
     sum_squared_error = torch.sum(diff * diff, dim=dim)
 
-    if isinstance(dim, int):
-        dim_list = [dim]
-    else:
-        dim_list = list(dim)
+    dim_list = [dim] if isinstance(dim, int) else list(dim)
     if not dim_list:
         n_obs = tensor(target.numel(), device=target.device)
     else:
