@@ -23,9 +23,11 @@ class EnumStr(StrEnum):
 
     @classmethod
     def from_str(cls, value: str) -> Optional["EnumStr"]:
-        """Raises:
-        ValueError:
-        If required information measure is not among the supported options.
+        """Load from string.
+
+        Raises:
+            ValueError:
+                If required information measure is not among the supported options.
         """
         _allowed_im = [im.lower() for im in cls._member_names_]
 
