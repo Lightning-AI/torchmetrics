@@ -51,63 +51,63 @@ _target = torch.Tensor(
 _inputs = Input(
     preds=[
         [
-            dict(
-                boxes=Tensor([[296.55, 93.96, 314.97, 152.79], [298.55, 98.96, 314.97, 151.79]]),
-                scores=Tensor([0.236, 0.56]),
-                labels=IntTensor([4, 5]),
-            )
+            {
+                "boxes": Tensor([[296.55, 93.96, 314.97, 152.79], [298.55, 98.96, 314.97, 151.79]]),
+                "scores": Tensor([0.236, 0.56]),
+                "labels": IntTensor([4, 5]),
+            }
         ],
         [
-            dict(
-                boxes=Tensor([[328.94, 97.05, 342.49, 122.98]]),
-                scores=Tensor([0.456]),
-                labels=IntTensor([4]),
-            ),
-            dict(
-                boxes=Tensor([[356.62, 95.47, 372.33, 147.55]]),
-                scores=Tensor([0.791]),
-                labels=IntTensor([4]),
-            ),
+            {
+                "boxes": Tensor([[328.94, 97.05, 342.49, 122.98]]),
+                "scores": Tensor([0.456]),
+                "labels": IntTensor([4]),
+            },
+            {
+                "boxes": Tensor([[356.62, 95.47, 372.33, 147.55]]),
+                "scores": Tensor([0.791]),
+                "labels": IntTensor([4]),
+            },
         ],
         [
-            dict(
-                boxes=Tensor([[328.94, 97.05, 342.49, 122.98]]),
-                scores=Tensor([0.456]),
-                labels=IntTensor([5]),
-            ),
-            dict(
-                boxes=Tensor([[356.62, 95.47, 372.33, 147.55]]),
-                scores=Tensor([0.791]),
-                labels=IntTensor([5]),
-            ),
+            {
+                "boxes": Tensor([[328.94, 97.05, 342.49, 122.98]]),
+                "scores": Tensor([0.456]),
+                "labels": IntTensor([5]),
+            },
+            {
+                "boxes": Tensor([[356.62, 95.47, 372.33, 147.55]]),
+                "scores": Tensor([0.791]),
+                "labels": IntTensor([5]),
+            },
         ],
     ],
     target=[
         [
-            dict(
-                boxes=Tensor([[300.00, 100.00, 315.00, 150.00]]),
-                labels=IntTensor([5]),
-            )
+            {
+                "boxes": Tensor([[300.00, 100.00, 315.00, 150.00]]),
+                "labels": IntTensor([5]),
+            }
         ],
         [
-            dict(
-                boxes=Tensor([[330.00, 100.00, 350.00, 125.00]]),
-                labels=IntTensor([4]),
-            ),
-            dict(
-                boxes=Tensor([[350.00, 100.00, 375.00, 150.00]]),
-                labels=IntTensor([4]),
-            ),
+            {
+                "boxes": Tensor([[330.00, 100.00, 350.00, 125.00]]),
+                "labels": IntTensor([4]),
+            },
+            {
+                "boxes": Tensor([[350.00, 100.00, 375.00, 150.00]]),
+                "labels": IntTensor([4]),
+            },
         ],
         [
-            dict(
-                boxes=Tensor([[330.00, 100.00, 350.00, 125.00]]),
-                labels=IntTensor([5]),
-            ),
-            dict(
-                boxes=Tensor([[350.00, 100.00, 375.00, 150.00]]),
-                labels=IntTensor([4]),
-            ),
+            {
+                "boxes": Tensor([[330.00, 100.00, 350.00, 125.00]]),
+                "labels": IntTensor([5]),
+            },
+            {
+                "boxes": Tensor([[350.00, 100.00, 375.00, 150.00]]),
+                "labels": IntTensor([4]),
+            },
         ],
     ],
 )
@@ -171,60 +171,60 @@ class BaseTestIntersectionOverUnion(ABC):
 
         with pytest.raises(ValueError, match="Expected all dicts in `preds` to contain the `boxes` key"):
             metric.update(
-                [dict(scores=Tensor(), labels=IntTensor)],
-                [dict(boxes=Tensor(), labels=IntTensor())],
+                [{"scores": Tensor(), "labels": IntTensor}],
+                [{"boxes": Tensor(), "labels": IntTensor()}],
             )
 
         with pytest.raises(ValueError, match="Expected all dicts in `preds` to contain the `scores` key"):
             metric.update(
-                [dict(boxes=Tensor(), labels=IntTensor)],
-                [dict(boxes=Tensor(), labels=IntTensor())],
+                [{"boxes": Tensor(), "labels": IntTensor}],
+                [{"boxes": Tensor(), "labels": IntTensor()}],
             )
 
         with pytest.raises(ValueError, match="Expected all dicts in `preds` to contain the `labels` key"):
             metric.update(
-                [dict(boxes=Tensor(), scores=IntTensor)],
-                [dict(boxes=Tensor(), labels=IntTensor())],
+                [{"boxes": Tensor(), "scores": IntTensor}],
+                [{"boxes": Tensor(), "labels": IntTensor()}],
             )
 
         with pytest.raises(ValueError, match="Expected all dicts in `target` to contain the `boxes` key"):
             metric.update(
-                [dict(boxes=Tensor(), scores=IntTensor, labels=IntTensor)],
-                [dict(labels=IntTensor())],
+                [{"boxes": Tensor(), "scores": IntTensor, "labels": IntTensor}],
+                [{"labels": IntTensor()}],
             )
 
         with pytest.raises(ValueError, match="Expected all dicts in `target` to contain the `labels` key"):
             metric.update(
-                [dict(boxes=Tensor(), scores=IntTensor, labels=IntTensor)],
-                [dict(boxes=IntTensor())],
+                [{"boxes": Tensor(), "scores": IntTensor, "labels": IntTensor}],
+                [{"boxes": IntTensor()}],
             )
 
         with pytest.raises(ValueError, match="Expected all boxes in `preds` to be of type Tensor"):
             metric.update(
-                [dict(boxes=[], scores=Tensor(), labels=IntTensor())],
-                [dict(boxes=Tensor(), labels=IntTensor())],
+                [{"boxes": [], "scores": Tensor(), "labels": IntTensor()}],
+                [{"boxes": Tensor(), "labels": IntTensor()}],
             )
 
         with pytest.raises(ValueError, match="Expected all scores in `preds` to be of type Tensor"):
             metric.update(
-                [dict(boxes=Tensor(), scores=[], labels=IntTensor())],
-                [dict(boxes=Tensor(), labels=IntTensor())],
+                [{"boxes": Tensor(), "scores": [], "labels": IntTensor()}],
+                [{"boxes": Tensor(), "labels": IntTensor()}],
             )
 
         with pytest.raises(ValueError, match="Expected all labels in `preds` to be of type Tensor"):
             metric.update(
-                [dict(boxes=Tensor(), scores=Tensor(), labels=[])],
-                [dict(boxes=Tensor(), labels=IntTensor())],
+                [{"boxes": Tensor(), "scores": Tensor(), "labels": []}],
+                [{"boxes": Tensor(), "labels": IntTensor()}],
             )
 
         with pytest.raises(ValueError, match="Expected all boxes in `target` to be of type Tensor"):
             metric.update(
-                [dict(boxes=Tensor(), scores=Tensor(), labels=IntTensor())],
-                [dict(boxes=[], labels=IntTensor())],
+                [{"boxes": Tensor(), "scores": Tensor(), "labels": IntTensor()}],
+                [{"boxes": [], "labels": IntTensor()}],
             )
 
         with pytest.raises(ValueError, match="Expected all labels in `target` to be of type Tensor"):
             metric.update(
-                [dict(boxes=Tensor(), scores=Tensor(), labels=IntTensor())],
-                [dict(boxes=Tensor(), labels=[])],
+                [{"boxes": Tensor(), "scores": Tensor(), "labels": IntTensor()}],
+                [{"boxes": Tensor(), "labels": []}],
             )

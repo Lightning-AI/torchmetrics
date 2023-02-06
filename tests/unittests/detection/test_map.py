@@ -39,25 +39,23 @@ def _create_inputs_masks() -> Input:
     _inputs_masks = Input(
         preds=[
             [
-                dict(
-                    masks=_mask_unsqueeze_bool(inputs_json["preds"][0]),
-                    scores=Tensor([0.236]),
-                    labels=IntTensor([4])
-                ),
-                dict(
-                    masks=_masks_stack_bool([inputs_json["preds"][1], inputs_json["preds"][2]]),
-                    scores=Tensor([0.318, 0.726]),
-                    labels=IntTensor([3, 2]),
-                ),  # 73
+                {
+                    "masks": _mask_unsqueeze_bool(inputs_json["preds"][0]), "scores": Tensor([0.236]), "labels": IntTensor([4])
+                },
+                {
+                    "masks": _masks_stack_bool([inputs_json["preds"][1], inputs_json["preds"][2]]),
+                    "scores": Tensor([0.318, 0.726]),
+                    "labels": IntTensor([3, 2]),
+                },  # 73
             ],
         ],
         target=[
             [
-                dict(masks=_mask_unsqueeze_bool(inputs_json["targets"][0]), labels=IntTensor([4])),  # 42
-                dict(
-                    masks=_masks_stack_bool([inputs_json["targets"][1], inputs_json["targets"][2]]),
-                    labels=IntTensor([2, 2]),
-                ),  # 73
+                {"masks": _mask_unsqueeze_bool(inputs_json["targets"][0]), "labels": IntTensor([4])},  # 42
+                {
+                    "masks": _masks_stack_bool([inputs_json["targets"][1], inputs_json["targets"][2]]),
+                    "labels": IntTensor([2, 2]),
+                },  # 73
             ],
         ],
     )
