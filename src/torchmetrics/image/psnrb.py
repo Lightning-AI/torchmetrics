@@ -65,6 +65,7 @@ class PeakSignalNoiseRatioWithBlockedEffect(Metric):
         >>> preds = torch.tensor([[0.0, 1.0], [2.0, 3.0]])
         >>> target = torch.tensor([[3.0, 2.0], [1.0, 0.0]])
         >>> psnrb(preds, target)
+        tensor(2.5527)
 
     .. note::
         Half precision is only support on GPU for this metric
