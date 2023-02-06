@@ -54,7 +54,10 @@ _ALLOWED_INFORMATION_MEASURE_LITERAL = Literal[
 class _IMEnum(EnumStr):
     """A helper Enum class for storing the information measure."""
 
-    task = "Information measure"
+    @property
+    def task(self) -> str:
+        return "Information measure"
+
     KL_DIVERGENCE = "kl_divergence"
     ALPHA_DIVERGENCE = "alpha_divergence"
     BETA_DIVERGENCE = "beta_divergence"

@@ -13,11 +13,13 @@
 # limitations under the License.
 from typing import Optional
 
-from lightning_utilities.core.enums import StrEnum as _StrEnum
+from lightning_utilities.core.enums import StrEnum as StrEnum
 
 
-class EnumStr(_StrEnum):
-    task: str = "Task"
+class EnumStr(StrEnum):
+    @property
+    def task(self) -> str:
+        return "Task"
 
     @classmethod
     def from_str(cls, value: str) -> Optional["EnumStr"]:
@@ -41,7 +43,10 @@ class DataType(EnumStr):
     True
     """
 
-    task = "Data type"
+    @property
+    def task(self) -> str:
+        return "Data type"
+
     BINARY = "binary"
     MULTILABEL = "multi-label"
     MULTICLASS = "multi-class"
@@ -59,7 +64,10 @@ class AverageMethod(EnumStr):
     True
     """
 
-    task = "Average method"
+    @property
+    def task(self) -> str:
+        return "Average method"
+
     MICRO = "micro"
     MACRO = "macro"
     WEIGHTED = "weighted"
@@ -70,7 +78,10 @@ class AverageMethod(EnumStr):
 class MDMCAverageMethod(EnumStr):
     """Enum to represent multi-dim multi-class average method."""
 
-    task = "MDMC Average method"
+    @property
+    def task(self) -> str:
+        return "MDMC Average method"
+
     GLOBAL = "global"
     SAMPLEWISE = "samplewise"
 
@@ -82,7 +93,10 @@ class ClassificationTask(EnumStr):
     True
     """
 
-    task = "Classification"
+    @property
+    def task(self) -> str:
+        return "Classification"
+
     BINARY = "binary"
     MULTICLASS = "multiclass"
     MULTILABEL = "multilabel"
