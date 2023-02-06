@@ -113,14 +113,12 @@ class BinaryAccuracy(BinaryStatScores):
             ax: An matplotlib axis object. If provided will add plot to that axis
 
         Returns:
-            fig: Figure object
-            ax: Axes object
+            Figure object and Axes object
 
         Raises:
             ModuleNotFoundError:
                 If `matplotlib` is not installed
 
-        Examples:
         .. plot::
             :scale: 75
 
@@ -264,14 +262,12 @@ class MulticlassAccuracy(MulticlassStatScores):
             ax: An matplotlib axis object. If provided will add plot to that axis
 
         Returns:
-            fig: Figure object
-            ax: Axes object
+            Figure object and Axes object
 
         Raises:
             ModuleNotFoundError:
                 If `matplotlib` is not installed
 
-        Examples:
         .. plot::
             :scale: 75
 
