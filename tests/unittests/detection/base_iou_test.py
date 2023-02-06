@@ -129,7 +129,7 @@ class BaseTestIntersectionOverUnion(ABC):
 
     data: Dict[str, TestCaseData] = {
         "iou_variant": TestCaseData(data=_inputs, result={"iou": torch.Tensor([0])}),
-        "box_iou_variant": TestCaseData(data=_box_inputs, result=None),
+        "fn_iou_variant": TestCaseData(data=_box_inputs, result=None),
     }
     metric_class: Metric
     metric_fn: Callable[[Tensor, Tensor, bool, float], Tensor]
@@ -150,9 +150,13 @@ class BaseTestIntersectionOverUnion(ABC):
         )
 
     def test_fn(self, compute_on_cpu: bool, ddp: bool):
-        preds = _preds[0]
-        target = _target[0]
-        result = self.metric_fn(preds, target)
+        key = "fn_iou_variant"
+        self.run_functional_metric_test(
+            self.data[key].data.preds[0],
+            self.data[key].data.target[0],
+            self.metric_fn,
+            partial(compare_fn, result=self.data[key].result),
+        )
 
     def test_error_on_wrong_input(self, compute_on_cpu: bool, ddp: bool):
         """Test class input validation."""

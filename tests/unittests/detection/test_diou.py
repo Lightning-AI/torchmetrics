@@ -45,7 +45,7 @@ class TestDistanceIntersectionOverUnion(MetricTester, BaseTestIntersectionOverUn
 
     data: Dict[str, TestCaseData] = {
         "iou_variant": TestCaseData(data=_inputs, result={DistanceIntersectionOverUnion.type: diou}),
-        "box_iou_variant": TestCaseData(data=_box_inputs, result=box_diou),
+        "fn_iou_variant": TestCaseData(data=_box_inputs, result=box_diou),
     }
     metric_class = DistanceIntersectionOverUnion
     metric_fn: Callable[[Tensor, Tensor, bool, float], Tensor] = distance_intersection_over_union

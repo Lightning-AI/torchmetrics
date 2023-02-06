@@ -40,7 +40,7 @@ class TestIntersectionOverUnion(MetricTester, BaseTestIntersectionOverUnion):
 
     data: Dict[str, TestCaseData] = {
         "iou_variant": TestCaseData(data=_inputs, result={IntersectionOverUnion.type: iou}),
-        "box_iou_variant": TestCaseData(data=_box_inputs, result=box_iou),
+        "fn_iou_variant": TestCaseData(data=_box_inputs, result=box_iou),
     }
     metric_class = IntersectionOverUnion
     metric_fn: Callable[[Tensor, Tensor, bool, float], Tensor] = intersection_over_union
