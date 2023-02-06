@@ -189,7 +189,7 @@ def test_normalize_arg_true():
     """Test that normalize argument works as expected."""
     img = torch.rand(2, 3, 299, 299)
     metric = FrechetInceptionDistance(normalize=True)
-    with does_not_raise:
+    with does_not_raise():
         metric.update(img, real=True)
 
 
