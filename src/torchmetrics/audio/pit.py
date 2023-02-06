@@ -110,8 +110,7 @@ class PermutationInvariantTraining(Metric):
             ax: An matplotlib axis object. If provided will add plot to that axis
 
         Returns:
-            fig: Figure object
-            ax: Axes object
+            Figure and Axes object
 
         Raises:
             ModuleNotFoundError:
