@@ -94,6 +94,7 @@ class BinaryAUROC(BinaryPrecisionRecallCurve):
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
+    plot_options: dict = {"lower_bound": 0.0, "upper_bound": 1.0}
 
     def __init__(
         self,
@@ -111,6 +112,45 @@ class BinaryAUROC(BinaryPrecisionRecallCurve):
     def compute(self) -> Tensor:
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _binary_auroc_compute(state, self.thresholds, self.max_fpr)
+    
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            fig: Figure object
+            ax: Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        Example:
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import randn, randint
+            >>> import torch.nn.functional as F
+            >>> # Example plotting a combined value across all classes
+            >>> from torchmetrics.classification import BinaryAUROC
+            >>> preds = F.softmax(randn(20, 2), dim=1)
+            >>> target = randint(2, (20,))
+            >>> metric = BinaryAUROC()
+            >>> metric.update(preds[:, 1], target)
+            >>> fig_, ax_ = metric.plot()
+        """
+        val = val or self.compute()
+        fig, ax = plot_single_or_multi_val(
+            val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
+        )
+        return fig, ax
 
 
 class MulticlassAUROC(MulticlassPrecisionRecallCurve):

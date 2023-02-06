@@ -213,3 +213,53 @@ def plot_confusion_matrix(
                 ax.text(jj, ii, str(val.item()), ha="center", va="center", fontsize=15)
 
     return fig, axs
+
+
+def plot_binary_roc_curve(
+    tpr: Tensor,
+    fpr: Tensor,
+    ax: Optional[_AX_TYPE] = None,  # type: ignore[valid-type]
+    roc_auc: Optional[Union[float, Tensor]] = None,
+    name: Optional[str] = None,
+    **kwargs,
+) -> _PLOT_OUT_TYPE:
+    """Inspired by: https://github.com/scikit-learn/scikit-learn/blob/main/sklearn/metrics/_plot/roc_curve.py.
+
+    Plots the roc curve
+
+    Args:
+        tpr: Tensor containing the values for True Positive Rate
+        fpr: Tensor containing the values for False Positive Rate
+        ax: Axis from a figure
+        roc_auc: AUROC score (computed separately)
+        name: Custom name to describe the classifier
+
+    Returns:
+        A tuple consisting of the figure and respective ax objects (or array of ax objects) of the generated figure
+
+    Raises:
+        ModuleNotFoundError:
+            If `matplotlib` is not installed
+    """
+    _error_on_missing_matplotlib()
+    fig, ax = plt.subplots() if ax is None else (None, ax)
+
+    if isinstance(roc_auc, Tensor):
+        assert roc_auc.numel() == 1, "roc_auc Tensor must consist of only one element"
+        roc_auc = roc_auc.item()
+
+    line_kwargs = {}
+    if roc_auc is not None and name is not None:
+        line_kwargs["label"] = f"{name} (AUC = {roc_auc:0.2f})"
+    elif roc_auc is not None:
+        line_kwargs["label"] = f"AUC = {roc_auc:0.2f}"
+    elif name is not None:
+        line_kwargs["label"] = name
+
+    line_kwargs.update(**kwargs)
+
+    ax.plot(fpr.detach().cpu(), tpr.detach().cpu(), **line_kwargs)
+    ax.set_xlabel("False Positive Rate")
+    ax.set_ylabel("True Positive Rate")
+
+    return fig, ax

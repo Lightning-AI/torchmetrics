@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any, List, Optional, Tuple, Union, Sequence
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -26,8 +26,18 @@ from torchmetrics.functional.classification.roc import (
     _multiclass_roc_compute,
     _multilabel_roc_compute,
 )
+from torchmetrics.functional.classification.auroc import (
+    _binary_auroc_arg_validation,
+    _binary_auroc_compute,
+    _multiclass_auroc_arg_validation,
+    _multiclass_auroc_compute,
+    _multilabel_auroc_arg_validation,
+    _multilabel_auroc_compute,
+)
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_binary_roc_curve
 
 
 class BinaryROC(BinaryPrecisionRecallCurve):
@@ -104,6 +114,56 @@ class BinaryROC(BinaryPrecisionRecallCurve):
     def compute(self) -> Tuple[Tensor, Tensor, Tensor]:
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _binary_roc_compute(state, self.thresholds)
+    
+    def compute_auroc(self) -> Tensor:
+        state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
+        return _binary_auroc_compute(state, self.thresholds, max_fpr=None)
+    
+    def plot(
+        self, 
+        fpr: Optional[Union[Tensor, Sequence[Tensor]]] = None,
+        tpr: Optional[Union[Tensor, Sequence[Tensor]]] = None, 
+        ax: Optional[_AX_TYPE] = None,
+        name: Optional[str] = None,
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            fpr: False Postive Rate provided by calling `metric.forward` or `metric.compute` 
+            tpr: True Postive Rate provided by calling `metric.forward` or `metric.compute`
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+            name: Custom name to describe the classifier
+
+        Returns:
+            fig: Figure object
+            ax: Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        Example:
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import randn, randint
+            >>> import torch.nn.functional as F
+            >>> # Example plotting a combined value across all classes
+            >>> from torchmetrics.classification import BinaryROC
+            >>> preds = F.softmax(randn(20, 2), dim=1)
+            >>> target = randint(2, (20,))
+            >>> metric = BinaryROC()
+            >>> metric.update(preds[:, 1], target)
+            >>> fig_, ax_ = metric.plot()
+        """
+        if fpr is None or tpr is None:
+            fpr, tpr, _ = self.compute()
+        roc_auc = self.compute_auroc()
+        name = self.__class__.__name__ if name is None else name
+        fig, ax = plot_binary_roc_curve(tpr, fpr, ax=ax, roc_auc=roc_auc, name=name)
+        return fig, ax
 
 
 class MulticlassROC(MulticlassPrecisionRecallCurve):
