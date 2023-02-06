@@ -27,7 +27,7 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class PerceptualEvaluationSpeechQuality(Metric):
-    """Calculates `Perceptual Evaluation of Speech Quality`_ (PESQ). It's a recognized industry standard for audio
+    """Calculate `Perceptual Evaluation of Speech Quality`_ (PESQ). It's a recognized industry standard for audio
     quality that takes into considerations characteristics such as: audio sharpness, call volume, background noise,
     clipping, audio interference ect. PESQ returns a score between -0.5 and 4.5 with the higher scores indicating a
     better quality.
@@ -122,7 +122,7 @@ class PerceptualEvaluationSpeechQuality(Metric):
         self.total += pesq_batch.numel()
 
     def compute(self) -> Tensor:
-        """Computes metric."""
+        """Compute metric."""
         return self.sum_pesq / self.total
 
     def plot(

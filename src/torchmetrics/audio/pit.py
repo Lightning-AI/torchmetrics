@@ -28,7 +28,7 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class PermutationInvariantTraining(Metric):
-    """Calculates `Permutation invariant training`_ (PIT) that can evaluate models for speaker independent multi-
+    """Calculate `Permutation invariant training`_ (PIT) that can evaluate models for speaker independent multi-
     talker speech separation in a permutation invariant way.
 
     As input to ``forward`` and ``update`` the metric accepts the following input
@@ -96,7 +96,7 @@ class PermutationInvariantTraining(Metric):
         self.total += pit_metric.numel()
 
     def compute(self) -> Tensor:
-        """Computes metric."""
+        """Compute metric."""
         return self.sum_pit_metric / self.total
 
     def plot(

@@ -27,7 +27,7 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class SignalDistortionRatio(Metric):
-    r"""Calculates Signal to Distortion Ratio (SDR) metric. See `SDR ref1`_ and `SDR ref2`_ for details on the
+    r"""Calculate Signal to Distortion Ratio (SDR) metric. See `SDR ref1`_ and `SDR ref2`_ for details on the
     metric.
 
     As input to ``forward`` and ``update`` the metric accepts the following input
@@ -114,7 +114,7 @@ class SignalDistortionRatio(Metric):
         self.total += sdr_batch.numel()
 
     def compute(self) -> Tensor:
-        """Computes metric."""
+        """Compute metric."""
         return self.sum_sdr / self.total
 
     def plot(
@@ -222,7 +222,7 @@ class ScaleInvariantSignalDistortionRatio(Metric):
         self.total += si_sdr_batch.numel()
 
     def compute(self) -> Tensor:
-        """Computes metric."""
+        """Compute metric."""
         return self.sum_si_sdr / self.total
 
     def plot(

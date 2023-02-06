@@ -23,7 +23,7 @@ from torchmetrics.utilities.compute import _safe_matmul
 def _pairwise_linear_similarity_update(
     x: Tensor, y: Optional[Tensor] = None, zero_diagonal: Optional[bool] = None
 ) -> Tensor:
-    """Calculates the pairwise linear similarity matrix.
+    """Calculate the pairwise linear similarity matrix.
 
     Args:
         x: tensor of shape ``[N,d]``
@@ -44,7 +44,7 @@ def pairwise_linear_similarity(
     reduction: Literal["mean", "sum", "none", None] = None,
     zero_diagonal: Optional[bool] = None,
 ) -> Tensor:
-    r"""Calculates pairwise linear similarity:
+    r"""Calculate pairwise linear similarity:
 
     .. math::
         s_{lin}(x,y) = <x,y> = \sum_{d=1}^D x_d \cdot y_d

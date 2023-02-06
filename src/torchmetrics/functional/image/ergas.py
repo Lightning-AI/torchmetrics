@@ -22,14 +22,13 @@ from torchmetrics.utilities.distributed import reduce
 
 
 def _ergas_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
-    """Updates and returns variables required to compute Erreur Relative Globale Adimensionnelle de Synthèse.
-    Checks for same shape and type of the input tensors.
+    """Update and returns variables required to compute Erreur Relative Globale Adimensionnelle de Synthèse.
+    Check for same shape and type of the input tensors.
 
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
     """
-
     if preds.dtype != target.dtype:
         raise TypeError(
             "Expected `preds` and `target` to have the same data type."

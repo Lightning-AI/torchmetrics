@@ -152,6 +152,7 @@ def stoi_example():
 
 
 def accuracy_example():
+    """Plot Accuracy example."""
     from torchmetrics.classification import MulticlassAccuracy
 
     p = lambda: torch.randn(20, 5)

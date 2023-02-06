@@ -24,9 +24,9 @@ def _mean_absolute_percentage_error_update(
     target: Tensor,
     epsilon: float = 1.17e-06,
 ) -> Tuple[Tensor, int]:
-    """Updates and returns variables required to compute Mean Percentage Error.
+    """Update and returns variables required to compute Mean Percentage Error.
 
-    Checks for same shape of input tensors.
+    Check for same shape of input tensors.
 
     Args:
         preds: Predicted tensor
@@ -34,7 +34,6 @@ def _mean_absolute_percentage_error_update(
         epsilon: Specifies the lower bound for target values. Any target value below epsilon
             is set to epsilon (avoids ``ZeroDivisionError``).
     """
-
     _check_same_shape(preds, target)
 
     abs_diff = torch.abs(preds - target)
@@ -48,7 +47,7 @@ def _mean_absolute_percentage_error_update(
 
 
 def _mean_absolute_percentage_error_compute(sum_abs_per_error: Tensor, num_obs: int) -> Tensor:
-    """Computes Mean Absolute Percentage Error.
+    """Compute Mean Absolute Percentage Error.
 
     Args:
         sum_abs_per_error: Sum of absolute value of percentage errors over all observations
@@ -62,12 +61,11 @@ def _mean_absolute_percentage_error_compute(sum_abs_per_error: Tensor, num_obs: 
         >>> _mean_absolute_percentage_error_compute(sum_abs_per_error, num_obs)
         tensor(0.2667)
     """
-
     return sum_abs_per_error / num_obs
 
 
 def mean_absolute_percentage_error(preds: Tensor, target: Tensor) -> Tensor:
-    """Computes mean absolute percentage error.
+    """Compute mean absolute percentage error.
 
     Args:
         preds: estimated labels

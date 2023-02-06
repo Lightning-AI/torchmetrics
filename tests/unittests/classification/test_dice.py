@@ -51,6 +51,7 @@ def _scipy_dice(
         target: target tensor
         ignore_index:
             Integer specifying a target class to ignore. Recommend set to index of background class.
+
     Return:
         Float dice score
     """

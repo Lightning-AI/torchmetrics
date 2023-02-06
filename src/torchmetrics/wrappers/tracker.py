@@ -120,12 +120,12 @@ class MetricTracker(ModuleList):
         self.append(deepcopy(self._base_metric))
 
     def forward(self, *args, **kwargs) -> None:  # type: ignore
-        """Calls forward of the current metric being tracked."""
+        """Call forward of the current metric being tracked."""
         self._check_for_increment("forward")
         return self[-1](*args, **kwargs)
 
     def update(self, *args, **kwargs) -> None:  # type: ignore
-        """Updates the current metric being tracked."""
+        """Update the current metric being tracked."""
         self._check_for_increment("update")
         self[-1].update(*args, **kwargs)
 
@@ -154,11 +154,11 @@ class MetricTracker(ModuleList):
         return torch.stack(res, dim=0)
 
     def reset(self) -> None:
-        """Resets the current metric being tracked."""
+        """Reset the current metric being tracked."""
         self[-1].reset()
 
     def reset_all(self) -> None:
-        """Resets all metrics being tracked."""
+        """Reset all metrics being tracked."""
         for metric in self:
             metric.reset()
 

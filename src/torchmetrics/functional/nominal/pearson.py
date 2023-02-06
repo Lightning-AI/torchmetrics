@@ -34,7 +34,7 @@ def _pearsons_contingency_coefficient_update(
     nan_strategy: Literal["replace", "drop"] = "replace",
     nan_replace_value: Optional[Union[int, float]] = 0.0,
 ) -> Tensor:
-    """Computes the bins to update the confusion matrix with for Pearson's Contingency Coefficient calculation.
+    """Compute the bins to update the confusion matrix with for Pearson's Contingency Coefficient calculation.
 
     Args:
         preds: 1D or 2D tensor of categorical (nominal) data
