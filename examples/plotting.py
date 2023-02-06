@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -183,6 +183,7 @@ def accuracy_example():
 
 
 def mean_squared_error_example():
+    """Plot mean squared error example."""
     from torchmetrics.regression import MeanSquaredError
 
     p = lambda: torch.randn(20)
@@ -201,6 +202,7 @@ def mean_squared_error_example():
 
 
 def confusion_matrix_example():
+    """Plot confusion matrix example."""
     from torchmetrics.classification import MulticlassConfusionMatrix
 
     p = lambda: torch.randn(20, 5)
