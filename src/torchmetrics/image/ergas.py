@@ -24,7 +24,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
-    """Calculates `Relative dimensionless global error synthesis`_ (ERGAS) is used to calculate the accuracy of Pan
+    """Calculate `Relative dimensionless global error synthesis`_ (ERGAS) is used to calculate the accuracy of Pan
     sharpened image considering normalized average error of each band of the result image
     (ErrorRelativeGlobalDimensionlessSynthesis).
 
@@ -90,7 +90,7 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
         self.target.append(target)
 
     def compute(self) -> Tensor:
-        """Computes explained variance over state."""
+        """Compute explained variance over state."""
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         return _ergas_compute(preds, target, self.ratio, self.reduction)

@@ -29,7 +29,7 @@ def _dice_compute(
     mdmc_average: Optional[str],
     zero_division: int = 0,
 ) -> Tensor:
-    """Computes dice from the stat scores: true positives, false positives, false negatives.
+    """Compute dice from the stat scores: true positives, false positives, false negatives.
 
     Args:
         tp: True positives
@@ -75,7 +75,7 @@ def dice(
     multiclass: Optional[bool] = None,
     ignore_index: Optional[int] = None,
 ) -> Tensor:
-    r"""Computes `Dice`_:
+    r"""Compute `Dice`_:
 
     .. math:: \text{Dice} = \frac{\text{2 * TP}}{\text{2 * TP} + \text{FP} + \text{FN}}
 

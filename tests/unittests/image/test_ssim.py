@@ -232,7 +232,8 @@ class TestSSIM(MetricTester):
 )
 def test_ssim_invalid_inputs(pred, target, kernel, sigma):
     """Test that an value errors are raised if input sizes are different, kernel length and sigma does not match
-    size or invalid values are provided."""
+    size or invalid values are provided.
+    """
     pred = torch.rand(pred)
     target = torch.rand(target)
     with pytest.raises(ValueError):
@@ -240,7 +241,7 @@ def test_ssim_invalid_inputs(pred, target, kernel, sigma):
 
 
 def test_ssim_unequal_kernel_size():
-    """Test the case where kernel_size[0] != kernel_size[1]"""
+    """Test the case where kernel_size[0] != kernel_size[1]."""
     preds = torch.tensor(
         [
             [
