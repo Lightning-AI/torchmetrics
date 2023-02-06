@@ -19,6 +19,7 @@ import numpy as np
 import pytest
 import torch
 
+from torchmetrics.functional import peak_signal_noise_ratio
 from torchmetrics.functional.classification.accuracy import binary_accuracy, multiclass_accuracy
 from torchmetrics.functional.classification.confusion_matrix import (
     binary_confusion_matrix,
@@ -62,6 +63,12 @@ from torchmetrics.utilities.plot import plot_confusion_matrix, plot_single_or_mu
             lambda: torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42)),
             lambda: torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42)),
             id="error relative global dimensionless synthesis",
+        ),
+        pytest.param(
+            partial(peak_signal_noise_ratio),
+            lambda: torch.tensor([[0.0, 1.0], [2.0, 3.0]]),
+            lambda: torch.tensor([[3.0, 2.0], [1.0, 0.0]]),
+            id="peak signal noise ratio",
         ),
     ],
 )

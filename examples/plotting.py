@@ -116,6 +116,25 @@ def error_relative_global_dimensionless_synthesis():
     return fig, ax
 
 
+def peak_signal_noise_ratio():
+    from torchmetrics.image.psnr import PeakSignalNoiseRatio
+
+    p = lambda: torch.tensor([[0.0, 1.0], [2.0, 3.0]])
+    t = lambda: torch.tensor([[3.0, 2.0], [1.0, 0.0]])
+
+    # plot single value
+    metric = PeakSignalNoiseRatio()
+    metric.update(p(), t())
+    fig, ax = metric.plot()
+
+    # plot multiple values
+    metric = PeakSignalNoiseRatio()
+    vals = [metric(p(), t()) for _ in range(10)]
+    fig, ax = metric.plot(vals)
+
+    return fig, ax
+
+
 if __name__ == "__main__":
     metrics_func = {
         "accuracy": accuracy_example,
@@ -123,6 +142,7 @@ if __name__ == "__main__":
         "confusion_matrix": confusion_matrix_example,
         "spectral_distortion_index": spectral_distortion_index_example,
         "error_relative_global_dimensionless_synthesis": error_relative_global_dimensionless_synthesis,
+        "peak_signal_noise_ratio": peak_signal_noise_ratio,
     }
 
     parser = argparse.ArgumentParser(description="Example script for plotting metrics.")
