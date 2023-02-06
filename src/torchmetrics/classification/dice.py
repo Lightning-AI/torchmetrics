@@ -24,7 +24,7 @@ from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
 
 
 class Dice(Metric):
-    r"""Computes `Dice`_:
+    r"""Compute `Dice`_:
 
     .. math:: \text{Dice} = \frac{\text{2 * TP}}{\text{2 * TP} + \text{FP} + \text{FN}}
 
@@ -232,6 +232,6 @@ class Dice(Metric):
 
     @no_type_check
     def compute(self) -> Tensor:
-        """Computes metric."""
+        """Compute metric."""
         tp, fp, _, fn = self._get_final_stats()
         return _dice_compute(tp, fp, fn, self.average, self.mdmc_reduce, self.zero_division)

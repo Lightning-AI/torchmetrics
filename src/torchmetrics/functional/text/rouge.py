@@ -145,13 +145,11 @@ def _backtracked_lcs(
 
 
 def _union_lcs(pred_tokens_list: Sequence[Sequence[str]], target_tokens: Sequence[str]) -> Sequence[str]:
-    """Find union LCS between a target sentence and iterable of predicted tokens.
+    r"""Find union LCS between a target sentence and iterable of predicted tokens.
 
     Args:
-        pred_tokens_list: A tokenized predicted sentence split by '\n'.
-        target_tokens: A tokenized single part of target sentence split by '\n'.
-
-    Return:
+        pred_tokens_list: A tokenized predicted sentence split by ``'\n'``.
+        target_tokens: A tokenized single part of target sentence split by ``'\n'``.
     """
 
     def lcs_ind(pred_tokens: Sequence[str], target_tokens: Sequence[str]) -> Sequence[int]:
@@ -177,7 +175,7 @@ def _normalize_and_tokenize_text(
 ) -> Sequence[str]:
     """Rouge score should be calculated only over lowercased words and digits. Optionally, Porter stemmer can be
     used to strip word suffixes to improve matching. The text normalization follows the implemantion from `Rouge
-    score_Text Normalizition`_
+    score_Text Normalizition`_.
 
     Args:
         text: An input sentence.
@@ -189,7 +187,6 @@ def _normalize_and_tokenize_text(
             A user's own tokenizer function. If this is ``None``, splitting by spaces is default
             This function must take a ``str`` and return ``Sequence[str]``
     """
-
     # If normalizer is none, replace any non-alpha-numeric characters with spaces.
     text = normalizer(text) if callable(normalizer) else re.sub(r"[^a-z0-9]+", " ", text.lower())
 
@@ -247,15 +244,15 @@ def _rouge_l_score(pred: Sequence[str], target: Sequence[str]) -> Dict[str, Tens
 
 
 def _rouge_lsum_score(pred: Sequence[Sequence[str]], target: Sequence[Sequence[str]]) -> Dict[str, Tensor]:
-    """This computes precision, recall and F1 score for the Rouge-LSum metric. More information can be found in Section
+    r"""This computes precision, recall and F1 score for the Rouge-LSum metric. More information can be found in Section
     3.2 of the referenced paper [1]. This implementation follow the official implementation from:
-    https://github.com/google-research/google-research/blob/master/rouge/rouge_scorer.py
+    https://github.com/google-research/google-research/blob/master/rouge/rouge_scorer.py.
 
     Args:
         pred: An iterable of predicted sentence split by '\n'.
         target: An iterable target sentence split by '\n'.
 
-    References
+    References:
         [1] ROUGE: A Package for Automatic Evaluation of Summaries by Chin-Yew Lin. https://aclanthology.org/W04-1013/
     """
     pred_len = sum(map(len, pred))
@@ -479,7 +476,6 @@ def rouge_score(
     References:
         [1] ROUGE: A Package for Automatic Evaluation of Summaries by Chin-Yew Lin. https://aclanthology.org/W04-1013/
     """
-
     if use_stemmer:
         if not _NLTK_AVAILABLE:
             raise ModuleNotFoundError("Stemmer requires that `nltk` is installed. Use `pip install nltk`.")

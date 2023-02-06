@@ -96,7 +96,7 @@ def _find_best_perm_by_exhaustive_method(
 def permutation_invariant_training(
     preds: Tensor, target: Tensor, metric_func: Callable, eval_func: Literal["max", "min"] = "max", **kwargs: Any
 ) -> Tuple[Tensor, Tensor]:
-    """Calculates `Permutation invariant training`_ (PIT) that can evaluate models for speaker independent multi-
+    """Calculate `Permutation invariant training`_ (PIT) that can evaluate models for speaker independent multi-
     talker speech separation in a permutation invariant way.
 
     Args:

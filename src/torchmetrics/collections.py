@@ -299,7 +299,7 @@ class MetricCollection(ModuleDict):
         """Make a copy of the metric collection
         Args:
             prefix: a string to append in front of the metric keys
-            postfix: a string to append after the keys of the output dict
+            postfix: a string to append after the keys of the output dict.
 
         """
         mc = deepcopy(self)

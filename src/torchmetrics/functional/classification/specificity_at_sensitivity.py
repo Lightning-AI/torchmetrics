@@ -39,7 +39,7 @@ from torchmetrics.functional.classification.roc import (
 
 
 def _convert_fpr_to_specificity(fpr: Tensor) -> Tensor:
-    """Converts fprs to specificity."""
+    """Convert  fprs to specificity."""
     return 1 - fpr
 
 
@@ -101,7 +101,7 @@ def binary_specificity_at_sensitivity(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tuple[Tensor, Tensor]:
-    r"""Computes the higest possible specificity value given the minimum sensitivity thresholds provided for binary
+    r"""Compute the higest possible specificity value given the minimum sensitivity thresholds provided for binary
     tasks. This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different
     thresholds and the find the specificity for a given sensitivity level.
 
@@ -207,7 +207,7 @@ def multiclass_specificity_at_sensitivity(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tuple[Tensor, Tensor]:
-    r"""Computes the higest possible specificity value given the minimum sensitivity thresholds provided for
+    r"""Compute the higest possible specificity value given the minimum sensitivity thresholds provided for
     multiclass tasks. This is done by first calculating the Receiver Operating Characteristic (ROC) curve for
     different thresholds and the find the specificity for a given sensitivity level.
 
@@ -322,7 +322,7 @@ def multilabel_specificity_at_sensitivity(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tuple[Tensor, Tensor]:
-    r"""Computes the higest possible specificity value given the minimum sensitivity thresholds provided for
+    r"""Compute the higest possible specificity value given the minimum sensitivity thresholds provided for
     multilabel tasks. This is done by first calculating the Receiver Operating Characteristic (ROC) curve for
     different thresholds and the find the specificity for a given sensitivity level.
 
@@ -404,7 +404,7 @@ def specicity_at_sensitivity(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tensor, Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    r"""Computes the higest possible specicity value given the minimum sensitivity thresholds provided. This is done
+    r"""Compute the higest possible specicity value given the minimum sensitivity thresholds provided. This is done
     by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the find
     the specificity for a given sensitivity level.
 
