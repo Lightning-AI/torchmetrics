@@ -43,7 +43,7 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class BinaryConfusionMatrix(Metric):
-    r"""Computes the `confusion matrix`_ for binary tasks.
+    r"""Compute the `confusion matrix`_ for binary tasks.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -122,12 +122,12 @@ class BinaryConfusionMatrix(Metric):
         self.confmat += confmat
 
     def compute(self) -> Tensor:
-        """Computes confusion matrix."""
+        """Compute confusion matrix."""
         return _binary_confusion_matrix_compute(self.confmat, self.normalize)
 
 
 class MulticlassConfusionMatrix(Metric):
-    r"""Computes the `confusion matrix`_ for multiclass tasks.
+    r"""Compute the `confusion matrix`_ for multiclass tasks.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -227,7 +227,7 @@ class MulticlassConfusionMatrix(Metric):
         self.confmat += confmat
 
     def compute(self) -> Tensor:
-        """Computes confusion matrix."""
+        """Compute confusion matrix."""
         return _multiclass_confusion_matrix_compute(self.confmat, self.normalize)
 
     def plot(self, val: Optional[Tensor] = None) -> _PLOT_OUT_TYPE:
@@ -262,7 +262,7 @@ class MulticlassConfusionMatrix(Metric):
 
 
 class MultilabelConfusionMatrix(Metric):
-    r"""Computes the `confusion matrix`_ for multilabel tasks.
+    r"""Compute the `confusion matrix`_ for multilabel tasks.
 
     As input to 'update' the metric accepts the following input:
 
@@ -348,12 +348,12 @@ class MultilabelConfusionMatrix(Metric):
         self.confmat += confmat
 
     def compute(self) -> Tensor:
-        """Computes confusion matrix."""
+        """Compute confusion matrix."""
         return _multilabel_confusion_matrix_compute(self.confmat, self.normalize)
 
 
 class ConfusionMatrix:
-    r"""Computes the `confusion matrix`_.
+    r"""Compute the `confusion matrix`_.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of

@@ -24,7 +24,7 @@ from torchmetrics.utilities.compute import _safe_matmul
 def _pairwise_cosine_similarity_update(
     x: Tensor, y: Optional[Tensor] = None, zero_diagonal: Optional[bool] = None
 ) -> Tensor:
-    """Calculates the pairwise cosine similarity matrix.
+    """Calculate the pairwise cosine similarity matrix.
 
     Args:
         x: tensor of shape ``[N,d]``
@@ -50,7 +50,7 @@ def pairwise_cosine_similarity(
     reduction: Literal["mean", "sum", "none", None] = None,
     zero_diagonal: Optional[bool] = None,
 ) -> Tensor:
-    r"""Calculates pairwise cosine similarity:
+    r"""Calculate pairwise cosine similarity:
 
     .. math::
         s_{cos}(x,y) = \frac{<x,y>}{||x|| \cdot ||y||}

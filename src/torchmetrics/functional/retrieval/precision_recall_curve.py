@@ -23,7 +23,7 @@ from torchmetrics.utilities.checks import _check_retrieval_functional_inputs
 def retrieval_precision_recall_curve(
     preds: Tensor, target: Tensor, max_k: Optional[int] = None, adaptive_k: bool = False
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    """Computes precision-recall pairs for different k (from 1 to `max_k`).
+    """Compute precision-recall pairs for different k (from 1 to `max_k`).
 
     In a ranked retrieval context, appropriate sets of retrieved documents are naturally given by
     the top k retrieved documents.

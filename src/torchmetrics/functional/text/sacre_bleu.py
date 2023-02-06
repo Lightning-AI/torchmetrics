@@ -150,9 +150,8 @@ class _SacreBLEUTokenizer:
 
     @staticmethod
     def _is_chinese_char(uchar: str) -> bool:
-        """
-        Args:
-            uchar: input char in unicode
+        """Args:
+            uchar: input char in unicode.
 
         Return:
             whether the input char is a Chinese character.
@@ -200,7 +199,7 @@ class _SacreBLEUTokenizer:
         """The tokenization of Chinese text in this script contains two
         steps: separate each Chinese characters (by utf-8 encoding); tokenize
         the Chinese part (following the `13a` i.e. mteval tokenizer).
-        Author: Shujian Huang huangsj@nju.edu.cn
+        Author: Shujian Huang huangsj@nju.edu.cn.
 
         Args:
             line: input sentence
@@ -208,7 +207,6 @@ class _SacreBLEUTokenizer:
         Return:
             tokenized sentence
         """
-
         line = line.strip()
         line_in_chars = ""
 
@@ -224,7 +222,7 @@ class _SacreBLEUTokenizer:
 
     @classmethod
     def _tokenize_international(cls, line: str) -> str:
-        """Tokenizes a string following the official BLEU implementation.
+        r"""Tokenizes a string following the official BLEU implementation.
 
         See github.com/moses-smt/mosesdecoder/blob/master/scripts/generic/mteval-v14.pl#L954-L983
 
@@ -320,7 +318,6 @@ def sacre_bleu_score(
         [3] Automatic Evaluation of Machine Translation Quality Using Longest Common Subsequence
         and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och `Machine Translation Evolution`_
     """
-
     if tokenize not in AVAILABLE_TOKENIZERS:
         raise ValueError(f"Argument `tokenize` expected to be one of {AVAILABLE_TOKENIZERS} but got {tokenize}.")
 

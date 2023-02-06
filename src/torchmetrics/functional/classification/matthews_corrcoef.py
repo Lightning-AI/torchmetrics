@@ -35,7 +35,8 @@ from torchmetrics.functional.classification.confusion_matrix import (
 
 def _matthews_corrcoef_reduce(confmat: Tensor) -> Tensor:
     """Reduce an un-normalized confusion matrix of shape (n_classes, n_classes) into the matthews corrcoef
-    score."""
+    score.
+    """
     # convert multilabel into binary
     confmat = confmat.sum(0) if confmat.ndim == 3 else confmat
 
@@ -62,7 +63,7 @@ def binary_matthews_corrcoef(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculates `Matthews correlation coefficient`_ for binary tasks. This metric measures the general
+    r"""Calculate `Matthews correlation coefficient`_ for binary tasks. This metric measures the general
     correlation or quality of a classification.
 
     Accepts the following input tensors:
@@ -112,7 +113,7 @@ def multiclass_matthews_corrcoef(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculates `Matthews correlation coefficient`_ for multiclass tasks. This metric measures the general
+    r"""Calculate `Matthews correlation coefficient`_ for multiclass tasks. This metric measures the general
     correlation or quality of a classification.
 
     Accepts the following input tensors:
@@ -166,15 +167,15 @@ def multilabel_matthews_corrcoef(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculates `Matthews correlation coefficient`_ for multilabel tasks. This metric measures the general
+    r"""Calculate `Matthews correlation coefficient`_ for multilabel tasks. This metric measures the general
     correlation or quality of a classification.
 
     Accepts the following input tensors:
 
-    - ``preds`` (int or float tensor): ``(N, C, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
-      we convert to int tensor with thresholding using the value in ``threshold``.
-    - ``target`` (int tensor): ``(N, C, ...)``
+        - ``preds`` (int or float tensor): ``(N, C, ...)``. If preds is a floating point tensor with values outside
+          [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
+          we convert to int tensor with thresholding using the value in ``threshold``.
+        - ``target`` (int tensor): ``(N, C, ...)``
 
     Additional dimension ``...`` will be flattened into the batch dimension.
 
@@ -185,7 +186,6 @@ def multilabel_matthews_corrcoef(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
-        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
         >>> from torch import tensor
@@ -220,7 +220,7 @@ def matthews_corrcoef(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculates `Matthews correlation coefficient`_ . This metric measures the general correlation or quality of
+    r"""Calculate `Matthews correlation coefficient`_ . This metric measures the general correlation or quality of
     a classification.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the

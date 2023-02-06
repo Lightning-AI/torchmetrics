@@ -54,6 +54,7 @@ def _get_embeddings_and_idf_scale(
     user_forward_fn: Callable[[Module, Dict[str, Tensor]], Tensor] = None,
 ) -> Tuple[Tensor, Tensor]:
     """Calculate sentence embeddings and the inverse-document-frequency scaling factor.
+
     Args:
         dataloader: dataloader instance.
         target_len: A length of the longest sequence in the data. Used for padding the model output.
@@ -158,7 +159,7 @@ def _get_precision_recall_f1(
 
 
 def _get_hash(model_name_or_path: Optional[str] = None, num_layers: Optional[int] = None, idf: bool = False) -> str:
-    """Compute `BERT_score`_ (copied and adjusted)"""
+    """Compute `BERT_score`_ (copied and adjusted)."""
     msg = f"{model_name_or_path}_L{num_layers}{'_idf' if idf else '_no-idf'}"
     return msg
 
