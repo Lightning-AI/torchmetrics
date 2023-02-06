@@ -23,7 +23,7 @@ from torchmetrics.utilities import rank_zero_warn
 
 
 class PeakSignalNoiseRatio(Metric):
-    r"""Computes `Computes Peak Signal-to-Noise Ratio`_ (PSNR):
+    r"""`Compute Peak Signal-to-Noise Ratio`_ (PSNR):
 
     .. math:: \text{PSNR}(I, J) = 10 * \log_{10} \left(\frac{\max(I)^2}{\text{MSE}(I, J)}\right)
 

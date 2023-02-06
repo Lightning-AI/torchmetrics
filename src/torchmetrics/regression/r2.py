@@ -21,7 +21,7 @@ from torchmetrics.metric import Metric
 
 
 class R2Score(Metric):
-    r"""Computes r2 score also known as `R2 Score_Coefficient Determination`_:
+    r"""Compute r2 score also known as `R2 Score_Coefficient Determination`_:
 
     .. math:: R^2 = 1 - \frac{SS_{res}}{SS_{tot}}
 
@@ -122,7 +122,7 @@ class R2Score(Metric):
         self.total += total
 
     def compute(self) -> Tensor:
-        """Computes r2 score over the metric states."""
+        """Compute r2 score over the metric states."""
         return _r2_score_compute(
             self.sum_squared_error, self.sum_error, self.residual, self.total, self.adjusted, self.multioutput
         )
