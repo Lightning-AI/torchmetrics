@@ -222,7 +222,7 @@ if __name__ == "__main__":
         "spectral_angle_mapper": spectral_angle_mapper,
         "structural_similarity_index_measure": structural_similarity_index_measure,
         "multiscale_structural_similarity_index_measure": multiscale_structural_similarity_index_measure,
-        "universal_image_quality_index": universal_image_quality_index
+        "universal_image_quality_index": universal_image_quality_index,
     }
 
     parser = argparse.ArgumentParser(description="Example script for plotting metrics.")
