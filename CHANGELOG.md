@@ -46,6 +46,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed type hints in methods belonging to `MetricTracker` wrapper ([#1472](https://github.com/Lightning-AI/metrics/pull/1472))
 
 
+- Fixed `multilabel` in `ExactMatch` ([#1474](https://github.com/Lightning-AI/metrics/pull/1474))
+
+
+
 ## [0.11.1] - 2023-01-30
 
 ### Fixed
