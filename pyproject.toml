@@ -108,26 +108,26 @@ unfixable = ["F401"]
 "__about__.py" = ["D100"]
 "__init__.py" = ["D100"]
 "src/**" = [
-    "D101",  # todo # Missing docstring in public class
-    "D102",  # todo # Missing docstring in public method
-    "D103",  # todo # Missing docstring in public function
-    "D105",  # todo # Missing docstring in magic method
-    "D205",  # todo # 1 blank line required between summary line and description
-    "D401",  # todo # First line of docstring should be in imperative mood: ...
-    "D415",  # todo # First line should end with a period, question mark, or exclamation point"
-    "D417",  # todo # Missing argument descriptions in the docstring: ...
+    "D101",   # Missing docstring in public class
+    "D102",   # Missing docstring in public method
+    "D103",   # Missing docstring in public function
+    "D105",   # Missing docstring in magic method
+    "D205",   # 1 blank line required between summary line and description
+    "D401",   # First line of docstring should be in imperative mood: ...
+    "D415",   # First line should end with a period, question mark, or exclamation point"
+    "D417",   # Missing argument descriptions in the docstring: ...
 ]
 "tests/**" = [
     "D101",  # Missing docstring in public class
     "D102",  # Missing docstring in public method
     "D103",  # Missing docstring in public function
     "D104",  # Missing docstring in public package
-    "D105",  # todo # Missing docstring in magic method
-    "D205",  # todo # 1 blank line required between summary line and description
-    "D401",  # todo # First line of docstring should be in imperative mood: ...
-    "D403",  # todo # First word of the first line should be properly capitalized
-    "D415",  # todo # First line should end with a period, question mark, or exclamation point"
-    "D417",  # todo # Missing argument descriptions in the docstring: ...
+    "D105",  # Missing docstring in magic method
+    "D205",  # 1 blank line required between summary line and description
+    "D401",  # First line of docstring should be in imperative mood: ...
+    "D403",  # First word of the first line should be properly capitalized
+    "D415",  # First line should end with a period, question mark, or exclamation point"
+    "D417",  # Missing argument descriptions in the docstring: ...
 ]
 
 [tool.ruff.pydocstyle]
