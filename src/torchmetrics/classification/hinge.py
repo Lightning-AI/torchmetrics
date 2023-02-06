@@ -29,7 +29,7 @@ from torchmetrics.functional.classification.hinge import (
     _multiclass_hinge_loss_update,
 )
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.enums import ClassificationTask
+from torchmetrics.utilities.enums import ClassificationTaskNoMultilabel
 
 
 class BinaryHingeLoss(Metric):
@@ -253,12 +253,10 @@ class HingeLoss:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
+        task = ClassificationTaskNoMultilabel.from_str(task)
         kwargs.update({"ignore_index": ignore_index, "validate_args": validate_args})
-        if task == ClassificationTask.BINARY:
+        if task == ClassificationTaskNoMultilabel.BINARY:
             return BinaryHingeLoss(squared, **kwargs)
-        if task == ClassificationTask.MULTICLASS:
+        if task == ClassificationTaskNoMultilabel.MULTICLASS:
             assert isinstance(num_classes, int)
             return MulticlassHingeLoss(num_classes, squared, multiclass_mode, **kwargs)
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-        )

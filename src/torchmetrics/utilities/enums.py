@@ -110,3 +110,33 @@ class ClassificationTask(EnumStr):
     BINARY = "binary"
     MULTICLASS = "multiclass"
     MULTILABEL = "multilabel"
+
+
+class ClassificationTaskNoBinary(EnumStr):
+    """Enum to represent the different tasks in classification metrics.
+
+    >>> "binary" in list(ClassificationTask)
+    False
+    """
+
+    @staticmethod
+    def _name() -> str:
+        return "Classification"
+
+    MULTILABEL = "multilabel"
+    MULTICLASS = "multiclass"
+
+
+class ClassificationTaskNoMultilabel(EnumStr):
+    """Enum to represent the different tasks in classification metrics.
+
+    >>> "multilabel" in list(ClassificationTask)
+    False
+    """
+
+    @staticmethod
+    def _name() -> str:
+        return "Classification"
+
+    BINARY = "binary"
+    MULTICLASS = "multiclass"

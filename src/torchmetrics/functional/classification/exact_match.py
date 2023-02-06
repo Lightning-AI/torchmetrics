@@ -26,7 +26,7 @@ from torchmetrics.functional.classification.stat_scores import (
     _multilabel_stat_scores_tensor_validation,
 )
 from torchmetrics.utilities.compute import _safe_divide
-from torchmetrics.utilities.enums import ClassificationTask
+from torchmetrics.utilities.enums import ClassificationTaskNoBinary
 
 
 def _exact_match_reduce(
@@ -230,12 +230,12 @@ def exact_match(
         >>> exact_match(preds, target, task="multiclass", num_classes=3, multidim_average='samplewise')
         tensor([1., 0.])
     """
-    if task == ClassificationTask.MULTICLASS:
+    task = ClassificationTaskNoBinary.from_str(task)
+    if task == ClassificationTaskNoBinary.MULTICLASS:
         assert num_classes is not None
         return multiclass_exact_match(preds, target, num_classes, multidim_average, ignore_index, validate_args)
-    if task == "multilabel":
+    if task == ClassificationTaskNoBinary.MULTILABEL:
         assert num_labels is not None
         return multilabel_exact_match(
             preds, target, num_labels, threshold, multidim_average, ignore_index, validate_args
         )
-    raise ValueError(f"Expected argument `task` to either be `'multiclass'` or `'multilabel'` but got {task}")

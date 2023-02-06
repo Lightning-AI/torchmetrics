@@ -382,6 +382,7 @@ class ROC:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
+        task = ClassificationTask.from_str(task)
         kwargs.update({"thresholds": thresholds, "ignore_index": ignore_index, "validate_args": validate_args})
         if task == ClassificationTask.BINARY:
             return BinaryROC(**kwargs)
@@ -391,6 +392,3 @@ class ROC:
         if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelROC(num_labels, **kwargs)
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-        )

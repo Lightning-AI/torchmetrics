@@ -1081,6 +1081,7 @@ def stat_scores(
                 [1, 1, 1, 1, 2],
                 [1, 0, 3, 0, 1]])
     """
+    task = ClassificationTask.from_str(task)
     assert multidim_average is not None
     if task == ClassificationTask.BINARY:
         return binary_stat_scores(preds, target, threshold, multidim_average, ignore_index, validate_args)
@@ -1095,6 +1096,3 @@ def stat_scores(
         return multilabel_stat_scores(
             preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
         )
-    raise ValueError(
-        f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-    )

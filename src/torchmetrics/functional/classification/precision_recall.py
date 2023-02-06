@@ -705,6 +705,7 @@ def recall(
         >>> recall(preds, target, task="multiclass", average='micro', num_classes=3)
         tensor(0.2500)
     """
+    task = ClassificationTask.from_str(task)
     assert multidim_average is not None
     if task == ClassificationTask.BINARY:
         return binary_recall(preds, target, threshold, multidim_average, ignore_index, validate_args)
@@ -719,6 +720,3 @@ def recall(
         return multilabel_recall(
             preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
         )
-    raise ValueError(
-        f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-    )

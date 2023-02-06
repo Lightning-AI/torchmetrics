@@ -414,6 +414,7 @@ def specicity_at_sensitivity(
     :func:`binary_specificity_at_sensitivity`, :func:`multiclass_specicity_at_sensitivity` and
     :func:`multilabel_specifity_at_sensitvity` for the specific details of each argument influence and examples.
     """
+    task = ClassificationTask.from_str(task)
     if task == ClassificationTask.BINARY:
         return binary_specificity_at_sensitivity(  # type: ignore
             preds, target, min_sensitivity, thresholds, ignore_index, validate_args
@@ -428,6 +429,3 @@ def specicity_at_sensitivity(
         return multilabel_specificity_at_sensitivity(  # type: ignore
             preds, target, num_labels, min_sensitivity, thresholds, ignore_index, validate_args
         )
-    raise ValueError(
-        f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-    )

@@ -398,6 +398,7 @@ class ConfusionMatrix:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
+        task = ClassificationTask.from_str(task)
         kwargs.update({"normalize": normalize, "ignore_index": ignore_index, "validate_args": validate_args})
         if task == ClassificationTask.BINARY:
             return BinaryConfusionMatrix(threshold, **kwargs)
@@ -407,6 +408,3 @@ class ConfusionMatrix:
         if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelConfusionMatrix(num_labels, threshold, **kwargs)
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-        )

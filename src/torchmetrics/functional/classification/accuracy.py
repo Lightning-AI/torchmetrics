@@ -397,6 +397,7 @@ def accuracy(
         >>> accuracy(preds, target, task="multiclass", num_classes=3, top_k=2)
         tensor(0.6667)
     """
+    task = ClassificationTask.from_str(task)
     assert multidim_average is not None
     if task == ClassificationTask.BINARY:
         return binary_accuracy(preds, target, threshold, multidim_average, ignore_index, validate_args)
@@ -411,6 +412,3 @@ def accuracy(
         return multilabel_accuracy(
             preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
         )
-    raise ValueError(
-        f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-    )

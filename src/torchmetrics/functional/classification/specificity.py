@@ -370,6 +370,7 @@ def specificity(
         >>> specificity(preds, target, task="multiclass", average='micro', num_classes=3)
         tensor(0.6250)
     """
+    task = ClassificationTask.from_str(task)
     assert multidim_average is not None
     if task == ClassificationTask.BINARY:
         return binary_specificity(preds, target, threshold, multidim_average, ignore_index, validate_args)
@@ -384,6 +385,3 @@ def specificity(
         return multilabel_specificity(
             preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
         )
-    raise ValueError(
-        f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-    )

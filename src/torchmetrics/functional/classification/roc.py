@@ -484,6 +484,7 @@ def roc(
          tensor([1.0000, 0.7576, 0.3680, 0.3468, 0.0745]),
          tensor([1.0000, 0.1837, 0.1338, 0.1183, 0.1138])]
     """
+    task = ClassificationTask.from_str(task)
     if task == ClassificationTask.BINARY:
         return binary_roc(preds, target, thresholds, ignore_index, validate_args)
     if task == ClassificationTask.MULTICLASS:
@@ -492,6 +493,3 @@ def roc(
     if task == ClassificationTask.MULTILABEL:
         assert isinstance(num_labels, int)
         return multilabel_roc(preds, target, num_labels, thresholds, ignore_index, validate_args)
-    raise ValueError(
-        f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-    )

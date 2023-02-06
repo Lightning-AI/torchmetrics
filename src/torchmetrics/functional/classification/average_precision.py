@@ -438,6 +438,7 @@ def average_precision(
         >>> average_precision(pred, target, task="multiclass", num_classes=5, average=None)
         tensor([1.0000, 1.0000, 0.2500, 0.2500,    nan])
     """
+    task = ClassificationTask.from_str(task)
     if task == ClassificationTask.BINARY:
         return binary_average_precision(preds, target, thresholds, ignore_index, validate_args)
     if task == ClassificationTask.MULTICLASS:
@@ -448,6 +449,3 @@ def average_precision(
     if task == ClassificationTask.MULTILABEL:
         assert isinstance(num_labels, int)
         return multilabel_average_precision(preds, target, num_labels, average, thresholds, ignore_index, validate_args)
-    raise ValueError(
-        f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-    )

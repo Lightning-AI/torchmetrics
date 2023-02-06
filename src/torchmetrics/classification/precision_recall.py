@@ -621,6 +621,7 @@ class Precision:
         kwargs.update(
             {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
         )
+        task = ClassificationTask.from_str(task)
         if task == ClassificationTask.BINARY:
             return BinaryPrecision(threshold, **kwargs)
         if task == ClassificationTask.MULTICLASS:
@@ -630,9 +631,6 @@ class Precision:
         if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelPrecision(num_labels, threshold, average, **kwargs)
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-        )
 
 
 class Recall:
@@ -673,6 +671,7 @@ class Recall:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
+        task = ClassificationTask.from_str(task)
         assert multidim_average is not None
         kwargs.update(
             {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
@@ -686,6 +685,3 @@ class Recall:
         if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelRecall(num_labels, threshold, average, **kwargs)
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-        )

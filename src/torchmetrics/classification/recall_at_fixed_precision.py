@@ -324,6 +324,7 @@ class RecallAtFixedPrecision:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
+        task = ClassificationTask.from_str(task)
         if task == ClassificationTask.BINARY:
             return BinaryRecallAtFixedPrecision(min_precision, thresholds, ignore_index, validate_args, **kwargs)
         if task == ClassificationTask.MULTICLASS:
@@ -336,6 +337,3 @@ class RecallAtFixedPrecision:
             return MultilabelRecallAtFixedPrecision(
                 num_labels, min_precision, thresholds, ignore_index, validate_args, **kwargs
             )
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-        )

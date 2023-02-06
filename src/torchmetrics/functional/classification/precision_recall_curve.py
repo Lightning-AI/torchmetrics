@@ -816,6 +816,7 @@ def precision_recall_curve(
         >>> thresholds
         [tensor([0.7500]), tensor([0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500])]
     """
+    task = ClassificationTask.from_str(task)
     if task == ClassificationTask.BINARY:
         return binary_precision_recall_curve(preds, target, thresholds, ignore_index, validate_args)
     if task == ClassificationTask.MULTICLASS:
@@ -824,6 +825,3 @@ def precision_recall_curve(
     if task == ClassificationTask.MULTILABEL:
         assert isinstance(num_labels, int)
         return multilabel_precision_recall_curve(preds, target, num_labels, thresholds, ignore_index, validate_args)
-    raise ValueError(
-        f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-    )

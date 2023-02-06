@@ -236,6 +236,7 @@ def matthews_corrcoef(
         >>> matthews_corrcoef(preds, target, task="multiclass", num_classes=2)
         tensor(0.5774)
     """
+    task = ClassificationTask.from_str(task)
     if task == ClassificationTask.BINARY:
         return binary_matthews_corrcoef(preds, target, threshold, ignore_index, validate_args)
     if task == ClassificationTask.MULTICLASS:
@@ -244,6 +245,3 @@ def matthews_corrcoef(
     if task == ClassificationTask.MULTILABEL:
         assert isinstance(num_labels, int)
         return multilabel_matthews_corrcoef(preds, target, num_labels, threshold, ignore_index, validate_args)
-    raise ValueError(
-        f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-    )

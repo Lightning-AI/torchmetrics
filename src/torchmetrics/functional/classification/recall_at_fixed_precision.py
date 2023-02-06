@@ -385,6 +385,7 @@ def recall_at_fixed_precision(
     :func:`binary_recall_at_fixed_precision`, :func:`multiclass_recall_at_fixed_precision` and
     :func:`multilabel_recall_at_fixed_precision` for the specific details of each argument influence and examples.
     """
+    task = ClassificationTask.from_str(task)
     if task == ClassificationTask.BINARY:
         return binary_recall_at_fixed_precision(preds, target, min_precision, thresholds, ignore_index, validate_args)
     if task == ClassificationTask.MULTICLASS:
@@ -397,6 +398,3 @@ def recall_at_fixed_precision(
         return multilabel_recall_at_fixed_precision(
             preds, target, num_labels, min_precision, thresholds, ignore_index, validate_args
         )
-    raise ValueError(
-        f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-    )

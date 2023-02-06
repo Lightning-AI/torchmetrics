@@ -328,6 +328,7 @@ class SpecificityAtSensitivity:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
+        task = ClassificationTask.from_str(task)
         if task == ClassificationTask.BINARY:
             return BinarySpecificityAtSensitivity(min_sensitivity, thresholds, ignore_index, validate_args, **kwargs)
         if task == ClassificationTask.MULTICLASS:
@@ -340,6 +341,3 @@ class SpecificityAtSensitivity:
             return MultilabelSpecificityAtSensitivity(
                 num_labels, min_sensitivity, thresholds, ignore_index, validate_args, **kwargs
             )
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-        )

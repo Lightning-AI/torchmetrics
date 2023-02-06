@@ -693,6 +693,7 @@ def fbeta_score(
         >>> fbeta_score(preds, target, task="multiclass", num_classes=3, beta=0.5)
         tensor(0.3333)
     """
+    task = ClassificationTask.from_str(task)
     assert multidim_average is not None
     if task == ClassificationTask.BINARY:
         return binary_fbeta_score(preds, target, beta, threshold, multidim_average, ignore_index, validate_args)
@@ -707,9 +708,6 @@ def fbeta_score(
         return multilabel_fbeta_score(
             preds, target, beta, num_labels, threshold, average, multidim_average, ignore_index, validate_args
         )
-    raise ValueError(
-        f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-    )
 
 
 def f1_score(
@@ -742,6 +740,7 @@ def f1_score(
         >>> f1_score(preds, target, task="multiclass", num_classes=3)
         tensor(0.3333)
     """
+    task = ClassificationTask.from_str(task)
     assert multidim_average is not None
     if task == ClassificationTask.BINARY:
         return binary_f1_score(preds, target, threshold, multidim_average, ignore_index, validate_args)
@@ -756,6 +755,3 @@ def f1_score(
         return multilabel_f1_score(
             preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
         )
-    raise ValueError(
-        f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-    )

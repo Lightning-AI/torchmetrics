@@ -451,6 +451,7 @@ def auroc(
         >>> auroc(preds, target, task='multiclass', num_classes=3)
         tensor(0.7778)
     """
+    task = ClassificationTask.from_str(task)
     if task == ClassificationTask.BINARY:
         return binary_auroc(preds, target, max_fpr, thresholds, ignore_index, validate_args)
     if task == ClassificationTask.MULTICLASS:
@@ -459,6 +460,3 @@ def auroc(
     if task == ClassificationTask.MULTILABEL:
         assert isinstance(num_labels, int)
         return multilabel_auroc(preds, target, num_labels, average, thresholds, ignore_index, validate_args)
-    raise ValueError(
-        f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-    )
