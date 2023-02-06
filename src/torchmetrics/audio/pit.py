@@ -118,7 +118,6 @@ class PermutationInvariantTraining(Metric):
                 If `matplotlib` is not installed
 
         Examples:
-
         .. plot::
             :scale: 75
 

@@ -136,7 +136,6 @@ class SignalDistortionRatio(Metric):
                 If `matplotlib` is not installed
 
         Examples:
-
         .. plot::
             :scale: 75
 
@@ -244,7 +243,6 @@ class ScaleInvariantSignalDistortionRatio(Metric):
                 If `matplotlib` is not installed
 
         Examples:
-
         .. plot::
             :scale: 75
 
