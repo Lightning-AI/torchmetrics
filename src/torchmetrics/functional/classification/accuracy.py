@@ -144,7 +144,6 @@ def binary_accuracy(
         >>> binary_accuracy(preds, target, multidim_average='samplewise')
         tensor([0.3333, 0.1667])
     """
-
     if validate_args:
         _binary_stat_scores_arg_validation(threshold, multidim_average, ignore_index)
         _binary_stat_scores_tensor_validation(preds, target, multidim_average, ignore_index)
@@ -250,7 +249,6 @@ def multiclass_accuracy(
         tensor([[1.0000, 0.0000, 0.5000],
                 [0.0000, 0.3333, 0.5000]])
     """
-
     if validate_args:
         _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index)
         _multiclass_stat_scores_tensor_validation(preds, target, num_classes, multidim_average, ignore_index)
@@ -354,7 +352,6 @@ def multilabel_accuracy(
         tensor([[0.5000, 0.5000, 0.0000],
                 [0.0000, 0.0000, 0.5000]])
     """
-
     if validate_args:
         _multilabel_stat_scores_arg_validation(num_labels, threshold, average, multidim_average, ignore_index)
         _multilabel_stat_scores_tensor_validation(preds, target, num_labels, multidim_average, ignore_index)
@@ -400,7 +397,6 @@ def accuracy(
         >>> accuracy(preds, target, task="multiclass", num_classes=3, top_k=2)
         tensor(0.6667)
     """
-
     if task not in ["binary", "multiclass", "multilabel"]:
         raise MisConfigurationError(
             f"Expected argument `task` must be one of (`'binary'`, `'multiclass'`, `'multilabel'`). Got `{task}`"
