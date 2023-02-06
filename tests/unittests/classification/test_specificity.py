@@ -34,7 +34,7 @@ seed_all(42)
 
 
 def _calc_specificity(tn, fp):
-    """safely calculate specificity."""
+    """Safely calculate specificity."""
     denom = tn + fp
     if np.isscalar(tn):
         denom = 1.0 if denom == 0 else denom

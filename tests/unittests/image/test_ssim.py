@@ -231,7 +231,9 @@ class TestSSIM(MetricTester):
     ],
 )
 def test_ssim_invalid_inputs(pred, target, kernel, sigma):
-    """Test that an value errors are raised if input sizes are different, kernel length and sigma does not match
+    """Test for invalid input.
+
+    Checks that that an value errors are raised if input sizes are different, kernel length and sigma does not match
     size or invalid values are provided.
     """
     pred = torch.rand(pred)

@@ -122,9 +122,7 @@ def test_metric_collection_wrong_input(tmpdir):
 
 
 def test_metric_collection_args_kwargs(tmpdir):
-    """Check that args and kwargs gets passed correctly in metric collection, Checks both update and forward
-    method.
-    """
+    """Check that args and kwargs gets passed correctly in metric collection, checks both update and forward."""
     m1 = DummyMetricSum()
     m2 = DummyMetricDiff()
 
@@ -450,9 +448,7 @@ class TestComputeGroups:
 
     @pytest.mark.parametrize("method", ["items", "values", "keys"])
     def test_check_compute_groups_items_and_values(self, metrics, expected, preds, target, method):
-        """Check that whenever user call a methods that give access to the indivitual metric that state are copied
-        instead of just passed by reference.
-        """
+        """Check states are copied instead of passed by ref when a single metric in the collection is access."""
         m = MetricCollection(deepcopy(metrics), compute_groups=True)
         m2 = MetricCollection(deepcopy(metrics), compute_groups=False)
 

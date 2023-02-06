@@ -110,7 +110,7 @@ def test_flatten_dict():
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires gpu")
 def test_bincount():
-    """test that bincount works in deterministic setting on GPU."""
+    """Test that bincount works in deterministic setting on GPU."""
     torch.use_deterministic_algorithms(True)
 
     x = torch.randint(10, size=(100,))
