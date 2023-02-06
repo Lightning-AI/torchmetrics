@@ -233,7 +233,7 @@ def exact_match(
     if task == "multiclass":
         assert num_classes is not None
         return multiclass_exact_match(preds, target, num_classes, multidim_average, ignore_index, validate_args)
-    if task == "multilalbe":
+    if task == "multilabel":
         assert num_labels is not None
         return multilabel_exact_match(
             preds, target, num_labels, threshold, multidim_average, ignore_index, validate_args
