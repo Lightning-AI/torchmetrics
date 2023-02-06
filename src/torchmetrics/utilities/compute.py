@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ def _safe_matmul(x: Tensor, y: Tensor) -> Tensor:
 
 
 def _safe_xlogy(x: Tensor, y: Tensor) -> Tensor:
-    """Computes x * log(y). Returns 0 if x=0.
+    """Compute x * log(y). Returns 0 if x=0.
 
     Example:
         >>> import torch
@@ -56,7 +56,7 @@ def _safe_divide(num: Tensor, denom: Tensor) -> Tensor:
 
 
 def _auc_format_inputs(x: Tensor, y: Tensor) -> Tuple[Tensor, Tensor]:
-    """Checks that auc input is correct."""
+    """Check that auc input is correct."""
     x = x.squeeze() if x.ndim > 1 else x
     y = y.squeeze() if y.ndim > 1 else y
 
@@ -72,7 +72,7 @@ def _auc_format_inputs(x: Tensor, y: Tensor) -> Tuple[Tensor, Tensor]:
 
 
 def _auc_compute_without_check(x: Tensor, y: Tensor, direction: float, axis: int = -1) -> Tensor:
-    """Computes area under the curve using the trapezoidal rule.
+    """Compute area under the curve using the trapezoidal rule.
 
     Assumes increasing or decreasing order of `x`.
     """
@@ -101,7 +101,7 @@ def _auc_compute(x: Tensor, y: Tensor, reorder: bool = False) -> Tensor:
 
 
 def auc(x: Tensor, y: Tensor, reorder: bool = False) -> Tensor:
-    """Computes Area Under the Curve (AUC) using the trapezoidal rule.
+    """Compute Area Under the Curve (AUC) using the trapezoidal rule.
 
     Args:
         x: x-coordinates, must be either increasing or decreasing

@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -51,6 +51,8 @@ def request_url(url: str, auth_token: Optional[str] = None) -> Optional[dict]:
 
 
 class AssistantCLI:
+    """CLI assistant for local CI."""
+
     @staticmethod
     def prune_packages(req_file: str, *pkgs: str) -> None:
         """Prune packages from requirement file."""
@@ -96,6 +98,7 @@ class AssistantCLI:
 
     @staticmethod
     def set_oldest_versions(req_files: List[str] = REQUIREMENTS_FILES) -> None:
+        """Set the oldest version for requirements."""
         AssistantCLI.set_min_torch_by_python()
         for fpath in req_files:
             AssistantCLI.replace_min_requirements(fpath)

@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -358,7 +358,6 @@ class TestMAP(MetricTester):
     @pytest.mark.parametrize("ddp", [False])
     def test_map_segm(self, compute_on_cpu, ddp):
         """Test modular implementation for correctness."""
-
         self.run_class_metric_test(
             ddp=ddp,
             preds=_inputs_masks.preds,

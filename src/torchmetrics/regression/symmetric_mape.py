@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ from torchmetrics.metric import Metric
 
 
 class SymmetricMeanAbsolutePercentageError(Metric):
-    r"""Computes symmetric mean absolute percentage error (`SMAPE`_).
+    r"""Compute symmetric mean absolute percentage error (`SMAPE`_).
 
     .. math:: \text{SMAPE} = \frac{2}{n}\sum_1^n\frac{|   y_i - \hat{y_i} |}{\max(| y_i | + | \hat{y_i} |, \epsilon)}
 
@@ -72,5 +72,5 @@ class SymmetricMeanAbsolutePercentageError(Metric):
         self.total += num_obs
 
     def compute(self) -> Tensor:
-        """Computes mean absolute percentage error over state."""
+        """Compute mean absolute percentage error over state."""
         return _symmetric_mean_absolute_percentage_error_compute(self.sum_abs_per_error, self.total)

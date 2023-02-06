@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -138,7 +138,7 @@ def test_uqi_invalid_inputs(pred, target, kernel, sigma):
 
 
 def test_uqi_unequal_kernel_size():
-    """Test the case where kernel_size[0] != kernel_size[1]"""
+    """Test the case where kernel_size[0] != kernel_size[1]."""
     preds = torch.tensor(
         [
             [

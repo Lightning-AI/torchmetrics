@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ from torchmetrics.metric import Metric
 
 
 class ExplainedVariance(Metric):
-    r"""Computes `explained variance`_:
+    r"""Compute `explained variance`_:
 
     .. math:: \text{ExplainedVariance} = 1 - \frac{\text{Var}(y - \hat{y})}{\text{Var}(y)}
 
@@ -110,7 +110,7 @@ class ExplainedVariance(Metric):
         self.sum_squared_target = self.sum_squared_target + sum_squared_target
 
     def compute(self) -> Union[Tensor, Sequence[Tensor]]:
-        """Computes explained variance over state."""
+        """Compute explained variance over state."""
         return _explained_variance_compute(
             self.n_obs,
             self.sum_error,
