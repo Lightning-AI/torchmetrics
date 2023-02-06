@@ -23,7 +23,7 @@ from torchmetrics.utilities.enums import ClassificationTask
 
 
 class BinaryPrecision(BinaryStatScores):
-    r"""Computes `Precision`_ for binary tasks:
+    r"""Compute `Precision`_ for binary tasks:
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 
@@ -96,7 +96,7 @@ class BinaryPrecision(BinaryStatScores):
 
 
 class MulticlassPrecision(MulticlassStatScores):
-    r"""Computes `Precision`_ for multiclass tasks.
+    r"""Compute `Precision`_ for multiclass tasks.
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 
@@ -133,8 +133,8 @@ class MulticlassPrecision(MulticlassStatScores):
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
         top_k:
             Number of highest probability or logit score predictions considered to find the correct label.
             Only works when ``preds`` contain probabilities/logits.
@@ -200,7 +200,7 @@ class MulticlassPrecision(MulticlassStatScores):
 
 
 class MultilabelPrecision(MultilabelStatScores):
-    r"""Computes `Precision`_ for multilabel tasks.
+    r"""Compute `Precision`_ for multilabel tasks.
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 
@@ -239,8 +239,8 @@ class MultilabelPrecision(MultilabelStatScores):
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
 
         multidim_average:
             Defines how additionally dimensions ``...`` should be handled. Should be one of the following:
@@ -302,7 +302,7 @@ class MultilabelPrecision(MultilabelStatScores):
 
 
 class BinaryRecall(BinaryStatScores):
-    r"""Computes `Recall`_ for binary tasks:
+    r"""Compute `Recall`_ for binary tasks:
 
     .. math:: \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
 
@@ -375,7 +375,7 @@ class BinaryRecall(BinaryStatScores):
 
 
 class MulticlassRecall(MulticlassStatScores):
-    r"""Computes `Recall`_ for multiclass tasks:
+    r"""Compute `Recall`_ for multiclass tasks:
 
     .. math:: \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
 
@@ -412,8 +412,8 @@ class MulticlassRecall(MulticlassStatScores):
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
         top_k:
             Number of highest probability or logit score predictions considered to find the correct label.
             Only works when ``preds`` contain probabilities/logits.
@@ -479,7 +479,7 @@ class MulticlassRecall(MulticlassStatScores):
 
 
 class MultilabelRecall(MultilabelStatScores):
-    r"""Computes `Recall`_ for multilabel tasks:
+    r"""Compute `Recall`_ for multilabel tasks:
 
     .. math:: \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
 
@@ -517,8 +517,8 @@ class MultilabelRecall(MultilabelStatScores):
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
 
         multidim_average:
             Defines how additionally dimensions ``...`` should be handled. Should be one of the following:
@@ -580,7 +580,7 @@ class MultilabelRecall(MultilabelStatScores):
 
 
 class Precision:
-    r"""Computes `Precision`_:
+    r"""Compute `Precision`_:
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 
@@ -636,7 +636,7 @@ class Precision:
 
 
 class Recall:
-    r"""Computes `Recall`_:
+    r"""Compute `Recall`_:
 
     .. math:: \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
 

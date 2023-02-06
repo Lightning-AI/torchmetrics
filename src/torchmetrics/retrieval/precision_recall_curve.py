@@ -28,7 +28,7 @@ def _retrieval_recall_at_fixed_precision(
     top_k: Tensor,
     min_precision: float,
 ) -> Tuple[Tensor, Tensor]:
-    """Computes maximum recall with condition that corresponding precision >= `min_precision`.
+    """Compute maximum recall with condition that corresponding precision >= `min_precision`.
 
     Args:
         top_k: tensor with all possible k
@@ -53,7 +53,7 @@ def _retrieval_recall_at_fixed_precision(
 
 
 class RetrievalPrecisionRecallCurve(Metric):
-    """Computes precision-recall pairs for different k (from 1 to `max_k`).
+    """Compute precision-recall pairs for different k (from 1 to `max_k`).
 
     In a ranked retrieval context, appropriate sets of retrieved documents are naturally given by the top k retrieved
     documents. Recall is the fraction of relevant documents retrieved among all the relevant documents. Precision is the
@@ -219,7 +219,7 @@ class RetrievalPrecisionRecallCurve(Metric):
 
 
 class RetrievalRecallAtFixedPrecision(RetrievalPrecisionRecallCurve):
-    """Computes `IR Recall at fixed Precision`_.
+    """Compute `IR Recall at fixed Precision`_.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 

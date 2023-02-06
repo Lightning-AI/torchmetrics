@@ -33,7 +33,7 @@ def _confusion_matrix_reduce(
             - `"true"` will divide by the sum of the column dimension.
             - `"pred"` will divide by the sum of the row dimension.
             - `"all"` will divide by the sum of the full matrix
-            - `"none"` or `None` will apply no reduction
+            - `"none"` or `None` will apply no reduction.
 
     Returns:
         Normalized confusion matrix
@@ -142,7 +142,7 @@ def _binary_confusion_matrix_format(
 
 
 def _binary_confusion_matrix_update(preds: Tensor, target: Tensor) -> Tensor:
-    """Computes the bins to update the confusion matrix with."""
+    """Compute the bins to update the confusion matrix with."""
     unique_mapping = (target * 2 + preds).to(torch.long)
     bins = _bincount(unique_mapping, minlength=4)
     return bins.reshape(2, 2)
@@ -166,7 +166,7 @@ def binary_confusion_matrix(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes the `confusion matrix`_ for binary tasks.
+    r"""Compute the `confusion matrix`_ for binary tasks.
 
     Accepts the following input tensors:
 
@@ -321,7 +321,7 @@ def _multiclass_confusion_matrix_format(
 
 
 def _multiclass_confusion_matrix_update(preds: Tensor, target: Tensor, num_classes: int) -> Tensor:
-    """Computes the bins to update the confusion matrix with."""
+    """Compute the bins to update the confusion matrix with."""
     unique_mapping = (target * num_classes + preds).to(torch.long)
     bins = _bincount(unique_mapping, minlength=num_classes**2)
     return bins.reshape(num_classes, num_classes)
@@ -345,7 +345,7 @@ def multiclass_confusion_matrix(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes the `confusion matrix`_ for multiclass tasks.
+    r"""Compute the `confusion matrix`_ for multiclass tasks.
 
     Accepts the following input tensors:
 
@@ -504,7 +504,7 @@ def _multilabel_confusion_matrix_format(
 
 
 def _multilabel_confusion_matrix_update(preds: Tensor, target: Tensor, num_labels: int) -> Tensor:
-    """Computes the bins to update the confusion matrix with."""
+    """Compute the bins to update the confusion matrix with."""
     unique_mapping = ((2 * target + preds) + 4 * torch.arange(num_labels, device=preds.device)).flatten()
     unique_mapping = unique_mapping[unique_mapping >= 0]
     bins = _bincount(unique_mapping, minlength=4 * num_labels)
@@ -530,7 +530,7 @@ def multilabel_confusion_matrix(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes the `confusion matrix`_ for multilabel tasks.
+    r"""Compute the `confusion matrix`_ for multilabel tasks.
 
     Accepts the following input tensors:
 
@@ -598,7 +598,7 @@ def confusion_matrix(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes the `confusion matrix`_.
+    r"""Compute the `confusion matrix`_.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of

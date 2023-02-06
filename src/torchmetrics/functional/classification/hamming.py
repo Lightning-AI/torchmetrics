@@ -88,7 +88,7 @@ def binary_hamming_distance(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes the average `Hamming distance`_ (also known as Hamming loss) for binary tasks:
+    r"""Compute the average `Hamming distance`_ (also known as Hamming loss) for binary tasks:
 
     .. math::
         \text{Hamming distance} = \frac{1}{N \cdot L} \sum_i^N \sum_l^L 1(y_{il} \neq \hat{y}_{il})
@@ -165,7 +165,7 @@ def multiclass_hamming_distance(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes the average `Hamming distance`_ (also known as Hamming loss) for multiclass tasks:
+    r"""Compute the average `Hamming distance`_ (also known as Hamming loss) for multiclass tasks:
 
     .. math::
         \text{Hamming distance} = \frac{1}{N \cdot L} \sum_i^N \sum_l^L 1(y_{il} \neq \hat{y}_{il})
@@ -190,8 +190,8 @@ def multiclass_hamming_distance(
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
 
         top_k:
             Number of highest probability or logit score predictions considered to find the correct label.
@@ -273,7 +273,7 @@ def multilabel_hamming_distance(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes the average `Hamming distance`_ (also known as Hamming loss) for multilabel tasks:
+    r"""Compute the average `Hamming distance`_ (also known as Hamming loss) for multilabel tasks:
 
     .. math::
         \text{Hamming distance} = \frac{1}{N \cdot L} \sum_i^N \sum_l^L 1(y_{il} \neq \hat{y}_{il})
@@ -299,8 +299,8 @@ def multilabel_hamming_distance(
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
 
         multidim_average:
             Defines how additionally dimensions ``...`` should be handled. Should be one of the following:
@@ -378,7 +378,7 @@ def hamming_distance(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes the average `Hamming distance`_ (also known as Hamming loss):
+    r"""Compute the average `Hamming distance`_ (also known as Hamming loss):
 
     .. math::
         \text{Hamming distance} = \frac{1}{N \cdot L} \sum_i^N \sum_l^L 1(y_{il} \neq \hat{y}_{il})

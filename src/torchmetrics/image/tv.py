@@ -23,7 +23,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class TotalVariation(Metric):
-    """Computes Total Variation loss (`TV`_).
+    """Compute Total Variation loss (`TV`_).
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 

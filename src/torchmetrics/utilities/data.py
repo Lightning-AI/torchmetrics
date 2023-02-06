@@ -71,7 +71,7 @@ def to_onehot(
     label_tensor: Tensor,
     num_classes: Optional[int] = None,
 ) -> Tensor:
-    """Converts a dense label tensor to one-hot format.
+    """Convert  a dense label tensor to one-hot format.
 
     Args:
         label_tensor: dense label tensor, with shape [N, d1, d2, ...]
@@ -128,7 +128,7 @@ def select_topk(prob_tensor: Tensor, topk: int = 1, dim: int = 1) -> Tensor:
 
 
 def to_categorical(x: Tensor, argmax_dim: int = 1) -> Tensor:
-    """Converts a tensor of probabilities to a dense label tensor.
+    """Convert  a tensor of probabilities to a dense label tensor.
 
     Args:
         x: probabilities to get the categorical label [N, d1, d2, ...]
@@ -237,7 +237,6 @@ def _flexible_bincount(x: Tensor) -> Tensor:
     Returns:
         Number of occurrences for each unique element in x
     """
-
     # make sure elements in x start from 0
     x = x - x.min()
     unique_x = torch.unique(x)

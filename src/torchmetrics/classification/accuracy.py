@@ -99,7 +99,7 @@ class BinaryAccuracy(BinaryStatScores):
     plot_options: dict = {"lower_bound": 0.0, "upper_bound": 1.0}
 
     def compute(self) -> Tensor:
-        """Computes accuracy based on inputs passed in to ``update`` previously."""
+        """Compute accuracy based on inputs passed in to ``update`` previously."""
         tp, fp, tn, fn = self._final_state()
         return _accuracy_reduce(tp, fp, tn, fn, average="binary", multidim_average=self.multidim_average)
 
@@ -114,14 +114,11 @@ class BinaryAccuracy(BinaryStatScores):
             ax: An matplotlib axis object. If provided will add plot to that axis
 
         Returns:
-            fig: Figure object
-            ax: Axes object
+            Figure object and Axes object
 
         Raises:
             ModuleNotFoundError:
                 If `matplotlib` is not installed
-
-        Examples:
 
         .. plot::
             :scale: 75
@@ -153,7 +150,7 @@ class BinaryAccuracy(BinaryStatScores):
 
 
 class MulticlassAccuracy(MulticlassStatScores):
-    r"""Computes `Accuracy`_ for multiclass tasks:
+    r"""Compute `Accuracy`_ for multiclass tasks:
 
     .. math::
         \text{Accuracy} = \frac{1}{N}\sum_i^N 1(y_i = \hat{y}_i)
@@ -189,8 +186,8 @@ class MulticlassAccuracy(MulticlassStatScores):
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
 
         top_k:
             Number of highest probability or logit score predictions considered to find the correct label.
@@ -251,7 +248,7 @@ class MulticlassAccuracy(MulticlassStatScores):
     plot_options = {"lower_bound": 0.0, "upper_bound": 1.0, "legend_name": "Class"}
 
     def compute(self) -> Tensor:
-        """Computes accuracy based on inputs passed in to ``update`` previously."""
+        """Compute accuracy based on inputs passed in to ``update`` previously."""
         tp, fp, tn, fn = self._final_state()
         return _accuracy_reduce(tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average)
 
@@ -266,14 +263,11 @@ class MulticlassAccuracy(MulticlassStatScores):
             ax: An matplotlib axis object. If provided will add plot to that axis
 
         Returns:
-            fig: Figure object
-            ax: Axes object
+            Figure object and Axes object
 
         Raises:
             ModuleNotFoundError:
                 If `matplotlib` is not installed
-
-        Examples:
 
         .. plot::
             :scale: 75
@@ -305,7 +299,7 @@ class MulticlassAccuracy(MulticlassStatScores):
 
 
 class MultilabelAccuracy(MultilabelStatScores):
-    r"""Computes `Accuracy`_ for multilabel tasks:
+    r"""Compute `Accuracy`_ for multilabel tasks:
 
     .. math::
         \text{Accuracy} = \frac{1}{N}\sum_i^N 1(y_i = \hat{y}_i)
@@ -342,8 +336,8 @@ class MultilabelAccuracy(MultilabelStatScores):
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
 
         multidim_average:
             Defines how additionally dimensions ``...`` should be handled. Should be one of the following:
@@ -403,7 +397,7 @@ class MultilabelAccuracy(MultilabelStatScores):
     plot_options: dict = {"lower_bound": 0.0, "upper_bound": 1.0, "legend_name": "Label"}
 
     def compute(self) -> Tensor:
-        """Computes accuracy based on inputs passed in to ``update`` previously."""
+        """Compute accuracy based on inputs passed in to ``update`` previously."""
         tp, fp, tn, fn = self._final_state()
         return _accuracy_reduce(
             tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average, multilabel=True
@@ -411,7 +405,7 @@ class MultilabelAccuracy(MultilabelStatScores):
 
 
 class Accuracy:
-    r"""Computes `Accuracy`_
+    r"""Compute `Accuracy`_.
 
     .. math::
         \text{Accuracy} = \frac{1}{N}\sum_i^N 1(y_i = \hat{y}_i)
