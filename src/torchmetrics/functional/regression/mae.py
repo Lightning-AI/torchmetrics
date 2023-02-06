@@ -37,7 +37,7 @@ def _mean_absolute_error_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, 
 
 
 def _mean_absolute_error_compute(sum_abs_error: Tensor, n_obs: int) -> Tensor:
-    """Computes Mean Absolute Error.
+    """Compute Mean Absolute Error.
 
     Args:
         sum_abs_error: Sum of absolute value of errors over all observations
@@ -55,7 +55,7 @@ def _mean_absolute_error_compute(sum_abs_error: Tensor, n_obs: int) -> Tensor:
 
 
 def mean_absolute_error(preds: Tensor, target: Tensor) -> Tensor:
-    """Computes mean absolute error.
+    """Compute mean absolute error.
 
     Args:
         preds: estimated labels
