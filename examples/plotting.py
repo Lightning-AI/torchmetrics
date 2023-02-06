@@ -49,6 +49,7 @@ def accuracy_example():
 
 
 def mean_squared_error_example():
+    """Plot mean squared error example."""
     from torchmetrics.regression import MeanSquaredError
 
     p = lambda: torch.randn(20)
@@ -67,6 +68,7 @@ def mean_squared_error_example():
 
 
 def confusion_matrix_example():
+    """Plot confusion matrix example."""
     from torchmetrics.classification import MulticlassConfusionMatrix
 
     p = lambda: torch.randn(20, 5)
