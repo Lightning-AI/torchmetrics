@@ -27,7 +27,7 @@ class _MetricVariant(EnumStr):
     """Enumerate for metric variants."""
 
     @property
-    def task(self) -> str:
+    def _name(self) -> str:
         return "variant"
 
     A = "a"
@@ -39,7 +39,7 @@ class _TestAlternative(EnumStr):
     """Enumerate for test altenative options."""
 
     @property
-    def task(self) -> str:
+    def _name(self) -> str:
         return "alternative"
 
     TWO_SIDED = "two-sided"

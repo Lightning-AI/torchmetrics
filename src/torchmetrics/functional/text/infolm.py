@@ -55,7 +55,7 @@ class _IMEnum(EnumStr):
     """A helper Enum class for storing the information measure."""
 
     @property
-    def task(self) -> str:
+    def _name(self) -> str:
         return "Information measure"
 
     KL_DIVERGENCE = "kl_divergence"

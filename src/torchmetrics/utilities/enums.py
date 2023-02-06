@@ -18,7 +18,7 @@ from lightning_utilities.core.enums import StrEnum as StrEnum
 
 class EnumStr(StrEnum):
     @property
-    def task(self) -> str:
+    def _name(self) -> str:
         return "Task"
 
     @classmethod
@@ -33,7 +33,7 @@ class EnumStr(StrEnum):
         enum_key = super().from_str(value)
         if enum_key is not None and enum_key in _allowed_im:
             return enum_key
-        raise ValueError(f"Invalid {cls.task}: expected one of {_allowed_im}, but got {enum_key}.")
+        raise ValueError(f"Invalid {cls._name}: expected one of {_allowed_im}, but got {enum_key}.")
 
 
 class DataType(EnumStr):
@@ -44,7 +44,7 @@ class DataType(EnumStr):
     """
 
     @property
-    def task(self) -> str:
+    def _name(self) -> str:
         return "Data type"
 
     BINARY = "binary"
@@ -65,7 +65,7 @@ class AverageMethod(EnumStr):
     """
 
     @property
-    def task(self) -> str:
+    def _name(self) -> str:
         return "Average method"
 
     MICRO = "micro"
@@ -79,7 +79,7 @@ class MDMCAverageMethod(EnumStr):
     """Enum to represent multi-dim multi-class average method."""
 
     @property
-    def task(self) -> str:
+    def _name(self) -> str:
         return "MDMC Average method"
 
     GLOBAL = "global"
@@ -94,7 +94,7 @@ class ClassificationTask(EnumStr):
     """
 
     @property
-    def task(self) -> str:
+    def _name(self) -> str:
         return "Classification"
 
     BINARY = "binary"
