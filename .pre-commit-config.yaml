@@ -51,7 +51,7 @@ repos:
         args: [--in-place, --wrap-summaries=115, --wrap-descriptions=120]
 
   - repo: https://github.com/PyCQA/isort
-    rev: 5.11.4
+    rev: 5.12.0
     hooks:
       - id: isort
         name: imports
@@ -81,9 +81,11 @@ repos:
     rev: v1.4.0
     hooks:
       - id: yesqa
+        additional_dependencies:
+          - pep8-naming
 
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.0.233
+    rev: v0.0.237
     hooks:
       - id: ruff
         args: ["--fix"]

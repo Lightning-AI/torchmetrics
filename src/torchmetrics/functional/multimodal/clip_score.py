@@ -38,7 +38,7 @@ def _clip_score_update(
         if images.ndim == 3:
             images = [images]
     else:  # unwrap into list
-        images = [i for i in images]
+        images = list(images)
 
     if not all(i.ndim == 3 for i in images):
         raise ValueError("Expected all images to be 3d but found image that has either more or less")
