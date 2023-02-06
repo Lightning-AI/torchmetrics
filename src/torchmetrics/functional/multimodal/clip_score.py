@@ -97,7 +97,7 @@ def clip_score(
         "openai/clip-vit-large-patch14",
     ] = "openai/clip-vit-large-patch14",
 ) -> Tensor:
-    """`CLIP Score`_ is a reference free metric that can be used to evaluate the correlation between a generated
+    r"""`CLIP Score`_ is a reference free metric that can be used to evaluate the correlation between a generated
     caption for an image and the actual content of the image. It has been found to be highly correlated with human
     judgement. The metric is defined as:
 

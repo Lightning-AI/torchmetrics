@@ -53,9 +53,11 @@ class _TestAlternative(EnumStr):
 
     @classmethod
     def from_str(cls, value: Literal["two-sided", "less", "greater"]) -> "_TestAlternative":  # type: ignore[override]
-        """Raises:
-        ValueError:
-        If required test alternative is not among the supported options.
+        """Load from string.
+
+        Raises:
+            ValueError:
+                If required test alternative is not among the supported options.
         """
         _allowed_alternatives = [im.lower().replace("_", "-") for im in _TestAlternative._member_names_]
 
@@ -341,7 +343,7 @@ def kendall_rank_corrcoef(
     t_test: bool = False,
     alternative: Optional[Literal["two-sided", "less", "greater"]] = "two-sided",
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    r"""Computes `Kendall Rank Correlation Coefficient`_.
+    r"""Compute `Kendall Rank Correlation Coefficient`_.
 
     .. math::
         tau_a = \frac{C - D}{C + D}

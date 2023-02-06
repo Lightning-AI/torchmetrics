@@ -24,9 +24,9 @@ def _symmetric_mean_absolute_percentage_error_update(
     target: Tensor,
     epsilon: float = 1.17e-06,
 ) -> Tuple[Tensor, int]:
-    """Updates and returns variables required to compute Symmetric Mean Absolute Percentage Error.
+    """Update and returns variables required to compute Symmetric Mean Absolute Percentage Error.
 
-    Checks for same shape of input tensors.
+    Check for same shape of input tensors.
 
     Args:
         preds: Predicted tensor
@@ -46,7 +46,7 @@ def _symmetric_mean_absolute_percentage_error_update(
 
 
 def _symmetric_mean_absolute_percentage_error_compute(sum_abs_per_error: Tensor, num_obs: int) -> Tensor:
-    """Computes Symmetric Mean Absolute Percentage Error.
+    """Compute Symmetric Mean Absolute Percentage Error.
 
     Args:
         sum_abs_per_error: Sum of values of symmetric absolute percentage errors over all observations
@@ -64,7 +64,7 @@ def _symmetric_mean_absolute_percentage_error_compute(sum_abs_per_error: Tensor,
 
 
 def symmetric_mean_absolute_percentage_error(preds: Tensor, target: Tensor) -> Tensor:
-    r"""Computes symmetric mean absolute percentage error (SMAPE_):
+    r"""Compute symmetric mean absolute percentage error (SMAPE_):
 
     .. math:: \text{SMAPE} = \frac{2}{n}\sum_1^n\frac{|   y_i - \hat{y_i} |}{max(| y_i | + | \hat{y_i} |, \epsilon)}
 

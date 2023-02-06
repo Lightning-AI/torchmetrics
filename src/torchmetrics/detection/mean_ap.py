@@ -193,7 +193,7 @@ def _fix_empty_tensors(boxes: Tensor) -> Tensor:
 
 
 class MeanAveragePrecision(Metric):
-    r"""Computes the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)`_ for object detection predictions.
+    r"""Compute the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)`_ for object detection predictions.
     Optionally, the mAP and mAR values can be calculated per class.
 
     Predicted boxes and targets have to be in Pascal VOC format
@@ -456,7 +456,7 @@ class MeanAveragePrecision(Metric):
         return []
 
     def _compute_iou(self, idx: int, class_id: int, max_det: int) -> Tensor:
-        """Computes the Intersection over Union (IoU) for ground truth and detection bounding boxes for the given
+        """Compute the Intersection over Union (IoU) for ground truth and detection bounding boxes for the given
         image and class.
 
         Args:
@@ -889,7 +889,7 @@ class MeanAveragePrecision(Metric):
         return recall, precision, scores
 
     def compute(self) -> dict:
-        """Computes metric."""
+        """Compute metric."""
         classes = self._get_classes()
         precisions, recalls = self._calculate(classes)
         map_val, mar_val = self._summarize_results(precisions, recalls)

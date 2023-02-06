@@ -68,7 +68,7 @@ def _basic_input_validation(
 
 
 def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> Tuple[DataType, int]:
-    """This checks that the shape and type of inputs are consistent with each other and fall into one of the
+    """Check that the shape and type of inputs are consistent with each other and fall into one of the
     allowed input types (see the documentation of docstring of ``_input_format_classification``). It does not check
     for consistency of number of classes, other functions take care of that.
 
@@ -121,7 +121,7 @@ def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> Tuple[Da
 
 
 def _check_num_classes_binary(num_classes: int, multiclass: Optional[bool]) -> None:
-    """This checks that the consistency of `num_classes` with the data and `multiclass` param for binary data."""
+    """Check that the consistency of `num_classes` with the data and `multiclass` param for binary data."""
     if num_classes > 2:
         raise ValueError("Your data is binary, but `num_classes` is larger than 2.")
     if num_classes == 2 and not multiclass:
@@ -144,7 +144,7 @@ def _check_num_classes_mc(
     multiclass: Optional[bool],
     implied_classes: int,
 ) -> None:
-    """This checks that the consistency of `num_classes` with the data and `multiclass` param for (multi-
+    """Check that the consistency of `num_classes` with the data and `multiclass` param for (multi-
     dimensional) multi-class data.
     """
     if num_classes == 1 and multiclass is not False:
@@ -169,7 +169,7 @@ def _check_num_classes_mc(
 
 
 def _check_num_classes_ml(num_classes: int, multiclass: Optional[bool], implied_classes: int) -> None:
-    """This checks that the consistency of ``num_classes`` with the data and ``multiclass`` param for multi-label
+    """Check that the consistency of ``num_classes`` with the data and ``multiclass`` param for multi-label
     data.
     """
     if multiclass and num_classes != 2:
@@ -320,17 +320,17 @@ def _input_format_classification(
     Preds and targets are supposed to fall into one of these categories (and are
     validated to make sure this is the case):
 
-    * Both preds and target are of shape ``(N,)``, and both are integers (multi-class)
-    * Both preds and target are of shape ``(N,)``, and target is binary, while preds
-      are a float (binary)
-    * preds are of shape ``(N, C)`` and are floats, and target is of shape ``(N,)`` and
-      is integer (multi-class)
-    * preds and target are of shape ``(N, ...)``, target is binary and preds is a float
-      (multi-label)
-    * preds are of shape ``(N, C, ...)`` and are floats, target is of shape ``(N, ...)``
-      and is integer (multi-dimensional multi-class)
-    * preds and target are of shape ``(N, ...)`` both are integers (multi-dimensional
-      multi-class)
+        * Both preds and target are of shape ``(N,)``, and both are integers (multi-class)
+        * Both preds and target are of shape ``(N,)``, and target is binary, while preds
+          are a float (binary)
+        * preds are of shape ``(N, C)`` and are floats, and target is of shape ``(N,)`` and
+          is integer (multi-class)
+        * preds and target are of shape ``(N, ...)``, target is binary and preds is a float
+          (multi-label)
+        * preds are of shape ``(N, C, ...)`` and are floats, target is of shape ``(N, ...)``
+          and is integer (multi-dimensional multi-class)
+        * preds and target are of shape ``(N, ...)`` both are integers (multi-dimensional
+          multi-class)
 
     To avoid ambiguities, all dimensions of size 1, except the first one, are squeezed out.
 

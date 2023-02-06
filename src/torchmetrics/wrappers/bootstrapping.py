@@ -115,7 +115,7 @@ class BootStrapper(Metric):
         self.sampling_strategy = sampling_strategy
 
     def update(self, *args: Any, **kwargs: Any) -> None:
-        """Updates the state of the base metric.
+        """Update the state of the base metric.
 
         Any tensor passed in will be bootstrapped along dimension 0.
         """
@@ -134,7 +134,7 @@ class BootStrapper(Metric):
             self.metrics[idx].update(*new_args, **new_kwargs)
 
     def compute(self) -> Dict[str, Tensor]:
-        """Computes the bootstrapped metric values.
+        """Compute the bootstrapped metric values.
 
         Always returns a dict of tensors, which can contain the following keys: ``mean``, ``std``, ``quantile`` and
         ``raw`` depending on how the class was initialized.

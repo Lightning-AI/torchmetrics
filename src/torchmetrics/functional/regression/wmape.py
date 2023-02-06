@@ -23,9 +23,9 @@ def _weighted_mean_absolute_percentage_error_update(
     preds: Tensor,
     target: Tensor,
 ) -> Tuple[Tensor, int]:
-    """Updates and returns variables required to compute Weighted Absolute Percentage Error.
+    """Update and returns variables required to compute Weighted Absolute Percentage Error.
 
-    Checks for same shape of input tensors.
+    Check for same shape of input tensors.
 
     Args:
         preds: Predicted tensor
@@ -44,7 +44,7 @@ def _weighted_mean_absolute_percentage_error_compute(
     sum_scale: Tensor,
     epsilon: float = 1.17e-06,
 ) -> Tensor:
-    """Computes Weighted Absolute Percentage Error.
+    """Compute Weighted Absolute Percentage Error.
 
     Args:
         sum_abs_error: scalar with sum of absolute errors
@@ -55,7 +55,7 @@ def _weighted_mean_absolute_percentage_error_compute(
 
 
 def weighted_mean_absolute_percentage_error(preds: Tensor, target: Tensor) -> Tensor:
-    r"""Computes weighted mean absolute percentage error (`WMAPE`_).
+    r"""Compute weighted mean absolute percentage error (`WMAPE`_).
 
     The output of WMAPE metric is a non-negative floating point, where the optimal value is 0. It is computes as:
 

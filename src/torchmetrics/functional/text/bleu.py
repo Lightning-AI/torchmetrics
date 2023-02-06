@@ -65,7 +65,7 @@ def _bleu_score_update(
     n_gram: int = 4,
     tokenizer: Callable[[str], Sequence[str]] = _tokenize_fn,
 ) -> Tuple[Tensor, Tensor]:
-    """Updates and returns variables required to compute the BLEU score.
+    """Update and returns variables required to compute the BLEU score.
 
     Args:
         preds: An iterable of machine translated corpus
@@ -111,7 +111,7 @@ def _bleu_score_compute(
     weights: Sequence[float],
     smooth: bool,
 ) -> Tensor:
-    """Computes the BLEU score.
+    """Compute the BLEU score.
 
     Args:
         preds_len: count of words in a candidate translation

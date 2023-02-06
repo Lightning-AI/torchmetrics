@@ -167,7 +167,7 @@ class Metric(Module, ABC):
         dist_reduce_fx: Optional[Union[str, Callable]] = None,
         persistent: bool = False,
     ) -> None:
-        """Adds metric state variable. Only used by subclasses.
+        """Add metric state variable. Only used by subclasses.
 
         Args:
             name: The name of the state variable. The variable will then be accessible at ``self.name``.
@@ -335,7 +335,7 @@ class Metric(Module, ABC):
         return batch_val
 
     def _reduce_states(self, incoming_state: Dict[str, Any]) -> None:
-        """Adds an incoming metric state to the current state of the metric.
+        """Add an incoming metric state to the current state of the metric.
 
         Args:
             incoming_state: a dict containing a metric state similar metric itself

@@ -21,7 +21,7 @@ from torchmetrics.utilities.checks import _check_same_shape
 
 
 def _find_repeats(data: Tensor) -> Tensor:
-    """find and return values which have repeats i.e. the same value are more than once in the tensor."""
+    """Find and return values which have repeats i.e. the same value are more than once in the tensor."""
     temp = data.detach().clone()
     temp = temp.sort()[0]
 
@@ -54,9 +54,9 @@ def _rank_data(data: Tensor) -> Tensor:
 
 
 def _spearman_corrcoef_update(preds: Tensor, target: Tensor, num_outputs: int) -> Tuple[Tensor, Tensor]:
-    """Updates and returns variables required to compute Spearman Correlation Coefficient.
+    """Update and returns variables required to compute Spearman Correlation Coefficient.
 
-    Checks for same shape and type of input tensors.
+    Check for same shape and type of input tensors.
 
     Args:
         preds: Predicted tensor
@@ -73,7 +73,7 @@ def _spearman_corrcoef_update(preds: Tensor, target: Tensor, num_outputs: int) -
 
 
 def _spearman_corrcoef_compute(preds: Tensor, target: Tensor, eps: float = 1e-6) -> Tensor:
-    """Computes Spearman Correlation Coefficient.
+    """Compute Spearman Correlation Coefficient.
 
     Args:
         preds: Predicted tensor
@@ -106,7 +106,7 @@ def _spearman_corrcoef_compute(preds: Tensor, target: Tensor, eps: float = 1e-6)
 
 
 def spearman_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
-    r"""Computes `spearmans rank correlation coefficient`_:
+    r"""Compute `spearmans rank correlation coefficient`_:
 
     .. math:
         r_s = = \frac{cov(rg_x, rg_y)}{\sigma_{rg_x} * \sigma_{rg_y}}

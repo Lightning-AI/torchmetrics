@@ -23,7 +23,7 @@ def _cosine_similarity_update(
     preds: Tensor,
     target: Tensor,
 ) -> Tuple[Tensor, Tensor]:
-    """Updates and returns variables required to compute Cosine Similarity. Checks for same shape of input tensors.
+    """Update and returns variables required to compute Cosine Similarity. Checks for same shape of input tensors.
 
     Args:
         preds: Predicted tensor
@@ -37,7 +37,7 @@ def _cosine_similarity_update(
 
 
 def _cosine_similarity_compute(preds: Tensor, target: Tensor, reduction: Optional[str] = "sum") -> Tensor:
-    """Computes Cosine Similarity.
+    """Compute Cosine Similarity.
 
     Args:
         preds: Predicted tensor
@@ -66,7 +66,7 @@ def _cosine_similarity_compute(preds: Tensor, target: Tensor, reduction: Optiona
 
 
 def cosine_similarity(preds: Tensor, target: Tensor, reduction: Optional[str] = "sum") -> Tensor:
-    r"""Computes the `Cosine Similarity`_ between targets and predictions:
+    r"""Compute the `Cosine Similarity`_ between targets and predictions:
 
     .. math::
         cos_{sim}(x,y) = \frac{x \cdot y}{||x|| \cdot ||y||} =

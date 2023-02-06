@@ -125,7 +125,7 @@ def _compute_fid(mu1: Tensor, sigma1: Tensor, mu2: Tensor, sigma2: Tensor, eps: 
 
 
 class FrechetInceptionDistance(Metric):
-    r"""Calculates Fréchet inception distance (FID_) which is used to access the quality of generated images. Given
+    r"""Calculate Fréchet inception distance (FID_) which is used to access the quality of generated images. Given
     by.
 
     .. math::

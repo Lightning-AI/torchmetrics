@@ -21,9 +21,9 @@ from torchmetrics.utilities.checks import _check_same_shape
 
 
 def _r2_score_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-    """Updates and returns variables required to compute R2 score.
+    """Update and returns variables required to compute R2 score.
 
-    Checks for same shape and 1D/2D input tensors.
+    Check for same shape and 1D/2D input tensors.
 
     Args:
         preds: Predicted tensor
@@ -53,7 +53,7 @@ def _r2_score_compute(
     adjusted: int = 0,
     multioutput: str = "uniform_average",
 ) -> Tensor:
-    """Computes R2 score.
+    """Compute R2 score.
 
     Args:
         sum_squared_obs: Sum of square of all observations
@@ -117,7 +117,7 @@ def r2_score(
     adjusted: int = 0,
     multioutput: str = "uniform_average",
 ) -> Tensor:
-    r"""Computes r2 score also known as `R2 Score_Coefficient Determination`_:
+    r"""Compute r2 score also known as `R2 Score_Coefficient Determination`_:
 
     .. math:: R^2 = 1 - \frac{SS_{res}}{SS_{tot}}
 

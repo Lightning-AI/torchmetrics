@@ -144,8 +144,8 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
             Defines the reduction that is applied over classes. Should be one of the following:
 
             - ``macro``: Calculate score for each class and average them
-            - ``weighted``: Calculates score for each class and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates score for each class and applies no reduction
+            - ``weighted``: calculates score for each class and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates score for each class and applies no reduction
 
         thresholds:
             Can be one of:
@@ -244,8 +244,8 @@ class MultilabelAUROC(MultilabelPrecisionRecallCurve):
 
             - ``micro``: Sum score over all labels
             - ``macro``: Calculate score for each label and average them
-            - ``weighted``: Calculates score for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates score for each label and applies no reduction
+            - ``weighted``: calculates score for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates score for each label and applies no reduction
         thresholds:
             Can be one of:
 

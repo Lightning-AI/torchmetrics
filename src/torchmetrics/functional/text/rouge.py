@@ -145,13 +145,11 @@ def _backtracked_lcs(
 
 
 def _union_lcs(pred_tokens_list: Sequence[Sequence[str]], target_tokens: Sequence[str]) -> Sequence[str]:
-    """Find union LCS between a target sentence and iterable of predicted tokens.
+    r"""Find union LCS between a target sentence and iterable of predicted tokens.
 
     Args:
-        pred_tokens_list: A tokenized predicted sentence split by '\n'.
-        target_tokens: A tokenized single part of target sentence split by '\n'.
-
-    Return:
+        pred_tokens_list: A tokenized predicted sentence split by ``'\n'``.
+        target_tokens: A tokenized single part of target sentence split by ``'\n'``.
     """
 
     def lcs_ind(pred_tokens: Sequence[str], target_tokens: Sequence[str]) -> Sequence[int]:
@@ -246,7 +244,7 @@ def _rouge_l_score(pred: Sequence[str], target: Sequence[str]) -> Dict[str, Tens
 
 
 def _rouge_lsum_score(pred: Sequence[Sequence[str]], target: Sequence[Sequence[str]]) -> Dict[str, Tensor]:
-    """This computes precision, recall and F1 score for the Rouge-LSum metric. More information can be found in Section
+    r"""This computes precision, recall and F1 score for the Rouge-LSum metric. More information can be found in Section
     3.2 of the referenced paper [1]. This implementation follow the official implementation from:
     https://github.com/google-research/google-research/blob/master/rouge/rouge_scorer.py.
 

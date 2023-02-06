@@ -9,7 +9,7 @@ from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_10
 
 
 def _gaussian(kernel_size: int, sigma: float, dtype: torch.dtype, device: torch.device) -> Tensor:
-    """Computes 1D gaussian kernel.
+    """Compute 1D gaussian kernel.
 
     Args:
         kernel_size: size of the gaussian kernel
@@ -33,7 +33,7 @@ def _gaussian_kernel_2d(
     dtype: torch.dtype,
     device: Union[torch.device, str],
 ) -> Tensor:
-    """Computes 2D gaussian kernel.
+    """Compute 2D gaussian kernel.
 
     Args:
         channel: number of channels in the image
@@ -60,7 +60,7 @@ def _gaussian_kernel_2d(
 def _gaussian_kernel_3d(
     channel: int, kernel_size: Sequence[int], sigma: Sequence[float], dtype: torch.dtype, device: torch.device
 ) -> Tensor:
-    """Computes 3D gaussian kernel.
+    """Compute 3D gaussian kernel.
 
     Args:
         channel: number of channels in the image

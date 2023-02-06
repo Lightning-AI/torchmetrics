@@ -20,7 +20,7 @@ from torchmetrics.retrieval.base import RetrievalMetric
 
 
 class RetrievalHitRate(RetrievalMetric):
-    """Computes `IR HitRate`.
+    """Compute `IR HitRate`.
 
     Works with binary target data. Accepts float predictions from a model output.
 

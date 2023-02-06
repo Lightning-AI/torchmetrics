@@ -33,7 +33,7 @@ def _mean_squared_log_error_update(preds: Tensor, target: Tensor) -> Tuple[Tenso
 
 
 def _mean_squared_log_error_compute(sum_squared_log_error: Tensor, n_obs: int) -> Tensor:
-    """Computes Mean Squared Log Error.
+    """Compute Mean Squared Log Error.
 
     Args:
         sum_squared_log_error:
@@ -51,7 +51,7 @@ def _mean_squared_log_error_compute(sum_squared_log_error: Tensor, n_obs: int) -
 
 
 def mean_squared_log_error(preds: Tensor, target: Tensor) -> Tensor:
-    """Computes mean squared log error.
+    """Compute mean squared log error.
 
     Args:
         preds: estimated labels

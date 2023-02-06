@@ -222,7 +222,7 @@ class _SacreBLEUTokenizer:
 
     @classmethod
     def _tokenize_international(cls, line: str) -> str:
-        """Tokenizes a string following the official BLEU implementation.
+        r"""Tokenizes a string following the official BLEU implementation.
 
         See github.com/moses-smt/mosesdecoder/blob/master/scripts/generic/mteval-v14.pl#L954-L983
 

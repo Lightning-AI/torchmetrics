@@ -64,7 +64,7 @@ class BaseAggregator(Metric):
         self.add_state("value", default=default_value, dist_reduce_fx=fn)
 
     def _cast_and_nan_check_input(self, x: Union[float, Tensor]) -> Tensor:
-        """Converts input x to a tensor if not already and afterwards checks for nans that either give an error,
+        """Convert  input x to a tensor if not already and afterwards checks for nans that either give an error,
         warning or just ignored.
         """
         if not isinstance(x, Tensor):

@@ -23,7 +23,7 @@ from torchmetrics.utilities.compute import _safe_xlogy
 
 
 def _kld_update(p: Tensor, q: Tensor, log_prob: bool) -> Tuple[Tensor, int]:
-    """Updates and returns KL divergence scores for each observation and the total number of observations. Checks
+    """Update and returns KL divergence scores for each observation and the total number of observations. Checks
     same shape and 2D nature of the input tensors else raises ValueError.
 
     Args:
@@ -48,7 +48,7 @@ def _kld_update(p: Tensor, q: Tensor, log_prob: bool) -> Tuple[Tensor, int]:
 
 
 def _kld_compute(measures: Tensor, total: Tensor, reduction: Literal["mean", "sum", "none", None] = "mean") -> Tensor:
-    """Computes the KL divergenece based on the type of reduction.
+    """Compute the KL divergenece based on the type of reduction.
 
     Args:
         measures: Tensor of KL divergence scores for each observation
@@ -79,7 +79,7 @@ def _kld_compute(measures: Tensor, total: Tensor, reduction: Literal["mean", "su
 def kl_divergence(
     p: Tensor, q: Tensor, log_prob: bool = False, reduction: Literal["mean", "sum", "none", None] = "mean"
 ) -> Tensor:
-    r"""Computes `KL divergence`_.
+    r"""Compute `KL divergence`_.
 
     .. math::
         D_{KL}(P||Q) = \sum_{x\in\mathcal{X}} P(x) \log\frac{P(x)}{Q{x}}

@@ -119,7 +119,7 @@ def _binary_stat_scores_update(
     target: Tensor,
     multidim_average: Literal["global", "samplewise"] = "global",
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-    """Computes the statistics."""
+    """Compute the statistics."""
     sum_dim = [0, 1] if multidim_average == "global" else 1
     tp = ((target == preds) & (target == 1)).sum(sum_dim).squeeze()
     fn = ((target != preds) & (target == 1)).sum(sum_dim).squeeze()
@@ -143,7 +143,7 @@ def binary_stat_scores(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes the number of true positives, false positives, true negatives, false negatives and the support for
+    r"""Compute the number of true positives, false positives, true negatives, false negatives and the support for
     binary tasks. Related to `Type I and Type II errors`_.
 
     Accepts the following input tensors:
@@ -342,7 +342,7 @@ def _multiclass_stat_scores_update(
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-    """Computes the statistics.
+    """Compute the statistics.
 
     - If ``multidim_average`` is equal to samplewise or ``top_k`` is not 1, we transform both preds and
     target into one hot format.
@@ -447,7 +447,7 @@ def multiclass_stat_scores(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes the number of true positives, false positives, true negatives, false negatives and the support for
+    r"""Compute the number of true positives, false positives, true negatives, false negatives and the support for
     multiclass tasks. Related to `Type I and Type II errors`_.
 
     Accepts the following input tensors:
@@ -466,8 +466,8 @@ def multiclass_stat_scores(
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
         top_k:
             Number of highest probability or logit score predictions considered to find the correct label.
             Only works when ``preds`` contain probabilities/logits.
@@ -656,7 +656,7 @@ def _multilabel_stat_scores_format(
 def _multilabel_stat_scores_update(
     preds: Tensor, target: Tensor, multidim_average: Literal["global", "samplewise"] = "global"
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-    """Computes the statistics."""
+    """Compute the statistics."""
     sum_dim = [0, -1] if multidim_average == "global" else [-1]
     tp = ((target == preds) & (target == 1)).sum(sum_dim).squeeze()
     fn = ((target != preds) & (target == 1)).sum(sum_dim).squeeze()
@@ -700,7 +700,7 @@ def multilabel_stat_scores(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes the number of true positives, false positives, true negatives, false negatives and the support for
+    r"""Compute the number of true positives, false positives, true negatives, false negatives and the support for
     multilabel tasks. Related to `Type I and Type II errors`_.
 
     Accepts the following input tensors:
@@ -720,8 +720,8 @@ def multilabel_stat_scores(
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
 
         multidim_average:
             Defines how additionally dimensions ``...`` should be handled. Should be one of the following:
@@ -896,7 +896,7 @@ def _stat_scores_update(
     ignore_index: Optional[int] = None,
     mode: DataType = None,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-    """Updates and returns the number of true positives, false positives, true negatives, false negatives. Raises
+    """Update and returns the number of true positives, false positives, true negatives, false negatives. Raises
     ValueError if:
 
         - The `ignore_index` is not valid
@@ -970,7 +970,7 @@ def _stat_scores_update(
 
 
 def _stat_scores_compute(tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor) -> Tensor:
-    """Computes the number of true positives, false positives, true negatives, false negatives. Concatenates the
+    """Compute the number of true positives, false positives, true negatives, false negatives. Concatenates the
     input tensors along with the support into one output.
 
     Args:
@@ -1063,7 +1063,7 @@ def stat_scores(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes the number of true positives, false positives, true negatives, false negatives and the support.
+    r"""Compute the number of true positives, false positives, true negatives, false negatives and the support.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
