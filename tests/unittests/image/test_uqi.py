@@ -133,7 +133,7 @@ def test_uqi_invalid_inputs(pred, target, kernel, sigma):
 
     pred = torch.rand(pred)
     target = torch.rand(target)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011  # todo
         universal_image_quality_index(pred, target, kernel, sigma)
 
 

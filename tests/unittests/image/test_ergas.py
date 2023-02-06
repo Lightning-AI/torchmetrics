@@ -117,17 +117,17 @@ class TestErrorRelativeGlobalDimensionlessSynthesis(MetricTester):
 
 def test_error_on_different_shape(metric_class=ErrorRelativeGlobalDimensionlessSynthesis):
     metric = metric_class()
-    with pytest.raises(RuntimeError):
+    with pytest.raises(RuntimeError):  # todo
         metric(torch.randn([1, 3, 16, 16]), torch.randn([1, 1, 16, 16]))
 
 
 def test_error_on_invalid_shape(metric_class=ErrorRelativeGlobalDimensionlessSynthesis):
     metric = metric_class()
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011  # todo
         metric(torch.randn([3, 16, 16]), torch.randn([3, 16, 16]))
 
 
 def test_error_on_invalid_type(metric_class=ErrorRelativeGlobalDimensionlessSynthesis):
     metric = metric_class()
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError):  # todo
         metric(torch.randn([3, 16, 16]), torch.randn([3, 16, 16], dtype=torch.float64))

@@ -35,7 +35,7 @@ def test_reduce():
     assert torch.allclose(reduce(start_tensor, "sum"), torch.sum(start_tensor))
     assert torch.allclose(reduce(start_tensor, "none"), start_tensor)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011  # todo
         reduce(start_tensor, "error_reduction")
 
 

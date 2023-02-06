@@ -150,8 +150,8 @@ def test_reduction_for_dim_none(reduction):
 
 
 def test_missing_data_range():
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011  # todo
         PeakSignalNoiseRatio(data_range=None, dim=0)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011  # todo
         peak_signal_noise_ratio(_inputs[0].preds, _inputs[0].target, data_range=None, dim=0)

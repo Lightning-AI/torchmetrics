@@ -69,16 +69,16 @@ def test_add_state():
     a.add_state("c", tensor(0), "cat")
     assert a._reductions["c"]([tensor([1]), tensor([1])]).shape == (2,)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011  # todo
         a.add_state("d1", tensor(0), "xyz")
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011  # todo
         a.add_state("d2", tensor(0), 42)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011  # todo
         a.add_state("d3", [tensor(0)], "sum")
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011  # todo
         a.add_state("d4", 42, "sum")
 
     def custom_fx(_):
@@ -111,10 +111,12 @@ def test_reset():
     assert a.x == 0
 
     b = B()
-    assert isinstance(b.x, list) and len(b.x) == 0
+    assert isinstance(b.x, list)
+    assert len(b.x) == 0
     b.x = tensor(5)
     b.reset()
-    assert isinstance(b.x, list) and len(b.x) == 0
+    assert isinstance(b.x, list)
+    assert len(b.x) == 0
 
 
 def test_reset_compute():
@@ -181,13 +183,16 @@ def test_hash():
     b1 = B()
     b2 = B()
     assert hash(b1) != hash(b2)  # different ids
-    assert isinstance(b1.x, list) and len(b1.x) == 0
+    assert isinstance(b1.x, list)
+    assert len(b1.x) == 0
     b1.x.append(tensor(5))
     assert isinstance(hash(b1), int)  # <- check that nothing crashes
-    assert isinstance(b1.x, list) and len(b1.x) == 1
+    assert isinstance(b1.x, list)
+    assert len(b1.x) == 1
     b2.x.append(tensor(5))
     # Sanity:
-    assert isinstance(b2.x, list) and len(b2.x) == 1
+    assert isinstance(b2.x, list)
+    assert len(b2.x) == 1
     # Now that they have tensor contents, they should have different hashes:
     assert hash(b1) != hash(b2)
 

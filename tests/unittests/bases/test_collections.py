@@ -105,11 +105,11 @@ def test_metric_collection_wrong_input(tmpdir):
     dms = DummyMetricSum()
 
     # Not all input are metrics (list)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011  # todo
         _ = MetricCollection([dms, 5])
 
     # Not all input are metrics (dict)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011  # todo
         _ = MetricCollection({"metric1": dms, "metric2": 5})
 
     # Same metric passed in multiple times
@@ -152,10 +152,10 @@ def test_metric_collection_args_kwargs(tmpdir):
 @pytest.mark.parametrize(
     ("prefix", "postfix"),
     [
-        [None, None],
-        ["prefix_", None],
-        [None, "_postfix"],
-        ["prefix_", "_postfix"],
+        (None, None),
+        ("prefix_", None),
+        (None, "_postfix"),
+        ("prefix_", "_postfix"),
     ],
 )
 def test_metric_collection_prefix_postfix_args(prefix, postfix):
@@ -259,7 +259,8 @@ def test_collection_add_metrics():
 
     collection.update(5)
     results = collection.compute()
-    assert results["DummyMetricSum"] == results["m1_"] and results["m1_"] == 5
+    assert results["DummyMetricSum"] == results["m1_"]
+    assert results["m1_"] == 5
     assert results["DummyMetricDiff"] == -5
 
 
@@ -404,10 +405,10 @@ class TestComputeGroups:
     @pytest.mark.parametrize(
         ("prefix", "postfix"),
         [
-            [None, None],
-            ["prefix_", None],
-            [None, "_postfix"],
-            ["prefix_", "_postfix"],
+            (None, None),
+            ("prefix_", None),
+            (None, "_postfix"),
+            ("prefix_", "_postfix"),
         ],
     )
     def test_check_compute_groups_correctness(self, metrics, expected, preds, target, prefix, postfix):

@@ -235,7 +235,7 @@ def test_ssim_invalid_inputs(pred, target, kernel, sigma):
     size or invalid values are provided."""
     pred = torch.rand(pred)
     target = torch.rand(target)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011  # todo
         structural_similarity_index_measure(pred, target, kernel_size=kernel, sigma=sigma)
 
 

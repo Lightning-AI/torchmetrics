@@ -168,10 +168,10 @@ def test_rouge_metric_raises_errors_and_warnings():
 def test_rouge_metric_wrong_key_value_error():
     key = ("rouge1", "rouge")
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011  # todo
         ROUGEScore(rouge_keys=key)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011  # todo
         rouge_score(
             _inputs_single_sentence_single_reference.preds,
             _inputs_single_sentence_single_reference.targets,

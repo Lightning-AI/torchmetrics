@@ -270,7 +270,7 @@ def test_threshold():
     ],
 )
 def test_incorrect_inputs(preds, target, num_classes, multiclass):
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011  # todo
         _input_format_classification(
             preds=preds, target=target, threshold=THRESHOLD, num_classes=num_classes, multiclass=multiclass
         )
@@ -301,7 +301,7 @@ def test_incorrect_inputs(preds, target, num_classes, multiclass):
     ],
 )
 def test_incorrect_inputs_topk(preds, target, num_classes, multiclass, top_k):
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011  # todo
         _input_format_classification(
             preds=preds,
             target=target,
