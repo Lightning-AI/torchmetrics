@@ -192,6 +192,25 @@ def multiscale_structural_similarity_index_measure():
     return fig, ax
 
 
+def universal_image_quality_index():
+    from torchmetrics.image.uqi import UniversalImageQualityIndex
+
+    p = lambda: torch.rand([16, 1, 16, 16])
+    t = lambda: p() * 0.75
+
+    # plot single value
+    metric = UniversalImageQualityIndex()
+    metric.update(p(), t())
+    fig, ax = metric.plot()
+
+    # plot multiple values
+    metric = UniversalImageQualityIndex()
+    vals = [metric(p(), t()) for _ in range(10)]
+    fig, ax = metric.plot(vals)
+
+    return fig, ax
+
+
 if __name__ == "__main__":
     metrics_func = {
         "accuracy": accuracy_example,
@@ -203,6 +222,7 @@ if __name__ == "__main__":
         "spectral_angle_mapper": spectral_angle_mapper,
         "structural_similarity_index_measure": structural_similarity_index_measure,
         "multiscale_structural_similarity_index_measure": multiscale_structural_similarity_index_measure,
+        "universal_image_quality_index": universal_image_quality_index
     }
 
     parser = argparse.ArgumentParser(description="Example script for plotting metrics.")

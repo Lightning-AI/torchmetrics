@@ -19,12 +19,8 @@ import numpy as np
 import pytest
 import torch
 
-from torchmetrics.functional import (
-    multiscale_structural_similarity_index_measure,
-    peak_signal_noise_ratio,
-    spectral_angle_mapper,
-    structural_similarity_index_measure,
-)
+from torchmetrics.functional import peak_signal_noise_ratio, spectral_angle_mapper, structural_similarity_index_measure, \
+    multiscale_structural_similarity_index_measure, universal_image_quality_index
 from torchmetrics.functional.classification.accuracy import binary_accuracy, multiclass_accuracy
 from torchmetrics.functional.classification.confusion_matrix import (
     binary_confusion_matrix,
@@ -92,6 +88,12 @@ from torchmetrics.utilities.plot import plot_confusion_matrix, plot_single_or_mu
             lambda: torch.rand([3, 3, 256, 256], generator=torch.manual_seed(42)),
             lambda: torch.rand([3, 3, 256, 256], generator=torch.manual_seed(42)) * 0.75,
             id="multiscale structural similarity index measure",
+        ),
+        pytest.param(
+            partial(universal_image_quality_index),
+            lambda: torch.rand([16, 1, 16, 16]),
+            lambda: torch.rand([16, 1, 16, 16]) * 0.75,
+            id="universal image quality index",
         ),
     ],
 )
