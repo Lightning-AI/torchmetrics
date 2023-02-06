@@ -66,7 +66,7 @@ def _scipy_dice(
 
 
 @pytest.mark.parametrize(
-    ["pred", "target", "expected"],
+    ("pred", "target", "expected"),
     [
         ([[0, 0], [1, 1]], [[0, 0], [1, 1]], 1.0),
         ([[1, 1], [0, 0]], [[0, 0], [1, 1]], 0.0),

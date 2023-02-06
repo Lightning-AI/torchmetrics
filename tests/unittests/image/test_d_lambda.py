@@ -126,7 +126,7 @@ class TestSpectralDistortionIndex(MetricTester):
 
 
 @pytest.mark.parametrize(
-    ["preds", "target", "p"],
+    ("preds", "target", "p"),
     [
         ([1, 16, 16], [1, 16, 16], 1),  # len(shape)
         ([1, 1, 16, 16], [1, 1, 16, 16], 0),  # invalid p

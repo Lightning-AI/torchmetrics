@@ -150,7 +150,7 @@ def test_metric_collection_args_kwargs(tmpdir):
 
 
 @pytest.mark.parametrize(
-    "prefix, postfix",
+    ("prefix", "postfix"),
     [
         [None, None],
         ["prefix_", None],
@@ -402,7 +402,7 @@ _ml_target = torch.randint(2, (10, 3))
 )
 class TestComputeGroups:
     @pytest.mark.parametrize(
-        "prefix, postfix",
+        ("prefix", "postfix"),
         [
             [None, None],
             ["prefix_", None],

@@ -112,7 +112,7 @@ class TestUQI(MetricTester):
 
 
 @pytest.mark.parametrize(
-    ["pred", "target", "kernel", "sigma"],
+    ("pred", "target", "kernel", "sigma"),
     [
         ([1, 16, 16], [1, 16, 16], [11, 11], [1.5, 1.5]),  # len(shape)
         ([1, 1, 16, 16], [1, 1, 16, 16], [11, 11], [1.5]),  # len(kernel), len(sigma)

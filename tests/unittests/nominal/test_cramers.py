@@ -47,7 +47,7 @@ _input_logits = Input(
 )
 
 
-@pytest.fixture
+@pytest.fixture()
 def _matrix_input():
     matrix = torch.cat(
         [

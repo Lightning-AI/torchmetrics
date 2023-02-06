@@ -130,7 +130,7 @@ def test_compare_is(tmpdir, compute_on_cpu):
 
 
 @pytest.mark.parametrize(
-    "normalize, expectation, message",
+    ("normalize", "expectation", "message"),
     [
         (True, does_not_raise(), None),
         (False, pytest.raises(ValueError), "Expecting image as torch.Tensor with dtype=torch.uint8"),

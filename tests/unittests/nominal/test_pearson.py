@@ -43,7 +43,7 @@ _input_logits = Input(
 # No testing with replacing NaN's values is done as not supported in SciPy
 
 
-@pytest.fixture
+@pytest.fixture()
 def _matrix_input():
     matrix = torch.cat(
         [
