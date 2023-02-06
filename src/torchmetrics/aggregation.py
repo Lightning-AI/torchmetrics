@@ -177,7 +177,6 @@ class MaxMetric(BaseAggregator):
                 If `matplotlib` is not installed
 
         Examples:
-
         .. plot::
             :scale: 75
 
@@ -284,7 +283,6 @@ class MinMetric(BaseAggregator):
                 If `matplotlib` is not installed
 
         Examples:
-
         .. plot::
             :scale: 75
 
@@ -389,7 +387,6 @@ class SumMetric(BaseAggregator):
                 If `matplotlib` is not installed
 
         Examples:
-
         .. plot::
             :scale: 75
 
@@ -571,7 +568,6 @@ class MeanMetric(BaseAggregator):
                 If `matplotlib` is not installed
 
         Examples:
-
         .. plot::
             :scale: 75
 
