@@ -79,7 +79,6 @@ def _compute_sklearn_metric(
     **kwargs,
 ) -> Tensor:
     """Compute metric with multiple iterations over every query predictions set."""
-
     if indexes is None:
         indexes = np.full_like(preds, fill_value=0, dtype=np.int64)
     if isinstance(indexes, Tensor):

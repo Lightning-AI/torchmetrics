@@ -64,7 +64,7 @@ def _final_aggregation(
 
 
 class PearsonCorrCoef(Metric):
-    r"""Computes `Pearson Correlation Coefficient`_:
+    r"""Compute `Pearson Correlation Coefficient`_:
 
     .. math::
         P_{corr}(x,y) = \frac{cov(x,y)}{\sigma_x \sigma_y}
@@ -146,7 +146,7 @@ class PearsonCorrCoef(Metric):
         )
 
     def compute(self) -> Tensor:
-        """Computes pearson correlation coefficient over state."""
+        """Compute pearson correlation coefficient over state."""
         if (self.num_outputs == 1 and self.mean_x.numel() > 1) or (self.num_outputs > 1 and self.mean_x.ndim > 1):
             # multiple devices, need further reduction
             _, _, var_x, var_y, corr_xy, n_total = _final_aggregation(

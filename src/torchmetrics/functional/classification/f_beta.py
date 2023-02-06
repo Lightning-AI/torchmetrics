@@ -80,7 +80,7 @@ def binary_fbeta_score(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes `F-score`_ metric for binary tasks:
+    r"""Compute `F-score`_ metric for binary tasks:
 
     .. math::
         F_{\beta} = (1 + \beta^2) * \frac{\text{precision} * \text{recall}}
@@ -169,7 +169,7 @@ def multiclass_fbeta_score(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes `F-score`_ metric for multiclass tasks:
+    r"""Compute `F-score`_ metric for multiclass tasks:
 
     .. math::
         F_{\beta} = (1 + \beta^2) * \frac{\text{precision} * \text{recall}}
@@ -192,8 +192,8 @@ def multiclass_fbeta_score(
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
         top_k:
             Number of highest probability or logit score predictions considered to find the correct label.
             Only works when ``preds`` contain probabilities/logits.
@@ -288,7 +288,7 @@ def multilabel_fbeta_score(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes `F-score`_ metric for multilabel tasks:
+    r"""Compute `F-score`_ metric for multilabel tasks:
 
     .. math::
         F_{\beta} = (1 + \beta^2) * \frac{\text{precision} * \text{recall}}
@@ -312,8 +312,8 @@ def multilabel_fbeta_score(
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
 
         multidim_average:
             Defines how additionally dimensions ``...`` should be handled. Should be one of the following:
@@ -386,7 +386,7 @@ def binary_f1_score(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes F-1 score for binary tasks:
+    r"""Compute F-1 score for binary tasks:
 
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
@@ -462,7 +462,7 @@ def multiclass_f1_score(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes F-1 score for multiclass tasks:
+    r"""Compute F-1 score for multiclass tasks:
 
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
@@ -483,8 +483,8 @@ def multiclass_f1_score(
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
         top_k:
             Number of highest probability or logit score predictions considered to find the correct label.
             Only works when ``preds`` contain probabilities/logits.
@@ -568,7 +568,7 @@ def multilabel_f1_score(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes F-1 score for multilabel tasks:
+    r"""Compute F-1 score for multilabel tasks:
 
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
@@ -590,8 +590,8 @@ def multilabel_f1_score(
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
 
         multidim_average:
             Defines how additionally dimensions ``...`` should be handled. Should be one of the following:
@@ -675,7 +675,7 @@ def fbeta_score(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes `F-score`_ metric:
+    r"""Compute `F-score`_ metric:
 
     .. math::
         F_{\beta} = (1 + \beta^2) * \frac{\text{precision} * \text{recall}}
@@ -725,7 +725,7 @@ def f1_score(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes F-1 score:
+    r"""Compute F-1 score:
 
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}

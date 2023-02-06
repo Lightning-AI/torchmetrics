@@ -33,7 +33,7 @@ from torchmetrics.classification.stat_scores import (  # isort:skip
 
 
 class BinaryAccuracy(BinaryStatScores):
-    r"""Computes `Accuracy`_ for binary tasks:
+    r"""Compute `Accuracy`_ for binary tasks.
 
     .. math::
         \text{Accuracy} = \frac{1}{N}\sum_i^N 1(y_i = \hat{y}_i)
@@ -42,16 +42,16 @@ class BinaryAccuracy(BinaryStatScores):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~torch.Tensor`): An int or float tensor of shape ``(N, ...)``. If preds is a floating
-      point tensor with values outside [0,1] range we consider the input to be logits and will auto apply sigmoid
-      per element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
-    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``
+        - ``preds`` (:class:`~torch.Tensor`): An int or float tensor of shape ``(N, ...)``. If preds is a floating
+          point tensor with values outside [0,1] range we consider the input to be logits and will auto apply sigmoid
+          per element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
+        - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``ba`` (:class:`~torch.Tensor`): If ``multidim_average`` is set to ``global``, the metric returns a scalar value.
-      If ``multidim_average`` is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of a scalar
-      value per sample.
+        - ``ba`` (:class:`~torch.Tensor`): If ``multidim_average`` is set to ``global``, metric returns a scalar value.
+          If ``multidim_average`` is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of a scalar
+          value per sample.
 
     Args:
         threshold: Threshold for transforming probability to binary {0,1} predictions
@@ -99,7 +99,7 @@ class BinaryAccuracy(BinaryStatScores):
     plot_options: dict = {"lower_bound": 0.0, "upper_bound": 1.0}
 
     def compute(self) -> Tensor:
-        """Computes accuracy based on inputs passed in to ``update`` previously."""
+        """Compute accuracy based on inputs passed in to ``update`` previously."""
         tp, fp, tn, fn = self._final_state()
         return _accuracy_reduce(tp, fp, tn, fn, average="binary", multidim_average=self.multidim_average)
 
@@ -114,14 +114,11 @@ class BinaryAccuracy(BinaryStatScores):
             ax: An matplotlib axis object. If provided will add plot to that axis
 
         Returns:
-            fig: Figure object
-            ax: Axes object
+            Figure object and Axes object
 
         Raises:
             ModuleNotFoundError:
                 If `matplotlib` is not installed
-
-        Examples:
 
         .. plot::
             :scale: 75
@@ -153,7 +150,7 @@ class BinaryAccuracy(BinaryStatScores):
 
 
 class MulticlassAccuracy(MulticlassStatScores):
-    r"""Computes `Accuracy`_ for multiclass tasks:
+    r"""Compute `Accuracy`_ for multiclass tasks:
 
     .. math::
         \text{Accuracy} = \frac{1}{N}\sum_i^N 1(y_i = \hat{y}_i)
@@ -162,25 +159,25 @@ class MulticlassAccuracy(MulticlassStatScores):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)`` or float tensor of shape ``(N, C, ..)``.
-      If preds is a floating point we apply ``torch.argmax`` along the ``C`` dimension to automatically convert
-      probabilities/logits into an int tensor.
-    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``
+        - ``preds`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)`` or float tensor
+          of shape ``(N, C, ..)``. If preds is a floating point we apply ``torch.argmax`` along the ``C`` dimension
+          to automatically convert probabilities/logits into an int tensor.
+        - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``mca`` (:class:`~torch.Tensor`): A tensor with the accuracy score whose returned shape depends on the
-      ``average`` and ``multidim_average`` arguments:
+        - ``mca`` (:class:`~torch.Tensor`): A tensor with the accuracy score whose returned shape depends on the
+          ``average`` and ``multidim_average`` arguments:
 
-        - If ``multidim_average`` is set to ``global``:
+            - If ``multidim_average`` is set to ``global``:
 
-          - If ``average='micro'/'macro'/'weighted'``, the output will be a scalar tensor
-          - If ``average=None/'none'``, the shape will be ``(C,)``
+              - If ``average='micro'/'macro'/'weighted'``, the output will be a scalar tensor
+              - If ``average=None/'none'``, the shape will be ``(C,)``
 
-        - If ``multidim_average`` is set to ``samplewise``:
+            - If ``multidim_average`` is set to ``samplewise``:
 
-          - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
-          - If ``average=None/'none'``, the shape will be ``(N, C)``
+              - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
+              - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Args:
         num_classes: Integer specifing the number of classes
@@ -189,8 +186,8 @@ class MulticlassAccuracy(MulticlassStatScores):
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
 
         top_k:
             Number of highest probability or logit score predictions considered to find the correct label.
@@ -251,7 +248,7 @@ class MulticlassAccuracy(MulticlassStatScores):
     plot_options = {"lower_bound": 0.0, "upper_bound": 1.0, "legend_name": "Class"}
 
     def compute(self) -> Tensor:
-        """Computes accuracy based on inputs passed in to ``update`` previously."""
+        """Compute accuracy based on inputs passed in to ``update`` previously."""
         tp, fp, tn, fn = self._final_state()
         return _accuracy_reduce(tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average)
 
@@ -266,14 +263,11 @@ class MulticlassAccuracy(MulticlassStatScores):
             ax: An matplotlib axis object. If provided will add plot to that axis
 
         Returns:
-            fig: Figure object
-            ax: Axes object
+            Figure object and Axes object
 
         Raises:
             ModuleNotFoundError:
                 If `matplotlib` is not installed
-
-        Examples:
 
         .. plot::
             :scale: 75
@@ -305,7 +299,7 @@ class MulticlassAccuracy(MulticlassStatScores):
 
 
 class MultilabelAccuracy(MultilabelStatScores):
-    r"""Computes `Accuracy`_ for multilabel tasks:
+    r"""Compute `Accuracy`_ for multilabel tasks:
 
     .. math::
         \text{Accuracy} = \frac{1}{N}\sum_i^N 1(y_i = \hat{y}_i)
@@ -342,8 +336,8 @@ class MultilabelAccuracy(MultilabelStatScores):
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
 
         multidim_average:
             Defines how additionally dimensions ``...`` should be handled. Should be one of the following:
@@ -403,7 +397,7 @@ class MultilabelAccuracy(MultilabelStatScores):
     plot_options: dict = {"lower_bound": 0.0, "upper_bound": 1.0, "legend_name": "Label"}
 
     def compute(self) -> Tensor:
-        """Computes accuracy based on inputs passed in to ``update`` previously."""
+        """Compute accuracy based on inputs passed in to ``update`` previously."""
         tp, fp, tn, fn = self._final_state()
         return _accuracy_reduce(
             tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average, multilabel=True
@@ -411,7 +405,7 @@ class MultilabelAccuracy(MultilabelStatScores):
 
 
 class Accuracy:
-    r"""Computes `Accuracy`_
+    r"""Compute `Accuracy`_.
 
     .. math::
         \text{Accuracy} = \frac{1}{N}\sum_i^N 1(y_i = \hat{y}_i)

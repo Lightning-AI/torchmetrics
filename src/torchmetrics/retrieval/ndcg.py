@@ -20,7 +20,7 @@ from torchmetrics.retrieval.base import RetrievalMetric
 
 
 class RetrievalNormalizedDCG(RetrievalMetric):
-    """Computes `Normalized Discounted Cumulative Gain`_.
+    """Compute `Normalized Discounted Cumulative Gain`_.
 
     Works with binary or positive integer target data. Accepts float predictions from a model output.
 

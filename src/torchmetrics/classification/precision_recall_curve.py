@@ -41,7 +41,7 @@ from torchmetrics.utilities.enums import ClassificationTask
 
 
 class BinaryPrecisionRecallCurve(Metric):
-    r"""Computes the precision-recall curve for binary tasks. The curve consist of multiple pairs of precision and
+    r"""Compute the precision-recall curve for binary tasks. The curve consist of multiple pairs of precision and
     recall values evaluated at different thresholds, such that the tradeoff between the two values can been seen.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
@@ -154,7 +154,7 @@ class BinaryPrecisionRecallCurve(Metric):
 
 
 class MulticlassPrecisionRecallCurve(Metric):
-    r"""Computes the precision-recall curve for multiclass tasks. The curve consist of multiple pairs of precision
+    r"""Compute the precision-recall curve for multiclass tasks. The curve consist of multiple pairs of precision
     and recall values evaluated at different thresholds, such that the tradeoff between the two values can been
     seen.
 
@@ -282,7 +282,7 @@ class MulticlassPrecisionRecallCurve(Metric):
 
 
 class MultilabelPrecisionRecallCurve(Metric):
-    r"""Computes the precision-recall curve for multilabel tasks. The curve consist of multiple pairs of precision
+    r"""Compute the precision-recall curve for multilabel tasks. The curve consist of multiple pairs of precision
     and recall values evaluated at different thresholds, such that the tradeoff between the two values can been
     seen.
 
@@ -421,7 +421,7 @@ class MultilabelPrecisionRecallCurve(Metric):
 
 
 class PrecisionRecallCurve:
-    r"""Computes the precision-recall curve. The curve consist of multiple pairs of precision and recall values
+    r"""Compute the precision-recall curve. The curve consist of multiple pairs of precision and recall values
     evaluated at different thresholds, such that the tradeoff between the two values can been seen.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the

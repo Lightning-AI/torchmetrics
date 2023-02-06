@@ -39,6 +39,7 @@ VERSIONS.sort(key=lambda v: Version(v["torch"]), reverse=True)
 
 
 def find_latest(ver: str) -> Dict[str, str]:
+    """Find the latest version."""
     # drop all except semantic version
     ver = re.search(r"([\.\d]+)", ver).groups()[0]
     # in case there remaining dot at the end - e.g "1.9.0.dev20210504"
@@ -54,6 +55,7 @@ def find_latest(ver: str) -> Dict[str, str]:
 
 
 def adjust(requires: str, torch_version: Optional[str] = None) -> str:
+    """Adjust the versions to be paired within pytorch ecosystem."""
     if not torch_version:
         import torch
 

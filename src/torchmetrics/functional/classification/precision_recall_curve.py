@@ -31,7 +31,7 @@ def _binary_clf_curve(
     sample_weights: Optional[Sequence] = None,
     pos_label: int = 1,
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    """Calculates the tps and false positives for all unique thresholds in the preds tensor. Adapted from
+    """Calculate the TPs and false positives for all unique thresholds in the preds tensor. Adapted from
     https://github.com/scikit-learn/scikit-learn/blob/main/sklearn/metrics/_ranking.py.
 
     Args:
@@ -206,7 +206,7 @@ def _binary_precision_recall_curve_compute(
     thresholds: Optional[Tensor],
     pos_label: int = 1,
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    """Computes the final pr-curve.
+    """Compute the final pr-curve.
 
     If state is a single tensor, then we calculate the pr-curve from a multi threshold confusion matrix. If state is
     original input, then we dynamically compute the binary classification curve.
@@ -245,7 +245,7 @@ def binary_precision_recall_curve(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    r"""Computes the precision-recall curve for binary tasks. The curve consist of multiple pairs of precision and
+    r"""Compute the precision-recall curve for binary tasks. The curve consist of multiple pairs of precision and
     recall values evaluated at different thresholds, such that the tradeoff between the two values can been seen.
 
     Accepts the following input tensors:
@@ -423,7 +423,7 @@ def _multiclass_precision_recall_curve_compute(
     num_classes: int,
     thresholds: Optional[Tensor],
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    """Computes the final pr-curve.
+    """Compute the final pr-curve.
 
     If state is a single tensor, then we calculate the pr-curve from a multi threshold confusion matrix. If state is
     original input, then we dynamically compute the binary classification curve in an iterative way.
@@ -455,7 +455,7 @@ def multiclass_precision_recall_curve(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    r"""Computes the precision-recall curve for multiclass tasks. The curve consist of multiple pairs of precision
+    r"""Compute the precision-recall curve for multiclass tasks. The curve consist of multiple pairs of precision
     and recall values evaluated at different thresholds, such that the tradeoff between the two values can been
     seen.
 
@@ -641,7 +641,7 @@ def _multilabel_precision_recall_curve_compute(
     thresholds: Optional[Tensor],
     ignore_index: Optional[int] = None,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    """Computes the final pr-curve.
+    """Compute the final pr-curve.
 
     If state is a single tensor, then we calculate the pr-curve from a multi threshold confusion matrix. If state is
     original input, then we dynamically compute the binary classification curve in an iterative way.
@@ -679,7 +679,7 @@ def multilabel_precision_recall_curve(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    r"""Computes the precision-recall curve for multilabel tasks. The curve consist of multiple pairs of precision
+    r"""Compute the precision-recall curve for multilabel tasks. The curve consist of multiple pairs of precision
     and recall values evaluated at different thresholds, such that the tradeoff between the two values can been
     seen.
 
@@ -783,7 +783,7 @@ def precision_recall_curve(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    r"""Computes the precision-recall curve. The curve consist of multiple pairs of precision and recall values
+    r"""Compute the precision-recall curve. The curve consist of multiple pairs of precision and recall values
     evaluated at different thresholds, such that the tradeoff between the two values can been seen.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the

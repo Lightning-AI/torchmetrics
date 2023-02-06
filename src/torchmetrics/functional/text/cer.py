@@ -62,8 +62,9 @@ def _cer_compute(errors: Tensor, total: Tensor) -> Tensor:
 
 
 def char_error_rate(preds: Union[str, List[str]], target: Union[str, List[str]]) -> Tensor:
-    """character error rate is a common metric of the performance of an automatic speech recognition system. This
-    value indicates the percentage of characters that were incorrectly predicted. The lower the value, the better
+    """Compute Character Rrror Rate used for performance of an automatic speech recognition system.
+
+    This value indicates the percentage of characters that were incorrectly predicted. The lower the value, the better
     the performance of the ASR system with a CER of 0 being a perfect score.
 
     Args:

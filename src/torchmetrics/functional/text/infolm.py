@@ -54,6 +54,10 @@ _ALLOWED_INFORMATION_MEASURE_LITERAL = Literal[
 class _IMEnum(EnumStr):
     """A helper Enum class for storing the information measure."""
 
+    @staticmethod
+    def _name() -> str:
+        return "Information measure"
+
     KL_DIVERGENCE = "kl_divergence"
     ALPHA_DIVERGENCE = "alpha_divergence"
     BETA_DIVERGENCE = "beta_divergence"
@@ -63,20 +67,6 @@ class _IMEnum(EnumStr):
     L2_DISTANCE = "l2_distance"
     L_INFINITY_DISTANCE = "l_infinity_distance"
     FISHER_RAO_DISTANCE = "fisher_rao_distance"
-
-    @classmethod
-    def from_str(cls, value: str) -> Optional["EnumStr"]:
-        """
-        Raises:
-            ValueError:
-                If required information measure is not among the supported options.
-        """
-        _allowed_im = [im.lower() for im in _IMEnum._member_names_]
-
-        enum_key = super().from_str(value)
-        if enum_key is not None and enum_key in _allowed_im:
-            return enum_key
-        raise ValueError(f"Invalid information measure. Expected one of {_allowed_im}, but got {enum_key}.")
 
 
 class _InformationMeasure:
@@ -425,6 +415,7 @@ def _get_data_distribution(
     verbose: bool,
 ) -> Tensor:
     """Calculate a discrete probability distribution according to the methodology described in `InfoLM`_.
+
     Args:
         model:
             Initialized model from HuggingFace's `transformers package.
@@ -547,8 +538,7 @@ def infolm(
     verbose: bool = True,
     return_sentence_level_score: bool = False,
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    """
-    Calculate `InfoLM`_ [1] - i.e. calculate a distance/divergence between predicted and reference sentence discrete
+    """Calculate `InfoLM`_ [1] - i.e. calculate a distance/divergence between predicted and reference sentence discrete
     distribution using one of the following information measures:
 
         - `KL divergence`_

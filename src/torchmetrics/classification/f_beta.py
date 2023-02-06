@@ -28,7 +28,7 @@ from torchmetrics.utilities.enums import ClassificationTask
 
 
 class BinaryFBetaScore(BinaryStatScores):
-    r"""Computes `F-score`_ metric for binary tasks:
+    r"""Compute `F-score`_ metric for binary tasks:
 
     .. math::
         F_{\beta} = (1 + \beta^2) * \frac{\text{precision} * \text{recall}}
@@ -122,7 +122,7 @@ class BinaryFBetaScore(BinaryStatScores):
 
 
 class MulticlassFBetaScore(MulticlassStatScores):
-    r"""Computes `F-score`_ metric for multiclass tasks:
+    r"""Compute `F-score`_ metric for multiclass tasks:
 
     .. math::
         F_{\beta} = (1 + \beta^2) * \frac{\text{precision} * \text{recall}}
@@ -159,8 +159,8 @@ class MulticlassFBetaScore(MulticlassStatScores):
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
         top_k:
 
             Number of highest probability or logit score predictions considered to find the correct label.
@@ -250,7 +250,7 @@ class MulticlassFBetaScore(MulticlassStatScores):
 
 
 class MultilabelFBetaScore(MultilabelStatScores):
-    r"""Computes `F-score`_ metric for multilabel tasks:
+    r"""Compute `F-score`_ metric for multilabel tasks:
 
     .. math::
         F_{\beta} = (1 + \beta^2) * \frac{\text{precision} * \text{recall}}
@@ -288,8 +288,8 @@ class MultilabelFBetaScore(MultilabelStatScores):
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
 
         multidim_average:
             Defines how additionally dimensions ``...`` should be handled. Should be one of the following:
@@ -374,7 +374,7 @@ class MultilabelFBetaScore(MultilabelStatScores):
 
 
 class BinaryF1Score(BinaryFBetaScore):
-    r"""Computes F-1 score for binary tasks:
+    r"""Compute F-1 score for binary tasks:
 
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
@@ -458,7 +458,7 @@ class BinaryF1Score(BinaryFBetaScore):
 
 
 class MulticlassF1Score(MulticlassFBetaScore):
-    r"""Computes F-1 score for multiclass tasks:
+    r"""Compute F-1 score for multiclass tasks:
 
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
@@ -495,8 +495,8 @@ class MulticlassF1Score(MulticlassFBetaScore):
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
         top_k:
             Number of highest probability or logit score predictions considered to find the correct label.
             Only works when ``preds`` contain probabilities/logits.
@@ -577,7 +577,7 @@ class MulticlassF1Score(MulticlassFBetaScore):
 
 
 class MultilabelF1Score(MultilabelFBetaScore):
-    r"""Computes F-1 score for multilabel tasks:
+    r"""Compute F-1 score for multilabel tasks:
 
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
@@ -614,8 +614,8 @@ class MultilabelF1Score(MultilabelFBetaScore):
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
 
         multidim_average:
             Defines how additionally dimensions ``...`` should be handled. Should be one of the following:
@@ -692,7 +692,7 @@ class MultilabelF1Score(MultilabelFBetaScore):
 
 
 class FBetaScore:
-    r"""Computes `F-score`_ metric:
+    r"""Compute `F-score`_ metric:
 
     .. math::
         F_{\beta} = (1 + \beta^2) * \frac{\text{precision} * \text{recall}}
@@ -745,7 +745,7 @@ class FBetaScore:
 
 
 class F1Score:
-    r"""Computes F-1 score:
+    r"""Compute F-1 score:
 
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
