@@ -40,8 +40,8 @@ _input_logits = Input(
 # No testing with replacing NaN's values is done as not supported in SciPy
 
 
-@pytest.fixture
-def _matrix_input():
+@pytest.fixture()
+def tschuprows_matrix_input():
     matrix = torch.cat(
         [
             torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES * BATCH_SIZE, 1), dtype=torch.float),
@@ -121,7 +121,7 @@ class TestTschuprowsT(MetricTester):
 @pytest.mark.skipif(  # TODO: testing on CUDA fails with pandas 1.3.5, and newer is not available for python 3.7
     torch.cuda.is_available(), reason="Tests fail on CUDA with the most up-to-date available pandas"
 )
-def test_tschuprows_t_matrix(_matrix_input):
-    tm_score = tschuprows_t_matrix(_matrix_input, bias_correction=False)
-    reference_score = _pd_tschuprows_t_matrix(_matrix_input)
+def test_tschuprows_t_matrix(tschuprows_matrix_input):
+    tm_score = tschuprows_t_matrix(tschuprows_matrix_input, bias_correction=False)
+    reference_score = _pd_tschuprows_t_matrix(tschuprows_matrix_input)
     assert torch.allclose(tm_score, reference_score)

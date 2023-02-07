@@ -217,7 +217,7 @@ class TestSSIM(MetricTester):
 
 
 @pytest.mark.parametrize(
-    ["pred", "target", "kernel", "sigma"],
+    ("pred", "target", "kernel", "sigma"),
     [
         ([1, 1, 16, 16], [1, 1, 16, 16], [11, 11], [1.5]),  # len(kernel), len(sigma)
         ([1, 16, 16], [1, 16, 16], [11, 11], [1.5, 1.5]),  # len(shape)
@@ -236,7 +236,7 @@ def test_ssim_invalid_inputs(pred, target, kernel, sigma):
     """
     pred = torch.rand(pred)
     target = torch.rand(target)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011  # todo
         structural_similarity_index_measure(pred, target, kernel_size=kernel, sigma=sigma)
 
 
@@ -293,7 +293,7 @@ def test_ssim_unequal_kernel_size():
 
 
 @pytest.mark.parametrize(
-    "preds, target",
+    ("preds", "target"),
     [(i.preds, i.target) for i in _inputs],
 )
 def test_full_image_output(preds, target):

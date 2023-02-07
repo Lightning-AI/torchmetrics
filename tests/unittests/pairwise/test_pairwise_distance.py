@@ -143,7 +143,7 @@ def test_error_on_wrong_shapes(metric):
 
 
 @pytest.mark.parametrize(
-    "metric_functional, sk_fn",
+    ("metric_functional", "sk_fn"),
     [
         (pairwise_cosine_similarity, cosine_similarity),
         (pairwise_euclidean_distance, euclidean_distances),

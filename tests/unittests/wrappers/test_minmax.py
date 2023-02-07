@@ -84,7 +84,7 @@ class TestMinMaxWrapper(MetricTester):
 
 
 @pytest.mark.parametrize(
-    "preds, labels, raws, maxs, mins",
+    ("preds", "labels", "raws", "maxs", "mins"),
     [
         (
             ([[0.9, 0.1], [0.2, 0.8]], [[0.1, 0.9], [0.2, 0.8]], [[0.1, 0.9], [0.8, 0.2]]),
