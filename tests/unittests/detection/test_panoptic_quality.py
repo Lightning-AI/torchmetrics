@@ -123,11 +123,11 @@ def test_error_on_wrong_input():
     with pytest.raises(TypeError, match="Expected argument `target` to be of type `torch.Tensor`.*"):
         metric.update(valid_image, [])
 
+    preds = torch.randint(low=0, high=9, size=(400, 300, 2))
+    target = torch.randint(low=0, high=9, size=(30, 40, 2))
     with pytest.raises(ValueError, match="Expected argument `preds` and `target` to have the same shape.*"):
-        preds = torch.randint(low=0, high=9, size=(400, 300, 2))
-        target = torch.randint(low=0, high=9, size=(30, 40, 2))
         metric.update(preds, target)
 
+    preds = torch.randint(low=0, high=9, size=(400, 300))
     with pytest.raises(ValueError, match="Expected argument `preds` to have shape.*"):
-        preds = torch.randint(low=0, high=9, size=(400, 300))
         metric.update(preds, preds)

@@ -79,7 +79,9 @@ def _validate_categories(things: Set[int], stuff: Set[int]) -> None:
     if not _is_set_int(stuff):
         raise TypeError(f"Expected argument `stuff` to be of type `Set[int]`, but got {stuff}")
     if stuff & things:
-        raise ValueError(f"Expected arguments `things` and `stuffs` to have distinct keys, but got {things} and {stuff}")
+        raise ValueError(
+            f"Expected arguments `things` and `stuffs` to have distinct keys, but got {things} and {stuff}"
+        )
 
 
 def _validate_inputs(preds: Tensor, target: torch.Tensor) -> None:

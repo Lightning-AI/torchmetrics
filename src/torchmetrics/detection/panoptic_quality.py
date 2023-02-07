@@ -134,6 +134,4 @@ class PanopticQuality(Metric):
 
     def compute(self) -> Tensor:
         """Computes panoptic quality based on inputs passed in to ``update`` previously."""
-        return _panoptic_quality_compute(
-            self.iou_sum, self.true_positives, self.false_positives, self.false_negatives
-        )
+        return _panoptic_quality_compute(self.iou_sum, self.true_positives, self.false_positives, self.false_negatives)
