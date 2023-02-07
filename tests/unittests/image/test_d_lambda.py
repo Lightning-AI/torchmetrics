@@ -126,7 +126,7 @@ class TestSpectralDistortionIndex(MetricTester):
 
 
 @pytest.mark.parametrize(
-    ["preds", "target", "p"],
+    ("preds", "target", "p"),
     [
         ([1, 16, 16], [1, 16, 16], 1),  # len(shape)
         ([1, 1, 16, 16], [1, 1, 16, 16], 0),  # invalid p
@@ -136,7 +136,7 @@ class TestSpectralDistortionIndex(MetricTester):
 def test_d_lambda_invalid_inputs(preds, target, p):
     preds_t = torch.rand(preds)
     target_t = torch.rand(target)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011  # todo
         spectral_distortion_index(preds_t, target_t, p)
 
 

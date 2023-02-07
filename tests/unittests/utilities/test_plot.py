@@ -38,7 +38,7 @@ from torchmetrics.utilities.plot import plot_confusion_matrix, plot_single_or_mu
 
 
 @pytest.mark.parametrize(
-    "metric, preds, target",
+    ("metric", "preds", "target"),
     [
         pytest.param(
             binary_accuracy,
@@ -108,7 +108,7 @@ def test_single_multi_val_plotter(metric, preds, target, num_vals):
 
 
 @pytest.mark.parametrize(
-    "metric, preds, target",
+    ("metric", "preds", "target"),
     [
         pytest.param(
             partial(permutation_invariant_training, metric_func=scale_invariant_signal_noise_ratio, eval_func="max"),
@@ -164,7 +164,7 @@ def test_confusion_matrix_plotter(metric, preds, target):
 
 
 @pytest.mark.parametrize(
-    "metric, preds, target, labels",
+    ("metric", "preds", "target", "labels"),
     [
         pytest.param(
             binary_confusion_matrix,

@@ -86,7 +86,7 @@ def naive_implementation_pit_scipy(
 
 
 def _average_metric(preds: Tensor, target: Tensor, metric_func: Callable) -> Tensor:
-    """average the metric values.
+    """Average the metric values.
 
     Args:
         preds: predictions, shape[batch, spk, time]

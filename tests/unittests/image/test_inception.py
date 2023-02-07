@@ -108,7 +108,7 @@ class _ImgDataset(Dataset):
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 @pytest.mark.parametrize("compute_on_cpu", [True, False])
 def test_compare_is(tmpdir, compute_on_cpu):
-    """check that the hole pipeline give the same result as torch-fidelity."""
+    """Check that the hole pipeline give the same result as torch-fidelity."""
     from torch_fidelity import calculate_metrics
 
     metric = InceptionScore(splits=1, compute_on_cpu=compute_on_cpu).cuda()
@@ -129,17 +129,17 @@ def test_compare_is(tmpdir, compute_on_cpu):
     assert torch.allclose(tm_mean.cpu(), torch.tensor([torch_fid["inception_score_mean"]]), atol=1e-3)
 
 
-@pytest.mark.parametrize(
-    "normalize, expectation, message",
-    [
-        (True, does_not_raise(), None),
-        (False, pytest.raises(ValueError), "Expecting image as torch.Tensor with dtype=torch.uint8"),
-    ],
-)
-def test_normalize_arg(normalize, expectation, message):
+def test_normalize_arg_true():
     """Test that normalize argument works as expected."""
     img = torch.rand(2, 3, 299, 299)
-    metric = InceptionScore(normalize=normalize)
-    with expectation as e:
+    metric = InceptionScore(normalize=True)
+    with does_not_raise():
         metric.update(img)
-    assert message is None or message in str(e)
+
+
+def test_normalize_arg_false():
+    """Test that normalize argument works as expected."""
+    img = torch.rand(2, 3, 299, 299)
+    metric = InceptionScore(normalize=False)
+    with pytest.raises(ValueError, match="Expecting image as torch.Tensor with dtype=torch.uint8"):
+        metric.update(img)
