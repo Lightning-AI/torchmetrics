@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -83,6 +83,7 @@ repos:
       - id: yesqa
         additional_dependencies:
           - pep8-naming
+          - flake8-pytest-style
 
   - repo: https://github.com/charliermarsh/ruff-pre-commit
     rev: v0.0.237

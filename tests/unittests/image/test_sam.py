@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -112,7 +112,7 @@ def test_error_on_different_shape(metric_class=SpectralAngleMapper):
 
 def test_error_on_invalid_shape(metric_class=SpectralAngleMapper):
     metric = metric_class()
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011  # todo
         metric(torch.randn([3, 16, 16]), torch.randn([3, 16, 16]))
 
 
@@ -124,5 +124,5 @@ def test_error_on_invalid_type(metric_class=SpectralAngleMapper):
 
 def test_error_on_grayscale_image(metric_class=SpectralAngleMapper):
     metric = metric_class()
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011  # todo
         metric(torch.randn([16, 1, 16, 16]), torch.randn([16, 1, 16, 16]))

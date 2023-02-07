@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -65,8 +65,8 @@ class TestAUC(MetricTester):
         )
 
 
-@pytest.mark.parametrize("unsqueeze_x", (True, False))
-@pytest.mark.parametrize("unsqueeze_y", (True, False))
+@pytest.mark.parametrize("unsqueeze_x", [True, False])
+@pytest.mark.parametrize("unsqueeze_y", [True, False])
 @pytest.mark.parametrize(
     ["x", "y", "expected"],
     [

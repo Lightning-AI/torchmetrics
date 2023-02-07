@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -108,7 +108,7 @@ class TestTotalVariation(MetricTester):
 
 
 def test_correct_args():
-    """that that arguments have the right type and sizes."""
+    """That that arguments have the right type and sizes."""
     with pytest.raises(ValueError, match="Expected argument `reduction`.*"):
         _ = TotalVariation(reduction="diff")
 
