@@ -414,3 +414,4 @@ def hamming_distance(
         return multilabel_hamming_distance(
             preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
         )
+    raise ValueError(f"Not handled value: {task}")  # this is for compliant of mypy

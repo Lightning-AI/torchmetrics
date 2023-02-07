@@ -214,7 +214,7 @@ def multilabel_matthews_corrcoef(
 def matthews_corrcoef(
     preds: Tensor,
     target: Tensor,
-    task: Literal["binary", "multiclass", "multilabel"] = None,
+    task: Literal["binary", "multiclass", "multilabel"],
     threshold: float = 0.5,
     num_classes: Optional[int] = None,
     num_labels: Optional[int] = None,
@@ -245,3 +245,4 @@ def matthews_corrcoef(
     if task == ClassificationTask.MULTILABEL:
         assert isinstance(num_labels, int)
         return multilabel_matthews_corrcoef(preds, target, num_labels, threshold, ignore_index, validate_args)
+    raise ValueError(f"Not handled value: {task}")  # this is for compliant of mypy

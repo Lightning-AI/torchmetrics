@@ -429,3 +429,4 @@ def specicity_at_sensitivity(
         return multilabel_specificity_at_sensitivity(  # type: ignore
             preds, target, num_labels, min_sensitivity, thresholds, ignore_index, validate_args
         )
+    raise ValueError(f"Not handled value: {task}")  # this is for compliant of mypy

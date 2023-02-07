@@ -51,9 +51,7 @@ def _clip_score_update(
             f"Expected the number of images and text examples to be the same but got {len(images)} and {len(text)}"
         )
     device = images[0].device
-    processed_input = processor(
-        text=text, images=[i.cpu() for i in images], return_tensors="pt", padding=True
-    )  # type: ignore
+    processed_input = processor(text=text, images=[i.cpu() for i in images], return_tensors="pt", padding=True)
 
     img_features = model.get_image_features(processed_input["pixel_values"].to(device))
     img_features = img_features / img_features.norm(p=2, dim=-1, keepdim=True)

@@ -331,3 +331,4 @@ def jaccard_index(
     if task == ClassificationTask.MULTILABEL:
         assert isinstance(num_labels, int)
         return multilabel_jaccard_index(preds, target, num_labels, threshold, average, ignore_index, validate_args)
+    raise ValueError(f"Not handled value: {task}")  # this is for compliant of mypy

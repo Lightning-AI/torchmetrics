@@ -283,3 +283,4 @@ def hinge_loss(
     if task == ClassificationTaskNoMultilabel.MULTICLASS:
         assert isinstance(num_classes, int)
         return multiclass_hinge_loss(preds, target, num_classes, squared, multiclass_mode, ignore_index, validate_args)
+    raise ValueError(f"Not handled value: {task}")  # this is for compliant of mypy
