@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class KLDivergence(Metric):
-    r"""Computes the `KL divergence`_:
+    r"""Compute the `KL divergence`_:
 
     .. math::
         D_{KL}(P||Q) = \sum_{x\in\mathcal{X}} P(x) \log\frac{P(x)}{Q{x}}

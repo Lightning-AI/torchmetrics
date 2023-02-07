@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -44,10 +44,7 @@ def _cohen_kappa_reduce(confmat: Tensor, weights: Optional[Literal["linear", "qu
     elif weights in ("linear", "quadratic"):
         w_mat = torch.zeros_like(confmat)
         w_mat += torch.arange(n_classes, dtype=w_mat.dtype, device=w_mat.device)
-        if weights == "linear":
-            w_mat = torch.abs(w_mat - w_mat.T)
-        else:
-            w_mat = torch.pow(w_mat - w_mat.T, 2.0)
+        w_mat = torch.abs(w_mat - w_mat.T) if weights == "linear" else torch.pow(w_mat - w_mat.T, 2.0)
     else:
         raise ValueError(
             f"Received {weights} for argument ``weights`` but should be either" " None, 'linear' or 'quadratic'"
@@ -81,7 +78,7 @@ def binary_cohen_kappa(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculates `Cohen's kappa score`_ that measures inter-annotator agreement for binary tasks. It is defined
+    r"""Calculate `Cohen's kappa score`_ that measures inter-annotator agreement for binary tasks. It is defined
     as.
 
     .. math::
@@ -164,7 +161,7 @@ def multiclass_cohen_kappa(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculates `Cohen's kappa score`_ that measures inter-annotator agreement for multiclass tasks. It is
+    r"""Calculate `Cohen's kappa score`_ that measures inter-annotator agreement for multiclass tasks. It is
     defined as.
 
     .. math::
@@ -237,7 +234,7 @@ def cohen_kappa(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculates `Cohen's kappa score`_ that measures inter-annotator agreement. It is defined as.
+    r"""Calculate `Cohen's kappa score`_ that measures inter-annotator agreement. It is defined as.
 
     .. math::
         \kappa = (p_o - p_e) / (1 - p_e)

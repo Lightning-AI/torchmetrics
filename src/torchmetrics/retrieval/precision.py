@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ from torchmetrics.retrieval.base import RetrievalMetric
 
 
 class RetrievalPrecision(RetrievalMetric):
-    """Computes `IR Precision`_.
+    """Compute `IR Precision`_.
 
     Works with binary target data. Accepts float predictions from a model output.
 

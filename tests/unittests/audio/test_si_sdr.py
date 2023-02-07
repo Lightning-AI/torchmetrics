@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -86,7 +86,7 @@ class TestSISDR(MetricTester):
             ScaleInvariantSignalDistortionRatio,
             reference_metric=partial(average_metric, metric_func=ref_metric),
             dist_sync_on_step=dist_sync_on_step,
-            metric_args=dict(zero_mean=zero_mean),
+            metric_args={"zero_mean": zero_mean},
         )
 
     def test_si_sdr_functional(self, preds, target, ref_metric, zero_mean):
@@ -95,7 +95,7 @@ class TestSISDR(MetricTester):
             target,
             scale_invariant_signal_distortion_ratio,
             ref_metric,
-            metric_args=dict(zero_mean=zero_mean),
+            metric_args={"zero_mean": zero_mean},
         )
 
     def test_si_sdr_differentiability(self, preds, target, ref_metric, zero_mean):

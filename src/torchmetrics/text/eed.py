@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ from torchmetrics.metric import Metric
 
 
 class ExtendedEditDistance(Metric):
-    """Computes extended edit distance score (`ExtendedEditDistance`_) for strings or list of strings.
+    """Compute extended edit distance score (`ExtendedEditDistance`_) for strings or list of strings.
 
     The metric utilises the Levenshtein distance and extends it by adding a jump operation.
 

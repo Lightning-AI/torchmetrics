@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import contextlib
 import pickle
 import sys
 from functools import partial, wraps
@@ -24,10 +25,8 @@ from torch.multiprocessing import set_start_method
 from torchmetrics import Metric
 from unittests.helpers.testers import MetricTester, _assert_allclose, _assert_requires_grad, _assert_tensor
 
-try:
+with contextlib.suppress(RuntimeError):
     set_start_method("spawn")
-except RuntimeError:
-    pass
 
 
 TEXT_METRIC_INPUT = Union[Sequence[str], Sequence[Sequence[str]], Sequence[Sequence[Sequence[str]]]]
@@ -222,11 +221,11 @@ def _assert_half_support(
 
 
 class TextTester(MetricTester):
-    """Class used for efficiently run alot of parametrized tests in ddp mode. Makes sure that ddp is only setup
-    once and that pool of processes are used for all tests.
+    """Tester class for text.
 
-    All tests for text metrics should subclass from this and implement a new method called `test_metric_name` where the
-    method `self.run_metric_test` is called inside.
+    Class used for efficiently run alot of parametrized tests in ddp mode. Makes sure that ddp is only setup once and
+    that pool of processes are used for all tests. All tests for text metrics should subclass from this and implement
+    a new method called `test_metric_name` where the method `self.run_metric_test` is called inside.
     """
 
     def run_functional_metric_test(
@@ -363,7 +362,8 @@ class TextTester(MetricTester):
         metric_args: dict = None,
         **kwargs_update,
     ):
-        """Test if a metric can be used with half precision tensors on cpu
+        """Test if a metric can be used with half precision tensors on cpu.
+
         Args:
             preds: torch tensor with predictions
             targets: torch tensor with targets
@@ -387,7 +387,8 @@ class TextTester(MetricTester):
         metric_args: dict = None,
         **kwargs_update,
     ):
-        """Test if a metric can be used with half precision tensors on gpu
+        """Test if a metric can be used with half precision tensors on gpu.
+
         Args:
             preds: torch tensor with predictions
             targets: torch tensor with targets

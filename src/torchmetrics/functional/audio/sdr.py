@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -98,7 +98,7 @@ def signal_distortion_ratio(
     zero_mean: bool = False,
     load_diag: Optional[float] = None,
 ) -> Tensor:
-    r"""Calculates Signal to Distortion Ratio (SDR) metric. See `SDR ref1`_ and `SDR ref2`_ for details on the
+    r"""Calculate Signal to Distortion Ratio (SDR) metric. See `SDR ref1`_ and `SDR ref2`_ for details on the
     metric.
 
     .. note:
@@ -177,15 +177,14 @@ def signal_distortion_ratio(
         # use preconditioned conjugate gradient
         sol = toeplitz_conjugate_gradient(r_0, b, n_iter=use_cg_iter)
     else:
-        if use_cg_iter is not None:
-            if not _FAST_BSS_EVAL_AVAILABLE:
-                warnings.warn(
-                    "The `use_cg_iter` parameter of `SDR` requires that `fast-bss-eval` is installed. "
-                    "To make this this warning disappear, you could install `fast-bss-eval` using "
-                    "`pip install fast-bss-eval` or set `use_cg_iter=None`. For this time, the solver "
-                    "provided by Pytorch is used.",
-                    UserWarning,
-                )
+        if use_cg_iter is not None and not _FAST_BSS_EVAL_AVAILABLE:
+            warnings.warn(
+                "The `use_cg_iter` parameter of `SDR` requires that `fast-bss-eval` is installed. "
+                "To make this this warning disappear, you could install `fast-bss-eval` using "
+                "`pip install fast-bss-eval` or set `use_cg_iter=None`. For this time, the solver "
+                "provided by Pytorch is used.",
+                UserWarning,
+            )
         # regular matrix solver
         r = _symmetric_toeplitz(r_0)  # the auto-correlation of the L shifts of `target`
         sol = solve(r, b)

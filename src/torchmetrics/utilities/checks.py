@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -68,14 +68,13 @@ def _basic_input_validation(
 
 
 def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> Tuple[DataType, int]:
-    """This checks that the shape and type of inputs are consistent with each other and fall into one of the
+    """Check that the shape and type of inputs are consistent with each other and fall into one of the
     allowed input types (see the documentation of docstring of ``_input_format_classification``). It does not check
     for consistency of number of classes, other functions take care of that.
 
     It returns the name of the case in which the inputs fall, and the implied number of classes (from the ``C`` dim for
     multi-class data, or extra dim(s) for multi-label data).
     """
-
     preds_float = preds.is_floating_point()
 
     if preds.ndim == target.ndim:
@@ -111,10 +110,7 @@ def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> Tuple[Da
 
         implied_classes = preds.shape[1] if preds.numel() > 0 else 0
 
-        if preds.ndim == 2:
-            case = DataType.MULTICLASS
-        else:
-            case = DataType.MULTIDIM_MULTICLASS
+        case = DataType.MULTICLASS if preds.ndim == 2 else DataType.MULTIDIM_MULTICLASS
     else:
         raise ValueError(
             "Either `preds` and `target` both should have the (same) shape (N, ...), or `target` should be (N, ...)"
@@ -125,8 +121,7 @@ def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> Tuple[Da
 
 
 def _check_num_classes_binary(num_classes: int, multiclass: Optional[bool]) -> None:
-    """This checks that the consistency of `num_classes` with the data and `multiclass` param for binary data."""
-
+    """Check that the consistency of `num_classes` with the data and `multiclass` param for binary data."""
     if num_classes > 2:
         raise ValueError("Your data is binary, but `num_classes` is larger than 2.")
     if num_classes == 2 and not multiclass:
@@ -149,9 +144,9 @@ def _check_num_classes_mc(
     multiclass: Optional[bool],
     implied_classes: int,
 ) -> None:
-    """This checks that the consistency of `num_classes` with the data and `multiclass` param for (multi-
-    dimensional) multi-class data."""
-
+    """Check that the consistency of `num_classes` with the data and `multiclass` param for (multi-
+    dimensional) multi-class data.
+    """
     if num_classes == 1 and multiclass is not False:
         raise ValueError(
             "You have set `num_classes=1`, but predictions are integers."
@@ -174,9 +169,9 @@ def _check_num_classes_mc(
 
 
 def _check_num_classes_ml(num_classes: int, multiclass: Optional[bool], implied_classes: int) -> None:
-    """This checks that the consistency of ``num_classes`` with the data and ``multiclass`` param for multi-label
-    data."""
-
+    """Check that the consistency of ``num_classes`` with the data and ``multiclass`` param for multi-label
+    data.
+    """
     if multiclass and num_classes != 2:
         raise ValueError(
             "Your have set `multiclass=True`, but `num_classes` is not equal to 2."
@@ -265,7 +260,6 @@ def _check_classification_inputs(
         case: The case the inputs fall in, one of 'binary', 'multi-class', 'multi-label' or
             'multi-dim multi-class'
     """
-
     # Basic validation (that does not need case/type information)
     _basic_input_validation(preds, target, threshold, multiclass, ignore_index)
 
@@ -326,17 +320,17 @@ def _input_format_classification(
     Preds and targets are supposed to fall into one of these categories (and are
     validated to make sure this is the case):
 
-    * Both preds and target are of shape ``(N,)``, and both are integers (multi-class)
-    * Both preds and target are of shape ``(N,)``, and target is binary, while preds
-      are a float (binary)
-    * preds are of shape ``(N, C)`` and are floats, and target is of shape ``(N,)`` and
-      is integer (multi-class)
-    * preds and target are of shape ``(N, ...)``, target is binary and preds is a float
-      (multi-label)
-    * preds are of shape ``(N, C, ...)`` and are floats, target is of shape ``(N, ...)``
-      and is integer (multi-dimensional multi-class)
-    * preds and target are of shape ``(N, ...)`` both are integers (multi-dimensional
-      multi-class)
+        * Both preds and target are of shape ``(N,)``, and both are integers (multi-class)
+        * Both preds and target are of shape ``(N,)``, and target is binary, while preds
+          are a float (binary)
+        * preds are of shape ``(N, C)`` and are floats, and target is of shape ``(N,)`` and
+          is integer (multi-class)
+        * preds and target are of shape ``(N, ...)``, target is binary and preds is a float
+          (multi-label)
+        * preds are of shape ``(N, C, ...)`` and are floats, target is of shape ``(N, ...)``
+          and is integer (multi-dimensional multi-class)
+        * preds and target are of shape ``(N, ...)`` both are integers (multi-dimensional
+          multi-class)
 
     To avoid ambiguities, all dimensions of size 1, except the first one, are squeezed out.
 
@@ -621,7 +615,7 @@ def _allclose_recursive(res1: Any, res2: Any, atol: float = 1e-6) -> bool:
     elif isinstance(res1, Sequence):
         return all(_allclose_recursive(r1, r2) for r1, r2 in zip(res1, res2))
     elif isinstance(res1, Mapping):
-        return all(_allclose_recursive(res1[k], res2[k]) for k in res1.keys())
+        return all(_allclose_recursive(res1[k], res2[k]) for k in res1)
     return res1 == res2
 
 

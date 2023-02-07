@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -82,7 +82,7 @@ class _AbstractStatScores(Metric):
 
 
 class BinaryStatScores(_AbstractStatScores):
-    r"""Computes the number of true positives, false positives, true negatives, false negatives and the support for
+    r"""Compute the number of true positives, false positives, true negatives, false negatives and the support for
     binary tasks. Related to `Type I and Type II errors`_.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
@@ -175,13 +175,13 @@ class BinaryStatScores(_AbstractStatScores):
         self._update_state(tp, fp, tn, fn)
 
     def compute(self) -> Tensor:
-        """Computes the final statistics."""
+        """Compute the final statistics."""
         tp, fp, tn, fn = self._final_state()
         return _binary_stat_scores_compute(tp, fp, tn, fn, self.multidim_average)
 
 
 class MulticlassStatScores(_AbstractStatScores):
-    r"""Computes the number of true positives, false positives, true negatives, false negatives and the support for
+    r"""Compute the number of true positives, false positives, true negatives, false negatives and the support for
     multiclass tasks. Related to `Type I and Type II errors`_.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
@@ -212,8 +212,8 @@ class MulticlassStatScores(_AbstractStatScores):
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
         top_k:
             Number of highest probability or logit score predictions considered to find the correct label.
             Only works when ``preds`` contain probabilities/logits.
@@ -318,13 +318,13 @@ class MulticlassStatScores(_AbstractStatScores):
         self._update_state(tp, fp, tn, fn)
 
     def compute(self) -> Tensor:
-        """Computes the final statistics."""
+        """Compute the final statistics."""
         tp, fp, tn, fn = self._final_state()
         return _multiclass_stat_scores_compute(tp, fp, tn, fn, self.average, self.multidim_average)
 
 
 class MultilabelStatScores(_AbstractStatScores):
-    r"""Computes the number of true positives, false positives, true negatives, false negatives and the support for
+    r"""Compute the number of true positives, false positives, true negatives, false negatives and the support for
     multilabel tasks. Related to `Type I and Type II errors`_.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
@@ -355,8 +355,8 @@ class MultilabelStatScores(_AbstractStatScores):
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
 
         multidim_average:
             Defines how additionally dimensions ``...`` should be handled. Should be one of the following:
@@ -455,13 +455,13 @@ class MultilabelStatScores(_AbstractStatScores):
         self._update_state(tp, fp, tn, fn)
 
     def compute(self) -> Tensor:
-        """Computes the final statistics."""
+        """Compute the final statistics."""
         tp, fp, tn, fn = self._final_state()
         return _multilabel_stat_scores_compute(tp, fp, tn, fn, self.average, self.multidim_average)
 
 
 class StatScores:
-    r"""Computes the number of true positives, false positives, true negatives, false negatives and the support.
+    r"""Compute the number of true positives, false positives, true negatives, false negatives and the support.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
@@ -496,7 +496,9 @@ class StatScores:
         **kwargs: Any,
     ) -> Metric:
         assert multidim_average is not None
-        kwargs.update(dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args))
+        kwargs.update(
+            {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
+        )
         if task == "binary":
             return BinaryStatScores(threshold, **kwargs)
         if task == "multiclass":

@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ from torchmetrics.metric import Metric
 
 
 class BinaryMatthewsCorrCoef(BinaryConfusionMatrix):
-    r"""Calculates `Matthews correlation coefficient`_ for binary tasks. This metric measures the general
+    r"""Calculate `Matthews correlation coefficient`_ for binary tasks. This metric measures the general
     correlation or quality of a classification.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
@@ -83,7 +83,7 @@ class BinaryMatthewsCorrCoef(BinaryConfusionMatrix):
 
 
 class MulticlassMatthewsCorrCoef(MulticlassConfusionMatrix):
-    r"""Calculates `Matthews correlation coefficient`_ for multiclass tasks. This metric measures the general
+    r"""Calculate `Matthews correlation coefficient`_ for multiclass tasks. This metric measures the general
     correlation or quality of a classification.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
@@ -147,7 +147,7 @@ class MulticlassMatthewsCorrCoef(MulticlassConfusionMatrix):
 
 
 class MultilabelMatthewsCorrCoef(MultilabelConfusionMatrix):
-    r"""Calculates `Matthews correlation coefficient`_ for multilabel tasks. This metric measures the general
+    r"""Calculate `Matthews correlation coefficient`_ for multilabel tasks. This metric measures the general
     correlation or quality of a classification.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
@@ -210,7 +210,7 @@ class MultilabelMatthewsCorrCoef(MultilabelConfusionMatrix):
 
 
 class MatthewsCorrCoef:
-    r"""Calculates `Matthews correlation coefficient`_ . This metric measures the general correlation or quality of
+    r"""Calculate `Matthews correlation coefficient`_ . This metric measures the general correlation or quality of
     a classification.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
@@ -237,7 +237,7 @@ class MatthewsCorrCoef:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
-        kwargs.update(dict(ignore_index=ignore_index, validate_args=validate_args))
+        kwargs.update({"ignore_index": ignore_index, "validate_args": validate_args})
         if task == "binary":
             return BinaryMatthewsCorrCoef(threshold, **kwargs)
         if task == "multiclass":

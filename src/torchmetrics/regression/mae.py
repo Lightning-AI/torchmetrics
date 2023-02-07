@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ from torchmetrics.metric import Metric
 
 
 class MeanAbsoluteError(Metric):
-    r"""`Computes Mean Absolute Error`_ (MAE):
+    r"""`Compute Mean Absolute Error`_ (MAE):
 
     .. math:: \text{MAE} = \frac{1}{N}\sum_i^N | y_i - \hat{y_i} |
 
@@ -70,5 +70,5 @@ class MeanAbsoluteError(Metric):
         self.total += n_obs
 
     def compute(self) -> Tensor:
-        """Computes mean absolute error over state."""
+        """Compute mean absolute error over state."""
         return _mean_absolute_error_compute(self.sum_abs_error, self.total)

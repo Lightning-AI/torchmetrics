@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -70,7 +70,7 @@ class TestFallOut(RetrievalMetricTester):
         ignore_index: int,
         k: int,
     ):
-        metric_args = dict(empty_target_action=empty_target_action, k=k, ignore_index=ignore_index)
+        metric_args = {"empty_target_action": empty_target_action, "k": k, "ignore_index": ignore_index}
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -99,7 +99,7 @@ class TestFallOut(RetrievalMetricTester):
         empty_target_action: str,
         k: int,
     ):
-        metric_args = dict(empty_target_action=empty_target_action, k=k, ignore_index=-100)
+        metric_args = {"empty_target_action": empty_target_action, "k": k, "ignore_index": -100}
 
         self.run_class_metric_test(
             ddp=ddp,

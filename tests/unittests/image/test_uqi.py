@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -112,7 +112,7 @@ class TestUQI(MetricTester):
 
 
 @pytest.mark.parametrize(
-    ["pred", "target", "kernel", "sigma"],
+    ("pred", "target", "kernel", "sigma"),
     [
         ([1, 16, 16], [1, 16, 16], [11, 11], [1.5, 1.5]),  # len(shape)
         ([1, 1, 16, 16], [1, 1, 16, 16], [11, 11], [1.5]),  # len(kernel), len(sigma)
@@ -133,12 +133,12 @@ def test_uqi_invalid_inputs(pred, target, kernel, sigma):
 
     pred = torch.rand(pred)
     target = torch.rand(target)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011  # todo
         universal_image_quality_index(pred, target, kernel, sigma)
 
 
 def test_uqi_unequal_kernel_size():
-    """Test the case where kernel_size[0] != kernel_size[1]"""
+    """Test the case where kernel_size[0] != kernel_size[1]."""
     preds = torch.tensor(
         [
             [

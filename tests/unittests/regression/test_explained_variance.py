@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -71,7 +71,7 @@ class TestExplainedVariance(MetricTester):
             ExplainedVariance,
             partial(ref_metric, sk_fn=partial(explained_variance_score, multioutput=multioutput)),
             dist_sync_on_step,
-            metric_args=dict(multioutput=multioutput),
+            metric_args={"multioutput": multioutput},
         )
 
     def test_explained_variance_functional(self, multioutput, preds, target, ref_metric):
@@ -80,7 +80,7 @@ class TestExplainedVariance(MetricTester):
             target,
             explained_variance,
             partial(ref_metric, sk_fn=partial(explained_variance_score, multioutput=multioutput)),
-            metric_args=dict(multioutput=multioutput),
+            metric_args={"multioutput": multioutput},
         )
 
     def test_explained_variance_differentiability(self, multioutput, preds, target, ref_metric):

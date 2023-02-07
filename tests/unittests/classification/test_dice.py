@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -51,6 +51,7 @@ def _scipy_dice(
         target: target tensor
         ignore_index:
             Integer specifying a target class to ignore. Recommend set to index of background class.
+
     Return:
         Float dice score
     """
@@ -66,7 +67,7 @@ def _scipy_dice(
 
 
 @pytest.mark.parametrize(
-    ["pred", "target", "expected"],
+    ("pred", "target", "expected"),
     [
         ([[0, 0], [1, 1]], [[0, 0], [1, 1]], 1.0),
         ([[1, 1], [0, 0]], [[0, 0], [1, 1]], 0.0),

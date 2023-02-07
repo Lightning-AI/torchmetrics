@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -105,11 +105,11 @@ def test_metric_collection_wrong_input(tmpdir):
     dms = DummyMetricSum()
 
     # Not all input are metrics (list)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011  # todo
         _ = MetricCollection([dms, 5])
 
     # Not all input are metrics (dict)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011  # todo
         _ = MetricCollection({"metric1": dms, "metric2": 5})
 
     # Same metric passed in multiple times
@@ -122,8 +122,7 @@ def test_metric_collection_wrong_input(tmpdir):
 
 
 def test_metric_collection_args_kwargs(tmpdir):
-    """Check that args and kwargs gets passed correctly in metric collection, Checks both update and forward
-    method."""
+    """Check that args and kwargs gets passed correctly in metric collection, checks both update and forward."""
     m1 = DummyMetricSum()
     m2 = DummyMetricDiff()
 
@@ -150,12 +149,12 @@ def test_metric_collection_args_kwargs(tmpdir):
 
 
 @pytest.mark.parametrize(
-    "prefix, postfix",
+    ("prefix", "postfix"),
     [
-        [None, None],
-        ["prefix_", None],
-        [None, "_postfix"],
-        ["prefix_", "_postfix"],
+        (None, None),
+        ("prefix_", None),
+        (None, "_postfix"),
+        ("prefix_", "_postfix"),
     ],
 )
 def test_metric_collection_prefix_postfix_args(prefix, postfix):
@@ -188,8 +187,11 @@ def test_metric_collection_prefix_postfix_args(prefix, postfix):
     for k, _ in new_metric_collection.items():
         assert "new_prefix_" in k
 
-    for k in new_metric_collection.keys():
+    for k in new_metric_collection.keys(keep_base=False):
         assert "new_prefix_" in k
+
+    for k in new_metric_collection:
+        assert "new_prefix_" not in k
 
     for k, _ in new_metric_collection.items(keep_base=True):
         assert "new_prefix_" not in k
@@ -256,7 +258,8 @@ def test_collection_add_metrics():
 
     collection.update(5)
     results = collection.compute()
-    assert results["DummyMetricSum"] == results["m1_"] and results["m1_"] == 5
+    assert results["DummyMetricSum"] == results["m1_"]
+    assert results["m1_"] == 5
     assert results["DummyMetricDiff"] == -5
 
 
@@ -399,12 +402,12 @@ _ml_target = torch.randint(2, (10, 3))
 )
 class TestComputeGroups:
     @pytest.mark.parametrize(
-        "prefix, postfix",
+        ("prefix", "postfix"),
         [
-            [None, None],
-            ["prefix_", None],
-            [None, "_postfix"],
-            ["prefix_", "_postfix"],
+            (None, None),
+            ("prefix_", None),
+            (None, "_postfix"),
+            ("prefix_", "_postfix"),
         ],
     )
     def test_check_compute_groups_correctness(self, metrics, expected, preds, target, prefix, postfix):
@@ -438,7 +441,7 @@ class TestComputeGroups:
             # compare results for correctness
             res_cg = m.compute()
             res_without_cg = m2.compute()
-            for key in res_cg.keys():
+            for key in res_cg:
                 assert torch.allclose(res_cg[key], res_without_cg[key])
 
             m.reset()
@@ -446,8 +449,7 @@ class TestComputeGroups:
 
     @pytest.mark.parametrize("method", ["items", "values", "keys"])
     def test_check_compute_groups_items_and_values(self, metrics, expected, preds, target, method):
-        """Check that whenever user call a methods that give access to the indivitual metric that state are copied
-        instead of just passed by reference."""
+        """Check states are copied instead of passed by ref when a single metric in the collection is access."""
         m = MetricCollection(deepcopy(metrics), compute_groups=True)
         m2 = MetricCollection(deepcopy(metrics), compute_groups=False)
 
@@ -471,7 +473,7 @@ class TestComputeGroups:
                 for metric_cg, metric_no_cg in zip(m.values(), m2.values()):
                     _compare(metric_cg, metric_no_cg)
             if method == "keys":
-                for key in m.keys():
+                for key in m:
                     metric_cg, metric_no_cg = m[key], m2[key]
                     _compare(metric_cg, metric_no_cg)
 

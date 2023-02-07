@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -64,8 +64,9 @@ class BaseAggregator(Metric):
         self.add_state("value", default=default_value, dist_reduce_fx=fn)
 
     def _cast_and_nan_check_input(self, x: Union[float, Tensor]) -> Tensor:
-        """Converts input x to a tensor if not already and afterwards checks for nans that either give an error,
-        warning or just ignored."""
+        """Convert  input x to a tensor if not already and afterwards checks for nans that either give an error,
+        warning or just ignored.
+        """
         if not isinstance(x, Tensor):
             x = torch.as_tensor(x, dtype=torch.float32, device=self.device)
 

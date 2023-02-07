@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ def test_reduce():
     assert torch.allclose(reduce(start_tensor, "sum"), torch.sum(start_tensor))
     assert torch.allclose(reduce(start_tensor, "none"), start_tensor)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011  # todo
         reduce(start_tensor, "error_reduction")
 
 
@@ -110,7 +110,7 @@ def test_flatten_dict():
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires gpu")
 def test_bincount():
-    """test that bincount works in deterministic setting on GPU."""
+    """Test that bincount works in deterministic setting on GPU."""
     torch.use_deterministic_algorithms(True)
 
     x = torch.randint(10, size=(100,))
@@ -130,12 +130,12 @@ def test_bincount():
     assert torch.allclose(res1, res3)
 
 
-@pytest.mark.parametrize("metric_class, expected", [(MeanSquaredError, False), (PearsonCorrCoef, True)])
+@pytest.mark.parametrize(("metric_class", "expected"), [(MeanSquaredError, False), (PearsonCorrCoef, True)])
 def test_check_full_state_update_fn(capsys, metric_class, expected):
     """Test that the check function works as it should."""
     check_forward_full_state_property(
         metric_class=metric_class,
-        input_args=dict(preds=torch.randn(1000), target=torch.randn(1000)),
+        input_args={"preds": torch.randn(1000), "target": torch.randn(1000)},
         num_update_to_compare=[10000],
         reps=5,
     )
@@ -144,7 +144,7 @@ def test_check_full_state_update_fn(capsys, metric_class, expected):
 
 
 @pytest.mark.parametrize(
-    "input, expected",
+    ("input", "expected"),
     [
         ((torch.ones(2), torch.ones(2)), True),
         ((torch.rand(2), torch.rand(2)), False),
