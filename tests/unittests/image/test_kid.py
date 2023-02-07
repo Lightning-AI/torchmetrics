@@ -107,7 +107,7 @@ def test_kid_extra_parameters():
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 @pytest.mark.parametrize("feature", [64, 192, 768, 2048])
 def test_kid_same_input(feature):
-    """test that the metric works."""
+    """Test that the metric works."""
     metric = KernelInceptionDistance(feature=feature, subsets=5, subset_size=2)
 
     for _ in range(2):
@@ -136,7 +136,7 @@ class _ImgDataset(Dataset):
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test is too slow without gpu")
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 def test_compare_kid(tmpdir, feature=2048):
-    """check that the hole pipeline give the same result as torch-fidelity."""
+    """Check that the hole pipeline give the same result as torch-fidelity."""
     from torch_fidelity import calculate_metrics
 
     metric = KernelInceptionDistance(feature=feature, subsets=1, subset_size=100).cuda()
