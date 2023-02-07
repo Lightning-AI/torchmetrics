@@ -38,7 +38,7 @@ _multilabel_randint_input = lambda: torch.randint(2, (10, 3))
 
 
 @pytest.mark.parametrize(
-    "metric_class, preds, target",
+    ("metric_class", "preds", "target"),
     [
         pytest.param(
             BinaryAccuracy,
@@ -91,7 +91,7 @@ def test_single_multi_val_plot_methods(metric_class, preds, target, num_vals):
 
 
 @pytest.mark.parametrize(
-    "metric_class, preds, target, labels",
+    ("metric_class", "preds", "target", "labels"),
     [
         pytest.param(
             BinaryConfusionMatrix,
