@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -94,9 +94,10 @@ def _get_characters(sentence: str, whitespace: bool) -> List[str]:
 
 
 def _separate_word_and_punctiation(word: str) -> List[str]:
-    """
-    Separates out punctuations from beginning and end of words for chrF. Adapted from https://github.com/m-popovic/chrF
-    and https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/chrf.py.
+    """Separates out punctuations from beginning and end of words for chrF. Adapted from
+    https://github.com/m-popovic/chrF and
+    https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/chrf.py.
+
     Args:
         word: An input word to be separated from a punctuation if present.
 
@@ -126,8 +127,7 @@ def _get_words_and_punctiation(sentence: str) -> List[str]:
 
 
 def _ngram_counts(char_or_word_list: List[str], n_gram_order: int) -> Dict[int, Dict[Tuple[str, ...], Tensor]]:
-    """
-    Args:
+    """Args:
         char_or_word_list: A list of characters of words
         n_gram_order: The largest number of n-gram.
 
@@ -149,8 +149,7 @@ def _get_n_grams_counts_and_total_ngrams(
     Dict[int, Tensor],
     Dict[int, Tensor],
 ]:
-    """
-    Args:
+    """Args:
         sentence: An input sentence
         n_char_order: A character n-gram order.
         n_word_order: A word n-gram order.
@@ -328,7 +327,6 @@ def _calculate_sentence_level_chrf_score(
         target_char_n_grams: A total number of reference character n-grams.
         target_word_n_grams: A total number of reference word n-grams.
     """
-
     best_f_score = tensor(0.0)
     best_matching_char_n_grams: Dict[int, Tensor] = defaultdict(lambda: tensor(0.0))
     best_matching_word_n_grams: Dict[int, Tensor] = defaultdict(lambda: tensor(0.0))
@@ -397,8 +395,7 @@ def _chrf_score_update(
     Dict[int, Tensor],
     Optional[List[Tensor]],
 ]:
-    """
-    Args:
+    """Args:
         preds: An iterable of hypothesis corpus.
         target: An iterable of iterables of reference corpus.
         total_preds_char_n_grams: A dictionary containing a total number of hypothesis character n-grams.

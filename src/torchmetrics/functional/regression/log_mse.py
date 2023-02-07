@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ def _mean_squared_log_error_update(preds: Tensor, target: Tensor) -> Tuple[Tenso
         preds: Predicted tensor
         target: Ground truth tensor
     """
-
     _check_same_shape(preds, target)
     sum_squared_log_error = torch.sum(torch.pow(torch.log1p(preds) - torch.log1p(target), 2))
     n_obs = target.numel()
@@ -34,7 +33,7 @@ def _mean_squared_log_error_update(preds: Tensor, target: Tensor) -> Tuple[Tenso
 
 
 def _mean_squared_log_error_compute(sum_squared_log_error: Tensor, n_obs: int) -> Tensor:
-    """Computes Mean Squared Log Error.
+    """Compute Mean Squared Log Error.
 
     Args:
         sum_squared_log_error:
@@ -48,12 +47,11 @@ def _mean_squared_log_error_compute(sum_squared_log_error: Tensor, n_obs: int) -
         >>> _mean_squared_log_error_compute(sum_squared_log_error, n_obs)
         tensor(0.0207)
     """
-
     return sum_squared_log_error / n_obs
 
 
 def mean_squared_log_error(preds: Tensor, target: Tensor) -> Tensor:
-    """Computes mean squared log error.
+    """Compute mean squared log error.
 
     Args:
         preds: estimated labels

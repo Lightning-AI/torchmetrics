@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -41,7 +41,9 @@ seed_all(42)
 
 
 def get_group_indexes(indexes: Union[Tensor, np.ndarray]) -> List[Union[Tensor, np.ndarray]]:
-    """Given an integer :class:`~torch.Tensor` or `np.ndarray` `indexes`, return a :class:`~torch.Tensor` or
+    """Extract group indexes.
+
+    Given an integer :class:`~torch.Tensor` or `np.ndarray` `indexes`, return a :class:`~torch.Tensor` or
     `np.ndarray` of indexes for each different value in `indexes`.
 
     Args:
@@ -79,7 +81,6 @@ def _compute_sklearn_metric(
     **kwargs,
 ) -> Tensor:
     """Compute metric with multiple iterations over every query predictions set."""
-
     if indexes is None:
         indexes = np.full_like(preds, fill_value=0, dtype=np.int64)
     if isinstance(indexes, Tensor):
@@ -397,7 +398,7 @@ def _errors_test_class_metric(
     """
     metric_args = metric_args or {}
     kwargs_update = kwargs_update or {}
-    with pytest.raises(exception_type, match=message):
+    with pytest.raises(exception_type, match=message):  # noqa: PT012
         metric = metric_class(**metric_args)
         metric(preds, target, indexes=indexes, **kwargs_update)
 

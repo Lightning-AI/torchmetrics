@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ from torchmetrics.metric import Metric
 
 
 class TweedieDevianceScore(Metric):
-    r"""Computes the `Tweedie Deviance Score`_ between targets and predictions:
+    r"""Compute the `Tweedie Deviance Score`_ between targets and predictions:
 
     .. math::
         deviance\_score(\hat{y},y) =

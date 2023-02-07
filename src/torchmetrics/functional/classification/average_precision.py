@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -85,7 +85,7 @@ def binary_average_precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes the average precision (AP) score for binary tasks. The AP score summarizes a precision-recall curve
+    r"""Compute the average precision (AP) score for binary tasks. The AP score summarizes a precision-recall curve
     as an weighted mean of precisions at each threshold, with the difference in recall from the previous threshold
     as weight:
 
@@ -140,7 +140,6 @@ def binary_average_precision(
         >>> binary_average_precision(preds, target, thresholds=5)
         tensor(0.6667)
     """
-
     if validate_args:
         _binary_precision_recall_curve_arg_validation(thresholds, ignore_index)
         _binary_precision_recall_curve_tensor_validation(preds, target, ignore_index)
@@ -185,7 +184,7 @@ def multiclass_average_precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes the average precision (AP) score for multiclass tasks. The AP score summarizes a precision-recall
+    r"""Compute the average precision (AP) score for multiclass tasks. The AP score summarizes a precision-recall
     curve as an weighted mean of precisions at each threshold, with the difference in recall from the previous
     threshold as weight:
 
@@ -219,8 +218,8 @@ def multiclass_average_precision(
             Defines the reduction that is applied over classes. Should be one of the following:
 
             - ``macro``: Calculate score for each class and average them
-            - ``weighted``: Calculates score for each class and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates score for each class and applies no reduction
+            - ``weighted``: calculates score for each class and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates score for each class and applies no reduction
         thresholds:
             Can be one of:
 
@@ -314,7 +313,7 @@ def multilabel_average_precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes the average precision (AP) score for multilabel tasks. The AP score summarizes a precision-recall
+    r"""Compute the average precision (AP) score for multilabel tasks. The AP score summarizes a precision-recall
     curve as an weighted mean of precisions at each threshold, with the difference in recall from the previous
     threshold as weight:
 
@@ -349,8 +348,8 @@ def multilabel_average_precision(
 
             - ``micro``: Sum score over all labels
             - ``macro``: Calculate score for each label and average them
-            - ``weighted``: Calculates score for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates score for each label and applies no reduction
+            - ``weighted``: calculates score for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates score for each label and applies no reduction
         thresholds:
             Can be one of:
 
@@ -409,7 +408,7 @@ def average_precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[List[Tensor], Tensor]:
-    r"""Computes the average precision (AP) score. The AP score summarizes a precision-recall curve as an weighted
+    r"""Compute the average precision (AP) score. The AP score summarizes a precision-recall curve as an weighted
     mean of precisions at each threshold, with the difference in recall from the previous threshold as weight:
 
     .. math::

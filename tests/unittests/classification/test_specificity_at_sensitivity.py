@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -426,7 +426,7 @@ class TestMultilabelSpecificityAtSensitivity(MetricTester):
 )
 @pytest.mark.parametrize("thresholds", [None, 100, [0.3, 0.5, 0.7, 0.9], torch.linspace(0, 1, 10)])
 def test_valid_input_thresholds(metric, thresholds):
-    """test valid formats of the threshold argument."""
+    """Test valid formats of the threshold argument."""
     with pytest.warns(None) as record:
         metric(min_sensitivity=0.5, thresholds=thresholds)
     assert len(record) == 0

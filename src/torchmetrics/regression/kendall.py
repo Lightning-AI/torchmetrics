@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class KendallRankCorrCoef(Metric):
-    r"""Computes `Kendall Rank Correlation Coefficient`_:
+    r"""Compute `Kendall Rank Correlation Coefficient`_:
 
     .. math::
         tau_a = \frac{C - D}{C + D}
@@ -146,7 +146,8 @@ class KendallRankCorrCoef(Metric):
 
     def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
         """Compute Kendall rank correlation coefficient, and optionally p-value of corresponding statistical
-        test."""
+        test.
+        """
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         tau, p_value = _kendall_corrcoef_compute(preds, target, self.variant, self.alternative)

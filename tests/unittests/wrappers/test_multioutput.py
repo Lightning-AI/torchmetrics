@@ -109,8 +109,11 @@ class TestMultioutputWrapper(MetricTester):
     def test_multioutput_wrapper(
         self, base_metric_class, compare_metric, preds, target, num_outputs, ddp, dist_sync_on_step
     ):
-        """Test that the multioutput wrapper properly slices and computes outputs along the output dimension for
-        both classification and regression metrics."""
+        """Test correctness of implementation
+
+        Tests that the multioutput wrapper properly slices and computes outputs along the output dimension for both
+        classification and regression metrics, by comparing to the metric if they had been calculated sequentially.
+        """
         self.run_class_metric_test(
             ddp,
             preds,

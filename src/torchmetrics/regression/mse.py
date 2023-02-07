@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class MeanSquaredError(Metric):
-    r"""Computes `mean squared error`_ (MSE):
+    r"""Compute `mean squared error`_ (MSE):
 
     .. math:: \text{MSE} = \frac{1}{N}\sum_i^N(y_i - \hat{y_i})^2
 
@@ -79,7 +79,7 @@ class MeanSquaredError(Metric):
         self.total += n_obs
 
     def compute(self) -> Tensor:
-        """Computes mean squared error over state."""
+        """Compute mean squared error over state."""
         return _mean_squared_error_compute(self.sum_squared_error, self.total, squared=self.squared)
 
     def plot(

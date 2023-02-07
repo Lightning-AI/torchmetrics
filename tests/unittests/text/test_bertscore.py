@@ -58,7 +58,7 @@ targets_batched = [targets[0:2], targets[2:]]
 
 
 @pytest.mark.parametrize(
-    "preds,targets",
+    ("preds", "targets"),
     [(preds, targets)],
 )
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
@@ -76,7 +76,7 @@ def test_score_fn(preds, targets):
 
 
 @pytest.mark.parametrize(
-    "preds,targets",
+    ("preds", "targets"),
     [(preds, targets)],
 )
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
@@ -94,7 +94,7 @@ def test_score_fn_with_idf(preds, targets):
 
 
 @pytest.mark.parametrize(
-    "preds,targets",
+    ("preds", "targets"),
     [(preds, targets)],
 )
 @pytest.mark.parametrize("device", ["cpu", "cuda", None])
@@ -116,7 +116,7 @@ def test_score_fn_all_layers(preds, targets, device):
 
 
 @pytest.mark.parametrize(
-    "preds,targets",
+    ("preds", "targets"),
     [(preds, targets)],
 )
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
@@ -134,7 +134,7 @@ def test_score_fn_all_layers_with_idf(preds, targets):
 
 
 @pytest.mark.parametrize(
-    "preds,targets",
+    ("preds", "targets"),
     [(preds, targets)],
 )
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
@@ -169,7 +169,7 @@ def test_score_fn_all_layers_rescale_with_baseline(preds, targets):
 
 
 @pytest.mark.parametrize(
-    "preds,targets",
+    ("preds", "targets"),
     [(preds, targets)],
 )
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
@@ -204,7 +204,7 @@ def test_score_fn_rescale_with_baseline(preds, targets):
 
 
 @pytest.mark.parametrize(
-    "preds,targets",
+    ("preds", "targets"),
     [(preds, targets)],
 )
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
@@ -224,7 +224,7 @@ def test_score(preds, targets):
 
 
 @pytest.mark.parametrize(
-    "preds,targets",
+    ("preds", "targets"),
     [(preds, targets)],
 )
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
@@ -244,7 +244,7 @@ def test_score_with_idf(preds, targets):
 
 
 @pytest.mark.parametrize(
-    "preds,targets",
+    ("preds", "targets"),
     [(preds, targets)],
 )
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
@@ -264,7 +264,7 @@ def test_score_all_layers(preds, targets):
 
 
 @pytest.mark.parametrize(
-    "preds,targets",
+    ("preds", "targets"),
     [(preds, targets)],
 )
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
@@ -284,7 +284,7 @@ def test_score_all_layers_with_idf(preds, targets):
 
 
 @pytest.mark.parametrize(
-    "preds,targets",
+    ("preds", "targets"),
     [(preds_batched, targets_batched)],
 )
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
@@ -325,7 +325,7 @@ def _test_score_ddp_fn(rank, world_size, preds, targets):
 
 
 @pytest.mark.parametrize(
-    "preds,targets",
+    ("preds", "targets"),
     [(preds, targets)],
 )
 @pytest.mark.skipif(not (_BERTSCORE_AVAILABLE and dist.is_available()), reason="test requires bert_score")

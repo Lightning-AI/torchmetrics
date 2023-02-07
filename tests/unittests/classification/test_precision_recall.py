@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -312,7 +312,7 @@ _mc_k_preds = tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]])
 
 
 @pytest.mark.parametrize(
-    "metric_class, metric_fn", [(MulticlassPrecision, multiclass_precision), (MulticlassRecall, multiclass_recall)]
+    ("metric_class", "metric_fn"), [(MulticlassPrecision, multiclass_precision), (MulticlassRecall, multiclass_recall)]
 )
 @pytest.mark.parametrize(
     "k, preds, target, average, expected_prec, expected_recall",
@@ -332,7 +332,6 @@ def test_top_k(
     expected_recall: Tensor,
 ):
     """A simple test to check that top_k works as expected."""
-
     class_metric = metric_class(top_k=k, average=average, num_classes=3)
     class_metric.update(preds, target)
 

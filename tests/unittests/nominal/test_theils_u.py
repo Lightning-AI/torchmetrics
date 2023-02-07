@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -47,8 +47,8 @@ _input_logits = Input(
 )
 
 
-@pytest.fixture
-def _matrix_input():
+@pytest.fixture()
+def theils_u_matrix_input():
     matrix = torch.cat(
         [
             torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES * BATCH_SIZE, 1), dtype=torch.float),
@@ -157,8 +157,8 @@ class TestTheilsU(MetricTester):
 @pytest.mark.skipif(  # TODO: testing on CUDA fails with pandas 1.3.5, and newer is not available for python 3.7
     torch.cuda.is_available(), reason="Tests fail on CUDA with the most up-to-date available pandas"
 )
-@pytest.mark.parametrize("nan_strategy, nan_replace_value", [("replace", 1.0), ("drop", None)])
-def test_theils_u_matrix(_matrix_input, nan_strategy, nan_replace_value):
-    tm_score = theils_u_matrix(_matrix_input, nan_strategy, nan_replace_value)
-    reference_score = _dython_theils_u_matrix(_matrix_input, nan_strategy, nan_replace_value)
+@pytest.mark.parametrize(("nan_strategy", "nan_replace_value"), [("replace", 1.0), ("drop", None)])
+def test_theils_u_matrix(theils_u_matrix_input, nan_strategy, nan_replace_value):
+    tm_score = theils_u_matrix(theils_u_matrix_input, nan_strategy, nan_replace_value)
+    reference_score = _dython_theils_u_matrix(theils_u_matrix_input, nan_strategy, nan_replace_value)
     assert torch.allclose(tm_score, reference_score, atol=1e-6)

@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -86,7 +86,7 @@ def naive_implementation_pit_scipy(
 
 
 def _average_metric(preds: Tensor, target: Tensor, metric_func: Callable) -> Tensor:
-    """average the metric values.
+    """Average the metric values.
 
     Args:
         preds: predictions, shape[batch, spk, time]

@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ from torchmetrics.metric import Metric
 
 
 class PermutationInvariantTraining(Metric):
-    """Calculates `Permutation invariant training`_ (PIT) that can evaluate models for speaker independent multi-
+    """Calculate `Permutation invariant training`_ (PIT) that can evaluate models for speaker independent multi-
     talker speech separation in a permutation invariant way.
 
     As input to ``forward`` and ``update`` the metric accepts the following input
@@ -88,5 +88,5 @@ class PermutationInvariantTraining(Metric):
         self.total += pit_metric.numel()
 
     def compute(self) -> Tensor:
-        """Computes metric."""
+        """Compute metric."""
         return self.sum_pit_metric / self.total

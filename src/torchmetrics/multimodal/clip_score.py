@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ from torchmetrics import Metric
 
 
 class CLIPScore(Metric):
-    """`CLIP Score`_ is a reference free metric that can be used to evaluate the correlation between a generated
+    r"""`CLIP Score`_ is a reference free metric that can be used to evaluate the correlation between a generated
     caption for an image and the actual content of the image. It has been found to be highly correlated with human
     judgement. The metric is defined as:
 
@@ -84,7 +84,7 @@ class CLIPScore(Metric):
         self.add_state("n_samples", torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
 
     def update(self, images: Union[Tensor, List[Tensor]], text: Union[str, List[str]]) -> None:
-        """Updates CLIP score on a batch of images and text.
+        """Update CLIP score on a batch of images and text.
 
         Args:
             images: Either a single [N, C, H, W] tensor or a list of [C, H, W] tensors
@@ -101,5 +101,5 @@ class CLIPScore(Metric):
         self.n_samples += n_samples
 
     def compute(self) -> Tensor:
-        """Computes accumulated clip score."""
+        """Compute accumulated clip score."""
         return torch.max(self.score / self.n_samples, torch.zeros_like(self.score))
