@@ -30,7 +30,7 @@ from torchmetrics.metric import Metric
 
 
 class PanopticQuality(Metric):
-    r"""Computes the `Panoptic Quality`_ for panoptic segmentations. It is defined as:
+    r"""Compute the `Panoptic Quality`_ for panoptic segmentations.
 
     .. math::
         PQ = \frac{IOU}{TP + 0.5 FP + 0.5 FN}
@@ -52,16 +52,17 @@ class PanopticQuality(Metric):
             If ``things``, ``stuffs`` share the same ``category_id``.
 
     Example:
-        >>> pred = torch.tensor([[[6, 0], [0, 0], [6, 0], [6, 0]],
-        ...                      [[0, 0], [0, 0], [6, 0], [0, 1]],
-        ...                      [[0, 0], [0, 0], [6, 0], [0, 1]],
-        ...                      [[0, 0], [7, 0], [6, 0], [1, 0]],
-        ...                      [[0, 0], [7, 0], [7, 0], [7, 0]]])
-        >>> target = torch.tensor([[[6, 0], [0, 1], [6, 0], [0, 1]],
-        ...                        [[0, 1], [0, 1], [6, 0], [0, 1]],
-        ...                        [[0, 1], [0, 1], [6, 0], [1, 0]],
-        ...                        [[0, 1], [7, 0], [1, 0], [1, 0]],
-        ...                        [[0, 1], [7, 0], [7, 0], [7, 0]]])
+        >>> from torch import tensor
+        >>> pred = tensor([[[6, 0], [0, 0], [6, 0], [6, 0]],
+        ...                [[0, 0], [0, 0], [6, 0], [0, 1]],
+        ...                [[0, 0], [0, 0], [6, 0], [0, 1]],
+        ...                [[0, 0], [7, 0], [6, 0], [1, 0]],
+        ...                [[0, 0], [7, 0], [7, 0], [7, 0]]])
+        >>> target = tensor([[[6, 0], [0, 1], [6, 0], [0, 1]],
+        ...                  [[0, 1], [0, 1], [6, 0], [0, 1]],
+        ...                  [[0, 1], [0, 1], [6, 0], [1, 0]],
+        ...                  [[0, 1], [7, 0], [1, 0], [1, 0]],
+        ...                  [[0, 1], [7, 0], [7, 0], [7, 0]]])
         >>> panoptic_quality = PanopticQuality(things = {0, 1}, stuff = {6, 7})
         >>> panoptic_quality(pred, target)
         tensor(0.5463, dtype=torch.float64)
@@ -102,13 +103,13 @@ class PanopticQuality(Metric):
         r"""Update state with predictions and targets.
 
         Args:
-            preds: ``torch.IntTensor`` panoptic detection of shape [height, width, 2] containing
-            the pair (category_id, instance_id) for each pixel of the image.
-            If the category_id refer to a stuff, the instance_id is ignored.
+            preds: panoptic detection of shape ``[height, width, 2]`` containing
+                the pair ``(category_id, instance_id)`` for each pixel of the image.
+                If the ``category_id`` refer to a stuff, the instance_id is ignored.
 
-            target: ``torch.IntTensor`` ground truth of shape [height, width, 2] containing
-            the pair (category_id, instance_id) for each pixel of the image.
-            If the category_id refer to a stuff, the instance_id is ignored.
+            target: ground truth of shape ``[height, width, 2]`` containing
+                the pair ``(category_id, instance_id)`` for each pixel of the image.
+                If the ``category_id`` refer to a stuff, the instance_id is ignored.
 
         Raises:
             TypeError:

@@ -30,7 +30,7 @@ def _nested_tuple(nested_list: List) -> Tuple:
     return tuple(map(_nested_tuple, nested_list)) if isinstance(nested_list, list) else nested_list
 
 
-def _totuple(t: torch.Tensor) -> Tuple:
+def _totuple(t: Tensor) -> Tuple:
     """Convert a tensor into a nested tuple.
 
     Args:
@@ -42,7 +42,7 @@ def _totuple(t: torch.Tensor) -> Tuple:
     return _nested_tuple(t.tolist())
 
 
-def _get_color_areas(img: torch.Tensor) -> Dict[Tuple, torch.Tensor]:
+def _get_color_areas(img: Tensor) -> Dict[Tuple, Tensor]:
     """Counts all color occurrences.
 
     Args:
@@ -153,10 +153,10 @@ def _isin(arr: torch.Tensor, values: List) -> torch.Tensor:
 def _prepocess_image(
     things: Set[int],
     stuff: Set[int],
-    img: torch.Tensor,
+    img: Tensor,
     void_color: Tuple[int, int],
     allow_unknown_category: bool,
-) -> torch.Tensor:
+) -> Tensor:
     """Preprocesses the image for metric calculation.
 
     Args:
@@ -183,11 +183,11 @@ def _prepocess_image(
 
 
 def _panoptic_quality_update(
-    flatten_preds: torch.Tensor,
-    flatten_target: torch.Tensor,
+    flatten_preds: Tensor,
+    flatten_target: Tensor,
     cat_id_to_continuous_id: Dict[int, int],
     void_color: Tuple[int, int],
-) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
     """Calculate stat scores (iou sum, true positives, false positives, false negatives) required to compute
     accuracy.
 
