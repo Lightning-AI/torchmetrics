@@ -104,7 +104,6 @@ def test_empty_metric():
 
 def test_error_on_wrong_input():
     """Test class input validation."""
-
     with pytest.raises(TypeError, match="Expected argument `things` to be of type.*"):
         PanopticQuality(things=[0], stuff={1})
 
