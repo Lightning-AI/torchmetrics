@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -95,9 +95,7 @@ def _assert_tensor(pl_result: Any, key: Optional[str] = None) -> None:
 
 
 def _assert_requires_grad(metric: Metric, pl_result: Any, key: Optional[str] = None) -> None:
-    """Utility function for recursively asserting that metric output is consistent with the `is_differentiable`
-    attribute.
-    """
+    """Function for recursively asserting that metric output is consistent with the `is_differentiable` attribute."""
     if isinstance(pl_result, Sequence):
         for plr in pl_result:
             _assert_requires_grad(metric, plr, key=key)
@@ -346,11 +344,11 @@ def _assert_dtype_support(
 
 
 class MetricTester:
-    """Class used for efficiently run alot of parametrized tests in ddp mode. Makes sure that ddp is only setup
-    once and that pool of processes are used for all tests.
+    """General test class for all metrics
 
-    All tests should subclass from this and implement a new method called `test_metric_name` where the method
-    `self.run_metric_test` is called inside.
+    Class used for efficiently run alot of parametrized tests in ddp mode. Makes sure that ddp is only setup once and
+    that pool of processes are used for all tests. All tests should subclass from this and implement a new method called
+    `test_metric_name` where the method `self.run_metric_test` is called inside.
     """
 
     atol: float = 1e-8
