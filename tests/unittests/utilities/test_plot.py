@@ -130,7 +130,7 @@ def test_single_multi_val_plotter_pit(metric, preds, target, num_vals):
 
 
 @pytest.mark.parametrize(
-    "metric, preds, target",
+    ("metric", "preds", "target"),
     [
         pytest.param(
             binary_confusion_matrix,
