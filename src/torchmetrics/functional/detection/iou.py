@@ -20,6 +20,8 @@ from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_
 if _TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8:
     from torchvision.ops import box_iou
 
+__doctest_requires__ = {("intersection_over_union",): ["torchvision"]}
+
 
 def _iou_update(
     preds: torch.Tensor, target: torch.Tensor, iou_threshold: Optional[float], replacement_val: float = 0
@@ -65,5 +67,10 @@ def intersection_over_union(
         >>> intersection_over_union(preds, target)
         tensor([[0.6807]])
     """
+    if not _TORCHVISION_GREATER_EQUAL_0_8:
+        raise ModuleNotFoundError(
+            f"`{intersection_over_union.__name__}` requires that `torchvision` version 0.8.0 or newer is installed."
+            " Please install with `pip install torchvision>=0.8` or `pip install torchmetrics[detection]`."
+        )
     iou = _iou_update(preds, target, iou_threshold, replacement_val)
     return _iou_compute(iou) if aggregate else iou

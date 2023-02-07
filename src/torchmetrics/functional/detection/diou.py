@@ -20,6 +20,8 @@ from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_
 if _TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_13:
     from torchvision.ops import distance_box_iou
 
+__doctest_requires__ = {("distance_intersection_over_union",): ["torchvision"]}
+
 
 def _diou_update(
     preds: torch.Tensor, target: torch.Tensor, iou_threshold: Optional[float], replacement_val: float = 0
@@ -65,5 +67,11 @@ def distance_intersection_over_union(
         >>> distance_intersection_over_union(preds, target)
         tensor([[0.6724]])
     """
+    if not _TORCHVISION_GREATER_EQUAL_0_13:
+        raise ModuleNotFoundError(
+            f"`{distance_intersection_over_union.__name__}` requires that `torchvision` version 0.13.0 or newer"
+            " is installed."
+            " Please install with `pip install torchvision>=0.13` or `pip install torchmetrics[detection]`."
+        )
     iou = _diou_update(preds, target, iou_threshold, replacement_val)
     return _diou_compute(iou) if aggregate else iou
