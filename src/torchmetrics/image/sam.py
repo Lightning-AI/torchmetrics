@@ -118,7 +118,6 @@ class SpectralAngleMapper(Metric):
                 If `matplotlib` is not installed
 
         Examples:
-
         .. plot::
             :scale: 75
 
