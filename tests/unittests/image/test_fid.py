@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ torch.manual_seed(42)
 
 @pytest.mark.parametrize("matrix_size", [2, 10, 100, 500])
 def test_matrix_sqrt(matrix_size):
-    """test that metrix sqrt function works as expected."""
+    """Test that metrix sqrt function works as expected."""
 
     def generate_cov(n):
         data = torch.randn(2 * n, n)
@@ -91,9 +91,7 @@ def test_fid_raises_errors_and_warnings():
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 @pytest.mark.parametrize("feature", [64, 192, 768, 2048])
 def test_fid_same_input(feature):
-    """if real and fake are update on the same data the fid score should be
-    0.
-    """
+    """If real and fake are update on the same data the fid score should be 0."""
     metric = FrechetInceptionDistance(feature=feature)
 
     for _ in range(2):
@@ -124,7 +122,7 @@ class _ImgDataset(Dataset):
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 @pytest.mark.parametrize("equal_size", [False, True])
 def test_compare_fid(tmpdir, equal_size, feature=768):
-    """check that the hole pipeline give the same result as torch-fidelity."""
+    """Check that the hole pipeline give the same result as torch-fidelity."""
     from torch_fidelity import calculate_metrics
 
     metric = FrechetInceptionDistance(feature=feature).cuda()
@@ -186,17 +184,17 @@ def test_reset_real_features_arg(reset_real_features):
         assert metric.real_features_cov_sum.shape == torch.Size([64, 64])
 
 
-@pytest.mark.parametrize(
-    "normalize, expectation, message",
-    [
-        (True, does_not_raise(), None),
-        (False, pytest.raises(ValueError), "Expecting image as torch.Tensor with dtype=torch.uint8"),
-    ],
-)
-def test_normalize_arg(normalize, expectation, message):
+def test_normalize_arg_true():
     """Test that normalize argument works as expected."""
     img = torch.rand(2, 3, 299, 299)
-    metric = FrechetInceptionDistance(normalize=normalize)
-    with expectation as e:
+    metric = FrechetInceptionDistance(normalize=True)
+    with does_not_raise():
         metric.update(img, real=True)
-    assert message is None or message in str(e)
+
+
+def test_normalize_arg_false():
+    """Test that normalize argument works as expected."""
+    img = torch.rand(2, 3, 299, 299)
+    metric = FrechetInceptionDistance(normalize=False)
+    with pytest.raises(ValueError, match="Expecting image as torch.Tensor with dtype=torch.uint8"):
+        metric.update(img, real=True)
