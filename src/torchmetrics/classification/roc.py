@@ -150,7 +150,6 @@ class BinaryROC(BinaryPrecisionRecallCurve):
 
             >>> from torch import randn, randint
             >>> import torch.nn.functional as F
-            >>> # Example plotting a combined value across all classes
             >>> from torchmetrics.classification import BinaryROC
             >>> preds = F.softmax(randn(20, 2), dim=1)
             >>> target = randint(2, (20,))
