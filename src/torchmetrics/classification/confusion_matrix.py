@@ -141,8 +141,7 @@ class BinaryConfusionMatrix(Metric):
             labels: a list of strings, if provided will be added to the plot to indicate the different classes
 
         Returns:
-            fig: Figure object
-            ax: Axes object
+            Figure and Axes object
 
         Raises:
             ModuleNotFoundError:
@@ -405,8 +404,7 @@ class MultilabelConfusionMatrix(Metric):
             labels: a list of strings, if provided will be added to the plot to indicate the different classes
 
         Returns:
-            fig: Figure object
-            ax: Axes object
+            Figure and Axes object
 
         Raises:
             ModuleNotFoundError:

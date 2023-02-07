@@ -169,8 +169,7 @@ class MaxMetric(BaseAggregator):
             ax: An matplotlib axis object. If provided will add plot to that axis
 
         Returns:
-            fig: Figure object
-            ax: Axes object
+            Figure and Axes object
 
         Raises:
             ModuleNotFoundError:
@@ -275,8 +274,7 @@ class MinMetric(BaseAggregator):
             ax: An matplotlib axis object. If provided will add plot to that axis
 
         Returns:
-            fig: Figure object
-            ax: Axes object
+            Figure and Axes object
 
         Raises:
             ModuleNotFoundError:
@@ -379,8 +377,7 @@ class SumMetric(BaseAggregator):
             ax: An matplotlib axis object. If provided will add plot to that axis
 
         Returns:
-            fig: Figure object
-            ax: Axes object
+            Figure and Axes object
 
         Raises:
             ModuleNotFoundError:
@@ -560,8 +557,7 @@ class MeanMetric(BaseAggregator):
             ax: An matplotlib axis object. If provided will add plot to that axis
 
         Returns:
-            fig: Figure object
-            ax: Axes object
+            Figure and Axes object
 
         Raises:
             ModuleNotFoundError:
