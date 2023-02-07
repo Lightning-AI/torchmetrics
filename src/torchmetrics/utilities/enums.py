@@ -27,7 +27,7 @@ class EnumStr(StrEnum):
 
         Raises:
             ValueError:
-                If required information measure is not among the supported options.
+                If required value is not among the supported options.
 
         >>> class MyEnum(EnumStr):
         ...     a = "aaa"
