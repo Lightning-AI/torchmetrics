@@ -36,7 +36,7 @@ class DistanceIntersectionOverUnion(IntersectionOverUnion):
 
     iou_update_fn: Callable[[Tensor, Tensor, bool, float], Tensor] = _diou_update
     iou_compute_fn: Callable[[Tensor, bool], Tensor] = _diou_compute
-    type: str = "diou"
+    iou_type: str = "diou"
     invalid_val: float = -1
 
     def __init__(
@@ -50,6 +50,6 @@ class DistanceIntersectionOverUnion(IntersectionOverUnion):
 
         if not _TORCHVISION_GREATER_EQUAL_0_13:
             raise ModuleNotFoundError(
-                f"Metric `{self.type.upper()}` requires that `torchvision` version 0.13.0 or newer is installed."
+                f"Metric `{self.iou_type.upper()}` requires that `torchvision` version 0.13.0 or newer is installed."
                 " Please install with `pip install torchvision>=0.13` or `pip install torchmetrics[detection]`."
             )

@@ -34,5 +34,5 @@ class GeneralizedIntersectionOverUnion(IntersectionOverUnion):
 
     iou_update_fn: Callable[[Tensor, Tensor, bool, float], Tensor] = _giou_update
     iou_compute_fn: Callable[[Tensor, bool], Tensor] = _giou_compute
-    type: str = "giou"
+    iou_type: str = "giou"
     invalid_val: float = -1

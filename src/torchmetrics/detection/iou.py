@@ -60,7 +60,7 @@ class IntersectionOverUnion(Metric):
 
     iou_update_fn: Callable[[Tensor, Tensor, bool, float], Tensor] = _iou_update
     iou_compute_fn: Callable[[Tensor, bool], Tensor] = _iou_compute
-    type: str = "iou"
+    iou_type: str = "iou"
     invalid_val: float = 0
 
     def __init__(
@@ -75,7 +75,7 @@ class IntersectionOverUnion(Metric):
 
         if not _TORCHVISION_GREATER_EQUAL_0_8:
             raise ModuleNotFoundError(
-                f"Metric `{self.type.upper()}` requires that `torchvision` version 0.8.0 or newer is installed."
+                f"Metric `{self.iou_type.upper()}` requires that `torchvision` version 0.8.0 or newer is installed."
                 " Please install with `pip install torchvision>=0.8` or `pip install torchmetrics[detection]`."
             )
 
@@ -95,7 +95,7 @@ class IntersectionOverUnion(Metric):
         self.add_state("results", default=[], dist_reduce_fx=None)
         self.add_state("labels_eq", default=[], dist_reduce_fx=None)
 
-    def update(self, preds: List[Dict[str, Tensor]], target: List[Dict[str, Tensor]]) -> None:  # type: ignore
+    def update(self, preds: List[Dict[str, Tensor]], target: List[Dict[str, Tensor]]) -> None:
         """Add detections and ground truth to the metric.
 
         Args:
