@@ -54,7 +54,7 @@ _specific_input = Input(
 
 
 @pytest.mark.parametrize(
-    "preds, target",
+    ("preds", "target"),
     [
         (_single_target_inputs1.preds, _single_target_inputs1.target),
         (_single_target_inputs2.preds, _single_target_inputs2.target),
@@ -62,7 +62,7 @@ _specific_input = Input(
     ],
 )
 def test_ranking(preds, target):
-    """test that ranking function works as expected."""
+    """Test that ranking function works as expected."""
     for p, t in zip(preds, target):
         scipy_ranking = [rankdata(p.numpy()), rankdata(t.numpy())]
         tm_ranking = [_rank_data(p), _rank_data(t)]

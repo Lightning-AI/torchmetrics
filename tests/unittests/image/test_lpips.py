@@ -35,7 +35,7 @@ _inputs = Input(
 
 
 def _compare_fn(img1: Tensor, img2: Tensor, net_type: str, normalize: bool, reduction: str = "mean") -> Tensor:
-    """comparison function for tm implementation."""
+    """Comparison function for tm implementation."""
     ref = LPIPS_reference(net=net_type)
     res = ref(img1, img2, normalize=normalize).detach().cpu().numpy()
     if reduction == "mean":
@@ -95,7 +95,7 @@ def test_error_on_wrong_init():
 
 @pytest.mark.skipif(not _LPIPS_AVAILABLE, reason="test requires that lpips is installed")
 @pytest.mark.parametrize(
-    "inp1, inp2",
+    ("inp1", "inp2"),
     [
         (torch.rand(1, 1, 28, 28), torch.rand(1, 3, 28, 28)),  # wrong number of channels
         (torch.rand(1, 3, 28, 28), torch.rand(1, 1, 28, 28)),  # wrong number of channels
@@ -104,7 +104,7 @@ def test_error_on_wrong_init():
     ],
 )
 def test_error_on_wrong_update(inp1, inp2):
-    """test error is raised on wrong input to update method."""
+    """Test error is raised on wrong input to update method."""
     metric = LearnedPerceptualImagePatchSimilarity()
     with pytest.raises(ValueError, match="Expected both input arguments to be normalized tensors .*"):
         metric(inp1, inp2)
