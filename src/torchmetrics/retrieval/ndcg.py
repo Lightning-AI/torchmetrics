@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ from torchmetrics.retrieval.base import RetrievalMetric
 
 
 class RetrievalNormalizedDCG(RetrievalMetric):
-    """Computes `Normalized Discounted Cumulative Gain`_.
+    """Compute `Normalized Discounted Cumulative Gain`_.
 
     Works with binary or positive integer target data. Accepts float predictions from a model output.
 

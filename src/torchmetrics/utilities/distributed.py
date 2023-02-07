@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -47,11 +47,10 @@ def class_reduce(
     weights: Tensor,
     class_reduction: Literal["micro", "macro", "weighted", "none", None] = "none",
 ) -> Tensor:
-    """
-    Function used to reduce classification metrics of the form ``num / denom * weights``.
+    """Reduce classification metrics of the form ``num / denom * weights``.
     For example for calculating standard accuracy the num would be number of
     true positives per class, denom would be the support per class, and weights
-    would be a tensor of 1s
+    would be a tensor of 1s.
 
     Args:
         num: numerator tensor

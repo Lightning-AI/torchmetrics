@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ class DummyMetric(Metric):
 
 
 @pytest.mark.parametrize(
-    ["second_operand", "expected_result"],
+    ("second_operand", "expected_result"),
     [
         (DummyMetric(2), tensor(4)),
         (2, tensor(4)),
@@ -61,7 +61,7 @@ def test_metrics_add(second_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    ["second_operand", "expected_result"],
+    ("second_operand", "expected_result"),
     [(DummyMetric(3), tensor(2)), (3, tensor(2)), (3, tensor(2)), (tensor(3), tensor(2))],
 )
 def test_metrics_and(second_operand, expected_result):
@@ -80,7 +80,7 @@ def test_metrics_and(second_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    ["second_operand", "expected_result"],
+    ("second_operand", "expected_result"),
     [
         (DummyMetric(2), tensor(True)),
         (2, tensor(True)),
@@ -101,7 +101,7 @@ def test_metrics_eq(second_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    ["second_operand", "expected_result"],
+    ("second_operand", "expected_result"),
     [
         (DummyMetric(2), tensor(2)),
         (2, tensor(2)),
@@ -121,7 +121,7 @@ def test_metrics_floordiv(second_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    ["second_operand", "expected_result"],
+    ("second_operand", "expected_result"),
     [
         (DummyMetric(2), tensor(True)),
         (2, tensor(True)),
@@ -142,7 +142,7 @@ def test_metrics_ge(second_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    ["second_operand", "expected_result"],
+    ("second_operand", "expected_result"),
     [
         (DummyMetric(2), tensor(True)),
         (2, tensor(True)),
@@ -163,7 +163,7 @@ def test_metrics_gt(second_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    ["second_operand", "expected_result"],
+    ("second_operand", "expected_result"),
     [
         (DummyMetric(2), tensor(False)),
         (2, tensor(False)),
@@ -184,7 +184,7 @@ def test_metrics_le(second_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    ["second_operand", "expected_result"],
+    ("second_operand", "expected_result"),
     [
         (DummyMetric(2), tensor(False)),
         (2, tensor(False)),
@@ -205,7 +205,7 @@ def test_metrics_lt(second_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    ["second_operand", "expected_result"],
+    ("second_operand", "expected_result"),
     [(DummyMetric([2, 2, 2]), tensor(12)), (tensor([2, 2, 2]), tensor(12))],
 )
 def test_metrics_matmul(second_operand, expected_result):
@@ -220,7 +220,7 @@ def test_metrics_matmul(second_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    ["second_operand", "expected_result"],
+    ("second_operand", "expected_result"),
     [
         (DummyMetric(2), tensor(1)),
         (2, tensor(1)),
@@ -241,7 +241,7 @@ def test_metrics_mod(second_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    ["second_operand", "expected_result"],
+    ("second_operand", "expected_result"),
     [
         (DummyMetric(2), tensor(4)),
         (2, tensor(4)),
@@ -265,7 +265,7 @@ def test_metrics_mul(second_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    ["second_operand", "expected_result"],
+    ("second_operand", "expected_result"),
     [
         (DummyMetric(2), tensor(False)),
         (2, tensor(False)),
@@ -286,7 +286,7 @@ def test_metrics_ne(second_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    ["second_operand", "expected_result"],
+    ("second_operand", "expected_result"),
     [(DummyMetric([1, 0, 3]), tensor([-1, -2, 3])), (tensor([1, 0, 3]), tensor([-1, -2, 3]))],
 )
 def test_metrics_or(second_operand, expected_result):
@@ -305,7 +305,7 @@ def test_metrics_or(second_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    ["second_operand", "expected_result"],
+    ("second_operand", "expected_result"),
     [
         (DummyMetric(2), tensor(4)),
         (2, tensor(4)),
@@ -325,7 +325,7 @@ def test_metrics_pow(second_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    ["first_operand", "expected_result"],
+    ("first_operand", "expected_result"),
     [(5, tensor(2)), (5.0, tensor(2.0)), (tensor(5), tensor(2))],
 )
 def test_metrics_rfloordiv(first_operand, expected_result):
@@ -340,7 +340,7 @@ def test_metrics_rfloordiv(first_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    ["first_operand", "expected_result"],
+    ("first_operand", "expected_result"),
     [pytest.param(tensor([2, 2, 2]), tensor(12))],
 )
 def test_metrics_rmatmul(first_operand, expected_result):
@@ -355,7 +355,7 @@ def test_metrics_rmatmul(first_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    ["first_operand", "expected_result"],
+    ("first_operand", "expected_result"),
     [pytest.param(tensor(2), tensor(2))],
 )
 def test_metrics_rmod(first_operand, expected_result):
@@ -370,7 +370,7 @@ def test_metrics_rmod(first_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    "first_operand,expected_result",
+    ("first_operand", "expected_result"),
     [
         (DummyMetric(2), tensor(4)),
         (2, tensor(4)),
@@ -388,7 +388,7 @@ def test_metrics_rpow(first_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    ["first_operand", "expected_result"],
+    ("first_operand", "expected_result"),
     [
         (DummyMetric(3), tensor(1)),
         (3, tensor(1)),
@@ -407,7 +407,7 @@ def test_metrics_rsub(first_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    ["first_operand", "expected_result"],
+    ("first_operand", "expected_result"),
     [
         (DummyMetric(6), tensor(2.0)),
         (6, tensor(2.0)),
@@ -426,7 +426,7 @@ def test_metrics_rtruediv(first_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    ["second_operand", "expected_result"],
+    ("second_operand", "expected_result"),
     [
         (DummyMetric(2), tensor(1)),
         (2, tensor(1)),
@@ -445,7 +445,7 @@ def test_metrics_sub(second_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    ["second_operand", "expected_result"],
+    ("second_operand", "expected_result"),
     [
         (DummyMetric(3), tensor(2.0)),
         (3, tensor(2.0)),
@@ -464,7 +464,7 @@ def test_metrics_truediv(second_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    ["second_operand", "expected_result"],
+    ("second_operand", "expected_result"),
     [(DummyMetric([1, 0, 3]), tensor([-2, -2, 0])), (tensor([1, 0, 3]), tensor([-2, -2, 0]))],
 )
 def test_metrics_xor(second_operand, expected_result):
@@ -520,7 +520,7 @@ def test_metrics_pos():
 
 
 @pytest.mark.parametrize(
-    ["value", "idx", "expected_result"],
+    ("value", "idx", "expected_result"),
     [([1, 2, 3], 1, tensor(2)), ([[0, 1], [2, 3]], (1, 0), tensor(2)), ([[0, 1], [2, 3]], 1, tensor([2, 3]))],
 )
 def test_metrics_getitem(value, idx, expected_result):
@@ -533,7 +533,7 @@ def test_metrics_getitem(value, idx, expected_result):
 
 
 def test_compositional_metrics_update():
-    """test update method for compositional metrics."""
+    """Test update method for compositional metrics."""
     compos = DummyMetric(5) + DummyMetric(4)
 
     assert isinstance(compos, CompositionalMetric)

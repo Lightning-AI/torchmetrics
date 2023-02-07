@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ from torchmetrics.utilities.checks import _check_retrieval_functional_inputs
 
 
 def retrieval_average_precision(preds: Tensor, target: Tensor) -> Tensor:
-    """Computes average precision (for information retrieval), as explained in `IR Average precision`_.
+    """Compute average precision (for information retrieval), as explained in `IR Average precision`_.
 
     ``preds`` and ``target`` should be of the same shape and live on the same device. If no ``target`` is ``True``,
     ``0`` is returned. ``target`` must be either `bool` or `integers` and ``preds`` must be ``float``,

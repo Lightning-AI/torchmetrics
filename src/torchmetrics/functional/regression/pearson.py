@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,9 +31,9 @@ def _pearson_corrcoef_update(
     n_prior: Tensor,
     num_outputs: int,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor, Tensor, Tensor]:
-    """Updates and returns variables required to compute Pearson Correlation Coefficient.
+    """Update and returns variables required to compute Pearson Correlation Coefficient.
 
-    Checks for same shape of input tensors.
+    Check for same shape of input tensors.
 
     Args:
         mean_x: current mean estimate of x tensor
@@ -66,7 +66,7 @@ def _pearson_corrcoef_compute(
     corr_xy: Tensor,
     nb: Tensor,
 ) -> Tensor:
-    """Computes the final pearson correlation based on accumulated statistics.
+    """Compute the final pearson correlation based on accumulated statistics.
 
     Args:
         var_x: variance estimate of x tensor
@@ -82,7 +82,7 @@ def _pearson_corrcoef_compute(
 
 
 def pearson_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
-    """Computes pearson correlation coefficient.
+    """Compute pearson correlation coefficient.
 
     Args:
         preds: estimated scores

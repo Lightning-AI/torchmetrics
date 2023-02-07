@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ from torchmetrics.metric import Metric
 
 
 class BinaryJaccardIndex(BinaryConfusionMatrix):
-    r"""Calculates the Jaccard index for binary tasks. The `Jaccard index`_ (also known as the intersetion over
+    r"""Calculate the Jaccard index for binary tasks. The `Jaccard index`_ (also known as the intersetion over
     union or jaccard similarity coefficient) is an statistic that can be used to determine the similarity and
     diversity of a sample set. It is defined as the size of the intersection divided by the union of the sample
     sets:
@@ -92,7 +92,7 @@ class BinaryJaccardIndex(BinaryConfusionMatrix):
 
 
 class MulticlassJaccardIndex(MulticlassConfusionMatrix):
-    r"""Calculates the Jaccard index for multiclass tasks. The `Jaccard index`_ (also known as the intersetion over
+    r"""Calculate the Jaccard index for multiclass tasks. The `Jaccard index`_ (also known as the intersetion over
     union or jaccard similarity coefficient) is an statistic that can be used to determine the similarity and
     diversity of a sample set. It is defined as the size of the intersection divided by the union of the sample
     sets:
@@ -122,8 +122,8 @@ class MulticlassJaccardIndex(MulticlassConfusionMatrix):
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
 
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
@@ -175,7 +175,7 @@ class MulticlassJaccardIndex(MulticlassConfusionMatrix):
 
 
 class MultilabelJaccardIndex(MultilabelConfusionMatrix):
-    r"""Calculates the Jaccard index for multilabel tasks. The `Jaccard index`_ (also known as the intersetion over
+    r"""Calculate the Jaccard index for multilabel tasks. The `Jaccard index`_ (also known as the intersetion over
     union or jaccard similarity coefficient) is an statistic that can be used to determine the similarity and
     diversity of a sample set. It is defined as the size of the intersection divided by the union of the sample
     sets:
@@ -206,8 +206,8 @@ class MultilabelJaccardIndex(MultilabelConfusionMatrix):
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
 
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
@@ -262,7 +262,7 @@ class MultilabelJaccardIndex(MultilabelConfusionMatrix):
 
 
 class JaccardIndex:
-    r"""Calculates the Jaccard index for multilabel tasks. The `Jaccard index`_ (also known as the intersetion over
+    r"""Calculate the Jaccard index for multilabel tasks. The `Jaccard index`_ (also known as the intersetion over
     union or jaccard similarity coefficient) is an statistic that can be used to determine the similarity and
     diversity of a sample set. It is defined as the size of the intersection divided by the union of the sample
     sets:

@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -74,7 +74,7 @@ def binary_hinge_loss(
     ignore_index: Optional[int] = None,
     validate_args: bool = False,
 ) -> Tensor:
-    r"""Computes the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs) for binary tasks. It is
+    r"""Compute the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs) for binary tasks. It is
     defined as:
 
     .. math::
@@ -185,7 +185,7 @@ def multiclass_hinge_loss(
     ignore_index: Optional[int] = None,
     validate_args: bool = False,
 ) -> Tensor:
-    r"""Computes the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs) for multiclass tasks.
+    r"""Compute the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs) for multiclass tasks.
 
     The metric can be computed in two ways. Either, the definition by Crammer and Singer is used:
 
@@ -252,7 +252,7 @@ def hinge_loss(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs).
+    r"""Compute the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs).
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'`` or ``'multiclass'``. See the documentation of

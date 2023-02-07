@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ from torchmetrics.utilities.checks import _check_retrieval_functional_inputs
 
 
 def retrieval_hit_rate(preds: Tensor, target: Tensor, k: Optional[int] = None) -> Tensor:
-    """Computes the hit rate (for information retrieval). The hit rate is 1.0 if there is at least one relevant
+    """Compute the hit rate (for information retrieval). The hit rate is 1.0 if there is at least one relevant
     document among all the top `k` retrieved documents.
 
     ``preds`` and ``target`` should be of the same shape and live on the same device. If no ``target`` is ``True``,

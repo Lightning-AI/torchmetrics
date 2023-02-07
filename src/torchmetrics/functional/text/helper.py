@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -93,7 +93,6 @@ class _LevenshteinEditDistance:
         Return:
             A tuple of a calculated edit distance and a trace of executed operations.
         """
-
         # Use cached edit distance for already computed words
         start_position, cached_edit_distance = self._find_cache(prediction_tokens)
         # Calculate the rest of the edit distance matrix

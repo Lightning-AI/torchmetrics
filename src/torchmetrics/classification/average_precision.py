@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class BinaryAveragePrecision(BinaryPrecisionRecallCurve):
-    r"""Computes the average precision (AP) score for binary tasks. The AP score summarizes a precision-recall curve
+    r"""Compute the average precision (AP) score for binary tasks. The AP score summarizes a precision-recall curve
     as an weighted mean of precisions at each threshold, with the difference in recall from the previous threshold
     as weight:
 
@@ -102,7 +102,7 @@ class BinaryAveragePrecision(BinaryPrecisionRecallCurve):
 
 
 class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
-    r"""Computes the average precision (AP) score for binary tasks. The AP score summarizes a precision-recall curve
+    r"""Compute the average precision (AP) score for binary tasks. The AP score summarizes a precision-recall curve
     as an weighted mean of precisions at each threshold, with the difference in recall from the previous threshold
     as weight:
 
@@ -139,8 +139,8 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
             Defines the reduction that is applied over classes. Should be one of the following:
 
             - ``macro``: Calculate score for each class and average them
-            - ``weighted``: Calculates score for each class and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates score for each class and applies no reduction
+            - ``weighted``: calculates score for each class and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates score for each class and applies no reduction
         thresholds:
             Can be one of:
 
@@ -205,7 +205,7 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
 
 
 class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
-    r"""Computes the average precision (AP) score for binary tasks. The AP score summarizes a precision-recall curve
+    r"""Compute the average precision (AP) score for binary tasks. The AP score summarizes a precision-recall curve
     as an weighted mean of precisions at each threshold, with the difference in recall from the previous threshold
     as weight:
 
@@ -243,8 +243,8 @@ class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
 
             - ``micro``: Sum score over all labels
             - ``macro``: Calculate score for each label and average them
-            - ``weighted``: Calculates score for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates score for each label and applies no reduction
+            - ``weighted``: calculates score for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates score for each label and applies no reduction
         thresholds:
             Can be one of:
 
@@ -313,7 +313,7 @@ class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
 
 
 class AveragePrecision:
-    r"""Computes the average precision (AP) score. The AP score summarizes a precision-recall curve as an weighted
+    r"""Compute the average precision (AP) score. The AP score summarizes a precision-recall curve as an weighted
     mean of precisions at each threshold, with the difference in recall from the previous threshold as weight:
 
     .. math::

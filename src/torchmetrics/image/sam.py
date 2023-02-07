@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -88,7 +88,7 @@ class SpectralAngleMapper(Metric):
         self.target.append(target)
 
     def compute(self) -> Tensor:
-        """Computes spectra over state."""
+        """Compute spectra over state."""
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         return _sam_compute(preds, target, self.reduction)
