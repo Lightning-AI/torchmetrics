@@ -62,7 +62,7 @@ _specific_input = Input(
     ],
 )
 def test_ranking(preds, target):
-    """test that ranking function works as expected."""
+    """Test that ranking function works as expected."""
     for p, t in zip(preds, target):
         scipy_ranking = [rankdata(p.numpy()), rankdata(t.numpy())]
         tm_ranking = [_rank_data(p), _rank_data(t)]
