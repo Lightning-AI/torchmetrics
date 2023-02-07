@@ -36,6 +36,7 @@ from torchmetrics.functional.classification.precision_recall_curve import (
 )
 from torchmetrics.utilities.compute import _safe_divide
 from torchmetrics.utilities.data import _bincount
+from torchmetrics.utilities.enums import ClassificationTask
 from torchmetrics.utilities.prints import rank_zero_warn
 
 
@@ -437,16 +438,14 @@ def average_precision(
         >>> average_precision(pred, target, task="multiclass", num_classes=5, average=None)
         tensor([1.0000, 1.0000, 0.2500, 0.2500,    nan])
     """
-    if task == "binary":
+    task = ClassificationTask.from_str(task)
+    if task == ClassificationTask.BINARY:
         return binary_average_precision(preds, target, thresholds, ignore_index, validate_args)
-    if task == "multiclass":
+    if task == ClassificationTask.MULTICLASS:
         assert isinstance(num_classes, int)
         return multiclass_average_precision(
             preds, target, num_classes, average, thresholds, ignore_index, validate_args
         )
-    if task == "multilabel":
+    if task == ClassificationTask.MULTILABEL:
         assert isinstance(num_labels, int)
         return multilabel_average_precision(preds, target, num_labels, average, thresholds, ignore_index, validate_args)
-    raise ValueError(
-        f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-    )

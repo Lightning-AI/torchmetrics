@@ -31,6 +31,7 @@ from torchmetrics.functional.classification.confusion_matrix import (
     _multilabel_confusion_matrix_tensor_validation,
     _multilabel_confusion_matrix_update,
 )
+from torchmetrics.utilities.enums import ClassificationTask
 
 
 def _matthews_corrcoef_reduce(confmat: Tensor) -> Tensor:
@@ -213,7 +214,7 @@ def multilabel_matthews_corrcoef(
 def matthews_corrcoef(
     preds: Tensor,
     target: Tensor,
-    task: Literal["binary", "multiclass", "multilabel"] = None,
+    task: Literal["binary", "multiclass", "multilabel"],
     threshold: float = 0.5,
     num_classes: Optional[int] = None,
     num_labels: Optional[int] = None,
@@ -235,14 +236,13 @@ def matthews_corrcoef(
         >>> matthews_corrcoef(preds, target, task="multiclass", num_classes=2)
         tensor(0.5774)
     """
-    if task == "binary":
+    task = ClassificationTask.from_str(task)
+    if task == ClassificationTask.BINARY:
         return binary_matthews_corrcoef(preds, target, threshold, ignore_index, validate_args)
-    if task == "multiclass":
+    if task == ClassificationTask.MULTICLASS:
         assert isinstance(num_classes, int)
         return multiclass_matthews_corrcoef(preds, target, num_classes, ignore_index, validate_args)
-    if task == "multilabel":
+    if task == ClassificationTask.MULTILABEL:
         assert isinstance(num_labels, int)
         return multilabel_matthews_corrcoef(preds, target, num_labels, threshold, ignore_index, validate_args)
-    raise ValueError(
-        f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-    )
+    raise ValueError(f"Not handled value: {task}")  # this is for compliant of mypy

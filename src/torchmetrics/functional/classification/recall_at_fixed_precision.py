@@ -34,6 +34,7 @@ from torchmetrics.functional.classification.precision_recall_curve import (
     _multilabel_precision_recall_curve_tensor_validation,
     _multilabel_precision_recall_curve_update,
 )
+from torchmetrics.utilities.enums import ClassificationTask
 
 
 def _recall_at_precision(
@@ -384,18 +385,16 @@ def recall_at_fixed_precision(
     :func:`binary_recall_at_fixed_precision`, :func:`multiclass_recall_at_fixed_precision` and
     :func:`multilabel_recall_at_fixed_precision` for the specific details of each argument influence and examples.
     """
-    if task == "binary":
+    task = ClassificationTask.from_str(task)
+    if task == ClassificationTask.BINARY:
         return binary_recall_at_fixed_precision(preds, target, min_precision, thresholds, ignore_index, validate_args)
-    if task == "multiclass":
+    if task == ClassificationTask.MULTICLASS:
         assert isinstance(num_classes, int)
         return multiclass_recall_at_fixed_precision(
             preds, target, num_classes, min_precision, thresholds, ignore_index, validate_args
         )
-    if task == "multilabel":
+    if task == ClassificationTask.MULTILABEL:
         assert isinstance(num_labels, int)
         return multilabel_recall_at_fixed_precision(
             preds, target, num_labels, min_precision, thresholds, ignore_index, validate_args
         )
-    raise ValueError(
-        f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-    )
