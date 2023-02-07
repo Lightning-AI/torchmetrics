@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ from torchmetrics.metric import Metric
 
 
 class MeanSquaredLogError(Metric):
-    r"""Computes `mean squared logarithmic error`_ (MSLE):
+    r"""Compute `mean squared logarithmic error`_ (MSLE):
 
     .. math:: \text{MSLE} = \frac{1}{N}\sum_i^N (\log_e(1 + y_i) - \log_e(1 + \hat{y_i}))^2
 

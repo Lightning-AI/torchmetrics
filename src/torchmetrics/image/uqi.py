@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class UniversalImageQualityIndex(Metric):
-    """Computes Universal Image Quality Index (UniversalImageQualityIndex_).
+    """Compute Universal Image Quality Index (UniversalImageQualityIndex_).
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 
@@ -103,7 +103,7 @@ class UniversalImageQualityIndex(Metric):
         self.target.append(target)
 
     def compute(self) -> Tensor:
-        """Computes explained variance over state."""
+        """Compute explained variance over state."""
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         return _uqi_compute(preds, target, self.kernel_size, self.sigma, self.reduction, self.data_range)

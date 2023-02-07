@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class TotalVariation(Metric):
-    """Computes Total Variation loss (`TV`_).
+    """Compute Total Variation loss (`TV`_).
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 

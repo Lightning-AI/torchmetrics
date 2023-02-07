@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,9 +23,11 @@ class RandomDictStringDataset(Dataset):
         self.data = torch.randn(length, size)
 
     def __getitem__(self, index):
+        """Get datapoint."""
         return {"id": str(index), "x": self.data[index]}
 
     def __len__(self):
+        """Return length of dataset."""
         return self.len
 
 
@@ -35,9 +37,11 @@ class RandomDataset(Dataset):
         self.data = torch.randn(length, size)
 
     def __getitem__(self, index):
+        """Get datapoint."""
         return self.data[index]
 
     def __len__(self):
+        """Get length of dataset."""
         return self.len
 
 

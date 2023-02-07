@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -95,7 +95,6 @@ def _squad_input_check(
     preds: PREDS_TYPE, targets: TARGETS_TYPE
 ) -> Tuple[Dict[str, str], List[Dict[str, List[Dict[str, List[Dict[str, Any]]]]]]]:
     """Check for types and convert the input to necessary format to compute the input."""
-
     if isinstance(preds, Dict):
         preds = [preds]
 

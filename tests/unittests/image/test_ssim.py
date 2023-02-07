@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -217,7 +217,7 @@ class TestSSIM(MetricTester):
 
 
 @pytest.mark.parametrize(
-    ["pred", "target", "kernel", "sigma"],
+    ("pred", "target", "kernel", "sigma"),
     [
         ([1, 1, 16, 16], [1, 1, 16, 16], [11, 11], [1.5]),  # len(kernel), len(sigma)
         ([1, 16, 16], [1, 16, 16], [11, 11], [1.5, 1.5]),  # len(shape)
@@ -231,16 +231,19 @@ class TestSSIM(MetricTester):
     ],
 )
 def test_ssim_invalid_inputs(pred, target, kernel, sigma):
-    """Test that an value errors are raised if input sizes are different, kernel length and sigma does not match
-    size or invalid values are provided."""
+    """Test for invalid input.
+
+    Checks that that an value errors are raised if input sizes are different, kernel length and sigma does not match
+    size or invalid values are provided.
+    """
     pred = torch.rand(pred)
     target = torch.rand(target)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011  # todo
         structural_similarity_index_measure(pred, target, kernel_size=kernel, sigma=sigma)
 
 
 def test_ssim_unequal_kernel_size():
-    """Test the case where kernel_size[0] != kernel_size[1]"""
+    """Test the case where kernel_size[0] != kernel_size[1]."""
     preds = torch.tensor(
         [
             [
@@ -292,7 +295,7 @@ def test_ssim_unequal_kernel_size():
 
 
 @pytest.mark.parametrize(
-    "preds, target",
+    ("preds", "target"),
     [(i.preds, i.target) for i in _inputs],
 )
 def test_full_image_output(preds, target):

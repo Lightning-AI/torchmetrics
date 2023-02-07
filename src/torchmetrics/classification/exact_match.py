@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class MulticlassExactMatch(Metric):
-    r"""Computes Exact match (also known as subset accuracy) for multiclass tasks. Exact Match is a stricter version
+    r"""Compute Exact match (also known as subset accuracy) for multiclass tasks. Exact Match is a stricter version
     of accuracy where all labels have to match exactly for the sample to be correctly classified.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
@@ -136,7 +136,7 @@ class MulticlassExactMatch(Metric):
 
 
 class MultilabelExactMatch(Metric):
-    r"""Computes Exact match (also known as subset accuracy) for multilabel tasks. Exact Match is a stricter version
+    r"""Compute Exact match (also known as subset accuracy) for multilabel tasks. Exact Match is a stricter version
     of accuracy where all labels have to match exactly for the sample to be correctly classified.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
@@ -254,8 +254,8 @@ class MultilabelExactMatch(Metric):
 
 
 class ExactMatch:
-    r"""Computes Exact match (also known as subset accuracy). Exact Match is a stricter version of accuracy where
-    all labels have to match exactly for the sample to be correctly classified.
+    r"""Compute Exact match (also known as subset accuracy). Exact Match is a stricter version of accuracy where all
+    labels have to match exactly for the sample to be correctly classified.
 
     This module is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'multiclass'`` or ``multilabel``. See the documentation of

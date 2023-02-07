@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,9 +27,9 @@ def _unsqueeze_tensors(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
 
 
 def _log_cosh_error_update(preds: Tensor, target: Tensor, num_outputs: int) -> Tuple[Tensor, Tensor]:
-    """Updates and returns variables required to compute LogCosh error.
+    """Update and returns variables required to compute LogCosh error.
 
-    Checks for same shape of input tensors.
+    Check for same shape of input tensors.
 
     Args:
         preds: Predicted tensor
@@ -49,7 +49,7 @@ def _log_cosh_error_update(preds: Tensor, target: Tensor, num_outputs: int) -> T
 
 
 def _log_cosh_error_compute(sum_log_cosh_error: Tensor, n_obs: Tensor) -> Tensor:
-    """Computes Mean Squared Error.
+    """Compute Mean Squared Error.
 
     Args:
         sum_squared_error: Sum of LogCosh errors over all observations

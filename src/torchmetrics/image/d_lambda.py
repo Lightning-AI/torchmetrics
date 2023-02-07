@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class SpectralDistortionIndex(Metric):
-    """Computes Spectral Distortion Index (SpectralDistortionIndex_) also now as D_lambda is used to compare the
+    """Compute Spectral Distortion Index (SpectralDistortionIndex_) also now as D_lambda is used to compare the
     spectral distortion between two images.
 
     As input to ``forward`` and ``update`` the metric accepts the following input
@@ -97,7 +97,7 @@ class SpectralDistortionIndex(Metric):
         self.target.append(target)
 
     def compute(self) -> Tensor:
-        """Computes and returns spectral distortion index."""
+        """Compute and returns spectral distortion index."""
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         return _spectral_distortion_index_compute(preds, target, self.p, self.reduction)
