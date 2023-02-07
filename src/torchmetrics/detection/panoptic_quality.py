@@ -53,18 +53,18 @@ class PanopticQuality(Metric):
 
     Example:
         >>> from torch import tensor
-        >>> pred = tensor([[[6, 0], [0, 0], [6, 0], [6, 0]],
-        ...                [[0, 0], [0, 0], [6, 0], [0, 1]],
-        ...                [[0, 0], [0, 0], [6, 0], [0, 1]],
-        ...                [[0, 0], [7, 0], [6, 0], [1, 0]],
-        ...                [[0, 0], [7, 0], [7, 0], [7, 0]]])
+        >>> preds = tensor([[[6, 0], [0, 0], [6, 0], [6, 0]],
+        ...                 [[0, 0], [0, 0], [6, 0], [0, 1]],
+        ...                 [[0, 0], [0, 0], [6, 0], [0, 1]],
+        ...                 [[0, 0], [7, 0], [6, 0], [1, 0]],
+        ...                 [[0, 0], [7, 0], [7, 0], [7, 0]]])
         >>> target = tensor([[[6, 0], [0, 1], [6, 0], [0, 1]],
         ...                  [[0, 1], [0, 1], [6, 0], [0, 1]],
         ...                  [[0, 1], [0, 1], [6, 0], [1, 0]],
         ...                  [[0, 1], [7, 0], [1, 0], [1, 0]],
         ...                  [[0, 1], [7, 0], [7, 0], [7, 0]]])
         >>> panoptic_quality = PanopticQuality(things = {0, 1}, stuff = {6, 7})
-        >>> panoptic_quality(pred, target)
+        >>> panoptic_quality(preds, target)
         tensor(0.5463, dtype=torch.float64)
     """
     is_differentiable: bool = False
@@ -92,7 +92,7 @@ class PanopticQuality(Metric):
         self.cat_id_to_continuous_id = _get_category_id_to_continous_id(things, stuff)
         self.allow_unknown_preds_category = allow_unknown_preds_category
 
-        # per category intemediate metrics
+        # per category intermediate metrics
         n_categories = len(things) + len(stuff)
         self.add_state("iou_sum", default=torch.zeros(n_categories, dtype=torch.double), dist_reduce_fx="sum")
         self.add_state("true_positives", default=torch.zeros(n_categories, dtype=torch.int), dist_reduce_fx="sum")
@@ -135,5 +135,5 @@ class PanopticQuality(Metric):
     def compute(self) -> Tensor:
         """Computes panoptic quality based on inputs passed in to ``update`` previously."""
         return _panoptic_quality_compute(
-            self.things, self.stuff, self.iou_sum, self.true_positives, self.false_positives, self.false_negatives
+            self.iou_sum, self.true_positives, self.false_positives, self.false_negatives
         )

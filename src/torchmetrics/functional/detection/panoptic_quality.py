@@ -26,11 +26,10 @@ def _nested_tuple(nested_list: List) -> Tuple:
     Returns:
         a nested tuple with the same content.
     """
-    """Construct a nested tuple from a nested list."""
     return tuple(map(_nested_tuple, nested_list)) if isinstance(nested_list, list) else nested_list
 
 
-def _totuple(t: Tensor) -> Tuple:
+def _to_tuple(t: Tensor) -> Tuple:
     """Convert a tensor into a nested tuple.
 
     Args:
@@ -53,17 +52,17 @@ def _get_color_areas(img: Tensor) -> Dict[Tuple, Tensor]:
     """
     unique_keys, unique_keys_area = torch.unique(img, dim=0, return_counts=True)
     # dictionary indexed by color tuples
-    return dict(zip(_totuple(unique_keys), unique_keys_area))
+    return dict(zip(_to_tuple(unique_keys), unique_keys_area))
 
 
 def _is_set_int(value: Any) -> bool:
-    """Check wheter value is a `Set[int]`
+    """Check whether value is a ``Set[int]``
 
     Args:
         value: the value to check
 
     Returns:
-        True if the value is a Set[int], False otherwise
+        True if the value is a ``Set[int]``, ``False`` otherwise
     """
     return isinstance(value, Set) and set(map(type, value)).issubset({int})
 
@@ -80,10 +79,10 @@ def _validate_categories(things: Set[int], stuff: Set[int]) -> None:
     if not _is_set_int(stuff):
         raise TypeError(f"Expected argument `stuff` to be of type `Set[int]`, but got {stuff}")
     if stuff & things:
-        raise ValueError("Expected arguments `things` and `stuffs` to have distinct keys, but got {things} and {stuff}")
+        raise ValueError(f"Expected arguments `things` and `stuffs` to have distinct keys, but got {things} and {stuff}")
 
 
-def _validate_inputs(preds: torch.Tensor, target: torch.Tensor) -> None:
+def _validate_inputs(preds: Tensor, target: torch.Tensor) -> None:
     """Validates the shapes of prediction and target tensors.
 
     Args:
@@ -136,7 +135,7 @@ def _get_category_id_to_continous_id(things: Set[int], stuff: Set[int]) -> Dict[
     return cat_id_to_continuous_id
 
 
-def _isin(arr: torch.Tensor, values: List) -> torch.Tensor:
+def _isin(arr: Tensor, values: List) -> Tensor:
     """Basic implementation of torch.isin to support pre 0.10 version.
 
     Args:
@@ -188,8 +187,9 @@ def _panoptic_quality_update(
     cat_id_to_continuous_id: Dict[int, int],
     void_color: Tuple[int, int],
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-    """Calculate stat scores (iou sum, true positives, false positives, false negatives) required to compute
-    accuracy.
+    """Calculate stat scores required to compute accuracy.
+
+    Computed scores: iou sum, true positives, false positives, false negatives
 
     Args:
         flatten_preds: a flattened prediction tensor
@@ -268,18 +268,14 @@ def _panoptic_quality_update(
 
 
 def _panoptic_quality_compute(
-    things: Set[int],
-    stuff: Set[int],
-    iou_sum: torch.Tensor,
-    true_positives: torch.Tensor,
-    false_positives: torch.Tensor,
-    false_negatives: torch.Tensor,
-) -> torch.Tensor:
+    iou_sum: Tensor,
+    true_positives: Tensor,
+    false_positives: Tensor,
+    false_negatives: Tensor,
+) -> Tensor:
     """Compute the final panoptic quality from interim values.
 
     Args:
-        things: All category IDs for things classes
-        stuff: All category IDs for stuff classes
         iou_sum: the iou sum from the update step
         true_positives: the TP value from the update step
         false_positives: the FP value from the update step
@@ -298,13 +294,13 @@ def _panoptic_quality_compute(
 
 
 def panoptic_quality(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     things: Set[int],
-    stuff: Set[int],
+    stuffs: Set[int],
     allow_unknown_preds_category: bool = False,
 ) -> Tensor:
-    r"""Computes the `Panoptic Quality`_ for panoptic segmentations. It is defined as:
+    r"""Computes the `Panoptic Quality`_ for panoptic segmentations.
 
     .. math::
         PQ = \frac{IOU}{TP + 0.5 FP + 0.5 FN}
@@ -339,26 +335,27 @@ def panoptic_quality(
             If ``preds`` is not a 3D tensor where the final dimension have size 2
 
     Example:
-        >>> pred = torch.tensor([[[6, 0], [0, 0], [6, 0], [6, 0]],
-        ...                      [[0, 0], [0, 0], [6, 0], [0, 1]],
-        ...                      [[0, 0], [0, 0], [6, 0], [0, 1]],
-        ...                      [[0, 0], [7, 0], [6, 0], [1, 0]],
-        ...                      [[0, 0], [7, 0], [7, 0], [7, 0]]])
-        >>> target = torch.tensor([[[6, 0], [0, 1], [6, 0], [0, 1]],
-        ...                        [[0, 1], [0, 1], [6, 0], [0, 1]],
-        ...                        [[0, 1], [0, 1], [6, 0], [1, 0]],
-        ...                        [[0, 1], [7, 0], [1, 0], [1, 0]],
-        ...                        [[0, 1], [7, 0], [7, 0], [7, 0]]])
-        >>> panoptic_quality(pred, target, things = {0, 1}, stuff = {6, 7})
+        >>> from torch import tensor
+        >>> preds = tensor([[[6, 0], [0, 0], [6, 0], [6, 0]],
+        ...                 [[0, 0], [0, 0], [6, 0], [0, 1]],
+        ...                 [[0, 0], [0, 0], [6, 0], [0, 1]],
+        ...                 [[0, 0], [7, 0], [6, 0], [1, 0]],
+        ...                 [[0, 0], [7, 0], [7, 0], [7, 0]]])
+        >>> target = tensor([[[6, 0], [0, 1], [6, 0], [0, 1]],
+        ...                  [[0, 1], [0, 1], [6, 0], [0, 1]],
+        ...                  [[0, 1], [0, 1], [6, 0], [1, 0]],
+        ...                  [[0, 1], [7, 0], [1, 0], [1, 0]],
+        ...                  [[0, 1], [7, 0], [7, 0], [7, 0]]])
+        >>> panoptic_quality(preds, target, things = {0, 1}, stuffs = {6, 7})
         tensor(0.5463, dtype=torch.float64)
     """
-    _validate_categories(things, stuff)
+    _validate_categories(things, stuffs)
     _validate_inputs(preds, target)
-    void_color = _get_void_color(things, stuff)
-    cat_id_to_continuous_id = _get_category_id_to_continous_id(things, stuff)
-    flatten_preds = _prepocess_image(things, stuff, preds, void_color, allow_unknown_preds_category)
-    flatten_target = _prepocess_image(things, stuff, target, void_color, True)
+    void_color = _get_void_color(things, stuffs)
+    cat_id_to_continuous_id = _get_category_id_to_continous_id(things, stuffs)
+    flatten_preds = _prepocess_image(things, stuffs, preds, void_color, allow_unknown_preds_category)
+    flatten_target = _prepocess_image(things, stuffs, target, void_color, True)
     iou_sum, true_positives, false_positives, false_negatives = _panoptic_quality_update(
         flatten_preds, flatten_target, cat_id_to_continuous_id, void_color
     )
-    return _panoptic_quality_compute(things, stuff, iou_sum, true_positives, false_positives, false_negatives)
+    return _panoptic_quality_compute(iou_sum, true_positives, false_positives, false_negatives)
