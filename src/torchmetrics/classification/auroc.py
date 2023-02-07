@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Union, Sequence
+from typing import Any, List, Optional, Sequence, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -112,7 +112,7 @@ class BinaryAUROC(BinaryPrecisionRecallCurve):
     def compute(self) -> Tensor:
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _binary_auroc_compute(state, self.thresholds, self.max_fpr)
-    
+
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
@@ -132,7 +132,6 @@ class BinaryAUROC(BinaryPrecisionRecallCurve):
                 If `matplotlib` is not installed
 
         Example:
-
         .. plot::
             :scale: 75
 
@@ -251,7 +250,7 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
     def compute(self) -> Tensor:
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _multiclass_auroc_compute(state, self.num_classes, self.average, self.thresholds)
-    
+
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
@@ -271,7 +270,6 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
                 If `matplotlib` is not installed
 
         Example:
-
         .. plot::
             :scale: 75
 

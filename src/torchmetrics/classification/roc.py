@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Tuple, Union, Sequence
+from typing import Any, List, Optional, Sequence, Tuple, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -21,11 +21,6 @@ from torchmetrics.classification.precision_recall_curve import (
     MulticlassPrecisionRecallCurve,
     MultilabelPrecisionRecallCurve,
 )
-from torchmetrics.functional.classification.roc import (
-    _binary_roc_compute,
-    _multiclass_roc_compute,
-    _multilabel_roc_compute,
-)
 from torchmetrics.functional.classification.auroc import (
     _binary_auroc_arg_validation,
     _binary_auroc_compute,
@@ -33,6 +28,11 @@ from torchmetrics.functional.classification.auroc import (
     _multiclass_auroc_compute,
     _multilabel_auroc_arg_validation,
     _multilabel_auroc_compute,
+)
+from torchmetrics.functional.classification.roc import (
+    _binary_roc_compute,
+    _multiclass_roc_compute,
+    _multilabel_roc_compute,
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
@@ -114,22 +114,22 @@ class BinaryROC(BinaryPrecisionRecallCurve):
     def compute(self) -> Tuple[Tensor, Tensor, Tensor]:
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _binary_roc_compute(state, self.thresholds)
-    
+
     def compute_auroc(self) -> Tensor:
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _binary_auroc_compute(state, self.thresholds, max_fpr=None)
-    
+
     def plot(
-        self, 
+        self,
         fpr: Optional[Union[Tensor, Sequence[Tensor]]] = None,
-        tpr: Optional[Union[Tensor, Sequence[Tensor]]] = None, 
+        tpr: Optional[Union[Tensor, Sequence[Tensor]]] = None,
         ax: Optional[_AX_TYPE] = None,
         name: Optional[str] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
         Args:
-            fpr: False Postive Rate provided by calling `metric.forward` or `metric.compute` 
+            fpr: False Postive Rate provided by calling `metric.forward` or `metric.compute`
             tpr: True Postive Rate provided by calling `metric.forward` or `metric.compute`
                 If no value is provided, will automatically call `metric.compute` and plot that result.
             ax: An matplotlib axis object. If provided will add plot to that axis
@@ -144,7 +144,6 @@ class BinaryROC(BinaryPrecisionRecallCurve):
                 If `matplotlib` is not installed
 
         Example:
-
         .. plot::
             :scale: 75
 
