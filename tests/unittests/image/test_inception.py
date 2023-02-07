@@ -108,7 +108,7 @@ class _ImgDataset(Dataset):
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 @pytest.mark.parametrize("compute_on_cpu", [True, False])
 def test_compare_is(tmpdir, compute_on_cpu):
-    """check that the hole pipeline give the same result as torch-fidelity."""
+    """Check that the hole pipeline give the same result as torch-fidelity."""
     from torch_fidelity import calculate_metrics
 
     metric = InceptionScore(splits=1, compute_on_cpu=compute_on_cpu).cuda()
