@@ -12,7 +12,7 @@ from unittests.text.inputs import _inputs_squad_batch_match, _inputs_squad_exact
 
 
 @pytest.mark.parametrize(
-    "preds, targets, exact_match, f1",
+    ("preds", "targets", "exact_match", "f1"),
     [
         (
             _inputs_squad_exact_match.preds,
@@ -38,7 +38,7 @@ def test_score_fn(preds, targets, exact_match, f1):
 
 
 @pytest.mark.parametrize(
-    "preds, targets, exact_match, f1",
+    ("preds", "targets", "exact_match", "f1"),
     [
         (
             _inputs_squad_batch_match.preds,
@@ -82,7 +82,7 @@ def _test_score_ddp_fn(rank, world_size, preds, targets, exact_match, f1):
 
 
 @pytest.mark.parametrize(
-    "preds, targets, exact_match, f1",
+    ("preds", "targets", "exact_match", "f1"),
     [
         (
             _inputs_squad_batch_match.preds,

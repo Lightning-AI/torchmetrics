@@ -77,7 +77,7 @@ select = [
 ]
 extend-select = [
     "C4",  # see: https://pypi.org/project/flake8-comprehensions
-#    "PT",  # see: https://pypi.org/project/flake8-pytest-style
+    "PT",  # see: https://pypi.org/project/flake8-pytest-style
 #    "RET",  # see: https://pypi.org/project/flake8-return
     "SIM",  # see: https://pypi.org/project/flake8-simplify
 ]

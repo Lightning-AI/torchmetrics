@@ -335,7 +335,7 @@ _mc_k_preds = tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]])
 
 
 @pytest.mark.parametrize(
-    "k, preds, target, average, expected_spec",
+    ("k", "preds", "target", "average", "expected_spec"),
     [
         (1, _mc_k_preds, _mc_k_target, "micro", tensor(5 / 6)),
         (2, _mc_k_preds, _mc_k_target, "micro", tensor(1 / 2)),

@@ -35,7 +35,7 @@ def test_reduce():
     assert torch.allclose(reduce(start_tensor, "sum"), torch.sum(start_tensor))
     assert torch.allclose(reduce(start_tensor, "none"), start_tensor)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011  # todo
         reduce(start_tensor, "error_reduction")
 
 
@@ -130,7 +130,7 @@ def test_bincount():
     assert torch.allclose(res1, res3)
 
 
-@pytest.mark.parametrize("metric_class, expected", [(MeanSquaredError, False), (PearsonCorrCoef, True)])
+@pytest.mark.parametrize(("metric_class", "expected"), [(MeanSquaredError, False), (PearsonCorrCoef, True)])
 def test_check_full_state_update_fn(capsys, metric_class, expected):
     """Test that the check function works as it should."""
     check_forward_full_state_property(
@@ -144,7 +144,7 @@ def test_check_full_state_update_fn(capsys, metric_class, expected):
 
 
 @pytest.mark.parametrize(
-    "input, expected",
+    ("input", "expected"),
     [
         ((torch.ones(2), torch.ones(2)), True),
         ((torch.rand(2), torch.rand(2)), False),
