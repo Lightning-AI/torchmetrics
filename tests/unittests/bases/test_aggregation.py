@@ -115,7 +115,7 @@ def test_nan_error(value, nan_strategy, metric_class):
 
 
 @pytest.mark.parametrize(
-    "metric_class, nan_strategy, value, expected",
+    ("metric_class", "nan_strategy", "value", "expected"),
     [
         (MinMetric, "ignore", _case1, torch.tensor(float("inf"))),
         (MinMetric, 2.0, _case1, 2.0),
@@ -157,7 +157,7 @@ def test_error_on_wrong_nan_strategy(metric_class):
 
 @pytest.mark.skipif(not hasattr(torch, "broadcast_to"), reason="PyTorch <1.8 does not have broadcast_to")
 @pytest.mark.parametrize(
-    "weights, expected", [(1, 11.5), (torch.ones(2, 1, 1), 11.5), (torch.tensor([1, 2]).reshape(2, 1, 1), 13.5)]
+    ("weights", "expected"), [(1, 11.5), (torch.ones(2, 1, 1), 11.5), (torch.tensor([1, 2]).reshape(2, 1, 1), 13.5)]
 )
 def test_mean_metric_broadcasting(weights, expected):
     """check that weight broadcasting works for mean metric."""
