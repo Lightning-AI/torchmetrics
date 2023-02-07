@@ -186,17 +186,17 @@ def test_reset_real_features_arg(reset_real_features):
         assert metric.real_features_cov_sum.shape == torch.Size([64, 64])
 
 
-@pytest.mark.parametrize(
-    "normalize, expectation, message",
-    [
-        (True, does_not_raise(), None),
-        (False, pytest.raises(ValueError), "Expecting image as torch.Tensor with dtype=torch.uint8"),
-    ],
-)
-def test_normalize_arg(normalize, expectation, message):
+def test_normalize_arg_true():
     """Test that normalize argument works as expected."""
     img = torch.rand(2, 3, 299, 299)
-    metric = FrechetInceptionDistance(normalize=normalize)
-    with expectation as e:
+    metric = FrechetInceptionDistance(normalize=True)
+    with does_not_raise():
         metric.update(img, real=True)
-    assert message is None or message in str(e)
+
+
+def test_normalize_arg_false():
+    """Test that normalize argument works as expected."""
+    img = torch.rand(2, 3, 299, 299)
+    metric = FrechetInceptionDistance(normalize=False)
+    with pytest.raises(ValueError, match="Expecting image as torch.Tensor with dtype=torch.uint8"):
+        metric.update(img, real=True)

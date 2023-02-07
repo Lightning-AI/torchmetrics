@@ -95,7 +95,7 @@ def test_error_on_wrong_init():
 
 @pytest.mark.skipif(not _LPIPS_AVAILABLE, reason="test requires that lpips is installed")
 @pytest.mark.parametrize(
-    "inp1, inp2",
+    ("inp1", "inp2"),
     [
         (torch.rand(1, 1, 28, 28), torch.rand(1, 3, 28, 28)),  # wrong number of channels
         (torch.rand(1, 3, 28, 28), torch.rand(1, 1, 28, 28)),  # wrong number of channels

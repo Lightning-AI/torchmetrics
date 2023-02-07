@@ -112,7 +112,7 @@ class TestUQI(MetricTester):
 
 
 @pytest.mark.parametrize(
-    ["pred", "target", "kernel", "sigma"],
+    ("pred", "target", "kernel", "sigma"),
     [
         ([1, 16, 16], [1, 16, 16], [11, 11], [1.5, 1.5]),  # len(shape)
         ([1, 1, 16, 16], [1, 1, 16, 16], [11, 11], [1.5]),  # len(kernel), len(sigma)
@@ -133,7 +133,7 @@ def test_uqi_invalid_inputs(pred, target, kernel, sigma):
 
     pred = torch.rand(pred)
     target = torch.rand(target)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011  # todo
         universal_image_quality_index(pred, target, kernel, sigma)
 
 

@@ -48,7 +48,7 @@ def test_raises_error_on_wrong_input():
 
 
 @pytest.mark.parametrize(
-    "method, method_input",
+    ("method", "method_input"),
     [
         ("update", (torch.randint(10, (50,)), torch.randint(10, (50,)))),
         ("forward", (torch.randint(10, (50,)), torch.randint(10, (50,)))),
@@ -57,7 +57,7 @@ def test_raises_error_on_wrong_input():
 )
 def test_raises_error_if_increment_not_called(method, method_input):
     tracker = MetricTracker(MulticlassAccuracy(num_classes=10))
-    with pytest.raises(ValueError, match=f"`{method}` cannot be called before .*"):
+    with pytest.raises(ValueError, match=f"`{method}` cannot be called before .*"):  # noqa: PT012
         if method_input is not None:
             getattr(tracker, method)(*method_input)
         else:
@@ -65,7 +65,7 @@ def test_raises_error_if_increment_not_called(method, method_input):
 
 
 @pytest.mark.parametrize(
-    "base_metric, metric_input, maximize",
+    ("base_metric", "metric_input", "maximize"),
     [
         (MulticlassAccuracy(num_classes=10), (torch.randint(10, (50,)), torch.randint(10, (50,))), True),
         (MulticlassPrecision(num_classes=10), (torch.randint(10, (50,)), torch.randint(10, (50,))), True),
