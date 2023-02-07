@@ -77,7 +77,9 @@ def test_kid_raises_errors_and_warnings():
     with pytest.raises(TypeError, match="Got unknown input to argument `feature`"):
         KernelInceptionDistance(feature=[1, 2])
 
-    with pytest.raises(ValueError, match="Argument `subset_size` should be smaller than the number of samples"):
+    with pytest.raises(  # noqa: PT012 # todo
+        ValueError, match="Argument `subset_size` should be smaller than the number of samples"
+    ):
         m = KernelInceptionDistance()
         m.update(torch.randint(0, 255, (5, 3, 299, 299), dtype=torch.uint8), real=True)
         m.update(torch.randint(0, 255, (5, 3, 299, 299), dtype=torch.uint8), real=False)
@@ -105,7 +107,7 @@ def test_kid_extra_parameters():
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 @pytest.mark.parametrize("feature", [64, 192, 768, 2048])
 def test_kid_same_input(feature):
-    """test that the metric works."""
+    """Test that the metric works."""
     metric = KernelInceptionDistance(feature=feature, subsets=5, subset_size=2)
 
     for _ in range(2):
@@ -134,7 +136,7 @@ class _ImgDataset(Dataset):
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test is too slow without gpu")
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 def test_compare_kid(tmpdir, feature=2048):
-    """check that the hole pipeline give the same result as torch-fidelity."""
+    """Check that the hole pipeline give the same result as torch-fidelity."""
     from torch_fidelity import calculate_metrics
 
     metric = KernelInceptionDistance(feature=feature, subsets=1, subset_size=100).cuda()
@@ -192,17 +194,17 @@ def test_reset_real_features_arg(reset_real_features):
         assert list(metric.real_features[0].shape) == [2, 64]
 
 
-@pytest.mark.parametrize(
-    "normalize, expectation, message",
-    [
-        (True, does_not_raise(), None),
-        (False, pytest.raises(ValueError), "Expecting image as torch.Tensor with dtype=torch.uint8"),
-    ],
-)
-def test_normalize_arg(normalize, expectation, message):
+def test_normalize_arg_true():
     """Test that normalize argument works as expected."""
     img = torch.rand(2, 3, 299, 299)
-    metric = KernelInceptionDistance(normalize=normalize)
-    with expectation as e:
+    metric = KernelInceptionDistance(normalize=True)
+    with does_not_raise():
         metric.update(img, real=True)
-    assert message is None or message in str(e)
+
+
+def test_normalize_arg_false():
+    """Test that normalize argument works as expected."""
+    img = torch.rand(2, 3, 299, 299)
+    metric = KernelInceptionDistance(normalize=False)
+    with pytest.raises(ValueError, match="Expecting image as torch.Tensor with dtype=torch.uint8"):
+        metric.update(img, real=True)

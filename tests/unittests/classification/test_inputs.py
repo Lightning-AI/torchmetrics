@@ -127,7 +127,7 @@ def _mlmd_prob_to_mc_preds_tr(x):
 
 
 @pytest.mark.parametrize(
-    "inputs, num_classes, multiclass, top_k, exp_mode, post_preds, post_target",
+    ("inputs", "num_classes", "multiclass", "top_k", "exp_mode", "post_preds", "post_target"),
     [
         #############################
         # Test usual expected cases
@@ -218,7 +218,7 @@ def test_threshold():
 
 
 @pytest.mark.parametrize(
-    "preds, target, num_classes, multiclass",
+    ("preds", "target", "num_classes", "multiclass"),
     [
         # Target not integer
         (randint(high=2, size=(7,)), randint(high=2, size=(7,)).float(), None, None),
@@ -270,14 +270,14 @@ def test_threshold():
     ],
 )
 def test_incorrect_inputs(preds, target, num_classes, multiclass):
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011  # todo
         _input_format_classification(
             preds=preds, target=target, threshold=THRESHOLD, num_classes=num_classes, multiclass=multiclass
         )
 
 
 @pytest.mark.parametrize(
-    "preds, target, num_classes, multiclass, top_k",
+    ("preds", "target", "num_classes", "multiclass", "top_k"),
     [
         # Topk set with non (md)mc or ml prob data
         (_bin.preds[0], _bin.target[0], None, None, 2),
@@ -301,7 +301,7 @@ def test_incorrect_inputs(preds, target, num_classes, multiclass):
     ],
 )
 def test_incorrect_inputs_topk(preds, target, num_classes, multiclass, top_k):
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011  # todo
         _input_format_classification(
             preds=preds,
             target=target,

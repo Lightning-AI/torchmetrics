@@ -23,9 +23,11 @@ class RandomDictStringDataset(Dataset):
         self.data = torch.randn(length, size)
 
     def __getitem__(self, index):
+        """Get datapoint."""
         return {"id": str(index), "x": self.data[index]}
 
     def __len__(self):
+        """Return length of dataset."""
         return self.len
 
 
@@ -35,9 +37,11 @@ class RandomDataset(Dataset):
         self.data = torch.randn(length, size)
 
     def __getitem__(self, index):
+        """Get datapoint."""
         return self.data[index]
 
     def __len__(self):
+        """Get length of dataset."""
         return self.len
 
 
