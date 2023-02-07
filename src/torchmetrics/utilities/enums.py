@@ -39,7 +39,7 @@ class EnumStr(StrEnum):
           ...
         ValueError: Invalid Task: expected one of ['a', 'b'], but got c.
         """
-        enum_key = super().from_str(value)
+        enum_key = super().from_str(value.replace("-", "_"))
         if enum_key is not None:
             return enum_key
         _allowed_im = [m.lower() for m in cls._member_names_]
