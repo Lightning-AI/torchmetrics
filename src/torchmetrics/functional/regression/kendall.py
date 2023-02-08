@@ -26,45 +26,25 @@ from torchmetrics.utilities.enums import EnumStr
 class _MetricVariant(EnumStr):
     """Enumerate for metric variants."""
 
+    @staticmethod
+    def _name() -> str:
+        return "variant"
+
     A = "a"
     B = "b"
     C = "c"
-
-    @classmethod
-    def from_str(cls, value: Literal["a", "b", "c"]) -> "_MetricVariant":  # type: ignore[override]
-        """Raises:
-        ValueError:
-        If required metric variant is not among the supported options.
-        """
-        _allowed_variants = [im.lower() for im in _MetricVariant._member_names_]
-
-        enum_key = super().from_str(value)
-        if enum_key is not None and enum_key in _allowed_variants:
-            return enum_key  # type: ignore[return-value]  # use override
-        raise ValueError(f"Invalid metric variant. Expected one of {_allowed_variants}, but got {enum_key}.")
 
 
 class _TestAlternative(EnumStr):
     """Enumerate for test altenative options."""
 
+    @staticmethod
+    def _name() -> str:
+        return "alternative"
+
     TWO_SIDED = "two-sided"
     LESS = "less"
     GREATER = "greater"
-
-    @classmethod
-    def from_str(cls, value: Literal["two-sided", "less", "greater"]) -> "_TestAlternative":  # type: ignore[override]
-        """Load from string.
-
-        Raises:
-            ValueError:
-                If required test alternative is not among the supported options.
-        """
-        _allowed_alternatives = [im.lower().replace("_", "-") for im in _TestAlternative._member_names_]
-
-        enum_key = super().from_str(value.replace("-", "_"))
-        if enum_key is not None and enum_key in _allowed_alternatives:
-            return enum_key  # type: ignore[return-value]  # use override
-        raise ValueError(f"Invalid test alternative. Expected one of {_allowed_alternatives}, but got {enum_key}.")
 
 
 def _sort_on_first_sequence(x: Tensor, y: Tensor) -> Tuple[Tensor, Tensor]:

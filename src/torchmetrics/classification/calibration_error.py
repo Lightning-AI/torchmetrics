@@ -29,6 +29,7 @@ from torchmetrics.functional.classification.calibration_error import (
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
+from torchmetrics.utilities.enums import ClassificationTaskNoMultilabel
 
 
 class BinaryCalibrationError(Metric):
@@ -267,12 +268,10 @@ class CalibrationError:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
+        task = ClassificationTaskNoMultilabel.from_str(task)
         kwargs.update({"n_bins": n_bins, "norm": norm, "ignore_index": ignore_index, "validate_args": validate_args})
-        if task == "binary":
+        if task == ClassificationTaskNoMultilabel.BINARY:
             return BinaryCalibrationError(**kwargs)
-        if task == "multiclass":
+        if task == ClassificationTaskNoMultilabel.MULTICLASS:
             assert isinstance(num_classes, int)
             return MulticlassCalibrationError(num_classes, **kwargs)
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-        )
