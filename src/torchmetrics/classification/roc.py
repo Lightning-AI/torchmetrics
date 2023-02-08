@@ -136,14 +136,12 @@ class BinaryROC(BinaryPrecisionRecallCurve):
             name: Custom name to describe the classifier
 
         Returns:
-            fig: Figure object
-            ax: Axes object
+            Figure and Axes object
 
         Raises:
             ModuleNotFoundError:
                 If `matplotlib` is not installed
 
-        Example:
         .. plot::
             :scale: 75
 
