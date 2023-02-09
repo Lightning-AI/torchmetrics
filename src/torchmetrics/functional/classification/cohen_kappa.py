@@ -27,6 +27,7 @@ from torchmetrics.functional.classification.confusion_matrix import (
     _multiclass_confusion_matrix_tensor_validation,
     _multiclass_confusion_matrix_update,
 )
+from torchmetrics.utilities.enums import ClassificationTaskNoMultilabel
 
 
 def _cohen_kappa_reduce(confmat: Tensor, weights: Optional[Literal["linear", "quadratic", "none"]] = None) -> Tensor:
@@ -256,9 +257,10 @@ def cohen_kappa(
         >>> cohen_kappa(preds, target, task="multiclass", num_classes=2)
         tensor(0.5000)
     """
-    if task == "binary":
+    task = ClassificationTaskNoMultilabel.from_str(task)
+    if task == ClassificationTaskNoMultilabel.BINARY:
         return binary_cohen_kappa(preds, target, threshold, weights, ignore_index, validate_args)
-    if task == "multiclass":
+    if task == ClassificationTaskNoMultilabel.MULTICLASS:
         assert isinstance(num_classes, int)
         return multiclass_cohen_kappa(preds, target, num_classes, weights, ignore_index, validate_args)
-    raise ValueError(f"Expected argument `task` to either be `'binary'` or `'multiclass'` but got {task}")
+    raise ValueError(f"Not handled value: {task}")  # this is for compliant of mypy
