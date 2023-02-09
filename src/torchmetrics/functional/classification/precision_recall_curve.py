@@ -195,10 +195,16 @@ def _binary_precision_recall_curve_update(
     if thresholds is None:
         return preds, target
     len_t = len(thresholds)
-    preds_t = (preds.unsqueeze(-1) >= thresholds.unsqueeze(0)).long()  # num_samples x num_thresholds
-    unique_mapping = preds_t + 2 * target.unsqueeze(-1) + 4 * torch.arange(len_t, device=target.device)
-    bins = _bincount(unique_mapping.flatten(), minlength=4 * len_t)
-    return bins.reshape(len_t, 2, 2)
+    target = target == 1
+    confmat = thresholds.new_empty((len_t, 2, 2), dtype=torch.int64)
+    # Iterate one threshold at a time to conserve memory
+    for i in range(len_t):
+        preds_t = preds >= thresholds[i]
+        confmat[i, 1, 1] = (target & preds_t).sum()
+        confmat[i, 0, 1] = ((~target) & preds_t).sum()
+        confmat[i, 1, 0] = (target & (~preds_t)).sum()
+    confmat[:, 0, 0] = len(preds_t) - confmat[:, 0, 1] - confmat[:, 1, 0] - confmat[:, 1, 1]
+    return confmat
 
 
 def _binary_precision_recall_curve_compute(
@@ -408,14 +414,16 @@ def _multiclass_precision_recall_curve_update(
     if thresholds is None:
         return preds, target
     len_t = len(thresholds)
-    # num_samples x num_classes x num_thresholds
-    preds_t = (preds.unsqueeze(-1) >= thresholds.unsqueeze(0).unsqueeze(0)).long()
     target_t = torch.nn.functional.one_hot(target, num_classes=num_classes)
-    unique_mapping = preds_t + 2 * target_t.unsqueeze(-1)
-    unique_mapping += 4 * torch.arange(num_classes, device=preds.device).unsqueeze(0).unsqueeze(-1)
-    unique_mapping += 4 * num_classes * torch.arange(len_t, device=preds.device)
-    bins = _bincount(unique_mapping.flatten(), minlength=4 * num_classes * len_t)
-    return bins.reshape(len_t, num_classes, 2, 2)
+    confmat = thresholds.new_empty((len_t, num_classes, 2, 2), dtype=torch.int64)
+    # Iterate one threshold at a time to conserve memory
+    for i in range(len_t):
+        preds_t = preds >= thresholds[i]
+        confmat[i, :, 1, 1] = (target_t & preds_t).sum(dim=0)
+        confmat[i, :, 0, 1] = ((~target_t) & preds_t).sum(dim=0)
+        confmat[i, :, 1, 0] = (target_t & (~preds_t)).sum(dim=0)
+    confmat[:, :, 0, 0] = len(preds_t) - confmat[:, :, 0, 1] - confmat[:, :, 1, 0] - confmat[:, :, 1, 1]
+    return confmat
 
 
 def _multiclass_precision_recall_curve_compute(
