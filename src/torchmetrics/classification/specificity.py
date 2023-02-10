@@ -27,8 +27,9 @@ class BinarySpecificity(BinaryStatScores):
 
     .. math:: \text{Specificity} = \frac{\text{TN}}{\text{TN} + \text{FP}}
 
-    Where :math:`\text{TN}` and :math:`\text{FP}` represent the number of true negatives and
-    false positives respecitively.
+    Where :math:`\text{TN}` and :math:`\text{FP}` represent the number of true negatives and false positives
+    respectively. The metric is only proper defined when :math:`\text{TN} + \text{FP} \neq 0`. If this case is
+    encountered a score of 0 is returned.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -94,8 +95,10 @@ class MulticlassSpecificity(MulticlassStatScores):
 
     .. math:: \text{Specificity} = \frac{\text{TN}}{\text{TN} + \text{FP}}
 
-    Where :math:`\text{TN}` and :math:`\text{FP}` represent the number of true negatives and
-    false positives respecitively.
+    Where :math:`\text{TN}` and :math:`\text{FP}` represent the number of true negatives and false positives
+    respectively.  The metric is only proper defined when :math:`\text{TN} + \text{FP} \neq 0`. If this case is
+    encountered for any class, the metric for that class will be set to 0 and the overall metric may therefore be
+    affected in turn.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -193,8 +196,10 @@ class MultilabelSpecificity(MultilabelStatScores):
 
     .. math:: \text{Specificity} = \frac{\text{TN}}{\text{TN} + \text{FP}}
 
-    Where :math:`\text{TN}` and :math:`\text{FP}` represent the number of true negatives and
-    false positives respecitively.
+    Where :math:`\text{TN}` and :math:`\text{FP}` represent the number of true negatives and false positives
+    respectively. The metric is only proper defined when :math:`\text{TN} + \text{FP} \neq 0`. If this case is
+    encountered for any label, the metric for that label will be set to 0 and the overall metric may therefore be
+    affected in turn.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -288,8 +293,10 @@ class Specificity:
 
     .. math:: \text{Specificity} = \frac{\text{TN}}{\text{TN} + \text{FP}}
 
-    Where :math:`\text{TN}` and :math:`\text{FP}` represent the number of true negatives and
-    false positives respecitively.
+    Where :math:`\text{TN}` and :math:`\text{FP}` represent the number of true negatives and false positives
+    respectively. The metric is only proper defined when :math:`\text{TP} + \text{FP} \neq 0`. If this case is
+    encountered for any class/label, the metric for that class/label will be set to 0 and the overall metric may
+    therefore be affected in turn.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of

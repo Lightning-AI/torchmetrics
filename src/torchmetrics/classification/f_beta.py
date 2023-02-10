@@ -34,13 +34,16 @@ class BinaryFBetaScore(BinaryStatScores):
         F_{\beta} = (1 + \beta^2) * \frac{\text{precision} * \text{recall}}
         {(\beta^2 * \text{precision}) + \text{recall}}
 
+    The metric is only proper defined when :math:`\text{TP} + \text{FP} \neq 0 \wedge \text{TP} + \text{FN} \neq 0`
+    where :math:`\text{TP}`, :math:`\text{FP}` and :math:`\text{FN}` represent the number of true positives, false
+    positives and false negatives respectively. If this case is encountered a score of 0 is returned.
+
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
     - ``preds`` (:class:`~torch.Tensor`): An int tensor or float tensor of shape ``(N, ...)``. If preds is a floating
       point tensor with values outside [0,1] range we consider the input to be logits and will auto apply sigmoid
       per element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``.
-
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
@@ -127,6 +130,11 @@ class MulticlassFBetaScore(MulticlassStatScores):
     .. math::
         F_{\beta} = (1 + \beta^2) * \frac{\text{precision} * \text{recall}}
         {(\beta^2 * \text{precision}) + \text{recall}}
+
+    The metric is only proper defined when :math:`\text{TP} + \text{FP} \neq 0 \wedge \text{TP} + \text{FN} \neq 0`
+    where :math:`\text{TP}`, :math:`\text{FP}` and :math:`\text{FN}` represent the number of true positives, false
+    positives and false negatives respectively. If this case is encountered for any class, the metric for that class
+    will be set to 0 and the overall metric may therefore be affected in turn.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -256,6 +264,11 @@ class MultilabelFBetaScore(MultilabelStatScores):
         F_{\beta} = (1 + \beta^2) * \frac{\text{precision} * \text{recall}}
         {(\beta^2 * \text{precision}) + \text{recall}}
 
+    The metric is only proper defined when :math:`\text{TP} + \text{FP} \neq 0 \wedge \text{TP} + \text{FN} \neq 0`
+    where :math:`\text{TP}`, :math:`\text{FP}` and :math:`\text{FN}` represent the number of true positives, false
+    positives and false negatives respectively. If this case is encountered for any label, the metric for that label
+    will be set to 0 and the overall metric may therefore be affected in turn.
+
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
     - ``preds`` (:class:`~torch.Tensor`): An int or float tensor of shape ``(N, C, ...)``. If preds is a floating
@@ -379,13 +392,16 @@ class BinaryF1Score(BinaryFBetaScore):
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
 
+    The metric is only proper defined when :math:`\text{TP} + \text{FP} \neq 0 \wedge \text{TP} + \text{FN} \neq 0`
+    where :math:`\text{TP}`, :math:`\text{FP}` and :math:`\text{FN}` represent the number of true positives, false
+    positives and false negatives respectively. If this case is encountered a score of 0 is returned.
+
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
     - ``preds`` (:class:`~torch.Tensor`): An int or float tensor of shape ``(N, ...)``. If preds is a floating point
       tensor with values outside [0,1] range we consider the input to be logits and will auto apply sigmoid per
       element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``
-
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
@@ -463,13 +479,17 @@ class MulticlassF1Score(MulticlassFBetaScore):
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
 
+    The metric is only proper defined when :math:`\text{TP} + \text{FP} \neq 0 \wedge \text{TP} + \text{FN} \neq 0`
+    where :math:`\text{TP}`, :math:`\text{FP}` and :math:`\text{FN}` represent the number of true positives, false
+    positives and false negatives respectively.  If this case is encountered for any class, the metric for that class
+    will be set to 0 and the overall metric may therefore be affected in turn.
+
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
     - ``preds`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)`` or float tensor of shape ``(N, C, ..)``.
       If preds is a floating point we apply ``torch.argmax`` along the ``C`` dimension to automatically convert
       probabilities/logits into an int tensor.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``
-
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
@@ -582,6 +602,11 @@ class MultilabelF1Score(MultilabelFBetaScore):
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
 
+    The metric is only proper defined when :math:`\text{TP} + \text{FP} \neq 0 \wedge \text{TP} + \text{FN} \neq 0`
+    where :math:`\text{TP}`, :math:`\text{FP}` and :math:`\text{FN}` represent the number of true positives, false
+    positives and false negatives respectively. If this case is encountered for any label, the metric for that label
+    will be set to 0 and the overall metric may therefore be affected in turn.
+
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
     - ``preds`` (:class:`~torch.Tensor`): An int or float tensor of shape ``(N, C, ...)``.
@@ -589,7 +614,6 @@ class MultilabelF1Score(MultilabelFBetaScore):
       will auto apply sigmoid per element. Addtionally, we convert to int tensor with thresholding using the value
       in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``.
-
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
@@ -698,6 +722,11 @@ class FBetaScore:
         F_{\beta} = (1 + \beta^2) * \frac{\text{precision} * \text{recall}}
         {(\beta^2 * \text{precision}) + \text{recall}}
 
+    The metric is only proper defined when :math:`\text{TP} + \text{FP} \neq 0 \wedge \text{TP} + \text{FN} \neq 0`
+    where :math:`\text{TP}`, :math:`\text{FP}` and :math:`\text{FN}` represent the number of true positives, false
+    positives and false negatives respectively. If this case is encountered for any class/label, the metric for that
+    class/label will be set to 0 and the overall metric may therefore be affected in turn.
+
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
     :func:`binary_fbeta_score`, :func:`multiclass_fbeta_score` and :func:`multilabel_fbeta_score` for the specific
@@ -749,6 +778,11 @@ class F1Score:
 
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
+
+    The metric is only proper defined when :math:`\text{TP} + \text{FP} \neq 0 \wedge \text{TP} + \text{FN} \neq 0`
+    where :math:`\text{TP}`, :math:`\text{FP}` and :math:`\text{FN}` represent the number of true positives, false
+    positives and false negatives respectively. If this case is encountered for any class/label, the metric for that
+    class/label will be set to 0 and the overall metric may therefore be affected in turn.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
