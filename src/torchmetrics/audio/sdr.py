@@ -134,7 +134,6 @@ class SignalDistortionRatio(Metric):
             ModuleNotFoundError:
                 If `matplotlib` is not installed
 
-        Examples:
         .. plot::
             :scale: 75
 
@@ -240,7 +239,6 @@ class ScaleInvariantSignalDistortionRatio(Metric):
             ModuleNotFoundError:
                 If `matplotlib` is not installed
 
-        Examples:
         .. plot::
             :scale: 75
 
