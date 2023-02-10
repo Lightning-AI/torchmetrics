@@ -175,13 +175,12 @@ class MaxMetric(BaseAggregator):
             ModuleNotFoundError:
                 If `matplotlib` is not installed
 
-        Examples:
         .. plot::
             :scale: 75
 
             >>> # Example plotting a single value
             >>> from torchmetrics import MaxMetric
-            >>> metric = BinaryAccuracy()
+            >>> metric = MaxMetric()
             >>> metric.update([1, 2, 3])
             >>> fig_, ax_ = metric.plot()
 
@@ -189,8 +188,8 @@ class MaxMetric(BaseAggregator):
             :scale: 75
 
             >>> # Example plotting multiple values
-            >>> from torchmetrics.classification import MaxMetric
-            >>> metric = BinaryAccuracy()
+            >>> from torchmetrics import MaxMetric
+            >>> metric = MaxMetric()
             >>> values = [ ]
             >>> for i in range(10):
             ...     values.append(metric(i))
@@ -280,7 +279,6 @@ class MinMetric(BaseAggregator):
             ModuleNotFoundError:
                 If `matplotlib` is not installed
 
-        Examples:
         .. plot::
             :scale: 75
 
@@ -383,7 +381,6 @@ class SumMetric(BaseAggregator):
             ModuleNotFoundError:
                 If `matplotlib` is not installed
 
-        Examples:
         .. plot::
             :scale: 75
 
@@ -396,10 +393,10 @@ class SumMetric(BaseAggregator):
         .. plot::
             :scale: 75
 
-            >>> from torch import rand, randint
             >>> # Example plotting multiple values
-            >>> from torchmetrics.classification import BinaryAccuracy
-            >>> metric = BinaryAccuracy()
+            >>> from torch import rand, randint
+            >>> from torchmetrics import SumMetric
+            >>> metric = SumMetric()
             >>> values = [ ]
             >>> for i in range(10):
             ...     values.append(metric([i, i+1]))
@@ -563,7 +560,6 @@ class MeanMetric(BaseAggregator):
             ModuleNotFoundError:
                 If `matplotlib` is not installed
 
-        Examples:
         .. plot::
             :scale: 75
 
