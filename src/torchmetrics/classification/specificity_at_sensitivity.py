@@ -199,7 +199,7 @@ class MulticlassSpecificityAtSensitivity(MulticlassPrecisionRecallCurve):
         self.min_sensitivity = min_sensitivity
 
     def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore
-        state = [_cat(self.preds), _cat(self.target)] if self.thresholds is None else self.confmat
+        state = [_cat(self.preds), _cat(self.target)] if self.thresholds is None else self.confmat  # type: ignore
         return _multiclass_specificity_at_sensitivity_compute(
             state, self.num_classes, self.thresholds, self.min_sensitivity  # type: ignore
         )
@@ -291,7 +291,7 @@ class MultilabelSpecificityAtSensitivity(MultilabelPrecisionRecallCurve):
         self.min_sensitivity = min_sensitivity
 
     def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
-        state = [_cat(self.preds), _cat(self.target)] if self.thresholds is None else self.confmat
+        state = [_cat(self.preds), _cat(self.target)] if self.thresholds is None else self.confmat  # type: ignore
         return _multilabel_specificity_at_sensitivity_compute(
             state, self.num_labels, self.thresholds, self.ignore_index, self.min_sensitivity  # type: ignore
         )
