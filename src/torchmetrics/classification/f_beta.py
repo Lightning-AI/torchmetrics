@@ -117,6 +117,7 @@ class BinaryFBetaScore(BinaryStatScores):
         self.beta = beta
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _fbeta_reduce(tp, fp, tn, fn, self.beta, average="binary", multidim_average=self.multidim_average)
 
@@ -245,6 +246,7 @@ class MulticlassFBetaScore(MulticlassStatScores):
         self.beta = beta
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _fbeta_reduce(tp, fp, tn, fn, self.beta, average=self.average, multidim_average=self.multidim_average)
 
@@ -369,6 +371,7 @@ class MultilabelFBetaScore(MultilabelStatScores):
         self.beta = beta
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _fbeta_reduce(tp, fp, tn, fn, self.beta, average=self.average, multidim_average=self.multidim_average)
 
@@ -726,6 +729,7 @@ class FBetaScore:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
+        """Initialize task metric."""
         assert multidim_average is not None
         kwargs.update(
             {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
@@ -777,6 +781,7 @@ class F1Score:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
+        """Initialize task metric."""
         task = ClassificationTask.from_str(task)
         assert multidim_average is not None
         kwargs.update(

@@ -54,6 +54,7 @@ class NoTrainInceptionV3(FeatureExtractorInceptionV3):
         return super().train(False)
 
     def forward(self, x: Tensor) -> Tensor:
+        """Forward pass of neural network with reshaping of output."""
         out = super().forward(x)
         return out[0].reshape(x.shape[0], -1)
 
@@ -66,6 +67,7 @@ class MatrixSquareRoot(Function):
 
     @staticmethod
     def forward(ctx: Any, input_data: Tensor) -> Tensor:
+        """Implements the forward pass for the matrix square root."""
         # TODO: update whenever pytorch gets an matrix square root function
         # Issue: https://github.com/pytorch/pytorch/issues/9983
         m = input_data.detach().cpu().numpy().astype(np.float_)
@@ -76,6 +78,7 @@ class MatrixSquareRoot(Function):
 
     @staticmethod
     def backward(ctx: Any, grad_output: Tensor) -> Tensor:
+        """Implements the backward pass for matrix square root."""
         grad_input = None
         if ctx.needs_input_grad[0]:
             (sqrtm,) = ctx.saved_tensors
@@ -288,6 +291,7 @@ class FrechetInceptionDistance(Metric):
         return _compute_fid(mean_real.squeeze(0), cov_real, mean_fake.squeeze(0), cov_fake).to(self.orig_dtype)
 
     def reset(self) -> None:
+        """Reset metric states."""
         if not self.reset_real_features:
             real_features_sum = deepcopy(self.real_features_sum)
             real_features_cov_sum = deepcopy(self.real_features_cov_sum)

@@ -687,6 +687,15 @@ class Metric(Module, ABC):
         prefix: str = "",
         keep_vars: bool = False,
     ) -> Optional[Dict[str, Any]]:
+        """Get the current state of metric as an dictionary.
+
+        Args:
+            destination: Optional dictionary, that if provided, the state of module will be updated into the dict and
+                the same object is returned. Otherwise, an ``OrderedDict`` will be created and returned.
+            prefix: optional string, a prefix added to parameter and buffer names to compose the keys in state_dict.
+            keep_vars: by default the :class:`~torch.Tensor`s returned in the state dict are detached from autograd.
+                If set to ``True``, detaching will not be performed.
+        """
         destination = super().state_dict(destination=destination, prefix=prefix, keep_vars=keep_vars)
         # Register metric states to be part of the state_dict
         for key in self._defaults:
@@ -912,6 +921,7 @@ class CompositionalMetric(Metric):
         pass
 
     def update(self, *args: Any, **kwargs: Any) -> None:
+        """Update metric state."""
         if isinstance(self.metric_a, Metric):
             self.metric_a.update(*args, **self.metric_a._filter_kwargs(**kwargs))
 
@@ -919,6 +929,7 @@ class CompositionalMetric(Metric):
             self.metric_b.update(*args, **self.metric_b._filter_kwargs(**kwargs))
 
     def compute(self) -> Any:
+        """Compute metric."""
         # also some parsing for kwargs?
         val_a = self.metric_a.compute() if isinstance(self.metric_a, Metric) else self.metric_a
 
@@ -931,6 +942,7 @@ class CompositionalMetric(Metric):
 
     @torch.jit.unused
     def forward(self, *args: Any, **kwargs: Any) -> Any:
+        """Calculate metric on current batch and accumulate to global state."""
         val_a = (
             self.metric_a(*args, **self.metric_a._filter_kwargs(**kwargs))
             if isinstance(self.metric_a, Metric)
@@ -956,6 +968,7 @@ class CompositionalMetric(Metric):
         return self.op(val_a, val_b)
 
     def reset(self) -> None:
+        """Reset metric state."""
         if isinstance(self.metric_a, Metric):
             self.metric_a.reset()
 
@@ -963,6 +976,12 @@ class CompositionalMetric(Metric):
             self.metric_b.reset()
 
     def persistent(self, mode: bool = False) -> None:
+        """Change if metric state is persistent (save as part of state_dict) or not.
+
+        Args:
+            mode: bool indicating if all states should be persistent or not
+
+        """
         if isinstance(self.metric_a, Metric):
             self.metric_a.persistent(mode=mode)
         if isinstance(self.metric_b, Metric):

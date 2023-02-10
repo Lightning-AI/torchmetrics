@@ -89,6 +89,7 @@ class BinaryJaccardIndex(BinaryConfusionMatrix):
         )
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         return _jaccard_index_reduce(self.confmat, average="binary")
 
 
@@ -172,6 +173,7 @@ class MulticlassJaccardIndex(MulticlassConfusionMatrix):
         self.average = average
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         return _jaccard_index_reduce(self.confmat, average=self.average)
 
 
@@ -259,6 +261,7 @@ class MultilabelJaccardIndex(MultilabelConfusionMatrix):
         self.average = average
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         return _jaccard_index_reduce(self.confmat, average=self.average)
 
 
@@ -296,6 +299,7 @@ class JaccardIndex:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
+        """Initialize task metric."""
         task = ClassificationTask.from_str(task)
         kwargs.update({"ignore_index": ignore_index, "validate_args": validate_args})
         if task == ClassificationTask.BINARY:
