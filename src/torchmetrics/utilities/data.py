@@ -223,7 +223,7 @@ def _bincount(x: Tensor, minlength: Optional[int] = None) -> Tensor:
     Example:
         >>> x = torch.tensor([0,0,0,1,1,2,2,2,2])
         >>> _bincount(x, minlength=3)
-        tensor([3,2,4])
+        tensor([3, 2, 4])
 
     """
     if minlength is None:
