@@ -23,6 +23,7 @@ from torchmetrics.functional.classification.cohen_kappa import (
     _multiclass_cohen_kappa_arg_validation,
 )
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.enums import ClassificationTaskNoMultilabel
 
 
 class BinaryCohenKappa(BinaryConfusionMatrix):
@@ -221,12 +222,10 @@ class CohenKappa:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
+        task = ClassificationTaskNoMultilabel.from_str(task)
         kwargs.update({"weights": weights, "ignore_index": ignore_index, "validate_args": validate_args})
-        if task == "binary":
+        if task == ClassificationTaskNoMultilabel.BINARY:
             return BinaryCohenKappa(threshold, **kwargs)
-        if task == "multiclass":
+        if task == ClassificationTaskNoMultilabel.MULTICLASS:
             assert isinstance(num_classes, int)
             return MulticlassCohenKappa(num_classes, **kwargs)
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-        )
