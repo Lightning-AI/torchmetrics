@@ -561,7 +561,7 @@ class Metric(Module, ABC):
         distributed backend.
         """
 
-    def plot(self, *_: Any, **__: Any) -> None:
+    def plot(self, *_: Any, **__: Any) -> Any:
         """Override this method plot the metric value."""
         raise NotImplementedError
 
