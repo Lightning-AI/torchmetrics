@@ -18,6 +18,7 @@ import torch
 
 
 def pesq_example():
+    """Plot PESQ audio example."""
     from torchmetrics.audio.pesq import PerceptualEvaluationSpeechQuality
 
     p = lambda: torch.randn(8000)
@@ -37,6 +38,7 @@ def pesq_example():
 
 
 def pit_example():
+    """Plot PIT audio example."""
     from torchmetrics.audio.pit import PermutationInvariantTraining
     from torchmetrics.functional import scale_invariant_signal_noise_ratio
 
@@ -57,6 +59,7 @@ def pit_example():
 
 
 def sdr_example():
+    """Plot SDR audio example."""
     from torchmetrics.audio.sdr import SignalDistortionRatio
 
     p = lambda: torch.randn(8000)
@@ -76,6 +79,7 @@ def sdr_example():
 
 
 def si_sdr_example():
+    """Plot SI-SDR audio example."""
     from torchmetrics.audio.sdr import ScaleInvariantSignalDistortionRatio
 
     p = lambda: torch.randn(5)
@@ -95,6 +99,7 @@ def si_sdr_example():
 
 
 def snr_example():
+    """Plot SNR audio example."""
     from torchmetrics.audio.snr import SignalNoiseRatio
 
     p = lambda: torch.randn(4)
@@ -114,6 +119,7 @@ def snr_example():
 
 
 def si_snr_example():
+    """Plot SI-SNR example."""
     from torchmetrics.audio.snr import ScaleInvariantSignalNoiseRatio
 
     p = lambda: torch.randn(4)
@@ -133,6 +139,7 @@ def si_snr_example():
 
 
 def stoi_example():
+    """Plot STOI example."""
     from torchmetrics.audio.stoi import ShortTimeObjectiveIntelligibility
 
     p = lambda: torch.randn(8000)
