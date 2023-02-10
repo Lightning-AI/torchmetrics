@@ -21,8 +21,9 @@ from torchmetrics.metric import Metric
 
 
 class WordErrorRate(Metric):
-    r"""Word error rate (`WordErrorRate`_) is a common metric of the performance of an automatic speech recognition
-    system. This value indicates the percentage of words that were incorrectly predicted. The lower the value, the
+    r"""Word error rate (`WordErrorRate`_) is a common metric of the performance of an automatic speech recognition.
+
+    This value indicates the percentage of words that were incorrectly predicted. The lower the value, the
     better the performance of the ASR system with a WER of 0 being a perfect score. Word error rate can then be
     computed as:
 

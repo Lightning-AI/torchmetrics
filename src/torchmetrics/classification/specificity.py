@@ -23,7 +23,7 @@ from torchmetrics.utilities.enums import ClassificationTask
 
 
 class BinarySpecificity(BinaryStatScores):
-    r"""Compute `Specificity`_ for binary tasks:
+    r"""Compute `Specificity`_ for binary tasks.
 
     .. math:: \text{Specificity} = \frac{\text{TN}}{\text{TN} + \text{FP}}
 
@@ -90,7 +90,7 @@ class BinarySpecificity(BinaryStatScores):
 
 
 class MulticlassSpecificity(MulticlassStatScores):
-    r"""Compute `Specificity`_ for multiclass tasks:
+    r"""Compute `Specificity`_ for multiclass tasks.
 
     .. math:: \text{Specificity} = \frac{\text{TN}}{\text{TN} + \text{FP}}
 

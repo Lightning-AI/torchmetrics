@@ -35,8 +35,10 @@ if not _TRANSFORMERS_AVAILABLE:
 
 
 class InfoLM(Metric):
-    """Calculate `InfoLM`_ - i.e. calculate a distance/divergence between predicted and reference sentence discrete
-    distribution using one of the following information measures:
+    """Calculate `InfoLM`_.
+
+    InfoLM measures a distance/divergence between predicted and reference sentence discrete distribution using one of
+    the following information measures:
 
         - `KL divergence`_
         - `alpha divergence`_

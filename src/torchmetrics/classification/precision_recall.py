@@ -23,7 +23,7 @@ from torchmetrics.utilities.enums import ClassificationTask
 
 
 class BinaryPrecision(BinaryStatScores):
-    r"""Compute `Precision`_ for binary tasks:
+    r"""Compute `Precision`_ for binary tasks.
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 
@@ -302,7 +302,7 @@ class MultilabelPrecision(MultilabelStatScores):
 
 
 class BinaryRecall(BinaryStatScores):
-    r"""Compute `Recall`_ for binary tasks:
+    r"""Compute `Recall`_ for binary tasks.
 
     .. math:: \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
 
@@ -375,7 +375,7 @@ class BinaryRecall(BinaryStatScores):
 
 
 class MulticlassRecall(MulticlassStatScores):
-    r"""Compute `Recall`_ for multiclass tasks:
+    r"""Compute `Recall`_ for multiclass tasks.
 
     .. math:: \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
 
@@ -479,7 +479,7 @@ class MulticlassRecall(MulticlassStatScores):
 
 
 class MultilabelRecall(MultilabelStatScores):
-    r"""Compute `Recall`_ for multilabel tasks:
+    r"""Compute `Recall`_ for multilabel tasks.
 
     .. math:: \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
 
@@ -580,7 +580,7 @@ class MultilabelRecall(MultilabelStatScores):
 
 
 class Precision:
-    r"""Compute `Precision`_:
+    r"""Compute `Precision`_.
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 
@@ -634,7 +634,7 @@ class Precision:
 
 
 class Recall:
-    r"""Compute `Recall`_:
+    r"""Compute `Recall`_.
 
     .. math:: \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
 
