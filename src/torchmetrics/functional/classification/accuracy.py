@@ -32,6 +32,7 @@ from torchmetrics.functional.classification.stat_scores import (
     _multilabel_stat_scores_update,
 )
 from torchmetrics.utilities.compute import _safe_divide
+from torchmetrics.utilities.enums import ClassificationTask
 from torchmetrics.utilities.exceptions import MisConfigurationError
 
 
@@ -397,14 +398,16 @@ def accuracy(
         >>> accuracy(preds, target, task="multiclass", num_classes=3, top_k=2)
         tensor(0.6667)
     """
+    task = ClassificationTask.from_str(task)
+
     if task not in ["binary", "multiclass", "multilabel"]:
         raise MisConfigurationError(
             f"Expected argument `task` must be one of (`'binary'`, `'multiclass'`, `'multilabel'`). Got `{task}`"
         )
 
-    if task == "binary":
+    if task == ClassificationTask.BINARY:
         return binary_accuracy(preds, target, threshold, multidim_average, ignore_index, validate_args)
-    if task == "multiclass":
+    if task == ClassificationTask.MULTICLASS:
         if not isinstance(num_classes, int):
             raise MisConfigurationError(
                 f"Optional arg `num_classes` must be type `int` when task is {task}. Got {type(num_classes)}"
@@ -416,7 +419,7 @@ def accuracy(
         return multiclass_accuracy(
             preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args
         )
-    if task == "multilabel":
+    if task == ClassificationTask.MULTILABEL:
         if not isinstance(num_labels, int):
             raise MisConfigurationError(
                 f"Optional arg `num_labels` must be type `int` when task is {task}. Got {type(num_labels)}"

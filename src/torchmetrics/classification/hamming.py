@@ -19,6 +19,7 @@ from typing_extensions import Literal
 from torchmetrics.classification.stat_scores import BinaryStatScores, MulticlassStatScores, MultilabelStatScores
 from torchmetrics.functional.classification.hamming import _hamming_distance_reduce
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.enums import ClassificationTask
 
 
 class BinaryHammingDistance(BinaryStatScores):
@@ -344,20 +345,17 @@ class HammingDistance:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
-
+        task = ClassificationTask.from_str(task)
         assert multidim_average is not None
         kwargs.update(
             {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
         )
-        if task == "binary":
+        if task == ClassificationTask.BINARY:
             return BinaryHammingDistance(threshold, **kwargs)
-        if task == "multiclass":
+        if task == ClassificationTask.MULTICLASS:
             assert isinstance(num_classes, int)
             assert isinstance(top_k, int)
             return MulticlassHammingDistance(num_classes, top_k, average, **kwargs)
-        if task == "multilabel":
+        if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelHammingDistance(num_labels, threshold, average, **kwargs)
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-        )

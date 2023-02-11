@@ -18,12 +18,13 @@ from typing_extensions import Literal
 
 from torchmetrics.functional.classification.accuracy import _accuracy_reduce
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.enums import ClassificationTask
 from torchmetrics.utilities.exceptions import MisConfigurationError
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
 
 if not _MATPLOTLIB_AVAILABLE:
-    __doctest_skip__ = ["BinaryAccuracy.plot", "MulticlassAccuracy.plot"]
+    __doctest_skip__ = ["BinaryAccuracy.plot", "MulticlassAccuracy.plot", "MultilabelAccuracy.plot"]
 
 from torchmetrics.classification.stat_scores import (  # isort:skip
     BinaryStatScores,
@@ -403,6 +404,52 @@ class MultilabelAccuracy(MultilabelStatScores):
             tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average, multilabel=True
         )
 
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            fig: Figure object
+            ax: Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import rand, randint
+            >>> # Example plotting a single value
+            >>> from torchmetrics.classification import MultilabelAccuracy
+            >>> metric = MultilabelAccuracy(num_labels=3)
+            >>> metric.update(randint(2, (20, 3)), randint(2, (20, 3)))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import rand, randint
+            >>> # Example plotting multiple values
+            >>> from torchmetrics.classification import MultilabelAccuracy
+            >>> metric = MultilabelAccuracy(num_labels=3)
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(randint(2, (20, 3)), randint(2, (20, 3))))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        val = val or self.compute()
+        fig, ax = plot_single_or_multi_val(
+            val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
+        )
+        return fig, ax
+
 
 class Accuracy:
     r"""Compute `Accuracy`_.
@@ -445,7 +492,7 @@ class Accuracy:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
-
+        task = ClassificationTask.from_str(task)
         kwargs.update(
             {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
         )
@@ -455,9 +502,9 @@ class Accuracy:
                 f"Expected argument `task` must be one of (`'binary'`, `'multiclass'`, `'multilabel'`). Got `{task}`"
             )
 
-        if task == "binary":
+        if task == ClassificationTask.BINARY:
             return BinaryAccuracy(threshold, **kwargs)
-        if task == "multiclass":
+        if task == ClassificationTask.MULTICLASS:
             if not isinstance(num_classes, int):
                 raise MisConfigurationError(
                     f"Optional arg `num_classes` must be type `int` when task is {task}. Got {type(num_classes)}"
@@ -467,7 +514,7 @@ class Accuracy:
                     f"Optional arg `top_k` must be type `int` when task is {task}. Got {type(top_k)}"
                 )
             return MulticlassAccuracy(num_classes, top_k, average, **kwargs)
-        if task == "multilabel":
+        if task == ClassificationTask.MULTILABEL:
             if not isinstance(num_labels, int):
                 raise MisConfigurationError(
                     f"Optional arg `num_labels` must be type `int` when task is {task}. Got {type(num_labels)}"
