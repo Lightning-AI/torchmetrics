@@ -20,6 +20,7 @@ import pytest
 import torch
 
 from torchmetrics.functional.classification.accuracy import binary_accuracy, multiclass_accuracy
+from torchmetrics.functional.classification.auroc import binary_auroc, multiclass_auroc
 from torchmetrics.functional.classification.confusion_matrix import (
     binary_confusion_matrix,
     multiclass_confusion_matrix,
@@ -31,6 +32,7 @@ from torchmetrics.utilities.plot import plot_confusion_matrix, plot_single_or_mu
 @pytest.mark.parametrize(
     ("metric", "preds", "target"),
     [
+        # Accuracy
         pytest.param(
             binary_accuracy,
             lambda: torch.rand(100),
@@ -46,6 +48,25 @@ from torchmetrics.utilities.plot import plot_confusion_matrix, plot_single_or_mu
         pytest.param(
             partial(multiclass_accuracy, num_classes=3, average=None),
             lambda: torch.randint(3, (100,)),
+            lambda: torch.randint(3, (100,)),
+            id="multiclass and average=None",
+        ),
+        # AUROC
+        pytest.param(
+            binary_auroc,
+            lambda: torch.nn.functional.softmax(torch.randn(100, 2), dim=1)[:, 1],
+            lambda: torch.randint(2, (100,)),
+            id="binary",
+        ),
+        pytest.param(
+            partial(multiclass_auroc, num_classes=3),
+            lambda: torch.randn(100, 3),
+            lambda: torch.randint(3, (100,)),
+            id="multiclass",
+        ),
+        pytest.param(
+            partial(multiclass_auroc, num_classes=3, average=None),
+            lambda: torch.randn(100, 3),
             lambda: torch.randint(3, (100,)),
             id="multiclass and average=None",
         ),
