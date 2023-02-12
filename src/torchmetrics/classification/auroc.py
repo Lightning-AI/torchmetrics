@@ -34,6 +34,9 @@ from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
 
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["BinaryAUROC.plot", "MulticlassAUROC.plot", "MultilabelAUROC.plot"]
+
 
 class BinaryAUROC(BinaryPrecisionRecallCurve):
     r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for binary tasks. The AUROC
@@ -361,6 +364,7 @@ class MultilabelAUROC(MultilabelPrecisionRecallCurve):
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
+    plot_options = {"lower_bound": 0.0, "upper_bound": 1.0, "legend_name": "Class"}
 
     def __init__(
         self,
@@ -382,6 +386,46 @@ class MultilabelAUROC(MultilabelPrecisionRecallCurve):
     def compute(self) -> Tensor:
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _multilabel_auroc_compute(state, self.num_labels, self.average, self.thresholds, self.ignore_index)
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import tensor
+            >>> from torchmetrics.classification import MultilabelAUROC
+            >>> preds = tensor([[0.75, 0.05, 0.35],
+            ...                [0.45, 0.75, 0.05],
+            ...                [0.05, 0.55, 0.75],
+            ...                [0.05, 0.65, 0.05]])
+            >>> target = tensor([[1, 0, 1],
+            ...                [0, 0, 0],
+            ...                [0, 1, 1],
+            ...                [1, 1, 1]])
+            >>> metric = MultilabelAUROC(num_labels=3, average="macro", thresholds=None)
+            >>> metric.update(preds, target)
+            >>> fig_, ax_ = metric.plot()
+        """
+        val = val or self.compute()
+        fig, ax = plot_single_or_multi_val(
+            val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
+        )
+        return fig, ax
 
 
 class AUROC:
