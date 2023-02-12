@@ -123,6 +123,3 @@ lightning_logs
 *.gz
 .DS_Store
 .*_submit.py
-
-# Ignore notebooks
-notebooks/
