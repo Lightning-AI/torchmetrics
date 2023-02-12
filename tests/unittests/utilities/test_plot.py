@@ -26,7 +26,8 @@ from torchmetrics.functional.classification.confusion_matrix import (
     multiclass_confusion_matrix,
     multilabel_confusion_matrix,
 )
-from torchmetrics.utilities.plot import plot_confusion_matrix, plot_single_or_multi_val
+from torchmetrics.functional.classification.roc import binary_roc
+from torchmetrics.utilities.plot import plot_binary_roc_curve, plot_confusion_matrix, plot_single_or_multi_val
 
 
 @pytest.mark.parametrize(
@@ -145,3 +146,21 @@ def test_confusion_matrix_plotter_with_labels(metric, preds, target, labels):
     cond1 = isinstance(axs, matplotlib.axes.Axes)
     cond2 = isinstance(axs, np.ndarray) and all(isinstance(a, matplotlib.axes.Axes) for a in axs)
     assert cond1 or cond2
+
+
+@pytest.mark.parametrize(
+    ("metric", "preds", "target"),
+    [
+        pytest.param(
+            binary_roc,
+            lambda: torch.nn.functional.softmax(torch.randn(100, 2), dim=1)[:, 1],
+            lambda: torch.randint(2, (100,)),
+            id="binary",
+        )
+    ],
+)
+def test_binary_roc_curve_plotter(metric, preds, target):
+    tpr, fpr, thresholds = metric(preds(), target())
+    fig, ax = plot_binary_roc_curve(tpr, fpr)
+    assert isinstance(fig, plt.Figure)
+    assert isinstance(ax, matplotlib.axes.Axes)
