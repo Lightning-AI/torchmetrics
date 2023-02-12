@@ -37,6 +37,7 @@ class TestMAP(RetrievalMetricTester):
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize("ignore_index", [None, 1])  # avoid setting 0, otherwise test with all 0 targets will fail
+    @pytest.mark.parametrize("k", [None, 1, 4, 10])
     @pytest.mark.parametrize(**_default_metric_class_input_arguments)
     def test_class_metric(
         self,
@@ -47,6 +48,7 @@ class TestMAP(RetrievalMetricTester):
         dist_sync_on_step: bool,
         empty_target_action: str,
         ignore_index: int,
+        k: int,
     ):
         metric_args = {"empty_target_action": empty_target_action, "ignore_index": ignore_index}
 
@@ -64,6 +66,7 @@ class TestMAP(RetrievalMetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
+    @pytest.mark.parametrize("k", [None, 1, 4, 10])
     @pytest.mark.parametrize(**_default_metric_class_input_arguments_ignore_index)
     def test_class_metric_ignore_index(
         self,
@@ -73,6 +76,7 @@ class TestMAP(RetrievalMetricTester):
         target: Tensor,
         dist_sync_on_step: bool,
         empty_target_action: str,
+        k: int,
     ):
         metric_args = {"empty_target_action": empty_target_action, "ignore_index": -100}
 
@@ -88,7 +92,8 @@ class TestMAP(RetrievalMetricTester):
         )
 
     @pytest.mark.parametrize(**_default_metric_functional_input_arguments)
-    def test_functional_metric(self, preds: Tensor, target: Tensor):
+    @pytest.mark.parametrize("k", [None, 1, 4, 10])
+    def test_functional_metric(self, preds: Tensor, target: Tensor, k: int):
         self.run_functional_metric_test(
             preds=preds,
             target=target,

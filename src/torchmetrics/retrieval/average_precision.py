@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional, Any
+
 from torch import Tensor
 
 from torchmetrics.functional.retrieval.average_precision import retrieval_average_precision
@@ -49,6 +51,7 @@ class RetrievalMAP(RetrievalMetric):
 
         ignore_index:
             Ignore predictions where the target is equal to this number.
+        k: consider only the top k elements for each query (default: ``None``, which considers them all)
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -56,6 +59,8 @@ class RetrievalMAP(RetrievalMetric):
             If ``empty_target_action`` is not one of ``error``, ``skip``, ``neg`` or ``pos``.
         ValueError:
             If ``ignore_index`` is not `None` or an integer.
+        ValueError:
+            If ``k`` is not `None` or an integer larger than 0.
 
     Example:
         >>> from torch import tensor
@@ -72,5 +77,23 @@ class RetrievalMAP(RetrievalMetric):
     higher_is_better: bool = True
     full_state_update: bool = False
 
+    def __init__(
+        self,
+        empty_target_action: str = "neg",
+        ignore_index: Optional[int] = None,
+        k: Optional[int] = None,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(
+            empty_target_action=empty_target_action,
+            ignore_index=ignore_index,
+            **kwargs,
+        )
+
+        if k is not None and k <= 0:
+            raise ValueError("`k` has to be a positive integer or None")
+
+        self.k = k
+
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
-        return retrieval_average_precision(preds, target)
+        return retrieval_average_precision(preds, target, k=self.k)
