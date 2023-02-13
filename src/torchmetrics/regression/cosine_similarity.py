@@ -22,7 +22,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class CosineSimilarity(Metric):
-    r"""Compute the `Cosine Similarity`_ between targets and predictions:
+    r"""Compute the `Cosine Similarity`_.
 
     .. math::
         cos_{sim}(x,y) = \frac{x \cdot y}{||x|| \cdot ||y||} =

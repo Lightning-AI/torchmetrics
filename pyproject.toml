@@ -113,7 +113,6 @@ unfixable = ["F401"]
     "D105",  # todo # Missing docstring in magic method
     "D205",  # todo # 1 blank line required between summary line and description
     "D401",  # todo # First line of docstring should be in imperative mood: ...
-    "D415",  # todo # First line should end with a period, question mark, or exclamation point"
     "D417",  # todo # Missing argument descriptions in the docstring: ...
 ]
 "tests/**" = [
