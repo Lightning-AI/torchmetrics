@@ -23,7 +23,7 @@ from torchmetrics.metric import Metric
 
 
 class MeanAbsolutePercentageError(Metric):
-    r"""Compute `Mean Absolute Percentage Error`_ (MAPE):
+    r"""Compute `Mean Absolute Percentage Error`_ (MAPE).
 
     .. math:: \text{MAPE} = \frac{1}{n}\sum_{i=1}^n\frac{|   y_i - \hat{y_i} |}{\max(\epsilon, | y_i |)}
 

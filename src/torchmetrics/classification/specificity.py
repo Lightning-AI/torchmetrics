@@ -23,7 +23,7 @@ from torchmetrics.utilities.enums import ClassificationTask
 
 
 class BinarySpecificity(BinaryStatScores):
-    r"""Compute `Specificity`_ for binary tasks:
+    r"""Compute `Specificity`_ for binary tasks.
 
     .. math:: \text{Specificity} = \frac{\text{TN}}{\text{TN} + \text{FP}}
 
@@ -85,12 +85,13 @@ class BinarySpecificity(BinaryStatScores):
     """
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _specificity_reduce(tp, fp, tn, fn, average="binary", multidim_average=self.multidim_average)
 
 
 class MulticlassSpecificity(MulticlassStatScores):
-    r"""Compute `Specificity`_ for multiclass tasks:
+    r"""Compute `Specificity`_ for multiclass tasks.
 
     .. math:: \text{Specificity} = \frac{\text{TN}}{\text{TN} + \text{FP}}
 
@@ -184,6 +185,7 @@ class MulticlassSpecificity(MulticlassStatScores):
     """
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _specificity_reduce(tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average)
 
@@ -279,6 +281,7 @@ class MultilabelSpecificity(MultilabelStatScores):
     """
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _specificity_reduce(tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average)
 
@@ -321,6 +324,7 @@ class Specificity:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
+        """Initialize task metric."""
         task = ClassificationTask.from_str(task)
         assert multidim_average is not None
         kwargs.update(

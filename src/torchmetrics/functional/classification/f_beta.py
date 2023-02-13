@@ -80,7 +80,7 @@ def binary_fbeta_score(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Compute `F-score`_ metric for binary tasks:
+    r"""Compute `F-score`_ metric for binary tasks.
 
     .. math::
         F_{\beta} = (1 + \beta^2) * \frac{\text{precision} * \text{recall}}
@@ -169,7 +169,7 @@ def multiclass_fbeta_score(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Compute `F-score`_ metric for multiclass tasks:
+    r"""Compute `F-score`_ metric for multiclass tasks.
 
     .. math::
         F_{\beta} = (1 + \beta^2) * \frac{\text{precision} * \text{recall}}
@@ -288,7 +288,7 @@ def multilabel_fbeta_score(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Compute `F-score`_ metric for multilabel tasks:
+    r"""Compute `F-score`_ metric for multilabel tasks.
 
     .. math::
         F_{\beta} = (1 + \beta^2) * \frac{\text{precision} * \text{recall}}
@@ -386,7 +386,7 @@ def binary_f1_score(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Compute F-1 score for binary tasks:
+    r"""Compute F-1 score for binary tasks.
 
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
@@ -462,7 +462,7 @@ def multiclass_f1_score(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Compute F-1 score for multiclass tasks:
+    r"""Compute F-1 score for multiclass tasks.
 
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
@@ -568,7 +568,7 @@ def multilabel_f1_score(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Compute F-1 score for multilabel tasks:
+    r"""Compute F-1 score for multilabel tasks.
 
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
@@ -675,7 +675,7 @@ def fbeta_score(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Compute `F-score`_ metric:
+    r"""Compute `F-score`_ metric.
 
     .. math::
         F_{\beta} = (1 + \beta^2) * \frac{\text{precision} * \text{recall}}
@@ -723,7 +723,7 @@ def f1_score(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Compute F-1 score:
+    r"""Compute F-1 score.
 
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}

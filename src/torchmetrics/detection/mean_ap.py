@@ -127,7 +127,10 @@ class COCOMetricResults(BaseMetricResults):
 
 
 def _segm_iou(det: List[Tuple[np.ndarray, np.ndarray]], gt: List[Tuple[np.ndarray, np.ndarray]]) -> Tensor:
-    """Compute IOU between detections and ground-truths using mask-IOU. Based on pycocotools toolkit for mask_utils
+    """Compute IOU between detections and ground-truths using mask-IOU.
+
+    Implementation is based on pycocotools toolkit for mask_utils.
+
     Args:
        det: A list of detection masks as ``[(RLE_SIZE, RLE_COUNTS)]``, where ``RLE_SIZE`` is (width, height) dimension
            of the input and RLE_COUNTS is its RLE representation;

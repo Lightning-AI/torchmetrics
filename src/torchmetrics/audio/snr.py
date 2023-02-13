@@ -20,7 +20,7 @@ from torchmetrics.metric import Metric
 
 
 class SignalNoiseRatio(Metric):
-    r"""Calculate `Signal-to-noise ratio`_ (SNR_) meric for evaluating quality of audio. It is defined as:
+    r"""Calculate `Signal-to-noise ratio`_ (SNR_) meric for evaluating quality of audio.
 
     .. math::
         \text{SNR} = \frac{P_{signal}}{P_{noise}}
