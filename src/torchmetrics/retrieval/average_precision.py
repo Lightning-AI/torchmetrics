@@ -51,7 +51,7 @@ class RetrievalMAP(RetrievalMetric):
 
         ignore_index:
             Ignore predictions where the target is equal to this number.
-        k: consider only the top k elements for each query (default: ``None``, which considers them all)
+        top_k: consider only the top k elements for each query (default: ``None``, which considers them all)
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -81,7 +81,7 @@ class RetrievalMAP(RetrievalMetric):
         self,
         empty_target_action: str = "neg",
         ignore_index: Optional[int] = None,
-        k: Optional[int] = None,
+        top_k: Optional[int] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -90,9 +90,9 @@ class RetrievalMAP(RetrievalMetric):
             **kwargs,
         )
 
-        if k is not None and not isinstance(k, int) and k <= 0:
-            raise ValueError(f"Argument `k` has to be a positive integer or None, but got {k}")
-        self.k = k
+        if top_k is not None and not isinstance(top_k, int) and top_k <= 0:
+            raise ValueError(f"Argument `k` has to be a positive integer or None, but got {top_k}")
+        self.k = top_k
 
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
-        return retrieval_average_precision(preds, target, k=self.k)
+        return retrieval_average_precision(preds, target, top_k=self.k)
