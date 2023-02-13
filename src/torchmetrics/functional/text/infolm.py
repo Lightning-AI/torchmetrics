@@ -538,8 +538,10 @@ def infolm(
     verbose: bool = True,
     return_sentence_level_score: bool = False,
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    """Calculate `InfoLM`_ [1] - i.e. calculate a distance/divergence between predicted and reference sentence discrete
-    distribution using one of the following information measures:
+    """Calculate `InfoLM`_ [1].
+
+    InfoML corresponds to distance/divergence between predicted and reference sentence discrete distribution using
+    one of the following information measures:
 
         - `KL divergence`_
         - `alpha divergence`_
