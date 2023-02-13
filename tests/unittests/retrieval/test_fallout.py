@@ -123,7 +123,7 @@ class TestFallOut(RetrievalMetricTester):
             reference_metric=_fallout_at_k,
             reverse=True,
             metric_args={},
-            k=k,
+            top_k=k,
         )
 
     @pytest.mark.parametrize(**_default_metric_class_input_arguments)

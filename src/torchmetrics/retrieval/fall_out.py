@@ -129,4 +129,4 @@ class RetrievalFallOut(RetrievalMetric):
         return torch.stack([x.to(preds) for x in res]).mean() if res else tensor(0.0).to(preds)
 
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
-        return retrieval_fall_out(preds, target, k=self.k)
+        return retrieval_fall_out(preds, target, top_k=self.k)
