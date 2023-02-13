@@ -56,7 +56,7 @@ def _get_color_areas(img: Tensor) -> Dict[Tuple, Tensor]:
 
 
 def _is_set_int(value: Any) -> bool:
-    """Check whether value is a ``Set[int]``
+    """Check whether value is a ``Set[int]``.
 
     Args:
         value: the value to check
@@ -68,7 +68,7 @@ def _is_set_int(value: Any) -> bool:
 
 
 def _validate_categories(things: Set[int], stuffs: Set[int]) -> None:
-    """Validate netrics arguments for `things` and `stuff`
+    """Validate netrics arguments for `things` and `stuff`.
 
     Args:
         things: All possible IDs for things categories
