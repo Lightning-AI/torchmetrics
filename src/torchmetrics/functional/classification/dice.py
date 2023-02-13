@@ -38,6 +38,7 @@ def _dice_compute(
         average: Defines the reduction that is applied
         mdmc_average: Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
             ``average`` parameter)
+        zero_division: The value to use for the score if denominator equals zero.
     """
     numerator = 2 * tp
     denominator = 2 * tp + fp + fn

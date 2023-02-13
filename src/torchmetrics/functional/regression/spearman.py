@@ -61,6 +61,7 @@ def _spearman_corrcoef_update(preds: Tensor, target: Tensor, num_outputs: int) -
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
+        num_outputs: Number of outputs in multioutput setting
     """
     if not (preds.is_floating_point() and target.is_floating_point()):
         raise TypeError(

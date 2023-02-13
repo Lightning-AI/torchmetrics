@@ -298,8 +298,10 @@ def _get_dataloader(
         attention_mask:
             Mask to avoid performing attention on padding token indices.
         idf:
+            A bool indicating whether normalization using inverse document frequencies should be used.
+        batch_size:
             A batch size used for model processing.
-        num_threads:
+        num_workers:
             A number of workers to use for a dataloader.
 
     Return:
@@ -369,6 +371,8 @@ def _get_batch_distribution(
             A maximum length of input sequences. Sequences longer than `max_length` are to be trimmed.
         idf:
             An indication of whether normalization using inverse document frequencies should be used.
+        special_tokens_map:
+            A dictionary mapping tokenizer special tokens into the corresponding integer values.
 
     Return:
         A discrete probability distribution.
@@ -427,6 +431,8 @@ def _get_data_distribution(
             A maximum length of input sequences. Sequences longer than `max_length` are to be trimmed.
         idf:
             An indication of whether normalization using inverse document frequencies should be used.
+        special_tokens_map:
+            A dictionary mapping tokenizer special tokens into the corresponding integer values.
         verbose:
             An indication of whether a progress bar to be displayed during the embeddings calculation.
 
@@ -493,7 +499,7 @@ def _infolm_compute(
             Initialized model from HuggingFace's `transformers package.
         preds_dataloader:
             Loader iterating over tokenizer predicted sentences.
-        target_datalaoder:
+        target_dataloader:
             Loader iterating over tokenizer reference sentences.
         temperature:
             A temperature for calibrating language modelling. For more information, please reference `InfoLM`_ paper.

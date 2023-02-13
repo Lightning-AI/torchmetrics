@@ -126,6 +126,8 @@ def binary_average_precision(
             - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 
@@ -232,6 +234,8 @@ def multiclass_average_precision(
             - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 
@@ -362,6 +366,8 @@ def multilabel_average_precision(
             - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 

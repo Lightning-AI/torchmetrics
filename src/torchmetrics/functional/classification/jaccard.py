@@ -107,6 +107,8 @@ def binary_jaccard_index(
     Additional dimension ``...`` will be flattened into the batch dimension.
 
     Args:
+        preds: Tensor with predictions
+        target: Tensor with true labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
@@ -173,6 +175,8 @@ def multiclass_jaccard_index(
     Additional dimension ``...`` will be flattened into the batch dimension.
 
     Args:
+        preds: Tensor with predictions
+        target: Tensor with true labels
         num_classes: Integer specifing the number of classes
         average:
             Defines the reduction that is applied over labels. Should be one of the following:
@@ -252,7 +256,9 @@ def multilabel_jaccard_index(
     Additional dimension ``...`` will be flattened into the batch dimension.
 
     Args:
-        num_classes: Integer specifing the number of labels
+        preds: Tensor with predictions
+        target: Tensor with true labels
+        num_labels: Integer specifing the number of labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
         average:
             Defines the reduction that is applied over labels. Should be one of the following:
