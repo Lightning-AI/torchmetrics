@@ -67,20 +67,20 @@ def _is_set_int(value: Any) -> bool:
     return isinstance(value, Set) and set(map(type, value)).issubset({int})
 
 
-def _validate_categories(things: Set[int], stuff: Set[int]) -> None:
+def _validate_categories(things: Set[int], stuffs: Set[int]) -> None:
     """Validate netrics arguments for `things` and `stuff`
 
     Args:
         things: All possible IDs for things categories
-        stuff: All possible IDs for stuff categories
+        stuffs: All possible IDs for stuff categories
     """
     if not _is_set_int(things):
         raise TypeError(f"Expected argument `things` to be of type `Set[int]`, but got {things}")
-    if not _is_set_int(stuff):
-        raise TypeError(f"Expected argument `stuff` to be of type `Set[int]`, but got {stuff}")
-    if stuff & things:
+    if not _is_set_int(stuffs):
+        raise TypeError(f"Expected argument `stuffs` to be of type `Set[int]`, but got {stuffs}")
+    if stuffs & things:
         raise ValueError(
-            f"Expected arguments `things` and `stuffs` to have distinct keys, but got {things} and {stuff}"
+            f"Expected arguments `things` and `stuffs` to have distinct keys, but got {things} and {stuffs}"
         )
 
 
@@ -103,26 +103,26 @@ def _validate_inputs(preds: Tensor, target: torch.Tensor) -> None:
         raise ValueError(f"Expected argument `preds` to have shape [height, width, 2], but got {preds.shape}")
 
 
-def _get_void_color(things: Set[int], stuff: Set[int]) -> Tuple[int, int]:
+def _get_void_color(things: Set[int], stuffs: Set[int]) -> Tuple[int, int]:
     """Get an unused color ID.
 
     Args:
         things: All things IDs
-        stuff: All stuff IDs
+        stuffs: All stuff IDs
 
     Returns:
-        A new color ID with 0 occurences
+        A new color ID with 0 occurrences
     """
-    unused_category_id = 1 + max([0] + list(things) + list(stuff))
+    unused_category_id = 1 + max([0] + list(things) + list(stuffs))
     return (unused_category_id, 0)
 
 
-def _get_category_id_to_continous_id(things: Set[int], stuff: Set[int]) -> Dict[int, int]:
+def _get_category_id_to_continous_id(things: Set[int], stuffs: Set[int]) -> Dict[int, int]:
     """Converts original IDs to continuous IDs.
 
     Args:
         things: all unique ids for things classes
-        stuff: all unique ids for stuff classes
+        stuffs: all unique ids for stuff classes
 
     Returns:
         A mapping from the original category IDs to continuous IDs
@@ -130,7 +130,7 @@ def _get_category_id_to_continous_id(things: Set[int], stuff: Set[int]) -> Dict[
     # things metrics are stored with a continous id in [0, len(things)[,
     thing_id_to_continuous_id = {thing_id: idx for idx, thing_id in enumerate(things)}
     # stuff metrics are stored with a continous id in [len(things), len(things) + len(stuffs)[
-    stuff_id_to_continuous_id = {stuff_id: idx + len(things) for idx, stuff_id in enumerate(stuff)}
+    stuff_id_to_continuous_id = {stuff_id: idx + len(things) for idx, stuff_id in enumerate(stuffs)}
     cat_id_to_continuous_id = {}
     cat_id_to_continuous_id.update(thing_id_to_continuous_id)
     cat_id_to_continuous_id.update(stuff_id_to_continuous_id)
@@ -153,7 +153,7 @@ def _isin(arr: Tensor, values: List) -> Tensor:
 
 def _prepocess_image(
     things: Set[int],
-    stuff: Set[int],
+    stuffs: Set[int],
     img: Tensor,
     void_color: Tuple[int, int],
     allow_unknown_category: bool,
@@ -162,7 +162,7 @@ def _prepocess_image(
 
     Args:
         things: All category IDs for things classes
-        stuff: All category IDs for stuff classes
+        stuffs: All category IDs for stuff classes
         img: the image tensor
         void_color: an additional, unused color
         allow_unknown_category:  whether to allow an 'unknown' category.
@@ -172,7 +172,7 @@ def _prepocess_image(
     """
     # flatten the height*width dimensions
     img = torch.flatten(img, 0, -2)
-    stuff_pixels = _isin(img[:, 0], list(stuff))
+    stuff_pixels = _isin(img[:, 0], list(stuffs))
     things_pixels = _isin(img[:, 0], list(things))
     # reset instance ids of stuffs
     img[stuff_pixels, 1] = 0

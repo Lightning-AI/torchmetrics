@@ -63,7 +63,7 @@ class PanopticQuality(Metric):
         ...                  [[0, 1], [0, 1], [6, 0], [1, 0]],
         ...                  [[0, 1], [7, 0], [1, 0], [1, 0]],
         ...                  [[0, 1], [7, 0], [7, 0], [7, 0]]])
-        >>> panoptic_quality = PanopticQuality(things = {0, 1}, stuff = {6, 7})
+        >>> panoptic_quality = PanopticQuality(things = {0, 1}, stuffs = {6, 7})
         >>> panoptic_quality(preds, target)
         tensor(0.5463, dtype=torch.float64)
     """
@@ -79,21 +79,21 @@ class PanopticQuality(Metric):
     def __init__(
         self,
         things: Set[int],
-        stuff: Set[int],
+        stuffs: Set[int],
         allow_unknown_preds_category: bool = False,
         **kwargs: Any,
     ):
         super().__init__(**kwargs)
 
-        _validate_categories(things, stuff)
+        _validate_categories(things, stuffs)
         self.things = things
-        self.stuff = stuff
-        self.void_color = _get_void_color(things, stuff)
-        self.cat_id_to_continuous_id = _get_category_id_to_continous_id(things, stuff)
+        self.stuffs = stuffs
+        self.void_color = _get_void_color(things, stuffs)
+        self.cat_id_to_continuous_id = _get_category_id_to_continous_id(things, stuffs)
         self.allow_unknown_preds_category = allow_unknown_preds_category
 
         # per category intermediate metrics
-        n_categories = len(things) + len(stuff)
+        n_categories = len(things) + len(stuffs)
         self.add_state("iou_sum", default=torch.zeros(n_categories, dtype=torch.double), dist_reduce_fx="sum")
         self.add_state("true_positives", default=torch.zeros(n_categories, dtype=torch.int), dist_reduce_fx="sum")
         self.add_state("false_positives", default=torch.zeros(n_categories, dtype=torch.int), dist_reduce_fx="sum")
@@ -121,9 +121,9 @@ class PanopticQuality(Metric):
         """
         _validate_inputs(preds, target)
         flatten_preds = _prepocess_image(
-            self.things, self.stuff, preds, self.void_color, self.allow_unknown_preds_category
+            self.things, self.stuffs, preds, self.void_color, self.allow_unknown_preds_category
         )
-        flatten_target = _prepocess_image(self.things, self.stuff, target, self.void_color, True)
+        flatten_target = _prepocess_image(self.things, self.stuffs, target, self.void_color, True)
         iou_sum, true_positives, false_positives, false_negatives = _panoptic_quality_update(
             flatten_preds, flatten_target, self.cat_id_to_continuous_id, self.void_color
         )
