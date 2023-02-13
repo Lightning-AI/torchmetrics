@@ -97,4 +97,4 @@ class RetrievalNormalizedDCG(RetrievalMetric):
         self.allow_non_binary_target = True
 
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
-        return retrieval_normalized_dcg(preds, target, k=self.k)
+        return retrieval_normalized_dcg(preds, target, top_k=self.k)
