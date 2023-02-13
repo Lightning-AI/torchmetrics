@@ -97,4 +97,5 @@ class TweedieDevianceScore(Metric):
         self.num_observations += num_observations
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         return _tweedie_deviance_score_compute(self.sum_deviance_score, self.num_observations)

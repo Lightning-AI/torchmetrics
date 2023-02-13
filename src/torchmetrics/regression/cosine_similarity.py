@@ -80,6 +80,7 @@ class CosineSimilarity(Metric):
         self.target.append(target)
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         return _cosine_similarity_compute(preds, target, self.reduction)
