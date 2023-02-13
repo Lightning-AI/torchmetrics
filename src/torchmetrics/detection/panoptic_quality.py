@@ -18,7 +18,7 @@ import torch
 from torch import Tensor
 
 from torchmetrics.functional.detection.panoptic_quality import (
-    _get_category_id_to_continous_id,
+    _get_category_id_to_continuous_id,
     _get_void_color,
     _panoptic_quality_compute,
     _panoptic_quality_update,
@@ -89,7 +89,7 @@ class PanopticQuality(Metric):
         self.things = things
         self.stuffs = stuffs
         self.void_color = _get_void_color(things, stuffs)
-        self.cat_id_to_continuous_id = _get_category_id_to_continous_id(things, stuffs)
+        self.cat_id_to_continuous_id = _get_category_id_to_continuous_id(things, stuffs)
         self.allow_unknown_preds_category = allow_unknown_preds_category
 
         # per category intermediate metrics

@@ -114,10 +114,10 @@ def _get_void_color(things: Set[int], stuffs: Set[int]) -> Tuple[int, int]:
         A new color ID with 0 occurrences
     """
     unused_category_id = 1 + max([0] + list(things) + list(stuffs))
-    return (unused_category_id, 0)
+    return unused_category_id, 0
 
 
-def _get_category_id_to_continous_id(things: Set[int], stuffs: Set[int]) -> Dict[int, int]:
+def _get_category_id_to_continuous_id(things: Set[int], stuffs: Set[int]) -> Dict[int, int]:
     """Converts original IDs to continuous IDs.
 
     Args:
@@ -127,9 +127,9 @@ def _get_category_id_to_continous_id(things: Set[int], stuffs: Set[int]) -> Dict
     Returns:
         A mapping from the original category IDs to continuous IDs
     """
-    # things metrics are stored with a continous id in [0, len(things)[,
+    # things metrics are stored with a continuous id in [0, len(things)[,
     thing_id_to_continuous_id = {thing_id: idx for idx, thing_id in enumerate(things)}
-    # stuff metrics are stored with a continous id in [len(things), len(things) + len(stuffs)[
+    # stuff metrics are stored with a continuous id in [len(things), len(things) + len(stuffs)[
     stuff_id_to_continuous_id = {stuff_id: idx + len(things) for idx, stuff_id in enumerate(stuffs)}
     cat_id_to_continuous_id = {}
     cat_id_to_continuous_id.update(thing_id_to_continuous_id)
@@ -141,7 +141,7 @@ def _isin(arr: Tensor, values: List) -> Tensor:
     """Basic implementation of torch.isin to support pre 0.10 version.
 
     Args:
-        arr: the torch tensor to check for availablilities
+        arr: the torch tensor to check for availabilities
         values: the values to search the tensor for.
 
     Returns:
@@ -354,7 +354,7 @@ def panoptic_quality(
     _validate_categories(things, stuffs)
     _validate_inputs(preds, target)
     void_color = _get_void_color(things, stuffs)
-    cat_id_to_continuous_id = _get_category_id_to_continous_id(things, stuffs)
+    cat_id_to_continuous_id = _get_category_id_to_continuous_id(things, stuffs)
     flatten_preds = _prepocess_image(things, stuffs, preds, void_color, allow_unknown_preds_category)
     flatten_target = _prepocess_image(things, stuffs, target, void_color, True)
     iou_sum, true_positives, false_positives, false_negatives = _panoptic_quality_update(
