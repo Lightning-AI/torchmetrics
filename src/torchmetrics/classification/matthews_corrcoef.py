@@ -80,6 +80,7 @@ class BinaryMatthewsCorrCoef(BinaryConfusionMatrix):
         super().__init__(threshold, ignore_index, normalize=None, validate_args=validate_args, **kwargs)
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         return _matthews_corrcoef_reduce(self.confmat)
 
 
@@ -144,6 +145,7 @@ class MulticlassMatthewsCorrCoef(MulticlassConfusionMatrix):
         super().__init__(num_classes, ignore_index, normalize=None, validate_args=validate_args, **kwargs)
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         return _matthews_corrcoef_reduce(self.confmat)
 
 
@@ -207,6 +209,7 @@ class MultilabelMatthewsCorrCoef(MultilabelConfusionMatrix):
         super().__init__(num_labels, threshold, ignore_index, normalize=None, validate_args=validate_args, **kwargs)
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         return _matthews_corrcoef_reduce(self.confmat)
 
 
@@ -238,6 +241,7 @@ class MatthewsCorrCoef:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
+        """Initialize task metric."""
         task = ClassificationTask.from_str(task)
         kwargs.update({"ignore_index": ignore_index, "validate_args": validate_args})
         if task == ClassificationTask.BINARY:

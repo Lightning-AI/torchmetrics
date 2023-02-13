@@ -99,6 +99,7 @@ class BinaryHingeLoss(Metric):
         self.add_state("total", default=torch.tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+        """Update metric state."""
         if self.validate_args:
             _binary_hinge_loss_tensor_validation(preds, target, self.ignore_index)
         preds, target = _binary_confusion_matrix_format(
@@ -109,6 +110,7 @@ class BinaryHingeLoss(Metric):
         self.total += total
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         return _hinge_loss_compute(self.measures, self.total)
 
 
@@ -203,6 +205,7 @@ class MulticlassHingeLoss(Metric):
         self.add_state("total", default=torch.tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+        """Update metric state."""
         if self.validate_args:
             _multiclass_hinge_loss_tensor_validation(preds, target, self.num_classes, self.ignore_index)
         preds, target = _multiclass_confusion_matrix_format(preds, target, self.ignore_index, convert_to_labels=False)
@@ -211,6 +214,7 @@ class MulticlassHingeLoss(Metric):
         self.total += total
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         return _hinge_loss_compute(self.measures, self.total)
 
 
@@ -253,6 +257,7 @@ class HingeLoss:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
+        """Initialize task metric."""
         task = ClassificationTaskNoMultilabel.from_str(task)
         kwargs.update({"ignore_index": ignore_index, "validate_args": validate_args})
         if task == ClassificationTaskNoMultilabel.BINARY:

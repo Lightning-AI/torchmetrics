@@ -94,6 +94,7 @@ class BinaryHammingDistance(BinaryStatScores):
     full_state_update: bool = False
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _hamming_distance_reduce(tp, fp, tn, fn, average="binary", multidim_average=self.multidim_average)
 
@@ -199,6 +200,7 @@ class MulticlassHammingDistance(MulticlassStatScores):
     full_state_update: bool = False
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _hamming_distance_reduce(tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average)
 
@@ -302,6 +304,7 @@ class MultilabelHammingDistance(MultilabelStatScores):
     full_state_update: bool = False
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _hamming_distance_reduce(
             tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average, multilabel=True
@@ -345,6 +348,7 @@ class HammingDistance:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
+        """Initialize task metric."""
         task = ClassificationTask.from_str(task)
         assert multidim_average is not None
         kwargs.update(
