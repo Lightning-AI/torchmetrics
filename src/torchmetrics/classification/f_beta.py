@@ -28,7 +28,7 @@ from torchmetrics.utilities.enums import ClassificationTask
 
 
 class BinaryFBetaScore(BinaryStatScores):
-    r"""Compute `F-score`_ metric for binary tasks:
+    r"""Compute `F-score`_ metric for binary tasks.
 
     .. math::
         F_{\beta} = (1 + \beta^2) * \frac{\text{precision} * \text{recall}}
@@ -123,7 +123,7 @@ class BinaryFBetaScore(BinaryStatScores):
 
 
 class MulticlassFBetaScore(MulticlassStatScores):
-    r"""Compute `F-score`_ metric for multiclass tasks:
+    r"""Compute `F-score`_ metric for multiclass tasks.
 
     .. math::
         F_{\beta} = (1 + \beta^2) * \frac{\text{precision} * \text{recall}}
@@ -252,7 +252,7 @@ class MulticlassFBetaScore(MulticlassStatScores):
 
 
 class MultilabelFBetaScore(MultilabelStatScores):
-    r"""Compute `F-score`_ metric for multilabel tasks:
+    r"""Compute `F-score`_ metric for multilabel tasks.
 
     .. math::
         F_{\beta} = (1 + \beta^2) * \frac{\text{precision} * \text{recall}}
@@ -377,7 +377,7 @@ class MultilabelFBetaScore(MultilabelStatScores):
 
 
 class BinaryF1Score(BinaryFBetaScore):
-    r"""Compute F-1 score for binary tasks:
+    r"""Compute F-1 score for binary tasks.
 
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
@@ -461,7 +461,7 @@ class BinaryF1Score(BinaryFBetaScore):
 
 
 class MulticlassF1Score(MulticlassFBetaScore):
-    r"""Compute F-1 score for multiclass tasks:
+    r"""Compute F-1 score for multiclass tasks.
 
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
@@ -580,7 +580,7 @@ class MulticlassF1Score(MulticlassFBetaScore):
 
 
 class MultilabelF1Score(MultilabelFBetaScore):
-    r"""Compute F-1 score for multilabel tasks:
+    r"""Compute F-1 score for multilabel tasks.
 
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
@@ -695,7 +695,7 @@ class MultilabelF1Score(MultilabelFBetaScore):
 
 
 class FBetaScore:
-    r"""Compute `F-score`_ metric:
+    r"""Compute `F-score`_ metric.
 
     .. math::
         F_{\beta} = (1 + \beta^2) * \frac{\text{precision} * \text{recall}}
@@ -749,7 +749,7 @@ class FBetaScore:
 
 
 class F1Score:
-    r"""Compute F-1 score:
+    r"""Compute F-1 score.
 
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}

@@ -23,7 +23,7 @@ from torchmetrics.utilities.enums import ClassificationTask
 
 
 class BinaryHammingDistance(BinaryStatScores):
-    r"""Compute the average `Hamming distance`_ (also known as Hamming loss) for binary tasks:
+    r"""Compute the average `Hamming distance`_ (also known as Hamming loss) for binary tasks.
 
     .. math::
         \text{Hamming distance} = \frac{1}{N \cdot L} \sum_i^N \sum_l^L 1(y_{il} \neq \hat{y}_{il})
@@ -100,7 +100,7 @@ class BinaryHammingDistance(BinaryStatScores):
 
 
 class MulticlassHammingDistance(MulticlassStatScores):
-    r"""Compute the average `Hamming distance`_ (also known as Hamming loss) for multiclass tasks:
+    r"""Compute the average `Hamming distance`_ (also known as Hamming loss) for multiclass tasks.
 
     .. math::
         \text{Hamming distance} = \frac{1}{N \cdot L} \sum_i^N \sum_l^L 1(y_{il} \neq \hat{y}_{il})
@@ -206,7 +206,7 @@ class MulticlassHammingDistance(MulticlassStatScores):
 
 
 class MultilabelHammingDistance(MultilabelStatScores):
-    r"""Compute the average `Hamming distance`_ (also known as Hamming loss) for multilabel tasks:
+    r"""Compute the average `Hamming distance`_ (also known as Hamming loss) for multilabel tasks.
 
     .. math::
         \text{Hamming distance} = \frac{1}{N \cdot L} \sum_i^N \sum_l^L 1(y_{il} \neq \hat{y}_{il})
@@ -312,7 +312,7 @@ class MultilabelHammingDistance(MultilabelStatScores):
 
 
 class HammingDistance:
-    r"""Compute the average `Hamming distance`_ (also known as Hamming loss):
+    r"""Compute the average `Hamming distance`_ (also known as Hamming loss).
 
     .. math::
         \text{Hamming distance} = \frac{1}{N \cdot L} \sum_i^N \sum_l^L 1(y_{il} \neq \hat{y}_{il})

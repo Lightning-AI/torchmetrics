@@ -65,7 +65,7 @@ def binary_specificity(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Compute `Specificity`_ for binary tasks:
+    r"""Compute `Specificity`_ for binary tasks.
 
     .. math:: \text{Specificity} = \frac{\text{TN}}{\text{TN} + \text{FP}}
 
@@ -140,7 +140,7 @@ def multiclass_specificity(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Compute `Specificity`_ for multiclass tasks:
+    r"""Compute `Specificity`_ for multiclass tasks.
 
     .. math:: \text{Specificity} = \frac{\text{TN}}{\text{TN} + \text{FP}}
 

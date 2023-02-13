@@ -21,7 +21,7 @@ from torchmetrics.metric import Metric
 
 
 class R2Score(Metric):
-    r"""Compute r2 score also known as `R2 Score_Coefficient Determination`_:
+    r"""Compute r2 score also known as `R2 Score_Coefficient Determination`_.
 
     .. math:: R^2 = 1 - \frac{SS_{res}}{SS_{tot}}
 
