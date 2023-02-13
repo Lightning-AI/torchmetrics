@@ -491,6 +491,7 @@ class Accuracy:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
+        """Initialize task metric."""
         task = ClassificationTask.from_str(task)
         kwargs.update(
             {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
