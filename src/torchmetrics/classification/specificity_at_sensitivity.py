@@ -31,6 +31,7 @@ from torchmetrics.functional.classification.specificity_at_sensitivity import (
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
+from torchmetrics.utilities.enums import ClassificationTask
 
 
 class BinarySpecificityAtSensitivity(BinaryPrecisionRecallCurve):
@@ -327,18 +328,16 @@ class SpecificityAtSensitivity:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
-        if task == "binary":
+        task = ClassificationTask.from_str(task)
+        if task == ClassificationTask.BINARY:
             return BinarySpecificityAtSensitivity(min_sensitivity, thresholds, ignore_index, validate_args, **kwargs)
-        if task == "multiclass":
+        if task == ClassificationTask.MULTICLASS:
             assert isinstance(num_classes, int)
             return MulticlassSpecificityAtSensitivity(
                 num_classes, min_sensitivity, thresholds, ignore_index, validate_args, **kwargs
             )
-        if task == "multilabel":
+        if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelSpecificityAtSensitivity(
                 num_labels, min_sensitivity, thresholds, ignore_index, validate_args, **kwargs
             )
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-        )

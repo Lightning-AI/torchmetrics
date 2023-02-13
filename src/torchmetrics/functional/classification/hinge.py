@@ -24,6 +24,7 @@ from torchmetrics.functional.classification.confusion_matrix import (
     _multiclass_confusion_matrix_tensor_validation,
 )
 from torchmetrics.utilities.data import to_onehot
+from torchmetrics.utilities.enums import ClassificationTaskNoMultilabel
 
 
 def _hinge_loss_compute(measure: Tensor, total: Tensor) -> Tensor:
@@ -276,9 +277,10 @@ def hinge_loss(
         >>> hinge_loss(preds, target, task="multiclass", num_classes=3, multiclass_mode="one-vs-all")
         tensor([1.3743, 1.1945, 1.2359])
     """
-    if task == "binary":
+    task = ClassificationTaskNoMultilabel.from_str(task)
+    if task == ClassificationTaskNoMultilabel.BINARY:
         return binary_hinge_loss(preds, target, squared, ignore_index, validate_args)
-    if task == "multiclass":
+    if task == ClassificationTaskNoMultilabel.MULTICLASS:
         assert isinstance(num_classes, int)
         return multiclass_hinge_loss(preds, target, num_classes, squared, multiclass_mode, ignore_index, validate_args)
-    raise ValueError(f"Expected argument `task` to either be `'binary'` or `'multilabel'` but got {task}")
+    raise ValueError(f"Not handled value: {task}")  # this is for compliant of mypy
