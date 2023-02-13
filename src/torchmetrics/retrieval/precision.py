@@ -51,7 +51,7 @@ class RetrievalPrecision(RetrievalMetric):
 
         ignore_index:
             Ignore predictions where the target is equal to this number.
-        k: consider only the top k elements for each query (default: ``None``, which considers them all)
+        top_k: consider only the top k elements for each query (default: ``None``, which considers them all)
         adaptive_k: adjust ``k`` to ``min(k, number of documents)`` for each query
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
@@ -71,7 +71,7 @@ class RetrievalPrecision(RetrievalMetric):
         >>> indexes = tensor([0, 0, 0, 1, 1, 1, 1])
         >>> preds = tensor([0.2, 0.3, 0.5, 0.1, 0.3, 0.5, 0.2])
         >>> target = tensor([False, False, True, False, True, False, True])
-        >>> p2 = RetrievalPrecision(k=2)
+        >>> p2 = RetrievalPrecision(top_k=2)
         >>> p2(preds, target, indexes=indexes)
         tensor(0.5000)
     """
@@ -84,7 +84,7 @@ class RetrievalPrecision(RetrievalMetric):
         self,
         empty_target_action: str = "neg",
         ignore_index: Optional[int] = None,
-        k: Optional[int] = None,
+        top_k: Optional[int] = None,
         adaptive_k: bool = False,
         **kwargs: Any,
     ) -> None:
@@ -94,12 +94,12 @@ class RetrievalPrecision(RetrievalMetric):
             **kwargs,
         )
 
-        if (k is not None) and not (isinstance(k, int) and k > 0):
+        if (top_k is not None) and not (isinstance(top_k, int) and top_k > 0):
             raise ValueError("`k` has to be a positive integer or None")
         if not isinstance(adaptive_k, bool):
             raise ValueError("`adaptive_k` has to be a boolean")
-        self.k = k
+        self.top_k = top_k
         self.adaptive_k = adaptive_k
 
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
-        return retrieval_precision(preds, target, top_k=self.k, adaptive_k=self.adaptive_k)
+        return retrieval_precision(preds, target, top_k=self.top_k, adaptive_k=self.adaptive_k)
