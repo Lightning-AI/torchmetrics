@@ -19,7 +19,7 @@ from torch import Tensor, tensor
 from torchmetrics.utilities.checks import _check_retrieval_functional_inputs
 
 
-def retrieval_average_precision(preds: Tensor, target: Tensor, k: Optional[int] = None) -> Tensor:
+def retrieval_average_precision(preds: Tensor, target: Tensor, top_k: Optional[int] = None) -> Tensor:
     """Compute average precision (for information retrieval), as explained in `IR Average precision`_.
 
     ``preds`` and ``target`` should be of the same shape and live on the same device. If no ``target`` is ``True``,
@@ -51,7 +51,7 @@ def retrieval_average_precision(preds: Tensor, target: Tensor, k: Optional[int] 
     if not isinstance(k, int) and k <= 0:
         raise ValueError(f"Argument `k` has to be a positive integer or None, but got {k}.")
 
-    target = target[preds.topk(min(k, preds.shape[-1]), dim=-1)[1]]
+    target = target[preds.topk(min(k, preds.shape[-1]), sorted=True, dim=-1)[1]]
     if not target.sum():
         return tensor(0.0, device=preds.device)
 
