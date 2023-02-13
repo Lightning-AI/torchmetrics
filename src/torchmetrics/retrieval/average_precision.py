@@ -60,7 +60,7 @@ class RetrievalMAP(RetrievalMetric):
         ValueError:
             If ``ignore_index`` is not `None` or an integer.
         ValueError:
-            If ``k`` is not `None` or an integer larger than 0.
+            If ``k`` is not ``None`` or an integer larger than 0.
 
     Example:
         >>> from torch import tensor
@@ -90,9 +90,8 @@ class RetrievalMAP(RetrievalMetric):
             **kwargs,
         )
 
-        if k is not None and k <= 0:
-            raise ValueError("`k` has to be a positive integer or None")
-
+        if k is not None and not isinstance(k, int) and k <= 0:
+            raise ValueError(f"Argument `k` has to be a positive integer or None, but got {k}")
         self.k = k
 
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
