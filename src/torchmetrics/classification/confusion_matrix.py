@@ -35,6 +35,7 @@ from torchmetrics.functional.classification.confusion_matrix import (
     _multilabel_confusion_matrix_update,
 )
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.enums import ClassificationTask
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _PLOT_OUT_TYPE, plot_confusion_matrix
 
@@ -397,15 +398,13 @@ class ConfusionMatrix:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
+        task = ClassificationTask.from_str(task)
         kwargs.update({"normalize": normalize, "ignore_index": ignore_index, "validate_args": validate_args})
-        if task == "binary":
+        if task == ClassificationTask.BINARY:
             return BinaryConfusionMatrix(threshold, **kwargs)
-        if task == "multiclass":
+        if task == ClassificationTask.MULTICLASS:
             assert isinstance(num_classes, int)
             return MulticlassConfusionMatrix(num_classes, **kwargs)
-        if task == "multilabel":
+        if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelConfusionMatrix(num_labels, threshold, **kwargs)
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-        )

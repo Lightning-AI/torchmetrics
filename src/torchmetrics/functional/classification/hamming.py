@@ -32,6 +32,7 @@ from torchmetrics.functional.classification.stat_scores import (
     _multilabel_stat_scores_update,
 )
 from torchmetrics.utilities.compute import _safe_divide
+from torchmetrics.utilities.enums import ClassificationTask
 
 
 def _hamming_distance_reduce(
@@ -398,20 +399,19 @@ def hamming_distance(
         >>> hamming_distance(preds, target, task="binary")
         tensor(0.2500)
     """
+    task = ClassificationTask.from_str(task)
     assert multidim_average is not None
-    if task == "binary":
+    if task == ClassificationTask.BINARY:
         return binary_hamming_distance(preds, target, threshold, multidim_average, ignore_index, validate_args)
-    if task == "multiclass":
+    if task == ClassificationTask.MULTICLASS:
         assert isinstance(num_classes, int)
         assert isinstance(top_k, int)
         return multiclass_hamming_distance(
             preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args
         )
-    if task == "multilabel":
+    if task == ClassificationTask.MULTILABEL:
         assert isinstance(num_labels, int)
         return multilabel_hamming_distance(
             preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
         )
-    raise ValueError(
-        f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-    )
+    raise ValueError(f"Not handled value: {task}")  # this is for compliant of mypy

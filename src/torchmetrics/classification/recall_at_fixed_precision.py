@@ -31,6 +31,7 @@ from torchmetrics.functional.classification.recall_at_fixed_precision import (
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
+from torchmetrics.utilities.enums import ClassificationTask
 
 
 class BinaryRecallAtFixedPrecision(BinaryPrecisionRecallCurve):
@@ -323,18 +324,16 @@ class RecallAtFixedPrecision:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
-        if task == "binary":
+        task = ClassificationTask.from_str(task)
+        if task == ClassificationTask.BINARY:
             return BinaryRecallAtFixedPrecision(min_precision, thresholds, ignore_index, validate_args, **kwargs)
-        if task == "multiclass":
+        if task == ClassificationTask.MULTICLASS:
             assert isinstance(num_classes, int)
             return MulticlassRecallAtFixedPrecision(
                 num_classes, min_precision, thresholds, ignore_index, validate_args, **kwargs
             )
-        if task == "multilabel":
+        if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelRecallAtFixedPrecision(
                 num_labels, min_precision, thresholds, ignore_index, validate_args, **kwargs
             )
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-        )

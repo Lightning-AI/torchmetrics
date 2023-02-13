@@ -11,38 +11,39 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from enum import Enum
-from typing import Optional, Union
+from typing import Optional
+
+from lightning_utilities.core.enums import StrEnum as StrEnum
 
 
-class EnumStr(str, Enum):
-    """Type of any enumerator with allowed comparison to string invariant to cases.
-
-    Example:
-        >>> class MyEnum(EnumStr):
-        ...     ABC = 'abc'
-        >>> MyEnum.from_str('Abc')
-        <MyEnum.ABC: 'abc'>
-        >>> {MyEnum.ABC: 123}
-        {<MyEnum.ABC: 'abc'>: 123}
-    """
+class EnumStr(StrEnum):
+    @staticmethod
+    def _name() -> str:
+        return "Task"
 
     @classmethod
-    def from_str(cls, value: str) -> Optional["EnumStr"]:
-        statuses = [status for status in dir(cls) if not status.startswith("_")]
-        for st in statuses:
-            if st.lower() == value.lower():
-                return getattr(cls, st)
-        return None
+    def from_str(cls, value: str) -> "EnumStr":
+        """Load from string.
 
-    def __eq__(self, other: Union[str, "EnumStr", None]) -> bool:  # type: ignore
-        other = other.value if isinstance(other, Enum) else str(other)
-        return self.value.lower() == other.lower()
+        Raises:
+            ValueError:
+                If required value is not among the supported options.
 
-    def __hash__(self) -> int:
-        # re-enable hashtable so it can be used as a dict key or in a set
-        # example: set(EnumStr)
-        return hash(self.name)
+        >>> class MyEnum(EnumStr):
+        ...     a = "aaa"
+        ...     b = "bbb"
+        >>> MyEnum.from_str("a")
+        <MyEnum.a: 'aaa'>
+        >>> MyEnum.from_str("c")
+        Traceback (most recent call last):
+          ...
+        ValueError: Invalid Task: expected one of ['a', 'b'], but got c.
+        """
+        enum_key = super().from_str(value.replace("-", "_"))
+        if enum_key is not None:
+            return enum_key
+        _allowed_im = [m.lower() for m in cls._member_names_]
+        raise ValueError(f"Invalid {cls._name()}: expected one of {_allowed_im}, but got {value}.")
 
 
 class DataType(EnumStr):
@@ -51,6 +52,10 @@ class DataType(EnumStr):
     >>> "Binary" in list(DataType)
     True
     """
+
+    @staticmethod
+    def _name() -> str:
+        return "Data type"
 
     BINARY = "binary"
     MULTILABEL = "multi-label"
@@ -69,6 +74,10 @@ class AverageMethod(EnumStr):
     True
     """
 
+    @staticmethod
+    def _name() -> str:
+        return "Average method"
+
     MICRO = "micro"
     MACRO = "macro"
     WEIGHTED = "weighted"
@@ -79,5 +88,55 @@ class AverageMethod(EnumStr):
 class MDMCAverageMethod(EnumStr):
     """Enum to represent multi-dim multi-class average method."""
 
+    @staticmethod
+    def _name() -> str:
+        return "MDMC Average method"
+
     GLOBAL = "global"
     SAMPLEWISE = "samplewise"
+
+
+class ClassificationTask(EnumStr):
+    """Enum to represent the different tasks in classification metrics.
+
+    >>> "binary" in list(ClassificationTask)
+    True
+    """
+
+    @staticmethod
+    def _name() -> str:
+        return "Classification"
+
+    BINARY = "binary"
+    MULTICLASS = "multiclass"
+    MULTILABEL = "multilabel"
+
+
+class ClassificationTaskNoBinary(EnumStr):
+    """Enum to represent the different tasks in classification metrics.
+
+    >>> "binary" in list(ClassificationTaskNoBinary)
+    False
+    """
+
+    @staticmethod
+    def _name() -> str:
+        return "Classification"
+
+    MULTILABEL = "multilabel"
+    MULTICLASS = "multiclass"
+
+
+class ClassificationTaskNoMultilabel(EnumStr):
+    """Enum to represent the different tasks in classification metrics.
+
+    >>> "multilabel" in list(ClassificationTaskNoMultilabel)
+    False
+    """
+
+    @staticmethod
+    def _name() -> str:
+        return "Classification"
+
+    BINARY = "binary"
+    MULTICLASS = "multiclass"
