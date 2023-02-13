@@ -32,7 +32,7 @@ else:
 
 
 class NoTrainLpips(_LPIPS):
-    """Wrapper to make sure LPIPS never leaves evaluation mode"""
+    """Wrapper to make sure LPIPS never leaves evaluation mode."""
 
     def train(self, mode: bool) -> "NoTrainLpips":
         """the network should not be able to be switched away from evaluation mode."""
