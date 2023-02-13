@@ -117,7 +117,7 @@ class TestHitRate(RetrievalMetricTester):
             metric_functional=retrieval_hit_rate,
             reference_metric=_hit_rate_at_k,
             metric_args={},
-            k=k,
+            top_k=k,
         )
 
     @pytest.mark.parametrize(**_default_metric_class_input_arguments)

@@ -96,4 +96,4 @@ class RetrievalHitRate(RetrievalMetric):
         self.k = k
 
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
-        return retrieval_hit_rate(preds, target, k=self.k)
+        return retrieval_hit_rate(preds, target, top_k=self.k)
