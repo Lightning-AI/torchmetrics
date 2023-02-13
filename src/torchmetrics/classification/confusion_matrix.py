@@ -239,8 +239,7 @@ class MulticlassConfusionMatrix(Metric):
                 If no value is provided, will automatically call `metric.compute` and plot that result.
 
         Returns:
-            fig: Figure object
-            ax: Axes object
+            Figure and Axes object
 
         Raises:
             ModuleNotFoundError:
