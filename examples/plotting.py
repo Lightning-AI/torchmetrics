@@ -82,6 +82,7 @@ def confusion_matrix_example():
 
 
 def spectral_distortion_index_example():
+    """Plot spectral distortion index example example."""
     from torchmetrics.image.d_lambda import SpectralDistortionIndex
 
     p = lambda: torch.rand([16, 3, 16, 16])
@@ -101,6 +102,7 @@ def spectral_distortion_index_example():
 
 
 def error_relative_global_dimensionless_synthesis():
+    """Plot error relative global dimensionless synthesis example."""
     from torchmetrics.image.ergas import ErrorRelativeGlobalDimensionlessSynthesis
 
     p = lambda: torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42))
@@ -120,6 +122,7 @@ def error_relative_global_dimensionless_synthesis():
 
 
 def peak_signal_noise_ratio():
+    """Plot peak signal noise ratio example."""
     from torchmetrics.image.psnr import PeakSignalNoiseRatio
 
     p = lambda: torch.tensor([[0.0, 1.0], [2.0, 3.0]])
@@ -139,6 +142,7 @@ def peak_signal_noise_ratio():
 
 
 def spectral_angle_mapper():
+    """Plot spectral angle mapper example."""
     from torchmetrics.image.sam import SpectralAngleMapper
 
     p = lambda: torch.rand([16, 3, 16, 16], generator=torch.manual_seed(42))
@@ -158,6 +162,7 @@ def spectral_angle_mapper():
 
 
 def structural_similarity_index_measure():
+    """Plot structural similarity index measure example."""
     from torchmetrics.image.ssim import StructuralSimilarityIndexMeasure
 
     p = lambda: torch.rand([3, 3, 256, 256], generator=torch.manual_seed(42))
@@ -177,6 +182,7 @@ def structural_similarity_index_measure():
 
 
 def multiscale_structural_similarity_index_measure():
+    """Plot multiscale structural similarity index measure example."""
     from torchmetrics.image.ssim import MultiScaleStructuralSimilarityIndexMeasure
 
     p = lambda: torch.rand([3, 3, 256, 256], generator=torch.manual_seed(42))
@@ -196,6 +202,7 @@ def multiscale_structural_similarity_index_measure():
 
 
 def universal_image_quality_index():
+    """Plot universal image quality index example."""
     from torchmetrics.image.uqi import UniversalImageQualityIndex
 
     p = lambda: torch.rand([16, 1, 16, 16])
