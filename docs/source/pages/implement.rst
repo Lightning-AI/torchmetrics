@@ -125,7 +125,7 @@ Wanting to contribute the metric you have implemented? Great, we are always open
 as long as they serve a general purpose. However, to keep all our metrics consistent we request that the implementation
 and tests gets formatted in the following way:
 
-1. Start by reading our `contribution guidelines <https://torchmetrics.readthedocs.io//en/latest/generated/CONTRIBUTING.html>`_.
+1. Start by reading our `contribution guidelines <https://torchmetrics.readthedocs.io/en/latest/generated/CONTRIBUTING.html>`_.
 2. First implement the functional backend. This takes cares of all the logic that goes into the metric. The code should
    be put into a single file placed under ``torchmetrics/functional/"domain"/"new_metric".py`` where ``domain`` is the type of
    metric (classification, regression, nlp etc) and ``new_metric`` is the name of the metric. In this file, there should be the
