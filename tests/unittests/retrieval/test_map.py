@@ -11,6 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
+
+import numpy as np
 import pytest
 from sklearn.metrics import average_precision_score as sk_average_precision_score
 from torch import Tensor
@@ -30,6 +33,16 @@ from unittests.retrieval.helpers import (
 )
 
 seed_all(42)
+
+
+def _precision_at_k(target: np.ndarray, preds: np.ndarray, k: Optional[int] = None):
+    """Wrapper around reference metric to account for k argument."""
+    assert target.shape == preds.shape
+    assert len(target.shape) == 1
+    k = k or len(preds)
+    idx = np.argsort(preds, axis=0)[::-1]
+    target, preds = target[idx][:k], preds[idx][:k]
+    return sk_average_precision_score(target, preds)
 
 
 class TestMAP(RetrievalMetricTester):
@@ -58,7 +71,7 @@ class TestMAP(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_class=RetrievalMAP,
-            reference_metric=sk_average_precision_score,
+            reference_metric=_precision_at_k,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
         )
@@ -78,7 +91,7 @@ class TestMAP(RetrievalMetricTester):
         empty_target_action: str,
         k: int,
     ):
-        metric_args = {"empty_target_action": empty_target_action, "ignore_index": -100}
+        metric_args = {"empty_target_action": empty_target_action, "ignore_index": -100, "k": k}
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -86,7 +99,7 @@ class TestMAP(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_class=RetrievalMAP,
-            reference_metric=sk_average_precision_score,
+            reference_metric=_precision_at_k,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
         )
@@ -98,8 +111,9 @@ class TestMAP(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_functional=retrieval_average_precision,
-            reference_metric=sk_average_precision_score,
+            reference_metric=_precision_at_k,
             metric_args={},
+            k=k,
         )
 
     @pytest.mark.parametrize(**_default_metric_class_input_arguments)
