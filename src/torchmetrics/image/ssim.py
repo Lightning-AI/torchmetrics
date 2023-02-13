@@ -183,7 +183,6 @@ class StructuralSimilarityIndexMeasure(Metric):
             ModuleNotFoundError:
                 If `matplotlib` is not installed
 
-        Examples:
         .. plot::
             :scale: 75
 
@@ -383,7 +382,6 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
             ModuleNotFoundError:
                 If `matplotlib` is not installed
 
-        Examples:
         .. plot::
             :scale: 75
 
