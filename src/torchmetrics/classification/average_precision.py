@@ -34,9 +34,10 @@ from torchmetrics.utilities.enums import ClassificationTask
 
 
 class BinaryAveragePrecision(BinaryPrecisionRecallCurve):
-    r"""Compute the average precision (AP) score for binary tasks. The AP score summarizes a precision-recall curve
-    as an weighted mean of precisions at each threshold, with the difference in recall from the previous threshold
-    as weight:
+    r"""Compute the average precision (AP) score for binary tasks.
+
+    The AP score summarizes a precision-recall curve as an weighted mean of precisions at each threshold, with the
+    difference in recall from the previous threshold as weight:
 
     .. math::
         AP = \sum_{n} (R_n - R_{n-1}) P_n
@@ -104,9 +105,10 @@ class BinaryAveragePrecision(BinaryPrecisionRecallCurve):
 
 
 class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
-    r"""Compute the average precision (AP) score for binary tasks. The AP score summarizes a precision-recall curve
-    as an weighted mean of precisions at each threshold, with the difference in recall from the previous threshold
-    as weight:
+    r"""Compute the average precision (AP) score for binary tasks.
+
+    The AP score summarizes a precision-recall curve as an weighted mean of precisions at each threshold, with the
+    difference in recall from the previous threshold as weight:
 
     .. math::
         AP = \sum_{n} (R_n - R_{n-1}) P_n
@@ -208,9 +210,10 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
 
 
 class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
-    r"""Compute the average precision (AP) score for binary tasks. The AP score summarizes a precision-recall curve
-    as an weighted mean of precisions at each threshold, with the difference in recall from the previous threshold
-    as weight:
+    r"""Compute the average precision (AP) score for binary tasks.
+
+    The AP score summarizes a precision-recall curve as an weighted mean of precisions at each threshold, with the
+    difference in recall from the previous threshold as weight:
 
     .. math::
         AP = \sum_{n} (R_n - R_{n-1}) P_n
@@ -317,8 +320,10 @@ class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
 
 
 class AveragePrecision:
-    r"""Compute the average precision (AP) score. The AP score summarizes a precision-recall curve as an weighted
-    mean of precisions at each threshold, with the difference in recall from the previous threshold as weight:
+    r"""Compute the average precision (AP) score.
+
+    The AP score summarizes a precision-recall curve as an weighted mean of precisions at each threshold, with the
+    difference in recall from the previous threshold as weight:
 
     .. math::
         AP = \sum_{n} (R_n - R_{n-1}) P_n

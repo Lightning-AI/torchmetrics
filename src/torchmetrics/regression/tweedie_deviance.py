@@ -24,7 +24,7 @@ from torchmetrics.metric import Metric
 
 
 class TweedieDevianceScore(Metric):
-    r"""Compute the `Tweedie Deviance Score`_ between targets and predictions:
+    r"""Compute the `Tweedie Deviance Score`_.
 
     .. math::
         deviance\_score(\hat{y},y) =

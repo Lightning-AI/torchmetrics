@@ -75,8 +75,7 @@ def binary_hinge_loss(
     ignore_index: Optional[int] = None,
     validate_args: bool = False,
 ) -> Tensor:
-    r"""Compute the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs) for binary tasks. It is
-    defined as:
+    r"""Compute the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs) for binary tasks.
 
     .. math::
         \text{Hinge loss} = \max(0, 1 - y \times \hat{y})

@@ -33,8 +33,7 @@ from torchmetrics.utilities.enums import ClassificationTaskNoMultilabel
 
 
 class BinaryHingeLoss(Metric):
-    r"""Compute the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs) for binary tasks. It is
-    defined as:
+    r"""Compute the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs) for binary tasks.
 
     .. math::
         \text{Hinge loss} = \max(0, 1 - y \times \hat{y})
