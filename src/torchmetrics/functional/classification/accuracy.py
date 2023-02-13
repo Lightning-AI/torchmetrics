@@ -86,7 +86,7 @@ def binary_accuracy(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Compute `Accuracy`_ for binary tasks:
+    r"""Compute `Accuracy`_ for binary tasks.
 
     .. math::
         \text{Accuracy} = \frac{1}{N}\sum_i^N 1(y_i = \hat{y}_i)
@@ -162,7 +162,7 @@ def multiclass_accuracy(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Compute `Accuracy`_ for multiclass tasks:
+    r"""Compute `Accuracy`_ for multiclass tasks.
 
     .. math::
         \text{Accuracy} = \frac{1}{N}\sum_i^N 1(y_i = \hat{y}_i)
@@ -269,7 +269,7 @@ def multilabel_accuracy(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Compute `Accuracy`_ for multilabel tasks:
+    r"""Compute `Accuracy`_ for multilabel tasks.
 
     .. math::
         \text{Accuracy} = \frac{1}{N}\sum_i^N 1(y_i = \hat{y}_i)

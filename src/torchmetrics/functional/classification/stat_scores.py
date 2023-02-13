@@ -896,12 +896,15 @@ def _stat_scores_update(
     ignore_index: Optional[int] = None,
     mode: DataType = None,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-    """Update and returns the number of true positives, false positives, true negatives, false negatives. Raises
-    ValueError if:
+    """Calculate true positives, false positives, true negatives, false negatives.
 
-        - The `ignore_index` is not valid
-        - When `ignore_index` is used with binary data
-        - When inputs are multi-dimensional multi-class, and the ``mdmc_reduce`` parameter is not set
+    Raises:
+        ValueError:
+            The `ignore_index` is not valid
+        ValueError:
+            When `ignore_index` is used with binary data
+        ValueError:
+            When inputs are multi-dimensional multi-class, and the ``mdmc_reduce`` parameter is not set
 
     Args:
         preds: Predicted tensor

@@ -114,6 +114,7 @@ class BinaryCalibrationError(Metric):
         self.add_state("accuracies", [], dist_reduce_fx="cat")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+        """Update metric states with predictions and targets."""
         if self.validate_args:
             _binary_calibration_error_tensor_validation(preds, target, self.ignore_index)
         preds, target = _binary_confusion_matrix_format(
@@ -124,6 +125,7 @@ class BinaryCalibrationError(Metric):
         self.accuracies.append(accuracies)
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         confidences = dim_zero_cat(self.confidences)
         accuracies = dim_zero_cat(self.accuracies)
         return _ce_compute(confidences, accuracies, self.n_bins, norm=self.norm)
@@ -217,6 +219,7 @@ class MulticlassCalibrationError(Metric):
         self.add_state("accuracies", [], dist_reduce_fx="cat")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+        """Update metric states with predictions and targets."""
         if self.validate_args:
             _multiclass_calibration_error_tensor_validation(preds, target, self.num_classes, self.ignore_index)
         preds, target = _multiclass_confusion_matrix_format(
@@ -227,6 +230,7 @@ class MulticlassCalibrationError(Metric):
         self.accuracies.append(accuracies)
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         confidences = dim_zero_cat(self.confidences)
         accuracies = dim_zero_cat(self.accuracies)
         return _ce_compute(confidences, accuracies, self.n_bins, norm=self.norm)
@@ -268,6 +272,7 @@ class CalibrationError:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
+        """Initialize task metric."""
         task = ClassificationTaskNoMultilabel.from_str(task)
         kwargs.update({"n_bins": n_bins, "norm": norm, "ignore_index": ignore_index, "validate_args": validate_args})
         if task == ClassificationTaskNoMultilabel.BINARY:

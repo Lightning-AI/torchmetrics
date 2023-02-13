@@ -28,7 +28,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class KendallRankCorrCoef(Metric):
-    r"""Compute `Kendall Rank Correlation Coefficient`_:
+    r"""Compute `Kendall Rank Correlation Coefficient`_.
 
     .. math::
         tau_a = \frac{C - D}{C + D}
