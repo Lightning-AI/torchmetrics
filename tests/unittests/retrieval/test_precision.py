@@ -138,7 +138,7 @@ class TestPrecision(RetrievalMetricTester):
             metric_functional=retrieval_precision,
             reference_metric=_precision_at_k,
             metric_args={},
-            k=k,
+            top_k=k,
             adaptive_k=adaptive_k,
         )
 

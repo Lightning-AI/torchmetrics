@@ -18,7 +18,7 @@ from torch import Tensor, tensor
 from torchmetrics.utilities.checks import _check_retrieval_functional_inputs
 
 
-def retrieval_precision(preds: Tensor, target: Tensor, k: Optional[int] = None, adaptive_k: bool = False) -> Tensor:
+def retrieval_precision(preds: Tensor, target: Tensor, top_k: Optional[int] = None, adaptive_k: bool = False) -> Tensor:
     """Compute the precision metric (for information retrieval). Precision is the fraction of relevant documents
     among all the retrieved documents.
 
@@ -29,7 +29,7 @@ def retrieval_precision(preds: Tensor, target: Tensor, k: Optional[int] = None, 
     Args:
         preds: estimated probabilities of each document to be relevant.
         target: ground truth about each document being relevant or not.
-        k: consider only the top k elements (default: ``None``, which considers them all)
+        top_k: consider only the top k elements (default: ``None``, which considers them all)
         adaptive_k: adjust `k` to `min(k, number of documents)` for each query
 
     Returns:
@@ -44,7 +44,7 @@ def retrieval_precision(preds: Tensor, target: Tensor, k: Optional[int] = None, 
     Example:
         >>> preds = tensor([0.2, 0.3, 0.5])
         >>> target = tensor([True, False, True])
-        >>> retrieval_precision(preds, target, k=2)
+        >>> retrieval_precision(preds, target, top_k=2)
         tensor(0.5000)
     """
     preds, target = _check_retrieval_functional_inputs(preds, target)
@@ -52,14 +52,14 @@ def retrieval_precision(preds: Tensor, target: Tensor, k: Optional[int] = None, 
     if not isinstance(adaptive_k, bool):
         raise ValueError("`adaptive_k` has to be a boolean")
 
-    if k is None or (adaptive_k and k > preds.shape[-1]):
-        k = preds.shape[-1]
+    if top_k is None or (adaptive_k and top_k > preds.shape[-1]):
+        top_k = preds.shape[-1]
 
-    if not (isinstance(k, int) and k > 0):
+    if not (isinstance(top_k, int) and top_k > 0):
         raise ValueError("`k` has to be a positive integer or None")
 
     if not target.sum():
         return tensor(0.0, device=preds.device)
 
-    relevant = target[preds.topk(min(k, preds.shape[-1]), dim=-1)[1]].sum().float()
-    return relevant / k
+    relevant = target[preds.topk(min(top_k, preds.shape[-1]), dim=-1)[1]].sum().float()
+    return relevant / top_k

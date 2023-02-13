@@ -102,4 +102,4 @@ class RetrievalPrecision(RetrievalMetric):
         self.adaptive_k = adaptive_k
 
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
-        return retrieval_precision(preds, target, k=self.k, adaptive_k=self.adaptive_k)
+        return retrieval_precision(preds, target, top_k=self.k, adaptive_k=self.adaptive_k)
