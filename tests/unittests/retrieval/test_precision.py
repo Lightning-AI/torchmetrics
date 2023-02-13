@@ -77,7 +77,7 @@ class TestPrecision(RetrievalMetricTester):
     ):
         metric_args = {
             "empty_target_action": empty_target_action,
-            "k": k,
+            "top_k": k,
             "ignore_index": ignore_index,
             "adaptive_k": adaptive_k,
         }
@@ -112,7 +112,7 @@ class TestPrecision(RetrievalMetricTester):
     ):
         metric_args = {
             "empty_target_action": empty_target_action,
-            "k": k,
+            "top_k": k,
             "ignore_index": -100,
             "adaptive_k": adaptive_k,
         }

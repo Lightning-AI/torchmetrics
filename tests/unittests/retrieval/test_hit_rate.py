@@ -67,7 +67,7 @@ class TestHitRate(RetrievalMetricTester):
         ignore_index: int,
         k: int,
     ):
-        metric_args = {"empty_target_action": empty_target_action, "k": k, "ignore_index": ignore_index}
+        metric_args = {"empty_target_action": empty_target_action, "top_k": k, "ignore_index": ignore_index}
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -95,7 +95,7 @@ class TestHitRate(RetrievalMetricTester):
         empty_target_action: str,
         k: int,
     ):
-        metric_args = {"empty_target_action": empty_target_action, "k": k, "ignore_index": -100}
+        metric_args = {"empty_target_action": empty_target_action, "top_k": k, "ignore_index": -100}
 
         self.run_class_metric_test(
             ddp=ddp,
