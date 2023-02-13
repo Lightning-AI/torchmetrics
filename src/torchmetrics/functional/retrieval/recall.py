@@ -19,7 +19,7 @@ from torch import Tensor, tensor
 from torchmetrics.utilities.checks import _check_retrieval_functional_inputs
 
 
-def retrieval_recall(preds: Tensor, target: Tensor, k: Optional[int] = None) -> Tensor:
+def retrieval_recall(preds: Tensor, target: Tensor, top_k: Optional[int] = None) -> Tensor:
     """Compute the recall metric (for information retrieval). Recall is the fraction of relevant documents
     retrieved among all the relevant documents.
 
@@ -30,7 +30,7 @@ def retrieval_recall(preds: Tensor, target: Tensor, k: Optional[int] = None) -> 
     Args:
         preds: estimated probabilities of each document to be relevant.
         target: ground truth about each document being relevant or not.
-        k: consider only the top k elements (default: `None`, which considers them all)
+        top_k: consider only the top k elements (default: `None`, which considers them all)
 
     Returns:
         a single-value tensor with the recall (at ``k``) of the predictions ``preds`` w.r.t. the labels ``target``.
@@ -43,19 +43,19 @@ def retrieval_recall(preds: Tensor, target: Tensor, k: Optional[int] = None) -> 
         >>> from  torchmetrics.functional import retrieval_recall
         >>> preds = tensor([0.2, 0.3, 0.5])
         >>> target = tensor([True, False, True])
-        >>> retrieval_recall(preds, target, k=2)
+        >>> retrieval_recall(preds, target, top_k=2)
         tensor(0.5000)
     """
     preds, target = _check_retrieval_functional_inputs(preds, target)
 
-    if k is None:
-        k = preds.shape[-1]
+    if top_k is None:
+        top_k = preds.shape[-1]
 
-    if not (isinstance(k, int) and k > 0):
+    if not (isinstance(top_k, int) and top_k > 0):
         raise ValueError("`k` has to be a positive integer or None")
 
     if not target.sum():
         return tensor(0.0, device=preds.device)
 
-    relevant = target[torch.argsort(preds, dim=-1, descending=True)][:k].sum().float()
+    relevant = target[torch.argsort(preds, dim=-1, descending=True)][:top_k].sum().float()
     return relevant / target.sum()

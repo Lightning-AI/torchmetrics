@@ -94,4 +94,4 @@ class RetrievalRecall(RetrievalMetric):
         self.k = k
 
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
-        return retrieval_recall(preds, target, k=self.k)
+        return retrieval_recall(preds, target, top_k=self.k)
