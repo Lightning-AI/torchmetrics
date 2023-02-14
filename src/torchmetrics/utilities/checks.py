@@ -11,9 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
+import signal
+import sys
 from functools import partial
 from time import perf_counter
-from typing import Any, Dict, Mapping, Optional, Sequence, Tuple, no_type_check
+from typing import Any, Callable, Dict, Mapping, Optional, Sequence, Tuple, no_type_check
 from unittest.mock import Mock
 
 import torch
@@ -746,3 +749,45 @@ def is_overridden(method_name: str, instance: object, parent: object) -> bool:
         raise ValueError("The parent should define the method")
 
     return instance_attr.__code__ != parent_attr.__code__
+
+
+def _in_doctest() -> bool:
+    """Determine if script running in doctest context.
+
+    From:
+    https://stackoverflow.com/questions/27884404/printing-test-execution-times-and-pinning-down-slow-tests-with-py-test
+    """
+    if "_pytest.doctest" in sys.modules:
+        return True
+    if hasattr(sys.modules["__main__"], "_SpoofOut"):
+        return True
+    if sys.modules["__main__"].__dict__.get("__file__", "").endswith("/pytest"):
+        return True
+    return False
+
+
+def _check_download_timeout(fn: Callable, default_timeout: int = 120) -> bool:
+    """Function for checking if a certain function is taking too long to execute.
+
+    Function will only be executed if running inside a doctest context. Currently does not support Windows.
+
+    Args:
+        fn: function to check
+        default_timeout: timeout for function
+
+    Returns:
+        Bool indicating if the function finished within the specificied timeout
+    """
+    if _in_doctest() and sys.platform != "win32":
+
+        def _handler(signum, frame):
+            raise Exception("Download took longer than timeout")
+
+        signal.signal(signal.SIGALRM, _handler)
+        signal.alarm(os.environ.get("PYTEST_TIMEOUT", default_timeout))
+        try:
+            fn()
+        except Exception:
+            return True
+
+    return False
