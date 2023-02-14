@@ -33,7 +33,7 @@ class RetrievalPrecision(RetrievalMetric):
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``p2`` (:class:`~torch.Tensor`): A single-value tensor with the precision (at ``k``) of the predictions
+    - ``p2`` (:class:`~torch.Tensor`): A single-value tensor with the precision (at ``top_k``) of the predictions
       ``preds`` w.r.t. the labels ``target``
 
     All ``indexes``, ``preds`` and ``target`` must have the same dimension and will be flatten at the beginning,
@@ -52,7 +52,7 @@ class RetrievalPrecision(RetrievalMetric):
         ignore_index:
             Ignore predictions where the target is equal to this number.
         top_k: consider only the top k elements for each query (default: ``None``, which considers them all)
-        adaptive_k: adjust ``k`` to ``min(k, number of documents)`` for each query
+        adaptive_k: adjust ``top_k`` to ``min(k, number of documents)`` for each query
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -61,7 +61,7 @@ class RetrievalPrecision(RetrievalMetric):
         ValueError:
             If ``ignore_index`` is not `None` or an integer.
         ValueError:
-            If ``k`` is not `None` or an integer larger than 0.
+            If ``top_k`` is not `None` or an integer larger than 0.
         ValueError:
             If ``adaptive_k`` is not boolean.
 

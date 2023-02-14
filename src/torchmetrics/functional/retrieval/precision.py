@@ -24,7 +24,7 @@ def retrieval_precision(preds: Tensor, target: Tensor, top_k: Optional[int] = No
 
     ``preds`` and ``target`` should be of the same shape and live on the same device. If no ``target`` is ``True``,
     ``0`` is returned. ``target`` must be either `bool` or `integers` and ``preds`` must be ``float``,
-    otherwise an error is raised. If you want to measure Precision@K, ``k`` must be a positive integer.
+    otherwise an error is raised. If you want to measure Precision@K, ``top_k`` must be a positive integer.
 
     Args:
         preds: estimated probabilities of each document to be relevant.
@@ -33,11 +33,12 @@ def retrieval_precision(preds: Tensor, target: Tensor, top_k: Optional[int] = No
         adaptive_k: adjust `k` to `min(k, number of documents)` for each query
 
     Returns:
-        a single-value tensor with the precision (at ``k``) of the predictions ``preds`` w.r.t. the labels ``target``.
+        A single-value tensor with the precision (at ``top_k``) of the predictions ``preds`` w.r.t. the labels
+          ``target``.
 
     Raises:
         ValueError:
-            If ``k`` is not `None` or an integer larger than 0.
+            If ``top_k`` is not `None` or an integer larger than 0.
         ValueError:
             If ``adaptive_k`` is not boolean.
 

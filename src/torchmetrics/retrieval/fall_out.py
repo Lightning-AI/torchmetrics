@@ -61,7 +61,7 @@ class RetrievalFallOut(RetrievalMetric):
         ValueError:
             If ``ignore_index`` is not `None` or an integer.
         ValueError:
-            If ``k`` parameter is not `None` or an integer larger than 0.
+            If ``top_k`` parameter is not `None` or an integer larger than 0.
 
     Example:
         >>> from torchmetrics import RetrievalFallOut

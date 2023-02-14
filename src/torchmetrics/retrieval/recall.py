@@ -33,7 +33,7 @@ class RetrievalRecall(RetrievalMetric):
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``r2`` (:class:`~torch.Tensor`): A single-value tensor with the recall (at ``k``) of the predictions
+    - ``r2`` (:class:`~torch.Tensor`): A single-value tensor with the recall (at ``top_k``) of the predictions
       ``preds`` w.r.t. the labels ``target``
 
     All ``indexes``, ``preds`` and ``target`` must have the same dimension and will be flatten at the beginning,
@@ -59,7 +59,7 @@ class RetrievalRecall(RetrievalMetric):
         ValueError:
             If ``ignore_index`` is not `None` or an integer.
         ValueError:
-            If ``k`` parameter is not `None` or an integer larger than 0.
+            If ``top_k`` parameter is not `None` or an integer larger than 0.
 
     Example:
         >>> from torch import tensor

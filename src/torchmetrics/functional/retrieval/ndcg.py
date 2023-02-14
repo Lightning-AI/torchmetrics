@@ -38,11 +38,11 @@ def retrieval_normalized_dcg(preds: Tensor, target: Tensor, top_k: Optional[int]
         top_k: consider only the top k elements (default: ``None``, which considers them all)
 
     Return:
-        a single-value tensor with the nDCG of the predictions ``preds`` w.r.t. the labels ``target``.
+        A single-value tensor with the nDCG of the predictions ``preds`` w.r.t. the labels ``target``.
 
     Raises:
         ValueError:
-            If ``k`` parameter is not `None` or an integer larger than 0
+            If ``top_k`` parameter is not `None` or an integer larger than 0
 
     Example:
         >>> from torchmetrics.functional import retrieval_normalized_dcg

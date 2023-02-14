@@ -25,7 +25,7 @@ def retrieval_fall_out(preds: Tensor, target: Tensor, top_k: Optional[int] = Non
 
     ``preds`` and ``target`` should be of the same shape and live on the same device. If no ``target`` is ``True``,
     ``0`` is returned. ``target`` must be either `bool` or `integers` and ``preds`` must be ``float``,
-    otherwise an error is raised. If you want to measure Fall-out@K, ``k`` must be a positive integer.
+    otherwise an error is raised. If you want to measure Fall-out@K, ``top_k`` must be a positive integer.
 
     Args:
         preds: estimated probabilities of each document to be relevant.
@@ -33,11 +33,11 @@ def retrieval_fall_out(preds: Tensor, target: Tensor, top_k: Optional[int] = Non
         top_k: consider only the top k elements (default: ``None``, which considers them all)
 
     Returns:
-        a single-value tensor with the fall-out (at ``k``) of the predictions ``preds`` w.r.t. the labels ``target``.
+        A single-value tensor with the fall-out (at ``top_k``) of the predictions ``preds`` w.r.t. the labels ``target``
 
     Raises:
         ValueError:
-            If ``k`` parameter is not `None` or an integer larger than 0
+            If ``top_k`` parameter is not `None` or an integer larger than 0
 
     Example:
         >>> from  torchmetrics.functional import retrieval_fall_out
