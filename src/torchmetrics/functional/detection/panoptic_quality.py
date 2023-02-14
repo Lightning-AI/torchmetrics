@@ -205,8 +205,6 @@ def _panoptic_quality_update(
         - False positives
         - False negatives
     """
-    r"""Returns stat scores (iou sum, true positives, false positives, false negatives) required to compute
-    accuracy."""
     device = flatten_preds.device
     n_categories = len(cat_id_to_continuous_id)
     iou_sum = torch.zeros(n_categories, dtype=torch.double, device=device)
