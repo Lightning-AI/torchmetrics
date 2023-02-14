@@ -35,13 +35,13 @@ from unittests.retrieval.helpers import (
 seed_all(42)
 
 
-def _precision_at_k(target: np.ndarray, preds: np.ndarray, k: Optional[int] = None):
-    """Wrapper around reference metric to account for k argument."""
+def _precision_at_k(target: np.ndarray, preds: np.ndarray, top_k: Optional[int] = None):
+    """Wrapper around reference metric to account for top_k argument."""
     assert target.shape == preds.shape
     assert len(target.shape) == 1
-    k = k or len(preds)
+    top_k = top_k or len(preds)
     idx = np.argsort(preds, axis=0)[::-1]
-    target, preds = target[idx][:k], preds[idx][:k]
+    target, preds = target[idx][:top_k], preds[idx][:top_k]
     return sk_average_precision_score(target, preds)
 
 
@@ -50,7 +50,7 @@ class TestMAP(RetrievalMetricTester):
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize("ignore_index", [None, 1])  # avoid setting 0, otherwise test with all 0 targets will fail
-    @pytest.mark.parametrize("k", [None, 1, 4, 10])
+    @pytest.mark.parametrize("top_k", [None, 1, 4, 10])
     @pytest.mark.parametrize(**_default_metric_class_input_arguments)
     def test_class_metric(
         self,
@@ -61,7 +61,7 @@ class TestMAP(RetrievalMetricTester):
         dist_sync_on_step: bool,
         empty_target_action: str,
         ignore_index: int,
-        k: int,
+        top_k: int,
     ):
         metric_args = {"empty_target_action": empty_target_action, "ignore_index": ignore_index}
 
@@ -79,7 +79,7 @@ class TestMAP(RetrievalMetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
-    @pytest.mark.parametrize("k", [None, 1, 4, 10])
+    @pytest.mark.parametrize("top_k", [None, 1, 4, 10])
     @pytest.mark.parametrize(**_default_metric_class_input_arguments_ignore_index)
     def test_class_metric_ignore_index(
         self,
@@ -89,9 +89,9 @@ class TestMAP(RetrievalMetricTester):
         target: Tensor,
         dist_sync_on_step: bool,
         empty_target_action: str,
-        k: int,
+        top_k: int,
     ):
-        metric_args = {"empty_target_action": empty_target_action, "ignore_index": -100, "k": k}
+        metric_args = {"empty_target_action": empty_target_action, "ignore_index": -100, "top_k": k}
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -105,15 +105,15 @@ class TestMAP(RetrievalMetricTester):
         )
 
     @pytest.mark.parametrize(**_default_metric_functional_input_arguments)
-    @pytest.mark.parametrize("k", [None, 1, 4, 10])
-    def test_functional_metric(self, preds: Tensor, target: Tensor, k: int):
+    @pytest.mark.parametrize("top_k", [None, 1, 4, 10])
+    def test_functional_metric(self, preds: Tensor, target: Tensor, top_k: int):
         self.run_functional_metric_test(
             preds=preds,
             target=target,
             metric_functional=retrieval_average_precision,
             reference_metric=_precision_at_k,
             metric_args={},
-            top_k=k,
+            top_k=top_k,
         )
 
     @pytest.mark.parametrize(**_default_metric_class_input_arguments)

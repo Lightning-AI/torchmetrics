@@ -91,7 +91,7 @@ class RetrievalMAP(RetrievalMetric):
         )
 
         if top_k is not None and not isinstance(top_k, int) and top_k <= 0:
-            raise ValueError(f"Argument `k` has to be a positive integer or None, but got {top_k}")
+            raise ValueError(f"Argument ``top_k`` has to be a positive integer or None, but got {top_k}")
         self.k = top_k
 
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:

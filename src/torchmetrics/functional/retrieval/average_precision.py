@@ -36,7 +36,7 @@ def retrieval_average_precision(preds: Tensor, target: Tensor, top_k: Optional[i
 
     Raises:
         ValueError:
-            If ``k`` is not ``None`` or an integer larger than 0.
+            If ``top_k`` is not ``None`` or an integer larger than 0.
 
     Example:
         >>> from torchmetrics.functional import retrieval_average_precision
@@ -49,7 +49,7 @@ def retrieval_average_precision(preds: Tensor, target: Tensor, top_k: Optional[i
 
     top_k = top_k or preds.shape[-1]
     if not isinstance(top_k, int) and top_k <= 0:
-        raise ValueError(f"Argument `k` has to be a positive integer or None, but got {top_k}.")
+        raise ValueError(f"Argument ``top_k`` has to be a positive integer or None, but got {top_k}.")
 
     target = target[preds.topk(min(top_k, preds.shape[-1]), sorted=True, dim=-1)[1]]
     if not target.sum():
