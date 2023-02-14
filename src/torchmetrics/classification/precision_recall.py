@@ -23,7 +23,7 @@ from torchmetrics.utilities.enums import ClassificationTask
 
 
 class BinaryPrecision(BinaryStatScores):
-    r"""Compute `Precision`_ for binary tasks:
+    r"""Compute `Precision`_ for binary tasks.
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 
@@ -89,6 +89,7 @@ class BinaryPrecision(BinaryStatScores):
     full_state_update: bool = False
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _precision_recall_reduce(
             "precision", tp, fp, tn, fn, average="binary", multidim_average=self.multidim_average
@@ -195,6 +196,7 @@ class MulticlassPrecision(MulticlassStatScores):
     full_state_update: bool = False
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _precision_recall_reduce(
             "precision", tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average
@@ -298,6 +300,7 @@ class MultilabelPrecision(MultilabelStatScores):
     full_state_update: bool = False
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _precision_recall_reduce(
             "precision", tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average
@@ -305,7 +308,7 @@ class MultilabelPrecision(MultilabelStatScores):
 
 
 class BinaryRecall(BinaryStatScores):
-    r"""Compute `Recall`_ for binary tasks:
+    r"""Compute `Recall`_ for binary tasks.
 
     .. math:: \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
 
@@ -371,6 +374,7 @@ class BinaryRecall(BinaryStatScores):
     full_state_update: bool = False
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _precision_recall_reduce(
             "recall", tp, fp, tn, fn, average="binary", multidim_average=self.multidim_average
@@ -378,7 +382,7 @@ class BinaryRecall(BinaryStatScores):
 
 
 class MulticlassRecall(MulticlassStatScores):
-    r"""Compute `Recall`_ for multiclass tasks:
+    r"""Compute `Recall`_ for multiclass tasks.
 
     .. math:: \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
 
@@ -476,6 +480,7 @@ class MulticlassRecall(MulticlassStatScores):
     full_state_update: bool = False
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _precision_recall_reduce(
             "recall", tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average
@@ -483,7 +488,7 @@ class MulticlassRecall(MulticlassStatScores):
 
 
 class MultilabelRecall(MultilabelStatScores):
-    r"""Compute `Recall`_ for multilabel tasks:
+    r"""Compute `Recall`_ for multilabel tasks.
 
     .. math:: \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
 
@@ -578,6 +583,7 @@ class MultilabelRecall(MultilabelStatScores):
     full_state_update: bool = False
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _precision_recall_reduce(
             "recall", tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average
@@ -585,7 +591,7 @@ class MultilabelRecall(MultilabelStatScores):
 
 
 class Precision:
-    r"""Compute `Precision`_:
+    r"""Compute `Precision`_.
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 
@@ -624,6 +630,7 @@ class Precision:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
+        """Initialize task metric."""
         assert multidim_average is not None
         kwargs.update(
             {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
@@ -641,7 +648,7 @@ class Precision:
 
 
 class Recall:
-    r"""Compute `Recall`_:
+    r"""Compute `Recall`_.
 
     .. math:: \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
 
@@ -680,6 +687,7 @@ class Recall:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
+        """Initialize task metric."""
         task = ClassificationTask.from_str(task)
         assert multidim_average is not None
         kwargs.update(

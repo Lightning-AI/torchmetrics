@@ -50,7 +50,7 @@ def pairwise_cosine_similarity(
     reduction: Literal["mean", "sum", "none", None] = None,
     zero_diagonal: Optional[bool] = None,
 ) -> Tensor:
-    r"""Calculate pairwise cosine similarity:
+    r"""Calculate pairwise cosine similarity.
 
     .. math::
         s_{cos}(x,y) = \frac{<x,y>}{||x|| \cdot ||y||}
