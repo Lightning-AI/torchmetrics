@@ -90,15 +90,19 @@ class ClasswiseWrapper(Metric):
         return {f"{name}_{lab}": val for lab, val in zip(self.labels, x)}
 
     def forward(self, *args: Any, **kwargs: Any) -> Any:
+        """Calculate on batch and accumulate to global state."""
         return self._convert(self.metric(*args, **kwargs))
 
     def update(self, *args: Any, **kwargs: Any) -> None:
+        """Update state."""
         self.metric.update(*args, **kwargs)
 
     def compute(self) -> Dict[str, Tensor]:
+        """Compute metric."""
         return self._convert(self.metric.compute())
 
     def reset(self) -> None:
+        """Reset metric."""
         self.metric.reset()
 
     def _wrap_update(self, update: Callable) -> Callable:

@@ -27,10 +27,11 @@ from torchmetrics.utilities.enums import ClassificationTask
 
 
 class BinaryJaccardIndex(BinaryConfusionMatrix):
-    r"""Calculate the Jaccard index for binary tasks. The `Jaccard index`_ (also known as the intersetion over
-    union or jaccard similarity coefficient) is an statistic that can be used to determine the similarity and
-    diversity of a sample set. It is defined as the size of the intersection divided by the union of the sample
-    sets:
+    r"""Calculate the Jaccard index for binary tasks.
+
+    The `Jaccard index`_ (also known as the intersetion over union or jaccard similarity coefficient) is an statistic
+    that can be used to determine the similarity and diversity of a sample set. It is defined as the size of the
+    intersection divided by the union of the sample sets:
 
     .. math:: J(A,B) = \frac{|A\cap B|}{|A\cup B|}
 
@@ -89,14 +90,16 @@ class BinaryJaccardIndex(BinaryConfusionMatrix):
         )
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         return _jaccard_index_reduce(self.confmat, average="binary")
 
 
 class MulticlassJaccardIndex(MulticlassConfusionMatrix):
-    r"""Calculate the Jaccard index for multiclass tasks. The `Jaccard index`_ (also known as the intersetion over
-    union or jaccard similarity coefficient) is an statistic that can be used to determine the similarity and
-    diversity of a sample set. It is defined as the size of the intersection divided by the union of the sample
-    sets:
+    r"""Calculate the Jaccard index for multiclass tasks.
+
+    The `Jaccard index`_ (also known as the intersetion over union or jaccard similarity coefficient) is an statistic
+    that can be used to determine the similarity and diversity of a sample set. It is defined as the size of the
+    intersection divided by the union of the sample sets:
 
     .. math:: J(A,B) = \frac{|A\cap B|}{|A\cup B|}
 
@@ -172,14 +175,16 @@ class MulticlassJaccardIndex(MulticlassConfusionMatrix):
         self.average = average
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         return _jaccard_index_reduce(self.confmat, average=self.average)
 
 
 class MultilabelJaccardIndex(MultilabelConfusionMatrix):
-    r"""Calculate the Jaccard index for multilabel tasks. The `Jaccard index`_ (also known as the intersetion over
-    union or jaccard similarity coefficient) is an statistic that can be used to determine the similarity and
-    diversity of a sample set. It is defined as the size of the intersection divided by the union of the sample
-    sets:
+    r"""Calculate the Jaccard index for multilabel tasks.
+
+    The `Jaccard index`_ (also known as the intersetion over union or jaccard similarity coefficient) is an statistic
+    that can be used to determine the similarity and diversity of a sample set. It is defined as the size of the
+    intersection divided by the union of the sample sets:
 
     .. math:: J(A,B) = \frac{|A\cap B|}{|A\cup B|}
 
@@ -259,14 +264,16 @@ class MultilabelJaccardIndex(MultilabelConfusionMatrix):
         self.average = average
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         return _jaccard_index_reduce(self.confmat, average=self.average)
 
 
 class JaccardIndex:
-    r"""Calculate the Jaccard index for multilabel tasks. The `Jaccard index`_ (also known as the intersetion over
-    union or jaccard similarity coefficient) is an statistic that can be used to determine the similarity and
-    diversity of a sample set. It is defined as the size of the intersection divided by the union of the sample
-    sets:
+    r"""Calculate the Jaccard index for multilabel tasks.
+
+    The `Jaccard index`_ (also known as the intersetion over union or jaccard similarity coefficient) is an statistic
+    that can be used to determine the similarity and diversity of a sample set. It is defined as the size of the
+    intersection divided by the union of the sample sets:
 
     .. math:: J(A,B) = \frac{|A\cap B|}{|A\cup B|}
 
@@ -296,6 +303,7 @@ class JaccardIndex:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
+        """Initialize task metric."""
         task = ClassificationTask.from_str(task)
         kwargs.update({"ignore_index": ignore_index, "validate_args": validate_args})
         if task == ClassificationTask.BINARY:

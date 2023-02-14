@@ -141,6 +141,7 @@ class InceptionScore(Metric):
         self.features.append(features)
 
     def compute(self) -> Tuple[Tensor, Tensor]:
+        """Compute metric."""
         features = dim_zero_cat(self.features)
         # random permute the features
         idx = torch.randperm(features.shape[0])
