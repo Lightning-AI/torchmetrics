@@ -20,7 +20,7 @@ from torchmetrics.metric import Metric
 
 
 class MeanSquaredLogError(Metric):
-    r"""Compute `mean squared logarithmic error`_ (MSLE):
+    r"""Compute `mean squared logarithmic error`_ (MSLE).
 
     .. math:: \text{MSLE} = \frac{1}{N}\sum_i^N (\log_e(1 + y_i) - \log_e(1 + \hat{y_i}))^2
 

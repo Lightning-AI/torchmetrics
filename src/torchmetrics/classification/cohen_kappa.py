@@ -102,6 +102,7 @@ class BinaryCohenKappa(BinaryConfusionMatrix):
         self.validate_args = validate_args
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         return _cohen_kappa_reduce(self.confmat, self.weights)
 
 
@@ -184,6 +185,7 @@ class MulticlassCohenKappa(MulticlassConfusionMatrix):
         self.validate_args = validate_args
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         return _cohen_kappa_reduce(self.confmat, self.weights)
 
 
@@ -222,6 +224,7 @@ class CohenKappa:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
+        """Initialize task metric."""
         task = ClassificationTaskNoMultilabel.from_str(task)
         kwargs.update({"weights": weights, "ignore_index": ignore_index, "validate_args": validate_args})
         if task == ClassificationTaskNoMultilabel.BINARY:

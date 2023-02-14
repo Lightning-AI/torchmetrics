@@ -496,6 +496,7 @@ class StatScores:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
+        """Initialize task metric."""
         task = ClassificationTask.from_str(task)
         assert multidim_average is not None
         kwargs.update(

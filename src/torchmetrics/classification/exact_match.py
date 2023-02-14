@@ -118,6 +118,7 @@ class MulticlassExactMatch(Metric):
         )
 
     def update(self, preds, target) -> None:
+        """Update metric states with predictions and targets."""
         if self.validate_args:
             _multiclass_stat_scores_tensor_validation(
                 preds, target, self.num_classes, self.multidim_average, self.ignore_index
@@ -132,6 +133,7 @@ class MulticlassExactMatch(Metric):
             self.total += total
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         correct = dim_zero_cat(self.correct) if isinstance(self.correct, list) else self.correct
         return _exact_match_reduce(correct, self.total)
 
@@ -250,6 +252,7 @@ class MultilabelExactMatch(Metric):
             self.total += total
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         correct = dim_zero_cat(self.correct) if isinstance(self.correct, list) else self.correct
         return _exact_match_reduce(correct, self.total)
 
@@ -289,6 +292,7 @@ class ExactMatch:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
+        """Initialize task metric."""
         task = ClassificationTaskNoBinary.from_str(task)
         kwargs.update(
             {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}

@@ -25,7 +25,7 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class MeanSquaredError(Metric):
-    r"""Compute `mean squared error`_ (MSE):
+    r"""Compute `mean squared error`_ (MSE).
 
     .. math:: \text{MSE} = \frac{1}{N}\sum_i^N(y_i - \hat{y_i})^2
 
