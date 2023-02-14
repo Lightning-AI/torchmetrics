@@ -32,7 +32,7 @@ else:
 
 
 class IntersectionOverUnion(Metric):
-    r"""Computes Intersection Over Union (IoU)
+    r"""Computes Intersection Over Union (IoU).
 
     Args:
         box_format:

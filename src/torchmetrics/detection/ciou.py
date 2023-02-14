@@ -21,7 +21,7 @@ from torchmetrics.utilities.imports import _TORCHVISION_GREATER_EQUAL_0_13
 
 
 class CompleteIntersectionOverUnion(IntersectionOverUnion):
-    r"""Computes Complete Intersection Over Union (CIoU) <https://arxiv.org/abs/2005.03572>`_
+    r"""Computes Complete Intersection Over Union (CIoU) <https://arxiv.org/abs/2005.03572>`_.
 
     Args:
         box_format:

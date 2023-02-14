@@ -21,7 +21,7 @@ from torchmetrics.utilities.imports import _TORCHVISION_GREATER_EQUAL_0_13
 
 
 class DistanceIntersectionOverUnion(IntersectionOverUnion):
-    r"""Computes Distance Intersection Over Union (DIoU) <https://arxiv.org/abs/1911.08287v1>`_
+    r"""Computes Distance Intersection Over Union (DIoU) <https://arxiv.org/abs/1911.08287v1>`_.
 
     Args:
         box_format:

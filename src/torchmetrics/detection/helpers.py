@@ -17,7 +17,7 @@ from torch import Tensor
 
 
 def _input_validator(preds: Sequence[Dict[str, Tensor]], targets: Sequence[Dict[str, Tensor]]) -> None:
-    """Ensure the correct input format of `preds` and `targets`"""
+    """Ensure the correct input format of `preds` and `targets`."""
     if not isinstance(preds, Sequence):
         raise ValueError(f"Expected argument `preds` to be of type Sequence, but got {preds}")
     if not isinstance(targets, Sequence):
