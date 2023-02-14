@@ -68,6 +68,11 @@ _args = {"things": {0, 1}, "stuffs": {6, 7}}
 
 
 def _compare_fn(preds, target) -> np.ndarray:
+    """Reference implementation
+    
+    Improve this by calling https://github.com/cocodataset/panopticapi/blob/master/panopticapi/evaluation.py
+    directly and compare at runtime on multiple examples
+    """
     return np.array([0.7753])
 
 

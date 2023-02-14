@@ -39,6 +39,9 @@ class PanopticQuality(Metric):
     true postitives, false positives and false negatives. This metric is inspired by the PQ implementation of
     panopticapi, a standard implementation for the PQ metric for object detection.
 
+.. note:
+    Metric is currently experimental
+
     Args:
         things:
             Set of ``category_id`` for countable things.
@@ -85,7 +88,7 @@ class PanopticQuality(Metric):
     ):
         super().__init__(**kwargs)
 
-        # todo
+        # todo: better testing for correctness of metric
         warnings.warn("This is experimental version and are actively working on its stability.")
 
         _validate_categories(things, stuffs)
