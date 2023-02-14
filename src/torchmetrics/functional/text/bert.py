@@ -39,7 +39,7 @@ _DEFAULT_MODEL = "roberta-large"
 if _TRANSFORMERS_AVAILABLE:
     from transformers import AutoModel, AutoTokenizer
 
-    def _try_download():
+    def _try_download() -> None:
         AutoTokenizer.from_pretrained(_DEFAULT_MODEL)
         AutoModel.from_pretrained(_DEFAULT_MODEL)
 
