@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Literal, Optional
+from typing import Any, Callable, Optional
 
 from torch import Tensor
 
@@ -41,7 +41,7 @@ class CompleteIntersectionOverUnion(IntersectionOverUnion):
 
     def __init__(
         self,
-        box_format: Literal["xyxy", "xywh", "cxcywh"] = "xyxy",
+        box_format: str = "xyxy",
         iou_threshold: Optional[float] = None,
         class_metrics: bool = False,
         **kwargs: Any,

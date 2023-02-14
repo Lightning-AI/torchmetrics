@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections import defaultdict
-from typing import Any, Callable, Dict, List, Literal, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 import torch
 from torch import Tensor
@@ -65,7 +65,7 @@ class IntersectionOverUnion(Metric):
 
     def __init__(
         self,
-        box_format: Literal["xyxy", "xywh", "cxcywh"] = "xyxy",
+        box_format: str = "xyxy",
         iou_threshold: Optional[float] = None,
         class_metrics: bool = False,
         respect_labels: bool = True,
