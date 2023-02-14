@@ -109,6 +109,7 @@ class BinarySpecificityAtSensitivity(BinaryPrecisionRecallCurve):
         self.min_sensitivity = min_sensitivity
 
     def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
+        """Compute metric."""
         if self.thresholds is None:
             state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]  # type: ignore
         else:
@@ -202,6 +203,7 @@ class MulticlassSpecificityAtSensitivity(MulticlassPrecisionRecallCurve):
         self.min_sensitivity = min_sensitivity
 
     def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore
+        """Compute metric."""
         if self.thresholds is None:
             state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]  # type: ignore
         else:
@@ -297,6 +299,7 @@ class MultilabelSpecificityAtSensitivity(MultilabelPrecisionRecallCurve):
         self.min_sensitivity = min_sensitivity
 
     def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
+        """Compute metric."""
         if self.thresholds is None:
             state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]  # type: ignore
         else:
@@ -328,6 +331,7 @@ class SpecificityAtSensitivity:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
+        """Initialize task metric."""
         task = ClassificationTask.from_str(task)
         if task == ClassificationTask.BINARY:
             return BinarySpecificityAtSensitivity(min_sensitivity, thresholds, ignore_index, validate_args, **kwargs)

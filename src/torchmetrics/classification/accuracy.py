@@ -150,7 +150,7 @@ class BinaryAccuracy(BinaryStatScores):
 
 
 class MulticlassAccuracy(MulticlassStatScores):
-    r"""Compute `Accuracy`_ for multiclass tasks:
+    r"""Compute `Accuracy`_ for multiclass tasks.
 
     .. math::
         \text{Accuracy} = \frac{1}{N}\sum_i^N 1(y_i = \hat{y}_i)
@@ -299,7 +299,7 @@ class MulticlassAccuracy(MulticlassStatScores):
 
 
 class MultilabelAccuracy(MultilabelStatScores):
-    r"""Compute `Accuracy`_ for multilabel tasks:
+    r"""Compute `Accuracy`_ for multilabel tasks.
 
     .. math::
         \text{Accuracy} = \frac{1}{N}\sum_i^N 1(y_i = \hat{y}_i)
@@ -491,6 +491,7 @@ class Accuracy:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
+        """Initialize task metric."""
         task = ClassificationTask.from_str(task)
         kwargs.update(
             {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
