@@ -31,7 +31,7 @@ if _TRANSFORMERS_AVAILABLE:
         AutoTokenizer.from_pretrained(_DEFAULT_MODEL)
         AutoModel.from_pretrained(_DEFAULT_MODEL)
 
-    if _check_download_timeout(_try_download, default_timeout=150):
+    if _check_download_timeout(_try_download, default_timeout=120):
         __doctest_skip__ = ["BERTScore"]
 else:
     __doctest_skip__ = ["BERTScore"]
