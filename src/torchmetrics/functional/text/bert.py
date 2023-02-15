@@ -40,6 +40,7 @@ if _TRANSFORMERS_AVAILABLE:
     from transformers import AutoModel, AutoTokenizer
 
     def _try_download() -> None:
+        """Download intensive operations."""
         AutoTokenizer.from_pretrained(_DEFAULT_MODEL)
         AutoModel.from_pretrained(_DEFAULT_MODEL)
 
