@@ -59,7 +59,6 @@ runs:
     run: |
       python -m pytest -v \
         ${{ inputs.dirs }} \
-        --maxfail=2 \
         --cov=torchmetrics \
         --durations=50 \
         --reruns 3 \
