@@ -61,6 +61,8 @@ runs:
         ${{ inputs.dirs }} \
         --cov=torchmetrics \
         --durations=50 \
+        --reruns 3 \
+        --reruns-delay 1 \
         --junitxml="${{ steps.location.outputs.artifact }}.xml" \
         ${{ inputs.test-timeout }}
     shell: ${{ inputs.shell-type }}
