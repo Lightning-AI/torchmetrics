@@ -61,7 +61,7 @@ runs:
         ${{ inputs.dirs }} \
         --cov=torchmetrics \
         --durations=50 \
-        --maxfail=5
+        --maxfail=5 \
         --junitxml="${{ steps.location.outputs.artifact }}.xml" \
         ${{ inputs.test-timeout }}
     shell: ${{ inputs.shell-type }}
