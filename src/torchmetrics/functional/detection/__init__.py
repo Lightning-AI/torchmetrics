@@ -19,7 +19,6 @@ from torchmetrics.utilities.imports import (
 )
 
 if _TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8:
-    from torchmetrics.detection.mean_ap import MeanAveragePrecision  # noqa: F401
     from torchmetrics.functional.detection.giou import generalized_intersection_over_union  # noqa: F401
     from torchmetrics.functional.detection.iou import intersection_over_union  # noqa: F401
 if _TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_13:
