@@ -275,7 +275,7 @@ class TextTester(MetricTester):
         targets: TEXT_METRIC_INPUT,
         metric_class: Metric,
         reference_metric: Callable,
-        dist_sync_on_step: bool,
+        dist_sync_on_step: bool = False,
         metric_args: dict = None,
         check_dist_sync_on_step: bool = True,
         check_batch: bool = True,

@@ -101,7 +101,6 @@ class TestPrecision(RetrievalMetricTester):
         indexes: Tensor,
         preds: Tensor,
         target: Tensor,
-        dist_sync_on_step: bool,
         empty_target_action: str,
         k: int,
         adaptive_k: bool,

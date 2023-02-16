@@ -94,7 +94,7 @@ def _base_e_sk_psnr(preds, target, data_range, reduction, dim):
 )
 class TestPSNR(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_psnr(self, preds, target, data_range, base, reduction, dim, ref_metric, ddp, dist_sync_on_step):
+    def test_psnr(self, preds, target, data_range, base, reduction, dim, ref_metric, ddp):
         _args = {"data_range": data_range, "base": base, "reduction": reduction, "dim": dim}
         self.run_class_metric_test(
             ddp,

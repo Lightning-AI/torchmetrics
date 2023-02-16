@@ -79,7 +79,7 @@ class TestConcordanceCorrCoef(MetricTester):
     atol = 1e-3
 
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_concordance_corrcoef(self, preds, target, ddp, dist_sync_on_step):
+    def test_concordance_corrcoef(self, preds, target, ddp):
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_class_metric_test(
             ddp,

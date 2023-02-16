@@ -76,7 +76,7 @@ class TestUQI(MetricTester):
     atol = 6e-3
 
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_uqi(self, preds, target, multichannel, kernel_size, ddp, dist_sync_on_step):
+    def test_uqi(self, preds, target, multichannel, kernel_size, ddp):
         self.run_class_metric_test(
             ddp,
             preds,

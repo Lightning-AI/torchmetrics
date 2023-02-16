@@ -94,7 +94,7 @@ class TestSpectralDistortionIndex(MetricTester):
     atol = 6e-3
 
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_d_lambda(self, preds, target, p, ddp, dist_sync_on_step):
+    def test_d_lambda(self, preds, target, p, ddp):
         self.run_class_metric_test(
             ddp,
             preds,

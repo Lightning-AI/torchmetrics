@@ -62,7 +62,7 @@ def _multi_target_ref_metric(preds, target, sk_fn=explained_variance_score):
 )
 class TestExplainedVariance(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_explained_variance(self, multioutput, preds, target, ref_metric, ddp, dist_sync_on_step):
+    def test_explained_variance(self, multioutput, preds, target, ref_metric, ddp):
         self.run_class_metric_test(
             ddp,
             preds,

@@ -77,7 +77,6 @@ class TestPearsonCorrcoef(MetricTester):
             target=target,
             metric_class=PearsonCorrCoef,
             reference_metric=_scipy_pearson,
-            dist_sync_on_step=False,
             metric_args={"num_outputs": num_outputs, "compute_on_cpu": compute_on_cpu},
         )
 

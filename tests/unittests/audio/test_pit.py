@@ -118,7 +118,7 @@ class TestPIT(MetricTester):
     atol = 1e-2
 
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_pit(self, preds, target, ref_metric, metric_func, eval_func, ddp, dist_sync_on_step):
+    def test_pit(self, preds, target, ref_metric, metric_func, eval_func, ddp):
         self.run_class_metric_test(
             ddp,
             preds,

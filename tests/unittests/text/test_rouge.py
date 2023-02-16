@@ -117,10 +117,7 @@ def _compute_rouge_score(
 @pytest.mark.parametrize("accumulate", ["avg", "best"])
 class TestROUGEScore(TextTester):
     @pytest.mark.parametrize("ddp", [False, True])
-    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_rouge_score_class(
-        self, ddp, dist_sync_on_step, preds, targets, pl_rouge_metric_key, use_stemmer, accumulate
-    ):
+    def test_rouge_score_class(self, ddp, preds, targets, pl_rouge_metric_key, use_stemmer, accumulate):
         metric_args = {"use_stemmer": use_stemmer, "accumulate": accumulate}
         rouge_level, metric = pl_rouge_metric_key.split("_")
         rouge_metric = partial(
@@ -132,7 +129,6 @@ class TestROUGEScore(TextTester):
             targets=targets,
             metric_class=ROUGEScore,
             reference_metric=rouge_metric,
-            dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
             key=pl_rouge_metric_key,
         )
