@@ -43,7 +43,7 @@ ALLOWED_ACCUMULATE_VALUES = ("avg", "best")
 
 def _is_internet_connection() -> bool:
     try:
-        urllib.request.urlopen("https://torchmetrics.readthedocs.io/")
+        urllib.request.urlopen("https://torchmetrics.readthedocs.io/", timeout=20)
     except HTTPError:
         return False
     return True
