@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from torchmetrics.utilities.imports import (
     _TORCHVISION_AVAILABLE,
     _TORCHVISION_GREATER_EQUAL_0_8,
@@ -18,8 +19,11 @@ from torchmetrics.utilities.imports import (
 )
 
 if _TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8:
+    from torchmetrics.detection.mean_ap import MeanAveragePrecision  # noqa: F401
     from torchmetrics.functional.detection.giou import generalized_intersection_over_union  # noqa: F401
     from torchmetrics.functional.detection.iou import intersection_over_union  # noqa: F401
 if _TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_13:
     from torchmetrics.functional.detection.ciou import complete_intersection_over_union  # noqa: F401
     from torchmetrics.functional.detection.diou import distance_intersection_over_union  # noqa: F401
+
+from torchmetrics.functional.detection.panoptic_quality import panoptic_quality  # noqa: F401

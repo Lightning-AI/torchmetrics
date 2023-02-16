@@ -25,6 +25,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `KendallRankCorrCoef` to regression package ([#1271](https://github.com/Lightning-AI/metrics/pull/1271))
 
 
+- Added new detection metric `PanopticQuality` ([#929](https://github.com/PyTorchLightning/metrics/pull/929))
+
+
 - Add `ClassificationTask` Enum and use in metrics ([#1479](https://github.com/Lightning-AI/metrics/pull/1479))
 
 
@@ -320,6 +323,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `adaptive_k` for the `RetrievalPrecision` metric ([#910](https://github.com/Lightning-AI/metrics/pull/910))
 - Added `reset_real_features` argument image quality assessment metrics ([#722](https://github.com/Lightning-AI/metrics/pull/722))
 - Added new keyword argument `compute_on_cpu` to all metrics ([#867](https://github.com/Lightning-AI/metrics/pull/867))
+
 
 ### Changed
 
