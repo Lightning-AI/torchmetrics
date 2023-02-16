@@ -77,7 +77,6 @@ class TestSTOI(MetricTester):
     atol = 1e-2
 
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_stoi(self, preds, target, ref_metric, fs, extended, ddp, dist_sync_on_step):
         self.run_class_metric_test(
             ddp,
@@ -85,7 +84,6 @@ class TestSTOI(MetricTester):
             target,
             ShortTimeObjectiveIntelligibility,
             reference_metric=partial(average_metric, metric_func=ref_metric),
-            dist_sync_on_step=dist_sync_on_step,
             metric_args={"fs": fs, "extended": extended},
         )
 

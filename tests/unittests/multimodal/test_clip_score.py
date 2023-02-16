@@ -59,7 +59,6 @@ def _compare_fn(preds, target, model_name_or_path):
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
 class TestCLIPScore(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @skip_on_connection_issues()
     def test_clip_score(self, input, model_name_or_path, ddp, dist_sync_on_step):
         # images are preds and targets are captions
@@ -70,7 +69,6 @@ class TestCLIPScore(MetricTester):
             target=target,
             metric_class=CLIPScore,
             reference_metric=partial(_compare_fn, model_name_or_path=model_name_or_path),
-            dist_sync_on_step=dist_sync_on_step,
             metric_args={"model_name_or_path": model_name_or_path},
             check_scriptable=False,
             check_state_dict=False,

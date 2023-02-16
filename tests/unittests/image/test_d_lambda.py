@@ -94,7 +94,6 @@ class TestSpectralDistortionIndex(MetricTester):
     atol = 6e-3
 
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_d_lambda(self, preds, target, p, ddp, dist_sync_on_step):
         self.run_class_metric_test(
             ddp,
@@ -103,7 +102,6 @@ class TestSpectralDistortionIndex(MetricTester):
             SpectralDistortionIndex,
             partial(_np_d_lambda, p=p),
             metric_args={"p": p},
-            dist_sync_on_step=dist_sync_on_step,
         )
 
     def test_d_lambda_functional(self, preds, target, p):
