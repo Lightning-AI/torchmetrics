@@ -171,8 +171,8 @@ def _union_lcs(pred_tokens_list: Sequence[Sequence[str]], target_tokens: Sequenc
 def _normalize_and_tokenize_text(
     text: str,
     stemmer: Optional[Any] = None,
-    normalizer: Callable[[str], str] = None,
-    tokenizer: Callable[[str], Sequence[str]] = None,
+    normalizer: Optional[Callable[[str], str]] = None,
+    tokenizer: Optional[Callable[[str], Sequence[str]]] = None,
 ) -> Sequence[str]:
     """Rouge score should be calculated only over lowercased words and digits. Optionally, Porter stemmer can be
     used to strip word suffixes to improve matching. The text normalization follows the implemantion from `Rouge
@@ -290,8 +290,8 @@ def _rouge_score_update(
     rouge_keys_values: List[Union[int, str]],
     accumulate: str,
     stemmer: Optional[Any] = None,
-    normalizer: Callable[[str], str] = None,
-    tokenizer: Callable[[str], Sequence[str]] = None,
+    normalizer: Optional[Callable[[str], str]] = None,
+    tokenizer: Optional[Callable[[str], Sequence[str]]] = None,
 ) -> Dict[Union[int, str], List[Dict[str, Tensor]]]:
     """Update the rouge score with the current set of predicted and target sentences.
 
@@ -420,8 +420,8 @@ def rouge_score(
     target: Union[str, Sequence[str], Sequence[Sequence[str]]],
     accumulate: Literal["avg", "best"] = "best",
     use_stemmer: bool = False,
-    normalizer: Callable[[str], str] = None,
-    tokenizer: Callable[[str], Sequence[str]] = None,
+    normalizer: Optional[Callable[[str], str]] = None,
+    tokenizer: Optional[Callable[[str], Sequence[str]]] = None,
     rouge_keys: Union[str, Tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),
 ) -> Dict[str, Tensor]:
     """Calculate `Calculate Rouge Score`_ , used for automatic summarization.

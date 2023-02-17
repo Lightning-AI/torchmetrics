@@ -124,7 +124,7 @@ class BERTScore(Metric):
         all_layers: bool = False,
         model: Optional[Module] = None,
         user_tokenizer: Optional[Any] = None,
-        user_forward_fn: Callable[[Module, Dict[str, Tensor]], Tensor] = None,
+        user_forward_fn: Optional[Callable[[Module, Dict[str, Tensor]], Tensor]] = None,
         verbose: bool = False,
         idf: bool = False,
         device: Optional[Union[str, torch.device]] = None,
