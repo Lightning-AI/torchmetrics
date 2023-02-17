@@ -100,7 +100,7 @@ class PermutationInvariantTraining(Metric):
         return self.sum_pit_metric / self.total
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

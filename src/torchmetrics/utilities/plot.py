@@ -81,7 +81,7 @@ def plot_single_or_multi_val(
                 label = f"{legend_name} {i}" if legend_name else f"{i}"
                 ax.plot(i, v.detach().cpu(), marker="o", markersize=10, linestyle="None", label=label)
     else:
-        val = torch.stack(val, 0)
+        val = torch.stack(list(val), 0)
         multi_series = val.ndim != 1
         val = val.T if multi_series else val.unsqueeze(0)
         for i, v in enumerate(val):
