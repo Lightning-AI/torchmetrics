@@ -322,8 +322,8 @@ def equal_opportunity(
 
 def binary_fairness(
     preds: torch.Tensor,
+    target: torch.Tensor,
     groups: torch.Tensor,
-    target: Optional[torch.Tensor] = None,
     task: Literal["demographic_parity", "equal_opportunity", "all"] = "all",
     threshold: float = 0.5,
     ignore_index: Optional[int] = None,
@@ -336,8 +336,8 @@ def binary_fairness(
 
     Args:
         preds: Tensor with predictions.
-        groups: Tensor with group identifiers. The group identifiers should be ``0, 1, ..., (num_groups - 1)``.
         target: Tensor with true labels (not required for demographic_parity).
+        groups: Tensor with group identifiers. The group identifiers should be ``0, 1, ..., (num_groups - 1)``.
         task: The task to compute. Can be either ``demographic_parity`` or ``equal_oppotunity`` or ``all``.
         threshold: Threshold for transforming probability to binary {0,1} predictions.
         ignore_index:

@@ -178,7 +178,7 @@ class BinaryFairness(_AbstractGroupStatScores):
         >>> preds = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> groups = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> metric = BinaryFairness(2)
-        >>> metric(preds, groups, target)
+        >>> metric(preds, target, groups)
         {'DP_0_1': tensor(0.), 'EO_0_1': tensor(0.)}
 
     Example (preds is float tensor):
@@ -187,7 +187,7 @@ class BinaryFairness(_AbstractGroupStatScores):
         >>> preds = torch.tensor([0.11, 0.84, 0.22, 0.73, 0.33, 0.92])
         >>> groups = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> metric = BinaryFairness(2)
-        >>> metric(preds, groups, target)
+        >>> metric(preds, target, groups)
         {'DP_0_1': tensor(0.), 'EO_0_1': tensor(0.)}
     """
     is_differentiable = False
@@ -224,13 +224,13 @@ class BinaryFairness(_AbstractGroupStatScores):
 
         self._create_states(self.num_groups)
 
-    def update(self, preds: torch.Tensor, groups: torch.Tensor, target: Optional[torch.Tensor] = None) -> None:
+    def update(self, preds: torch.Tensor, target: torch.Tensor, groups: Optional[torch.Tensor] = None) -> None:
         """Update state with predictions, groups, and target.
 
         Args:
             preds: Tensor with predictions.
-            groups: Tensor with group identifiers. The group identifiers should be ``0, 1, ..., (num_groups - 1)``.
             target: Tensor with true labels.
+            groups: Tensor with group identifiers. The group identifiers should be ``0, 1, ..., (num_groups - 1)``.
         """
         if self.task == "demographic_parity":
             if target is not None:
