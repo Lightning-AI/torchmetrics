@@ -25,7 +25,7 @@ from torchmetrics.utilities.imports import _LPIPS_AVAILABLE
 if _LPIPS_AVAILABLE:
     from lpips import LPIPS as _LPIPS
 
-    def _try_download():
+    def _try_download() -> None:
         _LPIPS(pretrained=True, net="vgg")
 
     if _check_download_timeout(_try_download):
