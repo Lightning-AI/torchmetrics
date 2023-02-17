@@ -138,7 +138,8 @@ def _sklearn_auroc_multiclass(preds, target, average="macro", ignore_index=None)
 
 
 @pytest.mark.parametrize(
-    "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5], _multiclass_cases[6])
+    "input",
+    (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5], _multiclass_cases[6]),
 )
 class TestMulticlassAUROC(MetricTester):
     @pytest.mark.parametrize("average", ["macro", "weighted"])

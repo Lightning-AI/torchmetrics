@@ -145,7 +145,8 @@ def _sklearn_roc_multiclass(preds, target, ignore_index=None):
 
 
 @pytest.mark.parametrize(
-    "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5], _multiclass_cases[6])
+    "input",
+    (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5], _multiclass_cases[6]),
 )
 class TestMulticlassROC(MetricTester):
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])

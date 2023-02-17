@@ -163,7 +163,7 @@ _multiclass_cases = (
             target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE), dtype=torch.int8),
         ),
         id="input[single dim int8-logits]",
-    )
+    ),
 )
 
 
