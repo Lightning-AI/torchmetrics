@@ -302,16 +302,16 @@ def _validate_inputs(
     metrics.
 
     Args:
-        reference_corpus: An iterable of iterables of reference corpus.
+        ref_corpus: An iterable of iterables of reference corpus.
         hypothesis_corpus: An iterable of hypothesis corpus.
 
     Return:
-        reference_corpus: An iterable of iterables of reference corpus.
+        ref_corpus: An iterable of iterables of reference corpus.
         hypothesis_corpus: An iterable of hypothesis corpus.
 
     Raises:
         ValueError:
-            If length of `reference_corpus` and `hypothesis_corpus` differs.
+            If length of `ref_corpus` and `hypothesis_corpus` differs.
     """
     if isinstance(hypothesis_corpus, str):
         hypothesis_corpus = [hypothesis_corpus]

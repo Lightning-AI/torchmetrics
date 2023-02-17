@@ -257,6 +257,7 @@ def _check_classification_inputs(
             than what they appear to be. See the parameter's
             :ref:`documentation section <pages/overview:using the multiclass parameter>`
             for a more detailed explanation and examples.
+        ignore_index: ignore predictions where targets are equal to this number
 
 
     Return:
@@ -391,6 +392,7 @@ def _input_format_classification(
             than what they appear to be. See the parameter's
             :ref:`documentation section <pages/overview:using the multiclass parameter>`
             for a more detailed explanation and examples.
+        ignore_index: ignore predictions where targets are equal to this number
 
     Returns:
         preds: binary tensor of shape ``(N, C)`` or ``(N, C, X)``
@@ -543,6 +545,7 @@ def _check_retrieval_inputs(
         indexes: tensor with queries indexes
         preds: tensor with scores/logits
         target: tensor with ground true labels
+        allow_non_binary_target: whether to allow target to contain non-binary values
         ignore_index: ignore predictions where targets are equal to this number
 
     Raises:
