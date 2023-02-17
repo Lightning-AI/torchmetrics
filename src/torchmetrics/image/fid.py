@@ -25,10 +25,10 @@ from torchmetrics.utilities import rank_zero_info
 from torchmetrics.utilities.imports import _SCIPY_AVAILABLE, _TORCH_FIDELITY_AVAILABLE
 
 if _TORCH_FIDELITY_AVAILABLE:
-    from torch_fidelity.feature_extractor_inceptionv3 import FeatureExtractorInceptionV3
+    from torch_fidelity.feature_extractor_inceptionv3 import FeatureExtractorInceptionV3 as _FeatureExtractorInceptionV3
 else:
 
-    class FeatureExtractorInceptionV3(Module):  # type: ignore
+    class _FeatureExtractorInceptionV3(Module):  # type: ignore
         pass
 
     __doctest_skip__ = ["FrechetInceptionDistance", "FID"]
@@ -38,7 +38,9 @@ if _SCIPY_AVAILABLE:
     import scipy
 
 
-class NoTrainInceptionV3(FeatureExtractorInceptionV3):
+class NoTrainInceptionV3(_FeatureExtractorInceptionV3):
+    """Define module that nevers leaves evaluation mode."""
+
     def __init__(
         self,
         name: str,
