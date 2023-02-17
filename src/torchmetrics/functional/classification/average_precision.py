@@ -86,9 +86,10 @@ def binary_average_precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Compute the average precision (AP) score for binary tasks. The AP score summarizes a precision-recall curve
-    as an weighted mean of precisions at each threshold, with the difference in recall from the previous threshold
-    as weight:
+    r"""Compute the average precision (AP) score for binary tasks.
+
+    The AP score summarizes a precision-recall curve as an weighted mean of precisions at each threshold, with the
+    difference in recall from the previous threshold as weight:
 
     .. math::
         AP = \sum{n} (R_n - R_{n-1}) P_n
@@ -185,9 +186,10 @@ def multiclass_average_precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Compute the average precision (AP) score for multiclass tasks. The AP score summarizes a precision-recall
-    curve as an weighted mean of precisions at each threshold, with the difference in recall from the previous
-    threshold as weight:
+    r"""Compute the average precision (AP) score for multiclass tasks.
+
+    The AP score summarizes a precision-recall curve as an weighted mean of precisions at each threshold, with the
+    difference in recall from the previous threshold as weight:
 
     .. math::
         AP = \sum{n} (R_n - R_{n-1}) P_n
@@ -314,9 +316,10 @@ def multilabel_average_precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Compute the average precision (AP) score for multilabel tasks. The AP score summarizes a precision-recall
-    curve as an weighted mean of precisions at each threshold, with the difference in recall from the previous
-    threshold as weight:
+    r"""Compute the average precision (AP) score for multilabel tasks.
+
+    The AP score summarizes a precision-recall curve as an weighted mean of precisions at each threshold, with the
+    difference in recall from the previous threshold as weight:
 
     .. math::
         AP = \sum{n} (R_n - R_{n-1}) P_n
@@ -409,8 +412,10 @@ def average_precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[List[Tensor], Tensor]:
-    r"""Compute the average precision (AP) score. The AP score summarizes a precision-recall curve as an weighted
-    mean of precisions at each threshold, with the difference in recall from the previous threshold as weight:
+    r"""Compute the average precision (AP) score.
+
+    The AP score summarizes a precision-recall curve as an weighted mean of precisions at each threshold, with the
+    difference in recall from the previous threshold as weight:
 
     .. math::
         AP = \sum{n} (R_n - R_{n-1}) P_n

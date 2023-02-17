@@ -85,6 +85,7 @@ class MultilabelCoverageError(Metric):
         self.add_state("total", torch.tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+        """Update metric states."""
         if self.validate_args:
             _multilabel_ranking_tensor_validation(preds, target, self.num_labels, self.ignore_index)
         preds, target = _multilabel_confusion_matrix_format(
@@ -95,6 +96,7 @@ class MultilabelCoverageError(Metric):
         self.total += n_elements
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         return _ranking_reduce(self.measure, self.total)
 
 
@@ -156,6 +158,7 @@ class MultilabelRankingAveragePrecision(Metric):
         self.add_state("total", torch.tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+        """Update metric states."""
         if self.validate_args:
             _multilabel_ranking_tensor_validation(preds, target, self.num_labels, self.ignore_index)
         preds, target = _multilabel_confusion_matrix_format(
@@ -166,6 +169,7 @@ class MultilabelRankingAveragePrecision(Metric):
         self.total += n_elements
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         return _ranking_reduce(self.measure, self.total)
 
 
@@ -229,6 +233,7 @@ class MultilabelRankingLoss(Metric):
         self.add_state("total", torch.tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+        """Update metric states."""
         if self.validate_args:
             _multilabel_ranking_tensor_validation(preds, target, self.num_labels, self.ignore_index)
         preds, target = _multilabel_confusion_matrix_format(
@@ -239,4 +244,5 @@ class MultilabelRankingLoss(Metric):
         self.total += n_elements
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         return _ranking_reduce(self.measure, self.total)

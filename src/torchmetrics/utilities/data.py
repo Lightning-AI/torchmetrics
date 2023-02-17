@@ -208,7 +208,9 @@ def _squeeze_if_scalar(data: Any) -> Any:
 
 
 def _bincount(x: Tensor, minlength: Optional[int] = None) -> Tensor:
-    """PyTorch currently does not support``torch.bincount`` for:
+    """Custom bincount implementation.
+
+    PyTorch currently does not support ``torch.bincount`` for:
 
         - deterministic mode on GPU.
         - MPS devices
@@ -221,6 +223,12 @@ def _bincount(x: Tensor, minlength: Optional[int] = None) -> Tensor:
 
     Returns:
         Number of occurrences for each unique element in x
+
+    Example:
+        >>> x = torch.tensor([0,0,0,1,1,2,2,2,2])
+        >>> _bincount(x, minlength=3)
+        tensor([3, 2, 4])
+
     """
     if minlength is None:
         minlength = len(torch.unique(x))

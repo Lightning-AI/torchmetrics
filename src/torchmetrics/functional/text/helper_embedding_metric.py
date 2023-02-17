@@ -219,6 +219,7 @@ class TextDataset(Dataset):
             self.tokens_idf = tokens_idf if tokens_idf is not None else self._get_tokens_idf()
 
     def __getitem__(self, idx: int) -> Dict[str, Tensor]:
+        """Get the input ids and attention mask belonging to a specific datapoint."""
         input_ids = self.text["input_ids"][idx, :]
         attention_mask = self.text["attention_mask"][idx, :]
         inputs_dict = {"input_ids": input_ids, "attention_mask": attention_mask}
@@ -228,6 +229,7 @@ class TextDataset(Dataset):
         return inputs_dict
 
     def __len__(self) -> int:
+        """Return the number of sentences in the dataset."""
         return self.num_sentences
 
     def _get_tokens_idf(self) -> Dict[int, float]:
