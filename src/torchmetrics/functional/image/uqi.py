@@ -52,7 +52,6 @@ def _uqi_compute(
     sigma: Sequence[float] = (1.5, 1.5),
     reduction: Optional[Literal["elementwise_mean", "sum", "none"]] = "elementwise_mean",
     data_range: Optional[float] = None,
-    return_contrast_sensitivity: bool = False,
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
     """Compute Universal Image Quality Index.
 
