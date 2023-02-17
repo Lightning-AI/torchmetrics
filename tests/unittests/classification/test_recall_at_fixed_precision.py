@@ -171,7 +171,7 @@ def _sklearn_recall_at_fixed_precision_multiclass(preds, target, min_precision, 
 
 
 @pytest.mark.parametrize(
-    "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
+    "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5], _multiclass_cases[6])
 )
 class TestMulticlassRecallAtFixedPrecision(MetricTester):
     @pytest.mark.parametrize("min_precision", [0.05, 0.1, 0.3, 0.5, 0.8])
