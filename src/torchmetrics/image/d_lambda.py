@@ -23,8 +23,9 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class SpectralDistortionIndex(Metric):
-    """Compute Spectral Distortion Index (SpectralDistortionIndex_) also now as D_lambda is used to compare the
-    spectral distortion between two images.
+    """Compute Spectral Distortion Index (SpectralDistortionIndex_) also now as D_lambda.
+
+    The metric is used to compare the spectral distortion between two images.
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 

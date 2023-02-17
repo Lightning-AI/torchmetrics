@@ -27,8 +27,7 @@ __doctest_requires__ = {("InceptionScore", "IS"): ["torch_fidelity"]}
 
 
 class InceptionScore(Metric):
-    r"""Calculate the Inception Score (IS) which is used to access how realistic generated images are. It is
-    defined as.
+    r"""Calculate the Inception Score (IS) which is used to access how realistic generated images are.
 
     .. math::
         IS = exp(\mathbb{E}_x KL(p(y | x ) || p(y)))

@@ -24,9 +24,10 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
-    """Calculate `Relative dimensionless global error synthesis`_ (ERGAS) is used to calculate the accuracy of Pan
-    sharpened image considering normalized average error of each band of the result image
-    (ErrorRelativeGlobalDimensionlessSynthesis).
+    """Calculate `Relative dimensionless global error synthesis`_ (ERGAS).
+
+    This metric is used to calculate the accuracy of Pan sharpened image considering normalized average error of each
+    band of the result image.
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 

@@ -27,8 +27,9 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class SignalDistortionRatio(Metric):
-    r"""Calculate Signal to Distortion Ratio (SDR) metric. See `SDR ref1`_ and `SDR ref2`_ for details on the
-    metric.
+    r"""Calculate Signal to Distortion Ratio (SDR) metric.
+
+    See `SDR ref1`_ and `SDR ref2`_ for details on the metric.
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 
@@ -162,8 +163,9 @@ class SignalDistortionRatio(Metric):
 
 
 class ScaleInvariantSignalDistortionRatio(Metric):
-    """`Scale-invariant signal-to-distortion ratio`_ (SI-SDR). The SI-SDR value is in general considered an overall
-    measure of how good a source sound.
+    """`Scale-invariant signal-to-distortion ratio`_ (SI-SDR).
+
+    The SI-SDR value is in general considered an overall measure of how good a source sound.
 
     As input to `forward` and `update` the metric accepts the following input
 
