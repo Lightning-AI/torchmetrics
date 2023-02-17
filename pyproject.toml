@@ -108,9 +108,7 @@ unfixable = ["F401"]
 "__about__.py" = ["D100"]
 "__init__.py" = ["D100"]
 "src/**" = [
-    "D101",  # todo # Missing docstring in public class
     "D103",  # todo # Missing docstring in public function
-    "D105",  # todo # Missing docstring in magic method
     "D205",  # todo # 1 blank line required between summary line and description
     "D401",  # todo # First line of docstring should be in imperative mood: ...
     "D417",  # todo # Missing argument descriptions in the docstring: ...
