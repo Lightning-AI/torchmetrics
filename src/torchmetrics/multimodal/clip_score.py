@@ -30,9 +30,9 @@ if _TRANSFORMERS_AVAILABLE:
         _CLIPProcessor.from_pretrained("openai/clip-vit-large-patch14")
 
     if _check_download_timeout(_try_download):
-        __doctest_skip__ = ["clip_score"]
+        __doctest_skip__ = ["CLIPScore"]
 else:
-    __doctest_skip__ = ["clip_score"]
+    __doctest_skip__ = ["CLIPScore"]
 
 from torchmetrics import Metric
 
