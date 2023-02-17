@@ -48,9 +48,9 @@ def class_reduce(
     class_reduction: Literal["micro", "macro", "weighted", "none", None] = "none",
 ) -> Tensor:
     """Reduce classification metrics of the form ``num / denom * weights``.
-    For example for calculating standard accuracy the num would be number of
-    true positives per class, denom would be the support per class, and weights
-    would be a tensor of 1s.
+
+    For example for calculating standard accuracy the num would be number of true positives per class, denom would be
+    the support per class, and weights would be a tensor of 1s.
 
     Args:
         num: numerator tensor
@@ -97,6 +97,7 @@ def _simple_gather_all_tensors(result: Tensor, group: Any, world_size: int) -> L
 
 def gather_all_tensors(result: Tensor, group: Optional[Any] = None) -> List[Tensor]:
     """Function to gather all tensors from several ddp processes onto a list that is broadcasted to all processes.
+
     Works on tensors that have the same number of dimensions, but where each dimension may differ. In this case
     tensors are padded, gathered and then trimmed to secure equal workload for all processes.
 

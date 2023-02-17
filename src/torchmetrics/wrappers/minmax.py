@@ -21,8 +21,9 @@ from torchmetrics.metric import Metric
 
 
 class MinMaxMetric(Metric):
-    """Wrapper Metric that tracks both the minimum and maximum of a scalar/tensor across an experiment. The min/max
-    value will be updated each time ``.compute`` is called.
+    """Wrapper metric that tracks both the minimum and maximum of a scalar/tensor across an experiment.
+
+    The min/max value will be updated each time ``.compute`` is called.
 
     Args:
         base_metric:

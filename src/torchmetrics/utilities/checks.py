@@ -68,9 +68,11 @@ def _basic_input_validation(
 
 
 def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> Tuple[DataType, int]:
-    """Check that the shape and type of inputs are consistent with each other and fall into one of the
-    allowed input types (see the documentation of docstring of ``_input_format_classification``). It does not check
-    for consistency of number of classes, other functions take care of that.
+    """Check that the shape and type of inputs are consistent with each other.
+
+    The input types needs to be one of allowed input types (see the documentation of docstring of
+    ``_input_format_classification``). It does not check for consistency of number of classes, other functions take
+    care of that.
 
     It returns the name of the case in which the inputs fall, and the implied number of classes (from the ``C`` dim for
     multi-class data, or extra dim(s) for multi-label data).
@@ -144,9 +146,7 @@ def _check_num_classes_mc(
     multiclass: Optional[bool],
     implied_classes: int,
 ) -> None:
-    """Check that the consistency of `num_classes` with the data and `multiclass` param for (multi-
-    dimensional) multi-class data.
-    """
+    """Check consistency of `num_classes`, data and `multiclass` param for (multi-dimensional) multi-class data."""
     if num_classes == 1 and multiclass is not False:
         raise ValueError(
             "You have set `num_classes=1`, but predictions are integers."
@@ -169,9 +169,7 @@ def _check_num_classes_mc(
 
 
 def _check_num_classes_ml(num_classes: int, multiclass: Optional[bool], implied_classes: int) -> None:
-    """Check that the consistency of ``num_classes`` with the data and ``multiclass`` param for multi-label
-    data.
-    """
+    """Check that the consistency of ``num_classes`` with the data and ``multiclass`` param for multi-label data."""
     if multiclass and num_classes != 2:
         raise ValueError(
             "Your have set `multiclass=True`, but `num_classes` is not equal to 2."
@@ -627,8 +625,10 @@ def check_forward_full_state_property(
     num_update_to_compare: Sequence[int] = [10, 100, 1000],
     reps: int = 5,
 ) -> bool:
-    """Utility function for checking if the new ``full_state_update`` property can safely be set to ``False`` which
-    will for most metrics results in a speedup when using ``forward``.
+    """Utility function for checking if the new ``full_state_update`` property.
+
+    This function checks if the property can safely be set to ``False`` which will for most metrics results in a
+    speedup when using ``forward``.
 
     Args:
         metric_class: metric class object that should be checked
