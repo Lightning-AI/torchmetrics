@@ -400,11 +400,6 @@ def accuracy(
     """
     task = ClassificationTask.from_str(task)
 
-    if task not in ["binary", "multiclass", "multilabel"]:
-        raise MisConfigurationError(
-            f"Expected argument `task` must be one of (`'binary'`, `'multiclass'`, `'multilabel'`). Got `{task}`"
-        )
-
     if task == ClassificationTask.BINARY:
         return binary_accuracy(preds, target, threshold, multidim_average, ignore_index, validate_args)
     if task == ClassificationTask.MULTICLASS:
