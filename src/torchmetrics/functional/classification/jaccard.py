@@ -32,6 +32,7 @@ from torchmetrics.functional.classification.confusion_matrix import (
     _multilabel_confusion_matrix_update,
 )
 from torchmetrics.utilities.compute import _safe_divide
+from torchmetrics.utilities.enums import ClassificationTask
 
 
 def _jaccard_index_reduce(
@@ -89,10 +90,11 @@ def binary_jaccard_index(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculate the Jaccard index for binary tasks. The `Jaccard index`_ (also known as the intersetion over
-    union or jaccard similarity coefficient) is an statistic that can be used to determine the similarity and
-    diversity of a sample set. It is defined as the size of the intersection divided by the union of the sample
-    sets:
+    r"""Calculate the Jaccard index for binary tasks.
+
+    The `Jaccard index`_ (also known as the intersetion over union or jaccard similarity coefficient) is an statistic
+    that can be used to determine the similarity and diversity of a sample set. It is defined as the size of the
+    intersection divided by the union of the sample sets:
 
     .. math:: J(A,B) = \frac{|A\cap B|}{|A\cup B|}
 
@@ -155,10 +157,11 @@ def multiclass_jaccard_index(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculate the Jaccard index for multiclass tasks. The `Jaccard index`_ (also known as the intersetion over
-    union or jaccard similarity coefficient) is an statistic that can be used to determine the similarity and
-    diversity of a sample set. It is defined as the size of the intersection divided by the union of the sample
-    sets:
+    r"""Calculate the Jaccard index for multiclass tasks.
+
+    The `Jaccard index`_ (also known as the intersetion over union or jaccard similarity coefficient) is an statistic
+    that can be used to determine the similarity and diversity of a sample set. It is defined as the size of the
+    intersection divided by the union of the sample sets:
 
     .. math:: J(A,B) = \frac{|A\cap B|}{|A\cup B|}
 
@@ -234,10 +237,11 @@ def multilabel_jaccard_index(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculate the Jaccard index for multilabel tasks. The `Jaccard index`_ (also known as the intersetion over
-    union or jaccard similarity coefficient) is an statistic that can be used to determine the similarity and
-    diversity of a sample set. It is defined as the size of the intersection divided by the union of the sample
-    sets:
+    r"""Calculate the Jaccard index for multilabel tasks.
+
+    The `Jaccard index`_ (also known as the intersetion over union or jaccard similarity coefficient) is an statistic
+    that can be used to determine the similarity and diversity of a sample set. It is defined as the size of the
+    intersection divided by the union of the sample sets:
 
     .. math:: J(A,B) = \frac{|A\cap B|}{|A\cup B|}
 
@@ -301,10 +305,11 @@ def jaccard_index(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculate the Jaccard index. The `Jaccard index`_ (also known as the intersetion over
-    union or jaccard similarity coefficient) is an statistic that can be used to determine the similarity and
-    diversity of a sample set. It is defined as the size of the intersection divided by the union of the sample
-    sets:
+    r"""Calculate the Jaccard index.
+
+    The `Jaccard index`_ (also known as the intersetion over union or jaccard similarity coefficient) is an statistic
+    that can be used to determine the similarity and diversity of a sample set. It is defined as the size of the
+    intersection divided by the union of the sample sets:
 
     .. math:: J(A,B) = \frac{|A\cap B|}{|A\cup B|}
 
@@ -321,14 +326,13 @@ def jaccard_index(
         >>> jaccard_index(pred, target, task="multiclass", num_classes=2)
         tensor(0.9660)
     """
-    if task == "binary":
+    task = ClassificationTask.from_str(task)
+    if task == ClassificationTask.BINARY:
         return binary_jaccard_index(preds, target, threshold, ignore_index, validate_args)
-    if task == "multiclass":
+    if task == ClassificationTask.MULTICLASS:
         assert isinstance(num_classes, int)
         return multiclass_jaccard_index(preds, target, num_classes, average, ignore_index, validate_args)
-    if task == "multilabel":
+    if task == ClassificationTask.MULTILABEL:
         assert isinstance(num_labels, int)
         return multilabel_jaccard_index(preds, target, num_labels, threshold, average, ignore_index, validate_args)
-    raise ValueError(
-        f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-    )
+    raise ValueError(f"Not handled value: {task}")  # this is for compliant of mypy

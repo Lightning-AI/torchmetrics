@@ -24,8 +24,9 @@ from torchmetrics.utilities.prints import rank_zero_warn
 
 
 class MetricTracker(ModuleList):
-    """A wrapper class that can help keeping track of a metric or metric collection over time and implement useful
-    methods. The wrapper implements the standard ``.update()``, ``.compute()``, ``.reset()`` methods that just
+    """A wrapper class that can help keeping track of a metric or metric collection over time.
+
+    The wrapper implements the standard ``.update()``, ``.compute()``, ``.reset()`` methods that just
     calls corresponding method of the currently tracked metric. However, the following additional methods are
     provided:
 

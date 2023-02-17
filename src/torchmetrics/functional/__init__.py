@@ -32,6 +32,7 @@ from torchmetrics.functional.classification.precision_recall_curve import precis
 from torchmetrics.functional.classification.roc import roc
 from torchmetrics.functional.classification.specificity import specificity
 from torchmetrics.functional.classification.stat_scores import stat_scores
+from torchmetrics.functional.detection.panoptic_quality import panoptic_quality
 from torchmetrics.functional.image.d_lambda import spectral_distortion_index
 from torchmetrics.functional.image.ergas import error_relative_global_dimensionless_synthesis
 from torchmetrics.functional.image.gradients import image_gradients
@@ -139,6 +140,7 @@ __all__ = [
     "pairwise_euclidean_distance",
     "pairwise_linear_similarity",
     "pairwise_manhattan_distance",
+    "panoptic_quality",
     "pearson_corrcoef",
     "pearsons_contingency_coefficient",
     "pearsons_contingency_coefficient_matrix",

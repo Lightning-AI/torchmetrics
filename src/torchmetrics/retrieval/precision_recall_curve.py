@@ -172,6 +172,7 @@ class RetrievalPrecisionRecallCurve(Metric):
         self.target.append(target)
 
     def compute(self) -> Tuple[Tensor, Tensor, Tensor]:
+        """Compute metric."""
         # concat all data
         indexes = dim_zero_cat(self.indexes)
         preds = dim_zero_cat(self.preds)
@@ -304,6 +305,7 @@ class RetrievalRecallAtFixedPrecision(RetrievalPrecisionRecallCurve):
         self.min_precision = min_precision
 
     def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore
+        """Compute metric."""
         precisions, recalls, top_k = super().compute()
 
         return _retrieval_recall_at_fixed_precision(precisions, recalls, top_k, self.min_precision)
