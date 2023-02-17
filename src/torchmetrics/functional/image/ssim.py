@@ -331,8 +331,9 @@ def _multiscale_ssim_update(
     Args:
         preds: estimated image
         target: ground truth image
-        kernel_size: size of the gaussian kernel
+        gaussian_kernel: If true, a gaussian kernel is used, if false a uniform kernel is used
         sigma: Standard deviation of the gaussian kernel
+        kernel_size: size of the gaussian kernel
         reduction: a method to reduce metric score over labels.
 
             - ``'elementwise_mean'``: takes the mean
@@ -450,8 +451,9 @@ def multiscale_structural_similarity_index_measure(
     Args:
         preds: Predictions from model of shape ``[N, C, H, W]``
         target: Ground truth values of shape ``[N, C, H, W]``
-        kernel_size: size of the gaussian kernel
+        gaussian_kernel: If true, a gaussian kernel is used, if false a uniform kernel is used
         sigma: Standard deviation of the gaussian kernel
+        kernel_size: size of the gaussian kernel
         reduction: a method to reduce metric score over labels.
 
             - ``'elementwise_mean'``: takes the mean

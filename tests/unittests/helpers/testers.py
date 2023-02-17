@@ -141,8 +141,11 @@ def _class_test(
             calculated per batch and per device (and not just at the end)
         check_batch: bool, if true will check if the metric is also correctly
             calculated across devices for each batch (and not just at the end)
+        atol: absolute tolerance used for comparison of results
         device: determine which device to run on, either 'cuda' or 'cpu'
         fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `target` among processes
+        check_scriptable: bool indicating if metric should also be tested if it can be scripted
+        check_state_dict: bool indicating if metric should be tested that its state_dict by default is empty
         kwargs_update: Additional keyword arguments that will be passed with preds and
             target when running update on the metric.
     """
@@ -275,6 +278,7 @@ def _functional_test(
         metric_functional: metric functional that should be tested
         reference_metric: callable function that is used for comparison
         metric_args: dict with additional arguments used for class initialization
+        atol: absolute tolerance used for comparison of results
         device: determine which device to run on, either 'cuda' or 'cpu'
         fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `target` among processes
         kwargs_update: Additional keyword arguments that will be passed with preds and
@@ -327,6 +331,7 @@ def _assert_dtype_support(
         preds: torch tensor with predictions
         target: torch tensor with targets
         device: determine device, either "cpu" or "cuda"
+        dtype: dtype to run test with
         kwargs_update: Additional keyword arguments that will be passed with preds and
             target when running update on the metric.
     """
@@ -435,7 +440,7 @@ class MetricTester:
             check_batch: bool, if true will check if the metric is also correctly
                 calculated across devices for each batch (and not just at the end)
             fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `target` among processes
-            check_scriptable:
+            check_scriptable: bool indicating if metric should also be tested if it can be scripted
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 target when running update on the metric.
         """
@@ -501,6 +506,7 @@ class MetricTester:
             metric_module: the metric module to test
             metric_functional: the metric functional to test
             metric_args: dict with additional arguments used for class initialization
+            dtype: dtype to run test with
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 target when running update on the metric.
         """
@@ -533,6 +539,7 @@ class MetricTester:
             metric_module: the metric module to test
             metric_functional: the metric functional to test
             metric_args: dict with additional arguments used for class initialization
+            dtype: dtype to run test with
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 target when running update on the metric.
         """
