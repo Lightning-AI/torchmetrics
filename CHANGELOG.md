@@ -20,6 +20,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 )
 
 
+- Added support for plotting of audio metrics through `.plot()` method ([#1434](https://github.com/Lightning-AI/metrics/pull/1434))
+
+
 - Added `classes` to output from `MAP` metric ([#1419](https://github.com/Lightning-AI/metrics/pull/1419))
 
 - Added `KendallRankCorrCoef` to regression package ([#1271](https://github.com/Lightning-AI/metrics/pull/1271))
