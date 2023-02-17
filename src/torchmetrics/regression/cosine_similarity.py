@@ -22,7 +22,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class CosineSimilarity(Metric):
-    r"""Compute the `Cosine Similarity`_ between targets and predictions:
+    r"""Compute the `Cosine Similarity`_.
 
     .. math::
         cos_{sim}(x,y) = \frac{x \cdot y}{||x|| \cdot ||y||} =
@@ -80,6 +80,7 @@ class CosineSimilarity(Metric):
         self.target.append(target)
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         return _cosine_similarity_compute(preds, target, self.reduction)

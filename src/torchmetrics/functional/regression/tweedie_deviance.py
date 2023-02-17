@@ -101,7 +101,7 @@ def _tweedie_deviance_score_compute(sum_deviance_score: Tensor, num_observations
 
 
 def tweedie_deviance_score(preds: Tensor, targets: Tensor, power: float = 0.0) -> Tensor:
-    r"""Compute the `Tweedie Deviance Score`_ between targets and predictions:
+    r"""Compute the `Tweedie Deviance Score`_.
 
     .. math::
         deviance\_score(\hat{y},y) =

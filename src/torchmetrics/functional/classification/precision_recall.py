@@ -68,7 +68,7 @@ def binary_precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Compute `Precision`_ for binary tasks:
+    r"""Compute `Precision`_ for binary tasks.
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 
@@ -347,7 +347,7 @@ def binary_recall(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Compute `Recall`_ for binary tasks:
+    r"""Compute `Recall`_ for binary tasks.
 
     .. math:: \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
 
@@ -422,7 +422,7 @@ def multiclass_recall(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Compute `Recall`_ for multiclass tasks:
+    r"""Compute `Recall`_ for multiclass tasks.
 
     .. math:: \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
 
@@ -528,7 +528,7 @@ def multilabel_recall(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Compute `Recall`_ for multilabel tasks:
+    r"""Compute `Recall`_ for multilabel tasks.
 
     .. math:: \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
 
@@ -631,7 +631,7 @@ def precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Compute `Precision`_:
+    r"""Compute `Precision`_.
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 
@@ -684,7 +684,7 @@ def recall(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Compute `Recall`_:
+    r"""Compute `Recall`_.
 
     .. math:: \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
 

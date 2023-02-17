@@ -64,7 +64,7 @@ def _final_aggregation(
 
 
 class PearsonCorrCoef(Metric):
-    r"""Compute `Pearson Correlation Coefficient`_:
+    r"""Compute `Pearson Correlation Coefficient`_.
 
     .. math::
         P_{corr}(x,y) = \frac{cov(x,y)}{\sigma_x \sigma_y}

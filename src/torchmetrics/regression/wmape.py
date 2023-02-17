@@ -24,8 +24,9 @@ from torchmetrics.metric import Metric
 
 
 class WeightedMeanAbsolutePercentageError(Metric):
-    r"""Compute weighted mean absolute percentage error (`WMAPE`_). The output of WMAPE metric is a non-negative
-    floating point, where the optimal value is 0. It is computes as:
+    r"""Compute weighted mean absolute percentage error (`WMAPE`_).
+
+    The output of WMAPE metric is a non-negative floating point, where the optimal value is 0. It is computes as:
 
     .. math::
         \text{WMAPE} = \frac{\sum_{t=1}^n | y_t - \hat{y}_t | }{\sum_{t=1}^n |y_t| }
