@@ -63,7 +63,7 @@ class TestMAP(RetrievalMetricTester):
         ignore_index: int,
         top_k: int,
     ):
-        metric_args = {"empty_target_action": empty_target_action, "ignore_index": ignore_index}
+        metric_args = {"empty_target_action": empty_target_action, "ignore_index": ignore_index, 'top_k': top_k}
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -91,7 +91,7 @@ class TestMAP(RetrievalMetricTester):
         empty_target_action: str,
         top_k: int,
     ):
-        metric_args = {"empty_target_action": empty_target_action, "ignore_index": -100, "top_k": k}
+        metric_args = {"empty_target_action": empty_target_action, "ignore_index": -100, "top_k": top_k}
 
         self.run_class_metric_test(
             ddp=ddp,
