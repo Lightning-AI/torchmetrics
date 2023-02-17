@@ -77,15 +77,18 @@ class BaseMetricResults(dict):
     """Base metric class, that allows fields for pre-defined metrics."""
 
     def __getattr__(self, key: str) -> Tensor:
+        """Get a specific metric attribute."""
         # Using this you get the correct error message, an AttributeError instead of a KeyError
         if key in self:
             return self[key]
         raise AttributeError(f"No such attribute: {key}")
 
     def __setattr__(self, key: str, value: Tensor) -> None:
+        """Set a specific metric attribute."""
         self[key] = value
 
     def __delattr__(self, key: str) -> None:
+        """Delete a specific metric attribute."""
         if key in self:
             del self[key]
         raise AttributeError(f"No such attribute: {key}")
