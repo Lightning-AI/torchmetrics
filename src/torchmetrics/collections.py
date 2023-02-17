@@ -296,7 +296,8 @@ class MetricCollection(ModuleDict):
             self._compute_groups_create_state_ref()
 
     def clone(self, prefix: Optional[str] = None, postfix: Optional[str] = None) -> "MetricCollection":
-        """Make a copy of the metric collection
+        """Make a copy of the metric collection.
+
         Args:
             prefix: a string to append in front of the metric keys
             postfix: a string to append after the keys of the output dict.

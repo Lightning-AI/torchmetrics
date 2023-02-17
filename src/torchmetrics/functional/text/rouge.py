@@ -81,7 +81,9 @@ def _split_sentence(x: str) -> Sequence[str]:
 
 
 def _compute_metrics(hits_or_lcs: int, pred_len: int, target_len: int) -> Dict[str, Tensor]:
-    """This computes precision, recall and F1 score based on hits/lcs, and the length of lists of tokenizer
+    """Compute overall metrics.
+
+    This function computes precision, recall and F1 score based on hits/lcs, the length of lists of tokenizer
     predicted and target sentences.
 
     Args:
@@ -174,9 +176,10 @@ def _normalize_and_tokenize_text(
     normalizer: Callable[[str], str] = None,
     tokenizer: Callable[[str], Sequence[str]] = None,
 ) -> Sequence[str]:
-    """Rouge score should be calculated only over lowercased words and digits. Optionally, Porter stemmer can be
-    used to strip word suffixes to improve matching. The text normalization follows the implemantion from `Rouge
-    score_Text Normalizition`_.
+    """Rouge score should be calculated only over lowercased words and digits.
+
+    Optionally, Porter stemmer can be used to strip word suffixes to improve matching. The text normalization follows
+    the implemantion from `Rouge score_Text Normalizition`_.
 
     Args:
         text: An input sentence.
@@ -245,8 +248,10 @@ def _rouge_l_score(pred: Sequence[str], target: Sequence[str]) -> Dict[str, Tens
 
 
 def _rouge_lsum_score(pred: Sequence[Sequence[str]], target: Sequence[Sequence[str]]) -> Dict[str, Tensor]:
-    r"""This computes precision, recall and F1 score for the Rouge-LSum metric. More information can be found in Section
-    3.2 of the referenced paper [1]. This implementation follow the official implementation from:
+    r"""This computes precision, recall and F1 score for the Rouge-LSum metric.
+
+    More information can be found in Section 3.2 of the referenced paper [1]. This implementation follow the official
+    implementation from:
     https://github.com/google-research/google-research/blob/master/rouge/rouge_scorer.py.
 
     Args:

@@ -200,11 +200,10 @@ def _fix_empty_tensors(boxes: Tensor) -> Tensor:
 
 class MeanAveragePrecision(Metric):
     r"""Compute the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)`_ for object detection predictions.
-    Optionally, the mAP and mAR values can be calculated per class.
 
-    Predicted boxes and targets have to be in Pascal VOC format
-    (xmin-top left, ymin-top left, xmax-bottom right, ymax-bottom right).
-    See the :meth:`update` method for more information about the input format to this metric.
+    Predicted boxes and targets have to be in Pascal VOC format (xmin-top left, ymin-top left, xmax-bottom right,
+    ymax-bottom right). The metric can both compute the mAP and mAR values per class or as an global average over all
+    classes.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -462,8 +461,7 @@ class MeanAveragePrecision(Metric):
         return []
 
     def _compute_iou(self, idx: int, class_id: int, max_det: int) -> Tensor:
-        """Compute the Intersection over Union (IoU) for ground truth and detection bounding boxes for the given
-        image and class.
+        """Compute the Intersection over Union (IoU) between bounding boxes for the given image and class.
 
         Args:
             idx:

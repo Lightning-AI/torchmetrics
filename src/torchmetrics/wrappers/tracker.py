@@ -236,6 +236,6 @@ class MetricTracker(ModuleList):
             return value
 
     def _check_for_increment(self, method: str) -> None:
-        """Method for checking that a metric that can be updated/used for computations has been intialized."""
+        """Method to check that a metric that can be updated/used for computations has been intialized."""
         if not self._increment_called:
             raise ValueError(f"`{method}` cannot be called before `.increment()` has been called")
