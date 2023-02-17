@@ -23,12 +23,13 @@ from torchmetrics.utilities.enums import ClassificationTask
 
 
 class BinarySpecificity(BinaryStatScores):
-    r"""Compute `Specificity`_ for binary tasks:
+    r"""Compute `Specificity`_ for binary tasks.
 
     .. math:: \text{Specificity} = \frac{\text{TN}}{\text{TN} + \text{FP}}
 
-    Where :math:`\text{TN}` and :math:`\text{FP}` represent the number of true negatives and
-    false positives respecitively.
+    Where :math:`\text{TN}` and :math:`\text{FP}` represent the number of true negatives and false positives
+    respectively. The metric is only proper defined when :math:`\text{TN} + \text{FP} \neq 0`. If this case is
+    encountered a score of 0 is returned.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -85,17 +86,20 @@ class BinarySpecificity(BinaryStatScores):
     """
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _specificity_reduce(tp, fp, tn, fn, average="binary", multidim_average=self.multidim_average)
 
 
 class MulticlassSpecificity(MulticlassStatScores):
-    r"""Compute `Specificity`_ for multiclass tasks:
+    r"""Compute `Specificity`_ for multiclass tasks.
 
     .. math:: \text{Specificity} = \frac{\text{TN}}{\text{TN} + \text{FP}}
 
-    Where :math:`\text{TN}` and :math:`\text{FP}` represent the number of true negatives and
-    false positives respecitively.
+    Where :math:`\text{TN}` and :math:`\text{FP}` represent the number of true negatives and false positives
+    respectively.  The metric is only proper defined when :math:`\text{TN} + \text{FP} \neq 0`. If this case is
+    encountered for any class, the metric for that class will be set to 0 and the overall metric may therefore be
+    affected in turn.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -184,6 +188,7 @@ class MulticlassSpecificity(MulticlassStatScores):
     """
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _specificity_reduce(tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average)
 
@@ -193,8 +198,10 @@ class MultilabelSpecificity(MultilabelStatScores):
 
     .. math:: \text{Specificity} = \frac{\text{TN}}{\text{TN} + \text{FP}}
 
-    Where :math:`\text{TN}` and :math:`\text{FP}` represent the number of true negatives and
-    false positives respecitively.
+    Where :math:`\text{TN}` and :math:`\text{FP}` represent the number of true negatives and false positives
+    respectively. The metric is only proper defined when :math:`\text{TN} + \text{FP} \neq 0`. If this case is
+    encountered for any label, the metric for that label will be set to 0 and the overall metric may therefore be
+    affected in turn.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -279,6 +286,7 @@ class MultilabelSpecificity(MultilabelStatScores):
     """
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _specificity_reduce(tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average)
 
@@ -288,8 +296,10 @@ class Specificity:
 
     .. math:: \text{Specificity} = \frac{\text{TN}}{\text{TN} + \text{FP}}
 
-    Where :math:`\text{TN}` and :math:`\text{FP}` represent the number of true negatives and
-    false positives respecitively.
+    Where :math:`\text{TN}` and :math:`\text{FP}` represent the number of true negatives and false positives
+    respectively. The metric is only proper defined when :math:`\text{TP} + \text{FP} \neq 0`. If this case is
+    encountered for any class/label, the metric for that class/label will be set to 0 and the overall metric may
+    therefore be affected in turn.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
@@ -321,6 +331,7 @@ class Specificity:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
+        """Initialize task metric."""
         task = ClassificationTask.from_str(task)
         assert multidim_average is not None
         kwargs.update(
