@@ -17,11 +17,20 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.utilities.checks import _check_download_timeout
 from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 
 if _TRANSFORMERS_AVAILABLE:
     from transformers import CLIPModel as _CLIPModel
     from transformers import CLIPProcessor as _CLIPProcessor
+
+    def _try_download():
+        _CLIPModel.from_pretrained("openai/clip-vit-large-patch14")
+        _CLIPProcessor.from_pretrained("openai/clip-vit-large-patch14")
+
+    if _check_download_timeout(_try_download):
+        __doctest_skip__ = ["clip_score"]
+
 else:
     __doctest_skip__ = ["clip_score"]
     _CLIPModel = None  # type:ignore
