@@ -17,6 +17,8 @@ from lightning_utilities.core.enums import StrEnum as StrEnum
 
 
 class EnumStr(StrEnum):
+    """Base Enum."""
+
     @staticmethod
     def _name() -> str:
         return "Task"

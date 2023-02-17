@@ -266,7 +266,7 @@ def _preprocess_sentences(
         ValueError: If objects in reference and hypothesis corpus are not strings
     """
     # sanity checks
-    target, preds = _validate_inputs(hypothesis_corpus=preds, reference_corpus=target)
+    target, preds = _validate_inputs(hypothesis_corpus=preds, ref_corpus=target)
 
     # preprocess string
     if language == "en":
