@@ -73,6 +73,7 @@ def _bleu_score_update(
         numerator: Numerator of precision score (true positives)
         denominator: Denominator of precision score (true positives + false positives)
         preds_len: count of words in a candidate prediction
+        target_len: count of words in a reference translation
         target: count of words in a reference translation
         n_gram: gram value ranged 1 to 4
         tokenizer: A function that turns sentence into list of words
