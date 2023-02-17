@@ -116,18 +116,20 @@ class TestErrorRelativeGlobalDimensionlessSynthesis(MetricTester):
 
 
 def test_error_on_different_shape(metric_class=ErrorRelativeGlobalDimensionlessSynthesis):
+    """Check that error is raised when input have different shape."""
     metric = metric_class()
-    with pytest.raises(RuntimeError):  # todo
+    with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape.*"):
         metric(torch.randn([1, 3, 16, 16]), torch.randn([1, 1, 16, 16]))
 
 
 def test_error_on_invalid_shape(metric_class=ErrorRelativeGlobalDimensionlessSynthesis):
+    """Check that error is raised when input is not 4D"""
     metric = metric_class()
-    with pytest.raises(ValueError):  # noqa: PT011  # todo
+    with pytest.raises(ValueError, match="Expected `preds` and `target` to have BxCxHxW shape.*"):
         metric(torch.randn([3, 16, 16]), torch.randn([3, 16, 16]))
 
 
 def test_error_on_invalid_type(metric_class=ErrorRelativeGlobalDimensionlessSynthesis):
     metric = metric_class()
-    with pytest.raises(TypeError):  # todo
+    with pytest.raises(TypeError, match="Expected `preds` and `target` to have the same data type.*"):
         metric(torch.randn([3, 16, 16]), torch.randn([3, 16, 16], dtype=torch.float64))
