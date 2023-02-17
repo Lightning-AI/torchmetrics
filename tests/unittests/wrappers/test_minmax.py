@@ -67,13 +67,13 @@ class TestMinMaxWrapper(MetricTester):
 
     atol = 1e-6
 
-    def test_minmax_wrapper(self, preds, target, base_metric, ddp):
+    def test_minmax_wrapper(self, preds, target, base_metric):
         self.run_class_metric_test(
-            ddp,
-            preds,
-            target,
-            TestingMinMaxMetric,
-            partial(compare_fn_ddp if ddp else compare_fn, base_fn=deepcopy(base_metric)),
+            ddp=False,
+            preds=preds,
+            target=target,
+            metric_class=TestingMinMaxMetric,
+            reference_metric=partial(compare_fn_ddp if ddp else compare_fn, base_fn=deepcopy(base_metric)),
             dist_sync_on_step=False,
             metric_args={"base_metric": base_metric},
             check_batch=False,
