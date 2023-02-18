@@ -479,9 +479,10 @@ def _ter_update(
     Args:
         preds: An iterable of hypothesis corpus.
         target: An iterable of iterables of reference corpus.
-        tokenizer:
+        tokenizer: An instance of ``_TercomTokenizer`` handling a sentence tokenization.
         total_num_edits: A total number of required edits to match hypothesis and reference sentences.
         total_tgt_length: A total average length of reference sentences.
+        sentence_ter: A list of sentence-level TER values
 
     Return:
         total_num_edits:
