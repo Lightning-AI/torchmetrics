@@ -11,8 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import logging
+import multiprocessing
 import os
-import signal
 import sys
 from functools import partial
 from time import perf_counter
@@ -24,6 +25,8 @@ from torch import Tensor
 
 from torchmetrics.utilities.data import select_topk, to_onehot
 from torchmetrics.utilities.enums import DataType
+
+_DOCTEST_DOWNLOAD_TIMEOUT = os.environ.get("DOCTEST_DOWNLOAD_TIMEOUT", 120)
 
 
 def _check_for_empty_tensors(preds: Tensor, target: Tensor) -> bool:
@@ -769,28 +772,31 @@ def _in_doctest() -> bool:
     return False
 
 
-def _check_download_timeout(fn: Callable, default_timeout: int = 120) -> bool:
+def _check_download_timeout(fn: Callable, timeout: int = _DOCTEST_DOWNLOAD_TIMEOUT) -> bool:
     """Function for checking if a certain function is taking too long to execute.
 
     Function will only be executed if running inside a doctest context. Currently does not support Windows.
 
     Args:
         fn: function to check
-        default_timeout: timeout for function
+        timeout: timeout for function
 
     Returns:
-        Bool indicating if the function finished within the specificied timeout
+        Bool indicating if the function finished within the specified timeout
     """
-    if _in_doctest() and sys.platform != "win32":
+    # source: https://stackoverflow.com/a/14924210/4521646
+    proc = multiprocessing.Process(target=fn)
+    proc.start()
+    # Wait for 10 seconds or until process finishes
+    proc.join(timeout)
+    # If thread is still active
+    if not proc.is_alive():
+        return True
 
-        def _handler(signum, frame):
-            raise Exception("Download took longer than timeout")
-
-        signal.signal(signal.SIGALRM, _handler)
-        signal.alarm(os.environ.get("PYTEST_TIMEOUT", default_timeout))
-        try:
-            fn()
-        except Exception:
-            return True
-
+    logging.warning(f"running `{fn.__name__}`... let's kill it...")
+    # Terminate - may not work if process is stuck for good
+    proc.terminate()
+    # OR Kill - will work for sure, no chance for process to finish nicely however
+    # p.kill()
+    proc.join()
     return False
