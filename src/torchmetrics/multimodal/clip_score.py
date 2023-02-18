@@ -18,7 +18,7 @@ from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.functional.multimodal.clip_score import _clip_score_update, _get_model_and_processor
-from torchmetrics.utilities.checks import _try_proceed_with_timeout, _in_doctest
+from torchmetrics.utilities.checks import _in_doctest, _try_proceed_with_timeout
 from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 
 if _TRANSFORMERS_AVAILABLE:
