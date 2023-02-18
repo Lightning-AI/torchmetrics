@@ -760,8 +760,6 @@ def is_overridden(method_name: str, instance: object, parent: object) -> bool:
 def _in_doctest() -> bool:
     """Determine if script running in doctest context.
 
-    From:
-    https://stackoverflow.com/questions/27884404/printing-test-execution-times-and-pinning-down-slow-tests-with-py-test
     """
     if "_pytest.doctest" in sys.modules:
         return True
