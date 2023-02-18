@@ -22,13 +22,13 @@ import torch
 from torchmetrics.functional import (
     multiscale_structural_similarity_index_measure,
     peak_signal_noise_ratio,
-    spectral_angle_mapper,
-    structural_similarity_index_measure,
-    universal_image_quality_index,
     scale_invariant_signal_distortion_ratio,
     scale_invariant_signal_noise_ratio,
     signal_distortion_ratio,
     signal_noise_ratio,
+    spectral_angle_mapper,
+    structural_similarity_index_measure,
+    universal_image_quality_index,
 )
 from torchmetrics.functional.audio import short_time_objective_intelligibility
 from torchmetrics.functional.audio.pesq import perceptual_evaluation_speech_quality
