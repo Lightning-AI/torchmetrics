@@ -268,6 +268,7 @@ class KernelInceptionDistance(Metric):
         return kid_scores.mean(), kid_scores.std(unbiased=False)
 
     def reset(self) -> None:
+        """Reset metric states."""
         if not self.reset_real_features:
             # remove temporarily to avoid resetting
             value = self._defaults.pop("real_features")

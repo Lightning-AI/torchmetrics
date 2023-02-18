@@ -83,7 +83,7 @@ class TheilsU(Metric):
             preds: 1D or 2D tensor of categorical (nominal) data
             - 1D shape: (batch_size,)
             - 2D shape: (batch_size, num_classes)
-        target: 1D or 2D tensor of categorical (nominal) data
+            target: 1D or 2D tensor of categorical (nominal) data
             - 1D shape: (batch_size,)
             - 2D shape: (batch_size, num_classes)
         """

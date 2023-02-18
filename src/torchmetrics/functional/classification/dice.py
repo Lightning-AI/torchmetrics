@@ -38,6 +38,7 @@ def _dice_compute(
         average: Defines the reduction that is applied
         mdmc_average: Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
             ``average`` parameter)
+        zero_division: The value to use for the score if denominator equals zero.
     """
     numerator = 2 * tp
     denominator = 2 * tp + fp + fn
@@ -75,7 +76,7 @@ def dice(
     multiclass: Optional[bool] = None,
     ignore_index: Optional[int] = None,
 ) -> Tensor:
-    r"""Compute `Dice`_:
+    r"""Compute `Dice`_.
 
     .. math:: \text{Dice} = \frac{\text{2 * TP}}{\text{2 * TP} + \text{FP} + \text{FN}}
 

@@ -1,4 +1,7 @@
-scikit-image>0.17.1
-kornia>=0.6.7
-pytorch-msssim==0.2.1
-sewar>=0.4.4
+# NOTE: the upper bound for the package version is only set for CI stability, and it is dropped while installing this package
+#  in case you want to preserve/enforce restrictions on the latest compatible version, add "strict" as an in-line comment
+
+scikit-image >0.17.1, <=0.19.3
+kornia >=0.6.7, <=0.6.9
+pytorch-msssim ==0.2.1
+sewar >=0.4.4, <=0.4.5

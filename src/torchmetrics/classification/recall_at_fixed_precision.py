@@ -31,6 +31,7 @@ from torchmetrics.functional.classification.recall_at_fixed_precision import (
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
+from torchmetrics.utilities.enums import ClassificationTask
 
 
 class BinaryRecallAtFixedPrecision(BinaryPrecisionRecallCurve):
@@ -110,6 +111,7 @@ class BinaryRecallAtFixedPrecision(BinaryPrecisionRecallCurve):
         self.min_precision = min_precision
 
     def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
+        """Compute metric."""
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _binary_recall_at_fixed_precision_compute(state, self.thresholds, self.min_precision)
 
@@ -200,6 +202,7 @@ class MulticlassRecallAtFixedPrecision(MulticlassPrecisionRecallCurve):
         self.min_precision = min_precision
 
     def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
+        """Compute metric."""
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _multiclass_recall_at_fixed_precision_arg_compute(
             state, self.num_classes, self.thresholds, self.min_precision
@@ -295,6 +298,7 @@ class MultilabelRecallAtFixedPrecision(MultilabelPrecisionRecallCurve):
         self.min_precision = min_precision
 
     def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
+        """Compute metric."""
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _multilabel_recall_at_fixed_precision_arg_compute(
             state, self.num_labels, self.thresholds, self.ignore_index, self.min_precision
@@ -323,18 +327,17 @@ class RecallAtFixedPrecision:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
-        if task == "binary":
+        """Initialize task metric."""
+        task = ClassificationTask.from_str(task)
+        if task == ClassificationTask.BINARY:
             return BinaryRecallAtFixedPrecision(min_precision, thresholds, ignore_index, validate_args, **kwargs)
-        if task == "multiclass":
+        if task == ClassificationTask.MULTICLASS:
             assert isinstance(num_classes, int)
             return MulticlassRecallAtFixedPrecision(
                 num_classes, min_precision, thresholds, ignore_index, validate_args, **kwargs
             )
-        if task == "multilabel":
+        if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelRecallAtFixedPrecision(
                 num_labels, min_precision, thresholds, ignore_index, validate_args, **kwargs
             )
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-        )

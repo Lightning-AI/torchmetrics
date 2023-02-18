@@ -43,7 +43,7 @@ def pairwise_manhattan_distance(
     reduction: Literal["mean", "sum", "none", None] = None,
     zero_diagonal: Optional[bool] = None,
 ) -> Tensor:
-    r"""Calculate pairwise manhattan distance:
+    r"""Calculate pairwise manhattan distance.
 
     .. math::
         d_{man}(x,y) = ||x-y||_1 = \sum_{d=1}^D |x_d - y_d|

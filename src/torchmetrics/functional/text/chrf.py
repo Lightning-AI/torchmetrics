@@ -196,8 +196,8 @@ def _get_ngram_matches(
     """Get a number of n-gram matches between reference and hypothesis n-grams.
 
     Args:
-        hyp_n_grams_counts:
-        ref_n_grams_counts:
+        hyp_n_grams_counts: n-grams counts for hypothesis
+        ref_n_grams_counts: n-grams counts for reference
 
     Return:
         matching_n_grams
@@ -289,8 +289,8 @@ def _calculate_sentence_level_chrf_score(
     targets: List[str],
     pred_char_n_grams_counts: Dict[int, Dict[Tuple[str, ...], Tensor]],
     pred_word_n_grams_counts: Dict[int, Dict[Tuple[str, ...], Tensor]],
-    preds_char_n_grams: Dict[int, Tensor],
-    preds_word_n_grams: Dict[int, Tensor],
+    pred_char_n_grams: Dict[int, Tensor],
+    pred_word_n_grams: Dict[int, Tensor],
     n_char_order: int,
     n_word_order: int,
     n_order: float,
@@ -305,8 +305,8 @@ def _calculate_sentence_level_chrf_score(
 
     Args:
         targets: An iterable of references.
-        preds_char_n_grams_counts: A dictionary of dictionaries with hypothesis character n-grams.
-        preds_word_n_grams_counts: A dictionary of dictionaries with hypothesis word n-grams.
+        pred_char_n_grams_counts: A dictionary of dictionaries with hypothesis character n-grams.
+        pred_word_n_grams_counts: A dictionary of dictionaries with hypothesis word n-grams.
         pred_char_n_grams: A total number of hypothesis character n-grams.
         pred_word_n_grams: A total number of hypothesis word n-grams.
         n_char_order: A character n-gram order.
@@ -346,8 +346,8 @@ def _calculate_sentence_level_chrf_score(
         f_score = _calculate_fscore(
             matching_char_n_grams,
             matching_word_n_grams,
-            preds_char_n_grams,
-            preds_word_n_grams,
+            pred_char_n_grams,
+            pred_word_n_grams,
             target_char_n_grams,
             target_word_n_grams,
             n_order,

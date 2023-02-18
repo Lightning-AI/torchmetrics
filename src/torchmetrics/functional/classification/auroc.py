@@ -38,6 +38,7 @@ from torchmetrics.functional.classification.roc import (
 )
 from torchmetrics.utilities.compute import _auc_compute_without_check, _safe_divide
 from torchmetrics.utilities.data import _bincount
+from torchmetrics.utilities.enums import ClassificationTask
 from torchmetrics.utilities.prints import rank_zero_warn
 
 
@@ -151,6 +152,8 @@ def binary_auroc(
             - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 
@@ -252,6 +255,8 @@ def multiclass_auroc(
             - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 
@@ -378,6 +383,8 @@ def multilabel_auroc(
             - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 
@@ -450,14 +457,12 @@ def auroc(
         >>> auroc(preds, target, task='multiclass', num_classes=3)
         tensor(0.7778)
     """
-    if task == "binary":
+    task = ClassificationTask.from_str(task)
+    if task == ClassificationTask.BINARY:
         return binary_auroc(preds, target, max_fpr, thresholds, ignore_index, validate_args)
-    if task == "multiclass":
+    if task == ClassificationTask.MULTICLASS:
         assert isinstance(num_classes, int)
         return multiclass_auroc(preds, target, num_classes, average, thresholds, ignore_index, validate_args)
-    if task == "multilabel":
+    if task == ClassificationTask.MULTILABEL:
         assert isinstance(num_labels, int)
         return multilabel_auroc(preds, target, num_labels, average, thresholds, ignore_index, validate_args)
-    raise ValueError(
-        f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-    )
