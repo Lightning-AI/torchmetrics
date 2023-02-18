@@ -85,5 +85,5 @@ class RelativeAverageSpectralError(Metric):
         )
 
     def compute(self) -> Tensor:
-        """Computes Relative Average Spectral Error (RASE)"""
+        """Computes Relative Average Spectral Error (RASE)."""
         return _rase_compute(self.rmse_map, self.target_sum, self.total_images, self.window_size)

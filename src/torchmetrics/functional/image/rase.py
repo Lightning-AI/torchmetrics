@@ -47,7 +47,7 @@ def _rase_update(
 def _rase_compute(rmse_map: Tensor, target_sum: Tensor, total_images: Tensor, window_size: int) -> Tensor:
     """Args:
         rmse_map: Sum of RMSE map values over all examples
-        total_images: Total number of images
+        total_images: Total number of images.
 
     Return:
         Relative Average Spectral Error (RASE)
