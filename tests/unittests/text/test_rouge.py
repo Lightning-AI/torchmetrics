@@ -118,7 +118,7 @@ def _compute_rouge_score(
 class TestROUGEScore(TextTester):
     @pytest.mark.parametrize("ddp", [False, True])
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    @skip_on_connection_issues(reason="could not download nltl relevant data")
+    @skip_on_connection_issues(reason="could not download nltk relevant data")
     def test_rouge_score_class(
         self, ddp, dist_sync_on_step, preds, targets, pl_rouge_metric_key, use_stemmer, accumulate
     ):
@@ -138,7 +138,7 @@ class TestROUGEScore(TextTester):
             key=pl_rouge_metric_key,
         )
 
-    @skip_on_connection_issues(reason="could not download nltl relevant data")
+    @skip_on_connection_issues(reason="could not download nltk relevant data")
     def test_rouge_score_functional(self, preds, targets, pl_rouge_metric_key, use_stemmer, accumulate):
         metric_args = {"use_stemmer": use_stemmer, "accumulate": accumulate}
 
@@ -199,7 +199,7 @@ def test_rouge_metric_wrong_key_value_error():
         "rougeLsum_fmeasure",
     ],
 )
-@skip_on_connection_issues(reason="could not download nltl relevant data")
+@skip_on_connection_issues(reason="could not download nltk relevant data")
 def test_rouge_metric_normalizer_tokenizer(pl_rouge_metric_key):
     normalizer: Callable[[str], str] = lambda text: re.sub(r"[^a-z0-9]+", " ", text.lower())
     tokenizer: Callable[[str], Sequence[str]] = lambda text: re.split(r"\s+", text)
@@ -238,7 +238,7 @@ def test_rouge_metric_normalizer_tokenizer(pl_rouge_metric_key):
     ],
 )
 @pytest.mark.parametrize("use_stemmer", [False, True])
-@skip_on_connection_issues(reason="could not download nltl relevant data")
+@skip_on_connection_issues(reason="could not download nltk relevant data")
 def test_rouge_lsum_score(pl_rouge_metric_key, use_stemmer):
     """Specific tests to verify the correctness of Rouge-L and Rouge-LSum metric."""
     rouge_level, metric = pl_rouge_metric_key.split("_")
