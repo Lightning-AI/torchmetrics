@@ -86,9 +86,10 @@ def binary_average_precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Compute the average precision (AP) score for binary tasks. The AP score summarizes a precision-recall curve
-    as an weighted mean of precisions at each threshold, with the difference in recall from the previous threshold
-    as weight:
+    r"""Compute the average precision (AP) score for binary tasks.
+
+    The AP score summarizes a precision-recall curve as an weighted mean of precisions at each threshold, with the
+    difference in recall from the previous threshold as weight:
 
     .. math::
         AP = \sum{n} (R_n - R_{n-1}) P_n
@@ -126,6 +127,8 @@ def binary_average_precision(
             - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 
@@ -185,9 +188,10 @@ def multiclass_average_precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Compute the average precision (AP) score for multiclass tasks. The AP score summarizes a precision-recall
-    curve as an weighted mean of precisions at each threshold, with the difference in recall from the previous
-    threshold as weight:
+    r"""Compute the average precision (AP) score for multiclass tasks.
+
+    The AP score summarizes a precision-recall curve as an weighted mean of precisions at each threshold, with the
+    difference in recall from the previous threshold as weight:
 
     .. math::
         AP = \sum{n} (R_n - R_{n-1}) P_n
@@ -232,6 +236,8 @@ def multiclass_average_precision(
             - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 
@@ -314,9 +320,10 @@ def multilabel_average_precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Compute the average precision (AP) score for multilabel tasks. The AP score summarizes a precision-recall
-    curve as an weighted mean of precisions at each threshold, with the difference in recall from the previous
-    threshold as weight:
+    r"""Compute the average precision (AP) score for multilabel tasks.
+
+    The AP score summarizes a precision-recall curve as an weighted mean of precisions at each threshold, with the
+    difference in recall from the previous threshold as weight:
 
     .. math::
         AP = \sum{n} (R_n - R_{n-1}) P_n
@@ -362,6 +369,8 @@ def multilabel_average_precision(
             - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 
@@ -409,8 +418,10 @@ def average_precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[List[Tensor], Tensor]:
-    r"""Compute the average precision (AP) score. The AP score summarizes a precision-recall curve as an weighted
-    mean of precisions at each threshold, with the difference in recall from the previous threshold as weight:
+    r"""Compute the average precision (AP) score.
+
+    The AP score summarizes a precision-recall curve as an weighted mean of precisions at each threshold, with the
+    difference in recall from the previous threshold as weight:
 
     .. math::
         AP = \sum{n} (R_n - R_{n-1}) P_n

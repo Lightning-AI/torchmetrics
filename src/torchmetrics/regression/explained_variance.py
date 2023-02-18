@@ -23,7 +23,7 @@ from torchmetrics.metric import Metric
 
 
 class ExplainedVariance(Metric):
-    r"""Compute `explained variance`_:
+    r"""Compute `explained variance`_.
 
     .. math:: \text{ExplainedVariance} = 1 - \frac{\text{Var}(y - \hat{y})}{\text{Var}(y)}
 

@@ -90,10 +90,11 @@ def binary_jaccard_index(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculate the Jaccard index for binary tasks. The `Jaccard index`_ (also known as the intersetion over
-    union or jaccard similarity coefficient) is an statistic that can be used to determine the similarity and
-    diversity of a sample set. It is defined as the size of the intersection divided by the union of the sample
-    sets:
+    r"""Calculate the Jaccard index for binary tasks.
+
+    The `Jaccard index`_ (also known as the intersetion over union or jaccard similarity coefficient) is an statistic
+    that can be used to determine the similarity and diversity of a sample set. It is defined as the size of the
+    intersection divided by the union of the sample sets:
 
     .. math:: J(A,B) = \frac{|A\cap B|}{|A\cup B|}
 
@@ -107,6 +108,8 @@ def binary_jaccard_index(
     Additional dimension ``...`` will be flattened into the batch dimension.
 
     Args:
+        preds: Tensor with predictions
+        target: Tensor with true labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
@@ -156,10 +159,11 @@ def multiclass_jaccard_index(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculate the Jaccard index for multiclass tasks. The `Jaccard index`_ (also known as the intersetion over
-    union or jaccard similarity coefficient) is an statistic that can be used to determine the similarity and
-    diversity of a sample set. It is defined as the size of the intersection divided by the union of the sample
-    sets:
+    r"""Calculate the Jaccard index for multiclass tasks.
+
+    The `Jaccard index`_ (also known as the intersetion over union or jaccard similarity coefficient) is an statistic
+    that can be used to determine the similarity and diversity of a sample set. It is defined as the size of the
+    intersection divided by the union of the sample sets:
 
     .. math:: J(A,B) = \frac{|A\cap B|}{|A\cup B|}
 
@@ -173,6 +177,8 @@ def multiclass_jaccard_index(
     Additional dimension ``...`` will be flattened into the batch dimension.
 
     Args:
+        preds: Tensor with predictions
+        target: Tensor with true labels
         num_classes: Integer specifing the number of classes
         average:
             Defines the reduction that is applied over labels. Should be one of the following:
@@ -235,10 +241,11 @@ def multilabel_jaccard_index(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculate the Jaccard index for multilabel tasks. The `Jaccard index`_ (also known as the intersetion over
-    union or jaccard similarity coefficient) is an statistic that can be used to determine the similarity and
-    diversity of a sample set. It is defined as the size of the intersection divided by the union of the sample
-    sets:
+    r"""Calculate the Jaccard index for multilabel tasks.
+
+    The `Jaccard index`_ (also known as the intersetion over union or jaccard similarity coefficient) is an statistic
+    that can be used to determine the similarity and diversity of a sample set. It is defined as the size of the
+    intersection divided by the union of the sample sets:
 
     .. math:: J(A,B) = \frac{|A\cap B|}{|A\cup B|}
 
@@ -252,7 +259,9 @@ def multilabel_jaccard_index(
     Additional dimension ``...`` will be flattened into the batch dimension.
 
     Args:
-        num_classes: Integer specifing the number of labels
+        preds: Tensor with predictions
+        target: Tensor with true labels
+        num_labels: Integer specifing the number of labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
         average:
             Defines the reduction that is applied over labels. Should be one of the following:
@@ -302,10 +311,11 @@ def jaccard_index(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculate the Jaccard index. The `Jaccard index`_ (also known as the intersetion over
-    union or jaccard similarity coefficient) is an statistic that can be used to determine the similarity and
-    diversity of a sample set. It is defined as the size of the intersection divided by the union of the sample
-    sets:
+    r"""Calculate the Jaccard index.
+
+    The `Jaccard index`_ (also known as the intersetion over union or jaccard similarity coefficient) is an statistic
+    that can be used to determine the similarity and diversity of a sample set. It is defined as the size of the
+    intersection divided by the union of the sample sets:
 
     .. math:: J(A,B) = \frac{|A\cap B|}{|A\cup B|}
 
