@@ -19,7 +19,7 @@ from typing_extensions import Literal
 
 from torchmetrics.utilities.checks import _check_same_shape, _input_format_classification
 from torchmetrics.utilities.data import _bincount, select_topk
-from torchmetrics.utilities.enums import AverageMethod, DataType, MDMCAverageMethod
+from torchmetrics.utilities.enums import AverageMethod, ClassificationTask, DataType, MDMCAverageMethod
 
 
 def _binary_stat_scores_arg_validation(
@@ -896,12 +896,15 @@ def _stat_scores_update(
     ignore_index: Optional[int] = None,
     mode: DataType = None,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-    """Update and returns the number of true positives, false positives, true negatives, false negatives. Raises
-    ValueError if:
+    """Calculate true positives, false positives, true negatives, false negatives.
 
-        - The `ignore_index` is not valid
-        - When `ignore_index` is used with binary data
-        - When inputs are multi-dimensional multi-class, and the ``mdmc_reduce`` parameter is not set
+    Raises:
+        ValueError:
+            The `ignore_index` is not valid
+        ValueError:
+            When `ignore_index` is used with binary data
+        ValueError:
+            When inputs are multi-dimensional multi-class, and the ``mdmc_reduce`` parameter is not set
 
     Args:
         preds: Predicted tensor
@@ -1081,20 +1084,18 @@ def stat_scores(
                 [1, 1, 1, 1, 2],
                 [1, 0, 3, 0, 1]])
     """
+    task = ClassificationTask.from_str(task)
     assert multidim_average is not None
-    if task == "binary":
+    if task == ClassificationTask.BINARY:
         return binary_stat_scores(preds, target, threshold, multidim_average, ignore_index, validate_args)
-    if task == "multiclass":
+    if task == ClassificationTask.MULTICLASS:
         assert isinstance(num_classes, int)
         assert isinstance(top_k, int)
         return multiclass_stat_scores(
             preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args
         )
-    if task == "multilabel":
+    if task == ClassificationTask.MULTILABEL:
         assert isinstance(num_labels, int)
         return multilabel_stat_scores(
             preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
         )
-    raise ValueError(
-        f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-    )

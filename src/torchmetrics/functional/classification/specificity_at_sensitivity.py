@@ -36,6 +36,7 @@ from torchmetrics.functional.classification.roc import (
     _multiclass_roc_compute,
     _multilabel_roc_compute,
 )
+from torchmetrics.utilities.enums import ClassificationTask
 
 
 def _convert_fpr_to_specificity(fpr: Tensor) -> Tensor:
@@ -136,6 +137,8 @@ def binary_specificity_at_sensitivity(
             - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 
@@ -243,6 +246,8 @@ def multiclass_specificity_at_sensitivity(
             - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 
@@ -358,6 +363,8 @@ def multilabel_specificity_at_sensitivity(
             - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 
@@ -413,20 +420,19 @@ def specicity_at_sensitivity(
     :func:`binary_specificity_at_sensitivity`, :func:`multiclass_specicity_at_sensitivity` and
     :func:`multilabel_specifity_at_sensitvity` for the specific details of each argument influence and examples.
     """
-    if task == "binary":
+    task = ClassificationTask.from_str(task)
+    if task == ClassificationTask.BINARY:
         return binary_specificity_at_sensitivity(  # type: ignore
             preds, target, min_sensitivity, thresholds, ignore_index, validate_args
         )
-    if task == "multiclass":
+    if task == ClassificationTask.MULTICLASS:
         assert isinstance(num_classes, int)
         return multiclass_specificity_at_sensitivity(  # type: ignore
             preds, target, num_classes, min_sensitivity, thresholds, ignore_index, validate_args
         )
-    if task == "multilabel":
+    if task == ClassificationTask.MULTILABEL:
         assert isinstance(num_labels, int)
         return multilabel_specificity_at_sensitivity(  # type: ignore
             preds, target, num_labels, min_sensitivity, thresholds, ignore_index, validate_args
         )
-    raise ValueError(
-        f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-    )
+    raise ValueError(f"Not handled value: {task}")  # this is for compliant of mypy

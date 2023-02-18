@@ -106,6 +106,7 @@ def _lcs(
     Args:
         pred_tokens: A tokenized predicted sentence.
         target_tokens: A tokenized target sentence.
+        return_full_table: If the full table of logest common subsequence should be returned or just the largest
     """
     lcs = [[0] * (len(pred_tokens) + 1) for _ in range(len(target_tokens) + 1)]
     for i in range(1, len(target_tokens) + 1):

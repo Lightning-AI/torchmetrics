@@ -61,6 +61,7 @@ def _spearman_corrcoef_update(preds: Tensor, target: Tensor, num_outputs: int) -
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
+        num_outputs: Number of outputs in multioutput setting
     """
     if not (preds.is_floating_point() and target.is_floating_point()):
         raise TypeError(
@@ -106,7 +107,7 @@ def _spearman_corrcoef_compute(preds: Tensor, target: Tensor, eps: float = 1e-6)
 
 
 def spearman_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
-    r"""Compute `spearmans rank correlation coefficient`_:
+    r"""Compute `spearmans rank correlation coefficient`_.
 
     .. math:
         r_s = = \frac{cov(rg_x, rg_y)}{\sigma_{rg_x} * \sigma_{rg_y}}
