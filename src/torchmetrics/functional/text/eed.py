@@ -98,8 +98,9 @@ from torchmetrics.functional.text.helper import _validate_inputs
 
 
 def _distance_between_words(preds_word: str, target_word: str) -> int:
-    """Distance measure used for substitutions/identity operation. Code adapted from
-    https://github.com/rwth-i6/ExtendedEditDistance/blob/master/EED.py.
+    """Distance measure used for substitutions/identity operation.
+
+    Code adapted from https://github.com/rwth-i6/ExtendedEditDistance/blob/master/EED.py.
 
     Args:
         preds_word: hypothesis word string
@@ -364,8 +365,9 @@ def extended_edit_distance(
     deletion: float = 0.2,
     insertion: float = 1.0,
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    """Compute extended edit distance score (`ExtendedEditDistance`_) [1] for strings or list of strings. The
-    metric utilises the Levenshtein distance and extends it by adding a jump operation.
+    """Compute extended edit distance score (`ExtendedEditDistance`_) [1] for strings or list of strings.
+
+    The metric utilises the Levenshtein distance and extends it by adding a jump operation.
 
     Args:
         preds: An iterable of hypothesis corpus.
