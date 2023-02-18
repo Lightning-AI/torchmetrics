@@ -754,21 +754,6 @@ def is_overridden(method_name: str, instance: object, parent: object) -> bool:
     return instance_attr.__code__ != parent_attr.__code__
 
 
-def _in_doctest() -> bool:
-    """Determine if script running in doctest context.
-
-    From:
-    https://stackoverflow.com/questions/27884404/printing-test-execution-times-and-pinning-down-slow-tests-with-py-test
-    """
-    if "_pytest.doctest" in sys.modules:
-        return True
-    if hasattr(sys.modules["__main__"], "_SpoofOut"):
-        return True
-    if sys.modules["__main__"].__dict__.get("__file__", "").endswith("/pytest"):
-        return True
-    return False
-
-
 def _check_download_timeout(fn: Callable, default_timeout: int = 120) -> bool:
     """Function for checking if a certain function is taking too long to execute.
 
@@ -781,7 +766,7 @@ def _check_download_timeout(fn: Callable, default_timeout: int = 120) -> bool:
     Returns:
         Bool indicating if the function finished within the specificied timeout
     """
-    if _in_doctest() and sys.platform != "win32":
+    if bool(os.environ.get("SKIP_SLOW_DOCTEST", 0)) and sys.platform != "win32":
 
         def _handler(signum, frame):
             raise Exception("Download took longer than timeout")
