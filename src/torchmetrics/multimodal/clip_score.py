@@ -18,7 +18,7 @@ from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.functional.multimodal.clip_score import _clip_score_update, _get_model_and_processor
-from torchmetrics.utilities.checks import _check_download_timeout, _in_doctest
+from torchmetrics.utilities.checks import _try_proceed_with_timeout, _in_doctest
 from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 
 if _TRANSFORMERS_AVAILABLE:
@@ -29,7 +29,7 @@ if _TRANSFORMERS_AVAILABLE:
         _CLIPModel.from_pretrained("openai/clip-vit-large-patch14")
         _CLIPProcessor.from_pretrained("openai/clip-vit-large-patch14")
 
-    if _in_doctest() and not _check_download_timeout(_download_clip):
+    if _in_doctest() and not _try_proceed_with_timeout(_download_clip):
         __doctest_skip__ = ["CLIPScore"]
 else:
     __doctest_skip__ = ["CLIPScore"]

@@ -772,7 +772,7 @@ def _in_doctest() -> bool:
     return False
 
 
-def _check_download_timeout(fn: Callable, timeout: int = _DOCTEST_DOWNLOAD_TIMEOUT) -> bool:
+def _try_proceed_with_timeout(fn: Callable, timeout: int = _DOCTEST_DOWNLOAD_TIMEOUT) -> bool:
     """Function for checking if a certain function is taking too long to execute.
 
     Function will only be executed if running inside a doctest context. Currently does not support Windows.

@@ -19,7 +19,7 @@ from torch.nn import Module
 from typing_extensions import Literal
 
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.checks import _check_download_timeout, _in_doctest
+from torchmetrics.utilities.checks import _try_proceed_with_timeout, _in_doctest
 from torchmetrics.utilities.imports import _LPIPS_AVAILABLE
 
 if _LPIPS_AVAILABLE:
@@ -28,7 +28,7 @@ if _LPIPS_AVAILABLE:
     def _download_lpips() -> None:
         _LPIPS(pretrained=True, net="vgg")
 
-    if _in_doctest() and not _check_download_timeout(_download_lpips):
+    if _in_doctest() and not _try_proceed_with_timeout(_download_lpips):
         __doctest_skip__ = ["LearnedPerceptualImagePatchSimilarity", "LPIPS"]
 else:
 
