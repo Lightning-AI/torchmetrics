@@ -23,7 +23,6 @@ from torchmetrics.utilities.distributed import reduce
 
 def _ergas_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
     """Update and returns variables required to compute Erreur Relative Globale Adimensionnelle de Synthèse.
-    Check for same shape and type of the input tensors.
 
     Args:
         preds: Predicted tensor

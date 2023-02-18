@@ -177,8 +177,7 @@ def _calculate_tau(
 
 
 def _get_p_value_for_t_value_from_dist(t_value: Tensor) -> Tensor:
-    """Obtain p-value for a given Tensor of t-values. Handle ``nan`` which cannot be passed into torch
-    distributions.
+    """Obtain p-value for a given Tensor of t-values. Handle ``nan`` which cannot be passed into torch distributions.
 
     When t-value is ``nan``, a resulted p-value should be alson ``nan``.
     """
