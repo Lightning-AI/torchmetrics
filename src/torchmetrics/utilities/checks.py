@@ -757,11 +757,6 @@ def is_overridden(method_name: str, instance: object, parent: object) -> bool:
     return instance_attr.__code__ != parent_attr.__code__
 
 
-def _in_doctest() -> bool:
-    """For skipping slow doctest."""
-    return bool(os.environ.get("SKIP_SLOW_DOCTEST", 0))
-
-
 def _try_proceed_with_timeout(fn: Callable, timeout: int = _DOCTEST_DOWNLOAD_TIMEOUT) -> bool:
     """Function for checking if a certain function is taking too long to execute.
 
