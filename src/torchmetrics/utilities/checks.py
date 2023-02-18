@@ -758,14 +758,8 @@ def is_overridden(method_name: str, instance: object, parent: object) -> bool:
 
 
 def _in_doctest() -> bool:
-    """Determine if script running in doctest context."""
-    if "_pytest.doctest" in sys.modules:
-        return True
-    if hasattr(sys.modules["__main__"], "_SpoofOut"):
-        return True
-    if sys.modules["__main__"].__dict__.get("__file__", "").endswith("/pytest"):
-        return True
-    return False
+    """For skipping slow doctest."""
+    return bool(os.environ.get("SKIP_SLOW_DOCTEST", 0))
 
 
 def _try_proceed_with_timeout(fn: Callable, timeout: int = _DOCTEST_DOWNLOAD_TIMEOUT) -> bool:
