@@ -25,7 +25,14 @@ from torchmetrics.functional import (
     spectral_angle_mapper,
     structural_similarity_index_measure,
     universal_image_quality_index,
+    scale_invariant_signal_distortion_ratio,
+    scale_invariant_signal_noise_ratio,
+    signal_distortion_ratio,
+    signal_noise_ratio,
 )
+from torchmetrics.functional.audio import short_time_objective_intelligibility
+from torchmetrics.functional.audio.pesq import perceptual_evaluation_speech_quality
+from torchmetrics.functional.audio.pit import permutation_invariant_training
 from torchmetrics.functional.classification.accuracy import binary_accuracy, multiclass_accuracy
 from torchmetrics.functional.classification.confusion_matrix import (
     binary_confusion_matrix,
@@ -99,6 +106,40 @@ from torchmetrics.utilities.plot import plot_confusion_matrix, plot_single_or_mu
             lambda: torch.rand([16, 1, 16, 16]),
             lambda: torch.rand([16, 1, 16, 16]) * 0.75,
             id="universal image quality index",
+            partial(perceptual_evaluation_speech_quality, fs=8000, mode="nb"),
+            lambda: torch.randn(8000),
+            lambda: torch.randn(8000),
+            id="perceptual_evaluation_speech_quality",
+        ),
+        pytest.param(
+            partial(signal_distortion_ratio),
+            lambda: torch.randn(8000),
+            lambda: torch.randn(8000),
+            id="signal_distortion_ratio",
+        ),
+        pytest.param(
+            partial(scale_invariant_signal_distortion_ratio),
+            lambda: torch.randn(5),
+            lambda: torch.randn(5),
+            id="scale_invariant_signal_distortion_ratio",
+        ),
+        pytest.param(
+            partial(signal_noise_ratio),
+            lambda: torch.randn(4),
+            lambda: torch.randn(4),
+            id="signal_noise_ratio",
+        ),
+        pytest.param(
+            partial(scale_invariant_signal_noise_ratio),
+            lambda: torch.randn(4),
+            lambda: torch.randn(4),
+            id="scale_invariant_signal_noise_ratio",
+        ),
+        pytest.param(
+            partial(short_time_objective_intelligibility, fs=8000, extended=False),
+            lambda: torch.randn(8000),
+            lambda: torch.randn(8000),
+            id="short_time_objective_intelligibility",
         ),
     ],
 )
@@ -107,6 +148,28 @@ def test_single_multi_val_plotter(metric, preds, target, num_vals):
     vals = []
     for i in range(num_vals):
         vals.append(metric(preds(), target()))
+    vals = vals[0] if i == 1 else vals
+    fig, ax = plot_single_or_multi_val(vals)
+    assert isinstance(fig, plt.Figure)
+    assert isinstance(ax, matplotlib.axes.Axes)
+
+
+@pytest.mark.parametrize(
+    ("metric", "preds", "target"),
+    [
+        pytest.param(
+            partial(permutation_invariant_training, metric_func=scale_invariant_signal_noise_ratio, eval_func="max"),
+            lambda: torch.randn(3, 2, 5),
+            lambda: torch.randn(3, 2, 5),
+            id="permutation_invariant_training",
+        )
+    ],
+)
+@pytest.mark.parametrize("num_vals", [1, 5, 10])
+def test_single_multi_val_plotter_pit(metric, preds, target, num_vals):
+    vals = []
+    for i in range(num_vals):
+        vals.append(metric(preds(), target())[0])
     vals = vals[0] if i == 1 else vals
     fig, ax = plot_single_or_multi_val(vals)
     assert isinstance(fig, plt.Figure)
