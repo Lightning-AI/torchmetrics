@@ -77,6 +77,8 @@ def binary_matthews_corrcoef(
     Additional dimension ``...`` will be flattened into the batch dimension.
 
     Args:
+        preds: Tensor with predictions
+        target: Tensor with true labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
@@ -127,6 +129,8 @@ def multiclass_matthews_corrcoef(
     Additional dimension ``...`` will be flattened into the batch dimension.
 
     Args:
+        preds: Tensor with predictions
+        target: Tensor with true labels
         num_classes: Integer specifing the number of classes
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
@@ -181,7 +185,9 @@ def multilabel_matthews_corrcoef(
     Additional dimension ``...`` will be flattened into the batch dimension.
 
     Args:
-        num_classes: Integer specifing the number of labels
+        preds: Tensor with predictions
+        target: Tensor with true labels
+        num_labels: Integer specifing the number of labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
