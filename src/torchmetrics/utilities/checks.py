@@ -758,9 +758,7 @@ def is_overridden(method_name: str, instance: object, parent: object) -> bool:
 
 
 def _in_doctest() -> bool:
-    """Determine if script running in doctest context.
-
-    """
+    """Determine if script running in doctest context."""
     if "_pytest.doctest" in sys.modules:
         return True
     if hasattr(sys.modules["__main__"], "_SpoofOut"):
