@@ -76,15 +76,18 @@ class BaseMetricResults(dict):
     """Base metric class, that allows fields for pre-defined metrics."""
 
     def __getattr__(self, key: str) -> Tensor:
+        """Get a specific metric attribute."""
         # Using this you get the correct error message, an AttributeError instead of a KeyError
         if key in self:
             return self[key]
         raise AttributeError(f"No such attribute: {key}")
 
     def __setattr__(self, key: str, value: Tensor) -> None:
+        """Set a specific metric attribute."""
         self[key] = value
 
     def __delattr__(self, key: str) -> None:
+        """Delete a specific metric attribute."""
         if key in self:
             del self[key]
         raise AttributeError(f"No such attribute: {key}")
@@ -124,7 +127,10 @@ class COCOMetricResults(BaseMetricResults):
 
 
 def _segm_iou(det: List[Tuple[np.ndarray, np.ndarray]], gt: List[Tuple[np.ndarray, np.ndarray]]) -> Tensor:
-    """Compute IOU between detections and ground-truths using mask-IOU. Based on pycocotools toolkit for mask_utils
+    """Compute IOU between detections and ground-truths using mask-IOU.
+
+    Implementation is based on pycocotools toolkit for mask_utils.
+
     Args:
        det: A list of detection masks as ``[(RLE_SIZE, RLE_COUNTS)]``, where ``RLE_SIZE`` is (width, height) dimension
            of the input and RLE_COUNTS is its RLE representation;

@@ -34,6 +34,7 @@ def _log_cosh_error_update(preds: Tensor, target: Tensor, num_outputs: int) -> T
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
+        num_outputs: Number of outputs in multioutput setting
 
     Return:
         Sum of LogCosh error over examples, and total number of examples
@@ -52,7 +53,7 @@ def _log_cosh_error_compute(sum_log_cosh_error: Tensor, n_obs: Tensor) -> Tensor
     """Compute Mean Squared Error.
 
     Args:
-        sum_squared_error: Sum of LogCosh errors over all observations
+        sum_log_cosh_error: Sum of LogCosh errors over all observations
         n_obs: Number of predictions or observations
     """
     return (sum_log_cosh_error / n_obs).squeeze()
