@@ -47,76 +47,72 @@ from torchmetrics.utilities.plot import plot_confusion_matrix, plot_single_or_mu
 @pytest.mark.parametrize(
     ("metric", "preds", "target"),
     [
-        pytest.param(
-            binary_accuracy,
-            lambda: torch.rand(100),
-            lambda: torch.randint(2, (100,)),
-            id="binary"
-        ),
+        pytest.param(binary_accuracy, lambda: torch.rand(100), lambda: torch.randint(2, (100,)), id="binary"),
         pytest.param(
             partial(multiclass_accuracy, num_classes=3),
             lambda: torch.randint(3, (100,)),
             lambda: torch.randint(3, (100,)),
-            id="multiclass"
+            id="multiclass",
         ),
         pytest.param(
             partial(multiclass_accuracy, num_classes=3, average=None),
             lambda: torch.randint(3, (100,)),
             lambda: torch.randint(3, (100,)),
-            id="multiclass and average=None"
+            id="multiclass and average=None",
         ),
         pytest.param(
             partial(spectral_distortion_index),
             lambda: torch.rand([16, 3, 16, 16]),
             lambda: torch.rand([16, 3, 16, 16]),
-            id="spectral distortion index"
+            id="spectral distortion index",
         ),
         pytest.param(
             partial(error_relative_global_dimensionless_synthesis),
             lambda: torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42)),
             lambda: torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42)),
-            id="error relative global dimensionless synthesis"
+            id="error relative global dimensionless synthesis",
         ),
         pytest.param(
             partial(peak_signal_noise_ratio),
             lambda: torch.tensor([[0.0, 1.0], [2.0, 3.0]]),
             lambda: torch.tensor([[3.0, 2.0], [1.0, 0.0]]),
-            id="peak signal noise ratio"
+            id="peak signal noise ratio",
         ),
         pytest.param(
             partial(spectral_angle_mapper),
             lambda: torch.rand([16, 3, 16, 16], generator=torch.manual_seed(42)),
             lambda: torch.rand([16, 3, 16, 16], generator=torch.manual_seed(123)),
-            id="spectral angle mapper"
+            id="spectral angle mapper",
         ),
         pytest.param(
             partial(structural_similarity_index_measure),
             lambda: torch.rand([3, 3, 256, 256], generator=torch.manual_seed(42)),
             lambda: torch.rand([3, 3, 256, 256], generator=torch.manual_seed(42)) * 0.75,
-            id="structural similarity index_measure"
+            id="structural similarity index_measure",
         ),
         pytest.param(
             partial(multiscale_structural_similarity_index_measure),
             lambda: torch.rand([3, 3, 256, 256], generator=torch.manual_seed(42)),
             lambda: torch.rand([3, 3, 256, 256], generator=torch.manual_seed(42)) * 0.75,
-            id="multiscale structural similarity index measure"
+            id="multiscale structural similarity index measure",
         ),
         pytest.param(
             partial(universal_image_quality_index),
             lambda: torch.rand([16, 1, 16, 16]),
             lambda: torch.rand([16, 1, 16, 16]) * 0.75,
-            id="universal image quality index"),
+            id="universal image quality index",
+        ),
         pytest.param(
             partial(perceptual_evaluation_speech_quality, fs=8000, mode="nb"),
             lambda: torch.randn(8000),
             lambda: torch.randn(8000),
-            id="perceptual_evaluation_speech_quality"
+            id="perceptual_evaluation_speech_quality",
         ),
         pytest.param(
             partial(signal_distortion_ratio),
             lambda: torch.randn(8000),
             lambda: torch.randn(8000),
-            id="signal_distortion_ratio"
+            id="signal_distortion_ratio",
         ),
         pytest.param(
             partial(scale_invariant_signal_distortion_ratio),
