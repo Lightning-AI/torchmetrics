@@ -39,9 +39,7 @@ from torchmetrics.classification import (
 from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio
 from torchmetrics.regression import MeanSquaredError
 
-_rand_input = lambda: torch.rand(
-    10
-)
+_rand_input = lambda: torch.rand(10)
 _binary_randint_input = lambda: torch.randint(2, (10,))
 _multiclass_randint_input = lambda: torch.randint(3, (10,))
 _multilabel_randint_input = lambda: torch.randint(2, (10, 3))
@@ -51,72 +49,44 @@ _audio_input = lambda: torch.randn(8000)
 @pytest.mark.parametrize(
     ("metric_class", "preds", "target"),
     [
-        pytest.param(
-            BinaryAccuracy,
-            _rand_input,
-            _binary_randint_input,
-            id="binary accuracy"
-        ),
+        pytest.param(BinaryAccuracy, _rand_input, _binary_randint_input, id="binary accuracy"),
         pytest.param(
             partial(MulticlassAccuracy, num_classes=3),
             _multiclass_randint_input,
             _multiclass_randint_input,
-            id="multiclass accuracy"
+            id="multiclass accuracy",
         ),
         pytest.param(
             partial(MulticlassAccuracy, num_classes=3, average=None),
             _multiclass_randint_input,
             _multiclass_randint_input,
-            id="multiclass accuracy and average=None"
+            id="multiclass accuracy and average=None",
         ),
         pytest.param(
             partial(PerceptualEvaluationSpeechQuality, fs=8000, mode="nb"),
             _audio_input,
             _audio_input,
-            id="perceptual_evaluation_speech_quality"
+            id="perceptual_evaluation_speech_quality",
         ),
+        pytest.param(SignalDistortionRatio, _audio_input, _audio_input, id="signal_distortion_ratio"),
         pytest.param(
-            SignalDistortionRatio,
-            _audio_input,
-            _audio_input,
-            id="signal_distortion_ratio"
+            ScaleInvariantSignalDistortionRatio, _rand_input, _rand_input, id="scale_invariant_signal_distortion_ratio"
         ),
-        pytest.param(
-            ScaleInvariantSignalDistortionRatio,
-            _rand_input,
-            _rand_input,
-            id="scale_invariant_signal_distortion_ratio"
-        ),
-        pytest.param(
-            SignalNoiseRatio,
-            _rand_input,
-            _rand_input,
-            id="signal_noise_ratio"
-        ),
-        pytest.param(
-            ScaleInvariantSignalNoiseRatio,
-            _rand_input,
-            _rand_input,
-            id="scale_invariant_signal_noise_ratio"
-        ),
+        pytest.param(SignalNoiseRatio, _rand_input, _rand_input, id="signal_noise_ratio"),
+        pytest.param(ScaleInvariantSignalNoiseRatio, _rand_input, _rand_input, id="scale_invariant_signal_noise_ratio"),
         pytest.param(
             partial(ShortTimeObjectiveIntelligibility, fs=8000, extended=False),
             _audio_input,
             _audio_input,
-            id="short_time_objective_intelligibility"
+            id="short_time_objective_intelligibility",
         ),
         pytest.param(
             partial(PermutationInvariantTraining, metric_func=scale_invariant_signal_noise_ratio, eval_func="max"),
             lambda: torch.randn(3, 2, 5),
             lambda: torch.randn(3, 2, 5),
-            id="permutation_invariant_training"
+            id="permutation_invariant_training",
         ),
-        pytest.param(
-            MeanSquaredError,
-            _rand_input,
-            _rand_input,
-            id="mean squared error"
-        ),
+        pytest.param(MeanSquaredError, _rand_input, _rand_input, id="mean squared error"),
         pytest.param(SumMetric, _rand_input, None, id="sum metric"),
         pytest.param(MeanMetric, _rand_input, None, id="mean metric"),
         pytest.param(MinMetric, _rand_input, None, id="min metric"),
