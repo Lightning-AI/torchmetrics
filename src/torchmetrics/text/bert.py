@@ -22,8 +22,11 @@ from torch.nn import Module
 from torchmetrics.functional.text.bert import bert_score
 from torchmetrics.functional.text.helper_embedding_metric import _preprocess_text
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.checks import _try_proceed_with_timeout, _SKIP_SLOW_DOCTEST
+from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
 from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
+
+# Default model recommended in the original implementation.
+_DEFAULT_MODEL = "roberta-large"
 
 if _TRANSFORMERS_AVAILABLE:
     from transformers import AutoModel, AutoTokenizer
@@ -37,10 +40,6 @@ if _TRANSFORMERS_AVAILABLE:
         __doctest_skip__ = ["BERTScore"]
 else:
     __doctest_skip__ = ["BERTScore"]
-
-
-# Default model recommended in the original implementation.
-_DEFAULT_MODEL = "roberta-large"
 
 
 def _get_input_dict(input_ids: List[Tensor], attention_mask: List[Tensor]) -> Dict[str, Tensor]:
