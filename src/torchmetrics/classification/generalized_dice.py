@@ -232,7 +232,7 @@ class GeneralizedDiceScore:
         **kwargs: Any,
     ) -> Metric:
         assert multidim_average is not None
-        kwargs.update(dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args))
+        kwargs.update({"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args})
         if task == "binary":
             return BinaryGeneralizedDiceScore(beta, threshold, **kwargs)
         if task == "multiclass":

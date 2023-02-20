@@ -48,7 +48,7 @@ def _sk_generalized_dice_score_binary(preds, target, sk_fn, ignore_index, multid
         target = target.numpy()
 
     if np.issubdtype(preds.dtype, np.floating):
-        if not ((0 < preds) & (preds < 1)).all():
+        if not ((preds > 0) & (preds < 1)).all():
             preds = sigmoid(preds)
         preds = (preds >= THRESHOLD).astype(np.uint8)
 
@@ -294,7 +294,7 @@ _mc_k_preds = torch.tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]]
 
 
 @pytest.mark.parametrize(
-    "metric_class, metric_fn",
+    ("metric_class", "metric_fn"),
     [
         (partial(MulticlassGeneralizedDiceScore, beta=2.0), partial(multiclass_generalized_dice_score, beta=2.0)),
         (MulticlassF1Score, multiclass_f1_score),
@@ -321,10 +321,7 @@ def test_top_k(
     class_metric = metric_class(top_k=k, average=average, num_classes=3)
     class_metric.update(preds, target)
 
-    if class_metric.beta != 1.0:
-        result = expected_generalized_dice
-    else:
-        result = expected_f1
+    result = expected_generalized_dice if class_metric.beta != 1.0 else expected_f1
 
     assert torch.isclose(class_metric.compute(), result)
     assert torch.isclose(metric_fn(preds, target, top_k=k, average=average, num_classes=3), result)
@@ -394,7 +391,7 @@ def _sk_generalized_dice_score_multilabel(preds, target, sk_fn, ignore_index, mu
     preds = preds.numpy()
     target = target.numpy()
     if np.issubdtype(preds.dtype, np.floating):
-        if not ((0 < preds) & (preds < 1)).all():
+        if not ((preds > 0) & (preds < 1)).all():
             preds = sigmoid(preds)
         preds = (preds >= THRESHOLD).astype(np.uint8)
     preds = preds.reshape(*preds.shape[:2], -1)

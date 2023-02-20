@@ -76,10 +76,7 @@ def _generalized_dice_reduce(
         generalized_dice_score = _safe_divide(2 * (tp + weights), 2 * tp + fp + fn)
         if average is None or average == "none":
             return generalized_dice_score
-        if average == "weighted":
-            weights = tp + fn
-        else:
-            weights = torch.ones_like(generalized_dice_score)
+        weights = tp + fn if average == "weighted" else torch.ones_like(generalized_dice_score)
         return _safe_divide(weights * generalized_dice_score, weights.sum(-1, keepdim=True)).sum(-1)
 
 
