@@ -34,7 +34,7 @@ from unittests.retrieval.helpers import (
 seed_all(42)
 
 
-def _ndcg_at_k(target: np.ndarray, preds: np.ndarray, k: int = None):
+def _ndcg_at_k(target: np.ndarray, preds: np.ndarray, top_k: int = None):
     """Adapting `from sklearn.metrics.ndcg_score`."""
     assert target.shape == preds.shape
     assert len(target.shape) == 1  # works only with single dimension inputs
@@ -45,7 +45,7 @@ def _ndcg_at_k(target: np.ndarray, preds: np.ndarray, k: int = None):
     preds = np.expand_dims(preds, axis=0)
     target = np.expand_dims(target, axis=0)
 
-    return ndcg_score(target, preds, k=k)
+    return ndcg_score(target, preds, k=top_k)
 
 
 class TestNDCG(RetrievalMetricTester):

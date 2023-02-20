@@ -34,7 +34,7 @@ from unittests.retrieval.helpers import (
 seed_all(42)
 
 
-def _recall_at_k(target: np.ndarray, preds: np.ndarray, k: int = None):
+def _recall_at_k(target: np.ndarray, preds: np.ndarray, top_k: int = None):
     """Didn't find a reliable implementation of Recall in Information Retrieval, so, reimplementing here.
 
     See wikipedia for more information about definition.
@@ -42,12 +42,12 @@ def _recall_at_k(target: np.ndarray, preds: np.ndarray, k: int = None):
     assert target.shape == preds.shape
     assert len(target.shape) == 1  # works only with single dimension inputs
 
-    if k is None:
-        k = len(preds)
+    if top_k is None:
+        top_k = len(preds)
 
     if target.sum() > 0:
         order_indexes = np.argsort(preds, axis=0)[::-1]
-        relevant = np.sum(target[order_indexes][:k])
+        relevant = np.sum(target[order_indexes][:top_k])
         return relevant * 1.0 / target.sum()
     return np.NaN
 
