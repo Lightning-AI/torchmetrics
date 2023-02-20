@@ -49,7 +49,7 @@ def pairwise_euclidean_distance(
     reduction: Literal["mean", "sum", "none", None] = None,
     zero_diagonal: Optional[bool] = None,
 ) -> Tensor:
-    r"""Calculate pairwise euclidean distances:
+    r"""Calculate pairwise euclidean distances.
 
     .. math::
         d_{euc}(x,y) = ||x - y||_2 = \sqrt{\sum_{d=1}^D (x_d - y_d)^2}

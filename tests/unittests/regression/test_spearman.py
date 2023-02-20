@@ -90,8 +90,7 @@ class TestSpearmanCorrCoef(MetricTester):
     atol = 1e-2
 
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_spearman_corrcoef(self, preds, target, ddp, dist_sync_on_step):
+    def test_spearman_corrcoef(self, preds, target, ddp):
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_class_metric_test(
             ddp,
@@ -99,7 +98,6 @@ class TestSpearmanCorrCoef(MetricTester):
             target,
             SpearmanCorrCoef,
             _scipy_spearman,
-            dist_sync_on_step,
             metric_args={"num_outputs": num_outputs},
         )
 

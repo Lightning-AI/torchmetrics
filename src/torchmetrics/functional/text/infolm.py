@@ -54,6 +54,10 @@ _ALLOWED_INFORMATION_MEASURE_LITERAL = Literal[
 class _IMEnum(EnumStr):
     """A helper Enum class for storing the information measure."""
 
+    @staticmethod
+    def _name() -> str:
+        return "Information measure"
+
     KL_DIVERGENCE = "kl_divergence"
     ALPHA_DIVERGENCE = "alpha_divergence"
     BETA_DIVERGENCE = "beta_divergence"
@@ -63,19 +67,6 @@ class _IMEnum(EnumStr):
     L2_DISTANCE = "l2_distance"
     L_INFINITY_DISTANCE = "l_infinity_distance"
     FISHER_RAO_DISTANCE = "fisher_rao_distance"
-
-    @classmethod
-    def from_str(cls, value: str) -> Optional["EnumStr"]:
-        """Raises:
-        ValueError:
-        If required information measure is not among the supported options.
-        """
-        _allowed_im = [im.lower() for im in _IMEnum._member_names_]
-
-        enum_key = super().from_str(value)
-        if enum_key is not None and enum_key in _allowed_im:
-            return enum_key
-        raise ValueError(f"Invalid information measure. Expected one of {_allowed_im}, but got {enum_key}.")
 
 
 class _InformationMeasure:
@@ -307,8 +298,10 @@ def _get_dataloader(
         attention_mask:
             Mask to avoid performing attention on padding token indices.
         idf:
+            A bool indicating whether normalization using inverse document frequencies should be used.
+        batch_size:
             A batch size used for model processing.
-        num_threads:
+        num_workers:
             A number of workers to use for a dataloader.
 
     Return:
@@ -378,6 +371,8 @@ def _get_batch_distribution(
             A maximum length of input sequences. Sequences longer than `max_length` are to be trimmed.
         idf:
             An indication of whether normalization using inverse document frequencies should be used.
+        special_tokens_map:
+            A dictionary mapping tokenizer special tokens into the corresponding integer values.
 
     Return:
         A discrete probability distribution.
@@ -436,6 +431,8 @@ def _get_data_distribution(
             A maximum length of input sequences. Sequences longer than `max_length` are to be trimmed.
         idf:
             An indication of whether normalization using inverse document frequencies should be used.
+        special_tokens_map:
+            A dictionary mapping tokenizer special tokens into the corresponding integer values.
         verbose:
             An indication of whether a progress bar to be displayed during the embeddings calculation.
 
@@ -502,7 +499,7 @@ def _infolm_compute(
             Initialized model from HuggingFace's `transformers package.
         preds_dataloader:
             Loader iterating over tokenizer predicted sentences.
-        target_datalaoder:
+        target_dataloader:
             Loader iterating over tokenizer reference sentences.
         temperature:
             A temperature for calibrating language modelling. For more information, please reference `InfoLM`_ paper.
@@ -547,8 +544,10 @@ def infolm(
     verbose: bool = True,
     return_sentence_level_score: bool = False,
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    """Calculate `InfoLM`_ [1] - i.e. calculate a distance/divergence between predicted and reference sentence discrete
-    distribution using one of the following information measures:
+    """Calculate `InfoLM`_ [1].
+
+    InfoML corresponds to distance/divergence between predicted and reference sentence discrete distribution using
+    one of the following information measures:
 
         - `KL divergence`_
         - `alpha divergence`_

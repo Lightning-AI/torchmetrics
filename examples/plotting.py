@@ -17,6 +17,147 @@ import matplotlib.pyplot as plt
 import torch
 
 
+def pesq_example():
+    """Plot PESQ audio example."""
+    from torchmetrics.audio.pesq import PerceptualEvaluationSpeechQuality
+
+    p = lambda: torch.randn(8000)
+    t = lambda: torch.randn(8000)
+
+    # plot single value
+    metric = PerceptualEvaluationSpeechQuality(8000, "nb")
+    metric.update(p(), t())
+    fig, ax = metric.plot()
+
+    # plot multiple values
+    metric = PerceptualEvaluationSpeechQuality(16000, "wb")
+    vals = [metric(p(), t()) for _ in range(10)]
+    fig, ax = metric.plot(vals)
+
+    return fig, ax
+
+
+def pit_example():
+    """Plot PIT audio example."""
+    from torchmetrics.audio.pit import PermutationInvariantTraining
+    from torchmetrics.functional import scale_invariant_signal_noise_ratio
+
+    p = lambda: torch.randn(3, 2, 5)
+    t = lambda: torch.randn(3, 2, 5)
+
+    # plot single value
+    metric = PermutationInvariantTraining(scale_invariant_signal_noise_ratio, "max")
+    metric.update(p(), t())
+    fig, ax = metric.plot()
+
+    # plot multiple values
+    metric = PermutationInvariantTraining(scale_invariant_signal_noise_ratio, "max")
+    vals = [metric(p(), t()) for _ in range(10)]
+    fig, ax = metric.plot(vals)
+
+    return fig, ax
+
+
+def sdr_example():
+    """Plot SDR audio example."""
+    from torchmetrics.audio.sdr import SignalDistortionRatio
+
+    p = lambda: torch.randn(8000)
+    t = lambda: torch.randn(8000)
+
+    # plot single value
+    metric = SignalDistortionRatio()
+    metric.update(p(), t())
+    fig, ax = metric.plot()
+
+    # plot multiple values
+    metric = SignalDistortionRatio()
+    vals = [metric(p(), t()) for _ in range(10)]
+    fig, ax = metric.plot(vals)
+
+    return fig, ax
+
+
+def si_sdr_example():
+    """Plot SI-SDR audio example."""
+    from torchmetrics.audio.sdr import ScaleInvariantSignalDistortionRatio
+
+    p = lambda: torch.randn(5)
+    t = lambda: torch.randn(5)
+
+    # plot single value
+    metric = ScaleInvariantSignalDistortionRatio()
+    metric.update(p(), t())
+    fig, ax = metric.plot()
+
+    # plot multiple values
+    metric = ScaleInvariantSignalDistortionRatio()
+    vals = [metric(p(), t()) for _ in range(10)]
+    fig, ax = metric.plot(vals)
+
+    return fig, ax
+
+
+def snr_example():
+    """Plot SNR audio example."""
+    from torchmetrics.audio.snr import SignalNoiseRatio
+
+    p = lambda: torch.randn(4)
+    t = lambda: torch.randn(4)
+
+    # plot single value
+    metric = SignalNoiseRatio()
+    metric.update(p(), t())
+    fig, ax = metric.plot()
+
+    # plot multiple values
+    metric = SignalNoiseRatio()
+    vals = [metric(p(), t()) for _ in range(10)]
+    fig, ax = metric.plot(vals)
+
+    return fig, ax
+
+
+def si_snr_example():
+    """Plot SI-SNR example."""
+    from torchmetrics.audio.snr import ScaleInvariantSignalNoiseRatio
+
+    p = lambda: torch.randn(4)
+    t = lambda: torch.randn(4)
+
+    # plot single value
+    metric = ScaleInvariantSignalNoiseRatio()
+    metric.update(p(), t())
+    fig, ax = metric.plot()
+
+    # plot multiple values
+    metric = ScaleInvariantSignalNoiseRatio()
+    vals = [metric(p(), t()) for _ in range(10)]
+    fig, ax = metric.plot(vals)
+
+    return fig, ax
+
+
+def stoi_example():
+    """Plot STOI example."""
+    from torchmetrics.audio.stoi import ShortTimeObjectiveIntelligibility
+
+    p = lambda: torch.randn(8000)
+    t = lambda: torch.randn(8000)
+
+    # plot single value
+    metric = ShortTimeObjectiveIntelligibility(8000, False)
+    metric.update(p(), t())
+    fig, ax = metric.plot()
+
+    # plot multiple values
+    metric = ShortTimeObjectiveIntelligibility(8000, False)
+    vals = [metric(p(), t()) for _ in range(10)]
+    fig, ax = metric.plot(vals)
+
+    return fig, ax
+
+
 def accuracy_example():
     """Plot Accuracy example."""
     from torchmetrics.classification import MulticlassAccuracy
@@ -85,6 +226,13 @@ if __name__ == "__main__":
 
     metrics_func = {
         "accuracy": accuracy_example,
+        "pesq": pesq_example,
+        "pit": pit_example,
+        "sdr": sdr_example,
+        "si-sdr": si_sdr_example,
+        "snr": snr_example,
+        "si-snr": si_snr_example,
+        "stoi": stoi_example,
         "mean_squared_error": mean_squared_error_example,
         "confusion_matrix": confusion_matrix_example,
     }

@@ -350,7 +350,6 @@ class TestMAP(MetricTester):
             target=_inputs.target,
             metric_class=MeanAveragePrecision,
             reference_metric=_compare_fn,
-            dist_sync_on_step=False,
             check_batch=False,
             metric_args={"class_metrics": True, "compute_on_cpu": compute_on_cpu},
         )
@@ -364,7 +363,6 @@ class TestMAP(MetricTester):
             target=_inputs_masks.target,
             metric_class=MeanAveragePrecision,
             reference_metric=_compare_fn_segm,
-            dist_sync_on_step=False,
             check_batch=False,
             metric_args={"class_metrics": True, "compute_on_cpu": compute_on_cpu, "iou_type": "segm"},
         )

@@ -67,8 +67,10 @@ def _class_test(
             calculated per batch per device (and not just at the end)
         check_batch: bool, if true will check if the metric is also correctly
             calculated across devices for each batch (and not just at the end)
+        atol: absolute tolerance used for comparison of results
         device: determine which device to run on, either 'cuda' or 'cpu'
         fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `targets` among processes
+        check_scriptable: bool indicating if metric should also be tested if it can be scripted
         key: The key passed onto the `_assert_allclose` to compare the respective metric from the Dict output against
             the ref_metric.
         kwargs_update: Additional keyword arguments that will be passed with preds and
@@ -161,6 +163,7 @@ def _functional_test(
         metric_functional: metric functional that should be tested
         ref_metric: callable function that is used for comparison
         metric_args: dict with additional arguments used for class initialization
+        atol: absolute tolerance used for comparison of results
         device: determine which device to run on, either 'cuda' or 'cpu'
         fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `targets` among processes
         key: The key passed onto the `_assert_allclose` to compare the respective metric from the Dict output against
@@ -275,7 +278,7 @@ class TextTester(MetricTester):
         targets: TEXT_METRIC_INPUT,
         metric_class: Metric,
         reference_metric: Callable,
-        dist_sync_on_step: bool,
+        dist_sync_on_step: bool = False,
         metric_args: dict = None,
         check_dist_sync_on_step: bool = True,
         check_batch: bool = True,
@@ -300,7 +303,7 @@ class TextTester(MetricTester):
             check_batch: bool, if true will check if the metric is also correctly
                 calculated across devices for each batch (and not just at the end)
             fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `targets` among processes
-            check_scriptable:
+            check_scriptable: bool indicating if metric should also be tested if it can be scripted
             key: The key passed onto the `_assert_allclose` to compare the respective metric from the Dict output
                 against the ref_metric.
             kwargs_update: Additional keyword arguments that will be passed with preds and
@@ -418,7 +421,7 @@ class TextTester(MetricTester):
             preds: torch tensor with predictions
             targets: torch tensor with targets
             metric_module: the metric module to test
-            metric_functional:
+            metric_functional: the functional metric version to test
             metric_args: dict with additional arguments used for class initialization
             key: The key passed onto the `_assert_allclose` to compare the respective metric from the Dict output
                 against the ref_metric.
@@ -437,11 +440,11 @@ class TextTester(MetricTester):
 
 
 def skip_on_connection_issues(reason: str = "Unable to load checkpoints from HuggingFace `transformers`."):
-    """Wrapper which handles HF-related tests if they fail due to connection issues.
+    """Wrapper which handles download related tests if they fail due to connection issues.
 
     The tests run normally if no connection issue arises, and they're marked as skipped otherwise.
     """
-    _error_msg_starts = ["We couldn't connect to", "Connection error", "Can't load"]
+    _error_msg_starts = ["We couldn't connect to", "Connection error", "Can't load", "`nltk` resource `punkt` is"]
 
     def test_decorator(function: Callable, *args: Any, **kwargs: Any) -> Optional[Callable]:
         @wraps(function)

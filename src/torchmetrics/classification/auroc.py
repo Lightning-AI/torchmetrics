@@ -31,6 +31,7 @@ from torchmetrics.functional.classification.auroc import (
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
+from torchmetrics.utilities.enums import ClassificationTask
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
 
@@ -113,6 +114,7 @@ class BinaryAUROC(BinaryPrecisionRecallCurve):
         self.max_fpr = max_fpr
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _binary_auroc_compute(state, self.thresholds, self.max_fpr)
 
@@ -249,6 +251,7 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
         self.validate_args = validate_args
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _multiclass_auroc_compute(state, self.num_classes, self.average, self.thresholds)
 
@@ -384,6 +387,7 @@ class MultilabelAUROC(MultilabelPrecisionRecallCurve):
         self.validate_args = validate_args
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _multilabel_auroc_compute(state, self.num_labels, self.average, self.thresholds, self.ignore_index)
 
@@ -469,15 +473,14 @@ class AUROC:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
+        """Initialize task metric."""
+        task = ClassificationTask.from_str(task)
         kwargs.update({"thresholds": thresholds, "ignore_index": ignore_index, "validate_args": validate_args})
-        if task == "binary":
+        if task == ClassificationTask.BINARY:
             return BinaryAUROC(max_fpr, **kwargs)
-        if task == "multiclass":
+        if task == ClassificationTask.MULTICLASS:
             assert isinstance(num_classes, int)
             return MulticlassAUROC(num_classes, average, **kwargs)
-        if task == "multilabel":
+        if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelAUROC(num_labels, average, **kwargs)
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-        )

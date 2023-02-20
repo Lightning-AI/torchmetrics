@@ -36,12 +36,15 @@ def _pearson_corrcoef_update(
     Check for same shape of input tensors.
 
     Args:
+        preds: estimated scores
+        target: ground truth scores
         mean_x: current mean estimate of x tensor
         mean_y: current mean estimate of y tensor
         var_x: current variance estimate of x tensor
         var_y: current variance estimate of y tensor
         corr_xy: current covariance estimate between x and y tensor
         n_prior: current number of observed observations
+        num_outputs: Number of outputs in multioutput setting
     """
     # Data checking
     _check_same_shape(preds, target)

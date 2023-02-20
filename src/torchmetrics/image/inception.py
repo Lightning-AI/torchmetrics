@@ -27,7 +27,7 @@ __doctest_requires__ = {("InceptionScore", "IS"): ["torch_fidelity"]}
 
 
 class InceptionScore(Metric):
-    r"""Calculate the Inception Score (IS) which is used to access how realistic generated images are. It is
+    r"""Calculate the Inception Score (IS) which is used to assess how realistic generated images are. It is
     defined as.
 
     .. math::
@@ -141,6 +141,7 @@ class InceptionScore(Metric):
         self.features.append(features)
 
     def compute(self) -> Tuple[Tensor, Tensor]:
+        """Compute metric."""
         features = dim_zero_cat(self.features)
         # random permute the features
         idx = torch.randperm(features.shape[0])
