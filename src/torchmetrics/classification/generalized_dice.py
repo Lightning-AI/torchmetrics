@@ -206,10 +206,10 @@ class GeneralizedDiceScore:
             If ``top_k`` is not an ``integer`` larger than ``0``.
 
     Example:
-        >>> import torch
+        >>> from torch import tensor
         >>> from torchmetrics import GeneralizedDiceScore
-        >>> preds = torch.tensor([2, 0, 2, 1])
-        >>> target = torch.tensor([1, 1, 2, 0])
+        >>> preds = tensor([2, 0, 2, 1])
+        >>> target = tensor([1, 1, 2, 0])
         >>> generalized_dice_score = GeneralizedDiceScore(num_classes=3)
         >>> generalized_dice_score(preds, target)
         tensor(0.3478)

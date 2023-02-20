@@ -26,8 +26,8 @@ from torchmetrics.utilities.prints import rank_zero_warn
 class Dice(Metric):
     r"""Compute `Dice`_.
 
-    .. deprecated:: v0.10
-        The `Dice` module was deprecated in v0.10 and will be removed in v0.11. Use `F1Score` module instead which
+    .. deprecated:: v0.12
+        The `Dice` module was deprecated in v0.12 and will be removed in v0.13. Use `F1Score` module instead which
         is equivalent.
 
     .. math:: \text{Dice} = \frac{\text{2 * TP}}{\text{2 * TP} + \text{FP} + \text{FN}}
@@ -150,7 +150,7 @@ class Dice(Metric):
         **kwargs: Any,
     ) -> None:
         rank_zero_warn(
-            "The `dice` function was deprecated in v0.10 and will be removed in v0.11. Use `f1score` function instead"
+            "The `dice` function was deprecated in v0.12 and will be removed in v0.13. Use `f1score` function instead"
             " which is equivalent.",
             DeprecationWarning,
         )

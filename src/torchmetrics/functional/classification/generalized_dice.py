@@ -207,15 +207,6 @@ def _generalized_dice_compute(
         ignore_index: Optional index of the class to ignore in the score computation
         zero_division: The value to use for the score if denominator equals zero. If set to 0, score will be 1
             if the numerator is also 0, and 0 otherwise
-
-    Example:
-        >>> from torchmetrics.functional.classification.stat_scores import _stat_scores_update
-        >>> from torchmetrics.functional.classification.generalized_dice import _generalized_dice_compute
-        >>> preds  = torch.tensor([2, 0, 2, 1])
-        >>> target = torch.tensor([1, 1, 2, 0])
-        >>> tp, fp, tn, fn = _stat_scores_update(preds, target, reduce='macro', mdmc_reduce='samplewise')
-        >>> _generalized_dice_compute(tp, fp, fn, average='samples')
-        tensor(0.3478)
     """
     # Compute ground-truth class volume and class weights
     target_volume = tp + fn
@@ -362,10 +353,10 @@ def generalized_dice_score(
             If ``top_k`` is not an integer larger than ``0``.
 
     Example:
-        >>> import torch
+        >>> from torch import tensor
         >>> from torchmetrics.functional import generalized_dice_score
-        >>> preds = torch.tensor([2, 0, 2, 1])
-        >>> target = torch.tensor([1, 1, 2, 0])
+        >>> preds = tensor([2, 0, 2, 1])
+        >>> target = tensor([1, 1, 2, 0])
         >>> generalized_dice_score(preds, target, average='samples')
         tensor(0.3478)
     """
