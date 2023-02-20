@@ -167,7 +167,7 @@ def plot_confusion_matrix(
         confmat: the confusion matrix. Either should be an [N,N] matrix in the binary and multiclass cases or an
             [N, 2, 2] matrix for multilabel classification
         add_text: if text should be added to each cell with the given value
-        labels: labels to add the the x and y axis
+        labels: labels to add the x- and y-axis
 
     Returns:
         A tuple consisting of the figure and respective ax objects (or array of ax objects) of the generated figure
@@ -191,7 +191,7 @@ def plot_confusion_matrix(
         )
     if confmat.ndim == 3:
         fig_label = labels if confmat.ndim == 3 and labels is not None else np.arange(nb)
-        labels = np.arange(n_classes).tolist()
+        labels = list(map(str, range(n_classes)))
     else:
         labels: Union[List[int], List[str]] = labels if labels is not None else np.arange(n_classes).tolist()
 
