@@ -61,7 +61,6 @@ class TestMinMaxWrapper(MetricTester):
             target=target,
             metric_class=TestingMinMaxMetric,
             reference_metric=partial(compare_fn, base_fn=deepcopy(base_metric)),
-            dist_sync_on_step=False,
             metric_args={"base_metric": base_metric},
             check_batch=False,
             check_scriptable=False,

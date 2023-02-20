@@ -77,15 +77,13 @@ def _baseline_ergas(
 )
 class TestErrorRelativeGlobalDimensionlessSynthesis(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_ergas(self, reduction, preds, target, ratio, ddp, dist_sync_on_step):
+    def test_ergas(self, reduction, preds, target, ratio, ddp):
         self.run_class_metric_test(
             ddp,
             preds,
             target,
             ErrorRelativeGlobalDimensionlessSynthesis,
             partial(_baseline_ergas, ratio=ratio, reduction=reduction),
-            dist_sync_on_step,
             metric_args={"ratio": ratio, "reduction": reduction},
         )
 

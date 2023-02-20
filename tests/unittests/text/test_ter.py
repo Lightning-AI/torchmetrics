@@ -49,10 +49,7 @@ def sacrebleu_ter_fn(
 @pytest.mark.skipif(not _SACREBLEU_AVAILABLE, reason="test requires sacrebleu")
 class TestTER(TextTester):
     @pytest.mark.parametrize("ddp", [False, True])
-    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_chrf_score_class(
-        self, ddp, dist_sync_on_step, preds, targets, normalize, no_punctuation, asian_support, lowercase
-    ):
+    def test_chrf_score_class(self, ddp, preds, targets, normalize, no_punctuation, asian_support, lowercase):
         metric_args = {
             "normalize": normalize,
             "no_punctuation": no_punctuation,
@@ -73,7 +70,6 @@ class TestTER(TextTester):
             targets=targets,
             metric_class=TranslationEditRate,
             reference_metric=nltk_metric,
-            dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
         )
 

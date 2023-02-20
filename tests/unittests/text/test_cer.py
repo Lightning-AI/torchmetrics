@@ -31,8 +31,7 @@ class TestCharErrorRate(TextTester):
     """test class for character error rate."""
 
     @pytest.mark.parametrize("ddp", [False, True])
-    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_cer_class(self, ddp, dist_sync_on_step, preds, targets):
+    def test_cer_class(self, ddp, preds, targets):
         """test modular version of cer."""
         self.run_class_metric_test(
             ddp=ddp,
@@ -40,7 +39,6 @@ class TestCharErrorRate(TextTester):
             targets=targets,
             metric_class=CharErrorRate,
             reference_metric=compare_fn,
-            dist_sync_on_step=dist_sync_on_step,
         )
 
     def test_cer_functional(self, preds, targets):

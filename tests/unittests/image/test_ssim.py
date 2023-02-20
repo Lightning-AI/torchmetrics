@@ -134,8 +134,7 @@ class TestSSIM(MetricTester):
     atol = 6e-3
 
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_ssim_sk(self, preds, target, sigma, ddp, dist_sync_on_step):
+    def test_ssim_sk(self, preds, target, sigma, ddp):
         self.run_class_metric_test(
             ddp,
             preds,
@@ -146,12 +145,10 @@ class TestSSIM(MetricTester):
                 "data_range": 1.0,
                 "sigma": sigma,
             },
-            dist_sync_on_step=dist_sync_on_step,
         )
 
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_ssim_pt(self, preds, target, sigma, ddp, dist_sync_on_step):
+    def test_ssim_pt(self, preds, target, sigma, ddp):
         self.run_class_metric_test(
             ddp,
             preds,
@@ -162,12 +159,10 @@ class TestSSIM(MetricTester):
                 "data_range": 1.0,
                 "sigma": sigma,
             },
-            dist_sync_on_step=dist_sync_on_step,
         )
 
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_ssim_without_gaussian_kernel(self, preds, target, sigma, ddp, dist_sync_on_step):
+    def test_ssim_without_gaussian_kernel(self, preds, target, sigma, ddp):
         self.run_class_metric_test(
             ddp,
             preds,
@@ -179,7 +174,6 @@ class TestSSIM(MetricTester):
                 "data_range": 1.0,
                 "sigma": sigma,
             },
-            dist_sync_on_step=dist_sync_on_step,
         )
 
     @pytest.mark.parametrize("reduction_arg", ["sum", "elementwise_mean", None])
