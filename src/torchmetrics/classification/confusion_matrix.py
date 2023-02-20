@@ -43,7 +43,7 @@ if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = [
         "BinaryConfusionMatrix.plot",
         "MulticlassConfusionMatrix.plot",
-        "MulticlassConfusionMatrix.plot",
+        "MultilabelConfusionMatrix.plot",
     ]
 
 

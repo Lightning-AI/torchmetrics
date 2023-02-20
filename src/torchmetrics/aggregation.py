@@ -23,7 +23,7 @@ from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
 
 if not _MATPLOTLIB_AVAILABLE:
-    __doctest_skip__ = ["SumMetric.plot", "MeanMetric.plot"]
+    __doctest_skip__ = ["SumMetric.plot", "MeanMetric.plot", "MaxMetric.plot", "MinMetric.plot"]
 
 
 class BaseAggregator(Metric):
