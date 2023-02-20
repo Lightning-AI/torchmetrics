@@ -14,7 +14,6 @@
 import logging
 import multiprocessing
 import os
-import sys
 from functools import partial
 from time import perf_counter
 from typing import Any, Callable, Dict, Mapping, Optional, Sequence, Tuple, no_type_check
@@ -27,6 +26,7 @@ from torchmetrics.utilities.data import select_topk, to_onehot
 from torchmetrics.utilities.enums import DataType
 
 _DOCTEST_DOWNLOAD_TIMEOUT = os.environ.get("DOCTEST_DOWNLOAD_TIMEOUT", 120)
+_SKIP_SLOW_DOCTEST = bool(os.environ.get("SKIP_SLOW_DOCTEST", 0))
 
 
 def _check_for_empty_tensors(preds: Tensor, target: Tensor) -> bool:

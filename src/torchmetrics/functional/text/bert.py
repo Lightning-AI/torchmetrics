@@ -31,7 +31,7 @@ from torchmetrics.functional.text.helper_embedding_metric import (
     _output_data_collator,
     _process_attention_mask_for_special_tokens,
 )
-from torchmetrics.utilities.checks import _try_proceed_with_timeout
+from torchmetrics.utilities.checks import _try_proceed_with_timeout, _SKIP_SLOW_DOCTEST
 from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_AVAILABLE
 
 # Default model recommended in the original implementation.
@@ -45,7 +45,7 @@ if _TRANSFORMERS_AVAILABLE:
         AutoTokenizer.from_pretrained(_DEFAULT_MODEL)
         AutoModel.from_pretrained(_DEFAULT_MODEL)
 
-    if bool(os.environ.get("SKIP_SLOW_DOCTEST", 0)) and not _try_proceed_with_timeout(_download_model):
+    if _SKIP_SLOW_DOCTEST and not _try_proceed_with_timeout(_download_model):
         __doctest_skip__ = ["bert_score"]
 else:
     __doctest_skip__ = ["bert_score"]
