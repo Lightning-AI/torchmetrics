@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import csv
+import os
 import urllib
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from warnings import warn
@@ -30,7 +31,7 @@ from torchmetrics.functional.text.helper_embedding_metric import (
     _output_data_collator,
     _process_attention_mask_for_special_tokens,
 )
-from torchmetrics.utilities.checks import _in_doctest, _try_proceed_with_timeout
+from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
 from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_AVAILABLE
 
 # Default model recommended in the original implementation.
@@ -44,7 +45,7 @@ if _TRANSFORMERS_AVAILABLE:
         AutoTokenizer.from_pretrained(_DEFAULT_MODEL)
         AutoModel.from_pretrained(_DEFAULT_MODEL)
 
-    if _in_doctest() and not _try_proceed_with_timeout(_download_model):
+    if _SKIP_SLOW_DOCTEST and not _try_proceed_with_timeout(_download_model):
         __doctest_skip__ = ["bert_score"]
 else:
     __doctest_skip__ = ["bert_score"]
