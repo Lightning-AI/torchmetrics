@@ -12,10 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import re
-import urllib.request
 from collections import Counter
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
-from urllib.request import HTTPError
 
 import torch
 from torch import Tensor, tensor

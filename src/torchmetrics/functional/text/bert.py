@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import csv
-import os
 import urllib
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from warnings import warn
