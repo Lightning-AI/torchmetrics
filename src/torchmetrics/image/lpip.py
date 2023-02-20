@@ -20,7 +20,7 @@ from torch.nn import Module
 from typing_extensions import Literal
 
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.checks import _try_proceed_with_timeout, _SKIP_SLOW_DOCTEST
+from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
 from torchmetrics.utilities.imports import _LPIPS_AVAILABLE
 
 if _LPIPS_AVAILABLE:
