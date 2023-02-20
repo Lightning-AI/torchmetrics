@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,10 +25,10 @@ from torchmetrics.utilities import rank_zero_info
 from torchmetrics.utilities.imports import _SCIPY_AVAILABLE, _TORCH_FIDELITY_AVAILABLE
 
 if _TORCH_FIDELITY_AVAILABLE:
-    from torch_fidelity.feature_extractor_inceptionv3 import FeatureExtractorInceptionV3
+    from torch_fidelity.feature_extractor_inceptionv3 import FeatureExtractorInceptionV3 as _FeatureExtractorInceptionV3
 else:
 
-    class FeatureExtractorInceptionV3(Module):  # type: ignore
+    class _FeatureExtractorInceptionV3(Module):  # type: ignore
         pass
 
     __doctest_skip__ = ["FrechetInceptionDistance", "FID"]
@@ -38,7 +38,9 @@ if _SCIPY_AVAILABLE:
     import scipy
 
 
-class NoTrainInceptionV3(FeatureExtractorInceptionV3):
+class NoTrainInceptionV3(_FeatureExtractorInceptionV3):
+    """Define module that nevers leaves evaluation mode."""
+
     def __init__(
         self,
         name: str,
@@ -54,6 +56,7 @@ class NoTrainInceptionV3(FeatureExtractorInceptionV3):
         return super().train(False)
 
     def forward(self, x: Tensor) -> Tensor:
+        """Forward pass of neural network with reshaping of output."""
         out = super().forward(x)
         return out[0].reshape(x.shape[0], -1)
 
@@ -66,6 +69,7 @@ class MatrixSquareRoot(Function):
 
     @staticmethod
     def forward(ctx: Any, input_data: Tensor) -> Tensor:
+        """Implements the forward pass for the matrix square root."""
         # TODO: update whenever pytorch gets an matrix square root function
         # Issue: https://github.com/pytorch/pytorch/issues/9983
         m = input_data.detach().cpu().numpy().astype(np.float_)
@@ -76,6 +80,7 @@ class MatrixSquareRoot(Function):
 
     @staticmethod
     def backward(ctx: Any, grad_output: Tensor) -> Tensor:
+        """Implements the backward pass for matrix square root."""
         grad_input = None
         if ctx.needs_input_grad[0]:
             (sqrtm,) = ctx.saved_tensors
@@ -96,7 +101,7 @@ sqrtm = MatrixSquareRoot.apply
 
 
 def _compute_fid(mu1: Tensor, sigma1: Tensor, mu2: Tensor, sigma2: Tensor, eps: float = 1e-6) -> Tensor:
-    r"""Adjusted version of `Fid Score`_
+    r"""Adjusted version of `Fid Score`_.
 
     The Frechet Inception Distance between two multivariate Gaussians X_x ~ N(mu_1, sigm_1)
     and X_y ~ N(mu_2, sigm_2) is d^2 = ||mu_1 - mu_2||^2 + Tr(sigm_1 + sigm_2 - 2*sqrt(sigm_1*sigm_2)).
@@ -125,7 +130,7 @@ def _compute_fid(mu1: Tensor, sigma1: Tensor, mu2: Tensor, sigma2: Tensor, eps: 
 
 
 class FrechetInceptionDistance(Metric):
-    r"""Calculates Fréchet inception distance (FID_) which is used to access the quality of generated images. Given
+    r"""Calculate Fréchet inception distance (FID_) which is used to access the quality of generated images. Given
     by.
 
     .. math::
@@ -288,6 +293,7 @@ class FrechetInceptionDistance(Metric):
         return _compute_fid(mean_real.squeeze(0), cov_real, mean_fake.squeeze(0), cov_fake).to(self.orig_dtype)
 
     def reset(self) -> None:
+        """Reset metric states."""
         if not self.reset_real_features:
             real_features_sum = deepcopy(self.real_features_sum)
             real_features_cov_sum = deepcopy(self.real_features_cov_sum)

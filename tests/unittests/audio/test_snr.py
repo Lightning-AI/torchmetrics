@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -80,16 +80,14 @@ class TestSNR(MetricTester):
     atol = 1e-2
 
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_snr(self, preds, target, ref_metric, zero_mean, ddp, dist_sync_on_step):
+    def test_snr(self, preds, target, ref_metric, zero_mean, ddp):
         self.run_class_metric_test(
             ddp,
             preds,
             target,
             SignalNoiseRatio,
             reference_metric=partial(average_metric, metric_func=ref_metric),
-            dist_sync_on_step=dist_sync_on_step,
-            metric_args=dict(zero_mean=zero_mean),
+            metric_args={"zero_mean": zero_mean},
         )
 
     def test_snr_functional(self, preds, target, ref_metric, zero_mean):
@@ -98,7 +96,7 @@ class TestSNR(MetricTester):
             target,
             signal_noise_ratio,
             ref_metric,
-            metric_args=dict(zero_mean=zero_mean),
+            metric_args={"zero_mean": zero_mean},
         )
 
     def test_snr_differentiability(self, preds, target, ref_metric, zero_mean):

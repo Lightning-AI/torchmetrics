@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,14 +20,13 @@ from torchmetrics.utilities.checks import _check_same_shape
 
 
 def _explained_variance_update(preds: Tensor, target: Tensor) -> Tuple[int, Tensor, Tensor, Tensor, Tensor]:
-    """Updates and returns variables required to compute Explained Variance. Checks for same shape of input
+    """Update and returns variables required to compute Explained Variance. Checks for same shape of input
     tensors.
 
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
     """
-
     _check_same_shape(preds, target)
 
     n_obs = preds.size(0)
@@ -49,7 +48,7 @@ def _explained_variance_compute(
     sum_squared_target: Tensor,
     multioutput: str = "uniform_average",
 ) -> Tensor:
-    """Computes Explained Variance.
+    """Compute Explained Variance.
 
     Args:
         n_obs: Number of predictions or observations
@@ -71,7 +70,6 @@ def _explained_variance_compute(
         >>> _explained_variance_compute(n_obs, sum_error, ss_error, sum_target, ss_target, multioutput='raw_values')
         tensor([0.9677, 1.0000])
     """
-
     diff_avg = sum_error / n_obs
     numerator = sum_squared_error / n_obs - (diff_avg * diff_avg)
 
@@ -102,7 +100,7 @@ def explained_variance(
     target: Tensor,
     multioutput: str = "uniform_average",
 ) -> Union[Tensor, Sequence[Tensor]]:
-    """Computes explained variance.
+    """Compute explained variance.
 
     Args:
         preds: estimated labels

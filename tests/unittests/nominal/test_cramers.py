@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -47,8 +47,8 @@ _input_logits = Input(
 )
 
 
-@pytest.fixture
-def _matrix_input():
+@pytest.fixture()
+def cramers_matrix_input():
     matrix = torch.cat(
         [
             torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES * BATCH_SIZE, 1), dtype=torch.float),
@@ -105,8 +105,7 @@ class TestCramersV(MetricTester):
     atol = 1e-5
 
     @pytest.mark.parametrize("ddp", [False, True])
-    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_cramers_v(self, ddp, dist_sync_on_step, preds, target, bias_correction, nan_strategy, nan_replace_value):
+    def test_cramers_v(self, ddp, preds, target, bias_correction, nan_strategy, nan_replace_value):
         metric_args = {
             "bias_correction": bias_correction,
             "nan_strategy": nan_strategy,
@@ -121,7 +120,6 @@ class TestCramersV(MetricTester):
         )
         self.run_class_metric_test(
             ddp=ddp,
-            dist_sync_on_step=dist_sync_on_step,
             preds=preds,
             target=target,
             metric_class=CramersV,
@@ -167,7 +165,7 @@ class TestCramersV(MetricTester):
 )
 @pytest.mark.parametrize("bias_correction", [False, True])
 @pytest.mark.parametrize("nan_strategy, nan_replace_value", [("replace", 1.0), ("drop", None)])
-def test_cramers_v_matrix(_matrix_input, bias_correction, nan_strategy, nan_replace_value):
-    tm_score = cramers_v_matrix(_matrix_input, bias_correction, nan_strategy, nan_replace_value)
-    reference_score = _dython_cramers_v_matrix(_matrix_input, bias_correction, nan_strategy, nan_replace_value)
+def test_cramers_v_matrix(cramers_matrix_input, bias_correction, nan_strategy, nan_replace_value):
+    tm_score = cramers_v_matrix(cramers_matrix_input, bias_correction, nan_strategy, nan_replace_value)
+    reference_score = _dython_cramers_v_matrix(cramers_matrix_input, bias_correction, nan_strategy, nan_replace_value)
     assert torch.allclose(tm_score, reference_score)

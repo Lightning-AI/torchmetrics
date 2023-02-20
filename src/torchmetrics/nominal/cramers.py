@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -94,11 +94,14 @@ class CramersV(Metric):
 
         Args:
             preds: 1D or 2D tensor of categorical (nominal) data
-            - 1D shape: (batch_size,)
-            - 2D shape: (batch_size, num_classes)
-        target: 1D or 2D tensor of categorical (nominal) data
-            - 1D shape: (batch_size,)
-            - 2D shape: (batch_size, num_classes)
+
+                - 1D shape: (batch_size,)
+                - 2D shape: (batch_size, num_classes)
+
+            target: 1D or 2D tensor of categorical (nominal) data
+
+                - 1D shape: (batch_size,)
+                - 2D shape: (batch_size, num_classes)
         """
         confmat = _cramers_v_update(preds, target, self.num_classes, self.nan_strategy, self.nan_replace_value)
         self.confmat += confmat

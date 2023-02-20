@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,9 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import logging
+import multiprocessing
+import os
 from functools import partial
 from time import perf_counter
-from typing import Any, Dict, Mapping, Optional, Sequence, Tuple, no_type_check
+from typing import Any, Callable, Dict, Mapping, Optional, Sequence, Tuple, no_type_check
 from unittest.mock import Mock
 
 import torch
@@ -21,6 +24,9 @@ from torch import Tensor
 
 from torchmetrics.utilities.data import select_topk, to_onehot
 from torchmetrics.utilities.enums import DataType
+
+_DOCTEST_DOWNLOAD_TIMEOUT = os.environ.get("DOCTEST_DOWNLOAD_TIMEOUT", 120)
+_SKIP_SLOW_DOCTEST = bool(os.environ.get("SKIP_SLOW_DOCTEST", 0))
 
 
 def _check_for_empty_tensors(preds: Tensor, target: Tensor) -> bool:
@@ -68,14 +74,13 @@ def _basic_input_validation(
 
 
 def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> Tuple[DataType, int]:
-    """This checks that the shape and type of inputs are consistent with each other and fall into one of the
+    """Check that the shape and type of inputs are consistent with each other and fall into one of the
     allowed input types (see the documentation of docstring of ``_input_format_classification``). It does not check
     for consistency of number of classes, other functions take care of that.
 
     It returns the name of the case in which the inputs fall, and the implied number of classes (from the ``C`` dim for
     multi-class data, or extra dim(s) for multi-label data).
     """
-
     preds_float = preds.is_floating_point()
 
     if preds.ndim == target.ndim:
@@ -111,10 +116,7 @@ def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> Tuple[Da
 
         implied_classes = preds.shape[1] if preds.numel() > 0 else 0
 
-        if preds.ndim == 2:
-            case = DataType.MULTICLASS
-        else:
-            case = DataType.MULTIDIM_MULTICLASS
+        case = DataType.MULTICLASS if preds.ndim == 2 else DataType.MULTIDIM_MULTICLASS
     else:
         raise ValueError(
             "Either `preds` and `target` both should have the (same) shape (N, ...), or `target` should be (N, ...)"
@@ -125,8 +127,7 @@ def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> Tuple[Da
 
 
 def _check_num_classes_binary(num_classes: int, multiclass: Optional[bool]) -> None:
-    """This checks that the consistency of `num_classes` with the data and `multiclass` param for binary data."""
-
+    """Check that the consistency of `num_classes` with the data and `multiclass` param for binary data."""
     if num_classes > 2:
         raise ValueError("Your data is binary, but `num_classes` is larger than 2.")
     if num_classes == 2 and not multiclass:
@@ -149,9 +150,9 @@ def _check_num_classes_mc(
     multiclass: Optional[bool],
     implied_classes: int,
 ) -> None:
-    """This checks that the consistency of `num_classes` with the data and `multiclass` param for (multi-
-    dimensional) multi-class data."""
-
+    """Check that the consistency of `num_classes` with the data and `multiclass` param for (multi-
+    dimensional) multi-class data.
+    """
     if num_classes == 1 and multiclass is not False:
         raise ValueError(
             "You have set `num_classes=1`, but predictions are integers."
@@ -174,9 +175,9 @@ def _check_num_classes_mc(
 
 
 def _check_num_classes_ml(num_classes: int, multiclass: Optional[bool], implied_classes: int) -> None:
-    """This checks that the consistency of ``num_classes`` with the data and ``multiclass`` param for multi-label
-    data."""
-
+    """Check that the consistency of ``num_classes`` with the data and ``multiclass`` param for multi-label
+    data.
+    """
     if multiclass and num_classes != 2:
         raise ValueError(
             "Your have set `multiclass=True`, but `num_classes` is not equal to 2."
@@ -259,13 +260,13 @@ def _check_classification_inputs(
             than what they appear to be. See the parameter's
             :ref:`documentation section <pages/overview:using the multiclass parameter>`
             for a more detailed explanation and examples.
+        ignore_index: ignore predictions where targets are equal to this number
 
 
     Return:
         case: The case the inputs fall in, one of 'binary', 'multi-class', 'multi-label' or
             'multi-dim multi-class'
     """
-
     # Basic validation (that does not need case/type information)
     _basic_input_validation(preds, target, threshold, multiclass, ignore_index)
 
@@ -326,17 +327,17 @@ def _input_format_classification(
     Preds and targets are supposed to fall into one of these categories (and are
     validated to make sure this is the case):
 
-    * Both preds and target are of shape ``(N,)``, and both are integers (multi-class)
-    * Both preds and target are of shape ``(N,)``, and target is binary, while preds
-      are a float (binary)
-    * preds are of shape ``(N, C)`` and are floats, and target is of shape ``(N,)`` and
-      is integer (multi-class)
-    * preds and target are of shape ``(N, ...)``, target is binary and preds is a float
-      (multi-label)
-    * preds are of shape ``(N, C, ...)`` and are floats, target is of shape ``(N, ...)``
-      and is integer (multi-dimensional multi-class)
-    * preds and target are of shape ``(N, ...)`` both are integers (multi-dimensional
-      multi-class)
+        * Both preds and target are of shape ``(N,)``, and both are integers (multi-class)
+        * Both preds and target are of shape ``(N,)``, and target is binary, while preds
+          are a float (binary)
+        * preds are of shape ``(N, C)`` and are floats, and target is of shape ``(N,)`` and
+          is integer (multi-class)
+        * preds and target are of shape ``(N, ...)``, target is binary and preds is a float
+          (multi-label)
+        * preds are of shape ``(N, C, ...)`` and are floats, target is of shape ``(N, ...)``
+          and is integer (multi-dimensional multi-class)
+        * preds and target are of shape ``(N, ...)`` both are integers (multi-dimensional
+          multi-class)
 
     To avoid ambiguities, all dimensions of size 1, except the first one, are squeezed out.
 
@@ -394,6 +395,7 @@ def _input_format_classification(
             than what they appear to be. See the parameter's
             :ref:`documentation section <pages/overview:using the multiclass parameter>`
             for a more detailed explanation and examples.
+        ignore_index: ignore predictions where targets are equal to this number
 
     Returns:
         preds: binary tensor of shape ``(N, C)`` or ``(N, C, X)``
@@ -546,6 +548,7 @@ def _check_retrieval_inputs(
         indexes: tensor with queries indexes
         preds: tensor with scores/logits
         target: tensor with ground true labels
+        allow_non_binary_target: whether to allow target to contain non-binary values
         ignore_index: ignore predictions where targets are equal to this number
 
     Raises:
@@ -621,7 +624,7 @@ def _allclose_recursive(res1: Any, res2: Any, atol: float = 1e-6) -> bool:
     elif isinstance(res1, Sequence):
         return all(_allclose_recursive(r1, r2) for r1, r2 in zip(res1, res2))
     elif isinstance(res1, Mapping):
-        return all(_allclose_recursive(res1[k], res2[k]) for k in res1.keys())
+        return all(_allclose_recursive(res1[k], res2[k]) for k in res1)
     return res1 == res2
 
 
@@ -752,3 +755,33 @@ def is_overridden(method_name: str, instance: object, parent: object) -> bool:
         raise ValueError("The parent should define the method")
 
     return instance_attr.__code__ != parent_attr.__code__
+
+
+def _try_proceed_with_timeout(fn: Callable, timeout: int = _DOCTEST_DOWNLOAD_TIMEOUT) -> bool:
+    """Function for checking if a certain function is taking too long to execute.
+
+    Function will only be executed if running inside a doctest context. Currently does not support Windows.
+
+    Args:
+        fn: function to check
+        timeout: timeout for function
+
+    Returns:
+        Bool indicating if the function finished within the specified timeout
+    """
+    # source: https://stackoverflow.com/a/14924210/4521646
+    proc = multiprocessing.Process(target=fn)
+    proc.start()
+    # Wait for 10 seconds or until process finishes
+    proc.join(timeout)
+    # If thread is still active
+    if not proc.is_alive():
+        return True
+
+    logging.warning(f"running `{fn.__name__}`... let's kill it...")
+    # Terminate - may not work if process is stuck for good
+    proc.terminate()
+    # OR Kill - will work for sure, no chance for process to finish nicely however
+    # p.kill()
+    proc.join()
+    return False

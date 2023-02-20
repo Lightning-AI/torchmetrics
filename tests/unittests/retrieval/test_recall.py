@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -54,7 +54,6 @@ def _recall_at_k(target: np.ndarray, preds: np.ndarray, k: int = None):
 
 class TestRecall(RetrievalMetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize("ignore_index", [None, 1])  # avoid setting 0, otherwise test with all 0 targets will fail
     @pytest.mark.parametrize("k", [None, 1, 4, 10])
@@ -65,12 +64,11 @@ class TestRecall(RetrievalMetricTester):
         indexes: Tensor,
         preds: Tensor,
         target: Tensor,
-        dist_sync_on_step: bool,
         empty_target_action: str,
         ignore_index: int,
         k: int,
     ):
-        metric_args = dict(empty_target_action=empty_target_action, k=k, ignore_index=ignore_index)
+        metric_args = {"empty_target_action": empty_target_action, "k": k, "ignore_index": ignore_index}
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -79,12 +77,10 @@ class TestRecall(RetrievalMetricTester):
             target=target,
             metric_class=RetrievalRecall,
             reference_metric=_recall_at_k,
-            dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
         )
 
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize("k", [None, 1, 4, 10])
     @pytest.mark.parametrize(**_default_metric_class_input_arguments_ignore_index)
@@ -94,11 +90,10 @@ class TestRecall(RetrievalMetricTester):
         indexes: Tensor,
         preds: Tensor,
         target: Tensor,
-        dist_sync_on_step: bool,
         empty_target_action: str,
         k: int,
     ):
-        metric_args = dict(empty_target_action=empty_target_action, k=k, ignore_index=-100)
+        metric_args = {"empty_target_action": empty_target_action, "k": k, "ignore_index": -100}
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -107,7 +102,6 @@ class TestRecall(RetrievalMetricTester):
             target=target,
             metric_class=RetrievalRecall,
             reference_metric=_recall_at_k,
-            dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
         )
 

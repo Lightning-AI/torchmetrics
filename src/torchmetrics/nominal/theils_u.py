@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -83,7 +83,7 @@ class TheilsU(Metric):
             preds: 1D or 2D tensor of categorical (nominal) data
             - 1D shape: (batch_size,)
             - 2D shape: (batch_size, num_classes)
-        target: 1D or 2D tensor of categorical (nominal) data
+            target: 1D or 2D tensor of categorical (nominal) data
             - 1D shape: (batch_size,)
             - 2D shape: (batch_size, num_classes)
         """

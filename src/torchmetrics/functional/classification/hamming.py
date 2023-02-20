@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ from torchmetrics.functional.classification.stat_scores import (
     _multilabel_stat_scores_update,
 )
 from torchmetrics.utilities.compute import _safe_divide
+from torchmetrics.utilities.enums import ClassificationTask
 
 
 def _hamming_distance_reduce(
@@ -72,16 +73,10 @@ def _hamming_distance_reduce(
             return 1 - _safe_divide(tp + tn, tp + tn + fp + fn)
         return 1 - _safe_divide(tp, tp + fn)
     else:
-        if multilabel:
-            score = 1 - _safe_divide(tp + tn, tp + tn + fp + fn)
-        else:
-            score = 1 - _safe_divide(tp, tp + fn)
+        score = 1 - _safe_divide(tp + tn, tp + tn + fp + fn) if multilabel else 1 - _safe_divide(tp, tp + fn)
         if average is None or average == "none":
             return score
-        if average == "weighted":
-            weights = tp + fn
-        else:
-            weights = torch.ones_like(score)
+        weights = tp + fn if average == "weighted" else torch.ones_like(score)
         return _safe_divide(weights * score, weights.sum(-1, keepdim=True)).sum(-1)
 
 
@@ -93,7 +88,7 @@ def binary_hamming_distance(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes the average `Hamming distance`_ (also known as Hamming loss) for binary tasks:
+    r"""Compute the average `Hamming distance`_ (also known as Hamming loss) for binary tasks.
 
     .. math::
         \text{Hamming distance} = \frac{1}{N \cdot L} \sum_i^N \sum_l^L 1(y_{il} \neq \hat{y}_{il})
@@ -108,9 +103,6 @@ def binary_hamming_distance(
       [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, ...)``
-
-    The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
 
     Args:
         preds: Tensor with predictions
@@ -133,28 +125,25 @@ def binary_hamming_distance(
         is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of a scalar value per sample.
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.functional.classification import binary_hamming_distance
-        >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
-        >>> preds = torch.tensor([0, 0, 1, 1, 0, 1])
+        >>> target = tensor([0, 1, 0, 1, 0, 1])
+        >>> preds = tensor([0, 0, 1, 1, 0, 1])
         >>> binary_hamming_distance(preds, target)
         tensor(0.3333)
 
     Example (preds is float tensor):
         >>> from torchmetrics.functional.classification import binary_hamming_distance
-        >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
-        >>> preds = torch.tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
+        >>> target = tensor([0, 1, 0, 1, 0, 1])
+        >>> preds = tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
         >>> binary_hamming_distance(preds, target)
         tensor(0.3333)
 
     Example (multidim tensors):
         >>> from torchmetrics.functional.classification import binary_hamming_distance
-        >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
-        >>> preds = torch.tensor(
-        ...     [
-        ...         [[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
-        ...         [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]],
-        ...     ]
-        ... )
+        >>> target = tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
+        >>> preds = tensor([[[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
+        ...                 [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]]])
         >>> binary_hamming_distance(preds, target, multidim_average='samplewise')
         tensor([0.6667, 0.8333])
     """
@@ -176,7 +165,7 @@ def multiclass_hamming_distance(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes the average `Hamming distance`_ (also known as Hamming loss) for multiclass tasks:
+    r"""Compute the average `Hamming distance`_ (also known as Hamming loss) for multiclass tasks.
 
     .. math::
         \text{Hamming distance} = \frac{1}{N \cdot L} \sum_i^N \sum_l^L 1(y_{il} \neq \hat{y}_{il})
@@ -192,9 +181,6 @@ def multiclass_hamming_distance(
       an int tensor.
     - ``target`` (int tensor): ``(N, ...)``
 
-    The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
-
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
@@ -204,8 +190,8 @@ def multiclass_hamming_distance(
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
 
         top_k:
             Number of highest probability or logit score predictions considered to find the correct label.
@@ -236,9 +222,10 @@ def multiclass_hamming_distance(
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.functional.classification import multiclass_hamming_distance
-        >>> target = torch.tensor([2, 1, 0, 0])
-        >>> preds = torch.tensor([2, 1, 0, 1])
+        >>> target = tensor([2, 1, 0, 0])
+        >>> preds = tensor([2, 1, 0, 1])
         >>> multiclass_hamming_distance(preds, target, num_classes=3)
         tensor(0.1667)
         >>> multiclass_hamming_distance(preds, target, num_classes=3, average=None)
@@ -246,13 +233,11 @@ def multiclass_hamming_distance(
 
     Example (preds is float tensor):
         >>> from torchmetrics.functional.classification import multiclass_hamming_distance
-        >>> target = torch.tensor([2, 1, 0, 0])
-        >>> preds = torch.tensor([
-        ...   [0.16, 0.26, 0.58],
-        ...   [0.22, 0.61, 0.17],
-        ...   [0.71, 0.09, 0.20],
-        ...   [0.05, 0.82, 0.13],
-        ... ])
+        >>> target = tensor([2, 1, 0, 0])
+        >>> preds = tensor([[0.16, 0.26, 0.58],
+        ...                 [0.22, 0.61, 0.17],
+        ...                 [0.71, 0.09, 0.20],
+        ...                 [0.05, 0.82, 0.13]])
         >>> multiclass_hamming_distance(preds, target, num_classes=3)
         tensor(0.1667)
         >>> multiclass_hamming_distance(preds, target, num_classes=3, average=None)
@@ -260,8 +245,8 @@ def multiclass_hamming_distance(
 
     Example (multidim tensors):
         >>> from torchmetrics.functional.classification import multiclass_hamming_distance
-        >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
-        >>> preds = torch.tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
+        >>> target = tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
+        >>> preds = tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
         >>> multiclass_hamming_distance(preds, target, num_classes=3, multidim_average='samplewise')
         tensor([0.5000, 0.7222])
         >>> multiclass_hamming_distance(preds, target, num_classes=3, multidim_average='samplewise', average=None)
@@ -288,7 +273,7 @@ def multilabel_hamming_distance(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes the average `Hamming distance`_ (also known as Hamming loss) for multilabel tasks:
+    r"""Compute the average `Hamming distance`_ (also known as Hamming loss) for multilabel tasks.
 
     .. math::
         \text{Hamming distance} = \frac{1}{N \cdot L} \sum_i^N \sum_l^L 1(y_{il} \neq \hat{y}_{il})
@@ -304,9 +289,6 @@ def multilabel_hamming_distance(
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, C, ...)``
 
-    The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
-
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
@@ -317,8 +299,8 @@ def multilabel_hamming_distance(
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
 
         multidim_average:
             Defines how additionally dimensions ``...`` should be handled. Should be one of the following:
@@ -346,9 +328,10 @@ def multilabel_hamming_distance(
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.functional.classification import multilabel_hamming_distance
-        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
-        >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
+        >>> target = tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = tensor([[0, 0, 1], [1, 0, 1]])
         >>> multilabel_hamming_distance(preds, target, num_labels=3)
         tensor(0.3333)
         >>> multilabel_hamming_distance(preds, target, num_labels=3, average=None)
@@ -356,8 +339,8 @@ def multilabel_hamming_distance(
 
     Example (preds is float tensor):
         >>> from torchmetrics.functional.classification import multilabel_hamming_distance
-        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
-        >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
+        >>> target = tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> multilabel_hamming_distance(preds, target, num_labels=3)
         tensor(0.3333)
         >>> multilabel_hamming_distance(preds, target, num_labels=3, average=None)
@@ -365,13 +348,9 @@ def multilabel_hamming_distance(
 
     Example (multidim tensors):
         >>> from torchmetrics.functional.classification import multilabel_hamming_distance
-        >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
-        >>> preds = torch.tensor(
-        ...     [
-        ...         [[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
-        ...         [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]],
-        ...     ]
-        ... )
+        >>> target = tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
+        >>> preds = tensor([[[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
+        ...                 [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]]])
         >>> multilabel_hamming_distance(preds, target, num_labels=3, multidim_average='samplewise')
         tensor([0.6667, 0.8333])
         >>> multilabel_hamming_distance(preds, target, num_labels=3, multidim_average='samplewise', average=None)
@@ -399,7 +378,7 @@ def hamming_distance(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes the average `Hamming distance`_ (also known as Hamming loss):
+    r"""Compute the average `Hamming distance`_ (also known as Hamming loss).
 
     .. math::
         \text{Hamming distance} = \frac{1}{N \cdot L} \sum_i^N \sum_l^L 1(y_{il} \neq \hat{y}_{il})
@@ -414,25 +393,25 @@ def hamming_distance(
     the specific details of each argument influence and examples.
 
     Legacy Example:
-        >>> target = torch.tensor([[0, 1], [1, 1]])
-        >>> preds = torch.tensor([[0, 1], [0, 1]])
+        >>> from torch import tensor
+        >>> target = tensor([[0, 1], [1, 1]])
+        >>> preds = tensor([[0, 1], [0, 1]])
         >>> hamming_distance(preds, target, task="binary")
         tensor(0.2500)
     """
+    task = ClassificationTask.from_str(task)
     assert multidim_average is not None
-    if task == "binary":
+    if task == ClassificationTask.BINARY:
         return binary_hamming_distance(preds, target, threshold, multidim_average, ignore_index, validate_args)
-    if task == "multiclass":
+    if task == ClassificationTask.MULTICLASS:
         assert isinstance(num_classes, int)
         assert isinstance(top_k, int)
         return multiclass_hamming_distance(
             preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args
         )
-    if task == "multilabel":
+    if task == ClassificationTask.MULTILABEL:
         assert isinstance(num_labels, int)
         return multilabel_hamming_distance(
             preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
         )
-    raise ValueError(
-        f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-    )
+    raise ValueError(f"Not handled value: {task}")  # this is for compliant of mypy

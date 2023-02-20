@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -64,17 +64,23 @@ def _final_aggregation(
 
 
 class PearsonCorrCoef(Metric):
-    r"""Computes `Pearson Correlation Coefficient`_:
+    r"""Compute `Pearson Correlation Coefficient`_.
 
     .. math::
         P_{corr}(x,y) = \frac{cov(x,y)}{\sigma_x \sigma_y}
 
     Where :math:`y` is a tensor of target values, and :math:`x` is a tensor of predictions.
 
-    Forward accepts
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (float tensor): either single output tensor with shape ``(N,)`` or multioutput tensor of shape ``(N,d)``
-    - ``target``(float tensor): either single output tensor with shape ``(N,)`` or multioutput tensor of shape ``(N,d)``
+    - ``preds`` (:class:`~torch.Tensor`): either single output float tensor with shape ``(N,)``
+      or multioutput float tensor of shape ``(N,d)``
+    - ``target`` (:class:`~torch.Tensor`): either single output tensor with shape ``(N,)``
+      or multioutput tensor of shape ``(N,d)``
+
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``pearson`` (:class:`~torch.Tensor`): A tensor with the Pearson Correlation Coefficient
 
     Args:
         num_outputs: Number of outputs in multioutput setting
@@ -126,12 +132,7 @@ class PearsonCorrCoef(Metric):
         self.add_state("n_total", default=torch.zeros(self.num_outputs), dist_reduce_fx=None)
 
     def update(self, preds: Tensor, target: Tensor) -> None:
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
+        """Update state with predictions and targets."""
         self.mean_x, self.mean_y, self.var_x, self.var_y, self.corr_xy, self.n_total = _pearson_corrcoef_update(
             preds,
             target,
@@ -145,7 +146,7 @@ class PearsonCorrCoef(Metric):
         )
 
     def compute(self) -> Tensor:
-        """Computes pearson correlation coefficient over state."""
+        """Compute pearson correlation coefficient over state."""
         if (self.num_outputs == 1 and self.mean_x.numel() > 1) or (self.num_outputs > 1 and self.mean_x.ndim > 1):
             # multiple devices, need further reduction
             _, _, var_x, var_y, corr_xy, n_total = _final_aggregation(

@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class StructuralSimilarityIndexMeasure(Metric):
-    """Computes Structual Similarity Index Measure (SSIM_).
+    """Compute Structual Similarity Index Measure (SSIM_).
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 
@@ -60,8 +60,8 @@ class StructuralSimilarityIndexMeasure(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
-        >>> from torchmetrics import StructuralSimilarityIndexMeasure
         >>> import torch
+        >>> from torchmetrics import StructuralSimilarityIndexMeasure
         >>> preds = torch.rand([3, 3, 256, 256])
         >>> target = preds * 0.75
         >>> ssim = StructuralSimilarityIndexMeasure(data_range=1.0)
@@ -146,7 +146,7 @@ class StructuralSimilarityIndexMeasure(Metric):
             self.similarity.append(similarity)
 
     def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-        """Computes SSIM over state."""
+        """Compute SSIM over state."""
         if self.reduction == "elementwise_mean":
             similarity = self.similarity / self.total
         elif self.reduction == "sum":
@@ -162,7 +162,7 @@ class StructuralSimilarityIndexMeasure(Metric):
 
 
 class MultiScaleStructuralSimilarityIndexMeasure(Metric):
-    """Computes `MultiScaleSSIM`_, Multi-scale Structural Similarity Index Measure, which is a generalization of
+    """Compute `MultiScaleSSIM`_, Multi-scale Structural Similarity Index Measure, which is a generalization of
     Structural Similarity Index Measure by incorporating image details at different resolution scores.
 
     As input to ``forward`` and ``update`` the metric accepts the following input
@@ -301,8 +301,7 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         self.total += preds.shape[0]
 
     def compute(self) -> Tensor:
-        """Computes MS-SSIM over state."""
-
+        """Compute MS-SSIM over state."""
         if self.reduction in ("none", None):
             return dim_zero_cat(self.similarity)
         elif self.reduction == "sum":

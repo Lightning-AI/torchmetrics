@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -53,7 +53,8 @@ def _input_data_collator(
     batch: Dict[str, Tensor], device: Optional[Union[str, torch.device]] = None
 ) -> Dict[str, Tensor]:
     """Helper function that trims model inputs to the longest sequence within the batch and put the input on the
-    proper device."""
+    proper device.
+    """
     max_len = int(batch["attention_mask"].sum(1).max().item())
     input_ids = batch["input_ids"][:, :max_len].to(device)
     attention_mask = batch["attention_mask"][:, :max_len].to(device)
@@ -137,7 +138,8 @@ def _preprocess_text(
 
 def _get_progress_bar(dataloader: DataLoader, verbose: bool = False) -> Union[DataLoader, "tqdm.auto.tqdm"]:
     """Helper function returning either the dataloader itself when `verbose = False`, or it wraps the dataloader with
-    `tqdm.auto.tqdm`, when `verbose = True` to display a progress bar during the embbeddings calculation."""
+    `tqdm.auto.tqdm`, when `verbose = True` to display a progress bar during the embbeddings calculation.
+    """
     return tqdm.auto.tqdm(dataloader) if verbose else dataloader
 
 
@@ -175,7 +177,8 @@ def _load_tokenizer_and_model(
 
 class TextDataset(Dataset):
     """PyTorch dataset class for storing tokenized sentences and other properties used for BERT score
-    calculation."""
+    calculation.
+    """
 
     def __init__(
         self,
@@ -188,20 +191,19 @@ class TextDataset(Dataset):
         idf: bool = False,
         tokens_idf: Optional[Dict[int, float]] = None,
     ) -> None:
-        """
-        Args:
-            text:
-                An iterable of sentences.
-            tokenizer:
-                `AutoTokenizer` instance from `transformers` package.
-            max_length:
-                A maximum sequence length.
-            preprocess_text_fn:
-                A function used for processing the input sentences.
-            idf:
-                An indication of whether calculate token inverse document frequencies to weight the model embeddings.
-            tokens_idf:
-                Inverse document frequencies (these should be calculated on reference sentences).
+        """Args:
+        text:
+        An iterable of sentences.
+        tokenizer:
+        `AutoTokenizer` instance from `transformers` package.
+        max_length:
+        A maximum sequence length.
+        preprocess_text_fn:
+        A function used for processing the input sentences.
+        idf:
+        An indication of whether calculate token inverse document frequencies to weight the model embeddings.
+        tokens_idf:
+        Inverse document frequencies (these should be calculated on reference sentences).
         """
         _text = preprocess_text_fn(text, tokenizer, max_length)
         if isinstance(_text, tuple):
@@ -216,6 +218,7 @@ class TextDataset(Dataset):
             self.tokens_idf = tokens_idf if tokens_idf is not None else self._get_tokens_idf()
 
     def __getitem__(self, idx: int) -> Dict[str, Tensor]:
+        """Get the input ids and attention mask belonging to a specific datapoint."""
         input_ids = self.text["input_ids"][idx, :]
         attention_mask = self.text["attention_mask"][idx, :]
         inputs_dict = {"input_ids": input_ids, "attention_mask": attention_mask}
@@ -225,6 +228,7 @@ class TextDataset(Dataset):
         return inputs_dict
 
     def __len__(self) -> int:
+        """Return the number of sentences in the dataset."""
         return self.num_sentences
 
     def _get_tokens_idf(self) -> Dict[int, float]:
@@ -263,14 +267,13 @@ class TokenizedDataset(TextDataset):
         idf: bool = False,
         tokens_idf: Optional[Dict[int, float]] = None,
     ) -> None:
-        """
-        Args:
-            input_ids: Input indexes
-            attention_mask: Attention mask
-            idf:
-                An indication of whether calculate token inverse document frequencies to weight the model embeddings.
-            tokens_idf:
-                Inverse document frequencies (these should be calculated on reference sentences).
+        """Args:
+        input_ids: Input indexes
+        attention_mask: Attention mask
+        idf:
+        An indication of whether calculate token inverse document frequencies to weight the model embeddings.
+        tokens_idf:
+        Inverse document frequencies (these should be calculated on reference sentences).
         """
         text = dict(
             zip(

@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -77,7 +77,6 @@ class TestPearsonCorrcoef(MetricTester):
             target=target,
             metric_class=PearsonCorrCoef,
             reference_metric=_scipy_pearson,
-            dist_sync_on_step=False,
             metric_args={"num_outputs": num_outputs, "compute_on_cpu": compute_on_cpu},
         )
 

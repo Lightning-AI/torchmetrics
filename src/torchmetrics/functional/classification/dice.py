@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ def _dice_compute(
     mdmc_average: Optional[str],
     zero_division: int = 0,
 ) -> Tensor:
-    """Computes dice from the stat scores: true positives, false positives, false negatives.
+    """Compute dice from the stat scores: true positives, false positives, false negatives.
 
     Args:
         tp: True positives
@@ -39,6 +39,7 @@ def _dice_compute(
         average: Defines the reduction that is applied
         mdmc_average: Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
             ``average`` parameter)
+        zero_division: The value to use for the score if denominator equals zero.
     """
     numerator = 2 * tp
     denominator = 2 * tp + fp + fn
@@ -76,7 +77,7 @@ def dice(
     multiclass: Optional[bool] = None,
     ignore_index: Optional[int] = None,
 ) -> Tensor:
-    r"""Computes `Dice`_:
+    r"""Compute `Dice`_.
 
     .. deprecated:: v0.10
         The `dice` function was deprecated in v0.10 and will be removed in v0.11. Use `f1score` function instead which

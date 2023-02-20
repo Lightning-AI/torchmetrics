@@ -37,6 +37,7 @@ jobs:
     env:
       PYTEST_ARTEFACT: test-results-${{ matrix.os }}-py${{ matrix.python-version }}-${{ matrix.requires }}.xml
       PYTORCH_URL: https://download.pytorch.org/whl/cpu/torch_stable.html
+      FREEZE_REQUIREMENTS: 1
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
     # seems that MacOS jobs take much more than orger OS
@@ -52,7 +53,6 @@ jobs:
     - name: full chashing
       uses: ./.github/actions/caching
       with:
-        os: ${{ runner.os }}
         requires: ${{ matrix.requires }}
         python-version: ${{ matrix.python-version }}
         offset: "integrate"

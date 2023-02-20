@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -83,10 +83,9 @@ def _scipy_kendall(preds, target, alternative, variant):
 @pytest.mark.parametrize("variant", ["b", "c"])
 class TestKendallRankCorrCoef(MetricTester):
     @pytest.mark.parametrize("ddp", [False, True])
-    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_kendall_rank_corrcoef(self, preds, target, alternative, variant, ddp, dist_sync_on_step):
+    def test_kendall_rank_corrcoef(self, preds, target, alternative, variant, ddp):
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
-        t_test = True if alternative is not None else False
+        t_test = bool(alternative is not None)
         _sk_kendall_tau = partial(_scipy_kendall, alternative=alternative, variant=variant)
         alternative = _adjust_alternative_to_scipy(alternative)
 
@@ -96,12 +95,11 @@ class TestKendallRankCorrCoef(MetricTester):
             target,
             KendallRankCorrCoef,
             _sk_kendall_tau,
-            dist_sync_on_step,
             metric_args={"t_test": t_test, "alternative": alternative, "variant": variant, "num_outputs": num_outputs},
         )
 
     def test_kendall_rank_corrcoef_functional(self, preds, target, alternative, variant):
-        t_test = True if alternative is not None else False
+        t_test = bool(alternative is not None)
         alternative = _adjust_alternative_to_scipy(alternative)
         metric_args = {"t_test": t_test, "alternative": alternative, "variant": variant}
         _sk_kendall_tau = partial(_scipy_kendall, alternative=alternative, variant=variant)

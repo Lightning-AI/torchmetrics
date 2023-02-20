@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ from torchmetrics.utilities.prints import rank_zero_warn
 
 
 class Dice(Metric):
-    r"""Computes `Dice`_:
+    r"""Compute `Dice`_.
 
     .. deprecated:: v0.10
         The `Dice` module was deprecated in v0.10 and will be removed in v0.11. Use `F1Score` module instead which
@@ -41,17 +41,17 @@ class Dice(Metric):
     ``average`` parameter, and additionally by the ``mdmc_average`` parameter in the
     multi-dimensional multi-class case.
 
-    As input to 'update' the metric accepts the following input:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds``: Predictions from model (probabilities, logits or labels)
-    - ``target``: Ground truth values
+    - ``preds`` (:class:`~torch.Tensor`): Predictions from model (probabilities, logits or labels)
+    - ``target`` (:class:`~torch.Tensor`): Ground truth values
 
-    As output of 'compute' the metric returns the dice score based on inputs passed in to ``update`` previously.
+    As output to ``forward`` and ``compute`` the metric returns the following output:
 
-    The shape of the returned tensor, depending on the ``average`` parameter:
+    - ``dice`` (:class:`~torch.Tensor`): A tensor containing the dice score.
 
-    - If ``average in ['micro', 'macro', 'weighted', 'samples']``, a one-element tensor will be returned
-    - If ``average in ['none', None]``, the shape will be ``(C,)``, where ``C`` stands  for the number of classes
+        - If ``average in ['micro', 'macro', 'weighted', 'samples']``, a one-element tensor will be returned
+        - If ``average in ['none', None]``, the shape will be ``(C,)``, where ``C`` stands  for the number of classes
 
     Args:
         num_classes:
@@ -74,8 +74,9 @@ class Dice(Metric):
             - ``'samples'``: Calculate the metric for each sample, and average the metrics
               across samples (with equal weights for each sample).
 
-            .. note:: What is considered a sample in the multi-dimensional multi-class case
-                depends on the value of ``mdmc_average``.
+            .. note::
+               What is considered a sample in the multi-dimensional multi-class case
+               depends on the value of ``mdmc_average``.
 
         mdmc_average:
             Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
@@ -123,10 +124,10 @@ class Dice(Metric):
             If ``num_classes`` is set and ``ignore_index`` is not in the range ``[0, num_classes)``.
 
     Example:
-        >>> import torch
+        >>> from torch import tensor
         >>> from torchmetrics import Dice
-        >>> preds  = torch.tensor([2, 0, 2, 1])
-        >>> target = torch.tensor([1, 1, 2, 0])
+        >>> preds  = tensor([2, 0, 2, 1])
+        >>> target = tensor([1, 1, 2, 0])
         >>> dice = Dice(average='micro')
         >>> dice(preds, target)
         tensor(0.2500)
@@ -240,6 +241,6 @@ class Dice(Metric):
 
     @no_type_check
     def compute(self) -> Tensor:
-        """Computes metric."""
+        """Compute metric."""
         tp, fp, _, fn = self._get_final_stats()
         return _dice_compute(tp, fp, fn, self.average, self.mdmc_reduce, self.zero_division)

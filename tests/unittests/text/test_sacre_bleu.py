@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -48,8 +48,7 @@ def sacrebleu_fn(preds: Sequence[str], targets: Sequence[Sequence[str]], tokeniz
 @pytest.mark.skipif(not _SACREBLEU_AVAILABLE, reason="test requires sacrebleu")
 class TestSacreBLEUScore(TextTester):
     @pytest.mark.parametrize("ddp", [False, True])
-    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_bleu_score_class(self, ddp, dist_sync_on_step, preds, targets, tokenize, lowercase):
+    def test_bleu_score_class(self, ddp, preds, targets, tokenize, lowercase):
         metric_args = {"tokenize": tokenize, "lowercase": lowercase}
         original_sacrebleu = partial(sacrebleu_fn, tokenize=tokenize, lowercase=lowercase)
 
@@ -59,7 +58,6 @@ class TestSacreBLEUScore(TextTester):
             targets=targets,
             metric_class=SacreBLEUScore,
             reference_metric=original_sacrebleu,
-            dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
         )
 

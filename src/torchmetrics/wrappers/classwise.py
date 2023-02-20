@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -41,7 +41,6 @@ class ClasswiseWrapper(Metric):
         'multiclassaccuracy_2': tensor(0.)}
 
     Example (labels as list of strings):
-        >>> import torch
         >>> from torchmetrics import ClasswiseWrapper
         >>> from torchmetrics.classification import MulticlassAccuracy
         >>> metric = ClasswiseWrapper(
@@ -56,7 +55,6 @@ class ClasswiseWrapper(Metric):
         'multiclassaccuracy_dog': tensor(0.)}
 
     Example (in metric collection):
-        >>> import torch
         >>> from torchmetrics import ClasswiseWrapper, MetricCollection
         >>> from torchmetrics.classification import MulticlassAccuracy, MulticlassRecall
         >>> labels = ["horse", "fish", "dog"]
@@ -92,15 +90,19 @@ class ClasswiseWrapper(Metric):
         return {f"{name}_{lab}": val for lab, val in zip(self.labels, x)}
 
     def forward(self, *args: Any, **kwargs: Any) -> Any:
+        """Calculate on batch and accumulate to global state."""
         return self._convert(self.metric(*args, **kwargs))
 
     def update(self, *args: Any, **kwargs: Any) -> None:
+        """Update state."""
         self.metric.update(*args, **kwargs)
 
     def compute(self) -> Dict[str, Tensor]:
+        """Compute metric."""
         return self._convert(self.metric.compute())
 
     def reset(self) -> None:
+        """Reset metric."""
         self.metric.reset()
 
     def _wrap_update(self, update: Callable) -> Callable:

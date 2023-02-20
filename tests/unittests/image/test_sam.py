@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@ from functools import partial
 
 import pytest
 import torch
-import torch.nn.functional as F
 from torch import Tensor
+from torch.nn import functional as F  # noqa: N812
 
 from torchmetrics.functional.image.sam import spectral_angle_mapper
 from torchmetrics.image.sam import SpectralAngleMapper
@@ -68,16 +68,14 @@ def _baseline_sam(
 )
 class TestSpectralAngleMapper(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_sam(self, reduction, preds, target, ddp, dist_sync_on_step):
+    def test_sam(self, reduction, preds, target, ddp):
         self.run_class_metric_test(
             ddp,
             preds,
             target,
             SpectralAngleMapper,
             partial(_baseline_sam, reduction=reduction),
-            dist_sync_on_step,
-            metric_args=dict(reduction=reduction),
+            metric_args={"reduction": reduction},
         )
 
     def test_sam_functional(self, reduction, preds, target):
@@ -86,7 +84,7 @@ class TestSpectralAngleMapper(MetricTester):
             target,
             spectral_angle_mapper,
             partial(_baseline_sam, reduction=reduction),
-            metric_args=dict(reduction=reduction),
+            metric_args={"reduction": reduction},
         )
 
     # SAM half + cpu does not work due to missing support in torch.log
@@ -112,7 +110,7 @@ def test_error_on_different_shape(metric_class=SpectralAngleMapper):
 
 def test_error_on_invalid_shape(metric_class=SpectralAngleMapper):
     metric = metric_class()
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011  # todo
         metric(torch.randn([3, 16, 16]), torch.randn([3, 16, 16]))
 
 
@@ -124,5 +122,5 @@ def test_error_on_invalid_type(metric_class=SpectralAngleMapper):
 
 def test_error_on_grayscale_image(metric_class=SpectralAngleMapper):
     metric = metric_class()
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011  # todo
         metric(torch.randn([16, 1, 16, 16]), torch.randn([16, 1, 16, 16]))

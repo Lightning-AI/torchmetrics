@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -94,8 +94,7 @@ class TestSpectralDistortionIndex(MetricTester):
     atol = 6e-3
 
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_d_lambda(self, preds, target, p, ddp, dist_sync_on_step):
+    def test_d_lambda(self, preds, target, p, ddp):
         self.run_class_metric_test(
             ddp,
             preds,
@@ -103,7 +102,6 @@ class TestSpectralDistortionIndex(MetricTester):
             SpectralDistortionIndex,
             partial(_np_d_lambda, p=p),
             metric_args={"p": p},
-            dist_sync_on_step=dist_sync_on_step,
         )
 
     def test_d_lambda_functional(self, preds, target, p):
@@ -126,7 +124,7 @@ class TestSpectralDistortionIndex(MetricTester):
 
 
 @pytest.mark.parametrize(
-    ["preds", "target", "p"],
+    ("preds", "target", "p"),
     [
         ([1, 16, 16], [1, 16, 16], 1),  # len(shape)
         ([1, 1, 16, 16], [1, 1, 16, 16], 0),  # invalid p
@@ -136,7 +134,7 @@ class TestSpectralDistortionIndex(MetricTester):
 def test_d_lambda_invalid_inputs(preds, target, p):
     preds_t = torch.rand(preds)
     target_t = torch.rand(target)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011  # todo
         spectral_distortion_index(preds_t, target_t, p)
 
 

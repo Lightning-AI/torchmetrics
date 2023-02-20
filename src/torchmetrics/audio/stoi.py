@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,19 +11,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any
+from typing import Any, Optional, Sequence, Union
 
 from torch import Tensor, tensor
 
 from torchmetrics.functional.audio.stoi import short_time_objective_intelligibility
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.imports import _PYSTOI_AVAILABLE
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _PYSTOI_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
 
 __doctest_requires__ = {"ShortTimeObjectiveIntelligibility": ["pystoi"]}
 
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["ShortTimeObjectiveIntelligibility.plot"]
+
 
 class ShortTimeObjectiveIntelligibility(Metric):
-    r"""Calculates STOI (Short-Time Objective Intelligibility) metric for evaluating speech signals. Intelligibility
+    r"""Calculate STOI (Short-Time Objective Intelligibility) metric for evaluating speech signals. Intelligibility
     measure which is highly correlated with the intelligibility of degraded speech signals, e.g., due to additive
     noise, single-/multi-channel noise reduction, binary masking and vocoded speech as in CI simulations. The STOI-
     measure is intrusive, i.e., a function of the clean and degraded speech signals. STOI may be a good alternative
@@ -58,8 +62,8 @@ class ShortTimeObjectiveIntelligibility(Metric):
             If ``pystoi`` package is not installed
 
     Example:
-        >>> from torchmetrics.audio.stoi import ShortTimeObjectiveIntelligibility
         >>> import torch
+        >>> from torchmetrics.audio.stoi import ShortTimeObjectiveIntelligibility
         >>> g = torch.manual_seed(1)
         >>> preds = torch.randn(8000)
         >>> target = torch.randn(8000)
@@ -72,6 +76,7 @@ class ShortTimeObjectiveIntelligibility(Metric):
     full_state_update: bool = False
     is_differentiable: bool = False
     higher_is_better: bool = True
+    plot_options: dict = {"lower_bound": -20.0, "upper_bound": 5.0}
 
     def __init__(
         self,
@@ -101,5 +106,54 @@ class ShortTimeObjectiveIntelligibility(Metric):
         self.total += stoi_batch.numel()
 
     def compute(self) -> Tensor:
-        """Computes metric."""
+        """Compute metric."""
         return self.sum_stoi / self.total
+
+    def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> import torch
+            >>> from torchmetrics.audio.stoi import ShortTimeObjectiveIntelligibility
+            >>> g = torch.manual_seed(1)
+            >>> preds = torch.randn(8000)
+            >>> target = torch.randn(8000)
+            >>> metric = ShortTimeObjectiveIntelligibility(8000, False)
+            >>> metric.update(preds, target)
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics.audio.stoi import ShortTimeObjectiveIntelligibility
+            >>> metric = ShortTimeObjectiveIntelligibility(8000, False)
+            >>> g = torch.manual_seed(1)
+            >>> preds = torch.randn(8000)
+            >>> target = torch.randn(8000)
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(preds, target))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        val = val or self.compute()
+        fig, ax = plot_single_or_multi_val(
+            val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
+        )
+        return fig, ax

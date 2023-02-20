@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,14 +30,23 @@ AVAILABLE_TOKENIZERS = ("none", "13a", "zh", "intl", "char")
 
 
 class SacreBLEUScore(BLEUScore):
-    """Calculate `BLEU score`_ [1] of machine translated text with one or more references. This implementation
-    follows the behaviour of SacreBLEU [2] implementation from https://github.com/mjpost/sacrebleu.
+    """Calculate `BLEU score`_ of machine translated text with one or more references. This implementation follows
+    the behaviour of `SacreBLEU`_.
 
     The SacreBLEU implementation differs from the NLTK BLEU implementation in tokenization techniques.
 
+    As input to ``forward`` and ``update`` the metric accepts the following input:
+
+    - ``preds`` (:class:`~Sequence`): An iterable of machine translated corpus
+    - ``target`` (:class:`~Sequence`): An iterable of iterables of reference corpus
+
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``sacre_bleu`` (:class:`~torch.Tensor`): A tensor with the SacreBLEU Score
+
     Args:
         n_gram: Gram value ranged from 1 to 4
-        smooth: Whether to apply smoothing, see [2]
+        smooth: Whether to apply smoothing, see `SacreBLEU`_
         tokenize: Tokenization technique to be used.
             Supported tokenization: ``['none', '13a', 'zh', 'intl', 'char']``
         lowercase:  If ``True``, BLEU score over lowercased text is calculated.
@@ -46,7 +55,7 @@ class SacreBLEUScore(BLEUScore):
             Weights used for unigrams, bigrams, etc. to calculate BLEU score.
             If not provided, uniform weights are used.
 
-     Raises:
+    Raises:
         ValueError:
             If ``tokenize`` not one of 'none', '13a', 'zh', 'intl' or 'char'
         ValueError:
@@ -59,18 +68,14 @@ class SacreBLEUScore(BLEUScore):
         >>> from torchmetrics import SacreBLEUScore
         >>> preds = ['the cat is on the mat']
         >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
-        >>> metric = SacreBLEUScore()
-        >>> metric(preds, target)
+        >>> sacre_bleu = SacreBLEUScore()
+        >>> sacre_bleu(preds, target)
         tensor(0.7598)
 
-    References:
-        [1] BLEU: a Method for Automatic Evaluation of Machine Translation by Papineni,
-        Kishore, Salim Roukos, Todd Ward, and Wei-Jing Zhu `BLEU`_
+    Additional References:
 
-        [2] A Call for Clarity in Reporting BLEU Scores by Matt Post.
-
-        [3] Automatic Evaluation of Machine Translation Quality Using Longest Common Subsequence
-        and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och `Machine Translation Evolution`_
+        - Automatic Evaluation of Machine Translation Quality Using Longest Common Subsequence
+          and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och `Machine Translation Evolution`_
     """
 
     is_differentiable: bool = False
@@ -98,12 +103,7 @@ class SacreBLEUScore(BLEUScore):
         self.tokenizer = _SacreBLEUTokenizer(tokenize, lowercase)
 
     def update(self, preds: Sequence[str], target: Sequence[Sequence[str]]) -> None:
-        """Compute Precision Scores.
-
-        Args:
-            preds: An iterable of machine translated corpus
-            target: An iterable of iterables of reference corpus
-        """
+        """Update state with predictions and targets."""
         self.preds_len, self.target_len = _bleu_score_update(
             preds,
             target,

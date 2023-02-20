@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,18 +29,23 @@ from torchmetrics.metric import Metric
 
 
 class MultilabelCoverageError(Metric):
-    """Computes `Multilabel coverage error`_. The score measure how far we need to go through the ranked scores to
+    """Compute `Multilabel coverage error`_. The score measure how far we need to go through the ranked scores to
     cover all true labels. The best value is equal to the average number of labels in the target tensor per sample.
 
-    Accepts the following input tensors:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (float tensor): ``(N, C, ...)``. Preds should be a tensor containing probabilities or logits for each
-      observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
-      sigmoid per element.
-    - ``target`` (int tensor): ``(N, C, ...)``. Target should be a tensor containing ground truth labels, and therefore
-      only contain {0,1} values (except if `ignore_index` is specified).
+    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, C, ...)``. Preds should be a tensor
+      containing probabilities or logits for each observation. If preds has values outside [0,1] range we consider
+      the input to be logits and will auto apply sigmoid per element.
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``. Target should be a tensor
+      containing ground truth labels, and therefore only contain {0,1} values (except if `ignore_index` is specified).
 
-    Additional dimension ``...`` will be flattened into the batch dimension.
+    .. note::
+       Additional dimension ``...`` will be flattened into the batch dimension.
+
+    As output to ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``mlce`` (:class:`~torch.Tensor`): A tensor containing the multilabel coverage error.
 
     Args:
         num_labels: Integer specifing the number of labels
@@ -54,8 +59,8 @@ class MultilabelCoverageError(Metric):
         >>> _ = torch.manual_seed(42)
         >>> preds = torch.rand(10, 5)
         >>> target = torch.randint(2, (10, 5))
-        >>> metric = MultilabelCoverageError(num_labels=5)
-        >>> metric(preds, target)
+        >>> mlce = MultilabelCoverageError(num_labels=5)
+        >>> mlce(preds, target)
         tensor(3.9000)
     """
 
@@ -80,6 +85,7 @@ class MultilabelCoverageError(Metric):
         self.add_state("total", torch.tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+        """Update metric states."""
         if self.validate_args:
             _multilabel_ranking_tensor_validation(preds, target, self.num_labels, self.ignore_index)
         preds, target = _multilabel_confusion_matrix_format(
@@ -90,23 +96,29 @@ class MultilabelCoverageError(Metric):
         self.total += n_elements
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         return _ranking_reduce(self.measure, self.total)
 
 
 class MultilabelRankingAveragePrecision(Metric):
-    """Computes label ranking average precision score for multilabel data [1]. The score is the average over each
+    """Compute label ranking average precision score for multilabel data [1]. The score is the average over each
     ground truth label assigned to each sample of the ratio of true vs. total labels with lower score. Best score
     is 1.
 
-    Accepts the following input tensors:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (float tensor): ``(N, C, ...)``. Preds should be a tensor containing probabilities or logits for each
-      observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
-      sigmoid per element.
-    - ``target`` (int tensor): ``(N, C, ...)``. Target should be a tensor containing ground truth labels, and therefore
-      only contain {0,1} values (except if `ignore_index` is specified).
+    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, C, ...)``. Preds should be a tensor
+      containing probabilities or logits for each observation. If preds has values outside [0,1] range we consider
+      the input to be logits and will auto apply sigmoid per element.
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``. Target should be a tensor
+      containing ground truth labels, and therefore only contain {0,1} values (except if `ignore_index` is specified).
 
-    Additional dimension ``...`` will be flattened into the batch dimension.
+    .. note::
+       Additional dimension ``...`` will be flattened into the batch dimension.
+
+    As output to ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``mlrap`` (:class:`~torch.Tensor`): A tensor containing the multilabel ranking average precision.
 
     Args:
         num_labels: Integer specifing the number of labels
@@ -120,8 +132,8 @@ class MultilabelRankingAveragePrecision(Metric):
         >>> _ = torch.manual_seed(42)
         >>> preds = torch.rand(10, 5)
         >>> target = torch.randint(2, (10, 5))
-        >>> metric = MultilabelRankingAveragePrecision(num_labels=5)
-        >>> metric(preds, target)
+        >>> mlrap = MultilabelRankingAveragePrecision(num_labels=5)
+        >>> mlrap(preds, target)
         tensor(0.7744)
     """
 
@@ -146,6 +158,7 @@ class MultilabelRankingAveragePrecision(Metric):
         self.add_state("total", torch.tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+        """Update metric states."""
         if self.validate_args:
             _multilabel_ranking_tensor_validation(preds, target, self.num_labels, self.ignore_index)
         preds, target = _multilabel_confusion_matrix_format(
@@ -156,23 +169,29 @@ class MultilabelRankingAveragePrecision(Metric):
         self.total += n_elements
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         return _ranking_reduce(self.measure, self.total)
 
 
 class MultilabelRankingLoss(Metric):
-    """Computes the label ranking loss for multilabel data [1]. The score is corresponds to the average number of
+    """Compute the label ranking loss for multilabel data [1]. The score is corresponds to the average number of
     label pairs that are incorrectly ordered given some predictions weighted by the size of the label set and the
     number of labels not in the label set. The best score is 0.
 
-    Accepts the following input tensors:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (float tensor): ``(N, C, ...)``. Preds should be a tensor containing probabilities or logits for each
-      observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
-      sigmoid per element.
-    - ``target`` (int tensor): ``(N, C, ...)``. Target should be a tensor containing ground truth labels, and therefore
-      only contain {0,1} values (except if `ignore_index` is specified).
+    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, C, ...)``. Preds should be a tensor
+      containing probabilities or logits for each observation. If preds has values outside [0,1] range we consider
+      the input to be logits and will auto apply sigmoid per element.
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``. Target should be a tensor
+      containing ground truth labels, and therefore only contain {0,1} values (except if `ignore_index` is specified).
 
-    Additional dimension ``...`` will be flattened into the batch dimension.
+    .. note::
+       Additional dimension ``...`` will be flattened into the batch dimension.
+
+    As output to ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``mlrl`` (:class:`~torch.Tensor`): A tensor containing the multilabel ranking loss.
 
     Args:
         preds: Tensor with predictions
@@ -188,8 +207,8 @@ class MultilabelRankingLoss(Metric):
         >>> _ = torch.manual_seed(42)
         >>> preds = torch.rand(10, 5)
         >>> target = torch.randint(2, (10, 5))
-        >>> metric = MultilabelRankingLoss(num_labels=5)
-        >>> metric(preds, target)
+        >>> mlrl = MultilabelRankingLoss(num_labels=5)
+        >>> mlrl(preds, target)
         tensor(0.4167)
     """
 
@@ -214,6 +233,7 @@ class MultilabelRankingLoss(Metric):
         self.add_state("total", torch.tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+        """Update metric states."""
         if self.validate_args:
             _multilabel_ranking_tensor_validation(preds, target, self.num_labels, self.ignore_index)
         preds, target = _multilabel_confusion_matrix_format(
@@ -224,4 +244,5 @@ class MultilabelRankingLoss(Metric):
         self.total += n_elements
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         return _ranking_reduce(self.measure, self.total)

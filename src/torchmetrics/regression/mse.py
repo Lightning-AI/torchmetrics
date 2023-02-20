@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +13,6 @@
 # limitations under the License.
 from typing import Any, Optional, Sequence, Union
 
-import torch
 from torch import Tensor, tensor
 
 from torchmetrics.functional.regression.mse import _mean_squared_error_compute, _mean_squared_error_update
@@ -26,20 +25,30 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class MeanSquaredError(Metric):
-    r"""Computes `mean squared error`_ (MSE):
+    r"""Compute `mean squared error`_ (MSE).
 
     .. math:: \text{MSE} = \frac{1}{N}\sum_i^N(y_i - \hat{y_i})^2
 
     Where :math:`y` is a tensor of target values, and :math:`\hat{y}` is a tensor of predictions.
+
+    As input to ``forward`` and ``update`` the metric accepts the following input:
+
+    - ``preds`` (:class:`~torch.Tensor`): Predictions from model
+    - ``target`` (:class:`~torch.Tensor`): Ground truth values
+
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``mean_squared_error`` (:class:`~torch.Tensor`): A tensor with the mean squared error
 
     Args:
         squared: If True returns MSE value, if False returns RMSE value.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics import MeanSquaredError
-        >>> target = torch.tensor([2.5, 5.0, 4.0, 8.0])
-        >>> preds = torch.tensor([3.0, 5.0, 2.5, 7.0])
+        >>> target = tensor([2.5, 5.0, 4.0, 8.0])
+        >>> preds = tensor([3.0, 5.0, 2.5, 7.0])
         >>> mean_squared_error = MeanSquaredError()
         >>> mean_squared_error(preds, target)
         tensor(0.8750)
@@ -63,19 +72,14 @@ class MeanSquaredError(Metric):
         self.squared = squared
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
+        """Update state with predictions and targets."""
         sum_squared_error, n_obs = _mean_squared_error_update(preds, target)
 
         self.sum_squared_error += sum_squared_error
         self.total += n_obs
 
     def compute(self) -> Tensor:
-        """Computes mean squared error over state."""
+        """Compute mean squared error over state."""
         return _mean_squared_error_compute(self.sum_squared_error, self.total, squared=self.squared)
 
     def plot(
@@ -99,23 +103,23 @@ class MeanSquaredError(Metric):
         .. plot::
             :scale: 75
 
+            >>> from torch import randn
             >>> # Example plotting a single value
-            >>> import torch
             >>> from torchmetrics.regression import MeanSquaredError
             >>> metric = MeanSquaredError()
-            >>> metric.update(torch.randn(10,), torch.randn(10,))
+            >>> metric.update(randn(10,), randn(10,))
             >>> fig_, ax_ = metric.plot()
 
         .. plot::
             :scale: 75
 
+            >>> from torch import randn
             >>> # Example plotting multiple values
-            >>> import torch
             >>> from torchmetrics.regression import MeanSquaredError
             >>> metric = MeanSquaredError()
             >>> values = []
             >>> for _ in range(10):
-            ...     values.append(metric(torch.randn(10,), torch.randn(10,)))
+            ...     values.append(metric(randn(10,), randn(10,)))
             >>> fig, ax = metric.plot(values)
         """
         val = val or self.compute()

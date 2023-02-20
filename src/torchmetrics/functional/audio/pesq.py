@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ def perceptual_evaluation_speech_quality(
     keep_same_device: bool = False,
     n_processes: int = 1,
 ) -> Tensor:
-    r"""Calculates `Perceptual Evaluation of Speech Quality`_ (PESQ). It's a recognized industry standard for audio
+    r"""Calculate `Perceptual Evaluation of Speech Quality`_ (PESQ). It's a recognized industry standard for audio
     quality that takes into considerations characteristics such as: audio sharpness, call volume, background noise,
     clipping, audio interference ect. PESQ returns a score between -0.5 and 4.5 with the higher scores indicating a
     better quality.
@@ -62,20 +62,20 @@ def perceptual_evaluation_speech_quality(
 
     Raises:
         ModuleNotFoundError:
-            If ``peqs`` package is not installed
+            If ``pesq`` package is not installed
         ValueError:
             If ``fs`` is not either  ``8000`` or ``16000``
         ValueError:
             If ``mode`` is not either ``"wb"`` or ``"nb"``
         RuntimeError:
-            If ``preds`` and ``target`` does not have the same shape
+            If ``preds`` and ``target`` do not have the same shape
 
     Example:
+        >>> from torch import randn
         >>> from torchmetrics.functional.audio.pesq import perceptual_evaluation_speech_quality
-        >>> import torch
         >>> g = torch.manual_seed(1)
-        >>> preds = torch.randn(8000)
-        >>> target = torch.randn(8000)
+        >>> preds = randn(8000)
+        >>> target = randn(8000)
         >>> perceptual_evaluation_speech_quality(preds, target, 8000, 'nb')
         tensor(2.2076)
         >>> perceptual_evaluation_speech_quality(preds, target, 16000, 'wb')

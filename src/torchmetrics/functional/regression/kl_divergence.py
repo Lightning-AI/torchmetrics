@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ from torchmetrics.utilities.compute import _safe_xlogy
 
 
 def _kld_update(p: Tensor, q: Tensor, log_prob: bool) -> Tuple[Tensor, int]:
-    """Updates and returns KL divergence scores for each observation and the total number of observations. Checks
+    """Update and returns KL divergence scores for each observation and the total number of observations. Checks
     same shape and 2D nature of the input tensors else raises ValueError.
 
     Args:
@@ -48,7 +48,7 @@ def _kld_update(p: Tensor, q: Tensor, log_prob: bool) -> Tuple[Tensor, int]:
 
 
 def _kld_compute(measures: Tensor, total: Tensor, reduction: Literal["mean", "sum", "none", None] = "mean") -> Tensor:
-    """Computes the KL divergenece based on the type of reduction.
+    """Compute the KL divergenece based on the type of reduction.
 
     Args:
         measures: Tensor of KL divergence scores for each observation
@@ -67,7 +67,6 @@ def _kld_compute(measures: Tensor, total: Tensor, reduction: Literal["mean", "su
         >>> _kld_compute(measures, total)
         tensor(0.0853)
     """
-
     if reduction == "sum":
         return measures.sum()
     if reduction == "mean":
@@ -80,7 +79,7 @@ def _kld_compute(measures: Tensor, total: Tensor, reduction: Literal["mean", "su
 def kl_divergence(
     p: Tensor, q: Tensor, log_prob: bool = False, reduction: Literal["mean", "sum", "none", None] = "mean"
 ) -> Tensor:
-    r"""Computes `KL divergence`_
+    r"""Compute `KL divergence`_.
 
     .. math::
         D_{KL}(P||Q) = \sum_{x\in\mathcal{X}} P(x) \log\frac{P(x)}{Q{x}}
@@ -102,9 +101,9 @@ def kl_divergence(
             - ``'none'`` or ``None``: Returns score per sample
 
     Example:
-        >>> import torch
-        >>> p = torch.tensor([[0.36, 0.48, 0.16]])
-        >>> q = torch.tensor([[1/3, 1/3, 1/3]])
+        >>> from torch import tensor
+        >>> p = tensor([[0.36, 0.48, 0.16]])
+        >>> q = tensor([[1/3, 1/3, 1/3]])
         >>> kl_divergence(p, q)
         tensor(0.0853)
     """

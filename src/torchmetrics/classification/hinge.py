@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,26 +29,32 @@ from torchmetrics.functional.classification.hinge import (
     _multiclass_hinge_loss_update,
 )
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.enums import ClassificationTaskNoMultilabel
 
 
 class BinaryHingeLoss(Metric):
-    r"""Computes the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs) for binary tasks. It is
-    defined as:
+    r"""Compute the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs) for binary tasks.
 
     .. math::
         \text{Hinge loss} = \max(0, 1 - y \times \hat{y})
 
     Where :math:`y \in {-1, 1}` is the target, and :math:`\hat{y} \in \mathbb{R}` is the prediction.
 
-    Accepts the following input tensors:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (float tensor): ``(N, ...)``. Preds should be a tensor containing probabilities or logits for each
-      observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
-      sigmoid per element.
-    - ``target`` (int tensor): ``(N, ...)``. Target should be a tensor containing ground truth labels, and therefore
-      only contain {0,1} values (except if `ignore_index` is specified). The value 1 always encodes the positive class.
+    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, ...)``. Preds should be a tensor containing
+      probabilities or logits for each observation. If preds has values outside [0,1] range we consider the input
+      to be logits and will auto apply sigmoid per element.
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``. Target should be a tensor containing
+      ground truth labels, and therefore only contain {0,1} values (except if `ignore_index` is specified). The value
+      1 always encodes the positive class.
 
-    Additional dimension ``...`` will be flattened into the batch dimension.
+    .. note::
+       Additional dimension ``...`` will be flattened into the batch dimension.
+
+    As output to ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``bhl`` (:class:`~torch.Tensor`): A tensor containing the hinge loss.
 
     Args:
         squared:
@@ -63,11 +69,11 @@ class BinaryHingeLoss(Metric):
         >>> from torchmetrics.classification import BinaryHingeLoss
         >>> preds = torch.tensor([0.25, 0.25, 0.55, 0.75, 0.75])
         >>> target = torch.tensor([0, 0, 1, 1, 1])
-        >>> metric = BinaryHingeLoss()
-        >>> metric(preds, target)
+        >>> bhl = BinaryHingeLoss()
+        >>> bhl(preds, target)
         tensor(0.6900)
-        >>> metric = BinaryHingeLoss(squared=True)
-        >>> metric(preds, target)
+        >>> bhl = BinaryHingeLoss(squared=True)
+        >>> bhl(preds, target)
         tensor(0.6905)
     """
     is_differentiable: bool = True
@@ -92,6 +98,7 @@ class BinaryHingeLoss(Metric):
         self.add_state("total", default=torch.tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+        """Update metric state."""
         if self.validate_args:
             _binary_hinge_loss_tensor_validation(preds, target, self.ignore_index)
         preds, target = _binary_confusion_matrix_format(
@@ -102,11 +109,12 @@ class BinaryHingeLoss(Metric):
         self.total += total
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         return _hinge_loss_compute(self.measures, self.total)
 
 
 class MulticlassHingeLoss(Metric):
-    r"""Computes the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs) for multiclass tasks.
+    r"""Compute the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs) for multiclass tasks.
 
     The metric can be computed in two ways. Either, the definition by Crammer and Singer is used:
 
@@ -117,15 +125,21 @@ class MulticlassHingeLoss(Metric):
     and :math:`\hat{y} \in \mathbb{R}^\mathrm{C}` is the predicted output per class. Alternatively, the metric can
     also be computed in one-vs-all approach, where each class is valued against all other classes in a binary fashion.
 
-    Accepts the following input tensors:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (float tensor): ``(N, C, ...)``. Preds should be a tensor containing probabilities or logits for each
-      observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
-      softmax per sample.
-    - ``target`` (int tensor): ``(N, ...)``. Target should be a tensor containing ground truth labels, and therefore
-      only contain values in the [0, n_classes-1] range (except if `ignore_index` is specified).
+    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, C, ...)``. Preds should be a tensor
+      containing probabilities or logits for each observation. If preds has values outside [0,1] range we consider
+      the input to be logits and will auto apply softmax per sample.
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``. Target should be a tensor containing
+      ground truth labels, and therefore only contain values in the [0, n_classes-1] range (except if `ignore_index`
+      is specified).
 
-    Additional dimension ``...`` will be flattened into the batch dimension.
+    .. note::
+       Additional dimension ``...`` will be flattened into the batch dimension.
+
+    As output to ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``mchl`` (:class:`~torch.Tensor`): A tensor containing the multi-class hinge loss.
 
     Args:
         num_classes: Integer specifing the number of classes
@@ -146,14 +160,14 @@ class MulticlassHingeLoss(Metric):
         ...                       [0.10, 0.30, 0.60],
         ...                       [0.90, 0.05, 0.05]])
         >>> target = torch.tensor([0, 1, 2, 0])
-        >>> metric = MulticlassHingeLoss(num_classes=3)
-        >>> metric(preds, target)
+        >>> mchl = MulticlassHingeLoss(num_classes=3)
+        >>> mchl(preds, target)
         tensor(0.9125)
-        >>> metric = MulticlassHingeLoss(num_classes=3, squared=True)
-        >>> metric(preds, target)
+        >>> mchl = MulticlassHingeLoss(num_classes=3, squared=True)
+        >>> mchl(preds, target)
         tensor(1.1131)
-        >>> metric = MulticlassHingeLoss(num_classes=3, multiclass_mode='one-vs-all')
-        >>> metric(preds, target)
+        >>> mchl = MulticlassHingeLoss(num_classes=3, multiclass_mode='one-vs-all')
+        >>> mchl(preds, target)
         tensor([0.8750, 1.1250, 1.1000])
     """
     is_differentiable: bool = True
@@ -190,6 +204,7 @@ class MulticlassHingeLoss(Metric):
         self.add_state("total", default=torch.tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+        """Update metric state."""
         if self.validate_args:
             _multiclass_hinge_loss_tensor_validation(preds, target, self.num_classes, self.ignore_index)
         preds, target = _multiclass_confusion_matrix_format(preds, target, self.ignore_index, convert_to_labels=False)
@@ -198,11 +213,12 @@ class MulticlassHingeLoss(Metric):
         self.total += total
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         return _hinge_loss_compute(self.measures, self.total)
 
 
 class HingeLoss:
-    r"""Computes the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs).
+    r"""Compute the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs).
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'`` or ``'multiclass'``. See the documentation of
@@ -210,21 +226,21 @@ class HingeLoss:
     each argument influence and examples.
 
     Legacy Example:
-        >>> import torch
-        >>> target = torch.tensor([0, 1, 1])
-        >>> preds = torch.tensor([0.5, 0.7, 0.1])
+        >>> from torch import tensor
+        >>> target = tensor([0, 1, 1])
+        >>> preds = tensor([0.5, 0.7, 0.1])
         >>> hinge = HingeLoss(task="binary")
         >>> hinge(preds, target)
         tensor(0.9000)
 
-        >>> target = torch.tensor([0, 1, 2])
-        >>> preds = torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
+        >>> target = tensor([0, 1, 2])
+        >>> preds = tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
         >>> hinge = HingeLoss(task="multiclass", num_classes=3)
         >>> hinge(preds, target)
         tensor(1.5551)
 
-        >>> target = torch.tensor([0, 1, 2])
-        >>> preds = torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
+        >>> target = tensor([0, 1, 2])
+        >>> preds = tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
         >>> hinge = HingeLoss(task="multiclass", num_classes=3, multiclass_mode="one-vs-all")
         >>> hinge(preds, target)
         tensor([1.3743, 1.1945, 1.2359])
@@ -240,12 +256,11 @@ class HingeLoss:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
-        kwargs.update(dict(ignore_index=ignore_index, validate_args=validate_args))
-        if task == "binary":
+        """Initialize task metric."""
+        task = ClassificationTaskNoMultilabel.from_str(task)
+        kwargs.update({"ignore_index": ignore_index, "validate_args": validate_args})
+        if task == ClassificationTaskNoMultilabel.BINARY:
             return BinaryHingeLoss(squared, **kwargs)
-        if task == "multiclass":
+        if task == ClassificationTaskNoMultilabel.MULTICLASS:
             assert isinstance(num_classes, int)
             return MulticlassHingeLoss(num_classes, squared, multiclass_mode, **kwargs)
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-        )

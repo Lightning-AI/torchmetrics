@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@ from torchmetrics import _logger as log
 
 
 def rank_zero_only(fn: Callable) -> Callable:
+    """Decorator to call a function only on rank 0 in distributed settings."""
+
     @wraps(fn)
     def wrapped_fn(*args: Any, **kwargs: Any) -> Any:
         if rank_zero_only.rank == 0:  # type: ignore
