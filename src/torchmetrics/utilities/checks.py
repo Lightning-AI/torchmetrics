@@ -14,7 +14,6 @@
 import logging
 import multiprocessing
 import os
-import sys
 from functools import partial
 from time import perf_counter
 from typing import Any, Callable, Dict, Mapping, Optional, Sequence, Tuple, no_type_check
@@ -27,6 +26,7 @@ from torchmetrics.utilities.data import select_topk, to_onehot
 from torchmetrics.utilities.enums import DataType
 
 _DOCTEST_DOWNLOAD_TIMEOUT = os.environ.get("DOCTEST_DOWNLOAD_TIMEOUT", 120)
+_SKIP_SLOW_DOCTEST = bool(os.environ.get("SKIP_SLOW_DOCTEST", 0))
 
 
 def _check_for_empty_tensors(preds: Tensor, target: Tensor) -> bool:
@@ -758,17 +758,6 @@ def is_overridden(method_name: str, instance: object, parent: object) -> bool:
         raise ValueError("The parent should define the method")
 
     return instance_attr.__code__ != parent_attr.__code__
-
-
-def _in_doctest() -> bool:
-    """Determine if script running in doctest context."""
-    if "_pytest.doctest" in sys.modules:
-        return True
-    if hasattr(sys.modules["__main__"], "_SpoofOut"):
-        return True
-    if sys.modules["__main__"].__dict__.get("__file__", "").endswith("/pytest"):
-        return True
-    return False
 
 
 def _try_proceed_with_timeout(fn: Callable, timeout: int = _DOCTEST_DOWNLOAD_TIMEOUT) -> bool:
