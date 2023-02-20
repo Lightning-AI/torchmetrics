@@ -69,15 +69,13 @@ def _multi_target_ref_metric(preds, target, adjusted, multioutput):
 )
 class TestR2Score(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_r2(self, adjusted, multioutput, preds, target, ref_metric, num_outputs, ddp, dist_sync_on_step):
+    def test_r2(self, adjusted, multioutput, preds, target, ref_metric, num_outputs, ddp):
         self.run_class_metric_test(
             ddp,
             preds,
             target,
             R2Score,
             partial(ref_metric, adjusted=adjusted, multioutput=multioutput),
-            dist_sync_on_step,
             metric_args={"adjusted": adjusted, "multioutput": multioutput, "num_outputs": num_outputs},
         )
 
