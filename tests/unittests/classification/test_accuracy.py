@@ -73,7 +73,7 @@ class TestAccuracy(MetricTester):
         ignore_index = None
         multidim_average = "global"
 
-        with pytest.raises(MisConfigurationError):
+        with pytest.raises(ValueError):
             self.run_class_metric_test(
                 ddp=False,
                 preds=preds,
@@ -96,7 +96,7 @@ class TestAccuracy(MetricTester):
         ignore_index = None
         multidim_average = "global"
 
-        with pytest.raises(MisConfigurationError):
+        with pytest.raises(ValueError):
             self.run_functional_metric_test(
                 preds=preds,
                 target=target,
