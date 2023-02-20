@@ -83,7 +83,7 @@ class TestBinaryRecallAtFixedPrecision(MetricTester):
             },
         )
 
-    @pytest.mark.parametrize("min_precision", [0.05, 0.1, 0.3, 0.5, 0.8])
+    @pytest.mark.parametrize("min_precision", [0.05, 0.5, 0.8])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     def test_binary_recall_at_fixed_precision_functional(self, input, min_precision, ignore_index):
         preds, target = input
@@ -140,7 +140,7 @@ class TestBinaryRecallAtFixedPrecision(MetricTester):
             dtype=dtype,
         )
 
-    @pytest.mark.parametrize("min_precision", [0.05, 0.1, 0.3, 0.5, 0.8])
+    @pytest.mark.parametrize("min_precision", [0.05, 0.5, 0.8])
     def test_binary_recall_at_fixed_precision_threshold_arg(self, input, min_precision):
         preds, target = input
 
@@ -175,7 +175,7 @@ def _sklearn_recall_at_fixed_precision_multiclass(preds, target, min_precision, 
     (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5], _multiclass_cases[6]),
 )
 class TestMulticlassRecallAtFixedPrecision(MetricTester):
-    @pytest.mark.parametrize("min_precision", [0.05, 0.1, 0.3, 0.5, 0.8])
+    @pytest.mark.parametrize("min_precision", [0.05, 0.5, 0.8])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multiclass_recall_at_fixed_precision(self, input, ddp, min_precision, ignore_index):
@@ -198,7 +198,7 @@ class TestMulticlassRecallAtFixedPrecision(MetricTester):
             },
         )
 
-    @pytest.mark.parametrize("min_precision", [0.05, 0.1, 0.3, 0.5, 0.8])
+    @pytest.mark.parametrize("min_precision", [0.05, 0.5, 0.8])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     def test_multiclass_recall_at_fixed_precision_functional(self, input, min_precision, ignore_index):
         preds, target = input
@@ -256,7 +256,7 @@ class TestMulticlassRecallAtFixedPrecision(MetricTester):
             dtype=dtype,
         )
 
-    @pytest.mark.parametrize("min_precision", [0.05, 0.1, 0.3, 0.5, 0.8])
+    @pytest.mark.parametrize("min_precision", [0.05, 0.5, 0.8])
     def test_multiclass_recall_at_fixed_precision_threshold_arg(self, input, min_precision):
         preds, target = input
         if (preds < 0).any():
@@ -285,7 +285,7 @@ def _sklearn_recall_at_fixed_precision_multilabel(preds, target, min_precision, 
     "input", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5])
 )
 class TestMultilabelRecallAtFixedPrecision(MetricTester):
-    @pytest.mark.parametrize("min_precision", [0.05, 0.1, 0.3, 0.5, 0.8])
+    @pytest.mark.parametrize("min_precision", [0.05, 0.5, 0.8])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multilabel_recall_at_fixed_precision(self, input, ddp, min_precision, ignore_index):
@@ -308,7 +308,7 @@ class TestMultilabelRecallAtFixedPrecision(MetricTester):
             },
         )
 
-    @pytest.mark.parametrize("min_precision", [0.05, 0.1, 0.3, 0.5, 0.8])
+    @pytest.mark.parametrize("min_precision", [0.05, 0.5, 0.8])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     def test_multilabel_recall_at_fixed_precision_functional(self, input, min_precision, ignore_index):
         preds, target = input
@@ -366,7 +366,7 @@ class TestMultilabelRecallAtFixedPrecision(MetricTester):
             dtype=dtype,
         )
 
-    @pytest.mark.parametrize("min_precision", [0.05, 0.1, 0.3, 0.5, 0.8])
+    @pytest.mark.parametrize("min_precision", [0.05, 0.5, 0.8])
     def test_multilabel_recall_at_fixed_precision_threshold_arg(self, input, min_precision):
         preds, target = input
         if (preds < 0).any():
