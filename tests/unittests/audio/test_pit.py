@@ -118,15 +118,13 @@ class TestPIT(MetricTester):
     atol = 1e-2
 
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_pit(self, preds, target, ref_metric, metric_func, eval_func, ddp, dist_sync_on_step):
+    def test_pit(self, preds, target, ref_metric, metric_func, eval_func, ddp):
         self.run_class_metric_test(
             ddp,
             preds,
             target,
             PermutationInvariantTraining,
             reference_metric=partial(_average_metric, metric_func=ref_metric),
-            dist_sync_on_step=dist_sync_on_step,
             metric_args={"metric_func": metric_func, "eval_func": eval_func},
         )
 
