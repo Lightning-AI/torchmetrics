@@ -48,8 +48,7 @@ def rwth_manual_metric(preds, targets) -> Tensor:
 )
 class TestExtendedEditDistance(TextTester):
     @pytest.mark.parametrize("ddp", [False, True])
-    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_eed_class(self, preds, targets, ddp, dist_sync_on_step):
+    def test_eed_class(self, preds, targets, ddp):
         rwth_metric = partial(rwth_manual_metric)
         self.run_class_metric_test(
             ddp=ddp,
@@ -57,7 +56,6 @@ class TestExtendedEditDistance(TextTester):
             targets=targets,
             metric_class=ExtendedEditDistance,
             reference_metric=rwth_metric,
-            dist_sync_on_step=dist_sync_on_step,
         )
 
     def test_eed_functional(self, preds, targets):
