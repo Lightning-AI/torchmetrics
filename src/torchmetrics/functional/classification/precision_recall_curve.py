@@ -194,11 +194,10 @@ def _binary_precision_recall_curve_update(
     """
     if thresholds is None:
         return preds, target
-    update_fn = (
-        _binary_precision_recall_curve_update_vectorized
-        if preds.numel() <= 50_000
-        else _binary_precision_recall_curve_update_loop
-    )
+    if preds.numel() <= 50_000:
+        update_fn = _binary_precision_recall_curve_update_vectorized
+    else:
+        update_fn = _binary_precision_recall_curve_update_loop
     return update_fn(preds, target, thresholds)
 
 
@@ -451,12 +450,10 @@ def _multiclass_precision_recall_curve_update(
     """
     if thresholds is None:
         return preds, target
-    size_thr = preds.numel() * num_classes <= 1_000_000
-    update_fn = (
-        _multiclass_precision_recall_curve_update_vectorized
-        if size_thr
-        else _multiclass_precision_recall_curve_update_loop
-    )
+    if preds.numel() * num_classes <= 1_000_000:
+        update_fn = _multiclass_precision_recall_curve_update_vectorized
+    else:
+        update_fn = _multiclass_precision_recall_curve_update_loop
     return update_fn(preds, target, num_classes, thresholds)
 
 
