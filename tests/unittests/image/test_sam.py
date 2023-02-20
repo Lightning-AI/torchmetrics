@@ -68,15 +68,13 @@ def _baseline_sam(
 )
 class TestSpectralAngleMapper(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_sam(self, reduction, preds, target, ddp, dist_sync_on_step):
+    def test_sam(self, reduction, preds, target, ddp):
         self.run_class_metric_test(
             ddp,
             preds,
             target,
             SpectralAngleMapper,
             partial(_baseline_sam, reduction=reduction),
-            dist_sync_on_step,
             metric_args={"reduction": reduction},
         )
 
