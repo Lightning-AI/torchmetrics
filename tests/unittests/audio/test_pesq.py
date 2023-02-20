@@ -78,8 +78,7 @@ class TestPESQ(MetricTester):
 
     @pytest.mark.parametrize("num_processes", [1, 2])
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_pesq(self, preds, target, ref_metric, fs, mode, num_processes, ddp, dist_sync_on_step):
+    def test_pesq(self, preds, target, ref_metric, fs, mode, num_processes, ddp):
         if num_processes != 1 and ddp:
             pytest.skip("Multiprocessing and ddp does not work together")
         self.run_class_metric_test(
@@ -88,7 +87,6 @@ class TestPESQ(MetricTester):
             target,
             PerceptualEvaluationSpeechQuality,
             reference_metric=partial(average_metric, metric_func=ref_metric),
-            dist_sync_on_step=dist_sync_on_step,
             metric_args={"fs": fs, "mode": mode, "n_processes": num_processes},
         )
 

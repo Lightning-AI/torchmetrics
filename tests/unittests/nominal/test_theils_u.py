@@ -102,8 +102,7 @@ class TestTheilsU(MetricTester):
     atol = 1e-5
 
     @pytest.mark.parametrize("ddp", [False, True])
-    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_theils_u(self, ddp, dist_sync_on_step, preds, target, nan_strategy, nan_replace_value):
+    def test_theils_u(self, ddp, preds, target, nan_strategy, nan_replace_value):
         metric_args = {
             "nan_strategy": nan_strategy,
             "nan_replace_value": nan_replace_value,
@@ -116,7 +115,6 @@ class TestTheilsU(MetricTester):
         )
         self.run_class_metric_test(
             ddp=ddp,
-            dist_sync_on_step=dist_sync_on_step,
             preds=preds,
             target=target,
             metric_class=TheilsU,

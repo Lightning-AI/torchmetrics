@@ -78,15 +78,13 @@ def _compare_fn(preds, target) -> np.ndarray:
 
 class TestPanopticQuality(MetricTester):
     @pytest.mark.parametrize("ddp", [False, True])
-    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_panoptic_quality_class(self, ddp, dist_sync_on_step):
+    def test_panoptic_quality_class(self, ddp):
         self.run_class_metric_test(
             ddp=ddp,
             preds=_inputs.preds,
             target=_inputs.target,
             metric_class=PanopticQuality,
             reference_metric=_compare_fn,
-            dist_sync_on_step=dist_sync_on_step,
             check_batch=False,
             metric_args=_args,
         )

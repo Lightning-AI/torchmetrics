@@ -81,12 +81,10 @@ class TestAggregation(MetricTester):
     """Test aggregation metrics."""
 
     @pytest.mark.parametrize("ddp", [False, True])
-    @pytest.mark.parametrize("dist_sync_on_step", [False])
-    def test_aggreagation(self, ddp, dist_sync_on_step, metric_class, compare_fn, values, weights):
+    def test_aggreagation(self, ddp, metric_class, compare_fn, values, weights):
         """test modular implementation."""
         self.run_class_metric_test(
             ddp=ddp,
-            dist_sync_on_step=dist_sync_on_step,
             metric_class=metric_class,
             reference_metric=compare_fn,
             check_scriptable=True,

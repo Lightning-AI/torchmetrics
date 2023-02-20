@@ -56,7 +56,6 @@ def _reciprocal_rank(target: np.ndarray, preds: np.ndarray):
 
 class TestMRR(RetrievalMetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize("ignore_index", [None, 1])  # avoid setting 0, otherwise test with all 0 targets will fail
     @pytest.mark.parametrize(**_default_metric_class_input_arguments)
@@ -66,7 +65,6 @@ class TestMRR(RetrievalMetricTester):
         indexes: Tensor,
         preds: Tensor,
         target: Tensor,
-        dist_sync_on_step: bool,
         empty_target_action: str,
         ignore_index: int,
     ):
@@ -79,12 +77,10 @@ class TestMRR(RetrievalMetricTester):
             target=target,
             metric_class=RetrievalMRR,
             reference_metric=_reciprocal_rank,
-            dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
         )
 
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize(**_default_metric_class_input_arguments_ignore_index)
     def test_class_metric_ignore_index(
@@ -93,7 +89,6 @@ class TestMRR(RetrievalMetricTester):
         indexes: Tensor,
         preds: Tensor,
         target: Tensor,
-        dist_sync_on_step: bool,
         empty_target_action: str,
     ):
         metric_args = {"empty_target_action": empty_target_action, "ignore_index": -100}
@@ -105,7 +100,6 @@ class TestMRR(RetrievalMetricTester):
             target=target,
             metric_class=RetrievalMRR,
             reference_metric=_reciprocal_rank,
-            dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
         )
 
