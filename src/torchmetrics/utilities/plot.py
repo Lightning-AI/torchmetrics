@@ -233,6 +233,7 @@ def plot_binary_roc_curve(
         ax: Axis from a figure
         roc_auc: AUROC score (computed separately)
         name: Custom name to describe the classifier
+        kwargs: additional keyword arguments for line drawing
 
     Returns:
         A tuple consisting of the figure and respective ax objects (or array of ax objects) of the generated figure
