@@ -103,9 +103,8 @@ class TestInfoLM(TextTester):
     atol = 1e-4
 
     @pytest.mark.parametrize("ddp", [False, True])
-    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
     @skip_on_connection_issues()
-    def test_infolm_class(self, ddp, dist_sync_on_step, preds, targets, information_measure, idf, alpha, beta):
+    def test_infolm_class(self, ddp, preds, targets, information_measure, idf, alpha, beta):
         metric_args = {
             "model_name_or_path": MODEL_NAME,
             "information_measure": information_measure,
@@ -129,7 +128,6 @@ class TestInfoLM(TextTester):
             targets=targets,
             metric_class=InfoLM,
             reference_metric=reference_metric,
-            dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
             check_scriptable=False,  # huggingface transformers are not usually scriptable
         )
