@@ -408,9 +408,7 @@ def accuracy(
                 f"Optional arg `num_classes` must be type `int` when task is {task}. Got {type(num_classes)}"
             )
         if not isinstance(top_k, int):
-            raise ValueError(
-                f"Optional arg `top_k` must be type `int` when task is {task}. Got {type(top_k)}"
-            )
+            raise ValueError(f"Optional arg `top_k` must be type `int` when task is {task}. Got {type(top_k)}")
         return multiclass_accuracy(
             preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args
         )
