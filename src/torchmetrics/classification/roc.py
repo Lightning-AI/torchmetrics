@@ -41,6 +41,10 @@ from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_binary_roc_curve
 
 
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["BinaryROC.plot"]
+
+
 class BinaryROC(BinaryPrecisionRecallCurve):
     r"""Compute the Receiver Operating Characteristic (ROC) for binary tasks. The curve consist of multiple pairs of
     true positive rate (TPR) and false positive rate (FPR) values evaluated at different thresholds, such that the
