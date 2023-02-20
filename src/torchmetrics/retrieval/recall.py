@@ -89,8 +89,8 @@ class RetrievalRecall(RetrievalMetric):
             **kwargs,
         )
 
-        if (top_k is not None) and not (isinstance(top_k, int) and top_k > 0):
-            raise ValueError("`k` has to be a positive integer or None")
+        if top_k is not None and not (isinstance(top_k, int) and top_k > 0):
+            raise ValueError("`top_k` has to be a positive integer or None")
         self.top_k = top_k
 
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:

@@ -56,7 +56,7 @@ def retrieval_normalized_dcg(preds: Tensor, target: Tensor, top_k: Optional[int]
     top_k = preds.shape[-1] if top_k is None else top_k
 
     if not (isinstance(top_k, int) and top_k > 0):
-        raise ValueError("`k` has to be a positive integer or None")
+        raise ValueError("`top_k` has to be a positive integer or None")
 
     sorted_target = target[torch.argsort(preds, dim=-1, descending=True)][:top_k]
     ideal_target = torch.sort(target, descending=True)[0][:top_k]

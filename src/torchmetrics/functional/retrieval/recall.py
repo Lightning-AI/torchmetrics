@@ -52,7 +52,7 @@ def retrieval_recall(preds: Tensor, target: Tensor, top_k: Optional[int] = None)
         top_k = preds.shape[-1]
 
     if not (isinstance(top_k, int) and top_k > 0):
-        raise ValueError("`k` has to be a positive integer or None")
+        raise ValueError("`top_k` has to be a positive integer or None")
 
     if not target.sum():
         return tensor(0.0, device=preds.device)

@@ -39,8 +39,7 @@ def _hit_rate_at_k(target: np.ndarray, preds: np.ndarray, top_k: int = None):
     assert target.shape == preds.shape
     assert len(target.shape) == 1  # works only with single dimension inputs
 
-    if top_k is None:
-        top_k = len(preds)
+    top_k = top_k or len(preds)
 
     if target.sum() > 0:
         order_indexes = np.argsort(preds, axis=0)[::-1]

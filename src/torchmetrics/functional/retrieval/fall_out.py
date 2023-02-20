@@ -51,7 +51,7 @@ def retrieval_fall_out(preds: Tensor, target: Tensor, top_k: Optional[int] = Non
     top_k = preds.shape[-1] if top_k is None else top_k
 
     if not (isinstance(top_k, int) and top_k > 0):
-        raise ValueError("`k` has to be a positive integer or None")
+        raise ValueError("`top_k` has to be a positive integer or None")
 
     target = 1 - target  # we want to compute the probability of getting a non-relevant doc among all non-relevant docs
 
