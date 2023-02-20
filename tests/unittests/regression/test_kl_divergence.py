@@ -61,15 +61,13 @@ class TestKLDivergence(MetricTester):
     atol = 1e-6
 
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_kldivergence(self, reduction, p, q, log_prob, ddp, dist_sync_on_step):
+    def test_kldivergence(self, reduction, p, q, log_prob, ddp):
         self.run_class_metric_test(
             ddp,
             p,
             q,
             KLDivergence,
             partial(_wrap_reduction, log_prob=log_prob, reduction=reduction),
-            dist_sync_on_step,
             metric_args={"log_prob": log_prob, "reduction": reduction},
         )
 

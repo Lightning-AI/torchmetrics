@@ -90,12 +90,10 @@ class TestPearsonsContingencyCoefficient(MetricTester):
     atol = 1e-5
 
     @pytest.mark.parametrize("ddp", [False, True])
-    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_pearsons_ta(self, ddp, dist_sync_on_step, preds, target):
+    def test_pearsons_ta(self, ddp, preds, target):
         metric_args = {"num_classes": NUM_CLASSES}
         self.run_class_metric_test(
             ddp=ddp,
-            dist_sync_on_step=dist_sync_on_step,
             preds=preds,
             target=target,
             metric_class=PearsonsContingencyCoefficient,

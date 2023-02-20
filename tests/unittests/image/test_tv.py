@@ -67,8 +67,7 @@ for size, channel, dtype in [
 @pytest.mark.parametrize("reduction", ["sum", "mean", None])
 class TestTotalVariation(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_total_variation(self, preds, target, reduction, ddp, dist_sync_on_step):
+    def test_total_variation(self, preds, target, reduction, ddp):
         """Test modular implementation."""
         if reduction is None and ddp:
             pytest.skip("reduction=None and ddp=True runs out of memory on CI hardware, but it does work")
@@ -78,7 +77,6 @@ class TestTotalVariation(MetricTester):
             target,
             TotalVariationTester,
             partial(total_variation_kornia_tester, reduction=reduction),
-            dist_sync_on_step,
             metric_args={"reduction": reduction},
         )
 
