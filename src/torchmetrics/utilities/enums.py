@@ -25,7 +25,7 @@ class EnumStr(StrEnum):
         return "Task"
 
     @classmethod
-    def from_str(cls, value: Union[str, Literal], source: Literal["key", "value", "any"] = "key") -> "EnumStr":
+    def from_str(cls, value: str, source: Literal["key", "value", "any"] = "key") -> "EnumStr":
         """Load from string.
 
         Raises:
