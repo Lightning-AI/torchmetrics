@@ -57,7 +57,7 @@ runs:
       path: ${{ env.TRANSFORMERS_CACHE }}
       key: cache-transformers
 
-  - name: Post HF
+  - name: Restored HF
     run: |
       mkdir -p $TRANSFORMERS_CACHE
       printf "list root:\n"
