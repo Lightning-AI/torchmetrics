@@ -13,7 +13,6 @@
 # limitations under the License.
 from __future__ import annotations
 
-
 from lightning_utilities.core.enums import StrEnum
 from typing_extensions import Literal
 
