@@ -26,25 +26,25 @@ from torchmetrics.utilities.enums import EnumStr
 class _MetricVariant(EnumStr):
     """Enumerate for metric variants."""
 
-    @staticmethod
-    def _name() -> str:
-        return "variant"
-
     A = "a"
     B = "b"
     C = "c"
 
-
-class _TestAlternative(EnumStr):
-    """Enumerate for test altenative options."""
-
     @staticmethod
     def _name() -> str:
-        return "alternative"
+        return "variant"
+
+
+class _TestAlternative(EnumStr):
+    """Enumerate for test alternative options."""
 
     TWO_SIDED = "two-sided"
     LESS = "less"
     GREATER = "greater"
+
+    @staticmethod
+    def _name() -> str:
+        return "alternative"
 
 
 def _sort_on_first_sequence(x: Tensor, y: Tensor) -> Tuple[Tensor, Tensor]:
@@ -395,13 +395,15 @@ def kendall_rank_corrcoef(
     if t_test and alternative is None:
         raise ValueError("Argument `alternative` is required if `t_test=True` but got `None`.")
 
-    _variant = _MetricVariant.from_str(variant)
-    _alternative = _TestAlternative.from_str(alternative) if t_test and alternative else None
+    _variant = _MetricVariant.from_str(str(variant))
+    _alternative = _TestAlternative.from_str(str(alternative)) if t_test else None
 
     _preds, _target = _kendall_corrcoef_update(
         preds, target, [], [], num_outputs=1 if preds.ndim == 1 else preds.shape[-1]
     )
-    tau, p_value = _kendall_corrcoef_compute(dim_zero_cat(_preds), dim_zero_cat(_target), _variant, _alternative)
+    tau, p_value = _kendall_corrcoef_compute(
+        dim_zero_cat(_preds), dim_zero_cat(_target), _variant, _alternative  # type: ignore[arg-type]  # todo
+    )
 
     if p_value is not None:
         return tau, p_value
