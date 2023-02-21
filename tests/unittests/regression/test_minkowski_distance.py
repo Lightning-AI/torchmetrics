@@ -29,14 +29,14 @@ _multi_target_inputs = Input(
 )
 
 
-def _single_target_sk_metric(preds, target, p):
+def _sk_metric_single_target(preds, target, p):
     sk_preds = preds.view(-1).numpy()
     sk_target = target.view(-1).numpy()
     res = scipy_minkowski(sk_preds, sk_target, p=p)
     return res
 
 
-def _multi_target_sk_metric(preds, target, p):
+def _sk_metric_multi_target(preds, target, p):
     sk_preds = preds.view(-1).numpy()
     sk_target = target.view(-1).numpy()
     res = scipy_minkowski(sk_preds, sk_target, p=p)
@@ -44,45 +44,45 @@ def _multi_target_sk_metric(preds, target, p):
 
 
 @pytest.mark.parametrize(
-    "preds, target, sk_metric",
+    "preds, target, ref_metric",
     [
-        (_single_target_inputs.preds, _single_target_inputs.target, _single_target_sk_metric),
-        (_multi_target_inputs.preds, _multi_target_inputs.target, _multi_target_sk_metric),
+        (_single_target_inputs.preds, _single_target_inputs.target, _sk_metric_single_target),
+        (_multi_target_inputs.preds, _multi_target_inputs.target, _sk_metric_multi_target),
     ],
 )
 @pytest.mark.parametrize("p", [1, 2, 4, 1.5])
 class TestMinkowskiDistance(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_minkowski_distance_class(self, preds, target, sk_metric, p, ddp, dist_sync_on_step):
+    def test_minkowski_distance_class(self, preds, target, ref_metric, p, ddp, dist_sync_on_step):
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
             target=target,
             metric_class=MinkowskiDistance,
-            reference_metric=partial(sk_metric, p=p),
+            reference_metric=partial(ref_metric, p=p),
             dist_sync_on_step=dist_sync_on_step,
-            metric_args={"p": p},
+            metric_args={"exponent": p},
         )
 
-    def test_minkowski_distance_functional(self, preds, target, sk_metric, p):
+    def test_minkowski_distance_functional(self, preds, target, ref_metric, p):
         self.run_functional_metric_test(
             preds=preds,
             target=target,
             metric_functional=minkowski_distance,
-            reference_metric=partial(sk_metric, p=p),
-            metric_args={"p": p},
+            reference_metric=partial(ref_metric, p=p),
+            metric_args={"exponent": p},
         )
 
     @pytest.mark.skipif(
         not _TORCH_GREATER_EQUAL_1_9, reason="minkowski half + cpu not supported for older versions of pytorch"
     )
-    def test_minkowski_distance_half_cpu(self, preds, target, sk_metric, p):
-        self.run_precision_test_cpu(preds, target, MinkowskiDistance, minkowski_distance, metric_args={"p": p})
+    def test_minkowski_distance_half_cpu(self, preds, target, ref_metric, p):
+        self.run_precision_test_cpu(preds, target, MinkowskiDistance, minkowski_distance, metric_args={"exponent": p})
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-    def test_minkowski_distance_half_gpu(self, preds, target, sk_metric, p):
-        self.run_precision_test_gpu(preds, target, MinkowskiDistance, minkowski_distance, metric_args={"p": p})
+    def test_minkowski_distance_half_gpu(self, preds, target, ref_metric, p):
+        self.run_precision_test_gpu(preds, target, MinkowskiDistance, minkowski_distance, metric_args={"exponent": p})
 
 
 def test_error_on_different_shape():
@@ -92,5 +92,5 @@ def test_error_on_different_shape():
 
 
 def test_error_on_wrong_p_arg():
-    with pytest.raises(TorchMetricsUserError, match="Argument ``p`` must be a float.*"):
+    with pytest.raises(TorchMetricsUserError, match="Argument ``exponent`` must be a float.*"):
         MinkowskiDistance(p=-10)
