@@ -159,8 +159,8 @@ _errors_test_functional_metric_parameters_with_nonbinary = {
 _errors_test_functional_metric_parameters_k = {
     "argnames": "preds,target,message,metric_args",
     "argvalues": [
-        (_irs.preds, _irs.target, "`k` has to be a positive integer or None", {"k": -10}),
-        (_irs.preds, _irs.target, "`k` has to be a positive integer or None", {"k": 4.0}),
+        (_irs.preds, _irs.target, "`top_k` has to be a positive integer or None", {"top_k": -10}),
+        (_irs.preds, _irs.target, "`top_k` has to be a positive integer or None", {"top_k": 4.0}),
     ],
 }
 
@@ -311,8 +311,8 @@ _errors_test_class_metric_parameters_default = {
 _errors_test_class_metric_parameters_k = {
     "argnames": "indexes,preds,target,message,metric_args",
     "argvalues": [
-        (_irs.index, _irs.preds, _irs.target, "`k` has to be a positive integer or None", {"k": -10}),
-        (_irs.index, _irs.preds, _irs.target, "`k` has to be a positive integer or None", {"k": 4.0}),
+        (_irs.index, _irs.preds, _irs.target, "`top_k` has to be a positive integer or None", {"top_k": -10}),
+        (_irs.index, _irs.preds, _irs.target, "`top_k` has to be a positive integer or None", {"top_k": 4.0}),
     ],
 }
 
