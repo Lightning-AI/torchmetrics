@@ -446,7 +446,7 @@ def _chrf_score_update(
             target_char_n_grams,
             target_word_n_grams,
         ) = _calculate_sentence_level_chrf_score(
-            targets,
+            targets,  # type: ignore
             pred_char_n_grams_counts,
             pred_word_n_grams_counts,
             pred_char_n_grams,

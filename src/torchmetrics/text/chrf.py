@@ -172,7 +172,7 @@ class CHRFScore(Metric):
 
                 n_grams_dicts[dict_name][n] = getattr(self, state_name)
 
-        return tuple(n_grams_dicts.values())
+        return tuple(n_grams_dicts.values())  # type: ignore
 
     def _update_states_from_dicts(self, n_grams_dicts_tuple: _DICT_STATES_TYPES) -> None:
         """Update global metric states based on the n-gram dictionaries calculated on the current batch."""
