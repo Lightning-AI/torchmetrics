@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections import namedtuple
-from typing import Final
 
 import numpy as np
 import pytest
@@ -27,7 +26,7 @@ seed_all(42)
 
 Input = namedtuple("Input", ["preds", "target"])
 
-_INPUTS_0: Final = Input(
+_INPUTS_0 = Input(
     # Shape of input tensors is (num_batches, batch_size, height, width, 2).
     preds=torch.tensor(
         [
@@ -52,7 +51,7 @@ _INPUTS_0: Final = Input(
     .reshape((1, 1, 5, 5, 2))
     .repeat(2, 1, 1, 1, 1),
 )
-_INPUTS_1: Final = Input(
+_INPUTS_1 = Input(
     # Shape of input tensors is (num_batches, batch_size, num_points, 2).
     preds=torch.tensor(
         [[10, 0], [10, 123], [0, 1], [10, 0], [1, 2]],
@@ -65,9 +64,9 @@ _INPUTS_1: Final = Input(
     .reshape((1, 1, 5, 2))
     .repeat(2, 1, 1, 1),
 )
-_ARGS_0: Final = {"things": {0, 1}, "stuffs": {6, 7}}
-_ARGS_1: Final = {"things": {2}, "stuffs": {3}, "allow_unknown_preds_category": True}
-_ARGS_2: Final = {"things": {0, 1}, "stuffs": {10, 11}}
+_ARGS_0 = {"things": {0, 1}, "stuffs": {6, 7}}
+_ARGS_1 = {"things": {2}, "stuffs": {3}, "allow_unknown_preds_category": True}
+_ARGS_2 = {"things": {0, 1}, "stuffs": {10, 11}}
 
 # TODO: Improve _compare_fn by calling https://github.com/cocodataset/panopticapi/blob/master/panopticapi/evaluation.py
 # directly and compare at runtime on multiple examples.
