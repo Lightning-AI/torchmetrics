@@ -395,8 +395,8 @@ def kendall_rank_corrcoef(
     if t_test and alternative is None:
         raise ValueError("Argument `alternative` is required if `t_test=True` but got `None`.")
 
-    _variant = _MetricVariant.from_str(str(variant))
-    _alternative = _TestAlternative.from_str(str(alternative)) if t_test else None
+    _variant = _MetricVariant.from_str(variant)
+    _alternative = _TestAlternative.from_str(alternative) if t_test else None
 
     _preds, _target = _kendall_corrcoef_update(
         preds, target, [], [], num_outputs=1 if preds.ndim == 1 else preds.shape[-1]
