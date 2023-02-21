@@ -72,7 +72,8 @@ class PanopticQuality(Metric):
             ...                   [[0, 1], [0, 1], [6, 0], [1, 0]],
             ...                   [[0, 1], [7, 0], [1, 0], [1, 0]],
             ...                   [[0, 1], [7, 0], [7, 0], [7, 0]]]])
-            >>> panoptic_quality(preds, target, things = {0, 1}, stuffs = {6, 7})
+            >>> panoptic_quality = PanopticQuality(things = {0, 1}, stuffs = {6, 7})
+            >>> panoptic_quality(preds, target)
             tensor(0.5463, dtype=torch.float64)
 
     """
