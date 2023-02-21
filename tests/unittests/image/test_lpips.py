@@ -58,7 +58,6 @@ class TestLPIPS(MetricTester):
             target=_inputs.img2,
             metric_class=LearnedPerceptualImagePatchSimilarity,
             reference_metric=partial(_compare_fn, net_type=net_type, normalize=normalize),
-            dist_sync_on_step=False,
             check_scriptable=False,
             check_state_dict=False,
             metric_args={"net_type": net_type, "normalize": normalize},

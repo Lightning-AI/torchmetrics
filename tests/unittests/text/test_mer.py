@@ -28,15 +28,13 @@ def _compute_mer_metric_jiwer(preds: Union[str, List[str]], target: Union[str, L
 )
 class TestMatchErrorRate(TextTester):
     @pytest.mark.parametrize("ddp", [False, True])
-    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_mer_class(self, ddp, dist_sync_on_step, preds, targets):
+    def test_mer_class(self, ddp, preds, targets):
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
             targets=targets,
             metric_class=MatchErrorRate,
             reference_metric=_compute_mer_metric_jiwer,
-            dist_sync_on_step=dist_sync_on_step,
         )
 
     def test_mer_functional(self, preds, targets):
