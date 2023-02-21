@@ -144,6 +144,6 @@ class SpectralAngleMapper(Metric):
         """
         val = val or self.compute()
         fig, ax = plot_single_or_multi_val(
-            val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
+            val, ax=ax, higher_is_better=self.higher_is_better, name=self.__class__.__name__, **self.plot_options
         )
         return fig, ax
