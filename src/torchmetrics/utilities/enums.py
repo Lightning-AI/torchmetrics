@@ -13,9 +13,8 @@
 # limitations under the License.
 from typing import Optional
 
-from typing_extensions import Literal
-
 from lightning_utilities.core.enums import StrEnum as StrEnum
+from typing_extensions import Literal
 
 
 class EnumStr(StrEnum):
