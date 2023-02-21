@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # this is just a bypass for this module name collision with build-in one
+from __future__ import annotations
 from collections import OrderedDict
 from copy import deepcopy
 from typing import Any, Dict, Hashable, Iterable, List, Optional, Sequence, Tuple, Union
@@ -295,7 +296,7 @@ class MetricCollection(ModuleDict):
             # reset state reference
             self._compute_groups_create_state_ref()
 
-    def clone(self, prefix: Optional[str] = None, postfix: Optional[str] = None) -> "MetricCollection":
+    def clone(self, prefix: Optional[str] = None, postfix: Optional[str] = None) -> MetricCollection:
         """Make a copy of the metric collection
         Args:
             prefix: a string to append in front of the metric keys

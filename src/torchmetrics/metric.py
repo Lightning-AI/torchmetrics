@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from __future__ import annotations
 import functools
 import inspect
 from abc import ABC, abstractmethod
@@ -583,7 +584,7 @@ class Metric(Module, ABC):
         self._cache = None
         self._is_synced = False
 
-    def clone(self) -> "Metric":
+    def clone(self) -> Metric:
         """Make a copy of the metric."""
         return deepcopy(self)
 
@@ -607,39 +608,39 @@ class Metric(Module, ABC):
         super().__setattr__(name, value)
 
     @property
-    def device(self) -> "torch.device":
+    def device(self) -> torch.device:
         """Return the device of the metric."""
         return self._device
 
-    def type(self, dst_type: Union[str, torch.dtype]) -> "Metric":
+    def type(self, dst_type: Union[str, torch.dtype]) -> Metric:
         """Method override default and prevent dtype casting.
 
         Please use `metric.set_dtype(dtype)` instead.
         """
         return self
 
-    def float(self) -> "Metric":
+    def float(self) -> Metric:
         """Method override default and prevent dtype casting.
 
         Please use `metric.set_dtype(dtype)` instead.
         """
         return self
 
-    def double(self) -> "Metric":
+    def double(self) -> Metric:
         """Method override default and prevent dtype casting.
 
         Please use `metric.set_dtype(dtype)` instead.
         """
         return self
 
-    def half(self) -> "Metric":
+    def half(self) -> Metric:
         """Method override default and prevent dtype casting.
 
         Please use `metric.set_dtype(dtype)` instead.
         """
         return self
 
-    def set_dtype(self, dst_type: Union[str, torch.dtype]) -> "Metric":
+    def set_dtype(self, dst_type: Union[str, torch.dtype]) -> Metric:
         """Special version of `type` for transferring all metric states to specific dtype
         Arguments:
             dst_type (type or string): the desired type.
@@ -778,141 +779,141 @@ class Metric(Module, ABC):
 
         return hash(tuple(hash_vals))
 
-    def __add__(self, other: "Metric") -> "Metric":
+    def __add__(self, other: Metric) -> Metric:
         """Construct conpositional metric using the addition operator."""
         return CompositionalMetric(torch.add, self, other)
 
-    def __and__(self, other: "Metric") -> "Metric":
+    def __and__(self, other: Metric) -> Metric:
         """Construct conpositional metric using the logical and operator."""
         return CompositionalMetric(torch.bitwise_and, self, other)
 
-    def __eq__(self, other: "Metric") -> "Metric":  # type: ignore
+    def __eq__(self, other: Metric) -> Metric:  # type: ignore
         """Construct conpositional metric using the equal operator."""
         return CompositionalMetric(torch.eq, self, other)
 
-    def __floordiv__(self, other: "Metric") -> "Metric":
+    def __floordiv__(self, other: Metric) -> Metric:
         """Construct conpositional metric using the floor division operator."""
         return CompositionalMetric(torch.floor_divide, self, other)
 
-    def __ge__(self, other: "Metric") -> "Metric":
+    def __ge__(self, other: Metric) -> Metric:
         """Construct conpositional metric using the greater than or equal operator."""
         return CompositionalMetric(torch.ge, self, other)
 
-    def __gt__(self, other: "Metric") -> "Metric":
+    def __gt__(self, other: Metric) -> Metric:
         """Construct conpositional metric using the greater than operator."""
         return CompositionalMetric(torch.gt, self, other)
 
-    def __le__(self, other: "Metric") -> "Metric":
+    def __le__(self, other: Metric) -> Metric:
         """Construct conpositional metric using the less than or equal operator."""
         return CompositionalMetric(torch.le, self, other)
 
-    def __lt__(self, other: "Metric") -> "Metric":
+    def __lt__(self, other: Metric) -> Metric:
         """Construct conpositional metric using the less than operator."""
         return CompositionalMetric(torch.lt, self, other)
 
-    def __matmul__(self, other: "Metric") -> "Metric":
+    def __matmul__(self, other: Metric) -> Metric:
         """Construct conpositional metric using the matrix multiplication operator."""
         return CompositionalMetric(torch.matmul, self, other)
 
-    def __mod__(self, other: "Metric") -> "Metric":
+    def __mod__(self, other: Metric) -> Metric:
         """Construct conpositional metric using the remainder operator."""
         return CompositionalMetric(torch.fmod, self, other)
 
-    def __mul__(self, other: "Metric") -> "Metric":
+    def __mul__(self, other: Metric) -> Metric:
         """Construct conpositional metric using the multiplication operator."""
         return CompositionalMetric(torch.mul, self, other)
 
     # Fixme: this shall return bool instead of Metric
-    def __ne__(self, other: "Metric") -> "Metric":  # type: ignore
+    def __ne__(self, other: Metric) -> Metric:  # type: ignore
         """Construct conpositional metric using the not equal operator."""
         return CompositionalMetric(torch.ne, self, other)
 
-    def __or__(self, other: "Metric") -> "Metric":
+    def __or__(self, other: Metric) -> Metric:
         """Construct conpositional metric using the logical or operator."""
         return CompositionalMetric(torch.bitwise_or, self, other)
 
-    def __pow__(self, other: "Metric") -> "Metric":
+    def __pow__(self, other: Metric) -> Metric:
         """Construct conpositional metric using the exponential/power operator."""
         return CompositionalMetric(torch.pow, self, other)
 
-    def __radd__(self, other: "Metric") -> "Metric":
+    def __radd__(self, other: Metric) -> Metric:
         """Construct conpositional metric using the addition operator."""
         return CompositionalMetric(torch.add, other, self)
 
-    def __rand__(self, other: "Metric") -> "Metric":
+    def __rand__(self, other: Metric) -> Metric:
         """Construct conpositional metric using the logical and operator."""
         # swap them since bitwise_and only supports that way and it's commutative
         return CompositionalMetric(torch.bitwise_and, self, other)
 
-    def __rfloordiv__(self, other: "Metric") -> "Metric":
+    def __rfloordiv__(self, other: Metric) -> Metric:
         """Construct conpositional metric using the floor division operator."""
         return CompositionalMetric(torch.floor_divide, other, self)
 
-    def __rmatmul__(self, other: "Metric") -> "Metric":
+    def __rmatmul__(self, other: Metric) -> Metric:
         """Construct conpositional metric using the matrix multiplication operator."""
         return CompositionalMetric(torch.matmul, other, self)
 
-    def __rmod__(self, other: "Metric") -> "Metric":
+    def __rmod__(self, other: Metric) -> Metric:
         """Construct conpositional metric using the remainder operator."""
         return CompositionalMetric(torch.fmod, other, self)
 
-    def __rmul__(self, other: "Metric") -> "Metric":
+    def __rmul__(self, other: Metric) -> Metric:
         """Construct conpositional metric using the multiplication operator."""
         return CompositionalMetric(torch.mul, other, self)
 
-    def __ror__(self, other: "Metric") -> "Metric":
+    def __ror__(self, other: Metric) -> Metric:
         """Construct conpositional metric using the logical or operator."""
         return CompositionalMetric(torch.bitwise_or, other, self)
 
-    def __rpow__(self, other: "Metric") -> "Metric":
+    def __rpow__(self, other: Metric) -> Metric:
         """Construct conpositional metric using the exponential/power operator."""
         return CompositionalMetric(torch.pow, other, self)
 
-    def __rsub__(self, other: "Metric") -> "Metric":
+    def __rsub__(self, other: Metric) -> Metric:
         """Construct conpositional metric using the subtraction operator."""
         return CompositionalMetric(torch.sub, other, self)
 
-    def __rtruediv__(self, other: "Metric") -> "Metric":
+    def __rtruediv__(self, other: Metric) -> Metric:
         """Construct conpositional metric using the true divide operator."""
         return CompositionalMetric(torch.true_divide, other, self)
 
-    def __rxor__(self, other: "Metric") -> "Metric":
+    def __rxor__(self, other: Metric) -> Metric:
         """Construct conpositional metric using the logical xor operator."""
         return CompositionalMetric(torch.bitwise_xor, other, self)
 
-    def __sub__(self, other: "Metric") -> "Metric":
+    def __sub__(self, other: Metric) -> Metric:
         """Construct conpositional metric using the subtraction operator."""
         return CompositionalMetric(torch.sub, self, other)
 
-    def __truediv__(self, other: "Metric") -> "Metric":
+    def __truediv__(self, other: Metric) -> Metric:
         """Construct conpositional metric using the true divide operator."""
         return CompositionalMetric(torch.true_divide, self, other)
 
-    def __xor__(self, other: "Metric") -> "Metric":
+    def __xor__(self, other: Metric) -> Metric:
         """Construct conpositional metric using the logical xor operator."""
         return CompositionalMetric(torch.bitwise_xor, self, other)
 
-    def __abs__(self) -> "Metric":
+    def __abs__(self) -> Metric:
         """Construct conpositional metric using the absolute operator."""
         return CompositionalMetric(torch.abs, self, None)
 
-    def __inv__(self) -> "Metric":
+    def __inv__(self) -> Metric:
         """Construct conpositional metric using the not operator."""
         return CompositionalMetric(torch.bitwise_not, self, None)
 
-    def __invert__(self) -> "Metric":
+    def __invert__(self) -> Metric:
         """Construct conpositional metric using the not operator."""
         return self.__inv__()
 
-    def __neg__(self) -> "Metric":
+    def __neg__(self) -> Metric:
         """Construct conpositional metric using absolute negative operator."""
         return CompositionalMetric(_neg, self, None)
 
-    def __pos__(self) -> "Metric":
+    def __pos__(self) -> Metric:
         """Construct conpositional metric using absolute operator."""
         return CompositionalMetric(torch.abs, self, None)
 
-    def __getitem__(self, idx: int) -> "Metric":
+    def __getitem__(self, idx: int) -> Metric:
         """Construct conpositional metric using the get item operator."""
         return CompositionalMetric(lambda x: x[idx], self, None)
 

@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import os
+from __future__ import annotations
 from typing import Any, List
 
 import torch
@@ -42,7 +42,7 @@ else:
 class NoTrainLpips(_LPIPS):
     """Wrapper to make sure LPIPS never leaves evaluation mode."""
 
-    def train(self, mode: bool) -> "NoTrainLpips":
+    def train(self, mode: bool) -> NoTrainLpips:
         """the network should not be able to be switched away from evaluation mode."""
         return super().train(False)
 

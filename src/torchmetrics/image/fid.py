@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from __future__ import annotations
 from copy import deepcopy
 from typing import Any, List, Optional, Union
 
@@ -51,7 +52,7 @@ class NoTrainInceptionV3(_FeatureExtractorInceptionV3):
         # put into evaluation mode
         self.eval()
 
-    def train(self, mode: bool) -> "NoTrainInceptionV3":
+    def train(self, mode: bool) -> NoTrainInceptionV3:
         """the inception network should not be able to be switched away from evaluation mode."""
         return super().train(False)
 
