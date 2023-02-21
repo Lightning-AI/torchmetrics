@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import annotations
+
 from copy import deepcopy
 from typing import Any, List, Optional, Union
 
@@ -45,8 +46,8 @@ class NoTrainInceptionV3(_FeatureExtractorInceptionV3):
     def __init__(
         self,
         name: str,
-        features_list: List[str],
-        feature_extractor_weights_path: Optional[str] = None,
+        features_list: list[str],
+        feature_extractor_weights_path: str | None = None,
     ) -> None:
         super().__init__(name, features_list, feature_extractor_weights_path)
         # put into evaluation mode
@@ -218,7 +219,7 @@ class FrechetInceptionDistance(Metric):
 
     def __init__(
         self,
-        feature: Union[int, Module] = 2048,
+        feature: int | Module = 2048,
         reset_real_features: bool = True,
         normalize: bool = False,
         **kwargs: Any,

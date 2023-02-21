@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import annotations
+
 import functools
 import inspect
 from abc import ABC, abstractmethod
@@ -77,9 +78,9 @@ class Metric(Module, ABC):
 
     __jit_ignored_attributes__ = ["device"]
     __jit_unused_properties__ = ["is_differentiable"]
-    is_differentiable: Optional[bool] = None
-    higher_is_better: Optional[bool] = None
-    full_state_update: Optional[bool] = None
+    is_differentiable: bool | None = None
+    higher_is_better: bool | None = None
+    full_state_update: bool | None = None
 
     def __init__(
         self,
@@ -137,13 +138,13 @@ class Metric(Module, ABC):
         self._enable_grad = False
 
         # initialize state
-        self._defaults: Dict[str, Union[List, Tensor]] = {}
-        self._persistent: Dict[str, bool] = {}
-        self._reductions: Dict[str, Union[str, Callable[..., Any], None]] = {}
+        self._defaults: dict[str, list | Tensor] = {}
+        self._persistent: dict[str, bool] = {}
+        self._reductions: dict[str, str | Callable[..., Any] | None] = {}
 
         # state management
         self._is_synced = False
-        self._cache: Optional[Dict[str, Union[List[Tensor], Tensor]]] = None
+        self._cache: dict[str, list[Tensor] | Tensor] | None = None
 
     @property
     def _update_called(self) -> bool:
@@ -165,8 +166,8 @@ class Metric(Module, ABC):
     def add_state(
         self,
         name: str,
-        default: Union[list, Tensor],
-        dist_reduce_fx: Optional[Union[str, Callable]] = None,
+        default: list | Tensor,
+        dist_reduce_fx: str | Callable | None = None,
         persistent: bool = False,
     ) -> None:
         """Add metric state variable. Only used by subclasses.
@@ -336,7 +337,7 @@ class Metric(Module, ABC):
 
         return batch_val
 
-    def _reduce_states(self, incoming_state: Dict[str, Any]) -> None:
+    def _reduce_states(self, incoming_state: dict[str, Any]) -> None:
         """Add an incoming metric state to the current state of the metric.
 
         Args:
@@ -365,7 +366,7 @@ class Metric(Module, ABC):
 
             setattr(self, attr, reduced)
 
-    def _sync_dist(self, dist_sync_fn: Callable = gather_all_tensors, process_group: Optional[Any] = None) -> None:
+    def _sync_dist(self, dist_sync_fn: Callable = gather_all_tensors, process_group: Any | None = None) -> None:
         input_dict = {attr: getattr(self, attr) for attr in self._reductions}
 
         for attr, reduction_fn in self._reductions.items():
@@ -430,10 +431,10 @@ class Metric(Module, ABC):
 
     def sync(
         self,
-        dist_sync_fn: Optional[Callable] = None,
-        process_group: Optional[Any] = None,
+        dist_sync_fn: Callable | None = None,
+        process_group: Any | None = None,
         should_sync: bool = True,
-        distributed_available: Optional[Callable] = None,
+        distributed_available: Callable | None = None,
     ) -> None:
         """Sync function for manually controlling when metrics states should be synced across processes.
 
@@ -492,11 +493,11 @@ class Metric(Module, ABC):
     @contextmanager
     def sync_context(
         self,
-        dist_sync_fn: Optional[Callable] = None,
-        process_group: Optional[Any] = None,
+        dist_sync_fn: Callable | None = None,
+        process_group: Any | None = None,
         should_sync: bool = True,
         should_unsync: bool = True,
-        distributed_available: Optional[Callable] = None,
+        distributed_available: Callable | None = None,
     ) -> Generator:
         """Context manager to synchronize the states between processes when running in a distributed setting and
         restore the local cache states after yielding.
@@ -588,12 +589,12 @@ class Metric(Module, ABC):
         """Make a copy of the metric."""
         return deepcopy(self)
 
-    def __getstate__(self) -> Dict[str, Any]:
+    def __getstate__(self) -> dict[str, Any]:
         """Get the current state, including all metric states, for the metric. Used for loading and saving a metric."""
         # ignore update and compute functions for pickling
         return {k: v for k, v in self.__dict__.items() if k not in ["update", "compute", "_update_signature"]}
 
-    def __setstate__(self, state: Dict[str, Any]) -> None:
+    def __setstate__(self, state: dict[str, Any]) -> None:
         """Set the state of the metric, based on a input state. Used for loading and saving a metric."""
         # manually restore update and compute functions for pickling
         self.__dict__.update(state)
@@ -612,7 +613,7 @@ class Metric(Module, ABC):
         """Return the device of the metric."""
         return self._device
 
-    def type(self, dst_type: Union[str, torch.dtype]) -> Metric:
+    def type(self, dst_type: str | torch.dtype) -> Metric:
         """Method override default and prevent dtype casting.
 
         Please use `metric.set_dtype(dtype)` instead.
@@ -640,7 +641,7 @@ class Metric(Module, ABC):
         """
         return self
 
-    def set_dtype(self, dst_type: Union[str, torch.dtype]) -> Metric:
+    def set_dtype(self, dst_type: str | torch.dtype) -> Metric:
         """Special version of `type` for transferring all metric states to specific dtype
         Arguments:
             dst_type (type or string): the desired type.
@@ -688,10 +689,10 @@ class Metric(Module, ABC):
 
     def state_dict(
         self,
-        destination: Dict[str, Any] = None,
+        destination: dict[str, Any] = None,
         prefix: str = "",
         keep_vars: bool = False,
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """Get the current state of metric as an dictionary.
 
         Args:
@@ -721,9 +722,9 @@ class Metric(Module, ABC):
         prefix: str,
         local_metadata: dict,
         strict: bool,
-        missing_keys: List[str],
-        unexpected_keys: List[str],
-        error_msgs: List[str],
+        missing_keys: list[str],
+        unexpected_keys: list[str],
+        error_msgs: list[str],
     ) -> None:
         """Loads metric states from state_dict."""
         for key in self._defaults:
@@ -734,7 +735,7 @@ class Metric(Module, ABC):
             state_dict, prefix, local_metadata, True, missing_keys, unexpected_keys, error_msgs
         )
 
-    def _filter_kwargs(self, **kwargs: Any) -> Dict[str, Any]:
+    def _filter_kwargs(self, **kwargs: Any) -> dict[str, Any]:
         """filter kwargs such that they match the update signature of the metric."""
         # filter all parameters based on update signature except those of
         # type VAR_POSITIONAL (*args) and VAR_KEYWORD (**kwargs)
@@ -917,7 +918,7 @@ class Metric(Module, ABC):
         """Construct conpositional metric using the get item operator."""
         return CompositionalMetric(lambda x: x[idx], self, None)
 
-    def __getnewargs__(self) -> Tuple:
+    def __getnewargs__(self) -> tuple:
         """Needede method for construction of new metrics __new__ method."""
         return (Metric.__str__(self),)
 
@@ -936,8 +937,8 @@ class CompositionalMetric(Metric):
     def __init__(
         self,
         operator: Callable,
-        metric_a: Union[Metric, int, float, Tensor],
-        metric_b: Union[Metric, int, float, Tensor, None],
+        metric_a: Metric | int | float | Tensor,
+        metric_b: Metric | int | float | Tensor | None,
     ) -> None:
         """Args:
         operator: the operator taking in one (if metric_b is None)
@@ -961,7 +962,7 @@ class CompositionalMetric(Metric):
         else:
             self.metric_b = metric_b
 
-    def _sync_dist(self, dist_sync_fn: Optional[Callable] = None, process_group: Optional[Any] = None) -> None:
+    def _sync_dist(self, dist_sync_fn: Callable | None = None, process_group: Any | None = None) -> None:
         """No syncing required here. syncing will be done in metric_a and metric_b."""
         pass
 

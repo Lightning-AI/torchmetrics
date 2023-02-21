@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import annotations
+
 from typing import Any, List
 
 import torch
@@ -108,8 +109,8 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
     higher_is_better: bool = False
     full_state_update: bool = False
 
-    real_features: List[Tensor]
-    fake_features: List[Tensor]
+    real_features: list[Tensor]
+    fake_features: list[Tensor]
 
     # due to the use of named tuple in the backbone the net variable cannot be scripted
     __jit_ignored_attributes__ = ["net"]

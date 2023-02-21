@@ -13,6 +13,7 @@
 # limitations under the License.
 # this is just a bypass for this module name collision with build-in one
 from __future__ import annotations
+
 from collections import OrderedDict
 from copy import deepcopy
 from typing import Any, Dict, Hashable, Iterable, List, Optional, Sequence, Tuple, Union
@@ -144,15 +145,15 @@ class MetricCollection(ModuleDict):
          'valmetrics/MulticlassPrecision_micro': tensor(0.1250)}
     """
 
-    _groups: Dict[int, List[str]]
+    _groups: dict[int, list[str]]
 
     def __init__(
         self,
-        metrics: Union[Metric, Sequence[Metric], Dict[str, Metric]],
+        metrics: Metric | Sequence[Metric] | dict[str, Metric],
         *additional_metrics: Metric,
-        prefix: Optional[str] = None,
-        postfix: Optional[str] = None,
-        compute_groups: Union[bool, List[List[str]]] = True,
+        prefix: str | None = None,
+        postfix: str | None = None,
+        compute_groups: bool | list[list[str]] = True,
     ) -> None:
         super().__init__()
 
@@ -165,7 +166,7 @@ class MetricCollection(ModuleDict):
         self.add_metrics(metrics, *additional_metrics)
 
     @torch.jit.unused
-    def forward(self, *args: Any, **kwargs: Any) -> Dict[str, Any]:
+    def forward(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
         """Iteratively call forward for each metric.
 
         Positional arguments (args) will be passed to every metric in the collection, while keyword arguments (kwargs)
@@ -282,7 +283,7 @@ class MetricCollection(ModuleDict):
                     setattr(mi, "_update_count", deepcopy(m0._update_count) if copy else m0._update_count)
         self._state_is_copy = copy
 
-    def compute(self) -> Dict[str, Any]:
+    def compute(self) -> dict[str, Any]:
         """Compute the result for each metric in the collection."""
         res = {k: m.compute() for k, m in self.items(keep_base=True, copy_state=False)}
         res = _flatten_dict(res)
@@ -296,7 +297,7 @@ class MetricCollection(ModuleDict):
             # reset state reference
             self._compute_groups_create_state_ref()
 
-    def clone(self, prefix: Optional[str] = None, postfix: Optional[str] = None) -> MetricCollection:
+    def clone(self, prefix: str | None = None, postfix: str | None = None) -> MetricCollection:
         """Make a copy of the metric collection
         Args:
             prefix: a string to append in front of the metric keys
@@ -315,9 +316,7 @@ class MetricCollection(ModuleDict):
         for _, m in self.items(keep_base=True, copy_state=False):
             m.persistent(mode)
 
-    def add_metrics(
-        self, metrics: Union[Metric, Sequence[Metric], Dict[str, Metric]], *additional_metrics: Metric
-    ) -> None:
+    def add_metrics(self, metrics: Metric | Sequence[Metric] | dict[str, Metric], *additional_metrics: Metric) -> None:
         """Add new metrics to Metric Collection."""
         if isinstance(metrics, Metric):
             # set compatible with original type expectations
@@ -399,7 +398,7 @@ class MetricCollection(ModuleDict):
             self._groups = {i: [str(k)] for i, k in enumerate(self.keys(keep_base=True))}
 
     @property
-    def compute_groups(self) -> Dict[int, List[str]]:
+    def compute_groups(self) -> dict[int, list[str]]:
         """Return a dict with the current compute groups in the collection."""
         return self._groups
 
@@ -426,7 +425,7 @@ class MetricCollection(ModuleDict):
             return self._modules.keys()
         return self._to_renamed_ordered_dict().keys()
 
-    def items(self, keep_base: bool = False, copy_state: bool = True) -> Iterable[Tuple[str, Module]]:
+    def items(self, keep_base: bool = False, copy_state: bool = True) -> Iterable[tuple[str, Module]]:
         r"""Return an iterable of the ModuleDict key/value pairs.
 
         Args:
@@ -461,7 +460,7 @@ class MetricCollection(ModuleDict):
         return self._modules[key]
 
     @staticmethod
-    def _check_arg(arg: Optional[str], name: str) -> Optional[str]:
+    def _check_arg(arg: str | None, name: str) -> str | None:
         if arg is None or isinstance(arg, str):
             return arg
         raise ValueError(f"Expected input `{name}` to be a string, but got {type(arg)}")
