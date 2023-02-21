@@ -5,4 +5,4 @@ numpy >=1.17.2
 torch >=1.8.1, <2.0.0
 typing-extensions; python_version < '3.9'
 packaging  # hotfix for utils, can be dropped with lit-utils >=0.5
-lightning-utilities >=0.5.0, <0.7.0
+lightning-utilities >=0.7.0, <0.8.0
