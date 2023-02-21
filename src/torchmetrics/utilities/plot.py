@@ -156,7 +156,7 @@ def trim_axs(axs: Union[_AX_TYPE, np.ndarray], nb: int) -> np.ndarray:  # type: 
 def plot_confusion_matrix(
     confmat: Tensor,
     add_text: bool = True,
-    labels: Optional[List[str]] = None,
+    labels: Optional[List[Union[int, str]]] = None,
 ) -> _PLOT_OUT_TYPE:
     """Inspired by: https://github.com/scikit-learn/scikit-
     learn/blob/main/sklearn/metrics/_plot/confusion_matrix.py.
@@ -190,19 +190,18 @@ def plot_confusion_matrix(
             f"got {len(labels)} and {n_classes}"
         )
     if confmat.ndim == 3:
-        fig_label = labels if confmat.ndim == 3 and labels is not None else np.arange(nb)
+        fig_label = labels or np.arange(nb)
         labels = list(map(str, range(n_classes)))
     else:
-        labels: Union[List[int], List[str]] = labels if labels is not None else np.arange(n_classes).tolist()
+        fig_label = None
+        labels = labels or np.arange(n_classes).tolist()
 
     fig, axs = plt.subplots(nrows=rows, ncols=cols)
     axs = trim_axs(axs, nb)
     for i in range(nb):
-        if rows != 1 and cols != 1:
-            ax = axs[i]
+        ax = axs[i] if rows != 1 and cols != 1 else axs
+        if fig_label:
             ax.set_title(f"Label {fig_label[i]}", fontsize=15)
-        else:
-            ax = axs
         ax.imshow(confmat[i].cpu().detach() if confmat.ndim == 3 else confmat.cpu().detach())
         ax.set_xlabel("True class", fontsize=15)
         ax.set_ylabel("Predicted class", fontsize=15)
