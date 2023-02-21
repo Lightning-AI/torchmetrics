@@ -188,8 +188,7 @@ def _multiclass_specificity_at_sensitivity_compute(
     specificity = [_convert_fpr_to_specificity(fpr_) for fpr_ in fpr]
     if isinstance(state, Tensor):
         res = [
-            _specificity_at_sensitivity(sp, sn, thresholds, min_sensitivity)
-            for sp, sn in zip(specificity, sensitivity)
+            _specificity_at_sensitivity(sp, sn, thresholds, min_sensitivity) for sp, sn in zip(specificity, sensitivity)
         ]
     else:
         res = [
@@ -276,9 +275,7 @@ def multiclass_specificity_at_sensitivity(
         preds, target, num_classes, thresholds, ignore_index
     )
     state = _multiclass_precision_recall_curve_update(preds, target, num_classes, thresholds)
-    return _multiclass_specificity_at_sensitivity_compute(
-        state, num_classes, thresholds, min_sensitivity
-    )
+    return _multiclass_specificity_at_sensitivity_compute(state, num_classes, thresholds, min_sensitivity)
 
 
 def _multilabel_specificity_at_sensitivity_arg_validation(
@@ -305,8 +302,7 @@ def _multilabel_specificity_at_sensitivity_compute(
     specificity = [_convert_fpr_to_specificity(fpr_) for fpr_ in fpr]
     if isinstance(state, Tensor):
         res = [
-            _specificity_at_sensitivity(sp, sn, thresholds, min_sensitivity)
-            for sp, sn in zip(specificity, sensitivity)
+            _specificity_at_sensitivity(sp, sn, thresholds, min_sensitivity) for sp, sn in zip(specificity, sensitivity)
         ]
     else:
         res = [
