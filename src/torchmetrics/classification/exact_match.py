@@ -124,6 +124,10 @@ class MulticlassExactMatch(Metric):
                 preds, target, self.num_classes, self.multidim_average, self.ignore_index
             )
         preds, target = _multiclass_stat_scores_format(preds, target, 1)
+
+        if self.ignore_index is not None:
+            preds[target == self.ignore_index] = self.ignore_index
+
         correct, total = _multiclass_exact_match_update(preds, target, self.multidim_average)
         if self.multidim_average == "samplewise":
             self.correct.append(correct)
