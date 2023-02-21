@@ -22,7 +22,7 @@ from torchmetrics.utilities.exceptions import TorchMetricsUserError
 
 
 class MinkowskiDistance(Metric):
-    r"""Computes `Minkowski Distance`_ :
+    r"""Compute `Minkowski Distance`_.
 
     .. math:: d_{\text{Minkowski}} = \\sum_{i}^N (| y_i - \\hat{y_i} |^p)^\frac{1}{p}
 
