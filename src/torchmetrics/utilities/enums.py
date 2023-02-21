@@ -41,11 +41,11 @@ class EnumStr(StrEnum):
           ...
         ValueError: Invalid Task: expected one of ['a', 'b'], but got c.
         """
-        enum_key = super().from_str(value.replace("-", "_"))
-        if enum_key is not None:
-            return enum_key
-        _allowed_im = [m.lower() for m in cls._member_names_]
-        raise ValueError(f"Invalid {cls._name()}: expected one of {_allowed_im}, but got {value}.")
+        try:
+            return super().from_str(value.replace("-", "_"))
+        except ValueError:
+            _allowed_im = [m.lower() for m in cls._member_names_]
+            raise ValueError(f"Invalid {cls._name()}: expected one of {_allowed_im}, but got {value}.")
 
 
 class DataType(EnumStr):
