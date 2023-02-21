@@ -33,7 +33,7 @@ from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 if _TRANSFORMERS_AVAILABLE:
     from transformers import PreTrainedModel, PreTrainedTokenizerBase
 else:
-    PreTrainedModel = PreTrainedTokenizerBase = None  # type: ignore[misc,assignment]
+    PreTrainedModel = PreTrainedTokenizerBase = None
     __doctest_skip__ = ["infolm"]
 
 
@@ -120,7 +120,7 @@ class _InformationMeasure:
                 f"Parameter `beta` is expected to be float differened from 0 and -1 for {information_measure}."
             )
         if self.information_measure == _IMEnum.AB_DIVERGENCE and (
-            any(not isinstance(p, float) for p in [alpha, beta]) or 0 in [alpha, beta, alpha + beta]  # type: ignore
+            any(not isinstance(p, float) for p in [alpha, beta]) or 0 in [alpha, beta, alpha + beta]
         ):
             raise ValueError(
                 "Parameters `alpha`, `beta` and their sum are expected to be differened from 0 for "
@@ -328,7 +328,7 @@ def _get_special_tokens_map(tokenizer: PreTrainedTokenizerBase) -> Dict[str, int
         "sep_token_id": tokenizer.sep_token_id,
         "cls_token_id": tokenizer.cls_token_id,
     }
-    return special_tokens_maps  # type: ignore[return-value]
+    return special_tokens_maps
 
 
 def _get_token_mask(input_ids: Tensor, pad_token_id: int, sep_token_id: int, cls_token_id: int) -> Tensor:

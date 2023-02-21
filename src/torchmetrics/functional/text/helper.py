@@ -229,15 +229,15 @@ class _LevenshteinEditDistance:
 
         # Jump through the cache to the current position
         for i in range(skip_num):
-            node = node[prediction_tokens[i]][0]  # type: ignore
+            node = node[prediction_tokens[i]][0]
 
         # Update cache with newly computed rows
         for word, row in zip(prediction_tokens[skip_num:], edit_distance):
             if word not in node:
-                node[word] = ({}, tuple(row))  # type: ignore
+                node[word] = ({}, tuple(row))
                 self.cache_size += 1
             value = node[word]
-            node = value[0]  # type: ignore
+            node = value[0]
 
     def _find_cache(self, prediction_tokens: List[str]) -> Tuple[int, List[List[Tuple[int, _EditOperations]]]]:
         """Find the already calculated rows of the Levenshtein edit distance matric.
@@ -259,8 +259,8 @@ class _LevenshteinEditDistance:
         for word in prediction_tokens:
             if word in node:
                 start_position += 1
-                node, row = node[word]  # type: ignore
-                edit_distance.append(row)  # type: ignore
+                node, row = node[word]
+                edit_distance.append(row)
             else:
                 break
 
@@ -318,7 +318,7 @@ def _validate_inputs(
 
     # Ensure reference corpus is properly of a type Sequence[Sequence[str]]
     if all(isinstance(ref, str) for ref in ref_corpus):
-        ref_corpus = [ref_corpus] if len(hypothesis_corpus) == 1 else [[ref] for ref in ref_corpus]  # type: ignore
+        ref_corpus = [ref_corpus] if len(hypothesis_corpus) == 1 else [[ref] for ref in ref_corpus]
 
     if hypothesis_corpus and all(ref for ref in ref_corpus) and len(ref_corpus) != len(hypothesis_corpus):
         raise ValueError(f"Corpus has different size {len(ref_corpus)} != {len(hypothesis_corpus)}")
@@ -369,7 +369,7 @@ def _flip_trace(trace: Tuple[_EditOperations, ...]) -> Tuple[_EditOperations, ..
         operation: _EditOperations, _flip_operations: Dict[_EditOperations, _EditOperations]
     ) -> _EditOperations:
         if operation in _flip_operations:
-            return _flip_operations.get(operation)  # type: ignore
+            return _flip_operations.get(operation)
         return operation
 
     inverted_trace = tuple(_replace_operation_or_retain(operation, _flip_operations) for operation in trace)

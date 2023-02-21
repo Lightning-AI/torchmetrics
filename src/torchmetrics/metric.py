@@ -126,8 +126,8 @@ class Metric(Module, ABC):
 
         # initialize
         self._update_signature = inspect.signature(self.update)
-        self.update: Callable = self._wrap_update(self.update)  # type: ignore
-        self.compute: Callable = self._wrap_compute(self.compute)  # type: ignore
+        self.update: Callable = self._wrap_update(self.update)
+        self.compute: Callable = self._wrap_compute(self.compute)
         self._computed = None
         self._forward_cache = None
         self._update_count = 0
@@ -360,7 +360,7 @@ class Metric(Module, ABC):
             elif reduce_fn is None and isinstance(global_state, list):
                 reduced = _flatten([global_state, local_state])
             else:
-                reduced = reduce_fn(torch.stack([global_state, local_state]))  # type: ignore
+                reduced = reduce_fn(torch.stack([global_state, local_state]))
 
             setattr(self, attr, reduced)
 
@@ -597,8 +597,8 @@ class Metric(Module, ABC):
         # manually restore update and compute functions for pickling
         self.__dict__.update(state)
         self._update_signature = inspect.signature(self.update)
-        self.update: Callable = self._wrap_update(self.update)  # type: ignore
-        self.compute: Callable = self._wrap_compute(self.compute)  # type: ignore
+        self.update: Callable = self._wrap_update(self.update)
+        self.compute: Callable = self._wrap_compute(self.compute)
 
     def __setattr__(self, name: str, value: Any) -> None:
         """Overwrite default method to prevent specific attributes from being set by user."""
@@ -711,7 +711,7 @@ class Metric(Module, ABC):
                     current_val = current_val.detach()
                 elif isinstance(current_val, list):
                     current_val = [cur_v.detach() if isinstance(cur_v, Tensor) else cur_v for cur_v in current_val]
-            destination[prefix + key] = deepcopy(current_val)  # type: ignore
+            destination[prefix + key] = deepcopy(current_val)
         return destination
 
     def _load_from_state_dict(
@@ -786,7 +786,7 @@ class Metric(Module, ABC):
         """Construct conpositional metric using the logical and operator."""
         return CompositionalMetric(torch.bitwise_and, self, other)
 
-    def __eq__(self, other: "Metric") -> "Metric":  # type: ignore
+    def __eq__(self, other: "Metric") -> "Metric":
         """Construct conpositional metric using the equal operator."""
         return CompositionalMetric(torch.eq, self, other)
 
@@ -823,7 +823,7 @@ class Metric(Module, ABC):
         return CompositionalMetric(torch.mul, self, other)
 
     # Fixme: this shall return bool instead of Metric
-    def __ne__(self, other: "Metric") -> "Metric":  # type: ignore
+    def __ne__(self, other: "Metric") -> "Metric":
         """Construct conpositional metric using the not equal operator."""
         return CompositionalMetric(torch.ne, self, other)
 

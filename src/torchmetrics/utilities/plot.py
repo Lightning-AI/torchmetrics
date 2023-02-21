@@ -28,7 +28,7 @@ if _MATPLOTLIB_AVAILABLE:
     _PLOT_OUT_TYPE = Tuple[plt.Figure, Union[matplotlib.axes.Axes, np.ndarray]]
     _AX_TYPE = matplotlib.axes.Axes
 else:
-    _PLOT_OUT_TYPE = Tuple[object, object]  # type: ignore[misc]
+    _PLOT_OUT_TYPE = Tuple[object, object]
     _AX_TYPE = object
 
 
@@ -42,7 +42,7 @@ def _error_on_missing_matplotlib() -> None:
 
 def plot_single_or_multi_val(
     val: Union[Tensor, Sequence[Tensor]],
-    ax: Optional[_AX_TYPE] = None,  # type: ignore[valid-type]
+    ax: Optional[_AX_TYPE] = None,
     higher_is_better: Optional[bool] = None,
     lower_bound: Optional[float] = None,
     upper_bound: Optional[float] = None,
@@ -139,7 +139,7 @@ def _get_col_row_split(n: int) -> Tuple[int, int]:
         return ceil(nsq), ceil(nsq)
 
 
-def trim_axs(axs: Union[_AX_TYPE, np.ndarray], nb: int) -> np.ndarray:  # type: ignore[valid-type]
+def trim_axs(axs: Union[_AX_TYPE, np.ndarray], nb: int) -> np.ndarray:
     """Reduce `axs` to `nb` Axes.
 
     All further Axes are removed from the figure.
@@ -147,7 +147,7 @@ def trim_axs(axs: Union[_AX_TYPE, np.ndarray], nb: int) -> np.ndarray:  # type: 
     if isinstance(axs, _AX_TYPE):
         return axs
     else:
-        axs = axs.flat  # type: ignore[union-attr]
+        axs = axs.flat
         for ax in axs[nb:]:
             ax.remove()
         return axs[:nb]

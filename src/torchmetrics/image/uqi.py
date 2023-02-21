@@ -90,7 +90,7 @@ class UniversalImageQualityIndex(Metric):
         self.data_range = data_range
         self.reduction = reduction
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
         preds, target = _uqi_update(preds, target)
         self.preds.append(preds)

@@ -34,8 +34,8 @@ if _TRANSFORMERS_AVAILABLE:
 
 else:
     __doctest_skip__ = ["clip_score"]
-    _CLIPModel = None  # type: ignore[misc,assignment]
-    _CLIPProcessor = None  # type: ignore[misc,assignment]
+    _CLIPModel = None
+    _CLIPProcessor = None
 
 
 def _clip_score_update(

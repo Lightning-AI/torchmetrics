@@ -147,7 +147,7 @@ def _union_lcs(pred_tokens_list: Sequence[Sequence[str]], target_tokens: Sequenc
 
     def lcs_ind(pred_tokens: Sequence[str], target_tokens: Sequence[str]) -> Sequence[int]:
         """Returns one of the longest of longest common subsequence via backtracked lcs table."""
-        lcs_table: Sequence[Sequence[int]] = _lcs(pred_tokens, target_tokens, return_full_table=True)  # type: ignore
+        lcs_table: Sequence[Sequence[int]] = _lcs(pred_tokens, target_tokens, return_full_table=True)
         backtracked_lcs_table = _backtracked_lcs(lcs_table, pred_tokens, target_tokens)
         return backtracked_lcs_table
 
@@ -232,7 +232,7 @@ def _rouge_l_score(pred: Sequence[str], target: Sequence[str]) -> Dict[str, Tens
     if 0 in (pred_len, target_len):
         return {"precision": tensor(0.0), "recall": tensor(0.0), "fmeasure": tensor(0.0)}
 
-    lcs: int = _lcs(pred, target)  # type: ignore
+    lcs: int = _lcs(pred, target)
     return _compute_metrics(lcs, pred_len, target_len)
 
 

@@ -210,8 +210,8 @@ def _calculate_p_value(
     else:
         m = n_total * (n_total - 1)
         t_value_denominator: Tensor = (t_value_denominator_base - preds_ties_p2 - target_ties_p2) / 18
-        t_value_denominator += (2 * preds_ties * target_ties) / m  # type: ignore
-        t_value_denominator += preds_ties_p1 * target_ties_p1 / (9 * m * (n_total - 2))  # type: ignore
+        t_value_denominator += (2 * preds_ties * target_ties) / m
+        t_value_denominator += preds_ties_p1 * target_ties_p1 / (9 * m * (n_total - 2))
         t_value = con_min_dis_pairs / torch.sqrt(t_value_denominator)
 
     if alternative == _TestAlternative.TWO_SIDED:
@@ -402,7 +402,7 @@ def kendall_rank_corrcoef(
         preds, target, [], [], num_outputs=1 if preds.ndim == 1 else preds.shape[-1]
     )
     tau, p_value = _kendall_corrcoef_compute(
-        dim_zero_cat(_preds), dim_zero_cat(_target), _variant, _alternative  # type: ignore[arg-type]  # todo
+        dim_zero_cat(_preds), dim_zero_cat(_target), _variant, _alternative
     )
 
     if p_value is not None:

@@ -188,7 +188,7 @@ def _multiclass_specificity_at_sensitivity_compute(
     specificity = [_convert_fpr_to_specificity(fpr_) for fpr_ in fpr]
     if isinstance(state, Tensor):
         res = [
-            _specificity_at_sensitivity(sp, sn, thresholds, min_sensitivity)  # type: ignore
+            _specificity_at_sensitivity(sp, sn, thresholds, min_sensitivity)
             for sp, sn in zip(specificity, sensitivity)
         ]
     else:
@@ -278,7 +278,7 @@ def multiclass_specificity_at_sensitivity(
     state = _multiclass_precision_recall_curve_update(preds, target, num_classes, thresholds)
     return _multiclass_specificity_at_sensitivity_compute(
         state, num_classes, thresholds, min_sensitivity
-    )  # type: ignore
+    )
 
 
 def _multilabel_specificity_at_sensitivity_arg_validation(
@@ -305,7 +305,7 @@ def _multilabel_specificity_at_sensitivity_compute(
     specificity = [_convert_fpr_to_specificity(fpr_) for fpr_ in fpr]
     if isinstance(state, Tensor):
         res = [
-            _specificity_at_sensitivity(sp, sn, thresholds, min_sensitivity)  # type: ignore
+            _specificity_at_sensitivity(sp, sn, thresholds, min_sensitivity)
             for sp, sn in zip(specificity, sensitivity)
         ]
     else:
@@ -422,17 +422,17 @@ def specicity_at_sensitivity(
     """
     task = ClassificationTask.from_str(task)
     if task == ClassificationTask.BINARY:
-        return binary_specificity_at_sensitivity(  # type: ignore
+        return binary_specificity_at_sensitivity(
             preds, target, min_sensitivity, thresholds, ignore_index, validate_args
         )
     if task == ClassificationTask.MULTICLASS:
         assert isinstance(num_classes, int)
-        return multiclass_specificity_at_sensitivity(  # type: ignore
+        return multiclass_specificity_at_sensitivity(
             preds, target, num_classes, min_sensitivity, thresholds, ignore_index, validate_args
         )
     if task == ClassificationTask.MULTILABEL:
         assert isinstance(num_labels, int)
-        return multilabel_specificity_at_sensitivity(  # type: ignore
+        return multilabel_specificity_at_sensitivity(
             preds, target, num_labels, min_sensitivity, thresholds, ignore_index, validate_args
         )
     raise ValueError(f"Not handled value: {task}")  # this is for compliant of mypy

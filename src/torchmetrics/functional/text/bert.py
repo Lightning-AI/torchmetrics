@@ -362,9 +362,9 @@ def bert_score(
     model.to(device)
 
     try:
-        if num_layers and num_layers > model.config.num_hidden_layers:  # type: ignore
+        if num_layers and num_layers > model.config.num_hidden_layers:
             raise ValueError(
-                f"num_layers={num_layers} is forbidden for {model_name_or_path}."  # type: ignore
+                f"num_layers={num_layers} is forbidden for {model_name_or_path}."
                 f" Please use num_layers <= {model.config.num_hidden_layers}"
             )
     except AttributeError:
@@ -393,17 +393,17 @@ def bert_score(
 
     # We ignore mypy typing below as the proper typing is ensured by conditions above, only mypy cannot infer that.
     if _are_valid_lists:
-        target_dataset = TextDataset(target, tokenizer, max_length, idf=idf)  # type: ignore
+        target_dataset = TextDataset(target, tokenizer, max_length, idf=idf)
         preds_dataset = TextDataset(
-            preds,  # type: ignore
+            preds,
             tokenizer,
             max_length,
             idf=idf,
             tokens_idf=target_dataset.tokens_idf,
         )
     elif _are_valid_tensors:
-        target_dataset = TokenizedDataset(**target, idf=idf)  # type: ignore
-        preds_dataset = TokenizedDataset(**preds, idf=idf, tokens_idf=target_dataset.tokens_idf)  # type: ignore
+        target_dataset = TokenizedDataset(**target, idf=idf)
+        preds_dataset = TokenizedDataset(**preds, idf=idf, tokens_idf=target_dataset.tokens_idf)
     else:
         raise ValueError("Invalid input provided.")
 
