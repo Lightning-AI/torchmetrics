@@ -33,7 +33,7 @@ from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 if _TRANSFORMERS_AVAILABLE:
     from transformers import PreTrainedModel, PreTrainedTokenizerBase
 else:
-    PreTrainedModel = PreTrainedTokenizerBase = None  # type: ignore
+    PreTrainedModel = PreTrainedTokenizerBase = None  # type: ignore[misc,assignment]
     __doctest_skip__ = ["infolm"]
 
 
@@ -328,7 +328,7 @@ def _get_special_tokens_map(tokenizer: PreTrainedTokenizerBase) -> Dict[str, int
         "sep_token_id": tokenizer.sep_token_id,
         "cls_token_id": tokenizer.cls_token_id,
     }
-    return special_tokens_maps  # type: ignore
+    return special_tokens_maps  # type: ignore[return-value]
 
 
 def _get_token_mask(input_ids: Tensor, pad_token_id: int, sep_token_id: int, cls_token_id: int) -> Tensor:
@@ -388,7 +388,7 @@ def _get_batch_distribution(
     for mask_idx in range(seq_len):
         input_ids = batch["input_ids"].clone()
         input_ids[:, mask_idx] = special_tokens_map["mask_token_id"]
-        logits_distribution = model(input_ids, batch["attention_mask"]).logits  # type: ignore
+        logits_distribution = model(input_ids, batch["attention_mask"]).logits
         # [batch_size, seq_len, vocab_size] -> [batch_size, vocab_size]
         logits_distribution = logits_distribution[:, mask_idx, :]
         prob_distribution = F.softmax(logits_distribution / temperature, dim=-1)

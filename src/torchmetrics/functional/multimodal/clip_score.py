@@ -34,8 +34,8 @@ if _TRANSFORMERS_AVAILABLE:
 
 else:
     __doctest_skip__ = ["clip_score"]
-    _CLIPModel = None  # type:ignore
-    _CLIPProcessor = None  # type:ignore
+    _CLIPModel = None  # type: ignore[misc,assignment]
+    _CLIPProcessor = None  # type: ignore[misc,assignment]
 
 
 def _clip_score_update(
@@ -63,7 +63,7 @@ def _clip_score_update(
     device = images[0].device
     processed_input = processor(
         text=text, images=[i.cpu() for i in images], return_tensors="pt", padding=True
-    )  # type: ignore
+    )
 
     img_features = model.get_image_features(processed_input["pixel_values"].to(device))
     img_features = img_features / img_features.norm(p=2, dim=-1, keepdim=True)
