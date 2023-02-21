@@ -128,7 +128,7 @@ class KendallRankCorrCoef(Metric):
             raise ValueError("Argument `alternative` is required if `t_test=True` but got `None`.")
 
         self.variant = _MetricVariant.from_str(variant)
-        self.alternative = _TestAlternative.from_str(alternative) if t_test and alternative else None
+        self.alternative = _TestAlternative.from_str(alternative) if t_test else None
         self.num_outputs = num_outputs
 
         self.add_state("preds", [], dist_reduce_fx="cat")

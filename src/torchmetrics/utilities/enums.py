@@ -13,7 +13,7 @@
 # limitations under the License.
 from typing_extensions import Literal
 
-from lightning_utilities.core.enums import StrEnum as StrEnum
+from lightning_utilities.core.enums import StrEnum
 
 
 class EnumStr(StrEnum):
