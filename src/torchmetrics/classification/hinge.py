@@ -97,7 +97,7 @@ class BinaryHingeLoss(Metric):
         self.add_state("measures", default=torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=torch.tensor(0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Update metric state."""
         if self.validate_args:
             _binary_hinge_loss_tensor_validation(preds, target, self.ignore_index)
@@ -203,7 +203,7 @@ class MulticlassHingeLoss(Metric):
         )
         self.add_state("total", default=torch.tensor(0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Update metric state."""
         if self.validate_args:
             _multiclass_hinge_loss_tensor_validation(preds, target, self.num_classes, self.ignore_index)
