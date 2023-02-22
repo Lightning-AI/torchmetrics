@@ -13,7 +13,6 @@
 # limitations under the License.
 import functools
 import inspect
-import warnings
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from copy import deepcopy
@@ -926,9 +925,7 @@ class Metric(Module, ABC):
             Metric.__str__(self),
         )
 
-    def __iter__(self) -> Any:
-        """Iteration over metrics are not allowed. Use metric collections for nesting metrics."""
-        raise NotImplementedError("Metrics do not support iteration.")
+    __iter__ = None
 
 
 def _neg(x: Tensor) -> Tensor:
