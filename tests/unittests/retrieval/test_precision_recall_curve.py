@@ -96,8 +96,8 @@ def _compute_precision_recall_curve(
 
         else:
             for k in top_k:
-                r.append(_recall_at_k(trg, prd, k=k.item()))
-                p.append(_precision_at_k(trg, prd, k=k.item(), adaptive_k=adaptive_k))
+                r.append(_recall_at_k(trg, prd, top_k=k.item()))
+                p.append(_precision_at_k(trg, prd, top_k=k.item(), adaptive_k=adaptive_k))
 
             recalls.append(r)
             precisions.append(p)

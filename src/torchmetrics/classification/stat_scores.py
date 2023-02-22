@@ -167,7 +167,7 @@ class BinaryStatScores(_AbstractStatScores):
 
         self._create_state(size=1, multidim_average=multidim_average)
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
         if self.validate_args:
             _binary_stat_scores_tensor_validation(preds, target, self.multidim_average, self.ignore_index)
@@ -306,7 +306,7 @@ class MulticlassStatScores(_AbstractStatScores):
             size=1 if (average == "micro" and top_k == 1) else num_classes, multidim_average=multidim_average
         )
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
         if self.validate_args:
             _multiclass_stat_scores_tensor_validation(
@@ -443,7 +443,7 @@ class MultilabelStatScores(_AbstractStatScores):
 
         self._create_state(size=num_labels, multidim_average=multidim_average)
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
         if self.validate_args:
             _multilabel_stat_scores_tensor_validation(
