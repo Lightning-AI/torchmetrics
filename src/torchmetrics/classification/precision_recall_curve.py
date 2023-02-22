@@ -137,7 +137,7 @@ class BinaryPrecisionRecallCurve(Metric):
                 "confmat", default=torch.zeros(len(thresholds), 2, 2, dtype=torch.long), dist_reduce_fx="sum"
             )
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Update metric states."""
         if self.validate_args:
             _binary_precision_recall_curve_tensor_validation(preds, target, self.ignore_index)
@@ -265,7 +265,7 @@ class MulticlassPrecisionRecallCurve(Metric):
                 dist_reduce_fx="sum",
             )
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Update metric states."""
         if self.validate_args:
             _multiclass_precision_recall_curve_tensor_validation(preds, target, self.num_classes, self.ignore_index)
@@ -406,7 +406,7 @@ class MultilabelPrecisionRecallCurve(Metric):
                 dist_reduce_fx="sum",
             )
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Update metric states."""
         if self.validate_args:
             _multilabel_precision_recall_curve_tensor_validation(preds, target, self.num_labels, self.ignore_index)
