@@ -13,7 +13,7 @@
 # limitations under the License.
 from itertools import product
 from math import ceil, floor, sqrt
-from typing import List, Optional, Sequence, Tuple, Union
+from typing import List, Optional, Sequence, Tuple, Union, Any
 
 import numpy as np
 import torch
@@ -221,7 +221,7 @@ def plot_binary_roc_curve(
     ax: Optional[_AX_TYPE] = None,  # type: ignore[valid-type]
     roc_auc: Optional[Union[float, Tensor]] = None,
     name: Optional[str] = None,
-    **kwargs,
+    **kwargs: Any,
 ) -> _PLOT_OUT_TYPE:
     """Inspired by: https://github.com/scikit-learn/scikit-learn/blob/main/sklearn/metrics/_plot/roc_curve.py.
 
