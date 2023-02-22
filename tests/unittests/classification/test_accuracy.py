@@ -65,30 +65,30 @@ def _sklearn_accuracy_binary(preds, target, ignore_index, multidim_average):
         return np.stack(res)
 
 
-class TestAccuracy:
-    def test_accuracy(self):
-        task = "NotValidTask"
-        ignore_index = None
-        multidim_average = "global"
+def test_accuracy_raises_invalid_task(self):
+    task = "NotValidTask"
+    ignore_index = None
+    multidim_average = "global"
 
-        with pytest.raises(ValueError, match=r"Invalid Task *"):
-            Accuracy(threshold=THRESHOLD, task=task, ignore_index=ignore_index, multidim_average=multidim_average)
+    with pytest.raises(ValueError, match=r"Invalid Task *"):
+        Accuracy(threshold=THRESHOLD, task=task, ignore_index=ignore_index, multidim_average=multidim_average)
 
-    def test_accuracy_functional(self):
-        preds, target = _input_binary
-        task = "NotValidTask"
-        ignore_index = None
-        multidim_average = "global"
 
-        with pytest.raises(ValueError, match=r"Invalid Task *"):
-            accuracy(
-                preds,
-                target,
-                threshold=THRESHOLD,
-                task=task,
-                ignore_index=ignore_index,
-                multidim_average=multidim_average,
-            )
+def test_accuracy_functional_raises_invalid_task(self):
+    preds, target = _input_binary
+    task = "NotValidTask"
+    ignore_index = None
+    multidim_average = "global"
+
+    with pytest.raises(ValueError, match=r"Invalid Task *"):
+        accuracy(
+            preds,
+            target,
+            threshold=THRESHOLD,
+            task=task,
+            ignore_index=ignore_index,
+            multidim_average=multidim_average,
+        )
 
 
 @pytest.mark.parametrize("input", _binary_cases)
