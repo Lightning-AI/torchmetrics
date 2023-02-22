@@ -13,7 +13,7 @@
 # limitations under the License.
 from itertools import product
 from math import ceil, floor, sqrt
-from typing import List, Optional, Sequence, Tuple, Union, Any
+from typing import Any, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 import torch
