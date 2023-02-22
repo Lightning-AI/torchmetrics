@@ -238,7 +238,7 @@ class MultilabelExactMatch(Metric):
             dist_reduce_fx="sum" if self.multidim_average == "global" else "mean",
         )
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
         if self.validate_args:
             _multilabel_stat_scores_tensor_validation(
