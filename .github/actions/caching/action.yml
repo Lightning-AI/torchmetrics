@@ -45,6 +45,7 @@ runs:
     shell: bash
 
   - name: Cache pip
+    continue-on-error: true
     uses: actions/cache@v3
     with:
       path: ${{ steps.cache_dirs.outputs.pip_cache }}
@@ -52,10 +53,12 @@ runs:
       restore-keys: ${{ runner.os }}-py${{ inputs.python-version }}-pip-${{ inputs.requires }}-${{ inputs.offset }}-
 
   - name: Cache HF
+    continue-on-error: true
     uses: actions/cache@v3
     with:
       path: ${{ env.TRANSFORMERS_CACHE }}
       key: cache-transformers
+      enableCrossOsArchive: true
 
   - name: Restored HF
     run: |
