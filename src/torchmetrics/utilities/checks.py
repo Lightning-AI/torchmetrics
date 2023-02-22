@@ -436,7 +436,7 @@ def _input_format_classification(
             num_classes = num_classes if num_classes else max(preds.max(), target.max()) + 1
             preds = to_onehot(preds, max(2, num_classes))
 
-        target = to_onehot(target, max(2, num_classes))  # type: ignore
+        target = to_onehot(target, max(2, num_classes))
 
         if multiclass is False:
             preds, target = preds[:, 1, ...], target[:, 1, ...]
