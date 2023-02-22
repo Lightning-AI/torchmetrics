@@ -69,16 +69,16 @@ def test_add_state():
     a.add_state("c", tensor(0), "cat")
     assert a._reductions["c"]([tensor([1]), tensor([1])]).shape == (2,)
 
-    with pytest.raises(ValueError):  # noqa: PT011  # todo
+    with pytest.raises(ValueError, match="`dist_reduce_fx` must be callable or one of .*"):
         a.add_state("d1", tensor(0), "xyz")
 
-    with pytest.raises(ValueError):  # noqa: PT011  # todo
+    with pytest.raises(ValueError, match="`dist_reduce_fx` must be callable or one of .*"):
         a.add_state("d2", tensor(0), 42)
 
-    with pytest.raises(ValueError):  # noqa: PT011  # todo
+    with pytest.raises(ValueError, match="state variable must be a tensor or any empty list .*"):
         a.add_state("d3", [tensor(0)], "sum")
 
-    with pytest.raises(ValueError):  # noqa: PT011  # todo
+    with pytest.raises(ValueError, match="state variable must be a tensor or any empty list .*"):
         a.add_state("d4", 42, "sum")
 
     def custom_fx(_):

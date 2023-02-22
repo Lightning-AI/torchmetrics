@@ -124,22 +124,24 @@ class TestSpectralDistortionIndex(MetricTester):
 
 
 @pytest.mark.parametrize(
-    ("preds", "target", "p"),
+    ("preds", "target", "p", "match"),
     [
-        ([1, 16, 16], [1, 16, 16], 1),  # len(shape)
-        ([1, 1, 16, 16], [1, 1, 16, 16], 0),  # invalid p
-        ([1, 1, 16, 16], [1, 1, 16, 16], -1),  # invalid p
+        ([1, 16, 16], [1, 16, 16], 1, "Expected `preds` and `target` to have BxCxHxW shape.*"),  # len(shape)
+        ([1, 1, 16, 16], [1, 1, 16, 16], 0, "Expected `p` to be a positive integer. Got p: 0."),  # invalid p
+        ([1, 1, 16, 16], [1, 1, 16, 16], -1, "Expected `p` to be a positive integer. Got p: -1."),  # invalid p
     ],
 )
-def test_d_lambda_invalid_inputs(preds, target, p):
+def test_d_lambda_invalid_inputs(preds, target, p, match):
+    """Test that invalid input raises the correct errors."""
     preds_t = torch.rand(preds)
     target_t = torch.rand(target)
-    with pytest.raises(ValueError):  # noqa: PT011  # todo
+    with pytest.raises(ValueError, match=match):
         spectral_distortion_index(preds_t, target_t, p)
 
 
 def test_d_lambda_invalid_type():
+    """Test that error is raised on different dtypes."""
     preds_t = torch.rand((1, 1, 16, 16))
     target_t = torch.rand((1, 1, 16, 16), dtype=torch.float64)
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match="Expected `ms` and `fused` to have the same data type.*"):
         spectral_distortion_index(preds_t, target_t, p=1)
