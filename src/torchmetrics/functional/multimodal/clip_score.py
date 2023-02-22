@@ -11,17 +11,27 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
 from typing import List, Tuple, Union
 
 import torch
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
 from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 
 if _TRANSFORMERS_AVAILABLE:
     from transformers import CLIPModel as _CLIPModel
     from transformers import CLIPProcessor as _CLIPProcessor
+
+    def _download_clip() -> None:
+        _CLIPModel.from_pretrained("openai/clip-vit-large-patch14")
+        _CLIPProcessor.from_pretrained("openai/clip-vit-large-patch14")
+
+    if _SKIP_SLOW_DOCTEST and not _try_proceed_with_timeout(_download_clip):
+        __doctest_skip__ = ["clip_score"]
+
 else:
     __doctest_skip__ = ["clip_score"]
     _CLIPModel = None  # type:ignore

@@ -36,7 +36,7 @@ from unittests.retrieval.helpers import (
 seed_all(42)
 
 
-def _precision_at_k(target: np.ndarray, preds: np.ndarray, k: int = None, adaptive_k: bool = False):
+def _precision_at_k(target: np.ndarray, preds: np.ndarray, top_k: int = None, adaptive_k: bool = False):
     """Didn't find a reliable implementation of Precision in Information Retrieval, so, reimplementing here.
 
     A good explanation can be found `here
@@ -45,19 +45,18 @@ def _precision_at_k(target: np.ndarray, preds: np.ndarray, k: int = None, adapti
     assert target.shape == preds.shape
     assert len(target.shape) == 1  # works only with single dimension inputs
 
-    if k is None or adaptive_k and k > len(preds):
-        k = len(preds)
+    if top_k is None or adaptive_k and top_k > len(preds):
+        top_k = len(preds)
 
     if target.sum() > 0:
         order_indexes = np.argsort(preds, axis=0)[::-1]
-        relevant = np.sum(target[order_indexes][:k])
-        return relevant * 1.0 / k
+        relevant = np.sum(target[order_indexes][:top_k])
+        return relevant * 1.0 / top_k
     return np.NaN
 
 
 class TestPrecision(RetrievalMetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize("ignore_index", [None, 1])  # avoid setting 0, otherwise test with all 0 targets will fail
     @pytest.mark.parametrize("k", [None, 1, 4, 10])
@@ -69,7 +68,6 @@ class TestPrecision(RetrievalMetricTester):
         indexes: Tensor,
         preds: Tensor,
         target: Tensor,
-        dist_sync_on_step: bool,
         empty_target_action: str,
         ignore_index: int,
         k: int,
@@ -77,7 +75,7 @@ class TestPrecision(RetrievalMetricTester):
     ):
         metric_args = {
             "empty_target_action": empty_target_action,
-            "k": k,
+            "top_k": k,
             "ignore_index": ignore_index,
             "adaptive_k": adaptive_k,
         }
@@ -89,12 +87,10 @@ class TestPrecision(RetrievalMetricTester):
             target=target,
             metric_class=RetrievalPrecision,
             reference_metric=_precision_at_k,
-            dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
         )
 
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize("k", [None, 1, 4, 10])
     @pytest.mark.parametrize("adaptive_k", [False, True])
@@ -105,14 +101,13 @@ class TestPrecision(RetrievalMetricTester):
         indexes: Tensor,
         preds: Tensor,
         target: Tensor,
-        dist_sync_on_step: bool,
         empty_target_action: str,
         k: int,
         adaptive_k: bool,
     ):
         metric_args = {
             "empty_target_action": empty_target_action,
-            "k": k,
+            "top_k": k,
             "ignore_index": -100,
             "adaptive_k": adaptive_k,
         }
@@ -124,7 +119,6 @@ class TestPrecision(RetrievalMetricTester):
             target=target,
             metric_class=RetrievalPrecision,
             reference_metric=_precision_at_k,
-            dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
         )
 
@@ -138,7 +132,7 @@ class TestPrecision(RetrievalMetricTester):
             metric_functional=retrieval_precision,
             reference_metric=_precision_at_k,
             metric_args={},
-            k=k,
+            top_k=k,
             adaptive_k=adaptive_k,
         )
 

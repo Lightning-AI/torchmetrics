@@ -30,7 +30,7 @@ from torchmetrics.functional.classification.specificity_at_sensitivity import (
     _multilabel_specificity_at_sensitivity_compute,
 )
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.data import dim_zero_cat
+from torchmetrics.utilities.data import dim_zero_cat as _cat
 from torchmetrics.utilities.enums import ClassificationTask
 
 
@@ -110,10 +110,7 @@ class BinarySpecificityAtSensitivity(BinaryPrecisionRecallCurve):
 
     def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
         """Compute metric."""
-        if self.thresholds is None:
-            state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]  # type: ignore
-        else:
-            state = self.confmat
+        state = [_cat(self.preds), _cat(self.target)] if self.thresholds is None else self.confmat  # type: ignore
         return _binary_specificity_at_sensitivity_compute(state, self.thresholds, self.min_sensitivity)  # type: ignore
 
 
@@ -204,10 +201,7 @@ class MulticlassSpecificityAtSensitivity(MulticlassPrecisionRecallCurve):
 
     def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore
         """Compute metric."""
-        if self.thresholds is None:
-            state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]  # type: ignore
-        else:
-            state = self.confmat
+        state = [_cat(self.preds), _cat(self.target)] if self.thresholds is None else self.confmat  # type: ignore
         return _multiclass_specificity_at_sensitivity_compute(
             state, self.num_classes, self.thresholds, self.min_sensitivity  # type: ignore
         )
@@ -300,10 +294,7 @@ class MultilabelSpecificityAtSensitivity(MultilabelPrecisionRecallCurve):
 
     def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
         """Compute metric."""
-        if self.thresholds is None:
-            state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]  # type: ignore
-        else:
-            state = self.confmat
+        state = [_cat(self.preds), _cat(self.target)] if self.thresholds is None else self.confmat  # type: ignore
         return _multilabel_specificity_at_sensitivity_compute(
             state, self.num_labels, self.thresholds, self.ignore_index, self.min_sensitivity  # type: ignore
         )

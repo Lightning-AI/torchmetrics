@@ -41,14 +41,6 @@ ALLOWED_ROUGE_KEYS: Dict[str, Union[int, str]] = {
 ALLOWED_ACCUMULATE_VALUES = ("avg", "best")
 
 
-def _is_internet_connection() -> bool:
-    try:
-        urllib.request.urlopen("https://torchmetrics.readthedocs.io/")
-    except HTTPError:
-        return False
-    return True
-
-
 def _ensure_nltk_punkt_is_downloaded() -> None:
     """Check whether `nltk` `punkt` is downloaded.
 
@@ -59,9 +51,9 @@ def _ensure_nltk_punkt_is_downloaded() -> None:
     try:
         nltk.data.find("tokenizers/punkt.zip")
     except LookupError:
-        if _is_internet_connection():
-            nltk.download("punkt", quiet=True, force=False)
-        else:
+        try:
+            nltk.download("punkt", quiet=True, force=False, halt_on_error=False, raise_on_error=True)
+        except ValueError:
             raise OSError(
                 "`nltk` resource `punkt` is not available on a disk and cannot be downloaded as a machine is not "
                 "connected to the internet."
@@ -106,6 +98,7 @@ def _lcs(
     Args:
         pred_tokens: A tokenized predicted sentence.
         target_tokens: A tokenized target sentence.
+        return_full_table: If the full table of logest common subsequence should be returned or just the largest
     """
     lcs = [[0] * (len(pred_tokens) + 1) for _ in range(len(target_tokens) + 1)]
     for i in range(1, len(target_tokens) + 1):

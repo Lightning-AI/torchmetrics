@@ -11,18 +11,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional
+from typing import Union
 
-from lightning_utilities.core.enums import StrEnum as StrEnum
+from lightning_utilities.core.enums import StrEnum
+from typing_extensions import Literal
 
 
 class EnumStr(StrEnum):
+    """Base Enum."""
+
     @staticmethod
     def _name() -> str:
         return "Task"
 
     @classmethod
-    def from_str(cls, value: str) -> "EnumStr":
+    def from_str(cls, value: str, source: Literal["key", "value", "any"] = "key") -> "EnumStr":
         """Load from string.
 
         Raises:
@@ -39,11 +42,12 @@ class EnumStr(StrEnum):
           ...
         ValueError: Invalid Task: expected one of ['a', 'b'], but got c.
         """
-        enum_key = super().from_str(value.replace("-", "_"))
-        if enum_key is not None:
-            return enum_key
-        _allowed_im = [m.lower() for m in cls._member_names_]
-        raise ValueError(f"Invalid {cls._name()}: expected one of {_allowed_im}, but got {value}.")
+        try:
+            me = super().from_str(value.replace("-", "_"), source=source)
+        except ValueError:
+            _allowed_im = [m.lower() for m in cls._member_names_]
+            raise ValueError(f"Invalid {cls._name()}: expected one of {cls._allowed_matches(source)}, but got {value}.")
+        return cls(me)
 
 
 class DataType(EnumStr):
