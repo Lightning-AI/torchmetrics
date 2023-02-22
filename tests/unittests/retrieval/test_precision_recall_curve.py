@@ -96,8 +96,8 @@ def _compute_precision_recall_curve(
 
         else:
             for k in top_k:
-                r.append(_recall_at_k(trg, prd, k=k.item()))
-                p.append(_precision_at_k(trg, prd, k=k.item(), adaptive_k=adaptive_k))
+                r.append(_recall_at_k(trg, prd, top_k=k.item()))
+                p.append(_precision_at_k(trg, prd, top_k=k.item(), adaptive_k=adaptive_k))
 
             recalls.append(r)
             precisions.append(p)
@@ -120,7 +120,6 @@ class RetrievalPrecisionRecallCurveTester(MetricTester):
         target: Tensor,
         metric_class: Metric,
         reference_metric: Callable,
-        dist_sync_on_step: bool,
         metric_args: dict,
         reverse: bool = False,
     ):
@@ -132,7 +131,6 @@ class RetrievalPrecisionRecallCurveTester(MetricTester):
             target=target,
             metric_class=metric_class,
             reference_metric=_ref_metric_adapted,
-            dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
             fragment_kwargs=True,
             indexes=indexes,  # every additional argument will be passed to metric_class and _ref_metric_adapted
@@ -140,7 +138,6 @@ class RetrievalPrecisionRecallCurveTester(MetricTester):
 
 
 @pytest.mark.parametrize("ddp", [False])
-@pytest.mark.parametrize("dist_sync_on_step", [False])
 @pytest.mark.parametrize("empty_target_action", ["neg", "skip", "pos"])
 @pytest.mark.parametrize("ignore_index", [None, 1])  # avoid setting 0, otherwise test with all 0 targets will fail
 @pytest.mark.parametrize("max_k", [None, 1, 2, 5, 10])
@@ -155,7 +152,6 @@ class TestRetrievalPrecisionRecallCurve(RetrievalPrecisionRecallCurveTester):
         preds,
         target,
         ddp,
-        dist_sync_on_step,
         empty_target_action,
         ignore_index,
         max_k,
@@ -175,6 +171,5 @@ class TestRetrievalPrecisionRecallCurve(RetrievalPrecisionRecallCurveTester):
             target=target,
             metric_class=RetrievalPrecisionRecallCurve,
             reference_metric=_compute_precision_recall_curve,
-            dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
         )

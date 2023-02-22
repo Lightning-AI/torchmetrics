@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
 from typing import Any, Callable, Dict, List, Optional, Union
 from warnings import warn
 
@@ -21,16 +22,24 @@ from torch.nn import Module
 from torchmetrics.functional.text.bert import bert_score
 from torchmetrics.functional.text.helper_embedding_metric import _preprocess_text
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
 from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
-
-if _TRANSFORMERS_AVAILABLE:
-    from transformers import AutoTokenizer
-else:
-    __doctest_skip__ = ["BERTScore"]
-
 
 # Default model recommended in the original implementation.
 _DEFAULT_MODEL = "roberta-large"
+
+if _TRANSFORMERS_AVAILABLE:
+    from transformers import AutoModel, AutoTokenizer
+
+    def _download_model() -> None:
+        """Download intensive operations."""
+        AutoTokenizer.from_pretrained(_DEFAULT_MODEL)
+        AutoModel.from_pretrained(_DEFAULT_MODEL)
+
+    if _SKIP_SLOW_DOCTEST and not _try_proceed_with_timeout(_download_model):
+        __doctest_skip__ = ["BERTScore"]
+else:
+    __doctest_skip__ = ["BERTScore"]
 
 
 def _get_input_dict(input_ids: List[Tensor], attention_mask: List[Tensor]) -> Dict[str, Tensor]:
@@ -124,7 +133,7 @@ class BERTScore(Metric):
         all_layers: bool = False,
         model: Optional[Module] = None,
         user_tokenizer: Optional[Any] = None,
-        user_forward_fn: Callable[[Module, Dict[str, Tensor]], Tensor] = None,
+        user_forward_fn: Optional[Callable[[Module, Dict[str, Tensor]], Tensor]] = None,
         verbose: bool = False,
         idf: bool = False,
         device: Optional[Union[str, torch.device]] = None,

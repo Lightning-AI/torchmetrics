@@ -11,9 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import logging
+import multiprocessing
+import os
 from functools import partial
 from time import perf_counter
-from typing import Any, Dict, Mapping, Optional, Sequence, Tuple, no_type_check
+from typing import Any, Callable, Dict, Mapping, Optional, Sequence, Tuple, no_type_check
 from unittest.mock import Mock
 
 import torch
@@ -21,6 +24,9 @@ from torch import Tensor
 
 from torchmetrics.utilities.data import select_topk, to_onehot
 from torchmetrics.utilities.enums import DataType
+
+_DOCTEST_DOWNLOAD_TIMEOUT = os.environ.get("DOCTEST_DOWNLOAD_TIMEOUT", 120)
+_SKIP_SLOW_DOCTEST = bool(os.environ.get("SKIP_SLOW_DOCTEST", 0))
 
 
 def _check_for_empty_tensors(preds: Tensor, target: Tensor) -> bool:
@@ -254,6 +260,7 @@ def _check_classification_inputs(
             than what they appear to be. See the parameter's
             :ref:`documentation section <pages/overview:using the multiclass parameter>`
             for a more detailed explanation and examples.
+        ignore_index: ignore predictions where targets are equal to this number
 
 
     Return:
@@ -388,6 +395,7 @@ def _input_format_classification(
             than what they appear to be. See the parameter's
             :ref:`documentation section <pages/overview:using the multiclass parameter>`
             for a more detailed explanation and examples.
+        ignore_index: ignore predictions where targets are equal to this number
 
     Returns:
         preds: binary tensor of shape ``(N, C)`` or ``(N, C, X)``
@@ -428,7 +436,7 @@ def _input_format_classification(
             num_classes = num_classes if num_classes else max(preds.max(), target.max()) + 1
             preds = to_onehot(preds, max(2, num_classes))
 
-        target = to_onehot(target, max(2, num_classes))  # type: ignore
+        target = to_onehot(target, max(2, num_classes))
 
         if multiclass is False:
             preds, target = preds[:, 1, ...], target[:, 1, ...]
@@ -540,6 +548,7 @@ def _check_retrieval_inputs(
         indexes: tensor with queries indexes
         preds: tensor with scores/logits
         target: tensor with ground true labels
+        allow_non_binary_target: whether to allow target to contain non-binary values
         ignore_index: ignore predictions where targets are equal to this number
 
     Raises:
@@ -746,3 +755,33 @@ def is_overridden(method_name: str, instance: object, parent: object) -> bool:
         raise ValueError("The parent should define the method")
 
     return instance_attr.__code__ != parent_attr.__code__
+
+
+def _try_proceed_with_timeout(fn: Callable, timeout: int = _DOCTEST_DOWNLOAD_TIMEOUT) -> bool:
+    """Function for checking if a certain function is taking too long to execute.
+
+    Function will only be executed if running inside a doctest context. Currently does not support Windows.
+
+    Args:
+        fn: function to check
+        timeout: timeout for function
+
+    Returns:
+        Bool indicating if the function finished within the specified timeout
+    """
+    # source: https://stackoverflow.com/a/14924210/4521646
+    proc = multiprocessing.Process(target=fn)
+    proc.start()
+    # Wait for 10 seconds or until process finishes
+    proc.join(timeout)
+    # If thread is still active
+    if not proc.is_alive():
+        return True
+
+    logging.warning(f"running `{fn.__name__}`... let's kill it...")
+    # Terminate - may not work if process is stuck for good
+    proc.terminate()
+    # OR Kill - will work for sure, no chance for process to finish nicely however
+    # p.kill()
+    proc.join()
+    return False

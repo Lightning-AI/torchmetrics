@@ -48,15 +48,13 @@ def _baseline_perplexity(preds, target, ignore_index):
 )
 class TestPerplexity(MetricTester):
     @pytest.mark.parametrize("ddp", [False, True])
-    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_perplexity_class(self, ddp, dist_sync_on_step, preds, target, ignore_index):
+    def test_perplexity_class(self, ddp, preds, target, ignore_index):
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
             target=target,
             metric_class=Perplexity,
             reference_metric=partial(_baseline_perplexity, ignore_index=ignore_index),
-            dist_sync_on_step=dist_sync_on_step,
             metric_args={"ignore_index": ignore_index},
         )
 

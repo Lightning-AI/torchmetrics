@@ -41,14 +41,6 @@ ALLOWED_ROUGE_KEYS: Dict[str, Union[int, str]] = {
 ALLOWED_ACCUMULATE_VALUES = ("avg", "best")
 
 
-def _is_internet_connection() -> bool:
-    try:
-        urllib.request.urlopen("https://torchmetrics.readthedocs.io/")
-    except HTTPError:
-        return False
-    return True
-
-
 def _ensure_nltk_punkt_is_downloaded() -> None:
     """Check whether `nltk` `punkt` is downloaded.
 
@@ -59,9 +51,9 @@ def _ensure_nltk_punkt_is_downloaded() -> None:
     try:
         nltk.data.find("tokenizers/punkt.zip")
     except LookupError:
-        if _is_internet_connection():
-            nltk.download("punkt", quiet=True, force=False)
-        else:
+        try:
+            nltk.download("punkt", quiet=True, force=False, halt_on_error=False, raise_on_error=True)
+        except ValueError:
             raise OSError(
                 "`nltk` resource `punkt` is not available on a disk and cannot be downloaded as a machine is not "
                 "connected to the internet."
@@ -106,6 +98,7 @@ def _lcs(
     Args:
         pred_tokens: A tokenized predicted sentence.
         target_tokens: A tokenized target sentence.
+        return_full_table: If the full table of logest common subsequence should be returned or just the largest
     """
     lcs = [[0] * (len(pred_tokens) + 1) for _ in range(len(target_tokens) + 1)]
     for i in range(1, len(target_tokens) + 1):
@@ -170,8 +163,8 @@ def _union_lcs(pred_tokens_list: Sequence[Sequence[str]], target_tokens: Sequenc
 def _normalize_and_tokenize_text(
     text: str,
     stemmer: Optional[Any] = None,
-    normalizer: Callable[[str], str] = None,
-    tokenizer: Callable[[str], Sequence[str]] = None,
+    normalizer: Optional[Callable[[str], str]] = None,
+    tokenizer: Optional[Callable[[str], Sequence[str]]] = None,
 ) -> Sequence[str]:
     """Rouge score should be calculated only over lowercased words and digits. Optionally, Porter stemmer can be
     used to strip word suffixes to improve matching. The text normalization follows the implemantion from `Rouge
@@ -289,8 +282,8 @@ def _rouge_score_update(
     rouge_keys_values: List[Union[int, str]],
     accumulate: str,
     stemmer: Optional[Any] = None,
-    normalizer: Callable[[str], str] = None,
-    tokenizer: Callable[[str], Sequence[str]] = None,
+    normalizer: Optional[Callable[[str], str]] = None,
+    tokenizer: Optional[Callable[[str], Sequence[str]]] = None,
 ) -> Dict[Union[int, str], List[Dict[str, Tensor]]]:
     """Update the rouge score with the current set of predicted and target sentences.
 
@@ -419,8 +412,8 @@ def rouge_score(
     target: Union[str, Sequence[str], Sequence[Sequence[str]]],
     accumulate: Literal["avg", "best"] = "best",
     use_stemmer: bool = False,
-    normalizer: Callable[[str], str] = None,
-    tokenizer: Callable[[str], Sequence[str]] = None,
+    normalizer: Optional[Callable[[str], str]] = None,
+    tokenizer: Optional[Callable[[str], Sequence[str]]] = None,
     rouge_keys: Union[str, Tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),
 ) -> Dict[str, Tensor]:
     """Calculate `Calculate Rouge Score`_ , used for automatic summarization.
