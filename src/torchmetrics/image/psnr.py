@@ -115,7 +115,7 @@ class PeakSignalNoiseRatio(Metric):
         self.reduction = reduction
         self.dim = tuple(dim) if isinstance(dim, Sequence) else dim
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
         sum_squared_error, n_obs = _psnr_update(preds, target, dim=self.dim)
         if self.dim is None:

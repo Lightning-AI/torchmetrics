@@ -113,7 +113,7 @@ class BinaryCalibrationError(Metric):
         self.add_state("confidences", [], dist_reduce_fx="cat")
         self.add_state("accuracies", [], dist_reduce_fx="cat")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Update metric states with predictions and targets."""
         if self.validate_args:
             _binary_calibration_error_tensor_validation(preds, target, self.ignore_index)
@@ -218,7 +218,7 @@ class MulticlassCalibrationError(Metric):
         self.add_state("confidences", [], dist_reduce_fx="cat")
         self.add_state("accuracies", [], dist_reduce_fx="cat")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Update metric states with predictions and targets."""
         if self.validate_args:
             _multiclass_calibration_error_tensor_validation(preds, target, self.num_classes, self.ignore_index)
