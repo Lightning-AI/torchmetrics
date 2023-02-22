@@ -17,9 +17,8 @@ Leads
 
 Core Maintainers
 ----------------
-- Luca Di Liello (`lucadiliello <https://github.com/lucadiliello>`_)
 - Daniel Stancl (`stancld <https://github.com/stancld>`_)
-- Maxim Grechkin (`maximsch2 <https://github.com/maximsch2>`_)
+- Luca Di Liello (`lucadiliello <https://github.com/lucadiliello>`_)
 - Changsheng Quan (`quancs <https://github.com/quancs>`_)
 
 
@@ -27,6 +26,7 @@ Alumni
 ------
 - Ananya Harsh Jha (`ananyahjha93 <https://github.com/ananyahjha93>`_)
 - Teddy Koker (`teddykoker <https://github.com/teddykoker>`_)
+- Maxim Grechkin (`maximsch2 <https://github.com/maximsch2>`_)
 
 
 Releases
