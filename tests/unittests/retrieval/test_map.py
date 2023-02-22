@@ -35,13 +35,13 @@ from unittests.retrieval.helpers import (
 seed_all(42)
 
 
-def _precision_at_k(target: np.ndarray, preds: np.ndarray, top_k: Optional[int] = None):
+def _average_precision_at_k(target: np.ndarray, preds: np.ndarray, top_k: Optional[int] = None):
     """Wrapper around reference metric to account for top_k argument."""
     assert target.shape == preds.shape
     assert len(target.shape) == 1
     top_k = top_k or len(preds)
-    idx = np.argsort(preds, axis=0)[::-1]
-    target, preds = target[idx][:top_k], preds[idx][:top_k]
+    idx = np.argsort(preds, axis=0)[::-1][:top_k]
+    target, preds = target[idx], preds[idx]
     return sk_average_precision_score(target, preds)
 
 
@@ -69,7 +69,7 @@ class TestMAP(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_class=RetrievalMAP,
-            reference_metric=_precision_at_k,
+            reference_metric=_average_precision_at_k,
             metric_args=metric_args,
         )
 
@@ -94,7 +94,7 @@ class TestMAP(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_class=RetrievalMAP,
-            reference_metric=_precision_at_k,
+            reference_metric=_average_precision_at_k,
             metric_args=metric_args,
         )
 
@@ -105,7 +105,7 @@ class TestMAP(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_functional=retrieval_average_precision,
-            reference_metric=_precision_at_k,
+            reference_metric=_average_precision_at_k,
             metric_args={},
             top_k=top_k,
         )
