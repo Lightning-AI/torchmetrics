@@ -70,7 +70,7 @@ class TweedieDevianceScore(Metric):
         tensor(1.2083)
     """
     is_differentiable: bool = True
-    higher_is_better = None  # TODO: both -1 and 1 are optimal
+    higher_is_better = None
     full_state_update: bool = False
     sum_deviance_score: Tensor
     num_observations: Tensor
