@@ -120,7 +120,7 @@ class _InformationMeasure:
                 f"Parameter `beta` is expected to be float differened from 0 and -1 for {information_measure}."
             )
         if self.information_measure == _IMEnum.AB_DIVERGENCE and (
-            any(not isinstance(p, float) for p in [alpha, beta]) or 0 in [alpha, beta, alpha + beta]  # type: ignore
+            any(not isinstance(p, float) for p in [alpha, beta]) or 0 in [alpha, beta, alpha + beta]
         ):
             raise ValueError(
                 "Parameters `alpha`, `beta` and their sum are expected to be differened from 0 for "
