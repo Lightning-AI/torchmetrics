@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Dict, List, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -97,8 +97,8 @@ class ROUGEScore(Metric):
     def __init__(
         self,
         use_stemmer: bool = False,
-        normalizer: Callable[[str], str] = None,
-        tokenizer: Callable[[str], Sequence[str]] = None,
+        normalizer: Optional[Callable[[str], str]] = None,
+        tokenizer: Optional[Callable[[str], Sequence[str]]] = None,
         accumulate: Literal["avg", "best"] = "best",
         rouge_keys: Union[str, Tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),
         **kwargs: Any,

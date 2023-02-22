@@ -688,7 +688,7 @@ class Metric(Module, ABC):
 
     def state_dict(  # type: ignore[override]  # todo
         self,
-        destination: Dict[str, Any] = None,
+        destination: Optional[Dict[str, Any]] = None,
         prefix: str = "",
         keep_vars: bool = False,
     ) -> Dict[str, Any]:
