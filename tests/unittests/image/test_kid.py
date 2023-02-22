@@ -77,12 +77,10 @@ def test_kid_raises_errors_and_warnings():
     with pytest.raises(TypeError, match="Got unknown input to argument `feature`"):
         KernelInceptionDistance(feature=[1, 2])
 
-    with pytest.raises(  # noqa: PT012 # todo
-        ValueError, match="Argument `subset_size` should be smaller than the number of samples"
-    ):
-        m = KernelInceptionDistance()
-        m.update(torch.randint(0, 255, (5, 3, 299, 299), dtype=torch.uint8), real=True)
-        m.update(torch.randint(0, 255, (5, 3, 299, 299), dtype=torch.uint8), real=False)
+    m = KernelInceptionDistance()
+    m.update(torch.randint(0, 255, (5, 3, 299, 299), dtype=torch.uint8), real=True)
+    m.update(torch.randint(0, 255, (5, 3, 299, 299), dtype=torch.uint8), real=False)
+    with pytest.raises(ValueError, match="Argument `subset_size` should be smaller than the number of samples"):
         m.compute()
 
 
