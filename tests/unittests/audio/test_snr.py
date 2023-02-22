@@ -22,8 +22,9 @@ from torch import Tensor
 
 from torchmetrics.audio import SignalNoiseRatio
 from torchmetrics.functional import signal_noise_ratio
+from unittests import NUM_BATCHES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
