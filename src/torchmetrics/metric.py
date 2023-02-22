@@ -921,9 +921,7 @@ class Metric(Module, ABC):
         """Needede method for construction of new metrics __new__ method."""
         return (Metric.__str__(self),)
 
-    def __iter__(self):
-        """Iteration over metrics are not allowed. Use metric collections for nesting metrics."""
-        raise NotImplementedError("Metrics does not support iteration.")
+    __iter__ = None
 
 
 def _neg(x: Tensor) -> Tensor:
