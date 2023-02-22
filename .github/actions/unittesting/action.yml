@@ -81,3 +81,9 @@ runs:
       coverage xml
       coverage report
     shell: ${{ inputs.shell-type }}
+
+  - name: Post HF
+    run: |
+      printf "list $TRANSFORMERS_CACHE:\n"
+      ls -l $TRANSFORMERS_CACHE
+    shell: bash
