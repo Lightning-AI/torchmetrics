@@ -73,7 +73,7 @@ class TotalVariation(Metric):
             self.add_state("score", default=tensor(0, dtype=torch.float), dist_reduce_fx="sum")
         self.add_state("num_elements", default=tensor(0, dtype=torch.int), dist_reduce_fx="sum")
 
-    def update(self, img: Tensor) -> None:  # type: ignore
+    def update(self, img: Tensor) -> None:
         """Update current score with batch of input images."""
         score, num_elements = _total_variation_update(img)
         if self.reduction is None or self.reduction == "none":

@@ -278,7 +278,7 @@ class TextTester(MetricTester):
         targets: TEXT_METRIC_INPUT,
         metric_class: Metric,
         reference_metric: Callable,
-        dist_sync_on_step: bool,
+        dist_sync_on_step: bool = False,
         metric_args: dict = None,
         check_dist_sync_on_step: bool = True,
         check_batch: bool = True,
@@ -440,11 +440,11 @@ class TextTester(MetricTester):
 
 
 def skip_on_connection_issues(reason: str = "Unable to load checkpoints from HuggingFace `transformers`."):
-    """Wrapper which handles HF-related tests if they fail due to connection issues.
+    """Wrapper which handles download related tests if they fail due to connection issues.
 
     The tests run normally if no connection issue arises, and they're marked as skipped otherwise.
     """
-    _error_msg_starts = ["We couldn't connect to", "Connection error", "Can't load"]
+    _error_msg_starts = ["We couldn't connect to", "Connection error", "Can't load", "`nltk` resource `punkt` is"]
 
     def test_decorator(function: Callable, *args: Any, **kwargs: Any) -> Optional[Callable]:
         @wraps(function)

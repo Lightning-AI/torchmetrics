@@ -1,0 +1,9 @@
+mypy==0.982
+types-PyYAML
+types-emoji
+types-protobuf
+types-requests
+types-setuptools
+types-six
+types-tabulate
+types-protobuf
