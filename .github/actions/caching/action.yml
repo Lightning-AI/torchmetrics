@@ -41,11 +41,11 @@ runs:
     run: |
       echo "pip_cache=$(pip cache dir)" >> $GITHUB_OUTPUT
       hf_cache=$(python -c "import os ; print(os.path.join(os.getcwd(), 'ci-cache_huggingface'))")
-      echo "hf_cache=$hf_cache" >> $GITHUB_OUTPUT
       echo "TRANSFORMERS_CACHE=$hf_cache" >> $GITHUB_ENV
     shell: bash
 
   - name: Cache pip
+    continue-on-error: true
     uses: actions/cache@v3
     with:
       path: ${{ steps.cache_dirs.outputs.pip_cache }}
@@ -53,14 +53,18 @@ runs:
       restore-keys: ${{ runner.os }}-py${{ inputs.python-version }}-pip-${{ inputs.requires }}-${{ inputs.offset }}-
 
   - name: Cache HF
+    continue-on-error: true
     uses: actions/cache@v3
     with:
-      path: ${{ steps.cache_dirs.outputs.hf_cache }}
-      key: ${{ runner.os }}-py${{ inputs.python-version }}-cache-transformers
+      path: ${{ env.TRANSFORMERS_CACHE }}
+      key: cache-transformers
+      enableCrossOsArchive: true
 
-  - name: Post HF
+  - name: Restored HF
     run: |
       mkdir -p $TRANSFORMERS_CACHE
+      printf "list root:\n"
       ls -l .
+      printf "list $TRANSFORMERS_CACHE:\n"
       ls -l $TRANSFORMERS_CACHE
     shell: bash
