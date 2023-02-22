@@ -100,12 +100,14 @@ class TestCLIPScore(MetricTester):
     def test_error_on_not_same_amount_of_input(self, input, model_name_or_path):
         """Test that an error is raised if the number of images and text examples does not match."""
         metric = CLIPScore(model_name_or_path=model_name_or_path)
-        with pytest.raises(ValueError):  # noqa: PT011  # todo
+        with pytest.raises(ValueError, match="Expected the number of images and text examples to be the same.*"):
             metric(torch.randint(255, (2, 3, 224, 224)), "28-year-old chef found dead in San Francisco mall")
 
     @skip_on_connection_issues()
     def test_error_on_wrong_image_format(self, input, model_name_or_path):
         """Test that an error is raised if not all images are [c, h, w] format."""
         metric = CLIPScore(model_name_or_path=model_name_or_path)
-        with pytest.raises(ValueError):  # noqa: PT011  # todo
+        with pytest.raises(
+            ValueError, match="Expected all images to be 3d but found image that has either more or less"
+        ):
             metric(torch.randint(255, (224, 224)), "28-year-old chef found dead in San Francisco mall")
