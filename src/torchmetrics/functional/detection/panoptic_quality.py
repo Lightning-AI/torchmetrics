@@ -186,17 +186,18 @@ def _prepocess_inputs(
         The preprocessed input tensor flattened along the spatial dimensions.
     """
     # flatten the spatial dimensions of the input tensor, e.g., (B, H, W, C) -> (B, H*W, C).
-    inputs = torch.flatten(inputs, 1, -2)
-    mask_stuffs = _isin(inputs[:, :, 0], list(stuffs))
-    mask_things = _isin(inputs[:, :, 0], list(things))
+    out = inputs.detach().clone()
+    out = torch.flatten(out, 1, -2)
+    mask_stuffs = _isin(out[:, :, 0], list(stuffs))
+    mask_things = _isin(out[:, :, 0], list(things))
     # reset instance IDs of stuffs
     mask_stuffs_instance = torch.stack([torch.zeros_like(mask_stuffs), mask_stuffs], dim=-1)
-    inputs[mask_stuffs_instance] = 0
+    out[mask_stuffs_instance] = 0
     if not allow_unknown_category and not torch.all(mask_things | mask_stuffs):
-        raise ValueError("Unknown categories found.")
+        raise ValueError(f"Unknown categories found: {out[~(mask_things|mask_stuffs)]}")
     # set unknown categories to void color
-    inputs[~(mask_things | mask_stuffs)] = inputs.new(void_color)
-    return inputs
+    out[~(mask_things | mask_stuffs)] = out.new(void_color)
+    return out
 
 
 def _panoptic_quality_update_sample(
