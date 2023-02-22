@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Union
+from typing import Any, Dict, List, Optional, Sequence, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -67,7 +67,6 @@ class SpectralAngleMapper(Metric):
     higher_is_better: bool = False
     is_differentiable: bool = True
     full_state_update: bool = False
-    plot_options = {"lower_bound": 0.0, "upper_bound": 1.0}
 
     preds: List[Tensor]
     target: List[Tensor]
@@ -144,6 +143,11 @@ class SpectralAngleMapper(Metric):
         """
         val = val or self.compute()
         fig, ax = plot_single_or_multi_val(
-            val, ax=ax, higher_is_better=self.higher_is_better, name=self.__class__.__name__, **self.plot_options
+            val,
+            ax=ax,
+            higher_is_better=self.higher_is_better,
+            name=self.__class__.__name__,
+            lower_bound=0.0,
+            upper_bound=1.0,
         )
         return fig, ax
