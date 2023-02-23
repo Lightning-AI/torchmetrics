@@ -35,8 +35,8 @@ def _baseline_exact_match_multiclass(preds, target, ignore_index, multidim_avera
     target = target.numpy()
 
     if ignore_index is not None:
-        target = np.copy(target)
-        target[target == ignore_index] = -1
+        preds = np.copy(preds)
+        preds[target == ignore_index] = ignore_index
 
     correct = (preds == target).sum(-1) == preds.shape[1]
     correct = correct.sum() if multidim_average == "global" else correct
