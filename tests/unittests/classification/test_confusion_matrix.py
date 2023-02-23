@@ -219,6 +219,18 @@ class TestMulticlassConfusionMatrix(MetricTester):
         )
 
 
+def test_multiclass_overflow():
+    """Test that multiclass computations does not overflow even on byte input."""
+    preds = torch.randint(20, (100,)).byte()
+    target = torch.randint(20, (100,)).byte()
+
+    m = MulticlassConfusionMatrix(num_classes=20)
+    res = m(preds, target)
+
+    compare = sk_confusion_matrix(target, preds)
+    assert torch.allclose(res, torch.tensor(compare))
+
+
 def _sklearn_confusion_matrix_multilabel(preds, target, normalize=None, ignore_index=None):
     preds = preds.numpy()
     target = target.numpy()
