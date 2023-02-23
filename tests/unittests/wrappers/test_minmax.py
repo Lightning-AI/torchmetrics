@@ -39,19 +39,6 @@ def compare_fn(preds, target, base_fn):
     return [raw.cpu().numpy(), v_min, v_max]
 
 
-def compare_fn_ddp(preds, target, base_fn):
-    v_min, v_max = 1e6, -1e6  # pick some very large numbers for comparing
-    for i, j in zip(range(0, NUM_BATCHES, 2), range(1, NUM_BATCHES, 2)):
-        p = torch.cat([preds[i * BATCH_SIZE : (i + 1) * BATCH_SIZE], preds[j * BATCH_SIZE : (j + 1) * BATCH_SIZE]])
-        t = torch.cat([target[i * BATCH_SIZE : (i + 1) * BATCH_SIZE], target[j * BATCH_SIZE : (j + 1) * BATCH_SIZE]])
-        base_fn.update(p, t)
-        val = base_fn.compute().cpu().numpy()
-        v_min = v_min if v_min < val else val
-        v_max = v_max if v_max > val else val
-    raw = base_fn(preds, target)
-    return [raw.cpu().numpy(), v_min, v_max]
-
-
 @pytest.mark.parametrize(
     "preds, target, base_metric",
     [
@@ -68,15 +55,13 @@ class TestMinMaxWrapper(MetricTester):
 
     atol = 1e-6
 
-    # TODO: fix ddp=True case, difference in how compare function works and wrapper metric
-    @pytest.mark.parametrize("ddp", [False])
-    def test_minmax_wrapper(self, preds, target, base_metric, ddp):
+    def test_minmax_wrapper(self, preds, target, base_metric):
         self.run_class_metric_test(
-            ddp,
-            preds,
-            target,
-            TestingMinMaxMetric,
-            partial(compare_fn_ddp if ddp else compare_fn, base_fn=deepcopy(base_metric)),
+            ddp=False,
+            preds=preds,
+            target=target,
+            metric_class=TestingMinMaxMetric,
+            reference_metric=partial(compare_fn, base_fn=deepcopy(base_metric)),
             metric_args={"base_metric": base_metric},
             check_batch=False,
             check_scriptable=False,

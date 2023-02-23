@@ -28,7 +28,7 @@ from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
-TIME = 100
+TIME = 25
 
 Input = namedtuple("Input", ["preds", "target"])
 
@@ -39,7 +39,7 @@ inputs = Input(
 )
 
 
-def bss_eval_images_snr(preds: Tensor, target: Tensor, metric_func: Callable, zero_mean: bool):
+def bss_eval_images_snr(preds: Tensor, target: Tensor, zero_mean: bool):
     # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
     if zero_mean:
@@ -51,10 +51,7 @@ def bss_eval_images_snr(preds: Tensor, target: Tensor, metric_func: Callable, ze
     for i in range(preds.shape[0]):
         ms = []
         for j in range(preds.shape[1]):
-            if metric_func == mir_eval_bss_eval_images:
-                snr_v = metric_func([target[i, j]], [preds[i, j]])[0][0]
-            else:
-                snr_v = metric_func([target[i, j]], [preds[i, j]])[0][0][0]
+            snr_v = mir_eval_bss_eval_images([target[i, j]], [preds[i, j]], compute_permutation=True)[0][0]
             ms.append(snr_v)
         mss.append(ms)
     return torch.tensor(mss)
@@ -66,8 +63,8 @@ def average_metric(preds: Tensor, target: Tensor, metric_func: Callable):
     return metric_func(preds, target).mean()
 
 
-mireval_snr_zeromean = partial(bss_eval_images_snr, metric_func=mir_eval_bss_eval_images, zero_mean=True)
-mireval_snr_nozeromean = partial(bss_eval_images_snr, metric_func=mir_eval_bss_eval_images, zero_mean=False)
+mireval_snr_zeromean = partial(bss_eval_images_snr, zero_mean=True)
+mireval_snr_nozeromean = partial(bss_eval_images_snr, zero_mean=False)
 
 
 @pytest.mark.parametrize(

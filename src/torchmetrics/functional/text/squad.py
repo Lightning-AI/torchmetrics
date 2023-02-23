@@ -119,7 +119,7 @@ def _squad_input_check(
                 f"{SQuAD_FORMAT}"
             )
 
-        answers: Dict[str, Union[List[str], List[int]]] = target["answers"]  # type: ignore
+        answers: Dict[str, Union[List[str], List[int]]] = target["answers"]
         if "text" not in answers.keys():
             raise KeyError(
                 "Expected keys in a 'answers' are 'text'."

@@ -33,7 +33,7 @@ if _LPIPS_AVAILABLE:
         __doctest_skip__ = ["LearnedPerceptualImagePatchSimilarity", "LPIPS"]
 else:
 
-    class _LPIPS(Module):  # type: ignore
+    class _LPIPS(Module):
         pass
 
     __doctest_skip__ = ["LearnedPerceptualImagePatchSimilarity", "LPIPS"]
@@ -146,7 +146,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
         self.add_state("sum_scores", torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", torch.tensor(0.0), dist_reduce_fx="sum")
 
-    def update(self, img1: Tensor, img2: Tensor) -> None:  # type: ignore
+    def update(self, img1: Tensor, img2: Tensor) -> None:
         """Update internal states with lpips score."""
         if not (_valid_img(img1, self.normalize) and _valid_img(img2, self.normalize)):
             raise ValueError(

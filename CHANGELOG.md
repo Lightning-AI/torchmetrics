@@ -43,6 +43,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Extend `EnumStr` raising `ValueError` for invalid value ([#1479](https://github.com/Lightning-AI/metrics/pull/1479))
 
 
+- Improve speed and memory consumption of binned `PrecisionRecallCurve` with large number of samples ([#1493](https://github.com/Lightning-AI/metrics/pull/1493))
+
+
+- Changed `__iter__` method from raising `NotImplementedError` to `TypeError` by setting to `None` ([#1538](https://github.com/Lightning-AI/metrics/pull/1538))
+
+
 ### Deprecated
 
 -
@@ -62,7 +68,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 - Fixed `multilabel` in `ExactMatch` ([#1474](https://github.com/Lightning-AI/metrics/pull/1474))
-
 
 
 ## [0.11.1] - 2023-01-30
