@@ -83,8 +83,9 @@ class _AbstractStatScores(Metric):
 
 
 class BinaryStatScores(_AbstractStatScores):
-    r"""Compute the number of true positives, false positives, true negatives, false negatives and the support for
-    binary tasks. Related to `Type I and Type II errors`_.
+    r"""Computes true positives, false positives, true negatives, false negatives and the support for binary tasks.
+
+    Related to `Type I and Type II errors`_.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -182,8 +183,9 @@ class BinaryStatScores(_AbstractStatScores):
 
 
 class MulticlassStatScores(_AbstractStatScores):
-    r"""Compute the number of true positives, false positives, true negatives, false negatives and the support for
-    multiclass tasks. Related to `Type I and Type II errors`_.
+    r"""Computes true positives, false positives, true negatives, false negatives and the support for multiclass tasks.
+
+    Related to `Type I and Type II errors`_.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -325,8 +327,9 @@ class MulticlassStatScores(_AbstractStatScores):
 
 
 class MultilabelStatScores(_AbstractStatScores):
-    r"""Compute the number of true positives, false positives, true negatives, false negatives and the support for
-    multilabel tasks. Related to `Type I and Type II errors`_.
+    r"""Computes true positives, false positives, true negatives, false negatives and the support for multilabel tasks.
+
+    Related to `Type I and Type II errors`_.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
