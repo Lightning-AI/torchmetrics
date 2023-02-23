@@ -11,13 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
 from typing import List, Tuple, Union
 
 import torch
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.utilities.checks import _in_doctest, _try_proceed_with_timeout
+from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
 from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 
 if _TRANSFORMERS_AVAILABLE:
@@ -28,13 +29,13 @@ if _TRANSFORMERS_AVAILABLE:
         _CLIPModel.from_pretrained("openai/clip-vit-large-patch14")
         _CLIPProcessor.from_pretrained("openai/clip-vit-large-patch14")
 
-    if _in_doctest() and not _try_proceed_with_timeout(_download_clip):
+    if _SKIP_SLOW_DOCTEST and not _try_proceed_with_timeout(_download_clip):
         __doctest_skip__ = ["clip_score"]
 
 else:
     __doctest_skip__ = ["clip_score"]
-    _CLIPModel = None  # type:ignore
-    _CLIPProcessor = None  # type:ignore
+    _CLIPModel = None
+    _CLIPProcessor = None
 
 
 def _clip_score_update(
@@ -60,9 +61,7 @@ def _clip_score_update(
             f"Expected the number of images and text examples to be the same but got {len(images)} and {len(text)}"
         )
     device = images[0].device
-    processed_input = processor(
-        text=text, images=[i.cpu() for i in images], return_tensors="pt", padding=True
-    )  # type: ignore
+    processed_input = processor(text=text, images=[i.cpu() for i in images], return_tensors="pt", padding=True)
 
     img_features = model.get_image_features(processed_input["pixel_values"].to(device))
     img_features = img_features / img_features.norm(p=2, dim=-1, keepdim=True)

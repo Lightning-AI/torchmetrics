@@ -26,7 +26,7 @@ from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_AVAILA
 if _TRANSFORMERS_AVAILABLE:
     from transformers import AutoModelForMaskedLM, AutoTokenizer, PreTrainedModel, PreTrainedTokenizerBase
 else:
-    PreTrainedModel = PreTrainedTokenizerBase = None  # type: ignore
+    PreTrainedModel = PreTrainedTokenizerBase = None
 
 if _TQDM_AVAILABLE:
     import tqdm

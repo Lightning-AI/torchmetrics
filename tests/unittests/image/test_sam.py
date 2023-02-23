@@ -68,15 +68,13 @@ def _baseline_sam(
 )
 class TestSpectralAngleMapper(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_sam(self, reduction, preds, target, ddp, dist_sync_on_step):
+    def test_sam(self, reduction, preds, target, ddp):
         self.run_class_metric_test(
             ddp,
             preds,
             target,
             SpectralAngleMapper,
             partial(_baseline_sam, reduction=reduction),
-            dist_sync_on_step,
             metric_args={"reduction": reduction},
         )
 
@@ -105,24 +103,28 @@ class TestSpectralAngleMapper(MetricTester):
 
 
 def test_error_on_different_shape(metric_class=SpectralAngleMapper):
+    """Test that error is raised if preds and target have different shape."""
     metric = metric_class()
-    with pytest.raises(RuntimeError):
+    with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape.*"):
         metric(torch.randn([1, 3, 16, 16]), torch.randn([1, 1, 16, 16]))
 
 
 def test_error_on_invalid_shape(metric_class=SpectralAngleMapper):
+    """Test that error is raised if input is not 4D."""
     metric = metric_class()
-    with pytest.raises(ValueError):  # noqa: PT011  # todo
+    with pytest.raises(ValueError, match="Expected `preds` and `target` to have BxCxHxW shape.*"):
         metric(torch.randn([3, 16, 16]), torch.randn([3, 16, 16]))
 
 
 def test_error_on_invalid_type(metric_class=SpectralAngleMapper):
+    """Test that error is raised if preds and target have different dtype."""
     metric = metric_class()
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match="Expected `preds` and `target` to have the same data type.*"):
         metric(torch.randn([3, 16, 16]), torch.randn([3, 16, 16], dtype=torch.float64))
 
 
 def test_error_on_grayscale_image(metric_class=SpectralAngleMapper):
+    """Test that error is raised if number of channelse is not larger than 1."""
     metric = metric_class()
-    with pytest.raises(ValueError):  # noqa: PT011  # todo
+    with pytest.raises(ValueError, match="Expected channel dimension of `preds` and `target` to be larger than 1.*"):
         metric(torch.randn([16, 1, 16, 16]), torch.randn([16, 1, 16, 16]))

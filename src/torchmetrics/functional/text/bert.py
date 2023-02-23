@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import csv
+import os
 import urllib
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from warnings import warn
@@ -30,7 +31,7 @@ from torchmetrics.functional.text.helper_embedding_metric import (
     _output_data_collator,
     _process_attention_mask_for_special_tokens,
 )
-from torchmetrics.utilities.checks import _in_doctest, _try_proceed_with_timeout
+from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
 from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_AVAILABLE
 
 # Default model recommended in the original implementation.
@@ -44,7 +45,7 @@ if _TRANSFORMERS_AVAILABLE:
         AutoTokenizer.from_pretrained(_DEFAULT_MODEL)
         AutoModel.from_pretrained(_DEFAULT_MODEL)
 
-    if _in_doctest() and not _try_proceed_with_timeout(_download_model):
+    if _SKIP_SLOW_DOCTEST and not _try_proceed_with_timeout(_download_model):
         __doctest_skip__ = ["bert_score"]
 else:
     __doctest_skip__ = ["bert_score"]
@@ -59,7 +60,7 @@ def _get_embeddings_and_idf_scale(
     all_layers: bool = False,
     idf: bool = False,
     verbose: bool = False,
-    user_forward_fn: Callable[[Module, Dict[str, Tensor]], Tensor] = None,
+    user_forward_fn: Optional[Callable[[Module, Dict[str, Tensor]], Tensor]] = None,
 ) -> Tuple[Tensor, Tensor]:
     """Calculate sentence embeddings and the inverse-document-frequency scaling factor.
 
@@ -248,7 +249,7 @@ def bert_score(
     all_layers: bool = False,
     model: Optional[Module] = None,
     user_tokenizer: Any = None,
-    user_forward_fn: Callable[[Module, Dict[str, Tensor]], Tensor] = None,
+    user_forward_fn: Optional[Callable[[Module, Dict[str, Tensor]], Tensor]] = None,
     verbose: bool = False,
     idf: bool = False,
     device: Optional[Union[str, torch.device]] = None,

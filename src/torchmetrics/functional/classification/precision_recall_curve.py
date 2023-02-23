@@ -194,11 +194,52 @@ def _binary_precision_recall_curve_update(
     """
     if thresholds is None:
         return preds, target
+    if preds.numel() <= 50_000:
+        update_fn = _binary_precision_recall_curve_update_vectorized
+    else:
+        update_fn = _binary_precision_recall_curve_update_loop
+    return update_fn(preds, target, thresholds)
+
+
+def _binary_precision_recall_curve_update_vectorized(
+    preds: Tensor,
+    target: Tensor,
+    thresholds: Tensor,
+) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+    """Returns the multi-threshold confusion matrix to calculate the pr-curve with.
+
+    This implementation is vectorized and faster than `_binary_precision_recall_curve_update_loop` for small
+    numbers of samples (up to 50k) but less memory- and time-efficient for more samples.
+    """
     len_t = len(thresholds)
     preds_t = (preds.unsqueeze(-1) >= thresholds.unsqueeze(0)).long()  # num_samples x num_thresholds
     unique_mapping = preds_t + 2 * target.unsqueeze(-1) + 4 * torch.arange(len_t, device=target.device)
     bins = _bincount(unique_mapping.flatten(), minlength=4 * len_t)
     return bins.reshape(len_t, 2, 2)
+
+
+def _binary_precision_recall_curve_update_loop(
+    preds: Tensor,
+    target: Tensor,
+    thresholds: Tensor,
+) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+    """Returns the multi-threshold confusion matrix to calculate the pr-curve with.
+
+    This implementation loops over thresholds and is more memory-efficient than
+    `_binary_precision_recall_curve_update_vectorized`. However, it is slowwer for small
+    numbers of samples (up to 50k).
+    """
+    len_t = len(thresholds)
+    target = target == 1
+    confmat = thresholds.new_empty((len_t, 2, 2), dtype=torch.int64)
+    # Iterate one threshold at a time to conserve memory
+    for i in range(len_t):
+        preds_t = preds >= thresholds[i]
+        confmat[i, 1, 1] = (target & preds_t).sum()
+        confmat[i, 0, 1] = ((~target) & preds_t).sum()
+        confmat[i, 1, 0] = (target & (~preds_t)).sum()
+    confmat[:, 0, 0] = len(preds_t) - confmat[:, 0, 1] - confmat[:, 1, 0] - confmat[:, 1, 1]
+    return confmat
 
 
 def _binary_precision_recall_curve_compute(
@@ -233,7 +274,7 @@ def _binary_precision_recall_curve_compute(
         # introduce negative strides that are not yet supported in pytorch
         precision = torch.cat([reversed(precision[sl]), torch.ones(1, dtype=precision.dtype, device=precision.device)])
         recall = torch.cat([reversed(recall[sl]), torch.zeros(1, dtype=recall.dtype, device=recall.device)])
-        thresholds = reversed(thresholds[sl]).detach().clone()  # type: ignore
+        thresholds = reversed(thresholds[sl]).detach().clone()
 
     return precision, recall, thresholds
 
@@ -409,8 +450,25 @@ def _multiclass_precision_recall_curve_update(
     """
     if thresholds is None:
         return preds, target
+    if preds.numel() * num_classes <= 1_000_000:
+        update_fn = _multiclass_precision_recall_curve_update_vectorized
+    else:
+        update_fn = _multiclass_precision_recall_curve_update_loop
+    return update_fn(preds, target, num_classes, thresholds)
+
+
+def _multiclass_precision_recall_curve_update_vectorized(
+    preds: Tensor,
+    target: Tensor,
+    num_classes: int,
+    thresholds: Tensor,
+) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+    """Returns the multi-threshold confusion matrix to calculate the pr-curve with.
+
+    This implementation is vectorized and faster than `_binary_precision_recall_curve_update_loop` for small
+    numbers of samples but less memory- and time-efficient for more samples.
+    """
     len_t = len(thresholds)
-    # num_samples x num_classes x num_thresholds
     preds_t = (preds.unsqueeze(-1) >= thresholds.unsqueeze(0).unsqueeze(0)).long()
     target_t = torch.nn.functional.one_hot(target, num_classes=num_classes)
     unique_mapping = preds_t + 2 * target_t.unsqueeze(-1)
@@ -418,6 +476,31 @@ def _multiclass_precision_recall_curve_update(
     unique_mapping += 4 * num_classes * torch.arange(len_t, device=preds.device)
     bins = _bincount(unique_mapping.flatten(), minlength=4 * num_classes * len_t)
     return bins.reshape(len_t, num_classes, 2, 2)
+
+
+def _multiclass_precision_recall_curve_update_loop(
+    preds: Tensor,
+    target: Tensor,
+    num_classes: int,
+    thresholds: Tensor,
+) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+    """Returns the state to calculate the pr-curve with.
+
+    This implementation loops over thresholds and is more memory-efficient than
+    `_binary_precision_recall_curve_update_vectorized`. However, it is slowwer for small
+    numbers of samples.
+    """
+    len_t = len(thresholds)
+    target_t = torch.nn.functional.one_hot(target, num_classes=num_classes)
+    confmat = thresholds.new_empty((len_t, num_classes, 2, 2), dtype=torch.int64)
+    # Iterate one threshold at a time to conserve memory
+    for i in range(len_t):
+        preds_t = preds >= thresholds[i]
+        confmat[i, :, 1, 1] = (target_t & preds_t).sum(dim=0)
+        confmat[i, :, 0, 1] = ((~target_t) & preds_t).sum(dim=0)
+        confmat[i, :, 1, 0] = (target_t & (~preds_t)).sum(dim=0)
+    confmat[:, :, 0, 0] = len(preds_t) - confmat[:, :, 0, 1] - confmat[:, :, 1, 0] - confmat[:, :, 1, 1]
+    return confmat
 
 
 def _multiclass_precision_recall_curve_compute(

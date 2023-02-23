@@ -33,13 +33,14 @@ def test_prints():
 
 
 def test_reduce():
+    """Test that reduction function works as expected and also raises error on wrong input."""
     start_tensor = torch.rand(50, 40, 30)
 
     assert torch.allclose(reduce(start_tensor, "elementwise_mean"), torch.mean(start_tensor))
     assert torch.allclose(reduce(start_tensor, "sum"), torch.sum(start_tensor))
     assert torch.allclose(reduce(start_tensor, "none"), start_tensor)
 
-    with pytest.raises(ValueError):  # noqa: PT011  # todo
+    with pytest.raises(ValueError, match="Reduction parameter unknown."):
         reduce(start_tensor, "error_reduction")
 
 

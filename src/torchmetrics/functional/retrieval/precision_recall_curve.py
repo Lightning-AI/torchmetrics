@@ -47,9 +47,9 @@ def retrieval_precision_recall_curve(
         adaptive_k: adjust `max_k` to `min(max_k, number of documents)` for each query
 
     Returns:
-        tensor with the precision values for each k (at ``k``) from 1 to `max_k`
-        tensor with the recall values for each k (at ``k``) from 1 to `max_k`
-        tensor with all possibles k
+        Tensor with the precision values for each k (at ``top_k``) from 1 to `max_k`
+        Tensor with the recall values for each k (at ``top_k``) from 1 to `max_k`
+        Tensor with all possibles k
 
     Raises:
         ValueError:
