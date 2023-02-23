@@ -210,7 +210,6 @@ module = [
     "torchmetrics.image.ssim",
     "torchmetrics.image.tv",
     "torchmetrics.image.uqi",
-    "torchmetrics.metric",
     "torchmetrics.regression.kl_divergence",
     "torchmetrics.regression.log_mse",
     "torchmetrics.regression.mae",
