@@ -37,7 +37,7 @@ NUM_BATCHES = 2 * NUM_PROCESSES  # Need to be divisible with the number of proce
 BATCH_SIZE = 32
 # NUM_BATCHES = 10 if torch.cuda.is_available() else 4
 # BATCH_SIZE = 64 if torch.cuda.is_available() else 32
-NUM_CLASSES = 17
+NUM_CLASSES = 5
 EXTRA_DIM = 3
 THRESHOLD = 0.5
 

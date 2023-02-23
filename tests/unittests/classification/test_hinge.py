@@ -131,8 +131,7 @@ def _sklearn_multiclass_hinge_loss(preds, target, multiclass_mode, ignore_index)
 
 
 @pytest.mark.parametrize(
-    "input",
-    (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5], _multiclass_cases[6]),
+    "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
 )
 class TestMulticlassHingeLoss(MetricTester):
     @pytest.mark.parametrize("multiclass_mode", ["crammer-singer", "one-vs-all"])

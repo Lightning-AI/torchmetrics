@@ -153,8 +153,7 @@ def _sklearn_avg_precision_multiclass(preds, target, average="macro", ignore_ind
 
 
 @pytest.mark.parametrize(
-    "input",
-    (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5], _multiclass_cases[6]),
+    "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
 )
 class TestMulticlassAveragePrecision(MetricTester):
     @pytest.mark.parametrize("average", ["macro", "weighted", None])

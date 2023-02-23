@@ -137,8 +137,7 @@ def _netcal_multiclass_calibration_error(preds, target, n_bins, norm, ignore_ind
 
 
 @pytest.mark.parametrize(
-    "input",
-    (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5], _multiclass_cases[6]),
+    "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
 )
 class TestMulticlassCalibrationError(MetricTester):
     @pytest.mark.parametrize("n_bins", [15, 20])

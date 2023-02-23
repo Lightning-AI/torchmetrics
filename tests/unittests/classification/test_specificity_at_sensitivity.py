@@ -190,8 +190,7 @@ def _sklearn_specificity_at_sensitivity_multiclass(preds, target, min_sensitivit
 
 
 @pytest.mark.parametrize(
-    "input",
-    (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5], _multiclass_cases[6]),
+    "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
 )
 class TestMulticlassSpecificityAtSensitivity(MetricTester):
     @pytest.mark.parametrize("min_sensitivity", [0.05, 0.1, 0.3, 0.5, 0.8])

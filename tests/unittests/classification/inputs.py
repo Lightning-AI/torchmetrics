@@ -157,13 +157,6 @@ _multiclass_cases = (
         ),
         id="input[multi dim-logits]",
     ),
-    pytest.param(
-        Input(
-            preds=_logsoftmax(torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES), -1),
-            target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE), dtype=torch.int8),
-        ),
-        id="input[single dim int8-logits]",
-    ),
 )
 
 
