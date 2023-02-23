@@ -182,7 +182,7 @@ def demographic_parity(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Dict[str, torch.Tensor]:
-    r"""Demographic parity compares the positivity rates between all groups. If more than two groups are present,
+    r"""`Demographic parity`_ compares the positivity rates between all groups. If more than two groups are present,
     the disparity between the lowest and highest group is reported. The lowest positivity rate is divided by the
     highest, so a lower value means more discrimination against the numerator. In the results this is also
     indicated as the key of dict is DP_{identifier_low_group}_{identifier_high_group}.
@@ -228,6 +228,9 @@ def demographic_parity(
         >>> groups = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> demographic_parity(preds, groups)
         {'DP_0_1': tensor(0.)}
+
+    .. _Demographic parity:
+        http://www.fairmlbook.org/
     """
     num_groups = torch.unique(groups).shape[0]
     target = torch.zeros(preds.shape)
@@ -262,7 +265,7 @@ def equal_opportunity(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Dict[str, torch.Tensor]:
-    r"""Equal opportunity compares the true positive rates between all groups. If more than two groups are present,
+    r"""`Equal opportunity`_ compares the true positive rates between all groups. If more than two groups are present,
     the disparity between the lowest and highest group is reported. The lowest true positive rate is divided by the
     highest, so a lower value means more discrimination against the numerator. In the results this is also
     indicated as the key of dict is EO_{identifier_low_group}_{identifier_high_group}.
@@ -311,6 +314,9 @@ def equal_opportunity(
         >>> groups = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> equal_opportunity(preds, target, groups)
         {'EO_0_1': tensor(0.)}
+
+    .. _Equal opportunity:
+        https://proceedings.neurips.cc/paper/2016/hash/9d2682367c3935defcb1f9e247a97c0d-Abstract.html
     """
     num_groups = torch.unique(groups).shape[0]
     group_stats = _binary_groups_stat_scores(preds, target, groups, num_groups, threshold, ignore_index, validate_args)

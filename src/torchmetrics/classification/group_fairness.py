@@ -138,7 +138,7 @@ class BinaryGroupStatRates(_AbstractGroupStatScores):
 
 
 class BinaryFairness(_AbstractGroupStatScores):
-    r"""Computes demographic parity and equal opportunity ratio for binary classification problems.
+    r"""Computes `demographic parity`_ and `equal opportunity`_ ratio for binary classification problems.
 
     Accepts the following input tensors:
 
@@ -189,6 +189,12 @@ class BinaryFairness(_AbstractGroupStatScores):
         >>> metric = BinaryFairness(2)
         >>> metric(preds, target, groups)
         {'DP_0_1': tensor(0.), 'EO_0_1': tensor(0.)}
+
+    .. _demographic parity:
+        http://www.fairmlbook.org/
+
+    .. _equal opportunity:
+        https://proceedings.neurips.cc/paper/2016/hash/9d2682367c3935defcb1f9e247a97c0d-Abstract.html
     """
     is_differentiable = False
     higher_is_better = False
