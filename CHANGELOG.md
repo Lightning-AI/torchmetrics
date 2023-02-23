@@ -16,7 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added support for plotting of metrics through `.plot()` method (
     [#1328](https://github.com/Lightning-AI/metrics/pull/1328),
-    [#1481](https://github.com/Lightning-AI/metrics/pull/1481)
+    [#1481](https://github.com/Lightning-AI/metrics/pull/1481),
+    [#1480](https://github.com/Lightning-AI/metrics/pull/1480)
 )
 
 
