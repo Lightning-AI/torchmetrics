@@ -22,7 +22,7 @@ from torch.multiprocessing import Pool, set_start_method
 with contextlib.suppress(RuntimeError):
     set_start_method("spawn")
 
-NUM_PROCESSES = torch.cuda.device_count() if torch.cuda.is_available() else 2
+NUM_PROCESSES = 2  # torch.cuda.device_count() if torch.cuda.is_available() else 2
 NUM_BATCHES = 2 * NUM_PROCESSES  # Need to be divisible with the number of processes
 BATCH_SIZE = 32
 NUM_CLASSES = 5

@@ -2,7 +2,7 @@ import os.path
 
 import torch
 
-from unittests.conftest import BATCH_SIZE, NUM_BATCHES, NUM_PROCESSES  # noqa: F401
+from unittests.conftest import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, NUM_CLASSES, NUM_PROCESSES, setup_ddp  # noqa: F401
 
 _PATH_TESTS = os.path.dirname(__file__)
 _PATH_ROOT = os.path.dirname(_PATH_TESTS)
