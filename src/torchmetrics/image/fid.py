@@ -28,7 +28,7 @@ if _TORCH_FIDELITY_AVAILABLE:
     from torch_fidelity.feature_extractor_inceptionv3 import FeatureExtractorInceptionV3 as _FeatureExtractorInceptionV3
 else:
 
-    class _FeatureExtractorInceptionV3(Module):  # type: ignore
+    class _FeatureExtractorInceptionV3(Module):
         pass
 
     __doctest_skip__ = ["FrechetInceptionDistance", "FID"]
@@ -262,7 +262,7 @@ class FrechetInceptionDistance(Metric):
         self.add_state("fake_features_cov_sum", torch.zeros(mx_nb_feets).double(), dist_reduce_fx="sum")
         self.add_state("fake_features_num_samples", torch.tensor(0).long(), dist_reduce_fx="sum")
 
-    def update(self, imgs: Tensor, real: bool) -> None:  # type: ignore
+    def update(self, imgs: Tensor, real: bool) -> None:
         """Update the state with extracted features."""
         imgs = (imgs * 255).byte() if self.normalize else imgs
         features = self.inception(imgs)

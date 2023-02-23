@@ -127,8 +127,8 @@ class KendallRankCorrCoef(Metric):
         if t_test and alternative is None:
             raise ValueError("Argument `alternative` is required if `t_test=True` but got `None`.")
 
-        self.variant = _MetricVariant.from_str(variant)
-        self.alternative = _TestAlternative.from_str(alternative) if t_test and alternative else None
+        self.variant = _MetricVariant.from_str(str(variant))
+        self.alternative = _TestAlternative.from_str(str(alternative)) if t_test else None
         self.num_outputs = num_outputs
 
         self.add_state("preds", [], dist_reduce_fx="cat")
@@ -148,7 +148,9 @@ class KendallRankCorrCoef(Metric):
         """Compute Kendall rank correlation coefficient, and optionally p-value of corresponding statistical test."""
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
-        tau, p_value = _kendall_corrcoef_compute(preds, target, self.variant, self.alternative)
+        tau, p_value = _kendall_corrcoef_compute(
+            preds, target, self.variant, self.alternative  # type: ignore[arg-type]  # todo
+        )
 
         if p_value is not None:
             return tau, p_value

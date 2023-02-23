@@ -133,7 +133,7 @@ class InceptionScore(Metric):
         self.splits = splits
         self.add_state("features", [], dist_reduce_fx=None)
 
-    def update(self, imgs: Tensor) -> None:  # type: ignore
+    def update(self, imgs: Tensor) -> None:
         """Update the state with extracted features."""
         imgs = (imgs * 255).byte() if self.normalize else imgs
         features = self.inception(imgs)

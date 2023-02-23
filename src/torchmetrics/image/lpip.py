@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
 from typing import Any, List
 
 import torch
@@ -19,13 +20,20 @@ from torch.nn import Module
 from typing_extensions import Literal
 
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
 from torchmetrics.utilities.imports import _LPIPS_AVAILABLE
 
 if _LPIPS_AVAILABLE:
     from lpips import LPIPS as _LPIPS
+
+    def _download_lpips() -> None:
+        _LPIPS(pretrained=True, net="vgg")
+
+    if _SKIP_SLOW_DOCTEST and not _try_proceed_with_timeout(_download_lpips):
+        __doctest_skip__ = ["LearnedPerceptualImagePatchSimilarity", "LPIPS"]
 else:
 
-    class _LPIPS(Module):  # type: ignore
+    class _LPIPS(Module):
         pass
 
     __doctest_skip__ = ["LearnedPerceptualImagePatchSimilarity", "LPIPS"]
@@ -139,7 +147,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
         self.add_state("sum_scores", torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", torch.tensor(0.0), dist_reduce_fx="sum")
 
-    def update(self, img1: Tensor, img2: Tensor) -> None:  # type: ignore
+    def update(self, img1: Tensor, img2: Tensor) -> None:
         """Update internal states with lpips score."""
         if not (_valid_img(img1, self.normalize) and _valid_img(img2, self.normalize)):
             raise ValueError(

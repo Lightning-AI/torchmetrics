@@ -82,7 +82,7 @@ class BaseAggregator(Metric):
 
         return x.float()
 
-    def update(self, value: Union[float, Tensor]) -> None:  # type: ignore
+    def update(self, value: Union[float, Tensor]) -> None:
         """Overwrite in child class."""
         pass
 
@@ -140,7 +140,7 @@ class MaxMetric(BaseAggregator):
             **kwargs,
         )
 
-    def update(self, value: Union[float, Tensor]) -> None:  # type: ignore
+    def update(self, value: Union[float, Tensor]) -> None:
         """Update state with data.
 
         Args:
@@ -201,7 +201,7 @@ class MinMetric(BaseAggregator):
             **kwargs,
         )
 
-    def update(self, value: Union[float, Tensor]) -> None:  # type: ignore
+    def update(self, value: Union[float, Tensor]) -> None:
         """Update state with data.
 
         Args:
@@ -260,7 +260,7 @@ class SumMetric(BaseAggregator):
             **kwargs,
         )
 
-    def update(self, value: Union[float, Tensor]) -> None:  # type: ignore
+    def update(self, value: Union[float, Tensor]) -> None:
         """Update state with data.
 
         Args:
@@ -314,7 +314,7 @@ class CatMetric(BaseAggregator):
     ):
         super().__init__("cat", [], nan_strategy, **kwargs)
 
-    def update(self, value: Union[float, Tensor]) -> None:  # type: ignore
+    def update(self, value: Union[float, Tensor]) -> None:
         """Update state with data.
 
         Args:
@@ -381,7 +381,7 @@ class MeanMetric(BaseAggregator):
         )
         self.add_state("weight", default=torch.tensor(0.0), dist_reduce_fx="sum")
 
-    def update(self, value: Union[float, Tensor], weight: Union[float, Tensor] = 1.0) -> None:  # type: ignore
+    def update(self, value: Union[float, Tensor], weight: Union[float, Tensor] = 1.0) -> None:
         """Update state with data.
 
         Args:

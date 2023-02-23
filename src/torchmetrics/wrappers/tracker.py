@@ -120,12 +120,12 @@ class MetricTracker(ModuleList):
         self._increment_called = True
         self.append(deepcopy(self._base_metric))
 
-    def forward(self, *args, **kwargs) -> None:  # type: ignore
+    def forward(self, *args, **kwargs) -> None:
         """Call forward of the current metric being tracked."""
         self._check_for_increment("forward")
         return self[-1](*args, **kwargs)
 
-    def update(self, *args, **kwargs) -> None:  # type: ignore
+    def update(self, *args, **kwargs) -> None:
         """Update the current metric being tracked."""
         self._check_for_increment("update")
         self[-1].update(*args, **kwargs)

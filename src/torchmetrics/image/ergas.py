@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, List, Union
+from typing import Any, Dict, List, Optional, Sequence, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -21,6 +21,11 @@ from torchmetrics.functional.image.ergas import _ergas_compute, _ergas_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["ErrorRelativeGlobalDimensionlessSynthesis.plot"]
 
 
 class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
@@ -95,3 +100,57 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         return _ergas_compute(preds, target, self.ratio, self.reduction)
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> import torch
+            >>> from torchmetrics import ErrorRelativeGlobalDimensionlessSynthesis
+            >>> preds = torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42))
+            >>> target = preds * 0.75
+            >>> metric = ErrorRelativeGlobalDimensionlessSynthesis()
+            >>> metric.update(preds, target)
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics import ErrorRelativeGlobalDimensionlessSynthesis
+            >>> preds = torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42))
+            >>> target = preds * 0.75
+            >>> metric = ErrorRelativeGlobalDimensionlessSynthesis()
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(preds, target))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        val = val or self.compute()
+        fig, ax = plot_single_or_multi_val(
+            val,
+            ax=ax,
+            higher_is_better=self.higher_is_better,
+            name=self.__class__.__name__,
+            lower_bound=0.0,
+            upper_bound=1.0,
+        )
+        return fig, ax

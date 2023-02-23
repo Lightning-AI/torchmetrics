@@ -400,7 +400,7 @@ def _multiclass_stat_scores_update(
             idx = target != ignore_index
             preds = preds[idx]
             target = target[idx]
-        unique_mapping = (target * num_classes + preds).to(torch.long)
+        unique_mapping = target.to(torch.long) * num_classes + preds.to(torch.long)
         bins = _bincount(unique_mapping, minlength=num_classes**2)
         confmat = bins.reshape(num_classes, num_classes)
         tp = confmat.diag()

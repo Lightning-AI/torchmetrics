@@ -72,7 +72,7 @@ class MatchErrorRate(Metric):
         self.add_state("errors", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
         self.add_state("total", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
 
-    def update(  # type: ignore
+    def update(
         self,
         preds: Union[str, List[str]],
         target: Union[str, List[str]],

@@ -25,14 +25,14 @@ def retrieval_r_precision(preds: Tensor, target: Tensor) -> Tensor:
 
     ``preds`` and ``target`` should be of the same shape and live on the same device. If no ``target`` is ``True``,
     ``0`` is returned. ``target`` must be either `bool` or `integers` and ``preds`` must be ``float``,
-    otherwise an error is raised. If you want to measure Precision@K, ``k`` must be a positive integer.
+    otherwise an error is raised. If you want to measure Precision@K, ``top_k`` must be a positive integer.
 
     Args:
         preds: estimated probabilities of each document to be relevant.
         target: ground truth about each document being relevant or not.
 
     Returns:
-        a single-value tensor with the r-precision of the predictions ``preds`` w.r.t. the labels ``target``.
+        A single-value tensor with the r-precision of the predictions ``preds`` w.r.t. the labels ``target``.
 
     Example:
         >>> preds = tensor([0.2, 0.3, 0.5])

@@ -407,7 +407,7 @@ class MeanAveragePrecision(Metric):
         self.add_state("groundtruths", default=[], dist_reduce_fx=None)
         self.add_state("groundtruth_labels", default=[], dist_reduce_fx=None)
 
-    def update(self, preds: List[Dict[str, Tensor]], target: List[Dict[str, Tensor]]) -> None:  # type: ignore
+    def update(self, preds: List[Dict[str, Tensor]], target: List[Dict[str, Tensor]]) -> None:
         """Update state with predictions and targets."""
         _input_validator(preds, target, iou_type=self.iou_type)
 

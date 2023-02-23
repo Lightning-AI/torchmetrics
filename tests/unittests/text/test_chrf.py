@@ -49,10 +49,7 @@ def sacrebleu_chrf_fn(
 @pytest.mark.skipif(not _SACREBLEU_AVAILABLE, reason="test requires sacrebleu")
 class TestCHRFScore(TextTester):
     @pytest.mark.parametrize("ddp", [False, True])
-    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_chrf_score_class(
-        self, ddp, dist_sync_on_step, preds, targets, char_order, word_order, lowercase, whitespace
-    ):
+    def test_chrf_score_class(self, ddp, preds, targets, char_order, word_order, lowercase, whitespace):
         metric_args = {
             "n_char_order": char_order,
             "n_word_order": word_order,
@@ -69,7 +66,6 @@ class TestCHRFScore(TextTester):
             targets=targets,
             metric_class=CHRFScore,
             reference_metric=nltk_metric,
-            dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
         )
 
