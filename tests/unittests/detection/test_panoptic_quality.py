@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections import namedtuple
+from typing import Any, Dict
 
 import numpy as np
 import pytest
@@ -161,3 +162,40 @@ def test_error_on_wrong_input():
         ValueError, match="Expected argument `preds` to have exactly 2 channels in the last dimension.*"
     ):
         metric.update(preds, preds)
+
+    metric = PanopticQuality(things=[0], stuffs=[1], allow_unknown_preds_category=False)
+    preds = torch.randint(low=0, high=1, size=(1, 100, 2))
+    preds[0, 0, 0] = 2
+    with pytest.raises(ValueError, match="Unknown categories found.*"):
+        metric.update(preds, preds)
+
+
+def test_extreme_values():
+    """Test that the metric returns expected values in trivial cases."""
+    # Exact match between preds and target => metric is 1
+    assert panoptic_quality(_INPUTS_0.target[0], _INPUTS_0.target[0], **_ARGS_0) == 1.0
+    # Every element of the prediction is wrong => metric is 0
+    assert panoptic_quality(_INPUTS_0.target[0], _INPUTS_0.target[0] + 1, **_ARGS_0) == 0.0
+
+
+@pytest.mark.parametrize(
+    ("inputs", "args", "cat_dim"),
+    [
+        (_INPUTS_0, _ARGS_0, 0),
+        (_INPUTS_0, _ARGS_0, 1),
+        (_INPUTS_0, _ARGS_0, 2),
+        (_INPUTS_1, _ARGS_2, 0),
+        (_INPUTS_1, _ARGS_2, 1),
+    ],
+)
+def test_ignore_mask(inputs: Input, args: Dict[str, Any], cat_dim: int):
+    """Test that the metric correctly ignores regions of the inputs that do not map to a know category ID."""
+    preds = inputs.preds[0]
+    target = inputs.target[0]
+    value = panoptic_quality(preds, target, **args)
+    ignored_regions = torch.zeros_like(preds)
+    ignored_regions[..., 0] = 255
+    preds_new = torch.cat([preds, preds], dim=cat_dim)
+    target_new = torch.cat([target, ignored_regions], dim=cat_dim)
+    value_new = panoptic_quality(preds_new, target_new, **args)
+    assert value == value_new
