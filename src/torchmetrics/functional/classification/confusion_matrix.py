@@ -325,8 +325,8 @@ def _multiclass_confusion_matrix_format(
 
 
 def _multiclass_confusion_matrix_update(preds: Tensor, target: Tensor, num_classes: int) -> Tensor:
-    """Computes the bins to update the confusion matrix with."""
-    unique_mapping = (target * num_classes + preds).to(torch.long)
+    """Compute the bins to update the confusion matrix with."""
+    unique_mapping = target.to(torch.long) * num_classes + preds.to(torch.long)
     bins = _bincount(unique_mapping, minlength=num_classes**2)
     return bins.reshape(num_classes, num_classes)
 
