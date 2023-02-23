@@ -21,8 +21,9 @@ import torch
 
 from torchmetrics.functional.regression.log_cosh import log_cosh_error
 from torchmetrics.regression.log_cosh import LogCoshError
+from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
