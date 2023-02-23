@@ -24,6 +24,7 @@ from torchmetrics.utilities.checks import _allclose_recursive
 from torchmetrics.utilities.data import _bincount, _cumsum, _flatten, _flatten_dict, to_categorical, to_onehot
 from torchmetrics.utilities.distributed import class_reduce, reduce
 from torchmetrics.utilities.exceptions import TorchMetricsUserWarning
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_13
 
 
 def test_prints():
@@ -166,6 +167,9 @@ def test_recursive_allclose(input, expected):
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires GPU")
 @pytest.mark.xfail(sys.platform == "win32", reason="test will only fail on non-windows systems")
+@pytest.mark.skipif(
+    not _TORCH_GREATER_EQUAL_1_13, reason="earlier versions was silently non-deterministic, even in deterministic mode"
+)
 def test_cumsum_still_not_supported():
     """Make sure that cumsum on gpu and deterministic mode still fails.
 
