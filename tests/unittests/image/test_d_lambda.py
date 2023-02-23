@@ -21,8 +21,9 @@ import torch
 from torchmetrics.functional.image.d_lambda import spectral_distortion_index
 from torchmetrics.functional.image.uqi import universal_image_quality_index
 from torchmetrics.image.d_lambda import SpectralDistortionIndex
+from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 

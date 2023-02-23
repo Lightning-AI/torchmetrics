@@ -21,8 +21,9 @@ from torch.nn import functional as F  # noqa: N812
 
 from torchmetrics.functional.image.sam import spectral_angle_mapper
 from torchmetrics.image.sam import SpectralAngleMapper
+from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
