@@ -30,16 +30,16 @@ from unittests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricS
 seed_all(42)
 
 
-def _test_ddp_sum(rank):
+def _test_ddp_sum(rank: int, worldsize: int = NUM_PROCESSES) -> None:
     dummy = DummyMetric()
     dummy._reductions = {"foo": torch.sum}
     dummy.foo = tensor(1)
     dummy._sync_dist()
 
-    assert dummy.foo == NUM_PROCESSES
+    assert dummy.foo == worldsize
 
 
-def _test_ddp_cat(rank):
+def _test_ddp_cat(rank: int, worldsize: int = NUM_PROCESSES) -> None:
     dummy = DummyMetric()
     dummy._reductions = {"foo": torch.cat}
     dummy.foo = [tensor([1])]
@@ -48,7 +48,7 @@ def _test_ddp_cat(rank):
     assert torch.all(torch.eq(dummy.foo, tensor([1, 1])))
 
 
-def _test_ddp_sum_cat(rank):
+def _test_ddp_sum_cat(rank: int, worldsize: int = NUM_PROCESSES) -> None:
     dummy = DummyMetric()
     dummy._reductions = {"foo": torch.cat, "bar": torch.sum}
     dummy.foo = [tensor([1])]
@@ -56,33 +56,33 @@ def _test_ddp_sum_cat(rank):
     dummy._sync_dist()
 
     assert torch.all(torch.eq(dummy.foo, tensor([1, 1])))
-    assert dummy.bar == NUM_PROCESSES
+    assert dummy.bar == worldsize
 
 
-def _test_ddp_gather_uneven_tensors(rank):
+def _test_ddp_gather_uneven_tensors(rank: int, worldsize: int = NUM_PROCESSES) -> None:
     tensor = torch.ones(rank)
     result = gather_all_tensors(tensor)
-    assert len(result) == NUM_PROCESSES
-    for idx in range(NUM_PROCESSES):
+    assert len(result) == worldsize
+    for idx in range(worldsize):
         assert (result[idx] == torch.ones_like(result[idx])).all()
 
 
-def _test_ddp_gather_uneven_tensors_multidim(rank):
+def _test_ddp_gather_uneven_tensors_multidim(rank: int, worldsize: int = NUM_PROCESSES) -> None:
     tensor = torch.ones(rank + 1, 2 - rank)
     result = gather_all_tensors(tensor)
-    assert len(result) == NUM_PROCESSES
-    for idx in range(NUM_PROCESSES):
+    assert len(result) == worldsize
+    for idx in range(worldsize):
         val = result[idx]
         assert (val == torch.ones_like(val)).all()
 
 
-def _test_ddp_compositional_tensor(rank):
+def _test_ddp_compositional_tensor(rank: int, worldsize: int = NUM_PROCESSES) -> None:
     dummy = DummyMetricSum()
     dummy._reductions = {"x": torch.sum}
     dummy = dummy.clone() + dummy.clone()
     dummy.update(tensor(1))
     val = dummy.compute()
-    assert val == 2 * NUM_PROCESSES
+    assert val == 2 * worldsize
 
 
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
