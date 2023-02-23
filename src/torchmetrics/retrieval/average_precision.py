@@ -60,7 +60,7 @@ class RetrievalMAP(RetrievalMetric):
         ValueError:
             If ``ignore_index`` is not `None` or an integer.
         ValueError:
-            If ``k`` is not ``None`` or an integer larger than 0.
+            If ``top_k`` is not ``None`` or an integer larger than 0.
 
     Example:
         >>> from torch import tensor
