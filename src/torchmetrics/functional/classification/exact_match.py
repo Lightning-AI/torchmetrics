@@ -41,8 +41,13 @@ def _multiclass_exact_match_update(
     preds: Tensor,
     target: Tensor,
     multidim_average: Literal["global", "samplewise"] = "global",
+    ignore_index: Optional[int] = None,
 ) -> Tuple[Tensor, Tensor]:
     """Compute the statistics."""
+    if ignore_index is not None:
+        preds = preds.clone()
+        preds[target == ignore_index] = ignore_index
+
     correct = (preds == target).sum(1) == preds.shape[1]
     correct = correct if multidim_average == "samplewise" else correct.sum()
     total = torch.tensor(preds.shape[0] if multidim_average == "global" else 1, device=correct.device)
@@ -109,7 +114,7 @@ def multiclass_exact_match(
         _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index)
         _multiclass_stat_scores_tensor_validation(preds, target, num_classes, multidim_average, ignore_index)
     preds, target = _multiclass_stat_scores_format(preds, target, top_k)
-    correct, total = _multiclass_exact_match_update(preds, target, multidim_average)
+    correct, total = _multiclass_exact_match_update(preds, target, multidim_average, ignore_index)
     return _exact_match_reduce(correct, total)
 
 
