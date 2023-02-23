@@ -81,6 +81,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `multilabel` in `ExactMatch` ([#1474](https://github.com/Lightning-AI/metrics/pull/1474))
 
 
+- Fixed classification metrics for `byte` input ([#1521](https://github.com/Lightning-AI/metrics/pull/1474))
+
+
 ## [0.11.1] - 2023-01-30
 
 ### Fixed
