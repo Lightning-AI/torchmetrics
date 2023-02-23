@@ -31,7 +31,9 @@ def _binary_clf_curve(
     sample_weights: Optional[Sequence] = None,
     pos_label: int = 1,
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    """Calculate the TPs and false positives for all unique thresholds in the preds tensor. Adapted from
+    """Calculate the TPs and false positives for all unique thresholds in the preds tensor.
+
+    Adapted from
     https://github.com/scikit-learn/scikit-learn/blob/main/sklearn/metrics/_ranking.py.
 
     Args:
@@ -286,8 +288,10 @@ def binary_precision_recall_curve(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    r"""Compute the precision-recall curve for binary tasks. The curve consist of multiple pairs of precision and
-    recall values evaluated at different thresholds, such that the tradeoff between the two values can been seen.
+    r"""Compute the precision-recall curve for binary tasks.
+
+    The curve consist of multiple pairs of precision and recall values evaluated at different thresholds, such that the
+    tradeoff between the two values can been seen.
 
     Accepts the following input tensors:
 
@@ -540,9 +544,10 @@ def multiclass_precision_recall_curve(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    r"""Compute the precision-recall curve for multiclass tasks. The curve consist of multiple pairs of precision
-    and recall values evaluated at different thresholds, such that the tradeoff between the two values can been
-    seen.
+    r"""Compute the precision-recall curve for multiclass tasks.
+
+    The curve consist of multiple pairs of precision and recall values evaluated at different thresholds, such that the
+    tradeoff between the two values can been seen.
 
     Accepts the following input tensors:
 
@@ -766,9 +771,10 @@ def multilabel_precision_recall_curve(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    r"""Compute the precision-recall curve for multilabel tasks. The curve consist of multiple pairs of precision
-    and recall values evaluated at different thresholds, such that the tradeoff between the two values can been
-    seen.
+    r"""Compute the precision-recall curve for multilabel tasks.
+
+    The curve consist of multiple pairs of precision and recall values evaluated at different thresholds, such that the
+    tradeoff between the two values can been seen.
 
     Accepts the following input tensors:
 
@@ -872,8 +878,10 @@ def precision_recall_curve(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    r"""Compute the precision-recall curve. The curve consist of multiple pairs of precision and recall values
-    evaluated at different thresholds, such that the tradeoff between the two values can been seen.
+    r"""Compute the precision-recall curve.
+
+    The curve consist of multiple pairs of precision and recall values evaluated at different thresholds, such that the
+    tradeoff between the two values can been seen.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of

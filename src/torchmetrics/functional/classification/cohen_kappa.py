@@ -79,8 +79,7 @@ def binary_cohen_kappa(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculate `Cohen's kappa score`_ that measures inter-annotator agreement for binary tasks. It is defined
-    as.
+    r"""Calculate `Cohen's kappa score`_ that measures inter-annotator agreement for binary tasks.
 
     .. math::
         \kappa = (p_o - p_e) / (1 - p_e)
@@ -162,8 +161,7 @@ def multiclass_cohen_kappa(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculate `Cohen's kappa score`_ that measures inter-annotator agreement for multiclass tasks. It is
-    defined as.
+    r"""Calculate `Cohen's kappa score`_ that measures inter-annotator agreement for multiclass tasks.
 
     .. math::
         \kappa = (p_o - p_e) / (1 - p_e)
