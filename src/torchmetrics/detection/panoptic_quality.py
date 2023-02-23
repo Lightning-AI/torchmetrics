@@ -40,7 +40,11 @@ class PanopticQuality(Metric):
         implementation of panopticapi, a standard implementation for the PQ metric for panoptic segmentation.
 
     .. note:
-        Metric is currently experimental
+        Metric is currently experimental.
+
+    .. note:
+        Points in the target tensor that do not map to a known category ID are automatically ignored in the metric
+        computation.
 
     Args:
             things:
@@ -51,8 +55,6 @@ class PanopticQuality(Metric):
                 Boolean flag to specify if unknown categories in the predictions are to be ignored in the metric
                 computation or raise an exception when found.
 
-        TODO(marco): where to say that points in target that are not things or stuff
-        TODO(cont.) are ignored from metric computation?
 
     Raises:
             ValueError:

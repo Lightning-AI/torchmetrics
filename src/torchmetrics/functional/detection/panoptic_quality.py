@@ -369,6 +369,13 @@ def panoptic_quality(
     true postitives, false positives and false negatives. This metric is inspired by the PQ implementation of
     panopticapi, a standard implementation for the PQ metric for object detection.
 
+    .. note:
+        Metric is currently experimental.
+
+    .. note:
+        Points in the target tensor that do not map to a known category ID are automatically ignored in the metric
+        computation.
+
     Args:
         preds:
             torch tensor with panoptic detection of shape [height, width, 2] containing the pair
