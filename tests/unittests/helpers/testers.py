@@ -11,8 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import contextlib
-import os
 import pickle
 import sys
 from copy import deepcopy
@@ -23,42 +21,11 @@ import numpy as np
 import pytest
 import torch
 from torch import Tensor, tensor
-from torch.multiprocessing import Pool, set_start_method
 
 from torchmetrics import Metric
 from torchmetrics.detection.mean_ap import MAPMetricResults
 from torchmetrics.utilities.data import _flatten, apply_to_collection
-
-with contextlib.suppress(RuntimeError):
-    set_start_method("spawn")
-
-NUM_PROCESSES = torch.cuda.device_count() if torch.cuda.is_available() else 2
-NUM_BATCHES = 2 * NUM_PROCESSES  # Need to be divisible with the number of processes
-BATCH_SIZE = 32
-# NUM_BATCHES = 10 if torch.cuda.is_available() else 4
-# BATCH_SIZE = 64 if torch.cuda.is_available() else 32
-NUM_CLASSES = 5
-EXTRA_DIM = 3
-THRESHOLD = 0.5
-
-MAX_PORT = 8100
-START_PORT = 8088
-CURRENT_PORT = START_PORT
-
-
-def setup_ddp(rank, world_size):
-    """Setup ddp environment."""
-    global CURRENT_PORT
-
-    os.environ["MASTER_ADDR"] = "localhost"
-    os.environ["MASTER_PORT"] = str(CURRENT_PORT)
-
-    CURRENT_PORT += 1
-    if CURRENT_PORT > MAX_PORT:
-        CURRENT_PORT = START_PORT
-
-    if torch.distributed.is_available() and sys.platform not in ("win32", "cygwin"):
-        torch.distributed.init_process_group("gloo", rank=rank, world_size=world_size)
+from unittests import NUM_PROCESSES
 
 
 def _assert_allclose(pl_result: Any, sk_result: Any, atol: float = 1e-8, key: Optional[str] = None) -> None:
@@ -357,22 +324,6 @@ class MetricTester:
     """
 
     atol: float = 1e-8
-    pool_size: int
-    pool: Pool
-
-    def setup_class(self):
-        """Setup the metric class.
-
-        This will spawn the pool of workers that are used for metric testing and setup_ddp
-        """
-        self.pool_size = NUM_PROCESSES
-        self.pool = Pool(processes=self.pool_size)
-        self.pool.starmap(setup_ddp, [(rank, self.pool_size) for rank in range(self.pool_size)])
-
-    def teardown_class(self):
-        """Close pool of workers."""
-        self.pool.close()
-        self.pool.join()
 
     def run_functional_metric_test(
         self,
@@ -449,7 +400,7 @@ class MetricTester:
             if sys.platform == "win32":
                 pytest.skip("DDP not supported on windows")
 
-            self.pool.starmap(
+            pytest.pool.starmap(
                 partial(
                     _class_test,
                     preds=preds,
@@ -465,7 +416,7 @@ class MetricTester:
                     check_scriptable=check_scriptable,
                     **kwargs_update,
                 ),
-                [(rank, self.pool_size) for rank in range(self.pool_size)],
+                [(rank, NUM_PROCESSES) for rank in range(NUM_PROCESSES)],
             )
         else:
             device = "cuda" if torch.cuda.is_available() else "cpu"
