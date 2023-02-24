@@ -122,7 +122,7 @@ class BinaryROC(BinaryPrecisionRecallCurve):
         return _binary_roc_compute(state, self.thresholds)
 
     def __compute_auroc(self) -> Tensor:
-        """Computes Area under ROC curve from BinaryAUROC metric to show AUROC value together with ROC plot."""
+        """Compute Area under ROC curve from BinaryAUROC metric to show AUROC value together with ROC plot."""
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _binary_auroc_compute(state, self.thresholds, max_fpr=None)
 
