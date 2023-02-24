@@ -15,7 +15,7 @@ from collections import namedtuple
 
 import torch
 
-from unittests.helpers.testers import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES
+from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES
 
 Input = namedtuple("InputMultiple", ["indexes", "preds", "target"])
 

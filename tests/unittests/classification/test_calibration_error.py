@@ -26,9 +26,10 @@ from torchmetrics.functional.classification.calibration_error import (
     multiclass_calibration_error,
 )
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_9
+from unittests import NUM_CLASSES
 from unittests.classification.inputs import _binary_cases, _multiclass_cases
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_CLASSES, MetricTester, inject_ignore_index, remove_ignore_index
+from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
 seed_all(42)
 
