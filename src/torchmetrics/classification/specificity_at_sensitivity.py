@@ -315,7 +315,7 @@ class SpecificityAtSensitivity:
     :func:`MultilabelSpecificityAtSensitivity` for the specific details of each argument influence and examples.
     """
 
-    def __new__(  # type: ignore
+    def __new__(  # type: ignore[misc]
         cls,
         task: Literal["binary", "multiclass", "multilabel"],
         min_sensitivity: float,
@@ -340,4 +340,4 @@ class SpecificityAtSensitivity:
             return MultilabelSpecificityAtSensitivity(
                 num_labels, min_sensitivity, thresholds, ignore_index, validate_args, **kwargs
             )
-        return None
+        return None  # type: ignore[return-value]
