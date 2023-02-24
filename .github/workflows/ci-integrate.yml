@@ -68,7 +68,7 @@ jobs:
         python ./requirements/adjust-versions.py requirements.txt
         python ./requirements/adjust-versions.py requirements/image.txt
         cat requirements.txt
-        pip install -e . --find-links $PYTORCH_URL -f $PYPI_CACHE 
+        pip install -e . --find-links $PYTORCH_URL -f $PYPI_CACHE
         pip list
 
     - name: Integrations
