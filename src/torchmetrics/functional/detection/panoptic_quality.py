@@ -11,20 +11,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict, List, Set, Tuple
+from typing import Collection, Dict, List, Set, Tuple
 
 import torch
 from torch import Tensor
+
+from torchmetrics.utilities import rank_zero_warn
 
 
 def _nested_tuple(nested_list: List) -> Tuple:
     """Construct a nested tuple from a nested list.
 
     Args:
-        nested_list:  the nested list to convert to a nested tuple
+        nested_list: The nested list to convert to a nested tuple.
 
     Returns:
-        a nested tuple with the same content.
+        A nested tuple with the same content.
     """
     return tuple(map(_nested_tuple, nested_list)) if isinstance(nested_list, list) else nested_list
 
@@ -33,55 +35,56 @@ def _to_tuple(t: Tensor) -> Tuple:
     """Convert a tensor into a nested tuple.
 
     Args:
-        t: the tensor to convert
+        t: The tensor to convert.
 
     Returns:
-        a nested tuple with the same content.
+        A nested tuple with the same content.
     """
     return _nested_tuple(t.tolist())
 
 
-def _get_color_areas(img: Tensor) -> Dict[Tuple, Tensor]:
-    """Count all color occurrences.
+def _get_color_areas(inputs: Tensor) -> Dict[Tuple, Tensor]:
+    """Measure the size of each instance.
 
     Args:
-        img: the image tensor containing the colored pixels.
+        inputs: the input tensor containing the colored pixels.
 
     Returns:
-        a dictionary specifying the color value and the corresponding area
+        A dictionary specifying the `(category_id, instance_id)` and the corresponding number of occurrences.
     """
-    unique_keys, unique_keys_area = torch.unique(img, dim=0, return_counts=True)
+    unique_keys, unique_keys_area = torch.unique(inputs, dim=0, return_counts=True)
     # dictionary indexed by color tuples
     return dict(zip(_to_tuple(unique_keys), unique_keys_area))
 
 
-def _is_set_int(value: Any) -> bool:
-    """Check whether value is a ``Set[int]``.
+def _parse_categories(things: Collection[int], stuffs: Collection[int]) -> Tuple[Set[int], Set[int]]:
+    """Parse and validate metrics arguments for `things` and `stuff`.
 
     Args:
-        value: the value to check
+        things: All possible IDs for things categories.
+        stuffs: All possible IDs for stuff categories.
 
     Returns:
-        True if the value is a ``Set[int]``, ``False`` otherwise
+        things_parsed: A set of unique category IDs for the things categories.
+        stuffs_parsed: A set of unique category IDs for the stuffs categories.
     """
-    return isinstance(value, Set) and set(map(type, value)).issubset({int})
-
-
-def _validate_categories(things: Set[int], stuffs: Set[int]) -> None:
-    """Validate netrics arguments for `things` and `stuff`.
-
-    Args:
-        things: All possible IDs for things categories
-        stuffs: All possible IDs for stuff categories
-    """
-    if not _is_set_int(things):
-        raise TypeError(f"Expected argument `things` to be of type `Set[int]`, but got {things}")
-    if not _is_set_int(stuffs):
-        raise TypeError(f"Expected argument `stuffs` to be of type `Set[int]`, but got {stuffs}")
-    if stuffs & things:
+    things_parsed = set(things)
+    if len(things_parsed) < len(things):
+        rank_zero_warn("The provided `things` categories contained duplicates, which have been removed.", UserWarning)
+    stuffs_parsed = set(stuffs)
+    if len(stuffs_parsed) < len(stuffs):
+        rank_zero_warn("The provided `stuffs` categories contained duplicates, which have been removed.", UserWarning)
+    if not all(isinstance(val, int) for val in things_parsed):
+        raise TypeError(f"Expected argument `things` to contain `int` categories, but got {things}")
+    if not all(isinstance(val, int) for val in stuffs_parsed):
+        raise TypeError(f"Expected argument `stuffs` to contain `int` categories, but got {stuffs}")
+    if things_parsed & stuffs_parsed:
         raise ValueError(
             f"Expected arguments `things` and `stuffs` to have distinct keys, but got {things} and {stuffs}"
         )
+    if not (things_parsed | stuffs_parsed):
+        raise ValueError("At least one of `things` and `stuffs` must be non-empty.")
+    return things_parsed, stuffs_parsed
 
 
 def _validate_inputs(preds: Tensor, target: torch.Tensor) -> None:
@@ -91,27 +94,35 @@ def _validate_inputs(preds: Tensor, target: torch.Tensor) -> None:
         preds: the prediction tensor
         target: the target tensor
     """
-    if not isinstance(preds, torch.Tensor):
+    if not isinstance(preds, Tensor):
         raise TypeError(f"Expected argument `preds` to be of type `torch.Tensor`, but got {type(preds)}")
-    if not isinstance(target, torch.Tensor):
+    if not isinstance(target, Tensor):
         raise TypeError(f"Expected argument `target` to be of type `torch.Tensor`, but got {type(target)}")
     if preds.shape != target.shape:
         raise ValueError(
             f"Expected argument `preds` and `target` to have the same shape, but got {preds.shape} and {target.shape}"
         )
-    if preds.dim() != 3 or preds.shape[-1] != 2:
-        raise ValueError(f"Expected argument `preds` to have shape [height, width, 2], but got {preds.shape}")
+    if preds.dim() < 3:
+        raise ValueError(
+            "Expected argument `preds` to have at least one spatial dimension (B, *spatial_dims, 2), "
+            f"got {preds.shape}"
+        )
+    if preds.shape[-1] != 2:
+        raise ValueError(
+            "Expected argument `preds` to have exactly 2 channels in the last dimension (category, instance), "
+            f"got {preds.shape} instead"
+        )
 
 
 def _get_void_color(things: Set[int], stuffs: Set[int]) -> Tuple[int, int]:
     """Get an unused color ID.
 
     Args:
-        things: All things IDs
-        stuffs: All stuff IDs
+        things: The set of category IDs for things.
+        stuffs: The set of category IDs for stuffs.
 
     Returns:
-        A new color ID with 0 occurrences
+        A new color ID that does not belong to things nor stuffs.
     """
     unused_category_id = 1 + max([0] + list(things) + list(stuffs))
     return unused_category_id, 0
@@ -121,11 +132,11 @@ def _get_category_id_to_continuous_id(things: Set[int], stuffs: Set[int]) -> Dic
     """Convert original IDs to continuous IDs.
 
     Args:
-        things: all unique ids for things classes
-        stuffs: all unique ids for stuff classes
+        things: All unique IDs for things classes.
+        stuffs: All unique IDs for stuff classes.
 
     Returns:
-        A mapping from the original category IDs to continuous IDs
+        A mapping from the original category IDs to continuous IDs (i.e., 0, 1, 2, ...).
     """
     # things metrics are stored with a continuous id in [0, len(things)[,
     thing_id_to_continuous_id = {thing_id: idx for idx, thing_id in enumerate(things)}
@@ -151,53 +162,59 @@ def _isin(arr: Tensor, values: List) -> Tensor:
     return (arr[..., None] == arr.new(values)).any(-1)
 
 
-def _prepocess_image(
+def _prepocess_inputs(
     things: Set[int],
     stuffs: Set[int],
-    img: Tensor,
+    inputs: Tensor,
     void_color: Tuple[int, int],
     allow_unknown_category: bool,
 ) -> Tensor:
-    """Preprocesses the image for metric calculation.
+    """Preprocesses an input tensor for metric calculation.
+
+    NOTE: The input tensor is assumed to have dimension ordering (B, spatial_dim0, ..., spatial_dim_N, 2).
+    Spelled out explicitly, this means (B, num_points, 2) for point clouds, (B, H, W, 2) for images, and so on.
 
     Args:
-        things: All category IDs for things classes
-        stuffs: All category IDs for stuff classes
-        img: the image tensor
-        void_color: an additional, unused color
-        allow_unknown_category:  whether to allow an 'unknown' category.
+        things: All category IDs for things classes.
+        stuffs: All category IDs for stuff classes.
+        inputs: The input tensor.
+        void_color: An additional color that is masked out during metrics calculation.
+        allow_unknown_category: If true, unknown category IDs are mapped to "void".
+            Otherwise, an exception is raised if they occur.
 
     Returns:
-        the preprocessed image tensor with combined height and width dimensions.
+        The preprocessed input tensor flattened along the spatial dimensions.
     """
-    # flatten the height*width dimensions
-    img = torch.flatten(img, 0, -2)
-    stuff_pixels = _isin(img[:, 0], list(stuffs))
-    things_pixels = _isin(img[:, 0], list(things))
-    # reset instance ids of stuffs
-    img[stuff_pixels, 1] = 0
-    if not allow_unknown_category and not torch.all(things_pixels | stuff_pixels):
-        raise ValueError("Unknown categories found in preds")
+    # flatten the spatial dimensions of the input tensor, e.g., (B, H, W, C) -> (B, H*W, C).
+    out = inputs.detach().clone()
+    out = torch.flatten(out, 1, -2)
+    mask_stuffs = _isin(out[:, :, 0], list(stuffs))
+    mask_things = _isin(out[:, :, 0], list(things))
+    # reset instance IDs of stuffs
+    mask_stuffs_instance = torch.stack([torch.zeros_like(mask_stuffs), mask_stuffs], dim=-1)
+    out[mask_stuffs_instance] = 0
+    if not allow_unknown_category and not torch.all(mask_things | mask_stuffs):
+        raise ValueError(f"Unknown categories found: {out[~(mask_things|mask_stuffs)]}")
     # set unknown categories to void color
-    img[~(things_pixels | stuff_pixels)] = img.new(void_color)
-    return img
+    out[~(mask_things | mask_stuffs)] = out.new(void_color)
+    return out
 
 
-def _panoptic_quality_update(
+def _panoptic_quality_update_sample(
     flatten_preds: Tensor,
     flatten_target: Tensor,
     cat_id_to_continuous_id: Dict[int, int],
     void_color: Tuple[int, int],
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-    """Calculate stat scores required to compute accuracy.
+    """Calculate stat scores required to compute accuracy **for a single sample**.
 
-    Computed scores: iou sum, true positives, false positives, false negatives
+    Computed scores: iou sum, true positives, false positives, false negatives.
 
     Args:
-        flatten_preds: a flattened prediction tensor
-        flatten_target: a flattened target tensor
-        cat_id_to_continuous_id: mapping from original category IDs to continuous IDs
-        void_color: an additional, unused color
+        flatten_preds: A flattened prediction tensor referring to a single sample, shape (num_points, 2).
+        flatten_target: A flattened target tensor referring to a single sample, shape (num_points, 2).
+        cat_id_to_continuous_id: Mapping from original category IDs to continuous IDs
+        void_color: an additional, unused color.
 
     Returns:
         - IOU Sum
@@ -215,7 +232,7 @@ def _panoptic_quality_update(
     # calculate the area of each prediction, ground truth and pairwise intersection
     pred_areas = _get_color_areas(flatten_preds)
     target_areas = _get_color_areas(flatten_target)
-    # intersection matrix of shape [height, width, 2, 2]
+    # intersection matrix of shape [num_pixels, 2, 2]
     intersection_matrix = torch.transpose(torch.stack((flatten_preds, flatten_target), -1), -1, -2)
     intersection_areas = _get_color_areas(intersection_matrix)
 
@@ -267,6 +284,51 @@ def _panoptic_quality_update(
     return iou_sum, true_positives, false_positives, false_negatives
 
 
+def _panoptic_quality_update(
+    flatten_preds: Tensor,
+    flatten_target: Tensor,
+    cat_id_to_continuous_id: Dict[int, int],
+    void_color: Tuple[int, int],
+) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+    """Calculate stat scores required to compute accuracy.
+
+    Computed scores: iou sum, true positives, false positives, false negatives.
+
+    Args:
+        flatten_preds: A flattened prediction tensor, shape (B, num_points, 2).
+        flatten_target: A flattened target tensor, shape (B, num_points, 2).
+        cat_id_to_continuous_id: Mapping from original category IDs to continuous IDs.
+        void_color: an additional, unused color.
+
+    Returns:
+        - IOU Sum
+        - True positives
+        - False positives
+        - False negatives
+    """
+    device = flatten_preds.device
+    n_categories = len(cat_id_to_continuous_id)
+    iou_sum = torch.zeros(n_categories, dtype=torch.double, device=device)
+    true_positives = torch.zeros(n_categories, dtype=torch.int, device=device)
+    false_positives = torch.zeros(n_categories, dtype=torch.int, device=device)
+    false_negatives = torch.zeros(n_categories, dtype=torch.int, device=device)
+
+    # Loop over each sample independently: segments must not be matched across frames.
+    for flatten_preds_single, flatten_target_single in zip(flatten_preds, flatten_target):
+        result = _panoptic_quality_update_sample(
+            flatten_preds_single,
+            flatten_target_single,
+            cat_id_to_continuous_id,
+            void_color,
+        )
+        iou_sum += result[0]
+        true_positives += result[1]
+        false_positives += result[2]
+        false_negatives += result[3]
+
+    return iou_sum, true_positives, false_positives, false_negatives
+
+
 def _panoptic_quality_compute(
     iou_sum: Tensor,
     true_positives: Tensor,
@@ -282,22 +344,20 @@ def _panoptic_quality_compute(
         false_negatives: the FN value from the update step
 
     Returns:
-        panoptic quality
+        Panoptic quality as a tensor containing a single scalar.
     """
-    # TODO: exclude from mean categories that are never seen ?
-    # TODO: per class metrics
-
     # per category calculation
     denominator = (true_positives + 0.5 * false_positives + 0.5 * false_negatives).double()
     panoptic_quality = torch.where(denominator > 0.0, iou_sum / denominator, 0.0)
-    return torch.mean(panoptic_quality)
+    # Reduce across categories. TODO: is it useful to have the option of returning per class metrics?
+    return torch.mean(panoptic_quality[denominator > 0])
 
 
 def panoptic_quality(
     preds: Tensor,
     target: Tensor,
-    things: Set[int],
-    stuffs: Set[int],
+    things: Collection[int],
+    stuffs: Collection[int],
     allow_unknown_preds_category: bool = False,
 ) -> Tensor:
     r"""Compute `Panoptic Quality`_ for panoptic segmentations.
@@ -308,6 +368,11 @@ def panoptic_quality(
     where IOU, TP, FP and FN are respectively the sum of the intersection over union for true positives, the number of
     true postitives, false positives and false negatives. This metric is inspired by the PQ implementation of
     panopticapi, a standard implementation for the PQ metric for object detection.
+
+
+    .. note:
+        Points in the target tensor that do not map to a known category ID are automatically ignored in the metric
+        computation.
 
     Args:
         preds:
@@ -322,39 +387,44 @@ def panoptic_quality(
         stuffs:
             Set of ``category_id`` for uncountable stuffs.
         allow_unknown_preds_category:
-            Bool indication if unknown categories in preds is allowed
+            Boolean flag to specify if unknown categories in the predictions are to be ignored in the metric
+            computation or raise an exception when found.
 
     Raises:
         ValueError:
-            If ``things``, ``stuffs`` share the same ``category_id``.
+            If ``things``, ``stuffs`` have at least one common ``category_id``.
         TypeError:
-            If ``preds`` or ``target`` is not an ``torch.Tensor``
+            If ``things``, ``stuffs`` contain non-integer ``category_id``.
+        TypeError:
+            If ``preds`` or ``target`` is not an ``torch.Tensor``.
         ValueError:
              If ``preds`` or ``target`` has different shape.
         ValueError:
-            If ``preds`` is not a 3D tensor where the final dimension have size 2
+            If ``preds`` has less than 3 dimensions.
+        ValueError:
+            If the final dimension of ``preds`` has size != 2.
 
     Example:
         >>> from torch import tensor
-        >>> preds = tensor([[[6, 0], [0, 0], [6, 0], [6, 0]],
-        ...                 [[0, 0], [0, 0], [6, 0], [0, 1]],
-        ...                 [[0, 0], [0, 0], [6, 0], [0, 1]],
-        ...                 [[0, 0], [7, 0], [6, 0], [1, 0]],
-        ...                 [[0, 0], [7, 0], [7, 0], [7, 0]]])
-        >>> target = tensor([[[6, 0], [0, 1], [6, 0], [0, 1]],
-        ...                  [[0, 1], [0, 1], [6, 0], [0, 1]],
-        ...                  [[0, 1], [0, 1], [6, 0], [1, 0]],
-        ...                  [[0, 1], [7, 0], [1, 0], [1, 0]],
-        ...                  [[0, 1], [7, 0], [7, 0], [7, 0]]])
+        >>> preds = tensor([[[[6, 0], [0, 0], [6, 0], [6, 0]],
+        ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
+        ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
+        ...                  [[0, 0], [7, 0], [6, 0], [1, 0]],
+        ...                  [[0, 0], [7, 0], [7, 0], [7, 0]]]])
+        >>> target = tensor([[[[6, 0], [0, 1], [6, 0], [0, 1]],
+        ...                   [[0, 1], [0, 1], [6, 0], [0, 1]],
+        ...                   [[0, 1], [0, 1], [6, 0], [1, 0]],
+        ...                   [[0, 1], [7, 0], [1, 0], [1, 0]],
+        ...                   [[0, 1], [7, 0], [7, 0], [7, 0]]]])
         >>> panoptic_quality(preds, target, things = {0, 1}, stuffs = {6, 7})
         tensor(0.5463, dtype=torch.float64)
     """
-    _validate_categories(things, stuffs)
+    things, stuffs = _parse_categories(things, stuffs)
     _validate_inputs(preds, target)
     void_color = _get_void_color(things, stuffs)
     cat_id_to_continuous_id = _get_category_id_to_continuous_id(things, stuffs)
-    flatten_preds = _prepocess_image(things, stuffs, preds, void_color, allow_unknown_preds_category)
-    flatten_target = _prepocess_image(things, stuffs, target, void_color, True)
+    flatten_preds = _prepocess_inputs(things, stuffs, preds, void_color, allow_unknown_preds_category)
+    flatten_target = _prepocess_inputs(things, stuffs, target, void_color, True)
     iou_sum, true_positives, false_positives, false_negatives = _panoptic_quality_update(
         flatten_preds, flatten_target, cat_id_to_continuous_id, void_color
     )
