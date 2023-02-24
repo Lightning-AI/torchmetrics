@@ -25,9 +25,10 @@ from torchmetrics.functional.classification.stat_scores import (
     multiclass_stat_scores,
     multilabel_stat_scores,
 )
+from unittests import NUM_CLASSES, THRESHOLD
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index, remove_ignore_index
+from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
 seed_all(42)
 
@@ -325,6 +326,24 @@ def test_top_k_multiclass(k, preds, target, average, expected):
     assert torch.allclose(
         multiclass_stat_scores(preds, target, top_k=k, average=average, num_classes=3).long(), expected.T
     )
+
+
+def test_multiclass_overflow():
+    """Test that multiclass computations does not overflow even on byte input."""
+    preds = torch.randint(20, (100,)).byte()
+    target = torch.randint(20, (100,)).byte()
+
+    m = MulticlassStatScores(num_classes=20, average=None)
+    res = m(preds, target)
+
+    confmat = sk_confusion_matrix(target, preds)
+    fp = confmat.sum(axis=0) - np.diag(confmat)
+    fn = confmat.sum(axis=1) - np.diag(confmat)
+    tp = np.diag(confmat)
+    tn = confmat.sum() - (fp + fn + tp)
+    compare = np.stack([tp, fp, tn, fn, tp + fn]).T
+
+    assert torch.allclose(res, torch.tensor(compare))
 
 
 def _sklearn_stat_scores_multilabel(preds, target, ignore_index, multidim_average, average):
