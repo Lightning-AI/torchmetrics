@@ -26,7 +26,8 @@ from torchmetrics.utilities.prints import rank_zero_warn
 def _confusion_matrix_reduce(
     confmat: Tensor, normalize: Optional[Literal["true", "pred", "all", "none"]] = None
 ) -> Tensor:
-    """Reduce an un-normalized confusion matrix
+    """Reduce an un-normalized confusion matrix.
+
     Args:
         confmat: un-normalized confusion matrix
         normalize: normalization method.
@@ -322,7 +323,7 @@ def _multiclass_confusion_matrix_format(
 
 def _multiclass_confusion_matrix_update(preds: Tensor, target: Tensor, num_classes: int) -> Tensor:
     """Compute the bins to update the confusion matrix with."""
-    unique_mapping = (target * num_classes + preds).to(torch.long)
+    unique_mapping = target.to(torch.long) * num_classes + preds.to(torch.long)
     bins = _bincount(unique_mapping, minlength=num_classes**2)
     return bins.reshape(num_classes, num_classes)
 

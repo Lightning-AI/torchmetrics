@@ -22,8 +22,7 @@ from torchmetrics.utilities.distributed import reduce
 
 
 def _sam_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
-    """Update and returns variables required to compute Spectral Angle Mapper. Checks for same shape and type of
-    the input tensors.
+    """Update and returns variables required to compute Spectral Angle Mapper.
 
     Args:
         preds: Predicted tensor

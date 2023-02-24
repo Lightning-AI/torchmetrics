@@ -44,18 +44,29 @@ def _accuracy_reduce(
     multidim_average: Literal["global", "samplewise"] = "global",
     multilabel: bool = False,
 ) -> Tensor:
-    """Reduce classification statistics into accuracy score
+    """Reduce classification statistics into accuracy score.
+
     Args:
         tp: number of true positives
         fp: number of false positives
         tn: number of true negatives
         fn: number of false negatives
-        normalize: normalization method.
-            - `"true"` will divide by the sum of the column dimension.
-            - `"pred"` will divide by the sum of the row dimension.
-            - `"all"` will divide by the sum of the full matrix
-            - `"none"` or `None` will apply no reduction
-        multilabel: bool indicating if reduction is for multilabel tasks.
+        average:
+            Defines the reduction that is applied over labels. Should be one of the following:
+
+            - ``binary``: for binary reduction
+            - ``micro``: sum score over all classes/labels
+            - ``macro``: salculate score for each class/label and average them
+            - ``weighted``: calculates score for each class/label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates score for each class/label and applies no reduction
+
+        multidim_average:
+            Defines how additionally dimensions ``...`` should be handled. Should be one of the following:
+
+            - ``global``: Additional dimensions are flatted along the batch dimension
+            - ``samplewise``: Statistic will be calculated independently for each sample on the ``N`` axis.
+
+        multilabel: If input is multilabel or not
 
     Returns:
         Accuracy score
