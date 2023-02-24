@@ -74,7 +74,7 @@ class BaseAggregator(Metric):
                 raise RuntimeError("Encounted `nan` values in tensor")
             if self.nan_strategy in ("ignore", "warn"):
                 if self.nan_strategy == "warn":
-                    warnings.warn("Encounted `nan` values in tensor. Will be removed.", UserWarning)
+                    rank_zero_warn("Encounted `nan` values in tensor. Will be removed.", UserWarning)
                 x = x[~nans]
             else:
                 if not isinstance(self.nan_strategy, float):
