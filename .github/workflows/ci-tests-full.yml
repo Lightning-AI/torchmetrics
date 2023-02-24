@@ -134,8 +134,7 @@ jobs:
         test-timeout: ${{ env.UNITTEST_TIMEOUT }}
 
     - name: update cashing
-      # FIXME
-      # if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
       uses: ./.github/actions/push-caches
       with:
         pypi-dir: ${{ env.PYPI_CACHE }}
