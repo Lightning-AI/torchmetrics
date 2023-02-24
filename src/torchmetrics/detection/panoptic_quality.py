@@ -94,7 +94,6 @@ class PanopticQuality(Metric):
     ):
         super().__init__(**kwargs)
 
-
         things, stuffs = _parse_categories(things, stuffs)
         self.things = things
         self.stuffs = stuffs
