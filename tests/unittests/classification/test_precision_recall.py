@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -38,14 +38,15 @@ from torchmetrics.functional.classification.precision_recall import (
     multilabel_precision,
     multilabel_recall,
 )
+from unittests import NUM_CLASSES, THRESHOLD
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index, remove_ignore_index
+from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
 seed_all(42)
 
 
-def _sk_precision_recall_binary(preds, target, sk_fn, ignore_index, multidim_average):
+def _sklearn_precision_recall_binary(preds, target, sk_fn, ignore_index, multidim_average):
     if multidim_average == "global":
         preds = preds.view(-1).numpy()
         target = target.view(-1).numpy()
@@ -54,7 +55,7 @@ def _sk_precision_recall_binary(preds, target, sk_fn, ignore_index, multidim_ave
         target = target.numpy()
 
     if np.issubdtype(preds.dtype, np.floating):
-        if not ((0 < preds) & (preds < 1)).all():
+        if not ((preds > 0) & (preds < 1)).all():
             preds = sigmoid(preds)
         preds = (preds >= THRESHOLD).astype(np.uint8)
 
@@ -98,8 +99,11 @@ class TestBinaryPrecisionRecall(MetricTester):
             preds=preds,
             target=target,
             metric_class=module,
-            sk_metric=partial(
-                _sk_precision_recall_binary, sk_fn=compare, ignore_index=ignore_index, multidim_average=multidim_average
+            reference_metric=partial(
+                _sklearn_precision_recall_binary,
+                sk_fn=compare,
+                ignore_index=ignore_index,
+                multidim_average=multidim_average,
             ),
             metric_args={"threshold": THRESHOLD, "ignore_index": ignore_index, "multidim_average": multidim_average},
         )
@@ -119,8 +123,11 @@ class TestBinaryPrecisionRecall(MetricTester):
             preds=preds,
             target=target,
             metric_functional=functional,
-            sk_metric=partial(
-                _sk_precision_recall_binary, sk_fn=compare, ignore_index=ignore_index, multidim_average=multidim_average
+            reference_metric=partial(
+                _sklearn_precision_recall_binary,
+                sk_fn=compare,
+                ignore_index=ignore_index,
+                multidim_average=multidim_average,
             ),
             metric_args={
                 "threshold": THRESHOLD,
@@ -167,7 +174,7 @@ class TestBinaryPrecisionRecall(MetricTester):
         )
 
 
-def _sk_precision_recall_multiclass(preds, target, sk_fn, ignore_index, multidim_average, average):
+def _sklearn_precision_recall_multiclass(preds, target, sk_fn, ignore_index, multidim_average, average):
     if preds.ndim == target.ndim + 1:
         preds = torch.argmax(preds, 1)
     if multidim_average == "global":
@@ -217,8 +224,8 @@ class TestMulticlassPrecisionRecall(MetricTester):
             preds=preds,
             target=target,
             metric_class=module,
-            sk_metric=partial(
-                _sk_precision_recall_multiclass,
+            reference_metric=partial(
+                _sklearn_precision_recall_multiclass,
                 sk_fn=compare,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
@@ -248,8 +255,8 @@ class TestMulticlassPrecisionRecall(MetricTester):
             preds=preds,
             target=target,
             metric_functional=functional,
-            sk_metric=partial(
-                _sk_precision_recall_multiclass,
+            reference_metric=partial(
+                _sklearn_precision_recall_multiclass,
                 sk_fn=compare,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
@@ -306,7 +313,7 @@ _mc_k_preds = tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]])
 
 
 @pytest.mark.parametrize(
-    "metric_class, metric_fn", [(MulticlassPrecision, multiclass_precision), (MulticlassRecall, multiclass_recall)]
+    ("metric_class", "metric_fn"), [(MulticlassPrecision, multiclass_precision), (MulticlassRecall, multiclass_recall)]
 )
 @pytest.mark.parametrize(
     "k, preds, target, average, expected_prec, expected_recall",
@@ -326,20 +333,16 @@ def test_top_k(
     expected_recall: Tensor,
 ):
     """A simple test to check that top_k works as expected."""
-
     class_metric = metric_class(top_k=k, average=average, num_classes=3)
     class_metric.update(preds, target)
 
-    if metric_class.__name__ == "MulticlassPrecision":
-        result = expected_prec
-    else:
-        result = expected_recall
+    result = expected_prec if metric_class.__name__ == "MulticlassPrecision" else expected_recall
 
     assert torch.equal(class_metric.compute(), result)
     assert torch.equal(metric_fn(preds, target, top_k=k, average=average, num_classes=3), result)
 
 
-def _sk_precision_recall_multilabel_global(preds, target, sk_fn, ignore_index, average):
+def _sklearn_precision_recall_multilabel_global(preds, target, sk_fn, ignore_index, average):
     if average == "micro":
         preds = preds.flatten()
         target = target.flatten()
@@ -366,7 +369,7 @@ def _sk_precision_recall_multilabel_global(preds, target, sk_fn, ignore_index, a
         return res
 
 
-def _sk_precision_recall_multilabel_local(preds, target, sk_fn, ignore_index, average):
+def _sklearn_precision_recall_multilabel_local(preds, target, sk_fn, ignore_index, average):
     precision_recall, weights = [], []
     for i in range(preds.shape[0]):
         if average == "micro":
@@ -399,11 +402,11 @@ def _sk_precision_recall_multilabel_local(preds, target, sk_fn, ignore_index, av
         return res
 
 
-def _sk_precision_recall_multilabel(preds, target, sk_fn, ignore_index, multidim_average, average):
+def _sklearn_precision_recall_multilabel(preds, target, sk_fn, ignore_index, multidim_average, average):
     preds = preds.numpy()
     target = target.numpy()
     if np.issubdtype(preds.dtype, np.floating):
-        if not ((0 < preds) & (preds < 1)).all():
+        if not ((preds > 0) & (preds < 1)).all():
             preds = sigmoid(preds)
         preds = (preds >= THRESHOLD).astype(np.uint8)
     preds = preds.reshape(*preds.shape[:2], -1)
@@ -415,8 +418,8 @@ def _sk_precision_recall_multilabel(preds, target, sk_fn, ignore_index, multidim
             average=average,
         )
     elif multidim_average == "global":
-        return _sk_precision_recall_multilabel_global(preds, target, sk_fn, ignore_index, average)
-    return _sk_precision_recall_multilabel_local(preds, target, sk_fn, ignore_index, average)
+        return _sklearn_precision_recall_multilabel_global(preds, target, sk_fn, ignore_index, average)
+    return _sklearn_precision_recall_multilabel_local(preds, target, sk_fn, ignore_index, average)
 
 
 @pytest.mark.parametrize("input", _multilabel_cases)
@@ -449,8 +452,8 @@ class TestMultilabelPrecisionRecall(MetricTester):
             preds=preds,
             target=target,
             metric_class=module,
-            sk_metric=partial(
-                _sk_precision_recall_multilabel,
+            reference_metric=partial(
+                _sklearn_precision_recall_multilabel,
                 sk_fn=compare,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
@@ -481,8 +484,8 @@ class TestMultilabelPrecisionRecall(MetricTester):
             preds=preds,
             target=target,
             metric_functional=functional,
-            sk_metric=partial(
-                _sk_precision_recall_multilabel,
+            reference_metric=partial(
+                _sklearn_precision_recall_multilabel,
                 sk_fn=compare,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,

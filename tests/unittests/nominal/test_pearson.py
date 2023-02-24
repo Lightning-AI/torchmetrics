@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,7 +26,8 @@ from torchmetrics.functional.nominal.pearson import (
     pearsons_contingency_coefficient_matrix,
 )
 from torchmetrics.nominal.pearson import PearsonsContingencyCoefficient
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from unittests import BATCH_SIZE, NUM_BATCHES
+from unittests.helpers.testers import MetricTester
 
 Input = namedtuple("Input", ["preds", "target"])
 NUM_CLASSES = 4
@@ -43,8 +44,8 @@ _input_logits = Input(
 # No testing with replacing NaN's values is done as not supported in SciPy
 
 
-@pytest.fixture
-def _matrix_input():
+@pytest.fixture()
+def pearson_matrix_input():
     matrix = torch.cat(
         [
             torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES * BATCH_SIZE, 1), dtype=torch.float),
@@ -90,22 +91,20 @@ class TestPearsonsContingencyCoefficient(MetricTester):
     atol = 1e-5
 
     @pytest.mark.parametrize("ddp", [False, True])
-    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_pearsons_ta(self, ddp, dist_sync_on_step, preds, target):
+    def test_pearsons_ta(self, ddp, preds, target):
         metric_args = {"num_classes": NUM_CLASSES}
         self.run_class_metric_test(
             ddp=ddp,
-            dist_sync_on_step=dist_sync_on_step,
             preds=preds,
             target=target,
             metric_class=PearsonsContingencyCoefficient,
-            sk_metric=_pd_pearsons_t,
+            reference_metric=_pd_pearsons_t,
             metric_args=metric_args,
         )
 
     def test_pearsons_t_functional(self, preds, target):
         self.run_functional_metric_test(
-            preds, target, metric_functional=pearsons_contingency_coefficient, sk_metric=_pd_pearsons_t
+            preds, target, metric_functional=pearsons_contingency_coefficient, reference_metric=_pd_pearsons_t
         )
 
     def test_pearsons_t_differentiability(self, preds, target):
@@ -123,7 +122,7 @@ class TestPearsonsContingencyCoefficient(MetricTester):
 @pytest.mark.skipif(  # TODO: testing on CUDA fails with pandas 1.3.5, and newer is not available for python 3.7
     torch.cuda.is_available(), reason="Tests fail on CUDA with the most up-to-date available pandas"
 )
-def test_pearsons_contingency_coefficient_matrix(_matrix_input):
-    tm_score = pearsons_contingency_coefficient_matrix(_matrix_input)
-    reference_score = _pd_pearsons_t_matrix(_matrix_input)
+def test_pearsons_contingency_coefficient_matrix(pearson_matrix_input):
+    tm_score = pearsons_contingency_coefficient_matrix(pearson_matrix_input)
+    reference_score = _pd_pearsons_t_matrix(pearson_matrix_input)
     assert torch.allclose(tm_score, reference_score)

@@ -5,14 +5,15 @@ import pytest
 import torch
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import r2_score as sk_r2score
-from torch import Tensor
+from torch import Tensor, tensor
 
 from torchmetrics import Metric
-from torchmetrics.classification import MulticlassAccuracy
+from torchmetrics.classification import ConfusionMatrix, MulticlassAccuracy
 from torchmetrics.regression import R2Score
 from torchmetrics.wrappers.multioutput import MultioutputWrapper
+from unittests import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -83,7 +84,7 @@ def _multi_target_sk_accuracy(preds, target, num_outputs):
 
 
 @pytest.mark.parametrize(
-    "base_metric_class, compare_metric, preds, target, num_outputs, metric_kwargs",
+    "base_metric_class, compare_metric, preds, target, num_outputs",
     [
         (
             R2Score,
@@ -91,15 +92,13 @@ def _multi_target_sk_accuracy(preds, target, num_outputs):
             _multi_target_regression_inputs.preds,
             _multi_target_regression_inputs.target,
             num_targets,
-            {},
         ),
         (
-            MulticlassAccuracy,
+            partial(MulticlassAccuracy, num_classes=NUM_CLASSES, average="micro"),
             partial(_multi_target_sk_accuracy, num_outputs=2),
             _multi_target_classification_inputs.preds,
             _multi_target_classification_inputs.target,
             num_targets,
-            dict(num_classes=NUM_CLASSES, average="micro"),
         ),
     ],
 )
@@ -107,18 +106,31 @@ class TestMultioutputWrapper(MetricTester):
     """Test the MultioutputWrapper class with regression and classification inner metrics."""
 
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_multioutput_wrapper(
-        self, base_metric_class, compare_metric, preds, target, num_outputs, metric_kwargs, ddp, dist_sync_on_step
-    ):
-        """Test that the multioutput wrapper properly slices and computes outputs along the output dimension for
-        both classification and regression metrics."""
+    def test_multioutput_wrapper(self, base_metric_class, compare_metric, preds, target, num_outputs, ddp):
+        """Test correctness of implementation
+
+        Tests that the multioutput wrapper properly slices and computes outputs along the output dimension for both
+        classification and regression metrics, by comparing to the metric if they had been calculated sequentially.
+        """
         self.run_class_metric_test(
             ddp,
             preds,
             target,
             _MultioutputMetric,
             compare_metric,
-            dist_sync_on_step,
-            metric_args=dict(num_outputs=num_outputs, base_metric_class=base_metric_class, **metric_kwargs),
+            metric_args={"num_outputs": num_outputs, "base_metric_class": base_metric_class},
         )
+
+
+def test_reset_called_correctly():
+    """Check that underlying metric is being correctly reset when calling forward."""
+    base_metric = ConfusionMatrix(task="multiclass", num_classes=2)
+    cf = MultioutputWrapper(base_metric, num_outputs=2)
+
+    res = cf(tensor([[0, 0]]), tensor([[0, 0]]))
+    assert torch.allclose(res[0], tensor([[1, 0], [0, 0]]))
+    assert torch.allclose(res[1], tensor([[1, 0], [0, 0]]))
+    cf.reset()
+    res = cf(tensor([[1, 1]]), tensor([[0, 0]]))
+    assert torch.allclose(res[0], tensor([[0, 1], [0, 0]]))
+    assert torch.allclose(res[1], tensor([[0, 1], [0, 0]]))

@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -68,7 +68,7 @@ original_impl_compute_permutation = partial(sdr_original_batch)
     _TORCH_GREATER_EQUAL_1_11 and torch.cuda.is_available(), reason="tests leads to cuda errors on latest torch"
 )
 @pytest.mark.parametrize(
-    "preds, target, sk_metric",
+    "preds, target, ref_metric",
     [
         (inputs_1spk.preds, inputs_1spk.target, original_impl_compute_permutation),
         # (inputs_1spk.preds, inputs_1spk.target, original_impl_no_compute_permutation, False),
@@ -80,28 +80,26 @@ class TestSDR(MetricTester):
     atol = 1e-2
 
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_sdr(self, preds, target, sk_metric, ddp, dist_sync_on_step):
+    def test_sdr(self, preds, target, ref_metric, ddp):
         self.run_class_metric_test(
             ddp,
             preds,
             target,
             SignalDistortionRatio,
-            sk_metric=partial(average_metric, metric_func=sk_metric),
-            dist_sync_on_step=dist_sync_on_step,
+            reference_metric=partial(average_metric, metric_func=ref_metric),
             metric_args={},
         )
 
-    def test_sdr_functional(self, preds, target, sk_metric):
+    def test_sdr_functional(self, preds, target, ref_metric):
         self.run_functional_metric_test(
             preds,
             target,
             signal_distortion_ratio,
-            sk_metric,
+            ref_metric,
             metric_args={},
         )
 
-    def test_sdr_differentiability(self, preds, target, sk_metric):
+    def test_sdr_differentiability(self, preds, target, ref_metric):
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -109,7 +107,7 @@ class TestSDR(MetricTester):
             metric_args={},
         )
 
-    def test_sdr_half_cpu(self, preds, target, sk_metric):
+    def test_sdr_half_cpu(self, preds, target, ref_metric):
         self.run_precision_test_cpu(
             preds=preds,
             target=target,
@@ -119,7 +117,7 @@ class TestSDR(MetricTester):
         )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-    def test_sdr_half_gpu(self, preds, target, sk_metric):
+    def test_sdr_half_gpu(self, preds, target, ref_metric):
         self.run_precision_test_gpu(
             preds=preds,
             target=target,

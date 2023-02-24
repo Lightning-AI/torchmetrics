@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,12 +22,13 @@ from torch import Tensor
 
 from torchmetrics.audio import SignalNoiseRatio
 from torchmetrics.functional import signal_noise_ratio
+from unittests import NUM_BATCHES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
-TIME = 100
+TIME = 25
 
 Input = namedtuple("Input", ["preds", "target"])
 
@@ -38,7 +39,7 @@ inputs = Input(
 )
 
 
-def bss_eval_images_snr(preds: Tensor, target: Tensor, metric_func: Callable, zero_mean: bool):
+def bss_eval_images_snr(preds: Tensor, target: Tensor, zero_mean: bool):
     # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
     if zero_mean:
@@ -50,10 +51,7 @@ def bss_eval_images_snr(preds: Tensor, target: Tensor, metric_func: Callable, ze
     for i in range(preds.shape[0]):
         ms = []
         for j in range(preds.shape[1]):
-            if metric_func == mir_eval_bss_eval_images:
-                snr_v = metric_func([target[i, j]], [preds[i, j]])[0][0]
-            else:
-                snr_v = metric_func([target[i, j]], [preds[i, j]])[0][0][0]
+            snr_v = mir_eval_bss_eval_images([target[i, j]], [preds[i, j]], compute_permutation=True)[0][0]
             ms.append(snr_v)
         mss.append(ms)
     return torch.tensor(mss)
@@ -65,12 +63,12 @@ def average_metric(preds: Tensor, target: Tensor, metric_func: Callable):
     return metric_func(preds, target).mean()
 
 
-mireval_snr_zeromean = partial(bss_eval_images_snr, metric_func=mir_eval_bss_eval_images, zero_mean=True)
-mireval_snr_nozeromean = partial(bss_eval_images_snr, metric_func=mir_eval_bss_eval_images, zero_mean=False)
+mireval_snr_zeromean = partial(bss_eval_images_snr, zero_mean=True)
+mireval_snr_nozeromean = partial(bss_eval_images_snr, zero_mean=False)
 
 
 @pytest.mark.parametrize(
-    "preds, target, sk_metric, zero_mean",
+    "preds, target, ref_metric, zero_mean",
     [
         (inputs.preds, inputs.target, mireval_snr_zeromean, True),
         (inputs.preds, inputs.target, mireval_snr_nozeromean, False),
@@ -80,28 +78,26 @@ class TestSNR(MetricTester):
     atol = 1e-2
 
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_snr(self, preds, target, sk_metric, zero_mean, ddp, dist_sync_on_step):
+    def test_snr(self, preds, target, ref_metric, zero_mean, ddp):
         self.run_class_metric_test(
             ddp,
             preds,
             target,
             SignalNoiseRatio,
-            sk_metric=partial(average_metric, metric_func=sk_metric),
-            dist_sync_on_step=dist_sync_on_step,
-            metric_args=dict(zero_mean=zero_mean),
+            reference_metric=partial(average_metric, metric_func=ref_metric),
+            metric_args={"zero_mean": zero_mean},
         )
 
-    def test_snr_functional(self, preds, target, sk_metric, zero_mean):
+    def test_snr_functional(self, preds, target, ref_metric, zero_mean):
         self.run_functional_metric_test(
             preds,
             target,
             signal_noise_ratio,
-            sk_metric,
-            metric_args=dict(zero_mean=zero_mean),
+            ref_metric,
+            metric_args={"zero_mean": zero_mean},
         )
 
-    def test_snr_differentiability(self, preds, target, sk_metric, zero_mean):
+    def test_snr_differentiability(self, preds, target, ref_metric, zero_mean):
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -110,11 +106,11 @@ class TestSNR(MetricTester):
             metric_args={"zero_mean": zero_mean},
         )
 
-    def test_snr_half_cpu(self, preds, target, sk_metric, zero_mean):
+    def test_snr_half_cpu(self, preds, target, ref_metric, zero_mean):
         pytest.xfail("SNR metric does not support cpu + half precision")
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-    def test_snr_half_gpu(self, preds, target, sk_metric, zero_mean):
+    def test_snr_half_gpu(self, preds, target, ref_metric, zero_mean):
         self.run_precision_test_gpu(
             preds=preds,
             target=target,

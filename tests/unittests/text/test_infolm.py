@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -103,9 +103,9 @@ class TestInfoLM(TextTester):
     atol = 1e-4
 
     @pytest.mark.parametrize("ddp", [False, True])
-    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
+    @pytest.mark.timeout(240)  # download may be too slow for default timeout
     @skip_on_connection_issues()
-    def test_infolm_class(self, ddp, dist_sync_on_step, preds, targets, information_measure, idf, alpha, beta):
+    def test_infolm_class(self, ddp, preds, targets, information_measure, idf, alpha, beta):
         metric_args = {
             "model_name_or_path": MODEL_NAME,
             "information_measure": information_measure,
@@ -128,8 +128,7 @@ class TestInfoLM(TextTester):
             preds=preds,
             targets=targets,
             metric_class=InfoLM,
-            sk_metric=reference_metric,
-            dist_sync_on_step=dist_sync_on_step,
+            reference_metric=reference_metric,
             metric_args=metric_args,
             check_scriptable=False,  # huggingface transformers are not usually scriptable
         )
@@ -157,7 +156,7 @@ class TestInfoLM(TextTester):
             preds,
             targets,
             metric_functional=infolm,
-            sk_metric=reference_metric,
+            reference_metric=reference_metric,
             metric_args=metric_args,
         )
 

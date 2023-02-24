@@ -11,7 +11,7 @@ from unittests.text.helpers import TextTester
 from unittests.text.inputs import _inputs_multiple_references, _inputs_single_sentence_multiple_references
 
 if _SACREBLEU_AVAILABLE:
-    from sacrebleu.metrics import TER as SacreTER
+    from sacrebleu.metrics import TER as SacreTER  # noqa: N811
 
 
 def sacrebleu_ter_fn(
@@ -49,10 +49,7 @@ def sacrebleu_ter_fn(
 @pytest.mark.skipif(not _SACREBLEU_AVAILABLE, reason="test requires sacrebleu")
 class TestTER(TextTester):
     @pytest.mark.parametrize("ddp", [False, True])
-    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_chrf_score_class(
-        self, ddp, dist_sync_on_step, preds, targets, normalize, no_punctuation, asian_support, lowercase
-    ):
+    def test_chrf_score_class(self, ddp, preds, targets, normalize, no_punctuation, asian_support, lowercase):
         metric_args = {
             "normalize": normalize,
             "no_punctuation": no_punctuation,
@@ -72,8 +69,7 @@ class TestTER(TextTester):
             preds=preds,
             targets=targets,
             metric_class=TranslationEditRate,
-            sk_metric=nltk_metric,
-            dist_sync_on_step=dist_sync_on_step,
+            reference_metric=nltk_metric,
             metric_args=metric_args,
         )
 
@@ -96,7 +92,7 @@ class TestTER(TextTester):
             preds,
             targets,
             metric_functional=translation_edit_rate,
-            sk_metric=nltk_metric,
+            reference_metric=nltk_metric,
             metric_args=metric_args,
         )
 

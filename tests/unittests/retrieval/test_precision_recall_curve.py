@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -96,8 +96,8 @@ def _compute_precision_recall_curve(
 
         else:
             for k in top_k:
-                r.append(_recall_at_k(trg, prd, k=k.item()))
-                p.append(_precision_at_k(trg, prd, k=k.item(), adaptive_k=adaptive_k))
+                r.append(_recall_at_k(trg, prd, top_k=k.item()))
+                p.append(_precision_at_k(trg, prd, top_k=k.item(), adaptive_k=adaptive_k))
 
             recalls.append(r)
             precisions.append(p)
@@ -119,28 +119,25 @@ class RetrievalPrecisionRecallCurveTester(MetricTester):
         preds: Tensor,
         target: Tensor,
         metric_class: Metric,
-        sk_metric: Callable,
-        dist_sync_on_step: bool,
+        reference_metric: Callable,
         metric_args: dict,
         reverse: bool = False,
     ):
-        _sk_metric_adapted = partial(sk_metric, reverse=reverse, **metric_args)
+        _ref_metric_adapted = partial(reference_metric, reverse=reverse, **metric_args)
 
         super().run_class_metric_test(
             ddp=ddp,
             preds=preds,
             target=target,
             metric_class=metric_class,
-            sk_metric=_sk_metric_adapted,
-            dist_sync_on_step=dist_sync_on_step,
+            reference_metric=_ref_metric_adapted,
             metric_args=metric_args,
             fragment_kwargs=True,
-            indexes=indexes,  # every additional argument will be passed to metric_class and _sk_metric_adapted
+            indexes=indexes,  # every additional argument will be passed to metric_class and _ref_metric_adapted
         )
 
 
 @pytest.mark.parametrize("ddp", [False])
-@pytest.mark.parametrize("dist_sync_on_step", [False])
 @pytest.mark.parametrize("empty_target_action", ["neg", "skip", "pos"])
 @pytest.mark.parametrize("ignore_index", [None, 1])  # avoid setting 0, otherwise test with all 0 targets will fail
 @pytest.mark.parametrize("max_k", [None, 1, 2, 5, 10])
@@ -155,18 +152,17 @@ class TestRetrievalPrecisionRecallCurve(RetrievalPrecisionRecallCurveTester):
         preds,
         target,
         ddp,
-        dist_sync_on_step,
         empty_target_action,
         ignore_index,
         max_k,
         adaptive_k,
     ):
-        metric_args = dict(
-            max_k=max_k,
-            adaptive_k=adaptive_k,
-            empty_target_action=empty_target_action,
-            ignore_index=ignore_index,
-        )
+        metric_args = {
+            "max_k": max_k,
+            "adaptive_k": adaptive_k,
+            "empty_target_action": empty_target_action,
+            "ignore_index": ignore_index,
+        }
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -174,7 +170,6 @@ class TestRetrievalPrecisionRecallCurve(RetrievalPrecisionRecallCurveTester):
             preds=preds,
             target=target,
             metric_class=RetrievalPrecisionRecallCurve,
-            sk_metric=_compute_precision_recall_curve,
-            dist_sync_on_step=dist_sync_on_step,
+            reference_metric=_compute_precision_recall_curve,
             metric_args=metric_args,
         )

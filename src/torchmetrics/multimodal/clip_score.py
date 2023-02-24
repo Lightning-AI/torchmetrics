@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
 from typing import Any, List, Union
 
 import torch
@@ -18,18 +19,31 @@ from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.functional.multimodal.clip_score import _clip_score_update, _get_model_and_processor
+from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
 from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 
-if not _TRANSFORMERS_AVAILABLE:
+if _TRANSFORMERS_AVAILABLE:
+    from transformers import CLIPModel as _CLIPModel
+    from transformers import CLIPProcessor as _CLIPProcessor
+
+    def _download_clip() -> None:
+        _CLIPModel.from_pretrained("openai/clip-vit-large-patch14")
+        _CLIPProcessor.from_pretrained("openai/clip-vit-large-patch14")
+
+    if _SKIP_SLOW_DOCTEST and not _try_proceed_with_timeout(_download_clip):
+        __doctest_skip__ = ["CLIPScore"]
+else:
     __doctest_skip__ = ["CLIPScore"]
 
 from torchmetrics import Metric
 
 
 class CLIPScore(Metric):
-    """`CLIP Score`_ is a reference free metric that can be used to evaluate the correlation between a generated
-    caption for an image and the actual content of the image. It has been found to be highly correlated with human
-    judgement. The metric is defined as:
+    r"""Calculates `CLIP Score`_ which is a text-to-image similarity metric.
+
+    CLIP is a reference free metric that can be used to evaluate the correlation between a generated caption for an
+    image and the actual content of the image. It has been found to be highly correlated with human judgement. The
+    metric is defined as:
 
     .. math::
         \text{CLIPScore(I, C)} = max(100 * cos(E_I, E_C), 0)
@@ -84,7 +98,7 @@ class CLIPScore(Metric):
         self.add_state("n_samples", torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
 
     def update(self, images: Union[Tensor, List[Tensor]], text: Union[str, List[str]]) -> None:
-        """Updates CLIP score on a batch of images and text.
+        """Update CLIP score on a batch of images and text.
 
         Args:
             images: Either a single [N, C, H, W] tensor or a list of [C, H, W] tensors
@@ -101,5 +115,5 @@ class CLIPScore(Metric):
         self.n_samples += n_samples
 
     def compute(self) -> Tensor:
-        """Computes accumulated clip score."""
+        """Compute accumulated clip score."""
         return torch.max(self.score / self.n_samples, torch.zeros_like(self.score))

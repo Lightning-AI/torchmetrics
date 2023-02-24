@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@ from typing import List, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor
-from torch.nn import functional as F
+from torch.nn import functional as F  # noqa: N812
 from typing_extensions import Literal
 
 from torchmetrics.functional.image.helper import _gaussian_kernel_2d, _gaussian_kernel_3d, _reflection_pad_3d
@@ -24,19 +24,14 @@ from torchmetrics.utilities.distributed import reduce
 
 
 def _ssim_check_inputs(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
-    """Updates and returns variables required to compute Structural Similarity Index Measure. Checks for same shape
-    and type of the input tensors.
+    """Update and returns variables required to compute Structural Similarity Index Measure.
 
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
     """
-
     if preds.dtype != target.dtype:
-        raise TypeError(
-            "Expected `preds` and `target` to have the same data type."
-            f" Got preds: {preds.dtype} and target: {target.dtype}."
-        )
+        target = target.to(preds.dtype)
     _check_same_shape(preds, target)
     if len(preds.shape) not in (4, 5):
         raise ValueError(
@@ -58,7 +53,7 @@ def _ssim_update(
     return_full_image: bool = False,
     return_contrast_sensitivity: bool = False,
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    """Computes Structual Similarity Index Measure.
+    """Compute Structual Similarity Index Measure.
 
     Args:
         preds: estimated image
@@ -145,10 +140,7 @@ def _ssim_update(
 
     input_list = torch.cat((preds, target, preds * preds, target * target, preds * target))  # (5 * B, C, H, W)
 
-    if is_3d:
-        outputs = F.conv3d(input_list, kernel, groups=channel)
-    else:
-        outputs = F.conv2d(input_list, kernel, groups=channel)
+    outputs = F.conv3d(input_list, kernel, groups=channel) if is_3d else F.conv2d(input_list, kernel, groups=channel)
 
     output_list = outputs.split(preds.shape[0])
 
@@ -187,7 +179,7 @@ def _ssim_compute(
     similarities: Tensor,
     reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
 ) -> Tensor:
-    """Applies the specified reduction to pre-computed structural similarity.
+    """Apply the specified reduction to pre-computed structural similarity.
 
     Args:
         similarities: per image similarities for a batch of images.
@@ -216,7 +208,7 @@ def structural_similarity_index_measure(
     return_full_image: bool = False,
     return_contrast_sensitivity: bool = False,
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    """Computes Structual Similarity Index Measure.
+    """Compute Structual Similarity Index Measure.
 
     Args:
         preds: estimated image
@@ -331,15 +323,16 @@ def _multiscale_ssim_update(
     ),
     normalize: Optional[Literal["relu", "simple"]] = None,
 ) -> Tensor:
-    """Computes Multi-Scale Structual Similarity Index Measure.
+    """Compute Multi-Scale Structual Similarity Index Measure.
 
     Adapted from: https://github.com/jorge-pessoa/pytorch-msssim/blob/master/pytorch_msssim/__init__.py.
 
     Args:
         preds: estimated image
         target: ground truth image
-        kernel_size: size of the gaussian kernel
+        gaussian_kernel: If true, a gaussian kernel is used, if false a uniform kernel is used
         sigma: Standard deviation of the gaussian kernel
+        kernel_size: size of the gaussian kernel
         reduction: a method to reduce metric score over labels.
 
             - ``'elementwise_mean'``: takes the mean
@@ -422,7 +415,7 @@ def _multiscale_ssim_compute(
     mcs_per_image: Tensor,
     reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
 ) -> Tensor:
-    """Applies the specified reduction to pre-computed multi-scale structural similarity.
+    """Apply the specified reduction to pre-computed multi-scale structural similarity.
 
     Args:
         mcs_per_image: per image similarities for a batch of images.
@@ -451,14 +444,17 @@ def multiscale_structural_similarity_index_measure(
     betas: Tuple[float, ...] = (0.0448, 0.2856, 0.3001, 0.2363, 0.1333),
     normalize: Optional[Literal["relu", "simple"]] = "relu",
 ) -> Tensor:
-    """Computes `MultiScaleSSIM`_, Multi-scale Structual Similarity Index Measure, which is a generalization of
-    Structual Similarity Index Measure by incorporating image details at different resolution scores.
+    """Compute `MultiScaleSSIM`_, Multi-scale Structual Similarity Index Measure.
+
+    This metric is a generalization of Structual Similarity Index Measure by incorporating image details at different
+    resolution scores.
 
     Args:
         preds: Predictions from model of shape ``[N, C, H, W]``
         target: Ground truth values of shape ``[N, C, H, W]``
-        kernel_size: size of the gaussian kernel
+        gaussian_kernel: If true, a gaussian kernel is used, if false a uniform kernel is used
         sigma: Standard deviation of the gaussian kernel
+        kernel_size: size of the gaussian kernel
         reduction: a method to reduce metric score over labels.
 
             - ``'elementwise_mean'``: takes the mean

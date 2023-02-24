@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +23,8 @@ from scipy.stats.contingency import association
 
 from torchmetrics.functional.nominal.tschuprows import tschuprows_t, tschuprows_t_matrix
 from torchmetrics.nominal.tschuprows import TschuprowsT
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from unittests import BATCH_SIZE, NUM_BATCHES
+from unittests.helpers.testers import MetricTester
 
 Input = namedtuple("Input", ["preds", "target"])
 NUM_CLASSES = 4
@@ -40,8 +41,8 @@ _input_logits = Input(
 # No testing with replacing NaN's values is done as not supported in SciPy
 
 
-@pytest.fixture
-def _matrix_input():
+@pytest.fixture()
+def tschuprows_matrix_input():
     matrix = torch.cat(
         [
             torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES * BATCH_SIZE, 1), dtype=torch.float),
@@ -87,23 +88,21 @@ class TestTschuprowsT(MetricTester):
     atol = 1e-5
 
     @pytest.mark.parametrize("ddp", [False, True])
-    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_tschuprows_ta(self, ddp, dist_sync_on_step, preds, target):
+    def test_tschuprows_ta(self, ddp, preds, target):
         metric_args = {"bias_correction": False, "num_classes": NUM_CLASSES}
         self.run_class_metric_test(
             ddp=ddp,
-            dist_sync_on_step=dist_sync_on_step,
             preds=preds,
             target=target,
             metric_class=TschuprowsT,
-            sk_metric=_pd_tschuprows_t,
+            reference_metric=_pd_tschuprows_t,
             metric_args=metric_args,
         )
 
     def test_tschuprows_t_functional(self, preds, target):
         metric_args = {"bias_correction": False}
         self.run_functional_metric_test(
-            preds, target, metric_functional=tschuprows_t, sk_metric=_pd_tschuprows_t, metric_args=metric_args
+            preds, target, metric_functional=tschuprows_t, reference_metric=_pd_tschuprows_t, metric_args=metric_args
         )
 
     def test_tschuprows_t_differentiability(self, preds, target):
@@ -121,7 +120,7 @@ class TestTschuprowsT(MetricTester):
 @pytest.mark.skipif(  # TODO: testing on CUDA fails with pandas 1.3.5, and newer is not available for python 3.7
     torch.cuda.is_available(), reason="Tests fail on CUDA with the most up-to-date available pandas"
 )
-def test_tschuprows_t_matrix(_matrix_input):
-    tm_score = tschuprows_t_matrix(_matrix_input, bias_correction=False)
-    reference_score = _pd_tschuprows_t_matrix(_matrix_input)
+def test_tschuprows_t_matrix(tschuprows_matrix_input):
+    tm_score = tschuprows_t_matrix(tschuprows_matrix_input, bias_correction=False)
+    reference_score = _pd_tschuprows_t_matrix(tschuprows_matrix_input)
     assert torch.allclose(tm_score, reference_score)

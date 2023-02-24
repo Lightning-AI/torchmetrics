@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ from torchmetrics.utilities.checks import _check_same_shape
 
 
 def signal_noise_ratio(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
-    r"""Calculates `Signal-to-noise ratio`_ (SNR_) meric for evaluating quality of audio. It is defined as:
+    r"""Calculate `Signal-to-noise ratio`_ (SNR_) meric for evaluating quality of audio.
 
     .. math::
         \text{SNR} = \frac{P_{signal}}{P_{noise}}

@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ _TORCH_GREATER_EQUAL_1_9: Optional[bool] = compare_version("torch", operator.ge,
 _TORCH_GREATER_EQUAL_1_10: Optional[bool] = compare_version("torch", operator.ge, "1.10.0")
 _TORCH_GREATER_EQUAL_1_11: Optional[bool] = compare_version("torch", operator.ge, "1.11.0")
 _TORCH_GREATER_EQUAL_1_12: Optional[bool] = compare_version("torch", operator.ge, "1.12.0")
+_TORCH_GREATER_EQUAL_1_13: Optional[bool] = compare_version("torch", operator.ge, "1.13.0")
 
 _JIWER_AVAILABLE: bool = package_available("jiwer")
 _NLTK_AVAILABLE: bool = package_available("nltk")
@@ -42,3 +43,4 @@ _PYSTOI_AVAILABLE: bool = package_available("pystoi")
 _FAST_BSS_EVAL_AVAILABLE: bool = package_available("fast_bss_eval")
 _MATPLOTLIB_AVAILABLE: bool = package_available("matplotlib")
 _MULTIPROCESSING_AVAILABLE: bool = package_available("multiprocessing")
+_XLA_AVAILABLE: bool = package_available("torch_xla")

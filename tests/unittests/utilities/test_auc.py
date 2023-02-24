@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,8 +20,9 @@ from sklearn.metrics import auc as _sk_auc
 from torch import tensor
 
 from torchmetrics.utilities.compute import auc
+from unittests import NUM_BATCHES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -57,12 +58,16 @@ class TestAUC(MetricTester):
     @pytest.mark.parametrize("reorder", [True, False])
     def test_auc_functional(self, x, y, reorder):
         self.run_functional_metric_test(
-            x, y, metric_functional=auc, sk_metric=partial(sk_auc, reorder=reorder), metric_args={"reorder": reorder}
+            x,
+            y,
+            metric_functional=auc,
+            reference_metric=partial(sk_auc, reorder=reorder),
+            metric_args={"reorder": reorder},
         )
 
 
-@pytest.mark.parametrize("unsqueeze_x", (True, False))
-@pytest.mark.parametrize("unsqueeze_y", (True, False))
+@pytest.mark.parametrize("unsqueeze_x", [True, False])
+@pytest.mark.parametrize("unsqueeze_y", [True, False])
 @pytest.mark.parametrize(
     ["x", "y", "expected"],
     [

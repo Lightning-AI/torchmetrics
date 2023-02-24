@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -71,8 +71,9 @@ def word_information_lost(
     preds: Union[str, List[str]],
     target: Union[str, List[str]],
 ) -> Tensor:
-    """Word Information Lost rate is a metric of the performance of an automatic speech recognition system. This
-    value indicates the percentage of characters that were incorrectly predicted. The lower the value, the better
+    """Word Information Lost rate is a metric of the performance of an automatic speech recognition system.
+
+    This value indicates the percentage of characters that were incorrectly predicted. The lower the value, the better
     the performance of the ASR system with a Word Information Lost rate of 0 being a perfect score.
 
     Args:

@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,8 +27,7 @@ __doctest_requires__ = {("InceptionScore", "IS"): ["torch_fidelity"]}
 
 
 class InceptionScore(Metric):
-    r"""Calculates the Inception Score (IS) which is used to access how realistic generated images are. It is
-    defined as.
+    r"""Calculate the Inception Score (IS) which is used to access how realistic generated images are.
 
     .. math::
         IS = exp(\mathbb{E}_x KL(p(y | x ) || p(y)))
@@ -36,10 +35,11 @@ class InceptionScore(Metric):
     where :math:`KL(p(y | x) || p(y))` is the KL divergence between the conditional distribution :math:`p(y|x)`
     and the margianl distribution :math:`p(y)`. Both the conditional and marginal distribution is calculated
     from features extracted from the images. The score is calculated on random splits of the images such that
-    both a mean and standard deviation of the score are returned. The metric was originally proposed in [1].
+    both a mean and standard deviation of the score are returned. The metric was originally proposed in
+    `inception ref1`_.
 
-    Using the default feature extraction (Inception v3 using the original weights from [2]), the input is
-    expected to be mini-batches of 3-channel RGB images of shape (``3 x H x W``). If argument ``normalize``
+    Using the default feature extraction (Inception v3 using the original weights from `inception ref2`_), the input
+    is expected to be mini-batches of 3-channel RGB images of shape ``(3 x H x W)``. If argument ``normalize``
     is ``True`` images are expected to be dtype ``float`` and have values in the ``[0, 1]`` range, else if
     ``normalize`` is set to ``False`` images are expected to have dtype uint8 and take values in the ``[0, 255]``
     range. All images will be resized to 299 x 299 which is the size of the original training data.
@@ -48,6 +48,14 @@ class InceptionScore(Metric):
         is installed. Either install as ``pip install torchmetrics[image]`` or
         ``pip install torch-fidelity``
 
+    As input to ``forward`` and ``update`` the metric accepts the following input
+
+    - ``imgs`` (:class:`~torch.Tensor`): tensor with images feed to the feature extractor
+
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``fid`` (:class:`~torch.Tensor`): float scalar tensor with mean FID value over samples
+
     Args:
         feature:
             Either an str, integer or ``nn.Module``:
@@ -55,25 +63,16 @@ class InceptionScore(Metric):
             - an str or integer will indicate the inceptionv3 feature layer to choose. Can be one of the following:
               'logits_unbiased', 64, 192, 768, 2048
             - an ``nn.Module`` for using a custom feature extractor. Expects that its forward method returns
-              an ``[N,d]`` matrix where ``N`` is the batch size and ``d`` is the feature size.
+              an ``(N,d)`` matrix where ``N`` is the batch size and ``d`` is the feature size.
 
         splits: integer determining how many splits the inception score calculation should be split among
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
-
-    References:
-        [1] Improved Techniques for Training GANs
-        Tim Salimans, Ian Goodfellow, Wojciech Zaremba, Vicki Cheung, Alec Radford, Xi Chen
-        https://arxiv.org/abs/1606.03498
-
-        [2] GANs Trained by a Two Time-Scale Update Rule Converge to a Local Nash Equilibrium,
-        Martin Heusel, Hubert Ramsauer, Thomas Unterthiner, Bernhard Nessler, Sepp Hochreiter
-        https://arxiv.org/abs/1706.08500
 
     Raises:
         ValueError:
             If ``feature`` is set to an ``str`` or ``int`` and ``torch-fidelity`` is not installed
         ValueError:
-            If ``feature`` is set to an ``str`` or ``int`` and not one of ``['logits_unbiased', 64, 192, 768, 2048]``
+            If ``feature`` is set to an ``str`` or ``int`` and not one of ``('logits_unbiased', 64, 192, 768, 2048)``
         TypeError:
             If ``feature`` is not an ``str``, ``int`` or ``torch.nn.Module``
 
@@ -134,17 +133,14 @@ class InceptionScore(Metric):
         self.splits = splits
         self.add_state("features", [], dist_reduce_fx=None)
 
-    def update(self, imgs: Tensor) -> None:  # type: ignore
-        """Update the state with extracted features.
-
-        Args:
-            imgs: tensor with images feed to the feature extractor
-        """
+    def update(self, imgs: Tensor) -> None:
+        """Update the state with extracted features."""
         imgs = (imgs * 255).byte() if self.normalize else imgs
         features = self.inception(imgs)
         self.features.append(features)
 
     def compute(self) -> Tuple[Tensor, Tensor]:
+        """Compute metric."""
         features = dim_zero_cat(self.features)
         # random permute the features
         idx = torch.randperm(features.shape[0])

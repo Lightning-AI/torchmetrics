@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,8 +20,9 @@ from scipy.stats import rankdata, spearmanr
 
 from torchmetrics.functional.regression.spearman import _rank_data, spearman_corrcoef
 from torchmetrics.regression.spearman import SpearmanCorrCoef
+from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, NUM_CLASSES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -54,7 +55,7 @@ _specific_input = Input(
 
 
 @pytest.mark.parametrize(
-    "preds, target",
+    ("preds", "target"),
     [
         (_single_target_inputs1.preds, _single_target_inputs1.target),
         (_single_target_inputs2.preds, _single_target_inputs2.target),
@@ -62,7 +63,7 @@ _specific_input = Input(
     ],
 )
 def test_ranking(preds, target):
-    """test that ranking function works as expected."""
+    """Test that ranking function works as expected."""
     for p, t in zip(preds, target):
         scipy_ranking = [rankdata(p.numpy()), rankdata(t.numpy())]
         tm_ranking = [_rank_data(p), _rank_data(t)]
@@ -70,11 +71,10 @@ def test_ranking(preds, target):
         assert (torch.tensor(scipy_ranking[1]) == tm_ranking[1]).all()
 
 
-def _sk_metric(preds, target):
+def _scipy_spearman(preds, target):
     if preds.ndim == 2:
         return [spearmanr(t.numpy(), p.numpy())[0] for t, p in zip(target.T, preds.T)]
-    else:
-        return spearmanr(target.numpy(), preds.numpy())[0]
+    return spearmanr(target.numpy(), preds.numpy())[0]
 
 
 @pytest.mark.parametrize(
@@ -91,21 +91,19 @@ class TestSpearmanCorrCoef(MetricTester):
     atol = 1e-2
 
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_spearman_corrcoef(self, preds, target, ddp, dist_sync_on_step):
+    def test_spearman_corrcoef(self, preds, target, ddp):
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_class_metric_test(
             ddp,
             preds,
             target,
             SpearmanCorrCoef,
-            _sk_metric,
-            dist_sync_on_step,
+            _scipy_spearman,
             metric_args={"num_outputs": num_outputs},
         )
 
     def test_spearman_corrcoef_functional(self, preds, target):
-        self.run_functional_metric_test(preds, target, spearman_corrcoef, _sk_metric)
+        self.run_functional_metric_test(preds, target, spearman_corrcoef, _scipy_spearman)
 
     def test_spearman_corrcoef_differentiability(self, preds, target):
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1

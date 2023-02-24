@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,13 +20,13 @@ from torchmetrics.utilities.checks import _check_retrieval_functional_inputs
 
 
 def _dcg(target: Tensor) -> Tensor:
-    """Computes Discounted Cumulative Gain for input tensor."""
+    """Compute Discounted Cumulative Gain for input tensor."""
     denom = torch.log2(torch.arange(target.shape[-1], device=target.device) + 2.0)
     return (target / denom).sum(dim=-1)
 
 
-def retrieval_normalized_dcg(preds: Tensor, target: Tensor, k: Optional[int] = None) -> Tensor:
-    """Computes `Normalized Discounted Cumulative Gain`_ (for information retrieval).
+def retrieval_normalized_dcg(preds: Tensor, target: Tensor, top_k: Optional[int] = None) -> Tensor:
+    """Compute `Normalized Discounted Cumulative Gain`_ (for information retrieval).
 
     ``preds`` and ``target`` should be of the same shape and live on the same device.
     ``target`` must be either `bool` or `integers` and ``preds`` must be ``float``,
@@ -35,14 +35,14 @@ def retrieval_normalized_dcg(preds: Tensor, target: Tensor, k: Optional[int] = N
     Args:
         preds: estimated probabilities of each document to be relevant.
         target: ground truth about each document relevance.
-        k: consider only the top k elements (default: ``None``, which considers them all)
+        top_k: consider only the top k elements (default: ``None``, which considers them all)
 
     Return:
-        a single-value tensor with the nDCG of the predictions ``preds`` w.r.t. the labels ``target``.
+        A single-value tensor with the nDCG of the predictions ``preds`` w.r.t. the labels ``target``.
 
     Raises:
         ValueError:
-            If ``k`` parameter is not `None` or an integer larger than 0
+            If ``top_k`` parameter is not `None` or an integer larger than 0
 
     Example:
         >>> from torchmetrics.functional import retrieval_normalized_dcg
@@ -53,13 +53,13 @@ def retrieval_normalized_dcg(preds: Tensor, target: Tensor, k: Optional[int] = N
     """
     preds, target = _check_retrieval_functional_inputs(preds, target, allow_non_binary_target=True)
 
-    k = preds.shape[-1] if k is None else k
+    top_k = preds.shape[-1] if top_k is None else top_k
 
-    if not (isinstance(k, int) and k > 0):
-        raise ValueError("`k` has to be a positive integer or None")
+    if not (isinstance(top_k, int) and top_k > 0):
+        raise ValueError("`top_k` has to be a positive integer or None")
 
-    sorted_target = target[torch.argsort(preds, dim=-1, descending=True)][:k]
-    ideal_target = torch.sort(target, descending=True)[0][:k]
+    sorted_target = target[torch.argsort(preds, dim=-1, descending=True)][:top_k]
+    ideal_target = torch.sort(target, descending=True)[0][:top_k]
 
     ideal_dcg = _dcg(ideal_target)
     target_dcg = _dcg(sorted_target)

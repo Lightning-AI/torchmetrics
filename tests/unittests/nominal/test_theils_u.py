@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +23,8 @@ from lightning_utilities.core.imports import compare_version
 
 from torchmetrics.functional.nominal.theils_u import theils_u, theils_u_matrix
 from torchmetrics.nominal import TheilsU
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from unittests import BATCH_SIZE, NUM_BATCHES
+from unittests.helpers.testers import MetricTester
 
 Input = namedtuple("Input", ["preds", "target"])
 NUM_CLASSES = 4
@@ -47,8 +48,8 @@ _input_logits = Input(
 )
 
 
-@pytest.fixture
-def _matrix_input():
+@pytest.fixture()
+def theils_u_matrix_input():
     matrix = torch.cat(
         [
             torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES * BATCH_SIZE, 1), dtype=torch.float),
@@ -102,8 +103,7 @@ class TestTheilsU(MetricTester):
     atol = 1e-5
 
     @pytest.mark.parametrize("ddp", [False, True])
-    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_theils_u(self, ddp, dist_sync_on_step, preds, target, nan_strategy, nan_replace_value):
+    def test_theils_u(self, ddp, preds, target, nan_strategy, nan_replace_value):
         metric_args = {
             "nan_strategy": nan_strategy,
             "nan_replace_value": nan_replace_value,
@@ -116,11 +116,10 @@ class TestTheilsU(MetricTester):
         )
         self.run_class_metric_test(
             ddp=ddp,
-            dist_sync_on_step=dist_sync_on_step,
             preds=preds,
             target=target,
             metric_class=TheilsU,
-            sk_metric=reference_metric,
+            reference_metric=reference_metric,
             metric_args=metric_args,
         )
 
@@ -135,7 +134,7 @@ class TestTheilsU(MetricTester):
             nan_replace_value=nan_replace_value,
         )
         self.run_functional_metric_test(
-            preds, target, metric_functional=theils_u, sk_metric=reference_metric, metric_args=metric_args
+            preds, target, metric_functional=theils_u, reference_metric=reference_metric, metric_args=metric_args
         )
 
     def test_theils_u_differentiability(self, preds, target, nan_strategy, nan_replace_value):
@@ -157,8 +156,8 @@ class TestTheilsU(MetricTester):
 @pytest.mark.skipif(  # TODO: testing on CUDA fails with pandas 1.3.5, and newer is not available for python 3.7
     torch.cuda.is_available(), reason="Tests fail on CUDA with the most up-to-date available pandas"
 )
-@pytest.mark.parametrize("nan_strategy, nan_replace_value", [("replace", 1.0), ("drop", None)])
-def test_theils_u_matrix(_matrix_input, nan_strategy, nan_replace_value):
-    tm_score = theils_u_matrix(_matrix_input, nan_strategy, nan_replace_value)
-    reference_score = _dython_theils_u_matrix(_matrix_input, nan_strategy, nan_replace_value)
+@pytest.mark.parametrize(("nan_strategy", "nan_replace_value"), [("replace", 1.0), ("drop", None)])
+def test_theils_u_matrix(theils_u_matrix_input, nan_strategy, nan_replace_value):
+    tm_score = theils_u_matrix(theils_u_matrix_input, nan_strategy, nan_replace_value)
+    reference_score = _dython_theils_u_matrix(theils_u_matrix_input, nan_strategy, nan_replace_value)
     assert torch.allclose(tm_score, reference_score, atol=1e-6)

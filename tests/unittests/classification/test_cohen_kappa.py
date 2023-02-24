@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,18 +21,19 @@ from sklearn.metrics import cohen_kappa_score as sk_cohen_kappa
 
 from torchmetrics.classification.cohen_kappa import BinaryCohenKappa, MulticlassCohenKappa
 from torchmetrics.functional.classification.cohen_kappa import binary_cohen_kappa, multiclass_cohen_kappa
+from unittests import NUM_CLASSES, THRESHOLD
 from unittests.classification.inputs import _binary_cases, _multiclass_cases
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index, remove_ignore_index
+from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
 seed_all(42)
 
 
-def _sk_cohen_kappa_binary(preds, target, weights=None, ignore_index=None):
+def _sklearn_cohen_kappa_binary(preds, target, weights=None, ignore_index=None):
     preds = preds.view(-1).numpy()
     target = target.view(-1).numpy()
     if np.issubdtype(preds.dtype, np.floating):
-        if not ((0 < preds) & (preds < 1)).all():
+        if not ((preds > 0) & (preds < 1)).all():
             preds = sigmoid(preds)
         preds = (preds >= THRESHOLD).astype(np.uint8)
     target, preds = remove_ignore_index(target, preds, ignore_index)
@@ -55,7 +56,7 @@ class TestBinaryCohenKappa(MetricTester):
             preds=preds,
             target=target,
             metric_class=BinaryCohenKappa,
-            sk_metric=partial(_sk_cohen_kappa_binary, weights=weights, ignore_index=ignore_index),
+            reference_metric=partial(_sklearn_cohen_kappa_binary, weights=weights, ignore_index=ignore_index),
             metric_args={
                 "threshold": THRESHOLD,
                 "weights": weights,
@@ -73,7 +74,7 @@ class TestBinaryCohenKappa(MetricTester):
             preds=preds,
             target=target,
             metric_functional=binary_cohen_kappa,
-            sk_metric=partial(_sk_cohen_kappa_binary, weights=weights, ignore_index=ignore_index),
+            reference_metric=partial(_sklearn_cohen_kappa_binary, weights=weights, ignore_index=ignore_index),
             metric_args={
                 "threshold": THRESHOLD,
                 "weights": weights,
@@ -120,7 +121,7 @@ class TestBinaryCohenKappa(MetricTester):
         )
 
 
-def _sk_cohen_kappa_multiclass(preds, target, weights, ignore_index=None):
+def _sklearn_cohen_kappa_multiclass(preds, target, weights, ignore_index=None):
     preds = preds.numpy()
     target = target.numpy()
     if np.issubdtype(preds.dtype, np.floating):
@@ -147,7 +148,7 @@ class TestMulticlassCohenKappa(MetricTester):
             preds=preds,
             target=target,
             metric_class=MulticlassCohenKappa,
-            sk_metric=partial(_sk_cohen_kappa_multiclass, weights=weights, ignore_index=ignore_index),
+            reference_metric=partial(_sklearn_cohen_kappa_multiclass, weights=weights, ignore_index=ignore_index),
             metric_args={
                 "num_classes": NUM_CLASSES,
                 "weights": weights,
@@ -165,7 +166,7 @@ class TestMulticlassCohenKappa(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multiclass_cohen_kappa,
-            sk_metric=partial(_sk_cohen_kappa_multiclass, weights=weights, ignore_index=ignore_index),
+            reference_metric=partial(_sklearn_cohen_kappa_multiclass, weights=weights, ignore_index=ignore_index),
             metric_args={
                 "num_classes": NUM_CLASSES,
                 "weights": weights,

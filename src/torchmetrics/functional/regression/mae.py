@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,24 +20,24 @@ from torchmetrics.utilities.checks import _check_same_shape
 
 
 def _mean_absolute_error_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, int]:
-    """Updates and returns variables required to compute Mean Absolute Error.
+    """Update and returns variables required to compute Mean Absolute Error.
 
-    Checks for same shape of input tensors.
+    Check for same shape of input tensors.
 
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
     """
     _check_same_shape(preds, target)
-    preds = preds if preds.is_floating_point else preds.float()
-    target = target if target.is_floating_point else target.float()
+    preds = preds if preds.is_floating_point else preds.float()  # type: ignore[truthy-function] # todo
+    target = target if target.is_floating_point else target.float()  # type: ignore[truthy-function] # todo
     sum_abs_error = torch.sum(torch.abs(preds - target))
     n_obs = target.numel()
     return sum_abs_error, n_obs
 
 
 def _mean_absolute_error_compute(sum_abs_error: Tensor, n_obs: int) -> Tensor:
-    """Computes Mean Absolute Error.
+    """Compute Mean Absolute Error.
 
     Args:
         sum_abs_error: Sum of absolute value of errors over all observations
@@ -50,12 +50,11 @@ def _mean_absolute_error_compute(sum_abs_error: Tensor, n_obs: int) -> Tensor:
         >>> _mean_absolute_error_compute(sum_abs_error, n_obs)
         tensor(0.2500)
     """
-
     return sum_abs_error / n_obs
 
 
 def mean_absolute_error(preds: Tensor, target: Tensor) -> Tensor:
-    """Computes mean absolute error.
+    """Compute mean absolute error.
 
     Args:
         preds: estimated labels

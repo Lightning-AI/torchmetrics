@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,27 +11,32 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torch import Tensor, tensor
+from torch import Tensor
 
 from torchmetrics.functional.retrieval.r_precision import retrieval_r_precision
 from torchmetrics.retrieval.base import RetrievalMetric
 
 
 class RetrievalRPrecision(RetrievalMetric):
-    """Computes `IR R-Precision`_.
+    """Compute `IR R-Precision`_.
 
     Works with binary target data. Accepts float predictions from a model output.
 
-    Forward accepts:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (float tensor): ``(N, ...)``
-    - ``target`` (long or bool tensor): ``(N, ...)``
-    - ``indexes`` (long tensor): ``(N, ...)``
+    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, ...)``
+    - ``target`` (:class:`~torch.Tensor`): A long or bool tensor of shape ``(N, ...)``
+    - ``indexes`` (:class:`~torch.Tensor`): A long tensor of shape ``(N, ...)`` which indicate to which query a
+      prediction belongs
 
-    ``indexes``, ``preds`` and ``target`` must have the same dimension.
-    ``indexes`` indicate to which query a prediction belongs.
-    Predictions will be first grouped by ``indexes`` and then `R-Precision` will be computed as the mean
-    of the `R-Precision` over each query.
+    As output to ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``p2`` (:class:`~torch.Tensor`): A single-value tensor with the r-precision of the predictions ``preds``
+      w.r.t. the labels ``target``.
+
+    All ``indexes``, ``preds`` and ``target`` must have the same dimension and will be flatten at the beginning,
+    so that for example, a tensor of shape ``(N, M)`` is treated as ``(N * M, )``. Predictions will be first grouped by
+    ``indexes`` and then will be computed as the mean of the metric over each query.
 
     Args:
         empty_target_action:
@@ -53,6 +58,7 @@ class RetrievalRPrecision(RetrievalMetric):
             If ``ignore_index`` is not `None` or an integer.
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics import RetrievalRPrecision
         >>> indexes = tensor([0, 0, 0, 1, 1, 1, 1])
         >>> preds = tensor([0.2, 0.3, 0.5, 0.1, 0.3, 0.5, 0.2])

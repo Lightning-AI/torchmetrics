@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ from unittests.retrieval.helpers import (
 seed_all(42)
 
 
-def _ndcg_at_k(target: np.ndarray, preds: np.ndarray, k: int = None):
+def _ndcg_at_k(target: np.ndarray, preds: np.ndarray, top_k: int = None):
     """Adapting `from sklearn.metrics.ndcg_score`."""
     assert target.shape == preds.shape
     assert len(target.shape) == 1  # works only with single dimension inputs
@@ -45,12 +45,11 @@ def _ndcg_at_k(target: np.ndarray, preds: np.ndarray, k: int = None):
     preds = np.expand_dims(preds, axis=0)
     target = np.expand_dims(target, axis=0)
 
-    return ndcg_score(target, preds, k=k)
+    return ndcg_score(target, preds, k=top_k)
 
 
 class TestNDCG(RetrievalMetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize("ignore_index", [None, 3])  # avoid setting 0, otherwise test with all 0 targets will fail
     @pytest.mark.parametrize("k", [None, 1, 4, 10])
@@ -61,12 +60,11 @@ class TestNDCG(RetrievalMetricTester):
         indexes: Tensor,
         preds: Tensor,
         target: Tensor,
-        dist_sync_on_step: bool,
         empty_target_action: str,
         ignore_index: int,
         k: int,
     ):
-        metric_args = dict(empty_target_action=empty_target_action, k=k, ignore_index=ignore_index)
+        metric_args = {"empty_target_action": empty_target_action, "top_k": k, "ignore_index": ignore_index}
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -74,13 +72,11 @@ class TestNDCG(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_class=RetrievalNormalizedDCG,
-            sk_metric=_ndcg_at_k,
-            dist_sync_on_step=dist_sync_on_step,
+            reference_metric=_ndcg_at_k,
             metric_args=metric_args,
         )
 
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize("k", [None, 1, 4, 10])
     @pytest.mark.parametrize(**_default_metric_class_input_arguments_ignore_index)
@@ -90,11 +86,10 @@ class TestNDCG(RetrievalMetricTester):
         indexes: Tensor,
         preds: Tensor,
         target: Tensor,
-        dist_sync_on_step: bool,
         empty_target_action: str,
         k: int,
     ):
-        metric_args = dict(empty_target_action=empty_target_action, k=k, ignore_index=-100)
+        metric_args = {"empty_target_action": empty_target_action, "top_k": k, "ignore_index": -100}
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -102,8 +97,7 @@ class TestNDCG(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_class=RetrievalNormalizedDCG,
-            sk_metric=_ndcg_at_k,
-            dist_sync_on_step=dist_sync_on_step,
+            reference_metric=_ndcg_at_k,
             metric_args=metric_args,
         )
 
@@ -114,9 +108,9 @@ class TestNDCG(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_functional=retrieval_normalized_dcg,
-            sk_metric=_ndcg_at_k,
+            reference_metric=_ndcg_at_k,
             metric_args={},
-            k=k,
+            top_k=k,
         )
 
     @pytest.mark.parametrize(**_default_metric_class_input_arguments_with_non_binary_target)

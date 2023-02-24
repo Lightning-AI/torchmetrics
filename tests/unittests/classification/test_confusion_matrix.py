@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,18 +29,19 @@ from torchmetrics.functional.classification.confusion_matrix import (
     multiclass_confusion_matrix,
     multilabel_confusion_matrix,
 )
+from unittests import NUM_CLASSES, THRESHOLD
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index, remove_ignore_index
+from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
 seed_all(42)
 
 
-def _sk_confusion_matrix_binary(preds, target, normalize=None, ignore_index=None):
+def _sklearn_confusion_matrix_binary(preds, target, normalize=None, ignore_index=None):
     preds = preds.view(-1).numpy()
     target = target.view(-1).numpy()
     if np.issubdtype(preds.dtype, np.floating):
-        if not ((0 < preds) & (preds < 1)).all():
+        if not ((preds > 0) & (preds < 1)).all():
             preds = sigmoid(preds)
         preds = (preds >= THRESHOLD).astype(np.uint8)
     target, preds = remove_ignore_index(target, preds, ignore_index)
@@ -61,7 +62,7 @@ class TestBinaryConfusionMatrix(MetricTester):
             preds=preds,
             target=target,
             metric_class=BinaryConfusionMatrix,
-            sk_metric=partial(_sk_confusion_matrix_binary, normalize=normalize, ignore_index=ignore_index),
+            reference_metric=partial(_sklearn_confusion_matrix_binary, normalize=normalize, ignore_index=ignore_index),
             metric_args={
                 "threshold": THRESHOLD,
                 "normalize": normalize,
@@ -79,7 +80,7 @@ class TestBinaryConfusionMatrix(MetricTester):
             preds=preds,
             target=target,
             metric_functional=binary_confusion_matrix,
-            sk_metric=partial(_sk_confusion_matrix_binary, normalize=normalize, ignore_index=ignore_index),
+            reference_metric=partial(_sklearn_confusion_matrix_binary, normalize=normalize, ignore_index=ignore_index),
             metric_args={
                 "threshold": THRESHOLD,
                 "normalize": normalize,
@@ -126,7 +127,7 @@ class TestBinaryConfusionMatrix(MetricTester):
         )
 
 
-def _sk_confusion_matrix_multiclass(preds, target, normalize=None, ignore_index=None):
+def _sklearn_confusion_matrix_multiclass(preds, target, normalize=None, ignore_index=None):
     preds = preds.numpy()
     target = target.numpy()
     if np.issubdtype(preds.dtype, np.floating):
@@ -151,7 +152,9 @@ class TestMulticlassConfusionMatrix(MetricTester):
             preds=preds,
             target=target,
             metric_class=MulticlassConfusionMatrix,
-            sk_metric=partial(_sk_confusion_matrix_multiclass, normalize=normalize, ignore_index=ignore_index),
+            reference_metric=partial(
+                _sklearn_confusion_matrix_multiclass, normalize=normalize, ignore_index=ignore_index
+            ),
             metric_args={
                 "num_classes": NUM_CLASSES,
                 "normalize": normalize,
@@ -169,7 +172,9 @@ class TestMulticlassConfusionMatrix(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multiclass_confusion_matrix,
-            sk_metric=partial(_sk_confusion_matrix_multiclass, normalize=normalize, ignore_index=ignore_index),
+            reference_metric=partial(
+                _sklearn_confusion_matrix_multiclass, normalize=normalize, ignore_index=ignore_index
+            ),
             metric_args={
                 "num_classes": NUM_CLASSES,
                 "normalize": normalize,
@@ -214,11 +219,23 @@ class TestMulticlassConfusionMatrix(MetricTester):
         )
 
 
-def _sk_confusion_matrix_multilabel(preds, target, normalize=None, ignore_index=None):
+def test_multiclass_overflow():
+    """Test that multiclass computations does not overflow even on byte input."""
+    preds = torch.randint(20, (100,)).byte()
+    target = torch.randint(20, (100,)).byte()
+
+    m = MulticlassConfusionMatrix(num_classes=20)
+    res = m(preds, target)
+
+    compare = sk_confusion_matrix(target, preds)
+    assert torch.allclose(res, torch.tensor(compare))
+
+
+def _sklearn_confusion_matrix_multilabel(preds, target, normalize=None, ignore_index=None):
     preds = preds.numpy()
     target = target.numpy()
     if np.issubdtype(preds.dtype, np.floating):
-        if not ((0 < preds) & (preds < 1)).all():
+        if not ((preds > 0) & (preds < 1)).all():
             preds = sigmoid(preds)
         preds = (preds >= THRESHOLD).astype(np.uint8)
     preds = np.moveaxis(preds, 1, -1).reshape((-1, preds.shape[1]))
@@ -245,7 +262,9 @@ class TestMultilabelConfusionMatrix(MetricTester):
             preds=preds,
             target=target,
             metric_class=MultilabelConfusionMatrix,
-            sk_metric=partial(_sk_confusion_matrix_multilabel, normalize=normalize, ignore_index=ignore_index),
+            reference_metric=partial(
+                _sklearn_confusion_matrix_multilabel, normalize=normalize, ignore_index=ignore_index
+            ),
             metric_args={
                 "num_labels": NUM_CLASSES,
                 "normalize": normalize,
@@ -263,7 +282,9 @@ class TestMultilabelConfusionMatrix(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multilabel_confusion_matrix,
-            sk_metric=partial(_sk_confusion_matrix_multilabel, normalize=normalize, ignore_index=ignore_index),
+            reference_metric=partial(
+                _sklearn_confusion_matrix_multilabel, normalize=normalize, ignore_index=ignore_index
+            ),
             metric_args={
                 "num_labels": NUM_CLASSES,
                 "normalize": normalize,

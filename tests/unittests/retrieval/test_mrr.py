@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -56,7 +56,6 @@ def _reciprocal_rank(target: np.ndarray, preds: np.ndarray):
 
 class TestMRR(RetrievalMetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize("ignore_index", [None, 1])  # avoid setting 0, otherwise test with all 0 targets will fail
     @pytest.mark.parametrize(**_default_metric_class_input_arguments)
@@ -66,11 +65,10 @@ class TestMRR(RetrievalMetricTester):
         indexes: Tensor,
         preds: Tensor,
         target: Tensor,
-        dist_sync_on_step: bool,
         empty_target_action: str,
         ignore_index: int,
     ):
-        metric_args = dict(empty_target_action=empty_target_action, ignore_index=ignore_index)
+        metric_args = {"empty_target_action": empty_target_action, "ignore_index": ignore_index}
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -78,13 +76,11 @@ class TestMRR(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_class=RetrievalMRR,
-            sk_metric=_reciprocal_rank,
-            dist_sync_on_step=dist_sync_on_step,
+            reference_metric=_reciprocal_rank,
             metric_args=metric_args,
         )
 
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize(**_default_metric_class_input_arguments_ignore_index)
     def test_class_metric_ignore_index(
@@ -93,10 +89,9 @@ class TestMRR(RetrievalMetricTester):
         indexes: Tensor,
         preds: Tensor,
         target: Tensor,
-        dist_sync_on_step: bool,
         empty_target_action: str,
     ):
-        metric_args = dict(empty_target_action=empty_target_action, ignore_index=-100)
+        metric_args = {"empty_target_action": empty_target_action, "ignore_index": -100}
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -104,8 +99,7 @@ class TestMRR(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_class=RetrievalMRR,
-            sk_metric=_reciprocal_rank,
-            dist_sync_on_step=dist_sync_on_step,
+            reference_metric=_reciprocal_rank,
             metric_args=metric_args,
         )
 
@@ -115,7 +109,7 @@ class TestMRR(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_functional=retrieval_reciprocal_rank,
-            sk_metric=_reciprocal_rank,
+            reference_metric=_reciprocal_rank,
             metric_args={},
         )
 

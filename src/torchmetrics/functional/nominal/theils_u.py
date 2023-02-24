@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -58,7 +58,7 @@ def _theils_u_update(
     nan_strategy: Literal["replace", "drop"] = "replace",
     nan_replace_value: Optional[Union[int, float]] = 0.0,
 ) -> Tensor:
-    """Computes the bins to update the confusion matrix with for Theil's U calculation.
+    """Compute the bins to update the confusion matrix with for Theil's U calculation.
 
     Args:
         preds: 1D or 2D tensor of categorical (nominal) data
@@ -108,8 +108,7 @@ def theils_u(
     nan_strategy: Literal["replace", "drop"] = "replace",
     nan_replace_value: Optional[Union[int, float]] = 0.0,
 ) -> Tensor:
-    r"""Compute `Theil's U`_ statistic (Uncertainty Coefficient) measuring the association between two categorical
-    (nominal) data series.
+    r"""Compute `Theil's U`_ statistic (Uncertainty Coef.) measuring the association between two nominal data series.
 
     .. math::
         U(X|Y) = \frac{H(X) - H(X|Y)}{H(X)}

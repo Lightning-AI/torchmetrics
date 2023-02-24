@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,8 +20,9 @@ from scipy.stats import pearsonr
 
 from torchmetrics.functional.regression.pearson import pearson_corrcoef
 from torchmetrics.regression.pearson import PearsonCorrCoef
+from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -49,11 +50,10 @@ _multi_target_inputs2 = Input(
 )
 
 
-def _sk_pearsonr(preds, target):
+def _scipy_pearson(preds, target):
     if preds.ndim == 2:
         return [pearsonr(t.numpy(), p.numpy())[0] for t, p in zip(target.T, preds.T)]
-    else:
-        return pearsonr(target.numpy(), preds.numpy())[0]
+    return pearsonr(target.numpy(), preds.numpy())[0]
 
 
 @pytest.mark.parametrize(
@@ -77,14 +77,13 @@ class TestPearsonCorrcoef(MetricTester):
             preds=preds,
             target=target,
             metric_class=PearsonCorrCoef,
-            sk_metric=_sk_pearsonr,
-            dist_sync_on_step=False,
+            reference_metric=_scipy_pearson,
             metric_args={"num_outputs": num_outputs, "compute_on_cpu": compute_on_cpu},
         )
 
     def test_pearson_corrcoef_functional(self, preds, target):
         self.run_functional_metric_test(
-            preds=preds, target=target, metric_functional=pearson_corrcoef, sk_metric=_sk_pearsonr
+            preds=preds, target=target, metric_functional=pearson_corrcoef, reference_metric=_scipy_pearson
         )
 
     def test_pearson_corrcoef_differentiability(self, preds, target):

@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -35,8 +35,8 @@ seed_all(42)
 def _r_precision(target: np.ndarray, preds: np.ndarray):
     """Didn't find a reliable implementation of R-Precision in Information Retrieval, so, reimplementing here.
 
-    A good explanation can be found
-    `here <https://web.stanford.edu/class/cs276/handouts/EvaluationNew-handout-1-per.pdf>_`.
+    A good explanation can be found `here
+    <https://web.stanford.edu/class/cs276/handouts/EvaluationNew-handout-1-per.pdf>_`.
     """
     assert target.shape == preds.shape
     assert len(target.shape) == 1  # works only with single dimension inputs
@@ -50,7 +50,6 @@ def _r_precision(target: np.ndarray, preds: np.ndarray):
 
 class TestRPrecision(RetrievalMetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize("ignore_index", [None, 1])  # avoid setting 0, otherwise test with all 0 targets will fail
     @pytest.mark.parametrize(**_default_metric_class_input_arguments)
@@ -60,11 +59,10 @@ class TestRPrecision(RetrievalMetricTester):
         indexes: Tensor,
         preds: Tensor,
         target: Tensor,
-        dist_sync_on_step: bool,
         empty_target_action: str,
         ignore_index: int,
     ):
-        metric_args = dict(empty_target_action=empty_target_action, ignore_index=ignore_index)
+        metric_args = {"empty_target_action": empty_target_action, "ignore_index": ignore_index}
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -72,13 +70,11 @@ class TestRPrecision(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_class=RetrievalRPrecision,
-            sk_metric=_r_precision,
-            dist_sync_on_step=dist_sync_on_step,
+            reference_metric=_r_precision,
             metric_args=metric_args,
         )
 
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize(**_default_metric_class_input_arguments_ignore_index)
     def test_class_metric_ignore_index(
@@ -87,10 +83,9 @@ class TestRPrecision(RetrievalMetricTester):
         indexes: Tensor,
         preds: Tensor,
         target: Tensor,
-        dist_sync_on_step: bool,
         empty_target_action: str,
     ):
-        metric_args = dict(empty_target_action=empty_target_action, ignore_index=-100)
+        metric_args = {"empty_target_action": empty_target_action, "ignore_index": -100}
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -98,8 +93,7 @@ class TestRPrecision(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_class=RetrievalRPrecision,
-            sk_metric=_r_precision,
-            dist_sync_on_step=dist_sync_on_step,
+            reference_metric=_r_precision,
             metric_args=metric_args,
         )
 
@@ -109,7 +103,7 @@ class TestRPrecision(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_functional=retrieval_r_precision,
-            sk_metric=_r_precision,
+            reference_metric=_r_precision,
             metric_args={},
         )
 

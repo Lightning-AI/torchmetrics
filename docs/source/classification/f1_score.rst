@@ -15,24 +15,28 @@ F1Score
 
 .. autoclass:: torchmetrics.F1Score
     :noindex:
+    :exclude-members: update, compute
 
 BinaryF1Score
 ^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.BinaryF1Score
     :noindex:
+    :exclude-members: update, compute
 
 MulticlassF1Score
 ^^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.MulticlassF1Score
     :noindex:
+    :exclude-members: update, compute
 
 MultilabelF1Score
 ^^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.MultilabelF1Score
     :noindex:
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________

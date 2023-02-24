@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import csv
+import os
 import urllib
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from warnings import warn
@@ -30,16 +31,24 @@ from torchmetrics.functional.text.helper_embedding_metric import (
     _output_data_collator,
     _process_attention_mask_for_special_tokens,
 )
+from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
 from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_AVAILABLE
-
-if _TRANSFORMERS_AVAILABLE:
-    from transformers import AutoModel, AutoTokenizer
-else:
-    __doctest_skip__ = ["bert_score"]
-
 
 # Default model recommended in the original implementation.
 _DEFAULT_MODEL = "roberta-large"
+
+if _TRANSFORMERS_AVAILABLE:
+    from transformers import AutoModel, AutoTokenizer
+
+    def _download_model() -> None:
+        """Download intensive operations."""
+        AutoTokenizer.from_pretrained(_DEFAULT_MODEL)
+        AutoModel.from_pretrained(_DEFAULT_MODEL)
+
+    if _SKIP_SLOW_DOCTEST and not _try_proceed_with_timeout(_download_model):
+        __doctest_skip__ = ["bert_score"]
+else:
+    __doctest_skip__ = ["bert_score"]
 
 
 def _get_embeddings_and_idf_scale(
@@ -51,9 +60,10 @@ def _get_embeddings_and_idf_scale(
     all_layers: bool = False,
     idf: bool = False,
     verbose: bool = False,
-    user_forward_fn: Callable[[Module, Dict[str, Tensor]], Tensor] = None,
+    user_forward_fn: Optional[Callable[[Module, Dict[str, Tensor]], Tensor]] = None,
 ) -> Tuple[Tensor, Tensor]:
     """Calculate sentence embeddings and the inverse-document-frequency scaling factor.
+
     Args:
         dataloader: dataloader instance.
         target_len: A length of the longest sequence in the data. Used for padding the model output.
@@ -122,7 +132,7 @@ def _get_embeddings_and_idf_scale(
 
 
 def _get_scaled_precision_or_recall(cos_sim: Tensor, metric: str, idf_scale: Tensor) -> Tensor:
-    """Helper function that calculates precision or recall, transpose it and scale it with idf_scale factor."""
+    """Calculate precision or recall, transpose it and scale it with idf_scale factor."""
     dim = 3 if metric == "precision" else 2
     res = cos_sim.max(dim=dim).values
     res = torch.einsum("bls, bs -> bls", res, idf_scale).sum(-1)
@@ -158,13 +168,13 @@ def _get_precision_recall_f1(
 
 
 def _get_hash(model_name_or_path: Optional[str] = None, num_layers: Optional[int] = None, idf: bool = False) -> str:
-    """Compute `BERT_score`_ (copied and adjusted)"""
+    """Compute `BERT_score`_ (copied and adjusted)."""
     msg = f"{model_name_or_path}_L{num_layers}{'_idf' if idf else '_no-idf'}"
     return msg
 
 
 def _read_csv_from_local_file(baseline_path: str) -> Tensor:
-    """Helper function which reads baseline the csv file from the local file.
+    """Read baseline from csv file from the local file.
 
     This method implemented to avoid `pandas` dependency.
     """
@@ -176,7 +186,7 @@ def _read_csv_from_local_file(baseline_path: str) -> Tensor:
 
 
 def _read_csv_from_url(baseline_url: str) -> Tensor:
-    """Helper function which reads the baseline csv file from URL.
+    """Read baseline from csv file from URL.
 
     This method is implemented to avoid `pandas` dependency.
     """
@@ -203,8 +213,8 @@ def _load_baseline(
         baseline = _read_csv_from_url(baseline_url)
     # Read default baseline from the original `bert-score` package https://github.com/Tiiiger/bert_score
     elif lang and model_name_or_path:
-        _URL_BASE = "https://raw.githubusercontent.com/Tiiiger/bert_score/master/bert_score/rescale_baseline"
-        baseline_url = f"{_URL_BASE}/{lang}/{model_name_or_path}.tsv"
+        url_base = "https://raw.githubusercontent.com/Tiiiger/bert_score/master/bert_score/rescale_baseline"
+        baseline_url = f"{url_base}/{lang}/{model_name_or_path}.tsv"
         baseline = _read_csv_from_url(baseline_url)
     else:
         baseline = None
@@ -239,7 +249,7 @@ def bert_score(
     all_layers: bool = False,
     model: Optional[Module] = None,
     user_tokenizer: Any = None,
-    user_forward_fn: Callable[[Module, Dict[str, Tensor]], Tensor] = None,
+    user_forward_fn: Optional[Callable[[Module, Dict[str, Tensor]], Tensor]] = None,
     verbose: bool = False,
     idf: bool = False,
     device: Optional[Union[str, torch.device]] = None,
@@ -252,12 +262,12 @@ def bert_score(
     baseline_path: Optional[str] = None,
     baseline_url: Optional[str] = None,
 ) -> Dict[str, Union[List[float], str]]:
-    """`Bert_score Evaluating Text Generation`_ leverages the pre-trained contextual embeddings from BERT and
-    matches words in candidate and reference sentences by cosine similarity.
+    """`Bert_score Evaluating Text Generation`_ for text similirity matching.
 
-    It has been shown to correlate with human judgment on sentence-level and system-level evaluation.
-    Moreover, BERTScore computes precision, recall, and F1 measure, which can be useful for evaluating different
-    language generation tasks.
+    This metric leverages the pre-trained contextual embeddings from BERT and matches words in candidate and reference
+    sentences by cosine similarity. It has been shown to correlate with human judgment on sentence-level and
+    system-level evaluation. Moreover, BERTScore computes precision, recall, and F1 measure, which can be useful for
+    evaluating different language generation tasks.
 
     This implemenation follows the original implementation from `BERT_score`_.
 

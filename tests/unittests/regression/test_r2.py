@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,8 +20,9 @@ from sklearn.metrics import r2_score as sk_r2score
 
 from torchmetrics.functional import r2_score
 from torchmetrics.regression import R2Score
+from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -40,7 +41,7 @@ _multi_target_inputs = Input(
 )
 
 
-def _single_target_sk_metric(preds, target, adjusted, multioutput):
+def _single_target_ref_metric(preds, target, adjusted, multioutput):
     sk_preds = preds.view(-1).numpy()
     sk_target = target.view(-1).numpy()
     r2_score = sk_r2score(sk_target, sk_preds, multioutput=multioutput)
@@ -49,7 +50,7 @@ def _single_target_sk_metric(preds, target, adjusted, multioutput):
     return r2_score
 
 
-def _multi_target_sk_metric(preds, target, adjusted, multioutput):
+def _multi_target_ref_metric(preds, target, adjusted, multioutput):
     sk_preds = preds.view(-1, num_targets).numpy()
     sk_target = target.view(-1, num_targets).numpy()
     r2_score = sk_r2score(sk_target, sk_preds, multioutput=multioutput)
@@ -61,46 +62,44 @@ def _multi_target_sk_metric(preds, target, adjusted, multioutput):
 @pytest.mark.parametrize("adjusted", [0, 5, 10])
 @pytest.mark.parametrize("multioutput", ["raw_values", "uniform_average", "variance_weighted"])
 @pytest.mark.parametrize(
-    "preds, target, sk_metric, num_outputs",
+    "preds, target, ref_metric, num_outputs",
     [
-        (_single_target_inputs.preds, _single_target_inputs.target, _single_target_sk_metric, 1),
-        (_multi_target_inputs.preds, _multi_target_inputs.target, _multi_target_sk_metric, num_targets),
+        (_single_target_inputs.preds, _single_target_inputs.target, _single_target_ref_metric, 1),
+        (_multi_target_inputs.preds, _multi_target_inputs.target, _multi_target_ref_metric, num_targets),
     ],
 )
 class TestR2Score(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_r2(self, adjusted, multioutput, preds, target, sk_metric, num_outputs, ddp, dist_sync_on_step):
+    def test_r2(self, adjusted, multioutput, preds, target, ref_metric, num_outputs, ddp):
         self.run_class_metric_test(
             ddp,
             preds,
             target,
             R2Score,
-            partial(sk_metric, adjusted=adjusted, multioutput=multioutput),
-            dist_sync_on_step,
-            metric_args=dict(adjusted=adjusted, multioutput=multioutput, num_outputs=num_outputs),
+            partial(ref_metric, adjusted=adjusted, multioutput=multioutput),
+            metric_args={"adjusted": adjusted, "multioutput": multioutput, "num_outputs": num_outputs},
         )
 
-    def test_r2_functional(self, adjusted, multioutput, preds, target, sk_metric, num_outputs):
+    def test_r2_functional(self, adjusted, multioutput, preds, target, ref_metric, num_outputs):
         # todo: `num_outputs` is unused
         self.run_functional_metric_test(
             preds,
             target,
             r2_score,
-            partial(sk_metric, adjusted=adjusted, multioutput=multioutput),
-            metric_args=dict(adjusted=adjusted, multioutput=multioutput),
+            partial(ref_metric, adjusted=adjusted, multioutput=multioutput),
+            metric_args={"adjusted": adjusted, "multioutput": multioutput},
         )
 
-    def test_r2_differentiability(self, adjusted, multioutput, preds, target, sk_metric, num_outputs):
+    def test_r2_differentiability(self, adjusted, multioutput, preds, target, ref_metric, num_outputs):
         self.run_differentiability_test(
             preds=preds,
             target=target,
             metric_module=partial(R2Score, num_outputs=num_outputs),
             metric_functional=r2_score,
-            metric_args=dict(adjusted=adjusted, multioutput=multioutput),
+            metric_args={"adjusted": adjusted, "multioutput": multioutput},
         )
 
-    def test_r2_half_cpu(self, adjusted, multioutput, preds, target, sk_metric, num_outputs):
+    def test_r2_half_cpu(self, adjusted, multioutput, preds, target, ref_metric, num_outputs):
         self.run_precision_test_cpu(
             preds,
             target,
@@ -110,7 +109,7 @@ class TestR2Score(MetricTester):
         )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-    def test_r2_half_gpu(self, adjusted, multioutput, preds, target, sk_metric, num_outputs):
+    def test_r2_half_gpu(self, adjusted, multioutput, preds, target, ref_metric, num_outputs):
         self.run_precision_test_gpu(
             preds,
             target,

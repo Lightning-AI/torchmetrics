@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -98,8 +98,9 @@ from torchmetrics.functional.text.helper import _validate_inputs
 
 
 def _distance_between_words(preds_word: str, target_word: str) -> int:
-    """Distance measure used for substitutions/identity operation. Code adapted from
-    https://github.com/rwth-i6/ExtendedEditDistance/blob/master/EED.py.
+    """Distance measure used for substitutions/identity operation.
+
+    Code adapted from https://github.com/rwth-i6/ExtendedEditDistance/blob/master/EED.py.
 
     Args:
         preds_word: hypothesis word string
@@ -119,7 +120,7 @@ def _eed_function(
     deletion: float = 0.2,
     insertion: float = 1.0,
 ) -> float:
-    """Computes extended edit distance score for two lists of strings: hyp and ref.
+    """Compute extended edit distance score for two lists of strings: hyp and ref.
 
     Code adapted from: https://github.com/rwth-i6/ExtendedEditDistance/blob/master/EED.py.
 
@@ -171,7 +172,9 @@ def _eed_function(
 
 
 def _preprocess_en(sentence: str) -> str:
-    """Copied from https://github.com/rwth-i6/ExtendedEditDistance/blob/master/util.py.
+    """Preprocess english sentences.
+
+    Copied from https://github.com/rwth-i6/ExtendedEditDistance/blob/master/util.py.
 
     Raises:
         ValueError: If input sentence is not of a type `str`.
@@ -215,7 +218,9 @@ def _preprocess_en(sentence: str) -> str:
 
 
 def _preprocess_ja(sentence: str) -> str:
-    """Copied from https://github.com/rwth-i6/ExtendedEditDistance/blob/master/util.py.
+    """Preprocess japanese sentences.
+
+    Copy from https://github.com/rwth-i6/ExtendedEditDistance/blob/master/util.py.
 
     Raises:
         ValueError: If input sentence is not of a type `str`.
@@ -230,7 +235,7 @@ def _preprocess_ja(sentence: str) -> str:
 
 
 def _eed_compute(sentence_level_scores: List[Tensor]) -> Tensor:
-    """Final step in extended edit distance.
+    """Reduction for extended edit distance.
 
     Args:
         sentence_level_scores: list of sentence-level scores as floats
@@ -266,7 +271,7 @@ def _preprocess_sentences(
         ValueError: If objects in reference and hypothesis corpus are not strings
     """
     # sanity checks
-    target, preds = _validate_inputs(hypothesis_corpus=preds, reference_corpus=target)
+    target, preds = _validate_inputs(hypothesis_corpus=preds, ref_corpus=target)
 
     # preprocess string
     if language == "en":
@@ -364,8 +369,9 @@ def extended_edit_distance(
     deletion: float = 0.2,
     insertion: float = 1.0,
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    """Computes extended edit distance score (`ExtendedEditDistance`_) [1] for strings or list of strings. The
-    metric utilises the Levenshtein distance and extends it by adding a jump operation.
+    """Compute extended edit distance score (`ExtendedEditDistance`_) [1] for strings or list of strings.
+
+    The metric utilises the Levenshtein distance and extends it by adding a jump operation.
 
     Args:
         preds: An iterable of hypothesis corpus.

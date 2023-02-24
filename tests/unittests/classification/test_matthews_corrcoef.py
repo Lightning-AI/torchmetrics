@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,18 +29,19 @@ from torchmetrics.functional.classification.matthews_corrcoef import (
     multiclass_matthews_corrcoef,
     multilabel_matthews_corrcoef,
 )
+from unittests import NUM_CLASSES, THRESHOLD
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index, remove_ignore_index
+from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
 seed_all(42)
 
 
-def _sk_matthews_corrcoef_binary(preds, target, ignore_index=None):
+def _sklearn_matthews_corrcoef_binary(preds, target, ignore_index=None):
     preds = preds.view(-1).numpy()
     target = target.view(-1).numpy()
     if np.issubdtype(preds.dtype, np.floating):
-        if not ((0 < preds) & (preds < 1)).all():
+        if not ((preds > 0) & (preds < 1)).all():
             preds = sigmoid(preds)
         preds = (preds >= THRESHOLD).astype(np.uint8)
     target, preds = remove_ignore_index(target, preds, ignore_index)
@@ -60,7 +61,7 @@ class TestBinaryMatthewsCorrCoef(MetricTester):
             preds=preds,
             target=target,
             metric_class=BinaryMatthewsCorrCoef,
-            sk_metric=partial(_sk_matthews_corrcoef_binary, ignore_index=ignore_index),
+            reference_metric=partial(_sklearn_matthews_corrcoef_binary, ignore_index=ignore_index),
             metric_args={
                 "threshold": THRESHOLD,
                 "ignore_index": ignore_index,
@@ -76,7 +77,7 @@ class TestBinaryMatthewsCorrCoef(MetricTester):
             preds=preds,
             target=target,
             metric_functional=binary_matthews_corrcoef,
-            sk_metric=partial(_sk_matthews_corrcoef_binary, ignore_index=ignore_index),
+            reference_metric=partial(_sklearn_matthews_corrcoef_binary, ignore_index=ignore_index),
             metric_args={
                 "threshold": THRESHOLD,
                 "ignore_index": ignore_index,
@@ -121,7 +122,7 @@ class TestBinaryMatthewsCorrCoef(MetricTester):
         )
 
 
-def _sk_matthews_corrcoef_multiclass(preds, target, ignore_index=None):
+def _sklearn_matthews_corrcoef_multiclass(preds, target, ignore_index=None):
     preds = preds.numpy()
     target = target.numpy()
     if np.issubdtype(preds.dtype, np.floating):
@@ -145,7 +146,7 @@ class TestMulticlassMatthewsCorrCoef(MetricTester):
             preds=preds,
             target=target,
             metric_class=MulticlassMatthewsCorrCoef,
-            sk_metric=partial(_sk_matthews_corrcoef_multiclass, ignore_index=ignore_index),
+            reference_metric=partial(_sklearn_matthews_corrcoef_multiclass, ignore_index=ignore_index),
             metric_args={
                 "num_classes": NUM_CLASSES,
                 "ignore_index": ignore_index,
@@ -161,7 +162,7 @@ class TestMulticlassMatthewsCorrCoef(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multiclass_matthews_corrcoef,
-            sk_metric=partial(_sk_matthews_corrcoef_multiclass, ignore_index=ignore_index),
+            reference_metric=partial(_sklearn_matthews_corrcoef_multiclass, ignore_index=ignore_index),
             metric_args={
                 "num_classes": NUM_CLASSES,
                 "ignore_index": ignore_index,
@@ -204,11 +205,11 @@ class TestMulticlassMatthewsCorrCoef(MetricTester):
         )
 
 
-def _sk_matthews_corrcoef_multilabel(preds, target, ignore_index=None):
+def _sklearn_matthews_corrcoef_multilabel(preds, target, ignore_index=None):
     preds = preds.view(-1).numpy()
     target = target.view(-1).numpy()
     if np.issubdtype(preds.dtype, np.floating):
-        if not ((0 < preds) & (preds < 1)).all():
+        if not ((preds > 0) & (preds < 1)).all():
             preds = sigmoid(preds)
         preds = (preds >= THRESHOLD).astype(np.uint8)
     target, preds = remove_ignore_index(target, preds, ignore_index)
@@ -228,7 +229,7 @@ class TestMultilabelMatthewsCorrCoef(MetricTester):
             preds=preds,
             target=target,
             metric_class=MultilabelMatthewsCorrCoef,
-            sk_metric=partial(_sk_matthews_corrcoef_multilabel, ignore_index=ignore_index),
+            reference_metric=partial(_sklearn_matthews_corrcoef_multilabel, ignore_index=ignore_index),
             metric_args={
                 "num_labels": NUM_CLASSES,
                 "ignore_index": ignore_index,
@@ -244,7 +245,7 @@ class TestMultilabelMatthewsCorrCoef(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multilabel_matthews_corrcoef,
-            sk_metric=partial(_sk_matthews_corrcoef_multilabel, ignore_index=ignore_index),
+            reference_metric=partial(_sklearn_matthews_corrcoef_multilabel, ignore_index=ignore_index),
             metric_args={
                 "num_labels": NUM_CLASSES,
                 "ignore_index": ignore_index,

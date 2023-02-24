@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +13,6 @@
 # limitations under the License.
 from typing import Any, List
 
-import torch
 from torch import Tensor
 
 from torchmetrics.functional.regression.spearman import _spearman_corrcoef_compute, _spearman_corrcoef_update
@@ -23,7 +22,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class SpearmanCorrCoef(Metric):
-    r"""Computes `spearmans rank correlation coefficient`_.
+    r"""Compute `spearmans rank correlation coefficient`_.
 
     .. math:
         r_s = = \frac{cov(rg_x, rg_y)}{\sigma_{rg_x} * \sigma_{rg_y}}
@@ -32,27 +31,32 @@ class SpearmanCorrCoef(Metric):
     Spearmans correlations coefficient corresponds to the standard pearsons correlation coefficient calculated
     on the rank variables.
 
-    Forward accepts
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (float tensor): ``(N,d)``
-    - ``target``(float tensor): ``(N,d)``
+    - ``preds`` (:class:`~torch.Tensor`): Predictions from model in float tensor with shape ``(N,d)``
+    - ``target`` (:class:`~torch.Tensor`): Ground truth values in float tensor with shape ``(N,d)``
+
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``spearman`` (:class:`~torch.Tensor`): A tensor with the spearman correlation(s)
 
     Args:
         num_outputs: Number of outputs in multioutput setting
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (single output regression):
+        >>> from torch import tensor
         >>> from torchmetrics import SpearmanCorrCoef
-        >>> target = torch.tensor([3, -0.5, 2, 7])
-        >>> preds = torch.tensor([2.5, 0.0, 2, 8])
+        >>> target = tensor([3, -0.5, 2, 7])
+        >>> preds = tensor([2.5, 0.0, 2, 8])
         >>> spearman = SpearmanCorrCoef()
         >>> spearman(preds, target)
         tensor(1.0000)
 
     Example (multi output regression):
         >>> from torchmetrics import SpearmanCorrCoef
-        >>> target = torch.tensor([[3, -0.5], [2, 7]])
-        >>> preds = torch.tensor([[2.5, 0.0], [2, 8]])
+        >>> target = tensor([[3, -0.5], [2, 7]])
+        >>> preds = tensor([[2.5, 0.0], [2, 8]])
         >>> spearman = SpearmanCorrCoef(num_outputs=2)
         >>> spearman(preds, target)
         tensor([1.0000, 1.0000])
@@ -81,18 +85,13 @@ class SpearmanCorrCoef(Metric):
         self.add_state("target", default=[], dist_reduce_fx="cat")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
+        """Update state with predictions and targets."""
         preds, target = _spearman_corrcoef_update(preds, target, num_outputs=self.num_outputs)
         self.preds.append(preds)
         self.target.append(target)
 
     def compute(self) -> Tensor:
-        """Computes Spearman's correlation coefficient."""
+        """Compute Spearman's correlation coefficient."""
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         return _spearman_corrcoef_compute(preds, target)

@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -35,9 +35,10 @@ if not _TRANSFORMERS_AVAILABLE:
 
 
 class InfoLM(Metric):
-    """
-    Calculate `InfoLM`_ [1] - i.e. calculate a distance/divergence between predicted and reference sentence discrete
-    distribution using one of the following information measures:
+    """Calculate `InfoLM`_.
+
+    InfoLM measures a distance/divergence between predicted and reference sentence discrete distribution using one of
+    the following information measures:
 
         - `KL divergence`_
         - `alpha divergence`_
@@ -53,11 +54,22 @@ class InfoLM(Metric):
     string-based metrics thanks to the usage of pre-trained masked language models. This family of metrics is mainly
     designed for summarization and data-to-text tasks.
 
-    The implementation of this metric is fully based HuggingFace `transformers`' package.
+    The implementation of this metric is fully based HuggingFace ``transformers``' package.
+
+    As input to ``forward`` and ``update`` the metric accepts the following input:
+
+    - ``preds`` (:class:`~Sequence`): An iterable of hypothesis corpus
+    - ``target`` (:class:`~Sequence`): An iterable of reference corpus
+
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
+    -  ``infolm`` (:class:`~torch.Tensor`): If `return_sentence_level_score=True` return a tuple with a tensor
+       with the corpus-level InfoLM score and a list of sentence-level InfoLM scores, else return a corpus-level
+       InfoLM score
 
     Args:
         model_name_or_path:
-            A name or a model path used to load `transformers` pretrained model.
+            A name or a model path used to load ``transformers`` pretrained model.
             By default the `"bert-base-uncased"` model is used.
         temperature:
             A temperature for calibrating language modelling. For more information, please reference `InfoLM`_ paper.
@@ -74,7 +86,7 @@ class InfoLM(Metric):
         device:
             A device to be used for calculation.
         max_length:
-            A maximum length of input sequences. Sequences longer than `max_length` are to be trimmed.
+            A maximum length of input sequences. Sequences longer than ``max_length`` are to be trimmed.
         batch_size:
             A batch size used for model processing.
         num_threads:
@@ -91,10 +103,6 @@ class InfoLM(Metric):
         >>> infolm = InfoLM('google/bert_uncased_L-2_H-128_A-2', idf=False)
         >>> infolm(preds, target)
         tensor(-0.1784)
-
-    References:
-        [1] InfoLM: A New Metric to Evaluate Summarization & Data2Text Generation by Pierre Colombo, Chloé Clavel and
-        Pablo Piantanida `InfoLM`_
     """
 
     is_differentiable = False
@@ -144,14 +152,7 @@ class InfoLM(Metric):
         self.add_state("target_attention_mask", [], dist_reduce_fx="cat")
 
     def update(self, preds: Union[str, Sequence[str]], target: Union[str, Sequence[str]]) -> None:
-        """Update the metric state by a tokenization of ``preds`` and ``target`` sentencens.
-
-        Args:
-            preds:
-            An iterable of hypothesis corpus.
-        target:
-            An iterable of reference corpus.
-        """
+        """Update state with predictions and targets."""
         preds_input_ids, preds_attention_mask, target_input_ids, target_attention_mask = _infolm_update(
             preds, target, self.tokenizer, self.max_length
         )
@@ -161,11 +162,7 @@ class InfoLM(Metric):
         self.target_attention_mask.append(target_attention_mask)
 
     def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-        """Calculate selected information measure using the pre-trained language model.
-
-        Return:
-            A corpus-level InfoLM score.
-        """
+        """Calculate selected information measure using the pre-trained language model."""
         preds_dataloader = _get_dataloader(
             input_ids=dim_zero_cat(self.preds_input_ids),
             attention_mask=dim_zero_cat(self.preds_attention_mask),

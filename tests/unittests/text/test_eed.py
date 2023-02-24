@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -48,16 +48,14 @@ def rwth_manual_metric(preds, targets) -> Tensor:
 )
 class TestExtendedEditDistance(TextTester):
     @pytest.mark.parametrize("ddp", [False, True])
-    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_eed_class(self, preds, targets, ddp, dist_sync_on_step):
+    def test_eed_class(self, preds, targets, ddp):
         rwth_metric = partial(rwth_manual_metric)
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
             targets=targets,
             metric_class=ExtendedEditDistance,
-            sk_metric=rwth_metric,
-            dist_sync_on_step=dist_sync_on_step,
+            reference_metric=rwth_metric,
         )
 
     def test_eed_functional(self, preds, targets):
@@ -66,7 +64,7 @@ class TestExtendedEditDistance(TextTester):
             preds,
             targets,
             metric_functional=extended_edit_distance,
-            sk_metric=rwth_metric,
+            reference_metric=rwth_metric,
         )
 
     def test_eed_differentiability(self, preds, targets):

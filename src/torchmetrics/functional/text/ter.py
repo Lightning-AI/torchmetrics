@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -246,8 +246,7 @@ def _handle_corner_cases_during_shifting(
     target_start: int,
     length: int,
 ) -> bool:
-    """A helper function which returns ``True`` if any of corner cases has been met. Otherwise, ``False`` is
-    returned.
+    """Return ``True`` if any of corner cases has been met. Otherwise, ``False`` is returned.
 
     Args:
         alignments: A dictionary mapping aligned positions between a reference and a hypothesis.
@@ -314,12 +313,13 @@ def _shift_words(
     cached_edit_distance: _LevenshteinEditDistance,
     checked_candidates: int,
 ) -> Tuple[int, List[str], int]:
-    """Attempt to shift words to match a hypothesis with a reference. It returns the lowest number of required
-    edits between a hypothesis and a provided reference, a list of shifted words and number of checked candidates.
+    """Attempt to shift words to match a hypothesis with a reference.
 
-    Note that the filtering of possible shifts and shift selection are heavily based on somewhat arbitrary heuristics.
-    The code here follows as closely as possible the logic in Tercom, not always justifying the particular design
-    choices. (The paragraph copied from https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/lib_ter.py)
+    It returns the lowest number of required edits between a hypothesis and a provided reference, a list of shifted
+    words and number of checked candidates. Note that the filtering of possible shifts and shift selection are heavily
+    based on somewhat arbitrary heuristics. The code here follows as closely as possible the logic in Tercom, not
+    always justifying the particular design choices.
+    The paragraph copied from https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/lib_ter.py.
 
     Args:
         pred_words: A list of tokenized hypothesis sentence.
@@ -479,9 +479,10 @@ def _ter_update(
     Args:
         preds: An iterable of hypothesis corpus.
         target: An iterable of iterables of reference corpus.
-        tokenizer:
+        tokenizer: An instance of ``_TercomTokenizer`` handling a sentence tokenization.
         total_num_edits: A total number of required edits to match hypothesis and reference sentences.
         total_tgt_length: A total average length of reference sentences.
+        sentence_ter: A list of sentence-level TER values
 
     Return:
         total_num_edits:
@@ -510,6 +511,7 @@ def _ter_update(
 
 def _ter_compute(total_num_edits: Tensor, total_tgt_length: Tensor) -> Tensor:
     """Compute TER based on pre-computed a total number of edits and a total average reference length.
+
     Args:
         total_num_edits: A total number of required edits to match hypothesis and reference sentences.
         total_tgt_length: A total average length of reference sentences.
@@ -529,8 +531,9 @@ def translation_edit_rate(
     asian_support: bool = False,
     return_sentence_level_score: bool = False,
 ) -> Union[Tensor, Tuple[Tensor, List[Tensor]]]:
-    """Calculate Translation edit rate (`TER`_)  of machine translated text with one or more references. This
-    implementation follows the implmenetaions from
+    """Calculate Translation edit rate (`TER`_)  of machine translated text with one or more references.
+
+    This implementation follows the implmenetaions from
     https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/ter.py. The `sacrebleu` implmenetation is a
     near-exact reimplementation of the Tercom algorithm, produces identical results on all "sane" outputs.
 

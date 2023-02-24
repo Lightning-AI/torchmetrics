@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -50,8 +50,7 @@ def _compute_bleu_metric_nltk(preds, targets, weights, smoothing_function, **kwa
 )
 class TestBLEUScore(TextTester):
     @pytest.mark.parametrize("ddp", [False, True])
-    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_bleu_score_class(self, ddp, dist_sync_on_step, preds, targets, weights, n_gram, smooth_func, smooth):
+    def test_bleu_score_class(self, ddp, preds, targets, weights, n_gram, smooth_func, smooth):
         metric_args = {"n_gram": n_gram, "smooth": smooth}
         compute_bleu_metric_nltk = partial(_compute_bleu_metric_nltk, weights=weights, smoothing_function=smooth_func)
 
@@ -60,8 +59,7 @@ class TestBLEUScore(TextTester):
             preds=preds,
             targets=targets,
             metric_class=BLEUScore,
-            sk_metric=compute_bleu_metric_nltk,
-            dist_sync_on_step=dist_sync_on_step,
+            reference_metric=compute_bleu_metric_nltk,
             metric_args=metric_args,
         )
 
@@ -73,7 +71,7 @@ class TestBLEUScore(TextTester):
             preds,
             targets,
             metric_functional=bleu_score,
-            sk_metric=compute_bleu_metric_nltk,
+            reference_metric=compute_bleu_metric_nltk,
             metric_args=metric_args,
         )
 

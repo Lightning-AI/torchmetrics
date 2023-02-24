@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,8 +33,12 @@ _target = torch.randint(10, (10, 32))
 
 
 class TestBootStrapper(BootStrapper):
-    """For testing purpose, we subclass the bootstrapper class so we can get the exact permutation the class is
-    creating."""
+    """Subclass of Bootstrapper class.
+
+    For testing purpose, we subclass the bootstrapper class so we can get the exact permutation the class is
+    creating. This is nessesary such that the reference we are comparing to returns the exact same result for a given
+    permutation.
+    """
 
     def update(self, *args) -> None:
         self.out = []
@@ -58,7 +62,7 @@ def _sample_checker(old_samples, new_samples, op: operator, threshold: int):
 
 @pytest.mark.parametrize("sampling_strategy", ["poisson", "multinomial"])
 def test_bootstrap_sampler(sampling_strategy):
-    """make sure that the bootstrap sampler works as intended."""
+    """Make sure that the bootstrap sampler works as intended."""
     old_samples = torch.randn(20, 2)
 
     # make sure that the new samples are only made up of old samples
@@ -77,20 +81,20 @@ def test_bootstrap_sampler(sampling_strategy):
 @pytest.mark.parametrize("device", ["cpu", "cuda"])
 @pytest.mark.parametrize("sampling_strategy", ["poisson", "multinomial"])
 @pytest.mark.parametrize(
-    "metric, sk_metric",
+    "metric, ref_metric",
     [
         [MulticlassPrecision(num_classes=10, average="micro"), partial(precision_score, average="micro")],
         [MulticlassRecall(num_classes=10, average="micro"), partial(recall_score, average="micro")],
         [MeanSquaredError(), mean_squared_error],
     ],
 )
-def test_bootstrap(device, sampling_strategy, metric, sk_metric):
+def test_bootstrap(device, sampling_strategy, metric, ref_metric):
     """Test that the different bootstraps gets updated as we expected and that the compute method works."""
     if device == "cuda" and not torch.cuda.is_available():
         pytest.skip("Test with device='cuda' requires gpu")
 
     _kwargs = {"base_metric": metric, "mean": True, "std": True, "raw": True, "sampling_strategy": sampling_strategy}
-    _kwargs.update(dict(quantile=torch.tensor([0.05, 0.95], device=device)))
+    _kwargs.update({"quantile": torch.tensor([0.05, 0.95], device=device)})
 
     bootstrapper = TestBootStrapper(**_kwargs)
     bootstrapper.to(device)
@@ -109,7 +113,7 @@ def test_bootstrap(device, sampling_strategy, metric, sk_metric):
     collected_preds = [torch.cat(cp).cpu() for cp in collected_preds]
     collected_target = [torch.cat(ct).cpu() for ct in collected_target]
 
-    sk_scores = [sk_metric(ct, cp) for ct, cp in zip(collected_target, collected_preds)]
+    sk_scores = [ref_metric(ct, cp) for ct, cp in zip(collected_target, collected_preds)]
 
     output = bootstrapper.compute()
     assert np.allclose(output["quantile"][0].cpu(), np.quantile(sk_scores, 0.05))

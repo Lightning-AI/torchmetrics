@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,14 +25,15 @@ from torchmetrics.functional.classification.stat_scores import (
     multiclass_stat_scores,
     multilabel_stat_scores,
 )
+from unittests import NUM_CLASSES, THRESHOLD
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index, remove_ignore_index
+from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
 seed_all(42)
 
 
-def _sk_stat_scores_binary(preds, target, ignore_index, multidim_average):
+def _sklearn_stat_scores_binary(preds, target, ignore_index, multidim_average):
     if multidim_average == "global":
         preds = preds.view(-1).numpy()
         target = target.view(-1).numpy()
@@ -41,7 +42,7 @@ def _sk_stat_scores_binary(preds, target, ignore_index, multidim_average):
         target = target.numpy()
 
     if np.issubdtype(preds.dtype, np.floating):
-        if not ((0 < preds) & (preds < 1)).all():
+        if not ((preds > 0) & (preds < 1)).all():
             preds = sigmoid(preds)
         preds = (preds >= THRESHOLD).astype(np.uint8)
 
@@ -79,7 +80,9 @@ class TestBinaryStatScores(MetricTester):
             preds=preds,
             target=target,
             metric_class=BinaryStatScores,
-            sk_metric=partial(_sk_stat_scores_binary, ignore_index=ignore_index, multidim_average=multidim_average),
+            reference_metric=partial(
+                _sklearn_stat_scores_binary, ignore_index=ignore_index, multidim_average=multidim_average
+            ),
             metric_args={"threshold": THRESHOLD, "ignore_index": ignore_index, "multidim_average": multidim_average},
         )
 
@@ -96,7 +99,9 @@ class TestBinaryStatScores(MetricTester):
             preds=preds,
             target=target,
             metric_functional=binary_stat_scores,
-            sk_metric=partial(_sk_stat_scores_binary, ignore_index=ignore_index, multidim_average=multidim_average),
+            reference_metric=partial(
+                _sklearn_stat_scores_binary, ignore_index=ignore_index, multidim_average=multidim_average
+            ),
             metric_args={
                 "threshold": THRESHOLD,
                 "ignore_index": ignore_index,
@@ -142,7 +147,7 @@ class TestBinaryStatScores(MetricTester):
         )
 
 
-def _sk_stat_scores_multiclass_global(preds, target, ignore_index, average):
+def _sklearn_stat_scores_multiclass_global(preds, target, ignore_index, average):
     preds = preds.numpy().flatten()
     target = target.numpy().flatten()
     target, preds = remove_ignore_index(target, preds, ignore_index)
@@ -164,7 +169,7 @@ def _sk_stat_scores_multiclass_global(preds, target, ignore_index, average):
         return res
 
 
-def _sk_stat_scores_multiclass_local(preds, target, ignore_index, average):
+def _sklearn_stat_scores_multiclass_local(preds, target, ignore_index, average):
     preds = preds.numpy()
     target = target.numpy()
 
@@ -191,12 +196,12 @@ def _sk_stat_scores_multiclass_local(preds, target, ignore_index, average):
     return np.stack(res, 0)
 
 
-def _sk_stat_scores_multiclass(preds, target, ignore_index, multidim_average, average):
+def _sklearn_stat_scores_multiclass(preds, target, ignore_index, multidim_average, average):
     if preds.ndim == target.ndim + 1:
         preds = torch.argmax(preds, 1)
     if multidim_average == "global":
-        return _sk_stat_scores_multiclass_global(preds, target, ignore_index, average)
-    return _sk_stat_scores_multiclass_local(preds, target, ignore_index, average)
+        return _sklearn_stat_scores_multiclass_global(preds, target, ignore_index, average)
+    return _sklearn_stat_scores_multiclass_local(preds, target, ignore_index, average)
 
 
 @pytest.mark.parametrize("input", _multiclass_cases)
@@ -219,8 +224,8 @@ class TestMulticlassStatScores(MetricTester):
             preds=preds,
             target=target,
             metric_class=MulticlassStatScores,
-            sk_metric=partial(
-                _sk_stat_scores_multiclass,
+            reference_metric=partial(
+                _sklearn_stat_scores_multiclass,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
                 average=average,
@@ -247,8 +252,8 @@ class TestMulticlassStatScores(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multiclass_stat_scores,
-            sk_metric=partial(
-                _sk_stat_scores_multiclass,
+            reference_metric=partial(
+                _sklearn_stat_scores_multiclass,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
                 average=average,
@@ -304,7 +309,7 @@ _mc_k_preds = torch.tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]]
 
 
 @pytest.mark.parametrize(
-    "k, preds, target, average, expected",
+    ("k", "preds", "target", "average", "expected"),
     [
         (1, _mc_k_preds, _mc_k_target, "micro", torch.tensor([2, 1, 5, 1, 3])),
         (2, _mc_k_preds, _mc_k_target, "micro", torch.tensor([3, 3, 3, 0, 3])),
@@ -323,11 +328,29 @@ def test_top_k_multiclass(k, preds, target, average, expected):
     )
 
 
-def _sk_stat_scores_multilabel(preds, target, ignore_index, multidim_average, average):
+def test_multiclass_overflow():
+    """Test that multiclass computations does not overflow even on byte input."""
+    preds = torch.randint(20, (100,)).byte()
+    target = torch.randint(20, (100,)).byte()
+
+    m = MulticlassStatScores(num_classes=20, average=None)
+    res = m(preds, target)
+
+    confmat = sk_confusion_matrix(target, preds)
+    fp = confmat.sum(axis=0) - np.diag(confmat)
+    fn = confmat.sum(axis=1) - np.diag(confmat)
+    tp = np.diag(confmat)
+    tn = confmat.sum() - (fp + fn + tp)
+    compare = np.stack([tp, fp, tn, fn, tp + fn]).T
+
+    assert torch.allclose(res, torch.tensor(compare))
+
+
+def _sklearn_stat_scores_multilabel(preds, target, ignore_index, multidim_average, average):
     preds = preds.numpy()
     target = target.numpy()
     if np.issubdtype(preds.dtype, np.floating):
-        if not ((0 < preds) & (preds < 1)).all():
+        if not ((preds > 0) & (preds < 1)).all():
             preds = sigmoid(preds)
         preds = (preds >= THRESHOLD).astype(np.uint8)
     preds = preds.reshape(*preds.shape[:2], -1)
@@ -392,8 +415,8 @@ class TestMultilabelStatScores(MetricTester):
             preds=preds,
             target=target,
             metric_class=MultilabelStatScores,
-            sk_metric=partial(
-                _sk_stat_scores_multilabel,
+            reference_metric=partial(
+                _sklearn_stat_scores_multilabel,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
                 average=average,
@@ -421,8 +444,8 @@ class TestMultilabelStatScores(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multilabel_stat_scores,
-            sk_metric=partial(
-                _sk_stat_scores_multilabel,
+            reference_metric=partial(
+                _sklearn_stat_scores_multilabel,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
                 average=average,

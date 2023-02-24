@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,8 +21,9 @@ from scipy.stats import pearsonr
 
 from torchmetrics.functional.regression.concordance import concordance_corrcoef
 from torchmetrics.regression.concordance import ConcordanceCorrCoef
+from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -49,7 +50,7 @@ _multi_target_inputs2 = Input(
 )
 
 
-def _sk_concordance(preds, target):
+def _scipy_concordance(preds, target):
     preds, target = preds.numpy(), target.numpy()
     if preds.ndim == 2:
         mean_pred = np.mean(preds, axis=0)
@@ -79,21 +80,19 @@ class TestConcordanceCorrCoef(MetricTester):
     atol = 1e-3
 
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_concordance_corrcoef(self, preds, target, ddp, dist_sync_on_step):
+    def test_concordance_corrcoef(self, preds, target, ddp):
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_class_metric_test(
             ddp,
             preds,
             target,
             ConcordanceCorrCoef,
-            _sk_concordance,
-            dist_sync_on_step,
+            _scipy_concordance,
             metric_args={"num_outputs": num_outputs},
         )
 
     def test_concordance_corrcoef_functional(self, preds, target):
-        self.run_functional_metric_test(preds, target, concordance_corrcoef, _sk_concordance)
+        self.run_functional_metric_test(preds, target, concordance_corrcoef, _scipy_concordance)
 
     def test_concordance_corrcoef_differentiability(self, preds, target):
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1

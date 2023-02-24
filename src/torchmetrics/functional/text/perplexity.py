@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
 from typing import Optional, Tuple
 
 import torch
-import torch.nn.functional as F
 from torch import Tensor
+from torch.nn import functional as F  # noqa: N812
 
 _TORCH_FLOAT_OR_DOUBLE = (torch.float32, torch.float64)
 
@@ -112,8 +112,9 @@ def _perplexity_compute(total: Tensor, count: Tensor) -> Tensor:
 
 
 def perplexity(preds: Tensor, target: Tensor, ignore_index: Optional[int] = None) -> Tensor:
-    """Perplexity measures how well a language model predicts a text sample. It's calculated as the average number
-    of bits per word a model needs to represent the sample.
+    """Perplexity measures how well a language model predicts a text sample.
+
+    This metric is calculated as the average number of bits per word a model needs to represent the sample.
 
     Args:
         preds:

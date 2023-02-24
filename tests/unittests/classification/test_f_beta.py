@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -38,14 +38,15 @@ from torchmetrics.functional.classification.f_beta import (
     multilabel_f1_score,
     multilabel_fbeta_score,
 )
+from unittests import NUM_CLASSES, THRESHOLD
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index, remove_ignore_index
+from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
 seed_all(42)
 
 
-def _sk_fbeta_score_binary(preds, target, sk_fn, ignore_index, multidim_average):
+def _sklearn_fbeta_score_binary(preds, target, sk_fn, ignore_index, multidim_average):
     if multidim_average == "global":
         preds = preds.view(-1).numpy()
         target = target.view(-1).numpy()
@@ -54,7 +55,7 @@ def _sk_fbeta_score_binary(preds, target, sk_fn, ignore_index, multidim_average)
         target = target.numpy()
 
     if np.issubdtype(preds.dtype, np.floating):
-        if not ((0 < preds) & (preds < 1)).all():
+        if not ((preds > 0) & (preds < 1)).all():
             preds = sigmoid(preds)
         preds = (preds >= THRESHOLD).astype(np.uint8)
 
@@ -98,8 +99,8 @@ class TestBinaryFBetaScore(MetricTester):
             preds=preds,
             target=target,
             metric_class=module,
-            sk_metric=partial(
-                _sk_fbeta_score_binary, sk_fn=compare, ignore_index=ignore_index, multidim_average=multidim_average
+            reference_metric=partial(
+                _sklearn_fbeta_score_binary, sk_fn=compare, ignore_index=ignore_index, multidim_average=multidim_average
             ),
             metric_args={"threshold": THRESHOLD, "ignore_index": ignore_index, "multidim_average": multidim_average},
         )
@@ -117,8 +118,8 @@ class TestBinaryFBetaScore(MetricTester):
             preds=preds,
             target=target,
             metric_functional=functional,
-            sk_metric=partial(
-                _sk_fbeta_score_binary, sk_fn=compare, ignore_index=ignore_index, multidim_average=multidim_average
+            reference_metric=partial(
+                _sklearn_fbeta_score_binary, sk_fn=compare, ignore_index=ignore_index, multidim_average=multidim_average
             ),
             metric_args={
                 "threshold": THRESHOLD,
@@ -166,7 +167,7 @@ class TestBinaryFBetaScore(MetricTester):
         )
 
 
-def _sk_fbeta_score_multiclass(preds, target, sk_fn, ignore_index, multidim_average, average):
+def _sklearn_fbeta_score_multiclass(preds, target, sk_fn, ignore_index, multidim_average, average):
     if preds.ndim == target.ndim + 1:
         preds = torch.argmax(preds, 1)
     if multidim_average == "global":
@@ -220,8 +221,8 @@ class TestMulticlassFBetaScore(MetricTester):
             preds=preds,
             target=target,
             metric_class=module,
-            sk_metric=partial(
-                _sk_fbeta_score_multiclass,
+            reference_metric=partial(
+                _sklearn_fbeta_score_multiclass,
                 sk_fn=compare,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
@@ -251,8 +252,8 @@ class TestMulticlassFBetaScore(MetricTester):
             preds=preds,
             target=target,
             metric_functional=functional,
-            sk_metric=partial(
-                _sk_fbeta_score_multiclass,
+            reference_metric=partial(
+                _sklearn_fbeta_score_multiclass,
                 sk_fn=compare,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
@@ -310,7 +311,7 @@ _mc_k_preds = torch.tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]]
 
 
 @pytest.mark.parametrize(
-    "metric_class, metric_fn",
+    ("metric_class", "metric_fn"),
     [
         (partial(MulticlassFBetaScore, beta=2.0), partial(multiclass_fbeta_score, beta=2.0)),
         (MulticlassF1Score, multiclass_f1_score),
@@ -337,16 +338,13 @@ def test_top_k(
     class_metric = metric_class(top_k=k, average=average, num_classes=3)
     class_metric.update(preds, target)
 
-    if class_metric.beta != 1.0:
-        result = expected_fbeta
-    else:
-        result = expected_f1
+    result = expected_fbeta if class_metric.beta != 1.0 else expected_f1
 
     assert torch.isclose(class_metric.compute(), result)
     assert torch.isclose(metric_fn(preds, target, top_k=k, average=average, num_classes=3), result)
 
 
-def _sk_fbeta_score_multilabel_global(preds, target, sk_fn, ignore_index, average):
+def _sklearn_fbeta_score_multilabel_global(preds, target, sk_fn, ignore_index, average):
     if average == "micro":
         preds = preds.flatten()
         target = target.flatten()
@@ -373,7 +371,7 @@ def _sk_fbeta_score_multilabel_global(preds, target, sk_fn, ignore_index, averag
         return res
 
 
-def _sk_fbeta_score_multilabel_local(preds, target, sk_fn, ignore_index, average):
+def _sklearn_fbeta_score_multilabel_local(preds, target, sk_fn, ignore_index, average):
     fbeta_score, weights = [], []
     for i in range(preds.shape[0]):
         if average == "micro":
@@ -406,11 +404,11 @@ def _sk_fbeta_score_multilabel_local(preds, target, sk_fn, ignore_index, average
         return res
 
 
-def _sk_fbeta_score_multilabel(preds, target, sk_fn, ignore_index, multidim_average, average):
+def _sklearn_fbeta_score_multilabel(preds, target, sk_fn, ignore_index, multidim_average, average):
     preds = preds.numpy()
     target = target.numpy()
     if np.issubdtype(preds.dtype, np.floating):
-        if not ((0 < preds) & (preds < 1)).all():
+        if not ((preds > 0) & (preds < 1)).all():
             preds = sigmoid(preds)
         preds = (preds >= THRESHOLD).astype(np.uint8)
     preds = preds.reshape(*preds.shape[:2], -1)
@@ -422,8 +420,8 @@ def _sk_fbeta_score_multilabel(preds, target, sk_fn, ignore_index, multidim_aver
             average=average,
         )
     elif multidim_average == "global":
-        return _sk_fbeta_score_multilabel_global(preds, target, sk_fn, ignore_index, average)
-    return _sk_fbeta_score_multilabel_local(preds, target, sk_fn, ignore_index, average)
+        return _sklearn_fbeta_score_multilabel_global(preds, target, sk_fn, ignore_index, average)
+    return _sklearn_fbeta_score_multilabel_local(preds, target, sk_fn, ignore_index, average)
 
 
 @pytest.mark.parametrize("input", _multilabel_cases)
@@ -460,8 +458,8 @@ class TestMultilabelFBetaScore(MetricTester):
             preds=preds,
             target=target,
             metric_class=module,
-            sk_metric=partial(
-                _sk_fbeta_score_multilabel,
+            reference_metric=partial(
+                _sklearn_fbeta_score_multilabel,
                 sk_fn=compare,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
@@ -492,8 +490,8 @@ class TestMultilabelFBetaScore(MetricTester):
             preds=preds,
             target=target,
             metric_functional=functional,
-            sk_metric=partial(
-                _sk_fbeta_score_multilabel,
+            reference_metric=partial(
+                _sklearn_fbeta_score_multilabel,
                 sk_fn=compare,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,

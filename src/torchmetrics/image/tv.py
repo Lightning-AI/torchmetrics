@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +23,16 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class TotalVariation(Metric):
-    """Computes Total Variation loss (`TV`_).
+    """Compute Total Variation loss (`TV`_).
+
+    As input to ``forward`` and ``update`` the metric accepts the following input
+
+    - ``img`` (:class:`~torch.Tensor`): A tensor of shape ``(N, C, H, W)`` consisting of images
+
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``sdi`` (:class:`~torch.Tensor`): if ``reduction!='none'`` returns float scalar tensor with average TV value
+      over sample else returns tensor of shape ``(N,)`` with TV values per sample
 
     Args:
         reduction: a method to reduce metric score over samples
@@ -64,12 +73,8 @@ class TotalVariation(Metric):
             self.add_state("score", default=tensor(0, dtype=torch.float), dist_reduce_fx="sum")
         self.add_state("num_elements", default=tensor(0, dtype=torch.int), dist_reduce_fx="sum")
 
-    def update(self, img: Tensor) -> None:  # type: ignore
-        """Update current score with batch of input images.
-
-        Args:
-            img: A `Tensor` of shape `(N, C, H, W)` consisting of images
-        """
+    def update(self, img: Tensor) -> None:
+        """Update current score with batch of input images."""
         score, num_elements = _total_variation_update(img)
         if self.reduction is None or self.reduction == "none":
             self.score.append(score)
@@ -79,8 +84,5 @@ class TotalVariation(Metric):
 
     def compute(self) -> Tensor:
         """Compute final total variation."""
-        if self.reduction is None or self.reduction == "none":
-            score = dim_zero_cat(self.score)
-        else:
-            score = self.score
+        score = dim_zero_cat(self.score) if self.reduction is None or self.reduction == "none" else self.score
         return _total_variation_compute(score, self.num_elements, self.reduction)

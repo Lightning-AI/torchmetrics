@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ from torchmetrics.functional.pairwise.helpers import _check_input, _reduce_dista
 def _pairwise_euclidean_distance_update(
     x: Tensor, y: Optional[Tensor] = None, zero_diagonal: Optional[bool] = None
 ) -> Tensor:
-    """Calculates the pairwise euclidean distance matrix.
+    """Calculate the pairwise euclidean distance matrix.
 
     Args:
         x: tensor of shape ``[N,d]``
@@ -49,7 +49,7 @@ def pairwise_euclidean_distance(
     reduction: Literal["mean", "sum", "none", None] = None,
     zero_diagonal: Optional[bool] = None,
 ) -> Tensor:
-    r"""Calculates pairwise euclidean distances:
+    r"""Calculate pairwise euclidean distances.
 
     .. math::
         d_{euc}(x,y) = ||x - y||_2 = \sqrt{\sum_{d=1}^D (x_d - y_d)^2}
