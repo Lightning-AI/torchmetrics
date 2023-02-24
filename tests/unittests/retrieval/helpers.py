@@ -118,9 +118,10 @@ def _compute_sklearn_metric(
             res = metric(trg, pds, **kwargs)
             sk_results.append(res)
 
-    if len(sk_results) > 0:
-        return np.mean(sk_results)
-    return np.array(0.0)
+    sk_results = np.array(sk_results)
+    sk_results[np.isnan(sk_results)] = 0.0  # this is needed with old versions of sklearn
+
+    return sk_results.mean() if len(sk_results) > 0 else np.array(0.0)
 
 
 def _concat_tests(*tests: Tuple[Dict]) -> Dict:
