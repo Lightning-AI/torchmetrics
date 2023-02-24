@@ -20,6 +20,7 @@ import torch
 from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
 
+from torchmetrics.utilities.data import _cumsum
 from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_AVAILABLE
 
 if _TRANSFORMERS_AVAILABLE:
@@ -44,7 +45,7 @@ def _process_attention_mask_for_special_tokens(attention_mask: Tensor) -> Tensor
     # Make attention_mask zero for [CLS] token
     attention_mask[:, 0] = 0
     # Make attention_mask zero for [SEP] token
-    sep_token_position = (attention_mask - 0.1).cumsum(-1).argmax(-1)
+    sep_token_position = _cumsum((attention_mask - 0.1), dim=-1).argmax(-1)
     attention_mask[torch.arange(attention_mask.size(0)).long(), sep_token_position] = 0
     return attention_mask
 
