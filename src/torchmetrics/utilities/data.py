@@ -208,7 +208,7 @@ def _squeeze_if_scalar(data: Any) -> Any:
 
 
 def _bincount(x: Tensor, minlength: Optional[int] = None) -> Tensor:
-    """Custom bincount implementation.
+    """Implement custom bincount.
 
     PyTorch currently does not support ``torch.bincount`` for:
 
@@ -271,7 +271,7 @@ def _flexible_bincount(x: Tensor) -> Tensor:
 
 
 def allclose(tensor1: Tensor, tensor2: Tensor) -> bool:
-    """Wrapper of torch.allclose that is robust towards dtype difference."""
+    """Wrap torch.allclose to be robust towards dtype difference."""
     if tensor1.dtype != tensor2.dtype:
         tensor2 = tensor2.to(dtype=tensor1.dtype)
     return torch.allclose(tensor1, tensor2)

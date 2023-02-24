@@ -21,8 +21,9 @@ from torchmetrics.metric import Metric
 
 
 class MinMaxMetric(Metric):
-    """Wrapper Metric that tracks both the minimum and maximum of a scalar/tensor across an experiment. The min/max
-    value will be updated each time ``.compute`` is called.
+    """Wrapper metric that tracks both the minimum and maximum of a scalar/tensor across an experiment.
+
+    The min/max value will be updated each time ``.compute`` is called.
 
     Args:
         base_metric:
@@ -90,13 +91,13 @@ class MinMaxMetric(Metric):
         return {"raw": val, "max": self.max_val, "min": self.min_val}
 
     def reset(self) -> None:
-        """Sets ``max_val`` and ``min_val`` to the initialization bounds and resets the base metric."""
+        """Set ``max_val`` and ``min_val`` to the initialization bounds and resets the base metric."""
         super().reset()
         self._base_metric.reset()
 
     @staticmethod
     def _is_suitable_val(val: Union[int, float, Tensor]) -> bool:
-        """Utility function that checks whether min/max value."""
+        """Check whether min/max is a scalar value."""
         if isinstance(val, (int, float)):
             return True
         if isinstance(val, Tensor):

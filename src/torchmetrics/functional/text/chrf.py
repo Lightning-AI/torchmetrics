@@ -50,8 +50,7 @@ def _prepare_n_grams_dicts(
 ) -> Tuple[
     Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor]
 ]:
-    """Prepare dictionaries dictionaries with default zero values for total reference, hypothesis and matching
-    character and word n-grams.
+    """Prepare dictionaries with default zero values for total ref, hypothesis and matching chraracter and word n-grams.
 
     Args:
         n_char_order: A character n-gram order.
@@ -94,8 +93,9 @@ def _get_characters(sentence: str, whitespace: bool) -> List[str]:
 
 
 def _separate_word_and_punctiation(word: str) -> List[str]:
-    """Separates out punctuations from beginning and end of words for chrF. Adapted from
-    https://github.com/m-popovic/chrF and
+    """Separates out punctuations from beginning and end of words for chrF.
+
+    Adapted from https://github.com/m-popovic/chrF and
     https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/chrf.py.
 
     Args:
@@ -127,7 +127,9 @@ def _get_words_and_punctiation(sentence: str) -> List[str]:
 
 
 def _ngram_counts(char_or_word_list: List[str], n_gram_order: int) -> Dict[int, Dict[Tuple[str, ...], Tensor]]:
-    """Args:
+    """Calculate n-gram counts.
+
+    Args:
         char_or_word_list: A list of characters of words
         n_gram_order: The largest number of n-gram.
 
@@ -149,7 +151,9 @@ def _get_n_grams_counts_and_total_ngrams(
     Dict[int, Tensor],
     Dict[int, Tensor],
 ]:
-    """Args:
+    """Get n-grams and total n-grams.
+
+    Args:
         sentence: An input sentence
         n_char_order: A character n-gram order.
         n_word_order: A word n-gram order.
@@ -395,7 +399,9 @@ def _chrf_score_update(
     Dict[int, Tensor],
     Optional[List[Tensor]],
 ]:
-    """Args:
+    """Update function for chrf score.
+
+    Args:
         preds: An iterable of hypothesis corpus.
         target: An iterable of iterables of reference corpus.
         total_preds_char_n_grams: A dictionary containing a total number of hypothesis character n-grams.
@@ -527,9 +533,10 @@ def chrf_score(
     whitespace: bool = False,
     return_sentence_level_score: bool = False,
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    """Calculate `chrF score`_  of machine translated text with one or more references. This implementation
-    supports both chrF score computation introduced in [1] and chrF++ score introduced in `chrF++ score`_. This
-    implementation follows the implmenetaions from https://github.com/m-popovic/chrF and
+    """Calculate `chrF score`_  of machine translated text with one or more references.
+
+    This implementation supports both chrF score computation introduced in [1] and chrF++ score introduced in
+    `chrF++ score`_. This implementation follows the implmenetaions from https://github.com/m-popovic/chrF and
     https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/chrf.py.
 
     Args:

@@ -28,8 +28,10 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class PermutationInvariantTraining(Metric):
-    """Calculate `Permutation invariant training`_ (PIT) that can evaluate models for speaker independent multi-
-    talker speech separation in a permutation invariant way.
+    """Calculate `Permutation invariant training`_ (PIT).
+
+    This metric can evaluate models for speaker independent multi-talker speech separation in a permutation
+    invariant way.
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 
