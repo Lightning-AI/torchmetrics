@@ -26,28 +26,49 @@ runs:
       cat requirements.dump
     shell: bash
 
-  - name: Filter self pkg
-    run: |
-      import os
-      fp = 'requirements.dump'
-      with open(fp) as fo:
-        lines = [ln.strip() for ln in fo.readlines()]
-      lines = [ln.split('+')[0] for ln in lines if '-e ' not in ln]
-      with open(fp, 'w') as fw:
-        fw.writelines([ln + os.linesep for ln in lines])
-    shell: python
+  #- name: Filter self pkg
+  #  run: |
+  #    import os
+  #    fp = 'requirements.dump'
+  #    with open(fp) as fo:
+  #      lines = [ln.strip() for ln in fo.readlines()]
+  #    lines = [ln.split('+')[0] for ln in lines if '-e ' not in ln]
+  #    with open(fp, 'w') as fw:
+  #      fw.writelines([ln + os.linesep for ln in lines])
+  #  shell: python
 
   - name: Dump wheels
     run: |
-      cat requirements.dump
-      pip wheel -r requirements.dump --prefer-binary \
-        --wheel-dir=${{ inputs.pypi-dir }} \
+      pip wheel -r requirements/devel.txt --prefer-binary \
+        --wheel-dir=_pip-wheels \
         -f ${{ inputs.torch-url }} -f ${{ inputs.pypi-dir }}
-      ls -lh ${{ inputs.pypi-dir }}
+      ls -lh _pip-wheels
     shell: bash
 
-  - name: Cache pip
-    continue-on-error: true
+  - name: Find diff
+    id: wheels-diff
+    run: |
+      import os, glob
+      wheels = [os.path.basename(p) for p in glob.glob("_pip-wheels/*")]
+      pkgs = [os.path.basename(p) for p in glob.glob("${{ inputs.pypi-dir }}/*")]
+      diff = [w for w in wheels if w not in pkgs]
+      with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
+          print(f'{new-wheels}={len(diff)}', file=fh)
+    shell: python
+
+  - name: Cache pull
+    if: ${{ steps.wheels-diff.outputs.new-wheels != 0 }}
+    uses: actions/cache/restore@v3
+    with:
+      path: ${{ inputs.pypi-dir }}
+      key: pypi-packages
+
+  - run: cp _pip-wheels/* ${{ inputs.pypi-dir }}
+    if: ${{ steps.wheels-diff.outputs.new-wheels != 0 }}
+    shell: bash
+
+  - name: Cache push
+    if: ${{ steps.wheels-diff.outputs.new-wheels != 0 }}
     uses: actions/cache/save@v3
     with:
       path: ${{ inputs.pypi-dir }}
