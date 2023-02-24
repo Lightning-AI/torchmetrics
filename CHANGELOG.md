@@ -39,6 +39,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `ignore_index` option to `exact_match` metric ([#1540](https://github.com/Lightning-AI/metrics/pull/1540))
 
 
+- Add parameter `top_k` to `RetrievalMAP` ([#1501](https://github.com/Lightning-AI/metrics/pull/1501))
+
+
 ### Changed
 
 - Changed `update_count` and `update_called` from private to public methods ([#1370](https://github.com/Lightning-AI/metrics/pull/1370))
