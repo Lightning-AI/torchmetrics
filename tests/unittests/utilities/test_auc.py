@@ -69,7 +69,7 @@ class TestAUC(MetricTester):
 @pytest.mark.parametrize("unsqueeze_x", [True, False])
 @pytest.mark.parametrize("unsqueeze_y", [True, False])
 @pytest.mark.parametrize(
-    ["x", "y", "expected"],
+    ("x", "y", "expected"),
     [
         ([0, 1], [0, 1], 0.5),
         ([1, 0], [0, 1], 0.5),

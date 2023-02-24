@@ -81,7 +81,7 @@ def test_bootstrap_sampler(sampling_strategy):
 @pytest.mark.parametrize("device", ["cpu", "cuda"])
 @pytest.mark.parametrize("sampling_strategy", ["poisson", "multinomial"])
 @pytest.mark.parametrize(
-    "metric, ref_metric",
+    ("metric", "ref_metric"),
     [
         [MulticlassPrecision(num_classes=10, average="micro"), partial(precision_score, average="micro")],
         [MulticlassRecall(num_classes=10, average="micro"), partial(recall_score, average="micro")],
@@ -106,7 +106,6 @@ def test_bootstrap(device, sampling_strategy, metric, ref_metric):
         bootstrapper.update(p, t)
 
         for i, o in enumerate(bootstrapper.out):
-
             collected_preds[i].append(o[0])
             collected_target[i].append(o[1])
 
