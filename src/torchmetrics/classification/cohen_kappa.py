@@ -27,8 +27,7 @@ from torchmetrics.utilities.enums import ClassificationTaskNoMultilabel
 
 
 class BinaryCohenKappa(BinaryConfusionMatrix):
-    r"""Calculate `Cohen's kappa score`_ that measures inter-annotator agreement for binary tasks. It is defined
-    as.
+    r"""Calculate `Cohen's kappa score`_ that measures inter-annotator agreement for binary tasks.
 
     .. math::
         \kappa = (p_o - p_e) / (1 - p_e)
@@ -107,8 +106,7 @@ class BinaryCohenKappa(BinaryConfusionMatrix):
 
 
 class MulticlassCohenKappa(MulticlassConfusionMatrix):
-    r"""Calculate `Cohen's kappa score`_ that measures inter-annotator agreement for multiclass tasks. It is
-    defined as.
+    r"""Calculate `Cohen's kappa score`_ that measures inter-annotator agreement for multiclass tasks.
 
     .. math::
         \kappa = (p_o - p_e) / (1 - p_e)
@@ -190,7 +188,7 @@ class MulticlassCohenKappa(MulticlassConfusionMatrix):
 
 
 class CohenKappa:
-    r"""Calculate `Cohen's kappa score`_ that measures inter-annotator agreement. It is defined as.
+    r"""Calculate `Cohen's kappa score`_ that measures inter-annotator agreement.
 
     .. math::
         \kappa = (p_o - p_e) / (1 - p_e)

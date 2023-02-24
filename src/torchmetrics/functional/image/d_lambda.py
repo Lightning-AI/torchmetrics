@@ -24,8 +24,7 @@ from torchmetrics.utilities.distributed import reduce
 
 
 def _spectral_distortion_index_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
-    """Update and returns variables required to compute Spectral Distortion Index. Checks for same shape and type
-    of the input tensors.
+    """Update and returns variables required to compute Spectral Distortion Index.
 
     Args:
         preds: Low resolution multispectral image
@@ -93,8 +92,9 @@ def spectral_distortion_index(
     p: int = 1,
     reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
 ) -> Tensor:
-    """Calculate `Spectral Distortion Index`_ (SpectralDistortionIndex_) also known as D_lambda that is used to
-    compare the spectral distortion between two images.
+    """Calculate `Spectral Distortion Index`_ (SpectralDistortionIndex_) also known as D_lambda.
+
+    Metric is used to compare the spectral distortion between two images.
 
     Args:
         preds: Low resolution multispectral image
