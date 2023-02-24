@@ -50,7 +50,6 @@ def _specificity_at_sensitivity(
     thresholds: Tensor,
     min_sensitivity: float,
 ) -> Tuple[Tensor, Tensor]:
-
     # get indices where sensitivity is greater than min_sensitivity
     indices = sensitivity >= min_sensitivity
 

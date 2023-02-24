@@ -316,7 +316,7 @@ _mc_k_preds = tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]])
     ("metric_class", "metric_fn"), [(MulticlassPrecision, multiclass_precision), (MulticlassRecall, multiclass_recall)]
 )
 @pytest.mark.parametrize(
-    "k, preds, target, average, expected_prec, expected_recall",
+    ("k", "preds", "target", "average", "expected_prec", "expected_recall"),
     [
         (1, _mc_k_preds, _mc_k_target, "micro", tensor(2 / 3), tensor(2 / 3)),
         (2, _mc_k_preds, _mc_k_target, "micro", tensor(1 / 2), tensor(1.0)),
