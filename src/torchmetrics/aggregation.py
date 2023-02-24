@@ -72,12 +72,13 @@ class BaseAggregator(Metric):
         if nans.any():
             if self.nan_strategy == "error":
                 raise RuntimeError("Encounted `nan` values in tensor")
-            if self.nan_strategy == "warn":
-                warnings.warn("Encounted `nan` values in tensor. Will be removed.", UserWarning)
-                x = x[~nans]
-            elif self.nan_strategy == "ignore":
+            if self.nan_strategy in ("ignore", "warn"):
+                if self.nan_strategy == "warn":
+                    warnings.warn("Encounted `nan` values in tensor. Will be removed.", UserWarning)
                 x = x[~nans]
             else:
+                if not isinstance(self.nan_strategy, float):
+                    raise ValueError(f"`nan_strategy` shall be float but you pass {self.nan_strategy}")
                 x[nans] = self.nan_strategy
 
         return x.float()
