@@ -213,7 +213,7 @@ def _check_classification_inputs(
     top_k: Optional[int],
     ignore_index: Optional[int] = None,
 ) -> DataType:
-    """Performs error checking on inputs for classification.
+    """Perform error checking on inputs for classification.
 
     This ensures that preds and target take one of the shape/type combinations that are
     specified in ``_input_format_classification`` docstring. It also checks the cases of
@@ -613,7 +613,7 @@ def _check_retrieval_target_and_prediction_types(
 
 
 def _allclose_recursive(res1: Any, res2: Any, atol: float = 1e-6) -> bool:
-    """Utility function for recursively asserting that two results are within a certain tolerance."""
+    """Recursively asserting that two results are within a certain tolerance."""
     # single output compare
     if isinstance(res1, Tensor):
         return torch.allclose(res1, res2, atol=atol)
@@ -634,7 +634,7 @@ def check_forward_full_state_property(
     num_update_to_compare: Sequence[int] = [10, 100, 1000],
     reps: int = 5,
 ) -> bool:
-    """Utility function for checking if the new ``full_state_update`` property.
+    """Check if the new ``full_state_update`` property works as intended.
 
     This function checks if the property can safely be set to ``False`` which will for most metrics results in a
     speedup when using ``forward``.
@@ -758,7 +758,7 @@ def is_overridden(method_name: str, instance: object, parent: object) -> bool:
 
 
 def _try_proceed_with_timeout(fn: Callable, timeout: int = _DOCTEST_DOWNLOAD_TIMEOUT) -> bool:
-    """Function for checking if a certain function is taking too long to execute.
+    """Check if a certain function is taking too long to execute.
 
     Function will only be executed if running inside a doctest context. Currently does not support Windows.
 

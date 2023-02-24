@@ -112,5 +112,5 @@ class PearsonsContingencyCoefficient(Metric):
         self.confmat += confmat
 
     def compute(self) -> Tensor:
-        """Computer Pearson's Contingency Coefficient statistic."""
+        """Compute Pearson's Contingency Coefficient statistic."""
         return _pearsons_contingency_coefficient_compute(self.confmat)

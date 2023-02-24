@@ -90,5 +90,5 @@ class TheilsU(Metric):
         self.confmat += confmat
 
     def compute(self) -> Tensor:
-        """Computer Theil's U statistic."""
+        """Compute Theil's U statistic."""
         return _theils_u_compute(self.confmat)

@@ -39,7 +39,7 @@ if _SCIPY_AVAILABLE:
 
 
 class NoTrainInceptionV3(_FeatureExtractorInceptionV3):
-    """Define module that nevers leaves evaluation mode."""
+    """Module that nevers leaves evaluation mode."""
 
     def __init__(
         self,
@@ -52,7 +52,7 @@ class NoTrainInceptionV3(_FeatureExtractorInceptionV3):
         self.eval()
 
     def train(self, mode: bool) -> "NoTrainInceptionV3":
-        """the inception network should not be able to be switched away from evaluation mode."""
+        """Force network to always be in evaluation mode."""
         return super().train(False)
 
     def forward(self, x: Tensor) -> Tensor:
