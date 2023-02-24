@@ -24,8 +24,9 @@ from torchmetrics.functional import (
     pairwise_linear_similarity,
     pairwise_manhattan_distance,
 )
+from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 

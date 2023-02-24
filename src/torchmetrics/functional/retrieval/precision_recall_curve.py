@@ -14,10 +14,11 @@
 from typing import Optional, Tuple
 
 import torch
-from torch import Tensor, cumsum
+from torch import Tensor
 from torch.nn.functional import pad
 
 from torchmetrics.utilities.checks import _check_retrieval_functional_inputs
+from torchmetrics.utilities.data import _cumsum
 
 
 def retrieval_precision_recall_curve(
@@ -90,7 +91,7 @@ def retrieval_precision_recall_curve(
         return torch.zeros(max_k, device=preds.device), torch.zeros(max_k, device=preds.device), topk
 
     relevant = target[preds.topk(min(max_k, preds.shape[-1]), dim=-1)[1]].float()
-    relevant = cumsum(pad(relevant, (0, max(0, max_k - len(relevant))), "constant", 0.0), dim=0)
+    relevant = _cumsum(pad(relevant, (0, max(0, max_k - len(relevant))), "constant", 0.0), dim=0)
 
     recall = relevant / target.sum()
     precision = relevant / topk

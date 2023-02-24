@@ -34,19 +34,28 @@ from torchmetrics.functional.audio import short_time_objective_intelligibility
 from torchmetrics.functional.audio.pesq import perceptual_evaluation_speech_quality
 from torchmetrics.functional.audio.pit import permutation_invariant_training
 from torchmetrics.functional.classification.accuracy import binary_accuracy, multiclass_accuracy
+from torchmetrics.functional.classification.auroc import binary_auroc, multiclass_auroc
 from torchmetrics.functional.classification.confusion_matrix import (
     binary_confusion_matrix,
     multiclass_confusion_matrix,
     multilabel_confusion_matrix,
 )
+from torchmetrics.functional.classification.roc import binary_roc
 from torchmetrics.functional.image.d_lambda import spectral_distortion_index
 from torchmetrics.functional.image.ergas import error_relative_global_dimensionless_synthesis
-from torchmetrics.utilities.plot import plot_confusion_matrix, plot_single_or_multi_val
+from torchmetrics.utilities.plot import plot_binary_roc_curve, plot_confusion_matrix, plot_single_or_multi_val
 
 
 @pytest.mark.parametrize(
     ("metric", "preds", "target"),
     [
+        # Accuracy
+        pytest.param(
+            binary_accuracy,
+            lambda: torch.rand(100),
+            lambda: torch.randint(2, (100,)),
+            id="binary",
+        ),
         pytest.param(binary_accuracy, lambda: torch.rand(100), lambda: torch.randint(2, (100,)), id="binary"),
         pytest.param(
             partial(multiclass_accuracy, num_classes=3),
@@ -57,6 +66,25 @@ from torchmetrics.utilities.plot import plot_confusion_matrix, plot_single_or_mu
         pytest.param(
             partial(multiclass_accuracy, num_classes=3, average=None),
             lambda: torch.randint(3, (100,)),
+            lambda: torch.randint(3, (100,)),
+            id="multiclass and average=None",
+        ),
+        # AUROC
+        pytest.param(
+            binary_auroc,
+            lambda: torch.nn.functional.softmax(torch.randn(100, 2), dim=1)[:, 1],
+            lambda: torch.randint(2, (100,)),
+            id="binary",
+        ),
+        pytest.param(
+            partial(multiclass_auroc, num_classes=3),
+            lambda: torch.randn(100, 3),
+            lambda: torch.randint(3, (100,)),
+            id="multiclass",
+        ),
+        pytest.param(
+            partial(multiclass_auroc, num_classes=3, average=None),
+            lambda: torch.randn(100, 3),
             lambda: torch.randint(3, (100,)),
             id="multiclass and average=None",
         ),
@@ -235,3 +263,21 @@ def test_confusion_matrix_plotter_with_labels(metric, preds, target, labels):
     cond1 = isinstance(axs, matplotlib.axes.Axes)
     cond2 = isinstance(axs, np.ndarray) and all(isinstance(a, matplotlib.axes.Axes) for a in axs)
     assert cond1 or cond2
+
+
+@pytest.mark.parametrize(
+    ("metric", "preds", "target"),
+    [
+        pytest.param(
+            binary_roc,
+            lambda: torch.nn.functional.softmax(torch.randn(100, 2), dim=1)[:, 1],
+            lambda: torch.randint(2, (100,)),
+            id="binary",
+        )
+    ],
+)
+def test_binary_roc_curve_plotter(metric, preds, target):
+    tpr, fpr, thresholds = metric(preds(), target())
+    fig, ax = plot_binary_roc_curve(tpr, fpr)
+    assert isinstance(fig, plt.Figure)
+    assert isinstance(ax, matplotlib.axes.Axes)

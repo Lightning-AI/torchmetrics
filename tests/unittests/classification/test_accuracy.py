@@ -20,16 +20,13 @@ from scipy.special import expit as sigmoid
 from sklearn.metrics import accuracy_score as sk_accuracy
 from sklearn.metrics import confusion_matrix as sk_confusion_matrix
 
-from torchmetrics.classification.accuracy import Accuracy, BinaryAccuracy, MulticlassAccuracy, MultilabelAccuracy
-from torchmetrics.functional.classification.accuracy import (
-    accuracy,
-    binary_accuracy,
-    multiclass_accuracy,
-    multilabel_accuracy,
-)
-from unittests.classification.inputs import _binary_cases, _input_binary, _multiclass_cases, _multilabel_cases
+from torchmetrics.classification.accuracy import BinaryAccuracy, MulticlassAccuracy, MultilabelAccuracy, Accuracy
+from torchmetrics.functional.classification.accuracy import binary_accuracy, multiclass_accuracy, multilabel_accuracy, \
+    accuracy
+from unittests import NUM_CLASSES, THRESHOLD
+from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases, _input_binary
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index, remove_ignore_index
+from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
 seed_all(42)
 

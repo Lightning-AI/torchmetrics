@@ -29,9 +29,10 @@ from torchmetrics.functional.classification.confusion_matrix import (
     multiclass_confusion_matrix,
     multilabel_confusion_matrix,
 )
+from unittests import NUM_CLASSES, THRESHOLD
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index, remove_ignore_index
+from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
 seed_all(42)
 
@@ -216,6 +217,18 @@ class TestMulticlassConfusionMatrix(MetricTester):
             metric_args={"num_classes": NUM_CLASSES},
             dtype=dtype,
         )
+
+
+def test_multiclass_overflow():
+    """Test that multiclass computations does not overflow even on byte input."""
+    preds = torch.randint(20, (100,)).byte()
+    target = torch.randint(20, (100,)).byte()
+
+    m = MulticlassConfusionMatrix(num_classes=20)
+    res = m(preds, target)
+
+    compare = sk_confusion_matrix(target, preds)
+    assert torch.allclose(res, torch.tensor(compare))
 
 
 def _sklearn_confusion_matrix_multilabel(preds, target, normalize=None, ignore_index=None):

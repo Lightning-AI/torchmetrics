@@ -17,7 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added support for plotting of metrics through `.plot()` method (
     [#1328](https://github.com/Lightning-AI/metrics/pull/1328),
     [#1481](https://github.com/Lightning-AI/metrics/pull/1481),
-    [#1480](https://github.com/Lightning-AI/metrics/pull/1480)
+    [#1480](https://github.com/Lightning-AI/metrics/pull/1480),
+    [#1490](https://github.com/Lightning-AI/metrics/pull/1490),
 )
 
 
@@ -34,6 +35,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 - Added `ignore_index` option to `exact_match` metric ([#1540](https://github.com/Lightning-AI/metrics/pull/1540))
+
+
+- Add parameter `top_k` to `RetrievalMAP` ([#1501](https://github.com/Lightning-AI/metrics/pull/1501))
+
+
+- Added support for deterministic evaluation on GPU for metrics that uses `torch.cumsum` operator ([#1499](https://github.com/Lightning-AI/metrics/pull/1499))
 
 
 ### Changed
@@ -72,6 +79,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 - Fixed `multilabel` in `ExactMatch` ([#1474](https://github.com/Lightning-AI/metrics/pull/1474))
+
+
+- Fixed classification metrics for `byte` input ([#1521](https://github.com/Lightning-AI/metrics/pull/1474))
 
 
 ## [0.11.1] - 2023-01-30
