@@ -21,7 +21,7 @@ from typing_extensions import Literal
 
 from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.compute import _safe_divide
-from torchmetrics.utilities.data import _bincount
+from torchmetrics.utilities.data import _bincount, _cumsum
 from torchmetrics.utilities.enums import ClassificationTask
 
 
@@ -65,12 +65,12 @@ def _binary_clf_curve(
         distinct_value_indices = torch.where(preds[1:] - preds[:-1])[0]
         threshold_idxs = F.pad(distinct_value_indices, [0, 1], value=target.size(0) - 1)
         target = (target == pos_label).to(torch.long)
-        tps = torch.cumsum(target * weight, dim=0)[threshold_idxs]
+        tps = _cumsum(target * weight, dim=0)[threshold_idxs]
 
         if sample_weights is not None:
             # express fps as a cumsum to ensure fps is increasing even in
             # the presence of floating point errors
-            fps = torch.cumsum((1 - target) * weight, dim=0)[threshold_idxs]
+            fps = _cumsum((1 - target) * weight, dim=0)[threshold_idxs]
         else:
             fps = 1 + threshold_idxs - tps
 
