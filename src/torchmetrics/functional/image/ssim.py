@@ -24,8 +24,7 @@ from torchmetrics.utilities.distributed import reduce
 
 
 def _ssim_check_inputs(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
-    """Update and returns variables required to compute Structural Similarity Index Measure. Checks for same shape
-    and type of the input tensors.
+    """Update and returns variables required to compute Structural Similarity Index Measure.
 
     Args:
         preds: Predicted tensor
@@ -180,7 +179,7 @@ def _ssim_compute(
     similarities: Tensor,
     reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
 ) -> Tensor:
-    """Applies the specified reduction to pre-computed structural similarity.
+    """Apply the specified reduction to pre-computed structural similarity.
 
     Args:
         similarities: per image similarities for a batch of images.
@@ -416,7 +415,7 @@ def _multiscale_ssim_compute(
     mcs_per_image: Tensor,
     reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
 ) -> Tensor:
-    """Applies the specified reduction to pre-computed multi-scale structural similarity.
+    """Apply the specified reduction to pre-computed multi-scale structural similarity.
 
     Args:
         mcs_per_image: per image similarities for a batch of images.
@@ -445,8 +444,10 @@ def multiscale_structural_similarity_index_measure(
     betas: Tuple[float, ...] = (0.0448, 0.2856, 0.3001, 0.2363, 0.1333),
     normalize: Optional[Literal["relu", "simple"]] = "relu",
 ) -> Tensor:
-    """Compute `MultiScaleSSIM`_, Multi-scale Structual Similarity Index Measure, which is a generalization of
-    Structual Similarity Index Measure by incorporating image details at different resolution scores.
+    """Compute `MultiScaleSSIM`_, Multi-scale Structual Similarity Index Measure.
+
+    This metric is a generalization of Structual Similarity Index Measure by incorporating image details at different
+    resolution scores.
 
     Args:
         preds: Predictions from model of shape ``[N, C, H, W]``

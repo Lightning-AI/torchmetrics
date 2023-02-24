@@ -27,8 +27,9 @@ from torchmetrics.functional.text.squad import (
 
 
 class SQuAD(Metric):
-    """Calculate `SQuAD Metric`_ which corresponds to the scoring script for version 1 of the Stanford Question
-    Answering Dataset (SQuAD).
+    """Calculate `SQuAD Metric`_ which is a metric for evaluating question answering models.
+
+    This metric corresponds to the scoring script for version 1 of the Stanford Question Answering Dataset (SQuAD).
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
