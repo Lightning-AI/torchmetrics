@@ -435,7 +435,7 @@ def _chrf_score_update(
     """
     target_corpus, preds = _validate_inputs(target, preds)
 
-    for (pred, targets) in zip(preds, target_corpus):
+    for pred, targets in zip(preds, target_corpus):
         (
             pred_char_n_grams_counts,
             pred_word_n_grams_counts,

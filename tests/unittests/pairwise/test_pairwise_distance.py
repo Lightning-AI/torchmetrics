@@ -94,12 +94,12 @@ def _wrap_reduction(x, y, sk_fn, reduction):
 )
 @pytest.mark.parametrize("reduction", ["sum", "mean", None])
 class TestPairwise(MetricTester):
-    """test pairwise implementations."""
+    """Test pairwise implementations."""
 
     atol = 1e-4
 
     def test_pairwise_functional(self, x, y, metric_functional, sk_fn, reduction):
-        """test functional pairwise implementations."""
+        """Test functional pairwise implementations."""
         self.run_functional_metric_test(
             preds=x,
             target=y,
@@ -109,7 +109,7 @@ class TestPairwise(MetricTester):
         )
 
     def test_pairwise_half_cpu(self, x, y, metric_functional, sk_fn, reduction, request):
-        """test half precision support on cpu."""
+        """Test half precision support on cpu."""
         if "euclidean" in request.node.callspec.id:
             pytest.xfail("pairwise_euclidean_distance metric does not support cpu + half precision")
         if "minkowski" in request.node.callspec.id and not _TORCH_GREATER_EQUAL_1_9:
@@ -118,7 +118,7 @@ class TestPairwise(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_pairwise_half_gpu(self, x, y, metric_functional, sk_fn, reduction):
-        """test half precision support on gpu."""
+        """Test half precision support on gpu."""
         self.run_precision_test_gpu(x, y, None, metric_functional, metric_args={"reduction": reduction})
 
 

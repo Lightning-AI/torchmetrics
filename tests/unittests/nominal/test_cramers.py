@@ -165,7 +165,7 @@ class TestCramersV(MetricTester):
     torch.cuda.is_available(), reason="Tests fail on CUDA with the most up-to-date available pandas"
 )
 @pytest.mark.parametrize("bias_correction", [False, True])
-@pytest.mark.parametrize("nan_strategy, nan_replace_value", [("replace", 1.0), ("drop", None)])
+@pytest.mark.parametrize(("nan_strategy", "nan_replace_value"), [("replace", 1.0), ("drop", None)])
 def test_cramers_v_matrix(cramers_matrix_input, bias_correction, nan_strategy, nan_replace_value):
     tm_score = cramers_v_matrix(cramers_matrix_input, bias_correction, nan_strategy, nan_replace_value)
     reference_score = _dython_cramers_v_matrix(cramers_matrix_input, bias_correction, nan_strategy, nan_replace_value)
