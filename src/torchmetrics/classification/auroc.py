@@ -40,9 +40,10 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class BinaryAUROC(BinaryPrecisionRecallCurve):
-    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for binary tasks. The AUROC
-    score summarizes the ROC curve into an single number that describes the performance of a model for multiple
-    thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
+    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for binary tasks.
+
+    The AUROC score summarizes the ROC curve into an single number that describes the performance of a model for
+    multiple thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
     corresponds to random guessing.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
@@ -156,9 +157,10 @@ class BinaryAUROC(BinaryPrecisionRecallCurve):
 
 
 class MulticlassAUROC(MulticlassPrecisionRecallCurve):
-    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for multiclass tasks. The AUROC
-    score summarizes the ROC curve into an single number that describes the performance of a model for multiple
-    thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
+    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for multiclass tasks.
+
+    The AUROC score summarizes the ROC curve into an single number that describes the performance of a model for
+    multiple thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
     corresponds to random guessing.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
@@ -290,9 +292,10 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
 
 
 class MultilabelAUROC(MultilabelPrecisionRecallCurve):
-    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for multilabel tasks. The AUROC
-    score summarizes the ROC curve into an single number that describes the performance of a model for multiple
-    thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
+    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for multilabel tasks.
+
+    The AUROC score summarizes the ROC curve into an single number that describes the performance of a model for
+    multiple thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
     corresponds to random guessing.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
@@ -433,9 +436,11 @@ class MultilabelAUROC(MultilabelPrecisionRecallCurve):
 
 
 class AUROC:
-    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_). The AUROC score summarizes the
-    ROC curve into an single number that describes the performance of a model for multiple thresholds at the same
-    time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5 corresponds to random guessing.
+    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_).
+
+    The AUROC score summarizes the ROC curve into an single number that describes the performance of a model for
+    multiple thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
+    corresponds to random guessing.
 
     This module is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of

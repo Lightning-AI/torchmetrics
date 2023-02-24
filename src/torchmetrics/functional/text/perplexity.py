@@ -112,8 +112,9 @@ def _perplexity_compute(total: Tensor, count: Tensor) -> Tensor:
 
 
 def perplexity(preds: Tensor, target: Tensor, ignore_index: Optional[int] = None) -> Tensor:
-    """Perplexity measures how well a language model predicts a text sample. It's calculated as the average number
-    of bits per word a model needs to represent the sample.
+    """Perplexity measures how well a language model predicts a text sample.
+
+    This metric is calculated as the average number of bits per word a model needs to represent the sample.
 
     Args:
         preds:

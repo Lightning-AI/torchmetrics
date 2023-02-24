@@ -19,8 +19,9 @@ from torchmetrics.utilities.checks import _check_retrieval_functional_inputs
 
 
 def retrieval_precision(preds: Tensor, target: Tensor, top_k: Optional[int] = None, adaptive_k: bool = False) -> Tensor:
-    """Compute the precision metric (for information retrieval). Precision is the fraction of relevant documents
-    among all the retrieved documents.
+    """Compute the precision metric for information retrieval.
+
+    Precision is the fraction of relevant documents among all the retrieved documents.
 
     ``preds`` and ``target`` should be of the same shape and live on the same device. If no ``target`` is ``True``,
     ``0`` is returned. ``target`` must be either `bool` or `integers` and ``preds`` must be ``float``,
