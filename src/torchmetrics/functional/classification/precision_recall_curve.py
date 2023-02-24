@@ -104,18 +104,17 @@ def _binary_precision_recall_curve_arg_validation(
             "Expected argument `thresholds` to either be an integer, list of floats or"
             f" tensor of floats, but got {thresholds}"
         )
-    else:
-        if isinstance(thresholds, int) and thresholds < 2:
-            raise ValueError(
-                f"If argument `thresholds` is an integer, expected it to be larger than 1, but got {thresholds}"
-            )
-        if isinstance(thresholds, list) and not all(isinstance(t, float) and 0 <= t <= 1 for t in thresholds):
-            raise ValueError(
-                "If argument `thresholds` is a list, expected all elements to be floats in the [0,1] range,"
-                f" but got {thresholds}"
-            )
-        if isinstance(thresholds, Tensor) and not thresholds.ndim == 1:
-            raise ValueError("If argument `thresholds` is an tensor, expected the tensor to be 1d")
+    if isinstance(thresholds, int) and thresholds < 2:
+        raise ValueError(
+            f"If argument `thresholds` is an integer, expected it to be larger than 1, but got {thresholds}"
+        )
+    if isinstance(thresholds, list) and not all(isinstance(t, float) and 0 <= t <= 1 for t in thresholds):
+        raise ValueError(
+            "If argument `thresholds` is a list, expected all elements to be floats in the [0,1] range,"
+            f" but got {thresholds}"
+        )
+    if isinstance(thresholds, Tensor) and not thresholds.ndim == 1:
+        raise ValueError("If argument `thresholds` is an tensor, expected the tensor to be 1d")
 
     if ignore_index is not None and not isinstance(ignore_index, int):
         raise ValueError(f"Expected argument `ignore_index` to either be `None` or an integer, but got {ignore_index}")

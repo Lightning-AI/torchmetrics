@@ -228,8 +228,7 @@ class MetricCollection(ModuleDict):
             # Stop when we iterate over everything and do not merge any groups
             if len(self._groups) == n_groups:
                 break
-            else:
-                n_groups = len(self._groups)
+            n_groups = len(self._groups)
 
         # Re-index groups
         temp = deepcopy(self._groups)

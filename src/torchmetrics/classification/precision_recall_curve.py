@@ -198,7 +198,7 @@ class MulticlassPrecisionRecallCurve(Metric):
             - If set to an `int` (larger than 1), will use that number of thresholds linearly spaced from
               0 to 1 as bins for the calculation.
             - If set to an `list` of floats, will use the indicated thresholds in the list as bins for the calculation
-            - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
+            - If set to a 1D `tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
