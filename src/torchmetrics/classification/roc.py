@@ -45,9 +45,10 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class BinaryROC(BinaryPrecisionRecallCurve):
-    r"""Compute the Receiver Operating Characteristic (ROC) for binary tasks. The curve consist of multiple pairs of
-    true positive rate (TPR) and false positive rate (FPR) values evaluated at different thresholds, such that the
-    tradeoff between the two values can be seen.
+    r"""Compute the Receiver Operating Characteristic (ROC) for binary tasks.
+
+    The curve consist of multiple pairs of true positive rate (TPR) and false positive rate (FPR) values evaluated at
+    different thresholds, such that the tradeoff between the two values can be seen.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -169,9 +170,10 @@ class BinaryROC(BinaryPrecisionRecallCurve):
 
 
 class MulticlassROC(MulticlassPrecisionRecallCurve):
-    r"""Compute the Receiver Operating Characteristic (ROC) for binary tasks. The curve consist of multiple pairs of
-    true positive rate (TPR) and false positive rate (FPR) values evaluated at different thresholds, such that the
-    tradeoff between the two values can be seen.
+    r"""Compute the Receiver Operating Characteristic (ROC) for binary tasks.
+
+    The curve consist of multiple pairs of true positive rate (TPR) and false positive rate (FPR) values evaluated at
+    different thresholds, such that the tradeoff between the two values can be seen.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -271,9 +273,10 @@ class MulticlassROC(MulticlassPrecisionRecallCurve):
 
 
 class MultilabelROC(MultilabelPrecisionRecallCurve):
-    r"""Compute the Receiver Operating Characteristic (ROC) for binary tasks. The curve consist of multiple pairs of
-    true positive rate (TPR) and false positive rate (FPR) values evaluated at different thresholds, such that the
-    tradeoff between the two values can be seen.
+    r"""Compute the Receiver Operating Characteristic (ROC) for binary tasks.
+
+    The curve consist of multiple pairs of true positive rate (TPR) and false positive rate (FPR) values evaluated at
+    different thresholds, such that the tradeoff between the two values can be seen.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -375,9 +378,10 @@ class MultilabelROC(MultilabelPrecisionRecallCurve):
 
 
 class ROC:
-    r"""Compute the Receiver Operating Characteristic (ROC). The curve consist of multiple pairs of true positive
-    rate (TPR) and false positive rate (FPR) values evaluated at different thresholds, such that the tradeoff
-    between the two values can be seen.
+    r"""Compute the Receiver Operating Characteristic (ROC).
+
+    The curve consist of multiple pairs of true positive rate (TPR) and false positive rate (FPR) values evaluated at
+    different thresholds, such that the tradeoff between the two values can be seen.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of

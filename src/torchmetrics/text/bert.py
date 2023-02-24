@@ -49,12 +49,13 @@ def _get_input_dict(input_ids: List[Tensor], attention_mask: List[Tensor]) -> Di
 
 
 class BERTScore(Metric):
-    """`Bert_score Evaluating Text Generation`_ leverages the pre-trained contextual embeddings from BERT and
-    matches words in candidate and reference sentences by cosine similarity. It has been shown to correlate with
-    human judgment on sentence-level and system-level evaluation. Moreover, BERTScore computes precision, recall,
-    and F1 measure, which can be useful for evaluating different language generation tasks.
+    """`Bert_score Evaluating Text Generation`_ for measuring text similarity.
 
-    This implemenation follows the original implementation from `BERT_score`_.
+    BERT leverages the pre-trained contextual embeddings from BERT and matches words in candidate and reference
+    sentences by cosine similarity. It has been shown to correlate with human judgment on sentence-level and
+    system-level evaluation. Moreover, BERTScore computes precision, recall, and F1 measure, which can be useful for
+    evaluating different language generation tasks. This implemenation follows the original implementation from
+    `BERT_score`_.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 

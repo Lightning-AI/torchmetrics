@@ -31,8 +31,7 @@ def _concordance_corrcoef_compute(
 
 
 def concordance_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
-    r"""Compute concordance correlation coefficient that measures the agreement between two variables. It is defined
-    as.
+    r"""Compute concordance correlation coefficient that measures the agreement between two variables.
 
     .. math::
         \rho_c = \frac{2 \rho \sigma_x \sigma_y}{\sigma_x^2 + \sigma_y^2 + (\mu_x - \mu_y)^2}

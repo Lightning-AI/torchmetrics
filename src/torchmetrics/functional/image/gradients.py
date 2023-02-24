@@ -18,7 +18,7 @@ from torch import Tensor
 
 
 def _image_gradients_validate(img: Tensor) -> None:
-    """Validates whether img is a 4D torch Tensor."""
+    """Validate whether img is a 4D torch Tensor."""
     if not isinstance(img, Tensor):
         raise TypeError(f"The `img` expects a value of <Tensor> type but got {type(img)}")
     if img.ndim != 4:

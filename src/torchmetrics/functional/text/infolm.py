@@ -70,9 +70,10 @@ class _IMEnum(EnumStr):
 
 
 class _InformationMeasure:
-    """A wrapper class used for the calculation the result of information measure between the discrete reference
-    distributions of predicted and reference sentences. The class also handles input validation for `alpha` and
-    `beta` parameters.
+    """A wrapper class used for the calculation of different information measures.
+
+    This metric can be used to measure the information between the discrete reference distributions of predicted and
+    reference sentences. The class also handles input validation for `alpha` and `beta` parameters.
 
     Args:
         information_measure:
@@ -139,8 +140,7 @@ class _InformationMeasure:
 
     @staticmethod
     def _calculate_kl_divergence(preds_distribution: Tensor, target_distribution: Tensor) -> Tensor:
-        """Calculate Kullback-Leibler divergence between discrete distributions of predicted and reference
-        sentences.
+        """Calculate Kullback-Leibler divergence between discrete distributions of predicted and reference sentences.
 
         Args:
             preds_distribution:
@@ -332,8 +332,9 @@ def _get_special_tokens_map(tokenizer: PreTrainedTokenizerBase) -> Dict[str, int
 
 
 def _get_token_mask(input_ids: Tensor, pad_token_id: int, sep_token_id: int, cls_token_id: int) -> Tensor:
-    """Generate a token mask for differentiating all special tokens in the input batch. There are 0s for special
-    tokens and 1s otherwise.
+    """Generate a token mask for differentiating all special tokens in the input batch.
+
+    There are 0s for special tokens and 1s otherwise.
 
     Args:
         input_ids:
@@ -357,8 +358,7 @@ def _get_token_mask(input_ids: Tensor, pad_token_id: int, sep_token_id: int, cls
 def _get_batch_distribution(
     model: PreTrainedModel, batch: Dict[str, Tensor], temperature: float, idf: bool, special_tokens_map: Dict[str, int]
 ) -> Tensor:
-    """Calculate a discrete probability distribution for a batch of examples according to the methodology described
-    in `InfoLM`_.
+    """Calculate a discrete probability distribution for a batch of examples. See `InfoLM`_ for details.
 
     Args:
         model:

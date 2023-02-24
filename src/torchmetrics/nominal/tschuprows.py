@@ -107,5 +107,5 @@ class TschuprowsT(Metric):
         self.confmat += confmat
 
     def compute(self) -> Tensor:
-        """Computer Tschuprow's T statistic."""
+        """Compute Tschuprow's T statistic."""
         return _tschuprows_t_compute(self.confmat, self.bias_correction)

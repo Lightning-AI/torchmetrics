@@ -158,10 +158,10 @@ def plot_confusion_matrix(
     add_text: bool = True,
     labels: Optional[List[str]] = None,
 ) -> _PLOT_OUT_TYPE:
-    """Inspired by: https://github.com/scikit-learn/scikit-
-    learn/blob/main/sklearn/metrics/_plot/confusion_matrix.py.
+    """Plot an confusion matrix.
 
-    Plots an confusion matrix
+    Inspired by: https://github.com/scikit-learn/scikit-learn/blob/main/sklearn/metrics/_plot/confusion_matrix.py.
+    Works for both binary, multiclass and multilabel confusion matrices.
 
     Args:
         confmat: the confusion matrix. Either should be an [N,N] matrix in the binary and multiclass cases or an
