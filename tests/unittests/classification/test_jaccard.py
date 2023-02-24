@@ -124,6 +124,10 @@ def _sklearn_jaccard_index_multiclass(preds, target, ignore_index=None, average=
     preds = preds.flatten()
     target = target.flatten()
     target, preds = remove_ignore_index(target, preds, ignore_index)
+    if ignore_index is not None and 0 <= ignore_index <= NUM_CLASSES:
+        labels = [i for i in range(NUM_CLASSES) if i != ignore_index]
+        res = sk_jaccard_index(y_true=target, y_pred=preds, average=average, labels=labels)
+        return np.insert(res, ignore_index, 0.0) if average is None else res
     return sk_jaccard_index(y_true=target, y_pred=preds, average=average)
 
 
@@ -236,7 +240,7 @@ def _sklearn_jaccard_index_multilabel(preds, target, ignore_index=None, average=
 @pytest.mark.parametrize("input", _multilabel_cases)
 class TestMultilabelJaccardIndex(MetricTester):
     @pytest.mark.parametrize("average", ["macro", "micro", "weighted", None])
-    @pytest.mark.parametrize("ignore_index", [None])  # , -1, 0])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multilabel_jaccard_index(self, input, ddp, ignore_index, average):
         preds, target = input
@@ -256,7 +260,7 @@ class TestMultilabelJaccardIndex(MetricTester):
         )
 
     @pytest.mark.parametrize("average", ["macro", "micro", "weighted", None])
-    @pytest.mark.parametrize("ignore_index", [None, -1, 0])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     def test_multilabel_jaccard_index_functional(self, input, ignore_index, average):
         preds, target = input
         if ignore_index is not None:
