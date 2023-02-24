@@ -88,7 +88,7 @@ def _parse_categories(things: Collection[int], stuffs: Collection[int]) -> Tuple
 
 
 def _validate_inputs(preds: Tensor, target: torch.Tensor) -> None:
-    """Validates the shapes of prediction and target tensors.
+    """Validate the shapes of prediction and target tensors.
 
     Args:
         preds: the prediction tensor
@@ -129,7 +129,7 @@ def _get_void_color(things: Set[int], stuffs: Set[int]) -> Tuple[int, int]:
 
 
 def _get_category_id_to_continuous_id(things: Set[int], stuffs: Set[int]) -> Dict[int, int]:
-    """Converts original IDs to continuous IDs.
+    """Convert original IDs to continuous IDs.
 
     Args:
         things: All unique IDs for things classes.
@@ -149,7 +149,7 @@ def _get_category_id_to_continuous_id(things: Set[int], stuffs: Set[int]) -> Dic
 
 
 def _isin(arr: Tensor, values: List) -> Tensor:
-    """Basic implementation of torch.isin to support pre 0.10 version.
+    """Check if all values of an arr are in another array. Implementation of torch.isin to support pre 0.10 version.
 
     Args:
         arr: the torch tensor to check for availabilities
@@ -360,7 +360,7 @@ def panoptic_quality(
     stuffs: Collection[int],
     allow_unknown_preds_category: bool = False,
 ) -> Tensor:
-    r"""Computes the `Panoptic Quality`_ for panoptic segmentations.
+    r"""Compute `Panoptic Quality`_ for panoptic segmentations.
 
     .. math::
         PQ = \frac{IOU}{TP + 0.5 FP + 0.5 FN}

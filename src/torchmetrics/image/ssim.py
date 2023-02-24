@@ -217,8 +217,10 @@ class StructuralSimilarityIndexMeasure(Metric):
 
 
 class MultiScaleStructuralSimilarityIndexMeasure(Metric):
-    """Compute `MultiScaleSSIM`_, Multi-scale Structural Similarity Index Measure, which is a generalization of
-    Structural Similarity Index Measure by incorporating image details at different resolution scores.
+    """Compute `MultiScaleSSIM`_, Multi-scale Structural Similarity Index Measure.
+
+    This metric is is a generalization of Structural Similarity Index Measure by incorporating image details at
+    different resolution scores.
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 

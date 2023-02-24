@@ -61,7 +61,7 @@ def _ensure_nltk_punkt_is_downloaded() -> None:
 
 
 def _split_sentence(x: str) -> Sequence[str]:
-    """The sentence is split to get rougeLsum scores matching published rougeL scores for BART and PEGASUS."""
+    """Split sentence to get rougeLsum scores matching published rougeL scores for BART and PEGASUS."""
     if not _NLTK_AVAILABLE:
         raise ModuleNotFoundError("ROUGE-Lsum calculation requires that `nltk` is installed. Use `pip install nltk`.")
     import nltk
@@ -73,7 +73,9 @@ def _split_sentence(x: str) -> Sequence[str]:
 
 
 def _compute_metrics(hits_or_lcs: int, pred_len: int, target_len: int) -> Dict[str, Tensor]:
-    """This computes precision, recall and F1 score based on hits/lcs, and the length of lists of tokenizer
+    """Compute overall metrics.
+
+    This function computes precision, recall and F1 score based on hits/lcs, the length of lists of tokenizer
     predicted and target sentences.
 
     Args:
@@ -93,7 +95,7 @@ def _compute_metrics(hits_or_lcs: int, pred_len: int, target_len: int) -> Dict[s
 def _lcs(
     pred_tokens: Sequence[str], target_tokens: Sequence[str], return_full_table: bool = False
 ) -> Union[int, Sequence[Sequence[int]]]:
-    """Common DP algorithm to compute the length of the longest common subsequence.
+    """DP algorithm to compute the length of the longest common subsequence.
 
     Args:
         pred_tokens: A tokenized predicted sentence.
@@ -146,7 +148,7 @@ def _union_lcs(pred_tokens_list: Sequence[Sequence[str]], target_tokens: Sequenc
     """
 
     def lcs_ind(pred_tokens: Sequence[str], target_tokens: Sequence[str]) -> Sequence[int]:
-        """Returns one of the longest of longest common subsequence via backtracked lcs table."""
+        """Return one of the longest of longest common subsequence via backtracked lcs table."""
         lcs_table: Sequence[Sequence[int]] = _lcs(pred_tokens, target_tokens, return_full_table=True)  # type: ignore
         backtracked_lcs_table = _backtracked_lcs(lcs_table, pred_tokens, target_tokens)
         return backtracked_lcs_table
@@ -166,9 +168,10 @@ def _normalize_and_tokenize_text(
     normalizer: Optional[Callable[[str], str]] = None,
     tokenizer: Optional[Callable[[str], Sequence[str]]] = None,
 ) -> Sequence[str]:
-    """Rouge score should be calculated only over lowercased words and digits. Optionally, Porter stemmer can be
-    used to strip word suffixes to improve matching. The text normalization follows the implemantion from `Rouge
-    score_Text Normalizition`_.
+    """Rouge score should be calculated only over lowercased words and digits.
+
+    Optionally, Porter stemmer can be used to strip word suffixes to improve matching. The text normalization follows
+    the implemantion from `Rouge score_Text Normalizition`_.
 
     Args:
         text: An input sentence.
@@ -197,7 +200,7 @@ def _normalize_and_tokenize_text(
 
 
 def _rouge_n_score(pred: Sequence[str], target: Sequence[str], n_gram: int) -> Dict[str, Tensor]:
-    """This computes precision, recall and F1 score for the Rouge-N metric.
+    """Compute precision, recall and F1 score for the Rouge-N metric.
 
     Args:
         pred: A predicted sentence.
@@ -222,7 +225,7 @@ def _rouge_n_score(pred: Sequence[str], target: Sequence[str], n_gram: int) -> D
 
 
 def _rouge_l_score(pred: Sequence[str], target: Sequence[str]) -> Dict[str, Tensor]:
-    """This computes precision, recall and F1 score for the Rouge-L metric.
+    """Compute precision, recall and F1 score for the Rouge-L metric.
 
     Args:
         pred: A predicted sentence.
@@ -237,8 +240,10 @@ def _rouge_l_score(pred: Sequence[str], target: Sequence[str]) -> Dict[str, Tens
 
 
 def _rouge_lsum_score(pred: Sequence[Sequence[str]], target: Sequence[Sequence[str]]) -> Dict[str, Tensor]:
-    r"""This computes precision, recall and F1 score for the Rouge-LSum metric. More information can be found in Section
-    3.2 of the referenced paper [1]. This implementation follow the official implementation from:
+    r"""Compute precision, recall and F1 score for the Rouge-LSum metric.
+
+    More information can be found in Section 3.2 of the referenced paper [1]. This implementation follow the official
+    implementation from:
     https://github.com/google-research/google-research/blob/master/rouge/rouge_scorer.py.
 
     Args:

@@ -23,8 +23,7 @@ from torchmetrics.utilities.compute import _safe_xlogy
 
 
 def _kld_update(p: Tensor, q: Tensor, log_prob: bool) -> Tuple[Tensor, int]:
-    """Update and returns KL divergence scores for each observation and the total number of observations. Checks
-    same shape and 2D nature of the input tensors else raises ValueError.
+    """Update and returns KL divergence scores for each observation and the total number of observations.
 
     Args:
         p: data distribution with shape ``[N, d]``
