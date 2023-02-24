@@ -127,6 +127,7 @@ jobs:
       if: ${{ needs.check-diff.outputs.test-dirs != '' }}
       with:
         requires: ${{ matrix.requires }}
+        codecov-token: ${{ secrets.CODECOV_TOKEN }}
         python-version: ${{ matrix.python-version }}
         pytorch-version: ${{ steps.info.outputs.TORCH }}
         dirs: ${{ needs.check-diff.outputs.test-dirs }}

@@ -20,7 +20,7 @@ runs:
   steps:
 
   - name: install assistant's deps
-    run: pip install fire requests packaging
+    run: pip install -q fire requests packaging
     shell: bash
 
   - name: Set PyTorch version

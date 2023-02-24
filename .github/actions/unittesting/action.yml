@@ -8,6 +8,9 @@ inputs:
   pytorch-version:
     description: PyTorch version
     required: true
+  codecov-token:
+    description: Codecov token for upload results
+    required: true
   requires:
     description: define oldest or latest
     required: false
@@ -72,7 +75,7 @@ runs:
   - name: Upload coverage to Codecov
     uses: codecov/codecov-action@v3
     with:
-      token: ${{ secrets.CODECOV_TOKEN }}
+      token: ${{ inputs.codecov-token }}
       file: tests/coverage.xml
       flags: cpu,${{ runner.os }},python${{ inputs.python-version }},torch${{ inputs.pytorch-version }}
       env_vars: OS,PYTHON
