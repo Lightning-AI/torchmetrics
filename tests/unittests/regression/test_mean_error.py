@@ -42,8 +42,9 @@ from torchmetrics.regression import (
     WeightedMeanAbsolutePercentageError,
 )
 from torchmetrics.regression.symmetric_mape import SymmetricMeanAbsolutePercentageError
+from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 

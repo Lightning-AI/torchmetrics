@@ -23,9 +23,10 @@ from sklearn.metrics import roc_auc_score as sk_roc_auc_score
 from torchmetrics.classification.auroc import BinaryAUROC, MulticlassAUROC, MultilabelAUROC
 from torchmetrics.functional.classification.auroc import binary_auroc, multiclass_auroc, multilabel_auroc
 from torchmetrics.functional.classification.roc import binary_roc
+from unittests import NUM_CLASSES
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_CLASSES, MetricTester, inject_ignore_index, remove_ignore_index
+from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
 seed_all(42)
 

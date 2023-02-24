@@ -31,9 +31,10 @@ from torchmetrics.functional.classification.average_precision import (
     multilabel_average_precision,
 )
 from torchmetrics.functional.classification.precision_recall_curve import binary_precision_recall_curve
+from unittests import NUM_CLASSES
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_CLASSES, MetricTester, inject_ignore_index, remove_ignore_index
+from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
 seed_all(42)
 
