@@ -231,7 +231,7 @@ class Metric(Module, ABC):
 
     @torch.jit.unused
     def forward(self, *args: Any, **kwargs: Any) -> Any:
-        """Method ``forward`` for calling the metric directly.
+        """Aggregate and evaluate batch input directly.
 
         Serves the dual purpose of both computing the metric on the current batch of inputs but also add the batch
         statistics to the overall accumululating metric state. Input arguments are the exact same as corresponding
@@ -569,7 +569,7 @@ class Metric(Module, ABC):
         raise NotImplementedError
 
     def reset(self) -> None:
-        """This method automatically resets the metric state variables to their default value."""
+        """Reset metric state variables to their default value."""
         self._update_count = 0
         self._forward_cache = None
         self._computed = None
@@ -614,35 +614,35 @@ class Metric(Module, ABC):
         return self._device
 
     def type(self, dst_type: Union[str, torch.dtype]) -> "Metric":
-        """Method override default and prevent dtype casting.
+        """Override default and prevent dtype casting.
 
         Please use `metric.set_dtype(dtype)` instead.
         """
         return self
 
     def float(self) -> "Metric":
-        """Method override default and prevent dtype casting.
+        """Override default and prevent dtype casting.
 
         Please use `metric.set_dtype(dtype)` instead.
         """
         return self
 
     def double(self) -> "Metric":
-        """Method override default and prevent dtype casting.
+        """Override default and prevent dtype casting.
 
         Please use `metric.set_dtype(dtype)` instead.
         """
         return self
 
     def half(self) -> "Metric":
-        """Method override default and prevent dtype casting.
+        """Override default and prevent dtype casting.
 
         Please use `metric.set_dtype(dtype)` instead.
         """
         return self
 
     def set_dtype(self, dst_type: Union[str, torch.dtype]) -> "Metric":
-        """Special version of `type` for transferring all metric states to specific dtype.
+        """Transfer all metric state to specific dtype. Special version of standard `type` method.
 
         Arguments:
             dst_type (type or string): the desired type.
@@ -685,7 +685,7 @@ class Metric(Module, ABC):
         return this
 
     def persistent(self, mode: bool = False) -> None:
-        """Method for post-init to change if metric states should be saved to its state_dict."""
+        """Change post-init if metric states should be saved to its state_dict."""
         for key in self._persistent:
             self._persistent[key] = mode
 

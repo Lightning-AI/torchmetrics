@@ -33,7 +33,7 @@ def _exact_match_reduce(
     correct: Tensor,
     total: Tensor,
 ) -> Tensor:
-    """Final reduction for exact match."""
+    """Reduce exact match."""
     return _safe_divide(correct, total)
 
 

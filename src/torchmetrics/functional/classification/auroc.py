@@ -48,7 +48,7 @@ def _reduce_auroc(
     average: Optional[Literal["macro", "weighted", "none"]] = "macro",
     weights: Optional[Tensor] = None,
 ) -> Tensor:
-    """Utility function for reducing multiple average precision score into one number."""
+    """Reduce multiple average precision score into one number."""
     if isinstance(fpr, Tensor):
         res = _auc_compute_without_check(fpr, tpr, 1.0, axis=1)
     else:

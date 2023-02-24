@@ -135,7 +135,7 @@ class _SacreBLEUTokenizer:
 
     @classmethod
     def _tokenize_regex(cls, line: str) -> str:
-        """Common post-processing tokenizer for `13a` and `zh` tokenizers.
+        """Post-processing tokenizer for `13a` and `zh` tokenizers.
 
         Args:
             line: a segment to tokenize

@@ -51,7 +51,7 @@ def _process_attention_mask_for_special_tokens(attention_mask: Tensor) -> Tensor
 def _input_data_collator(
     batch: Dict[str, Tensor], device: Optional[Union[str, torch.device]] = None
 ) -> Dict[str, Tensor]:
-    """Helper function that trims model inputs.
+    """Trim model inputs.
 
     This function trims the model inputs to the longest sequence within the batch and put the input on the proper
     device.
@@ -64,7 +64,7 @@ def _input_data_collator(
 
 
 def _output_data_collator(model_output: Tensor, attention_mask: Tensor, target_len: int) -> Tuple[Tensor, Tensor]:
-    """Helper function that pads the model output and attention mask to the target length."""
+    """Pad the model output and attention mask to the target length."""
     zeros_shape = list(model_output.shape)
     zeros_shape[2] = target_len - zeros_shape[2]
     model_output = torch.cat(
@@ -91,7 +91,7 @@ def _preprocess_text(
     sort_according_length: bool = True,
     own_tokenizer: bool = False,
 ) -> Tuple[Dict[str, Tensor], Optional[Tensor]]:
-    """Default text pre-processing function using `transformers` `AutoTokenizer` instance.
+    """Text pre-processing function using `transformers` `AutoTokenizer` instance.
 
     Args:
         text:
@@ -138,7 +138,7 @@ def _preprocess_text(
 
 
 def _get_progress_bar(dataloader: DataLoader, verbose: bool = False) -> Union[DataLoader, "tqdm.auto.tqdm"]:
-    """Helper function for wrapping dataloaders into a progressbar.
+    """Wrap dataloader in progressbar if asked for.
 
     Function will return either the dataloader itself when `verbose = False`, or it wraps the dataloader with
     `tqdm.auto.tqdm`, when `verbose = True` to display a progress bar during the embbeddings calculation.
@@ -245,7 +245,7 @@ class TextDataset(Dataset):
         return tokens_idf
 
     def _get_tokens_idf_default_value(self) -> float:
-        """Helper function that ensures `defaultdict` to be pickled."""
+        """Ensure `defaultdict` can be pickled."""
         return math.log((self.num_sentences + 1) / 1)
 
     @staticmethod

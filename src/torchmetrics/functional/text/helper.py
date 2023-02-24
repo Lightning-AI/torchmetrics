@@ -108,7 +108,7 @@ class _LevenshteinEditDistance:
         prediction_start: int,
         cache: List[List[Tuple[int, _EditOperations]]],
     ) -> Tuple[int, List[List[Tuple[int, _EditOperations]]], Tuple[_EditOperations, ...]]:
-        """A dynamic programming algorithm to compute the Levenhstein edit distance.
+        """Dynamic programming algorithm to compute the Levenhstein edit distance.
 
         Args:
             prediction_tokens: A tokenized predicted sentence.
@@ -324,7 +324,7 @@ def _validate_inputs(
 
 
 def _edit_distance(prediction_tokens: List[str], reference_tokens: List[str]) -> int:
-    """Standard dynamic programming algorithm to compute the edit distance.
+    """Dynamic programming algorithm to compute the edit distance.
 
     Args:
         prediction_tokens: A tokenized predicted sentence

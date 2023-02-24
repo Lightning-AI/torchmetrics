@@ -108,7 +108,7 @@ unfixable = ["F401"]
 "__about__.py" = ["D100"]
 "__init__.py" = ["D100"]
 "src/**" = [
-    "D401",  # todo # First line of docstring should be in imperative mood: ...
+    #"D401",  # todo # First line of docstring should be in imperative mood: ...
 ]
 "tests/**" = [
     "D101",  # Missing docstring in public class

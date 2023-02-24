@@ -172,7 +172,9 @@ def _eed_function(
 
 
 def _preprocess_en(sentence: str) -> str:
-    """Copied from https://github.com/rwth-i6/ExtendedEditDistance/blob/master/util.py.
+    """Preprocess english sentences.
+
+    Copied from https://github.com/rwth-i6/ExtendedEditDistance/blob/master/util.py.
 
     Raises:
         ValueError: If input sentence is not of a type `str`.
@@ -216,7 +218,9 @@ def _preprocess_en(sentence: str) -> str:
 
 
 def _preprocess_ja(sentence: str) -> str:
-    """Copied from https://github.com/rwth-i6/ExtendedEditDistance/blob/master/util.py.
+    """Preprocess japanese sentences.
+
+    Copy from https://github.com/rwth-i6/ExtendedEditDistance/blob/master/util.py.
 
     Raises:
         ValueError: If input sentence is not of a type `str`.
@@ -231,7 +235,7 @@ def _preprocess_ja(sentence: str) -> str:
 
 
 def _eed_compute(sentence_level_scores: List[Tensor]) -> Tensor:
-    """Final step in extended edit distance.
+    """Reduction for extended edit distance.
 
     Args:
         sentence_level_scores: list of sentence-level scores as floats

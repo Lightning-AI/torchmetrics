@@ -455,7 +455,7 @@ class MeanAveragePrecision(Metric):
             raise Exception(f"IOU type {self.iou_type} is not supported")
 
     def _get_classes(self) -> List:
-        """Returns a list of unique classes found in ground truth and detection data."""
+        """Return a list of unique classes found in ground truth and detection data."""
         if len(self.detection_labels) > 0 or len(self.groundtruth_labels) > 0:
             return torch.cat(self.detection_labels + self.groundtruth_labels).unique().tolist()
         return []
@@ -503,7 +503,7 @@ class MeanAveragePrecision(Metric):
     def __evaluate_image_gt_no_preds(
         self, gt: Tensor, gt_label_mask: Tensor, area_range: Tuple[int, int], nb_iou_thrs: int
     ) -> Dict[str, Any]:
-        """Some GT but no predictions."""
+        """Evaluate images with a ground truth but no predictions."""
         # GTs
         gt = [gt[i] for i in gt_label_mask]
         nb_gt = len(gt)
@@ -527,7 +527,7 @@ class MeanAveragePrecision(Metric):
     def __evaluate_image_preds_no_gt(
         self, det: Tensor, idx: int, det_label_mask: Tensor, max_det: int, area_range: Tuple[int, int], nb_iou_thrs: int
     ) -> Dict[str, Any]:
-        """Some predictions but no GT."""
+        """Evaluate images with a prediction but no ground truth."""
         # GTs
         nb_gt = 0
 
