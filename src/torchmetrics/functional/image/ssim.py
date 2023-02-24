@@ -179,7 +179,7 @@ def _ssim_compute(
     similarities: Tensor,
     reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
 ) -> Tensor:
-    """Applies the specified reduction to pre-computed structural similarity.
+    """Apply the specified reduction to pre-computed structural similarity.
 
     Args:
         similarities: per image similarities for a batch of images.
@@ -415,7 +415,7 @@ def _multiscale_ssim_compute(
     mcs_per_image: Tensor,
     reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
 ) -> Tensor:
-    """Applies the specified reduction to pre-computed multi-scale structural similarity.
+    """Apply the specified reduction to pre-computed multi-scale structural similarity.
 
     Args:
         mcs_per_image: per image similarities for a batch of images.

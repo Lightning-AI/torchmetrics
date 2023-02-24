@@ -132,7 +132,7 @@ def _get_embeddings_and_idf_scale(
 
 
 def _get_scaled_precision_or_recall(cos_sim: Tensor, metric: str, idf_scale: Tensor) -> Tensor:
-    """Helper function that calculates precision or recall, transpose it and scale it with idf_scale factor."""
+    """Calculate precision or recall, transpose it and scale it with idf_scale factor."""
     dim = 3 if metric == "precision" else 2
     res = cos_sim.max(dim=dim).values
     res = torch.einsum("bls, bs -> bls", res, idf_scale).sum(-1)
@@ -174,7 +174,7 @@ def _get_hash(model_name_or_path: Optional[str] = None, num_layers: Optional[int
 
 
 def _read_csv_from_local_file(baseline_path: str) -> Tensor:
-    """Helper function which reads baseline the csv file from the local file.
+    """Read baseline from csv file from the local file.
 
     This method implemented to avoid `pandas` dependency.
     """
@@ -186,7 +186,7 @@ def _read_csv_from_local_file(baseline_path: str) -> Tensor:
 
 
 def _read_csv_from_url(baseline_url: str) -> Tensor:
-    """Helper function which reads the baseline csv file from URL.
+    """Read baseline from csv file from URL.
 
     This method is implemented to avoid `pandas` dependency.
     """

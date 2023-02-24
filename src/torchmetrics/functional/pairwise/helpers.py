@@ -43,7 +43,7 @@ def _check_input(
 
 
 def _reduce_distance_matrix(distmat: Tensor, reduction: Optional[str] = None) -> Tensor:
-    """Final reduction of distance matrix.
+    """Reduction of distance matrix.
 
     Args:
         distmat: a ``[N,M]`` matrix

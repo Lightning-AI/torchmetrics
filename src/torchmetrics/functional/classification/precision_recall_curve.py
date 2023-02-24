@@ -82,7 +82,7 @@ def _binary_clf_curve(
 def _adjust_threshold_arg(
     thresholds: Optional[Union[int, List[float], Tensor]] = None, device: Optional[torch.device] = None
 ) -> Optional[Tensor]:
-    """Utility function for converting the threshold arg for list and int to tensor format."""
+    """Convert threshold arg for list and int to tensor format."""
     if isinstance(thresholds, int):
         thresholds = torch.linspace(0, 1, thresholds, device=device)
     if isinstance(thresholds, list):
@@ -189,7 +189,7 @@ def _binary_precision_recall_curve_update(
     target: Tensor,
     thresholds: Optional[Tensor],
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    """Returns the state to calculate the pr-curve with.
+    """Return the state to calculate the pr-curve with.
 
     If thresholds is `None` the direct preds and targets are used. If thresholds is not `None` we compute a multi
     threshold confusion matrix.
@@ -208,7 +208,7 @@ def _binary_precision_recall_curve_update_vectorized(
     target: Tensor,
     thresholds: Tensor,
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    """Returns the multi-threshold confusion matrix to calculate the pr-curve with.
+    """Return the multi-threshold confusion matrix to calculate the pr-curve with.
 
     This implementation is vectorized and faster than `_binary_precision_recall_curve_update_loop` for small
     numbers of samples (up to 50k) but less memory- and time-efficient for more samples.
@@ -225,7 +225,7 @@ def _binary_precision_recall_curve_update_loop(
     target: Tensor,
     thresholds: Tensor,
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    """Returns the multi-threshold confusion matrix to calculate the pr-curve with.
+    """Return the multi-threshold confusion matrix to calculate the pr-curve with.
 
     This implementation loops over thresholds and is more memory-efficient than
     `_binary_precision_recall_curve_update_vectorized`. However, it is slowwer for small
@@ -447,7 +447,7 @@ def _multiclass_precision_recall_curve_update(
     num_classes: int,
     thresholds: Optional[Tensor],
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    """Returns the state to calculate the pr-curve with.
+    """Return the state to calculate the pr-curve with.
 
     If thresholds is `None` the direct preds and targets are used. If thresholds is not `None` we compute a multi
     threshold confusion matrix.
@@ -467,7 +467,7 @@ def _multiclass_precision_recall_curve_update_vectorized(
     num_classes: int,
     thresholds: Tensor,
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    """Returns the multi-threshold confusion matrix to calculate the pr-curve with.
+    """Return the multi-threshold confusion matrix to calculate the pr-curve with.
 
     This implementation is vectorized and faster than `_binary_precision_recall_curve_update_loop` for small
     numbers of samples but less memory- and time-efficient for more samples.
@@ -488,7 +488,7 @@ def _multiclass_precision_recall_curve_update_loop(
     num_classes: int,
     thresholds: Tensor,
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    """Returns the state to calculate the pr-curve with.
+    """Return the state to calculate the pr-curve with.
 
     This implementation loops over thresholds and is more memory-efficient than
     `_binary_precision_recall_curve_update_vectorized`. However, it is slowwer for small
@@ -709,7 +709,7 @@ def _multilabel_precision_recall_curve_update(
     num_labels: int,
     thresholds: Optional[Tensor],
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    """Returns the state to calculate the pr-curve with.
+    """Return the state to calculate the pr-curve with.
 
     If thresholds is `None` the direct preds and targets are used. If thresholds is not `None` we compute a multi
     threshold confusion matrix.

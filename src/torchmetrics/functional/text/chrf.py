@@ -127,7 +127,7 @@ def _get_words_and_punctiation(sentence: str) -> List[str]:
 
 
 def _ngram_counts(char_or_word_list: List[str], n_gram_order: int) -> Dict[int, Dict[Tuple[str, ...], Tensor]]:
-    """Function for calculating n-gram counts.
+    """Calculate n-gram counts.
 
     Args:
         char_or_word_list: A list of characters of words
@@ -151,7 +151,7 @@ def _get_n_grams_counts_and_total_ngrams(
     Dict[int, Tensor],
     Dict[int, Tensor],
 ]:
-    """Function for getting n-grams and total n-grams.
+    """Get n-grams and total n-grams.
 
     Args:
         sentence: An input sentence
