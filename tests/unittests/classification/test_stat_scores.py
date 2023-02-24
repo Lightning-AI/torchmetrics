@@ -50,15 +50,15 @@ def _sklearn_stat_scores_binary(preds, target, ignore_index, multidim_average):
         target, preds = remove_ignore_index(target, preds, ignore_index)
         tn, fp, fn, tp = sk_confusion_matrix(y_true=target, y_pred=preds, labels=[0, 1]).ravel()
         return np.array([tp, fp, tn, fn, tp + fn])
-    else:
-        res = []
-        for pred, true in zip(preds, target):
-            pred = pred.flatten()
-            true = true.flatten()
-            true, pred = remove_ignore_index(true, pred, ignore_index)
-            tn, fp, fn, tp = sk_confusion_matrix(y_true=true, y_pred=pred, labels=[0, 1]).ravel()
-            res.append(np.array([tp, fp, tn, fn, tp + fn]))
-        return np.stack(res)
+
+    res = []
+    for pred, true in zip(preds, target):
+        pred = pred.flatten()
+        true = true.flatten()
+        true, pred = remove_ignore_index(true, pred, ignore_index)
+        tn, fp, fn, tp = sk_confusion_matrix(y_true=true, y_pred=pred, labels=[0, 1]).ravel()
+        res.append(np.array([tp, fp, tn, fn, tp + fn]))
+    return np.stack(res)
 
 
 @pytest.mark.parametrize("input", _binary_cases)
@@ -160,13 +160,14 @@ def _sklearn_stat_scores_multiclass_global(preds, target, ignore_index, average)
     res = np.stack([tp, fp, tn, fn, tp + fn], 1)
     if average == "micro":
         return res.sum(0)
-    elif average == "macro":
+    if average == "macro":
         return res.mean(0)
-    elif average == "weighted":
+    if average == "weighted":
         w = tp + fn
         return (res * (w / w.sum()).reshape(-1, 1)).sum(0)
-    elif average is None or average == "none":
+    if average is None or average == "none":
         return res
+    return None
 
 
 def _sklearn_stat_scores_multiclass_local(preds, target, ignore_index, average):
@@ -366,33 +367,35 @@ def _sklearn_stat_scores_multilabel(preds, target, ignore_index, multidim_averag
 
         if average == "micro":
             return res.sum(0)
-        elif average == "macro":
+        if average == "macro":
             return res.mean(0)
-        elif average == "weighted":
+        if average == "weighted":
             w = res[:, 0] + res[:, 3]
             return (res * (w / w.sum()).reshape(-1, 1)).sum(0)
-        elif average is None or average == "none":
+        if average is None or average == "none":
             return res
-    else:
-        stat_scores = []
-        for i in range(preds.shape[0]):
-            scores = []
-            for j in range(preds.shape[1]):
-                pred, true = preds[i, j], target[i, j]
-                true, pred = remove_ignore_index(true, pred, ignore_index)
-                tn, fp, fn, tp = sk_confusion_matrix(true, pred, labels=[0, 1]).ravel()
-                scores.append(np.array([tp, fp, tn, fn, tp + fn]))
-            stat_scores.append(np.stack(scores, 1))
-        res = np.stack(stat_scores, 0)
-        if average == "micro":
-            return res.sum(-1)
-        elif average == "macro":
-            return res.mean(-1)
-        elif average == "weighted":
-            w = res[:, 0, :] + res[:, 3, :]
-            return (res * (w / w.sum())[:, np.newaxis]).sum(-1)
-        elif average is None or average == "none":
-            return np.moveaxis(res, 1, -1)
+        return None
+
+    stat_scores = []
+    for i in range(preds.shape[0]):
+        scores = []
+        for j in range(preds.shape[1]):
+            pred, true = preds[i, j], target[i, j]
+            true, pred = remove_ignore_index(true, pred, ignore_index)
+            tn, fp, fn, tp = sk_confusion_matrix(true, pred, labels=[0, 1]).ravel()
+            scores.append(np.array([tp, fp, tn, fn, tp + fn]))
+        stat_scores.append(np.stack(scores, 1))
+    res = np.stack(stat_scores, 0)
+    if average == "micro":
+        return res.sum(-1)
+    if average == "macro":
+        return res.mean(-1)
+    if average == "weighted":
+        w = res[:, 0, :] + res[:, 3, :]
+        return (res * (w / w.sum())[:, np.newaxis]).sum(-1)
+    if average is None or average == "none":
+        return np.moveaxis(res, 1, -1)
+    return None
 
 
 @pytest.mark.parametrize("input", _multilabel_cases)

@@ -62,14 +62,14 @@ def _sklearn_precision_recall_binary(preds, target, sk_fn, ignore_index, multidi
     if multidim_average == "global":
         target, preds = remove_ignore_index(target, preds, ignore_index)
         return sk_fn(target, preds)
-    else:
-        res = []
-        for pred, true in zip(preds, target):
-            pred = pred.flatten()
-            true = true.flatten()
-            true, pred = remove_ignore_index(true, pred, ignore_index)
-            res.append(sk_fn(true, pred))
-        return np.stack(res)
+
+    res = []
+    for pred, true in zip(preds, target):
+        pred = pred.flatten()
+        true = true.flatten()
+        true, pred = remove_ignore_index(true, pred, ignore_index)
+        res.append(sk_fn(true, pred))
+    return np.stack(res)
 
 
 @pytest.mark.parametrize("input", _binary_cases)
@@ -182,16 +182,16 @@ def _sklearn_precision_recall_multiclass(preds, target, sk_fn, ignore_index, mul
         target = target.numpy().flatten()
         target, preds = remove_ignore_index(target, preds, ignore_index)
         return sk_fn(target, preds, average=average)
-    else:
-        preds = preds.numpy()
-        target = target.numpy()
-        res = []
-        for pred, true in zip(preds, target):
-            pred = pred.flatten()
-            true = true.flatten()
-            true, pred = remove_ignore_index(true, pred, ignore_index)
-            res.append(sk_fn(true, pred, average=average, labels=list(range(NUM_CLASSES))))
-        return np.stack(res, 0)
+
+    preds = preds.numpy()
+    target = target.numpy()
+    res = []
+    for pred, true in zip(preds, target):
+        pred = pred.flatten()
+        true = true.flatten()
+        true, pred = remove_ignore_index(true, pred, ignore_index)
+        res.append(sk_fn(true, pred, average=average, labels=list(range(NUM_CLASSES))))
+    return np.stack(res, 0)
 
 
 @pytest.mark.parametrize("input", _multiclass_cases)
@@ -360,13 +360,14 @@ def _sklearn_precision_recall_multilabel_global(preds, target, sk_fn, ignore_ind
 
     if average == "macro":
         return res.mean(0)
-    elif average == "weighted":
+    if average == "weighted":
         weights = np.stack(weights, 0).astype(float)
         weights_norm = weights.sum(-1, keepdims=True)
         weights_norm[weights_norm == 0] = 1.0
         return ((weights * res) / weights_norm).sum(-1)
-    elif average is None or average == "none":
+    if average is None or average == "none":
         return res
+    return None
 
 
 def _sklearn_precision_recall_multilabel_local(preds, target, sk_fn, ignore_index, average):
@@ -393,13 +394,14 @@ def _sklearn_precision_recall_multilabel_local(preds, target, sk_fn, ignore_inde
     res = np.stack(precision_recall, 0)
     if average == "macro":
         return res.mean(-1)
-    elif average == "weighted":
+    if average == "weighted":
         weights = np.stack(weights, 0).astype(float)
         weights_norm = weights.sum(-1, keepdims=True)
         weights_norm[weights_norm == 0] = 1.0
         return ((weights * res) / weights_norm).sum(-1)
-    elif average is None or average == "none":
+    if average is None or average == "none":
         return res
+    return None
 
 
 def _sklearn_precision_recall_multilabel(preds, target, sk_fn, ignore_index, multidim_average, average):
@@ -417,7 +419,7 @@ def _sklearn_precision_recall_multilabel(preds, target, sk_fn, ignore_index, mul
             preds.transpose(0, 2, 1).reshape(-1, NUM_CLASSES),
             average=average,
         )
-    elif multidim_average == "global":
+    if multidim_average == "global":
         return _sklearn_precision_recall_multilabel_global(preds, target, sk_fn, ignore_index, average)
     return _sklearn_precision_recall_multilabel_local(preds, target, sk_fn, ignore_index, average)
 

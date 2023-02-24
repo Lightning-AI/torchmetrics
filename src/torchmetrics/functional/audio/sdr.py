@@ -198,8 +198,7 @@ def signal_distortion_ratio(
 
     if preds_dtype == torch.float64:
         return val
-    else:
-        return val.float()
+    return val.float()
 
 
 def scale_invariant_signal_distortion_ratio(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:

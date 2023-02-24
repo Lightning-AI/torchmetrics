@@ -88,7 +88,6 @@ ignore = [
     "D104",  # Missing docstring in public package
     "D107",  # Missing docstring in `__init__`
     "RET504",  # ToDo
-    "RET505",  # ToDo
 ]
 # Exclude a variety of commonly ignored directories.
 exclude = [

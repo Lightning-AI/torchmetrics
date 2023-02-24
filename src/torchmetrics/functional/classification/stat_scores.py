@@ -428,14 +428,14 @@ def _multiclass_stat_scores_compute(
         return res.sum(sum_dim) if res.ndim > 1 else res
     if average == "macro":
         return res.float().mean(sum_dim)
-    elif average == "weighted":
+    if average == "weighted":
         weight = tp + fn
         if multidim_average == "global":
             return (res * (weight / weight.sum()).reshape(*weight.shape, 1)).sum(sum_dim)
-        else:
-            return (res * (weight / weight.sum(-1, keepdim=True)).reshape(*weight.shape, 1)).sum(sum_dim)
-    elif average is None or average == "none":
+        return (res * (weight / weight.sum(-1, keepdim=True)).reshape(*weight.shape, 1)).sum(sum_dim)
+    if average is None or average == "none":
         return res
+    return None
 
 
 def multiclass_stat_scores(
@@ -683,13 +683,14 @@ def _multilabel_stat_scores_compute(
     sum_dim = 0 if multidim_average == "global" else 1
     if average == "micro":
         return res.sum(sum_dim)
-    elif average == "macro":
+    if average == "macro":
         return res.float().mean(sum_dim)
-    elif average == "weighted":
+    if average == "weighted":
         w = tp + fn
         return (res * (w / w.sum()).reshape(*w.shape, 1)).sum(sum_dim)
-    elif average is None or average == "none":
+    if average is None or average == "none":
         return res
+    return None
 
 
 def multilabel_stat_scores(

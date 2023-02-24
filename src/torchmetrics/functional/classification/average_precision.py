@@ -64,11 +64,10 @@ def _reduce_average_precision(
     idx = ~torch.isnan(res)
     if average == "macro":
         return res[idx].mean()
-    elif average == "weighted" and weights is not None:
+    if average == "weighted" and weights is not None:
         weights = _safe_divide(weights[idx], weights[idx].sum())
         return (res[idx] * weights).sum()
-    else:
-        raise ValueError("Received an incompatible combinations of inputs to make reduction.")
+    raise ValueError("Received an incompatible combinations of inputs to make reduction.")
 
 
 def _binary_average_precision_compute(
@@ -301,14 +300,14 @@ def _multilabel_average_precision_compute(
                 target = target[~idx]
             state = [preds, target]
         return _binary_average_precision_compute(state, thresholds)
-    else:
-        precision, recall, _ = _multilabel_precision_recall_curve_compute(state, num_labels, thresholds, ignore_index)
-        return _reduce_average_precision(
-            precision,
-            recall,
-            average,
-            weights=(state[1] == 1).sum(dim=0).float() if thresholds is None else state[0][:, 1, :].sum(-1),
-        )
+
+    precision, recall, _ = _multilabel_precision_recall_curve_compute(state, num_labels, thresholds, ignore_index)
+    return _reduce_average_precision(
+        precision,
+        recall,
+        average,
+        weights=(state[1] == 1).sum(dim=0).float() if thresholds is None else state[0][:, 1, :].sum(-1),
+    )
 
 
 def multilabel_average_precision(
