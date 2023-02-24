@@ -46,7 +46,7 @@ def _reduce_average_precision(
     average: Optional[Literal["macro", "weighted", "none"]] = "macro",
     weights: Optional[Tensor] = None,
 ) -> Tensor:
-    """Utility function for reducing multiple average precision score into one number."""
+    """Reduce multiple average precision score into one number."""
     res = []
     if isinstance(precision, Tensor) and isinstance(recall, Tensor):
         res = -torch.sum((recall[:, 1:] - recall[:, :-1]) * precision[:, :-1], 1)

@@ -107,5 +107,5 @@ class CramersV(Metric):
         self.confmat += confmat
 
     def compute(self) -> Tensor:
-        """Computer Cramer's V statistic."""
+        """Compute Cramer's V statistic."""
         return _cramers_v_compute(self.confmat, self.bias_correction)

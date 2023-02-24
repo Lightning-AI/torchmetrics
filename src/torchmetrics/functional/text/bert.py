@@ -132,7 +132,7 @@ def _get_embeddings_and_idf_scale(
 
 
 def _get_scaled_precision_or_recall(cos_sim: Tensor, metric: str, idf_scale: Tensor) -> Tensor:
-    """Helper function that calculates precision or recall, transpose it and scale it with idf_scale factor."""
+    """Calculate precision or recall, transpose it and scale it with idf_scale factor."""
     dim = 3 if metric == "precision" else 2
     res = cos_sim.max(dim=dim).values
     res = torch.einsum("bls, bs -> bls", res, idf_scale).sum(-1)
@@ -174,7 +174,7 @@ def _get_hash(model_name_or_path: Optional[str] = None, num_layers: Optional[int
 
 
 def _read_csv_from_local_file(baseline_path: str) -> Tensor:
-    """Helper function which reads baseline the csv file from the local file.
+    """Read baseline from csv file from the local file.
 
     This method implemented to avoid `pandas` dependency.
     """
@@ -186,7 +186,7 @@ def _read_csv_from_local_file(baseline_path: str) -> Tensor:
 
 
 def _read_csv_from_url(baseline_url: str) -> Tensor:
-    """Helper function which reads the baseline csv file from URL.
+    """Read baseline from csv file from URL.
 
     This method is implemented to avoid `pandas` dependency.
     """
@@ -262,12 +262,12 @@ def bert_score(
     baseline_path: Optional[str] = None,
     baseline_url: Optional[str] = None,
 ) -> Dict[str, Union[List[float], str]]:
-    """`Bert_score Evaluating Text Generation`_ leverages the pre-trained contextual embeddings from BERT and
-    matches words in candidate and reference sentences by cosine similarity.
+    """`Bert_score Evaluating Text Generation`_ for text similirity matching.
 
-    It has been shown to correlate with human judgment on sentence-level and system-level evaluation.
-    Moreover, BERTScore computes precision, recall, and F1 measure, which can be useful for evaluating different
-    language generation tasks.
+    This metric leverages the pre-trained contextual embeddings from BERT and matches words in candidate and reference
+    sentences by cosine similarity. It has been shown to correlate with human judgment on sentence-level and
+    system-level evaluation. Moreover, BERTScore computes precision, recall, and F1 measure, which can be useful for
+    evaluating different language generation tasks.
 
     This implemenation follows the original implementation from `BERT_score`_.
 

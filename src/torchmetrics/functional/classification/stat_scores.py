@@ -143,8 +143,9 @@ def binary_stat_scores(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Compute the number of true positives, false positives, true negatives, false negatives and the support for
-    binary tasks. Related to `Type I and Type II errors`_.
+    r"""Compute the true positives, false positives, true negatives, false negatives, support for binary tasks.
+
+    Related to `Type I and Type II errors`_.
 
     Accepts the following input tensors:
 
@@ -447,8 +448,9 @@ def multiclass_stat_scores(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Compute the number of true positives, false positives, true negatives, false negatives and the support for
-    multiclass tasks. Related to `Type I and Type II errors`_.
+    r"""Compute the true positives, false positives, true negatives, false negatives and support for multiclass tasks.
+
+    Related to `Type I and Type II errors`_.
 
     Accepts the following input tensors:
 
@@ -700,8 +702,9 @@ def multilabel_stat_scores(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Compute the number of true positives, false positives, true negatives, false negatives and the support for
-    multilabel tasks. Related to `Type I and Type II errors`_.
+    r"""Compute the true positives, false positives, true negatives, false negatives and support for multilabel tasks.
+
+    Related to `Type I and Type II errors`_.
 
     Accepts the following input tensors:
 
@@ -973,8 +976,9 @@ def _stat_scores_update(
 
 
 def _stat_scores_compute(tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor) -> Tensor:
-    """Compute the number of true positives, false positives, true negatives, false negatives. Concatenates the
-    input tensors along with the support into one output.
+    """Compute the number of true positives, false positives, true negatives, false negatives.
+
+    Concatenates the input tensors along with the support into one output.
 
     Args:
         tp: True positives

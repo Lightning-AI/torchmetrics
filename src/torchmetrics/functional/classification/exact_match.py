@@ -33,7 +33,7 @@ def _exact_match_reduce(
     correct: Tensor,
     total: Tensor,
 ) -> Tensor:
-    """Final reduction for exact match."""
+    """Reduce exact match."""
     return _safe_divide(correct, total)
 
 
@@ -62,8 +62,10 @@ def multiclass_exact_match(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Compute Exact match (also known as subset accuracy) for multiclass tasks. Exact Match is a stricter version
-    of accuracy where all labels have to match exactly for the sample to be correctly classified.
+    r"""Compute Exact match (also known as subset accuracy) for multiclass tasks.
+
+    Exact Match is a stricter version of accuracy where all labels have to match exactly for the sample to be
+    correctly classified.
 
     Accepts the following input tensors:
 
@@ -140,8 +142,10 @@ def multilabel_exact_match(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Compute Exact match (also known as subset accuracy) for multilabel tasks. Exact Match is a stricter version
-    of accuracy where all labels have to match exactly for the sample to be correctly classified.
+    r"""Compute Exact match (also known as subset accuracy) for multilabel tasks.
+
+    Exact Match is a stricter version of accuracy where all labels have to match exactly for the sample to be
+    correctly classified.
 
     Accepts the following input tensors:
 
@@ -216,8 +220,10 @@ def exact_match(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Compute Exact match (also known as subset accuracy). Exact Match is a stricter version of accuracy where all
-    classes/labels have to match exactly for the sample to be correctly classified.
+    r"""Compute Exact match (also known as subset accuracy).
+
+    Exact Match is a stricter version of accuracy where all classes/labels have to match exactly for the sample to be
+    correctly classified.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'multiclass'`` or ``'multilabel'``. See the documentation of
