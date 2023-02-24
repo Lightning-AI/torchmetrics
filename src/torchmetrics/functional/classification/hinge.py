@@ -52,7 +52,6 @@ def _binary_hinge_loss_update(
     target: Tensor,
     squared: bool,
 ) -> Tuple[Tensor, Tensor]:
-
     target = target.bool()
     margin = torch.zeros_like(preds)
     margin[target] = preds[target]

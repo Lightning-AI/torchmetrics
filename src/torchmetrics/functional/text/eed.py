@@ -145,7 +145,6 @@ def _eed_function(
 
     for w in range(1, len(ref) + 1):
         for i in range(0, len(hyp) + 1):
-
             if i > 0:
                 next_row[i] = min(
                     next_row[i - 1] + deletion,
