@@ -52,23 +52,24 @@ runs:
       wheels = [os.path.basename(p) for p in glob.glob("_pip-wheels/*")]
       pkgs = [os.path.basename(p) for p in glob.glob("${{ inputs.pypi-dir }}/*")]
       diff = [w for w in wheels if w not in pkgs]
+      print(diff)
       with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
-          print(f'{new-wheels}={len(diff)}', file=fh)
+          print(f'count-new={len(diff)}', file=fh)
     shell: python
 
   - name: Cache pull
-    if: ${{ steps.wheels-diff.outputs.new-wheels != 0 }}
+    if: ${{ steps.wheels-diff.outputs.count-new != 0 }}
     uses: actions/cache/restore@v3
     with:
       path: ${{ inputs.pypi-dir }}
       key: pypi-packages
 
   - run: cp _pip-wheels/* ${{ inputs.pypi-dir }}
-    if: ${{ steps.wheels-diff.outputs.new-wheels != 0 }}
+    if: ${{ steps.wheels-diff.outputs.count-new != 0 }}
     shell: bash
 
   - name: Cache push
-    if: ${{ steps.wheels-diff.outputs.new-wheels != 0 }}
+    if: ${{ steps.wheels-diff.outputs.count-new != 0 }}
     uses: actions/cache/save@v3
     with:
       path: ${{ inputs.pypi-dir }}
