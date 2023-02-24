@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -35,9 +35,10 @@ if not _TRANSFORMERS_AVAILABLE:
 
 
 class InfoLM(Metric):
-    """
-    Calculate `InfoLM`_ - i.e. calculate a distance/divergence between predicted and reference sentence discrete
-    distribution using one of the following information measures:
+    """Calculate `InfoLM`_.
+
+    InfoLM measures a distance/divergence between predicted and reference sentence discrete distribution using one of
+    the following information measures:
 
         - `KL divergence`_
         - `alpha divergence`_

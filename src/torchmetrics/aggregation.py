@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -64,8 +64,9 @@ class BaseAggregator(Metric):
         self.add_state("value", default=default_value, dist_reduce_fx=fn)
 
     def _cast_and_nan_check_input(self, x: Union[float, Tensor]) -> Tensor:
-        """Converts input x to a tensor if not already and afterwards checks for nans that either give an error,
-        warning or just ignored."""
+        """Convert  input x to a tensor if not already and afterwards checks for nans that either give an error,
+        warning or just ignored.
+        """
         if not isinstance(x, Tensor):
             x = torch.as_tensor(x, dtype=torch.float32, device=self.device)
 
@@ -83,7 +84,7 @@ class BaseAggregator(Metric):
 
         return x.float()
 
-    def update(self, value: Union[float, Tensor]) -> None:  # type: ignore
+    def update(self, value: Union[float, Tensor]) -> None:
         """Overwrite in child class."""
         pass
 
@@ -141,7 +142,7 @@ class MaxMetric(BaseAggregator):
             **kwargs,
         )
 
-    def update(self, value: Union[float, Tensor]) -> None:  # type: ignore
+    def update(self, value: Union[float, Tensor]) -> None:
         """Update state with data.
 
         Args:
@@ -202,7 +203,7 @@ class MinMetric(BaseAggregator):
             **kwargs,
         )
 
-    def update(self, value: Union[float, Tensor]) -> None:  # type: ignore
+    def update(self, value: Union[float, Tensor]) -> None:
         """Update state with data.
 
         Args:
@@ -261,7 +262,7 @@ class SumMetric(BaseAggregator):
             **kwargs,
         )
 
-    def update(self, value: Union[float, Tensor]) -> None:  # type: ignore
+    def update(self, value: Union[float, Tensor]) -> None:
         """Update state with data.
 
         Args:
@@ -315,7 +316,7 @@ class CatMetric(BaseAggregator):
     ):
         super().__init__("cat", [], nan_strategy, **kwargs)
 
-    def update(self, value: Union[float, Tensor]) -> None:  # type: ignore
+    def update(self, value: Union[float, Tensor]) -> None:
         """Update state with data.
 
         Args:
@@ -382,7 +383,7 @@ class MeanMetric(BaseAggregator):
         )
         self.add_state("weight", default=torch.tensor(0.0), dist_reduce_fx="sum")
 
-    def update(self, value: Union[float, Tensor], weight: Union[float, Tensor] = 1.0) -> None:  # type: ignore
+    def update(self, value: Union[float, Tensor], weight: Union[float, Tensor] = 1.0) -> None:
         """Update state with data.
 
         Args:

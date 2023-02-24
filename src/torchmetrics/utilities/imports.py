@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -42,3 +42,4 @@ _PYSTOI_AVAILABLE: bool = package_available("pystoi")
 _FAST_BSS_EVAL_AVAILABLE: bool = package_available("fast_bss_eval")
 _MATPLOTLIB_AVAILABLE: bool = package_available("matplotlib")
 _MULTIPROCESSING_AVAILABLE: bool = package_available("multiprocessing")
+_XLA_AVAILABLE: bool = package_available("torch_xla")

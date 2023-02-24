@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ from torchmetrics.retrieval.base import RetrievalMetric
 
 
 class RetrievalNormalizedDCG(RetrievalMetric):
-    """Computes `Normalized Discounted Cumulative Gain`_.
+    """Compute `Normalized Discounted Cumulative Gain`_.
 
     Works with binary or positive integer target data. Accepts float predictions from a model output.
 
@@ -52,7 +52,7 @@ class RetrievalNormalizedDCG(RetrievalMetric):
 
         ignore_index:
             Ignore predictions where the target is equal to this number.
-        k: consider only the top k elements for each query (default: ``None``, which considers them all)
+        top_k: consider only the top k elements for each query (default: ``None``, which considers them all)
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -61,7 +61,7 @@ class RetrievalNormalizedDCG(RetrievalMetric):
         ValueError:
             If ``ignore_index`` is not `None` or an integer.
         ValueError:
-            If ``k`` parameter is not `None` or an integer larger than 0.
+            If ``top_k`` parameter is not `None` or an integer larger than 0.
 
     Example:
         >>> from torch import tensor
@@ -82,7 +82,7 @@ class RetrievalNormalizedDCG(RetrievalMetric):
         self,
         empty_target_action: str = "neg",
         ignore_index: Optional[int] = None,
-        k: Optional[int] = None,
+        top_k: Optional[int] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -91,10 +91,10 @@ class RetrievalNormalizedDCG(RetrievalMetric):
             **kwargs,
         )
 
-        if (k is not None) and not (isinstance(k, int) and k > 0):
-            raise ValueError("`k` has to be a positive integer or None")
-        self.k = k
+        if top_k is not None and not (isinstance(top_k, int) and top_k > 0):
+            raise ValueError("`top_k` has to be a positive integer or None")
+        self.top_k = top_k
         self.allow_non_binary_target = True
 
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
-        return retrieval_normalized_dcg(preds, target, k=self.k)
+        return retrieval_normalized_dcg(preds, target, top_k=self.top_k)

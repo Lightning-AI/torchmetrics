@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,10 +32,11 @@ from torchmetrics.functional.classification.stat_scores import (
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
+from torchmetrics.utilities.enums import ClassificationTaskNoBinary
 
 
 class MulticlassExactMatch(Metric):
-    r"""Computes Exact match (also known as subset accuracy) for multiclass tasks. Exact Match is a stricter version
+    r"""Compute Exact match (also known as subset accuracy) for multiclass tasks. Exact Match is a stricter version
     of accuracy where all labels have to match exactly for the sample to be correctly classified.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
@@ -117,6 +118,7 @@ class MulticlassExactMatch(Metric):
         )
 
     def update(self, preds, target) -> None:
+        """Update metric states with predictions and targets."""
         if self.validate_args:
             _multiclass_stat_scores_tensor_validation(
                 preds, target, self.num_classes, self.multidim_average, self.ignore_index
@@ -131,12 +133,13 @@ class MulticlassExactMatch(Metric):
             self.total += total
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         correct = dim_zero_cat(self.correct) if isinstance(self.correct, list) else self.correct
         return _exact_match_reduce(correct, self.total)
 
 
 class MultilabelExactMatch(Metric):
-    r"""Computes Exact match (also known as subset accuracy) for multilabel tasks. Exact Match is a stricter version
+    r"""Compute Exact match (also known as subset accuracy) for multilabel tasks. Exact Match is a stricter version
     of accuracy where all labels have to match exactly for the sample to be correctly classified.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
@@ -231,7 +234,7 @@ class MultilabelExactMatch(Metric):
             dist_reduce_fx="sum" if self.multidim_average == "global" else "mean",
         )
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
         if self.validate_args:
             _multilabel_stat_scores_tensor_validation(
@@ -249,13 +252,14 @@ class MultilabelExactMatch(Metric):
             self.total += total
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         correct = dim_zero_cat(self.correct) if isinstance(self.correct, list) else self.correct
         return _exact_match_reduce(correct, self.total)
 
 
 class ExactMatch:
-    r"""Computes Exact match (also known as subset accuracy). Exact Match is a stricter version of accuracy where
-    all labels have to match exactly for the sample to be correctly classified.
+    r"""Compute Exact match (also known as subset accuracy). Exact Match is a stricter version of accuracy where all
+    labels have to match exactly for the sample to be correctly classified.
 
     This module is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'multiclass'`` or ``multilabel``. See the documentation of
@@ -288,11 +292,14 @@ class ExactMatch:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
-        kwargs.update(dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args))
-        if task == "multiclass":
+        """Initialize task metric."""
+        task = ClassificationTaskNoBinary.from_str(task)
+        kwargs.update(
+            {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
+        )
+        if task == ClassificationTaskNoBinary.MULTICLASS:
             assert isinstance(num_classes, int)
             return MulticlassExactMatch(num_classes, **kwargs)
-        if task == "multilabel":
+        if task == ClassificationTaskNoBinary.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelExactMatch(num_labels, threshold, **kwargs)
-        raise ValueError(f"Expected argument `task` to either be `'multiclass'` or `'multilabel'` but got {task}")

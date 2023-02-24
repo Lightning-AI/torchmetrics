@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -479,9 +479,10 @@ def _ter_update(
     Args:
         preds: An iterable of hypothesis corpus.
         target: An iterable of iterables of reference corpus.
-        tokenizer:
+        tokenizer: An instance of ``_TercomTokenizer`` handling a sentence tokenization.
         total_num_edits: A total number of required edits to match hypothesis and reference sentences.
         total_tgt_length: A total average length of reference sentences.
+        sentence_ter: A list of sentence-level TER values
 
     Return:
         total_num_edits:
@@ -510,6 +511,7 @@ def _ter_update(
 
 def _ter_compute(total_num_edits: Tensor, total_tgt_length: Tensor) -> Tensor:
     """Compute TER based on pre-computed a total number of edits and a total average reference length.
+
     Args:
         total_num_edits: A total number of required edits to match hypothesis and reference sentences.
         total_tgt_length: A total average length of reference sentences.

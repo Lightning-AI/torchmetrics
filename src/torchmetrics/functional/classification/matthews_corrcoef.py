@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,11 +31,13 @@ from torchmetrics.functional.classification.confusion_matrix import (
     _multilabel_confusion_matrix_tensor_validation,
     _multilabel_confusion_matrix_update,
 )
+from torchmetrics.utilities.enums import ClassificationTask
 
 
 def _matthews_corrcoef_reduce(confmat: Tensor) -> Tensor:
     """Reduce an un-normalized confusion matrix of shape (n_classes, n_classes) into the matthews corrcoef
-    score."""
+    score.
+    """
     # convert multilabel into binary
     confmat = confmat.sum(0) if confmat.ndim == 3 else confmat
 
@@ -62,7 +64,7 @@ def binary_matthews_corrcoef(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculates `Matthews correlation coefficient`_ for binary tasks. This metric measures the general
+    r"""Calculate `Matthews correlation coefficient`_ for binary tasks. This metric measures the general
     correlation or quality of a classification.
 
     Accepts the following input tensors:
@@ -75,6 +77,8 @@ def binary_matthews_corrcoef(
     Additional dimension ``...`` will be flattened into the batch dimension.
 
     Args:
+        preds: Tensor with predictions
+        target: Tensor with true labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
@@ -112,7 +116,7 @@ def multiclass_matthews_corrcoef(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculates `Matthews correlation coefficient`_ for multiclass tasks. This metric measures the general
+    r"""Calculate `Matthews correlation coefficient`_ for multiclass tasks. This metric measures the general
     correlation or quality of a classification.
 
     Accepts the following input tensors:
@@ -125,6 +129,8 @@ def multiclass_matthews_corrcoef(
     Additional dimension ``...`` will be flattened into the batch dimension.
 
     Args:
+        preds: Tensor with predictions
+        target: Tensor with true labels
         num_classes: Integer specifing the number of classes
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
@@ -166,26 +172,27 @@ def multilabel_matthews_corrcoef(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculates `Matthews correlation coefficient`_ for multilabel tasks. This metric measures the general
+    r"""Calculate `Matthews correlation coefficient`_ for multilabel tasks. This metric measures the general
     correlation or quality of a classification.
 
     Accepts the following input tensors:
 
-    - ``preds`` (int or float tensor): ``(N, C, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
-      we convert to int tensor with thresholding using the value in ``threshold``.
-    - ``target`` (int tensor): ``(N, C, ...)``
+        - ``preds`` (int or float tensor): ``(N, C, ...)``. If preds is a floating point tensor with values outside
+          [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
+          we convert to int tensor with thresholding using the value in ``threshold``.
+        - ``target`` (int tensor): ``(N, C, ...)``
 
     Additional dimension ``...`` will be flattened into the batch dimension.
 
     Args:
-        num_classes: Integer specifing the number of labels
+        preds: Tensor with predictions
+        target: Tensor with true labels
+        num_labels: Integer specifing the number of labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
-        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
         >>> from torch import tensor
@@ -213,14 +220,14 @@ def multilabel_matthews_corrcoef(
 def matthews_corrcoef(
     preds: Tensor,
     target: Tensor,
-    task: Literal["binary", "multiclass", "multilabel"] = None,
+    task: Literal["binary", "multiclass", "multilabel"],
     threshold: float = 0.5,
     num_classes: Optional[int] = None,
     num_labels: Optional[int] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculates `Matthews correlation coefficient`_ . This metric measures the general correlation or quality of
+    r"""Calculate `Matthews correlation coefficient`_ . This metric measures the general correlation or quality of
     a classification.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
@@ -235,14 +242,13 @@ def matthews_corrcoef(
         >>> matthews_corrcoef(preds, target, task="multiclass", num_classes=2)
         tensor(0.5774)
     """
-    if task == "binary":
+    task = ClassificationTask.from_str(task)
+    if task == ClassificationTask.BINARY:
         return binary_matthews_corrcoef(preds, target, threshold, ignore_index, validate_args)
-    if task == "multiclass":
+    if task == ClassificationTask.MULTICLASS:
         assert isinstance(num_classes, int)
         return multiclass_matthews_corrcoef(preds, target, num_classes, ignore_index, validate_args)
-    if task == "multilabel":
+    if task == ClassificationTask.MULTILABEL:
         assert isinstance(num_labels, int)
         return multilabel_matthews_corrcoef(preds, target, num_labels, threshold, ignore_index, validate_args)
-    raise ValueError(
-        f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-    )
+    raise ValueError(f"Not handled value: {task}")  # this is for compliant of mypy

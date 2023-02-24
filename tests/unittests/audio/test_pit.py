@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -86,7 +86,7 @@ def naive_implementation_pit_scipy(
 
 
 def _average_metric(preds: Tensor, target: Tensor, metric_func: Callable) -> Tensor:
-    """average the metric values.
+    """Average the metric values.
 
     Args:
         preds: predictions, shape[batch, spk, time]
@@ -118,16 +118,14 @@ class TestPIT(MetricTester):
     atol = 1e-2
 
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_pit(self, preds, target, ref_metric, metric_func, eval_func, ddp, dist_sync_on_step):
+    def test_pit(self, preds, target, ref_metric, metric_func, eval_func, ddp):
         self.run_class_metric_test(
             ddp,
             preds,
             target,
             PermutationInvariantTraining,
             reference_metric=partial(_average_metric, metric_func=ref_metric),
-            dist_sync_on_step=dist_sync_on_step,
-            metric_args=dict(metric_func=metric_func, eval_func=eval_func),
+            metric_args={"metric_func": metric_func, "eval_func": eval_func},
         )
 
     def test_pit_functional(self, preds, target, ref_metric, metric_func, eval_func):
@@ -136,7 +134,7 @@ class TestPIT(MetricTester):
             target=target,
             metric_functional=permutation_invariant_training,
             reference_metric=ref_metric,
-            metric_args=dict(metric_func=metric_func, eval_func=eval_func),
+            metric_args={"metric_func": metric_func, "eval_func": eval_func},
         )
 
     def test_pit_differentiability(self, preds, target, ref_metric, metric_func, eval_func):

@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ from torchmetrics.utilities.checks import _check_retrieval_functional_inputs
 def retrieval_precision_recall_curve(
     preds: Tensor, target: Tensor, max_k: Optional[int] = None, adaptive_k: bool = False
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    """Computes precision-recall pairs for different k (from 1 to `max_k`).
+    """Compute precision-recall pairs for different k (from 1 to `max_k`).
 
     In a ranked retrieval context, appropriate sets of retrieved documents are naturally given by
     the top k retrieved documents.
@@ -46,9 +46,9 @@ def retrieval_precision_recall_curve(
         adaptive_k: adjust `max_k` to `min(max_k, number of documents)` for each query
 
     Returns:
-        tensor with the precision values for each k (at ``k``) from 1 to `max_k`
-        tensor with the recall values for each k (at ``k``) from 1 to `max_k`
-        tensor with all possibles k
+        Tensor with the precision values for each k (at ``top_k``) from 1 to `max_k`
+        Tensor with the recall values for each k (at ``top_k``) from 1 to `max_k`
+        Tensor with all possibles k
 
     Raises:
         ValueError:

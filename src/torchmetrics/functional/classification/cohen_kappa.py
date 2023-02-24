@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ from torchmetrics.functional.classification.confusion_matrix import (
     _multiclass_confusion_matrix_tensor_validation,
     _multiclass_confusion_matrix_update,
 )
+from torchmetrics.utilities.enums import ClassificationTaskNoMultilabel
 
 
 def _cohen_kappa_reduce(confmat: Tensor, weights: Optional[Literal["linear", "quadratic", "none"]] = None) -> Tensor:
@@ -44,10 +45,7 @@ def _cohen_kappa_reduce(confmat: Tensor, weights: Optional[Literal["linear", "qu
     elif weights in ("linear", "quadratic"):
         w_mat = torch.zeros_like(confmat)
         w_mat += torch.arange(n_classes, dtype=w_mat.dtype, device=w_mat.device)
-        if weights == "linear":
-            w_mat = torch.abs(w_mat - w_mat.T)
-        else:
-            w_mat = torch.pow(w_mat - w_mat.T, 2.0)
+        w_mat = torch.abs(w_mat - w_mat.T) if weights == "linear" else torch.pow(w_mat - w_mat.T, 2.0)
     else:
         raise ValueError(
             f"Received {weights} for argument ``weights`` but should be either" " None, 'linear' or 'quadratic'"
@@ -81,7 +79,7 @@ def binary_cohen_kappa(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculates `Cohen's kappa score`_ that measures inter-annotator agreement for binary tasks. It is defined
+    r"""Calculate `Cohen's kappa score`_ that measures inter-annotator agreement for binary tasks. It is defined
     as.
 
     .. math::
@@ -164,7 +162,7 @@ def multiclass_cohen_kappa(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculates `Cohen's kappa score`_ that measures inter-annotator agreement for multiclass tasks. It is
+    r"""Calculate `Cohen's kappa score`_ that measures inter-annotator agreement for multiclass tasks. It is
     defined as.
 
     .. math::
@@ -237,7 +235,7 @@ def cohen_kappa(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculates `Cohen's kappa score`_ that measures inter-annotator agreement. It is defined as.
+    r"""Calculate `Cohen's kappa score`_ that measures inter-annotator agreement. It is defined as.
 
     .. math::
         \kappa = (p_o - p_e) / (1 - p_e)
@@ -259,9 +257,10 @@ def cohen_kappa(
         >>> cohen_kappa(preds, target, task="multiclass", num_classes=2)
         tensor(0.5000)
     """
-    if task == "binary":
+    task = ClassificationTaskNoMultilabel.from_str(task)
+    if task == ClassificationTaskNoMultilabel.BINARY:
         return binary_cohen_kappa(preds, target, threshold, weights, ignore_index, validate_args)
-    if task == "multiclass":
+    if task == ClassificationTaskNoMultilabel.MULTICLASS:
         assert isinstance(num_classes, int)
         return multiclass_cohen_kappa(preds, target, num_classes, weights, ignore_index, validate_args)
-    raise ValueError(f"Expected argument `task` to either be `'binary'` or `'multiclass'` but got {task}")
+    raise ValueError(f"Not handled value: {task}")  # this is for compliant of mypy

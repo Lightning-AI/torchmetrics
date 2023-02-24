@@ -105,20 +105,19 @@ class TestMultioutputWrapper(MetricTester):
     """Test the MultioutputWrapper class with regression and classification inner metrics."""
 
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_multioutput_wrapper(
-        self, base_metric_class, compare_metric, preds, target, num_outputs, ddp, dist_sync_on_step
-    ):
-        """Test that the multioutput wrapper properly slices and computes outputs along the output dimension for
-        both classification and regression metrics."""
+    def test_multioutput_wrapper(self, base_metric_class, compare_metric, preds, target, num_outputs, ddp):
+        """Test correctness of implementation
+
+        Tests that the multioutput wrapper properly slices and computes outputs along the output dimension for both
+        classification and regression metrics, by comparing to the metric if they had been calculated sequentially.
+        """
         self.run_class_metric_test(
             ddp,
             preds,
             target,
             _MultioutputMetric,
             compare_metric,
-            dist_sync_on_step,
-            metric_args=dict(num_outputs=num_outputs, base_metric_class=base_metric_class),
+            metric_args={"num_outputs": num_outputs, "base_metric_class": base_metric_class},
         )
 
 

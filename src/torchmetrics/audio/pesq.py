@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,19 +11,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any
+from typing import Any, Optional, Sequence, Union
 
 from torch import Tensor, tensor
 
 from torchmetrics.functional.audio.pesq import perceptual_evaluation_speech_quality
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.imports import _PESQ_AVAILABLE
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _PESQ_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
 
 __doctest_requires__ = {"PerceptualEvaluationSpeechQuality": ["pesq"]}
 
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["PerceptualEvaluationSpeechQuality.plot"]
+
 
 class PerceptualEvaluationSpeechQuality(Metric):
-    """Calculates `Perceptual Evaluation of Speech Quality`_ (PESQ). It's a recognized industry standard for audio
+    """Calculate `Perceptual Evaluation of Speech Quality`_ (PESQ). It's a recognized industry standard for audio
     quality that takes into considerations characteristics such as: audio sharpness, call volume, background noise,
     clipping, audio interference ect. PESQ returns a score between -0.5 and 4.5 with the higher scores indicating a
     better quality.
@@ -80,6 +84,7 @@ class PerceptualEvaluationSpeechQuality(Metric):
     full_state_update: bool = False
     is_differentiable: bool = False
     higher_is_better: bool = True
+    plot_options: dict = {"lower_bound": 1.0, "upper_bound": 4.5}
 
     def __init__(
         self,
@@ -117,5 +122,48 @@ class PerceptualEvaluationSpeechQuality(Metric):
         self.total += pesq_batch.numel()
 
     def compute(self) -> Tensor:
-        """Computes metric."""
+        """Compute metric."""
         return self.sum_pesq / self.total
+
+    def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> import torch
+            >>> from torchmetrics.audio.pesq import PerceptualEvaluationSpeechQuality
+            >>> metric = PerceptualEvaluationSpeechQuality(8000, 'nb')
+            >>> metric.update(torch.rand(8000), torch.rand(8000))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics.audio.pesq import PerceptualEvaluationSpeechQuality
+            >>> metric = PerceptualEvaluationSpeechQuality(8000, 'nb')
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(torch.rand(8000), torch.rand(8000)))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        val = val or self.compute()
+        fig, ax = plot_single_or_multi_val(
+            val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
+        )
+        return fig, ax

@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -240,8 +240,7 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
 
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
 def test_state_dict_is_synced(tmpdir):
-    """This test asserts that metrics are synced while creating the state dict but restored after to continue
-    accumulation."""
+    """Tests that metrics are synced while creating the state dict but restored after to continue accumulation."""
     torch.multiprocessing.spawn(_test_state_dict_is_synced, args=(2, tmpdir), nprocs=2)
 
 

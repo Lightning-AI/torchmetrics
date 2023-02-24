@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ _inputs = Input(
 
 
 def _compare_fn(img1: Tensor, img2: Tensor, net_type: str, normalize: bool, reduction: str = "mean") -> Tensor:
-    """comparison function for tm implementation."""
+    """Comparison function for tm implementation."""
     ref = LPIPS_reference(net=net_type)
     res = ref(img1, img2, normalize=normalize).detach().cpu().numpy()
     if reduction == "mean":
@@ -45,7 +45,7 @@ def _compare_fn(img1: Tensor, img2: Tensor, net_type: str, normalize: bool, redu
 
 @pytest.mark.skipif(not _LPIPS_AVAILABLE, reason="test requires that lpips is installed")
 class TestLPIPS(MetricTester):
-    atol: float = 1e-4  # TODO lowered to pass on RTX3090 and PT 1.13
+    atol: float = 1e-4
 
     @pytest.mark.parametrize("net_type", ["vgg", "alex", "squeeze"])
     @pytest.mark.parametrize("normalize", [False, True])
@@ -58,7 +58,6 @@ class TestLPIPS(MetricTester):
             target=_inputs.img2,
             metric_class=LearnedPerceptualImagePatchSimilarity,
             reference_metric=partial(_compare_fn, net_type=net_type, normalize=normalize),
-            dist_sync_on_step=False,
             check_scriptable=False,
             check_state_dict=False,
             metric_args={"net_type": net_type, "normalize": normalize},
@@ -95,7 +94,7 @@ def test_error_on_wrong_init():
 
 @pytest.mark.skipif(not _LPIPS_AVAILABLE, reason="test requires that lpips is installed")
 @pytest.mark.parametrize(
-    "inp1, inp2",
+    ("inp1", "inp2"),
     [
         (torch.rand(1, 1, 28, 28), torch.rand(1, 3, 28, 28)),  # wrong number of channels
         (torch.rand(1, 3, 28, 28), torch.rand(1, 1, 28, 28)),  # wrong number of channels
@@ -104,7 +103,7 @@ def test_error_on_wrong_init():
     ],
 )
 def test_error_on_wrong_update(inp1, inp2):
-    """test error is raised on wrong input to update method."""
+    """Test error is raised on wrong input to update method."""
     metric = LearnedPerceptualImagePatchSimilarity()
     with pytest.raises(ValueError, match="Expected both input arguments to be normalized tensors .*"):
         metric(inp1, inp2)

@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ from torchmetrics.functional.classification.confusion_matrix import (
     _multiclass_confusion_matrix_tensor_validation,
 )
 from torchmetrics.utilities.data import to_onehot
+from torchmetrics.utilities.enums import ClassificationTaskNoMultilabel
 
 
 def _hinge_loss_compute(measure: Tensor, total: Tensor) -> Tensor:
@@ -74,8 +75,7 @@ def binary_hinge_loss(
     ignore_index: Optional[int] = None,
     validate_args: bool = False,
 ) -> Tensor:
-    r"""Computes the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs) for binary tasks. It is
-    defined as:
+    r"""Compute the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs) for binary tasks.
 
     .. math::
         \text{Hinge loss} = \max(0, 1 - y \times \hat{y})
@@ -153,7 +153,7 @@ def _multiclass_hinge_loss_update(
     squared: bool,
     multiclass_mode: Literal["crammer-singer", "one-vs-all"] = "crammer-singer",
 ) -> Tuple[Tensor, Tensor]:
-    if not torch.all((0 <= preds) * (preds <= 1)):
+    if not torch.all((preds >= 0) * (preds <= 1)):
         preds = preds.softmax(1)
 
     target = to_onehot(target, max(2, preds.shape[1])).bool()
@@ -185,7 +185,7 @@ def multiclass_hinge_loss(
     ignore_index: Optional[int] = None,
     validate_args: bool = False,
 ) -> Tensor:
-    r"""Computes the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs) for multiclass tasks.
+    r"""Compute the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs) for multiclass tasks.
 
     The metric can be computed in two ways. Either, the definition by Crammer and Singer is used:
 
@@ -252,7 +252,7 @@ def hinge_loss(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs).
+    r"""Compute the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs).
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'`` or ``'multiclass'``. See the documentation of
@@ -276,9 +276,10 @@ def hinge_loss(
         >>> hinge_loss(preds, target, task="multiclass", num_classes=3, multiclass_mode="one-vs-all")
         tensor([1.3743, 1.1945, 1.2359])
     """
-    if task == "binary":
+    task = ClassificationTaskNoMultilabel.from_str(task)
+    if task == ClassificationTaskNoMultilabel.BINARY:
         return binary_hinge_loss(preds, target, squared, ignore_index, validate_args)
-    if task == "multiclass":
+    if task == ClassificationTaskNoMultilabel.MULTICLASS:
         assert isinstance(num_classes, int)
         return multiclass_hinge_loss(preds, target, num_classes, squared, multiclass_mode, ignore_index, validate_args)
-    raise ValueError(f"Expected argument `task` to either be `'binary'` or `'multilabel'` but got {task}")
+    raise ValueError(f"Not handled value: {task}")  # this is for compliant of mypy

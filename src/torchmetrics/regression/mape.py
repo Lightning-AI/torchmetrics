@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ from torchmetrics.metric import Metric
 
 
 class MeanAbsolutePercentageError(Metric):
-    r"""Computes `Mean Absolute Percentage Error`_ (MAPE):
+    r"""Compute `Mean Absolute Percentage Error`_ (MAPE).
 
     .. math:: \text{MAPE} = \frac{1}{n}\sum_{i=1}^n\frac{|   y_i - \hat{y_i} |}{\max(\epsilon, | y_i |)}
 
@@ -71,7 +71,7 @@ class MeanAbsolutePercentageError(Metric):
         self.add_state("sum_abs_per_error", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0.0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
         sum_abs_per_error, num_obs = _mean_absolute_percentage_error_update(preds, target)
 
@@ -79,5 +79,5 @@ class MeanAbsolutePercentageError(Metric):
         self.total += num_obs
 
     def compute(self) -> Tensor:
-        """Computes mean absolute percentage error over state."""
+        """Compute mean absolute percentage error over state."""
         return _mean_absolute_percentage_error_compute(self.sum_abs_per_error, self.total)

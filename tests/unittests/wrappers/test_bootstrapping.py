@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,8 +33,12 @@ _target = torch.randint(10, (10, 32))
 
 
 class TestBootStrapper(BootStrapper):
-    """For testing purpose, we subclass the bootstrapper class so we can get the exact permutation the class is
-    creating."""
+    """Subclass of Bootstrapper class.
+
+    For testing purpose, we subclass the bootstrapper class so we can get the exact permutation the class is
+    creating. This is nessesary such that the reference we are comparing to returns the exact same result for a given
+    permutation.
+    """
 
     def update(self, *args) -> None:
         self.out = []
@@ -58,7 +62,7 @@ def _sample_checker(old_samples, new_samples, op: operator, threshold: int):
 
 @pytest.mark.parametrize("sampling_strategy", ["poisson", "multinomial"])
 def test_bootstrap_sampler(sampling_strategy):
-    """make sure that the bootstrap sampler works as intended."""
+    """Make sure that the bootstrap sampler works as intended."""
     old_samples = torch.randn(20, 2)
 
     # make sure that the new samples are only made up of old samples
@@ -90,7 +94,7 @@ def test_bootstrap(device, sampling_strategy, metric, ref_metric):
         pytest.skip("Test with device='cuda' requires gpu")
 
     _kwargs = {"base_metric": metric, "mean": True, "std": True, "raw": True, "sampling_strategy": sampling_strategy}
-    _kwargs.update(dict(quantile=torch.tensor([0.05, 0.95], device=device)))
+    _kwargs.update({"quantile": torch.tensor([0.05, 0.95], device=device)})
 
     bootstrapper = TestBootStrapper(**_kwargs)
     bootstrapper.to(device)

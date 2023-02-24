@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -119,7 +119,7 @@ def _eed_function(
     deletion: float = 0.2,
     insertion: float = 1.0,
 ) -> float:
-    """Computes extended edit distance score for two lists of strings: hyp and ref.
+    """Compute extended edit distance score for two lists of strings: hyp and ref.
 
     Code adapted from: https://github.com/rwth-i6/ExtendedEditDistance/blob/master/EED.py.
 
@@ -266,7 +266,7 @@ def _preprocess_sentences(
         ValueError: If objects in reference and hypothesis corpus are not strings
     """
     # sanity checks
-    target, preds = _validate_inputs(hypothesis_corpus=preds, reference_corpus=target)
+    target, preds = _validate_inputs(hypothesis_corpus=preds, ref_corpus=target)
 
     # preprocess string
     if language == "en":
@@ -364,7 +364,7 @@ def extended_edit_distance(
     deletion: float = 0.2,
     insertion: float = 1.0,
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    """Computes extended edit distance score (`ExtendedEditDistance`_) [1] for strings or list of strings. The
+    """Compute extended edit distance score (`ExtendedEditDistance`_) [1] for strings or list of strings. The
     metric utilises the Levenshtein distance and extends it by adding a jump operation.
 
     Args:

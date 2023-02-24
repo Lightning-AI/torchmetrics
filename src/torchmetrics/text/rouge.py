@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -171,6 +171,7 @@ class ROUGEScore(Metric):
         return _rouge_score_compute(update_output)
 
     def __hash__(self) -> int:
+        """Return a unique hash for the specific instance of this metric."""
         # override to hash list objects.
         # this is a bug in the upstream pytorch release.
         hash_vals = [self.__class__.__name__]

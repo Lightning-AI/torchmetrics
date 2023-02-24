@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ from torchmetrics.functional.classification.stat_scores import (
     _multilabel_stat_scores_tensor_validation,
 )
 from torchmetrics.utilities.compute import _safe_divide
+from torchmetrics.utilities.enums import ClassificationTaskNoBinary
 
 
 def _exact_match_reduce(
@@ -41,7 +42,7 @@ def _multiclass_exact_match_update(
     target: Tensor,
     multidim_average: Literal["global", "samplewise"] = "global",
 ) -> Tuple[Tensor, Tensor]:
-    """Computes the statistics."""
+    """Compute the statistics."""
     correct = (preds == target).sum(1) == preds.shape[1]
     correct = correct if multidim_average == "samplewise" else correct.sum()
     total = torch.tensor(preds.shape[0] if multidim_average == "global" else 1, device=correct.device)
@@ -56,7 +57,7 @@ def multiclass_exact_match(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes Exact match (also known as subset accuracy) for multiclass tasks. Exact Match is a stricter version
+    r"""Compute Exact match (also known as subset accuracy) for multiclass tasks. Exact Match is a stricter version
     of accuracy where all labels have to match exactly for the sample to be correctly classified.
 
     Accepts the following input tensors:
@@ -115,7 +116,7 @@ def multiclass_exact_match(
 def _multilabel_exact_match_update(
     preds: Tensor, target: Tensor, num_labels: int, multidim_average: Literal["global", "samplewise"] = "global"
 ) -> Tuple[Tensor, Tensor]:
-    """Computes the statistics."""
+    """Compute the statistics."""
     if multidim_average == "global":
         preds = torch.movedim(preds, 1, -1).reshape(-1, num_labels)
         target = torch.movedim(target, 1, -1).reshape(-1, num_labels)
@@ -134,7 +135,7 @@ def multilabel_exact_match(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes Exact match (also known as subset accuracy) for multilabel tasks. Exact Match is a stricter version
+    r"""Compute Exact match (also known as subset accuracy) for multilabel tasks. Exact Match is a stricter version
     of accuracy where all labels have to match exactly for the sample to be correctly classified.
 
     Accepts the following input tensors:
@@ -210,8 +211,8 @@ def exact_match(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes Exact match (also known as subset accuracy). Exact Match is a stricter version of accuracy where
-    all classes/labels have to match exactly for the sample to be correctly classified.
+    r"""Compute Exact match (also known as subset accuracy). Exact Match is a stricter version of accuracy where all
+    classes/labels have to match exactly for the sample to be correctly classified.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'multiclass'`` or ``'multilabel'``. See the documentation of
@@ -229,12 +230,13 @@ def exact_match(
         >>> exact_match(preds, target, task="multiclass", num_classes=3, multidim_average='samplewise')
         tensor([1., 0.])
     """
-    if task == "multiclass":
+    task = ClassificationTaskNoBinary.from_str(task)
+    if task == ClassificationTaskNoBinary.MULTICLASS:
         assert num_classes is not None
         return multiclass_exact_match(preds, target, num_classes, multidim_average, ignore_index, validate_args)
-    if task == "multilalbe":
+    if task == ClassificationTaskNoBinary.MULTILABEL:
         assert num_labels is not None
         return multilabel_exact_match(
             preds, target, num_labels, threshold, multidim_average, ignore_index, validate_args
         )
-    raise ValueError(f"Expected argument `task` to either be `'multiclass'` or `'multilabel'` but got {task}")
+    raise ValueError(f"Not handled value: {task}")  # this is for compliant of mypy

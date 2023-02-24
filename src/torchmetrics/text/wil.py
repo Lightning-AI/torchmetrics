@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ from torchmetrics.metric import Metric
 
 class WordInfoLost(Metric):
     r"""Word Information Lost (`WIL`_) is a metric of the performance of an automatic speech recognition system.
+
     This value indicates the percentage of words that were incorrectly predicted between a set of ground-truth
     sentences and a set of hypothesis sentences. The lower the value, the better the performance of the ASR system
     with a WordInfoLost of 0 being a perfect score. Word Information Lost rate can then be computed as:

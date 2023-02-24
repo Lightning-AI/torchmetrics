@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ torch.manual_seed(42)
 def _sklearn_binary_hinge_loss(preds, target, ignore_index):
     preds = preds.numpy().flatten()
     target = target.numpy().flatten()
-    if not ((0 < preds) & (preds < 1)).all():
+    if not ((preds > 0) & (preds < 1)).all():
         preds = sigmoid(preds)
 
     target, preds = remove_ignore_index(target, preds, ignore_index)
@@ -112,7 +112,7 @@ class TestBinaryHingeLoss(MetricTester):
 def _sklearn_multiclass_hinge_loss(preds, target, multiclass_mode, ignore_index):
     preds = preds.numpy()
     target = target.numpy().flatten()
-    if not ((0 < preds) & (preds < 1)).all():
+    if not ((preds > 0) & (preds < 1)).all():
         preds = softmax(preds, 1)
     preds = np.moveaxis(preds, 1, -1).reshape((-1, preds.shape[1]))
     target, preds = remove_ignore_index(target, preds, ignore_index)

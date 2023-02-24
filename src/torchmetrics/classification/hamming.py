@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,10 +19,11 @@ from typing_extensions import Literal
 from torchmetrics.classification.stat_scores import BinaryStatScores, MulticlassStatScores, MultilabelStatScores
 from torchmetrics.functional.classification.hamming import _hamming_distance_reduce
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.enums import ClassificationTask
 
 
 class BinaryHammingDistance(BinaryStatScores):
-    r"""Computes the average `Hamming distance`_ (also known as Hamming loss) for binary tasks:
+    r"""Compute the average `Hamming distance`_ (also known as Hamming loss) for binary tasks.
 
     .. math::
         \text{Hamming distance} = \frac{1}{N \cdot L} \sum_i^N \sum_l^L 1(y_{il} \neq \hat{y}_{il})
@@ -93,12 +94,13 @@ class BinaryHammingDistance(BinaryStatScores):
     full_state_update: bool = False
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _hamming_distance_reduce(tp, fp, tn, fn, average="binary", multidim_average=self.multidim_average)
 
 
 class MulticlassHammingDistance(MulticlassStatScores):
-    r"""Computes the average `Hamming distance`_ (also known as Hamming loss) for multiclass tasks:
+    r"""Compute the average `Hamming distance`_ (also known as Hamming loss) for multiclass tasks.
 
     .. math::
         \text{Hamming distance} = \frac{1}{N \cdot L} \sum_i^N \sum_l^L 1(y_{il} \neq \hat{y}_{il})
@@ -137,8 +139,8 @@ class MulticlassHammingDistance(MulticlassStatScores):
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
         top_k:
             Number of highest probability or logit score predictions considered to find the correct label.
             Only works when ``preds`` contain probabilities/logits.
@@ -198,12 +200,13 @@ class MulticlassHammingDistance(MulticlassStatScores):
     full_state_update: bool = False
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _hamming_distance_reduce(tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average)
 
 
 class MultilabelHammingDistance(MultilabelStatScores):
-    r"""Computes the average `Hamming distance`_ (also known as Hamming loss) for multilabel tasks:
+    r"""Compute the average `Hamming distance`_ (also known as Hamming loss) for multilabel tasks.
 
     .. math::
         \text{Hamming distance} = \frac{1}{N \cdot L} \sum_i^N \sum_l^L 1(y_{il} \neq \hat{y}_{il})
@@ -244,8 +247,8 @@ class MultilabelHammingDistance(MultilabelStatScores):
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
 
         multidim_average:
             Defines how additionally dimensions ``...`` should be handled. Should be one of the following:
@@ -301,6 +304,7 @@ class MultilabelHammingDistance(MultilabelStatScores):
     full_state_update: bool = False
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _hamming_distance_reduce(
             tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average, multilabel=True
@@ -308,7 +312,7 @@ class MultilabelHammingDistance(MultilabelStatScores):
 
 
 class HammingDistance:
-    r"""Computes the average `Hamming distance`_ (also known as Hamming loss):
+    r"""Compute the average `Hamming distance`_ (also known as Hamming loss).
 
     .. math::
         \text{Hamming distance} = \frac{1}{N \cdot L} \sum_i^N \sum_l^L 1(y_{il} \neq \hat{y}_{il})
@@ -344,18 +348,18 @@ class HammingDistance:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
-
+        """Initialize task metric."""
+        task = ClassificationTask.from_str(task)
         assert multidim_average is not None
-        kwargs.update(dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args))
-        if task == "binary":
+        kwargs.update(
+            {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
+        )
+        if task == ClassificationTask.BINARY:
             return BinaryHammingDistance(threshold, **kwargs)
-        if task == "multiclass":
+        if task == ClassificationTask.MULTICLASS:
             assert isinstance(num_classes, int)
             assert isinstance(top_k, int)
             return MulticlassHammingDistance(num_classes, top_k, average, **kwargs)
-        if task == "multilabel":
+        if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelHammingDistance(num_labels, threshold, average, **kwargs)
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-        )

@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -36,10 +36,11 @@ from torchmetrics.functional.classification.roc import (
     _multiclass_roc_compute,
     _multilabel_roc_compute,
 )
+from torchmetrics.utilities.enums import ClassificationTask
 
 
 def _convert_fpr_to_specificity(fpr: Tensor) -> Tensor:
-    """Converts fprs to specificity."""
+    """Convert  fprs to specificity."""
     return 1 - fpr
 
 
@@ -101,7 +102,7 @@ def binary_specificity_at_sensitivity(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tuple[Tensor, Tensor]:
-    r"""Computes the higest possible specificity value given the minimum sensitivity thresholds provided for binary
+    r"""Compute the higest possible specificity value given the minimum sensitivity thresholds provided for binary
     tasks. This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different
     thresholds and the find the specificity for a given sensitivity level.
 
@@ -136,6 +137,8 @@ def binary_specificity_at_sensitivity(
             - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 
@@ -207,7 +210,7 @@ def multiclass_specificity_at_sensitivity(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tuple[Tensor, Tensor]:
-    r"""Computes the higest possible specificity value given the minimum sensitivity thresholds provided for
+    r"""Compute the higest possible specificity value given the minimum sensitivity thresholds provided for
     multiclass tasks. This is done by first calculating the Receiver Operating Characteristic (ROC) curve for
     different thresholds and the find the specificity for a given sensitivity level.
 
@@ -243,6 +246,8 @@ def multiclass_specificity_at_sensitivity(
             - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 
@@ -322,7 +327,7 @@ def multilabel_specificity_at_sensitivity(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tuple[Tensor, Tensor]:
-    r"""Computes the higest possible specificity value given the minimum sensitivity thresholds provided for
+    r"""Compute the higest possible specificity value given the minimum sensitivity thresholds provided for
     multilabel tasks. This is done by first calculating the Receiver Operating Characteristic (ROC) curve for
     different thresholds and the find the specificity for a given sensitivity level.
 
@@ -358,6 +363,8 @@ def multilabel_specificity_at_sensitivity(
             - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 
@@ -404,7 +411,7 @@ def specicity_at_sensitivity(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tensor, Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    r"""Computes the higest possible specicity value given the minimum sensitivity thresholds provided. This is done
+    r"""Compute the higest possible specicity value given the minimum sensitivity thresholds provided. This is done
     by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the find
     the specificity for a given sensitivity level.
 
@@ -413,20 +420,19 @@ def specicity_at_sensitivity(
     :func:`binary_specificity_at_sensitivity`, :func:`multiclass_specicity_at_sensitivity` and
     :func:`multilabel_specifity_at_sensitvity` for the specific details of each argument influence and examples.
     """
-    if task == "binary":
+    task = ClassificationTask.from_str(task)
+    if task == ClassificationTask.BINARY:
         return binary_specificity_at_sensitivity(  # type: ignore
             preds, target, min_sensitivity, thresholds, ignore_index, validate_args
         )
-    if task == "multiclass":
+    if task == ClassificationTask.MULTICLASS:
         assert isinstance(num_classes, int)
         return multiclass_specificity_at_sensitivity(  # type: ignore
             preds, target, num_classes, min_sensitivity, thresholds, ignore_index, validate_args
         )
-    if task == "multilabel":
+    if task == ClassificationTask.MULTILABEL:
         assert isinstance(num_labels, int)
         return multilabel_specificity_at_sensitivity(  # type: ignore
             preds, target, num_labels, min_sensitivity, thresholds, ignore_index, validate_args
         )
-    raise ValueError(
-        f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-    )
+    raise ValueError(f"Not handled value: {task}")  # this is for compliant of mypy

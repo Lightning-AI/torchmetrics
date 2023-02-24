@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ from torchmetrics.metric import Metric
 
 
 class MultilabelCoverageError(Metric):
-    """Computes `Multilabel coverage error`_. The score measure how far we need to go through the ranked scores to
+    """Compute `Multilabel coverage error`_. The score measure how far we need to go through the ranked scores to
     cover all true labels. The best value is equal to the average number of labels in the target tensor per sample.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
@@ -84,7 +84,8 @@ class MultilabelCoverageError(Metric):
         self.add_state("measure", torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", torch.tensor(0.0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
+        """Update metric states."""
         if self.validate_args:
             _multilabel_ranking_tensor_validation(preds, target, self.num_labels, self.ignore_index)
         preds, target = _multilabel_confusion_matrix_format(
@@ -95,11 +96,12 @@ class MultilabelCoverageError(Metric):
         self.total += n_elements
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         return _ranking_reduce(self.measure, self.total)
 
 
 class MultilabelRankingAveragePrecision(Metric):
-    """Computes label ranking average precision score for multilabel data [1]. The score is the average over each
+    """Compute label ranking average precision score for multilabel data [1]. The score is the average over each
     ground truth label assigned to each sample of the ratio of true vs. total labels with lower score. Best score
     is 1.
 
@@ -155,7 +157,8 @@ class MultilabelRankingAveragePrecision(Metric):
         self.add_state("measure", torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", torch.tensor(0.0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
+        """Update metric states."""
         if self.validate_args:
             _multilabel_ranking_tensor_validation(preds, target, self.num_labels, self.ignore_index)
         preds, target = _multilabel_confusion_matrix_format(
@@ -166,11 +169,12 @@ class MultilabelRankingAveragePrecision(Metric):
         self.total += n_elements
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         return _ranking_reduce(self.measure, self.total)
 
 
 class MultilabelRankingLoss(Metric):
-    """Computes the label ranking loss for multilabel data [1]. The score is corresponds to the average number of
+    """Compute the label ranking loss for multilabel data [1]. The score is corresponds to the average number of
     label pairs that are incorrectly ordered given some predictions weighted by the size of the label set and the
     number of labels not in the label set. The best score is 0.
 
@@ -228,7 +232,8 @@ class MultilabelRankingLoss(Metric):
         self.add_state("measure", torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", torch.tensor(0.0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
+        """Update metric states."""
         if self.validate_args:
             _multilabel_ranking_tensor_validation(preds, target, self.num_labels, self.ignore_index)
         preds, target = _multilabel_confusion_matrix_format(
@@ -239,4 +244,5 @@ class MultilabelRankingLoss(Metric):
         self.total += n_elements
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         return _ranking_reduce(self.measure, self.total)

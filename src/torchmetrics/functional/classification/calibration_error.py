@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ from torchmetrics.functional.classification.confusion_matrix import (
     _multiclass_confusion_matrix_format,
     _multiclass_confusion_matrix_tensor_validation,
 )
+from torchmetrics.utilities.enums import ClassificationTaskNoMultilabel
 
 
 def _binning_bucketize(
@@ -64,7 +65,7 @@ def _ce_compute(
     norm: str = "l1",
     debias: bool = False,
 ) -> Tensor:
-    """Computes the calibration error given the provided bin boundaries and norm.
+    """Compute the calibration error given the provided bin boundaries and norm.
 
     Args:
         confidences: The confidence (i.e. predicted prob) of the top1 prediction.
@@ -235,7 +236,7 @@ def _multiclass_calibration_error_update(
     preds: Tensor,
     target: Tensor,
 ) -> Tensor:
-    if not torch.all((0 <= preds) * (preds <= 1)):
+    if not torch.all((preds >= 0) * (preds <= 1)):
         preds = preds.softmax(1)
     confidences, predictions = preds.max(dim=1)
     accuracies = predictions.eq(target)
@@ -347,10 +348,11 @@ def calibration_error(
     :func:`binary_calibration_error` and :func:`multiclass_calibration_error` for the specific details of
     each argument influence and examples.
     """
+    task = ClassificationTaskNoMultilabel.from_str(task)
     assert norm is not None
-    if task == "binary":
+    if task == ClassificationTaskNoMultilabel.BINARY:
         return binary_calibration_error(preds, target, n_bins, norm, ignore_index, validate_args)
-    if task == "multiclass":
+    if task == ClassificationTaskNoMultilabel.MULTICLASS:
         assert isinstance(num_classes, int)
         return multiclass_calibration_error(preds, target, num_classes, n_bins, norm, ignore_index, validate_args)
     raise ValueError(f"Expected argument `task` to either be `'binary'` or `'multiclass'` but got {task}")

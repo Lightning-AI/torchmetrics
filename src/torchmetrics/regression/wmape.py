@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,8 +24,9 @@ from torchmetrics.metric import Metric
 
 
 class WeightedMeanAbsolutePercentageError(Metric):
-    r"""Computes weighted mean absolute percentage error (`WMAPE`_). The output of WMAPE metric is a non-negative
-    floating point, where the optimal value is 0. It is computes as:
+    r"""Compute weighted mean absolute percentage error (`WMAPE`_).
+
+    The output of WMAPE metric is a non-negative floating point, where the optimal value is 0. It is computes as:
 
     .. math::
         \text{WMAPE} = \frac{\sum_{t=1}^n | y_t - \hat{y}_t | }{\sum_{t=1}^n |y_t| }
@@ -72,5 +73,5 @@ class WeightedMeanAbsolutePercentageError(Metric):
         self.sum_scale += sum_scale
 
     def compute(self) -> Tensor:
-        """Computes weighted mean absolute percentage error over state."""
+        """Compute weighted mean absolute percentage error over state."""
         return _weighted_mean_absolute_percentage_error_compute(self.sum_abs_error, self.sum_scale)

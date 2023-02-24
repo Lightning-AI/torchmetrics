@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,11 +29,11 @@ from torchmetrics.functional.classification.hinge import (
     _multiclass_hinge_loss_update,
 )
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.enums import ClassificationTaskNoMultilabel
 
 
 class BinaryHingeLoss(Metric):
-    r"""Computes the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs) for binary tasks. It is
-    defined as:
+    r"""Compute the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs) for binary tasks.
 
     .. math::
         \text{Hinge loss} = \max(0, 1 - y \times \hat{y})
@@ -97,7 +97,8 @@ class BinaryHingeLoss(Metric):
         self.add_state("measures", default=torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=torch.tensor(0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
+        """Update metric state."""
         if self.validate_args:
             _binary_hinge_loss_tensor_validation(preds, target, self.ignore_index)
         preds, target = _binary_confusion_matrix_format(
@@ -108,11 +109,12 @@ class BinaryHingeLoss(Metric):
         self.total += total
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         return _hinge_loss_compute(self.measures, self.total)
 
 
 class MulticlassHingeLoss(Metric):
-    r"""Computes the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs) for multiclass tasks.
+    r"""Compute the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs) for multiclass tasks.
 
     The metric can be computed in two ways. Either, the definition by Crammer and Singer is used:
 
@@ -201,7 +203,8 @@ class MulticlassHingeLoss(Metric):
         )
         self.add_state("total", default=torch.tensor(0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
+        """Update metric state."""
         if self.validate_args:
             _multiclass_hinge_loss_tensor_validation(preds, target, self.num_classes, self.ignore_index)
         preds, target = _multiclass_confusion_matrix_format(preds, target, self.ignore_index, convert_to_labels=False)
@@ -210,11 +213,12 @@ class MulticlassHingeLoss(Metric):
         self.total += total
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         return _hinge_loss_compute(self.measures, self.total)
 
 
 class HingeLoss:
-    r"""Computes the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs).
+    r"""Compute the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs).
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'`` or ``'multiclass'``. See the documentation of
@@ -252,12 +256,11 @@ class HingeLoss:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
-        kwargs.update(dict(ignore_index=ignore_index, validate_args=validate_args))
-        if task == "binary":
+        """Initialize task metric."""
+        task = ClassificationTaskNoMultilabel.from_str(task)
+        kwargs.update({"ignore_index": ignore_index, "validate_args": validate_args})
+        if task == ClassificationTaskNoMultilabel.BINARY:
             return BinaryHingeLoss(squared, **kwargs)
-        if task == "multiclass":
+        if task == ClassificationTaskNoMultilabel.MULTICLASS:
             assert isinstance(num_classes, int)
             return MulticlassHingeLoss(num_classes, squared, multiclass_mode, **kwargs)
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-        )

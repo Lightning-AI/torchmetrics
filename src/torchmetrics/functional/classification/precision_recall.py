@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ from torchmetrics.functional.classification.stat_scores import (
     _multilabel_stat_scores_update,
 )
 from torchmetrics.utilities.compute import _safe_divide
+from torchmetrics.utilities.enums import ClassificationTask
 
 
 def _precision_recall_reduce(
@@ -55,10 +56,7 @@ def _precision_recall_reduce(
         score = _safe_divide(tp, tp + different_stat)
         if average is None or average == "none":
             return score
-        if average == "weighted":
-            weights = tp + fn
-        else:
-            weights = torch.ones_like(score)
+        weights = tp + fn if average == "weighted" else torch.ones_like(score)
         return _safe_divide(weights * score, weights.sum(-1, keepdim=True)).sum(-1)
 
 
@@ -70,7 +68,7 @@ def binary_precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes `Precision`_ for binary tasks:
+    r"""Compute `Precision`_ for binary tasks.
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 
@@ -145,7 +143,7 @@ def multiclass_precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes `Precision`_ for multiclass tasks.
+    r"""Compute `Precision`_ for multiclass tasks.
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 
@@ -168,8 +166,8 @@ def multiclass_precision(
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
 
         top_k:
             Number of highest probability or logit score predictions considered to find the correct label.
@@ -251,7 +249,7 @@ def multilabel_precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes `Precision`_ for multilabel tasks.
+    r"""Compute `Precision`_ for multilabel tasks.
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 
@@ -275,8 +273,8 @@ def multilabel_precision(
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
 
         multidim_average:
             Defines how additionally dimensions ``...`` should be handled. Should be one of the following:
@@ -349,7 +347,7 @@ def binary_recall(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes `Recall`_ for binary tasks:
+    r"""Compute `Recall`_ for binary tasks.
 
     .. math:: \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
 
@@ -424,7 +422,7 @@ def multiclass_recall(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes `Recall`_ for multiclass tasks:
+    r"""Compute `Recall`_ for multiclass tasks.
 
     .. math:: \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
 
@@ -447,8 +445,8 @@ def multiclass_recall(
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
 
         top_k:
             Number of highest probability or logit score predictions considered to find the correct label.
@@ -530,7 +528,7 @@ def multilabel_recall(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes `Recall`_ for multilabel tasks:
+    r"""Compute `Recall`_ for multilabel tasks.
 
     .. math:: \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
 
@@ -554,8 +552,8 @@ def multilabel_recall(
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
 
         multidim_average:
             Defines how additionally dimensions ``...`` should be handled. Should be one of the following:
@@ -633,7 +631,7 @@ def precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes `Precision`_:
+    r"""Compute `Precision`_.
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 
@@ -655,15 +653,15 @@ def precision(
         tensor(0.2500)
     """
     assert multidim_average is not None
-    if task == "binary":
+    if task == ClassificationTask.BINARY:
         return binary_precision(preds, target, threshold, multidim_average, ignore_index, validate_args)
-    if task == "multiclass":
+    if task == ClassificationTask.MULTICLASS:
         assert isinstance(num_classes, int)
         assert isinstance(top_k, int)
         return multiclass_precision(
             preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args
         )
-    if task == "multilabel":
+    if task == ClassificationTask.MULTILABEL:
         assert isinstance(num_labels, int)
         return multilabel_precision(
             preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
@@ -686,7 +684,7 @@ def recall(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes `Recall`_:
+    r"""Compute `Recall`_.
 
     .. math:: \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
 
@@ -707,20 +705,19 @@ def recall(
         >>> recall(preds, target, task="multiclass", average='micro', num_classes=3)
         tensor(0.2500)
     """
+    task = ClassificationTask.from_str(task)
     assert multidim_average is not None
-    if task == "binary":
+    if task == ClassificationTask.BINARY:
         return binary_recall(preds, target, threshold, multidim_average, ignore_index, validate_args)
-    if task == "multiclass":
+    if task == ClassificationTask.MULTICLASS:
         assert isinstance(num_classes, int)
         assert isinstance(top_k, int)
         return multiclass_recall(
             preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args
         )
-    if task == "multilabel":
+    if task == ClassificationTask.MULTILABEL:
         assert isinstance(num_labels, int)
         return multilabel_recall(
             preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
         )
-    raise ValueError(
-        f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-    )
+    raise ValueError(f"Not handled value: {task}")  # this is for compliant of mypy

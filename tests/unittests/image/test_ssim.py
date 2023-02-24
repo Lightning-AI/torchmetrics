@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -134,8 +134,7 @@ class TestSSIM(MetricTester):
     atol = 6e-3
 
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_ssim_sk(self, preds, target, sigma, ddp, dist_sync_on_step):
+    def test_ssim_sk(self, preds, target, sigma, ddp):
         self.run_class_metric_test(
             ddp,
             preds,
@@ -146,12 +145,10 @@ class TestSSIM(MetricTester):
                 "data_range": 1.0,
                 "sigma": sigma,
             },
-            dist_sync_on_step=dist_sync_on_step,
         )
 
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_ssim_pt(self, preds, target, sigma, ddp, dist_sync_on_step):
+    def test_ssim_pt(self, preds, target, sigma, ddp):
         self.run_class_metric_test(
             ddp,
             preds,
@@ -162,12 +159,10 @@ class TestSSIM(MetricTester):
                 "data_range": 1.0,
                 "sigma": sigma,
             },
-            dist_sync_on_step=dist_sync_on_step,
         )
 
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_ssim_without_gaussian_kernel(self, preds, target, sigma, ddp, dist_sync_on_step):
+    def test_ssim_without_gaussian_kernel(self, preds, target, sigma, ddp):
         self.run_class_metric_test(
             ddp,
             preds,
@@ -179,7 +174,6 @@ class TestSSIM(MetricTester):
                 "data_range": 1.0,
                 "sigma": sigma,
             },
-            dist_sync_on_step=dist_sync_on_step,
         )
 
     @pytest.mark.parametrize("reduction_arg", ["sum", "elementwise_mean", None])
@@ -217,30 +211,57 @@ class TestSSIM(MetricTester):
 
 
 @pytest.mark.parametrize(
-    ["pred", "target", "kernel", "sigma"],
+    ("pred", "target", "kernel", "sigma", "match"),
     [
-        ([1, 1, 16, 16], [1, 1, 16, 16], [11, 11], [1.5]),  # len(kernel), len(sigma)
-        ([1, 16, 16], [1, 16, 16], [11, 11], [1.5, 1.5]),  # len(shape)
-        ([1, 1, 16, 16], [1, 1, 16, 16], [11], [1.5, 1.5]),  # len(kernel), len(sigma)
-        ([1, 1, 16, 16], [1, 1, 16, 16], [11], [1.5]),  # len(kernel), len(sigma)
-        ([1, 1, 16, 16], [1, 1, 16, 16], [11, 0], [1.5, 1.5]),  # invalid kernel input
-        ([1, 1, 16, 16], [1, 1, 16, 16], [11, 10], [1.5, 1.5]),  # invalid kernel input
-        ([1, 1, 16, 16], [1, 1, 16, 16], [11, -11], [1.5, 1.5]),  # invalid kernel input
-        ([1, 1, 16, 16], [1, 1, 16, 16], [11, 11], [1.5, 0]),  # invalid sigma input
-        ([1, 1, 16, 16], [1, 1, 16, 16], [11, 0], [1.5, -1.5]),  # invalid sigma input
+        (
+            [1, 1, 16, 16],
+            [1, 1, 16, 16],
+            [11, 11],
+            [1.5],
+            "`kernel_size` has dimension 2, but expected to be two less that target dimensionality.*",
+        ),
+        (
+            [1, 16, 16],
+            [1, 16, 16],
+            [11, 11],
+            [1.5, 1.5],
+            "Expected `preds` and `target` to have BxCxHxW or BxCxDxHxW shape.*",
+        ),
+        (
+            [1, 1, 16, 16],
+            [1, 1, 16, 16],
+            [11],
+            [1.5, 1.5],
+            "`kernel_size` has dimension 1, but expected to be two less that target dimensionality.*",
+        ),
+        (
+            [1, 1, 16, 16],
+            [1, 1, 16, 16],
+            [11],
+            [1.5],
+            "`kernel_size` has dimension 1, but expected to be two less that target dimensionality.*",
+        ),
+        ([1, 1, 16, 16], [1, 1, 16, 16], [11, 0], [1.5, 1.5], "Expected `kernel_size` to have odd positive number.*"),
+        ([1, 1, 16, 16], [1, 1, 16, 16], [11, 10], [1.5, 1.5], "Expected `kernel_size` to have odd positive number.*"),
+        ([1, 1, 16, 16], [1, 1, 16, 16], [11, -11], [1.5, 1.5], "Expected `kernel_size` to have odd positive number.*"),
+        ([1, 1, 16, 16], [1, 1, 16, 16], [11, 11], [1.5, 0], "Expected `sigma` to have positive number.*"),
+        ([1, 1, 16, 16], [1, 1, 16, 16], [11, 11], [1.5, -1.5], "Expected `sigma` to have positive number.*"),
     ],
 )
-def test_ssim_invalid_inputs(pred, target, kernel, sigma):
-    """Test that an value errors are raised if input sizes are different, kernel length and sigma does not match
-    size or invalid values are provided."""
+def test_ssim_invalid_inputs(pred, target, kernel, sigma, match):
+    """Test for invalid input.
+
+    Checks that that an value errors are raised if input sizes are different, kernel length and sigma does not match
+    size or invalid values are provided.
+    """
     pred = torch.rand(pred)
     target = torch.rand(target)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=match):
         structural_similarity_index_measure(pred, target, kernel_size=kernel, sigma=sigma)
 
 
 def test_ssim_unequal_kernel_size():
-    """Test the case where kernel_size[0] != kernel_size[1]"""
+    """Test the case where kernel_size[0] != kernel_size[1]."""
     preds = torch.tensor(
         [
             [
@@ -292,7 +313,7 @@ def test_ssim_unequal_kernel_size():
 
 
 @pytest.mark.parametrize(
-    "preds, target",
+    ("preds", "target"),
     [(i.preds, i.target) for i in _inputs],
 )
 def test_full_image_output(preds, target):

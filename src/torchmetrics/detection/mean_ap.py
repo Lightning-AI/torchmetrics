@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -64,7 +64,6 @@ def compute_iou(
     iou_type: str = "bbox",
 ) -> Tensor:
     """Compute IOU between detections and ground-truth using the specified iou_type."""
-
     if iou_type == "bbox":
         return box_iou(torch.stack(det), torch.stack(gt))
     elif iou_type == "segm":
@@ -77,15 +76,18 @@ class BaseMetricResults(dict):
     """Base metric class, that allows fields for pre-defined metrics."""
 
     def __getattr__(self, key: str) -> Tensor:
+        """Get a specific metric attribute."""
         # Using this you get the correct error message, an AttributeError instead of a KeyError
         if key in self:
             return self[key]
         raise AttributeError(f"No such attribute: {key}")
 
     def __setattr__(self, key: str, value: Tensor) -> None:
+        """Set a specific metric attribute."""
         self[key] = value
 
     def __delattr__(self, key: str) -> None:
+        """Delete a specific metric attribute."""
         if key in self:
             del self[key]
         raise AttributeError(f"No such attribute: {key}")
@@ -125,8 +127,10 @@ class COCOMetricResults(BaseMetricResults):
 
 
 def _segm_iou(det: List[Tuple[np.ndarray, np.ndarray]], gt: List[Tuple[np.ndarray, np.ndarray]]) -> Tensor:
-    """
-    Compute IOU between detections and ground-truths using mask-IOU. Based on pycocotools toolkit for mask_utils
+    """Compute IOU between detections and ground-truths using mask-IOU.
+
+    Implementation is based on pycocotools toolkit for mask_utils.
+
     Args:
        det: A list of detection masks as ``[(RLE_SIZE, RLE_COUNTS)]``, where ``RLE_SIZE`` is (width, height) dimension
            of the input and RLE_COUNTS is its RLE representation;
@@ -135,7 +139,6 @@ def _segm_iou(det: List[Tuple[np.ndarray, np.ndarray]], gt: List[Tuple[np.ndarra
            of the input and RLE_COUNTS is its RLE representation;
 
     """
-
     det_coco_format = [{"size": i[0], "counts": i[1]} for i in det]
     gt_coco_format = [{"size": i[0], "counts": i[1]} for i in gt]
 
@@ -145,7 +148,7 @@ def _segm_iou(det: List[Tuple[np.ndarray, np.ndarray]], gt: List[Tuple[np.ndarra
 def _input_validator(
     preds: Sequence[Dict[str, Tensor]], targets: Sequence[Dict[str, Tensor]], iou_type: str = "bbox"
 ) -> None:
-    """Ensure the correct input format of `preds` and `targets`"""
+    """Ensure the correct input format of `preds` and `targets`."""
     if not isinstance(preds, Sequence):
         raise ValueError("Expected argument `preds` to be of type Sequence")
     if not isinstance(targets, Sequence):
@@ -190,14 +193,13 @@ def _input_validator(
 
 def _fix_empty_tensors(boxes: Tensor) -> Tensor:
     """Empty tensors can cause problems in DDP mode, this methods corrects them."""
-
     if boxes.numel() == 0 and boxes.ndim == 1:
         return boxes.unsqueeze(0)
     return boxes
 
 
 class MeanAveragePrecision(Metric):
-    r"""Computes the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)`_ for object detection predictions.
+    r"""Compute the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)`_ for object detection predictions.
     Optionally, the mAP and mAR values can be calculated per class.
 
     Predicted boxes and targets have to be in Pascal VOC format
@@ -406,7 +408,7 @@ class MeanAveragePrecision(Metric):
         self.add_state("groundtruths", default=[], dist_reduce_fx=None)
         self.add_state("groundtruth_labels", default=[], dist_reduce_fx=None)
 
-    def update(self, preds: List[Dict[str, Tensor]], target: List[Dict[str, Tensor]]) -> None:  # type: ignore
+    def update(self, preds: List[Dict[str, Tensor]], target: List[Dict[str, Tensor]]) -> None:
         """Update state with predictions and targets."""
         _input_validator(preds, target, iou_type=self.iou_type)
 
@@ -425,8 +427,7 @@ class MeanAveragePrecision(Metric):
 
     def _move_list_states_to_cpu(self) -> None:
         """Move list states to cpu to save GPU memory."""
-
-        for key in self._defaults.keys():
+        for key in self._defaults:
             current_val = getattr(self, key)
             current_to_cpu = []
             if isinstance(current_val, Sequence):
@@ -461,7 +462,7 @@ class MeanAveragePrecision(Metric):
         return []
 
     def _compute_iou(self, idx: int, class_id: int, max_det: int) -> Tensor:
-        """Computes the Intersection over Union (IoU) for ground truth and detection bounding boxes for the given
+        """Compute the Intersection over Union (IoU) for ground truth and detection bounding boxes for the given
         image and class.
 
         Args:
@@ -472,7 +473,6 @@ class MeanAveragePrecision(Metric):
             max_det:
                 Maximum number of evaluated detection bounding boxes
         """
-
         # if self.iou_type == "bbox":
         gt = self.groundtruths[idx]
         det = self.detections[idx]
@@ -576,7 +576,6 @@ class MeanAveragePrecision(Metric):
             ious:
                 IoU results for image and class.
         """
-
         gt = self.groundtruths[idx]
         det = self.detections[idx]
         gt_label_mask = (self.groundtruth_labels[idx] == class_id).nonzero().squeeze(1)
@@ -799,7 +798,7 @@ class MeanAveragePrecision(Metric):
             recalls:
                 Recall values for different thresholds
         """
-        results = dict(precision=precisions, recall=recalls)
+        results = {"precision": precisions, "recall": recalls}
         map_metrics = MAPMetricResults()
         map_metrics.map = self._summarize(results, True)
         last_max_det_thr = self.max_detection_thresholds[-1]
@@ -896,7 +895,7 @@ class MeanAveragePrecision(Metric):
         return recall, precision, scores
 
     def compute(self) -> dict:
-        """Computes metric."""
+        """Compute metric."""
         classes = self._get_classes()
         precisions, recalls = self._calculate(classes)
         map_val, mar_val = self._summarize_results(precisions, recalls)

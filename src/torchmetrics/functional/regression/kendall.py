@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,41 +30,21 @@ class _MetricVariant(EnumStr):
     B = "b"
     C = "c"
 
-    @classmethod
-    def from_str(cls, value: Literal["a", "b", "c"]) -> "_MetricVariant":  # type: ignore[override]
-        """
-        Raises:
-            ValueError:
-                If required metric variant is not among the supported options.
-        """
-        _allowed_variants = [im.lower() for im in _MetricVariant._member_names_]
-
-        enum_key = super().from_str(value)
-        if enum_key is not None and enum_key in _allowed_variants:
-            return enum_key  # type: ignore[return-value]  # use override
-        raise ValueError(f"Invalid metric variant. Expected one of {_allowed_variants}, but got {enum_key}.")
+    @staticmethod
+    def _name() -> str:
+        return "variant"
 
 
 class _TestAlternative(EnumStr):
-    """Enumerate for test altenative options."""
+    """Enumerate for test alternative options."""
 
     TWO_SIDED = "two-sided"
     LESS = "less"
     GREATER = "greater"
 
-    @classmethod
-    def from_str(cls, value: Literal["two-sided", "less", "greater"]) -> "_TestAlternative":  # type: ignore[override]
-        """
-        Raises:
-            ValueError:
-                If required test alternative is not among the supported options.
-        """
-        _allowed_alternatives = [im.lower().replace("_", "-") for im in _TestAlternative._member_names_]
-
-        enum_key = super().from_str(value.replace("-", "_"))
-        if enum_key is not None and enum_key in _allowed_alternatives:
-            return enum_key  # type: ignore[return-value]  # use override
-        raise ValueError(f"Invalid test alternative. Expected one of {_allowed_alternatives}, but got {enum_key}.")
+    @staticmethod
+    def _name() -> str:
+        return "alternative"
 
 
 def _sort_on_first_sequence(x: Tensor, y: Tensor) -> Tuple[Tensor, Tensor]:
@@ -343,7 +323,7 @@ def kendall_rank_corrcoef(
     t_test: bool = False,
     alternative: Optional[Literal["two-sided", "less", "greater"]] = "two-sided",
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    r"""Computes `Kendall Rank Correlation Coefficient`_.
+    r"""Compute `Kendall Rank Correlation Coefficient`_.
 
     .. math::
         tau_a = \frac{C - D}{C + D}
@@ -415,13 +395,15 @@ def kendall_rank_corrcoef(
     if t_test and alternative is None:
         raise ValueError("Argument `alternative` is required if `t_test=True` but got `None`.")
 
-    _variant = _MetricVariant.from_str(variant)
-    _alternative = _TestAlternative.from_str(alternative) if t_test and alternative else None
+    _variant = _MetricVariant.from_str(str(variant))
+    _alternative = _TestAlternative.from_str(str(alternative)) if t_test else None
 
     _preds, _target = _kendall_corrcoef_update(
         preds, target, [], [], num_outputs=1 if preds.ndim == 1 else preds.shape[-1]
     )
-    tau, p_value = _kendall_corrcoef_compute(dim_zero_cat(_preds), dim_zero_cat(_target), _variant, _alternative)
+    tau, p_value = _kendall_corrcoef_compute(
+        dim_zero_cat(_preds), dim_zero_cat(_target), _variant, _alternative  # type: ignore[arg-type]  # todo
+    )
 
     if p_value is not None:
         return tau, p_value

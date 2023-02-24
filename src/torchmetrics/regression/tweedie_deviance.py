@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ from torchmetrics.metric import Metric
 
 
 class TweedieDevianceScore(Metric):
-    r"""Computes the `Tweedie Deviance Score`_ between targets and predictions:
+    r"""Compute the `Tweedie Deviance Score`_.
 
     .. math::
         deviance\_score(\hat{y},y) =
@@ -70,7 +70,7 @@ class TweedieDevianceScore(Metric):
         tensor(1.2083)
     """
     is_differentiable: bool = True
-    higher_is_better = None  # TODO: both -1 and 1 are optimal
+    higher_is_better = None
     full_state_update: bool = False
     sum_deviance_score: Tensor
     num_observations: Tensor
@@ -97,4 +97,5 @@ class TweedieDevianceScore(Metric):
         self.num_observations += num_observations
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         return _tweedie_deviance_score_compute(self.sum_deviance_score, self.num_observations)

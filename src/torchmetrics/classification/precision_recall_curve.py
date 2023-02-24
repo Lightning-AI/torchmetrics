@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -37,10 +37,11 @@ from torchmetrics.functional.classification.precision_recall_curve import (
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
+from torchmetrics.utilities.enums import ClassificationTask
 
 
 class BinaryPrecisionRecallCurve(Metric):
-    r"""Computes the precision-recall curve for binary tasks. The curve consist of multiple pairs of precision and
+    r"""Compute the precision-recall curve for binary tasks. The curve consist of multiple pairs of precision and
     recall values evaluated at different thresholds, such that the tradeoff between the two values can been seen.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
@@ -136,7 +137,8 @@ class BinaryPrecisionRecallCurve(Metric):
                 "confmat", default=torch.zeros(len(thresholds), 2, 2, dtype=torch.long), dist_reduce_fx="sum"
             )
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
+        """Update metric states."""
         if self.validate_args:
             _binary_precision_recall_curve_tensor_validation(preds, target, self.ignore_index)
         preds, target, _ = _binary_precision_recall_curve_format(preds, target, self.thresholds, self.ignore_index)
@@ -148,15 +150,13 @@ class BinaryPrecisionRecallCurve(Metric):
             self.target.append(state[1])
 
     def compute(self) -> Tuple[Tensor, Tensor, Tensor]:
-        if self.thresholds is None:
-            state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]
-        else:
-            state = self.confmat
+        """Compute metric."""
+        state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _binary_precision_recall_curve_compute(state, self.thresholds)
 
 
 class MulticlassPrecisionRecallCurve(Metric):
-    r"""Computes the precision-recall curve for multiclass tasks. The curve consist of multiple pairs of precision
+    r"""Compute the precision-recall curve for multiclass tasks. The curve consist of multiple pairs of precision
     and recall values evaluated at different thresholds, such that the tradeoff between the two values can been
     seen.
 
@@ -265,7 +265,8 @@ class MulticlassPrecisionRecallCurve(Metric):
                 dist_reduce_fx="sum",
             )
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
+        """Update metric states."""
         if self.validate_args:
             _multiclass_precision_recall_curve_tensor_validation(preds, target, self.num_classes, self.ignore_index)
         preds, target, _ = _multiclass_precision_recall_curve_format(
@@ -279,15 +280,13 @@ class MulticlassPrecisionRecallCurve(Metric):
             self.target.append(state[1])
 
     def compute(self) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-        if self.thresholds is None:
-            state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]
-        else:
-            state = self.confmat
+        """Compute metric."""
+        state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _multiclass_precision_recall_curve_compute(state, self.num_classes, self.thresholds)
 
 
 class MultilabelPrecisionRecallCurve(Metric):
-    r"""Computes the precision-recall curve for multilabel tasks. The curve consist of multiple pairs of precision
+    r"""Compute the precision-recall curve for multilabel tasks. The curve consist of multiple pairs of precision
     and recall values evaluated at different thresholds, such that the tradeoff between the two values can been
     seen.
 
@@ -407,7 +406,8 @@ class MultilabelPrecisionRecallCurve(Metric):
                 dist_reduce_fx="sum",
             )
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
+        """Update metric states."""
         if self.validate_args:
             _multilabel_precision_recall_curve_tensor_validation(preds, target, self.num_labels, self.ignore_index)
         preds, target, _ = _multilabel_precision_recall_curve_format(
@@ -421,15 +421,13 @@ class MultilabelPrecisionRecallCurve(Metric):
             self.target.append(state[1])
 
     def compute(self) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-        if self.thresholds is None:
-            state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]
-        else:
-            state = self.confmat
+        """Compute metric."""
+        state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _multilabel_precision_recall_curve_compute(state, self.num_labels, self.thresholds, self.ignore_index)
 
 
 class PrecisionRecallCurve:
-    r"""Computes the precision-recall curve. The curve consist of multiple pairs of precision and recall values
+    r"""Compute the precision-recall curve. The curve consist of multiple pairs of precision and recall values
     evaluated at different thresholds, such that the tradeoff between the two values can been seen.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
@@ -475,15 +473,14 @@ class PrecisionRecallCurve:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
-        kwargs.update(dict(thresholds=thresholds, ignore_index=ignore_index, validate_args=validate_args))
-        if task == "binary":
+        """Initialize task metric."""
+        task = ClassificationTask.from_str(task)
+        kwargs.update({"thresholds": thresholds, "ignore_index": ignore_index, "validate_args": validate_args})
+        if task == ClassificationTask.BINARY:
             return BinaryPrecisionRecallCurve(**kwargs)
-        if task == "multiclass":
+        if task == ClassificationTask.MULTICLASS:
             assert isinstance(num_classes, int)
             return MulticlassPrecisionRecallCurve(num_classes, **kwargs)
-        if task == "multilabel":
+        if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelPrecisionRecallCurve(num_labels, **kwargs)
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-        )

@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ from torchmetrics.metric import Metric
 
 
 class MeanSquaredLogError(Metric):
-    r"""Computes `mean squared logarithmic error`_ (MSLE):
+    r"""Compute `mean squared logarithmic error`_ (MSLE).
 
     .. math:: \text{MSLE} = \frac{1}{N}\sum_i^N (\log_e(1 + y_i) - \log_e(1 + \hat{y_i}))^2
 
@@ -65,7 +65,7 @@ class MeanSquaredLogError(Metric):
         self.add_state("sum_squared_log_error", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
         sum_squared_log_error, n_obs = _mean_squared_log_error_update(preds, target)
 

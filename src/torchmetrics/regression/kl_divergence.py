@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class KLDivergence(Metric):
-    r"""Computes the `KL divergence`_:
+    r"""Compute the `KL divergence`_.
 
     .. math::
         D_{KL}(P||Q) = \sum_{x\in\mathcal{X}} P(x) \log\frac{P(x)}{Q{x}}
@@ -97,7 +97,8 @@ class KLDivergence(Metric):
             self.add_state("measures", [], dist_reduce_fx="cat")
         self.add_state("total", torch.tensor(0), dist_reduce_fx="sum")
 
-    def update(self, p: Tensor, q: Tensor) -> None:  # type: ignore
+    def update(self, p: Tensor, q: Tensor) -> None:
+        """Update metric states with predictions and targets."""
         measures, total = _kld_update(p, q, self.log_prob)
         if self.reduction is None or self.reduction == "none":
             self.measures.append(measures)
@@ -106,5 +107,6 @@ class KLDivergence(Metric):
             self.total += total
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         measures = dim_zero_cat(self.measures) if self.reduction is None or self.reduction == "none" else self.measures
         return _kld_compute(measures, self.total, self.reduction)

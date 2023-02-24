@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ def _retrieval_recall_at_fixed_precision(
     top_k: Tensor,
     min_precision: float,
 ) -> Tuple[Tensor, Tensor]:
-    """Computes maximum recall with condition that corresponding precision >= `min_precision`.
+    """Compute maximum recall with condition that corresponding precision >= `min_precision`.
 
     Args:
         top_k: tensor with all possible k
@@ -53,7 +53,7 @@ def _retrieval_recall_at_fixed_precision(
 
 
 class RetrievalPrecisionRecallCurve(Metric):
-    """Computes precision-recall pairs for different k (from 1 to `max_k`).
+    """Compute precision-recall pairs for different k (from 1 to `max_k`).
 
     In a ranked retrieval context, appropriate sets of retrieved documents are naturally given by the top k retrieved
     documents. Recall is the fraction of relevant documents retrieved among all the relevant documents. Precision is the
@@ -158,7 +158,7 @@ class RetrievalPrecisionRecallCurve(Metric):
         self.add_state("preds", default=[], dist_reduce_fx=None)
         self.add_state("target", default=[], dist_reduce_fx=None)
 
-    def update(self, preds: Tensor, target: Tensor, indexes: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor, indexes: Tensor) -> None:
         """Check shape, check and convert dtypes, flatten and add to accumulators."""
         if indexes is None:
             raise ValueError("Argument `indexes` cannot be None")
@@ -172,6 +172,7 @@ class RetrievalPrecisionRecallCurve(Metric):
         self.target.append(target)
 
     def compute(self) -> Tuple[Tensor, Tensor, Tensor]:
+        """Compute metric."""
         # concat all data
         indexes = dim_zero_cat(self.indexes)
         preds = dim_zero_cat(self.preds)
@@ -219,7 +220,7 @@ class RetrievalPrecisionRecallCurve(Metric):
 
 
 class RetrievalRecallAtFixedPrecision(RetrievalPrecisionRecallCurve):
-    """Computes `IR Recall at fixed Precision`_.
+    """Compute `IR Recall at fixed Precision`_.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -303,7 +304,8 @@ class RetrievalRecallAtFixedPrecision(RetrievalPrecisionRecallCurve):
 
         self.min_precision = min_precision
 
-    def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore
+    def compute(self) -> Tuple[Tensor, Tensor]:
+        """Compute metric."""
         precisions, recalls, top_k = super().compute()
 
         return _retrieval_recall_at_fixed_precision(precisions, recalls, top_k, self.min_precision)

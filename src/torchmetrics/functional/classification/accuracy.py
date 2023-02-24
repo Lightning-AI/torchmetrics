@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ from torchmetrics.functional.classification.stat_scores import (
     _multilabel_stat_scores_update,
 )
 from torchmetrics.utilities.compute import _safe_divide
+from torchmetrics.utilities.enums import ClassificationTask
 
 
 def _accuracy_reduce(
@@ -54,7 +55,7 @@ def _accuracy_reduce(
             - `"pred"` will divide by the sum of the row dimension.
             - `"all"` will divide by the sum of the full matrix
             - `"none"` or `None` will apply no reduction
-        multilabel: bool indicating if reduction is for multilabel tasks
+        multilabel: bool indicating if reduction is for multilabel tasks.
 
     Returns:
         Accuracy score
@@ -70,16 +71,10 @@ def _accuracy_reduce(
             return _safe_divide(tp + tn, tp + tn + fp + fn)
         return _safe_divide(tp, tp + fn)
     else:
-        if multilabel:
-            score = _safe_divide(tp + tn, tp + tn + fp + fn)
-        else:
-            score = _safe_divide(tp, tp + fn)
+        score = _safe_divide(tp + tn, tp + tn + fp + fn) if multilabel else _safe_divide(tp, tp + fn)
         if average is None or average == "none":
             return score
-        if average == "weighted":
-            weights = tp + fn
-        else:
-            weights = torch.ones_like(score)
+        weights = tp + fn if average == "weighted" else torch.ones_like(score)
         return _safe_divide(weights * score, weights.sum(-1, keepdim=True)).sum(-1)
 
 
@@ -91,7 +86,7 @@ def binary_accuracy(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes `Accuracy`_ for binary tasks:
+    r"""Compute `Accuracy`_ for binary tasks.
 
     .. math::
         \text{Accuracy} = \frac{1}{N}\sum_i^N 1(y_i = \hat{y}_i)
@@ -167,7 +162,7 @@ def multiclass_accuracy(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes `Accuracy`_ for multiclass tasks:
+    r"""Compute `Accuracy`_ for multiclass tasks.
 
     .. math::
         \text{Accuracy} = \frac{1}{N}\sum_i^N 1(y_i = \hat{y}_i)
@@ -191,8 +186,8 @@ def multiclass_accuracy(
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
 
         top_k:
             Number of highest probability or logit score predictions considered to find the correct label.
@@ -274,7 +269,7 @@ def multilabel_accuracy(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes `Accuracy`_ for multilabel tasks:
+    r"""Compute `Accuracy`_ for multilabel tasks.
 
     .. math::
         \text{Accuracy} = \frac{1}{N}\sum_i^N 1(y_i = \hat{y}_i)
@@ -299,8 +294,8 @@ def multilabel_accuracy(
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
 
         multidim_average:
             Defines how additionally dimensions ``...`` should be handled. Should be one of the following:
@@ -378,7 +373,7 @@ def accuracy(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes `Accuracy`_
+    r"""Compute `Accuracy`_.
 
     .. math::
         \text{Accuracy} = \frac{1}{N}\sum_i^N 1(y_i = \hat{y}_i)
@@ -402,20 +397,19 @@ def accuracy(
         >>> accuracy(preds, target, task="multiclass", num_classes=3, top_k=2)
         tensor(0.6667)
     """
+    task = ClassificationTask.from_str(task)
     assert multidim_average is not None
-    if task == "binary":
+    if task == ClassificationTask.BINARY:
         return binary_accuracy(preds, target, threshold, multidim_average, ignore_index, validate_args)
-    if task == "multiclass":
+    if task == ClassificationTask.MULTICLASS:
         assert isinstance(num_classes, int)
         assert isinstance(top_k, int)
         return multiclass_accuracy(
             preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args
         )
-    if task == "multilabel":
+    if task == ClassificationTask.MULTILABEL:
         assert isinstance(num_labels, int)
         return multilabel_accuracy(
             preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
         )
-    raise ValueError(
-        f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-    )
+    raise ValueError(f"Not handled value: {task}")  # this is for compliant of mypy

@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,10 +31,11 @@ from torchmetrics.functional.classification.recall_at_fixed_precision import (
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
+from torchmetrics.utilities.enums import ClassificationTask
 
 
 class BinaryRecallAtFixedPrecision(BinaryPrecisionRecallCurve):
-    r"""Computes the highest possible recall value given the minimum precision thresholds provided. This is done by
+    r"""Compute the highest possible recall value given the minimum precision thresholds provided. This is done by
     first calculating the precision-recall curve for different thresholds and the find the recall for a given
     precision level.
 
@@ -109,16 +110,14 @@ class BinaryRecallAtFixedPrecision(BinaryPrecisionRecallCurve):
         self.validate_args = validate_args
         self.min_precision = min_precision
 
-    def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
-        if self.thresholds is None:
-            state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]
-        else:
-            state = self.confmat
+    def compute(self) -> Tuple[Tensor, Tensor]:
+        """Compute metric."""
+        state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _binary_recall_at_fixed_precision_compute(state, self.thresholds, self.min_precision)
 
 
 class MulticlassRecallAtFixedPrecision(MulticlassPrecisionRecallCurve):
-    r"""Computes the highest possible recall value given the minimum precision thresholds provided. This is done by
+    r"""Compute the highest possible recall value given the minimum precision thresholds provided. This is done by
     first calculating the precision-recall curve for different thresholds and the find the recall for a given
     precision level.
 
@@ -202,18 +201,16 @@ class MulticlassRecallAtFixedPrecision(MulticlassPrecisionRecallCurve):
         self.validate_args = validate_args
         self.min_precision = min_precision
 
-    def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
-        if self.thresholds is None:
-            state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]
-        else:
-            state = self.confmat
+    def compute(self) -> Tuple[Tensor, Tensor]:
+        """Compute metric."""
+        state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _multiclass_recall_at_fixed_precision_arg_compute(
             state, self.num_classes, self.thresholds, self.min_precision
         )
 
 
 class MultilabelRecallAtFixedPrecision(MultilabelPrecisionRecallCurve):
-    r"""Computes the highest possible recall value given the minimum precision thresholds provided. This is done by
+    r"""Compute the highest possible recall value given the minimum precision thresholds provided. This is done by
     first calculating the precision-recall curve for different thresholds and the find the recall for a given
     precision level.
 
@@ -300,18 +297,16 @@ class MultilabelRecallAtFixedPrecision(MultilabelPrecisionRecallCurve):
         self.validate_args = validate_args
         self.min_precision = min_precision
 
-    def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
-        if self.thresholds is None:
-            state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]
-        else:
-            state = self.confmat
+    def compute(self) -> Tuple[Tensor, Tensor]:
+        """Compute metric."""
+        state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _multilabel_recall_at_fixed_precision_arg_compute(
             state, self.num_labels, self.thresholds, self.ignore_index, self.min_precision
         )
 
 
 class RecallAtFixedPrecision:
-    r"""Computes the highest possible recall value given the minimum precision thresholds provided. This is done by
+    r"""Compute the highest possible recall value given the minimum precision thresholds provided. This is done by
     first calculating the precision-recall curve for different thresholds and the find the recall for a given
     precision level.
 
@@ -332,18 +327,17 @@ class RecallAtFixedPrecision:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
-        if task == "binary":
+        """Initialize task metric."""
+        task = ClassificationTask.from_str(task)
+        if task == ClassificationTask.BINARY:
             return BinaryRecallAtFixedPrecision(min_precision, thresholds, ignore_index, validate_args, **kwargs)
-        if task == "multiclass":
+        if task == ClassificationTask.MULTICLASS:
             assert isinstance(num_classes, int)
             return MulticlassRecallAtFixedPrecision(
                 num_classes, min_precision, thresholds, ignore_index, validate_args, **kwargs
             )
-        if task == "multilabel":
+        if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelRecallAtFixedPrecision(
                 num_labels, min_precision, thresholds, ignore_index, validate_args, **kwargs
             )
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-        )

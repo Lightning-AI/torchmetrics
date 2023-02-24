@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ def _sklearn_fbeta_score_binary(preds, target, sk_fn, ignore_index, multidim_ave
         target = target.numpy()
 
     if np.issubdtype(preds.dtype, np.floating):
-        if not ((0 < preds) & (preds < 1)).all():
+        if not ((preds > 0) & (preds < 1)).all():
             preds = sigmoid(preds)
         preds = (preds >= THRESHOLD).astype(np.uint8)
 
@@ -310,7 +310,7 @@ _mc_k_preds = torch.tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]]
 
 
 @pytest.mark.parametrize(
-    "metric_class, metric_fn",
+    ("metric_class", "metric_fn"),
     [
         (partial(MulticlassFBetaScore, beta=2.0), partial(multiclass_fbeta_score, beta=2.0)),
         (MulticlassF1Score, multiclass_f1_score),
@@ -337,10 +337,7 @@ def test_top_k(
     class_metric = metric_class(top_k=k, average=average, num_classes=3)
     class_metric.update(preds, target)
 
-    if class_metric.beta != 1.0:
-        result = expected_fbeta
-    else:
-        result = expected_f1
+    result = expected_fbeta if class_metric.beta != 1.0 else expected_f1
 
     assert torch.isclose(class_metric.compute(), result)
     assert torch.isclose(metric_fn(preds, target, top_k=k, average=average, num_classes=3), result)
@@ -410,7 +407,7 @@ def _sklearn_fbeta_score_multilabel(preds, target, sk_fn, ignore_index, multidim
     preds = preds.numpy()
     target = target.numpy()
     if np.issubdtype(preds.dtype, np.floating):
-        if not ((0 < preds) & (preds < 1)).all():
+        if not ((preds > 0) & (preds < 1)).all():
             preds = sigmoid(preds)
         preds = (preds >= THRESHOLD).astype(np.uint8)
     preds = preds.reshape(*preds.shape[:2], -1)

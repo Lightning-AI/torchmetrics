@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,10 +23,11 @@ from torchmetrics.functional.classification.cohen_kappa import (
     _multiclass_cohen_kappa_arg_validation,
 )
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.enums import ClassificationTaskNoMultilabel
 
 
 class BinaryCohenKappa(BinaryConfusionMatrix):
-    r"""Calculates `Cohen's kappa score`_ that measures inter-annotator agreement for binary tasks. It is defined
+    r"""Calculate `Cohen's kappa score`_ that measures inter-annotator agreement for binary tasks. It is defined
     as.
 
     .. math::
@@ -101,11 +102,12 @@ class BinaryCohenKappa(BinaryConfusionMatrix):
         self.validate_args = validate_args
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         return _cohen_kappa_reduce(self.confmat, self.weights)
 
 
 class MulticlassCohenKappa(MulticlassConfusionMatrix):
-    r"""Calculates `Cohen's kappa score`_ that measures inter-annotator agreement for multiclass tasks. It is
+    r"""Calculate `Cohen's kappa score`_ that measures inter-annotator agreement for multiclass tasks. It is
     defined as.
 
     .. math::
@@ -183,11 +185,12 @@ class MulticlassCohenKappa(MulticlassConfusionMatrix):
         self.validate_args = validate_args
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         return _cohen_kappa_reduce(self.confmat, self.weights)
 
 
 class CohenKappa:
-    r"""Calculates `Cohen's kappa score`_ that measures inter-annotator agreement. It is defined as.
+    r"""Calculate `Cohen's kappa score`_ that measures inter-annotator agreement. It is defined as.
 
     .. math::
         \kappa = (p_o - p_e) / (1 - p_e)
@@ -221,12 +224,11 @@ class CohenKappa:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
-        kwargs.update(dict(weights=weights, ignore_index=ignore_index, validate_args=validate_args))
-        if task == "binary":
+        """Initialize task metric."""
+        task = ClassificationTaskNoMultilabel.from_str(task)
+        kwargs.update({"weights": weights, "ignore_index": ignore_index, "validate_args": validate_args})
+        if task == ClassificationTaskNoMultilabel.BINARY:
             return BinaryCohenKappa(threshold, **kwargs)
-        if task == "multiclass":
+        if task == ClassificationTaskNoMultilabel.MULTICLASS:
             assert isinstance(num_classes, int)
             return MulticlassCohenKappa(num_classes, **kwargs)
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-        )

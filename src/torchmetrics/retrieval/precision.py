@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ from torchmetrics.retrieval.base import RetrievalMetric
 
 
 class RetrievalPrecision(RetrievalMetric):
-    """Computes `IR Precision`_.
+    """Compute `IR Precision`_.
 
     Works with binary target data. Accepts float predictions from a model output.
 
@@ -33,7 +33,7 @@ class RetrievalPrecision(RetrievalMetric):
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``p2`` (:class:`~torch.Tensor`): A single-value tensor with the precision (at ``k``) of the predictions
+    - ``p2`` (:class:`~torch.Tensor`): A single-value tensor with the precision (at ``top_k``) of the predictions
       ``preds`` w.r.t. the labels ``target``
 
     All ``indexes``, ``preds`` and ``target`` must have the same dimension and will be flatten at the beginning,
@@ -51,8 +51,8 @@ class RetrievalPrecision(RetrievalMetric):
 
         ignore_index:
             Ignore predictions where the target is equal to this number.
-        k: consider only the top k elements for each query (default: ``None``, which considers them all)
-        adaptive_k: adjust ``k`` to ``min(k, number of documents)`` for each query
+        top_k: consider only the top k elements for each query (default: ``None``, which considers them all)
+        adaptive_k: adjust ``top_k`` to ``min(k, number of documents)`` for each query
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -61,7 +61,7 @@ class RetrievalPrecision(RetrievalMetric):
         ValueError:
             If ``ignore_index`` is not `None` or an integer.
         ValueError:
-            If ``k`` is not `None` or an integer larger than 0.
+            If ``top_k`` is not `None` or an integer larger than 0.
         ValueError:
             If ``adaptive_k`` is not boolean.
 
@@ -71,7 +71,7 @@ class RetrievalPrecision(RetrievalMetric):
         >>> indexes = tensor([0, 0, 0, 1, 1, 1, 1])
         >>> preds = tensor([0.2, 0.3, 0.5, 0.1, 0.3, 0.5, 0.2])
         >>> target = tensor([False, False, True, False, True, False, True])
-        >>> p2 = RetrievalPrecision(k=2)
+        >>> p2 = RetrievalPrecision(top_k=2)
         >>> p2(preds, target, indexes=indexes)
         tensor(0.5000)
     """
@@ -84,7 +84,7 @@ class RetrievalPrecision(RetrievalMetric):
         self,
         empty_target_action: str = "neg",
         ignore_index: Optional[int] = None,
-        k: Optional[int] = None,
+        top_k: Optional[int] = None,
         adaptive_k: bool = False,
         **kwargs: Any,
     ) -> None:
@@ -94,12 +94,12 @@ class RetrievalPrecision(RetrievalMetric):
             **kwargs,
         )
 
-        if (k is not None) and not (isinstance(k, int) and k > 0):
-            raise ValueError("`k` has to be a positive integer or None")
+        if top_k is not None and not (isinstance(top_k, int) and top_k > 0):
+            raise ValueError("`top_k` has to be a positive integer or None")
         if not isinstance(adaptive_k, bool):
             raise ValueError("`adaptive_k` has to be a boolean")
-        self.k = k
+        self.top_k = top_k
         self.adaptive_k = adaptive_k
 
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
-        return retrieval_precision(preds, target, k=self.k, adaptive_k=self.adaptive_k)
+        return retrieval_precision(preds, target, top_k=self.top_k, adaptive_k=self.adaptive_k)

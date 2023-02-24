@@ -44,7 +44,7 @@ class PeakSignalNoiseRatioWithBlockedEffect(Metric):
             the range of the data. If None, it is determined from the data (max - min).
             The ``data_range`` must be given when ``dim`` is not None.
         base: a base of a logarithm to use.
-        reduction: a method to reduce metric score over labels.
+        reduction: a method to reduce metric scores over labels:
 
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
@@ -65,6 +65,7 @@ class PeakSignalNoiseRatioWithBlockedEffect(Metric):
         >>> preds = torch.tensor([[0.0, 1.0], [2.0, 3.0]])
         >>> target = torch.tensor([[3.0, 2.0], [1.0, 0.0]])
         >>> psnrb(preds, target)
+        tensor(2.5527)
 
     .. note::
         Half precision is only support on GPU for this metric
@@ -133,10 +134,7 @@ class PeakSignalNoiseRatioWithBlockedEffect(Metric):
 
     def compute(self) -> Tensor:
         """Compute peak signal-to-noise ratio over state."""
-        if self.data_range is not None:
-            data_range = self.data_range
-        else:
-            data_range = self.max_target - self.min_target
+        data_range = self.data_range if self.data_range is not None else self.max_target - self.min_target
 
         if self.dim is None:
             sum_squared_error = self.sum_squared_error

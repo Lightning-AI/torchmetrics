@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,15 +19,17 @@ from typing_extensions import Literal
 from torchmetrics.classification.stat_scores import BinaryStatScores, MulticlassStatScores, MultilabelStatScores
 from torchmetrics.functional.classification.precision_recall import _precision_recall_reduce
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.enums import ClassificationTask
 
 
 class BinaryPrecision(BinaryStatScores):
-    r"""Computes `Precision`_ for binary tasks:
+    r"""Compute `Precision`_ for binary tasks.
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 
-    Where :math:`\text{TP}` and :math:`\text{FP}` represent the number of true positives and
-    false positives respecitively.
+    Where :math:`\text{TP}` and :math:`\text{FP}` represent the number of true positives and false positives
+    respectively. The metric is only proper defined when :math:`\text{TP} + \text{FP} \neq 0`. If this case is
+    encountered a score of 0 is returned.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -35,7 +37,6 @@ class BinaryPrecision(BinaryStatScores):
       tensor with values outside [0,1] range we consider the input to be logits and will auto apply sigmoid per
       element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``.
-
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
@@ -88,6 +89,7 @@ class BinaryPrecision(BinaryStatScores):
     full_state_update: bool = False
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _precision_recall_reduce(
             "precision", tp, fp, tn, fn, average="binary", multidim_average=self.multidim_average
@@ -95,12 +97,14 @@ class BinaryPrecision(BinaryStatScores):
 
 
 class MulticlassPrecision(MulticlassStatScores):
-    r"""Computes `Precision`_ for multiclass tasks.
+    r"""Compute `Precision`_ for multiclass tasks.
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 
-    Where :math:`\text{TP}` and :math:`\text{FP}` represent the number of true positives and
-    false positives respecitively.
+    Where :math:`\text{TP}` and :math:`\text{FP}` represent the number of true positives and false positives
+    respectively. The metric is only proper defined when :math:`\text{TP} + \text{FP} \neq 0`. If this case is
+    encountered for any class, the metric for that class will be set to 0 and the overall metric may therefore be
+    affected in turn.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -132,8 +136,8 @@ class MulticlassPrecision(MulticlassStatScores):
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
         top_k:
             Number of highest probability or logit score predictions considered to find the correct label.
             Only works when ``preds`` contain probabilities/logits.
@@ -192,6 +196,7 @@ class MulticlassPrecision(MulticlassStatScores):
     full_state_update: bool = False
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _precision_recall_reduce(
             "precision", tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average
@@ -199,12 +204,14 @@ class MulticlassPrecision(MulticlassStatScores):
 
 
 class MultilabelPrecision(MultilabelStatScores):
-    r"""Computes `Precision`_ for multilabel tasks.
+    r"""Compute `Precision`_ for multilabel tasks.
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 
-    Where :math:`\text{TP}` and :math:`\text{FP}` represent the number of true positives and
-    false positives respecitively.
+    Where :math:`\text{TP}` and :math:`\text{FP}` represent the number of true positives and false positives
+    respectively. The metric is only proper defined when :math:`\text{TP} + \text{FP} \neq 0`. If this case is
+    encountered for any label, the metric for that label will be set to 0 and the overall metric may therefore be
+    affected in turn.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -213,7 +220,6 @@ class MultilabelPrecision(MultilabelStatScores):
       will auto apply sigmoid per element. Addtionally, we convert to int tensor with thresholding using the value
       in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``.
-
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
@@ -238,8 +244,8 @@ class MultilabelPrecision(MultilabelStatScores):
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
 
         multidim_average:
             Defines how additionally dimensions ``...`` should be handled. Should be one of the following:
@@ -294,6 +300,7 @@ class MultilabelPrecision(MultilabelStatScores):
     full_state_update: bool = False
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _precision_recall_reduce(
             "precision", tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average
@@ -301,12 +308,13 @@ class MultilabelPrecision(MultilabelStatScores):
 
 
 class BinaryRecall(BinaryStatScores):
-    r"""Computes `Recall`_ for binary tasks:
+    r"""Compute `Recall`_ for binary tasks.
 
     .. math:: \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
 
-    Where :math:`\text{TP}` and :math:`\text{FN}` represent the number of true positives and
-    false negatives respecitively.
+    Where :math:`\text{TP}` and :math:`\text{FN}` represent the number of true positives and false negatives
+    respectively. The metric is only proper defined when :math:`\text{TP} + \text{FN} \neq 0`. If this case is
+    encountered a score of 0 is returned.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -314,7 +322,6 @@ class BinaryRecall(BinaryStatScores):
       floating point tensor with values outside [0,1] range we consider the input to be logits and will auto apply
       sigmoid per element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``
-
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
@@ -367,6 +374,7 @@ class BinaryRecall(BinaryStatScores):
     full_state_update: bool = False
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _precision_recall_reduce(
             "recall", tp, fp, tn, fn, average="binary", multidim_average=self.multidim_average
@@ -374,12 +382,14 @@ class BinaryRecall(BinaryStatScores):
 
 
 class MulticlassRecall(MulticlassStatScores):
-    r"""Computes `Recall`_ for multiclass tasks:
+    r"""Compute `Recall`_ for multiclass tasks.
 
     .. math:: \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
 
-    Where :math:`\text{TP}` and :math:`\text{FN}` represent the number of true positives and
-    false negatives respecitively.
+    Where :math:`\text{TP}` and :math:`\text{FN}` represent the number of true positives and false negatives
+    respectively. The metric is only proper defined when :math:`\text{TP} + \text{FN} \neq 0`. If this case is
+    encountered for any class, the metric for that class will be set to 0 and the overall metric may therefore be
+    affected in turn.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -387,7 +397,6 @@ class MulticlassRecall(MulticlassStatScores):
       If preds is a floating point we apply ``torch.argmax`` along the ``C`` dimension to automatically convert
       probabilities/logits into an int tensor.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``
-
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
@@ -411,8 +420,8 @@ class MulticlassRecall(MulticlassStatScores):
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
         top_k:
             Number of highest probability or logit score predictions considered to find the correct label.
             Only works when ``preds`` contain probabilities/logits.
@@ -471,6 +480,7 @@ class MulticlassRecall(MulticlassStatScores):
     full_state_update: bool = False
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _precision_recall_reduce(
             "recall", tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average
@@ -478,12 +488,14 @@ class MulticlassRecall(MulticlassStatScores):
 
 
 class MultilabelRecall(MultilabelStatScores):
-    r"""Computes `Recall`_ for multilabel tasks:
+    r"""Compute `Recall`_ for multilabel tasks.
 
     .. math:: \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
 
-    Where :math:`\text{TP}` and :math:`\text{FN}` represent the number of true positives and
-    false negatives respecitively.
+    Where :math:`\text{TP}` and :math:`\text{FN}` represent the number of true positives and false negatives
+    respectively. The metric is only proper defined when :math:`\text{TP} + \text{FN} \neq 0`. If this case is
+    encountered for any label, the metric for that label will be set to 0 and the overall metric may therefore be
+    affected in turn.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -491,7 +503,6 @@ class MultilabelRecall(MultilabelStatScores):
       point tensor with values outside [0,1] range we consider the input to be logits and will auto apply sigmoid
       per element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``
-
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
@@ -516,8 +527,8 @@ class MultilabelRecall(MultilabelStatScores):
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
 
         multidim_average:
             Defines how additionally dimensions ``...`` should be handled. Should be one of the following:
@@ -572,6 +583,7 @@ class MultilabelRecall(MultilabelStatScores):
     full_state_update: bool = False
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _precision_recall_reduce(
             "recall", tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average
@@ -579,12 +591,14 @@ class MultilabelRecall(MultilabelStatScores):
 
 
 class Precision:
-    r"""Computes `Precision`_:
+    r"""Compute `Precision`_.
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 
-    Where :math:`\text{TP}` and :math:`\text{FP}` represent the number of true positives and
-    false positives respecitively.
+    Where :math:`\text{TP}` and :math:`\text{FP}` represent the number of true positives and false positives
+    respectively. The metric is only proper defined when :math:`\text{TP} + \text{FP} \neq 0`. If this case is
+    encountered for any class/label, the metric for that class/label will be set to 0 and the overall metric may
+    therefore be affected in turn.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
@@ -616,29 +630,32 @@ class Precision:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
+        """Initialize task metric."""
         assert multidim_average is not None
-        kwargs.update(dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args))
-        if task == "binary":
+        kwargs.update(
+            {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
+        )
+        task = ClassificationTask.from_str(task)
+        if task == ClassificationTask.BINARY:
             return BinaryPrecision(threshold, **kwargs)
-        if task == "multiclass":
+        if task == ClassificationTask.MULTICLASS:
             assert isinstance(num_classes, int)
             assert isinstance(top_k, int)
             return MulticlassPrecision(num_classes, top_k, average, **kwargs)
-        if task == "multilabel":
+        if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelPrecision(num_labels, threshold, average, **kwargs)
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-        )
 
 
 class Recall:
-    r"""Computes `Recall`_:
+    r"""Compute `Recall`_.
 
     .. math:: \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
 
     Where :math:`\text{TP}` and :math:`\text{FN}` represent the number of true positives and
-    false negatives respecitively.
+    false negatives respectively. The metric is only proper defined when :math:`\text{TP} + \text{FN} \neq 0`. If this
+    case is encountered for any class/label, the metric for that class/label will be set to 0 and the overall metric may
+    therefore be affected in turn.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
@@ -670,17 +687,18 @@ class Recall:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
+        """Initialize task metric."""
+        task = ClassificationTask.from_str(task)
         assert multidim_average is not None
-        kwargs.update(dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args))
-        if task == "binary":
+        kwargs.update(
+            {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
+        )
+        if task == ClassificationTask.BINARY:
             return BinaryRecall(threshold, **kwargs)
-        if task == "multiclass":
+        if task == ClassificationTask.MULTICLASS:
             assert isinstance(num_classes, int)
             assert isinstance(top_k, int)
             return MulticlassRecall(num_classes, top_k, average, **kwargs)
-        if task == "multilabel":
+        if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelRecall(num_labels, threshold, average, **kwargs)
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-        )

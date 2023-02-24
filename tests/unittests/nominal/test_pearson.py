@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -43,8 +43,8 @@ _input_logits = Input(
 # No testing with replacing NaN's values is done as not supported in SciPy
 
 
-@pytest.fixture
-def _matrix_input():
+@pytest.fixture()
+def pearson_matrix_input():
     matrix = torch.cat(
         [
             torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES * BATCH_SIZE, 1), dtype=torch.float),
@@ -90,12 +90,10 @@ class TestPearsonsContingencyCoefficient(MetricTester):
     atol = 1e-5
 
     @pytest.mark.parametrize("ddp", [False, True])
-    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_pearsons_ta(self, ddp, dist_sync_on_step, preds, target):
+    def test_pearsons_ta(self, ddp, preds, target):
         metric_args = {"num_classes": NUM_CLASSES}
         self.run_class_metric_test(
             ddp=ddp,
-            dist_sync_on_step=dist_sync_on_step,
             preds=preds,
             target=target,
             metric_class=PearsonsContingencyCoefficient,
@@ -123,7 +121,7 @@ class TestPearsonsContingencyCoefficient(MetricTester):
 @pytest.mark.skipif(  # TODO: testing on CUDA fails with pandas 1.3.5, and newer is not available for python 3.7
     torch.cuda.is_available(), reason="Tests fail on CUDA with the most up-to-date available pandas"
 )
-def test_pearsons_contingency_coefficient_matrix(_matrix_input):
-    tm_score = pearsons_contingency_coefficient_matrix(_matrix_input)
-    reference_score = _pd_pearsons_t_matrix(_matrix_input)
+def test_pearsons_contingency_coefficient_matrix(pearson_matrix_input):
+    tm_score = pearsons_contingency_coefficient_matrix(pearson_matrix_input)
+    reference_score = _pd_pearsons_t_matrix(pearson_matrix_input)
     assert torch.allclose(tm_score, reference_score)

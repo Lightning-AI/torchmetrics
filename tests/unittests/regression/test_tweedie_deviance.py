@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -62,16 +62,14 @@ def _sklearn_deviance(preds: Tensor, targets: Tensor, power: float):
 )
 class TestDevianceScore(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_deviance_scores_class(self, ddp, dist_sync_on_step, preds, targets, power):
+    def test_deviance_scores_class(self, ddp, preds, targets, power):
         self.run_class_metric_test(
             ddp,
             preds,
             targets,
             TweedieDevianceScore,
             partial(_sklearn_deviance, power=power),
-            dist_sync_on_step,
-            metric_args=dict(power=power),
+            metric_args={"power": power},
         )
 
     def test_deviance_scores_functional(self, preds, targets, power):
@@ -80,7 +78,7 @@ class TestDevianceScore(MetricTester):
             targets,
             tweedie_deviance_score,
             partial(_sklearn_deviance, power=power),
-            metric_args=dict(power=power),
+            metric_args={"power": power},
         )
 
     def test_deviance_scores_differentiability(self, preds, targets, power):

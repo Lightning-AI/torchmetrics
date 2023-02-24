@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -93,7 +93,6 @@ class _LevenshteinEditDistance:
         Return:
             A tuple of a calculated edit distance and a trace of executed operations.
         """
-
         # Use cached edit distance for already computed words
         start_position, cached_edit_distance = self._find_cache(prediction_tokens)
         # Calculate the rest of the edit distance matrix
@@ -130,7 +129,7 @@ class _LevenshteinEditDistance:
         length_ratio = self.reference_len / prediction_len if prediction_tokens else 1.0
 
         # Ensure to not end up with zero overlaip with previous role
-        beam_width = math.ceil(length_ratio / 2 + _BEAM_WIDTH) if _BEAM_WIDTH < length_ratio / 2 else _BEAM_WIDTH
+        beam_width = math.ceil(length_ratio / 2 + _BEAM_WIDTH) if length_ratio / 2 > _BEAM_WIDTH else _BEAM_WIDTH
 
         # Calculate the Levenshtein distance
         for i in range(prediction_start + 1, prediction_len + 1):
@@ -296,38 +295,35 @@ class _LevenshteinEditDistance:
 
 
 def _validate_inputs(
-    reference_corpus: Union[Sequence[str], Sequence[Sequence[str]]],
+    ref_corpus: Union[Sequence[str], Sequence[Sequence[str]]],
     hypothesis_corpus: Union[str, Sequence[str]],
 ) -> Tuple[Sequence[Sequence[str]], Sequence[str]]:
     """Check and update (if needed) the format of reference and hypothesis corpora for various text evaluation
     metrics.
 
     Args:
-        reference_corpus: An iterable of iterables of reference corpus.
+        ref_corpus: An iterable of iterables of reference corpus.
         hypothesis_corpus: An iterable of hypothesis corpus.
 
     Return:
-        reference_corpus: An iterable of iterables of reference corpus.
+        ref_corpus: An iterable of iterables of reference corpus.
         hypothesis_corpus: An iterable of hypothesis corpus.
 
     Raises:
         ValueError:
-            If length of `reference_corpus` and `hypothesis_corpus` differs.
+            If length of `ref_corpus` and `hypothesis_corpus` differs.
     """
     if isinstance(hypothesis_corpus, str):
         hypothesis_corpus = [hypothesis_corpus]
 
     # Ensure reference corpus is properly of a type Sequence[Sequence[str]]
-    if all(isinstance(ref, str) for ref in reference_corpus):
-        if len(hypothesis_corpus) == 1:
-            reference_corpus = [reference_corpus]  # type: ignore
-        else:
-            reference_corpus = [[ref] for ref in reference_corpus]  # type: ignore
+    if all(isinstance(ref, str) for ref in ref_corpus):
+        ref_corpus = [ref_corpus] if len(hypothesis_corpus) == 1 else [[ref] for ref in ref_corpus]  # type: ignore
 
-    if hypothesis_corpus and all(ref for ref in reference_corpus) and len(reference_corpus) != len(hypothesis_corpus):
-        raise ValueError(f"Corpus has different size {len(reference_corpus)} != {len(hypothesis_corpus)}")
+    if hypothesis_corpus and all(ref for ref in ref_corpus) and len(ref_corpus) != len(hypothesis_corpus):
+        raise ValueError(f"Corpus has different size {len(ref_corpus)} != {len(hypothesis_corpus)}")
 
-    return reference_corpus, hypothesis_corpus
+    return ref_corpus, hypothesis_corpus
 
 
 def _edit_distance(prediction_tokens: List[str], reference_tokens: List[str]) -> int:

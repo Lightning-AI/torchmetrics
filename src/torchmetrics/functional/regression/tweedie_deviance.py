@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,9 +21,9 @@ from torchmetrics.utilities.compute import _safe_xlogy
 
 
 def _tweedie_deviance_score_update(preds: Tensor, targets: Tensor, power: float = 0.0) -> Tuple[Tensor, Tensor]:
-    """Updates and returns variables required to compute Deviance Score for the given power.
+    """Update and returns variables required to compute Deviance Score for the given power.
 
-    Checks for same shape of input tensors.
+    Check for same shape of input tensors.
 
     Args:
         preds: Predicted tensor
@@ -84,7 +84,7 @@ def _tweedie_deviance_score_update(preds: Tensor, targets: Tensor, power: float 
 
 
 def _tweedie_deviance_score_compute(sum_deviance_score: Tensor, num_observations: Tensor) -> Tensor:
-    """Computes Deviance Score.
+    """Compute Deviance Score.
 
     Args:
         sum_deviance_score: Sum of deviance scores accumalated until now.
@@ -97,12 +97,11 @@ def _tweedie_deviance_score_compute(sum_deviance_score: Tensor, num_observations
         >>> _tweedie_deviance_score_compute(sum_deviance_score, num_observations)
         tensor(1.2083)
     """
-
     return sum_deviance_score / num_observations
 
 
 def tweedie_deviance_score(preds: Tensor, targets: Tensor, power: float = 0.0) -> Tensor:
-    r"""Computes the `Tweedie Deviance Score`_ between targets and predictions:
+    r"""Compute the `Tweedie Deviance Score`_.
 
     .. math::
         deviance\_score(\hat{y},y) =

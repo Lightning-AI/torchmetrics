@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ from torchmetrics.functional.classification.confusion_matrix import (
     _multilabel_confusion_matrix_update,
 )
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.enums import ClassificationTask
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _PLOT_OUT_TYPE, plot_confusion_matrix
 
@@ -43,7 +44,7 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class BinaryConfusionMatrix(Metric):
-    r"""Computes the `confusion matrix`_ for binary tasks.
+    r"""Compute the `confusion matrix`_ for binary tasks.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -113,7 +114,7 @@ class BinaryConfusionMatrix(Metric):
 
         self.add_state("confmat", torch.zeros(2, 2, dtype=torch.long), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
         if self.validate_args:
             _binary_confusion_matrix_tensor_validation(preds, target, self.ignore_index)
@@ -122,12 +123,12 @@ class BinaryConfusionMatrix(Metric):
         self.confmat += confmat
 
     def compute(self) -> Tensor:
-        """Computes confusion matrix."""
+        """Compute confusion matrix."""
         return _binary_confusion_matrix_compute(self.confmat, self.normalize)
 
 
 class MulticlassConfusionMatrix(Metric):
-    r"""Computes the `confusion matrix`_ for multiclass tasks.
+    r"""Compute the `confusion matrix`_ for multiclass tasks.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -218,7 +219,7 @@ class MulticlassConfusionMatrix(Metric):
 
         self.add_state("confmat", torch.zeros(num_classes, num_classes, dtype=torch.long), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
         if self.validate_args:
             _multiclass_confusion_matrix_tensor_validation(preds, target, self.num_classes, self.ignore_index)
@@ -227,7 +228,7 @@ class MulticlassConfusionMatrix(Metric):
         self.confmat += confmat
 
     def compute(self) -> Tensor:
-        """Computes confusion matrix."""
+        """Compute confusion matrix."""
         return _multiclass_confusion_matrix_compute(self.confmat, self.normalize)
 
     def plot(self, val: Optional[Tensor] = None) -> _PLOT_OUT_TYPE:
@@ -262,7 +263,7 @@ class MulticlassConfusionMatrix(Metric):
 
 
 class MultilabelConfusionMatrix(Metric):
-    r"""Computes the `confusion matrix`_ for multilabel tasks.
+    r"""Compute the `confusion matrix`_ for multilabel tasks.
 
     As input to 'update' the metric accepts the following input:
 
@@ -337,7 +338,7 @@ class MultilabelConfusionMatrix(Metric):
 
         self.add_state("confmat", torch.zeros(num_labels, 2, 2, dtype=torch.long), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
         if self.validate_args:
             _multilabel_confusion_matrix_tensor_validation(preds, target, self.num_labels, self.ignore_index)
@@ -348,12 +349,12 @@ class MultilabelConfusionMatrix(Metric):
         self.confmat += confmat
 
     def compute(self) -> Tensor:
-        """Computes confusion matrix."""
+        """Compute confusion matrix."""
         return _multilabel_confusion_matrix_compute(self.confmat, self.normalize)
 
 
 class ConfusionMatrix:
-    r"""Computes the `confusion matrix`_.
+    r"""Compute the `confusion matrix`_.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
@@ -397,15 +398,14 @@ class ConfusionMatrix:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
-        kwargs.update(dict(normalize=normalize, ignore_index=ignore_index, validate_args=validate_args))
-        if task == "binary":
+        """Initialize task metric."""
+        task = ClassificationTask.from_str(task)
+        kwargs.update({"normalize": normalize, "ignore_index": ignore_index, "validate_args": validate_args})
+        if task == ClassificationTask.BINARY:
             return BinaryConfusionMatrix(threshold, **kwargs)
-        if task == "multiclass":
+        if task == ClassificationTask.MULTICLASS:
             assert isinstance(num_classes, int)
             return MulticlassConfusionMatrix(num_classes, **kwargs)
-        if task == "multilabel":
+        if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelConfusionMatrix(num_labels, threshold, **kwargs)
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-        )

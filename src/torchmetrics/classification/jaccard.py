@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,13 +23,15 @@ from torchmetrics.functional.classification.jaccard import (
     _multilabel_jaccard_index_arg_validation,
 )
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.enums import ClassificationTask
 
 
 class BinaryJaccardIndex(BinaryConfusionMatrix):
-    r"""Calculates the Jaccard index for binary tasks. The `Jaccard index`_ (also known as the intersetion over
-    union or jaccard similarity coefficient) is an statistic that can be used to determine the similarity and
-    diversity of a sample set. It is defined as the size of the intersection divided by the union of the sample
-    sets:
+    r"""Calculate the Jaccard index for binary tasks.
+
+    The `Jaccard index`_ (also known as the intersetion over union or jaccard similarity coefficient) is an statistic
+    that can be used to determine the similarity and diversity of a sample set. It is defined as the size of the
+    intersection divided by the union of the sample sets:
 
     .. math:: J(A,B) = \frac{|A\cap B|}{|A\cup B|}
 
@@ -88,14 +90,16 @@ class BinaryJaccardIndex(BinaryConfusionMatrix):
         )
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         return _jaccard_index_reduce(self.confmat, average="binary")
 
 
 class MulticlassJaccardIndex(MulticlassConfusionMatrix):
-    r"""Calculates the Jaccard index for multiclass tasks. The `Jaccard index`_ (also known as the intersetion over
-    union or jaccard similarity coefficient) is an statistic that can be used to determine the similarity and
-    diversity of a sample set. It is defined as the size of the intersection divided by the union of the sample
-    sets:
+    r"""Calculate the Jaccard index for multiclass tasks.
+
+    The `Jaccard index`_ (also known as the intersetion over union or jaccard similarity coefficient) is an statistic
+    that can be used to determine the similarity and diversity of a sample set. It is defined as the size of the
+    intersection divided by the union of the sample sets:
 
     .. math:: J(A,B) = \frac{|A\cap B|}{|A\cup B|}
 
@@ -122,8 +126,8 @@ class MulticlassJaccardIndex(MulticlassConfusionMatrix):
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
 
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
@@ -171,14 +175,16 @@ class MulticlassJaccardIndex(MulticlassConfusionMatrix):
         self.average = average
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         return _jaccard_index_reduce(self.confmat, average=self.average)
 
 
 class MultilabelJaccardIndex(MultilabelConfusionMatrix):
-    r"""Calculates the Jaccard index for multilabel tasks. The `Jaccard index`_ (also known as the intersetion over
-    union or jaccard similarity coefficient) is an statistic that can be used to determine the similarity and
-    diversity of a sample set. It is defined as the size of the intersection divided by the union of the sample
-    sets:
+    r"""Calculate the Jaccard index for multilabel tasks.
+
+    The `Jaccard index`_ (also known as the intersetion over union or jaccard similarity coefficient) is an statistic
+    that can be used to determine the similarity and diversity of a sample set. It is defined as the size of the
+    intersection divided by the union of the sample sets:
 
     .. math:: J(A,B) = \frac{|A\cap B|}{|A\cup B|}
 
@@ -206,8 +212,8 @@ class MultilabelJaccardIndex(MultilabelConfusionMatrix):
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
 
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
@@ -258,14 +264,16 @@ class MultilabelJaccardIndex(MultilabelConfusionMatrix):
         self.average = average
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         return _jaccard_index_reduce(self.confmat, average=self.average)
 
 
 class JaccardIndex:
-    r"""Calculates the Jaccard index for multilabel tasks. The `Jaccard index`_ (also known as the intersetion over
-    union or jaccard similarity coefficient) is an statistic that can be used to determine the similarity and
-    diversity of a sample set. It is defined as the size of the intersection divided by the union of the sample
-    sets:
+    r"""Calculate the Jaccard index for multilabel tasks.
+
+    The `Jaccard index`_ (also known as the intersetion over union or jaccard similarity coefficient) is an statistic
+    that can be used to determine the similarity and diversity of a sample set. It is defined as the size of the
+    intersection divided by the union of the sample sets:
 
     .. math:: J(A,B) = \frac{|A\cap B|}{|A\cup B|}
 
@@ -295,15 +303,14 @@ class JaccardIndex:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
-        kwargs.update(dict(ignore_index=ignore_index, validate_args=validate_args))
-        if task == "binary":
+        """Initialize task metric."""
+        task = ClassificationTask.from_str(task)
+        kwargs.update({"ignore_index": ignore_index, "validate_args": validate_args})
+        if task == ClassificationTask.BINARY:
             return BinaryJaccardIndex(threshold, **kwargs)
-        if task == "multiclass":
+        if task == ClassificationTask.MULTICLASS:
             assert isinstance(num_classes, int)
             return MulticlassJaccardIndex(num_classes, average, **kwargs)
-        if task == "multilabel":
+        if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelJaccardIndex(num_labels, threshold, average, **kwargs)
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-        )

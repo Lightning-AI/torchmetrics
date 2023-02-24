@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -83,16 +83,14 @@ def _single_target_ref_metric(preds, target, reduction, sk_fn=sk_cosine):
 )
 class TestCosineSimilarity(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_cosine_similarity(self, reduction, preds, target, ref_metric, ddp, dist_sync_on_step):
+    def test_cosine_similarity(self, reduction, preds, target, ref_metric, ddp):
         self.run_class_metric_test(
             ddp,
             preds,
             target,
             CosineSimilarity,
             partial(ref_metric, reduction=reduction),
-            dist_sync_on_step,
-            metric_args=dict(reduction=reduction),
+            metric_args={"reduction": reduction},
         )
 
     def test_cosine_similarity_functional(self, reduction, preds, target, ref_metric):
@@ -101,7 +99,7 @@ class TestCosineSimilarity(MetricTester):
             target,
             cosine_similarity,
             partial(ref_metric, reduction=reduction),
-            metric_args=dict(reduction=reduction),
+            metric_args={"reduction": reduction},
         )
 
 

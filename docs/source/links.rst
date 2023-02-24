@@ -64,10 +64,10 @@
 .. _Improved Techniques for Training GANs: https://arxiv.org/abs/1606.03498
 .. _KID Score: https://github.com/toshas/torch-fidelity/blob/v0.3.0/torch_fidelity/metric_kid.py
 .. _Demystifying MMD GANs: https://arxiv.org/abs/1801.01401
-.. _Computes Peak Signal-to-Noise Ratio: https://en.wikipedia.org/wiki/Peak_signal-to-noise_ratio
+.. _Compute Peak Signal-to-Noise Ratio: https://en.wikipedia.org/wiki/Peak_signal-to-noise_ratio
 .. _Turn a Metric into a Bootstrapped: https://en.wikipedia.org/wiki/Bootstrapping_(statistics)
 .. _Metric Test for Reset: https://github.com/Lightning-AI/pytorch-lightning/pull/7055
-.. _Computes Mean Absolute Error: https://en.wikipedia.org/wiki/Mean_absolute_error
+.. _Compute Mean Absolute Error: https://en.wikipedia.org/wiki/Mean_absolute_error
 .. _Mean Absolute Percentage Error: https://en.wikipedia.org/wiki/Mean_absolute_percentage_error
 .. _mean squared error: https://en.wikipedia.org/wiki/Mean_squared_error
 .. _Aggregate the statistics from multiple devices: https://stackoverflow.com/questions/68395368/estimate-running-correlation-on-multiple-nodes
@@ -128,5 +128,6 @@
 .. _kid ref2: https://arxiv.org/abs/1706.08500
 .. _Spectral Angle Mapper: https://ntrs.nasa.gov/citations/19940012238
 .. _Multilabel coverage error: https://link.springer.com/chapter/10.1007/978-0-387-09823-4_34
+.. _Panoptic Quality: https://arxiv.org/abs/1801.00868
 .. _torchmetrics mAP example: https://github.com/Lightning-AI/metrics/blob/master/examples/detection_map.py
 .. _Peak Signal to Noise Ratio With Blocked Effect: https://ieeexplore.ieee.org/abstract/document/5535179

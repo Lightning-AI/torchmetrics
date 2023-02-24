@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ from torchmetrics.functional.classification.precision_recall_curve import (
 )
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.compute import _safe_divide
+from torchmetrics.utilities.enums import ClassificationTask
 
 
 def _binary_roc_compute(
@@ -86,9 +87,9 @@ def binary_roc(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    r"""Computes the Receiver Operating Characteristic (ROC) for binary tasks. The curve consist of multiple pairs
-    of true positive rate (TPR) and false positive rate (FPR) values evaluated at different thresholds, such that
-    the tradeoff between the two values can be seen.
+    r"""Compute the Receiver Operating Characteristic (ROC) for binary tasks. The curve consist of multiple pairs of
+    true positive rate (TPR) and false positive rate (FPR) values evaluated at different thresholds, such that the
+    tradeoff between the two values can be seen.
 
     Accepts the following input tensors:
 
@@ -123,6 +124,8 @@ def binary_roc(
             - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 
@@ -185,7 +188,7 @@ def multiclass_roc(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    r"""Computes the Receiver Operating Characteristic (ROC) for multiclass tasks. The curve consist of multiple
+    r"""Compute the Receiver Operating Characteristic (ROC) for multiclass tasks. The curve consist of multiple
     pairs of true positive rate (TPR) and false positive rate (FPR) values evaluated at different thresholds, such
     that the tradeoff between the two values can be seen.
 
@@ -223,6 +226,8 @@ def multiclass_roc(
             - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 
@@ -320,7 +325,7 @@ def multilabel_roc(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    r"""Computes the Receiver Operating Characteristic (ROC) for multilabel tasks. The curve consist of multiple
+    r"""Compute the Receiver Operating Characteristic (ROC) for multilabel tasks. The curve consist of multiple
     pairs of true positive rate (TPR) and false positive rate (FPR) values evaluated at different thresholds, such
     that the tradeoff between the two values can be seen.
 
@@ -358,6 +363,8 @@ def multilabel_roc(
             - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 
@@ -430,7 +437,7 @@ def roc(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    r"""Computes the Receiver Operating Characteristic (ROC). The curve consist of multiple pairs of true positive
+    r"""Compute the Receiver Operating Characteristic (ROC). The curve consist of multiple pairs of true positive
     rate (TPR) and false positive rate (FPR) values evaluated at different thresholds, such that the tradeoff
     between the two values can be seen.
 
@@ -483,14 +490,12 @@ def roc(
          tensor([1.0000, 0.7576, 0.3680, 0.3468, 0.0745]),
          tensor([1.0000, 0.1837, 0.1338, 0.1183, 0.1138])]
     """
-    if task == "binary":
+    task = ClassificationTask.from_str(task)
+    if task == ClassificationTask.BINARY:
         return binary_roc(preds, target, thresholds, ignore_index, validate_args)
-    if task == "multiclass":
+    if task == ClassificationTask.MULTICLASS:
         assert isinstance(num_classes, int)
         return multiclass_roc(preds, target, num_classes, thresholds, ignore_index, validate_args)
-    if task == "multilabel":
+    if task == ClassificationTask.MULTILABEL:
         assert isinstance(num_labels, int)
         return multilabel_roc(preds, target, num_labels, thresholds, ignore_index, validate_args)
-    raise ValueError(
-        f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-    )
