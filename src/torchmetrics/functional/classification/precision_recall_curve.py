@@ -922,3 +922,4 @@ def precision_recall_curve(
     if task == ClassificationTask.MULTILABEL:
         assert isinstance(num_labels, int)
         return multilabel_precision_recall_curve(preds, target, num_labels, thresholds, ignore_index, validate_args)
+    return None

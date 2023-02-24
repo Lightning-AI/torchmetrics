@@ -490,3 +490,4 @@ class PrecisionRecallCurve:
         if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelPrecisionRecallCurve(num_labels, **kwargs)
+        return None

@@ -471,3 +471,4 @@ def auroc(
     if task == ClassificationTask.MULTILABEL:
         assert isinstance(num_labels, int)
         return multilabel_auroc(preds, target, num_labels, average, thresholds, ignore_index, validate_args)
+    return None

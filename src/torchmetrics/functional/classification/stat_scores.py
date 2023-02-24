@@ -1103,3 +1103,4 @@ def stat_scores(
         return multilabel_stat_scores(
             preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
         )
+    return None

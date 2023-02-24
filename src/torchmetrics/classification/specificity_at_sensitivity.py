@@ -340,3 +340,4 @@ class SpecificityAtSensitivity:
             return MultilabelSpecificityAtSensitivity(
                 num_labels, min_sensitivity, thresholds, ignore_index, validate_args, **kwargs
             )
+        return None
