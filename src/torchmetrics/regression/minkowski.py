@@ -66,5 +66,5 @@ class MinkowskiDistance(Metric):
         self.minkowski_dist_sum += minkowski_dist_sum
 
     def compute(self) -> Tensor:
-        """Computes metric."""
+        """Compute metric."""
         return _minkowski_distance_compute(self.minkowski_dist_sum, self.p)

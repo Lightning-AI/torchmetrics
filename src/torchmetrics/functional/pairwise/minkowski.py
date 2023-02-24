@@ -24,7 +24,7 @@ from torchmetrics.utilities.exceptions import TorchMetricsUserError
 def _pairwise_minkowski_distance_update(
     x: Tensor, y: Optional[Tensor] = None, exponent: Union[int, float] = 2, zero_diagonal: Optional[bool] = None
 ) -> Tensor:
-    """Calculates the pairwise minkowski distance matrix.
+    """Calculate the pairwise minkowski distance matrix.
 
     Args:
         x: tensor of shape ``[N,d]``

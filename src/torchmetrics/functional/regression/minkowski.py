@@ -19,7 +19,7 @@ from torchmetrics.utilities.exceptions import TorchMetricsUserError
 
 
 def _minkowski_distance_update(preds: Tensor, targets: Tensor, p: float) -> Tensor:
-    """Updates and returns variables required to compute Minkowski distance.
+    """Update and return variables required to compute Minkowski distance.
 
     Checks for same shape of input tensors.
 
@@ -40,7 +40,7 @@ def _minkowski_distance_update(preds: Tensor, targets: Tensor, p: float) -> Tens
 
 
 def _minkowski_distance_compute(distance: Tensor, p: float) -> Tensor:
-    """Computes Minkowski Distance.
+    """Compute Minkowski Distance.
 
     Args:
         distance: Sum of the p-th powers of errors over all observations
