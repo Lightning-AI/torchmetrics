@@ -23,9 +23,10 @@ from torchmetrics.utilities import rank_zero_warn
 
 
 class PeakSignalNoiseRatioWithBlockedEffect(Metric):
-    r"""Computes `Peak Signal to Noise Ratio With Blocked Effect`_ (PSNRB):
+    r"""Computes `Peak Signal to Noise Ratio With Blocked Effect`_ (PSNRB).
 
-    .. math:: \text{PSNRB}(I, J) = 10 * \log_{10} \left(\frac{\max(I)^2}{\text{MSE}(I, J)-\text{B}(I, J)}\right)
+    .. math::
+        \text{PSNRB}(I, J) = 10 * \log_{10} \left(\frac{\max(I)^2}{\text{MSE}(I, J)-\text{B}(I, J)}\right)
 
     Where :math:`\text{MSE}` denotes the `mean-squared-error`_ function.
 

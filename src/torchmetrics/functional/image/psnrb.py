@@ -20,15 +20,24 @@ from typing_extensions import Literal
 from torchmetrics.utilities import rank_zero_warn, reduce
 
 
-def _compute_bef(target: Tensor, dim: Optional[Union[int, Tuple[int, ...]]] = None, block_size=8) -> Tensor:
-    if dim == 3:
-        height, width, channels = target.Size
-    elif dim == 2:
-        height, width = target.Size
-        channels = 1
-    else:
-        raise ValueError("Not a 1-channel/3-channel grayscale image")
+def _compute_bef(x: Tensor, dim: Optional[Union[int, Tuple[int, ...]]] = None, block_size=8) -> Tensor:
+    """Compute block effect.
 
+    Args:
+        x: input image
+        dim: dimension to calculate block over
+        block_size: integer indication the block size
+
+    Returns:
+        Computed block effect
+
+    """
+    (
+        _,
+        channels,
+        height,
+        width,
+    ) = x.shape
     if channels > 1:
         raise ValueError("Not for color images")
 
@@ -44,11 +53,11 @@ def _compute_bef(target: Tensor, dim: Optional[Union[int, Tuple[int, ...]]] = No
     d_bc = 0
 
     # h_b for loop
-    h_b = torch.arange(0, target.shape[1] - 1, dtype=torch.long)
+    h_b = torch.arange(0, x.shape[1] - 1, dtype=torch.long)
     h_bc = h_b + 1
-    v_b = torch.arange(0, target.shape[0] - 1, dtype=torch.long)
+    v_b = torch.arange(0, x.shape[0] - 1, dtype=torch.long)
     v_bc = v_b + 1
-    diff = target.gather(1, h_b.unsqueeze(-1)) - torch.gather(1, h_b.unsqueeze(-1))
+    diff = x.gather(1, h_b.unsqueeze(-1)) - torch.gather(1, h_b.unsqueeze(-1))
     d_b += torch.sum(torch.square(diff))
     diff = torch.gather(0, v_b.unsqueeze(0)) - torch.gather(0, v_b.unsqueeze(0))
     d_b += torch.sum(torch.square(diff))
@@ -89,6 +98,7 @@ def _psnrb_compute(
 
     Args:
         sum_squared_error: Sum of square of errors over all observations
+        bef: block effect
         n_obs: Number of predictions or observations
         data_range: the range of the data. If None, it is determined from the data (max - min).
            ``data_range`` must be given when ``dim`` is not None.
@@ -98,14 +108,6 @@ def _psnrb_compute(
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
             - ``'none'`` or ``None``: no reduction will be applied
-
-    Example:
-        >>> preds = torch.tensor([[0.0, 1.0], [2.0, 3.0]])
-        >>> target = torch.tensor([[3.0, 2.0], [1.0, 0.0]])
-        >>> data_range = target.max() - target.min()
-        >>> sum_squared_error, n_obs = _psnrb_update(preds, target)
-        >>> _psnrb_compute(sum_squared_error, n_obs, data_range)
-        tensor(2.5527)
     """
     sum_squared_error = sum_squared_error / n_obs + bef
     psnr_base_e = 2 * torch.log(data_range) - torch.log(sum_squared_error)
@@ -121,8 +123,11 @@ def _psnrb_update(
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
-        dim: Dimensions to reduce PSNR scores over provided as either an integer or a list of integers. Default is
+        dim:
+            Dimensions to reduce PSNR scores over provided as either an integer or a list of integers. Default is
             None meaning scores will be reduced across all dimensions.
+        block_size:
+            Integer indication the block size
     """
     if dim is None:
         sum_squared_error = torch.sum(torch.pow(preds - target, 2))
@@ -154,15 +159,17 @@ def peak_signal_noise_ratio_with_blocked_effect(
     reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
     dim: Optional[Union[int, Tuple[int, ...]]] = None,
 ) -> Tensor:
-    """Computes `Peak Signal to Noise Ratio With Blocked Effect` (PSNRB) metrics, which is defined as.
+    r"""Computes `Peak Signal to Noise Ratio With Blocked Effect` (PSNRB) metrics.
 
-    .. math:: \text{PSNRB}(I, J) = 10 * \\log_{10} \\left(\frac{\\max(I)^2}{\text{MSE}(I, J)-\text{B}(I, J)}\right)
+    .. math::
+        \text{PSNRB}(I, J) = 10 * \log_{10} \left(\frac{\max(I)^2}{\text{MSE}(I, J)-\text{B}(I, J)}\right)
 
     Where :math:`\text{MSE}` denotes the `mean-squared-error`_ function.
 
     Args:
         preds: estimated signal
         target: groun truth signal
+        block_size: integer indication the block size
         data_range: the range of the data. If None, it is determined from the data (max - min).
             ``data_range`` must be given when ``dim`` is not None.
         base: a base of a logarithm to use
@@ -185,9 +192,9 @@ def peak_signal_noise_ratio_with_blocked_effect(
 
     Example:
         >>> from torchmetrics.functional import peak_signal_noise_ratio_with_blocked_effect
-        >>> pred = torch.tensor([[0.0, 1.0], [2.0, 3.0]])
-        >>> target = torch.tensor([[3.0, 2.0], [1.0, 0.0]])
-        >>> peak_signal_noise_ratio_with_blocked_effect(pred, target)
+        >>> preds = torch.rand(1, 1, 28, 28)
+        >>> target = torch.rand(1, 1, 28, 28)
+        >>> peak_signal_noise_ratio_with_blocked_effect(preds, target)
         tensor(2.5527)
 
     .. note::
