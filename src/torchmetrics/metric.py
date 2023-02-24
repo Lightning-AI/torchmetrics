@@ -730,7 +730,7 @@ class Metric(Module, ABC):
         unexpected_keys: List[str],
         error_msgs: List[str],
     ) -> None:
-        """Loads metric states from state_dict."""
+        """Load metric states from state_dict."""
         for key in self._defaults:
             name = prefix + key
             if name in state_dict:
@@ -740,7 +740,7 @@ class Metric(Module, ABC):
         )
 
     def _filter_kwargs(self, **kwargs: Any) -> Dict[str, Any]:
-        """filter kwargs such that they match the update signature of the metric."""
+        """Filter kwargs such that they match the update signature of the metric."""
         # filter all parameters based on update signature except those of
         # type VAR_POSITIONAL (*args) and VAR_KEYWORD (**kwargs)
         _params = (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD)
@@ -761,7 +761,7 @@ class Metric(Module, ABC):
         return filtered_kwargs
 
     def __hash__(self) -> int:
-        """Returns an unique hash of the metric.
+        """Return an unique hash of the metric.
 
         The hash depends on both the class itself but also the current metric state, which therefore enforces that two
         instances of the same metrics never have the same hash even if they have been updated on the same data.
@@ -1044,7 +1044,7 @@ class CompositionalMetric(Metric):
             self.metric_b.persistent(mode=mode)
 
     def __repr__(self) -> str:
-        """Returns a representation of the compositional metric, including the two inputs it was formed from."""
+        """Return a representation of the compositional metric, including the two inputs it was formed from."""
         _op_metrics = f"(\n  {self.op.__name__}(\n    {repr(self.metric_a)},\n    {repr(self.metric_b)}\n  )\n)"
         repr_str = self.__class__.__name__ + _op_metrics
 

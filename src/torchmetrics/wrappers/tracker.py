@@ -116,7 +116,7 @@ class MetricTracker(ModuleList):
         return len(self) - 1  # subtract the base metric
 
     def increment(self) -> None:
-        """Creates a new instance of the input metric that will be updated next."""
+        """Create a new instance of the input metric that will be updated next."""
         self._increment_called = True
         self.append(deepcopy(self._base_metric))
 
@@ -173,7 +173,7 @@ class MetricTracker(ModuleList):
         Dict[str, Union[float, None]],
         Tuple[Dict[str, Union[float, None]], Dict[str, Union[int, None]]],
     ]:
-        """Returns the highest metric out of all tracked.
+        """Return the highest metric out of all tracked.
 
         Args:
             return_step: If ``True`` will also return the step with the highest metric value.
@@ -236,6 +236,6 @@ class MetricTracker(ModuleList):
             return value
 
     def _check_for_increment(self, method: str) -> None:
-        """Method to check that a metric that can be updated/used for computations has been intialized."""
+        """Check that a metric that can be updated/used for computations has been intialized."""
         if not self._increment_called:
             raise ValueError(f"`{method}` cannot be called before `.increment()` has been called")

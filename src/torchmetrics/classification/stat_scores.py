@@ -74,7 +74,7 @@ class _AbstractStatScores(Metric):
             self.fn += fn
 
     def _final_state(self) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-        """Final aggregation in case of list states."""
+        """Aggregate states that are lists and return final states."""
         tp = dim_zero_cat(self.tp)
         fp = dim_zero_cat(self.fp)
         tn = dim_zero_cat(self.tn)
@@ -83,7 +83,7 @@ class _AbstractStatScores(Metric):
 
 
 class BinaryStatScores(_AbstractStatScores):
-    r"""Computes true positives, false positives, true negatives, false negatives and the support for binary tasks.
+    r"""Compute true positives, false positives, true negatives, false negatives and the support for binary tasks.
 
     Related to `Type I and Type II errors`_.
 
@@ -327,7 +327,7 @@ class MulticlassStatScores(_AbstractStatScores):
 
 
 class MultilabelStatScores(_AbstractStatScores):
-    r"""Computes true positives, false positives, true negatives, false negatives and the support for multilabel tasks.
+    r"""Compute true positives, false positives, true negatives, false negatives and the support for multilabel tasks.
 
     Related to `Type I and Type II errors`_.
 
