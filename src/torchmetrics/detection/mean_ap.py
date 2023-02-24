@@ -19,6 +19,7 @@ import torch
 from torch import IntTensor, Tensor
 
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.data import _cumsum
 from torchmetrics.utilities.imports import _PYCOCOTOOLS_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
 
 if _TORCHVISION_GREATER_EQUAL_0_8:
@@ -865,8 +866,8 @@ class MeanAveragePrecision(Metric):
         tps = torch.logical_and(det_matches, torch.logical_not(det_ignore))
         fps = torch.logical_and(torch.logical_not(det_matches), torch.logical_not(det_ignore))
 
-        tp_sum = torch.cumsum(tps, axis=1, dtype=torch.float)
-        fp_sum = torch.cumsum(fps, axis=1, dtype=torch.float)
+        tp_sum = _cumsum(tps, dim=1, dtype=torch.float)
+        fp_sum = _cumsum(fps, dim=1, dtype=torch.float)
         for idx, (tp, fp) in enumerate(zip(tp_sum, fp_sum)):
             nd = len(tp)
             rc = tp / npig
