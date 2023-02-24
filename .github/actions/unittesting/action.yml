@@ -1,4 +1,4 @@
-name: Unittesting and coverage
+name: Unit-testing and Coverage
 description: pull data samples -> unittests
 
 inputs:
@@ -29,15 +29,10 @@ runs:
   using: "composite"
   steps:
 
-  - run: |
-      python --version
+  - name: Details
+    run: |
       pip --version
       pip list
-    shell: ${{ inputs.shell-type }}
-
-  - run: |
-      echo "artifact=test-results-${{ runner.os }}-py${{ inputs.python-version }}-pt{{ inputs.pytorch-version }}-${{ inputs.requires }}" >> $GITHUB_OUTPUT
-    id: location
     shell: ${{ inputs.shell-type }}
 
   - name: Pull testing data from S3
@@ -63,16 +58,8 @@ runs:
         --durations=50 \
         --reruns 3 \
         --reruns-delay 1 \
-        --junitxml="${{ steps.location.outputs.artifact }}.xml" \
         ${{ inputs.test-timeout }}
     shell: ${{ inputs.shell-type }}
-
-  - name: Upload pytest results
-    uses: actions/upload-artifact@v2
-    with:
-      name: ${{ steps.location.outputs.artifact }}
-      path: "test/${{ steps.location.outputs.artifact }}.xml"
-    if: failure()
 
   - name: Statistics
     if: success()
@@ -82,8 +69,12 @@ runs:
       coverage report
     shell: ${{ inputs.shell-type }}
 
-  - name: Post HF
-    run: |
-      printf "list $TRANSFORMERS_CACHE:\n"
-      ls -l $TRANSFORMERS_CACHE
-    shell: bash
+  - name: Upload coverage to Codecov
+    uses: codecov/codecov-action@v3
+    with:
+      token: ${{ secrets.CODECOV_TOKEN }}
+      file: tests/coverage.xml
+      flags: cpu,${{ runner.os }},python${{ inputs.python-version }},torch${{ inputs.pytorch-version }}
+      env_vars: OS,PYTHON
+      name: codecov-umbrella
+      fail_ci_if_error: false

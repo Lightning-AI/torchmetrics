@@ -1,0 +1,67 @@
+name: Update caches & artifacts
+description: some more complex push-caches - pip & hf
+
+inputs:
+  pypi-dir:
+    description: location of local PyPI cache
+    required: false
+    default: "_ci-cache_PyPI"
+  torch-url:
+    description: location to pull PyTorch from
+    required: false
+    default: "https://download.pytorch.org/whl/cpu/torch_stable.html"
+
+
+runs:
+  using: "composite"
+  steps:
+
+  - name: install dev. env
+    run: pip install -q setuptools wheel
+    shell: bash
+
+  - name: Freeze local emv.
+    run: |
+      pip freeze > requirements.dump
+      cat requirements.dump
+    shell: bash
+
+  - name: Filter self pkg
+    run: |
+      import os
+      fp = 'requirements.dump'
+      with open(fp) as fo:
+        lines = [ln.strip() for ln in fo.readlines()]
+      lines = [ln.split('+')[0] for ln in lines if '-e ' not in ln]
+      with open(fp, 'w') as fw:
+        fw.writelines([ln + os.linesep for ln in lines])
+    shell: python
+
+  - name: Dump wheels
+    run: |
+      cat requirements.dump
+      pip wheel -r requirements.dump --prefer-binary \
+        --wheel-dir=${{ inputs.pypi-dir }} \
+        -f ${{ inputs.torch-url }} -f ${{ inputs.pypi-dir }}
+      ls -lh ${{ inputs.pypi-dir }}
+    shell: bash
+
+  - name: Cache pip
+    continue-on-error: true
+    uses: actions/cache/save@v3
+    with:
+      path: ${{ inputs.pypi-dir }}
+      key: pypi-packages
+
+  - name: Post HF
+    run: |
+      printf "list $TRANSFORMERS_CACHE:\n"
+      ls -lh $TRANSFORMERS_CACHE
+    shell: bash
+
+  - name: Cache HF
+    continue-on-error: true
+    uses: actions/cache/save@v3
+    with:
+      path: ${{ env.TRANSFORMERS_CACHE }}
+      key: cache-transformers
