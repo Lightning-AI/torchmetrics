@@ -149,7 +149,6 @@ warn_no_return = "False"
 # TODO: the goal is for this to be empty
 [[tool.mypy.overrides]]
 module = [
-    "torchmetrics.aggregation",
     "torchmetrics.classification.accuracy",
     "torchmetrics.classification.auroc",
     "torchmetrics.classification.average_precision",
