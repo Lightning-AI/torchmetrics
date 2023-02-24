@@ -490,8 +490,7 @@ class MeanAveragePrecision(Metric):
         if len(det) > max_det:
             det = det[:max_det]
 
-        ious = compute_iou(det, gt, self.iou_type).to(self.device)
-        return ious
+        return compute_iou(det, gt, self.iou_type).to(self.device)
 
     def __evaluate_image_gt_no_preds(
         self, gt: Tensor, gt_label_mask: Tensor, area_range: Tuple[int, int], nb_iou_thrs: int
@@ -720,8 +719,7 @@ class MeanAveragePrecision(Metric):
             else:
                 prec = prec[:, :, area_inds, mdet_inds]
 
-        mean_prec = torch.tensor([-1.0]) if len(prec[prec > -1]) == 0 else torch.mean(prec[prec > -1])
-        return mean_prec
+        return torch.tensor([-1.0]) if len(prec[prec > -1]) == 0 else torch.mean(prec[prec > -1])
 
     def _calculate(self, class_ids: List) -> Tuple[MAPMetricResults, MARMetricResults]:
         """Calculate the precision and recall for all supplied classes to calculate mAP/mAR.

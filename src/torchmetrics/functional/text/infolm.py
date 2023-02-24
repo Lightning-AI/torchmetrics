@@ -166,10 +166,9 @@ class _InformationMeasure:
             Alpha divergence between discrete distributions of predicted and reference sentences.
         """
         _alpha_denom = self.alpha * (self.alpha - 1)
-        alpha_divergence = (
+        return (
             1 - torch.sum(target_distribution**self.alpha * preds_distribution ** (1 - self.alpha), dim=-1)
         ) / _alpha_denom
-        return alpha_divergence
 
     def _calculate_ab_divergence(self, preds_distribution: Tensor, target_distribution: Tensor) -> Tensor:
         """Calculate AB divergence between discrete distributions of predicted and reference sentences.
@@ -190,8 +189,7 @@ class _InformationMeasure:
         c = torch.log(torch.sum(target_distribution**self.alpha * preds_distribution**self.beta, dim=-1))
         c /= self.alpha * self.beta
 
-        ab_divergence = a + b - c
-        return ab_divergence
+        return a + b - c
 
     def _calculate_beta_divergence(self, preds_distribution: Tensor, target_distribution: Tensor) -> Tensor:
         """Calculate beta divergence between discrete distributions of predicted and reference sentences.
@@ -206,8 +204,7 @@ class _InformationMeasure:
             Beta divergence between discrete distributions of predicted and reference sentences.
         """
         self.alpha = 1.0
-        beta_divergence = self._calculate_ab_divergence(preds_distribution, target_distribution)
-        return beta_divergence
+        return self._calculate_ab_divergence(preds_distribution, target_distribution)
 
     def _calculate_renyi_divergence(self, preds_distribution: Tensor, target_distribution: Tensor) -> Tensor:
         """Calculate Rényi divergence between discrete distributions of predicted and reference sentences.
@@ -221,10 +218,9 @@ class _InformationMeasure:
         Return:
             Rényi divergence between discrete distributions of predicted and reference sentences.
         """
-        renyi_divergence = (
+        return (
             torch.log(torch.sum(target_distribution**self.alpha * preds_distribution ** (1 - self.alpha), dim=-1))
         ) / (self.alpha - 1)
-        return renyi_divergence
 
     @staticmethod
     def _calculate_l1_distance(preds_distribution: Tensor, target_distribution: Tensor) -> Tensor:
@@ -308,8 +304,7 @@ def _get_dataloader(
         An instance of ``torch.utils.data.DataLoader`` used for iterating over examples.
     """
     dataset = TokenizedDataset(input_ids, attention_mask, idf)
-    dataloader = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers)
-    return dataloader
+    return DataLoader(dataset, batch_size=batch_size, num_workers=num_workers)
 
 
 def _get_special_tokens_map(tokenizer: PreTrainedTokenizerBase) -> Dict[str, int]:
@@ -322,13 +317,12 @@ def _get_special_tokens_map(tokenizer: PreTrainedTokenizerBase) -> Dict[str, int
     Return:
         A dictionary containing: mask_token_id, pad_token_id, sep_token_id and cls_token_id.
     """
-    special_tokens_maps = {
+    return {
         "mask_token_id": tokenizer.mask_token_id,
         "pad_token_id": tokenizer.pad_token_id,
         "sep_token_id": tokenizer.sep_token_id,
         "cls_token_id": tokenizer.cls_token_id,
     }
-    return special_tokens_maps
 
 
 def _get_token_mask(input_ids: Tensor, pad_token_id: int, sep_token_id: int, cls_token_id: int) -> Tensor:
@@ -524,8 +518,7 @@ def _infolm_compute(
     preds_distribution = preds_distribution[preds_dataloader.dataset.sorting_indices]
     target_distribution = target_distribution[target_dataloader.dataset.sorting_indices]
     # Calculate information measure
-    infolm_score = information_measure_cls(preds_distribution, target_distribution)
-    return infolm_score
+    return information_measure_cls(preds_distribution, target_distribution)
 
 
 def infolm(

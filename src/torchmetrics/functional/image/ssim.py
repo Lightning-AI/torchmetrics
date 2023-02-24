@@ -406,9 +406,7 @@ def _multiscale_ssim_update(
 
     betas = torch.tensor(betas, device=mcs_stack.device).view(-1, 1)
     mcs_weighted = mcs_stack**betas
-    mcs_per_image = torch.prod(mcs_weighted, axis=0)
-
-    return mcs_per_image
+    return torch.prod(mcs_weighted, axis=0)
 
 
 def _multiscale_ssim_compute(

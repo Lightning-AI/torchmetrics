@@ -75,8 +75,7 @@ def _compute_f1_score(predicted_answer: str, target_answer: str) -> Tensor:
         return tensor(0.0)
     precision = 1.0 * num_same / tensor(len(predicted_tokens))
     recall = 1.0 * num_same / tensor(len(target_tokens))
-    f1 = (2 * precision * recall) / (precision + recall)
-    return f1
+    return (2 * precision * recall) / (precision + recall)
 
 
 def _compute_exact_match_score(prediction: str, ground_truth: str) -> Tensor:

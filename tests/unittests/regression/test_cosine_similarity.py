@@ -49,13 +49,11 @@ def _multi_target_ref_metric(preds, target, reduction, sk_fn=sk_cosine):
     col = np.diagonal(result_array)
     col_sum = col.sum()
     if reduction == "sum":
-        to_return = col_sum
-    elif reduction == "mean":
+        return col_sum
+    if reduction == "mean":
         mean = col_sum / len(col)
-        to_return = mean
-    else:
-        to_return = col
-    return to_return
+        return mean
+    return col
 
 
 def _single_target_ref_metric(preds, target, reduction, sk_fn=sk_cosine):
@@ -65,13 +63,11 @@ def _single_target_ref_metric(preds, target, reduction, sk_fn=sk_cosine):
     col = np.diagonal(result_array)
     col_sum = col.sum()
     if reduction == "sum":
-        to_return = col_sum
-    elif reduction == "mean":
+        return col_sum
+    if reduction == "mean":
         mean = col_sum / len(col)
-        to_return = mean
-    else:
-        to_return = col
-    return to_return
+        return mean
+    return col
 
 
 @pytest.mark.parametrize("reduction", ["sum", "mean"])

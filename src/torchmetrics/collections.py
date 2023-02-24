@@ -405,8 +405,7 @@ class MetricCollection(ModuleDict):
     def _set_name(self, base: str) -> str:
         """Adjust name of metric with both prefix and postfix."""
         name = base if self.prefix is None else self.prefix + base
-        name = name if self.postfix is None else name + self.postfix
-        return name
+        return name if self.postfix is None else name + self.postfix
 
     def _to_renamed_ordered_dict(self) -> OrderedDict:
         od = OrderedDict()

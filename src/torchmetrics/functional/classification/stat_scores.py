@@ -995,9 +995,7 @@ def _stat_scores_compute(tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor) -> Tens
         tp.unsqueeze(-1) + fn.unsqueeze(-1),  # support
     ]
     outputs: Tensor = torch.cat(stats, -1)
-    outputs = torch.where(outputs < 0, tensor(-1, device=outputs.device), outputs)
-
-    return outputs
+    return torch.where(outputs < 0, tensor(-1, device=outputs.device), outputs)
 
 
 def _reduce_stat_scores(
