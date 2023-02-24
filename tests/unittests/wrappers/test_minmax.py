@@ -8,8 +8,9 @@ from torch import Tensor
 from torchmetrics import MeanSquaredError
 from torchmetrics.classification import BinaryAccuracy, BinaryConfusionMatrix, MulticlassAccuracy
 from torchmetrics.wrappers import MinMaxMetric
+from unittests import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
