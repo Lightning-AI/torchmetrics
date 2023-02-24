@@ -83,9 +83,9 @@ def test_bootstrap_sampler(sampling_strategy):
 @pytest.mark.parametrize(
     ("metric", "ref_metric"),
     [
-        [MulticlassPrecision(num_classes=10, average="micro"), partial(precision_score, average="micro")],
-        [MulticlassRecall(num_classes=10, average="micro"), partial(recall_score, average="micro")],
-        [MeanSquaredError(), mean_squared_error],
+        (MulticlassPrecision(num_classes=10, average="micro"), partial(precision_score, average="micro")),
+        (MulticlassRecall(num_classes=10, average="micro"), partial(recall_score, average="micro")),
+        (MeanSquaredError(), mean_squared_error),
     ],
 )
 def test_bootstrap(device, sampling_strategy, metric, ref_metric):
