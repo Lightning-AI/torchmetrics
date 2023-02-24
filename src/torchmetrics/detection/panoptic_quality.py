@@ -40,9 +40,6 @@ class PanopticQuality(Metric):
         implementation of panopticapi, a standard implementation for the PQ metric for panoptic segmentation.
 
     .. note:
-        Metric is currently experimental.
-
-    .. note:
         Points in the target tensor that do not map to a known category ID are automatically ignored in the metric
         computation.
 
@@ -97,8 +94,6 @@ class PanopticQuality(Metric):
     ):
         super().__init__(**kwargs)
 
-        # todo: better testing for correctness of metric
-        warnings.warn("This is experimental version and are actively working on its stability.")
 
         things, stuffs = _parse_categories(things, stuffs)
         self.things = things

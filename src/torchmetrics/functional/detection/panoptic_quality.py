@@ -70,10 +70,10 @@ def _parse_categories(things: Collection[int], stuffs: Collection[int]) -> Tuple
     """
     things_parsed = set(things)
     if len(things_parsed) < len(things):
-        rank_zero_warn("The provided `things` categories contained duplicates, which have been removed.")
+        rank_zero_warn("The provided `things` categories contained duplicates, which have been removed.", UserWarning)
     stuffs_parsed = set(stuffs)
     if len(stuffs_parsed) < len(stuffs):
-        rank_zero_warn("The provided `stuffs` categories contained duplicates, which have been removed.")
+        rank_zero_warn("The provided `stuffs` categories contained duplicates, which have been removed.", UserWarning)
     if not all(isinstance(val, int) for val in things_parsed):
         raise TypeError(f"Expected argument `things` to contain `int` categories, but got {things}")
     if not all(isinstance(val, int) for val in stuffs_parsed):
@@ -369,8 +369,6 @@ def panoptic_quality(
     true postitives, false positives and false negatives. This metric is inspired by the PQ implementation of
     panopticapi, a standard implementation for the PQ metric for object detection.
 
-    .. note:
-        Metric is currently experimental.
 
     .. note:
         Points in the target tensor that do not map to a known category ID are automatically ignored in the metric
