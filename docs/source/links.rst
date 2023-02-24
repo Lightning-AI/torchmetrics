@@ -130,3 +130,4 @@
 .. _Multilabel coverage error: https://link.springer.com/chapter/10.1007/978-0-387-09823-4_34
 .. _Panoptic Quality: https://arxiv.org/abs/1801.00868
 .. _torchmetrics mAP example: https://github.com/Lightning-AI/metrics/blob/master/examples/detection_map.py
+.. _Minkowski Distance: https://en.wikipedia.org/wiki/Minkowski_distance
