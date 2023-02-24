@@ -71,6 +71,8 @@ def _sklearn_hamming_distance_binary(preds, target, ignore_index, multidim_avera
 
 @pytest.mark.parametrize("input", _binary_cases)
 class TestBinaryHammingDistance(MetricTester):
+    """Test class for `BinaryHammingDistance` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("ddp", [False, True])
@@ -207,6 +209,8 @@ def _sklearn_hamming_distance_multiclass(preds, target, ignore_index, multidim_a
 
 @pytest.mark.parametrize("input", _multiclass_cases)
 class TestMulticlassHammingDistance(MetricTester):
+    """Test class for `MulticlassHammingDistance` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
@@ -380,6 +384,8 @@ def _sklearn_hamming_distance_multilabel(preds, target, ignore_index, multidim_a
 
 @pytest.mark.parametrize("input", _multilabel_cases)
 class TestMultilabelHammingDistance(MetricTester):
+    """Test class for `MultilabelHammingDistance` metric."""
+
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])

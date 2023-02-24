@@ -53,6 +53,8 @@ def _fallout_at_k(target: np.ndarray, preds: np.ndarray, top_k: int = None):
 
 
 class TestFallOut(RetrievalMetricTester):
+    """Test class for `FallOut` metric."""
+
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize("ignore_index", [None, 1])  # avoid setting 0, otherwise test with all 0 targets will fail

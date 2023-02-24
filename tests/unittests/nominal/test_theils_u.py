@@ -100,6 +100,8 @@ def _dython_theils_u_matrix(matrix, nan_strategy, nan_replace_value):
 )
 @pytest.mark.parametrize("nan_strategy, nan_replace_value", [("replace", 0.0), ("drop", None)])
 class TestTheilsU(MetricTester):
+    """Test class for `TheilsU` metric."""
+
     atol = 1e-5
 
     @pytest.mark.parametrize("ddp", [False, True])

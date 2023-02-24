@@ -77,6 +77,8 @@ def _scipy_concordance(preds, target):
     ],
 )
 class TestConcordanceCorrCoef(MetricTester):
+    """Test class for `ConcordanceCorrCoef` metric."""
+
     atol = 1e-3
 
     @pytest.mark.parametrize("ddp", [True, False])

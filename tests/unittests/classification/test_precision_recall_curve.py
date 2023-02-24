@@ -49,6 +49,8 @@ def _sklearn_precision_recall_curve_binary(preds, target, ignore_index=None):
 
 @pytest.mark.parametrize("input", (_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]))
 class TestBinaryPrecisionRecallCurve(MetricTester):
+    """Test class for `BinaryPrecisionRecallCurve` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_binary_precision_recall_curve(self, input, ddp, ignore_index):
@@ -166,6 +168,8 @@ def _sklearn_precision_recall_curve_multiclass(preds, target, ignore_index=None)
     "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
 )
 class TestMulticlassPrecisionRecallCurve(MetricTester):
+    """Test class for `MulticlassPrecisionRecallCurve` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multiclass_precision_recall_curve(self, input, ddp, ignore_index):
@@ -278,6 +282,8 @@ def _sklearn_precision_recall_curve_multilabel(preds, target, ignore_index=None)
     "input", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5])
 )
 class TestMultilabelPrecisionRecallCurve(MetricTester):
+    """Test class for `MultilabelPrecisionRecallCurve` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multilabel_precision_recall_curve(self, input, ddp, ignore_index):

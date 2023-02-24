@@ -103,6 +103,8 @@ def _dython_cramers_v_matrix(matrix, bias_correction, nan_strategy, nan_replace_
 @pytest.mark.parametrize("bias_correction", [False, True])
 @pytest.mark.parametrize("nan_strategy, nan_replace_value", [("replace", 0.0), ("drop", None)])
 class TestCramersV(MetricTester):
+    """Test class for `CramersV` metric."""
+
     atol = 1e-5
 
     @pytest.mark.parametrize("ddp", [False, True])

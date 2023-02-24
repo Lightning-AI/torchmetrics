@@ -132,6 +132,8 @@ def _pt_ssim(
 )
 @pytest.mark.parametrize("sigma", [1.5, 0.5])
 class TestSSIM(MetricTester):
+    """Test class for `StructuralSimilarityIndexMeasure` metric."""
+
     atol = 6e-3
 
     @pytest.mark.parametrize("ddp", [True, False])
