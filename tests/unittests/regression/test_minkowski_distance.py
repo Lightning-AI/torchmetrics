@@ -62,7 +62,7 @@ class TestMinkowskiDistance(MetricTester):
             metric_class=MinkowskiDistance,
             reference_metric=partial(ref_metric, p=p),
             dist_sync_on_step=dist_sync_on_step,
-            metric_args={"exponent": p},
+            metric_args={"p": p},
         )
 
     def test_minkowski_distance_functional(self, preds, target, ref_metric, p):
@@ -71,18 +71,18 @@ class TestMinkowskiDistance(MetricTester):
             target=target,
             metric_functional=minkowski_distance,
             reference_metric=partial(ref_metric, p=p),
-            metric_args={"exponent": p},
+            metric_args={"p": p},
         )
 
     @pytest.mark.skipif(
         not _TORCH_GREATER_EQUAL_1_9, reason="minkowski half + cpu not supported for older versions of pytorch"
     )
     def test_minkowski_distance_half_cpu(self, preds, target, ref_metric, p):
-        self.run_precision_test_cpu(preds, target, MinkowskiDistance, minkowski_distance, metric_args={"exponent": p})
+        self.run_precision_test_cpu(preds, target, MinkowskiDistance, minkowski_distance, metric_args={"p": p})
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_minkowski_distance_half_gpu(self, preds, target, ref_metric, p):
-        self.run_precision_test_gpu(preds, target, MinkowskiDistance, minkowski_distance, metric_args={"exponent": p})
+        self.run_precision_test_gpu(preds, target, MinkowskiDistance, minkowski_distance, metric_args={"p": p})
 
 
 def test_error_on_different_shape():
@@ -92,5 +92,5 @@ def test_error_on_different_shape():
 
 
 def test_error_on_wrong_p_arg():
-    with pytest.raises(TorchMetricsUserError, match="Argument ``exponent`` must be a float.*"):
+    with pytest.raises(TorchMetricsUserError, match="Argument ``p`` must be a float.*"):
         MinkowskiDistance(p=-10)

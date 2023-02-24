@@ -18,7 +18,7 @@ from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
 
 
-def _minkowski_distance_update(preds: Tensor, targets: Tensor, exponent: float) -> Tensor:
+def _minkowski_distance_update(preds: Tensor, targets: Tensor, p: float) -> Tensor:
     """Updates and returns variables required to compute Minkowski distance.
 
     Checks for same shape of input tensors.
@@ -26,25 +26,25 @@ def _minkowski_distance_update(preds: Tensor, targets: Tensor, exponent: float) 
     Args:
         preds: Predicted tensor
         targets: Ground truth tensor
-        exponent: Non-negative number acting as the exponent to the errors
+        p: Non-negative number acting as the p to the errors
     """
     _check_same_shape(preds, targets)
 
-    if not (isinstance(exponent, (float, int)) and exponent >= 1):
-        raise TorchMetricsUserError(f"Argument ``p`` must be a float or int greater than 1, but got {exponent}")
+    if not (isinstance(p, (float, int)) and p >= 1):
+        raise TorchMetricsUserError(f"Argument ``p`` must be a float or int greater than 1, but got {p}")
 
     difference = torch.abs(preds - targets)
-    mink_dist_sum = torch.sum(torch.pow(difference, exponent))
+    mink_dist_sum = torch.sum(torch.pow(difference, p))
 
     return mink_dist_sum
 
 
-def _minkowski_distance_compute(distance: Tensor, exponent: float) -> Tensor:
+def _minkowski_distance_compute(distance: Tensor, p: float) -> Tensor:
     """Computes Minkowski Distance.
 
     Args:
         distance: Sum of the p-th powers of errors over all observations
-        exponent: The non-negative numeric power the errors are to be raised to
+        p: The non-negative numeric power the errors are to be raised to
 
     Example:
         >>> preds = torch.tensor([0., 1, 2, 3])
@@ -53,10 +53,10 @@ def _minkowski_distance_compute(distance: Tensor, exponent: float) -> Tensor:
         >>> _minkowski_distance_compute(distance_p_sum, 5)
         tensor(2.0244)
     """
-    return torch.pow(distance, 1.0 / exponent)
+    return torch.pow(distance, 1.0 / p)
 
 
-def minkowski_distance(preds: Tensor, targets: Tensor, exponent: float) -> Tensor:
+def minkowski_distance(preds: Tensor, targets: Tensor, p: float) -> Tensor:
     r"""Compute the `Minkowski distance`_.
 
     .. math:: d_{\text{Minkowski}} = \\sum_{i}^N (| y_i - \\hat{y_i} |^p)^\frac{1}{p}
@@ -67,7 +67,7 @@ def minkowski_distance(preds: Tensor, targets: Tensor, exponent: float) -> Tenso
     Args:
         preds: estimated labels of type Tensor
         targets: ground truth labels of type Tensor
-        exponent: int or float larger than 1, exponent to which the difference between preds and target is to be raised
+        p: int or float larger than 1, exponent to which the difference between preds and target is to be raised
 
     Return:
         Tensor with the Minkowski distance
@@ -76,8 +76,8 @@ def minkowski_distance(preds: Tensor, targets: Tensor, exponent: float) -> Tenso
         >>> from torchmetrics.functional import minkowski_distance
         >>> x = torch.tensor([1.0, 2.8, 3.5, 4.5])
         >>> y = torch.tensor([6.1, 2.11, 3.1, 5.6])
-        >>> minkowski_distance(x, y, exponent=3)
+        >>> minkowski_distance(x, y, p=3)
         tensor(5.1220)
     """
-    minkowski_dist_sum = _minkowski_distance_update(preds, targets, exponent)
-    return _minkowski_distance_compute(minkowski_dist_sum, exponent)
+    minkowski_dist_sum = _minkowski_distance_update(preds, targets, p)
+    return _minkowski_distance_compute(minkowski_dist_sum, p)
