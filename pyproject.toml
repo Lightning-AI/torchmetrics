@@ -206,8 +206,5 @@ module = [
     "torchmetrics.regression.mse",
     "torchmetrics.regression.symmetric_mape",
     "torchmetrics.retrieval.precision_recall_curve",
-    "torchmetrics.utilities.checks",
-    "torchmetrics.utilities.data",
-    "torchmetrics.wrappers.tracker",
 ]
 ignore_errors = "True"
