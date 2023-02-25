@@ -77,6 +77,8 @@ def _baseline_ergas(
     [(i.preds, i.target, i.ratio) for i in _inputs],
 )
 class TestErrorRelativeGlobalDimensionlessSynthesis(MetricTester):
+    """Test class for `ErrorRelativeGlobalDimensionlessSynthesis` metric."""
+
     @pytest.mark.parametrize("ddp", [True, False])
     def test_ergas(self, reduction, preds, target, ratio, ddp):
         self.run_class_metric_test(

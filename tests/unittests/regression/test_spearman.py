@@ -88,6 +88,8 @@ def _scipy_spearman(preds, target):
     ],
 )
 class TestSpearmanCorrCoef(MetricTester):
+    """Test class for `SpearmanCorrCoef` metric."""
+
     atol = 1e-2
 
     @pytest.mark.parametrize("ddp", [True, False])

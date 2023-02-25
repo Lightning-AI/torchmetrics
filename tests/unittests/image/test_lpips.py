@@ -45,6 +45,8 @@ def _compare_fn(img1: Tensor, img2: Tensor, net_type: str, normalize: bool = Fal
 
 @pytest.mark.skipif(not _LPIPS_AVAILABLE, reason="test requires that lpips is installed")
 class TestLPIPS(MetricTester):
+    """Test class for `LearnedPerceptualImagePatchSimilarity` metric."""
+
     atol: float = 1e-4
 
     @pytest.mark.parametrize("net_type", ["vgg", "alex", "squeeze"])
