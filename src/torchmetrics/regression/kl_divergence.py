@@ -67,7 +67,7 @@ class KLDivergence(Metric):
         >>> from torchmetrics import KLDivergence
         >>> p = tensor([[0.36, 0.48, 0.16]])
         >>> q = tensor([[1/3, 1/3, 1/3]])
-        >>> from torchmetrics import KLDivergence()
+        >>> kl_divergence = KLDivergence()
         >>> kl_divergence(p, q)
         tensor(0.0853)
     """
