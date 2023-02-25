@@ -49,6 +49,8 @@ def _hit_rate_at_k(target: np.ndarray, preds: np.ndarray, top_k: int = None):
 
 
 class TestHitRate(RetrievalMetricTester):
+    """Test class for `HitRate` metric."""
+
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize("ignore_index", [None, 1])  # avoid setting 0, otherwise test with all 0 targets will fail

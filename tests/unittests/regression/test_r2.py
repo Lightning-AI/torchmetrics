@@ -69,6 +69,8 @@ def _multi_target_ref_metric(preds, target, adjusted, multioutput):
     ],
 )
 class TestR2Score(MetricTester):
+    """Test class for `R2Score` metric."""
+
     @pytest.mark.parametrize("ddp", [True, False])
     def test_r2(self, adjusted, multioutput, preds, target, ref_metric, num_outputs, ddp):
         self.run_class_metric_test(

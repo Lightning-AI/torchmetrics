@@ -75,6 +75,8 @@ mireval_snr_nozeromean = partial(bss_eval_images_snr, zero_mean=False)
     ],
 )
 class TestSNR(MetricTester):
+    """Test class for `SignalNoiseRatio` metric."""
+
     atol = 1e-2
 
     @pytest.mark.parametrize("ddp", [True, False])

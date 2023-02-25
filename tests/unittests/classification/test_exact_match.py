@@ -46,6 +46,8 @@ def _baseline_exact_match_multiclass(preds, target, ignore_index, multidim_avera
 
 @pytest.mark.parametrize("input", _multiclass_cases)
 class TestMulticlassExactMatch(MetricTester):
+    """Test class for `MulticlassExactMatch` metric."""
+
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])
@@ -166,6 +168,8 @@ def _baseline_exact_match_multilabel(preds, target, ignore_index, multidim_avera
 
 @pytest.mark.parametrize("input", _multilabel_cases)
 class TestMultilabelExactMatch(MetricTester):
+    """Test class for `MultilabelExactMatch` metric."""
+
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])

@@ -46,6 +46,8 @@ def _netcal_binary_calibration_error(preds, target, n_bins, norm, ignore_index):
 
 @pytest.mark.parametrize("input", (_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]))
 class TestBinaryCalibrationError(MetricTester):
+    """Test class for `BinaryCalibrationError` metric."""
+
     @pytest.mark.parametrize("n_bins", [10, 15, 20])
     @pytest.mark.parametrize("norm", ["l1", "max"])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
@@ -141,6 +143,8 @@ def _netcal_multiclass_calibration_error(preds, target, n_bins, norm, ignore_ind
     "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
 )
 class TestMulticlassCalibrationError(MetricTester):
+    """Test class for `MulticlassCalibrationError` metric."""
+
     @pytest.mark.parametrize("n_bins", [15, 20])
     @pytest.mark.parametrize("norm", ["l1", "max"])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])

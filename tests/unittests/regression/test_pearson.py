@@ -65,7 +65,9 @@ def _scipy_pearson(preds, target):
         (_multi_target_inputs2.preds, _multi_target_inputs2.target),
     ],
 )
-class TestPearsonCorrcoef(MetricTester):
+class TestPearsonCorrCoef(MetricTester):
+    """Test class for `PearsonCorrCoef` metric."""
+
     atol = 1e-3
 
     @pytest.mark.parametrize("compute_on_cpu", [True, False])
