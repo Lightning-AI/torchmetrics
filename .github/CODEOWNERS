@@ -5,7 +5,7 @@
 # the repo. Unless a later match takes precedence,
 # @global-owner1 and @global-owner2 will be requested for
 # review when someone opens a pull request.
-* @borda @SkafteNicki @justusschock @ananyahjha93 @tchaton @ethanwharris @SeanNaren
+* @SkafteNicki @borda @justusschock
 
 # owners
 /.github/CODEOWNERS   @williamFalcon
@@ -19,9 +19,9 @@
 /src/torchmetrics/collections.py   @SkafteNicki @justusschock @borda
 
 # CI/CD
-/.github/workflows/   @borda @ethanwharris
+/.github/workflows/   @borda @akihironitta @ethanwharris
 # configs in root
-/*.yml                @borda @ethanwharris
+/*.yml                @borda @akihironitta @ethanwharris
 
 # Docs
 /docs/                          @edenlightning @SkafteNicki @borda
