@@ -21,9 +21,10 @@ from scipy.special import expit as sigmoid
 
 from torchmetrics.classification.group_fairness import BinaryFairness
 from torchmetrics.functional.classification.group_fairness import binary_fairness
+from unittests import THRESHOLD
 from unittests.classification.inputs import _group_cases
 from unittests.helpers import seed_all
-from unittests.helpers.testers import THRESHOLD, MetricTester, inject_ignore_index, remove_ignore_index_groups
+from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index_groups
 
 seed_all(42)
 
