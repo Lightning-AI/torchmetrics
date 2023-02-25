@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Union
+from typing import Any
 
 import torch
 from torch import Tensor
@@ -75,7 +75,8 @@ class KLDivergence(Metric):
     higher_is_better: bool = False
     full_state_update: bool = False
     total: Tensor
-    measures: Union[Tensor, List[Tensor]]
+    # FIXME: Apply once minimal torch is 1.10. For torch<=1.9, jit does not support Union types
+    # measures: Union[Tensor, List[Tensor]]
 
     def __init__(
         self,
@@ -103,7 +104,7 @@ class KLDivergence(Metric):
         """Update metric states with predictions and targets."""
         measures, total = _kld_update(p, q, self.log_prob)
         if self.reduction is None or self.reduction == "none":
-            self.measures.append(measures)  # type: ignore[union-attr]
+            self.measures.append(measures)  # type: ignore[operator,union-attr]
         else:
             self.measures += measures.sum()
             self.total += total
@@ -111,7 +112,7 @@ class KLDivergence(Metric):
     def compute(self) -> Tensor:
         """Compute metric."""
         measures: Tensor = (
-            dim_zero_cat(self.measures)
+            dim_zero_cat(self.measures)  # type: ignore[arg-type]
             if self.reduction in ["none", None]
             else self.measures  # type: ignore[assignment]
         )
