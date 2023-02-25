@@ -59,6 +59,8 @@ def _wrap_reduction(p: Tensor, q: Tensor, log_prob: bool, reduction: Optional[st
     "p, q, log_prob", [(_probs_inputs.p, _probs_inputs.q, False), (_log_probs_inputs.p, _log_probs_inputs.q, True)]
 )
 class TestKLDivergence(MetricTester):
+    """Test class for `KLDivergence` metric."""
+
     atol = 1e-6
 
     @pytest.mark.parametrize("ddp", [True, False])

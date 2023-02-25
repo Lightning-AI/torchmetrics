@@ -92,6 +92,8 @@ def _np_d_lambda(preds, target, p):
     [(i.preds, i.target, i.p) for i in _inputs],
 )
 class TestSpectralDistortionIndex(MetricTester):
+    """Test class for `SpectralDistortionIndex` metric."""
+
     atol = 6e-3
 
     @pytest.mark.parametrize("ddp", [True, False])

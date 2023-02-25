@@ -42,6 +42,8 @@ def _sklearn_cohen_kappa_binary(preds, target, weights=None, ignore_index=None):
 
 @pytest.mark.parametrize("input", _binary_cases)
 class TestBinaryCohenKappa(MetricTester):
+    """Test class for `BinaryCohenKappa` metric."""
+
     atol = 1e-5
 
     @pytest.mark.parametrize("weights", ["linear", "quadratic", None])
@@ -134,6 +136,8 @@ def _sklearn_cohen_kappa_multiclass(preds, target, weights, ignore_index=None):
 
 @pytest.mark.parametrize("input", _multiclass_cases)
 class TestMulticlassCohenKappa(MetricTester):
+    """Test class for `MulticlassCohenKappa` metric."""
+
     atol = 1e-5
 
     @pytest.mark.parametrize("weights", ["linear", "quadratic", None])
