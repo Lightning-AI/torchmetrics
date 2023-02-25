@@ -2,6 +2,8 @@ from torchmetrics import Metric
 
 
 class MetricWrapper(Metric):
+    """Metric wrapper,"""
+
     def __init__(self, metric):
         super().__init__()
         self.metric = metric

@@ -543,6 +543,8 @@ class MetricTester:
 
 
 class DummyMetric(Metric):
+    """DummyMetric for testing core components."""
+
     name = "Dummy"
     full_state_update: Optional[bool] = True
 
@@ -558,6 +560,8 @@ class DummyMetric(Metric):
 
 
 class DummyListMetric(Metric):
+    """DummyListMetric for testing core components."""
+
     name = "DummyList"
     full_state_update: Optional[bool] = True
 
@@ -573,6 +577,8 @@ class DummyListMetric(Metric):
 
 
 class DummyMetricSum(DummyMetric):
+    """DummyMetricSum for testing core components."""
+
     def update(self, x):
         self.x += x
 
@@ -581,6 +587,8 @@ class DummyMetricSum(DummyMetric):
 
 
 class DummyMetricDiff(DummyMetric):
+    """DummyMetricDiff for testing core components."""
+
     def update(self, y):
         self.x -= y
 
@@ -589,6 +597,8 @@ class DummyMetricDiff(DummyMetric):
 
 
 class DummyMetricMultiOutput(DummyMetricSum):
+    """DummyMetricMultiOutput for testing core components."""
+
     def compute(self):
         return [self.x, self.x]
 

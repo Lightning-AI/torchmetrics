@@ -74,6 +74,8 @@ stoi_original_batch_16k_noext = partial(stoi_original_batch, fs=16000, extended=
     ],
 )
 class TestSTOI(MetricTester):
+    """Test class for `ShortTimeObjectiveIntelligibility` metric."""
+
     atol = 1e-2
 
     @pytest.mark.parametrize("ddp", [True, False])

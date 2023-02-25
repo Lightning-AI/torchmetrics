@@ -21,6 +21,8 @@ from torchmetrics.metric import CompositionalMetric, Metric
 
 
 class DummyMetric(Metric):
+    """DummyMetric class for testing composition component."""
+
     full_state_update = True
 
     def __init__(self, val_to_return):

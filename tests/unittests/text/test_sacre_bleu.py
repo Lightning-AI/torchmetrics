@@ -47,6 +47,8 @@ def sacrebleu_fn(preds: Sequence[str], targets: Sequence[Sequence[str]], tokeniz
 @pytest.mark.parametrize("tokenize", TOKENIZERS)
 @pytest.mark.skipif(not _SACREBLEU_AVAILABLE, reason="test requires sacrebleu")
 class TestSacreBLEUScore(TextTester):
+    """Test class for `SacreBLEUScore` metric."""
+
     @pytest.mark.parametrize("ddp", [False, True])
     def test_bleu_score_class(self, ddp, preds, targets, tokenize, lowercase):
         metric_args = {"tokenize": tokenize, "lowercase": lowercase}
