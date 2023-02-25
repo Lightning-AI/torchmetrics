@@ -59,8 +59,7 @@ def _binary_groups_stat_scores(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> List[Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]:
-    """Computes the number of true positives, false positives, true negatives, and false negatives for binary
-    classification by group.
+    """Computes the true/false positives and true/false negatives rates for binary classification by group.
 
     Related to `Type I and Type II errors`_.
     """
@@ -114,8 +113,9 @@ def binary_groups_stat_rates(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Dict[str, torch.Tensor]:
-    r"""Computes the true positives, false positives, true negatives, and false negatives rates for binary
-    classification by group. Related to `Type I and Type II errors`_.
+    r"""Computes the true/false positives and true/false negatives rates for binary classification by group.
+
+    Related to `Type I and Type II errors`_.
 
     Accepts the following input tensors:
 
@@ -182,10 +182,11 @@ def demographic_parity(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Dict[str, torch.Tensor]:
-    r"""`Demographic parity`_ compares the positivity rates between all groups. If more than two groups are present,
-    the disparity between the lowest and highest group is reported. The lowest positivity rate is divided by the
-    highest, so a lower value means more discrimination against the numerator. In the results this is also
-    indicated as the key of dict is DP_{identifier_low_group}_{identifier_high_group}.
+    r"""`Demographic parity`_ compares the positivity rates between all groups.
+
+    If more than two groups are present, the disparity between the lowest and highest group is reported. The lowest
+    positivity rate is divided by the highest, so a lower value means more discrimination against the numerator.
+    In the results this is also indicated as the key of dict is DP_{identifier_low_group}_{identifier_high_group}.
 
     .. math::
         \text{DP} = \dfrac{\min_a PR_a}{\max_a PR_a}.
@@ -265,10 +266,11 @@ def equal_opportunity(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Dict[str, torch.Tensor]:
-    r"""`Equal opportunity`_ compares the true positive rates between all groups. If more than two groups are present,
-    the disparity between the lowest and highest group is reported. The lowest true positive rate is divided by the
-    highest, so a lower value means more discrimination against the numerator. In the results this is also
-    indicated as the key of dict is EO_{identifier_low_group}_{identifier_high_group}.
+    r"""`Equal opportunity`_ compares the true positive rates between all groups.
+
+    If more than two groups are present, the disparity between the lowest and highest group is reported. The lowest
+    true positive rate is divided by the highest, so a lower value means more discrimination against the numerator.
+    In the results this is also indicated as the key of dict is EO_{identifier_low_group}_{identifier_high_group}.
 
     .. math::
         \text{DP} = \dfrac{\min_a TPR_a}{\max_a TPR_a}.
@@ -335,10 +337,11 @@ def binary_fairness(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Dict[str, torch.Tensor]:
-    r"""This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'demographic_parity'``, ``'equal_opportunity'`` or ``all``. See the documentation of
-    :func:`_compute_binary_demographic_parity` and :func:`_compute_binary_equal_opportunity` for the specific
-    details of each argument influence and examples.
+    r"""This function is a simple wrapper to get the task specific versions of the metric.
+
+    This is done by setting the ``task`` argument to either ``'demographic_parity'``, ``'equal_opportunity'``
+    or ``all``. See the documentation of :func:`_compute_binary_demographic_parity`
+    and :func:`_compute_binary_equal_opportunity` for the specific details of each argument influence and examples.
 
     Args:
         preds: Tensor with predictions.

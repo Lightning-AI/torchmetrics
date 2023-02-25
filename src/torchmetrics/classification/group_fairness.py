@@ -46,8 +46,9 @@ class _AbstractGroupStatScores(Metric):
 
 
 class BinaryGroupStatRates(_AbstractGroupStatScores):
-    r"""Computes the true positives, false positives, true negatives, and false negatives rates for binary
-    classification by group. Related to `Type I and Type II errors`_.
+    r"""Computes the true/false positives and true/false negatives rates for binary classification by group.
+
+    Related to `Type I and Type II errors`_.
 
     Accepts the following input tensors:
 
