@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Tuple
+from typing import Tuple, Union
 
 import torch
 from torch import Tensor
@@ -37,16 +37,18 @@ def _kld_update(p: Tensor, q: Tensor, log_prob: bool) -> Tuple[Tensor, int]:
 
     total = p.shape[0]
     if log_prob:
-        measures = torch.sum(p.exp() * (p - q), axis=-1)
+        measures = torch.sum(p.exp() * (p - q), axis=-1)  # type: ignore[call-overload]
     else:
-        p = p / p.sum(axis=-1, keepdim=True)
-        q = q / q.sum(axis=-1, keepdim=True)
-        measures = _safe_xlogy(p, p / q).sum(axis=-1)
+        p = p / p.sum(axis=-1, keepdim=True)  # type: ignore[call-overload]
+        q = q / q.sum(axis=-1, keepdim=True)  # type: ignore[call-overload]
+        measures = _safe_xlogy(p, p / q).sum(axis=-1)  # type: ignore[call-overload]
 
     return measures, total
 
 
-def _kld_compute(measures: Tensor, total: Tensor, reduction: Literal["mean", "sum", "none", None] = "mean") -> Tensor:
+def _kld_compute(
+    measures: Tensor, total: Union[int, Tensor], reduction: Literal["mean", "sum", "none", None] = "mean"
+) -> Tensor:
     """Compute the KL divergenece based on the type of reduction.
 
     Args:
