@@ -498,7 +498,7 @@ def _ter_update(
     """
     target, preds = _validate_inputs(target, preds)
 
-    for (pred, tgt) in zip(preds, target):
+    for pred, tgt in zip(preds, target):
         tgt_words_: List[List[str]] = [_preprocess_sentence(_tgt, tokenizer).split() for _tgt in tgt]
         pred_words_: List[str] = _preprocess_sentence(pred, tokenizer).split()
         num_edits, tgt_length = _compute_sentence_statistics(pred_words_, tgt_words_)

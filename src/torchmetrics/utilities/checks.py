@@ -54,9 +54,7 @@ def _basic_input_validation(
     if target.is_floating_point():
         raise ValueError("The `target` has to be an integer tensor.")
 
-    if ignore_index is None and target.min() < 0:
-        raise ValueError("The `target` has to be a non-negative tensor.")
-    elif ignore_index is not None and ignore_index >= 0 and target.min() < 0:
+    if (ignore_index is None and target.min() < 0) or (ignore_index and ignore_index >= 0 and target.min() < 0):
         raise ValueError("The `target` has to be a non-negative tensor.")
 
     preds_float = preds.is_floating_point()
