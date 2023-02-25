@@ -49,6 +49,8 @@ def _r_precision(target: np.ndarray, preds: np.ndarray):
 
 
 class TestRPrecision(RetrievalMetricTester):
+    """Test class for `RetrievalRPrecision` metric."""
+
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize("ignore_index", [None, 1])  # avoid setting 0, otherwise test with all 0 targets will fail

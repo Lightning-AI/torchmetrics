@@ -55,6 +55,8 @@ for batch_size in (8, 4049):
 
 @pytest.mark.parametrize("x, y", _examples)
 class TestAUC(MetricTester):
+    """Test class for `AUC`."""
+
     @pytest.mark.parametrize("reorder", [True, False])
     def test_auc_functional(self, x, y, reorder):
         self.run_functional_metric_test(

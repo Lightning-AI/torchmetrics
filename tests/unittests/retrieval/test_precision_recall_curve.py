@@ -112,6 +112,8 @@ def _compute_precision_recall_curve(
 
 
 class RetrievalPrecisionRecallCurveTester(MetricTester):
+    """Tester class for `RetrievalPrecisionRecallCurveTester` metric."""
+
     def run_class_metric_test(
         self,
         ddp: bool,
@@ -144,6 +146,8 @@ class RetrievalPrecisionRecallCurveTester(MetricTester):
 @pytest.mark.parametrize("adaptive_k", [False, True])
 @pytest.mark.parametrize(**_default_metric_class_input_arguments)
 class TestRetrievalPrecisionRecallCurve(RetrievalPrecisionRecallCurveTester):
+    """Test class for `RetrievalPrecisionRecallCurveTester` metric."""
+
     atol = 0.02
 
     def test_class_metric(

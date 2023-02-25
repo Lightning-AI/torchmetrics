@@ -108,7 +108,6 @@ unfixable = ["F401"]
 "__about__.py" = ["D100"]
 "__init__.py" = ["D100"]
 "tests/**" = [
-    "D101",  # Missing docstring in public class
     "D102",  # Missing docstring in public method
     "D103",  # Missing docstring in public function
     "D401",  # todo # First line of docstring should be in imperative mood: ...
