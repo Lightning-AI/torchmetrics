@@ -36,8 +36,10 @@ from torchmetrics.utilities.enums import ClassificationTaskNoBinary
 
 
 class MulticlassExactMatch(Metric):
-    r"""Compute Exact match (also known as subset accuracy) for multiclass tasks. Exact Match is a stricter version
-    of accuracy where all labels have to match exactly for the sample to be correctly classified.
+    r"""Compute Exact match (also known as subset accuracy) for multiclass tasks.
+
+    Exact Match is a stricter version of accuracy where all labels have to match exactly for the sample to be
+    correctly classified.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -124,7 +126,8 @@ class MulticlassExactMatch(Metric):
                 preds, target, self.num_classes, self.multidim_average, self.ignore_index
             )
         preds, target = _multiclass_stat_scores_format(preds, target, 1)
-        correct, total = _multiclass_exact_match_update(preds, target, self.multidim_average)
+
+        correct, total = _multiclass_exact_match_update(preds, target, self.multidim_average, self.ignore_index)
         if self.multidim_average == "samplewise":
             self.correct.append(correct)
             self.total = total
@@ -139,8 +142,10 @@ class MulticlassExactMatch(Metric):
 
 
 class MultilabelExactMatch(Metric):
-    r"""Compute Exact match (also known as subset accuracy) for multilabel tasks. Exact Match is a stricter version
-    of accuracy where all labels have to match exactly for the sample to be correctly classified.
+    r"""Compute Exact match (also known as subset accuracy) for multilabel tasks.
+
+    Exact Match is a stricter version of accuracy where all labels have to match exactly for the sample to be
+    correctly classified.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -258,8 +263,10 @@ class MultilabelExactMatch(Metric):
 
 
 class ExactMatch:
-    r"""Compute Exact match (also known as subset accuracy). Exact Match is a stricter version of accuracy where all
-    labels have to match exactly for the sample to be correctly classified.
+    r"""Compute Exact match (also known as subset accuracy).
+
+    Exact Match is a stricter version of accuracy where all labels have to match exactly for the sample to be
+    correctly classified.
 
     This module is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'multiclass'`` or ``multilabel``. See the documentation of

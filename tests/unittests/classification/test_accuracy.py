@@ -22,9 +22,10 @@ from sklearn.metrics import confusion_matrix as sk_confusion_matrix
 
 from torchmetrics.classification.accuracy import BinaryAccuracy, MulticlassAccuracy, MultilabelAccuracy
 from torchmetrics.functional.classification.accuracy import binary_accuracy, multiclass_accuracy, multilabel_accuracy
+from unittests import NUM_CLASSES, THRESHOLD
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index, remove_ignore_index
+from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
 seed_all(42)
 
@@ -62,6 +63,8 @@ def _sklearn_accuracy_binary(preds, target, ignore_index, multidim_average):
 
 @pytest.mark.parametrize("input", _binary_cases)
 class TestBinaryAccuracy(MetricTester):
+    """Test class for `BinaryAccuracy` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("ddp", [False, True])
@@ -193,6 +196,8 @@ def _sklearn_accuracy_multiclass(preds, target, ignore_index, multidim_average, 
 
 @pytest.mark.parametrize("input", _multiclass_cases)
 class TestMulticlassAccuracy(MetricTester):
+    """Test class for `MulticlassAccuracy` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
@@ -381,6 +386,8 @@ def _sklearn_accuracy_multilabel(preds, target, ignore_index, multidim_average, 
 
 @pytest.mark.parametrize("input", _multilabel_cases)
 class TestMultilabelAccuracy(MetricTester):
+    """Test class for `MultilabelAccuracy` metric."""
+
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])

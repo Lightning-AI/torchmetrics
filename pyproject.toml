@@ -107,13 +107,7 @@ unfixable = ["F401"]
 "setup.py" = ["D100", "SIM115"]
 "__about__.py" = ["D100"]
 "__init__.py" = ["D100"]
-"src/**" = [
-    "D103",  # todo # Missing docstring in public function
-    "D205",  # todo # 1 blank line required between summary line and description
-    "D401",  # todo # First line of docstring should be in imperative mood: ...
-]
 "tests/**" = [
-    "D101",  # Missing docstring in public class
     "D102",  # Missing docstring in public method
     "D103",  # Missing docstring in public function
     "D401",  # todo # First line of docstring should be in imperative mood: ...
@@ -154,7 +148,6 @@ warn_no_return = "False"
 # TODO: the goal is for this to be empty
 [[tool.mypy.overrides]]
 module = [
-    "torchmetrics.aggregation",
     "torchmetrics.classification.accuracy",
     "torchmetrics.classification.auroc",
     "torchmetrics.classification.average_precision",
@@ -198,9 +191,6 @@ module = [
     "torchmetrics.functional.regression.r2",
     "torchmetrics.functional.regression.wmape",
     "torchmetrics.functional.retrieval.r_precision",
-    "torchmetrics.functional.text.helper_embedding_metric",
-    "torchmetrics.functional.text.infolm",
-    "torchmetrics.functional.text.squad",
     "torchmetrics.image.fid",
     "torchmetrics.image.inception",
     "torchmetrics.image.lpip",
@@ -215,9 +205,6 @@ module = [
     "torchmetrics.regression.mse",
     "torchmetrics.regression.symmetric_mape",
     "torchmetrics.retrieval.precision_recall_curve",
-    "torchmetrics.text.cer",
-    "torchmetrics.text.mer",
-    "torchmetrics.text.wer",
     "torchmetrics.utilities.checks",
     "torchmetrics.utilities.data",
     "torchmetrics.wrappers.tracker",

@@ -157,9 +157,7 @@ class Metric(Module, ABC):
 
     @property
     def update_count(self) -> int:
-        """Get the number of times `update` and/or `forward` has been called since initialization or last
-        `reset`.
-        """
+        """Get the number of times `update` and/or `forward` has been called since initialization or last `reset`."""
         return self._update_count
 
     def add_state(
@@ -234,11 +232,11 @@ class Metric(Module, ABC):
 
     @torch.jit.unused
     def forward(self, *args: Any, **kwargs: Any) -> Any:
-        """``forward`` serves the dual purpose of both computing the metric on the current batch of inputs but also
-        add the batch statistics to the overall accumululating metric state.
+        """Aggregate and evaluate batch input directly.
 
-        Input arguments are the exact same as corresponding ``update`` method. The returned output is the exact same as
-        the output of ``compute``.
+        Serves the dual purpose of both computing the metric on the current batch of inputs but also add the batch
+        statistics to the overall accumululating metric state. Input arguments are the exact same as corresponding
+        ``update`` method. The returned output is the exact same as the output of ``compute``.
         """
         # check if states are already synced
         if self._is_synced:
@@ -255,10 +253,11 @@ class Metric(Module, ABC):
         return self._forward_cache
 
     def _forward_full_state_update(self, *args: Any, **kwargs: Any) -> Any:
-        """forward computation using two calls to `update` to calculate the metric value on the current batch and
-        accumulate global state.
+        """Forward computation using two calls to `update`.
 
         Doing this secures that metrics that need access to the full metric state during `update` works as expected.
+        This is the most safe method to use for any metric but also the slower version of the two forward
+        implementations.
         """
         # global accumulation
         self.update(*args, **kwargs)
@@ -298,10 +297,10 @@ class Metric(Module, ABC):
         return batch_val
 
     def _forward_reduce_state_update(self, *args: Any, **kwargs: Any) -> Any:
-        """forward computation using single call to `update` to calculate the metric value on the current batch and
-        accumulate global state.
+        """Forward computation using single call to `update`.
 
-        This can be done when the global metric state is a sinple reduction of batch states.
+        This can be done when the global metric state is a sinple reduction of batch states. This can be unsafe for
+        certain metric cases but is also the fastest way to both accumulate globally and compute locally.
         """
         # store global state and reset to default
         global_state = {attr: getattr(self, attr) for attr in self._defaults}
@@ -469,8 +468,7 @@ class Metric(Module, ABC):
         self._is_synced = True
 
     def unsync(self, should_unsync: bool = True) -> None:
-        """Unsync function for manually controlling when metrics states should be reverted back to their local
-        states.
+        """Unsync function for manually controlling when metrics states should be reverted back to their local states.
 
         Args:
             should_unsync: Whether to perform unsync
@@ -499,8 +497,10 @@ class Metric(Module, ABC):
         should_unsync: bool = True,
         distributed_available: Optional[Callable] = None,
     ) -> Generator:
-        """Context manager to synchronize the states between processes when running in a distributed setting and
-        restore the local cache states after yielding.
+        """Context manager to synchronize states.
+
+        This context manager is used in distributed setting and makes sure that the local cache states are restored
+        after yielding the syncronized state.
 
         Args:
             dist_sync_fn: Function to be used to perform states synchronization
@@ -560,8 +560,9 @@ class Metric(Module, ABC):
 
     @abstractmethod
     def compute(self) -> Any:
-        """Override this method to compute the final metric value from state variables synchronized across the
-        distributed backend.
+        """Override this method to compute the final metric value.
+
+        This method will automatically synchronize state variables when running in distributed backend.
         """
 
     def plot(self, *_: Any, **__: Any) -> Any:
@@ -569,7 +570,7 @@ class Metric(Module, ABC):
         raise NotImplementedError
 
     def reset(self) -> None:
-        """This method automatically resets the metric state variables to their default value."""
+        """Reset metric state variables to their default value."""
         self._update_count = 0
         self._forward_cache = None
         self._computed = None
@@ -614,43 +615,45 @@ class Metric(Module, ABC):
         return self._device
 
     def type(self, dst_type: Union[str, torch.dtype]) -> "Metric":
-        """Method override default and prevent dtype casting.
+        """Override default and prevent dtype casting.
 
         Please use `metric.set_dtype(dtype)` instead.
         """
         return self
 
     def float(self) -> "Metric":
-        """Method override default and prevent dtype casting.
+        """Override default and prevent dtype casting.
 
         Please use `metric.set_dtype(dtype)` instead.
         """
         return self
 
     def double(self) -> "Metric":
-        """Method override default and prevent dtype casting.
+        """Override default and prevent dtype casting.
 
         Please use `metric.set_dtype(dtype)` instead.
         """
         return self
 
     def half(self) -> "Metric":
-        """Method override default and prevent dtype casting.
+        """Override default and prevent dtype casting.
 
         Please use `metric.set_dtype(dtype)` instead.
         """
         return self
 
     def set_dtype(self, dst_type: Union[str, torch.dtype]) -> "Metric":
-        """Special version of `type` for transferring all metric states to specific dtype
+        """Transfer all metric state to specific dtype. Special version of standard `type` method.
+
         Arguments:
             dst_type (type or string): the desired type.
         """
         return super().type(dst_type)
 
     def _apply(self, fn: Callable) -> Module:
-        """Overwrite _apply function such that we can also move metric states to the correct device when `.to`,
-        `.cuda`, etc methods are called.
+        """Overwrite _apply function such that we can also move metric states to the correct device.
+
+        This method is called by the base ``nn.Module`` class whenever `.to`, `.cuda`, etc. methods are called.
         """
         this = super()._apply(fn)
         # Also apply fn to metric states and defaults
@@ -683,7 +686,7 @@ class Metric(Module, ABC):
         return this
 
     def persistent(self, mode: bool = False) -> None:
-        """Method for post-init to change if metric states should be saved to its state_dict."""
+        """Change post-init if metric states should be saved to its state_dict."""
         for key in self._persistent:
             self._persistent[key] = mode
 
@@ -728,7 +731,7 @@ class Metric(Module, ABC):
         unexpected_keys: List[str],
         error_msgs: List[str],
     ) -> None:
-        """Loads metric states from state_dict."""
+        """Load metric states from state_dict."""
         for key in self._defaults:
             name = prefix + key
             if name in state_dict:
@@ -738,7 +741,7 @@ class Metric(Module, ABC):
         )
 
     def _filter_kwargs(self, **kwargs: Any) -> Dict[str, Any]:
-        """filter kwargs such that they match the update signature of the metric."""
+        """Filter kwargs such that they match the update signature of the metric."""
         # filter all parameters based on update signature except those of
         # type VAR_POSITIONAL (*args) and VAR_KEYWORD (**kwargs)
         _params = (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD)
@@ -759,7 +762,7 @@ class Metric(Module, ABC):
         return filtered_kwargs
 
     def __hash__(self) -> int:
-        """Returns an unique hash of the metric.
+        """Return an unique hash of the metric.
 
         The hash depends on both the class itself but also the current metric state, which therefore enforces that two
         instances of the same metrics never have the same hash even if they have been updated on the same data.
@@ -942,13 +945,20 @@ class CompositionalMetric(Metric):
         metric_a: Union[Metric, int, float, Tensor],
         metric_b: Union[Metric, int, float, Tensor, None],
     ) -> None:
-        """Args:
-        operator: the operator taking in one (if metric_b is None)
-        or two arguments. Will be applied to outputs of metric_a.compute()
-        and (optionally if metric_b is not None) metric_b.compute()
-        metric_a: first metric whose compute() result is the first argument of operator
-        metric_b: second metric whose compute() result is the second argument of operator.
-        For operators taking in only one input, this should be None.
+        """Class for creating compositions of metrics.
+
+        This metric class is the output of adding, multiplying etc. any other metric. The metric re-implements the
+        standard ``update``, ``forward``, ``reset`` and ``compute`` methods to redirect the arguments to the metrics
+        that formed this composition.
+
+        Args:
+            operator:
+                The operator taking in one (if metric_b is None) or two arguments. Will be applied to outputs of
+                metric_a.compute() and (optionally if metric_b is not None) metric_b.compute()
+            metric_a:
+                First metric whose compute() result is the first argument of operator
+            metric_b: second metric whose compute() result is the second argument of operator.
+                For operators taking in only one input, this should be None.
         """
         super().__init__()
 
@@ -1035,7 +1045,7 @@ class CompositionalMetric(Metric):
             self.metric_b.persistent(mode=mode)
 
     def __repr__(self) -> str:
-        """Returns a representation of the compositional metric, including the two inputs it was formed from."""
+        """Return a representation of the compositional metric, including the two inputs it was formed from."""
         _op_metrics = f"(\n  {self.op.__name__}(\n    {repr(self.metric_a)},\n    {repr(self.metric_b)}\n  )\n)"
         repr_str = self.__class__.__name__ + _op_metrics
 

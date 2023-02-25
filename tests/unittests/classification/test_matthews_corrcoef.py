@@ -29,9 +29,10 @@ from torchmetrics.functional.classification.matthews_corrcoef import (
     multiclass_matthews_corrcoef,
     multilabel_matthews_corrcoef,
 )
+from unittests import NUM_CLASSES, THRESHOLD
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index, remove_ignore_index
+from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
 seed_all(42)
 
@@ -49,6 +50,8 @@ def _sklearn_matthews_corrcoef_binary(preds, target, ignore_index=None):
 
 @pytest.mark.parametrize("input", _binary_cases)
 class TestBinaryMatthewsCorrCoef(MetricTester):
+    """Test class for `BinaryMatthewsCorrCoef` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_binary_matthews_corrcoef(self, input, ddp, ignore_index):
@@ -134,6 +137,8 @@ def _sklearn_matthews_corrcoef_multiclass(preds, target, ignore_index=None):
 
 @pytest.mark.parametrize("input", _multiclass_cases)
 class TestMulticlassMatthewsCorrCoef(MetricTester):
+    """Test class for `MulticlassMatthewsCorrCoef` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multiclass_matthews_corrcoef(self, input, ddp, ignore_index):
@@ -217,6 +222,8 @@ def _sklearn_matthews_corrcoef_multilabel(preds, target, ignore_index=None):
 
 @pytest.mark.parametrize("input", _multilabel_cases)
 class TestMultilabelMatthewsCorrCoef(MetricTester):
+    """Test class for `MultilabelMatthewsCorrCoef` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multilabel_matthews_corrcoef(self, input, ddp, ignore_index):

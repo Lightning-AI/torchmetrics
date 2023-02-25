@@ -24,7 +24,7 @@ from torch import Tensor, tensor
 
 
 def _count_ngram(ngram_input_list: Sequence[str], n_gram: int) -> Counter:
-    """Counting how many times each word appears in a given text with ngram.
+    """Count how many times each word appears in a given text with ngram.
 
     Args:
         ngram_input_list: A list of translated text or reference texts
@@ -81,7 +81,7 @@ def _bleu_score_update(
     target_: Sequence[Sequence[Sequence[str]]] = [[tokenizer(line) if line else [] for line in t] for t in target]
     preds_: Sequence[Sequence[str]] = [tokenizer(line) if line else [] for line in preds]
 
-    for (pred, targets) in zip(preds_, target_):
+    for pred, targets in zip(preds_, target_):
         preds_len += len(pred)
         target_len_list = [len(tgt) for tgt in targets]
         target_len_diff = [abs(len(pred) - x) for x in target_len_list]

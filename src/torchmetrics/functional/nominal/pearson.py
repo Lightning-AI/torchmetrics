@@ -76,8 +76,7 @@ def pearsons_contingency_coefficient(
     nan_strategy: Literal["replace", "drop"] = "replace",
     nan_replace_value: Optional[Union[int, float]] = 0.0,
 ) -> Tensor:
-    r"""Compute `Pearson's Contingency Coefficient`_  measuring the association between two categorical (nominal)
-    data series.
+    r"""Compute `Pearson's Contingency Coefficient`_ for measuring the association between two categorical data series.
 
     .. math::
         Pearson = \sqrt{\frac{\chi^2 / n}{1 + \chi^2 / n}}

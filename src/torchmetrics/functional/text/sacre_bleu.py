@@ -135,7 +135,7 @@ class _SacreBLEUTokenizer:
 
     @classmethod
     def _tokenize_regex(cls, line: str) -> str:
-        """Common post-processing tokenizer for `13a` and `zh` tokenizers.
+        """Post-processing tokenizer for `13a` and `zh` tokenizers.
 
         Args:
             line: a segment to tokenize
@@ -143,14 +143,16 @@ class _SacreBLEUTokenizer:
         Return:
             the tokenized line
         """
-        for (_re, repl) in cls._REGEX:
+        for _re, repl in cls._REGEX:
             line = _re.sub(repl, line)
         # no leading or trailing spaces, single space within words
         return " ".join(line.split())
 
     @staticmethod
     def _is_chinese_char(uchar: str) -> bool:
-        """Args:
+        """Check if character is chinese.
+
+        Args:
             uchar: input char in unicode.
 
         Return:
@@ -172,8 +174,7 @@ class _SacreBLEUTokenizer:
 
     @classmethod
     def _tokenize_13a(cls, line: str) -> str:
-        """Tokenizes an input line using a relatively minimal tokenization that is however equivalent to
-        mteval-v13a, used by WMT.
+        """Tokenizes an line using a relatively minimal tokenization that is equivalent to mteval-v13a, used by WMT.
 
         Args:
             line: input sentence
@@ -196,9 +197,10 @@ class _SacreBLEUTokenizer:
 
     @classmethod
     def _tokenize_zh(cls, line: str) -> str:
-        """The tokenization of Chinese text in this script contains two
-        steps: separate each Chinese characters (by utf-8 encoding); tokenize
-        the Chinese part (following the `13a` i.e. mteval tokenizer).
+        """Tokenization of Chinese text.
+
+        This is done in two steps: separate each Chinese characters (by utf-8 encoding) and afterwards tokenize the
+        Chinese part (following the `13a` i.e. mteval tokenizer).
         Author: Shujian Huang huangsj@nju.edu.cn.
 
         Args:
@@ -247,7 +249,7 @@ class _SacreBLEUTokenizer:
         Return:
             The tokenized string.
         """
-        for (_re, repl) in cls._INT_REGEX:
+        for _re, repl in cls._INT_REGEX:
             line = _re.sub(repl, line)
 
         return " ".join(line.split())
@@ -280,8 +282,9 @@ def sacre_bleu_score(
     lowercase: bool = False,
     weights: Optional[Sequence[float]] = None,
 ) -> Tensor:
-    """Calculate `BLEU score`_ [1] of machine translated text with one or more references. This implementation
-    follows the behaviour of SacreBLEU [2] implementation from https://github.com/mjpost/sacrebleu.
+    """Calculate `BLEU score`_ [1] of machine translated text with one or more references.
+
+    This implementation follows the behaviour of SacreBLEU [2] implementation from https://github.com/mjpost/sacrebleu.
 
     Args:
         preds: An iterable of machine translated corpus

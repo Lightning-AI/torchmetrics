@@ -25,9 +25,10 @@ from torchmetrics.functional.classification.stat_scores import (
     multiclass_stat_scores,
     multilabel_stat_scores,
 )
+from unittests import NUM_CLASSES, THRESHOLD
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index, remove_ignore_index
+from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
 seed_all(42)
 
@@ -62,6 +63,8 @@ def _sklearn_stat_scores_binary(preds, target, ignore_index, multidim_average):
 
 @pytest.mark.parametrize("input", _binary_cases)
 class TestBinaryStatScores(MetricTester):
+    """Test class for `BinaryStatScores` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("ddp", [False, True])
@@ -205,6 +208,8 @@ def _sklearn_stat_scores_multiclass(preds, target, ignore_index, multidim_averag
 
 @pytest.mark.parametrize("input", _multiclass_cases)
 class TestMulticlassStatScores(MetricTester):
+    """Test class for `MulticlassStatScores` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", None])
@@ -327,6 +332,24 @@ def test_top_k_multiclass(k, preds, target, average, expected):
     )
 
 
+def test_multiclass_overflow():
+    """Test that multiclass computations does not overflow even on byte input."""
+    preds = torch.randint(20, (100,)).byte()
+    target = torch.randint(20, (100,)).byte()
+
+    m = MulticlassStatScores(num_classes=20, average=None)
+    res = m(preds, target)
+
+    confmat = sk_confusion_matrix(target, preds)
+    fp = confmat.sum(axis=0) - np.diag(confmat)
+    fn = confmat.sum(axis=1) - np.diag(confmat)
+    tp = np.diag(confmat)
+    tn = confmat.sum() - (fp + fn + tp)
+    compare = np.stack([tp, fp, tn, fn, tp + fn]).T
+
+    assert torch.allclose(res, torch.tensor(compare))
+
+
 def _sklearn_stat_scores_multilabel(preds, target, ignore_index, multidim_average, average):
     preds = preds.numpy()
     target = target.numpy()
@@ -378,6 +401,8 @@ def _sklearn_stat_scores_multilabel(preds, target, ignore_index, multidim_averag
 
 @pytest.mark.parametrize("input", _multilabel_cases)
 class TestMultilabelStatScores(MetricTester):
+    """Test class for `MultilabelStatScores` metric."""
+
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])

@@ -21,8 +21,9 @@ import torch
 from torchmetrics.functional.image.d_lambda import spectral_distortion_index
 from torchmetrics.functional.image.uqi import universal_image_quality_index
 from torchmetrics.image.d_lambda import SpectralDistortionIndex
+from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -91,6 +92,8 @@ def _np_d_lambda(preds, target, p):
     [(i.preds, i.target, i.p) for i in _inputs],
 )
 class TestSpectralDistortionIndex(MetricTester):
+    """Test class for `SpectralDistortionIndex` metric."""
+
     atol = 6e-3
 
     @pytest.mark.parametrize("ddp", [True, False])

@@ -61,10 +61,11 @@ def _symmetric_toeplitz(vector: Tensor) -> Tensor:
 
 
 def _compute_autocorr_crosscorr(target: Tensor, preds: Tensor, corr_len: int) -> Tuple[Tensor, Tensor]:
-    r"""Compute the auto correlation of `target` and the cross correlation of `target` and `preds` using the fast
-    Fourier transform (FFT). Let's denotes the symmetric Toeplitz matric of the auto correlation of `target` as
-    `R`, the cross correlation as 'b', then solving the equation `Rh=b` could have `h` as the coordinate of `preds`
-    in the column space of the `corr_len` shifts of `target`.
+    r"""Compute the auto correlation of `target` and the cross correlation of `target` and `preds`.
+
+    This calculation is done using the fast Fourier transform (FFT). Let's denotes the symmetric Toeplitz matric of the
+    auto correlation of `target` as `R`, the cross correlation as 'b', then solving the equation `Rh=b` could have `h`
+    as the coordinate of `preds` in the column space of the `corr_len` shifts of `target`.
 
     Args:
         target: the target (reference) signal of shape [..., time]
@@ -98,8 +99,7 @@ def signal_distortion_ratio(
     zero_mean: bool = False,
     load_diag: Optional[float] = None,
 ) -> Tensor:
-    r"""Calculate Signal to Distortion Ratio (SDR) metric. See `SDR ref1`_ and `SDR ref2`_ for details on the
-    metric.
+    r"""Calculate Signal to Distortion Ratio (SDR) metric. See `SDR ref1`_ and `SDR ref2`_ for details on the metric.
 
     .. note:
         The metric currently does not seem to work with Pytorch v1.11 and specific GPU hardware.
@@ -203,8 +203,9 @@ def signal_distortion_ratio(
 
 
 def scale_invariant_signal_distortion_ratio(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
-    """`Scale-invariant signal-to-distortion ratio`_ (SI-SDR). The SI-SDR value is in general considered an overall
-    measure of how good a source sound.
+    """`Scale-invariant signal-to-distortion ratio`_ (SI-SDR).
+
+    The SI-SDR value is in general considered an overall measure of how good a source sound.
 
     Args:
         preds: float tensor with shape ``(...,time)``

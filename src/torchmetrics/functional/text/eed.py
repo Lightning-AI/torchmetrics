@@ -98,8 +98,9 @@ from torchmetrics.functional.text.helper import _validate_inputs
 
 
 def _distance_between_words(preds_word: str, target_word: str) -> int:
-    """Distance measure used for substitutions/identity operation. Code adapted from
-    https://github.com/rwth-i6/ExtendedEditDistance/blob/master/EED.py.
+    """Distance measure used for substitutions/identity operation.
+
+    Code adapted from https://github.com/rwth-i6/ExtendedEditDistance/blob/master/EED.py.
 
     Args:
         preds_word: hypothesis word string
@@ -144,7 +145,6 @@ def _eed_function(
 
     for w in range(1, len(ref) + 1):
         for i in range(0, len(hyp) + 1):
-
             if i > 0:
                 next_row[i] = min(
                     next_row[i - 1] + deletion,
@@ -171,7 +171,9 @@ def _eed_function(
 
 
 def _preprocess_en(sentence: str) -> str:
-    """Copied from https://github.com/rwth-i6/ExtendedEditDistance/blob/master/util.py.
+    """Preprocess english sentences.
+
+    Copied from https://github.com/rwth-i6/ExtendedEditDistance/blob/master/util.py.
 
     Raises:
         ValueError: If input sentence is not of a type `str`.
@@ -215,7 +217,9 @@ def _preprocess_en(sentence: str) -> str:
 
 
 def _preprocess_ja(sentence: str) -> str:
-    """Copied from https://github.com/rwth-i6/ExtendedEditDistance/blob/master/util.py.
+    """Preprocess japanese sentences.
+
+    Copy from https://github.com/rwth-i6/ExtendedEditDistance/blob/master/util.py.
 
     Raises:
         ValueError: If input sentence is not of a type `str`.
@@ -230,7 +234,7 @@ def _preprocess_ja(sentence: str) -> str:
 
 
 def _eed_compute(sentence_level_scores: List[Tensor]) -> Tensor:
-    """Final step in extended edit distance.
+    """Reduction for extended edit distance.
 
     Args:
         sentence_level_scores: list of sentence-level scores as floats
@@ -364,8 +368,9 @@ def extended_edit_distance(
     deletion: float = 0.2,
     insertion: float = 1.0,
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    """Compute extended edit distance score (`ExtendedEditDistance`_) [1] for strings or list of strings. The
-    metric utilises the Levenshtein distance and extends it by adding a jump operation.
+    """Compute extended edit distance score (`ExtendedEditDistance`_) [1] for strings or list of strings.
+
+    The metric utilises the Levenshtein distance and extends it by adding a jump operation.
 
     Args:
         preds: An iterable of hypothesis corpus.

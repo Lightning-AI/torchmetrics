@@ -22,8 +22,9 @@ from scipy.stats import kendalltau
 
 from torchmetrics.functional.regression.kendall import kendall_rank_corrcoef
 from torchmetrics.regression.kendall import KendallRankCorrCoef
+from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 _SCIPY_GREATER_EQUAL_1_8 = compare_version("scipy", operator.ge, "1.8.0")
 
@@ -82,6 +83,8 @@ def _scipy_kendall(preds, target, alternative, variant):
 )
 @pytest.mark.parametrize("variant", ["b", "c"])
 class TestKendallRankCorrCoef(MetricTester):
+    """Test class for `KendallRankCorrCoef` metric."""
+
     @pytest.mark.parametrize("ddp", [False, True])
     def test_kendall_rank_corrcoef(self, preds, target, alternative, variant, ddp):
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1

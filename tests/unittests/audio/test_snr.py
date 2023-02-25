@@ -22,8 +22,9 @@ from torch import Tensor
 
 from torchmetrics.audio import SignalNoiseRatio
 from torchmetrics.functional import signal_noise_ratio
+from unittests import NUM_BATCHES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -74,6 +75,8 @@ mireval_snr_nozeromean = partial(bss_eval_images_snr, zero_mean=False)
     ],
 )
 class TestSNR(MetricTester):
+    """Test class for `SignalNoiseRatio` metric."""
+
     atol = 1e-2
 
     @pytest.mark.parametrize("ddp", [True, False])

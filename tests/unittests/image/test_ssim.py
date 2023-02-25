@@ -23,8 +23,9 @@ from torch import Tensor
 
 from torchmetrics.functional import structural_similarity_index_measure
 from torchmetrics.image import StructuralSimilarityIndexMeasure
+from unittests import NUM_BATCHES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -131,6 +132,8 @@ def _pt_ssim(
 )
 @pytest.mark.parametrize("sigma", [1.5, 0.5])
 class TestSSIM(MetricTester):
+    """Test class for `StructuralSimilarityIndexMeasure` metric."""
+
     atol = 6e-3
 
     @pytest.mark.parametrize("ddp", [True, False])

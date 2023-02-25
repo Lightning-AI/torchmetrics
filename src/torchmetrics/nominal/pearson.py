@@ -26,8 +26,9 @@ from torchmetrics.metric import Metric
 
 
 class PearsonsContingencyCoefficient(Metric):
-    r"""Compute `Pearson's Contingency Coefficient`_ statistic measuring the association between two categorical
-    (nominal) data series.
+    r"""Compute `Pearson's Contingency Coefficient`_ statistic.
+
+    This metric measures the association between two categorical (nominal) data series.
 
     .. math::
         Pearson = \sqrt{\frac{\chi^2 / n}{1 + \chi^2 / n}}
@@ -111,5 +112,5 @@ class PearsonsContingencyCoefficient(Metric):
         self.confmat += confmat
 
     def compute(self) -> Tensor:
-        """Computer Pearson's Contingency Coefficient statistic."""
+        """Compute Pearson's Contingency Coefficient statistic."""
         return _pearsons_contingency_coefficient_compute(self.confmat)

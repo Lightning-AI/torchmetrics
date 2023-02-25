@@ -20,7 +20,7 @@ from torchmetrics.utilities.checks import _check_same_shape
 
 
 def _mean_squared_log_error_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, int]:
-    """Returns variables required to compute Mean Squared Log Error. Checks for same shape of tensors.
+    """Return variables required to compute Mean Squared Log Error. Checks for same shape of tensors.
 
     Args:
         preds: Predicted tensor

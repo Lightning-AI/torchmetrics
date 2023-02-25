@@ -20,8 +20,9 @@ from sklearn.metrics import explained_variance_score
 
 from torchmetrics.functional import explained_variance
 from torchmetrics.regression import ExplainedVariance
+from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -61,6 +62,8 @@ def _multi_target_ref_metric(preds, target, sk_fn=explained_variance_score):
     ],
 )
 class TestExplainedVariance(MetricTester):
+    """Test class for `ExplainedVariance` metric."""
+
     @pytest.mark.parametrize("ddp", [True, False])
     def test_explained_variance(self, multioutput, preds, target, ref_metric, ddp):
         self.run_class_metric_test(

@@ -31,9 +31,10 @@ from torchmetrics.functional.classification.recall_at_fixed_precision import (
     multiclass_recall_at_fixed_precision,
     multilabel_recall_at_fixed_precision,
 )
+from unittests import NUM_CLASSES
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_CLASSES, MetricTester, inject_ignore_index, remove_ignore_index
+from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
 seed_all(42)
 
@@ -61,6 +62,8 @@ def _sklearn_recall_at_fixed_precision_binary(preds, target, min_precision, igno
 
 @pytest.mark.parametrize("input", (_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]))
 class TestBinaryRecallAtFixedPrecision(MetricTester):
+    """Test class for `BinaryRecallAtFixedPrecision` metric."""
+
     @pytest.mark.parametrize("min_precision", [0.05, 0.1, 0.3, 0.5, 0.85])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
@@ -174,6 +177,8 @@ def _sklearn_recall_at_fixed_precision_multiclass(preds, target, min_precision, 
     "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
 )
 class TestMulticlassRecallAtFixedPrecision(MetricTester):
+    """Test class for `MulticlassRecallAtFixedPrecision` metric."""
+
     @pytest.mark.parametrize("min_precision", [0.05, 0.5, 0.8])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
@@ -284,6 +289,8 @@ def _sklearn_recall_at_fixed_precision_multilabel(preds, target, min_precision, 
     "input", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5])
 )
 class TestMultilabelRecallAtFixedPrecision(MetricTester):
+    """Test class for `MultilabelRecallAtFixedPrecision` metric."""
+
     @pytest.mark.parametrize("min_precision", [0.05, 0.5, 0.8])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])

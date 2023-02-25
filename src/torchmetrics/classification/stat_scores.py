@@ -74,7 +74,7 @@ class _AbstractStatScores(Metric):
             self.fn += fn
 
     def _final_state(self) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-        """Final aggregation in case of list states."""
+        """Aggregate states that are lists and return final states."""
         tp = dim_zero_cat(self.tp)
         fp = dim_zero_cat(self.fp)
         tn = dim_zero_cat(self.tn)
@@ -83,8 +83,9 @@ class _AbstractStatScores(Metric):
 
 
 class BinaryStatScores(_AbstractStatScores):
-    r"""Compute the number of true positives, false positives, true negatives, false negatives and the support for
-    binary tasks. Related to `Type I and Type II errors`_.
+    r"""Compute true positives, false positives, true negatives, false negatives and the support for binary tasks.
+
+    Related to `Type I and Type II errors`_.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -182,8 +183,9 @@ class BinaryStatScores(_AbstractStatScores):
 
 
 class MulticlassStatScores(_AbstractStatScores):
-    r"""Compute the number of true positives, false positives, true negatives, false negatives and the support for
-    multiclass tasks. Related to `Type I and Type II errors`_.
+    r"""Computes true positives, false positives, true negatives, false negatives and the support for multiclass tasks.
+
+    Related to `Type I and Type II errors`_.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -325,8 +327,9 @@ class MulticlassStatScores(_AbstractStatScores):
 
 
 class MultilabelStatScores(_AbstractStatScores):
-    r"""Compute the number of true positives, false positives, true negatives, false negatives and the support for
-    multilabel tasks. Related to `Type I and Type II errors`_.
+    r"""Compute true positives, false positives, true negatives, false negatives and the support for multilabel tasks.
+
+    Related to `Type I and Type II errors`_.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 

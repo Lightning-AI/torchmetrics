@@ -23,7 +23,8 @@ from scipy.stats.contingency import association
 
 from torchmetrics.functional.nominal.tschuprows import tschuprows_t, tschuprows_t_matrix
 from torchmetrics.nominal.tschuprows import TschuprowsT
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from unittests import BATCH_SIZE, NUM_BATCHES
+from unittests.helpers.testers import MetricTester
 
 Input = namedtuple("Input", ["preds", "target"])
 NUM_CLASSES = 4
@@ -84,6 +85,8 @@ def _pd_tschuprows_t_matrix(matrix):
     ],
 )
 class TestTschuprowsT(MetricTester):
+    """Test class for `TschuprowsT` metric."""
+
     atol = 1e-5
 
     @pytest.mark.parametrize("ddp", [False, True])

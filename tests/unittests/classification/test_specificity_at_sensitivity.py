@@ -32,9 +32,10 @@ from torchmetrics.functional.classification.specificity_at_sensitivity import (
     multiclass_specificity_at_sensitivity,
     multilabel_specificity_at_sensitivity,
 )
+from unittests import NUM_CLASSES
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_CLASSES, MetricTester, inject_ignore_index, remove_ignore_index
+from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
 seed_all(42)
 
@@ -80,6 +81,8 @@ def _sklearn_specificity_at_sensitivity_binary(preds, target, min_sensitivity, i
 
 @pytest.mark.parametrize("input", (_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]))
 class TestBinarySpecificityAtSensitivity(MetricTester):
+    """Test class for `BinarySpecificityAtSensitivity` metric."""
+
     @pytest.mark.parametrize("min_sensitivity", [0.05, 0.1, 0.3, 0.5, 0.85])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
@@ -193,6 +196,8 @@ def _sklearn_specificity_at_sensitivity_multiclass(preds, target, min_sensitivit
     "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
 )
 class TestMulticlassSpecificityAtSensitivity(MetricTester):
+    """Test class for `MulticlassSpecificityAtSensitivity` metric."""
+
     @pytest.mark.parametrize("min_sensitivity", [0.05, 0.1, 0.3, 0.5, 0.8])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
@@ -311,6 +316,8 @@ def _sklearn_specificity_at_sensitivity_multilabel(preds, target, min_sensitivit
     "input", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5])
 )
 class TestMultilabelSpecificityAtSensitivity(MetricTester):
+    """Test class for `MultilabelSpecificityAtSensitivity` metric."""
+
     @pytest.mark.parametrize("min_sensitivity", [0.05, 0.1, 0.3, 0.5, 0.8])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])

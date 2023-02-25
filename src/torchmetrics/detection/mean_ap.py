@@ -19,6 +19,7 @@ import torch
 from torch import IntTensor, Tensor
 
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.data import _cumsum
 from torchmetrics.utilities.imports import _PYCOCOTOOLS_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
 
 if _TORCHVISION_GREATER_EQUAL_0_8:
@@ -43,13 +44,11 @@ def compute_area(input: List[Any], iou_type: str = "bbox") -> Tensor:
     Default output for empty input is :class:`~torch.Tensor`
     """
     if len(input) == 0:
-
         return Tensor([])
 
     if iou_type == "bbox":
         return box_area(torch.stack(input))
     elif iou_type == "segm":
-
         input = [{"size": i[0], "counts": i[1]} for i in input]
         area = torch.tensor(mask_utils.area(input).astype("float"))
 
@@ -200,11 +199,10 @@ def _fix_empty_tensors(boxes: Tensor) -> Tensor:
 
 class MeanAveragePrecision(Metric):
     r"""Compute the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)`_ for object detection predictions.
-    Optionally, the mAP and mAR values can be calculated per class.
 
-    Predicted boxes and targets have to be in Pascal VOC format
-    (xmin-top left, ymin-top left, xmax-bottom right, ymax-bottom right).
-    See the :meth:`update` method for more information about the input format to this metric.
+    Predicted boxes and targets have to be in Pascal VOC format (xmin-top left, ymin-top left, xmax-bottom right,
+    ymax-bottom right). The metric can both compute the mAP and mAR values per class or as an global average over all
+    classes.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -413,7 +411,6 @@ class MeanAveragePrecision(Metric):
         _input_validator(preds, target, iou_type=self.iou_type)
 
         for item in preds:
-
             detections = self._get_safe_item_values(item)
 
             self.detections.append(detections)
@@ -456,14 +453,13 @@ class MeanAveragePrecision(Metric):
             raise Exception(f"IOU type {self.iou_type} is not supported")
 
     def _get_classes(self) -> List:
-        """Returns a list of unique classes found in ground truth and detection data."""
+        """Return a list of unique classes found in ground truth and detection data."""
         if len(self.detection_labels) > 0 or len(self.groundtruth_labels) > 0:
             return torch.cat(self.detection_labels + self.groundtruth_labels).unique().tolist()
         return []
 
     def _compute_iou(self, idx: int, class_id: int, max_det: int) -> Tensor:
-        """Compute the Intersection over Union (IoU) for ground truth and detection bounding boxes for the given
-        image and class.
+        """Compute the Intersection over Union (IoU) between bounding boxes for the given image and class.
 
         Args:
             idx:
@@ -505,7 +501,7 @@ class MeanAveragePrecision(Metric):
     def __evaluate_image_gt_no_preds(
         self, gt: Tensor, gt_label_mask: Tensor, area_range: Tuple[int, int], nb_iou_thrs: int
     ) -> Dict[str, Any]:
-        """Some GT but no predictions."""
+        """Evaluate images with a ground truth but no predictions."""
         # GTs
         gt = [gt[i] for i in gt_label_mask]
         nb_gt = len(gt)
@@ -529,7 +525,7 @@ class MeanAveragePrecision(Metric):
     def __evaluate_image_preds_no_gt(
         self, det: Tensor, idx: int, det_label_mask: Tensor, max_det: int, area_range: Tuple[int, int], nb_iou_thrs: int
     ) -> Dict[str, Any]:
-        """Some predictions but no GT."""
+        """Evaluate images with a prediction but no ground truth."""
         # GTs
         nb_gt = 0
 
@@ -865,8 +861,8 @@ class MeanAveragePrecision(Metric):
         tps = torch.logical_and(det_matches, torch.logical_not(det_ignore))
         fps = torch.logical_and(torch.logical_not(det_matches), torch.logical_not(det_ignore))
 
-        tp_sum = torch.cumsum(tps, axis=1, dtype=torch.float)
-        fp_sum = torch.cumsum(fps, axis=1, dtype=torch.float)
+        tp_sum = _cumsum(tps, dim=1, dtype=torch.float)
+        fp_sum = _cumsum(fps, dim=1, dtype=torch.float)
         for idx, (tp, fp) in enumerate(zip(tp_sum, fp_sum)):
             nd = len(tp)
             rc = tp / npig
@@ -880,7 +876,6 @@ class MeanAveragePrecision(Metric):
             diff_zero = torch.zeros((1,), device=pr.device)
             diff = torch.ones((1,), device=pr.device)
             while not torch.all(diff == 0):
-
                 diff = torch.clamp(torch.cat(((pr[1:] - pr[:-1]), diff_zero), 0), min=0)
                 pr += diff
 

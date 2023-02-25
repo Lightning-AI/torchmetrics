@@ -26,9 +26,10 @@ from torchmetrics.functional.classification.specificity import (
     multiclass_specificity,
     multilabel_specificity,
 )
+from unittests import NUM_CLASSES, THRESHOLD
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index
+from unittests.helpers.testers import MetricTester, inject_ignore_index
 
 seed_all(42)
 
@@ -79,6 +80,8 @@ def _baseline_specificity_binary(preds, target, ignore_index, multidim_average):
 
 @pytest.mark.parametrize("input", _binary_cases)
 class TestBinarySpecificity(MetricTester):
+    """Test class for `BinarySpecificity` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("ddp", [False, True])
@@ -232,6 +235,8 @@ def _baseline_specificity_multiclass(preds, target, ignore_index, multidim_avera
 
 @pytest.mark.parametrize("input", _multiclass_cases)
 class TestMulticlassSpecificity(MetricTester):
+    """Test class for `MulticlassSpecificity` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", None])
@@ -425,6 +430,8 @@ def _baseline_specificity_multilabel(preds, target, ignore_index, multidim_avera
 
 @pytest.mark.parametrize("input", _multilabel_cases)
 class TestMultilabelSpecificity(MetricTester):
+    """Test class for `MultilabelSpecificity` metric."""
+
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])

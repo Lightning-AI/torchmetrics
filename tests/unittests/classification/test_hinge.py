@@ -23,8 +23,9 @@ from sklearn.preprocessing import OneHotEncoder
 
 from torchmetrics.classification.hinge import BinaryHingeLoss, MulticlassHingeLoss
 from torchmetrics.functional.classification.hinge import binary_hinge_loss, multiclass_hinge_loss
+from unittests import NUM_CLASSES
 from unittests.classification.inputs import _binary_cases, _multiclass_cases
-from unittests.helpers.testers import NUM_CLASSES, MetricTester, inject_ignore_index, remove_ignore_index
+from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
 torch.manual_seed(42)
 
@@ -42,6 +43,8 @@ def _sklearn_binary_hinge_loss(preds, target, ignore_index):
 
 @pytest.mark.parametrize("input", (_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]))
 class TestBinaryHingeLoss(MetricTester):
+    """Test class for `BinaryHingeLoss` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_binary_hinge_loss(self, input, ddp, ignore_index):
@@ -134,6 +137,8 @@ def _sklearn_multiclass_hinge_loss(preds, target, multiclass_mode, ignore_index)
     "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
 )
 class TestMulticlassHingeLoss(MetricTester):
+    """Test class for `MulticlassHingeLoss` metric."""
+
     @pytest.mark.parametrize("multiclass_mode", ["crammer-singer", "one-vs-all"])
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])

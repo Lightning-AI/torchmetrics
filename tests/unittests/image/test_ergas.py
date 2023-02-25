@@ -21,8 +21,9 @@ from torch import Tensor
 
 from torchmetrics.functional.image.ergas import error_relative_global_dimensionless_synthesis
 from torchmetrics.image.ergas import ErrorRelativeGlobalDimensionlessSynthesis
+from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -76,6 +77,8 @@ def _baseline_ergas(
     [(i.preds, i.target, i.ratio) for i in _inputs],
 )
 class TestErrorRelativeGlobalDimensionlessSynthesis(MetricTester):
+    """Test class for `ErrorRelativeGlobalDimensionlessSynthesis` metric."""
+
     @pytest.mark.parametrize("ddp", [True, False])
     def test_ergas(self, reduction, preds, target, ratio, ddp):
         self.run_class_metric_test(

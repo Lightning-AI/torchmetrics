@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import partial
+from typing import Callable
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -31,19 +32,33 @@ from torchmetrics.audio.pesq import PerceptualEvaluationSpeechQuality
 from torchmetrics.audio.pit import PermutationInvariantTraining
 from torchmetrics.classification import (
     BinaryAccuracy,
+    BinaryAUROC,
     BinaryConfusionMatrix,
+    BinaryROC,
     MulticlassAccuracy,
+    MulticlassAUROC,
     MulticlassConfusionMatrix,
     MultilabelConfusionMatrix,
 )
 from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio
+from torchmetrics.image import (
+    ErrorRelativeGlobalDimensionlessSynthesis,
+    MultiScaleStructuralSimilarityIndexMeasure,
+    PeakSignalNoiseRatio,
+    SpectralAngleMapper,
+    SpectralDistortionIndex,
+    StructuralSimilarityIndexMeasure,
+    UniversalImageQualityIndex,
+)
 from torchmetrics.regression import MeanSquaredError
 
 _rand_input = lambda: torch.rand(10)
 _binary_randint_input = lambda: torch.randint(2, (10,))
 _multiclass_randint_input = lambda: torch.randint(3, (10,))
+_multiclass_randn_input = lambda: torch.randn(10, 3).softmax(dim=-1)
 _multilabel_randint_input = lambda: torch.randint(2, (10, 3))
 _audio_input = lambda: torch.randn(8000)
+_image_input = lambda: torch.rand([8, 3, 16, 16])
 
 
 @pytest.mark.parametrize(
@@ -61,6 +76,72 @@ _audio_input = lambda: torch.randn(8000)
             _multiclass_randint_input,
             _multiclass_randint_input,
             id="multiclass accuracy and average=None",
+        ),
+        # AUROC
+        pytest.param(
+            BinaryAUROC,
+            _rand_input,
+            _binary_randint_input,
+            id="binary auroc",
+        ),
+        pytest.param(
+            partial(MulticlassAUROC, num_classes=3),
+            _multiclass_randn_input,
+            _multiclass_randint_input,
+            id="multiclass auroc",
+        ),
+        pytest.param(
+            partial(MulticlassAUROC, num_classes=3, average=None),
+            _multiclass_randn_input,
+            _multiclass_randint_input,
+            id="multiclass auroc and average=None",
+        ),
+        pytest.param(
+            BinaryROC,
+            _rand_input,
+            _binary_randint_input,
+        ),
+        pytest.param(
+            SpectralDistortionIndex,
+            _image_input,
+            _image_input,
+            id="spectral distortion index",
+        ),
+        pytest.param(
+            ErrorRelativeGlobalDimensionlessSynthesis,
+            _image_input,
+            _image_input,
+            id="error relative global dimensionless synthesis",
+        ),
+        pytest.param(
+            PeakSignalNoiseRatio,
+            lambda: torch.tensor([[0.0, 1.0], [2.0, 3.0]]),
+            lambda: torch.tensor([[3.0, 2.0], [1.0, 0.0]]),
+            id="peak signal noise ratio",
+        ),
+        pytest.param(
+            SpectralAngleMapper,
+            _image_input,
+            _image_input,
+            id="spectral angle mapper",
+        ),
+        pytest.param(
+            StructuralSimilarityIndexMeasure,
+            _image_input,
+            _image_input,
+            id="structural similarity index_measure",
+        ),
+        pytest.param(
+            MultiScaleStructuralSimilarityIndexMeasure,
+            lambda: torch.rand(3, 3, 180, 180),
+            lambda: torch.rand(3, 3, 180, 180),
+            id="multiscale structural similarity index measure",
+        ),
+        pytest.param(
+            UniversalImageQualityIndex,
+            _image_input,
+            _image_input,
+            id="universal image quality index",
         ),
         pytest.param(
             partial(PerceptualEvaluationSpeechQuality, fs=8000, mode="nb"),
@@ -94,7 +175,7 @@ _audio_input = lambda: torch.randn(8000)
     ],
 )
 @pytest.mark.parametrize("num_vals", [1, 5])
-def test_single_multi_val_plot_methods(metric_class, preds, target, num_vals):
+def test_single_multi_val_plot_methods(metric_class: object, preds: Callable, target: Callable, num_vals: int):
     """Test the plot method of metrics that only output a single tensor scalar."""
     metric = metric_class()
 

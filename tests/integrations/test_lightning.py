@@ -25,6 +25,8 @@ from torchmetrics.classification import BinaryAccuracy, BinaryAveragePrecision
 
 
 class DiffMetric(SumMetric):
+    """DiffMetric inheritted from `SumMetric` by overidding its `update` method."""
+
     def update(self, value):
         super().update(-value)
 

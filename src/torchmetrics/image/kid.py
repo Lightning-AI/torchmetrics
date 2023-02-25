@@ -65,8 +65,7 @@ def poly_mmd(
 
 
 class KernelInceptionDistance(Metric):
-    r"""Calculate Kernel Inception Distance (KID) which is used to access the quality of generated images. Given
-    by.
+    r"""Calculate Kernel Inception Distance (KID) which is used to access the quality of generated images.
 
     .. math::
         KID = MMD(f_{real}, f_{fake})^2

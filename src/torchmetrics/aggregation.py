@@ -11,13 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import warnings
 from typing import Any, Callable, List, Optional, Sequence, Union
 
 import torch
 from torch import Tensor
 
 from torchmetrics.metric import Metric
+from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
@@ -69,9 +69,7 @@ class BaseAggregator(Metric):
         self.add_state("value", default=default_value, dist_reduce_fx=fn)
 
     def _cast_and_nan_check_input(self, x: Union[float, Tensor]) -> Tensor:
-        """Convert  input x to a tensor if not already and afterwards checks for nans that either give an error,
-        warning or just ignored.
-        """
+        """Convert input ``x`` to a tensor and check for Nans."""
         if not isinstance(x, Tensor):
             x = torch.as_tensor(x, dtype=torch.float32, device=self.device)
 
@@ -79,12 +77,13 @@ class BaseAggregator(Metric):
         if nans.any():
             if self.nan_strategy == "error":
                 raise RuntimeError("Encounted `nan` values in tensor")
-            if self.nan_strategy == "warn":
-                warnings.warn("Encounted `nan` values in tensor. Will be removed.", UserWarning)
-                x = x[~nans]
-            elif self.nan_strategy == "ignore":
+            if self.nan_strategy in ("ignore", "warn"):
+                if self.nan_strategy == "warn":
+                    rank_zero_warn("Encounted `nan` values in tensor. Will be removed.", UserWarning)
                 x = x[~nans]
             else:
+                if not isinstance(self.nan_strategy, float):
+                    raise ValueError(f"`nan_strategy` shall be float but you pass {self.nan_strategy}")
                 x[nans] = self.nan_strategy
 
         return x.float()

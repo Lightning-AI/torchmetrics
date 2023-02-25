@@ -11,6 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import sys
+
+import numpy as np
 import pytest
 import torch
 from torch import tensor
@@ -18,8 +21,10 @@ from torch import tensor
 from torchmetrics import MeanSquaredError, PearsonCorrCoef
 from torchmetrics.utilities import check_forward_full_state_property, rank_zero_debug, rank_zero_info, rank_zero_warn
 from torchmetrics.utilities.checks import _allclose_recursive
-from torchmetrics.utilities.data import _bincount, _flatten, _flatten_dict, to_categorical, to_onehot
+from torchmetrics.utilities.data import _bincount, _cumsum, _flatten, _flatten_dict, to_categorical, to_onehot
 from torchmetrics.utilities.distributed import class_reduce, reduce
+from torchmetrics.utilities.exceptions import TorchMetricsUserWarning
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_13
 
 
 def test_prints():
@@ -158,3 +163,35 @@ def test_check_full_state_update_fn(capsys, metric_class, expected):
 def test_recursive_allclose(input, expected):
     res = _allclose_recursive(*input)
     assert res == expected
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires GPU")
+@pytest.mark.xfail(sys.platform == "win32", reason="test will only fail on non-windows systems")
+@pytest.mark.skipif(
+    not _TORCH_GREATER_EQUAL_1_13, reason="earlier versions was silently non-deterministic, even in deterministic mode"
+)
+def test_cumsum_still_not_supported():
+    """Make sure that cumsum on gpu and deterministic mode still fails.
+
+    If this test begins to passes, it means newer Pytorch versions support this and we can drop internal support.
+    """
+    torch.use_deterministic_algorithms(True)
+    with pytest.raises(RuntimeError, match="cumsum_cuda_kernel does not have a deterministic implementation.*"):
+        torch.arange(10).float().cuda().cumsum(0)
+    torch.use_deterministic_algorithms(False)
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires GPU")
+def test_custom_cumsum():
+    """Test custom cumsum implementation."""
+    torch.use_deterministic_algorithms(True)
+    x = torch.arange(100).float().cuda()
+    if sys.platform != "win32":
+        with pytest.warns(
+            TorchMetricsUserWarning, match="You are trying to use a metric in deterministic mode on GPU that.*"
+        ):
+            res = _cumsum(x, dim=0).cpu()
+    else:
+        res = _cumsum(x, dim=0).cpu()
+    res2 = np.cumsum(x.cpu(), axis=0)
+    assert torch.allclose(res, res2)

@@ -26,8 +26,9 @@ from torchmetrics.functional.classification.jaccard import (
     multiclass_jaccard_index,
     multilabel_jaccard_index,
 )
+from unittests import NUM_CLASSES, THRESHOLD
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
-from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index, remove_ignore_index
+from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
 
 def _sklearn_jaccard_index_binary(preds, target, ignore_index=None):
@@ -43,6 +44,8 @@ def _sklearn_jaccard_index_binary(preds, target, ignore_index=None):
 
 @pytest.mark.parametrize("input", _binary_cases)
 class TestBinaryJaccardIndex(MetricTester):
+    """Test class for `BinaryJaccardIndex` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_binary_jaccard_index(self, input, ddp, ignore_index):
@@ -128,6 +131,8 @@ def _sklearn_jaccard_index_multiclass(preds, target, ignore_index=None, average=
 
 @pytest.mark.parametrize("input", _multiclass_cases)
 class TestMulticlassJaccardIndex(MetricTester):
+    """Test class for `MulticlassJaccardIndex` metric."""
+
     @pytest.mark.parametrize("average", ["macro", "micro", "weighted", None])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
@@ -234,6 +239,8 @@ def _sklearn_jaccard_index_multilabel(preds, target, ignore_index=None, average=
 
 @pytest.mark.parametrize("input", _multilabel_cases)
 class TestMultilabelJaccardIndex(MetricTester):
+    """Test class for `MultilabelJaccardIndex` metric."""
+
     @pytest.mark.parametrize("average", ["macro", "micro", "weighted", None])
     @pytest.mark.parametrize("ignore_index", [None])  # , -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])

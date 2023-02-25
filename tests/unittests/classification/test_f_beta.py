@@ -38,9 +38,10 @@ from torchmetrics.functional.classification.f_beta import (
     multilabel_f1_score,
     multilabel_fbeta_score,
 )
+from unittests import NUM_CLASSES, THRESHOLD
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index, remove_ignore_index
+from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
 seed_all(42)
 
@@ -81,6 +82,8 @@ def _sklearn_fbeta_score_binary(preds, target, sk_fn, ignore_index, multidim_ave
     ids=["f1", "fbeta"],
 )
 class TestBinaryFBetaScore(MetricTester):
+    """Test class for `BinaryFBetaScore` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("ddp", [False, True])
@@ -200,6 +203,8 @@ def _sklearn_fbeta_score_multiclass(preds, target, sk_fn, ignore_index, multidim
     ids=["f1", "fbeta"],
 )
 class TestMulticlassFBetaScore(MetricTester):
+    """Test class for `MulticlassFBetaScore` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
@@ -317,7 +322,7 @@ _mc_k_preds = torch.tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]]
     ],
 )
 @pytest.mark.parametrize(
-    "k, preds, target, average, expected_fbeta, expected_f1",
+    ("k", "preds", "target", "average", "expected_fbeta", "expected_f1"),
     [
         (1, _mc_k_preds, _mc_k_target, "micro", torch.tensor(2 / 3), torch.tensor(2 / 3)),
         (2, _mc_k_preds, _mc_k_target, "micro", torch.tensor(5 / 6), torch.tensor(2 / 3)),
@@ -437,6 +442,8 @@ def _sklearn_fbeta_score_multilabel(preds, target, sk_fn, ignore_index, multidim
     ids=["f1", "fbeta"],
 )
 class TestMultilabelFBetaScore(MetricTester):
+    """Test class for `MultilabelFBetaScore` metric."""
+
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])

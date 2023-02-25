@@ -26,7 +26,8 @@ from torchmetrics.functional.nominal.pearson import (
     pearsons_contingency_coefficient_matrix,
 )
 from torchmetrics.nominal.pearson import PearsonsContingencyCoefficient
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from unittests import BATCH_SIZE, NUM_BATCHES
+from unittests.helpers.testers import MetricTester
 
 Input = namedtuple("Input", ["preds", "target"])
 NUM_CLASSES = 4
@@ -87,6 +88,8 @@ def _pd_pearsons_t_matrix(matrix):
     ],
 )
 class TestPearsonsContingencyCoefficient(MetricTester):
+    """Test class for `PearsonsContingencyCoefficient` metric."""
+
     atol = 1e-5
 
     @pytest.mark.parametrize("ddp", [False, True])

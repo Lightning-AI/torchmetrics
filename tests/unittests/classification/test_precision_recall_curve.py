@@ -30,9 +30,10 @@ from torchmetrics.functional.classification.precision_recall_curve import (
     multiclass_precision_recall_curve,
     multilabel_precision_recall_curve,
 )
+from unittests import NUM_CLASSES
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_CLASSES, MetricTester, inject_ignore_index, remove_ignore_index
+from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
 seed_all(42)
 
@@ -48,6 +49,8 @@ def _sklearn_precision_recall_curve_binary(preds, target, ignore_index=None):
 
 @pytest.mark.parametrize("input", (_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]))
 class TestBinaryPrecisionRecallCurve(MetricTester):
+    """Test class for `BinaryPrecisionRecallCurve` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_binary_precision_recall_curve(self, input, ddp, ignore_index):
@@ -165,6 +168,8 @@ def _sklearn_precision_recall_curve_multiclass(preds, target, ignore_index=None)
     "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
 )
 class TestMulticlassPrecisionRecallCurve(MetricTester):
+    """Test class for `MulticlassPrecisionRecallCurve` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multiclass_precision_recall_curve(self, input, ddp, ignore_index):
@@ -277,6 +282,8 @@ def _sklearn_precision_recall_curve_multilabel(preds, target, ignore_index=None)
     "input", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5])
 )
 class TestMultilabelPrecisionRecallCurve(MetricTester):
+    """Test class for `MultilabelPrecisionRecallCurve` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multilabel_precision_recall_curve(self, input, ddp, ignore_index):
