@@ -401,6 +401,8 @@ _ml_target = torch.randint(2, (10, 3))
     ],
 )
 class TestComputeGroups:
+    """Test class for testing groups computation."""
+
     @pytest.mark.parametrize(
         ("prefix", "postfix"),
         [

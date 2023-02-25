@@ -43,6 +43,8 @@ def _sklearn_binary_hinge_loss(preds, target, ignore_index):
 
 @pytest.mark.parametrize("input", (_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]))
 class TestBinaryHingeLoss(MetricTester):
+    """Test class for `BinaryHingeLoss` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_binary_hinge_loss(self, input, ddp, ignore_index):
@@ -135,6 +137,8 @@ def _sklearn_multiclass_hinge_loss(preds, target, multiclass_mode, ignore_index)
     "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
 )
 class TestMulticlassHingeLoss(MetricTester):
+    """Test class for `MulticlassHingeLoss` metric."""
+
     @pytest.mark.parametrize("multiclass_mode", ["crammer-singer", "one-vs-all"])
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])

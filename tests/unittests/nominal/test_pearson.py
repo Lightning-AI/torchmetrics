@@ -88,6 +88,8 @@ def _pd_pearsons_t_matrix(matrix):
     ],
 )
 class TestPearsonsContingencyCoefficient(MetricTester):
+    """Test class for `PearsonsContingencyCoefficient` metric."""
+
     atol = 1e-5
 
     @pytest.mark.parametrize("ddp", [False, True])
