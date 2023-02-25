@@ -49,8 +49,7 @@ def _assert_list(preds: Any, targets: Any, threshold: float = 1e-7):
 
 def _parse_original_bert_score(score: Tensor) -> Dict[str, List[float]]:
     """Parse the BERT score returned by the original `bert-score` package."""
-    score_dict = {metric: value.tolist() for metric, value in zip(_METRICS, score)}
-    return score_dict
+    return {metric: value.tolist() for metric, value in zip(_METRICS, score)}
 
 
 preds_batched = [preds[0:2], preds[2:]]

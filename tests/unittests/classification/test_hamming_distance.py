@@ -59,14 +59,14 @@ def _sklearn_hamming_distance_binary(preds, target, ignore_index, multidim_avera
     if multidim_average == "global":
         target, preds = remove_ignore_index(target, preds, ignore_index)
         return _sklearn_hamming_loss(target, preds)
-    else:
-        res = []
-        for pred, true in zip(preds, target):
-            pred = pred.flatten()
-            true = true.flatten()
-            true, pred = remove_ignore_index(true, pred, ignore_index)
-            res.append(_sklearn_hamming_loss(true, pred))
-        return np.stack(res)
+
+    res = []
+    for pred, true in zip(preds, target):
+        pred = pred.flatten()
+        true = true.flatten()
+        true, pred = remove_ignore_index(true, pred, ignore_index)
+        res.append(_sklearn_hamming_loss(true, pred))
+    return np.stack(res)
 
 
 @pytest.mark.parametrize("input", _binary_cases)
@@ -168,7 +168,7 @@ def _sklearn_hamming_distance_multiclass_global(preds, target, ignore_index, ave
     hamming_per_class[np.isnan(hamming_per_class)] = 1.0
     if average == "macro":
         return hamming_per_class.mean()
-    elif average == "weighted":
+    if average == "weighted":
         weights = confmat.sum(1)
         return ((weights * hamming_per_class) / weights.sum()).sum()
     return hamming_per_class
@@ -327,13 +327,14 @@ def _sklearn_hamming_distance_multilabel_global(preds, target, ignore_index, ave
 
     if average == "macro":
         return res.mean(0)
-    elif average == "weighted":
+    if average == "weighted":
         weights = np.stack(weights, 0).astype(float)
         weights_norm = weights.sum(-1, keepdims=True)
         weights_norm[weights_norm == 0] = 1.0
         return ((weights * res) / weights_norm).sum(-1)
-    elif average is None or average == "none":
+    if average is None or average == "none":
         return res
+    return None
 
 
 def _sklearn_hamming_distance_multilabel_local(preds, target, ignore_index, average):
@@ -358,13 +359,14 @@ def _sklearn_hamming_distance_multilabel_local(preds, target, ignore_index, aver
     res = np.stack(hamming, 0)
     if average == "macro":
         return res.mean(-1)
-    elif average == "weighted":
+    if average == "weighted":
         weights = np.stack(weights, 0).astype(float)
         weights_norm = weights.sum(-1, keepdims=True)
         weights_norm[weights_norm == 0] = 1.0
         return ((weights * res) / weights_norm).sum(-1)
-    elif average is None or average == "none":
+    if average is None or average == "none":
         return res
+    return None
 
 
 def _sklearn_hamming_distance_multilabel(preds, target, ignore_index, multidim_average, average):

@@ -78,7 +78,7 @@ select = [
 extend-select = [
     "C4",  # see: https://pypi.org/project/flake8-comprehensions
     "PT",  # see: https://pypi.org/project/flake8-pytest-style
-#    "RET",  # see: https://pypi.org/project/flake8-return
+    "RET",  # see: https://pypi.org/project/flake8-return
     "SIM",  # see: https://pypi.org/project/flake8-simplify
 ]
 ignore = [
@@ -87,6 +87,7 @@ ignore = [
     "D100",  # Missing docstring in public module
     "D104",  # Missing docstring in public package
     "D107",  # Missing docstring in `__init__`
+    "RET504",  # ToDo
 ]
 # Exclude a variety of commonly ignored directories.
 exclude = [
@@ -194,8 +195,5 @@ module = [
     "torchmetrics.image.tv",
     "torchmetrics.image.uqi",
     "torchmetrics.retrieval.precision_recall_curve",
-    "torchmetrics.utilities.checks",
-    "torchmetrics.utilities.data",
-    "torchmetrics.wrappers.tracker",
 ]
 ignore_errors = "True"

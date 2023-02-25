@@ -104,18 +104,17 @@ def _binary_precision_recall_curve_arg_validation(
             "Expected argument `thresholds` to either be an integer, list of floats or"
             f" tensor of floats, but got {thresholds}"
         )
-    else:
-        if isinstance(thresholds, int) and thresholds < 2:
-            raise ValueError(
-                f"If argument `thresholds` is an integer, expected it to be larger than 1, but got {thresholds}"
-            )
-        if isinstance(thresholds, list) and not all(isinstance(t, float) and 0 <= t <= 1 for t in thresholds):
-            raise ValueError(
-                "If argument `thresholds` is a list, expected all elements to be floats in the [0,1] range,"
-                f" but got {thresholds}"
-            )
-        if isinstance(thresholds, Tensor) and not thresholds.ndim == 1:
-            raise ValueError("If argument `thresholds` is an tensor, expected the tensor to be 1d")
+    if isinstance(thresholds, int) and thresholds < 2:
+        raise ValueError(
+            f"If argument `thresholds` is an integer, expected it to be larger than 1, but got {thresholds}"
+        )
+    if isinstance(thresholds, list) and not all(isinstance(t, float) and 0 <= t <= 1 for t in thresholds):
+        raise ValueError(
+            "If argument `thresholds` is a list, expected all elements to be floats in the [0,1] range,"
+            f" but got {thresholds}"
+        )
+    if isinstance(thresholds, Tensor) and not thresholds.ndim == 1:
+        raise ValueError("If argument `thresholds` is an tensor, expected the tensor to be 1d")
 
     if ignore_index is not None and not isinstance(ignore_index, int):
         raise ValueError(f"Expected argument `ignore_index` to either be `None` or an integer, but got {ignore_index}")
@@ -263,21 +262,20 @@ def _binary_precision_recall_curve_compute(
         precision = torch.cat([precision, torch.ones(1, dtype=precision.dtype, device=precision.device)])
         recall = torch.cat([recall, torch.zeros(1, dtype=recall.dtype, device=recall.device)])
         return precision, recall, thresholds
-    else:
-        fps, tps, thresholds = _binary_clf_curve(state[0], state[1], pos_label=pos_label)
-        precision = tps / (tps + fps)
-        recall = tps / tps[-1]
 
-        # stop when full recall attained and reverse the outputs so recall is decreasing
-        last_ind = torch.where(tps == tps[-1])[0][0]
-        sl = slice(0, last_ind.item() + 1)
+    fps, tps, thresholds = _binary_clf_curve(state[0], state[1], pos_label=pos_label)
+    precision = tps / (tps + fps)
+    recall = tps / tps[-1]
 
-        # need to call reversed explicitly, since including that to slice would
-        # introduce negative strides that are not yet supported in pytorch
-        precision = torch.cat([reversed(precision[sl]), torch.ones(1, dtype=precision.dtype, device=precision.device)])
-        recall = torch.cat([reversed(recall[sl]), torch.zeros(1, dtype=recall.dtype, device=recall.device)])
-        thresholds = reversed(thresholds[sl]).detach().clone()
+    # stop when full recall attained and reverse the outputs so recall is decreasing
+    last_ind = torch.where(tps == tps[-1])[0][0]
+    sl = slice(0, last_ind.item() + 1)
 
+    # need to call reversed explicitly, since including that to slice would
+    # introduce negative strides that are not yet supported in pytorch
+    precision = torch.cat([reversed(precision[sl]), torch.ones(1, dtype=precision.dtype, device=precision.device)])
+    recall = torch.cat([reversed(recall[sl]), torch.zeros(1, dtype=recall.dtype, device=recall.device)])
+    thresholds = reversed(thresholds[sl]).detach().clone()
     return precision, recall, thresholds
 
 
@@ -526,13 +524,13 @@ def _multiclass_precision_recall_curve_compute(
         precision = torch.cat([precision, torch.ones(1, num_classes, dtype=precision.dtype, device=precision.device)])
         recall = torch.cat([recall, torch.zeros(1, num_classes, dtype=recall.dtype, device=recall.device)])
         return precision.T, recall.T, thresholds
-    else:
-        precision, recall, thresholds = [], [], []
-        for i in range(num_classes):
-            res = _binary_precision_recall_curve_compute([state[0][:, i], state[1]], thresholds=None, pos_label=i)
-            precision.append(res[0])
-            recall.append(res[1])
-            thresholds.append(res[2])
+
+    precision, recall, thresholds = [], [], []
+    for i in range(num_classes):
+        res = _binary_precision_recall_curve_compute([state[0][:, i], state[1]], thresholds=None, pos_label=i)
+        precision.append(res[0])
+        recall.append(res[1])
+        thresholds.append(res[2])
     return precision, recall, thresholds
 
 
@@ -747,19 +745,19 @@ def _multilabel_precision_recall_curve_compute(
         precision = torch.cat([precision, torch.ones(1, num_labels, dtype=precision.dtype, device=precision.device)])
         recall = torch.cat([recall, torch.zeros(1, num_labels, dtype=recall.dtype, device=recall.device)])
         return precision.T, recall.T, thresholds
-    else:
-        precision, recall, thresholds = [], [], []
-        for i in range(num_labels):
-            preds = state[0][:, i]
-            target = state[1][:, i]
-            if ignore_index is not None:
-                idx = target == ignore_index
-                preds = preds[~idx]
-                target = target[~idx]
-            res = _binary_precision_recall_curve_compute([preds, target], thresholds=None, pos_label=1)
-            precision.append(res[0])
-            recall.append(res[1])
-            thresholds.append(res[2])
+
+    precision, recall, thresholds = [], [], []
+    for i in range(num_labels):
+        preds = state[0][:, i]
+        target = state[1][:, i]
+        if ignore_index is not None:
+            idx = target == ignore_index
+            preds = preds[~idx]
+            target = target[~idx]
+        res = _binary_precision_recall_curve_compute([preds, target], thresholds=None, pos_label=1)
+        precision.append(res[0])
+        recall.append(res[1])
+        thresholds.append(res[2])
     return precision, recall, thresholds
 
 
@@ -922,3 +920,4 @@ def precision_recall_curve(
     if task == ClassificationTask.MULTILABEL:
         assert isinstance(num_labels, int)
         return multilabel_precision_recall_curve(preds, target, num_labels, thresholds, ignore_index, validate_args)
+    return None

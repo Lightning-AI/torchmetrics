@@ -70,7 +70,7 @@ def _hamming_distance_reduce(
     """
     if average == "binary":
         return 1 - _safe_divide(tp + tn, tp + fp + tn + fn)
-    elif average == "micro":
+    if average == "micro":
         tp = tp.sum(dim=0 if multidim_average == "global" else 1)
         fn = fn.sum(dim=0 if multidim_average == "global" else 1)
         if multilabel:
@@ -78,12 +78,12 @@ def _hamming_distance_reduce(
             tn = tn.sum(dim=0 if multidim_average == "global" else 1)
             return 1 - _safe_divide(tp + tn, tp + tn + fp + fn)
         return 1 - _safe_divide(tp, tp + fn)
-    else:
-        score = 1 - _safe_divide(tp + tn, tp + tn + fp + fn) if multilabel else 1 - _safe_divide(tp, tp + fn)
-        if average is None or average == "none":
-            return score
-        weights = tp + fn if average == "weighted" else torch.ones_like(score)
-        return _safe_divide(weights * score, weights.sum(-1, keepdim=True)).sum(-1)
+
+    score = 1 - _safe_divide(tp + tn, tp + tn + fp + fn) if multilabel else 1 - _safe_divide(tp, tp + fn)
+    if average is None or average == "none":
+        return score
+    weights = tp + fn if average == "weighted" else torch.ones_like(score)
+    return _safe_divide(weights * score, weights.sum(-1, keepdim=True)).sum(-1)
 
 
 def binary_hamming_distance(

@@ -275,8 +275,7 @@ class _LevenshteinEditDistance:
         Return:
             A list of tuples containing infinite edit operation costs and yet undefined edit operations.
         """
-        empty_row = [(int(_EditOperationsCost.OP_UNDEFINED), _EditOperations.OP_UNDEFINED)] * (length + 1)
-        return empty_row
+        return [(int(_EditOperationsCost.OP_UNDEFINED), _EditOperations.OP_UNDEFINED)] * (length + 1)
 
     @staticmethod
     def _get_initial_row(length: int) -> List[Tuple[int, _EditOperations]]:
@@ -288,8 +287,7 @@ class _LevenshteinEditDistance:
         Return:
             A list of tuples containing edit operation costs of insert and insert edit operations.
         """
-        initial_row = [(i * _EditOperationsCost.OP_INSERT, _EditOperations.OP_INSERT) for i in range(length + 1)]
-        return initial_row
+        return [(i * _EditOperationsCost.OP_INSERT, _EditOperations.OP_INSERT) for i in range(length + 1)]
 
 
 def _validate_inputs(
@@ -370,8 +368,7 @@ def _flip_trace(trace: Tuple[_EditOperations, ...]) -> Tuple[_EditOperations, ..
             return _flip_operations.get(operation)  # type: ignore
         return operation
 
-    inverted_trace = tuple(_replace_operation_or_retain(operation, _flip_operations) for operation in trace)
-    return inverted_trace
+    return tuple(_replace_operation_or_retain(operation, _flip_operations) for operation in trace)
 
 
 def _trace_to_alignment(trace: Tuple[_EditOperations, ...]) -> Tuple[Dict[int, int], List[int], List[int]]:

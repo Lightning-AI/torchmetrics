@@ -362,10 +362,9 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         """Compute MS-SSIM over state."""
         if self.reduction in ("none", None):
             return dim_zero_cat(self.similarity)
-        elif self.reduction == "sum":
+        if self.reduction == "sum":
             return self.similarity
-        else:
-            return self.similarity / self.total
+        return self.similarity / self.total
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None

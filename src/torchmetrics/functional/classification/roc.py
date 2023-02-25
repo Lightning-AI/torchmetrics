@@ -503,3 +503,4 @@ def roc(
     if task == ClassificationTask.MULTILABEL:
         assert isinstance(num_labels, int)
         return multilabel_roc(preds, target, num_labels, thresholds, ignore_index, validate_args)
+    return None
