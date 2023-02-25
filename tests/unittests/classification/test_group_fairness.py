@@ -17,6 +17,7 @@ from functools import partial
 from typing import Any, Callable, Dict, Optional
 
 import numpy as np
+import pandas as pd
 import pytest
 import torch
 from fairlearn.metrics import MetricFrame, selection_rate, true_positive_rate
@@ -59,8 +60,12 @@ def _fairlearn_binary(preds, target, groups, ignore_index):
     ratios = mf.ratio()
 
     return {
-        f"DP_{mf_group['dp'].idxmin()}_{mf_group['dp'].idxmax()}": torch.tensor(ratios["dp"], dtype=torch.float),
-        f"EO_{mf_group['eo'].idxmin()}_{mf_group['eo'].idxmax()}": torch.tensor(ratios["eo"], dtype=torch.float),
+        f"DP_{pd.to_numeric(mf_group['dp']).idxmin()}_{pd.to_numeric(mf_group['dp']).idxmax()}": torch.tensor(
+            ratios["dp"], dtype=torch.float
+        ),
+        f"EO_{pd.to_numeric(mf_group['eo']).idxmin()}_{pd.to_numeric(mf_group['eo']).idxmax()}": torch.tensor(
+            ratios["eo"], dtype=torch.float
+        ),
     }
 
 
