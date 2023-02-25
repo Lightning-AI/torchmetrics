@@ -171,8 +171,7 @@ class _TercomTokenizer:
         sentence = re.sub(r"(^|^[\u31f0-\u31ff])([\u31f0-\u31ff]+)(?=$|^[\u31f0-\u31ff])", r"\1 \2 ", sentence)
 
         sentence = re.sub(cls._ASIAN_PUNCTUATION, r" \1 ", sentence)
-        sentence = re.sub(cls._FULL_WIDTH_PUNCTUATION, r" \1 ", sentence)
-        return sentence
+        return re.sub(cls._FULL_WIDTH_PUNCTUATION, r" \1 ", sentence)
 
     @staticmethod
     def _remove_punct(sentence: str) -> str:
@@ -183,8 +182,7 @@ class _TercomTokenizer:
     def _remove_asian_punct(cls, sentence: str) -> str:
         """Remove asian punctuation from an input sentence string."""
         sentence = re.sub(cls._ASIAN_PUNCTUATION, r"", sentence)
-        sentence = re.sub(cls._FULL_WIDTH_PUNCTUATION, r"", sentence)
-        return sentence
+        return re.sub(cls._FULL_WIDTH_PUNCTUATION, r"", sentence)
 
 
 def _preprocess_sentence(sentence: str, tokenizer: _TercomTokenizer) -> str:
@@ -458,12 +456,10 @@ def _compute_ter_score_from_statistics(num_edits: Tensor, tgt_length: Tensor) ->
         A corpus-level TER score or 1 if reference_length == 0.
     """
     if tgt_length > 0 and num_edits > 0:
-        score = num_edits / tgt_length
-    elif tgt_length == 0 and num_edits > 0:
-        score = tensor(1.0)
-    else:
-        score = tensor(0.0)
-    return score
+        return num_edits / tgt_length
+    if tgt_length == 0 and num_edits > 0:
+        return tensor(1.0)
+    return tensor(0.0)
 
 
 def _ter_update(

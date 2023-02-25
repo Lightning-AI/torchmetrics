@@ -133,9 +133,7 @@ def _load_readme_description(path_dir: str, homepage: str, version: str) -> str:
     skip_begin = r"<!-- following section will be skipped from PyPI description -->"
     skip_end = r"<!-- end skipping PyPI description -->"
     # todo: wrap content as commented description
-    text = re.sub(rf"{skip_begin}.+?{skip_end}", "<!--  -->", text, flags=re.IGNORECASE + re.DOTALL)
-
-    return text
+    return re.sub(rf"{skip_begin}.+?{skip_end}", "<!--  -->", text, flags=re.IGNORECASE + re.DOTALL)
 
 
 def _load_py_module(fname, pkg="torchmetrics"):

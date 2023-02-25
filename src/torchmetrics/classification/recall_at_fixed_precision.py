@@ -345,3 +345,4 @@ class RecallAtFixedPrecision:
             return MultilabelRecallAtFixedPrecision(
                 num_labels, min_precision, thresholds, ignore_index, validate_args, **kwargs
             )
+        return None

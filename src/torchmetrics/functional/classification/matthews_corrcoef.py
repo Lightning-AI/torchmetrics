@@ -51,8 +51,7 @@ def _matthews_corrcoef_reduce(confmat: Tensor) -> Tensor:
     denom = cov_ypyp * cov_ytyt
     if denom == 0:
         return torch.tensor(0, dtype=confmat.dtype, device=confmat.device)
-    else:
-        return cov_ytyp / torch.sqrt(denom)
+    return cov_ytyp / torch.sqrt(denom)
 
 
 def binary_matthews_corrcoef(

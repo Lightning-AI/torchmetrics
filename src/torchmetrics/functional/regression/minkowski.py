@@ -34,9 +34,7 @@ def _minkowski_distance_update(preds: Tensor, targets: Tensor, p: float) -> Tens
         raise TorchMetricsUserError(f"Argument ``p`` must be a float or int greater than 1, but got {p}")
 
     difference = torch.abs(preds - targets)
-    mink_dist_sum = torch.sum(torch.pow(difference, p))
-
-    return mink_dist_sum
+    return torch.sum(torch.pow(difference, p))
 
 
 def _minkowski_distance_compute(distance: Tensor, p: float) -> Tensor:

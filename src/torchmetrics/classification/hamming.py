@@ -363,3 +363,4 @@ class HammingDistance:
         if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelHammingDistance(num_labels, threshold, average, **kwargs)
+        return None

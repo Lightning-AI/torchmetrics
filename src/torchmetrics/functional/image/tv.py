@@ -36,12 +36,11 @@ def _total_variation_compute(
     """Compute final total variation score."""
     if reduction == "mean":
         return score.sum() / num_elements
-    elif reduction == "sum":
+    if reduction == "sum":
         return score.sum()
-    elif reduction is None or reduction == "none":
+    if reduction is None or reduction == "none":
         return score
-    else:
-        raise ValueError("Expected argument `reduction` to either be 'sum', 'mean', 'none' or None")
+    raise ValueError("Expected argument `reduction` to either be 'sum', 'mean', 'none' or None")
 
 
 def total_variation(img: Tensor, reduction: Literal["mean", "sum", "none", None] = "sum") -> Tensor:

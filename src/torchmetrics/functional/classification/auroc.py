@@ -64,11 +64,10 @@ def _reduce_auroc(
     idx = ~torch.isnan(res)
     if average == "macro":
         return res[idx].mean()
-    elif average == "weighted" and weights is not None:
+    if average == "weighted" and weights is not None:
         weights = _safe_divide(weights[idx], weights[idx].sum())
         return (res[idx] * weights).sum()
-    else:
-        raise ValueError("Received an incompatible combinations of inputs to make reduction.")
+    raise ValueError("Received an incompatible combinations of inputs to make reduction.")
 
 
 def _binary_auroc_arg_validation(
@@ -314,23 +313,22 @@ def _multilabel_auroc_compute(
     if average == "micro":
         if isinstance(state, Tensor) and thresholds is not None:
             return _binary_auroc_compute(state.sum(1), thresholds, max_fpr=None)
-        else:
-            preds = state[0].flatten()
-            target = state[1].flatten()
-            if ignore_index is not None:
-                idx = target == ignore_index
-                preds = preds[~idx]
-                target = target[~idx]
-            return _binary_auroc_compute((preds, target), thresholds, max_fpr=None)
 
-    else:
-        fpr, tpr, _ = _multilabel_roc_compute(state, num_labels, thresholds, ignore_index)
-        return _reduce_auroc(
-            fpr,
-            tpr,
-            average,
-            weights=(state[1] == 1).sum(dim=0).float() if thresholds is None else state[0][:, 1, :].sum(-1),
-        )
+        preds = state[0].flatten()
+        target = state[1].flatten()
+        if ignore_index is not None:
+            idx = target == ignore_index
+            preds = preds[~idx]
+            target = target[~idx]
+        return _binary_auroc_compute((preds, target), thresholds, max_fpr=None)
+
+    fpr, tpr, _ = _multilabel_roc_compute(state, num_labels, thresholds, ignore_index)
+    return _reduce_auroc(
+        fpr,
+        tpr,
+        average,
+        weights=(state[1] == 1).sum(dim=0).float() if thresholds is None else state[0][:, 1, :].sum(-1),
+    )
 
 
 def multilabel_auroc(
@@ -471,3 +469,4 @@ def auroc(
     if task == ClassificationTask.MULTILABEL:
         assert isinstance(num_labels, int)
         return multilabel_auroc(preds, target, num_labels, average, thresholds, ignore_index, validate_args)
+    return None
