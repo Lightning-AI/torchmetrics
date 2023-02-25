@@ -212,8 +212,5 @@ module = [
     "torchmetrics.text.cer",
     "torchmetrics.text.mer",
     "torchmetrics.text.wer",
-    "torchmetrics.utilities.checks",
-    "torchmetrics.utilities.data",
-    "torchmetrics.wrappers.tracker",
 ]
 ignore_errors = "True"

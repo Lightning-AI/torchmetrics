@@ -25,7 +25,7 @@ from torch import Tensor
 from torchmetrics.utilities.data import select_topk, to_onehot
 from torchmetrics.utilities.enums import DataType
 
-_DOCTEST_DOWNLOAD_TIMEOUT = os.environ.get("DOCTEST_DOWNLOAD_TIMEOUT", 120)
+_DOCTEST_DOWNLOAD_TIMEOUT = int(os.environ.get("DOCTEST_DOWNLOAD_TIMEOUT", 120))
 _SKIP_SLOW_DOCTEST = bool(os.environ.get("SKIP_SLOW_DOCTEST", 0))
 
 
@@ -429,7 +429,7 @@ def _input_format_classification(
             num_classes = preds.shape[1]
             preds = select_topk(preds, top_k or 1)
         else:
-            num_classes = num_classes if num_classes else max(preds.max(), target.max()) + 1
+            num_classes = num_classes or int(max(preds.max().item(), target.max().item()) + 1)
             preds = to_onehot(preds, max(2, num_classes))
 
         target = to_onehot(target, max(2, num_classes))
