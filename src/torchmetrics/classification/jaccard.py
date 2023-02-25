@@ -314,3 +314,4 @@ class JaccardIndex:
         if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelJaccardIndex(num_labels, threshold, average, **kwargs)
+        return None

@@ -489,3 +489,4 @@ class AUROC:
         if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelAUROC(num_labels, average, **kwargs)
+        return None

@@ -45,5 +45,4 @@ def retrieval_reciprocal_rank(preds: Tensor, target: Tensor) -> Tensor:
 
     target = target[torch.argsort(preds, dim=-1, descending=True)]
     position = torch.nonzero(target).view(-1)
-    res = 1.0 / (position[0] + 1.0)
-    return res
+    return 1.0 / (position[0] + 1.0)

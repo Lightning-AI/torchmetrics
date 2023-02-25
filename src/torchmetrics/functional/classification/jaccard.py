@@ -60,27 +60,27 @@ def _jaccard_index_reduce(
     confmat = confmat.float()
     if average == "binary":
         return confmat[1, 1] / (confmat[0, 1] + confmat[1, 0] + confmat[1, 1])
+
+    if confmat.ndim == 3:  # multilabel
+        num = confmat[:, 1, 1]
+        denom = confmat[:, 1, 1] + confmat[:, 0, 1] + confmat[:, 1, 0]
+    else:  # multiclass
+        num = torch.diag(confmat)
+        denom = confmat.sum(0) + confmat.sum(1) - num
+
+    if average == "micro":
+        num = num.sum()
+        denom = denom.sum()
+
+    jaccard = _safe_divide(num, denom)
+
+    if average is None or average == "none":
+        return jaccard
+    if average == "weighted":
+        weights = confmat[:, 1, 1] + confmat[:, 1, 0] if confmat.ndim == 3 else confmat.sum(1)
     else:
-        if confmat.ndim == 3:  # multilabel
-            num = confmat[:, 1, 1]
-            denom = confmat[:, 1, 1] + confmat[:, 0, 1] + confmat[:, 1, 0]
-        else:  # multiclass
-            num = torch.diag(confmat)
-            denom = confmat.sum(0) + confmat.sum(1) - num
-
-        if average == "micro":
-            num = num.sum()
-            denom = denom.sum()
-
-        jaccard = _safe_divide(num, denom)
-
-        if average is None or average == "none":
-            return jaccard
-        if average == "weighted":
-            weights = confmat[:, 1, 1] + confmat[:, 1, 0] if confmat.ndim == 3 else confmat.sum(1)
-        else:
-            weights = torch.ones_like(jaccard)
-        return ((weights * jaccard) / weights.sum()).sum()
+        weights = torch.ones_like(jaccard)
+    return ((weights * jaccard) / weights.sum()).sum()
 
 
 def binary_jaccard_index(

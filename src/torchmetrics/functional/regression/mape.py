@@ -85,6 +85,4 @@ def mean_absolute_percentage_error(preds: Tensor, target: Tensor) -> Tensor:
         tensor(0.2667)
     """
     sum_abs_per_error, num_obs = _mean_absolute_percentage_error_update(preds, target)
-    mean_ape = _mean_absolute_percentage_error_compute(sum_abs_per_error, num_obs)
-
-    return mean_ape
+    return _mean_absolute_percentage_error_compute(sum_abs_per_error, num_obs)

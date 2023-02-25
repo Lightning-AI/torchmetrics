@@ -133,10 +133,9 @@ def _get_col_row_split(n: int) -> Tuple[int, int]:
     nsq = sqrt(n)
     if nsq * nsq == n:
         return int(nsq), int(nsq)
-    elif floor(nsq) * ceil(nsq) > n:
+    if floor(nsq) * ceil(nsq) > n:
         return floor(nsq), ceil(nsq)
-    else:
-        return ceil(nsq), ceil(nsq)
+    return ceil(nsq), ceil(nsq)
 
 
 def trim_axs(axs: Union[_AX_TYPE, np.ndarray], nb: int) -> np.ndarray:  # type: ignore[valid-type]
@@ -146,11 +145,11 @@ def trim_axs(axs: Union[_AX_TYPE, np.ndarray], nb: int) -> np.ndarray:  # type: 
     """
     if isinstance(axs, _AX_TYPE):
         return axs
-    else:
-        axs = axs.flat  # type: ignore[union-attr]
-        for ax in axs[nb:]:
-            ax.remove()
-        return axs[:nb]
+
+    axs = axs.flat  # type: ignore[union-attr]
+    for ax in axs[nb:]:
+        ax.remove()
+    return axs[:nb]
 
 
 def plot_confusion_matrix(

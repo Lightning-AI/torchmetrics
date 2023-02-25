@@ -482,3 +482,4 @@ class ConfusionMatrix:
         if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelConfusionMatrix(num_labels, threshold, **kwargs)
+        return None

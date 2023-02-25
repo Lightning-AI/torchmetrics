@@ -408,3 +408,4 @@ def recall_at_fixed_precision(
         return multilabel_recall_at_fixed_precision(
             preds, target, num_labels, min_precision, thresholds, ignore_index, validate_args
         )
+    return None

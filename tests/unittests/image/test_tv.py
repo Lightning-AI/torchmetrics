@@ -42,7 +42,7 @@ def total_variation_kornia_tester(preds, target, reduction):
     score = kornia_total_variation(preds).sum(-1)
     if reduction == "sum":
         return score.sum()
-    elif reduction == "mean":
+    if reduction == "mean":
         return score.mean()
     return score
 
