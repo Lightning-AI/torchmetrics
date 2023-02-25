@@ -56,6 +56,8 @@ def _compare_fn(preds, target, model_name_or_path):
 @pytest.mark.skipif(not _TRANSFORMERS_AVAILABLE, reason="test requires bert_score")
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
 class TestCLIPScore(MetricTester):
+    """Test class for `CLIPScore` metric."""
+
     @pytest.mark.parametrize("ddp", [True, False])
     @skip_on_connection_issues()
     def test_clip_score(self, input, model_name_or_path, ddp):

@@ -74,6 +74,8 @@ def _skimage_uqi(preds, target, data_range, multichannel, kernel_size):
 )
 @pytest.mark.parametrize("kernel_size", [5, 11])
 class TestUQI(MetricTester):
+    """Test class for `UniversalImageQualityIndex` metric."""
+
     atol = 6e-3
 
     @pytest.mark.parametrize("ddp", [True, False])

@@ -43,6 +43,8 @@ def _sklearn_roc_binary(preds, target, ignore_index=None):
 
 @pytest.mark.parametrize("input", (_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]))
 class TestBinaryROC(MetricTester):
+    """Test class for `BinaryROC` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_binary_roc(self, input, ddp, ignore_index):
@@ -149,6 +151,8 @@ def _sklearn_roc_multiclass(preds, target, ignore_index=None):
     "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
 )
 class TestMulticlassROC(MetricTester):
+    """Test class for `MulticlassROC` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multiclass_roc(self, input, ddp, ignore_index):
@@ -249,6 +253,8 @@ def _sklearn_roc_multilabel(preds, target, ignore_index=None):
     "input", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5])
 )
 class TestMultilabelROC(MetricTester):
+    """Test class for `MultilabelROC` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multilabel_roc(self, input, ddp, ignore_index):

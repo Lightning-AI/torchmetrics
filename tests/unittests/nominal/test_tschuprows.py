@@ -85,6 +85,8 @@ def _pd_tschuprows_t_matrix(matrix):
     ],
 )
 class TestTschuprowsT(MetricTester):
+    """Test class for `TschuprowsT` metric."""
+
     atol = 1e-5
 
     @pytest.mark.parametrize("ddp", [False, True])
