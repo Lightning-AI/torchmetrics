@@ -240,7 +240,7 @@ def _bincount(x: Tensor, minlength: Optional[int] = None) -> Tensor:
     return torch.bincount(x, minlength=minlength)
 
 
-def _cumsum(x: Tensor, dim: Optional[int] = 0, dtype: Optional[torch.dtype] = None):
+def _cumsum(x: Tensor, dim: Optional[int] = 0, dtype: Optional[torch.dtype] = None) -> Tensor:
     if torch.are_deterministic_algorithms_enabled() and x.is_cuda and x.is_floating_point() and sys.platform != "win32":
         rank_zero_warn(
             "You are trying to use a metric in deterministic mode on GPU that uses `torch.cumsum` which is currently"
@@ -265,7 +265,7 @@ def _flexible_bincount(x: Tensor) -> Tensor:
     x = x - x.min()
     unique_x = torch.unique(x)
 
-    output = _bincount(x, minlength=torch.max(unique_x) + 1)
+    output = _bincount(x, minlength=torch.max(unique_x) + 1)  # type: ignore[arg-type]
     # remove zeros from output tensor
     return output[unique_x]
 
