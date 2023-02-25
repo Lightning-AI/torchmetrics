@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,8 +20,9 @@ from pytorch_msssim import ms_ssim
 
 from torchmetrics.functional.image.ssim import multiscale_structural_similarity_index_measure
 from torchmetrics.image.ssim import MultiScaleStructuralSimilarityIndexMeasure
+from unittests import NUM_BATCHES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -54,15 +55,13 @@ class TestMultiScaleStructuralSimilarityIndexMeasure(MetricTester):
     # to a kernel size of 11
 
     @pytest.mark.parametrize("ddp", [False, True])
-    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_ms_ssim(self, preds, target, ddp, dist_sync_on_step):
+    def test_ms_ssim(self, preds, target, ddp):
         self.run_class_metric_test(
             ddp,
             preds,
             target,
             MultiScaleStructuralSimilarityIndexMeasure,
             partial(pytorch_ms_ssim, data_range=1.0, kernel_size=11),
-            dist_sync_on_step=dist_sync_on_step,
             metric_args={"data_range": 1.0, "kernel_size": 11},
         )
 

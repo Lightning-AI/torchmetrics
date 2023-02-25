@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,16 +20,21 @@ from torchmetrics import _logger as log
 
 
 def rank_zero_only(fn: Callable) -> Callable:
+    """Call a function only on rank 0 in distributed settings.
+
+    Meant to be used as an decorator.
+    """
+
     @wraps(fn)
     def wrapped_fn(*args: Any, **kwargs: Any) -> Any:
-        if rank_zero_only.rank == 0:  # type: ignore
+        if rank_zero_only.rank == 0:
             return fn(*args, **kwargs)
 
     return wrapped_fn
 
 
 # add the attribute to the function but don't overwrite in case Trainer has already set it
-rank_zero_only.rank = getattr(rank_zero_only, "rank", int(os.environ.get("LOCAL_RANK", 0)))  # type: ignore
+rank_zero_only.rank = getattr(rank_zero_only, "rank", int(os.environ.get("LOCAL_RANK", 0)))
 
 
 def _warn(*args: Any, **kwargs: Any) -> None:

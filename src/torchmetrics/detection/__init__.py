@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,3 +15,5 @@ from torchmetrics.utilities.imports import _TORCHVISION_GREATER_EQUAL_0_8
 
 if _TORCHVISION_GREATER_EQUAL_0_8:
     from torchmetrics.detection.mean_ap import MeanAveragePrecision  # noqa: F401
+
+from torchmetrics.detection.panoptic_quality import PanopticQuality  # noqa: F401

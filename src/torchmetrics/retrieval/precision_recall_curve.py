@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 from typing import Any, Optional, Tuple
 
 import torch
-from torch import Tensor, tensor
+from torch import Tensor
 
 from torchmetrics import Metric
 from torchmetrics.functional.retrieval.precision_recall_curve import retrieval_precision_recall_curve
@@ -28,7 +28,7 @@ def _retrieval_recall_at_fixed_precision(
     top_k: Tensor,
     min_precision: float,
 ) -> Tuple[Tensor, Tensor]:
-    """Computes maximum recall with condition that corresponding precision >= `min_precision`.
+    """Compute maximum recall with condition that corresponding precision >= `min_precision`.
 
     Args:
         top_k: tensor with all possible k
@@ -53,27 +53,31 @@ def _retrieval_recall_at_fixed_precision(
 
 
 class RetrievalPrecisionRecallCurve(Metric):
-    """Computes precision-recall pairs for different k (from 1 to `max_k`).
+    """Compute precision-recall pairs for different k (from 1 to `max_k`).
 
-    In a ranked retrieval context, appropriate sets of retrieved documents are naturally given by
-    the top k retrieved documents.
+    In a ranked retrieval context, appropriate sets of retrieved documents are naturally given by the top k retrieved
+    documents. Recall is the fraction of relevant documents retrieved among all the relevant documents. Precision is the
+    fraction of relevant documents among all the retrieved documents. For each such set, precision and recall values
+    can be plotted to give a recall-precision curve.
 
-    Recall is the fraction of relevant documents retrieved among all the relevant documents.
-    Precision is the fraction of relevant documents among all the retrieved documents.
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    For each such set, precision and recall values can be plotted to give a recall-precision
-    curve.
+    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, ...)``
+    - ``target`` (:class:`~torch.Tensor`): A long or bool tensor of shape ``(N, ...)``
+    - ``indexes`` (:class:`~torch.Tensor`): A long tensor of shape ``(N, ...)`` which indicate to which query a
+      prediction belongs
 
-    Forward accepts:
+    As output to ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``preds`` (float tensor): ``(N, ...)``
-    - ``target`` (long or bool tensor): ``(N, ...)``
-    - ``indexes`` (long tensor): ``(N, ...)``
+    - ``precisions`` (:class:`~torch.Tensor`): A tensor with the fraction of relevant documents among all the
+      retrieved documents.
+    - ``recalls`` (:class:`~torch.Tensor`): A tensor with the fraction of relevant documents retrieved among all the
+      relevant documents
+    - ``top_k`` (:class:`~torch.Tensor`): A tensor with k from 1 to `max_k`
 
-    ``indexes``, ``preds`` and ``target`` must have the same dimension.
-    ``indexes`` indicate to which query a prediction belongs.
-    Predictions will be first grouped by ``indexes`` and then `RetrievalRecallAtFixedPrecision`
-    will be computed as the mean of the `RetrievalRecallAtFixedPrecision` over each query.
+    All ``indexes``, ``preds`` and ``target`` must have the same dimension and will be flatten at the beginning,
+    so that for example, a tensor of shape ``(N, M)`` is treated as ``(N * M, )``. Predictions will be first grouped by
+    ``indexes`` and then will be computed as the mean of the metric over each query.
 
     Args:
         max_k: Calculate recall and precision for all possible top k from 1 to max_k
@@ -101,6 +105,7 @@ class RetrievalPrecisionRecallCurve(Metric):
             If ``max_k`` parameter is not `None` or an integer larger than 0.
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics import RetrievalPrecisionRecallCurve
         >>> indexes = tensor([0, 0, 0, 0, 1, 1, 1])
         >>> preds = tensor([0.4, 0.01, 0.5, 0.6, 0.2, 0.3, 0.5])
@@ -153,7 +158,7 @@ class RetrievalPrecisionRecallCurve(Metric):
         self.add_state("preds", default=[], dist_reduce_fx=None)
         self.add_state("target", default=[], dist_reduce_fx=None)
 
-    def update(self, preds: Tensor, target: Tensor, indexes: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor, indexes: Tensor) -> None:
         """Check shape, check and convert dtypes, flatten and add to accumulators."""
         if indexes is None:
             raise ValueError("Argument `indexes` cannot be None")
@@ -167,6 +172,7 @@ class RetrievalPrecisionRecallCurve(Metric):
         self.target.append(target)
 
     def compute(self) -> Tuple[Tensor, Tensor, Tensor]:
+        """Compute metric."""
         # concat all data
         indexes = dim_zero_cat(self.indexes)
         preds = dim_zero_cat(self.preds)
@@ -214,18 +220,26 @@ class RetrievalPrecisionRecallCurve(Metric):
 
 
 class RetrievalRecallAtFixedPrecision(RetrievalPrecisionRecallCurve):
-    """Computes `IR Recall at fixed Precision`_.
+    """Compute `IR Recall at fixed Precision`_.
 
-    Forward accepts:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (float tensor): ``(N, ...)``
-    - ``target`` (long or bool tensor): ``(N, ...)``
-    - ``indexes`` (long tensor): ``(N, ...)``
+    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, ...)``
+    - ``target`` (:class:`~torch.Tensor`): A long or bool tensor of shape ``(N, ...)``
+    - ``indexes`` (:class:`~torch.Tensor`): A long tensor of shape ``(N, ...)`` which indicate to which query a
+      prediction belongs
 
-    ``indexes``, ``preds`` and ``target`` must have the same dimension.
-    ``indexes`` indicate to which query a prediction belongs.
-    Predictions will be first grouped by ``indexes`` and then `RetrievalRecallAtFixedPrecision`
-    will be computed as the mean of the `RetrievalRecallAtFixedPrecision` over each query.
+    .. note:: All ``indexes``, ``preds`` and ``target`` must have the same dimension.
+
+    .. note::
+        Predictions will be first grouped by ``indexes`` and then `RetrievalRecallAtFixedPrecision`
+        will be computed as the mean of the `RetrievalRecallAtFixedPrecision` over each query.
+
+    As output to ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``max_recall`` (:class:`~torch.Tensor`): A tensor with the maximum recall value
+      retrieved documents.
+    - ``best_k`` (:class:`~torch.Tensor`): A tensor with the best k corresponding to the maximum recall value
 
     Args:
         min_precision: float value specifying minimum precision threshold.
@@ -256,6 +270,7 @@ class RetrievalRecallAtFixedPrecision(RetrievalPrecisionRecallCurve):
             If ``max_k`` parameter is not `None` or an integer larger than 0.
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics import RetrievalRecallAtFixedPrecision
         >>> indexes = tensor([0, 0, 0, 0, 1, 1, 1])
         >>> preds = tensor([0.4, 0.01, 0.5, 0.6, 0.2, 0.3, 0.5])
@@ -289,7 +304,8 @@ class RetrievalRecallAtFixedPrecision(RetrievalPrecisionRecallCurve):
 
         self.min_precision = min_precision
 
-    def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore
+    def compute(self) -> Tuple[Tensor, Tensor]:
+        """Compute metric."""
         precisions, recalls, top_k = super().compute()
 
         return _retrieval_recall_at_fixed_precision(precisions, recalls, top_k, self.min_precision)

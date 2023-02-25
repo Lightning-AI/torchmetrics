@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,15 +26,16 @@ from torchmetrics.functional.classification.specificity import (
     multiclass_specificity,
     multilabel_specificity,
 )
+from unittests import NUM_CLASSES, THRESHOLD
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index
+from unittests.helpers.testers import MetricTester, inject_ignore_index
 
 seed_all(42)
 
 
 def _calc_specificity(tn, fp):
-    """safely calculate specificity."""
+    """Safely calculate specificity."""
     denom = tn + fp
     if np.isscalar(tn):
         denom = 1.0 if denom == 0 else denom
@@ -52,7 +53,7 @@ def _baseline_specificity_binary(preds, target, ignore_index, multidim_average):
         target = target.numpy()
 
     if np.issubdtype(preds.dtype, np.floating):
-        if not ((0 < preds) & (preds < 1)).all():
+        if not ((preds > 0) & (preds < 1)).all():
             preds = sigmoid(preds)
         preds = (preds >= THRESHOLD).astype(np.uint8)
 
@@ -335,7 +336,7 @@ _mc_k_preds = tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]])
 
 
 @pytest.mark.parametrize(
-    "k, preds, target, average, expected_spec",
+    ("k", "preds", "target", "average", "expected_spec"),
     [
         (1, _mc_k_preds, _mc_k_target, "micro", tensor(5 / 6)),
         (2, _mc_k_preds, _mc_k_target, "micro", tensor(1 / 2)),
@@ -413,7 +414,7 @@ def _baseline_specificity_multilabel(preds, target, ignore_index, multidim_avera
     preds = preds.numpy()
     target = target.numpy()
     if np.issubdtype(preds.dtype, np.floating):
-        if not ((0 < preds) & (preds < 1)).all():
+        if not ((preds > 0) & (preds < 1)).all():
             preds = sigmoid(preds)
         preds = (preds >= THRESHOLD).astype(np.uint8)
     preds = preds.reshape(*preds.shape[:2], -1)

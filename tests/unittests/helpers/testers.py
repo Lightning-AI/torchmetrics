@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import os
 import pickle
 import sys
 from copy import deepcopy
@@ -22,44 +21,11 @@ import numpy as np
 import pytest
 import torch
 from torch import Tensor, tensor
-from torch.multiprocessing import Pool, set_start_method
 
 from torchmetrics import Metric
 from torchmetrics.detection.mean_ap import MAPMetricResults
 from torchmetrics.utilities.data import _flatten, apply_to_collection
-
-try:
-    set_start_method("spawn")
-except RuntimeError:
-    pass
-
-NUM_PROCESSES = torch.cuda.device_count() if torch.cuda.is_available() else 2
-NUM_BATCHES = 2 * NUM_PROCESSES  # Need to be divisible with the number of processes
-BATCH_SIZE = 32
-# NUM_BATCHES = 10 if torch.cuda.is_available() else 4
-# BATCH_SIZE = 64 if torch.cuda.is_available() else 32
-NUM_CLASSES = 5
-EXTRA_DIM = 3
-THRESHOLD = 0.5
-
-MAX_PORT = 8100
-START_PORT = 8088
-CURRENT_PORT = START_PORT
-
-
-def setup_ddp(rank, world_size):
-    """Setup ddp environment."""
-    global CURRENT_PORT
-
-    os.environ["MASTER_ADDR"] = "localhost"
-    os.environ["MASTER_PORT"] = str(CURRENT_PORT)
-
-    CURRENT_PORT += 1
-    if CURRENT_PORT > MAX_PORT:
-        CURRENT_PORT = START_PORT
-
-    if torch.distributed.is_available() and sys.platform not in ("win32", "cygwin"):
-        torch.distributed.init_process_group("gloo", rank=rank, world_size=world_size)
+from unittests import NUM_PROCESSES
 
 
 def _assert_allclose(pl_result: Any, sk_result: Any, atol: float = 1e-8, key: Optional[str] = None) -> None:
@@ -96,8 +62,7 @@ def _assert_tensor(pl_result: Any, key: Optional[str] = None) -> None:
 
 
 def _assert_requires_grad(metric: Metric, pl_result: Any, key: Optional[str] = None) -> None:
-    """Utility function for recursively asserting that metric output is consistent with the `is_differentiable`
-    attribute."""
+    """Function for recursively asserting that metric output is consistent with the `is_differentiable` attribute."""
     if isinstance(pl_result, Sequence):
         for plr in pl_result:
             _assert_requires_grad(metric, plr, key=key)
@@ -143,8 +108,11 @@ def _class_test(
             calculated per batch and per device (and not just at the end)
         check_batch: bool, if true will check if the metric is also correctly
             calculated across devices for each batch (and not just at the end)
+        atol: absolute tolerance used for comparison of results
         device: determine which device to run on, either 'cuda' or 'cpu'
         fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `target` among processes
+        check_scriptable: bool indicating if metric should also be tested if it can be scripted
+        check_state_dict: bool indicating if metric should be tested that its state_dict by default is empty
         kwargs_update: Additional keyword arguments that will be passed with preds and
             target when running update on the metric.
     """
@@ -215,7 +183,7 @@ def _class_test(
             target_ = target[i].cpu() if isinstance(target, Tensor) else target[i]
             ref_batch_result = reference_metric(preds_, target_, **batch_kwargs_update)
             if isinstance(batch_result, dict):
-                for key in batch_result.keys():
+                for key in batch_result:
                     _assert_allclose(batch_result, ref_batch_result[key].numpy(), atol=atol, key=key)
             else:
                 _assert_allclose(batch_result, ref_batch_result, atol=atol)
@@ -230,7 +198,7 @@ def _class_test(
     # check on all batches on all ranks
     result = metric.compute()
     if isinstance(result, dict):
-        for key in result.keys():
+        for key in result:
             _assert_tensor(result, key=key)
     else:
         _assert_tensor(result)
@@ -252,7 +220,7 @@ def _class_test(
 
     # assert after aggregation
     if isinstance(sk_result, dict):
-        for key in sk_result.keys():
+        for key in sk_result:
             _assert_allclose(result, sk_result[key].numpy(), atol=atol, key=key)
     else:
         _assert_allclose(result, sk_result, atol=atol)
@@ -277,6 +245,7 @@ def _functional_test(
         metric_functional: metric functional that should be tested
         reference_metric: callable function that is used for comparison
         metric_args: dict with additional arguments used for class initialization
+        atol: absolute tolerance used for comparison of results
         device: determine which device to run on, either 'cuda' or 'cpu'
         fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `target` among processes
         kwargs_update: Additional keyword arguments that will be passed with preds and
@@ -296,7 +265,7 @@ def _functional_test(
         target = target.to(device)
     kwargs_update = {k: v.to(device) if isinstance(v, Tensor) else v for k, v in kwargs_update.items()}
 
-    for i in range(num_batches):
+    for i in range(num_batches // 2):
         extra_kwargs = {k: v[i] if isinstance(v, Tensor) else v for k, v in kwargs_update.items()}
         tm_result = metric(preds[i], target[i], **extra_kwargs)
         extra_kwargs = {
@@ -329,6 +298,7 @@ def _assert_dtype_support(
         preds: torch tensor with predictions
         target: torch tensor with targets
         device: determine device, either "cpu" or "cuda"
+        dtype: dtype to run test with
         kwargs_update: Additional keyword arguments that will be passed with preds and
             target when running update on the metric.
     """
@@ -346,30 +316,14 @@ def _assert_dtype_support(
 
 
 class MetricTester:
-    """Class used for efficiently run alot of parametrized tests in ddp mode. Makes sure that ddp is only setup
-    once and that pool of processes are used for all tests.
+    """General test class for all metrics
 
-    All tests should subclass from this and implement a new method called `test_metric_name` where the method
-    `self.run_metric_test` is called inside.
+    Class used for efficiently run alot of parametrized tests in ddp mode. Makes sure that ddp is only setup once and
+    that pool of processes are used for all tests. All tests should subclass from this and implement a new method called
+    `test_metric_name` where the method `self.run_metric_test` is called inside.
     """
 
     atol: float = 1e-8
-    poolSize: int
-    pool: Pool
-
-    def setup_class(self):
-        """Setup the metric class.
-
-        This will spawn the pool of workers that are used for metric testing and setup_ddp
-        """
-        self.poolSize = NUM_PROCESSES
-        self.pool = Pool(processes=self.poolSize)
-        self.pool.starmap(setup_ddp, [(rank, self.poolSize) for rank in range(self.poolSize)])
-
-    def teardown_class(self):
-        """Close pool of workers."""
-        self.pool.close()
-        self.pool.join()
 
     def run_functional_metric_test(
         self,
@@ -437,7 +391,7 @@ class MetricTester:
             check_batch: bool, if true will check if the metric is also correctly
                 calculated across devices for each batch (and not just at the end)
             fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `target` among processes
-            check_scriptable:
+            check_scriptable: bool indicating if metric should also be tested if it can be scripted
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 target when running update on the metric.
         """
@@ -446,7 +400,7 @@ class MetricTester:
             if sys.platform == "win32":
                 pytest.skip("DDP not supported on windows")
 
-            self.pool.starmap(
+            pytest.pool.starmap(
                 partial(
                     _class_test,
                     preds=preds,
@@ -462,7 +416,7 @@ class MetricTester:
                     check_scriptable=check_scriptable,
                     **kwargs_update,
                 ),
-                [(rank, self.poolSize) for rank in range(self.poolSize)],
+                [(rank, NUM_PROCESSES) for rank in range(NUM_PROCESSES)],
             )
         else:
             device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -503,6 +457,7 @@ class MetricTester:
             metric_module: the metric module to test
             metric_functional: the metric functional to test
             metric_args: dict with additional arguments used for class initialization
+            dtype: dtype to run test with
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 target when running update on the metric.
         """
@@ -535,6 +490,7 @@ class MetricTester:
             metric_module: the metric module to test
             metric_functional: the metric functional to test
             metric_args: dict with additional arguments used for class initialization
+            dtype: dtype to run test with
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 target when running update on the metric.
         """

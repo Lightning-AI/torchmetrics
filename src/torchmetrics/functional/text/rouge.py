@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import re
+import urllib.request
 from collections import Counter
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
+from urllib.request import HTTPError
 
 import torch
 from torch import Tensor, tensor
@@ -39,20 +41,41 @@ ALLOWED_ROUGE_KEYS: Dict[str, Union[int, str]] = {
 ALLOWED_ACCUMULATE_VALUES = ("avg", "best")
 
 
+def _ensure_nltk_punkt_is_downloaded() -> None:
+    """Check whether `nltk` `punkt` is downloaded.
+
+    If not, try to download if a machine is connected to the internet.
+    """
+    import nltk
+
+    try:
+        nltk.data.find("tokenizers/punkt.zip")
+    except LookupError:
+        try:
+            nltk.download("punkt", quiet=True, force=False, halt_on_error=False, raise_on_error=True)
+        except ValueError:
+            raise OSError(
+                "`nltk` resource `punkt` is not available on a disk and cannot be downloaded as a machine is not "
+                "connected to the internet."
+            )
+
+
 def _split_sentence(x: str) -> Sequence[str]:
-    """The sentence is split to get rougeLsum scores matching published rougeL scores for BART and PEGASUS."""
+    """Split sentence to get rougeLsum scores matching published rougeL scores for BART and PEGASUS."""
     if not _NLTK_AVAILABLE:
         raise ModuleNotFoundError("ROUGE-Lsum calculation requires that `nltk` is installed. Use `pip install nltk`.")
     import nltk
 
-    nltk.download("punkt", quiet=True, force=False)
+    _ensure_nltk_punkt_is_downloaded()
 
     re.sub("<n>", "", x)  # remove pegasus newline char
     return nltk.sent_tokenize(x)
 
 
 def _compute_metrics(hits_or_lcs: int, pred_len: int, target_len: int) -> Dict[str, Tensor]:
-    """This computes precision, recall and F1 score based on hits/lcs, and the length of lists of tokenizer
+    """Compute overall metrics.
+
+    This function computes precision, recall and F1 score based on hits/lcs, the length of lists of tokenizer
     predicted and target sentences.
 
     Args:
@@ -63,20 +86,21 @@ def _compute_metrics(hits_or_lcs: int, pred_len: int, target_len: int) -> Dict[s
     precision = hits_or_lcs / pred_len
     recall = hits_or_lcs / target_len
     if precision == recall == 0.0:
-        return dict(precision=tensor(0.0), recall=tensor(0.0), fmeasure=tensor(0.0))
+        return {"precision": tensor(0.0), "recall": tensor(0.0), "fmeasure": tensor(0.0)}
 
     fmeasure = 2 * precision * recall / (precision + recall)
-    return dict(precision=tensor(precision), recall=tensor(recall), fmeasure=tensor(fmeasure))
+    return {"precision": tensor(precision), "recall": tensor(recall), "fmeasure": tensor(fmeasure)}
 
 
 def _lcs(
     pred_tokens: Sequence[str], target_tokens: Sequence[str], return_full_table: bool = False
 ) -> Union[int, Sequence[Sequence[int]]]:
-    """Common DP algorithm to compute the length of the longest common subsequence.
+    """DP algorithm to compute the length of the longest common subsequence.
 
     Args:
         pred_tokens: A tokenized predicted sentence.
         target_tokens: A tokenized target sentence.
+        return_full_table: If the full table of logest common subsequence should be returned or just the largest
     """
     lcs = [[0] * (len(pred_tokens) + 1) for _ in range(len(target_tokens) + 1)]
     for i in range(1, len(target_tokens) + 1):
@@ -116,24 +140,22 @@ def _backtracked_lcs(
 
 
 def _union_lcs(pred_tokens_list: Sequence[Sequence[str]], target_tokens: Sequence[str]) -> Sequence[str]:
-    """Find union LCS between a target sentence and iterable of predicted tokens.
+    r"""Find union LCS between a target sentence and iterable of predicted tokens.
 
     Args:
-        pred_tokens_list: A tokenized predicted sentence split by '\n'.
-        target_tokens: A tokenized single part of target sentence split by '\n'.
-
-    Return:
+        pred_tokens_list: A tokenized predicted sentence split by ``'\n'``.
+        target_tokens: A tokenized single part of target sentence split by ``'\n'``.
     """
 
     def lcs_ind(pred_tokens: Sequence[str], target_tokens: Sequence[str]) -> Sequence[int]:
-        """Returns one of the longest of longest common subsequence via backtracked lcs table."""
+        """Return one of the longest of longest common subsequence via backtracked lcs table."""
         lcs_table: Sequence[Sequence[int]] = _lcs(pred_tokens, target_tokens, return_full_table=True)  # type: ignore
         backtracked_lcs_table = _backtracked_lcs(lcs_table, pred_tokens, target_tokens)
         return backtracked_lcs_table
 
     def find_union(lcs_tables: Sequence[Sequence[int]]) -> Sequence[int]:
         """Find union LCS given a list of LCS."""
-        return sorted(list(set().union(*lcs_tables)))
+        return sorted(set().union(*lcs_tables))
 
     lcs_tables = [lcs_ind(pred_tokens, target_tokens) for pred_tokens in pred_tokens_list]
     union_lcs = [target_tokens[i] for i in find_union(lcs_tables)]
@@ -143,12 +165,13 @@ def _union_lcs(pred_tokens_list: Sequence[Sequence[str]], target_tokens: Sequenc
 def _normalize_and_tokenize_text(
     text: str,
     stemmer: Optional[Any] = None,
-    normalizer: Callable[[str], str] = None,
-    tokenizer: Callable[[str], Sequence[str]] = None,
+    normalizer: Optional[Callable[[str], str]] = None,
+    tokenizer: Optional[Callable[[str], Sequence[str]]] = None,
 ) -> Sequence[str]:
-    """Rouge score should be calculated only over lowercased words and digits. Optionally, Porter stemmer can be
-    used to strip word suffixes to improve matching. The text normalization follows the implemantion from `Rouge
-    score_Text Normalizition`_
+    """Rouge score should be calculated only over lowercased words and digits.
+
+    Optionally, Porter stemmer can be used to strip word suffixes to improve matching. The text normalization follows
+    the implemantion from `Rouge score_Text Normalizition`_.
 
     Args:
         text: An input sentence.
@@ -160,7 +183,6 @@ def _normalize_and_tokenize_text(
             A user's own tokenizer function. If this is ``None``, splitting by spaces is default
             This function must take a ``str`` and return ``Sequence[str]``
     """
-
     # If normalizer is none, replace any non-alpha-numeric characters with spaces.
     text = normalizer(text) if callable(normalizer) else re.sub(r"[^a-z0-9]+", " ", text.lower())
 
@@ -178,7 +200,7 @@ def _normalize_and_tokenize_text(
 
 
 def _rouge_n_score(pred: Sequence[str], target: Sequence[str], n_gram: int) -> Dict[str, Tensor]:
-    """This computes precision, recall and F1 score for the Rouge-N metric.
+    """Compute precision, recall and F1 score for the Rouge-N metric.
 
     Args:
         pred: A predicted sentence.
@@ -195,7 +217,7 @@ def _rouge_n_score(pred: Sequence[str], target: Sequence[str], n_gram: int) -> D
     pred_ngrams, target_ngrams = _create_ngrams(pred, n_gram), _create_ngrams(target, n_gram)
     pred_len, target_len = sum(pred_ngrams.values()), sum(target_ngrams.values())
     if 0 in (pred_len, target_len):
-        return dict(precision=tensor(0.0), recall=tensor(0.0), fmeasure=tensor(0.0))
+        return {"precision": tensor(0.0), "recall": tensor(0.0), "fmeasure": tensor(0.0)}
 
     # It is sufficient to take a set(pred_tokenized) for hits count as we consider intersenction of pred & target
     hits = sum(min(pred_ngrams[w], target_ngrams[w]) for w in set(pred_ngrams))
@@ -203,7 +225,7 @@ def _rouge_n_score(pred: Sequence[str], target: Sequence[str], n_gram: int) -> D
 
 
 def _rouge_l_score(pred: Sequence[str], target: Sequence[str]) -> Dict[str, Tensor]:
-    """This computes precision, recall and F1 score for the Rouge-L metric.
+    """Compute precision, recall and F1 score for the Rouge-L metric.
 
     Args:
         pred: A predicted sentence.
@@ -211,28 +233,30 @@ def _rouge_l_score(pred: Sequence[str], target: Sequence[str]) -> Dict[str, Tens
     """
     pred_len, target_len = len(pred), len(target)
     if 0 in (pred_len, target_len):
-        return dict(precision=tensor(0.0), recall=tensor(0.0), fmeasure=tensor(0.0))
+        return {"precision": tensor(0.0), "recall": tensor(0.0), "fmeasure": tensor(0.0)}
 
     lcs: int = _lcs(pred, target)  # type: ignore
     return _compute_metrics(lcs, pred_len, target_len)
 
 
 def _rouge_lsum_score(pred: Sequence[Sequence[str]], target: Sequence[Sequence[str]]) -> Dict[str, Tensor]:
-    """This computes precision, recall and F1 score for the Rouge-LSum metric. More information can be found in Section
-    3.2 of the referenced paper [1]. This implementation follow the official implementation from:
-    https://github.com/google-research/google-research/blob/master/rouge/rouge_scorer.py
+    r"""Compute precision, recall and F1 score for the Rouge-LSum metric.
+
+    More information can be found in Section 3.2 of the referenced paper [1]. This implementation follow the official
+    implementation from:
+    https://github.com/google-research/google-research/blob/master/rouge/rouge_scorer.py.
 
     Args:
         pred: An iterable of predicted sentence split by '\n'.
         target: An iterable target sentence split by '\n'.
 
-    References
+    References:
         [1] ROUGE: A Package for Automatic Evaluation of Summaries by Chin-Yew Lin. https://aclanthology.org/W04-1013/
     """
     pred_len = sum(map(len, pred))
     target_len = sum(map(len, target))
     if 0 in (pred_len, target_len):
-        return dict(precision=tensor(0.0), recall=tensor(0.0), fmeasure=tensor(0.0))
+        return {"precision": tensor(0.0), "recall": tensor(0.0), "fmeasure": tensor(0.0)}
 
     # Get token counts
     def _get_token_counts(sentences: Sequence[Sequence[str]]) -> Counter:
@@ -263,8 +287,8 @@ def _rouge_score_update(
     rouge_keys_values: List[Union[int, str]],
     accumulate: str,
     stemmer: Optional[Any] = None,
-    normalizer: Callable[[str], str] = None,
-    tokenizer: Callable[[str], Sequence[str]] = None,
+    normalizer: Optional[Callable[[str], str]] = None,
+    tokenizer: Optional[Callable[[str], Sequence[str]]] = None,
 ) -> Dict[Union[int, str], List[Dict[str, Tensor]]]:
     """Update the rouge score with the current set of predicted and target sentences.
 
@@ -393,8 +417,8 @@ def rouge_score(
     target: Union[str, Sequence[str], Sequence[Sequence[str]]],
     accumulate: Literal["avg", "best"] = "best",
     use_stemmer: bool = False,
-    normalizer: Callable[[str], str] = None,
-    tokenizer: Callable[[str], Sequence[str]] = None,
+    normalizer: Optional[Callable[[str], str]] = None,
+    tokenizer: Optional[Callable[[str], Sequence[str]]] = None,
     rouge_keys: Union[str, Tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),
 ) -> Dict[str, Tensor]:
     """Calculate `Calculate Rouge Score`_ , used for automatic summarization.
@@ -450,7 +474,6 @@ def rouge_score(
     References:
         [1] ROUGE: A Package for Automatic Evaluation of Summaries by Chin-Yew Lin. https://aclanthology.org/W04-1013/
     """
-
     if use_stemmer:
         if not _NLTK_AVAILABLE:
             raise ModuleNotFoundError("Stemmer requires that `nltk` is installed. Use `pip install nltk`.")

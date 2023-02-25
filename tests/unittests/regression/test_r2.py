@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,8 +20,9 @@ from sklearn.metrics import r2_score as sk_r2score
 
 from torchmetrics.functional import r2_score
 from torchmetrics.regression import R2Score
+from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -69,16 +70,14 @@ def _multi_target_ref_metric(preds, target, adjusted, multioutput):
 )
 class TestR2Score(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_r2(self, adjusted, multioutput, preds, target, ref_metric, num_outputs, ddp, dist_sync_on_step):
+    def test_r2(self, adjusted, multioutput, preds, target, ref_metric, num_outputs, ddp):
         self.run_class_metric_test(
             ddp,
             preds,
             target,
             R2Score,
             partial(ref_metric, adjusted=adjusted, multioutput=multioutput),
-            dist_sync_on_step,
-            metric_args=dict(adjusted=adjusted, multioutput=multioutput, num_outputs=num_outputs),
+            metric_args={"adjusted": adjusted, "multioutput": multioutput, "num_outputs": num_outputs},
         )
 
     def test_r2_functional(self, adjusted, multioutput, preds, target, ref_metric, num_outputs):
@@ -88,7 +87,7 @@ class TestR2Score(MetricTester):
             target,
             r2_score,
             partial(ref_metric, adjusted=adjusted, multioutput=multioutput),
-            metric_args=dict(adjusted=adjusted, multioutput=multioutput),
+            metric_args={"adjusted": adjusted, "multioutput": multioutput},
         )
 
     def test_r2_differentiability(self, adjusted, multioutput, preds, target, ref_metric, num_outputs):
@@ -97,7 +96,7 @@ class TestR2Score(MetricTester):
             target=target,
             metric_module=partial(R2Score, num_outputs=num_outputs),
             metric_functional=r2_score,
-            metric_args=dict(adjusted=adjusted, multioutput=multioutput),
+            metric_args={"adjusted": adjusted, "multioutput": multioutput},
         )
 
     def test_r2_half_cpu(self, adjusted, multioutput, preds, target, ref_metric, num_outputs):

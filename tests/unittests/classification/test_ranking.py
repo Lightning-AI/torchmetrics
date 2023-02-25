@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,9 +32,10 @@ from torchmetrics.functional.classification.ranking import (
     multilabel_ranking_loss,
 )
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_9
+from unittests import NUM_CLASSES
 from unittests.classification.inputs import _multilabel_cases
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_CLASSES, MetricTester, inject_ignore_index
+from unittests.helpers.testers import MetricTester, inject_ignore_index
 
 seed_all(42)
 
@@ -42,9 +43,8 @@ seed_all(42)
 def _sklearn_ranking(preds, target, fn, ignore_index):
     preds = preds.numpy()
     target = target.numpy()
-    if np.issubdtype(preds.dtype, np.floating):
-        if not ((0 < preds) & (preds < 1)).all():
-            preds = sigmoid(preds)
+    if np.issubdtype(preds.dtype, np.floating) and not ((preds > 0) & (preds < 1)).all():
+        preds = sigmoid(preds)
     preds = np.moveaxis(preds, 1, -1).reshape((-1, preds.shape[1]))
     target = np.moveaxis(target, 1, -1).reshape((-1, target.shape[1]))
     if ignore_index is not None:

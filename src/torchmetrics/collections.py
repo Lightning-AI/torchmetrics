@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -80,12 +80,12 @@ class MetricCollection(ModuleDict):
             If ``postfix`` is set and it is not a string.
 
     Example (input as list):
-        >>> import torch
+        >>> from torch import tensor
         >>> from pprint import pprint
         >>> from torchmetrics import MetricCollection, MeanSquaredError
         >>> from torchmetrics.classification import MulticlassAccuracy, MulticlassPrecision, MulticlassRecall
-        >>> target = torch.tensor([0, 2, 0, 2, 0, 1, 0, 2])
-        >>> preds = torch.tensor([2, 1, 2, 0, 1, 2, 2, 2])
+        >>> target = tensor([0, 2, 0, 2, 0, 1, 0, 2])
+        >>> preds = tensor([2, 1, 2, 0, 1, 2, 2, 2])
         >>> metrics = MetricCollection([MulticlassAccuracy(num_classes=3, average='micro'),
         ...                             MulticlassPrecision(num_classes=3, average='macro'),
         ...                             MulticlassRecall(num_classes=3, average='macro')])
@@ -165,7 +165,7 @@ class MetricCollection(ModuleDict):
 
     @torch.jit.unused
     def forward(self, *args: Any, **kwargs: Any) -> Dict[str, Any]:
-        """Iteratively call forward for each metric.
+        """Call forward for each metric sequentially.
 
         Positional arguments (args) will be passed to every metric in the collection, while keyword arguments (kwargs)
         will be filtered based on the signature of the individual metric.
@@ -175,7 +175,7 @@ class MetricCollection(ModuleDict):
         return {self._set_name(k): v for k, v in res.items()}
 
     def update(self, *args: Any, **kwargs: Any) -> None:
-        """Iteratively call update for each metric.
+        """Call update for each metric sequentially.
 
         Positional arguments (args) will be passed to every metric in the collection, while keyword arguments (kwargs)
         will be filtered based on the signature of the individual metric.
@@ -202,7 +202,7 @@ class MetricCollection(ModuleDict):
                 self._groups_checked = True
 
     def _merge_compute_groups(self) -> None:
-        """Iterates over the collection of metrics, checking if the state of each metric matches another.
+        """Iterate over the collection of metrics, checking if the state of each metric matches another.
 
         If so, their compute groups will be merged into one. The complexity of the method is approximately
         ``O(number_of_metrics_in_collection ** 2)``, as all metrics need to be compared to all other metrics.
@@ -247,7 +247,7 @@ class MetricCollection(ModuleDict):
         if metric1._defaults.keys() != metric2._defaults.keys():
             return False
 
-        for key in metric1._defaults.keys():
+        for key in metric1._defaults:
             state1 = getattr(metric1, key)
             state2 = getattr(metric2, key)
 
@@ -288,7 +288,7 @@ class MetricCollection(ModuleDict):
         return {self._set_name(k): v for k, v in res.items()}
 
     def reset(self) -> None:
-        """Iteratively call reset for each metric."""
+        """Call reset for each metric sequentially."""
         for _, m in self.items(keep_base=True, copy_state=False):
             m.reset()
         if self._enable_compute_groups and self._groups_checked:
@@ -296,10 +296,11 @@ class MetricCollection(ModuleDict):
             self._compute_groups_create_state_ref()
 
     def clone(self, prefix: Optional[str] = None, postfix: Optional[str] = None) -> "MetricCollection":
-        """Make a copy of the metric collection
+        """Make a copy of the metric collection.
+
         Args:
             prefix: a string to append in front of the metric keys
-            postfix: a string to append after the keys of the output dict
+            postfix: a string to append after the keys of the output dict.
 
         """
         mc = deepcopy(self)
@@ -310,7 +311,7 @@ class MetricCollection(ModuleDict):
         return mc
 
     def persistent(self, mode: bool = True) -> None:
-        """Method for post-init to change if metric states should be saved to its state_dict."""
+        """Change if metric states should be saved to its state_dict after initialization."""
         for _, m in self.items(keep_base=True, copy_state=False):
             m.persistent(mode)
 
@@ -414,6 +415,7 @@ class MetricCollection(ModuleDict):
             od[self._set_name(k)] = v
         return od
 
+    # TODO: redefine this as native python dict
     def keys(self, keep_base: bool = False) -> Iterable[Hashable]:
         r"""Return an iterable of the ModuleDict key.
 
@@ -465,6 +467,7 @@ class MetricCollection(ModuleDict):
         raise ValueError(f"Expected input `{name}` to be a string, but got {type(arg)}")
 
     def __repr__(self) -> str:
+        """Return the representation of the metric collection including all metrics in the collection."""
         repr_str = super().__repr__()[:-2]
         if self.prefix:
             repr_str += f",\n  prefix={self.prefix}{',' if self.postfix else ''}"

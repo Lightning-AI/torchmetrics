@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,8 +30,9 @@ def _find_best_perm_by_linear_sum_assignment(
     metric_mtx: Tensor,
     eval_func: Union[torch.min, torch.max],
 ) -> Tuple[Tensor, Tensor]:
-    """Solves the linear sum assignment problem using scipy, and returns the best metric values and the
-    corresponding permutations.
+    """Solves the linear sum assignment problem.
+
+    This implementation uses scipy and input is therefore transferred to cpu during calculations.
 
     Args:
         metric_mtx: the metric matrix, shape [batch_size, spk_num, spk_num]
@@ -54,8 +55,10 @@ def _find_best_perm_by_exhaustive_method(
     metric_mtx: Tensor,
     eval_func: Union[torch.min, torch.max],
 ) -> Tuple[Tensor, Tensor]:
-    """Solves the linear sum assignment problem using exhaustive method, i.e. exhaustively calculates the metric
-    values of all possible permutations, and returns the best metric values and the corresponding permutations.
+    """Solves the linear sum assignment problem using exhaustive method.
+
+    This is done by exhaustively calculating the metric values of all possible permutations, and returns the best metric
+    values and the corresponding permutations.
 
     Args:
         metric_mtx: the metric matrix, shape ``[batch_size, spk_num, spk_num]``
@@ -96,8 +99,10 @@ def _find_best_perm_by_exhaustive_method(
 def permutation_invariant_training(
     preds: Tensor, target: Tensor, metric_func: Callable, eval_func: Literal["max", "min"] = "max", **kwargs: Any
 ) -> Tuple[Tensor, Tensor]:
-    """Calculates `Permutation invariant training`_ (PIT) that can evaluate models for speaker independent multi-
-    talker speech separation in a permutation invariant way.
+    """Calculate `Permutation invariant training`_ (PIT).
+
+    This metric can evaluate models for speaker independent multi-talker speech separation in a permutation
+    invariant way.
 
     Args:
         preds: float tensor with shape ``(batch_size,num_speakers,...)``

@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,8 +22,9 @@ from skimage.metrics import peak_signal_noise_ratio as skimage_peak_signal_noise
 
 from torchmetrics.functional import peak_signal_noise_ratio
 from torchmetrics.image import PeakSignalNoiseRatio
+from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -94,8 +95,7 @@ def _base_e_sk_psnr(preds, target, data_range, reduction, dim):
 )
 class TestPSNR(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_psnr(self, preds, target, data_range, base, reduction, dim, ref_metric, ddp, dist_sync_on_step):
+    def test_psnr(self, preds, target, data_range, base, reduction, dim, ref_metric, ddp):
         _args = {"data_range": data_range, "base": base, "reduction": reduction, "dim": dim}
         self.run_class_metric_test(
             ddp,
@@ -104,7 +104,6 @@ class TestPSNR(MetricTester):
             PeakSignalNoiseRatio,
             partial(ref_metric, data_range=data_range, reduction=reduction, dim=dim),
             metric_args=_args,
-            dist_sync_on_step=dist_sync_on_step,
         )
 
     def test_psnr_functional(self, preds, target, ref_metric, data_range, base, reduction, dim):
@@ -150,8 +149,9 @@ def test_reduction_for_dim_none(reduction):
 
 
 def test_missing_data_range():
-    with pytest.raises(ValueError):
+    """Check that error is raised if data range is not provided."""
+    with pytest.raises(ValueError, match="The `data_range` must be given when `dim` is not None."):
         PeakSignalNoiseRatio(data_range=None, dim=0)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="The `data_range` must be given when `dim` is not None."):
         peak_signal_noise_ratio(_inputs[0].preds, _inputs[0].target, data_range=None, dim=0)

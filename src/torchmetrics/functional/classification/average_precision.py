@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ from torchmetrics.functional.classification.precision_recall_curve import (
 )
 from torchmetrics.utilities.compute import _safe_divide
 from torchmetrics.utilities.data import _bincount
+from torchmetrics.utilities.enums import ClassificationTask
 from torchmetrics.utilities.prints import rank_zero_warn
 
 
@@ -45,7 +46,7 @@ def _reduce_average_precision(
     average: Optional[Literal["macro", "weighted", "none"]] = "macro",
     weights: Optional[Tensor] = None,
 ) -> Tensor:
-    """Utility function for reducing multiple average precision score into one number."""
+    """Reduce multiple average precision score into one number."""
     res = []
     if isinstance(precision, Tensor) and isinstance(recall, Tensor):
         res = -torch.sum((recall[:, 1:] - recall[:, :-1]) * precision[:, :-1], 1)
@@ -85,9 +86,10 @@ def binary_average_precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes the average precision (AP) score for binary tasks. The AP score summarizes a precision-recall curve
-    as an weighted mean of precisions at each threshold, with the difference in recall from the previous threshold
-    as weight:
+    r"""Compute the average precision (AP) score for binary tasks.
+
+    The AP score summarizes a precision-recall curve as an weighted mean of precisions at each threshold, with the
+    difference in recall from the previous threshold as weight:
 
     .. math::
         AP = \sum{n} (R_n - R_{n-1}) P_n
@@ -125,6 +127,8 @@ def binary_average_precision(
             - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 
@@ -140,7 +144,6 @@ def binary_average_precision(
         >>> binary_average_precision(preds, target, thresholds=5)
         tensor(0.6667)
     """
-
     if validate_args:
         _binary_precision_recall_curve_arg_validation(thresholds, ignore_index)
         _binary_precision_recall_curve_tensor_validation(preds, target, ignore_index)
@@ -185,9 +188,10 @@ def multiclass_average_precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes the average precision (AP) score for multiclass tasks. The AP score summarizes a precision-recall
-    curve as an weighted mean of precisions at each threshold, with the difference in recall from the previous
-    threshold as weight:
+    r"""Compute the average precision (AP) score for multiclass tasks.
+
+    The AP score summarizes a precision-recall curve as an weighted mean of precisions at each threshold, with the
+    difference in recall from the previous threshold as weight:
 
     .. math::
         AP = \sum{n} (R_n - R_{n-1}) P_n
@@ -219,8 +223,8 @@ def multiclass_average_precision(
             Defines the reduction that is applied over classes. Should be one of the following:
 
             - ``macro``: Calculate score for each class and average them
-            - ``weighted``: Calculates score for each class and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates score for each class and applies no reduction
+            - ``weighted``: calculates score for each class and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates score for each class and applies no reduction
         thresholds:
             Can be one of:
 
@@ -232,6 +236,8 @@ def multiclass_average_precision(
             - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 
@@ -314,9 +320,10 @@ def multilabel_average_precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes the average precision (AP) score for multilabel tasks. The AP score summarizes a precision-recall
-    curve as an weighted mean of precisions at each threshold, with the difference in recall from the previous
-    threshold as weight:
+    r"""Compute the average precision (AP) score for multilabel tasks.
+
+    The AP score summarizes a precision-recall curve as an weighted mean of precisions at each threshold, with the
+    difference in recall from the previous threshold as weight:
 
     .. math::
         AP = \sum{n} (R_n - R_{n-1}) P_n
@@ -349,8 +356,8 @@ def multilabel_average_precision(
 
             - ``micro``: Sum score over all labels
             - ``macro``: Calculate score for each label and average them
-            - ``weighted``: Calculates score for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates score for each label and applies no reduction
+            - ``weighted``: calculates score for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates score for each label and applies no reduction
         thresholds:
             Can be one of:
 
@@ -362,6 +369,8 @@ def multilabel_average_precision(
             - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 
@@ -409,8 +418,10 @@ def average_precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[List[Tensor], Tensor]:
-    r"""Computes the average precision (AP) score. The AP score summarizes a precision-recall curve as an weighted
-    mean of precisions at each threshold, with the difference in recall from the previous threshold as weight:
+    r"""Compute the average precision (AP) score.
+
+    The AP score summarizes a precision-recall curve as an weighted mean of precisions at each threshold, with the
+    difference in recall from the previous threshold as weight:
 
     .. math::
         AP = \sum{n} (R_n - R_{n-1}) P_n
@@ -438,16 +449,14 @@ def average_precision(
         >>> average_precision(pred, target, task="multiclass", num_classes=5, average=None)
         tensor([1.0000, 1.0000, 0.2500, 0.2500,    nan])
     """
-    if task == "binary":
+    task = ClassificationTask.from_str(task)
+    if task == ClassificationTask.BINARY:
         return binary_average_precision(preds, target, thresholds, ignore_index, validate_args)
-    if task == "multiclass":
+    if task == ClassificationTask.MULTICLASS:
         assert isinstance(num_classes, int)
         return multiclass_average_precision(
             preds, target, num_classes, average, thresholds, ignore_index, validate_args
         )
-    if task == "multilabel":
+    if task == ClassificationTask.MULTILABEL:
         assert isinstance(num_labels, int)
         return multilabel_average_precision(preds, target, num_labels, average, thresholds, ignore_index, validate_args)
-    raise ValueError(
-        f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-    )

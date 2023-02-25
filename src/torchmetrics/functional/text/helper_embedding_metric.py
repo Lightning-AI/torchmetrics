@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,20 +20,20 @@ import torch
 from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
 
+from torchmetrics.utilities.data import _cumsum
 from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_AVAILABLE
 
 if _TRANSFORMERS_AVAILABLE:
     from transformers import AutoModelForMaskedLM, AutoTokenizer, PreTrainedModel, PreTrainedTokenizerBase
 else:
-    PreTrainedModel = PreTrainedTokenizerBase = None  # type: ignore
+    PreTrainedModel = PreTrainedTokenizerBase = None
 
 if _TQDM_AVAILABLE:
     import tqdm
 
 
 def _process_attention_mask_for_special_tokens(attention_mask: Tensor) -> Tensor:
-    """Process attention mask to be zero for special [CLS] and [SEP] tokens as they're not included in a
-    calculation for BERT score.
+    """Process attention mask to be zero for special [CLS] and [SEP] tokens as they're not included in BERT score.
 
     Args:
         attention_mask: An attention mask to be returned, for example, by a `transformers` tokenizer.
@@ -44,7 +44,7 @@ def _process_attention_mask_for_special_tokens(attention_mask: Tensor) -> Tensor
     # Make attention_mask zero for [CLS] token
     attention_mask[:, 0] = 0
     # Make attention_mask zero for [SEP] token
-    sep_token_position = (attention_mask - 0.1).cumsum(-1).argmax(-1)
+    sep_token_position = _cumsum((attention_mask - 0.1), dim=-1).argmax(-1)
     attention_mask[torch.arange(attention_mask.size(0)).long(), sep_token_position] = 0
     return attention_mask
 
@@ -52,8 +52,11 @@ def _process_attention_mask_for_special_tokens(attention_mask: Tensor) -> Tensor
 def _input_data_collator(
     batch: Dict[str, Tensor], device: Optional[Union[str, torch.device]] = None
 ) -> Dict[str, Tensor]:
-    """Helper function that trims model inputs to the longest sequence within the batch and put the input on the
-    proper device."""
+    """Trim model inputs.
+
+    This function trims the model inputs to the longest sequence within the batch and put the input on the proper
+    device.
+    """
     max_len = int(batch["attention_mask"].sum(1).max().item())
     input_ids = batch["input_ids"][:, :max_len].to(device)
     attention_mask = batch["attention_mask"][:, :max_len].to(device)
@@ -62,7 +65,7 @@ def _input_data_collator(
 
 
 def _output_data_collator(model_output: Tensor, attention_mask: Tensor, target_len: int) -> Tuple[Tensor, Tensor]:
-    """Helper function that pads the model output and attention mask to the target length."""
+    """Pad the model output and attention mask to the target length."""
     zeros_shape = list(model_output.shape)
     zeros_shape[2] = target_len - zeros_shape[2]
     model_output = torch.cat(
@@ -89,7 +92,7 @@ def _preprocess_text(
     sort_according_length: bool = True,
     own_tokenizer: bool = False,
 ) -> Tuple[Dict[str, Tensor], Optional[Tensor]]:
-    """Default text pre-processing function using `transformers` `AutoTokenizer` instance.
+    """Text pre-processing function using `transformers` `AutoTokenizer` instance.
 
     Args:
         text:
@@ -136,8 +139,11 @@ def _preprocess_text(
 
 
 def _get_progress_bar(dataloader: DataLoader, verbose: bool = False) -> Union[DataLoader, "tqdm.auto.tqdm"]:
-    """Helper function returning either the dataloader itself when `verbose = False`, or it wraps the dataloader with
-    `tqdm.auto.tqdm`, when `verbose = True` to display a progress bar during the embbeddings calculation."""
+    """Wrap dataloader in progressbar if asked for.
+
+    Function will return either the dataloader itself when `verbose = False`, or it wraps the dataloader with
+    `tqdm.auto.tqdm`, when `verbose = True` to display a progress bar during the embbeddings calculation.
+    """
     return tqdm.auto.tqdm(dataloader) if verbose else dataloader
 
 
@@ -174,8 +180,7 @@ def _load_tokenizer_and_model(
 
 
 class TextDataset(Dataset):
-    """PyTorch dataset class for storing tokenized sentences and other properties used for BERT score
-    calculation."""
+    """PyTorch dataset class for storing tokenized sentences and other properties used for BERT score calculation."""
 
     def __init__(
         self,
@@ -188,20 +193,15 @@ class TextDataset(Dataset):
         idf: bool = False,
         tokens_idf: Optional[Dict[int, float]] = None,
     ) -> None:
-        """
+        """Initialize text dataset class.
+
         Args:
-            text:
-                An iterable of sentences.
-            tokenizer:
-                `AutoTokenizer` instance from `transformers` package.
-            max_length:
-                A maximum sequence length.
-            preprocess_text_fn:
-                A function used for processing the input sentences.
-            idf:
-                An indication of whether calculate token inverse document frequencies to weight the model embeddings.
-            tokens_idf:
-                Inverse document frequencies (these should be calculated on reference sentences).
+            text: An iterable of sentences.
+            tokenizer: `AutoTokenizer` instance from `transformers` package.
+            max_length: A maximum sequence length.
+            preprocess_text_fn: A function used for processing the input sentences.
+            idf: An indication of whether calculate token inverse document frequencies to weight the model embeddings.
+            tokens_idf: Inverse document frequencies (these should be calculated on reference sentences).
         """
         _text = preprocess_text_fn(text, tokenizer, max_length)
         if isinstance(_text, tuple):
@@ -216,6 +216,7 @@ class TextDataset(Dataset):
             self.tokens_idf = tokens_idf if tokens_idf is not None else self._get_tokens_idf()
 
     def __getitem__(self, idx: int) -> Dict[str, Tensor]:
+        """Get the input ids and attention mask belonging to a specific datapoint."""
         input_ids = self.text["input_ids"][idx, :]
         attention_mask = self.text["attention_mask"][idx, :]
         inputs_dict = {"input_ids": input_ids, "attention_mask": attention_mask}
@@ -225,6 +226,7 @@ class TextDataset(Dataset):
         return inputs_dict
 
     def __len__(self) -> int:
+        """Return the number of sentences in the dataset."""
         return self.num_sentences
 
     def _get_tokens_idf(self) -> Dict[int, float]:
@@ -244,7 +246,7 @@ class TextDataset(Dataset):
         return tokens_idf
 
     def _get_tokens_idf_default_value(self) -> float:
-        """Helper function that ensures `defaultdict` to be pickled."""
+        """Ensure `defaultdict` can be pickled."""
         return math.log((self.num_sentences + 1) / 1)
 
     @staticmethod
@@ -263,14 +265,14 @@ class TokenizedDataset(TextDataset):
         idf: bool = False,
         tokens_idf: Optional[Dict[int, float]] = None,
     ) -> None:
-        """
+        """Initialize the dataset class.
+
         Args:
             input_ids: Input indexes
             attention_mask: Attention mask
             idf:
                 An indication of whether calculate token inverse document frequencies to weight the model embeddings.
-            tokens_idf:
-                Inverse document frequencies (these should be calculated on reference sentences).
+            tokens_idf: Inverse document frequencies (these should be calculated on reference sentences).
         """
         text = dict(
             zip(

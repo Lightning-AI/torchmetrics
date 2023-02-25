@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -34,14 +34,12 @@ Input = namedtuple("Input", ["images", "captions"])
 
 captions = [
     "28-year-old chef found dead in San Francisco mall",
-    "A 28-year-old chef who recently moved to San Francisco was "
-    "found dead in the staircase of a local shopping center.",
-    "The victim's brother said he cannot imagine anyone who would want to harm him,\"Finally, it went uphill again at "
-    'him."',
-    "A lawyer says him .\nMoschetto, 54 and prosecutors say .\nAuthority abc Moschetto  .",
+    "A 28-year-old chef who recently moved to San Francisco was found dead.",
+    "The victim's brother said he cannot imagine anyone who would want to harm him",
+    "A lawyer says him .\nMoschetto, 54 and prosecutors say .\nAuthority abc Moschetto.",
 ]
 
-_random_input = Input(images=torch.randint(255, (2, 2, 3, 224, 224)), captions=[captions[0:2], captions[2:]])
+_random_input = Input(images=torch.randint(255, (2, 2, 3, 64, 64)), captions=[captions[0:2], captions[2:]])
 
 
 def _compare_fn(preds, target, model_name_or_path):
@@ -59,9 +57,8 @@ def _compare_fn(preds, target, model_name_or_path):
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
 class TestCLIPScore(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @skip_on_connection_issues()
-    def test_clip_score(self, input, model_name_or_path, ddp, dist_sync_on_step):
+    def test_clip_score(self, input, model_name_or_path, ddp):
         # images are preds and targets are captions
         preds, target = input
         self.run_class_metric_test(
@@ -70,10 +67,10 @@ class TestCLIPScore(MetricTester):
             target=target,
             metric_class=CLIPScore,
             reference_metric=partial(_compare_fn, model_name_or_path=model_name_or_path),
-            dist_sync_on_step=dist_sync_on_step,
             metric_args={"model_name_or_path": model_name_or_path},
             check_scriptable=False,
             check_state_dict=False,
+            check_batch=False,
         )
 
     @skip_on_connection_issues()
@@ -102,12 +99,14 @@ class TestCLIPScore(MetricTester):
     def test_error_on_not_same_amount_of_input(self, input, model_name_or_path):
         """Test that an error is raised if the number of images and text examples does not match."""
         metric = CLIPScore(model_name_or_path=model_name_or_path)
-        with pytest.raises(ValueError):
-            metric(torch.randint(255, (2, 3, 224, 224)), "28-year-old chef found dead in San Francisco mall")
+        with pytest.raises(ValueError, match="Expected the number of images and text examples to be the same.*"):
+            metric(torch.randint(255, (2, 3, 64, 64)), "28-year-old chef found dead in San Francisco mall")
 
     @skip_on_connection_issues()
     def test_error_on_wrong_image_format(self, input, model_name_or_path):
         """Test that an error is raised if not all images are [c, h, w] format."""
         metric = CLIPScore(model_name_or_path=model_name_or_path)
-        with pytest.raises(ValueError):
-            metric(torch.randint(255, (224, 224)), "28-year-old chef found dead in San Francisco mall")
+        with pytest.raises(
+            ValueError, match="Expected all images to be 3d but found image that has either more or less"
+        ):
+            metric(torch.randint(255, (64, 64)), "28-year-old chef found dead in San Francisco mall")

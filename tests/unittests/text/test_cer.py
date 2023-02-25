@@ -28,23 +28,21 @@ def compare_fn(preds: Union[str, List[str]], target: Union[str, List[str]]):
     ],
 )
 class TestCharErrorRate(TextTester):
-    """test class for character error rate."""
+    """Test class for character error rate."""
 
     @pytest.mark.parametrize("ddp", [False, True])
-    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_cer_class(self, ddp, dist_sync_on_step, preds, targets):
-        """test modular version of cer."""
+    def test_cer_class(self, ddp, preds, targets):
+        """Test modular version of cer."""
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
             targets=targets,
             metric_class=CharErrorRate,
             reference_metric=compare_fn,
-            dist_sync_on_step=dist_sync_on_step,
         )
 
     def test_cer_functional(self, preds, targets):
-        """test functional version of cer."""
+        """Test functional version of cer."""
         self.run_functional_metric_test(
             preds,
             targets,
@@ -53,7 +51,7 @@ class TestCharErrorRate(TextTester):
         )
 
     def test_cer_differentiability(self, preds, targets):
-        """test differentiability of cer metric."""
+        """Test differentiability of cer metric."""
         self.run_differentiability_test(
             preds=preds,
             targets=targets,

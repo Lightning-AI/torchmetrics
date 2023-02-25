@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,10 +20,15 @@ from typing_extensions import Literal
 from torchmetrics.functional.image.psnr import _psnr_compute, _psnr_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["PeakSignalNoiseRatio.plot"]
 
 
 class PeakSignalNoiseRatio(Metric):
-    r"""Computes `Computes Peak Signal-to-Noise Ratio`_ (PSNR):
+    r"""`Compute Peak Signal-to-Noise Ratio`_ (PSNR).
 
     .. math:: \text{PSNR}(I, J) = 10 * \log_{10} \left(\frac{\max(I)^2}{\text{MSE}(I, J)}\right)
 
@@ -70,6 +75,7 @@ class PeakSignalNoiseRatio(Metric):
     is_differentiable: bool = True
     higher_is_better: bool = True
     full_state_update: bool = False
+    plot_options = {"lower_bound": 0.0, "upper_bound": 10.0}
 
     min_target: Tensor
     max_target: Tensor
@@ -109,7 +115,7 @@ class PeakSignalNoiseRatio(Metric):
         self.reduction = reduction
         self.dim = tuple(dim) if isinstance(dim, Sequence) else dim
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
         sum_squared_error, n_obs = _psnr_update(preds, target, dim=self.dim)
         if self.dim is None:
@@ -126,10 +132,7 @@ class PeakSignalNoiseRatio(Metric):
 
     def compute(self) -> Tensor:
         """Compute peak signal-to-noise ratio over state."""
-        if self.data_range is not None:
-            data_range = self.data_range
-        else:
-            data_range = self.max_target - self.min_target
+        data_range = self.data_range if self.data_range is not None else self.max_target - self.min_target
 
         if self.dim is None:
             sum_squared_error = self.sum_squared_error
@@ -138,3 +141,52 @@ class PeakSignalNoiseRatio(Metric):
             sum_squared_error = torch.cat([values.flatten() for values in self.sum_squared_error])
             total = torch.cat([values.flatten() for values in self.total])
         return _psnr_compute(sum_squared_error, total, data_range, base=self.base, reduction=self.reduction)
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> import torch
+            >>> from torchmetrics import PeakSignalNoiseRatio
+            >>> metric = PeakSignalNoiseRatio()
+            >>> preds = torch.tensor([[0.0, 1.0], [2.0, 3.0]])
+            >>> target = torch.tensor([[3.0, 2.0], [1.0, 0.0]])
+            >>> metric.update(preds, target)
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics import PeakSignalNoiseRatio
+            >>> metric = PeakSignalNoiseRatio()
+            >>> preds = torch.tensor([[0.0, 1.0], [2.0, 3.0]])
+            >>> target = torch.tensor([[3.0, 2.0], [1.0, 0.0]])
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(preds, target))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        val = val or self.compute()
+        fig, ax = plot_single_or_multi_val(
+            val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
+        )
+        return fig, ax

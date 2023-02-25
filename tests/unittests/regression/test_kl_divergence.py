@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,8 +23,9 @@ from torch import Tensor
 
 from torchmetrics.functional.regression.kl_divergence import kl_divergence
 from torchmetrics.regression.kl_divergence import KLDivergence
+from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -61,26 +62,23 @@ class TestKLDivergence(MetricTester):
     atol = 1e-6
 
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_kldivergence(self, reduction, p, q, log_prob, ddp, dist_sync_on_step):
+    def test_kldivergence(self, reduction, p, q, log_prob, ddp):
         self.run_class_metric_test(
             ddp,
             p,
             q,
             KLDivergence,
             partial(_wrap_reduction, log_prob=log_prob, reduction=reduction),
-            dist_sync_on_step,
-            metric_args=dict(log_prob=log_prob, reduction=reduction),
+            metric_args={"log_prob": log_prob, "reduction": reduction},
         )
 
     def test_kldivergence_functional(self, reduction, p, q, log_prob):
-        # todo: `num_outputs` is unused
         self.run_functional_metric_test(
             p,
             q,
             kl_divergence,
             partial(_wrap_reduction, log_prob=log_prob, reduction=reduction),
-            metric_args=dict(log_prob=log_prob, reduction=reduction),
+            metric_args={"log_prob": log_prob, "reduction": reduction},
         )
 
     def test_kldivergence_differentiability(self, reduction, p, q, log_prob):
@@ -89,7 +87,7 @@ class TestKLDivergence(MetricTester):
             q,
             metric_module=KLDivergence,
             metric_functional=kl_divergence,
-            metric_args=dict(log_prob=log_prob, reduction=reduction),
+            metric_args={"log_prob": log_prob, "reduction": reduction},
         )
 
     # KLDivergence half + cpu does not work due to missing support in torch.clamp

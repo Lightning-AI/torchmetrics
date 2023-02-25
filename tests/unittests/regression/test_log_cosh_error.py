@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,8 +21,9 @@ import torch
 
 from torchmetrics.functional.regression.log_cosh import log_cosh_error
 from torchmetrics.regression.log_cosh import LogCoshError
+from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -58,13 +59,11 @@ def sk_log_cosh_error(preds, target):
 )
 class TestLogCoshError(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_log_cosh_error_class(self, ddp, dist_sync_on_step, preds, target):
+    def test_log_cosh_error_class(self, ddp, preds, target):
         num_outputs = 1 if preds.ndim == 2 else num_targets
         print(preds.shape)
         self.run_class_metric_test(
             ddp=ddp,
-            dist_sync_on_step=dist_sync_on_step,
             preds=preds,
             target=target,
             metric_class=LogCoshError,

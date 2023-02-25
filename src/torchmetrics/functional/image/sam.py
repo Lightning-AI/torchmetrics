@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,14 +22,12 @@ from torchmetrics.utilities.distributed import reduce
 
 
 def _sam_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
-    """Updates and returns variables required to compute Spectral Angle Mapper. Checks for same shape and type of
-    the input tensors.
+    """Update and returns variables required to compute Spectral Angle Mapper.
 
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
     """
-
     if preds.dtype != target.dtype:
         raise TypeError(
             "Expected `preds` and `target` to have the same data type."
@@ -54,7 +52,7 @@ def _sam_compute(
     target: Tensor,
     reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
 ) -> Tensor:
-    """Computes Spectral Angle Mapper.
+    """Compute Spectral Angle Mapper.
 
     Args:
         preds: estimated image

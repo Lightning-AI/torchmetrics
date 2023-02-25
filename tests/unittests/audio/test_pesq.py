@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -78,8 +78,7 @@ class TestPESQ(MetricTester):
 
     @pytest.mark.parametrize("num_processes", [1, 2])
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_pesq(self, preds, target, ref_metric, fs, mode, num_processes, ddp, dist_sync_on_step):
+    def test_pesq(self, preds, target, ref_metric, fs, mode, num_processes, ddp):
         if num_processes != 1 and ddp:
             pytest.skip("Multiprocessing and ddp does not work together")
         self.run_class_metric_test(
@@ -88,8 +87,7 @@ class TestPESQ(MetricTester):
             target,
             PerceptualEvaluationSpeechQuality,
             reference_metric=partial(average_metric, metric_func=ref_metric),
-            dist_sync_on_step=dist_sync_on_step,
-            metric_args=dict(fs=fs, mode=mode, n_processes=num_processes),
+            metric_args={"fs": fs, "mode": mode, "n_processes": num_processes},
         )
 
     @pytest.mark.parametrize("num_processes", [1, 2])
@@ -99,7 +97,7 @@ class TestPESQ(MetricTester):
             target,
             perceptual_evaluation_speech_quality,
             ref_metric,
-            metric_args=dict(fs=fs, mode=mode, n_processes=num_processes),
+            metric_args={"fs": fs, "mode": mode, "n_processes": num_processes},
         )
 
     def test_pesq_differentiability(self, preds, target, ref_metric, fs, mode):
@@ -108,7 +106,7 @@ class TestPESQ(MetricTester):
             target=target,
             metric_module=PerceptualEvaluationSpeechQuality,
             metric_functional=perceptual_evaluation_speech_quality,
-            metric_args=dict(fs=fs, mode=mode),
+            metric_args={"fs": fs, "mode": mode},
         )
 
     def test_pesq_half_cpu(self, preds, target, ref_metric, fs, mode):
@@ -121,7 +119,7 @@ class TestPESQ(MetricTester):
             target=target,
             metric_module=PerceptualEvaluationSpeechQuality,
             metric_functional=partial(perceptual_evaluation_speech_quality, fs=fs, mode=mode),
-            metric_args=dict(fs=fs, mode=mode),
+            metric_args={"fs": fs, "mode": mode},
         )
 
 

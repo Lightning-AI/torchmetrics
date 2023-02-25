@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,16 +11,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any
+from typing import Any, Optional, Sequence, Union
 
 from torch import Tensor, tensor
 
 from torchmetrics.functional.audio.snr import scale_invariant_signal_noise_ratio, signal_noise_ratio
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["SignalNoiseRatio.plot", "ScaleInvariantSignalNoiseRatio.plot"]
 
 
 class SignalNoiseRatio(Metric):
-    r"""Calculates `Signal-to-noise ratio`_ (SNR_) meric for evaluating quality of audio. It is defined as:
+    r"""Calculate `Signal-to-noise ratio`_ (SNR_) meric for evaluating quality of audio.
 
     .. math::
         \text{SNR} = \frac{P_{signal}}{P_{noise}}
@@ -46,10 +51,10 @@ class SignalNoiseRatio(Metric):
             if target and preds have a different shape
 
     Example:
-        >>> import torch
+        >>> from torch import tensor
         >>> from torchmetrics import SignalNoiseRatio
-        >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
-        >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
+        >>> target = tensor([3.0, -0.5, 2.0, 7.0])
+        >>> preds = tensor([2.5, 0.0, 2.0, 8.0])
         >>> snr = SignalNoiseRatio()
         >>> snr(preds, target)
         tensor(16.1805)
@@ -59,6 +64,7 @@ class SignalNoiseRatio(Metric):
     higher_is_better: bool = True
     sum_snr: Tensor
     total: Tensor
+    plot_options: dict = {"lower_bound": -20.0, "upper_bound": 5.0}
 
     def __init__(
         self,
@@ -79,12 +85,57 @@ class SignalNoiseRatio(Metric):
         self.total += snr_batch.numel()
 
     def compute(self) -> Tensor:
-        """Computes metric."""
+        """Compute metric."""
         return self.sum_snr / self.total
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> import torch
+            >>> from torchmetrics.audio.snr import SignalNoiseRatio
+            >>> metric = SignalNoiseRatio()
+            >>> metric.update(torch.rand(4), torch.rand(4))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics.audio.snr import SignalNoiseRatio
+            >>> metric = SignalNoiseRatio()
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(torch.rand(4), torch.rand(4)))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        val = val or self.compute()
+        fig, ax = plot_single_or_multi_val(
+            val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
+        )
+        return fig, ax
 
 
 class ScaleInvariantSignalNoiseRatio(Metric):
-    """Calculates `Scale-invariant signal-to-noise ratio`_ (SI-SNR) metric for evaluating quality of audio.
+    """Calculate `Scale-invariant signal-to-noise ratio`_ (SI-SNR) metric for evaluating quality of audio.
 
     As input to `forward` and `update` the metric accepts the following input
 
@@ -103,10 +154,10 @@ class ScaleInvariantSignalNoiseRatio(Metric):
             if target and preds have a different shape
 
     Example:
-        >>> import torch
+        >>> from torch import tensor
         >>> from torchmetrics import ScaleInvariantSignalNoiseRatio
-        >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
-        >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
+        >>> target = tensor([3.0, -0.5, 2.0, 7.0])
+        >>> preds = tensor([2.5, 0.0, 2.0, 8.0])
         >>> si_snr = ScaleInvariantSignalNoiseRatio()
         >>> si_snr(preds, target)
         tensor(15.0918)
@@ -116,6 +167,7 @@ class ScaleInvariantSignalNoiseRatio(Metric):
     sum_si_snr: Tensor
     total: Tensor
     higher_is_better = True
+    plot_options: dict = {"lower_bound": -20.0, "upper_bound": 10.0}
 
     def __init__(
         self,
@@ -134,5 +186,48 @@ class ScaleInvariantSignalNoiseRatio(Metric):
         self.total += si_snr_batch.numel()
 
     def compute(self) -> Tensor:
-        """Computes metric."""
+        """Compute metric."""
         return self.sum_si_snr / self.total
+
+    def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> import torch
+            >>> from torchmetrics.audio.snr import ScaleInvariantSignalNoiseRatio
+            >>> metric = ScaleInvariantSignalNoiseRatio()
+            >>> metric.update(torch.rand(4), torch.rand(4))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics.audio.snr import ScaleInvariantSignalNoiseRatio
+            >>> metric = ScaleInvariantSignalNoiseRatio()
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(torch.rand(4), torch.rand(4)))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        val = val or self.compute()
+        fig, ax = plot_single_or_multi_val(
+            val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
+        )
+        return fig, ax

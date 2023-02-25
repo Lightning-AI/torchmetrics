@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -107,5 +107,5 @@ class TschuprowsT(Metric):
         self.confmat += confmat
 
     def compute(self) -> Tensor:
-        """Computer Tschuprow's T statistic."""
+        """Compute Tschuprow's T statistic."""
         return _tschuprows_t_compute(self.confmat, self.bias_correction)

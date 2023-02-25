@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,8 +18,7 @@ from torchmetrics.regression.pearson import PearsonCorrCoef, _final_aggregation
 
 
 class ConcordanceCorrCoef(PearsonCorrCoef):
-    r"""Computes concordance correlation coefficient that measures the agreement between two variables. It is
-    defined as.
+    r"""Compute concordance correlation coefficient that measures the agreement between two variables.
 
     .. math::
         \rho_c = \frac{2 \rho \sigma_x \sigma_y}{\sigma_x^2 + \sigma_y^2 + (\mu_x - \mu_y)^2}
@@ -27,9 +26,17 @@ class ConcordanceCorrCoef(PearsonCorrCoef):
     where :math:`\mu_x, \mu_y` is the means for the two variables, :math:`\sigma_x^2, \sigma_y^2` are the corresponding
     variances and \rho is the pearson correlation coefficient between the two variables.
 
-    Forward accepts
-    - ``preds`` (float tensor): either single output tensor with shape ``(N,)`` or multioutput tensor of shape ``(N,d)``
-    - ``target``(float tensor): either single output tensor with shape ``(N,)`` or multioutput tensor of shape ``(N,d)``
+    As input to ``forward`` and ``update`` the metric accepts the following input:
+
+    - ``preds`` (:class:`~torch.Tensor`): either single output float tensor with shape ``(N,)`` or multioutput
+      float tensor of shape ``(N,d)``
+    - ``target`` (:class:`~torch.Tensor`): either single output float tensor with shape ``(N,)`` or multioutput
+      float tensor of shape ``(N,d)``
+
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``concordance`` (:class:`~torch.Tensor`): A scalar float tensor with the concordance coefficient(s) for
+      non-multioutput input or a float tensor with shape ``(d,)`` for multioutput input
 
     Args:
         num_outputs: Number of outputs in multioutput setting
@@ -37,25 +44,24 @@ class ConcordanceCorrCoef(PearsonCorrCoef):
 
     Example (single output regression):
         >>> from torchmetrics import ConcordanceCorrCoef
-        >>> import torch
-        >>> target = torch.tensor([3, -0.5, 2, 7])
-        >>> preds = torch.tensor([2.5, 0.0, 2, 8])
+        >>> from torch import tensor
+        >>> target = tensor([3, -0.5, 2, 7])
+        >>> preds = tensor([2.5, 0.0, 2, 8])
         >>> concordance = ConcordanceCorrCoef()
         >>> concordance(preds, target)
         tensor(0.9777)
 
     Example (multi output regression):
         >>> from torchmetrics import ConcordanceCorrCoef
-        >>> import torch
-        >>> target = torch.tensor([[3, -0.5], [2, 7]])
-        >>> preds = torch.tensor([[2.5, 0.0], [2, 8]])
+        >>> target = tensor([[3, -0.5], [2, 7]])
+        >>> preds = tensor([[2.5, 0.0], [2, 8]])
         >>> concordance = ConcordanceCorrCoef(num_outputs=2)
         >>> concordance(preds, target)
         tensor([0.7273, 0.9887])
     """
 
     def compute(self) -> Tensor:
-        """Computes final concordance correlation coefficient over metric states."""
+        """Compute final concordance correlation coefficient over metric states."""
         if (self.num_outputs == 1 and self.mean_x.numel() > 1) or (self.num_outputs > 1 and self.mean_x.ndim > 1):
             mean_x, mean_y, var_x, var_y, corr_xy, n_total = _final_aggregation(
                 self.mean_x, self.mean_y, self.var_x, self.var_y, self.corr_xy, self.n_total

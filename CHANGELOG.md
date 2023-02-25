@@ -11,9 +11,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added support for plotting of metrics through `.plot()` method ([#1328](https://github.com/Lightning-AI/metrics/pull/1328))
+- Added support for `SpecificityAtSensitivity` Metric ([#1432](https://github.com/Lightning-AI/metrics/pull/1432))
+
+
+- Added support for plotting of metrics through `.plot()` method (
+    [#1328](https://github.com/Lightning-AI/metrics/pull/1328),
+    [#1481](https://github.com/Lightning-AI/metrics/pull/1481),
+    [#1480](https://github.com/Lightning-AI/metrics/pull/1480),
+    [#1490](https://github.com/Lightning-AI/metrics/pull/1490),
+)
+
+
+- Added support for plotting of audio metrics through `.plot()` method ([#1434](https://github.com/Lightning-AI/metrics/pull/1434))
+
 
 - Added `classes` to output from `MAP` metric ([#1419](https://github.com/Lightning-AI/metrics/pull/1419))
+
+
+- Added `MinkowskiDistance` to regression package ([#1362](https://github.com/Lightning-AI/metrics/pull/1362))
+
+
+- Added `pairwise_minkowski_distance` to pairwise package ([#1362](https://github.com/Lightning-AI/metrics/pull/1362))
+
+
+- Added new detection metric `PanopticQuality` (
+    [#929](https://github.com/PyTorchLightning/metrics/pull/929),
+    [#1527](https://github.com/PyTorchLightning/metrics/pull/1527),
+)
+
+
+- Added `ClassificationTask` Enum and use in metrics ([#1479](https://github.com/Lightning-AI/metrics/pull/1479))
+
+
+- Added `ignore_index` option to `exact_match` metric ([#1540](https://github.com/Lightning-AI/metrics/pull/1540))
+
+
+- Add parameter `top_k` to `RetrievalMAP` ([#1501](https://github.com/Lightning-AI/metrics/pull/1501))
+
+
+- Added support for deterministic evaluation on GPU for metrics that uses `torch.cumsum` operator ([#1499](https://github.com/Lightning-AI/metrics/pull/1499))
+
 
 ### Changed
 
@@ -21,6 +58,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 - Raise exception for invalid kwargs in Metric base class ([#1427](https://github.com/Lightning-AI/metrics/pull/1427))
+
+
+- Extend `EnumStr` raising `ValueError` for invalid value ([#1479](https://github.com/Lightning-AI/metrics/pull/1479))
+
+
+- Improve speed and memory consumption of binned `PrecisionRecallCurve` with large number of samples ([#1493](https://github.com/Lightning-AI/metrics/pull/1493))
+
+
+- Changed `__iter__` method from raising `NotImplementedError` to `TypeError` by setting to `None` ([#1538](https://github.com/Lightning-AI/metrics/pull/1538))
 
 
 ### Deprecated
@@ -35,7 +81,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed compatibility between XLA in `_bincount` function ([#1471](https://github.com/Lightning-AI/metrics/pull/1471))
+
+
+- Fixed type hints in methods belonging to `MetricTracker` wrapper ([#1472](https://github.com/Lightning-AI/metrics/pull/1472))
+
+
+- Fixed `multilabel` in `ExactMatch` ([#1474](https://github.com/Lightning-AI/metrics/pull/1474))
+
+
+- Fixed classification metrics for `byte` input ([#1521](https://github.com/Lightning-AI/metrics/pull/1474))
+
+
+## [0.11.1] - 2023-01-30
+
+### Fixed
+
 - Fixed type checking on the `maximize` parameter at the initialization of `MetricTracker` ([#1428](https://github.com/Lightning-AI/metrics/issues/1428))
+- Fixed mixed precision autocast for `SSIM` metric ([#1454](https://github.com/Lightning-AI/metrics/pull/1454))
+- Fixed checking for `nltk.punkt` in `RougeScore` if a machine is not online ([#1456](https://github.com/Lightning-AI/metrics/pull/1456))
+- Fixed wrongly reset method in `MultioutputWrapper` ([#1460](https://github.com/Lightning-AI/metrics/issues/1460))
+- Fixed dtype checking in `PrecisionRecallCurve` for `target` tensor ([#1457](https://github.com/Lightning-AI/metrics/pull/1457))
 
 
 ## [0.11.0] - 2022-11-30
@@ -281,6 +347,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `adaptive_k` for the `RetrievalPrecision` metric ([#910](https://github.com/Lightning-AI/metrics/pull/910))
 - Added `reset_real_features` argument image quality assessment metrics ([#722](https://github.com/Lightning-AI/metrics/pull/722))
 - Added new keyword argument `compute_on_cpu` to all metrics ([#867](https://github.com/Lightning-AI/metrics/pull/867))
+
 
 ### Changed
 

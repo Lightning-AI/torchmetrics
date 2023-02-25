@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,13 +23,8 @@ from torch import Tensor
 from torch.multiprocessing import set_start_method
 
 from torchmetrics import Metric
+from unittests import NUM_PROCESSES
 from unittests.helpers.testers import MetricTester, _assert_allclose, _assert_requires_grad, _assert_tensor
-
-try:
-    set_start_method("spawn")
-except RuntimeError:
-    pass
-
 
 TEXT_METRIC_INPUT = Union[Sequence[str], Sequence[Sequence[str]], Sequence[Sequence[Sequence[str]]]]
 NUM_BATCHES = 2
@@ -38,8 +33,7 @@ NUM_BATCHES = 2
 def _assert_all_close_regardless_of_order(
     pl_result: Any, sk_result: Any, atol: float = 1e-8, key: Optional[str] = None
 ) -> None:
-    """Utility function for recursively asserting that two results are within a certain tolerance regardless of the
-    order."""
+    """Recursively asserting that two results are within a certain tolerance regardless of the order."""
     # single output compare
     if isinstance(pl_result, Tensor):
         assert np.allclose(pl_result.detach().cpu().numpy().mean(0), sk_result.mean(0), atol=atol, equal_nan=True)
@@ -90,8 +84,10 @@ def _class_test(
             calculated per batch per device (and not just at the end)
         check_batch: bool, if true will check if the metric is also correctly
             calculated across devices for each batch (and not just at the end)
+        atol: absolute tolerance used for comparison of results
         device: determine which device to run on, either 'cuda' or 'cpu'
         fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `targets` among processes
+        check_scriptable: bool indicating if metric should also be tested if it can be scripted
         key: The key passed onto the `_assert_allclose` to compare the respective metric from the Dict output against
             the ref_metric.
         ignore_order: Ignore order of prediction accross processes when DDP is used.
@@ -207,6 +203,7 @@ def _functional_test(
         metric_functional: metric functional that should be tested
         ref_metric: callable function that is used for comparison
         metric_args: dict with additional arguments used for class initialization
+        atol: absolute tolerance used for comparison of results
         device: determine which device to run on, either 'cuda' or 'cpu'
         fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `targets` among processes
         key: The key passed onto the `_assert_allclose` to compare the respective metric from the Dict output against
@@ -267,11 +264,11 @@ def _assert_half_support(
 
 
 class TextTester(MetricTester):
-    """Class used for efficiently run alot of parametrized tests in ddp mode. Makes sure that ddp is only setup
-    once and that pool of processes are used for all tests.
+    """Tester class for text.
 
-    All tests for text metrics should subclass from this and implement a new method called `test_metric_name` where the
-    method `self.run_metric_test` is called inside.
+    Class used for efficiently run alot of parametrized tests in ddp mode. Makes sure that ddp is only setup once and
+    that pool of processes are used for all tests. All tests for text metrics should subclass from this and implement
+    a new method called `test_metric_name` where the method `self.run_metric_test` is called inside.
     """
 
     def run_functional_metric_test(
@@ -321,7 +318,7 @@ class TextTester(MetricTester):
         targets: TEXT_METRIC_INPUT,
         metric_class: Metric,
         reference_metric: Callable,
-        dist_sync_on_step: bool,
+        dist_sync_on_step: bool = False,
         metric_args: dict = None,
         check_dist_sync_on_step: bool = True,
         check_batch: bool = True,
@@ -347,7 +344,7 @@ class TextTester(MetricTester):
             check_batch: bool, if true will check if the metric is also correctly
                 calculated across devices for each batch (and not just at the end)
             fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `targets` among processes
-            check_scriptable:
+            check_scriptable: bool indicating if metric should also be tested if it can be scripted
             key: The key passed onto the `_assert_allclose` to compare the respective metric from the Dict output
                 against the ref_metric.
             ignore_order: Ignore order of prediction accross processes when DDP is used.
@@ -360,7 +357,7 @@ class TextTester(MetricTester):
             if sys.platform == "win32":
                 pytest.skip("DDP not supported on windows")
 
-            self.pool.starmap(
+            pytest.pool.starmap(
                 partial(
                     _class_test,
                     preds=preds,
@@ -378,7 +375,7 @@ class TextTester(MetricTester):
                     ignore_order=ignore_order,
                     **kwargs_update,
                 ),
-                [(rank, self.poolSize) for rank in range(self.poolSize)],
+                [(rank, NUM_PROCESSES) for rank in range(NUM_PROCESSES)],
             )
         else:
             device = "cuda" if (torch.cuda.is_available() and torch.cuda.device_count() > 0) else "cpu"
@@ -411,7 +408,8 @@ class TextTester(MetricTester):
         metric_args: dict = None,
         **kwargs_update,
     ):
-        """Test if a metric can be used with half precision tensors on cpu
+        """Test if a metric can be used with half precision tensors on cpu.
+
         Args:
             preds: torch tensor with predictions
             targets: torch tensor with targets
@@ -435,7 +433,8 @@ class TextTester(MetricTester):
         metric_args: dict = None,
         **kwargs_update,
     ):
-        """Test if a metric can be used with half precision tensors on gpu
+        """Test if a metric can be used with half precision tensors on gpu.
+
         Args:
             preds: torch tensor with predictions
             targets: torch tensor with targets
@@ -465,7 +464,7 @@ class TextTester(MetricTester):
             preds: torch tensor with predictions
             targets: torch tensor with targets
             metric_module: the metric module to test
-            metric_functional:
+            metric_functional: the functional metric version to test
             metric_args: dict with additional arguments used for class initialization
             key: The key passed onto the `_assert_allclose` to compare the respective metric from the Dict output
                 against the ref_metric.
@@ -484,11 +483,11 @@ class TextTester(MetricTester):
 
 
 def skip_on_connection_issues(reason: str = "Unable to load checkpoints from HuggingFace `transformers`."):
-    """Wrapper which handles HF-related tests if they fail due to connection issues.
+    """Wrapper which handles download related tests if they fail due to connection issues.
 
     The tests run normally if no connection issue arises, and they're marked as skipped otherwise.
     """
-    _error_msg_starts = ["We couldn't connect to", "Connection error", "Can't load"]
+    _error_msg_starts = ["We couldn't connect to", "Connection error", "Can't load", "`nltk` resource `punkt` is"]
 
     def test_decorator(function: Callable, *args: Any, **kwargs: Any) -> Optional[Callable]:
         @wraps(function)

@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -42,8 +42,9 @@ from torchmetrics.regression import (
     WeightedMeanAbsolutePercentageError,
 )
 from torchmetrics.regression.symmetric_mape import SymmetricMeanAbsolutePercentageError
+from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -167,9 +168,8 @@ def _multi_target_ref_metric(preds, target, sk_fn, metric_args):
 )
 class TestMeanError(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_mean_error_class(
-        self, preds, target, ref_metric, metric_class, metric_functional, sk_fn, metric_args, ddp, dist_sync_on_step
+        self, preds, target, ref_metric, metric_class, metric_functional, sk_fn, metric_args, ddp
     ):
         # todo: `metric_functional` is unused
         self.run_class_metric_test(
@@ -178,7 +178,6 @@ class TestMeanError(MetricTester):
             target=target,
             metric_class=metric_class,
             reference_metric=partial(ref_metric, sk_fn=sk_fn, metric_args=metric_args),
-            dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
         )
 

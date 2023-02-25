@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,9 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Union
+from typing import Any, List, Optional, Sequence, Union
 
-import torch
 from torch import Tensor
 from typing_extensions import Literal
 
@@ -32,28 +31,40 @@ from torchmetrics.functional.classification.auroc import (
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
+from torchmetrics.utilities.enums import ClassificationTask
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["BinaryAUROC.plot", "MulticlassAUROC.plot", "MultilabelAUROC.plot"]
 
 
 class BinaryAUROC(BinaryPrecisionRecallCurve):
-    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for binary tasks. The AUROC
-    score summarizes the ROC curve into an single number that describes the performance of a model for multiple
-    thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
+    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for binary tasks.
+
+    The AUROC score summarizes the ROC curve into an single number that describes the performance of a model for
+    multiple thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
     corresponds to random guessing.
 
-    Accepts the following input tensors:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (float tensor): ``(N, ...)``. Preds should be a tensor containing probabilities or logits for each
-      observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
+    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, ...)`` containing probabilities or logits for
+      each observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
       sigmoid per element.
-    - ``target`` (int tensor): ``(N, ...)``. Target should be a tensor containing ground truth labels, and therefore
-      only contain {0,1} values (except if `ignore_index` is specified). The value 1 always encodes the positive class.
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)`` containing ground truth labels, and
+      therefore only contain {0,1} values (except if `ignore_index` is specified). The value 1 always encodes the
+      positive class.
+
+    As output to ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``b_auroc`` (:class:`~torch.Tensor`): A single scalar with the auroc score.
 
     Additional dimension ``...`` will be flattened into the batch dimension.
 
-    The implementation both supports calculating the metric in a non-binned but accurate version and a binned version
-    that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
-    non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
-    argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
+    The implementation both supports calculating the metric in a non-binned but accurate version and a
+    binned version that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will
+    activate the non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the
+    `thresholds` argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
     size :math:`\mathcal{O}(n_{thresholds})` (constant memory).
 
     Args:
@@ -73,23 +84,22 @@ class BinaryAUROC(BinaryPrecisionRecallCurve):
             Set to ``False`` for faster computations.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    Returns:
-        A single scalar with the auroc score
-
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics.classification import BinaryAUROC
-        >>> preds = torch.tensor([0, 0.5, 0.7, 0.8])
-        >>> target = torch.tensor([0, 1, 1, 0])
+        >>> preds = tensor([0, 0.5, 0.7, 0.8])
+        >>> target = tensor([0, 1, 1, 0])
         >>> metric = BinaryAUROC(thresholds=None)
         >>> metric(preds, target)
         tensor(0.5000)
-        >>> metric = BinaryAUROC(thresholds=5)
-        >>> metric(preds, target)
+        >>> b_auroc = BinaryAUROC(thresholds=5)
+        >>> b_auroc(preds, target)
         tensor(0.5000)
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
+    plot_options: dict = {"lower_bound": 0.0, "upper_bound": 1.0}
 
     def __init__(
         self,
@@ -105,26 +115,66 @@ class BinaryAUROC(BinaryPrecisionRecallCurve):
         self.max_fpr = max_fpr
 
     def compute(self) -> Tensor:
-        if self.thresholds is None:
-            state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]
-        else:
-            state = self.confmat
+        """Compute metric."""
+        state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _binary_auroc_compute(state, self.thresholds, self.max_fpr)
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import randn, randint
+            >>> import torch.nn.functional as F
+            >>> # Example plotting a combined value across all classes
+            >>> from torchmetrics.classification import BinaryAUROC
+            >>> preds = F.softmax(randn(20, 2), dim=1)
+            >>> target = randint(2, (20,))
+            >>> metric = BinaryAUROC()
+            >>> metric.update(preds[:, 1], target)
+            >>> fig_, ax_ = metric.plot()
+        """
+        val = val or self.compute()
+        fig, ax = plot_single_or_multi_val(
+            val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
+        )
+        return fig, ax
 
 
 class MulticlassAUROC(MulticlassPrecisionRecallCurve):
-    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for multiclass tasks. The AUROC
-    score summarizes the ROC curve into an single number that describes the performance of a model for multiple
-    thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
+    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for multiclass tasks.
+
+    The AUROC score summarizes the ROC curve into an single number that describes the performance of a model for
+    multiple thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
     corresponds to random guessing.
 
-    Accepts the following input tensors:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (float tensor): ``(N, C, ...)``. Preds should be a tensor containing probabilities or logits for each
-      observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
-      softmax per sample.
-    - ``target`` (int tensor): ``(N, ...)``. Target should be a tensor containing ground truth labels, and therefore
-      only contain values in the [0, n_classes-1] range (except if `ignore_index` is specified).
+    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, C, ...)`` containing probabilities or logits
+      for each observation. If preds has values outside [0,1] range we consider the input to be logits and will auto
+      apply softmax per sample.
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)`` containing ground truth labels, and
+      therefore only contain values in the [0, n_classes-1] range (except if `ignore_index` is specified).
+
+    As output to ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``mc_auroc`` (:class:`~torch.Tensor`): If `average=None|"none"` then a 1d tensor of shape (n_classes, ) will
+      be returned with auroc score per class. If `average="macro"|"weighted"` then a single scalar is returned.
 
     Additional dimension ``...`` will be flattened into the batch dimension.
 
@@ -140,8 +190,8 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
             Defines the reduction that is applied over classes. Should be one of the following:
 
             - ``macro``: Calculate score for each class and average them
-            - ``weighted``: Calculates score for each class and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates score for each class and applies no reduction
+            - ``weighted``: calculates score for each class and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates score for each class and applies no reduction
 
         thresholds:
             Can be one of:
@@ -158,34 +208,32 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
             Set to ``False`` for faster computations.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    Returns:
-        If `average=None|"none"` then a 1d tensor of shape (n_classes, ) will be returned with auroc score per class.
-        If `average="macro"|"weighted"` then a single scalar is returned.
-
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics.classification import MulticlassAUROC
-        >>> preds = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
-        ...                       [0.05, 0.75, 0.05, 0.05, 0.05],
-        ...                       [0.05, 0.05, 0.75, 0.05, 0.05],
-        ...                       [0.05, 0.05, 0.05, 0.75, 0.05]])
-        >>> target = torch.tensor([0, 1, 3, 2])
+        >>> preds = tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
+        ...                 [0.05, 0.75, 0.05, 0.05, 0.05],
+        ...                 [0.05, 0.05, 0.75, 0.05, 0.05],
+        ...                 [0.05, 0.05, 0.05, 0.75, 0.05]])
+        >>> target = tensor([0, 1, 3, 2])
         >>> metric = MulticlassAUROC(num_classes=5, average="macro", thresholds=None)
         >>> metric(preds, target)
         tensor(0.5333)
-        >>> metric = MulticlassAUROC(num_classes=5, average=None, thresholds=None)
-        >>> metric(preds, target)
+        >>> mc_auroc = MulticlassAUROC(num_classes=5, average=None, thresholds=None)
+        >>> mc_auroc(preds, target)
         tensor([1.0000, 1.0000, 0.3333, 0.3333, 0.0000])
-        >>> metric = MulticlassAUROC(num_classes=5, average="macro", thresholds=5)
-        >>> metric(preds, target)
+        >>> mc_auroc = MulticlassAUROC(num_classes=5, average="macro", thresholds=5)
+        >>> mc_auroc(preds, target)
         tensor(0.5333)
-        >>> metric = MulticlassAUROC(num_classes=5, average=None, thresholds=5)
-        >>> metric(preds, target)
+        >>> mc_auroc = MulticlassAUROC(num_classes=5, average=None, thresholds=5)
+        >>> mc_auroc(preds, target)
         tensor([1.0000, 1.0000, 0.3333, 0.3333, 0.0000])
     """
 
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
+    plot_options = {"lower_bound": 0.0, "upper_bound": 1.0, "legend_name": "Class"}
 
     def __init__(
         self,
@@ -205,26 +253,63 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
         self.validate_args = validate_args
 
     def compute(self) -> Tensor:
-        if self.thresholds is None:
-            state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]
-        else:
-            state = self.confmat
+        """Compute metric."""
+        state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _multiclass_auroc_compute(state, self.num_classes, self.average, self.thresholds)
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import randn, randint
+            >>> # Example plotting a combined value across all classes
+            >>> from torchmetrics.classification import MulticlassAUROC
+            >>> metric = MulticlassAUROC(num_classes=3, average="macro")
+            >>> metric.update(randn(20, 3), randint(3, (20,)))
+            >>> fig_, ax_ = metric.plot()
+        """
+        val = val or self.compute()
+        fig, ax = plot_single_or_multi_val(
+            val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
+        )
+        return fig, ax
 
 
 class MultilabelAUROC(MultilabelPrecisionRecallCurve):
-    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for multilabel tasks. The AUROC
-    score summarizes the ROC curve into an single number that describes the performance of a model for multiple
-    thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
+    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for multilabel tasks.
+
+    The AUROC score summarizes the ROC curve into an single number that describes the performance of a model for
+    multiple thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
     corresponds to random guessing.
 
-    Accepts the following input tensors:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (float tensor): ``(N, C, ...)``. Preds should be a tensor containing probabilities or logits for each
-      observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
-      sigmoid per element.
-    - ``target`` (int tensor): ``(N, C, ...)``. Target should be a tensor containing ground truth labels, and therefore
-      only contain {0,1} values (except if `ignore_index` is specified).
+    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, C, ...)`` containing probabilities or logits
+      for each observation. If preds has values outside [0,1] range we consider the input to be logits and will auto
+      apply sigmoid per element.
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)`` containing ground truth labels, and
+      therefore only contain {0,1} values (except if `ignore_index` is specified).
+
+    As output to ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``ml_auroc`` (:class:`~torch.Tensor`): If `average=None|"none"` then a 1d tensor of shape (n_classes, ) will
+      be returned with auroc score per class. If `average="micro|macro"|"weighted"` then a single scalar is returned.
 
     Additional dimension ``...`` will be flattened into the batch dimension.
 
@@ -241,8 +326,8 @@ class MultilabelAUROC(MultilabelPrecisionRecallCurve):
 
             - ``micro``: Sum score over all labels
             - ``macro``: Calculate score for each label and average them
-            - ``weighted``: Calculates score for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates score for each label and applies no reduction
+            - ``weighted``: calculates score for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates score for each label and applies no reduction
         thresholds:
             Can be one of:
 
@@ -258,36 +343,34 @@ class MultilabelAUROC(MultilabelPrecisionRecallCurve):
             Set to ``False`` for faster computations.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    Returns:
-        If `average=None|"none"` then a 1d tensor of shape (n_classes, ) will be returned with auroc score per class.
-        If `average="micro|macro"|"weighted"` then a single scalar is returned.
-
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics.classification import MultilabelAUROC
-        >>> preds = torch.tensor([[0.75, 0.05, 0.35],
+        >>> preds = tensor([[0.75, 0.05, 0.35],
         ...                       [0.45, 0.75, 0.05],
         ...                       [0.05, 0.55, 0.75],
         ...                       [0.05, 0.65, 0.05]])
-        >>> target = torch.tensor([[1, 0, 1],
+        >>> target = tensor([[1, 0, 1],
         ...                        [0, 0, 0],
         ...                        [0, 1, 1],
         ...                        [1, 1, 1]])
-        >>> metric = MultilabelAUROC(num_labels=3, average="macro", thresholds=None)
-        >>> metric(preds, target)
+        >>> ml_auroc = MultilabelAUROC(num_labels=3, average="macro", thresholds=None)
+        >>> ml_auroc(preds, target)
         tensor(0.6528)
-        >>> metric = MultilabelAUROC(num_labels=3, average=None, thresholds=None)
-        >>> metric(preds, target)
+        >>> ml_auroc = MultilabelAUROC(num_labels=3, average=None, thresholds=None)
+        >>> ml_auroc(preds, target)
         tensor([0.6250, 0.5000, 0.8333])
-        >>> metric = MultilabelAUROC(num_labels=3, average="macro", thresholds=5)
-        >>> metric(preds, target)
+        >>> ml_auroc = MultilabelAUROC(num_labels=3, average="macro", thresholds=5)
+        >>> ml_auroc(preds, target)
         tensor(0.6528)
-        >>> metric = MultilabelAUROC(num_labels=3, average=None, thresholds=5)
-        >>> metric(preds, target)
+        >>> ml_auroc = MultilabelAUROC(num_labels=3, average=None, thresholds=5)
+        >>> ml_auroc(preds, target)
         tensor([0.6250, 0.5000, 0.8333])
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
+    plot_options = {"lower_bound": 0.0, "upper_bound": 1.0, "legend_name": "Class"}
 
     def __init__(
         self,
@@ -307,17 +390,57 @@ class MultilabelAUROC(MultilabelPrecisionRecallCurve):
         self.validate_args = validate_args
 
     def compute(self) -> Tensor:
-        if self.thresholds is None:
-            state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)]
-        else:
-            state = self.confmat
+        """Compute metric."""
+        state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _multilabel_auroc_compute(state, self.num_labels, self.average, self.thresholds, self.ignore_index)
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import tensor
+            >>> from torchmetrics.classification import MultilabelAUROC
+            >>> preds = tensor([[0.75, 0.05, 0.35],
+            ...                [0.45, 0.75, 0.05],
+            ...                [0.05, 0.55, 0.75],
+            ...                [0.05, 0.65, 0.05]])
+            >>> target = tensor([[1, 0, 1],
+            ...                [0, 0, 0],
+            ...                [0, 1, 1],
+            ...                [1, 1, 1]])
+            >>> metric = MultilabelAUROC(num_labels=3, average="macro", thresholds=None)
+            >>> metric.update(preds, target)
+            >>> fig_, ax_ = metric.plot()
+        """
+        val = val or self.compute()
+        fig, ax = plot_single_or_multi_val(
+            val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
+        )
+        return fig, ax
 
 
 class AUROC:
-    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_). The AUROC score summarizes the
-    ROC curve into an single number that describes the performance of a model for multiple thresholds at the same
-    time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5 corresponds to random guessing.
+    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_).
+
+    The AUROC score summarizes the ROC curve into an single number that describes the performance of a model for
+    multiple thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
+    corresponds to random guessing.
 
     This module is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
@@ -325,18 +448,19 @@ class AUROC:
     each argument influence and examples.
 
     Legacy Example:
-        >>> preds = torch.tensor([0.13, 0.26, 0.08, 0.19, 0.34])
-        >>> target = torch.tensor([0, 0, 1, 1, 1])
+        >>> from torch import tensor
+        >>> preds = tensor([0.13, 0.26, 0.08, 0.19, 0.34])
+        >>> target = tensor([0, 0, 1, 1, 1])
         >>> auroc = AUROC(task="binary")
         >>> auroc(preds, target)
         tensor(0.5000)
 
-        >>> preds = torch.tensor([[0.90, 0.05, 0.05],
+        >>> preds = tensor([[0.90, 0.05, 0.05],
         ...                       [0.05, 0.90, 0.05],
         ...                       [0.05, 0.05, 0.90],
         ...                       [0.85, 0.05, 0.10],
         ...                       [0.10, 0.10, 0.80]])
-        >>> target = torch.tensor([0, 1, 1, 2, 2])
+        >>> target = tensor([0, 1, 1, 2, 2])
         >>> auroc = AUROC(task="multiclass", num_classes=3)
         >>> auroc(preds, target)
         tensor(0.7778)
@@ -354,15 +478,14 @@ class AUROC:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
-        kwargs.update(dict(thresholds=thresholds, ignore_index=ignore_index, validate_args=validate_args))
-        if task == "binary":
+        """Initialize task metric."""
+        task = ClassificationTask.from_str(task)
+        kwargs.update({"thresholds": thresholds, "ignore_index": ignore_index, "validate_args": validate_args})
+        if task == ClassificationTask.BINARY:
             return BinaryAUROC(max_fpr, **kwargs)
-        if task == "multiclass":
+        if task == ClassificationTask.MULTICLASS:
             assert isinstance(num_classes, int)
             return MulticlassAUROC(num_classes, average, **kwargs)
-        if task == "multilabel":
+        if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelAUROC(num_labels, average, **kwargs)
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-        )

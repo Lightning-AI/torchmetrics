@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,27 +13,33 @@
 # limitations under the License.
 from typing import Any, Optional
 
-from torch import Tensor, tensor
+from torch import Tensor
 
 from torchmetrics.functional.retrieval.hit_rate import retrieval_hit_rate
 from torchmetrics.retrieval.base import RetrievalMetric
 
 
 class RetrievalHitRate(RetrievalMetric):
-    """Computes `IR HitRate`.
+    """Compute `IR HitRate`.
 
     Works with binary target data. Accepts float predictions from a model output.
 
-    Forward accepts:
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (float tensor): ``(N, ...)``
-    - ``target`` (long or bool tensor): ``(N, ...)``
-    - ``indexes`` (long tensor): ``(N, ...)``
+    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, ...)``
+    - ``target`` (:class:`~torch.Tensor`): A long or bool tensor of shape ``(N, ...)``
+    - ``indexes`` (:class:`~torch.Tensor`): A long tensor of shape ``(N, ...)`` which indicate to which query a
+      prediction belongs
 
-    ``indexes``, ``preds`` and ``target`` must have the same dimension.
-    ``indexes`` indicate to which query a prediction belongs.
-    Predictions will be first grouped by ``indexes`` and then the `Hit Rate` will be computed as the mean
-    of the `Hit Rate` over each query.
+    As output to ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``hr2`` (:class:`~torch.Tensor`): A single-value tensor with the hit rate (at ``top_k``) of the predictions
+      ``preds`` w.r.t. the labels ``target``
+
+    All ``indexes``, ``preds`` and ``target`` must have the same dimension and will be flatten at the beginning,
+    so that for example, a tensor of shape ``(N, M)`` is treated as ``(N * M, )``. Predictions will be first grouped by
+    ``indexes`` and then will be computed as the mean of the metric over each query.
+
 
     Args:
         empty_target_action:
@@ -46,7 +52,7 @@ class RetrievalHitRate(RetrievalMetric):
 
         ignore_index:
             Ignore predictions where the target is equal to this number.
-        k: consider only the top k elements for each query (default: ``None``, which considers them all)
+        top_k: consider only the top k elements for each query (default: ``None``, which considers them all)
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -55,14 +61,15 @@ class RetrievalHitRate(RetrievalMetric):
         ValueError:
             If ``ignore_index`` is not `None` or an integer.
         ValueError:
-            If ``k`` parameter is not `None` or an integer larger than 0.
+            If ``top_k`` parameter is not `None` or an integer larger than 0.
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics import RetrievalHitRate
         >>> indexes = tensor([0, 0, 0, 1, 1, 1, 1])
         >>> preds = tensor([0.2, 0.3, 0.5, 0.1, 0.3, 0.5, 0.2])
         >>> target = tensor([True, False, False, False, True, False, True])
-        >>> hr2 = RetrievalHitRate(k=2)
+        >>> hr2 = RetrievalHitRate(top_k=2)
         >>> hr2(preds, target, indexes=indexes)
         tensor(0.5000)
     """
@@ -75,7 +82,7 @@ class RetrievalHitRate(RetrievalMetric):
         self,
         empty_target_action: str = "neg",
         ignore_index: Optional[int] = None,
-        k: Optional[int] = None,
+        top_k: Optional[int] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -84,9 +91,9 @@ class RetrievalHitRate(RetrievalMetric):
             **kwargs,
         )
 
-        if (k is not None) and not (isinstance(k, int) and k > 0):
-            raise ValueError("`k` has to be a positive integer or None")
-        self.k = k
+        if top_k is not None and not (isinstance(top_k, int) and top_k > 0):
+            raise ValueError("`top_k` has to be a positive integer or None")
+        self.top_k = top_k
 
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
-        return retrieval_hit_rate(preds, target, k=self.k)
+        return retrieval_hit_rate(preds, target, top_k=self.top_k)

@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@ from functools import partial
 
 import pytest
 import torch
-import torch.nn.functional as F
+from torch.nn import functional as F  # noqa: N812
 
 from torchmetrics.functional.text.perplexity import perplexity
 from torchmetrics.text.perplexity import Perplexity
@@ -48,15 +48,13 @@ def _baseline_perplexity(preds, target, ignore_index):
 )
 class TestPerplexity(MetricTester):
     @pytest.mark.parametrize("ddp", [False, True])
-    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_perplexity_class(self, ddp, dist_sync_on_step, preds, target, ignore_index):
+    def test_perplexity_class(self, ddp, preds, target, ignore_index):
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
             target=target,
             metric_class=Perplexity,
             reference_metric=partial(_baseline_perplexity, ignore_index=ignore_index),
-            dist_sync_on_step=dist_sync_on_step,
             metric_args={"ignore_index": ignore_index},
         )
 

@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -69,16 +69,16 @@ def test_add_state():
     a.add_state("c", tensor(0), "cat")
     assert a._reductions["c"]([tensor([1]), tensor([1])]).shape == (2,)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="`dist_reduce_fx` must be callable or one of .*"):
         a.add_state("d1", tensor(0), "xyz")
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="`dist_reduce_fx` must be callable or one of .*"):
         a.add_state("d2", tensor(0), 42)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="state variable must be a tensor or any empty list .*"):
         a.add_state("d3", [tensor(0)], "sum")
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="state variable must be a tensor or any empty list .*"):
         a.add_state("d4", 42, "sum")
 
     def custom_fx(_):
@@ -111,10 +111,12 @@ def test_reset():
     assert a.x == 0
 
     b = B()
-    assert isinstance(b.x, list) and len(b.x) == 0
+    assert isinstance(b.x, list)
+    assert len(b.x) == 0
     b.x = tensor(5)
     b.reset()
-    assert isinstance(b.x, list) and len(b.x) == 0
+    assert isinstance(b.x, list)
+    assert len(b.x) == 0
 
 
 def test_reset_compute():
@@ -151,8 +153,8 @@ def test_compute():
             return self.x
 
     a = A()
-    assert 0 == a.compute()
-    assert 0 == a.x
+    assert a.compute() == 0
+    assert a.x == 0
     a.update(1)
     assert a._computed is None
     assert a.compute() == 1
@@ -181,13 +183,16 @@ def test_hash():
     b1 = B()
     b2 = B()
     assert hash(b1) != hash(b2)  # different ids
-    assert isinstance(b1.x, list) and len(b1.x) == 0
+    assert isinstance(b1.x, list)
+    assert len(b1.x) == 0
     b1.x.append(tensor(5))
     assert isinstance(hash(b1), int)  # <- check that nothing crashes
-    assert isinstance(b1.x, list) and len(b1.x) == 1
+    assert isinstance(b1.x, list)
+    assert len(b1.x) == 1
     b2.x.append(tensor(5))
     # Sanity:
-    assert isinstance(b2.x, list) and len(b2.x) == 1
+    assert isinstance(b2.x, list)
+    assert len(b2.x) == 1
     # Now that they have tensor contents, they should have different hashes:
     assert hash(b1) != hash(b2)
 
@@ -230,7 +235,7 @@ def test_pickle(tmpdir):
 
 
 def test_state_dict(tmpdir):
-    """test that metric states can be removed and added to state dict."""
+    """Test that metric states can be removed and added to state dict."""
     metric = DummyMetric()
     assert metric.state_dict() == OrderedDict()
     metric.persistent(True)
@@ -240,7 +245,7 @@ def test_state_dict(tmpdir):
 
 
 def test_load_state_dict(tmpdir):
-    """test that metric states can be loaded with state dict."""
+    """Test that metric states can be loaded with state dict."""
     metric = DummyMetricSum()
     metric.persistent(True)
     metric.update(5)
@@ -250,7 +255,7 @@ def test_load_state_dict(tmpdir):
 
 
 def test_child_metric_state_dict():
-    """test that child metric states will be added to parent state dict."""
+    """Test that child metric states will be added to parent state dict."""
 
     class TestModule(Module):
         def __init__(self):
@@ -292,7 +297,7 @@ def test_device_and_dtype_transfer(tmpdir):
 
 
 def test_warning_on_compute_before_update():
-    """test that an warning is raised if user tries to call compute before update."""
+    """Test that an warning is raised if user tries to call compute before update."""
     metric = DummyMetricSum()
 
     # make sure everything is fine with forward
@@ -315,13 +320,13 @@ def test_warning_on_compute_before_update():
 
 
 def test_metric_scripts():
-    """test that metrics are scriptable."""
+    """Test that metrics are scriptable."""
     torch.jit.script(DummyMetric())
     torch.jit.script(DummyMetricSum())
 
 
 def test_metric_forward_cache_reset():
-    """test that forward cache is reset when `reset` is called."""
+    """Test that forward cache is reset when `reset` is called."""
     metric = DummyMetricSum()
     _ = metric(2.0)
     assert metric._forward_cache == 2.0
@@ -463,7 +468,7 @@ def test_custom_availability_check_and_sync_fn():
 
 def test_no_iteration_allowed():
     metric = DummyMetric()
-    with pytest.raises(NotImplementedError, match="Metrics does not support iteration."):
+    with pytest.raises(TypeError, match="'DummyMetric' object is not iterable"):  # noqa: PT012
         for m in metric:
             continue
 

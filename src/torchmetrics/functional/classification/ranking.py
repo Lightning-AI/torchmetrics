@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ from torchmetrics.functional.classification.confusion_matrix import (
     _multilabel_confusion_matrix_format,
     _multilabel_confusion_matrix_tensor_validation,
 )
+from torchmetrics.utilities.data import _cumsum
 
 
 def _rank_data(x: Tensor) -> Tensor:
@@ -28,7 +29,7 @@ def _rank_data(x: Tensor) -> Tensor:
     # torch.unique does not support input that requires grad
     with torch.no_grad():
         _, inverse, counts = torch.unique(x, sorted=True, return_inverse=True, return_counts=True)
-    ranks = counts.cumsum(dim=0)
+    ranks = _cumsum(counts, dim=0)
     return ranks[inverse]
 
 
@@ -61,8 +62,10 @@ def multilabel_coverage_error(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    """Computes multilabel coverage error [1]. The score measure how far we need to go through the ranked scores to
-    cover all true labels. The best value is equal to the average number of labels in the target tensor per sample.
+    """Compute multilabel coverage error [1].
+
+    The score measure how far we need to go through the ranked scores to cover all true labels. The best value is equal
+    to the average number of labels in the target tensor per sample.
 
     Accepts the following input tensors:
 
@@ -131,9 +134,10 @@ def multilabel_ranking_average_precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    """Computes label ranking average precision score for multilabel data [1]. The score is the average over each
-    ground truth label assigned to each sample of the ratio of true vs. total labels with lower score. Best score
-    is 1.
+    """Compute label ranking average precision score for multilabel data [1].
+
+    The score is the average over each ground truth label assigned to each sample of the ratio of true vs. total labels
+    with lower score. Best score is 1.
 
     Accepts the following input tensors:
 
@@ -213,9 +217,10 @@ def multilabel_ranking_loss(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    """Computes the label ranking loss for multilabel data [1]. The score is corresponds to the average number of
-    label pairs that are incorrectly ordered given some predictions weighted by the size of the label set and the
-    number of labels not in the label set. The best score is 0.
+    """Compute the label ranking loss for multilabel data [1].
+
+    The score is corresponds to the average number of label pairs that are incorrectly ordered given some predictions
+    weighted by the size of the label set and the number of labels not in the label set. The best score is 0.
 
     Accepts the following input tensors:
 
