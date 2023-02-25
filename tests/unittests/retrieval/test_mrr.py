@@ -55,6 +55,8 @@ def _reciprocal_rank(target: np.ndarray, preds: np.ndarray):
 
 
 class TestMRR(RetrievalMetricTester):
+    """Test class for `RetrievalMRR` metric."""
+
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize("ignore_index", [None, 1])  # avoid setting 0, otherwise test with all 0 targets will fail

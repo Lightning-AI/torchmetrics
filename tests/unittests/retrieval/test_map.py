@@ -46,6 +46,8 @@ def _average_precision_at_k(target: np.ndarray, preds: np.ndarray, top_k: Option
 
 
 class TestMAP(RetrievalMetricTester):
+    """Test class for `RetrievalMAP` metric."""
+
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize("ignore_index", [None, 1])  # avoid setting 0, otherwise test with all 0 targets will fail

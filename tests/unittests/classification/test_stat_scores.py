@@ -63,6 +63,8 @@ def _sklearn_stat_scores_binary(preds, target, ignore_index, multidim_average):
 
 @pytest.mark.parametrize("input", _binary_cases)
 class TestBinaryStatScores(MetricTester):
+    """Test class for `BinaryStatScores` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("ddp", [False, True])
@@ -206,6 +208,8 @@ def _sklearn_stat_scores_multiclass(preds, target, ignore_index, multidim_averag
 
 @pytest.mark.parametrize("input", _multiclass_cases)
 class TestMulticlassStatScores(MetricTester):
+    """Test class for `MulticlassStatScores` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", None])
@@ -397,6 +401,8 @@ def _sklearn_stat_scores_multilabel(preds, target, ignore_index, multidim_averag
 
 @pytest.mark.parametrize("input", _multilabel_cases)
 class TestMultilabelStatScores(MetricTester):
+    """Test class for `MultilabelStatScores` metric."""
+
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])

@@ -70,6 +70,8 @@ def average_metric(preds, target, metric_func):
     ],
 )
 class TestSISNR(MetricTester):
+    """Test class for `ScaleInvariantSignalNoiseRatio` metric."""
+
     atol = 1e-2
 
     @pytest.mark.parametrize("ddp", [True, False])

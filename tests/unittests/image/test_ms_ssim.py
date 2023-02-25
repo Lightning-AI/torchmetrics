@@ -49,6 +49,8 @@ def pytorch_ms_ssim(preds, target, data_range, kernel_size):
     [(i.preds, i.target) for i in _inputs],
 )
 class TestMultiScaleStructuralSimilarityIndexMeasure(MetricTester):
+    """Test class for `MultiScaleStructuralSimilarityIndexMeasure` metric."""
+
     atol = 6e-3
 
     # in the pytorch-msssim package, sigma is hardcoded to 1.5. We can thus only test this value, which corresponds
