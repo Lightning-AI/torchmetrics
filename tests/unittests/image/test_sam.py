@@ -66,6 +66,8 @@ def _baseline_sam(
     [(i.preds, i.target) for i in _inputs],
 )
 class TestSpectralAngleMapper(MetricTester):
+    """Test class for `SpectralAngleMapper` metric."""
+
     @pytest.mark.parametrize("ddp", [True, False])
     def test_sam(self, reduction, preds, target, ddp):
         self.run_class_metric_test(

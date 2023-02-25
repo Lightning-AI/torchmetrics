@@ -34,6 +34,8 @@ class RandomDictStringDataset(Dataset):
 
 
 class RandomDataset(Dataset):
+    """Random dataset for testing PL Module."""
+
     def __init__(self, size, length):
         self.len = length
         self.data = torch.randn(length, size)
@@ -48,22 +50,23 @@ class RandomDataset(Dataset):
 
 
 class BoringModel(LightningModule):
+    """Testing PL Module.
+
+    Use as follows:
+    - subclass
+    - modify the behavior for what you want
+
+    class TestModel(BaseTestModel):
+        def training_step(...):
+            # do your own thing
+
+    or:
+
+    model = BaseTestModel()
+    model.training_epoch_end = None
+    """
+
     def __init__(self):
-        """Testing PL Module.
-
-        Use as follows:
-        - subclass
-        - modify the behavior for what you want
-
-        class TestModel(BaseTestModel):
-            def training_step(...):
-                # do your own thing
-
-        or:
-
-        model = BaseTestModel()
-        model.training_epoch_end = None
-        """
         super().__init__()
         self.layer = torch.nn.Linear(32, 2)
 

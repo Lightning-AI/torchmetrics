@@ -77,6 +77,8 @@ original_impl_compute_permutation = partial(sdr_original_batch)
     ],
 )
 class TestSDR(MetricTester):
+    """Test class for `SingalDistortionRatio` metric."""
+
     atol = 1e-2
 
     @pytest.mark.parametrize("ddp", [True, False])

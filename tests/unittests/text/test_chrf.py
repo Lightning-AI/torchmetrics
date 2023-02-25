@@ -48,6 +48,8 @@ def sacrebleu_chrf_fn(
 )
 @pytest.mark.skipif(not _SACREBLEU_AVAILABLE, reason="test requires sacrebleu")
 class TestCHRFScore(TextTester):
+    """Test class for `CHRFScore` metric."""
+
     @pytest.mark.parametrize("ddp", [False, True])
     def test_chrf_score_class(self, ddp, preds, targets, char_order, word_order, lowercase, whitespace):
         metric_args = {

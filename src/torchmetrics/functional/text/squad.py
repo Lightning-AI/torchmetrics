@@ -87,7 +87,7 @@ def _metric_max_over_ground_truths(
     metric_fn: Callable[[str, str], Tensor], prediction: str, ground_truths: List[str]
 ) -> Tensor:
     """Calculate maximum score for a predicted answer with all reference answers."""
-    return max(metric_fn(prediction, truth) for truth in ground_truths)
+    return max(metric_fn(prediction, truth) for truth in ground_truths)  # type: ignore[type-var]
 
 
 def _squad_input_check(
@@ -101,16 +101,16 @@ def _squad_input_check(
         targets = [targets]
 
     for pred in preds:
-        keys = pred.keys()
-        if "prediction_text" not in keys or "id" not in keys:
+        pred_keys = pred.keys()
+        if "prediction_text" not in pred_keys or "id" not in pred_keys:
             raise KeyError(
                 "Expected keys in a single prediction are 'prediction_text' and 'id'."
                 "Please make sure that 'prediction_text' maps to the answer string and 'id' maps to the key string."
             )
 
     for target in targets:
-        keys = target.keys()
-        if "answers" not in keys or "id" not in keys:
+        target_keys = target.keys()
+        if "answers" not in target_keys or "id" not in target_keys:
             raise KeyError(
                 "Expected keys in a single target are 'answers' and 'id'."
                 "Please make sure that 'answers' maps to a `SQuAD` format dictionary and 'id' maps to the key string.\n"
@@ -118,7 +118,7 @@ def _squad_input_check(
                 f"{SQuAD_FORMAT}"
             )
 
-        answers: Dict[str, Union[List[str], List[int]]] = target["answers"]
+        answers: Dict[str, Union[List[str], List[int]]] = target["answers"]  # type: ignore[assignment]
         if "text" not in answers.keys():
             raise KeyError(
                 "Expected keys in a 'answers' are 'text'."

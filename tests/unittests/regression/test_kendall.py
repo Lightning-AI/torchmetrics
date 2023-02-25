@@ -83,6 +83,8 @@ def _scipy_kendall(preds, target, alternative, variant):
 )
 @pytest.mark.parametrize("variant", ["b", "c"])
 class TestKendallRankCorrCoef(MetricTester):
+    """Test class for `KendallRankCorrCoef` metric."""
+
     @pytest.mark.parametrize("ddp", [False, True])
     def test_kendall_rank_corrcoef(self, preds, target, alternative, variant, ddp):
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1

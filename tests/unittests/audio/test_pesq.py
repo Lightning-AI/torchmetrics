@@ -74,6 +74,8 @@ pesq_original_batch_16k_wb = partial(pesq_original_batch, fs=16000, mode="wb")
     ],
 )
 class TestPESQ(MetricTester):
+    """Test class for `PerceptualEvaluationSpeechQuality` metric."""
+
     atol = 1e-2
 
     @pytest.mark.parametrize("num_processes", [1, 2])

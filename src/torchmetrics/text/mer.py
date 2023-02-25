@@ -61,7 +61,7 @@ class MatchErrorRate(Metric):
     higher_is_better: bool = False
     full_state_update: bool = False
 
-    error: Tensor
+    errors: Tensor
     total: Tensor
 
     def __init__(
@@ -78,10 +78,7 @@ class MatchErrorRate(Metric):
         target: Union[str, List[str]],
     ) -> None:
         """Update state with predictions and targets."""
-        errors, total = _mer_update(
-            preds,
-            target,
-        )
+        errors, total = _mer_update(preds, target)
         self.errors += errors
         self.total += total
 

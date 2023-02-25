@@ -50,6 +50,8 @@ def _sklearn_confusion_matrix_binary(preds, target, normalize=None, ignore_index
 
 @pytest.mark.parametrize("input", _binary_cases)
 class TestBinaryConfusionMatrix(MetricTester):
+    """Test class for `BinaryConfusionMatrix` metric."""
+
     @pytest.mark.parametrize("normalize", ["true", "pred", "all", None])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
@@ -140,6 +142,8 @@ def _sklearn_confusion_matrix_multiclass(preds, target, normalize=None, ignore_i
 
 @pytest.mark.parametrize("input", _multiclass_cases)
 class TestMulticlassConfusionMatrix(MetricTester):
+    """Test class for `MultiClassConfusionMatrix` metric."""
+
     @pytest.mark.parametrize("normalize", ["true", "pred", "all", None])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
@@ -250,6 +254,8 @@ def _sklearn_confusion_matrix_multilabel(preds, target, normalize=None, ignore_i
 
 @pytest.mark.parametrize("input", _multilabel_cases)
 class TestMultilabelConfusionMatrix(MetricTester):
+    """Test class for `MultilabelConfusionMatrix` metric."""
+
     @pytest.mark.parametrize("normalize", ["true", "pred", "all", None])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])

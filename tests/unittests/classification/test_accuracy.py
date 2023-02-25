@@ -63,6 +63,8 @@ def _sklearn_accuracy_binary(preds, target, ignore_index, multidim_average):
 
 @pytest.mark.parametrize("input", _binary_cases)
 class TestBinaryAccuracy(MetricTester):
+    """Test class for `BinaryAccuracy` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("ddp", [False, True])
@@ -193,6 +195,8 @@ def _sklearn_accuracy_multiclass(preds, target, ignore_index, multidim_average, 
 
 @pytest.mark.parametrize("input", _multiclass_cases)
 class TestMulticlassAccuracy(MetricTester):
+    """Test class for `MulticlassAccuracy` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
@@ -383,6 +387,8 @@ def _sklearn_accuracy_multilabel(preds, target, ignore_index, multidim_average, 
 
 @pytest.mark.parametrize("input", _multilabel_cases)
 class TestMultilabelAccuracy(MetricTester):
+    """Test class for `MultilabelAccuracy` metric."""
+
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
