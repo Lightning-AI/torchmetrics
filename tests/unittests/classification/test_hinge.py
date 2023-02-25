@@ -129,8 +129,8 @@ def _sklearn_multiclass_hinge_loss(preds, target, multiclass_mode, ignore_index)
         for i in range(result.shape[0]):
             result[i] = sk_hinge(y_true=target[:, i], pred_decision=preds[:, i])
         return result
-    else:
-        return sk_hinge(target, preds)
+
+    return sk_hinge(target, preds)
 
 
 @pytest.mark.parametrize(

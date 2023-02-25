@@ -48,13 +48,12 @@ def compute_area(input: List[Any], iou_type: str = "bbox") -> Tensor:
 
     if iou_type == "bbox":
         return box_area(torch.stack(input))
-    elif iou_type == "segm":
+    if iou_type == "segm":
         input = [{"size": i[0], "counts": i[1]} for i in input]
         area = torch.tensor(mask_utils.area(input).astype("float"))
-
         return area
-    else:
-        raise Exception(f"IOU type {iou_type} is not supported")
+
+    raise Exception(f"IOU type {iou_type} is not supported")
 
 
 def compute_iou(
@@ -65,10 +64,9 @@ def compute_iou(
     """Compute IOU between detections and ground-truth using the specified iou_type."""
     if iou_type == "bbox":
         return box_iou(torch.stack(det), torch.stack(gt))
-    elif iou_type == "segm":
+    if iou_type == "segm":
         return _segm_iou(det, gt)
-    else:
-        raise Exception(f"IOU type {iou_type} is not supported")
+    raise Exception(f"IOU type {iou_type} is not supported")
 
 
 class BaseMetricResults(dict):
@@ -441,16 +439,13 @@ class MeanAveragePrecision(Metric):
             if boxes.numel() > 0:
                 boxes = box_convert(boxes, in_fmt=self.box_format, out_fmt="xyxy")
             return boxes
-        elif self.iou_type == "segm":
+        if self.iou_type == "segm":
             masks = []
-
             for i in item["masks"].cpu().numpy():
                 rle = mask_utils.encode(np.asfortranarray(i))
                 masks.append((tuple(rle["size"]), rle["counts"]))
-
             return tuple(masks)
-        else:
-            raise Exception(f"IOU type {self.iou_type} is not supported")
+        raise Exception(f"IOU type {self.iou_type} is not supported")
 
     def _get_classes(self) -> List:
         """Return a list of unique classes found in ground truth and detection data."""
@@ -495,8 +490,7 @@ class MeanAveragePrecision(Metric):
         if len(det) > max_det:
             det = det[:max_det]
 
-        ious = compute_iou(det, gt, self.iou_type).to(self.device)
-        return ious
+        return compute_iou(det, gt, self.iou_type).to(self.device)
 
     def __evaluate_image_gt_no_preds(
         self, gt: Tensor, gt_label_mask: Tensor, area_range: Tuple[int, int], nb_iou_thrs: int
@@ -725,8 +719,7 @@ class MeanAveragePrecision(Metric):
             else:
                 prec = prec[:, :, area_inds, mdet_inds]
 
-        mean_prec = torch.tensor([-1.0]) if len(prec[prec > -1]) == 0 else torch.mean(prec[prec > -1])
-        return mean_prec
+        return torch.tensor([-1.0]) if len(prec[prec > -1]) == 0 else torch.mean(prec[prec > -1])
 
     def _calculate(self, class_ids: List) -> Tuple[MAPMetricResults, MARMetricResults]:
         """Calculate the precision and recall for all supplied classes to calculate mAP/mAR.

@@ -92,6 +92,7 @@ def _explained_variance_compute(
     if multioutput == "variance_weighted":
         denom_sum = torch.sum(denominator)
         return torch.sum(denominator / denom_sum * output_scores)
+    return None
 
 
 def explained_variance(

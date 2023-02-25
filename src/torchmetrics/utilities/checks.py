@@ -615,11 +615,11 @@ def _allclose_recursive(res1: Any, res2: Any, atol: float = 1e-6) -> bool:
     # single output compare
     if isinstance(res1, Tensor):
         return torch.allclose(res1, res2, atol=atol)
-    elif isinstance(res1, str):
+    if isinstance(res1, str):
         return res1 == res2
-    elif isinstance(res1, Sequence):
+    if isinstance(res1, Sequence):
         return all(_allclose_recursive(r1, r2) for r1, r2 in zip(res1, res2))
-    elif isinstance(res1, Mapping):
+    if isinstance(res1, Mapping):
         return all(_allclose_recursive(res1[k], res2[k]) for k in res1)
     return res1 == res2
 

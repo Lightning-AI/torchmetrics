@@ -29,6 +29,7 @@ def rank_zero_only(fn: Callable) -> Callable:
     def wrapped_fn(*args: Any, **kwargs: Any) -> Any:
         if rank_zero_only.rank == 0:
             return fn(*args, **kwargs)
+        return None
 
     return wrapped_fn
 
