@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple
+from typing import Tuple, Union
 
 import torch
 from torch import Tensor
@@ -20,7 +20,7 @@ from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.checks import _check_same_shape
 
 
-def _r2_score_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+def _r2_score_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor, Tensor, int]:
     """Update and returns variables required to compute R2 score.
 
     Check for same shape and 1D/2D input tensors.
@@ -49,7 +49,7 @@ def _r2_score_compute(
     sum_squared_obs: Tensor,
     sum_obs: Tensor,
     rss: Tensor,
-    n_obs: Tensor,
+    n_obs: Union[int, Tensor],
     adjusted: int = 0,
     multioutput: str = "uniform_average",
 ) -> Tensor:
