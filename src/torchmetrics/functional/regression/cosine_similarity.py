@@ -62,7 +62,7 @@ def _cosine_similarity_compute(preds: Tensor, target: Tensor, reduction: Optiona
         "none": lambda x: x,
         None: lambda x: x,
     }
-    return reduction_mapping[reduction](similarity)
+    return reduction_mapping[reduction](similarity)  # type: ignore[operator]
 
 
 def cosine_similarity(preds: Tensor, target: Tensor, reduction: Optional[str] = "sum") -> Tensor:
