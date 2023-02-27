@@ -50,8 +50,7 @@ def poly_kernel(f1: Tensor, f2: Tensor, degree: int = 3, gamma: Optional[float] 
     """Adapted from `KID Score`_."""
     if gamma is None:
         gamma = 1.0 / f1.shape[1]
-    kernel = (f1 @ f2.T * gamma + coef) ** degree
-    return kernel
+    return (f1 @ f2.T * gamma + coef) ** degree
 
 
 def poly_mmd(
@@ -65,8 +64,7 @@ def poly_mmd(
 
 
 class KernelInceptionDistance(Metric):
-    r"""Calculate Kernel Inception Distance (KID) which is used to access the quality of generated images. Given
-    by.
+    r"""Calculate Kernel Inception Distance (KID) which is used to access the quality of generated images.
 
     .. math::
         KID = MMD(f_{real}, f_{fake})^2

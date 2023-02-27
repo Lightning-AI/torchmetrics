@@ -11,12 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import sys
 from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Union
 
+import numpy as np
 import torch
 from torch import Tensor
 
+from torchmetrics.utilities.exceptions import TorchMetricsUserWarning
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_12, _XLA_AVAILABLE
+from torchmetrics.utilities.prints import rank_zero_warn
 
 METRIC_EPS = 1e-6
 
@@ -204,7 +208,7 @@ def _squeeze_if_scalar(data: Any) -> Any:
 
 
 def _bincount(x: Tensor, minlength: Optional[int] = None) -> Tensor:
-    """Custom bincount implementation.
+    """Implement custom bincount.
 
     PyTorch currently does not support ``torch.bincount`` for:
 
@@ -236,6 +240,18 @@ def _bincount(x: Tensor, minlength: Optional[int] = None) -> Tensor:
     return torch.bincount(x, minlength=minlength)
 
 
+def _cumsum(x: Tensor, dim: Optional[int] = 0, dtype: Optional[torch.dtype] = None) -> Tensor:
+    if torch.are_deterministic_algorithms_enabled() and x.is_cuda and x.is_floating_point() and sys.platform != "win32":
+        rank_zero_warn(
+            "You are trying to use a metric in deterministic mode on GPU that uses `torch.cumsum` which is currently"
+            "not supported. Instead the tensor will be casted to CPU, compute the `cumsum` and then casted back to GPU"
+            "Expect some slowdowns.",
+            TorchMetricsUserWarning,
+        )
+        return x.cpu().cumsum(dim=dim, dtype=dtype).cuda()
+    return torch.cumsum(x, dim=dim, dtype=dtype)
+
+
 def _flexible_bincount(x: Tensor) -> Tensor:
     """Similar to `_bincount`, but works also with tensor that do not contain continuous values.
 
@@ -249,13 +265,13 @@ def _flexible_bincount(x: Tensor) -> Tensor:
     x = x - x.min()
     unique_x = torch.unique(x)
 
-    output = _bincount(x, minlength=torch.max(unique_x) + 1)
+    output = _bincount(x, minlength=torch.max(unique_x) + 1)  # type: ignore[arg-type]
     # remove zeros from output tensor
     return output[unique_x]
 
 
 def allclose(tensor1: Tensor, tensor2: Tensor) -> bool:
-    """Wrapper of torch.allclose that is robust towards dtype difference."""
+    """Wrap torch.allclose to be robust towards dtype difference."""
     if tensor1.dtype != tensor2.dtype:
         tensor2 = tensor2.to(dtype=tensor1.dtype)
     return torch.allclose(tensor1, tensor2)

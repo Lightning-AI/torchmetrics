@@ -116,6 +116,8 @@ si_sdr_pit_scipy = partial(
     ],
 )
 class TestPIT(MetricTester):
+    """Test class for `PermutationInvariantTraining` metric."""
+
     atol = 1e-2
 
     @pytest.mark.parametrize("ddp", [True, False])

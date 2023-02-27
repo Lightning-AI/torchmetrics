@@ -26,7 +26,8 @@ from torchmetrics.utilities.prints import rank_zero_warn
 def _confusion_matrix_reduce(
     confmat: Tensor, normalize: Optional[Literal["true", "pred", "all", "none"]] = None
 ) -> Tensor:
-    """Reduce an un-normalized confusion matrix
+    """Reduce an un-normalized confusion matrix.
+
     Args:
         confmat: un-normalized confusion matrix
         normalize: normalization method.
@@ -640,3 +641,4 @@ def confusion_matrix(
     if task == ClassificationTask.MULTILABEL:
         assert isinstance(num_labels, int)
         return multilabel_confusion_matrix(preds, target, num_labels, threshold, normalize, ignore_index, validate_args)
+    return None

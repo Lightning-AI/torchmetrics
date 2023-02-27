@@ -88,11 +88,11 @@ def _get_model_and_processor(
         model = _CLIPModel.from_pretrained(model_name_or_path)
         processor = _CLIPProcessor.from_pretrained(model_name_or_path)
         return model, processor
-    else:
-        raise ModuleNotFoundError(
-            "`clip_score` metric requires `transformers` package be installed."
-            " Either install with `pip install transformers>=4.0` or `pip install torchmetrics[multimodal]`."
-        )
+
+    raise ModuleNotFoundError(
+        "`clip_score` metric requires `transformers` package be installed."
+        " Either install with `pip install transformers>=4.0` or `pip install torchmetrics[multimodal]`."
+    )
 
 
 def clip_score(
@@ -105,7 +105,7 @@ def clip_score(
         "openai/clip-vit-large-patch14",
     ] = "openai/clip-vit-large-patch14",
 ) -> Tensor:
-    r"""Calculates `CLIP Score`_ which is a text-to-image similarity metric.
+    r"""Calculate `CLIP Score`_ which is a text-to-image similarity metric.
 
     CLIP is a reference free metric that can be used to evaluate the correlation between a generated caption for an
     image and the actual content of the image. It has been found to be highly correlated with human judgement. The

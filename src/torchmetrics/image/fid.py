@@ -39,7 +39,7 @@ if _SCIPY_AVAILABLE:
 
 
 class NoTrainInceptionV3(_FeatureExtractorInceptionV3):
-    """Define module that nevers leaves evaluation mode."""
+    """Module that nevers leaves evaluation mode."""
 
     def __init__(
         self,
@@ -52,7 +52,7 @@ class NoTrainInceptionV3(_FeatureExtractorInceptionV3):
         self.eval()
 
     def train(self, mode: bool) -> "NoTrainInceptionV3":
-        """the inception network should not be able to be switched away from evaluation mode."""
+        """Force network to always be in evaluation mode."""
         return super().train(False)
 
     def forward(self, x: Tensor) -> Tensor:
@@ -69,7 +69,7 @@ class MatrixSquareRoot(Function):
 
     @staticmethod
     def forward(ctx: Any, input_data: Tensor) -> Tensor:
-        """Implements the forward pass for the matrix square root."""
+        """Forward pass for the matrix square root."""
         # TODO: update whenever pytorch gets an matrix square root function
         # Issue: https://github.com/pytorch/pytorch/issues/9983
         m = input_data.detach().cpu().numpy().astype(np.float_)
@@ -80,7 +80,7 @@ class MatrixSquareRoot(Function):
 
     @staticmethod
     def backward(ctx: Any, grad_output: Tensor) -> Tensor:
-        """Implements the backward pass for matrix square root."""
+        """Backward pass for matrix square root."""
         grad_input = None
         if ctx.needs_input_grad[0]:
             (sqrtm,) = ctx.saved_tensors
@@ -101,7 +101,7 @@ sqrtm = MatrixSquareRoot.apply
 
 
 def _compute_fid(mu1: Tensor, sigma1: Tensor, mu2: Tensor, sigma2: Tensor, eps: float = 1e-6) -> Tensor:
-    r"""Adjusted version of `Fid Score`_.
+    r"""Compute adjusted version of `Fid Score`_.
 
     The Frechet Inception Distance between two multivariate Gaussians X_x ~ N(mu_1, sigm_1)
     and X_y ~ N(mu_2, sigm_2) is d^2 = ||mu_1 - mu_2||^2 + Tr(sigm_1 + sigm_2 - 2*sqrt(sigm_1*sigm_2)).
@@ -130,8 +130,7 @@ def _compute_fid(mu1: Tensor, sigma1: Tensor, mu2: Tensor, sigma2: Tensor, eps: 
 
 
 class FrechetInceptionDistance(Metric):
-    r"""Calculate Fréchet inception distance (FID_) which is used to access the quality of generated images. Given
-    by.
+    r"""Calculate Fréchet inception distance (FID_) which is used to access the quality of generated images.
 
     .. math::
         FID = |\mu - \mu_w| + tr(\Sigma + \Sigma_w - 2(\Sigma \Sigma_w)^{\frac{1}{2}})

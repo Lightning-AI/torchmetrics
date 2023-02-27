@@ -198,7 +198,7 @@ class RetrievalPrecisionRecallCurve(Metric):
             if not mini_target.sum():
                 if self.empty_target_action == "error":
                     raise ValueError("`compute` method was provided with a query with no positive target.")
-                elif self.empty_target_action == "pos":
+                if self.empty_target_action == "pos":
                     recalls.append(torch.ones(max_k, device=preds.device))
                     precisions.append(torch.ones(max_k, device=preds.device))
                 elif self.empty_target_action == "neg":

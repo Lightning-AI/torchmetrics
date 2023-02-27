@@ -131,3 +131,4 @@
 .. _Panoptic Quality: https://arxiv.org/abs/1801.00868
 .. _torchmetrics mAP example: https://github.com/Lightning-AI/metrics/blob/master/examples/detection_map.py
 .. _Peak Signal to Noise Ratio With Blocked Effect: https://ieeexplore.ieee.org/abstract/document/5535179
+.. _Minkowski Distance: https://en.wikipedia.org/wiki/Minkowski_distance

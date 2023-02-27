@@ -17,7 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added support for plotting of metrics through `.plot()` method (
     [#1328](https://github.com/Lightning-AI/metrics/pull/1328),
     [#1481](https://github.com/Lightning-AI/metrics/pull/1481),
-    [#1480](https://github.com/Lightning-AI/metrics/pull/1480)
+    [#1480](https://github.com/Lightning-AI/metrics/pull/1480),
+    [#1490](https://github.com/Lightning-AI/metrics/pull/1490),
 )
 
 
@@ -25,6 +26,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 - Added `classes` to output from `MAP` metric ([#1419](https://github.com/Lightning-AI/metrics/pull/1419))
+
+
+- Added `MinkowskiDistance` to regression package ([#1362](https://github.com/Lightning-AI/metrics/pull/1362))
+
+
+- Added `pairwise_minkowski_distance` to pairwise package ([#1362](https://github.com/Lightning-AI/metrics/pull/1362))
+
+
+- Added new detection metric `PanopticQuality` (
+    [#929](https://github.com/PyTorchLightning/metrics/pull/929),
+    [#1527](https://github.com/PyTorchLightning/metrics/pull/1527),
+)
 
 
 - Added `PSNRB` metric ([#1421](https://github.com/Lightning-AI/metrics/pull/1421))
@@ -41,6 +54,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add parameter `top_k` to `RetrievalMAP` ([#1501](https://github.com/Lightning-AI/metrics/pull/1501))
 
+
+- Added support for deterministic evaluation on GPU for metrics that uses `torch.cumsum` operator ([#1499](https://github.com/Lightning-AI/metrics/pull/1499))
 
 
 ### Changed

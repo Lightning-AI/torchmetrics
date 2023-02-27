@@ -54,12 +54,10 @@ def _baseline_sam(
     sam_score = torch.clamp(similarity, -1, 1).acos()
     # reduction
     if reduction == "sum":
-        to_return = torch.sum(sam_score)
-    elif reduction == "elementwise_mean":
-        to_return = torch.mean(sam_score)
-    else:
-        to_return = sam_score
-    return to_return
+        return torch.sum(sam_score)
+    if reduction == "elementwise_mean":
+        return torch.mean(sam_score)
+    return sam_score
 
 
 @pytest.mark.parametrize("reduction", ["sum", "elementwise_mean"])
@@ -68,6 +66,8 @@ def _baseline_sam(
     [(i.preds, i.target) for i in _inputs],
 )
 class TestSpectralAngleMapper(MetricTester):
+    """Test class for `SpectralAngleMapper` metric."""
+
     @pytest.mark.parametrize("ddp", [True, False])
     def test_sam(self, reduction, preds, target, ddp):
         self.run_class_metric_test(

@@ -217,8 +217,10 @@ class StructuralSimilarityIndexMeasure(Metric):
 
 
 class MultiScaleStructuralSimilarityIndexMeasure(Metric):
-    """Compute `MultiScaleSSIM`_, Multi-scale Structural Similarity Index Measure, which is a generalization of
-    Structural Similarity Index Measure by incorporating image details at different resolution scores.
+    """Compute `MultiScaleSSIM`_, Multi-scale Structural Similarity Index Measure.
+
+    This metric is is a generalization of Structural Similarity Index Measure by incorporating image details at
+    different resolution scores.
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 
@@ -360,10 +362,9 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         """Compute MS-SSIM over state."""
         if self.reduction in ("none", None):
             return dim_zero_cat(self.similarity)
-        elif self.reduction == "sum":
+        if self.reduction == "sum":
             return self.similarity
-        else:
-            return self.similarity / self.total
+        return self.similarity / self.total
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None

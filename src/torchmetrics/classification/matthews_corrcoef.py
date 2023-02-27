@@ -23,8 +23,9 @@ from torchmetrics.utilities.enums import ClassificationTask
 
 
 class BinaryMatthewsCorrCoef(BinaryConfusionMatrix):
-    r"""Calculate `Matthews correlation coefficient`_ for binary tasks. This metric measures the general
-    correlation or quality of a classification.
+    r"""Calculate `Matthews correlation coefficient`_ for binary tasks.
+
+    This metric measures the general correlation or quality of a classification.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -85,8 +86,9 @@ class BinaryMatthewsCorrCoef(BinaryConfusionMatrix):
 
 
 class MulticlassMatthewsCorrCoef(MulticlassConfusionMatrix):
-    r"""Calculate `Matthews correlation coefficient`_ for multiclass tasks. This metric measures the general
-    correlation or quality of a classification.
+    r"""Calculate `Matthews correlation coefficient`_ for multiclass tasks.
+
+    This metric measures the general correlation or quality of a classification.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -150,8 +152,9 @@ class MulticlassMatthewsCorrCoef(MulticlassConfusionMatrix):
 
 
 class MultilabelMatthewsCorrCoef(MultilabelConfusionMatrix):
-    r"""Calculate `Matthews correlation coefficient`_ for multilabel tasks. This metric measures the general
-    correlation or quality of a classification.
+    r"""Calculate `Matthews correlation coefficient`_ for multilabel tasks.
+
+    This metric measures the general correlation or quality of a classification.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -214,8 +217,9 @@ class MultilabelMatthewsCorrCoef(MultilabelConfusionMatrix):
 
 
 class MatthewsCorrCoef:
-    r"""Calculate `Matthews correlation coefficient`_ . This metric measures the general correlation or quality of
-    a classification.
+    r"""Calculate `Matthews correlation coefficient`_ .
+
+    This metric measures the general correlation or quality of a classification.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
@@ -252,3 +256,4 @@ class MatthewsCorrCoef:
         if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelMatthewsCorrCoef(num_labels, threshold, **kwargs)
+        return None
