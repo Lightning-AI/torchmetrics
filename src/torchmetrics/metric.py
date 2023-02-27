@@ -81,9 +81,9 @@ class Metric(Module, ABC):
     higher_is_better: Optional[bool] = None
     full_state_update: Optional[bool] = None
 
-    _plot_lower_bound: Optional[float] = (None,)
-    _plot_upper_bound: Optional[float] = (None,)
-    _plot_legend_name: Optional[str] = (None,)
+    _plot_lower_bound: Optional[float] = None
+    _plot_upper_bound: Optional[float] = None
+    _plot_legend_name: Optional[str] = None
 
     def __init__(
         self,
