@@ -381,3 +381,4 @@ def binary_fairness(
             **_compute_binary_demographic_parity(**transformed_group_stats),
             **_compute_binary_equal_opportunity(**transformed_group_stats),
         }
+    return None

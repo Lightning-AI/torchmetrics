@@ -265,3 +265,4 @@ class BinaryFairness(_AbstractGroupStatScores):
                 **_compute_binary_demographic_parity(self.tp, self.fp, self.tn, self.fn),
                 **_compute_binary_equal_opportunity(self.tp, self.fp, self.tn, self.fn),
             }
+        return None
