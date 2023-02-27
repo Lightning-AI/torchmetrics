@@ -569,11 +569,11 @@ class Metric(Module, ABC):
         This method will automatically synchronize state variables when running in distributed backend.
         """
 
-    # def plot(self, *_: Any, **__: Any) -> Any:
-    #     """Override this method plot the metric value."""
-    #     raise NotImplementedError
+    def plot(self, *_: Any, **__: Any) -> Any:
+        """Override this method plot the metric value."""
+        raise NotImplementedError
 
-    def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
+    def _plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
         Args:

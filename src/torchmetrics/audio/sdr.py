@@ -156,7 +156,7 @@ class SignalDistortionRatio(Metric):
             ...     values.append(metric(torch.rand(8000), torch.rand(8000)))
             >>> fig_, ax_ = metric.plot(values)
         """
-        return super().plot(val, ax)
+        return super()._plot(val, ax)
 
 
 class ScaleInvariantSignalDistortionRatio(Metric):
@@ -263,4 +263,4 @@ class ScaleInvariantSignalDistortionRatio(Metric):
             ...     values.append(metric(preds, target))
             >>> fig_, ax_ = metric.plot(values)
         """
-        return super().plot(val, ax)
+        return super()._plot(val, ax)

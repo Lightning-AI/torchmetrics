@@ -150,7 +150,7 @@ class BinaryAUROC(BinaryPrecisionRecallCurve):
             >>> metric.update(preds[:, 1], target)
             >>> fig_, ax_ = metric.plot()
         """
-        return super().plot(val, ax)
+        return super()._plot(val, ax)
 
 
 class MulticlassAUROC(MulticlassPrecisionRecallCurve):
@@ -283,7 +283,7 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
             >>> metric.update(randn(20, 3), randint(3, (20,)))
             >>> fig_, ax_ = metric.plot()
         """
-        return super().plot(val, ax)
+        return super()._plot(val, ax)
 
 
 class MultilabelAUROC(MultilabelPrecisionRecallCurve):
@@ -425,7 +425,7 @@ class MultilabelAUROC(MultilabelPrecisionRecallCurve):
             >>> metric.update(preds, target)
             >>> fig_, ax_ = metric.plot()
         """
-        return super().plot(val, ax)
+        return super()._plot(val, ax)
 
 
 class AUROC:
