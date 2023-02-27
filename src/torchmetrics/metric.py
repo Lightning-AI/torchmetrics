@@ -252,7 +252,7 @@ class Metric(Module, ABC):
         return self._forward_cache
 
     def _forward_full_state_update(self, *args: Any, **kwargs: Any) -> Any:
-        """forward computation using two calls to `update`.
+        """Forward computation using two calls to `update`.
 
         Doing this secures that metrics that need access to the full metric state during `update` works as expected.
         This is the most safe method to use for any metric but also the slower version of the two forward
@@ -296,7 +296,7 @@ class Metric(Module, ABC):
         return batch_val
 
     def _forward_reduce_state_update(self, *args: Any, **kwargs: Any) -> Any:
-        """forward computation using single call to `update`.
+        """Forward computation using single call to `update`.
 
         This can be done when the global metric state is a sinple reduction of batch states. This can be unsafe for
         certain metric cases but is also the fastest way to both accumulate globally and compute locally.
@@ -1046,9 +1046,7 @@ class CompositionalMetric(Metric):
     def __repr__(self) -> str:
         """Return a representation of the compositional metric, including the two inputs it was formed from."""
         _op_metrics = f"(\n  {self.op.__name__}(\n    {repr(self.metric_a)},\n    {repr(self.metric_b)}\n  )\n)"
-        repr_str = self.__class__.__name__ + _op_metrics
-
-        return repr_str
+        return self.__class__.__name__ + _op_metrics
 
     def _wrap_compute(self, compute: Callable) -> Callable:
         """No wrapping nessesary for compositional metrics."""

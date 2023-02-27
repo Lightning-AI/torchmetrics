@@ -145,7 +145,6 @@ def _eed_function(
 
     for w in range(1, len(ref) + 1):
         for i in range(0, len(hyp) + 1):
-
             if i > 0:
                 next_row[i] = min(
                     next_row[i - 1] + deletion,
@@ -230,8 +229,7 @@ def _preprocess_ja(sentence: str) -> str:
 
     sentence = sentence.rstrip()  # trailing space, tab, newline
     # characters which look identical actually are identical
-    sentence = unicodedata.normalize("NFKC", sentence)
-    return sentence
+    return unicodedata.normalize("NFKC", sentence)
 
 
 def _eed_compute(sentence_level_scores: List[Tensor]) -> Tensor:
@@ -246,8 +244,7 @@ def _eed_compute(sentence_level_scores: List[Tensor]) -> Tensor:
     if len(sentence_level_scores) == 0:
         return tensor(0.0)
 
-    average = sum(sentence_level_scores) / tensor(len(sentence_level_scores))
-    return average
+    return sum(sentence_level_scores) / tensor(len(sentence_level_scores))
 
 
 def _preprocess_sentences(

@@ -25,7 +25,7 @@ from torch import Tensor
 from torchmetrics.utilities.data import select_topk, to_onehot
 from torchmetrics.utilities.enums import DataType
 
-_DOCTEST_DOWNLOAD_TIMEOUT = os.environ.get("DOCTEST_DOWNLOAD_TIMEOUT", 120)
+_DOCTEST_DOWNLOAD_TIMEOUT = int(os.environ.get("DOCTEST_DOWNLOAD_TIMEOUT", 120))
 _SKIP_SLOW_DOCTEST = bool(os.environ.get("SKIP_SLOW_DOCTEST", 0))
 
 
@@ -54,9 +54,7 @@ def _basic_input_validation(
     if target.is_floating_point():
         raise ValueError("The `target` has to be an integer tensor.")
 
-    if ignore_index is None and target.min() < 0:
-        raise ValueError("The `target` has to be a non-negative tensor.")
-    elif ignore_index is not None and ignore_index >= 0 and target.min() < 0:
+    if (ignore_index is None and target.min() < 0) or (ignore_index and ignore_index >= 0 and target.min() < 0):
         raise ValueError("The `target` has to be a non-negative tensor.")
 
     preds_float = preds.is_floating_point()
@@ -431,7 +429,7 @@ def _input_format_classification(
             num_classes = preds.shape[1]
             preds = select_topk(preds, top_k or 1)
         else:
-            num_classes = num_classes if num_classes else max(preds.max(), target.max()) + 1
+            num_classes = num_classes or int(max(preds.max().item(), target.max().item()) + 1)
             preds = to_onehot(preds, max(2, num_classes))
 
         target = to_onehot(target, max(2, num_classes))
@@ -617,11 +615,11 @@ def _allclose_recursive(res1: Any, res2: Any, atol: float = 1e-6) -> bool:
     # single output compare
     if isinstance(res1, Tensor):
         return torch.allclose(res1, res2, atol=atol)
-    elif isinstance(res1, str):
+    if isinstance(res1, str):
         return res1 == res2
-    elif isinstance(res1, Sequence):
+    if isinstance(res1, Sequence):
         return all(_allclose_recursive(r1, r2) for r1, r2 in zip(res1, res2))
-    elif isinstance(res1, Mapping):
+    if isinstance(res1, Mapping):
         return all(_allclose_recursive(res1[k], res2[k]) for k in res1)
     return res1 == res2
 

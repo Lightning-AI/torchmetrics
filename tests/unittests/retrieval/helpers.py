@@ -429,6 +429,8 @@ def _errors_test_functional_metric(
 
 
 class RetrievalMetricTester(MetricTester):
+    """General tester class for retrieval metrics."""
+
     atol: float = 1e-6
 
     def run_class_metric_test(

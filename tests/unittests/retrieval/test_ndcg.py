@@ -49,6 +49,8 @@ def _ndcg_at_k(target: np.ndarray, preds: np.ndarray, top_k: int = None):
 
 
 class TestNDCG(RetrievalMetricTester):
+    """Test class for `RetrievalNormalizedDCG` metric."""
+
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize("ignore_index", [None, 3])  # avoid setting 0, otherwise test with all 0 targets will fail

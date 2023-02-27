@@ -14,8 +14,10 @@
 from typing import Any, Sequence, Union
 
 from torch import Tensor, tensor
+from typing_extensions import Literal
 
 from torchmetrics.functional.regression.explained_variance import (
+    ALLOWED_MULTIOUTPUT,
     _explained_variance_compute,
     _explained_variance_update,
 )
@@ -84,16 +86,16 @@ class ExplainedVariance(Metric):
 
     def __init__(
         self,
-        multioutput: str = "uniform_average",
+        multioutput: Literal["raw_values", "uniform_average", "variance_weighted"] = "uniform_average",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        allowed_multioutput = ("raw_values", "uniform_average", "variance_weighted")
-        if multioutput not in allowed_multioutput:
+
+        if multioutput not in ALLOWED_MULTIOUTPUT:
             raise ValueError(
-                f"Invalid input to argument `multioutput`. Choose one of the following: {allowed_multioutput}"
+                f"Invalid input to argument `multioutput`. Choose one of the following: {ALLOWED_MULTIOUTPUT}"
             )
-        self.multioutput: str = multioutput
+        self.multioutput = multioutput
         self.add_state("sum_error", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("sum_squared_error", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("sum_target", default=tensor(0.0), dist_reduce_fx="sum")

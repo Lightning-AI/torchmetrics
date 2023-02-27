@@ -50,6 +50,8 @@ def _sklearn_avg_precision_binary(preds, target, ignore_index=None):
 
 @pytest.mark.parametrize("input", (_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]))
 class TestBinaryAveragePrecision(MetricTester):
+    """Test class for `BinaryAveragePrecision` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_binary_average_precision(self, input, ddp, ignore_index):
@@ -157,6 +159,8 @@ def _sklearn_avg_precision_multiclass(preds, target, average="macro", ignore_ind
     "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
 )
 class TestMulticlassAveragePrecision(MetricTester):
+    """Test class for `MulticlassAveragePrecision` metric."""
+
     @pytest.mark.parametrize("average", ["macro", "weighted", None])
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])
@@ -267,6 +271,8 @@ def _sklearn_avg_precision_multilabel(preds, target, average="macro", ignore_ind
     "input", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5])
 )
 class TestMultilabelAveragePrecision(MetricTester):
+    """Test class for `MultilabelAveragePrecision` metric."""
+
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])

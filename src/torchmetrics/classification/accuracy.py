@@ -514,3 +514,4 @@ class Accuracy:
                     f"Optional arg `num_labels` must be type `int` when task is {task}. Got {type(num_labels)}"
                 )
             return MultilabelAccuracy(num_labels, threshold, average, **kwargs)
+        return None

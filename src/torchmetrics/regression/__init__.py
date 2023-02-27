@@ -20,6 +20,7 @@ from torchmetrics.regression.log_cosh import LogCoshError  # noqa: F401
 from torchmetrics.regression.log_mse import MeanSquaredLogError  # noqa: F401
 from torchmetrics.regression.mae import MeanAbsoluteError  # noqa: F401
 from torchmetrics.regression.mape import MeanAbsolutePercentageError  # noqa: F401
+from torchmetrics.regression.minkowski import MinkowskiDistance  # noqa: F401
 from torchmetrics.regression.mse import MeanSquaredError  # noqa: F401
 from torchmetrics.regression.pearson import PearsonCorrCoef  # noqa: F401
 from torchmetrics.regression.r2 import R2Score  # noqa: F401

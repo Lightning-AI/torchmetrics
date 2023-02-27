@@ -280,3 +280,4 @@ class CalibrationError:
         if task == ClassificationTaskNoMultilabel.MULTICLASS:
             assert isinstance(num_classes, int)
             return MulticlassCalibrationError(num_classes, **kwargs)
+        return None

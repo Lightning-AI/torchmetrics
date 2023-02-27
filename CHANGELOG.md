@@ -28,7 +28,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `classes` to output from `MAP` metric ([#1419](https://github.com/Lightning-AI/metrics/pull/1419))
 
 
-- Added new detection metric `PanopticQuality` ([#929](https://github.com/PyTorchLightning/metrics/pull/929))
+- Added `MinkowskiDistance` to regression package ([#1362](https://github.com/Lightning-AI/metrics/pull/1362))
+
+
+- Added `pairwise_minkowski_distance` to pairwise package ([#1362](https://github.com/Lightning-AI/metrics/pull/1362))
+
+
+- Added new detection metric `PanopticQuality` (
+    [#929](https://github.com/PyTorchLightning/metrics/pull/929),
+    [#1527](https://github.com/PyTorchLightning/metrics/pull/1527),
+)
 
 
 - Added `ClassificationTask` Enum and use in metrics ([#1479](https://github.com/Lightning-AI/metrics/pull/1479))

@@ -81,7 +81,7 @@ def _bleu_score_update(
     target_: Sequence[Sequence[Sequence[str]]] = [[tokenizer(line) if line else [] for line in t] for t in target]
     preds_: Sequence[Sequence[str]] = [tokenizer(line) if line else [] for line in preds]
 
-    for (pred, targets) in zip(preds_, target_):
+    for pred, targets in zip(preds_, target_):
         preds_len += len(pred)
         target_len_list = [len(tgt) for tgt in targets]
         target_len_diff = [abs(len(pred) - x) for x in target_len_list]
@@ -139,9 +139,7 @@ def _bleu_score_compute(
     log_precision_scores = tensor(weights, device=device) * torch.log(precision_scores)
     geometric_mean = torch.exp(torch.sum(log_precision_scores))
     brevity_penalty = tensor(1.0, device=device) if preds_len > target_len else torch.exp(1 - (target_len / preds_len))
-    bleu = brevity_penalty * geometric_mean
-
-    return bleu
+    return brevity_penalty * geometric_mean
 
 
 def bleu_score(
