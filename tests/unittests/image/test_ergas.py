@@ -63,12 +63,10 @@ def _baseline_ergas(
     ergas_score = 100 * ratio * torch.sqrt(torch.sum((rmse_per_band / mean_target) ** 2, dim=1) / c)
     # reduction
     if reduction == "sum":
-        to_return = torch.sum(ergas_score)
-    elif reduction == "elementwise_mean":
-        to_return = torch.mean(ergas_score)
-    else:
-        to_return = ergas_score
-    return to_return
+        return torch.sum(ergas_score)
+    if reduction == "elementwise_mean":
+        return torch.mean(ergas_score)
+    return ergas_score
 
 
 @pytest.mark.parametrize("reduction", ["sum", "elementwise_mean"])

@@ -133,10 +133,9 @@ def _get_col_row_split(n: int) -> Tuple[int, int]:
     nsq = sqrt(n)
     if nsq * nsq == n:
         return int(nsq), int(nsq)
-    elif floor(nsq) * ceil(nsq) > n:
+    if floor(nsq) * ceil(nsq) > n:
         return floor(nsq), ceil(nsq)
-    else:
-        return ceil(nsq), ceil(nsq)
+    return ceil(nsq), ceil(nsq)
 
 
 def trim_axs(axs: Union[_AX_TYPE, np.ndarray], nb: int) -> np.ndarray:  # type: ignore[valid-type]
@@ -146,17 +145,17 @@ def trim_axs(axs: Union[_AX_TYPE, np.ndarray], nb: int) -> np.ndarray:  # type: 
     """
     if isinstance(axs, _AX_TYPE):
         return axs
-    else:
-        axs = axs.flat  # type: ignore[union-attr]
-        for ax in axs[nb:]:
-            ax.remove()
-        return axs[:nb]
+
+    axs = axs.flat  # type: ignore[union-attr]
+    for ax in axs[nb:]:
+        ax.remove()
+    return axs[:nb]
 
 
 def plot_confusion_matrix(
     confmat: Tensor,
     add_text: bool = True,
-    labels: Optional[List[str]] = None,
+    labels: Optional[List[Union[int, str]]] = None,
 ) -> _PLOT_OUT_TYPE:
     """Plot an confusion matrix.
 
@@ -167,7 +166,7 @@ def plot_confusion_matrix(
         confmat: the confusion matrix. Either should be an [N,N] matrix in the binary and multiclass cases or an
             [N, 2, 2] matrix for multilabel classification
         add_text: if text should be added to each cell with the given value
-        labels: labels to add the the x and y axis
+        labels: labels to add the x- and y-axis
 
     Returns:
         A tuple consisting of the figure and respective ax objects (or array of ax objects) of the generated figure
@@ -189,16 +188,19 @@ def plot_confusion_matrix(
             "Expected number of elements in arg `labels` to match number of labels in confmat but "
             f"got {len(labels)} and {n_classes}"
         )
-    labels: Union[List[int], List[str]] = labels if labels is not None else np.arange(n_classes).tolist()
+    if confmat.ndim == 3:
+        fig_label = labels or np.arange(nb)
+        labels = list(map(str, range(n_classes)))
+    else:
+        fig_label = None
+        labels = labels or np.arange(n_classes).tolist()
 
     fig, axs = plt.subplots(nrows=rows, ncols=cols)
     axs = trim_axs(axs, nb)
     for i in range(nb):
-        if rows != 1 and cols != 1:
-            ax = axs[i]
-            ax.set_title(f"Label {i}", fontsize=15)
-        else:
-            ax = axs
+        ax = axs[i] if rows != 1 and cols != 1 else axs
+        if fig_label is not None:
+            ax.set_title(f"Label {fig_label[i]}", fontsize=15)
         ax.imshow(confmat[i].cpu().detach() if confmat.ndim == 3 else confmat.cpu().detach())
         ax.set_xlabel("True class", fontsize=15)
         ax.set_ylabel("Predicted class", fontsize=15)

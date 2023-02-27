@@ -285,8 +285,7 @@ def _calculate_fscore(
     char_n_gram_f_score = _get_n_gram_fscore(matching_char_n_grams, ref_char_n_grams, hyp_char_n_grams, beta)
     word_n_gram_f_score = _get_n_gram_fscore(matching_word_n_grams, ref_word_n_grams, hyp_word_n_grams, beta)
 
-    f_score = (sum(char_n_gram_f_score.values()) + sum(word_n_gram_f_score.values())) / tensor(n_order)
-    return f_score
+    return (sum(char_n_gram_f_score.values()) + sum(word_n_gram_f_score.values())) / tensor(n_order)
 
 
 def _calculate_sentence_level_chrf_score(
@@ -510,7 +509,7 @@ def _chrf_score_compute(
     Return:
         A corpus-level chrF/chrF++ score.
     """
-    chrf_f_score = _calculate_fscore(
+    return _calculate_fscore(
         total_matching_char_n_grams,
         total_matching_word_n_grams,
         total_preds_char_n_grams,
@@ -520,7 +519,6 @@ def _chrf_score_compute(
         n_order,
         beta,
     )
-    return chrf_f_score
 
 
 def chrf_score(
