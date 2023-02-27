@@ -76,8 +76,7 @@ def _drop_empty_rows_and_cols(confmat: Tensor) -> Tensor:
                 [2, 8]])
     """
     confmat = confmat[confmat.sum(1) != 0]
-    confmat = confmat[:, confmat.sum(0) != 0]
-    return confmat
+    return confmat[:, confmat.sum(0) != 0]
 
 
 def _compute_phi_squared_corrected(

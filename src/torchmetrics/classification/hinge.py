@@ -264,3 +264,4 @@ class HingeLoss:
         if task == ClassificationTaskNoMultilabel.MULTICLASS:
             assert isinstance(num_classes, int)
             return MulticlassHingeLoss(num_classes, squared, multiclass_mode, **kwargs)
+        return None

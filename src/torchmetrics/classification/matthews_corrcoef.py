@@ -256,3 +256,4 @@ class MatthewsCorrCoef:
         if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelMatthewsCorrCoef(num_labels, threshold, **kwargs)
+        return None

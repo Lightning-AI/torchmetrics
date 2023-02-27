@@ -179,5 +179,4 @@ def pit_permutate(preds: Tensor, perm: Tensor) -> Tensor:
     Returns:
         Tensor: the permutated version of estimate
     """
-    preds_pmted = torch.stack([torch.index_select(pred, 0, p) for pred, p in zip(preds, perm)])
-    return preds_pmted
+    return torch.stack([torch.index_select(pred, 0, p) for pred, p in zip(preds, perm)])

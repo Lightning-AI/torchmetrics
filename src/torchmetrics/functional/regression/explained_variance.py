@@ -15,8 +15,11 @@ from typing import Sequence, Tuple, Union
 
 import torch
 from torch import Tensor
+from typing_extensions import Literal
 
 from torchmetrics.utilities.checks import _check_same_shape
+
+ALLOWED_MULTIOUTPUT = ("raw_values", "uniform_average", "variance_weighted")
 
 
 def _explained_variance_update(preds: Tensor, target: Tensor) -> Tuple[int, Tensor, Tensor, Tensor, Tensor]:
@@ -40,12 +43,12 @@ def _explained_variance_update(preds: Tensor, target: Tensor) -> Tuple[int, Tens
 
 
 def _explained_variance_compute(
-    n_obs: Tensor,
+    n_obs: Union[int, Tensor],
     sum_error: Tensor,
     sum_squared_error: Tensor,
     sum_target: Tensor,
     sum_squared_target: Tensor,
-    multioutput: str = "uniform_average",
+    multioutput: Literal["raw_values", "uniform_average", "variance_weighted"] = "uniform_average",
 ) -> Tensor:
     """Compute Explained Variance.
 
@@ -89,15 +92,14 @@ def _explained_variance_compute(
         return output_scores
     if multioutput == "uniform_average":
         return torch.mean(output_scores)
-    if multioutput == "variance_weighted":
-        denom_sum = torch.sum(denominator)
-        return torch.sum(denominator / denom_sum * output_scores)
+    denom_sum = torch.sum(denominator)
+    return torch.sum(denominator / denom_sum * output_scores)
 
 
 def explained_variance(
     preds: Tensor,
     target: Tensor,
-    multioutput: str = "uniform_average",
+    multioutput: Literal["raw_values", "uniform_average", "variance_weighted"] = "uniform_average",
 ) -> Union[Tensor, Sequence[Tensor]]:
     """Compute explained variance.
 
@@ -123,6 +125,8 @@ def explained_variance(
         >>> explained_variance(preds, target, multioutput='raw_values')
         tensor([0.9677, 1.0000])
     """
+    if multioutput not in ALLOWED_MULTIOUTPUT:
+        raise ValueError(f"Invalid input to argument `multioutput`. Choose one of the following: {ALLOWED_MULTIOUTPUT}")
     n_obs, sum_error, sum_squared_error, sum_target, sum_squared_target = _explained_variance_update(preds, target)
     return _explained_variance_compute(
         n_obs,

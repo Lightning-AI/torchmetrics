@@ -166,3 +166,4 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
             return self.sum_scores / self.total
         if self.reduction == "sum":
             return self.sum_scores
+        return None

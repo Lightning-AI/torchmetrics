@@ -645,6 +645,7 @@ class Precision:
         if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelPrecision(num_labels, threshold, average, **kwargs)
+        return None
 
 
 class Recall:
@@ -702,3 +703,4 @@ class Recall:
         if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelRecall(num_labels, threshold, average, **kwargs)
+        return None
