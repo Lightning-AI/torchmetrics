@@ -48,7 +48,7 @@ class BaseAggregator(Metric):
     value: Tensor
     is_differentiable = None
     higher_is_better = None
-    full_state_update = False
+    full_state_update: bool = False
 
     def __init__(
         self,
@@ -132,7 +132,7 @@ class MaxMetric(BaseAggregator):
         tensor(3.)
     """
 
-    full_state_update = True
+    full_state_update: bool = True
 
     def __init__(
         self,
@@ -196,7 +196,7 @@ class MaxMetric(BaseAggregator):
         """
         val = val or self.compute()
         fig, ax = plot_single_or_multi_val(
-            val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
+            val, ax=ax, higher_is_better=self.higher_is_better, name=self.__class__.__name__
         )
         return fig, ax
 
@@ -236,7 +236,7 @@ class MinMetric(BaseAggregator):
         tensor(1.)
     """
 
-    full_state_update = True
+    full_state_update: bool = True
 
     def __init__(
         self,
@@ -300,7 +300,7 @@ class MinMetric(BaseAggregator):
         """
         val = val or self.compute()
         fig, ax = plot_single_or_multi_val(
-            val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
+            val, ax=ax, higher_is_better=self.higher_is_better, name=self.__class__.__name__
         )
         return fig, ax
 
@@ -403,7 +403,7 @@ class SumMetric(BaseAggregator):
         """
         val = val or self.compute()
         fig, ax = plot_single_or_multi_val(
-            val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
+            val, ax=ax, higher_is_better=self.higher_is_better, name=self.__class__.__name__
         )
         return fig, ax
 
@@ -581,6 +581,6 @@ class MeanMetric(BaseAggregator):
         """
         val = val or self.compute()
         fig, ax = plot_single_or_multi_val(
-            val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
+            val, ax=ax, higher_is_better=self.higher_is_better, name=self.__class__.__name__
         )
         return fig, ax
