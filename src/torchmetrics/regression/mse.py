@@ -121,4 +121,4 @@ class MeanSquaredError(Metric):
             ...     values.append(metric(randn(10,), randn(10,)))
             >>> fig, ax = metric.plot(values)
         """
-        return super()._plot(val, ax)
+        return self._plot(val, ax)

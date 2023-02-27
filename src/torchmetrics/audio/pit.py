@@ -145,4 +145,4 @@ class PermutationInvariantTraining(Metric):
             ...     values.append(metric(preds, target))
             >>> fig_, ax_ = metric.plot(values)
         """
-        return super()._plot(val, ax)
+        return self._plot(val, ax)

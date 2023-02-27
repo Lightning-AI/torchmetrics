@@ -128,7 +128,7 @@ class SignalNoiseRatio(Metric):
             ...     values.append(metric(torch.rand(4), torch.rand(4)))
             >>> fig_, ax_ = metric.plot(values)
         """
-        return super()._plot(val, ax)
+        return self._plot(val, ax)
 
 
 class ScaleInvariantSignalNoiseRatio(Metric):
@@ -224,4 +224,4 @@ class ScaleInvariantSignalNoiseRatio(Metric):
             ...     values.append(metric(torch.rand(4), torch.rand(4)))
             >>> fig_, ax_ = metric.plot(values)
         """
-        return super()._plot(val, ax)
+        return self._plot(val, ax)

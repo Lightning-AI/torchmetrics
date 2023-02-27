@@ -143,7 +143,7 @@ class BinaryAccuracy(BinaryStatScores):
             ...     values.append(metric(rand(10), randint(2,(10,))))
             >>> fig_, ax_ = metric.plot(values)
         """
-        return super()._plot(val, ax)
+        return self._plot(val, ax)
 
 
 class MulticlassAccuracy(MulticlassStatScores):
@@ -290,7 +290,7 @@ class MulticlassAccuracy(MulticlassStatScores):
             ...     values.append(metric(randint(3, (20,)), randint(3, (20,))))
             >>> fig_, ax_ = metric.plot(values)
         """
-        return super()._plot(val, ax)
+        return self._plot(val, ax)
 
 
 class MultilabelAccuracy(MultilabelStatScores):
@@ -439,7 +439,7 @@ class MultilabelAccuracy(MultilabelStatScores):
             ...     values.append(metric(randint(2, (20, 3)), randint(2, (20, 3))))
             >>> fig_, ax_ = metric.plot(values)
         """
-        return super()._plot(val, ax)
+        return self._plot(val, ax)
 
 
 class Accuracy:
