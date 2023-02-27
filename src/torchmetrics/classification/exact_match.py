@@ -310,3 +310,4 @@ class ExactMatch:
         if task == ClassificationTaskNoBinary.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelExactMatch(num_labels, threshold, **kwargs)
+        return None

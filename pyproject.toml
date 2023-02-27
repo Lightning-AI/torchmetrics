@@ -78,7 +78,7 @@ select = [
 extend-select = [
     "C4",  # see: https://pypi.org/project/flake8-comprehensions
     "PT",  # see: https://pypi.org/project/flake8-pytest-style
-#    "RET",  # see: https://pypi.org/project/flake8-return
+    "RET",  # see: https://pypi.org/project/flake8-return
     "SIM",  # see: https://pypi.org/project/flake8-simplify
 ]
 ignore = [
@@ -87,6 +87,7 @@ ignore = [
     "D100",  # Missing docstring in public module
     "D104",  # Missing docstring in public package
     "D107",  # Missing docstring in `__init__`
+    "RET504",  # ToDo
 ]
 # Exclude a variety of commonly ignored directories.
 exclude = [
@@ -108,7 +109,6 @@ unfixable = ["F401"]
 "__about__.py" = ["D100"]
 "__init__.py" = ["D100"]
 "tests/**" = [
-    "D101",  # Missing docstring in public class
     "D102",  # Missing docstring in public method
     "D103",  # Missing docstring in public function
     "D401",  # todo # First line of docstring should be in imperative mood: ...
@@ -186,15 +186,7 @@ module = [
     "torchmetrics.functional.image.ssim",
     "torchmetrics.functional.image.uqi",
     "torchmetrics.functional.multimodal.clip_score",
-    "torchmetrics.functional.regression.cosine_similarity",
-    "torchmetrics.functional.regression.explained_variance",
-    "torchmetrics.functional.regression.kl_divergence",
-    "torchmetrics.functional.regression.r2",
-    "torchmetrics.functional.regression.wmape",
     "torchmetrics.functional.retrieval.r_precision",
-    "torchmetrics.functional.text.helper_embedding_metric",
-    "torchmetrics.functional.text.infolm",
-    "torchmetrics.functional.text.squad",
     "torchmetrics.image.fid",
     "torchmetrics.image.inception",
     "torchmetrics.image.lpip",
@@ -202,18 +194,6 @@ module = [
     "torchmetrics.image.ssim",
     "torchmetrics.image.tv",
     "torchmetrics.image.uqi",
-    "torchmetrics.regression.kl_divergence",
-    "torchmetrics.regression.log_mse",
-    "torchmetrics.regression.mae",
-    "torchmetrics.regression.mape",
-    "torchmetrics.regression.mse",
-    "torchmetrics.regression.symmetric_mape",
     "torchmetrics.retrieval.precision_recall_curve",
-    "torchmetrics.text.cer",
-    "torchmetrics.text.mer",
-    "torchmetrics.text.wer",
-    "torchmetrics.utilities.checks",
-    "torchmetrics.utilities.data",
-    "torchmetrics.wrappers.tracker",
 ]
 ignore_errors = "True"

@@ -73,7 +73,7 @@ def _accuracy_reduce(
     """
     if average == "binary":
         return _safe_divide(tp + tn, tp + tn + fp + fn)
-    elif average == "micro":
+    if average == "micro":
         tp = tp.sum(dim=0 if multidim_average == "global" else 1)
         fn = fn.sum(dim=0 if multidim_average == "global" else 1)
         if multilabel:
@@ -81,12 +81,12 @@ def _accuracy_reduce(
             tn = tn.sum(dim=0 if multidim_average == "global" else 1)
             return _safe_divide(tp + tn, tp + tn + fp + fn)
         return _safe_divide(tp, tp + fn)
-    else:
-        score = _safe_divide(tp + tn, tp + tn + fp + fn) if multilabel else _safe_divide(tp, tp + fn)
-        if average is None or average == "none":
-            return score
-        weights = tp + fn if average == "weighted" else torch.ones_like(score)
-        return _safe_divide(weights * score, weights.sum(-1, keepdim=True)).sum(-1)
+
+    score = _safe_divide(tp + tn, tp + tn + fp + fn) if multilabel else _safe_divide(tp, tp + fn)
+    if average is None or average == "none":
+        return score
+    weights = tp + fn if average == "weighted" else torch.ones_like(score)
+    return _safe_divide(weights * score, weights.sum(-1, keepdim=True)).sum(-1)
 
 
 def binary_accuracy(

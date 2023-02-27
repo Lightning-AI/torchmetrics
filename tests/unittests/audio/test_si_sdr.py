@@ -75,6 +75,8 @@ speechmetrics_si_sdr_no_zero_mean = partial(speechmetrics_si_sdr, zero_mean=Fals
     ],
 )
 class TestSISDR(MetricTester):
+    """Test class for `ScaleInvariantSignalDistortionRatio` metric."""
+
     atol = 1e-2
 
     @pytest.mark.parametrize("ddp", [True, False])

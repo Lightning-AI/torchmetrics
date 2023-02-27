@@ -230,3 +230,4 @@ class CohenKappa:
         if task == ClassificationTaskNoMultilabel.MULTICLASS:
             assert isinstance(num_classes, int)
             return MulticlassCohenKappa(num_classes, **kwargs)
+        return None

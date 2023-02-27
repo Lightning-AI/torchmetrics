@@ -346,3 +346,4 @@ class Specificity:
         if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelSpecificity(num_labels, threshold, average, **kwargs)
+        return None

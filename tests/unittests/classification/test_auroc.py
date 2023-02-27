@@ -42,6 +42,8 @@ def _sklearn_auroc_binary(preds, target, max_fpr=None, ignore_index=None):
 
 @pytest.mark.parametrize("input", (_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]))
 class TestBinaryAUROC(MetricTester):
+    """Test class for `BinaryAUROC` metric."""
+
     @pytest.mark.parametrize("max_fpr", [None, 0.8, 0.5])
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])
@@ -142,6 +144,8 @@ def _sklearn_auroc_multiclass(preds, target, average="macro", ignore_index=None)
     "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
 )
 class TestMulticlassAUROC(MetricTester):
+    """Test class for `MulticlassAUROC` metric."""
+
     @pytest.mark.parametrize("average", ["macro", "weighted"])
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])
@@ -262,6 +266,8 @@ def _sklearn_auroc_multilabel(preds, target, average="macro", ignore_index=None)
     "input", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5])
 )
 class TestMultilabelAUROC(MetricTester):
+    """Test class for `MultilabelAUROC` metric."""
+
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])

@@ -33,15 +33,13 @@ _multi_target_inputs = Input(
 def _sk_metric_single_target(preds, target, p):
     sk_preds = preds.view(-1).numpy()
     sk_target = target.view(-1).numpy()
-    res = scipy_minkowski(sk_preds, sk_target, p=p)
-    return res
+    return scipy_minkowski(sk_preds, sk_target, p=p)
 
 
 def _sk_metric_multi_target(preds, target, p):
     sk_preds = preds.view(-1).numpy()
     sk_target = target.view(-1).numpy()
-    res = scipy_minkowski(sk_preds, sk_target, p=p)
-    return res
+    return scipy_minkowski(sk_preds, sk_target, p=p)
 
 
 @pytest.mark.parametrize(
@@ -53,6 +51,8 @@ def _sk_metric_multi_target(preds, target, p):
 )
 @pytest.mark.parametrize("p", [1, 2, 4, 1.5])
 class TestMinkowskiDistance(MetricTester):
+    """Test class for `MinkowskiDistance` metric."""
+
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_minkowski_distance_class(self, preds, target, ref_metric, p, ddp, dist_sync_on_step):

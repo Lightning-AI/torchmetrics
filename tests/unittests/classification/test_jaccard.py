@@ -44,6 +44,8 @@ def _sklearn_jaccard_index_binary(preds, target, ignore_index=None):
 
 @pytest.mark.parametrize("input", _binary_cases)
 class TestBinaryJaccardIndex(MetricTester):
+    """Test class for `BinaryJaccardIndex` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_binary_jaccard_index(self, input, ddp, ignore_index):
@@ -133,6 +135,8 @@ def _sklearn_jaccard_index_multiclass(preds, target, ignore_index=None, average=
 
 @pytest.mark.parametrize("input", _multiclass_cases)
 class TestMulticlassJaccardIndex(MetricTester):
+    """Test class for `MulticlassJaccardIndex` metric."""
+
     @pytest.mark.parametrize("average", ["macro", "micro", "weighted", None])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
@@ -218,27 +222,29 @@ def _sklearn_jaccard_index_multilabel(preds, target, ignore_index=None, average=
     target = np.moveaxis(target, 1, -1).reshape((-1, target.shape[1]))
     if ignore_index is None:
         return sk_jaccard_index(y_true=target, y_pred=preds, average=average)
-    else:
-        if average == "micro":
-            return _sklearn_jaccard_index_binary(torch.tensor(preds), torch.tensor(target), ignore_index)
-        scores, weights = [], []
-        for i in range(preds.shape[1]):
-            pred, true = preds[:, i], target[:, i]
-            true, pred = remove_ignore_index(true, pred, ignore_index)
-            confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
-            scores.append(sk_jaccard_index(true, pred))
-            weights.append(confmat[1, 0] + confmat[1, 1])
-        scores = np.stack(scores, axis=0)
-        weights = np.stack(weights, axis=0)
-        if average is None or average == "none":
-            return scores
-        elif average == "macro":
-            return scores.mean()
-        return ((scores * weights) / weights.sum()).sum()
+
+    if average == "micro":
+        return _sklearn_jaccard_index_binary(torch.tensor(preds), torch.tensor(target), ignore_index)
+    scores, weights = [], []
+    for i in range(preds.shape[1]):
+        pred, true = preds[:, i], target[:, i]
+        true, pred = remove_ignore_index(true, pred, ignore_index)
+        confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
+        scores.append(sk_jaccard_index(true, pred))
+        weights.append(confmat[1, 0] + confmat[1, 1])
+    scores = np.stack(scores, axis=0)
+    weights = np.stack(weights, axis=0)
+    if average is None or average == "none":
+        return scores
+    if average == "macro":
+        return scores.mean()
+    return ((scores * weights) / weights.sum()).sum()
 
 
 @pytest.mark.parametrize("input", _multilabel_cases)
 class TestMultilabelJaccardIndex(MetricTester):
+    """Test class for `MultilabelJaccardIndex` metric."""
+
     @pytest.mark.parametrize("average", ["macro", "micro", "weighted", None])
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])

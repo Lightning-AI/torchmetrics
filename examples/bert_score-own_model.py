@@ -94,8 +94,7 @@ class UserTokenizer:
 def get_user_model_encoder(num_layers: int = _NUM_LAYERS, d_model: int = _MODEL_DIM, nhead: int = _NHEAD) -> Module:
     """Initialize the Transformer encoder."""
     encoder_layer = nn.TransformerEncoderLayer(d_model=d_model, nhead=nhead)
-    transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
-    return transformer_encoder
+    return nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
 
 
 def user_forward_fn(model: Module, batch: Dict[str, Tensor]) -> Tensor:

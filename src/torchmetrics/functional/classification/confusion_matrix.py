@@ -641,3 +641,4 @@ def confusion_matrix(
     if task == ClassificationTask.MULTILABEL:
         assert isinstance(num_labels, int)
         return multilabel_confusion_matrix(preds, target, num_labels, threshold, normalize, ignore_index, validate_args)
+    return None

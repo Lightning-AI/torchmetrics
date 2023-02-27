@@ -61,7 +61,7 @@ def _wrap_reduction(x, y, sk_fn, reduction):
     res = sk_fn(x, y)
     if reduction == "sum":
         return res.sum(axis=-1)
-    elif reduction == "mean":
+    if reduction == "mean":
         return res.mean(axis=-1)
     return res
 

@@ -46,7 +46,7 @@ _input_logits = Input(
 
 @pytest.fixture()
 def pearson_matrix_input():
-    matrix = torch.cat(
+    return torch.cat(
         [
             torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES * BATCH_SIZE, 1), dtype=torch.float),
             torch.randint(high=NUM_CLASSES + 2, size=(NUM_BATCHES * BATCH_SIZE, 1), dtype=torch.float),
@@ -54,7 +54,6 @@ def pearson_matrix_input():
         ],
         dim=-1,
     )
-    return matrix
 
 
 def _pd_pearsons_t(preds, target):
@@ -88,6 +87,8 @@ def _pd_pearsons_t_matrix(matrix):
     ],
 )
 class TestPearsonsContingencyCoefficient(MetricTester):
+    """Test class for `PearsonsContingencyCoefficient` metric."""
+
     atol = 1e-5
 
     @pytest.mark.parametrize("ddp", [False, True])

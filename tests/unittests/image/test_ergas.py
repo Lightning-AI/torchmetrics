@@ -63,12 +63,10 @@ def _baseline_ergas(
     ergas_score = 100 * ratio * torch.sqrt(torch.sum((rmse_per_band / mean_target) ** 2, dim=1) / c)
     # reduction
     if reduction == "sum":
-        to_return = torch.sum(ergas_score)
-    elif reduction == "elementwise_mean":
-        to_return = torch.mean(ergas_score)
-    else:
-        to_return = ergas_score
-    return to_return
+        return torch.sum(ergas_score)
+    if reduction == "elementwise_mean":
+        return torch.mean(ergas_score)
+    return ergas_score
 
 
 @pytest.mark.parametrize("reduction", ["sum", "elementwise_mean"])
@@ -77,6 +75,8 @@ def _baseline_ergas(
     [(i.preds, i.target, i.ratio) for i in _inputs],
 )
 class TestErrorRelativeGlobalDimensionlessSynthesis(MetricTester):
+    """Test class for `ErrorRelativeGlobalDimensionlessSynthesis` metric."""
+
     @pytest.mark.parametrize("ddp", [True, False])
     def test_ergas(self, reduction, preds, target, ratio, ddp):
         self.run_class_metric_test(

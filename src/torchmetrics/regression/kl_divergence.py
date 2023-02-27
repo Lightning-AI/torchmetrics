@@ -64,9 +64,10 @@ class KLDivergence(Metric):
 
     Example:
         >>> from torch import tensor
-        >>> from torchmetrics.functional import kl_divergence
+        >>> from torchmetrics import KLDivergence
         >>> p = tensor([[0.36, 0.48, 0.16]])
         >>> q = tensor([[1/3, 1/3, 1/3]])
+        >>> kl_divergence = KLDivergence()
         >>> kl_divergence(p, q)
         tensor(0.0853)
     """
@@ -74,6 +75,8 @@ class KLDivergence(Metric):
     higher_is_better: bool = False
     full_state_update: bool = False
     total: Tensor
+    # FIXME: Apply once minimal torch is 1.10. For torch<=1.9, jit does not support Union types
+    # measures: Union[Tensor, List[Tensor]]
 
     def __init__(
         self,
@@ -101,12 +104,16 @@ class KLDivergence(Metric):
         """Update metric states with predictions and targets."""
         measures, total = _kld_update(p, q, self.log_prob)
         if self.reduction is None or self.reduction == "none":
-            self.measures.append(measures)
+            self.measures.append(measures)  # type: ignore[operator,union-attr]
         else:
             self.measures += measures.sum()
             self.total += total
 
     def compute(self) -> Tensor:
         """Compute metric."""
-        measures = dim_zero_cat(self.measures) if self.reduction is None or self.reduction == "none" else self.measures
+        measures: Tensor = (
+            dim_zero_cat(self.measures)  # type: ignore[arg-type]
+            if self.reduction in ["none", None]
+            else self.measures  # type: ignore[assignment]
+        )
         return _kld_compute(measures, self.total, self.reduction)
