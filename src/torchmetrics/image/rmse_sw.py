@@ -48,7 +48,7 @@ class RootMeanSquaredErrorUsingSlidingWindow(Metric):
     """
 
     rmse_val_sum: Tensor
-    rmse_map: Tensor = None
+    rmse_map: Optional[Tensor] = None
     total_images: Tensor
     higher_is_better: bool = False
     is_differentiable: bool = True
@@ -58,10 +58,9 @@ class RootMeanSquaredErrorUsingSlidingWindow(Metric):
         self,
         window_size: int = 8,
         return_rmse_map: bool = False,
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
         self.add_state("rmse_val_sum", default=torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total_images", default=torch.tensor(0.0), dist_reduce_fx="sum")
 
