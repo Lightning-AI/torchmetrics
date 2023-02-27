@@ -29,8 +29,9 @@ def _rase_update(
     Args:
         preds: Deformed image
         target: Ground truth image
-        window_size: Sliding window used for rmse calculation
+        window_size: Sliding window used for RMSE calculation
         rmse_map: Sum of RMSE map values over all examples
+        target_sum: target...
         total_images: Total number of images
 
     Return:
@@ -45,9 +46,13 @@ def _rase_update(
 
 
 def _rase_compute(rmse_map: Tensor, target_sum: Tensor, total_images: Tensor, window_size: int) -> Tensor:
-    """Args:
+    """Compute RASE.
+
+    Args:
         rmse_map: Sum of RMSE map values over all examples
+        target_sum: target...
         total_images: Total number of images.
+        window_size: Sliding window used for rmse calculation
 
     Return:
         Relative Average Spectral Error (RASE)

@@ -52,6 +52,8 @@ def _sewar_rase(preds, target, window_size):
 
 @pytest.mark.parametrize("preds, target, window_size", [(i.preds, i.target, i.window_size) for i in _inputs])
 class TestRelativeAverageSpectralError(MetricTester):
+    """Testing of Relative Average Spectral Error"""
+
     atol = 1e-2
 
     @pytest.mark.parametrize("ddp", [False])

@@ -73,35 +73,37 @@ def _uniform_weight_bias_conv2d(inputs: Tensor, window_size: int) -> Tuple[Tenso
     return kernel_weight, kernel_bias
 
 
-def _single_dimension_pad(inputs: Tensor, dim: int, pad: int, outter_pad: int = 0) -> Tensor:
-    """Applies single-dimension reflection padding to match scipy implementation:
+def _single_dimension_pad(inputs: Tensor, dim: int, pad: int, outer_pad: int = 0) -> Tensor:
+    """Apply single-dimension reflection padding to match scipy implementation.
 
     Args:
         inputs: Input image
         dim: A dimension the image should be padded over
         pad: Number of pads
+        outer_pad: Number of outer pads
 
     Return:
         Image padded over a single dimension
     """
     _max = inputs.shape[dim]
     x = torch.index_select(inputs, dim, torch.arange(pad - 1, -1, -1).to(inputs.device))
-    y = torch.index_select(inputs, dim, torch.arange(_max - 1, _max - pad - outter_pad, -1).to(inputs.device))
+    y = torch.index_select(inputs, dim, torch.arange(_max - 1, _max - pad - outer_pad, -1).to(inputs.device))
     return torch.cat((x, inputs, y), dim)
 
 
-def _reflection_pad_2d(inputs: Tensor, pad: int, outter_pad: int = 0) -> Tensor:
-    """Applies reflection padding to the input image.
+def _reflection_pad_2d(inputs: Tensor, pad: int, outer_pad: int = 0) -> Tensor:
+    """Apply reflection padding to the input image.
 
     Args:
         inputs: Input image
         pad: Number of pads
+        outer_pad: Number of outer pads
 
     Return:
         Padded image
     """
     for dim in [2, 3]:
-        inputs = _single_dimension_pad(inputs, dim, pad, outter_pad)
+        inputs = _single_dimension_pad(inputs, dim, pad, outer_pad)
     return inputs
 
 
