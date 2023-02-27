@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import partial
+from typing import Callable
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -19,265 +20,214 @@ import numpy as np
 import pytest
 import torch
 
-from torchmetrics.functional import (
-    multiscale_structural_similarity_index_measure,
-    peak_signal_noise_ratio,
-    scale_invariant_signal_distortion_ratio,
-    scale_invariant_signal_noise_ratio,
-    signal_distortion_ratio,
-    signal_noise_ratio,
-    spectral_angle_mapper,
-    structural_similarity_index_measure,
-    universal_image_quality_index,
+from torchmetrics.aggregation import MaxMetric, MeanMetric, MinMetric, SumMetric
+from torchmetrics.audio import (
+    ScaleInvariantSignalDistortionRatio,
+    ScaleInvariantSignalNoiseRatio,
+    ShortTimeObjectiveIntelligibility,
+    SignalDistortionRatio,
+    SignalNoiseRatio,
 )
-from torchmetrics.functional.audio import short_time_objective_intelligibility
-from torchmetrics.functional.audio.pesq import perceptual_evaluation_speech_quality
-from torchmetrics.functional.audio.pit import permutation_invariant_training
-from torchmetrics.functional.classification.accuracy import binary_accuracy, multiclass_accuracy
-from torchmetrics.functional.classification.auroc import binary_auroc, multiclass_auroc
-from torchmetrics.functional.classification.confusion_matrix import (
-    binary_confusion_matrix,
-    multiclass_confusion_matrix,
-    multilabel_confusion_matrix,
+from torchmetrics.audio.pesq import PerceptualEvaluationSpeechQuality
+from torchmetrics.audio.pit import PermutationInvariantTraining
+from torchmetrics.classification import (
+    BinaryAccuracy,
+    BinaryAUROC,
+    BinaryConfusionMatrix,
+    BinaryROC,
+    MulticlassAccuracy,
+    MulticlassAUROC,
+    MulticlassConfusionMatrix,
+    MultilabelConfusionMatrix,
 )
-from torchmetrics.functional.classification.roc import binary_roc
-from torchmetrics.functional.image.d_lambda import spectral_distortion_index
-from torchmetrics.functional.image.ergas import error_relative_global_dimensionless_synthesis
-from torchmetrics.utilities.plot import plot_binary_roc_curve, plot_confusion_matrix, plot_single_or_multi_val
+from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio
+from torchmetrics.image import (
+    ErrorRelativeGlobalDimensionlessSynthesis,
+    MultiScaleStructuralSimilarityIndexMeasure,
+    PeakSignalNoiseRatio,
+    SpectralAngleMapper,
+    SpectralDistortionIndex,
+    StructuralSimilarityIndexMeasure,
+    UniversalImageQualityIndex,
+)
+from torchmetrics.regression import MeanSquaredError
+
+_rand_input = lambda: torch.rand(10)
+_binary_randint_input = lambda: torch.randint(2, (10,))
+_multiclass_randint_input = lambda: torch.randint(3, (10,))
+_multiclass_randn_input = lambda: torch.randn(10, 3).softmax(dim=-1)
+_multilabel_randint_input = lambda: torch.randint(2, (10, 3))
+_audio_input = lambda: torch.randn(8000)
+_image_input = lambda: torch.rand([8, 3, 16, 16])
 
 
 @pytest.mark.parametrize(
-    ("metric", "preds", "target"),
+    ("metric_class", "preds", "target"),
     [
-        # Accuracy
+        pytest.param(BinaryAccuracy, _rand_input, _binary_randint_input, id="binary accuracy"),
         pytest.param(
-            binary_accuracy,
-            lambda: torch.rand(100),
-            lambda: torch.randint(2, (100,)),
-            id="binary",
-        ),
-        pytest.param(binary_accuracy, lambda: torch.rand(100), lambda: torch.randint(2, (100,)), id="binary"),
-        pytest.param(
-            partial(multiclass_accuracy, num_classes=3),
-            lambda: torch.randint(3, (100,)),
-            lambda: torch.randint(3, (100,)),
-            id="multiclass",
+            partial(MulticlassAccuracy, num_classes=3),
+            _multiclass_randint_input,
+            _multiclass_randint_input,
+            id="multiclass accuracy",
         ),
         pytest.param(
-            partial(multiclass_accuracy, num_classes=3, average=None),
-            lambda: torch.randint(3, (100,)),
-            lambda: torch.randint(3, (100,)),
-            id="multiclass and average=None",
+            partial(MulticlassAccuracy, num_classes=3, average=None),
+            _multiclass_randint_input,
+            _multiclass_randint_input,
+            id="multiclass accuracy and average=None",
         ),
         # AUROC
         pytest.param(
-            binary_auroc,
-            lambda: torch.nn.functional.softmax(torch.randn(100, 2), dim=1)[:, 1],
-            lambda: torch.randint(2, (100,)),
-            id="binary",
+            BinaryAUROC,
+            _rand_input,
+            _binary_randint_input,
+            id="binary auroc",
         ),
         pytest.param(
-            partial(multiclass_auroc, num_classes=3),
-            lambda: torch.randn(100, 3),
-            lambda: torch.randint(3, (100,)),
-            id="multiclass",
+            partial(MulticlassAUROC, num_classes=3),
+            _multiclass_randn_input,
+            _multiclass_randint_input,
+            id="multiclass auroc",
         ),
         pytest.param(
-            partial(multiclass_auroc, num_classes=3, average=None),
-            lambda: torch.randn(100, 3),
-            lambda: torch.randint(3, (100,)),
-            id="multiclass and average=None",
+            partial(MulticlassAUROC, num_classes=3, average=None),
+            _multiclass_randn_input,
+            _multiclass_randint_input,
+            id="multiclass auroc and average=None",
         ),
         pytest.param(
-            partial(spectral_distortion_index),
-            lambda: torch.rand([16, 3, 16, 16]),
-            lambda: torch.rand([16, 3, 16, 16]),
+            BinaryROC,
+            _rand_input,
+            _binary_randint_input,
+        ),
+        pytest.param(
+            SpectralDistortionIndex,
+            _image_input,
+            _image_input,
             id="spectral distortion index",
         ),
         pytest.param(
-            partial(error_relative_global_dimensionless_synthesis),
-            lambda: torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42)),
-            lambda: torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42)),
+            ErrorRelativeGlobalDimensionlessSynthesis,
+            _image_input,
+            _image_input,
             id="error relative global dimensionless synthesis",
         ),
         pytest.param(
-            partial(peak_signal_noise_ratio),
+            PeakSignalNoiseRatio,
             lambda: torch.tensor([[0.0, 1.0], [2.0, 3.0]]),
             lambda: torch.tensor([[3.0, 2.0], [1.0, 0.0]]),
             id="peak signal noise ratio",
         ),
         pytest.param(
-            partial(spectral_angle_mapper),
-            lambda: torch.rand([16, 3, 16, 16], generator=torch.manual_seed(42)),
-            lambda: torch.rand([16, 3, 16, 16], generator=torch.manual_seed(123)),
+            SpectralAngleMapper,
+            _image_input,
+            _image_input,
             id="spectral angle mapper",
         ),
         pytest.param(
-            partial(structural_similarity_index_measure),
-            lambda: torch.rand([3, 3, 256, 256], generator=torch.manual_seed(42)),
-            lambda: torch.rand([3, 3, 256, 256], generator=torch.manual_seed(42)) * 0.75,
+            StructuralSimilarityIndexMeasure,
+            _image_input,
+            _image_input,
             id="structural similarity index_measure",
         ),
         pytest.param(
-            partial(multiscale_structural_similarity_index_measure),
-            lambda: torch.rand([3, 3, 256, 256], generator=torch.manual_seed(42)),
-            lambda: torch.rand([3, 3, 256, 256], generator=torch.manual_seed(42)) * 0.75,
+            MultiScaleStructuralSimilarityIndexMeasure,
+            lambda: torch.rand(3, 3, 180, 180),
+            lambda: torch.rand(3, 3, 180, 180),
             id="multiscale structural similarity index measure",
         ),
         pytest.param(
-            partial(universal_image_quality_index),
-            lambda: torch.rand([16, 1, 16, 16]),
-            lambda: torch.rand([16, 1, 16, 16]) * 0.75,
+            UniversalImageQualityIndex,
+            _image_input,
+            _image_input,
             id="universal image quality index",
         ),
         pytest.param(
-            partial(perceptual_evaluation_speech_quality, fs=8000, mode="nb"),
-            lambda: torch.randn(8000),
-            lambda: torch.randn(8000),
+            partial(PerceptualEvaluationSpeechQuality, fs=8000, mode="nb"),
+            _audio_input,
+            _audio_input,
             id="perceptual_evaluation_speech_quality",
         ),
+        pytest.param(SignalDistortionRatio, _audio_input, _audio_input, id="signal_distortion_ratio"),
         pytest.param(
-            partial(signal_distortion_ratio),
-            lambda: torch.randn(8000),
-            lambda: torch.randn(8000),
-            id="signal_distortion_ratio",
+            ScaleInvariantSignalDistortionRatio, _rand_input, _rand_input, id="scale_invariant_signal_distortion_ratio"
         ),
+        pytest.param(SignalNoiseRatio, _rand_input, _rand_input, id="signal_noise_ratio"),
+        pytest.param(ScaleInvariantSignalNoiseRatio, _rand_input, _rand_input, id="scale_invariant_signal_noise_ratio"),
         pytest.param(
-            partial(scale_invariant_signal_distortion_ratio),
-            lambda: torch.randn(5),
-            lambda: torch.randn(5),
-            id="scale_invariant_signal_distortion_ratio",
-        ),
-        pytest.param(
-            partial(signal_noise_ratio),
-            lambda: torch.randn(4),
-            lambda: torch.randn(4),
-            id="signal_noise_ratio",
-        ),
-        pytest.param(
-            partial(scale_invariant_signal_noise_ratio),
-            lambda: torch.randn(4),
-            lambda: torch.randn(4),
-            id="scale_invariant_signal_noise_ratio",
-        ),
-        pytest.param(
-            partial(short_time_objective_intelligibility, fs=8000, extended=False),
-            lambda: torch.randn(8000),
-            lambda: torch.randn(8000),
+            partial(ShortTimeObjectiveIntelligibility, fs=8000, extended=False),
+            _audio_input,
+            _audio_input,
             id="short_time_objective_intelligibility",
         ),
-    ],
-)
-@pytest.mark.parametrize("num_vals", [1, 5, 10])
-def test_single_multi_val_plotter(metric, preds, target, num_vals):
-    vals = []
-    for i in range(num_vals):
-        vals.append(metric(preds(), target()))
-    vals = vals[0] if i == 1 else vals
-    fig, ax = plot_single_or_multi_val(vals)
-    assert isinstance(fig, plt.Figure)
-    assert isinstance(ax, matplotlib.axes.Axes)
-
-
-@pytest.mark.parametrize(
-    ("metric", "preds", "target"),
-    [
         pytest.param(
-            partial(permutation_invariant_training, metric_func=scale_invariant_signal_noise_ratio, eval_func="max"),
+            partial(PermutationInvariantTraining, metric_func=scale_invariant_signal_noise_ratio, eval_func="max"),
             lambda: torch.randn(3, 2, 5),
             lambda: torch.randn(3, 2, 5),
             id="permutation_invariant_training",
-        )
+        ),
+        pytest.param(MeanSquaredError, _rand_input, _rand_input, id="mean squared error"),
+        pytest.param(SumMetric, _rand_input, None, id="sum metric"),
+        pytest.param(MeanMetric, _rand_input, None, id="mean metric"),
+        pytest.param(MinMetric, _rand_input, None, id="min metric"),
+        pytest.param(MaxMetric, _rand_input, None, id="min metric"),
     ],
 )
-@pytest.mark.parametrize("num_vals", [1, 5, 10])
-def test_single_multi_val_plotter_pit(metric, preds, target, num_vals):
-    vals = []
-    for i in range(num_vals):
-        vals.append(metric(preds(), target())[0])
-    vals = vals[0] if i == 1 else vals
-    fig, ax = plot_single_or_multi_val(vals)
+@pytest.mark.parametrize("num_vals", [1, 5])
+def test_single_multi_val_plot_methods(metric_class: object, preds: Callable, target: Callable, num_vals: int):
+    """Test the plot method of metrics that only output a single tensor scalar."""
+    metric = metric_class()
+
+    input = (lambda: (preds(),)) if target is None else lambda: (preds(), target())
+
+    if num_vals == 1:
+        metric.update(*input())
+        fig, ax = metric.plot()
+    else:
+        vals = []
+        for _ in range(num_vals):
+            vals.append(metric(*input()))
+        fig, ax = metric.plot(vals)
+
     assert isinstance(fig, plt.Figure)
     assert isinstance(ax, matplotlib.axes.Axes)
 
 
 @pytest.mark.parametrize(
-    ("metric", "preds", "target"),
+    ("metric_class", "preds", "target", "labels"),
     [
         pytest.param(
-            binary_confusion_matrix,
-            torch.rand(
-                100,
-            ),
-            torch.randint(2, (100,)),
-            id="binary",
-        ),
-        pytest.param(
-            partial(multiclass_confusion_matrix, num_classes=3),
-            torch.randint(3, (100,)),
-            torch.randint(3, (100,)),
-            id="multiclass",
-        ),
-        pytest.param(
-            partial(multilabel_confusion_matrix, num_labels=3),
-            torch.randint(2, (100, 3)),
-            torch.randint(2, (100, 3)),
-            id="multilabel",
-        ),
-    ],
-)
-def test_confusion_matrix_plotter(metric, preds, target):
-    confmat = metric(preds, target)
-    fig, axs = plot_confusion_matrix(confmat)
-    assert isinstance(fig, plt.Figure)
-    cond1 = isinstance(axs, matplotlib.axes.Axes)
-    cond2 = isinstance(axs, np.ndarray) and all(isinstance(a, matplotlib.axes.Axes) for a in axs)
-    assert cond1 or cond2
-
-
-@pytest.mark.parametrize(
-    ("metric", "preds", "target", "labels"),
-    [
-        pytest.param(
-            binary_confusion_matrix,
-            torch.rand(
-                100,
-            ),
-            torch.randint(2, (100,)),
+            BinaryConfusionMatrix,
+            _rand_input,
+            _binary_randint_input,
             ["cat", "dog"],
-            id="binary",
+            id="binary confusion matrix",
         ),
         pytest.param(
-            partial(multiclass_confusion_matrix, num_classes=3),
-            torch.randint(3, (100,)),
-            torch.randint(3, (100,)),
+            partial(MulticlassConfusionMatrix, num_classes=3),
+            _multiclass_randint_input,
+            _multiclass_randint_input,
             ["cat", "dog", "bird"],
-            id="multiclass",
+            id="multiclass confusion matrix",
+        ),
+        pytest.param(
+            partial(MultilabelConfusionMatrix, num_labels=3),
+            _multilabel_randint_input,
+            _multilabel_randint_input,
+            ["cat", "dog", "bird"],
+            id="multilabel confusion matrix",
         ),
     ],
 )
-def test_confusion_matrix_plotter_with_labels(metric, preds, target, labels):
-    confmat = metric(preds, target)
-    fig, axs = plot_confusion_matrix(confmat, labels=labels)
+@pytest.mark.parametrize("use_labels", [False, True])
+def test_confusion_matrix_plotter(metric_class, preds, target, labels, use_labels):
+    """Test confusion matrix that uses specialized plot function."""
+    metric = metric_class()
+    metric.update(preds(), target())
+    labels = labels if use_labels else None
+    fig, axs = metric.plot(add_text=True, labels=labels)
     assert isinstance(fig, plt.Figure)
     cond1 = isinstance(axs, matplotlib.axes.Axes)
     cond2 = isinstance(axs, np.ndarray) and all(isinstance(a, matplotlib.axes.Axes) for a in axs)
     assert cond1 or cond2
-
-
-@pytest.mark.parametrize(
-    ("metric", "preds", "target"),
-    [
-        pytest.param(
-            binary_roc,
-            lambda: torch.nn.functional.softmax(torch.randn(100, 2), dim=1)[:, 1],
-            lambda: torch.randint(2, (100,)),
-            id="binary",
-        )
-    ],
-)
-def test_binary_roc_curve_plotter(metric, preds, target):
-    tpr, fpr, thresholds = metric(preds(), target())
-    fig, ax = plot_binary_roc_curve(tpr, fpr)
-    assert isinstance(fig, plt.Figure)
-    assert isinstance(ax, matplotlib.axes.Axes)
