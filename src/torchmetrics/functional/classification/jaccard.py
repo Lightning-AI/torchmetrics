@@ -37,6 +37,7 @@ from torchmetrics.utilities.compute import _safe_divide
 def _jaccard_index_reduce(
     confmat: Tensor,
     average: Optional[Literal["micro", "macro", "weighted", "none", "binary"]],
+    ignore_index: Optional[int] = None,
 ) -> Tensor:
     """Perform reduction of an un-normalized confusion matrix into jaccard score.
 
@@ -52,6 +53,9 @@ def _jaccard_index_reduce(
               metrics across classes, weighting each class by its support (``tp + fn``).
             - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
               the metric for every class.
+
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
     """
     allowed_average = ["binary", "micro", "macro", "weighted", "none", None]
     if average not in allowed_average:
@@ -60,6 +64,7 @@ def _jaccard_index_reduce(
     if average == "binary":
         return confmat[1, 1] / (confmat[0, 1] + confmat[1, 0] + confmat[1, 1])
     else:
+        ignore_index_cond = ignore_index is not None and 0 <= ignore_index <= confmat.shape[0]
         if confmat.ndim == 3:  # multilabel
             num = confmat[:, 1, 1]
             denom = confmat[:, 1, 1] + confmat[:, 0, 1] + confmat[:, 1, 0]
@@ -69,16 +74,18 @@ def _jaccard_index_reduce(
 
         if average == "micro":
             num = num.sum()
-            denom = denom.sum()
+            denom = denom.sum() - (denom[ignore_index] if ignore_index_cond else 0.0)
 
         jaccard = _safe_divide(num, denom)
 
-        if average is None or average == "none":
+        if average is None or average == "none" or average == "micro":
             return jaccard
         if average == "weighted":
             weights = confmat[:, 1, 1] + confmat[:, 1, 0] if confmat.ndim == 3 else confmat.sum(1)
         else:
             weights = torch.ones_like(jaccard)
+            if ignore_index_cond:
+                weights[ignore_index] = 0.0
         return ((weights * jaccard) / weights.sum()).sum()
 
 
@@ -210,7 +217,7 @@ def multiclass_jaccard_index(
         _multiclass_confusion_matrix_tensor_validation(preds, target, num_classes, ignore_index)
     preds, target = _multiclass_confusion_matrix_format(preds, target, ignore_index)
     confmat = _multiclass_confusion_matrix_update(preds, target, num_classes)
-    return _jaccard_index_reduce(confmat, average=average)
+    return _jaccard_index_reduce(confmat, average=average, ignore_index=ignore_index)
 
 
 def _multilabel_jaccard_index_arg_validation(
@@ -286,7 +293,7 @@ def multilabel_jaccard_index(
         _multilabel_confusion_matrix_tensor_validation(preds, target, num_labels, ignore_index)
     preds, target = _multilabel_confusion_matrix_format(preds, target, num_labels, threshold, ignore_index)
     confmat = _multilabel_confusion_matrix_update(preds, target, num_labels)
-    return _jaccard_index_reduce(confmat, average=average)
+    return _jaccard_index_reduce(confmat, average=average, ignore_index=ignore_index)
 
 
 def jaccard_index(
