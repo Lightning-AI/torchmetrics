@@ -393,8 +393,8 @@ def test_constant_memory(device, requires_grad):
             pid = os.getpid()
             py = psutil.Process(pid)
             return py.memory_info()[0] / 2.0**30
-        else:
-            return torch.cuda.memory_allocated()
+
+        return torch.cuda.memory_allocated()
 
     x = torch.randn(10, requires_grad=requires_grad, device=device)
 

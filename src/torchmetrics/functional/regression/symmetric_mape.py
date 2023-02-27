@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple
+from typing import Tuple, Union
 
 import torch
 from torch import Tensor
@@ -45,7 +45,7 @@ def _symmetric_mean_absolute_percentage_error_update(
     return sum_abs_per_error, num_obs
 
 
-def _symmetric_mean_absolute_percentage_error_compute(sum_abs_per_error: Tensor, num_obs: int) -> Tensor:
+def _symmetric_mean_absolute_percentage_error_compute(sum_abs_per_error: Tensor, num_obs: Union[int, Tensor]) -> Tensor:
     """Compute Symmetric Mean Absolute Percentage Error.
 
     Args:
