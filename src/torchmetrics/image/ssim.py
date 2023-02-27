@@ -20,6 +20,11 @@ from typing_extensions import Literal
 from torchmetrics.functional.image.ssim import _multiscale_ssim_update, _ssim_check_inputs, _ssim_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["StructuralSimilarityIndexMeasure.plot", "MultiScaleStructuralSimilarityIndexMeasure.plot"]
 
 
 class StructuralSimilarityIndexMeasure(Metric):
@@ -72,6 +77,7 @@ class StructuralSimilarityIndexMeasure(Metric):
     higher_is_better: bool = True
     is_differentiable: bool = True
     full_state_update: bool = False
+    plot_options = {"lower_bound": 0.0, "upper_bound": 1.0}
 
     preds: List[Tensor]
     target: List[Tensor]
@@ -160,10 +166,61 @@ class StructuralSimilarityIndexMeasure(Metric):
 
         return similarity
 
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> import torch
+            >>> from torchmetrics import StructuralSimilarityIndexMeasure
+            >>> preds = torch.rand([3, 3, 256, 256])
+            >>> target = preds * 0.75
+            >>> metric = StructuralSimilarityIndexMeasure(data_range=1.0)
+            >>> metric.update(preds, target)
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics import StructuralSimilarityIndexMeasure
+            >>> preds = torch.rand([3, 3, 256, 256])
+            >>> target = preds * 0.75
+            >>> metric = StructuralSimilarityIndexMeasure(data_range=1.0)
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(preds, target))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        val = val or self.compute()
+        fig, ax = plot_single_or_multi_val(
+            val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
+        )
+        return fig, ax
+
 
 class MultiScaleStructuralSimilarityIndexMeasure(Metric):
-    """Compute `MultiScaleSSIM`_, Multi-scale Structural Similarity Index Measure, which is a generalization of
-    Structural Similarity Index Measure by incorporating image details at different resolution scores.
+    """Compute `MultiScaleSSIM`_, Multi-scale Structural Similarity Index Measure.
+
+    This metric is is a generalization of Structural Similarity Index Measure by incorporating image details at
+    different resolution scores.
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 
@@ -219,6 +276,7 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
     higher_is_better: bool = True
     is_differentiable: bool = True
     full_state_update: bool = False
+    plot_options = {"lower_bound": 0.0, "upper_bound": 1.0}
 
     preds: List[Tensor]
     target: List[Tensor]
@@ -304,7 +362,55 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         """Compute MS-SSIM over state."""
         if self.reduction in ("none", None):
             return dim_zero_cat(self.similarity)
-        elif self.reduction == "sum":
+        if self.reduction == "sum":
             return self.similarity
-        else:
-            return self.similarity / self.total
+        return self.similarity / self.total
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> from torchmetrics import MultiScaleStructuralSimilarityIndexMeasure
+            >>> import torch
+            >>> preds = torch.rand([3, 3, 256, 256], generator=torch.manual_seed(42))
+            >>> target = preds * 0.75
+            >>> metric = MultiScaleStructuralSimilarityIndexMeasure(data_range=1.0)
+            >>> metric.update(preds, target)
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> from torchmetrics import MultiScaleStructuralSimilarityIndexMeasure
+            >>> import torch
+            >>> preds = torch.rand([3, 3, 256, 256], generator=torch.manual_seed(42))
+            >>> target = preds * 0.75
+            >>> metric = MultiScaleStructuralSimilarityIndexMeasure(data_range=1.0)
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(preds, target))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        val = val or self.compute()
+        fig, ax = plot_single_or_multi_val(
+            val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
+        )
+        return fig, ax

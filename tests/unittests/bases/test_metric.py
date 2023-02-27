@@ -393,8 +393,8 @@ def test_constant_memory(device, requires_grad):
             pid = os.getpid()
             py = psutil.Process(pid)
             return py.memory_info()[0] / 2.0**30
-        else:
-            return torch.cuda.memory_allocated()
+
+        return torch.cuda.memory_allocated()
 
     x = torch.randn(10, requires_grad=requires_grad, device=device)
 
@@ -468,7 +468,7 @@ def test_custom_availability_check_and_sync_fn():
 
 def test_no_iteration_allowed():
     metric = DummyMetric()
-    with pytest.raises(NotImplementedError, match="Metrics does not support iteration."):  # noqa: PT012
+    with pytest.raises(TypeError, match="'DummyMetric' object is not iterable"):  # noqa: PT012
         for m in metric:
             continue
 

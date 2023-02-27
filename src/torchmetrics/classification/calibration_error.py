@@ -33,10 +33,10 @@ from torchmetrics.utilities.enums import ClassificationTaskNoMultilabel
 
 
 class BinaryCalibrationError(Metric):
-    r"""`Top-label Calibration Error`_ for binary tasks. The expected calibration error can be used to quantify how
-    well a given model is calibrated e.g. how well the predicted output probabilities of the model matches the
-    actual probabilities of the ground truth distribution.
+    r"""`Top-label Calibration Error`_ for binary tasks.
 
+    The expected calibration error can be used to quantify how well a given model is calibrated e.g. how well the
+    predicted output probabilities of the model matches the actual probabilities of the ground truth distribution.
     Three different norms are implemented, each corresponding to variations on the calibration error metric.
 
     .. math::
@@ -132,10 +132,10 @@ class BinaryCalibrationError(Metric):
 
 
 class MulticlassCalibrationError(Metric):
-    r"""`Top-label Calibration Error`_ for multiclass tasks. The expected calibration error can be used to quantify
-    how well a given model is calibrated e.g. how well the predicted output probabilities of the model matches the
-    actual probabilities of the ground truth distribution.
+    r"""`Top-label Calibration Error`_ for multiclass tasks.
 
+    The expected calibration error can be used to quantify how well a given model is calibrated e.g. how well the
+    predicted output probabilities of the model matches the actual probabilities of the ground truth distribution.
     Three different norms are implemented, each corresponding to variations on the calibration error metric.
 
     .. math::
@@ -237,10 +237,10 @@ class MulticlassCalibrationError(Metric):
 
 
 class CalibrationError:
-    r"""`Top-label Calibration Error`_. The expected calibration error can be used to quantify how well a given
-    model is calibrated e.g. how well the predicted output probabilities of the model matches the actual
-    probabilities of the ground truth distribution.
+    r"""`Top-label Calibration Error`_.
 
+    The expected calibration error can be used to quantify how well a given model is calibrated e.g. how well the
+    predicted output probabilities of the model matches the actual probabilities of the ground truth distribution.
     Three different norms are implemented, each corresponding to variations on the calibration error metric.
 
     .. math::
@@ -280,3 +280,4 @@ class CalibrationError:
         if task == ClassificationTaskNoMultilabel.MULTICLASS:
             assert isinstance(num_classes, int)
             return MulticlassCalibrationError(num_classes, **kwargs)
+        return None

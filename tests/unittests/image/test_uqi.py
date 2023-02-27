@@ -20,8 +20,9 @@ from skimage.metrics import structural_similarity
 
 from torchmetrics.functional.image.uqi import universal_image_quality_index
 from torchmetrics.image.uqi import UniversalImageQualityIndex
+from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -73,6 +74,8 @@ def _skimage_uqi(preds, target, data_range, multichannel, kernel_size):
 )
 @pytest.mark.parametrize("kernel_size", [5, 11])
 class TestUQI(MetricTester):
+    """Test class for `UniversalImageQualityIndex` metric."""
+
     atol = 6e-3
 
     @pytest.mark.parametrize("ddp", [True, False])

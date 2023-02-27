@@ -22,9 +22,10 @@ from sklearn.metrics import roc_curve as sk_roc_curve
 
 from torchmetrics.classification.roc import BinaryROC, MulticlassROC, MultilabelROC
 from torchmetrics.functional.classification.roc import binary_roc, multiclass_roc, multilabel_roc
+from unittests import NUM_CLASSES
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_CLASSES, MetricTester, inject_ignore_index, remove_ignore_index
+from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
 seed_all(42)
 
@@ -42,6 +43,8 @@ def _sklearn_roc_binary(preds, target, ignore_index=None):
 
 @pytest.mark.parametrize("input", (_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]))
 class TestBinaryROC(MetricTester):
+    """Test class for `BinaryROC` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_binary_roc(self, input, ddp, ignore_index):
@@ -148,6 +151,8 @@ def _sklearn_roc_multiclass(preds, target, ignore_index=None):
     "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
 )
 class TestMulticlassROC(MetricTester):
+    """Test class for `MulticlassROC` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multiclass_roc(self, input, ddp, ignore_index):
@@ -248,6 +253,8 @@ def _sklearn_roc_multilabel(preds, target, ignore_index=None):
     "input", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5])
 )
 class TestMultilabelROC(MetricTester):
+    """Test class for `MultilabelROC` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multilabel_roc(self, input, ddp, ignore_index):

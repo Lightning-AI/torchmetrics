@@ -32,9 +32,10 @@ from torchmetrics.functional.classification.ranking import (
     multilabel_ranking_loss,
 )
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_9
+from unittests import NUM_CLASSES
 from unittests.classification.inputs import _multilabel_cases
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_CLASSES, MetricTester, inject_ignore_index
+from unittests.helpers.testers import MetricTester, inject_ignore_index
 
 seed_all(42)
 
@@ -64,6 +65,8 @@ def _sklearn_ranking(preds, target, fn, ignore_index):
     "input", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5])
 )
 class TestMultilabelRanking(MetricTester):
+    """Test class for `MultilabelRanking` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multilabel_ranking(self, input, metric, functional_metric, ref_metric, ddp, ignore_index):

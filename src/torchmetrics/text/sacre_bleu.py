@@ -30,10 +30,10 @@ AVAILABLE_TOKENIZERS = ("none", "13a", "zh", "intl", "char")
 
 
 class SacreBLEUScore(BLEUScore):
-    """Calculate `BLEU score`_ of machine translated text with one or more references. This implementation follows
-    the behaviour of `SacreBLEU`_.
+    """Calculate `BLEU score`_ of machine translated text with one or more references.
 
-    The SacreBLEU implementation differs from the NLTK BLEU implementation in tokenization techniques.
+    This implementation follows the behaviour of `SacreBLEU`_. The SacreBLEU implementation differs from the NLTK BLEU
+    implementation in tokenization techniques.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 

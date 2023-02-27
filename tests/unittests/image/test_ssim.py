@@ -23,8 +23,9 @@ from torch import Tensor
 
 from torchmetrics.functional import structural_similarity_index_measure
 from torchmetrics.image import StructuralSimilarityIndexMeasure
+from unittests import NUM_BATCHES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -89,27 +90,27 @@ def _skimage_ssim(
             )
             results[i] = torch.from_numpy(np.asarray(res)).type(preds.dtype)
         return results if reduction_arg != "sum" else results.sum()
-    else:
-        fullimages = torch.zeros(target.shape, dtype=target.dtype)
-        for i in range(sk_preds.shape[0]):
-            res, fullimage = structural_similarity(
-                sk_target[i],
-                sk_preds[i],
-                data_range=data_range,
-                multichannel=True,
-                gaussian_weights=gaussian_weights,
-                win_size=kernel_size,
-                sigma=sigma,
-                use_sample_covariance=False,
-                full=return_ssim_image,
-            )
-            results[i] = torch.from_numpy(res).type(preds.dtype)
-            fullimage = torch.from_numpy(fullimage).type(preds.dtype)
-            if len(preds.shape) == 4:
-                fullimages[i] = fullimage.permute(2, 0, 1)
-            elif len(preds.shape) == 5:
-                fullimages[i] = fullimage.permute(3, 0, 1, 2)
-        return results, fullimages
+
+    fullimages = torch.zeros(target.shape, dtype=target.dtype)
+    for i in range(sk_preds.shape[0]):
+        res, fullimage = structural_similarity(
+            sk_target[i],
+            sk_preds[i],
+            data_range=data_range,
+            multichannel=True,
+            gaussian_weights=gaussian_weights,
+            win_size=kernel_size,
+            sigma=sigma,
+            use_sample_covariance=False,
+            full=return_ssim_image,
+        )
+        results[i] = torch.from_numpy(res).type(preds.dtype)
+        fullimage = torch.from_numpy(fullimage).type(preds.dtype)
+        if len(preds.shape) == 4:
+            fullimages[i] = fullimage.permute(2, 0, 1)
+        elif len(preds.shape) == 5:
+            fullimages[i] = fullimage.permute(3, 0, 1, 2)
+    return results, fullimages
 
 
 def _pt_ssim(
@@ -131,6 +132,8 @@ def _pt_ssim(
 )
 @pytest.mark.parametrize("sigma", [1.5, 0.5])
 class TestSSIM(MetricTester):
+    """Test class for `StructuralSimilarityIndexMeasure` metric."""
+
     atol = 6e-3
 
     @pytest.mark.parametrize("ddp", [True, False])

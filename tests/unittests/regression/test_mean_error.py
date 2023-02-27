@@ -42,8 +42,9 @@ from torchmetrics.regression import (
     WeightedMeanAbsolutePercentageError,
 )
 from torchmetrics.regression.symmetric_mape import SymmetricMeanAbsolutePercentageError
+from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -166,6 +167,8 @@ def _multi_target_ref_metric(preds, target, sk_fn, metric_args):
     ],
 )
 class TestMeanError(MetricTester):
+    """Test class for `MeanError` metric."""
+
     @pytest.mark.parametrize("ddp", [True, False])
     def test_mean_error_class(
         self, preds, target, ref_metric, metric_class, metric_functional, sk_fn, metric_args, ddp

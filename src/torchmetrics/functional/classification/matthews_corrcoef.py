@@ -35,9 +35,7 @@ from torchmetrics.utilities.enums import ClassificationTask
 
 
 def _matthews_corrcoef_reduce(confmat: Tensor) -> Tensor:
-    """Reduce an un-normalized confusion matrix of shape (n_classes, n_classes) into the matthews corrcoef
-    score.
-    """
+    """Reduce an un-normalized confusion matrix of shape (n_classes, n_classes) into the matthews corrcoef score."""
     # convert multilabel into binary
     confmat = confmat.sum(0) if confmat.ndim == 3 else confmat
 
@@ -53,8 +51,7 @@ def _matthews_corrcoef_reduce(confmat: Tensor) -> Tensor:
     denom = cov_ypyp * cov_ytyt
     if denom == 0:
         return torch.tensor(0, dtype=confmat.dtype, device=confmat.device)
-    else:
-        return cov_ytyp / torch.sqrt(denom)
+    return cov_ytyp / torch.sqrt(denom)
 
 
 def binary_matthews_corrcoef(
@@ -64,8 +61,9 @@ def binary_matthews_corrcoef(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculate `Matthews correlation coefficient`_ for binary tasks. This metric measures the general
-    correlation or quality of a classification.
+    r"""Calculate `Matthews correlation coefficient`_ for binary tasks.
+
+    This metric measures the general correlation or quality of a classification.
 
     Accepts the following input tensors:
 
@@ -116,8 +114,9 @@ def multiclass_matthews_corrcoef(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculate `Matthews correlation coefficient`_ for multiclass tasks. This metric measures the general
-    correlation or quality of a classification.
+    r"""Calculate `Matthews correlation coefficient`_ for multiclass tasks.
+
+    This metric measures the general correlation or quality of a classification.
 
     Accepts the following input tensors:
 
@@ -172,8 +171,9 @@ def multilabel_matthews_corrcoef(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculate `Matthews correlation coefficient`_ for multilabel tasks. This metric measures the general
-    correlation or quality of a classification.
+    r"""Calculate `Matthews correlation coefficient`_ for multilabel tasks.
+
+    This metric measures the general correlation or quality of a classification.
 
     Accepts the following input tensors:
 
@@ -227,8 +227,9 @@ def matthews_corrcoef(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculate `Matthews correlation coefficient`_ . This metric measures the general correlation or quality of
-    a classification.
+    r"""Calculate `Matthews correlation coefficient`_ .
+
+    This metric measures the general correlation or quality of a classification.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of

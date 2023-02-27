@@ -376,3 +376,4 @@ class AveragePrecision:
         if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelAveragePrecision(num_labels, average, **kwargs)
+        return None

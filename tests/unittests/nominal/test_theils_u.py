@@ -23,7 +23,8 @@ from lightning_utilities.core.imports import compare_version
 
 from torchmetrics.functional.nominal.theils_u import theils_u, theils_u_matrix
 from torchmetrics.nominal import TheilsU
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from unittests import BATCH_SIZE, NUM_BATCHES
+from unittests.helpers.testers import MetricTester
 
 Input = namedtuple("Input", ["preds", "target"])
 NUM_CLASSES = 4
@@ -99,6 +100,8 @@ def _dython_theils_u_matrix(matrix, nan_strategy, nan_replace_value):
 )
 @pytest.mark.parametrize("nan_strategy, nan_replace_value", [("replace", 0.0), ("drop", None)])
 class TestTheilsU(MetricTester):
+    """Test class for `TheilsU` metric."""
+
     atol = 1e-5
 
     @pytest.mark.parametrize("ddp", [False, True])

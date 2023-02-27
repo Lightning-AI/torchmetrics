@@ -21,8 +21,9 @@ from sklearn.metrics.pairwise import cosine_similarity as sk_cosine
 
 from torchmetrics.functional.regression.cosine_similarity import cosine_similarity
 from torchmetrics.regression.cosine_similarity import CosineSimilarity
+from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -48,13 +49,11 @@ def _multi_target_ref_metric(preds, target, reduction, sk_fn=sk_cosine):
     col = np.diagonal(result_array)
     col_sum = col.sum()
     if reduction == "sum":
-        to_return = col_sum
-    elif reduction == "mean":
+        return col_sum
+    if reduction == "mean":
         mean = col_sum / len(col)
-        to_return = mean
-    else:
-        to_return = col
-    return to_return
+        return mean
+    return col
 
 
 def _single_target_ref_metric(preds, target, reduction, sk_fn=sk_cosine):
@@ -64,13 +63,11 @@ def _single_target_ref_metric(preds, target, reduction, sk_fn=sk_cosine):
     col = np.diagonal(result_array)
     col_sum = col.sum()
     if reduction == "sum":
-        to_return = col_sum
-    elif reduction == "mean":
+        return col_sum
+    if reduction == "mean":
         mean = col_sum / len(col)
-        to_return = mean
-    else:
-        to_return = col
-    return to_return
+        return mean
+    return col
 
 
 @pytest.mark.parametrize("reduction", ["sum", "mean"])
@@ -82,6 +79,8 @@ def _single_target_ref_metric(preds, target, reduction, sk_fn=sk_cosine):
     ],
 )
 class TestCosineSimilarity(MetricTester):
+    """Test class for `CosineSimilarity` metric."""
+
     @pytest.mark.parametrize("ddp", [True, False])
     def test_cosine_similarity(self, reduction, preds, target, ref_metric, ddp):
         self.run_class_metric_test(

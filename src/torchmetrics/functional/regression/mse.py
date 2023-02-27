@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple
+from typing import Tuple, Union
 
 import torch
 from torch import Tensor
@@ -35,7 +35,7 @@ def _mean_squared_error_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, i
     return sum_squared_error, n_obs
 
 
-def _mean_squared_error_compute(sum_squared_error: Tensor, n_obs: int, squared: bool = True) -> Tensor:
+def _mean_squared_error_compute(sum_squared_error: Tensor, n_obs: Union[int, Tensor], squared: bool = True) -> Tensor:
     """Compute Mean Squared Error.
 
     Args:

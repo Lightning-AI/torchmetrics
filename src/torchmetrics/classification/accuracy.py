@@ -414,8 +414,7 @@ class MultilabelAccuracy(MultilabelStatScores):
             ax: An matplotlib axis object. If provided will add plot to that axis
 
         Returns:
-            fig: Figure object
-            ax: Axes object
+            Figure and Axes object
 
         Raises:
             ModuleNotFoundError:
@@ -505,3 +504,4 @@ class Accuracy:
         if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelAccuracy(num_labels, threshold, average, **kwargs)
+        return None

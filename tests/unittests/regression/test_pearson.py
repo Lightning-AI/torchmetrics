@@ -20,8 +20,9 @@ from scipy.stats import pearsonr
 
 from torchmetrics.functional.regression.pearson import pearson_corrcoef
 from torchmetrics.regression.pearson import PearsonCorrCoef
+from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -64,7 +65,9 @@ def _scipy_pearson(preds, target):
         (_multi_target_inputs2.preds, _multi_target_inputs2.target),
     ],
 )
-class TestPearsonCorrcoef(MetricTester):
+class TestPearsonCorrCoef(MetricTester):
+    """Test class for `PearsonCorrCoef` metric."""
+
     atol = 1e-3
 
     @pytest.mark.parametrize("compute_on_cpu", [True, False])

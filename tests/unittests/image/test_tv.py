@@ -28,6 +28,8 @@ seed_all(42)
 
 # add extra argument to make the metric and reference fit into the testing framework
 class TotalVariationTester(TotalVariation):
+    """Tester class for `TotalVariation` metric overriding its update method."""
+
     def update(self, img, *args):
         super().update(img=img)
 
@@ -40,7 +42,7 @@ def total_variation_kornia_tester(preds, target, reduction):
     score = kornia_total_variation(preds).sum(-1)
     if reduction == "sum":
         return score.sum()
-    elif reduction == "mean":
+    if reduction == "mean":
         return score.mean()
     return score
 
@@ -66,6 +68,8 @@ for size, channel, dtype in [
 )
 @pytest.mark.parametrize("reduction", ["sum", "mean", None])
 class TestTotalVariation(MetricTester):
+    """Test class for `TotalVariation` metric."""
+
     @pytest.mark.parametrize("ddp", [True, False])
     def test_total_variation(self, preds, target, reduction, ddp):
         """Test modular implementation."""
