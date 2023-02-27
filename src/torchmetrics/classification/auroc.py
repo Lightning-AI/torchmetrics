@@ -99,7 +99,8 @@ class BinaryAUROC(BinaryPrecisionRecallCurve):
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
-    plot_options: dict = {"lower_bound": 0.0, "upper_bound": 1.0}
+    _plot_lower_bound = 0.0
+    _plot_upper_bound = 1.0
 
     def __init__(
         self,
@@ -149,11 +150,7 @@ class BinaryAUROC(BinaryPrecisionRecallCurve):
             >>> metric.update(preds[:, 1], target)
             >>> fig_, ax_ = metric.plot()
         """
-        val = val or self.compute()
-        fig, ax = plot_single_or_multi_val(
-            val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
-        )
-        return fig, ax
+        return super().plot(val, ax)
 
 
 class MulticlassAUROC(MulticlassPrecisionRecallCurve):
@@ -233,7 +230,9 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
-    plot_options = {"lower_bound": 0.0, "upper_bound": 1.0, "legend_name": "Class"}
+    _plot_lower_bound = 0.0
+    _plot_upper_bound = 1.0
+    _plot_legend_name = "Class"
 
     def __init__(
         self,
@@ -284,11 +283,7 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
             >>> metric.update(randn(20, 3), randint(3, (20,)))
             >>> fig_, ax_ = metric.plot()
         """
-        val = val or self.compute()
-        fig, ax = plot_single_or_multi_val(
-            val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
-        )
-        return fig, ax
+        return super().plot(val, ax)
 
 
 class MultilabelAUROC(MultilabelPrecisionRecallCurve):
@@ -370,7 +365,9 @@ class MultilabelAUROC(MultilabelPrecisionRecallCurve):
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
-    plot_options = {"lower_bound": 0.0, "upper_bound": 1.0, "legend_name": "Class"}
+    _plot_lower_bound = 0.0
+    _plot_upper_bound = 1.0
+    _plot_legend_name = "Class"
 
     def __init__(
         self,
@@ -428,11 +425,7 @@ class MultilabelAUROC(MultilabelPrecisionRecallCurve):
             >>> metric.update(preds, target)
             >>> fig_, ax_ = metric.plot()
         """
-        val = val or self.compute()
-        fig, ax = plot_single_or_multi_val(
-            val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
-        )
-        return fig, ax
+        return super().plot(val, ax)
 
 
 class AUROC:

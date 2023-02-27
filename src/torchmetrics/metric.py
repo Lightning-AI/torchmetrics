@@ -34,6 +34,7 @@ from torchmetrics.utilities.data import (
 )
 from torchmetrics.utilities.distributed import gather_all_tensors
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
 
 
 def jit_distributed_available() -> bool:
@@ -79,7 +80,10 @@ class Metric(Module, ABC):
     is_differentiable: Optional[bool] = None
     higher_is_better: Optional[bool] = None
     full_state_update: Optional[bool] = None
-    plot_options: Dict[str, Union[str, float]] = {}
+
+    _plot_lower_bound: Optional[float] = (None,)
+    _plot_upper_bound: Optional[float] = (None,)
+    _plot_legend_name: Optional[str] = (None,)
 
     def __init__(
         self,
@@ -565,9 +569,36 @@ class Metric(Module, ABC):
         This method will automatically synchronize state variables when running in distributed backend.
         """
 
-    def plot(self, *_: Any, **__: Any) -> Any:
-        """Override this method plot the metric value."""
-        raise NotImplementedError
+    # def plot(self, *_: Any, **__: Any) -> Any:
+    #     """Override this method plot the metric value."""
+    #     raise NotImplementedError
+
+    def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+        """
+        val = val or self.compute()
+        fig, ax = plot_single_or_multi_val(
+            val,
+            ax=ax,
+            higher_is_better=self.higher_is_better,
+            name=self.__class__.__name__,
+            lower_bound=self._plot_lower_bound,
+            upper_bound=self._plot_upper_bound,
+            legend_name=self._plot_legend_name,
+        )
+        return fig, ax
 
     def reset(self) -> None:
         """Reset metric state variables to their default value."""

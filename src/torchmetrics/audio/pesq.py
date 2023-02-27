@@ -85,7 +85,8 @@ class PerceptualEvaluationSpeechQuality(Metric):
     full_state_update: bool = False
     is_differentiable: bool = False
     higher_is_better: bool = True
-    plot_options: dict = {"lower_bound": 1.0, "upper_bound": 4.5}
+    _plot_lower_bound = 1.0
+    _plot_upper_bound = 4.5
 
     def __init__(
         self,
@@ -163,8 +164,4 @@ class PerceptualEvaluationSpeechQuality(Metric):
             ...     values.append(metric(torch.rand(8000), torch.rand(8000)))
             >>> fig_, ax_ = metric.plot(values)
         """
-        val = val or self.compute()
-        fig, ax = plot_single_or_multi_val(
-            val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
-        )
-        return fig, ax
+        return super().plot(val, ax)
