@@ -20,9 +20,10 @@ from scipy.special import expit as sigmoid
 
 from torchmetrics.classification.exact_match import MulticlassExactMatch, MultilabelExactMatch
 from torchmetrics.functional.classification.exact_match import multiclass_exact_match, multilabel_exact_match
+from unittests import NUM_CLASSES, THRESHOLD
 from unittests.classification.inputs import _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index
+from unittests.helpers.testers import MetricTester, inject_ignore_index
 
 seed_all(42)
 
@@ -34,8 +35,8 @@ def _baseline_exact_match_multiclass(preds, target, ignore_index, multidim_avera
     target = target.numpy()
 
     if ignore_index is not None:
-        target = np.copy(target)
-        target[target == ignore_index] = -1
+        preds = np.copy(preds)
+        preds[target == ignore_index] = ignore_index
 
     correct = (preds == target).sum(-1) == preds.shape[1]
     correct = correct.sum() if multidim_average == "global" else correct
@@ -45,6 +46,8 @@ def _baseline_exact_match_multiclass(preds, target, ignore_index, multidim_avera
 
 @pytest.mark.parametrize("input", _multiclass_cases)
 class TestMulticlassExactMatch(MetricTester):
+    """Test class for `MulticlassExactMatch` metric."""
+
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])
@@ -165,6 +168,8 @@ def _baseline_exact_match_multilabel(preds, target, ignore_index, multidim_avera
 
 @pytest.mark.parametrize("input", _multilabel_cases)
 class TestMultilabelExactMatch(MetricTester):
+    """Test class for `MultilabelExactMatch` metric."""
+
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])

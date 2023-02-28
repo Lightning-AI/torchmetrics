@@ -20,8 +20,9 @@ from pytorch_msssim import ms_ssim
 
 from torchmetrics.functional.image.ssim import multiscale_structural_similarity_index_measure
 from torchmetrics.image.ssim import MultiScaleStructuralSimilarityIndexMeasure
+from unittests import NUM_BATCHES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -48,6 +49,8 @@ def pytorch_ms_ssim(preds, target, data_range, kernel_size):
     [(i.preds, i.target) for i in _inputs],
 )
 class TestMultiScaleStructuralSimilarityIndexMeasure(MetricTester):
+    """Test class for `MultiScaleStructuralSimilarityIndexMeasure` metric."""
+
     atol = 6e-3
 
     # in the pytorch-msssim package, sigma is hardcoded to 1.5. We can thus only test this value, which corresponds

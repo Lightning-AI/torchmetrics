@@ -24,8 +24,7 @@ from torchmetrics.utilities.distributed import reduce
 
 
 def _uqi_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
-    """Update and returns variables required to compute Universal Image Quality Index. Checks for same shape and
-    type of the input tensors.
+    """Update and returns variables required to compute Universal Image Quality Index.
 
     Args:
         preds: Predicted tensor

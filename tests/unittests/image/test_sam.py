@@ -21,8 +21,9 @@ from torch.nn import functional as F  # noqa: N812
 
 from torchmetrics.functional.image.sam import spectral_angle_mapper
 from torchmetrics.image.sam import SpectralAngleMapper
+from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -53,12 +54,10 @@ def _baseline_sam(
     sam_score = torch.clamp(similarity, -1, 1).acos()
     # reduction
     if reduction == "sum":
-        to_return = torch.sum(sam_score)
-    elif reduction == "elementwise_mean":
-        to_return = torch.mean(sam_score)
-    else:
-        to_return = sam_score
-    return to_return
+        return torch.sum(sam_score)
+    if reduction == "elementwise_mean":
+        return torch.mean(sam_score)
+    return sam_score
 
 
 @pytest.mark.parametrize("reduction", ["sum", "elementwise_mean"])
@@ -67,6 +66,8 @@ def _baseline_sam(
     [(i.preds, i.target) for i in _inputs],
 )
 class TestSpectralAngleMapper(MetricTester):
+    """Test class for `SpectralAngleMapper` metric."""
+
     @pytest.mark.parametrize("ddp", [True, False])
     def test_sam(self, reduction, preds, target, ddp):
         self.run_class_metric_test(
@@ -103,24 +104,28 @@ class TestSpectralAngleMapper(MetricTester):
 
 
 def test_error_on_different_shape(metric_class=SpectralAngleMapper):
+    """Test that error is raised if preds and target have different shape."""
     metric = metric_class()
-    with pytest.raises(RuntimeError):
+    with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape.*"):
         metric(torch.randn([1, 3, 16, 16]), torch.randn([1, 1, 16, 16]))
 
 
 def test_error_on_invalid_shape(metric_class=SpectralAngleMapper):
+    """Test that error is raised if input is not 4D."""
     metric = metric_class()
-    with pytest.raises(ValueError):  # noqa: PT011  # todo
+    with pytest.raises(ValueError, match="Expected `preds` and `target` to have BxCxHxW shape.*"):
         metric(torch.randn([3, 16, 16]), torch.randn([3, 16, 16]))
 
 
 def test_error_on_invalid_type(metric_class=SpectralAngleMapper):
+    """Test that error is raised if preds and target have different dtype."""
     metric = metric_class()
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match="Expected `preds` and `target` to have the same data type.*"):
         metric(torch.randn([3, 16, 16]), torch.randn([3, 16, 16], dtype=torch.float64))
 
 
 def test_error_on_grayscale_image(metric_class=SpectralAngleMapper):
+    """Test that error is raised if number of channelse is not larger than 1."""
     metric = metric_class()
-    with pytest.raises(ValueError):  # noqa: PT011  # todo
+    with pytest.raises(ValueError, match="Expected channel dimension of `preds` and `target` to be larger than 1.*"):
         metric(torch.randn([16, 1, 16, 16]), torch.randn([16, 1, 16, 16]))

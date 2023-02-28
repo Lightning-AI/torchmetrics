@@ -118,9 +118,10 @@ def _compute_sklearn_metric(
             res = metric(trg, pds, **kwargs)
             sk_results.append(res)
 
-    if len(sk_results) > 0:
-        return np.mean(sk_results)
-    return np.array(0.0)
+    sk_results = np.array(sk_results)
+    sk_results[np.isnan(sk_results)] = 0.0  # this is needed with old versions of sklearn
+
+    return sk_results.mean() if len(sk_results) > 0 else np.array(0.0)
 
 
 def _concat_tests(*tests: Tuple[Dict]) -> Dict:
@@ -159,8 +160,8 @@ _errors_test_functional_metric_parameters_with_nonbinary = {
 _errors_test_functional_metric_parameters_k = {
     "argnames": "preds,target,message,metric_args",
     "argvalues": [
-        (_irs.preds, _irs.target, "`k` has to be a positive integer or None", {"k": -10}),
-        (_irs.preds, _irs.target, "`k` has to be a positive integer or None", {"k": 4.0}),
+        (_irs.preds, _irs.target, "`top_k` has to be a positive integer or None", {"top_k": -10}),
+        (_irs.preds, _irs.target, "`top_k` has to be a positive integer or None", {"top_k": 4.0}),
     ],
 }
 
@@ -311,8 +312,8 @@ _errors_test_class_metric_parameters_default = {
 _errors_test_class_metric_parameters_k = {
     "argnames": "indexes,preds,target,message,metric_args",
     "argvalues": [
-        (_irs.index, _irs.preds, _irs.target, "`k` has to be a positive integer or None", {"k": -10}),
-        (_irs.index, _irs.preds, _irs.target, "`k` has to be a positive integer or None", {"k": 4.0}),
+        (_irs.index, _irs.preds, _irs.target, "`top_k` has to be a positive integer or None", {"top_k": -10}),
+        (_irs.index, _irs.preds, _irs.target, "`top_k` has to be a positive integer or None", {"top_k": 4.0}),
     ],
 }
 
@@ -428,6 +429,8 @@ def _errors_test_functional_metric(
 
 
 class RetrievalMetricTester(MetricTester):
+    """General tester class for retrieval metrics."""
+
     atol: float = 1e-6
 
     def run_class_metric_test(

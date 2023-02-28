@@ -48,7 +48,7 @@ def _reduce_auroc(
     average: Optional[Literal["macro", "weighted", "none"]] = "macro",
     weights: Optional[Tensor] = None,
 ) -> Tensor:
-    """Utility function for reducing multiple average precision score into one number."""
+    """Reduce multiple average precision score into one number."""
     if isinstance(fpr, Tensor):
         res = _auc_compute_without_check(fpr, tpr, 1.0, axis=1)
     else:
@@ -64,11 +64,10 @@ def _reduce_auroc(
     idx = ~torch.isnan(res)
     if average == "macro":
         return res[idx].mean()
-    elif average == "weighted" and weights is not None:
+    if average == "weighted" and weights is not None:
         weights = _safe_divide(weights[idx], weights[idx].sum())
         return (res[idx] * weights).sum()
-    else:
-        raise ValueError("Received an incompatible combinations of inputs to make reduction.")
+    raise ValueError("Received an incompatible combinations of inputs to make reduction.")
 
 
 def _binary_auroc_arg_validation(
@@ -116,9 +115,10 @@ def binary_auroc(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for binary tasks. The AUROC
-    score summarizes the ROC curve into an single number that describes the performance of a model for multiple
-    thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
+    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for binary tasks.
+
+    The AUROC score summarizes the ROC curve into an single number that describes the performance of a model for
+    multiple thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
     corresponds to random guessing.
 
     Accepts the following input tensors:
@@ -213,9 +213,10 @@ def multiclass_auroc(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for multiclass tasks. The AUROC
-    score summarizes the ROC curve into an single number that describes the performance of a model for multiple
-    thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
+    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for multiclass tasks.
+
+    The AUROC score summarizes the ROC curve into an single number that describes the performance of a model for
+    multiple thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
     corresponds to random guessing.
 
     Accepts the following input tensors:
@@ -312,23 +313,22 @@ def _multilabel_auroc_compute(
     if average == "micro":
         if isinstance(state, Tensor) and thresholds is not None:
             return _binary_auroc_compute(state.sum(1), thresholds, max_fpr=None)
-        else:
-            preds = state[0].flatten()
-            target = state[1].flatten()
-            if ignore_index is not None:
-                idx = target == ignore_index
-                preds = preds[~idx]
-                target = target[~idx]
-            return _binary_auroc_compute((preds, target), thresholds, max_fpr=None)
 
-    else:
-        fpr, tpr, _ = _multilabel_roc_compute(state, num_labels, thresholds, ignore_index)
-        return _reduce_auroc(
-            fpr,
-            tpr,
-            average,
-            weights=(state[1] == 1).sum(dim=0).float() if thresholds is None else state[0][:, 1, :].sum(-1),
-        )
+        preds = state[0].flatten()
+        target = state[1].flatten()
+        if ignore_index is not None:
+            idx = target == ignore_index
+            preds = preds[~idx]
+            target = target[~idx]
+        return _binary_auroc_compute((preds, target), thresholds, max_fpr=None)
+
+    fpr, tpr, _ = _multilabel_roc_compute(state, num_labels, thresholds, ignore_index)
+    return _reduce_auroc(
+        fpr,
+        tpr,
+        average,
+        weights=(state[1] == 1).sum(dim=0).float() if thresholds is None else state[0][:, 1, :].sum(-1),
+    )
 
 
 def multilabel_auroc(
@@ -340,9 +340,10 @@ def multilabel_auroc(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for multilabel tasks. The AUROC
-    score summarizes the ROC curve into an single number that describes the performance of a model for multiple
-    thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
+    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for multilabel tasks.
+
+    The AUROC score summarizes the ROC curve into an single number that describes the performance of a model for
+    multiple thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
     corresponds to random guessing.
 
     Accepts the following input tensors:
@@ -433,9 +434,11 @@ def auroc(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tensor, Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_). The AUROC score summarizes the
-    ROC curve into an single number that describes the performance of a model for multiple thresholds at the same
-    time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5 corresponds to random guessing.
+    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_).
+
+    The AUROC score summarizes the ROC curve into an single number that describes the performance of a model for
+    multiple thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
+    corresponds to random guessing.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
@@ -466,3 +469,4 @@ def auroc(
     if task == ClassificationTask.MULTILABEL:
         assert isinstance(num_labels, int)
         return multilabel_auroc(preds, target, num_labels, average, thresholds, ignore_index, validate_args)
+    return None

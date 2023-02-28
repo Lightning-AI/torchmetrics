@@ -61,7 +61,7 @@ class MatchErrorRate(Metric):
     higher_is_better: bool = False
     full_state_update: bool = False
 
-    error: Tensor
+    errors: Tensor
     total: Tensor
 
     def __init__(
@@ -72,16 +72,13 @@ class MatchErrorRate(Metric):
         self.add_state("errors", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
         self.add_state("total", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
 
-    def update(  # type: ignore
+    def update(
         self,
         preds: Union[str, List[str]],
         target: Union[str, List[str]],
     ) -> None:
         """Update state with predictions and targets."""
-        errors, total = _mer_update(
-            preds,
-            target,
-        )
+        errors, total = _mer_update(preds, target)
         self.errors += errors
         self.total += total
 

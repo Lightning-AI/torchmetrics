@@ -27,10 +27,11 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class PerceptualEvaluationSpeechQuality(Metric):
-    """Calculate `Perceptual Evaluation of Speech Quality`_ (PESQ). It's a recognized industry standard for audio
-    quality that takes into considerations characteristics such as: audio sharpness, call volume, background noise,
-    clipping, audio interference ect. PESQ returns a score between -0.5 and 4.5 with the higher scores indicating a
-    better quality.
+    """Calculate `Perceptual Evaluation of Speech Quality`_ (PESQ).
+
+    It's a recognized industry standard for audio quality that takes into considerations characteristics such as:
+    audio sharpness, call volume, background noise, clipping, audio interference ect. PESQ returns a score between
+    -0.5 and 4.5 with the higher scores indicating a better quality.
 
     This metric is a wrapper for the `pesq package`_. Note that input will be moved to ``cpu`` to perform the metric
     calculation.

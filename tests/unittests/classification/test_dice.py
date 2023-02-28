@@ -90,6 +90,8 @@ def test_dice(pred, target, expected):
 )
 @pytest.mark.parametrize("ignore_index", [None])
 class TestDiceBinary(MetricTester):
+    """Test class for `Dice` metric inf binary setting."""
+
     @pytest.mark.parametrize("ddp", [False])
     def test_dice_class(self, ddp, preds, target, ignore_index):
         self.run_class_metric_test(
@@ -127,6 +129,8 @@ class TestDiceBinary(MetricTester):
 )
 @pytest.mark.parametrize("ignore_index", [None, 0])
 class TestDiceMulti(MetricTester):
+    """Test class for `Dice` metric in multi-class setting.."""
+
     @pytest.mark.parametrize("ddp", [False])
     def test_dice_class(self, ddp, preds, target, ignore_index):
         self.run_class_metric_test(

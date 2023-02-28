@@ -116,6 +116,8 @@ def _compute_rouge_score(
 )
 @pytest.mark.parametrize("accumulate", ["avg", "best"])
 class TestROUGEScore(TextTester):
+    """Test class for `ROUGEScore` metric."""
+
     @pytest.mark.parametrize("ddp", [False, True])
     @skip_on_connection_issues(reason="could not download nltk relevant data")
     def test_rouge_score_class(self, ddp, preds, targets, pl_rouge_metric_key, use_stemmer, accumulate):
@@ -166,10 +168,10 @@ def test_rouge_metric_raises_errors_and_warnings():
 def test_rouge_metric_wrong_key_value_error():
     key = ("rouge1", "rouge")
 
-    with pytest.raises(ValueError):  # noqa: PT011  # todo
+    with pytest.raises(ValueError, match="Got unknown rouge key rouge. Expected to be one of"):
         ROUGEScore(rouge_keys=key)
 
-    with pytest.raises(ValueError):  # noqa: PT011  # todo
+    with pytest.raises(ValueError, match="Got unknown rouge key rouge. Expected to be one of"):
         rouge_score(
             _inputs_single_sentence_single_reference.preds,
             _inputs_single_sentence_single_reference.targets,

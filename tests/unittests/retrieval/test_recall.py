@@ -34,7 +34,7 @@ from unittests.retrieval.helpers import (
 seed_all(42)
 
 
-def _recall_at_k(target: np.ndarray, preds: np.ndarray, k: int = None):
+def _recall_at_k(target: np.ndarray, preds: np.ndarray, top_k: int = None):
     """Didn't find a reliable implementation of Recall in Information Retrieval, so, reimplementing here.
 
     See wikipedia for more information about definition.
@@ -42,17 +42,18 @@ def _recall_at_k(target: np.ndarray, preds: np.ndarray, k: int = None):
     assert target.shape == preds.shape
     assert len(target.shape) == 1  # works only with single dimension inputs
 
-    if k is None:
-        k = len(preds)
+    top_k = top_k or len(preds)
 
     if target.sum() > 0:
         order_indexes = np.argsort(preds, axis=0)[::-1]
-        relevant = np.sum(target[order_indexes][:k])
+        relevant = np.sum(target[order_indexes][:top_k])
         return relevant * 1.0 / target.sum()
     return np.NaN
 
 
 class TestRecall(RetrievalMetricTester):
+    """Test class for `RetrievalRecall` metric."""
+
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize("ignore_index", [None, 1])  # avoid setting 0, otherwise test with all 0 targets will fail
@@ -68,7 +69,7 @@ class TestRecall(RetrievalMetricTester):
         ignore_index: int,
         k: int,
     ):
-        metric_args = {"empty_target_action": empty_target_action, "k": k, "ignore_index": ignore_index}
+        metric_args = {"empty_target_action": empty_target_action, "top_k": k, "ignore_index": ignore_index}
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -93,7 +94,7 @@ class TestRecall(RetrievalMetricTester):
         empty_target_action: str,
         k: int,
     ):
-        metric_args = {"empty_target_action": empty_target_action, "k": k, "ignore_index": -100}
+        metric_args = {"empty_target_action": empty_target_action, "top_k": k, "ignore_index": -100}
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -114,7 +115,7 @@ class TestRecall(RetrievalMetricTester):
             metric_functional=retrieval_recall,
             reference_metric=_recall_at_k,
             metric_args={},
-            k=k,
+            top_k=k,
         )
 
     @pytest.mark.parametrize(**_default_metric_class_input_arguments)

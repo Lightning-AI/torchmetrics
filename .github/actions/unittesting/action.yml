@@ -1,4 +1,4 @@
-name: Unittesting and coverage
+name: Unit-testing and Coverage
 description: pull data samples -> unittests
 
 inputs:
@@ -7,6 +7,9 @@ inputs:
     required: true
   pytorch-version:
     description: PyTorch version
+    required: true
+  codecov-token:
+    description: Codecov token for upload results
     required: true
   requires:
     description: define oldest or latest
@@ -29,23 +32,20 @@ runs:
   using: "composite"
   steps:
 
-  - run: |
-      python --version
+  - name: Details
+    run: |
       pip --version
       pip list
     shell: ${{ inputs.shell-type }}
 
-  - run: |
-      echo "artifact=test-results-${{ runner.os }}-py${{ inputs.python-version }}-pt{{ inputs.pytorch-version }}-${{ inputs.requires }}" >> $GITHUB_OUTPUT
-    id: location
-    shell: ${{ inputs.shell-type }}
-
   - name: Pull testing data from S3
     working-directory: ./tests
+    env:
+      S3_DATA: "https://pl-public-data.s3.amazonaws.com/metrics/data.zip"
     run: |
       pip install -q "urllib3>1.0"
       # wget is simpler but does not work on Windows
-      python -c "from urllib.request import urlretrieve ; urlretrieve('https://pl-public-data.s3.amazonaws.com/metrics/data.zip', 'data.zip')"
+      python -c "from urllib.request import urlretrieve ; urlretrieve('$S3_DATA', 'data.zip')"
       unzip -o data.zip
       ls -l _data/*
     shell: ${{ inputs.shell-type }}
@@ -63,16 +63,8 @@ runs:
         --durations=50 \
         --reruns 3 \
         --reruns-delay 1 \
-        --junitxml="${{ steps.location.outputs.artifact }}.xml" \
         ${{ inputs.test-timeout }}
     shell: ${{ inputs.shell-type }}
-
-  - name: Upload pytest results
-    uses: actions/upload-artifact@v2
-    with:
-      name: ${{ steps.location.outputs.artifact }}
-      path: "test/${{ steps.location.outputs.artifact }}.xml"
-    if: failure()
 
   - name: Statistics
     if: success()
@@ -81,3 +73,13 @@ runs:
       coverage xml
       coverage report
     shell: ${{ inputs.shell-type }}
+
+  - name: Upload coverage to Codecov
+    uses: codecov/codecov-action@v3
+    with:
+      token: ${{ inputs.codecov-token }}
+      file: tests/coverage.xml
+      flags: cpu,${{ runner.os }},python${{ inputs.python-version }},torch${{ inputs.pytorch-version }}
+      env_vars: OS,PYTHON
+      name: codecov-umbrella
+      fail_ci_if_error: false

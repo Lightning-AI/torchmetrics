@@ -116,16 +116,16 @@ class MetricTracker(ModuleList):
         return len(self) - 1  # subtract the base metric
 
     def increment(self) -> None:
-        """Creates a new instance of the input metric that will be updated next."""
+        """Create a new instance of the input metric that will be updated next."""
         self._increment_called = True
         self.append(deepcopy(self._base_metric))
 
-    def forward(self, *args, **kwargs) -> None:  # type: ignore
+    def forward(self, *args: Any, **kwargs: Any) -> None:
         """Call forward of the current metric being tracked."""
         self._check_for_increment("forward")
         return self[-1](*args, **kwargs)
 
-    def update(self, *args, **kwargs) -> None:  # type: ignore
+    def update(self, *args: Any, **kwargs: Any) -> None:
         """Update the current metric being tracked."""
         self._check_for_increment("update")
         self[-1].update(*args, **kwargs)
@@ -173,7 +173,7 @@ class MetricTracker(ModuleList):
         Dict[str, Union[float, None]],
         Tuple[Dict[str, Union[float, None]], Dict[str, Union[int, None]]],
     ]:
-        """Returns the highest metric out of all tracked.
+        """Return the highest metric out of all tracked.
 
         Args:
             return_step: If ``True`` will also return the step with the highest metric value.
@@ -198,7 +198,7 @@ class MetricTracker(ModuleList):
         if isinstance(self._base_metric, Metric):
             fn = torch.max if self.maximize else torch.min
             try:
-                value, idx = fn(self.compute_all(), 0)
+                value, idx = fn(self.compute_all(), 0)  # type: ignore[arg-type]
                 if return_step:
                     return value.item(), idx.item()
                 return value.item()
@@ -217,7 +217,7 @@ class MetricTracker(ModuleList):
             res = self.compute_all()
             maximize = self.maximize if isinstance(self.maximize, list) else len(res) * [self.maximize]
             value, idx = {}, {}
-            for i, (k, v) in enumerate(res.items()):
+            for i, (k, v) in enumerate(res.items()):  # type: ignore[union-attr]
                 try:
                     fn = torch.max if maximize[i] else torch.min
                     out = fn(v, 0)
@@ -236,6 +236,6 @@ class MetricTracker(ModuleList):
             return value
 
     def _check_for_increment(self, method: str) -> None:
-        """Method for checking that a metric that can be updated/used for computations has been intialized."""
+        """Check that a metric that can be updated/used for computations has been intialized."""
         if not self._increment_called:
             raise ValueError(f"`{method}` cannot be called before `.increment()` has been called")

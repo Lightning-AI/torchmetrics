@@ -158,7 +158,7 @@ class RetrievalPrecisionRecallCurve(Metric):
         self.add_state("preds", default=[], dist_reduce_fx=None)
         self.add_state("target", default=[], dist_reduce_fx=None)
 
-    def update(self, preds: Tensor, target: Tensor, indexes: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor, indexes: Tensor) -> None:
         """Check shape, check and convert dtypes, flatten and add to accumulators."""
         if indexes is None:
             raise ValueError("Argument `indexes` cannot be None")
@@ -198,7 +198,7 @@ class RetrievalPrecisionRecallCurve(Metric):
             if not mini_target.sum():
                 if self.empty_target_action == "error":
                     raise ValueError("`compute` method was provided with a query with no positive target.")
-                elif self.empty_target_action == "pos":
+                if self.empty_target_action == "pos":
                     recalls.append(torch.ones(max_k, device=preds.device))
                     precisions.append(torch.ones(max_k, device=preds.device))
                 elif self.empty_target_action == "neg":
@@ -304,7 +304,7 @@ class RetrievalRecallAtFixedPrecision(RetrievalPrecisionRecallCurve):
 
         self.min_precision = min_precision
 
-    def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore
+    def compute(self) -> Tuple[Tensor, Tensor]:
         """Compute metric."""
         precisions, recalls, top_k = super().compute()
 

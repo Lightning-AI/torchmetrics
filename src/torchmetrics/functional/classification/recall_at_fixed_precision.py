@@ -89,6 +89,7 @@ def binary_recall_at_fixed_precision(
     validate_args: bool = True,
 ) -> Tuple[Tensor, Tensor]:
     r"""Compute the highest possible recall value given the minimum precision thresholds provided for binary tasks.
+
     This is done by first calculating the precision-recall curve for different thresholds and the find the recall
     for a given precision level.
 
@@ -189,9 +190,10 @@ def multiclass_recall_at_fixed_precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tuple[Tensor, Tensor]:
-    r"""Compute the highest possible recall value given the minimum precision thresholds provided for multiclass
-    tasks. This is done by first calculating the precision-recall curve for different thresholds and the find the
-    recall for a given precision level.
+    r"""Compute the highest possible recall value given the minimum precision thresholds provided for multiclass tasks.
+
+    This is done by first calculating the precision-recall curve for different thresholds and the find the recall for a
+    given precision level.
 
     Accepts the following input tensors:
 
@@ -299,9 +301,10 @@ def multilabel_recall_at_fixed_precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tuple[Tensor, Tensor]:
-    r"""Compute the highest possible recall value given the minimum precision thresholds provided for multilabel
-    tasks. This is done by first calculating the precision-recall curve for different thresholds and the find the
-    recall for a given precision level.
+    r"""Compute the highest possible recall value given the minimum precision thresholds provided for multilabel tasks.
+
+    This is done by first calculating the precision-recall curve for different thresholds and the find the recall for a
+    given precision level.
 
     Accepts the following input tensors:
 
@@ -382,9 +385,10 @@ def recall_at_fixed_precision(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tensor, Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    r"""Compute the highest possible recall value given the minimum precision thresholds provided. This is done by
-    first calculating the precision-recall curve for different thresholds and the find the recall for a given
-    precision level.
+    r"""Compute the highest possible recall value given the minimum precision thresholds provided.
+
+    This is done by first calculating the precision-recall curve for different thresholds and the find the recall for a
+    given precision level.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
@@ -404,3 +408,4 @@ def recall_at_fixed_precision(
         return multilabel_recall_at_fixed_precision(
             preds, target, num_labels, min_precision, thresholds, ignore_index, validate_args
         )
+    return None

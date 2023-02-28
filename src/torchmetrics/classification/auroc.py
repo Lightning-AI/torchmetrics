@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Union
+from typing import Any, List, Optional, Sequence, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -32,12 +32,18 @@ from torchmetrics.functional.classification.auroc import (
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.enums import ClassificationTask
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["BinaryAUROC.plot", "MulticlassAUROC.plot", "MultilabelAUROC.plot"]
 
 
 class BinaryAUROC(BinaryPrecisionRecallCurve):
-    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for binary tasks. The AUROC
-    score summarizes the ROC curve into an single number that describes the performance of a model for multiple
-    thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
+    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for binary tasks.
+
+    The AUROC score summarizes the ROC curve into an single number that describes the performance of a model for
+    multiple thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
     corresponds to random guessing.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
@@ -93,6 +99,7 @@ class BinaryAUROC(BinaryPrecisionRecallCurve):
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
+    plot_options: dict = {"lower_bound": 0.0, "upper_bound": 1.0}
 
     def __init__(
         self,
@@ -112,11 +119,48 @@ class BinaryAUROC(BinaryPrecisionRecallCurve):
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _binary_auroc_compute(state, self.thresholds, self.max_fpr)
 
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import randn, randint
+            >>> import torch.nn.functional as F
+            >>> # Example plotting a combined value across all classes
+            >>> from torchmetrics.classification import BinaryAUROC
+            >>> preds = F.softmax(randn(20, 2), dim=1)
+            >>> target = randint(2, (20,))
+            >>> metric = BinaryAUROC()
+            >>> metric.update(preds[:, 1], target)
+            >>> fig_, ax_ = metric.plot()
+        """
+        val = val or self.compute()
+        fig, ax = plot_single_or_multi_val(
+            val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
+        )
+        return fig, ax
+
 
 class MulticlassAUROC(MulticlassPrecisionRecallCurve):
-    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for multiclass tasks. The AUROC
-    score summarizes the ROC curve into an single number that describes the performance of a model for multiple
-    thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
+    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for multiclass tasks.
+
+    The AUROC score summarizes the ROC curve into an single number that describes the performance of a model for
+    multiple thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
     corresponds to random guessing.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
@@ -189,6 +233,7 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
+    plot_options = {"lower_bound": 0.0, "upper_bound": 1.0, "legend_name": "Class"}
 
     def __init__(
         self,
@@ -212,11 +257,45 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _multiclass_auroc_compute(state, self.num_classes, self.average, self.thresholds)
 
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import randn, randint
+            >>> # Example plotting a combined value across all classes
+            >>> from torchmetrics.classification import MulticlassAUROC
+            >>> metric = MulticlassAUROC(num_classes=3, average="macro")
+            >>> metric.update(randn(20, 3), randint(3, (20,)))
+            >>> fig_, ax_ = metric.plot()
+        """
+        val = val or self.compute()
+        fig, ax = plot_single_or_multi_val(
+            val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
+        )
+        return fig, ax
+
 
 class MultilabelAUROC(MultilabelPrecisionRecallCurve):
-    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for multilabel tasks. The AUROC
-    score summarizes the ROC curve into an single number that describes the performance of a model for multiple
-    thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
+    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for multilabel tasks.
+
+    The AUROC score summarizes the ROC curve into an single number that describes the performance of a model for
+    multiple thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
     corresponds to random guessing.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
@@ -291,6 +370,7 @@ class MultilabelAUROC(MultilabelPrecisionRecallCurve):
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
+    plot_options = {"lower_bound": 0.0, "upper_bound": 1.0, "legend_name": "Class"}
 
     def __init__(
         self,
@@ -314,11 +394,53 @@ class MultilabelAUROC(MultilabelPrecisionRecallCurve):
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _multilabel_auroc_compute(state, self.num_labels, self.average, self.thresholds, self.ignore_index)
 
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import tensor
+            >>> from torchmetrics.classification import MultilabelAUROC
+            >>> preds = tensor([[0.75, 0.05, 0.35],
+            ...                [0.45, 0.75, 0.05],
+            ...                [0.05, 0.55, 0.75],
+            ...                [0.05, 0.65, 0.05]])
+            >>> target = tensor([[1, 0, 1],
+            ...                [0, 0, 0],
+            ...                [0, 1, 1],
+            ...                [1, 1, 1]])
+            >>> metric = MultilabelAUROC(num_labels=3, average="macro", thresholds=None)
+            >>> metric.update(preds, target)
+            >>> fig_, ax_ = metric.plot()
+        """
+        val = val or self.compute()
+        fig, ax = plot_single_or_multi_val(
+            val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
+        )
+        return fig, ax
+
 
 class AUROC:
-    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_). The AUROC score summarizes the
-    ROC curve into an single number that describes the performance of a model for multiple thresholds at the same
-    time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5 corresponds to random guessing.
+    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_).
+
+    The AUROC score summarizes the ROC curve into an single number that describes the performance of a model for
+    multiple thresholds at the same time. Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5
+    corresponds to random guessing.
 
     This module is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
@@ -367,3 +489,4 @@ class AUROC:
         if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelAUROC(num_labels, average, **kwargs)
+        return None

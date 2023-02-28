@@ -47,17 +47,17 @@ def _fbeta_reduce(
     beta2 = beta**2
     if average == "binary":
         return _safe_divide((1 + beta2) * tp, (1 + beta2) * tp + beta2 * fn + fp)
-    elif average == "micro":
+    if average == "micro":
         tp = tp.sum(dim=0 if multidim_average == "global" else 1)
         fn = fn.sum(dim=0 if multidim_average == "global" else 1)
         fp = fp.sum(dim=0 if multidim_average == "global" else 1)
         return _safe_divide((1 + beta2) * tp, (1 + beta2) * tp + beta2 * fn + fp)
-    else:
-        fbeta_score = _safe_divide((1 + beta2) * tp, (1 + beta2) * tp + beta2 * fn + fp)
-        if average is None or average == "none":
-            return fbeta_score
-        weights = tp + fn if average == "weighted" else torch.ones_like(fbeta_score)
-        return _safe_divide(weights * fbeta_score, weights.sum(-1, keepdim=True)).sum(-1)
+
+    fbeta_score = _safe_divide((1 + beta2) * tp, (1 + beta2) * tp + beta2 * fn + fp)
+    if average is None or average == "none":
+        return fbeta_score
+    weights = tp + fn if average == "weighted" else torch.ones_like(fbeta_score)
+    return _safe_divide(weights * fbeta_score, weights.sum(-1, keepdim=True)).sum(-1)
 
 
 def _binary_fbeta_score_arg_validation(
@@ -714,6 +714,7 @@ def fbeta_score(
         return multilabel_fbeta_score(
             preds, target, beta, num_labels, threshold, average, multidim_average, ignore_index, validate_args
         )
+    return None
 
 
 def f1_score(
@@ -761,3 +762,4 @@ def f1_score(
         return multilabel_f1_score(
             preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
         )
+    return None

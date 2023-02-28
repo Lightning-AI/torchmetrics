@@ -836,3 +836,4 @@ class F1Score:
         if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelF1Score(num_labels, threshold, average, **kwargs)
+        return None

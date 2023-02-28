@@ -20,8 +20,9 @@ from sklearn.metrics import auc as _sk_auc
 from torch import tensor
 
 from torchmetrics.utilities.compute import auc
+from unittests import NUM_BATCHES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -54,6 +55,8 @@ for batch_size in (8, 4049):
 
 @pytest.mark.parametrize("x, y", _examples)
 class TestAUC(MetricTester):
+    """Test class for `AUC`."""
+
     @pytest.mark.parametrize("reorder", [True, False])
     def test_auc_functional(self, x, y, reorder):
         self.run_functional_metric_test(
@@ -68,7 +71,7 @@ class TestAUC(MetricTester):
 @pytest.mark.parametrize("unsqueeze_x", [True, False])
 @pytest.mark.parametrize("unsqueeze_y", [True, False])
 @pytest.mark.parametrize(
-    ["x", "y", "expected"],
+    ("x", "y", "expected"),
     [
         ([0, 1], [0, 1], 0.5),
         ([1, 0], [0, 1], 0.5),

@@ -33,7 +33,7 @@ if _LPIPS_AVAILABLE:
         __doctest_skip__ = ["LearnedPerceptualImagePatchSimilarity", "LPIPS"]
 else:
 
-    class _LPIPS(Module):  # type: ignore
+    class _LPIPS(Module):
         pass
 
     __doctest_skip__ = ["LearnedPerceptualImagePatchSimilarity", "LPIPS"]
@@ -43,7 +43,7 @@ class NoTrainLpips(_LPIPS):
     """Wrapper to make sure LPIPS never leaves evaluation mode."""
 
     def train(self, mode: bool) -> "NoTrainLpips":
-        """the network should not be able to be switched away from evaluation mode."""
+        """Force network to always be in evaluation mode."""
         return super().train(False)
 
 
@@ -54,13 +54,14 @@ def _valid_img(img: Tensor, normalize: bool) -> bool:
 
 
 class LearnedPerceptualImagePatchSimilarity(Metric):
-    """The Learned Perceptual Image Patch Similarity (`LPIPS_`) is used to judge the perceptual similarity between
-    two images. LPIPS essentially computes the similarity between the activations of two image patches for some
-    pre-defined network. This measure has been shown to match human perception well. A low LPIPS score means that
-    image patches are perceptual similar.
+    """The Learned Perceptual Image Patch Similarity (`LPIPS_`) calculates the perceptual similarity between two images.
 
-    Both input image patches are expected to have shape ``(N, 3, H, W)``.
-    The minimum size of `H, W` depends on the chosen backbone (see `net_type` arg).
+    LPIPS essentially computes the similarity between the activations of two image patches for some pre-defined network.
+    This measure has been shown to match human perception well. A low LPIPS score means that image patches are
+    perceptual similar.
+
+    Both input image patches are expected to have shape ``(N, 3, H, W)``. The minimum size of `H, W` depends on the
+    chosen backbone (see `net_type` arg).
 
     .. note:: using this metrics requires you to have ``lpips`` package installed. Either install
         as ``pip install torchmetrics[image]`` or ``pip install lpips``
@@ -146,7 +147,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
         self.add_state("sum_scores", torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", torch.tensor(0.0), dist_reduce_fx="sum")
 
-    def update(self, img1: Tensor, img2: Tensor) -> None:  # type: ignore
+    def update(self, img1: Tensor, img2: Tensor) -> None:
         """Update internal states with lpips score."""
         if not (_valid_img(img1, self.normalize) and _valid_img(img2, self.normalize)):
             raise ValueError(
@@ -165,3 +166,4 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
             return self.sum_scores / self.total
         if self.reduction == "sum":
             return self.sum_scores
+        return None

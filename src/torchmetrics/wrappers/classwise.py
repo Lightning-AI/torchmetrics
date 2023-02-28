@@ -19,8 +19,10 @@ from torchmetrics import Metric
 
 
 class ClasswiseWrapper(Metric):
-    """Wrapper class for altering the output of classification metrics that returns multiple values to include
-    label information.
+    """Wrapper metric for altering the output of classification metrics.
+
+    This metric works together with classification metrics that returns multiple values (one value per class) such that
+    label information can be automatically included in the output.
 
     Args:
         metric: base metric that should be wrapped. It is assumed that the metric outputs a single

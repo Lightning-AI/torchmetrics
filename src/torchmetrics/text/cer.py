@@ -22,8 +22,7 @@ from torchmetrics.metric import Metric
 
 
 class CharErrorRate(Metric):
-    r"""Character Error Rate (`CER`_) is a metric of the performance of an automatic speech recognition (ASR)
-    system.
+    r"""Character Error Rate (`CER`_) is a metric of the performance of an automatic speech recognition (ASR) system.
 
     This value indicates the percentage of characters that were incorrectly predicted.
     The lower the value, the better the performance of the ASR system with a CharErrorRate of 0 being
@@ -76,7 +75,7 @@ class CharErrorRate(Metric):
         self.add_state("errors", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
         self.add_state("total", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
 
-    def update(self, preds: Union[str, List[str]], target: Union[str, List[str]]) -> None:  # type: ignore
+    def update(self, preds: Union[str, List[str]], target: Union[str, List[str]]) -> None:
         """Update state with predictions and targets."""
         errors, total = _cer_update(preds, target)
         self.errors += errors

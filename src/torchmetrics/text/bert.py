@@ -44,17 +44,17 @@ else:
 
 def _get_input_dict(input_ids: List[Tensor], attention_mask: List[Tensor]) -> Dict[str, Tensor]:
     """Create an input dictionary of ``input_ids`` and ``attention_mask`` for BERTScore calculation."""
-    output_dict = {"input_ids": torch.cat(input_ids), "attention_mask": torch.cat(attention_mask)}
-    return output_dict
+    return {"input_ids": torch.cat(input_ids), "attention_mask": torch.cat(attention_mask)}
 
 
 class BERTScore(Metric):
-    """`Bert_score Evaluating Text Generation`_ leverages the pre-trained contextual embeddings from BERT and
-    matches words in candidate and reference sentences by cosine similarity. It has been shown to correlate with
-    human judgment on sentence-level and system-level evaluation. Moreover, BERTScore computes precision, recall,
-    and F1 measure, which can be useful for evaluating different language generation tasks.
+    """`Bert_score Evaluating Text Generation`_ for measuring text similarity.
 
-    This implemenation follows the original implementation from `BERT_score`_.
+    BERT leverages the pre-trained contextual embeddings from BERT and matches words in candidate and reference
+    sentences by cosine similarity. It has been shown to correlate with human judgment on sentence-level and
+    system-level evaluation. Moreover, BERTScore computes precision, recall, and F1 measure, which can be useful for
+    evaluating different language generation tasks. This implemenation follows the original implementation from
+    `BERT_score`_.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -133,7 +133,7 @@ class BERTScore(Metric):
         all_layers: bool = False,
         model: Optional[Module] = None,
         user_tokenizer: Optional[Any] = None,
-        user_forward_fn: Callable[[Module, Dict[str, Tensor]], Tensor] = None,
+        user_forward_fn: Optional[Callable[[Module, Dict[str, Tensor]], Tensor]] = None,
         verbose: bool = False,
         idf: bool = False,
         device: Optional[Union[str, torch.device]] = None,

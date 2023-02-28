@@ -27,8 +27,7 @@ __doctest_requires__ = {("InceptionScore", "IS"): ["torch_fidelity"]}
 
 
 class InceptionScore(Metric):
-    r"""Calculate the Inception Score (IS) which is used to assess how realistic generated images are. It is
-    defined as.
+    r"""Calculate the Inception Score (IS) which is used to access how realistic generated images are.
 
     .. math::
         IS = exp(\mathbb{E}_x KL(p(y | x ) || p(y)))
@@ -134,7 +133,7 @@ class InceptionScore(Metric):
         self.splits = splits
         self.add_state("features", [], dist_reduce_fx=None)
 
-    def update(self, imgs: Tensor) -> None:  # type: ignore
+    def update(self, imgs: Tensor) -> None:
         """Update the state with extracted features."""
         imgs = (imgs * 255).byte() if self.normalize else imgs
         features = self.inception(imgs)

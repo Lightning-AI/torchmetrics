@@ -96,8 +96,8 @@ def _compute_precision_recall_curve(
 
         else:
             for k in top_k:
-                r.append(_recall_at_k(trg, prd, k=k.item()))
-                p.append(_precision_at_k(trg, prd, k=k.item(), adaptive_k=adaptive_k))
+                r.append(_recall_at_k(trg, prd, top_k=k.item()))
+                p.append(_precision_at_k(trg, prd, top_k=k.item(), adaptive_k=adaptive_k))
 
             recalls.append(r)
             precisions.append(p)
@@ -112,6 +112,8 @@ def _compute_precision_recall_curve(
 
 
 class RetrievalPrecisionRecallCurveTester(MetricTester):
+    """Tester class for `RetrievalPrecisionRecallCurveTester` metric."""
+
     def run_class_metric_test(
         self,
         ddp: bool,
@@ -144,6 +146,8 @@ class RetrievalPrecisionRecallCurveTester(MetricTester):
 @pytest.mark.parametrize("adaptive_k", [False, True])
 @pytest.mark.parametrize(**_default_metric_class_input_arguments)
 class TestRetrievalPrecisionRecallCurve(RetrievalPrecisionRecallCurveTester):
+    """Test class for `RetrievalPrecisionRecallCurveTester` metric."""
+
     atol = 0.02
 
     def test_class_metric(

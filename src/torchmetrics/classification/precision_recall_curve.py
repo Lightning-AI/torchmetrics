@@ -41,8 +41,10 @@ from torchmetrics.utilities.enums import ClassificationTask
 
 
 class BinaryPrecisionRecallCurve(Metric):
-    r"""Compute the precision-recall curve for binary tasks. The curve consist of multiple pairs of precision and
-    recall values evaluated at different thresholds, such that the tradeoff between the two values can been seen.
+    r"""Compute the precision-recall curve for binary tasks.
+
+    The curve consist of multiple pairs of precision and recall values evaluated at different thresholds, such that the
+    tradeoff between the two values can been seen.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -137,7 +139,7 @@ class BinaryPrecisionRecallCurve(Metric):
                 "confmat", default=torch.zeros(len(thresholds), 2, 2, dtype=torch.long), dist_reduce_fx="sum"
             )
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Update metric states."""
         if self.validate_args:
             _binary_precision_recall_curve_tensor_validation(preds, target, self.ignore_index)
@@ -156,9 +158,10 @@ class BinaryPrecisionRecallCurve(Metric):
 
 
 class MulticlassPrecisionRecallCurve(Metric):
-    r"""Compute the precision-recall curve for multiclass tasks. The curve consist of multiple pairs of precision
-    and recall values evaluated at different thresholds, such that the tradeoff between the two values can been
-    seen.
+    r"""Compute the precision-recall curve for multiclass tasks.
+
+    The curve consist of multiple pairs of precision and recall values evaluated at different thresholds, such that the
+    tradeoff between the two values can been seen.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -195,7 +198,7 @@ class MulticlassPrecisionRecallCurve(Metric):
             - If set to an `int` (larger than 1), will use that number of thresholds linearly spaced from
               0 to 1 as bins for the calculation.
             - If set to an `list` of floats, will use the indicated thresholds in the list as bins for the calculation
-            - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
+            - If set to a 1D `tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
@@ -265,7 +268,7 @@ class MulticlassPrecisionRecallCurve(Metric):
                 dist_reduce_fx="sum",
             )
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Update metric states."""
         if self.validate_args:
             _multiclass_precision_recall_curve_tensor_validation(preds, target, self.num_classes, self.ignore_index)
@@ -286,9 +289,10 @@ class MulticlassPrecisionRecallCurve(Metric):
 
 
 class MultilabelPrecisionRecallCurve(Metric):
-    r"""Compute the precision-recall curve for multilabel tasks. The curve consist of multiple pairs of precision
-    and recall values evaluated at different thresholds, such that the tradeoff between the two values can been
-    seen.
+    r"""Compute the precision-recall curve for multilabel tasks.
+
+    The curve consist of multiple pairs of precision and recall values evaluated at different thresholds, such that the
+    tradeoff between the two values can been seen.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -406,7 +410,7 @@ class MultilabelPrecisionRecallCurve(Metric):
                 dist_reduce_fx="sum",
             )
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Update metric states."""
         if self.validate_args:
             _multilabel_precision_recall_curve_tensor_validation(preds, target, self.num_labels, self.ignore_index)
@@ -427,8 +431,10 @@ class MultilabelPrecisionRecallCurve(Metric):
 
 
 class PrecisionRecallCurve:
-    r"""Compute the precision-recall curve. The curve consist of multiple pairs of precision and recall values
-    evaluated at different thresholds, such that the tradeoff between the two values can been seen.
+    r"""Compute the precision-recall curve.
+
+    The curve consist of multiple pairs of precision and recall values evaluated at different thresholds, such that the
+    tradeoff between the two values can been seen.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
@@ -484,3 +490,4 @@ class PrecisionRecallCurve:
         if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelPrecisionRecallCurve(num_labels, **kwargs)
+        return None

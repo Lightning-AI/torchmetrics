@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple
+from typing import Tuple, Union
 
 import torch
 from torch import Tensor
@@ -20,7 +20,7 @@ from torchmetrics.utilities.checks import _check_same_shape
 
 
 def _mean_squared_log_error_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, int]:
-    """Returns variables required to compute Mean Squared Log Error. Checks for same shape of tensors.
+    """Return variables required to compute Mean Squared Log Error. Checks for same shape of tensors.
 
     Args:
         preds: Predicted tensor
@@ -32,7 +32,7 @@ def _mean_squared_log_error_update(preds: Tensor, target: Tensor) -> Tuple[Tenso
     return sum_squared_log_error, n_obs
 
 
-def _mean_squared_log_error_compute(sum_squared_log_error: Tensor, n_obs: int) -> Tensor:
+def _mean_squared_log_error_compute(sum_squared_log_error: Tensor, n_obs: Union[int, Tensor]) -> Tensor:
     """Compute Mean Squared Log Error.
 
     Args:

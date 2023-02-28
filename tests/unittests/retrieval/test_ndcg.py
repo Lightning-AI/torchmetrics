@@ -34,7 +34,7 @@ from unittests.retrieval.helpers import (
 seed_all(42)
 
 
-def _ndcg_at_k(target: np.ndarray, preds: np.ndarray, k: int = None):
+def _ndcg_at_k(target: np.ndarray, preds: np.ndarray, top_k: int = None):
     """Adapting `from sklearn.metrics.ndcg_score`."""
     assert target.shape == preds.shape
     assert len(target.shape) == 1  # works only with single dimension inputs
@@ -45,10 +45,12 @@ def _ndcg_at_k(target: np.ndarray, preds: np.ndarray, k: int = None):
     preds = np.expand_dims(preds, axis=0)
     target = np.expand_dims(target, axis=0)
 
-    return ndcg_score(target, preds, k=k)
+    return ndcg_score(target, preds, k=top_k)
 
 
 class TestNDCG(RetrievalMetricTester):
+    """Test class for `RetrievalNormalizedDCG` metric."""
+
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize("ignore_index", [None, 3])  # avoid setting 0, otherwise test with all 0 targets will fail
@@ -64,7 +66,7 @@ class TestNDCG(RetrievalMetricTester):
         ignore_index: int,
         k: int,
     ):
-        metric_args = {"empty_target_action": empty_target_action, "k": k, "ignore_index": ignore_index}
+        metric_args = {"empty_target_action": empty_target_action, "top_k": k, "ignore_index": ignore_index}
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -89,7 +91,7 @@ class TestNDCG(RetrievalMetricTester):
         empty_target_action: str,
         k: int,
     ):
-        metric_args = {"empty_target_action": empty_target_action, "k": k, "ignore_index": -100}
+        metric_args = {"empty_target_action": empty_target_action, "top_k": k, "ignore_index": -100}
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -110,7 +112,7 @@ class TestNDCG(RetrievalMetricTester):
             metric_functional=retrieval_normalized_dcg,
             reference_metric=_ndcg_at_k,
             metric_args={},
-            k=k,
+            top_k=k,
         )
 
     @pytest.mark.parametrize(**_default_metric_class_input_arguments_with_non_binary_target)

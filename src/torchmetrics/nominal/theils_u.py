@@ -23,14 +23,13 @@ from torchmetrics.metric import Metric
 
 
 class TheilsU(Metric):
-    r"""Compute `Theil's U`_ statistic (Uncertainty Coefficient) measuring the association between two categorical
-    (nominal) data series.
+    r"""Compute `Theil's U`_ statistic measuring the association between two categorical (nominal) data series.
 
     .. math::
         U(X|Y) = \frac{H(X) - H(X|Y)}{H(X)}
 
     where :math:`H(X)` is entropy of variable :math:`X` while :math:`H(X|Y)` is the conditional entropy of :math:`X`
-    given :math:`Y`.
+    given :math:`Y`. It is also know as the Uncertainty Coefficient.
 
     Theils's U is an asymmetric coefficient, i.e. :math:`TheilsU(preds, target) \neq TheilsU(target, preds)`.
 
@@ -91,5 +90,5 @@ class TheilsU(Metric):
         self.confmat += confmat
 
     def compute(self) -> Tensor:
-        """Computer Theil's U statistic."""
+        """Compute Theil's U statistic."""
         return _theils_u_compute(self.confmat)

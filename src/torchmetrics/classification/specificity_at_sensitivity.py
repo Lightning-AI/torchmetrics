@@ -35,8 +35,9 @@ from torchmetrics.utilities.enums import ClassificationTask
 
 
 class BinarySpecificityAtSensitivity(BinaryPrecisionRecallCurve):
-    r"""Compute the higest possible specificity value given the minimum sensitivity thresholds provided. This is
-    done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the
+    r"""Compute the higest possible specificity value given the minimum sensitivity thresholds provided.
+
+    This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the
     find the specificity for a given sensitivity level.
 
     Accepts the following input tensors:
@@ -115,8 +116,9 @@ class BinarySpecificityAtSensitivity(BinaryPrecisionRecallCurve):
 
 
 class MulticlassSpecificityAtSensitivity(MulticlassPrecisionRecallCurve):
-    r"""Compute the higest possible specificity value given the minimum sensitivity thresholds provided. This is
-    done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the
+    r"""Compute the higest possible specificity value given the minimum sensitivity thresholds provided.
+
+    This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the
     find the specificity for a given sensitivity level.
 
     Accepts the following input tensors:
@@ -199,7 +201,7 @@ class MulticlassSpecificityAtSensitivity(MulticlassPrecisionRecallCurve):
         self.validate_args = validate_args
         self.min_sensitivity = min_sensitivity
 
-    def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore
+    def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
         """Compute metric."""
         state = [_cat(self.preds), _cat(self.target)] if self.thresholds is None else self.confmat  # type: ignore
         return _multiclass_specificity_at_sensitivity_compute(
@@ -208,8 +210,9 @@ class MulticlassSpecificityAtSensitivity(MulticlassPrecisionRecallCurve):
 
 
 class MultilabelSpecificityAtSensitivity(MultilabelPrecisionRecallCurve):
-    r"""Compute the higest possible specificity value given the minimum sensitivity thresholds provided. This is
-    done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the
+    r"""Compute the higest possible specificity value given the minimum sensitivity thresholds provided.
+
+    This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the
     find the specificity for a given sensitivity level.
 
     Accepts the following input tensors:
@@ -301,8 +304,9 @@ class MultilabelSpecificityAtSensitivity(MultilabelPrecisionRecallCurve):
 
 
 class SpecificityAtSensitivity:
-    r"""Compute the higest possible specificity value given the minimum sensitivity thresholds provided. This is
-    done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the
+    r"""Compute the higest possible specificity value given the minimum sensitivity thresholds provided.
+
+    This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the
     find the specificity for a given sensitivity level.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
@@ -311,7 +315,7 @@ class SpecificityAtSensitivity:
     :func:`MultilabelSpecificityAtSensitivity` for the specific details of each argument influence and examples.
     """
 
-    def __new__(  # type: ignore
+    def __new__(  # type: ignore[misc]
         cls,
         task: Literal["binary", "multiclass", "multilabel"],
         min_sensitivity: float,
@@ -336,3 +340,4 @@ class SpecificityAtSensitivity:
             return MultilabelSpecificityAtSensitivity(
                 num_labels, min_sensitivity, thresholds, ignore_index, validate_args, **kwargs
             )
+        return None  # type: ignore[return-value]

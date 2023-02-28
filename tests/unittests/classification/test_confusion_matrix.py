@@ -29,9 +29,10 @@ from torchmetrics.functional.classification.confusion_matrix import (
     multiclass_confusion_matrix,
     multilabel_confusion_matrix,
 )
+from unittests import NUM_CLASSES, THRESHOLD
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index, remove_ignore_index
+from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
 seed_all(42)
 
@@ -49,6 +50,8 @@ def _sklearn_confusion_matrix_binary(preds, target, normalize=None, ignore_index
 
 @pytest.mark.parametrize("input", _binary_cases)
 class TestBinaryConfusionMatrix(MetricTester):
+    """Test class for `BinaryConfusionMatrix` metric."""
+
     @pytest.mark.parametrize("normalize", ["true", "pred", "all", None])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
@@ -139,6 +142,8 @@ def _sklearn_confusion_matrix_multiclass(preds, target, normalize=None, ignore_i
 
 @pytest.mark.parametrize("input", _multiclass_cases)
 class TestMulticlassConfusionMatrix(MetricTester):
+    """Test class for `MultiClassConfusionMatrix` metric."""
+
     @pytest.mark.parametrize("normalize", ["true", "pred", "all", None])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
@@ -218,6 +223,18 @@ class TestMulticlassConfusionMatrix(MetricTester):
         )
 
 
+def test_multiclass_overflow():
+    """Test that multiclass computations does not overflow even on byte input."""
+    preds = torch.randint(20, (100,)).byte()
+    target = torch.randint(20, (100,)).byte()
+
+    m = MulticlassConfusionMatrix(num_classes=20)
+    res = m(preds, target)
+
+    compare = sk_confusion_matrix(target, preds)
+    assert torch.allclose(res, torch.tensor(compare))
+
+
 def _sklearn_confusion_matrix_multilabel(preds, target, normalize=None, ignore_index=None):
     preds = preds.numpy()
     target = target.numpy()
@@ -237,6 +254,8 @@ def _sklearn_confusion_matrix_multilabel(preds, target, normalize=None, ignore_i
 
 @pytest.mark.parametrize("input", _multilabel_cases)
 class TestMultilabelConfusionMatrix(MetricTester):
+    """Test class for `MultilabelConfusionMatrix` metric."""
+
     @pytest.mark.parametrize("normalize", ["true", "pred", "all", None])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])

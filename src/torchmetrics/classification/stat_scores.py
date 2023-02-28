@@ -74,7 +74,7 @@ class _AbstractStatScores(Metric):
             self.fn += fn
 
     def _final_state(self) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-        """Final aggregation in case of list states."""
+        """Aggregate states that are lists and return final states."""
         tp = dim_zero_cat(self.tp)
         fp = dim_zero_cat(self.fp)
         tn = dim_zero_cat(self.tn)
@@ -83,8 +83,9 @@ class _AbstractStatScores(Metric):
 
 
 class BinaryStatScores(_AbstractStatScores):
-    r"""Compute the number of true positives, false positives, true negatives, false negatives and the support for
-    binary tasks. Related to `Type I and Type II errors`_.
+    r"""Compute true positives, false positives, true negatives, false negatives and the support for binary tasks.
+
+    Related to `Type I and Type II errors`_.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -167,7 +168,7 @@ class BinaryStatScores(_AbstractStatScores):
 
         self._create_state(size=1, multidim_average=multidim_average)
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
         if self.validate_args:
             _binary_stat_scores_tensor_validation(preds, target, self.multidim_average, self.ignore_index)
@@ -182,8 +183,9 @@ class BinaryStatScores(_AbstractStatScores):
 
 
 class MulticlassStatScores(_AbstractStatScores):
-    r"""Compute the number of true positives, false positives, true negatives, false negatives and the support for
-    multiclass tasks. Related to `Type I and Type II errors`_.
+    r"""Computes true positives, false positives, true negatives, false negatives and the support for multiclass tasks.
+
+    Related to `Type I and Type II errors`_.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -306,7 +308,7 @@ class MulticlassStatScores(_AbstractStatScores):
             size=1 if (average == "micro" and top_k == 1) else num_classes, multidim_average=multidim_average
         )
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
         if self.validate_args:
             _multiclass_stat_scores_tensor_validation(
@@ -325,8 +327,9 @@ class MulticlassStatScores(_AbstractStatScores):
 
 
 class MultilabelStatScores(_AbstractStatScores):
-    r"""Compute the number of true positives, false positives, true negatives, false negatives and the support for
-    multilabel tasks. Related to `Type I and Type II errors`_.
+    r"""Compute true positives, false positives, true negatives, false negatives and the support for multilabel tasks.
+
+    Related to `Type I and Type II errors`_.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -443,7 +446,7 @@ class MultilabelStatScores(_AbstractStatScores):
 
         self._create_state(size=num_labels, multidim_average=multidim_average)
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
         if self.validate_args:
             _multilabel_stat_scores_tensor_validation(
@@ -511,3 +514,4 @@ class StatScores:
         if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelStatScores(num_labels, threshold, average, **kwargs)
+        return None

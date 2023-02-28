@@ -78,7 +78,7 @@ select = [
 extend-select = [
     "C4",  # see: https://pypi.org/project/flake8-comprehensions
     "PT",  # see: https://pypi.org/project/flake8-pytest-style
-#    "RET",  # see: https://pypi.org/project/flake8-return
+    "RET",  # see: https://pypi.org/project/flake8-return
     "SIM",  # see: https://pypi.org/project/flake8-simplify
 ]
 ignore = [
@@ -87,6 +87,7 @@ ignore = [
     "D100",  # Missing docstring in public module
     "D104",  # Missing docstring in public package
     "D107",  # Missing docstring in `__init__`
+    "RET504",  # ToDo
 ]
 # Exclude a variety of commonly ignored directories.
 exclude = [
@@ -107,13 +108,7 @@ unfixable = ["F401"]
 "setup.py" = ["D100", "SIM115"]
 "__about__.py" = ["D100"]
 "__init__.py" = ["D100"]
-"src/**" = [
-    "D103",  # todo # Missing docstring in public function
-    "D205",  # todo # 1 blank line required between summary line and description
-    "D401",  # todo # First line of docstring should be in imperative mood: ...
-]
 "tests/**" = [
-    "D101",  # Missing docstring in public class
     "D102",  # Missing docstring in public method
     "D103",  # Missing docstring in public function
     "D401",  # todo # First line of docstring should be in imperative mood: ...
@@ -153,14 +148,10 @@ warn_no_return = "False"
 # Ignore mypy errors for these files
 # TODO: the goal is for this to be empty
 [[tool.mypy.overrides]]
-# the list can be generated with:
-# mypy --no-error-summary 2>&1 | tr ':' ' ' | awk '{print $1}' | sort | uniq | sed 's/\.py//g; s|src/||g;  s|\/|\.|g' | xargs -I {} echo '"{}",'
 module = [
-    "torchmetrics.aggregation",
     "torchmetrics.classification.accuracy",
     "torchmetrics.classification.auroc",
     "torchmetrics.classification.average_precision",
-    "torchmetrics.classification.binned_precision_recall",
     "torchmetrics.classification.calibration_error",
     "torchmetrics.classification.cohen_kappa",
     "torchmetrics.classification.confusion_matrix",
@@ -170,8 +161,8 @@ module = [
     "torchmetrics.classification.hinge",
     "torchmetrics.classification.jaccard",
     "torchmetrics.classification.matthews_corrcoef",
-    "torchmetrics.classification.precision_recall_curve",
     "torchmetrics.classification.precision_recall",
+    "torchmetrics.classification.precision_recall_curve",
     "torchmetrics.classification.ranking",
     "torchmetrics.classification.recall_at_fixed_precision",
     "torchmetrics.classification.roc",
@@ -194,13 +185,8 @@ module = [
     "torchmetrics.functional.image.psnr",
     "torchmetrics.functional.image.ssim",
     "torchmetrics.functional.image.uqi",
-    "torchmetrics.functional.regression.cosine_similarity",
-    "torchmetrics.functional.regression.explained_variance",
-    "torchmetrics.functional.regression.kl_divergence",
-    "torchmetrics.functional.regression.r2",
-    "torchmetrics.functional.regression.wmape",
+    "torchmetrics.functional.multimodal.clip_score",
     "torchmetrics.functional.retrieval.r_precision",
-    "torchmetrics.functional.text.squad",
     "torchmetrics.image.fid",
     "torchmetrics.image.inception",
     "torchmetrics.image.lpip",
@@ -208,19 +194,6 @@ module = [
     "torchmetrics.image.ssim",
     "torchmetrics.image.tv",
     "torchmetrics.image.uqi",
-    "torchmetrics.metric",
-    "torchmetrics.regression.kl_divergence",
-    "torchmetrics.regression.log_mse",
-    "torchmetrics.regression.mae",
-    "torchmetrics.regression.mape",
-    "torchmetrics.regression.mse",
-    "torchmetrics.regression.symmetric_mape",
     "torchmetrics.retrieval.precision_recall_curve",
-    "torchmetrics.text.cer",
-    "torchmetrics.text.mer",
-    "torchmetrics.text.wer",
-    "torchmetrics.utilities.checks",
-    "torchmetrics.utilities.data",
-    "torchmetrics.wrappers.tracker",
 ]
 ignore_errors = "True"

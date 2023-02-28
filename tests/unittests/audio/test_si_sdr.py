@@ -21,8 +21,9 @@ from torch import Tensor
 
 from torchmetrics.audio import ScaleInvariantSignalDistortionRatio
 from torchmetrics.functional import scale_invariant_signal_distortion_ratio
+from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -74,6 +75,8 @@ speechmetrics_si_sdr_no_zero_mean = partial(speechmetrics_si_sdr, zero_mean=Fals
     ],
 )
 class TestSISDR(MetricTester):
+    """Test class for `ScaleInvariantSignalDistortionRatio` metric."""
+
     atol = 1e-2
 
     @pytest.mark.parametrize("ddp", [True, False])

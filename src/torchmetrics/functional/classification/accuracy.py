@@ -44,25 +44,36 @@ def _accuracy_reduce(
     multidim_average: Literal["global", "samplewise"] = "global",
     multilabel: bool = False,
 ) -> Tensor:
-    """Reduce classification statistics into accuracy score
+    """Reduce classification statistics into accuracy score.
+
     Args:
         tp: number of true positives
         fp: number of false positives
         tn: number of true negatives
         fn: number of false negatives
-        normalize: normalization method.
-            - `"true"` will divide by the sum of the column dimension.
-            - `"pred"` will divide by the sum of the row dimension.
-            - `"all"` will divide by the sum of the full matrix
-            - `"none"` or `None` will apply no reduction
-        multilabel: bool indicating if reduction is for multilabel tasks.
+        average:
+            Defines the reduction that is applied over labels. Should be one of the following:
+
+            - ``binary``: for binary reduction
+            - ``micro``: sum score over all classes/labels
+            - ``macro``: salculate score for each class/label and average them
+            - ``weighted``: calculates score for each class/label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates score for each class/label and applies no reduction
+
+        multidim_average:
+            Defines how additionally dimensions ``...`` should be handled. Should be one of the following:
+
+            - ``global``: Additional dimensions are flatted along the batch dimension
+            - ``samplewise``: Statistic will be calculated independently for each sample on the ``N`` axis.
+
+        multilabel: If input is multilabel or not
 
     Returns:
         Accuracy score
     """
     if average == "binary":
         return _safe_divide(tp + tn, tp + tn + fp + fn)
-    elif average == "micro":
+    if average == "micro":
         tp = tp.sum(dim=0 if multidim_average == "global" else 1)
         fn = fn.sum(dim=0 if multidim_average == "global" else 1)
         if multilabel:
@@ -70,12 +81,12 @@ def _accuracy_reduce(
             tn = tn.sum(dim=0 if multidim_average == "global" else 1)
             return _safe_divide(tp + tn, tp + tn + fp + fn)
         return _safe_divide(tp, tp + fn)
-    else:
-        score = _safe_divide(tp + tn, tp + tn + fp + fn) if multilabel else _safe_divide(tp, tp + fn)
-        if average is None or average == "none":
-            return score
-        weights = tp + fn if average == "weighted" else torch.ones_like(score)
-        return _safe_divide(weights * score, weights.sum(-1, keepdim=True)).sum(-1)
+
+    score = _safe_divide(tp + tn, tp + tn + fp + fn) if multilabel else _safe_divide(tp, tp + fn)
+    if average is None or average == "none":
+        return score
+    weights = tp + fn if average == "weighted" else torch.ones_like(score)
+    return _safe_divide(weights * score, weights.sum(-1, keepdim=True)).sum(-1)
 
 
 def binary_accuracy(

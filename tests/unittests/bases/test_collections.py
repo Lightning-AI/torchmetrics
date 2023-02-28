@@ -105,11 +105,11 @@ def test_metric_collection_wrong_input(tmpdir):
     dms = DummyMetricSum()
 
     # Not all input are metrics (list)
-    with pytest.raises(ValueError):  # noqa: PT011  # todo
+    with pytest.raises(ValueError, match="Input .* to `MetricCollection` is not a instance of .*"):
         _ = MetricCollection([dms, 5])
 
     # Not all input are metrics (dict)
-    with pytest.raises(ValueError):  # noqa: PT011  # todo
+    with pytest.raises(ValueError, match="Value .* belonging to key .* is not an instance of .*"):
         _ = MetricCollection({"metric1": dms, "metric2": 5})
 
     # Same metric passed in multiple times
@@ -401,6 +401,8 @@ _ml_target = torch.randint(2, (10, 3))
     ],
 )
 class TestComputeGroups:
+    """Test class for testing groups computation."""
+
     @pytest.mark.parametrize(
         ("prefix", "postfix"),
         [

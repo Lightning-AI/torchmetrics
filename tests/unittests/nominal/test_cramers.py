@@ -23,7 +23,8 @@ from lightning_utilities.core.imports import compare_version
 
 from torchmetrics.functional.nominal.cramers import cramers_v, cramers_v_matrix
 from torchmetrics.nominal.cramers import CramersV
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from unittests import BATCH_SIZE, NUM_BATCHES
+from unittests.helpers.testers import MetricTester
 
 Input = namedtuple("Input", ["preds", "target"])
 NUM_CLASSES = 4
@@ -102,6 +103,8 @@ def _dython_cramers_v_matrix(matrix, bias_correction, nan_strategy, nan_replace_
 @pytest.mark.parametrize("bias_correction", [False, True])
 @pytest.mark.parametrize("nan_strategy, nan_replace_value", [("replace", 0.0), ("drop", None)])
 class TestCramersV(MetricTester):
+    """Test class for `CramersV` metric."""
+
     atol = 1e-5
 
     @pytest.mark.parametrize("ddp", [False, True])
@@ -164,7 +167,7 @@ class TestCramersV(MetricTester):
     torch.cuda.is_available(), reason="Tests fail on CUDA with the most up-to-date available pandas"
 )
 @pytest.mark.parametrize("bias_correction", [False, True])
-@pytest.mark.parametrize("nan_strategy, nan_replace_value", [("replace", 1.0), ("drop", None)])
+@pytest.mark.parametrize(("nan_strategy", "nan_replace_value"), [("replace", 1.0), ("drop", None)])
 def test_cramers_v_matrix(cramers_matrix_input, bias_correction, nan_strategy, nan_replace_value):
     tm_score = cramers_v_matrix(cramers_matrix_input, bias_correction, nan_strategy, nan_replace_value)
     reference_score = _dython_cramers_v_matrix(cramers_matrix_input, bias_correction, nan_strategy, nan_replace_value)

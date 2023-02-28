@@ -143,8 +143,9 @@ def binary_stat_scores(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Compute the number of true positives, false positives, true negatives, false negatives and the support for
-    binary tasks. Related to `Type I and Type II errors`_.
+    r"""Compute the true positives, false positives, true negatives, false negatives, support for binary tasks.
+
+    Related to `Type I and Type II errors`_.
 
     Accepts the following input tensors:
 
@@ -399,7 +400,7 @@ def _multiclass_stat_scores_update(
             idx = target != ignore_index
             preds = preds[idx]
             target = target[idx]
-        unique_mapping = (target * num_classes + preds).to(torch.long)
+        unique_mapping = target.to(torch.long) * num_classes + preds.to(torch.long)
         bins = _bincount(unique_mapping, minlength=num_classes**2)
         confmat = bins.reshape(num_classes, num_classes)
         tp = confmat.diag()
@@ -427,14 +428,14 @@ def _multiclass_stat_scores_compute(
         return res.sum(sum_dim) if res.ndim > 1 else res
     if average == "macro":
         return res.float().mean(sum_dim)
-    elif average == "weighted":
+    if average == "weighted":
         weight = tp + fn
         if multidim_average == "global":
             return (res * (weight / weight.sum()).reshape(*weight.shape, 1)).sum(sum_dim)
-        else:
-            return (res * (weight / weight.sum(-1, keepdim=True)).reshape(*weight.shape, 1)).sum(sum_dim)
-    elif average is None or average == "none":
+        return (res * (weight / weight.sum(-1, keepdim=True)).reshape(*weight.shape, 1)).sum(sum_dim)
+    if average is None or average == "none":
         return res
+    return None
 
 
 def multiclass_stat_scores(
@@ -447,8 +448,9 @@ def multiclass_stat_scores(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Compute the number of true positives, false positives, true negatives, false negatives and the support for
-    multiclass tasks. Related to `Type I and Type II errors`_.
+    r"""Compute the true positives, false positives, true negatives, false negatives and support for multiclass tasks.
+
+    Related to `Type I and Type II errors`_.
 
     Accepts the following input tensors:
 
@@ -681,13 +683,14 @@ def _multilabel_stat_scores_compute(
     sum_dim = 0 if multidim_average == "global" else 1
     if average == "micro":
         return res.sum(sum_dim)
-    elif average == "macro":
+    if average == "macro":
         return res.float().mean(sum_dim)
-    elif average == "weighted":
+    if average == "weighted":
         w = tp + fn
         return (res * (w / w.sum()).reshape(*w.shape, 1)).sum(sum_dim)
-    elif average is None or average == "none":
+    if average is None or average == "none":
         return res
+    return None
 
 
 def multilabel_stat_scores(
@@ -700,8 +703,9 @@ def multilabel_stat_scores(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Compute the number of true positives, false positives, true negatives, false negatives and the support for
-    multilabel tasks. Related to `Type I and Type II errors`_.
+    r"""Compute the true positives, false positives, true negatives, false negatives and support for multilabel tasks.
+
+    Related to `Type I and Type II errors`_.
 
     Accepts the following input tensors:
 
@@ -973,8 +977,9 @@ def _stat_scores_update(
 
 
 def _stat_scores_compute(tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor) -> Tensor:
-    """Compute the number of true positives, false positives, true negatives, false negatives. Concatenates the
-    input tensors along with the support into one output.
+    """Compute the number of true positives, false positives, true negatives, false negatives.
+
+    Concatenates the input tensors along with the support into one output.
 
     Args:
         tp: True positives
@@ -990,9 +995,7 @@ def _stat_scores_compute(tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor) -> Tens
         tp.unsqueeze(-1) + fn.unsqueeze(-1),  # support
     ]
     outputs: Tensor = torch.cat(stats, -1)
-    outputs = torch.where(outputs < 0, tensor(-1, device=outputs.device), outputs)
-
-    return outputs
+    return torch.where(outputs < 0, tensor(-1, device=outputs.device), outputs)
 
 
 def _reduce_stat_scores(
@@ -1099,3 +1102,4 @@ def stat_scores(
         return multilabel_stat_scores(
             preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
         )
+    return None

@@ -99,10 +99,13 @@ def reference_infolm_score(preds, target, model_name, information_measure, idf, 
 )
 @pytest.mark.skipif(not _TRANSFORMERS_AVAILABLE, reason="test requires transformers")
 class TestInfoLM(TextTester):
+    """Test class for `InfoLM` metric."""
+
     # Set atol = 1e-4 as reference results are rounded
     atol = 1e-4
 
     @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.timeout(240)  # download may be too slow for default timeout
     @skip_on_connection_issues()
     def test_infolm_class(self, ddp, preds, targets, information_measure, idf, alpha, beta):
         metric_args = {

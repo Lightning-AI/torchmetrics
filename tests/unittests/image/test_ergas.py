@@ -21,8 +21,9 @@ from torch import Tensor
 
 from torchmetrics.functional.image.ergas import error_relative_global_dimensionless_synthesis
 from torchmetrics.image.ergas import ErrorRelativeGlobalDimensionlessSynthesis
+from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -62,12 +63,10 @@ def _baseline_ergas(
     ergas_score = 100 * ratio * torch.sqrt(torch.sum((rmse_per_band / mean_target) ** 2, dim=1) / c)
     # reduction
     if reduction == "sum":
-        to_return = torch.sum(ergas_score)
-    elif reduction == "elementwise_mean":
-        to_return = torch.mean(ergas_score)
-    else:
-        to_return = ergas_score
-    return to_return
+        return torch.sum(ergas_score)
+    if reduction == "elementwise_mean":
+        return torch.mean(ergas_score)
+    return ergas_score
 
 
 @pytest.mark.parametrize("reduction", ["sum", "elementwise_mean"])
@@ -76,6 +75,8 @@ def _baseline_ergas(
     [(i.preds, i.target, i.ratio) for i in _inputs],
 )
 class TestErrorRelativeGlobalDimensionlessSynthesis(MetricTester):
+    """Test class for `ErrorRelativeGlobalDimensionlessSynthesis` metric."""
+
     @pytest.mark.parametrize("ddp", [True, False])
     def test_ergas(self, reduction, preds, target, ratio, ddp):
         self.run_class_metric_test(
@@ -114,18 +115,20 @@ class TestErrorRelativeGlobalDimensionlessSynthesis(MetricTester):
 
 
 def test_error_on_different_shape(metric_class=ErrorRelativeGlobalDimensionlessSynthesis):
+    """Check that error is raised when input have different shape."""
     metric = metric_class()
-    with pytest.raises(RuntimeError):  # todo
+    with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape.*"):
         metric(torch.randn([1, 3, 16, 16]), torch.randn([1, 1, 16, 16]))
 
 
 def test_error_on_invalid_shape(metric_class=ErrorRelativeGlobalDimensionlessSynthesis):
+    """Check that error is raised when input is not 4D"""
     metric = metric_class()
-    with pytest.raises(ValueError):  # noqa: PT011  # todo
+    with pytest.raises(ValueError, match="Expected `preds` and `target` to have BxCxHxW shape.*"):
         metric(torch.randn([3, 16, 16]), torch.randn([3, 16, 16]))
 
 
 def test_error_on_invalid_type(metric_class=ErrorRelativeGlobalDimensionlessSynthesis):
     metric = metric_class()
-    with pytest.raises(TypeError):  # todo
+    with pytest.raises(TypeError, match="Expected `preds` and `target` to have the same data type.*"):
         metric(torch.randn([3, 16, 16]), torch.randn([3, 16, 16], dtype=torch.float64))

@@ -91,7 +91,6 @@ class CLIPScore(Metric):
         ] = "openai/clip-vit-large-patch14",
         **kwargs: Any,
     ) -> None:
-
         super().__init__(**kwargs)
         self.model, self.processor = _get_model_and_processor(model_name_or_path)
         self.add_state("score", torch.tensor(0.0), dist_reduce_fx="sum")

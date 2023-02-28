@@ -34,8 +34,8 @@ if _TRANSFORMERS_AVAILABLE:
 
 else:
     __doctest_skip__ = ["clip_score"]
-    _CLIPModel = None  # type:ignore
-    _CLIPProcessor = None  # type:ignore
+    _CLIPModel = None
+    _CLIPProcessor = None
 
 
 def _clip_score_update(
@@ -61,9 +61,7 @@ def _clip_score_update(
             f"Expected the number of images and text examples to be the same but got {len(images)} and {len(text)}"
         )
     device = images[0].device
-    processed_input = processor(
-        text=text, images=[i.cpu() for i in images], return_tensors="pt", padding=True
-    )  # type: ignore
+    processed_input = processor(text=text, images=[i.cpu() for i in images], return_tensors="pt", padding=True)
 
     img_features = model.get_image_features(processed_input["pixel_values"].to(device))
     img_features = img_features / img_features.norm(p=2, dim=-1, keepdim=True)
@@ -90,11 +88,11 @@ def _get_model_and_processor(
         model = _CLIPModel.from_pretrained(model_name_or_path)
         processor = _CLIPProcessor.from_pretrained(model_name_or_path)
         return model, processor
-    else:
-        raise ModuleNotFoundError(
-            "`clip_score` metric requires `transformers` package be installed."
-            " Either install with `pip install transformers>=4.0` or `pip install torchmetrics[multimodal]`."
-        )
+
+    raise ModuleNotFoundError(
+        "`clip_score` metric requires `transformers` package be installed."
+        " Either install with `pip install transformers>=4.0` or `pip install torchmetrics[multimodal]`."
+    )
 
 
 def clip_score(
@@ -107,7 +105,7 @@ def clip_score(
         "openai/clip-vit-large-patch14",
     ] = "openai/clip-vit-large-patch14",
 ) -> Tensor:
-    r"""Calculates `CLIP Score`_ which is a text-to-image similarity metric.
+    r"""Calculate `CLIP Score`_ which is a text-to-image similarity metric.
 
     CLIP is a reference free metric that can be used to evaluate the correlation between a generated caption for an
     image and the actual content of the image. It has been found to be highly correlated with human judgement. The

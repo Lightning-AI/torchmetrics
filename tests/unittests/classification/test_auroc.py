@@ -23,9 +23,10 @@ from sklearn.metrics import roc_auc_score as sk_roc_auc_score
 from torchmetrics.classification.auroc import BinaryAUROC, MulticlassAUROC, MultilabelAUROC
 from torchmetrics.functional.classification.auroc import binary_auroc, multiclass_auroc, multilabel_auroc
 from torchmetrics.functional.classification.roc import binary_roc
+from unittests import NUM_CLASSES
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_CLASSES, MetricTester, inject_ignore_index, remove_ignore_index
+from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
 seed_all(42)
 
@@ -41,6 +42,8 @@ def _sklearn_auroc_binary(preds, target, max_fpr=None, ignore_index=None):
 
 @pytest.mark.parametrize("input", (_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]))
 class TestBinaryAUROC(MetricTester):
+    """Test class for `BinaryAUROC` metric."""
+
     @pytest.mark.parametrize("max_fpr", [None, 0.8, 0.5])
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])
@@ -141,6 +144,8 @@ def _sklearn_auroc_multiclass(preds, target, average="macro", ignore_index=None)
     "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
 )
 class TestMulticlassAUROC(MetricTester):
+    """Test class for `MulticlassAUROC` metric."""
+
     @pytest.mark.parametrize("average", ["macro", "weighted"])
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])
@@ -261,6 +266,8 @@ def _sklearn_auroc_multilabel(preds, target, average="macro", ignore_index=None)
     "input", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5])
 )
 class TestMultilabelAUROC(MetricTester):
+    """Test class for `MultilabelAUROC` metric."""
+
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])
