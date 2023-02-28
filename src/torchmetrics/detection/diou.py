@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional
-
-from torch import Tensor
+from typing import Any, Optional
 
 from torchmetrics.detection.iou import IntersectionOverUnion
 from torchmetrics.functional.detection.diou import _diou_compute, _diou_update
@@ -33,11 +31,8 @@ class DistanceIntersectionOverUnion(IntersectionOverUnion):
         kwargs:
              Additional keyword arguments, see :ref:`Metric kwargs` for more info.
     """
-
-    iou_update_fn: Callable[[Tensor, Tensor, bool, float], Tensor] = _diou_update
-    iou_compute_fn: Callable[[Tensor, bool], Tensor] = _diou_compute
-    iou_type: str = "diou"
-    invalid_val: float = -1
+    _iou_type: str = "diou"
+    _invalid_val: float = -1
 
     def __init__(
         self,
@@ -46,10 +41,11 @@ class DistanceIntersectionOverUnion(IntersectionOverUnion):
         class_metrics: bool = False,
         **kwargs: Any,
     ) -> None:
-        super().__init__(box_format, iou_threshold, class_metrics, **kwargs)
-
         if not _TORCHVISION_GREATER_EQUAL_0_13:
             raise ModuleNotFoundError(
-                f"Metric `{self.iou_type.upper()}` requires that `torchvision` version 0.13.0 or newer is installed."
+                f"Metric `{self._iou_type.upper()}` requires that `torchvision` version 0.13.0 or newer is installed."
                 " Please install with `pip install torchvision>=0.13` or `pip install torchmetrics[detection]`."
             )
+        super().__init__(
+            box_format, iou_threshold, class_metrics, iou_update_fn=_diou_update, iou_compute_fn=_diou_compute, **kwargs
+        )

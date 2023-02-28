@@ -57,11 +57,10 @@ class IntersectionOverUnion(Metric):
     groundtruth_labels: List[Tensor]
     results: List[Tensor]
     labels_eq: List[bool]
-
-    iou_update_fn: Callable[[Tensor, Tensor, bool, float], Tensor] = _iou_update
-    iou_compute_fn: Callable[[Tensor, bool], Tensor] = _iou_compute
-    iou_type: str = "iou"
-    invalid_val: float = 0
+    _iou_update_fn: Callable[[Tensor, Tensor, bool, float], Tensor]
+    _iou_compute_fn: Callable[[Tensor, bool], Tensor]
+    _iou_type: str = "iou"
+    _invalid_val: float = 0
 
     def __init__(
         self,
@@ -69,15 +68,19 @@ class IntersectionOverUnion(Metric):
         iou_threshold: Optional[float] = None,
         class_metrics: bool = False,
         respect_labels: bool = True,
+        iou_update_fn: Callable[[Tensor, Tensor, bool, float], Tensor] = _iou_update,
+        iou_compute_fn: Callable[[Tensor, bool], Tensor] = _iou_compute,
         **kwargs: Any,
     ) -> None:
-        super().__init__(**kwargs)
-
         if not _TORCHVISION_GREATER_EQUAL_0_8:
             raise ModuleNotFoundError(
-                f"Metric `{self.iou_type.upper()}` requires that `torchvision` version 0.8.0 or newer is installed."
+                f"Metric `{self._iou_type.upper()}` requires that `torchvision` version 0.8.0 or newer is installed."
                 " Please install with `pip install torchvision>=0.8` or `pip install torchmetrics[detection]`."
             )
+
+        super().__init__(**kwargs)
+        self._iou_update_fn = iou_update_fn
+        self._iou_compute_fn = iou_compute_fn
 
         allowed_box_formats = ("xyxy", "xywh", "cxcywh")
         if box_format not in allowed_box_formats:
@@ -101,22 +104,25 @@ class IntersectionOverUnion(Metric):
         Args:
             preds: A list consisting of dictionaries each containing the key-values
             (each dictionary corresponds to a single image):
-            - ``boxes``: ``torch.FloatTensor`` of shape
-                [num_boxes, 4] containing `num_boxes` detection boxes of the format
-                specified in the contructor. By default, this method expects
-                [xmin, ymin, xmax, ymax] in absolute image coordinates.
-            - ``scores``: ``torch.FloatTensor`` of shape
-                [num_boxes] containing detection scores for the boxes.
-            - ``labels``: ``torch.IntTensor`` of shape
-                [num_boxes] containing 0-indexed detection classes for the boxes.
+
+                - ``boxes``: ``torch.FloatTensor`` of shape
+                    [num_boxes, 4] containing `num_boxes` detection boxes of the format
+                    specified in the contructor. By default, this method expects
+                    [xmin, ymin, xmax, ymax] in absolute image coordinates.
+                - ``scores``: ``torch.FloatTensor`` of shape
+                    [num_boxes] containing detection scores for the boxes.
+                - ``labels``: ``torch.IntTensor`` of shape
+                    [num_boxes] containing 0-indexed detection classes for the boxes.
+
             target: A list consisting of dictionaries each containing the key-values
             (each dictionary corresponds to a single image):
-            - ``boxes``: ``torch.FloatTensor`` of shape
-                [num_boxes, 4] containing `num_boxes` ground truth boxes of the format
-                specified in the contructor. By default, this method expects
-                [xmin, ymin, xmax, ymax] in absolute image coordinates.
-            - ``labels``: ``torch.IntTensor`` of shape
-                [num_boxes] containing 1-indexed ground truth classes for the boxes.
+
+                - ``boxes``: ``torch.FloatTensor`` of shape
+                    [num_boxes, 4] containing `num_boxes` ground truth boxes of the format
+                    specified in the contructor. By default, this method expects
+                    [xmin, ymin, xmax, ymax] in absolute image coordinates.
+                - ``labels``: ``torch.IntTensor`` of shape
+                    [num_boxes] containing 1-indexed ground truth classes for the boxes.
 
         Raises:
             ValueError:
@@ -154,10 +160,10 @@ class IntersectionOverUnion(Metric):
             label_eq = torch.equal(p["labels"], t["labels"])
             self.labels_eq.append(label_eq)
 
-            ious = self.iou_update_fn.__func__(det_boxes, gt_boxes, self.iou_threshold, self.invalid_val)
+            ious = self._iou_update_fn.__func__(det_boxes, gt_boxes, self.iou_threshold, self._invalid_val)
             if self.respect_labels and not label_eq:
                 labels_not_eq = p["labels"].unsqueeze(0).T - t["labels"].unsqueeze(0) != 0
-                ious[labels_not_eq] = self.invalid_val
+                ious[labels_not_eq] = self._invalid_val
             self.results.append(ious)
 
     def _get_gt_classes(self) -> List:
@@ -169,7 +175,7 @@ class IntersectionOverUnion(Metric):
     def compute(self) -> dict:
         """Computes IoU based on inputs passed in to ``update`` previously."""
         aggregated_iou = dim_zero_cat(
-            [self.iou_compute_fn.__func__(iou, lbl_eq) for iou, lbl_eq in zip(self.results, self.labels_eq)]
+            [self._iou_compute_fn.__func__(iou, lbl_eq) for iou, lbl_eq in zip(self.results, self.labels_eq)]
         )
         results: Dict[str, Tensor] = {f"{self.type}": aggregated_iou.mean()}
 
@@ -179,7 +185,7 @@ class IntersectionOverUnion(Metric):
                 for cl in self._get_gt_classes():
                     masked_iou = iou[:, label == cl]
                     if masked_iou.numel() > 0:
-                        class_results[cl].append(self.iou_compute_fn.__func__(masked_iou, False))
+                        class_results[cl].append(self._iou_compute_fn.__func__(masked_iou, False))
 
             results.update({f"{self.type}/cl_{cl}": dim_zero_cat(class_results[cl]).mean() for cl in class_results})
         return results

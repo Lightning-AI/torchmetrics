@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Callable
-
-from torch import Tensor
+from typing import Any, Optional
 
 from torchmetrics.detection.iou import IntersectionOverUnion
 from torchmetrics.functional.detection.giou import _giou_compute, _giou_update
@@ -32,8 +30,16 @@ class GeneralizedIntersectionOverUnion(IntersectionOverUnion):
         kwargs:
              Additional keyword arguments, see :ref:`Metric kwargs` for more info.
     """
+    _iou_type: str = "giou"
+    _invalid_val: float = -1
 
-    iou_update_fn: Callable[[Tensor, Tensor, bool, float], Tensor] = _giou_update
-    iou_compute_fn: Callable[[Tensor, bool], Tensor] = _giou_compute
-    iou_type: str = "giou"
-    invalid_val: float = -1
+    def __init__(
+        self,
+        box_format: str = "xyxy",
+        iou_threshold: Optional[float] = None,
+        class_metrics: bool = False,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(
+            box_format, iou_threshold, class_metrics, iou_update_fn=_giou_update, iou_compute_fn=_giou_compute, **kwargs
+        )
