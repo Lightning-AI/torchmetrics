@@ -19,6 +19,9 @@ from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_
 
 if _TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_13:
     from torchvision.ops import distance_box_iou
+else:
+    distance_box_iou = None
+    __doctest_skip__ = ["distance_intersection_over_union"]
 
 __doctest_requires__ = {("distance_intersection_over_union",): ["torchvision"]}
 
@@ -66,7 +69,7 @@ def distance_intersection_over_union(
         >>> preds = torch.Tensor([[100, 100, 200, 200]])
         >>> target = torch.Tensor([[110, 110, 210, 210]])
         >>> distance_intersection_over_union(preds, target)
-        tensor([[0.6724]])
+        tensor(0.6724)
     """
     if not _TORCHVISION_GREATER_EQUAL_0_13:
         raise ModuleNotFoundError(
