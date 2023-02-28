@@ -41,7 +41,7 @@ class RootMeanSquaredErrorUsingSlidingWindow(Metric):
         >>> target = torch.rand(4, 3, 16, 16)
         >>> rmse_sw = RootMeanSquaredErrorUsingSlidingWindow()
         >>> rmse_sw(preds, target)
-        tensor(0.4008)
+        tensor(0.3999)
 
     Raises:
         ValueError: If ``window_size`` is not a positive integer.
@@ -87,7 +87,6 @@ class RootMeanSquaredErrorUsingSlidingWindow(Metric):
 
     def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
         """Computes Root Mean Squared Error (using sliding window) and potentially return RMSE map."""
-        print(self.total_images)
         rmse, rmse_map = _rmse_sw_compute(self.rmse_val_sum, self.rmse_map, self.total_images)
         if self.return_rmse_map:
             return rmse, rmse_map

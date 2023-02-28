@@ -17,8 +17,9 @@ from typing import Any, Dict
 import torch
 from torch import Tensor
 
-from torchmetrics.functional.image.rase import _rase_compute, _rase_update
+from torchmetrics.functional.image.rase import relative_average_spectral_error
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.data import dim_zero_cat
 
 
 class RelativeAverageSpectralError(Metric):
@@ -28,7 +29,6 @@ class RelativeAverageSpectralError(Metric):
         preds: Deformed image
         target: Ground truth image
         window_size: Sliding window used for rmse calculation
-        return_rmse_map: An indication whether
 
     Return:
         Relative Average Spectral Error (RASE)
@@ -40,7 +40,7 @@ class RelativeAverageSpectralError(Metric):
         >>> target = torch.rand(4, 3, 16, 16)
         >>> rase = RelativeAverageSpectralError()
         >>> rase(preds, target)
-        tensor(8091.1338)
+        tensor(5114.6641)
 
     Raises:
         ValueError: If ``window_size`` is not a positive integer.
@@ -56,17 +56,16 @@ class RelativeAverageSpectralError(Metric):
     def __init__(
         self,
         window_size: int = 8,
-        return_rmse_map: bool = False,
         **kwargs: Dict[str, Any],
     ) -> None:
         super().__init__(**kwargs)
-        self.add_state("add_total_images", default=torch.tensor(0.0), dist_reduce_fx="sum")
 
         if not isinstance(window_size, int) or isinstance(window_size, int) and window_size < 1:
-            raise ValueError("Argument `window_size` is expected to be a positive integer.")
-
+            raise ValueError(f"Argument `window_size` is expected to be a positive integer, but got {window_size}")
         self.window_size = window_size
-        self.return_rmse_map = return_rmse_map
+
+        self.add_state("preds", default=[], dist_reduce_fx="cat")
+        self.add_state("target", default=[], dist_reduce_fx="cat")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Updates intermediate rmse and target maps.
@@ -75,15 +74,11 @@ class RelativeAverageSpectralError(Metric):
             preds: Deformed image
             target: Ground truth image
         """
-        if self.rmse_map is None:
-            img_shape = target.shape[1:]  # [num_channels, width, height]
-            self.rmse_map = torch.zeros(img_shape, dtype=target.dtype, device=target.device)
-            self.target_sum = torch.zeros(img_shape, dtype=target.dtype, device=target.device)
-
-        self.rmse_map, self.target_sum, self.total_images = _rase_update(
-            preds, target, self.window_size, self.rmse_map, self.target_sum, self.add_total_images
-        )
+        self.preds.append(preds)
+        self.target.append(target)
 
     def compute(self) -> Tensor:
         """Computes Relative Average Spectral Error (RASE)."""
-        return _rase_compute(self.rmse_map, self.target_sum, self.total_images, self.window_size)
+        preds = dim_zero_cat(self.preds)
+        target = dim_zero_cat(self.target)
+        return relative_average_spectral_error(preds, target, self.window_size)

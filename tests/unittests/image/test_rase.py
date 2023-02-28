@@ -15,13 +15,16 @@
 from collections import namedtuple
 from functools import partial
 
+import numpy as np
 import pytest
 import sewar
 import torch
 
 from torchmetrics import RelativeAverageSpectralError
 from torchmetrics.functional import relative_average_spectral_error
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from torchmetrics.functional.image.helper import _uniform_filter
+from unittests import BATCH_SIZE, NUM_BATCHES
+from unittests.helpers.testers import MetricTester
 
 Input = namedtuple("Input", ["preds", "target", "window_size"])
 
@@ -32,22 +35,30 @@ for size, channel, window_size, dtype in [
     (14, 1, 5, torch.double),
     (15, 3, 8, torch.float64),
 ]:
-    preds = torch.rand(NUM_BATCHES, BATCH_SIZE, channel, size, size, dtype=dtype)
-    target = torch.rand(NUM_BATCHES, BATCH_SIZE, channel, size, size, dtype=dtype)
+    preds = torch.rand(2, BATCH_SIZE, channel, size, size, dtype=dtype)
+    target = torch.rand(2, BATCH_SIZE, channel, size, size, dtype=dtype)
     _inputs.append(Input(preds=preds, target=target, window_size=window_size))
 
 
 def _sewar_rase(preds, target, window_size):
-    rase_mean = torch.tensor(0.0, dtype=preds.dtype)
+    """Custom implementation since sewar only supports single image and aggregation therefore needs adjustments."""
+    target_sum = torch.sum(_uniform_filter(target, window_size) / (window_size**2), dim=0)
+    target_mean = target_sum / target.shape[0]
+    target_mean = target_mean.mean(0)  # mean over image channels
 
     preds = preds.permute(0, 2, 3, 1).numpy()
     target = target.permute(0, 2, 3, 1).numpy()
 
-    for idx, (pred, tgt) in enumerate(zip(preds, target)):
-        rase = sewar.rase(tgt, pred, window_size)
-        rase_mean += (rase - rase_mean) / (idx + 1)
+    rmse_mean = torch.zeros(*preds.shape[1:])
+    for pred, tgt in zip(preds, target):
+        _, rmse_map = sewar.rmse_sw(tgt, pred, window_size)
+        rmse_mean += rmse_map
+    rmse_mean /= preds.shape[0]
 
-    return rase_mean
+    rase_map = 100 / target_mean * torch.sqrt(torch.mean(rmse_mean**2, 2))
+    crop_slide = round(window_size / 2)
+
+    return torch.mean(rase_map[crop_slide:-crop_slide, crop_slide:-crop_slide])
 
 
 @pytest.mark.parametrize("preds, target, window_size", [(i.preds, i.target, i.window_size) for i in _inputs])
@@ -57,8 +68,8 @@ class TestRelativeAverageSpectralError(MetricTester):
     atol = 1e-2
 
     @pytest.mark.parametrize("ddp", [False])
-    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_rase(self, preds, target, window_size, ddp, dist_sync_on_step):
+    def test_rase(self, preds, target, window_size, ddp):
+        """Test class version of rase metric."""
         self.run_class_metric_test(
             ddp,
             preds,
@@ -66,10 +77,11 @@ class TestRelativeAverageSpectralError(MetricTester):
             RelativeAverageSpectralError,
             partial(_sewar_rase, window_size=window_size),
             metric_args={"window_size": window_size},
-            dist_sync_on_step=dist_sync_on_step,
+            check_batch=False,
         )
 
     def test_rase_functional(self, preds, target, window_size):
+        """Test functional version of rase metric."""
         self.run_functional_metric_test(
             preds,
             target,

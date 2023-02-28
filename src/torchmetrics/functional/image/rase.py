@@ -58,6 +58,7 @@ def _rase_compute(rmse_map: Tensor, target_sum: Tensor, total_images: Tensor, wi
         Relative Average Spectral Error (RASE)
     """
     _, rmse_map = _rmse_sw_compute(rmse_val_sum=None, rmse_map=rmse_map, total_images=total_images)
+
     target_mean = target_sum / total_images
     target_mean = target_mean.mean(0)  # mean over image channels
     rase_map = 100 / target_mean * torch.sqrt(torch.mean(rmse_map**2, 0))
@@ -83,7 +84,7 @@ def relative_average_spectral_error(preds: Tensor, target: Tensor, window_size: 
         >>> preds = torch.rand(4, 3, 16, 16)
         >>> target = torch.rand(4, 3, 16, 16)
         >>> relative_average_spectral_error(preds, target)
-        tensor(8091.1338)
+        tensor(5114.6641)
 
     Raises:
         ValueError: If ``window_size`` is not a positive integer.

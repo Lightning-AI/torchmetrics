@@ -127,7 +127,7 @@ def root_mean_squared_error_using_sliding_window(
         >>> preds = torch.rand(4, 3, 16, 16)
         >>> target = torch.rand(4, 3, 16, 16)
         >>> root_mean_squared_error_using_sliding_window(preds, target)
-        tensor(0.4008)
+        tensor(0.3999)
 
     Raises:
         ValueError: If ``window_size`` is not a positive integer.

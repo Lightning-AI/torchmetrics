@@ -21,7 +21,8 @@ import torch
 
 from torchmetrics import RootMeanSquaredErrorUsingSlidingWindow
 from torchmetrics.functional import root_mean_squared_error_using_sliding_window
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from unittests import BATCH_SIZE, NUM_BATCHES
+from unittests.helpers.testers import MetricTester
 
 Input = namedtuple("Input", ["preds", "target", "window_size"])
 
@@ -56,9 +57,8 @@ class TestRootMeanSquareErrorWithSlidingWindow(MetricTester):
 
     atol = 1e-2
 
-    @pytest.mark.parametrize("ddp", [False])
-    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_rmse_sw(self, preds, target, window_size, ddp, dist_sync_on_step):
+    @pytest.mark.parametrize("ddp", [False, True])
+    def test_rmse_sw(self, preds, target, window_size, ddp):
         self.run_class_metric_test(
             ddp,
             preds,
@@ -66,7 +66,6 @@ class TestRootMeanSquareErrorWithSlidingWindow(MetricTester):
             RootMeanSquaredErrorUsingSlidingWindow,
             partial(_sewar_rmse_sw, window_size=window_size),
             metric_args={"window_size": window_size},
-            dist_sync_on_step=dist_sync_on_step,
         )
 
     def test_rmse_sw_functional(self, preds, target, window_size):
