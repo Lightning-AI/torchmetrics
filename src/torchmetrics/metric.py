@@ -76,14 +76,20 @@ class Metric(Module, ABC):
     """
 
     __jit_ignored_attributes__ = ["device"]
-    __jit_unused_properties__ = ["is_differentiable"]
+    __jit_unused_properties__ = [
+        "is_differentiable",
+        "higher_is_better",
+        "plot_lower_bound",
+        "plot_upper_bound",
+        "plot_legend_name",
+    ]
     is_differentiable: Optional[bool] = None
     higher_is_better: Optional[bool] = None
     full_state_update: Optional[bool] = None
 
-    _plot_lower_bound: Optional[float] = None
-    _plot_upper_bound: Optional[float] = None
-    _plot_legend_name: Optional[str] = None
+    plot_lower_bound: Optional[float] = None
+    plot_upper_bound: Optional[float] = None
+    plot_legend_name: Optional[str] = None
 
     def __init__(
         self,
@@ -594,9 +600,9 @@ class Metric(Module, ABC):
             ax=ax,
             higher_is_better=self.higher_is_better,
             name=self.__class__.__name__,
-            lower_bound=self._plot_lower_bound,
-            upper_bound=self._plot_upper_bound,
-            legend_name=self._plot_legend_name,
+            lower_bound=self.plot_lower_bound,
+            upper_bound=self.plot_upper_bound,
+            legend_name=self.plot_legend_name,
         )
         return fig, ax
 
@@ -636,7 +642,14 @@ class Metric(Module, ABC):
 
     def __setattr__(self, name: str, value: Any) -> None:
         """Overwrite default method to prevent specific attributes from being set by user."""
-        if name in ("higher_is_better", "is_differentiable", "full_state_update"):
+        if name in (
+            "higher_is_better",
+            "is_differentiable",
+            "full_state_update",
+            "plot_lower_bound",
+            "plot_upper_bound",
+            "plot_legend_name",
+        ):
             raise RuntimeError(f"Can't change const `{name}`.")
         super().__setattr__(name, value)
 

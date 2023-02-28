@@ -69,8 +69,8 @@ class UniversalImageQualityIndex(Metric):
     is_differentiable: bool = True
     higher_is_better: bool = True
     full_state_update: bool = False
-    _plot_lower_bound = 0.0
-    _plot_upper_bound = 1.0
+    plot_lower_bound = 0.0
+    plot_upper_bound = 1.0
 
     preds: List[Tensor]
     target: List[Tensor]
