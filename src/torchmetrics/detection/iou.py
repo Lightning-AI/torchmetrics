@@ -57,7 +57,7 @@ class IntersectionOverUnion(Metric):
     groundtruth_labels: List[Tensor]
     results: List[Tensor]
     labels_eq: List[bool]
-    _iou_update_fn: Callable[[Tensor, Tensor, bool, float], Tensor]
+    _iou_update_fn: Callable[[Tensor, Tensor, Optional[float], float], Tensor]
     _iou_compute_fn: Callable[[Tensor, bool], Tensor]
     _iou_type: str = "iou"
     _invalid_val: float = 0
@@ -68,7 +68,7 @@ class IntersectionOverUnion(Metric):
         iou_threshold: Optional[float] = None,
         class_metrics: bool = False,
         respect_labels: bool = True,
-        iou_update_fn: Callable[[Tensor, Tensor, bool, float], Tensor] = _iou_update,
+        iou_update_fn: Callable[[Tensor, Tensor, Optional[float], float], Tensor] = _iou_update,
         iou_compute_fn: Callable[[Tensor, bool], Tensor] = _iou_compute,
         **kwargs: Any,
     ) -> None:
