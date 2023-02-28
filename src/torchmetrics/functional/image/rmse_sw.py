@@ -27,8 +27,8 @@ def _rmse_sw_update(
     window_size: int,
     rmse_val_sum: Optional[Tensor],
     rmse_map: Optional[Tensor],
-    total_images: Tensor,
-) -> Tuple[Optional[Tensor], Optional[Tensor], Tensor]:
+    total_images: Optional[Tensor],
+) -> Tuple[Tensor, Tensor, Tensor]:
     """Calculates the sum of RMSE values and RMSE map for the batch of examples and update intermediate states.
 
     Args:
@@ -66,7 +66,7 @@ def _rmse_sw_update(
     if total_images is not None:
         total_images += target.shape[0]
     else:
-        total_images = target.shape[0]
+        total_images = torch.tensor(target.shape[0], device=target.device)
     error = (target - preds) ** 2
     error = _uniform_filter(error, window_size)
     _rmse_map = torch.sqrt(error)
@@ -87,8 +87,8 @@ def _rmse_sw_update(
 
 
 def _rmse_sw_compute(
-    rmse_val_sum: Optional[Tensor], rmse_map: Optional[Tensor], total_images: Tensor
-) -> Tuple[Optional[Tensor], Optional[Tensor]]:
+    rmse_val_sum: Optional[Tensor], rmse_map: Tensor, total_images: Tensor
+) -> Tuple[Optional[Tensor], Tensor]:
     """Computes RMSE from the aggregated RMSE value. Optionally also computes the mean value for RMSE map.
 
     Args:
@@ -108,14 +108,14 @@ def _rmse_sw_compute(
 
 def root_mean_squared_error_using_sliding_window(
     preds: Tensor, target: Tensor, window_size: int = 8, return_rmse_map: bool = False
-) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+) -> Union[Optional[Tensor], Tuple[Optional[Tensor], Tensor]]:
     """Computes Root Mean Squared Error (RMSE) using sliding window.
 
     Args:
         preds: Deformed image
         target: Ground truth image
         window_size: Sliding window used for rmse calculation
-        return_rmse_map: An indication whether
+        return_rmse_map: An indication whether the full rmse reduced image should be returned.
 
     Return:
         RMSE using sliding window

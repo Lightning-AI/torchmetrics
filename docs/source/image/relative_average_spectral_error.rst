@@ -14,6 +14,7 @@ ________________
 
 .. autoclass:: torchmetrics.RelativeAverageSpectralError
     :noindex:
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________

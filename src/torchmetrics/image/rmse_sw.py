@@ -24,15 +24,18 @@ from torchmetrics.metric import Metric
 class RootMeanSquaredErrorUsingSlidingWindow(Metric):
     """Computes Root Mean Squared Error (RMSE) using sliding window.
 
-    Args:
-        preds: Deformed image
-        target: Ground truth image
-        window_size: Sliding window used for rmse calculation
-        return_rmse_map: An indication whether
+    As input to ``forward`` and ``update`` the metric accepts the following input
 
-    Return:
-        RMSE using sliding window
-        (Optionally) RMSE map
+    - ``preds`` (:class:`~torch.Tensor`): Predictions from model of shape ``(N,C,H,W)``
+    - ``target`` (:class:`~torch.Tensor`): Ground truth values of shape ``(N,C,H,W)``
+
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``rmse_sw`` (:class:`~torch.Tensor`): returns float scalar tensor with average RMSE-SW value over sample
+
+    Args:
+        window_size: Sliding window used for rmse calculation
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
         >>> from torchmetrics import RootMeanSquaredErrorUsingSlidingWindow
@@ -57,27 +60,19 @@ class RootMeanSquaredErrorUsingSlidingWindow(Metric):
     def __init__(
         self,
         window_size: int = 8,
-        return_rmse_map: bool = False,
         **kwargs: Dict[str, Any],
     ) -> None:
         super().__init__(**kwargs)
+        if not isinstance(window_size, int) or isinstance(window_size, int) and window_size < 1:
+            raise ValueError("Argument `window_size` is expected to be a positive integer.")
+        self.window_size = window_size
+
         self.add_state("rmse_val_sum", default=torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total_images", default=torch.tensor(0.0), dist_reduce_fx="sum")
 
-        if not isinstance(window_size, int) or isinstance(window_size, int) and window_size < 1:
-            raise ValueError("Argument `window_size` is expected to be a positive integer.")
-
-        self.window_size = window_size
-        self.return_rmse_map = return_rmse_map
-
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Updates intermediate rmse values and map.
-
-        Args:
-            preds: Deformed image
-            target: Ground truth image
-        """
-        if self.return_rmse_map and self.rmse_map is None:
+    def update(self, preds: Tensor, target: Tensor) -> None:
+        """Update state with predictions and targets."""
+        if self.rmse_map is None:
             _img_shape = target.shape[1:]  # channels, width, height
             self.rmse_map = torch.zeros(_img_shape, dtype=target.dtype, device=target.device)
 
@@ -85,9 +80,7 @@ class RootMeanSquaredErrorUsingSlidingWindow(Metric):
             preds, target, self.window_size, self.rmse_val_sum, self.rmse_map, self.total_images
         )
 
-    def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+    def compute(self) -> Tensor:
         """Computes Root Mean Squared Error (using sliding window) and potentially return RMSE map."""
-        rmse, rmse_map = _rmse_sw_compute(self.rmse_val_sum, self.rmse_map, self.total_images)
-        if self.return_rmse_map:
-            return rmse, rmse_map
+        rmse, _ = _rmse_sw_compute(self.rmse_val_sum, self.rmse_map, self.total_images)  # type: ignore
         return rmse

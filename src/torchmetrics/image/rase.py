@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import torch
 from torch import Tensor
@@ -25,10 +25,18 @@ from torchmetrics.utilities.data import dim_zero_cat
 class RelativeAverageSpectralError(Metric):
     """Computes Relative Average Spectral Error (RASE) (RelativeAverageSpectralError_).
 
+    As input to ``forward`` and ``update`` the metric accepts the following input
+
+    - ``preds`` (:class:`~torch.Tensor`): Predictions from model of shape ``(N,C,H,W)``
+    - ``target`` (:class:`~torch.Tensor`): Ground truth values of shape ``(N,C,H,W)``
+
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``rase`` (:class:`~torch.Tensor`): returns float scalar tensor with average RASE value over sample
+
     Args:
-        preds: Deformed image
-        target: Ground truth image
         window_size: Sliding window used for rmse calculation
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Return:
         Relative Average Spectral Error (RASE)
@@ -46,12 +54,12 @@ class RelativeAverageSpectralError(Metric):
         ValueError: If ``window_size`` is not a positive integer.
     """
 
-    total_images: Tensor
-    rmse_map: Tensor = None
-    target_sum: Tensor = None
     higher_is_better: bool = False
     is_differentiable: bool = True
     full_state_update: bool = False
+
+    preds: List[Tensor]
+    target: List[Tensor]
 
     def __init__(
         self,
@@ -67,13 +75,8 @@ class RelativeAverageSpectralError(Metric):
         self.add_state("preds", default=[], dist_reduce_fx="cat")
         self.add_state("target", default=[], dist_reduce_fx="cat")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Updates intermediate rmse and target maps.
-
-        Args:
-            preds: Deformed image
-            target: Ground truth image
-        """
+    def update(self, preds: Tensor, target: Tensor) -> None:
+        """Update state with predictions and targets."""
         self.preds.append(preds)
         self.target.append(target)
 
