@@ -173,5 +173,5 @@ def _reflection_pad_3d(inputs: Tensor, pad_h: int, pad_w: int, pad_d: int) -> Te
             " For optimal speed, please upgrade to at least PyTorch v1.10 or higher."
         )
         for dim, pad in enumerate([pad_h, pad_w, pad_d]):
-            inputs = _single_dimension_pad(inputs, dim + 2, pad)
+            inputs = _single_dimension_pad(inputs, dim + 2, pad, outer_pad=1)
     return inputs
