@@ -96,7 +96,8 @@ class BinaryAccuracy(BinaryStatScores):
     is_differentiable = False
     higher_is_better = True
     full_state_update: bool = False
-    plot_options: dict = {"lower_bound": 0.0, "upper_bound": 1.0}
+    plot_lower_bound = 0.0
+    plot_upper_bound = 1.0
 
     def compute(self) -> Tensor:
         """Compute accuracy based on inputs passed in to ``update`` previously."""
@@ -142,11 +143,7 @@ class BinaryAccuracy(BinaryStatScores):
             ...     values.append(metric(rand(10), randint(2,(10,))))
             >>> fig_, ax_ = metric.plot(values)
         """
-        val = val or self.compute()
-        fig, ax = plot_single_or_multi_val(
-            val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
-        )
-        return fig, ax
+        return self._plot(val, ax)
 
 
 class MulticlassAccuracy(MulticlassStatScores):
@@ -245,7 +242,9 @@ class MulticlassAccuracy(MulticlassStatScores):
     is_differentiable = False
     higher_is_better = True
     full_state_update: bool = False
-    plot_options = {"lower_bound": 0.0, "upper_bound": 1.0, "legend_name": "Class"}
+    plot_lower_bound = 0.0
+    plot_upper_bound = 1.0
+    plot_legend_name = "Class"
 
     def compute(self) -> Tensor:
         """Compute accuracy based on inputs passed in to ``update`` previously."""
@@ -291,11 +290,7 @@ class MulticlassAccuracy(MulticlassStatScores):
             ...     values.append(metric(randint(3, (20,)), randint(3, (20,))))
             >>> fig_, ax_ = metric.plot(values)
         """
-        val = val or self.compute()
-        fig, ax = plot_single_or_multi_val(
-            val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
-        )
-        return fig, ax
+        return self._plot(val, ax)
 
 
 class MultilabelAccuracy(MultilabelStatScores):
@@ -394,7 +389,9 @@ class MultilabelAccuracy(MultilabelStatScores):
     is_differentiable = False
     higher_is_better = True
     full_state_update: bool = False
-    plot_options: dict = {"lower_bound": 0.0, "upper_bound": 1.0, "legend_name": "Label"}
+    plot_lower_bound = 0.0
+    plot_upper_bound = 1.0
+    plot_legend_name = "Label"
 
     def compute(self) -> Tensor:
         """Compute accuracy based on inputs passed in to ``update`` previously."""
@@ -442,11 +439,7 @@ class MultilabelAccuracy(MultilabelStatScores):
             ...     values.append(metric(randint(2, (20, 3)), randint(2, (20, 3))))
             >>> fig_, ax_ = metric.plot(values)
         """
-        val = val or self.compute()
-        fig, ax = plot_single_or_multi_val(
-            val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
-        )
-        return fig, ax
+        return self._plot(val, ax)
 
 
 class Accuracy:
