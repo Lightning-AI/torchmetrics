@@ -44,7 +44,7 @@ class TestIntersectionOverUnion(MetricTester, BaseTestIntersectionOverUnion):
     """Test the Intersection over Union metric for object detection predictions."""
 
     data: Dict[str, TestCaseData] = {
-        "iou_variant": TestCaseData(data=_inputs, result={IntersectionOverUnion.type: iou}),
+        "iou_variant": TestCaseData(data=_inputs, result={IntersectionOverUnion._iou_type: iou}),
         "fn_iou_variant": TestCaseData(data=_box_inputs, result=box_iou),
     }
     metric_class = IntersectionOverUnion

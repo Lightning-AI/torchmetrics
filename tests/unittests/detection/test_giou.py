@@ -44,7 +44,7 @@ class TestGeneralizedIntersectionOverUnion(MetricTester, BaseTestIntersectionOve
     """Test the Generalized Intersection over Union metric for object detection predictions."""
 
     data: Dict[str, TestCaseData] = {
-        "iou_variant": TestCaseData(data=_inputs, result={GeneralizedIntersectionOverUnion.type: giou}),
+        "iou_variant": TestCaseData(data=_inputs, result={GeneralizedIntersectionOverUnion._iou_type: giou}),
         "fn_iou_variant": TestCaseData(data=_box_inputs, result=box_giou),
     }
     metric_class = GeneralizedIntersectionOverUnion

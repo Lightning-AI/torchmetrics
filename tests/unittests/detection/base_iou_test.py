@@ -154,9 +154,9 @@ class BaseTestIntersectionOverUnion(ABC):
     def test_fn(self, compute_on_cpu: bool, ddp: bool):
         key = "fn_iou_variant"
         self.run_functional_metric_test(
-            self.data[key].data.preds[0],
-            self.data[key].data.target[0],
-            self.metric_fn,
+            self.data[key].data.preds[0].unsqueeze(0),  # pass as batch, otherwise it attempts to pass element wise
+            self.data[key].data.target[0].unsqueeze(0),
+            self.metric_fn.__func__,
             partial(compare_fn, result=self.data[key].result),
         )
 

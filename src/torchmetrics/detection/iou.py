@@ -160,7 +160,7 @@ class IntersectionOverUnion(Metric):
             label_eq = torch.equal(p["labels"], t["labels"])
             self.labels_eq.append(label_eq)
 
-            ious = self._iou_update_fn.__func__(det_boxes, gt_boxes, self.iou_threshold, self._invalid_val)
+            ious = self._iou_update_fn(det_boxes, gt_boxes, self.iou_threshold, self._invalid_val)
             if self.respect_labels and not label_eq:
                 labels_not_eq = p["labels"].unsqueeze(0).T - t["labels"].unsqueeze(0) != 0
                 ious[labels_not_eq] = self._invalid_val
@@ -175,7 +175,7 @@ class IntersectionOverUnion(Metric):
     def compute(self) -> dict:
         """Computes IoU based on inputs passed in to ``update`` previously."""
         aggregated_iou = dim_zero_cat(
-            [self._iou_compute_fn.__func__(iou, lbl_eq) for iou, lbl_eq in zip(self.results, self.labels_eq)]
+            [self._iou_compute_fn(iou, lbl_eq) for iou, lbl_eq in zip(self.results, self.labels_eq)]
         )
         results: Dict[str, Tensor] = {f"{self.type}": aggregated_iou.mean()}
 
@@ -185,7 +185,7 @@ class IntersectionOverUnion(Metric):
                 for cl in self._get_gt_classes():
                     masked_iou = iou[:, label == cl]
                     if masked_iou.numel() > 0:
-                        class_results[cl].append(self._iou_compute_fn.__func__(masked_iou, False))
+                        class_results[cl].append(self._iou_compute_fn(masked_iou, False))
 
             results.update({f"{self.type}/cl_{cl}": dim_zero_cat(class_results[cl]).mean() for cl in class_results})
         return results

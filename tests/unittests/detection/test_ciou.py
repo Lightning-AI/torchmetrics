@@ -46,7 +46,7 @@ class TestCompleteIntersectionOverUnion(MetricTester, BaseTestIntersectionOverUn
     """Test the Complete Intersection over Union metric for object detection predictions."""
 
     data: Dict[str, TestCaseData] = {
-        "iou_variant": TestCaseData(data=_inputs, result={CompleteIntersectionOverUnion.type: ciou}),
+        "iou_variant": TestCaseData(data=_inputs, result={CompleteIntersectionOverUnion._iou_type: ciou}),
         "fn_iou_variant": TestCaseData(data=_box_inputs, result=box_ciou),
     }
     metric_class: Metric = CompleteIntersectionOverUnion
