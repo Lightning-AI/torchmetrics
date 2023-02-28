@@ -68,6 +68,8 @@ class SpectralAngleMapper(Metric):
     higher_is_better: bool = False
     is_differentiable: bool = True
     full_state_update: bool = False
+    _plot_lower_bound = 0.0
+    _plot_upper_bound = 1.0
 
     preds: List[Tensor]
     target: List[Tensor]
@@ -142,13 +144,4 @@ class SpectralAngleMapper(Metric):
             ...     values.append(metric(preds, target))
             >>> fig_, ax_ = metric.plot(values)
         """
-        val = val or self.compute()
-        fig, ax = plot_single_or_multi_val(
-            val,
-            ax=ax,
-            higher_is_better=self.higher_is_better,
-            name=self.__class__.__name__,
-            lower_bound=0.0,
-            upper_bound=1.0,
-        )
-        return fig, ax
+        return self._plot(val, ax)
