@@ -28,55 +28,55 @@ from torchmetrics.utilities.data import _flatten, apply_to_collection
 from unittests import NUM_PROCESSES
 
 
-def _assert_allclose(pl_result: Any, sk_result: Any, atol: float = 1e-8, key: Optional[str] = None) -> None:
+def _assert_allclose(tm_result: Any, ref_result: Any, atol: float = 1e-8, key: Optional[str] = None) -> None:
     """Utility function for recursively asserting that two results are within a certain tolerance."""
     # single output compare
-    if isinstance(pl_result, Tensor):
-        assert np.allclose(pl_result.detach().cpu().numpy(), sk_result, atol=atol, equal_nan=True)
+    if isinstance(tm_result, Tensor):
+        assert np.allclose(tm_result.detach().cpu().numpy(), ref_result, atol=atol, equal_nan=True)
     # multi output compare
-    elif isinstance(pl_result, Sequence):
-        for pl_res, sk_res in zip(pl_result, sk_result):
+    elif isinstance(tm_result, Sequence):
+        for pl_res, sk_res in zip(tm_result, ref_result):
             _assert_allclose(pl_res, sk_res, atol=atol)
-    elif isinstance(pl_result, Dict):
+    elif isinstance(tm_result, Dict):
         if key is None:
             raise KeyError("Provide Key for Dict based metric results.")
-        assert np.allclose(pl_result[key].detach().cpu().numpy(), sk_result, atol=atol, equal_nan=True)
+        assert np.allclose(tm_result[key].detach().cpu().numpy(), ref_result, atol=atol, equal_nan=True)
     else:
         raise ValueError("Unknown format for comparison")
 
 
-def _assert_tensor(pl_result: Any, key: Optional[str] = None) -> None:
+def _assert_tensor(tm_result: Any, key: Optional[str] = None) -> None:
     """Utility function for recursively checking that some input only consists of torch tensors."""
-    if isinstance(pl_result, Sequence):
-        for plr in pl_result:
+    if isinstance(tm_result, Sequence):
+        for plr in tm_result:
             _assert_tensor(plr)
-    elif isinstance(pl_result, Dict):
+    elif isinstance(tm_result, Dict):
         if key is None:
             raise KeyError("Provide Key for Dict based metric results.")
-        assert isinstance(pl_result[key], Tensor)
-    elif isinstance(pl_result, MAPMetricResults):
-        for val_index in [a for a in dir(pl_result) if not a.startswith("__")]:
-            assert isinstance(pl_result[val_index], Tensor)
+        assert isinstance(tm_result[key], Tensor)
+    elif isinstance(tm_result, MAPMetricResults):
+        for val_index in [a for a in dir(tm_result) if not a.startswith("__")]:
+            assert isinstance(tm_result[val_index], Tensor)
     else:
-        assert isinstance(pl_result, Tensor)
+        assert isinstance(tm_result, Tensor)
 
 
-def _assert_requires_grad(metric: Metric, pl_result: Any, key: Optional[str] = None) -> None:
+def _assert_requires_grad(metric: Metric, tm_result: Any, key: Optional[str] = None) -> None:
     """Function for recursively asserting that metric output is consistent with the `is_differentiable` attribute."""
-    if isinstance(pl_result, Sequence):
-        for plr in pl_result:
+    if isinstance(tm_result, Sequence):
+        for plr in tm_result:
             _assert_requires_grad(metric, plr, key=key)
-    elif isinstance(pl_result, Dict):
+    elif isinstance(tm_result, Dict):
         if key is None:
             raise KeyError("Provide Key for Dict based metric results.")
-        assert metric.is_differentiable == pl_result[key].requires_grad
+        assert metric.is_differentiable == tm_result[key].requires_grad
     else:
-        assert metric.is_differentiable == pl_result.requires_grad
+        assert metric.is_differentiable == tm_result.requires_grad
 
 
 def _class_test(
     rank: int,
-    worldsize: int,
+    world_size: int,
     preds: Union[Tensor, list, List[Dict[str, Tensor]]],
     target: Union[Tensor, list, List[Dict[str, Tensor]]],
     metric_class: Metric,
@@ -96,7 +96,7 @@ def _class_test(
 
     Args:
         rank: rank of current process
-        worldsize: number of processes
+        world_size: number of processes
         preds: torch tensor with predictions
         target: torch tensor with targets
         metric_class: metric class that should be tested
@@ -149,22 +149,22 @@ def _class_test(
     pickled_metric = pickle.dumps(metric)
     metric = pickle.loads(pickled_metric)
 
-    for i in range(rank, num_batches, worldsize):
+    for i in range(rank, num_batches, world_size):
         batch_kwargs_update = {k: v[i] if isinstance(v, Tensor) else v for k, v in kwargs_update.items()}
 
         batch_result = metric(preds[i], target[i], **batch_kwargs_update)
 
         if metric.dist_sync_on_step and check_dist_sync_on_step and rank == 0:
             if isinstance(preds, Tensor):
-                ddp_preds = torch.cat([preds[i + r] for r in range(worldsize)]).cpu()
+                ddp_preds = torch.cat([preds[i + r] for r in range(world_size)]).cpu()
             else:
-                ddp_preds = _flatten([preds[i + r] for r in range(worldsize)])
+                ddp_preds = _flatten([preds[i + r] for r in range(world_size)])
             if isinstance(target, Tensor):
-                ddp_target = torch.cat([target[i + r] for r in range(worldsize)]).cpu()
+                ddp_target = torch.cat([target[i + r] for r in range(world_size)]).cpu()
             else:
-                ddp_target = _flatten([target[i + r] for r in range(worldsize)])
+                ddp_target = _flatten([target[i + r] for r in range(world_size)])
             ddp_kwargs_upd = {
-                k: torch.cat([v[i + r] for r in range(worldsize)]).cpu() if isinstance(v, Tensor) else v
+                k: torch.cat([v[i + r] for r in range(world_size)]).cpu() if isinstance(v, Tensor) else v
                 for k, v in (kwargs_update if fragment_kwargs else batch_kwargs_update).items()
             }
             ref_batch_result = reference_metric(ddp_preds, ddp_target, **ddp_kwargs_upd)
@@ -423,7 +423,7 @@ class MetricTester:
 
             _class_test(
                 rank=0,
-                worldsize=1,
+                world_size=1,
                 preds=preds,
                 target=target,
                 metric_class=metric_class,

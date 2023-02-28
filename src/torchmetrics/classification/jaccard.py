@@ -176,7 +176,7 @@ class MulticlassJaccardIndex(MulticlassConfusionMatrix):
 
     def compute(self) -> Tensor:
         """Compute metric."""
-        return _jaccard_index_reduce(self.confmat, average=self.average)
+        return _jaccard_index_reduce(self.confmat, average=self.average, ignore_index=self.ignore_index)
 
 
 class MultilabelJaccardIndex(MultilabelConfusionMatrix):
