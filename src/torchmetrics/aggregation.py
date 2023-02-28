@@ -194,11 +194,7 @@ class MaxMetric(BaseAggregator):
             ...     values.append(metric(i))
             >>> fig_, ax_ = metric.plot(values)
         """
-        val = val or self.compute()
-        fig, ax = plot_single_or_multi_val(
-            val, ax=ax, higher_is_better=self.higher_is_better, name=self.__class__.__name__
-        )
-        return fig, ax
+        return self._plot(val, ax)
 
 
 class MinMetric(BaseAggregator):
@@ -298,11 +294,7 @@ class MinMetric(BaseAggregator):
             ...     values.append(metric(i))
             >>> fig_, ax_ = metric.plot(values)
         """
-        val = val or self.compute()
-        fig, ax = plot_single_or_multi_val(
-            val, ax=ax, higher_is_better=self.higher_is_better, name=self.__class__.__name__
-        )
-        return fig, ax
+        return self._plot(val, ax)
 
 
 class SumMetric(BaseAggregator):
@@ -401,11 +393,7 @@ class SumMetric(BaseAggregator):
             ...     values.append(metric([i, i+1]))
             >>> fig_, ax_ = metric.plot(values)
         """
-        val = val or self.compute()
-        fig, ax = plot_single_or_multi_val(
-            val, ax=ax, higher_is_better=self.higher_is_better, name=self.__class__.__name__
-        )
-        return fig, ax
+        return self._plot(val, ax)
 
 
 class CatMetric(BaseAggregator):
@@ -579,8 +567,4 @@ class MeanMetric(BaseAggregator):
             ...     values.append(metric([i, i+1]))
             >>> fig_, ax_ = metric.plot(values)
         """
-        val = val or self.compute()
-        fig, ax = plot_single_or_multi_val(
-            val, ax=ax, higher_is_better=self.higher_is_better, name=self.__class__.__name__
-        )
-        return fig, ax
+        return self._plot(val, ax)
