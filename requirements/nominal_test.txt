@@ -3,4 +3,4 @@
 
 pandas >1.0.0, <=1.5.3 # cannot pin version due to numpy version incompatibility
 dython <=0.7.3 # todo: pin version, but some version resolution issue
-scipy >1.0.0, <=1.10.0 # cannot pin version due to some version conflicts with `oldest` CI configuration
+scipy >1.0.0, <1.11.0 # cannot pin version due to some version conflicts with `oldest` CI configuration
