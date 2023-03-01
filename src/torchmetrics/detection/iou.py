@@ -56,7 +56,7 @@ class IntersectionOverUnion(Metric):
     groundtruths: List[Tensor]
     groundtruth_labels: List[Tensor]
     results: List[Tensor]
-    labels_eq: List[bool]
+    labels_eq: List[Tensor]
     _iou_update_fn: Callable[[Tensor, Tensor, Optional[float], float], Tensor]
     _iou_compute_fn: Callable[[Tensor, bool], Tensor]
     _iou_type: str = "iou"
