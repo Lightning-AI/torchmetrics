@@ -158,7 +158,8 @@ class IntersectionOverUnion(Metric):
             self.groundtruth_labels.append(t["labels"])
 
             label_eq = torch.equal(p["labels"], t["labels"])
-            self.labels_eq.append(label_eq)
+            # Workaround to persist state, which only works with tensors
+            self.labels_eq.append(torch.tensor([label_eq], dtype=torch.bool, device=self.device))
 
             ious = self._iou_update_fn(det_boxes, gt_boxes, self.iou_threshold, self._invalid_val)
             if self.respect_labels and not label_eq:
@@ -175,7 +176,7 @@ class IntersectionOverUnion(Metric):
     def compute(self) -> dict:
         """Computes IoU based on inputs passed in to ``update`` previously."""
         aggregated_iou = dim_zero_cat(
-            [self._iou_compute_fn(iou, lbl_eq) for iou, lbl_eq in zip(self.results, self.labels_eq)]
+            [self._iou_compute_fn(iou, bool(lbl_eq)) for iou, lbl_eq in zip(self.results, self.labels_eq)]
         )
         results: Dict[str, Tensor] = {f"{self._iou_type}": aggregated_iou.mean()}
 
