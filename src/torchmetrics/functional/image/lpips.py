@@ -18,6 +18,9 @@
 # https://github.com/richzhang/PerceptualSimilarity/blob/master/lpips/pretrained_networks.py
 # and with adjustments from
 # https://github.com/richzhang/PerceptualSimilarity/pull/114/files
+# Copyright (c) 2018, Richard Zhang, Phillip Isola, Alexei A. Efros, Eli Shechtman, Oliver Wang
+# All rights reserved.
+
 from collections import namedtuple
 
 import torch
