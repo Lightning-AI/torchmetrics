@@ -151,6 +151,21 @@ class BaseTestIntersectionOverUnion(ABC):
             metric_args={"compute_on_cpu": compute_on_cpu},
         )
 
+    def test_iou_variant_dont_respect_labels(self, compute_on_cpu: bool, ddp: bool):
+        """Test modular implementation for correctness."""
+        key = "iou_variant_respect"
+
+        self.run_class_metric_test(  # type: ignore
+            ddp=ddp,
+            preds=self.data[key].data.preds,
+            target=self.data[key].data.target,
+            metric_class=self.metric_class,
+            reference_metric=partial(compare_fn, result=self.data[key].result),
+            dist_sync_on_step=False,
+            check_batch=False,
+            metric_args={"compute_on_cpu": compute_on_cpu, "respect_labels": False},
+        )
+
     def test_fn(self, compute_on_cpu: bool, ddp: bool):
         key = "fn_iou_variant"
         self.run_functional_metric_test(

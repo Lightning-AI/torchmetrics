@@ -25,7 +25,12 @@ from unittests.helpers.testers import MetricTester
 
 iou = torch.Tensor(
     [
-        [0.58793],
+        [0.402661],
+    ]
+)
+iou_dontrespect = torch.Tensor(
+    [
+        [0.584721],
     ]
 )
 box_iou = torch.Tensor(
@@ -45,6 +50,7 @@ class TestIntersectionOverUnion(MetricTester, BaseTestIntersectionOverUnion):
 
     data: Dict[str, TestCaseData] = {
         "iou_variant": TestCaseData(data=_inputs, result={IntersectionOverUnion._iou_type: iou}),
+        "iou_variant_respect": TestCaseData(data=_inputs, result={IntersectionOverUnion._iou_type: iou_dontrespect}),
         "fn_iou_variant": TestCaseData(data=_box_inputs, result=box_iou),
     }
     metric_class = IntersectionOverUnion

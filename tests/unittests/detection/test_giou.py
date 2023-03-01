@@ -25,7 +25,12 @@ from unittests.helpers.testers import MetricTester
 
 giou = torch.Tensor(
     [
-        [0.563799],
+        [0.079967],
+    ]
+)
+giou_dontrespect = torch.Tensor(
+    [
+        [0.555829],
     ]
 )
 box_giou = torch.Tensor(
@@ -45,6 +50,9 @@ class TestGeneralizedIntersectionOverUnion(MetricTester, BaseTestIntersectionOve
 
     data: Dict[str, TestCaseData] = {
         "iou_variant": TestCaseData(data=_inputs, result={GeneralizedIntersectionOverUnion._iou_type: giou}),
+        "iou_variant_respect": TestCaseData(
+            data=_inputs, result={GeneralizedIntersectionOverUnion._iou_type: giou_dontrespect}
+        ),
         "fn_iou_variant": TestCaseData(data=_box_inputs, result=box_giou),
     }
     metric_class = GeneralizedIntersectionOverUnion
