@@ -4,4 +4,3 @@
 scipy >1.0.0, <1.11.0
 torchvision >=0.8, <=0.14.1
 torch-fidelity <=0.3.0
-lpips <=0.1.4

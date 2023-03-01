@@ -19,38 +19,18 @@ from torch import Tensor
 from torch.nn import Module
 from typing_extensions import Literal
 
+from torchmetrics.functional.image.lpips import _LPIPS, _lpips_compute, _lpips_update, _NoTrainLpips
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
 from torchmetrics.utilities.imports import _LPIPS_AVAILABLE
 
-if _LPIPS_AVAILABLE:
-    from lpips import LPIPS as _LPIPS
 
-    def _download_lpips() -> None:
-        _LPIPS(pretrained=True, net="vgg")
+def _download_lpips() -> None:
+    _LPIPS(pretrained=True, net="vgg")
 
-    if _SKIP_SLOW_DOCTEST and not _try_proceed_with_timeout(_download_lpips):
-        __doctest_skip__ = ["LearnedPerceptualImagePatchSimilarity", "LPIPS"]
-else:
 
-    class _LPIPS(Module):
-        pass
-
+if _SKIP_SLOW_DOCTEST and not _try_proceed_with_timeout(_download_lpips):
     __doctest_skip__ = ["LearnedPerceptualImagePatchSimilarity", "LPIPS"]
-
-
-class NoTrainLpips(_LPIPS):
-    """Wrapper to make sure LPIPS never leaves evaluation mode."""
-
-    def train(self, mode: bool) -> "NoTrainLpips":
-        """Force network to always be in evaluation mode."""
-        return super().train(False)
-
-
-def _valid_img(img: Tensor, normalize: bool) -> bool:
-    """Check that input is a valid image to the network."""
-    value_check = img.max() <= 1.0 and img.min() >= 0.0 if normalize else img.min() >= -1
-    return img.ndim == 4 and img.shape[1] == 3 and value_check
 
 
 class LearnedPerceptualImagePatchSimilarity(Metric):
@@ -117,7 +97,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
 
     def __init__(
         self,
-        net_type: str = "alex",
+        net_type: Literal["alex", "alex", "squeeze"] = "alex",
         reduction: Literal["sum", "mean"] = "mean",
         normalize: bool = False,
         **kwargs: Any,
@@ -133,7 +113,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
         valid_net_type = ("vgg", "alex", "squeeze")
         if net_type not in valid_net_type:
             raise ValueError(f"Argument `net_type` must be one of {valid_net_type}, but got {net_type}.")
-        self.net = NoTrainLpips(net=net_type, verbose=False)
+        self.net = _NoTrainLpips(net=net_type)
 
         valid_reduction = ("mean", "sum")
         if reduction not in valid_reduction:
@@ -149,21 +129,10 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
 
     def update(self, img1: Tensor, img2: Tensor) -> None:
         """Update internal states with lpips score."""
-        if not (_valid_img(img1, self.normalize) and _valid_img(img2, self.normalize)):
-            raise ValueError(
-                "Expected both input arguments to be normalized tensors with shape [N, 3, H, W]."
-                f" Got input with shape {img1.shape} and {img2.shape} and values in range"
-                f" {[img1.min(), img1.max()]} and {[img2.min(), img2.max()]} when all values are"
-                f" expected to be in the {[0,1] if self.normalize else [-1,1]} range."
-            )
-        loss = self.net(img1, img2, normalize=self.normalize).squeeze()
+        loss, total = _lpips_update(img1, img2, net=self.net, normalize=self.normalize)
         self.sum_scores += loss.sum()
-        self.total += img1.shape[0]
+        self.total += total
 
     def compute(self) -> Tensor:
         """Compute final perceptual similarity metric."""
-        if self.reduction == "mean":
-            return self.sum_scores / self.total
-        if self.reduction == "sum":
-            return self.sum_scores
-        return None
+        return _lpips_compute(self.sum_scores, self.total, self.reduction)
