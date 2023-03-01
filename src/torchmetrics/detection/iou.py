@@ -177,7 +177,7 @@ class IntersectionOverUnion(Metric):
         aggregated_iou = dim_zero_cat(
             [self._iou_compute_fn(iou, lbl_eq) for iou, lbl_eq in zip(self.results, self.labels_eq)]
         )
-        results: Dict[str, Tensor] = {f"{self.type}": aggregated_iou.mean()}
+        results: Dict[str, Tensor] = {f"{self._iou_type}": aggregated_iou.mean()}
 
         if self.class_metrics:
             class_results: Dict[int, List[Tensor]] = defaultdict(list)
@@ -187,5 +187,7 @@ class IntersectionOverUnion(Metric):
                     if masked_iou.numel() > 0:
                         class_results[cl].append(self._iou_compute_fn(masked_iou, False))
 
-            results.update({f"{self.type}/cl_{cl}": dim_zero_cat(class_results[cl]).mean() for cl in class_results})
+            results.update(
+                {f"{self._iou_type}/cl_{cl}": dim_zero_cat(class_results[cl]).mean() for cl in class_results}
+            )
         return results
