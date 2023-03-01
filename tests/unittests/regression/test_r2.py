@@ -159,3 +159,11 @@ def test_warning_on_too_large_adjusted(metric_class=R2Score):
 
     with pytest.warns(UserWarning, match="Division by zero in adjusted r2 score. Falls back to" " standard r2 score."):
         metric(torch.randn(11), torch.randn(11))
+
+
+def test_constant_target():
+    """Check for a near constant target that a value of 0 is returned."""
+    y_true = torch.tensor([-5.1608, -5.1609, -5.1608, -5.1608, -5.1608, -5.1608])
+    y_pred = torch.tensor([-3.9865, -5.4648, -5.0238, -4.3899, -5.6672, -4.7336])
+    score = r2_score(preds=y_pred, target=y_true)
+    assert score == 0
