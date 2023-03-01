@@ -42,7 +42,6 @@ def _r2_score_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor, Ten
     residual = target - preds
     rss = torch.sum(residual * residual, dim=0)
     n_obs = target.size(0)
-
     return sum_squared_obs, sum_obs, rss, n_obs
 
 
@@ -80,7 +79,15 @@ def _r2_score_compute(
 
     mean_obs = sum_obs / n_obs
     tss = sum_squared_obs - sum_obs * mean_obs
-    raw_scores = 1 - (rss / tss)
+
+    # Account for near constant targets
+    cond_rss = ~torch.isclose(rss, torch.zeros_like(rss), atol=1e-4)
+    cond_tss = ~torch.isclose(tss, torch.zeros_like(tss), atol=1e-4)
+    cond = cond_rss & cond_tss
+
+    raw_scores = torch.ones_like(rss)
+    raw_scores[cond] = 1 - (rss[cond] / tss[cond])
+    raw_scores[cond_rss & ~cond_tss] = 0.0
 
     if multioutput == "raw_values":
         r2 = raw_scores
