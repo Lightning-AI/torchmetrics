@@ -77,7 +77,8 @@ class ShortTimeObjectiveIntelligibility(Metric):
     full_state_update: bool = False
     is_differentiable: bool = False
     higher_is_better: bool = True
-    plot_options: dict = {"lower_bound": -20.0, "upper_bound": 5.0}
+    plot_lower_bound = -20.0
+    plot_upper_bound = 5.0
 
     def __init__(
         self,
@@ -153,8 +154,4 @@ class ShortTimeObjectiveIntelligibility(Metric):
             ...     values.append(metric(preds, target))
             >>> fig_, ax_ = metric.plot(values)
         """
-        val = val or self.compute()
-        fig, ax = plot_single_or_multi_val(
-            val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
-        )
-        return fig, ax
+        return self._plot(val, ax)
