@@ -79,6 +79,7 @@ def _r2_score_compute(
     mean_obs = sum_obs / n_obs
     tss = sum_squared_obs - sum_obs * mean_obs
 
+    # Account for near constant targets
     cond_rss = ~torch.isclose(rss, torch.zeros_like(rss), atol=1e-4)
     cond_tss = ~torch.isclose(tss, torch.zeros_like(tss), atol=1e-4)
     cond = cond_rss & cond_tss
