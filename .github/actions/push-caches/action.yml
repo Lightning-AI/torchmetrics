@@ -78,6 +78,20 @@ runs:
       path: ${{ inputs.pypi-dir }}
       key: ${{ inputs.pypi-key }}
 
+  - name: Post PT
+    if: ${{ runner.os == 'Linux' }}
+    run: |
+      printf "list $TORCH_HOME:\n"
+      tree -h $TORCH_HOME
+    shell: bash
+
+  - name: Cache Torch
+    continue-on-error: true
+    uses: actions/cache/save@v3
+    with:
+      path: ${{ env.TORCH_HOME }}
+      key: cache-pytorch
+
   - name: Post HF
     run: |
       printf "list $TRANSFORMERS_CACHE:\n"
