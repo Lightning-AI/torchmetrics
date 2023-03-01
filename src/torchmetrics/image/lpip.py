@@ -22,14 +22,16 @@ from typing_extensions import Literal
 from torchmetrics.functional.image.lpips import _LPIPS, _lpips_compute, _lpips_update, _NoTrainLpips
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
-from torchmetrics.utilities.imports import _LPIPS_AVAILABLE
+from torchmetrics.utilities.imports import _LPIPS_AVAILABLE, _TORCHVISION_AVAILABLE
 
+if _TORCHVISION_AVAILABLE:
 
-def _download_lpips() -> None:
-    _LPIPS(pretrained=True, net="vgg")
+    def _download_lpips() -> None:
+        _LPIPS(pretrained=True, net="vgg")
 
-
-if _SKIP_SLOW_DOCTEST and not _try_proceed_with_timeout(_download_lpips):
+    if _SKIP_SLOW_DOCTEST and not _try_proceed_with_timeout(_download_lpips):
+        __doctest_skip__ = ["LearnedPerceptualImagePatchSimilarity", "LPIPS"]
+else:
     __doctest_skip__ = ["LearnedPerceptualImagePatchSimilarity", "LPIPS"]
 
 

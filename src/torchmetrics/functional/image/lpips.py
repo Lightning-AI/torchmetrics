@@ -30,13 +30,16 @@ from torch import Tensor, nn
 from torchvision import models as tv
 from typing_extensions import Literal
 
-from torchmetrics.utilities.imports import _TORCHVISION_GREATER_EQUAL_0_13
+from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_13
 
 _weight_map = {
     "squeezenet1_1": "SqueezeNet1_1_Weights",
     "alexnet": "AlexNet_Weights",
     "vgg16": "VGG16_Weights",
 }
+
+if not _TORCHVISION_AVAILABLE:
+    __doctest_skip__ = ["learned_perceptual_image_patch_similarity"]
 
 
 def _get_net(net: str, pretrained: bool):
@@ -335,16 +338,10 @@ class _LPIPS(nn.Module):
             feats0[kk], feats1[kk] = normalize_tensor(outs0[kk]), normalize_tensor(outs1[kk])
             diffs[kk] = (feats0[kk] - feats1[kk]) ** 2
 
-        if self.lpips:
-            if self.spatial:
-                res = [upsample(self.lins[kk](diffs[kk]), out_HW=in0.shape[2:]) for kk in range(self.L)]
-            else:
-                res = [spatial_average(self.lins[kk](diffs[kk]), keepdim=True) for kk in range(self.L)]
+        if self.spatial:
+            res = [upsample(self.lins[kk](diffs[kk]), out_HW=in0.shape[2:]) for kk in range(self.L)]
         else:
-            if self.spatial:
-                res = [upsample(diffs[kk].sum(dim=1, keepdim=True), out_HW=in0.shape[2:]) for kk in range(self.L)]
-            else:
-                res = [spatial_average(diffs[kk].sum(dim=1, keepdim=True), keepdim=True) for kk in range(self.L)]
+            res = [spatial_average(self.lins[kk](diffs[kk]), keepdim=True) for kk in range(self.L)]
 
         val = 0
         for layer in range(self.L):
@@ -408,8 +405,17 @@ def learned_perceptual_image_patch_similarity(
         reduction: str indicating how to reduce over the batch dimension. Choose between `'sum'` or `'mean'`.
         normalize: by default this is ``False`` meaning that the input is expected to be in the [-1,1] range. If set
             to ``True`` will instead expect input to be in the ``[0,1]`` range.
-        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+
+    Example:
+        >>> import torch
+        >>> _ = torch.manual_seed(123)
+        >>> from torchmetrics.functional.image.lpips import learned_perceptual_image_patch_similarity
+        >>> img1 = (torch.rand(10, 3, 100, 100) * 2) - 1
+        >>> img2 = (torch.rand(10, 3, 100, 100) * 2) - 1
+        >>> learned_perceptual_image_patch_similarity(img1, img2, net_type='vgg')
+        tensor(0.3493, grad_fn=<SqueezeBackward0>)
+
     """
     net = _NoTrainLpips(net_type)
     loss, total = _lpips_update(img1, img2, net, normalize)
-    return _lpips_compute(loss, total, reduction)
+    return _lpips_compute(loss.sum(), total, reduction)
