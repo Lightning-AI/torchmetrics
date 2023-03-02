@@ -78,6 +78,9 @@ def _parse_requirements(strs: Union[str, Iterable[str]]) -> Iterator[_Requiremen
                 line += next(lines)
             except StopIteration:
                 return
+        if "@" in line or re.search("https?://", line):
+            # skip lines with links like `pesq @ git+https://github.com/ludlows/python-pesq`
+            continue
         # If there's a pip argument, save it
         if line.startswith("--"):
             pip_argument = line
