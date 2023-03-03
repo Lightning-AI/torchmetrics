@@ -16,11 +16,10 @@ from math import ceil, floor, sqrt
 from typing import Any, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
-import scienceplots  # noqa: F401
 import torch
 from torch import Tensor
 
-from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _SCIENCEPLOT_AVAILABLE
 
 if _MATPLOTLIB_AVAILABLE:
     import matplotlib
@@ -32,6 +31,9 @@ else:
     _PLOT_OUT_TYPE = Tuple[object, object]  # type: ignore[misc]
     _AX_TYPE = object
 
+if _SCIENCEPLOT_AVAILABLE:
+    import scienceplots  # noqa: F401
+
 
 def _error_on_missing_matplotlib() -> None:
     """Raise error if matplotlib is not installed."""
@@ -41,7 +43,7 @@ def _error_on_missing_matplotlib() -> None:
         )
 
 
-@plt.style.context("science")
+@plt.style.context("science" if _SCIENCEPLOT_AVAILABLE else "default")
 def plot_single_or_multi_val(
     val: Union[Tensor, Sequence[Tensor]],
     ax: Optional[_AX_TYPE] = None,  # type: ignore[valid-type]
@@ -154,7 +156,7 @@ def trim_axs(axs: Union[_AX_TYPE, np.ndarray], nb: int) -> np.ndarray:  # type: 
     return axs[:nb]
 
 
-@plt.style.context("science")
+@plt.style.context("science" if _SCIENCEPLOT_AVAILABLE else "default")
 def plot_confusion_matrix(
     confmat: Tensor,
     add_text: bool = True,
@@ -220,7 +222,7 @@ def plot_confusion_matrix(
     return fig, axs
 
 
-@plt.style.context("science")
+@plt.style.context("science" if _SCIENCEPLOT_AVAILABLE else "default")
 def plot_binary_roc_curve(
     tpr: Tensor,
     fpr: Tensor,
