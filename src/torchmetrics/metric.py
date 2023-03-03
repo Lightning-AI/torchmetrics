@@ -700,6 +700,10 @@ class Metric(Module, ABC):
         This method is called by the base ``nn.Module`` class whenever `.to`, `.cuda`, etc. methods are called.
         """
         this = super()._apply(fn)
+
+        if "Module.half" in str(fn) or "Module.float" in str(fn):
+            return this
+
         # Also apply fn to metric states and defaults
         for key, value in this._defaults.items():
             if isinstance(value, Tensor):
