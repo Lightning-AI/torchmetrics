@@ -216,7 +216,7 @@ class BinaryFairnessTester(MetricTester):
 
 @mock.patch("unittests.helpers.testers._assert_tensor", _assert_tensor)
 @mock.patch("unittests.helpers.testers._assert_allclose", _assert_allclose)
-@pytest.mark.skipif(sys.version_info.minor < 7, reason="`TestBinaryFairness` requires `python>=3.8`.")
+@pytest.mark.skipif(sys.version_info.minor < 8, reason="`TestBinaryFairness` requires `python>=3.8`.")
 @pytest.mark.parametrize("inputs", _group_cases)
 class TestBinaryFairness(BinaryFairnessTester):
     """Test class for `BinaryFairness` metric."""
