@@ -13,13 +13,13 @@
 # limitations under the License.
 from itertools import product
 from math import ceil, floor, sqrt
-from typing import Any, List, Optional, Sequence, Tuple, Union
+from typing import Any, Generator, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 import torch
 from torch import Tensor
 
-from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.imports import _LATEX_AVAILABLE, _MATPLOTLIB_AVAILABLE, _SCIENCEPLOT_AVAILABLE
 
 if _MATPLOTLIB_AVAILABLE:
     import matplotlib
@@ -27,9 +27,26 @@ if _MATPLOTLIB_AVAILABLE:
 
     _PLOT_OUT_TYPE = Tuple[plt.Figure, Union[matplotlib.axes.Axes, np.ndarray]]
     _AX_TYPE = matplotlib.axes.Axes
+
+    style_change = plt.style.context
 else:
     _PLOT_OUT_TYPE = Tuple[object, object]  # type: ignore[misc]
     _AX_TYPE = object
+
+    from contextlib import contextmanager
+
+    @contextmanager
+    def style_change(*args: Any, **kwargs: Any) -> Generator:
+        """Default no-ops decorator if matplotlib is not installed."""
+        yield
+
+
+if _SCIENCEPLOT_AVAILABLE:
+    import scienceplots  # noqa: F401
+
+    _style = ["science", "no-latex"]
+
+_style = ["science"] if _SCIENCEPLOT_AVAILABLE and _LATEX_AVAILABLE else ["default"]
 
 
 def _error_on_missing_matplotlib() -> None:
@@ -40,6 +57,7 @@ def _error_on_missing_matplotlib() -> None:
         )
 
 
+@style_change(_style)
 def plot_single_or_multi_val(
     val: Union[Tensor, Sequence[Tensor]],
     ax: Optional[_AX_TYPE] = None,  # type: ignore[valid-type]
@@ -152,6 +170,7 @@ def trim_axs(axs: Union[_AX_TYPE, np.ndarray], nb: int) -> np.ndarray:  # type: 
     return axs[:nb]
 
 
+@style_change(_style)
 def plot_confusion_matrix(
     confmat: Tensor,
     add_text: bool = True,
@@ -217,6 +236,7 @@ def plot_confusion_matrix(
     return fig, axs
 
 
+@style_change(_style)
 def plot_binary_roc_curve(
     tpr: Tensor,
     fpr: Tensor,
