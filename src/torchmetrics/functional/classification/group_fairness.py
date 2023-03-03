@@ -229,9 +229,6 @@ def demographic_parity(
         >>> groups = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> demographic_parity(preds, groups)
         {'DP_0_1': tensor(0.)}
-
-    .. _Demographic parity:
-        http://www.fairmlbook.org/
     """
     num_groups = torch.unique(groups).shape[0]
     target = torch.zeros(preds.shape)
@@ -316,9 +313,6 @@ def equal_opportunity(
         >>> groups = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> equal_opportunity(preds, target, groups)
         {'EO_0_1': tensor(0.)}
-
-    .. _Equal opportunity:
-        https://proceedings.neurips.cc/paper/2016/hash/9d2682367c3935defcb1f9e247a97c0d-Abstract.html
     """
     num_groups = torch.unique(groups).shape[0]
     group_stats = _binary_groups_stat_scores(preds, target, groups, num_groups, threshold, ignore_index, validate_args)
