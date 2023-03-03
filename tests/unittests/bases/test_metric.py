@@ -22,7 +22,8 @@ import psutil
 import pytest
 import torch
 from torch import Tensor, tensor
-from torch.nn import Module
+from torch.nn import Module, Linear
+from pytorch_lightning import LightningModule
 
 from torchmetrics import PearsonCorrCoef
 from torchmetrics.classification import BinaryAccuracy
@@ -294,6 +295,39 @@ def test_device_and_dtype_transfer(tmpdir):
     assert metric.x.dtype == torch.float16
     metric.reset()
     assert metric.x.dtype == torch.float16
+
+
+def test_dtype_in_pl_module_transfer(tmpdir):
+    """Test that metric states don't change dtype when .half() or .float() is called on the LightningModule."""
+    class BoringModel(LightningModule):
+        def __init__(self, metric_dtype=torch.float32):
+            super().__init__()
+            self.layer = Linear(32, 32)
+            self.metric = DummyMetricSum()
+            self.metric.set_dtype(metric_dtype)
+
+        def forward(self, x):
+            return self.layer(x)
+
+        def training_step(self, batch, batch_idx):
+            pred = self.forward(batch)
+            loss = self(batch).sum()
+            self.metric.update(torch.flatten(pred), torch.flatten(batch))
+
+            return {"loss": loss}
+
+        def configure_optimizers(self):
+            return torch.optim.SGD(self.layer.parameters(), lr=0.1)
+    
+    model = BoringModel()
+    assert model.metric.x.dtype == torch.float32
+    model = model.half()
+    assert model.metric.x.dtype == torch.float32
+
+    model = BoringModel(metric_dtype=torch.float16)
+    assert model.metric.x.dtype == torch.float16
+    model = model.float()
+    assert model.metric.x.dtype == torch.float16
 
 
 def test_warning_on_compute_before_update():
