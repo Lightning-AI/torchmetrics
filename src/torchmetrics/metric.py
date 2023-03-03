@@ -697,7 +697,8 @@ class Metric(Module, ABC):
     def _apply(self, fn: Callable) -> Module:
         """Overwrite _apply function such that we can also move metric states to the correct device.
 
-        This method is called by the base ``nn.Module`` class whenever `.to`, `.cuda`, etc. methods are called.
+        This method is called by the base ``nn.Module`` class whenever `.to`, `.cuda`, etc. methods are called,
+        however .half() and .float() calls are not applied on metric states and defaults.
         """
         this = super()._apply(fn)
 
