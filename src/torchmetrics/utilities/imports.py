@@ -13,6 +13,7 @@
 # limitations under the License.
 """Import utilities."""
 import operator
+import shutil
 from typing import Optional
 
 from lightning_utilities.core.imports import compare_version, package_available
@@ -45,3 +46,5 @@ _MATPLOTLIB_AVAILABLE: bool = package_available("matplotlib")
 _SCIENCEPLOT_AVAILABLE: bool = package_available("scienceplots")
 _MULTIPROCESSING_AVAILABLE: bool = package_available("multiprocessing")
 _XLA_AVAILABLE: bool = package_available("torch_xla")
+
+_LATEX_AVAILABLE: bool = shutil.which("latex") is not None
