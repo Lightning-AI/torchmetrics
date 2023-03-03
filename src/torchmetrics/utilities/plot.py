@@ -13,7 +13,7 @@
 # limitations under the License.
 from itertools import product
 from math import ceil, floor, sqrt
-from typing import Any, List, Optional, Sequence, Tuple, Union
+from typing import Any, Generator, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 import torch
@@ -36,7 +36,7 @@ else:
     from contextlib import contextmanager
 
     @contextmanager
-    def style_change(*args, **kwargs):
+    def style_change(*args: Any, **kwargs: Any) -> Generator:
         """Default no-ops decorator if matplotlib is not installed."""
         yield
 
@@ -46,7 +46,7 @@ if _SCIENCEPLOT_AVAILABLE:
 
     _style = ["science", "no-latex"]
 
-_style = "science" if _SCIENCEPLOT_AVAILABLE and _LATEX_AVAILABLE else "default"
+_style = ["science"] if _SCIENCEPLOT_AVAILABLE and _LATEX_AVAILABLE else ["default"]
 
 
 def _error_on_missing_matplotlib() -> None:
