@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import inspect
+import sys
 import unittest.mock as mock
 from functools import partial
 from typing import Any, Callable, Dict, Optional
@@ -215,6 +216,7 @@ class BinaryFairnessTester(MetricTester):
 
 @mock.patch("unittests.helpers.testers._assert_tensor", _assert_tensor)
 @mock.patch("unittests.helpers.testers._assert_allclose", _assert_allclose)
+@pytest.mark.skipif(sys.version_info.minor < 7, reason="`TestBinaryFairness` requires `python>=3.8`.")
 @pytest.mark.parametrize("inputs", _group_cases)
 class TestBinaryFairness(BinaryFairnessTester):
     """Test class for `BinaryFairness` metric."""
