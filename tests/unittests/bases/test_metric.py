@@ -21,9 +21,9 @@ import numpy as np
 import psutil
 import pytest
 import torch
-from torch import Tensor, tensor
-from torch.nn import Module, Linear
 from pytorch_lightning import LightningModule
+from torch import Tensor, tensor
+from torch.nn import Linear, Module
 
 from torchmetrics import PearsonCorrCoef
 from torchmetrics.classification import BinaryAccuracy
@@ -299,6 +299,7 @@ def test_device_and_dtype_transfer(tmpdir):
 
 def test_dtype_in_pl_module_transfer(tmpdir):
     """Test that metric states don't change dtype when .half() or .float() is called on the LightningModule."""
+
     class BoringModel(LightningModule):
         def __init__(self, metric_dtype=torch.float32):
             super().__init__()
@@ -318,7 +319,7 @@ def test_dtype_in_pl_module_transfer(tmpdir):
 
         def configure_optimizers(self):
             return torch.optim.SGD(self.layer.parameters(), lr=0.1)
-    
+
     model = BoringModel()
     assert model.metric.x.dtype == torch.float32
     model = model.half()
