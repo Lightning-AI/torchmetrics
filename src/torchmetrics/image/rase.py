@@ -81,7 +81,7 @@ class RelativeAverageSpectralError(Metric):
         self.target.append(target)
 
     def compute(self) -> Tensor:
-        """Computes Relative Average Spectral Error (RASE)."""
+        """Compute Relative Average Spectral Error (RASE)."""
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         return relative_average_spectral_error(preds, target, self.window_size)

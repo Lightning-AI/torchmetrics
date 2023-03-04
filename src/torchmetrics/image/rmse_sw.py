@@ -81,7 +81,7 @@ class RootMeanSquaredErrorUsingSlidingWindow(Metric):
         )
 
     def compute(self) -> Optional[Tensor]:
-        """Computes Root Mean Squared Error (using sliding window) and potentially return RMSE map."""
+        """Compute Root Mean Squared Error (using sliding window) and potentially return RMSE map."""
         assert self.rmse_map is not None
         rmse, _ = _rmse_sw_compute(self.rmse_val_sum, self.rmse_map, self.total_images)
         return rmse

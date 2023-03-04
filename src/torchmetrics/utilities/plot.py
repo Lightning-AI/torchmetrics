@@ -37,7 +37,7 @@ else:
 
     @contextmanager
     def style_change(*args: Any, **kwargs: Any) -> Generator:
-        """Default no-ops decorator if matplotlib is not installed."""
+        """No-ops decorator if matplotlib is not installed."""
         yield
 
 
