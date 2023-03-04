@@ -83,7 +83,6 @@ class TestR2Score(MetricTester):
         )
 
     def test_r2_functional(self, adjusted, multioutput, preds, target, ref_metric, num_outputs):
-        # todo: `num_outputs` is unused
         self.run_functional_metric_test(
             preds,
             target,
