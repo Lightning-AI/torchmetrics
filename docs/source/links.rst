@@ -132,3 +132,5 @@
 .. _Panoptic Quality: https://arxiv.org/abs/1801.00868
 .. _torchmetrics mAP example: https://github.com/Lightning-AI/metrics/blob/master/examples/detection_map.py
 .. _Minkowski Distance: https://en.wikipedia.org/wiki/Minkowski_distance
+.. _Demographic parity: http://www.fairmlbook.org/
+.. _Equal opportunity: https://proceedings.neurips.cc/paper/2016/hash/9d2682367c3935defcb1f9e247a97c0d-Abstract.html
