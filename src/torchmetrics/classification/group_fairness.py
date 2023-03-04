@@ -132,7 +132,7 @@ class BinaryGroupStatRates(_AbstractGroupStatScores):
     def compute(
         self,
     ) -> Dict[str, torch.Tensor]:
-        """Computes tp, fp, tn and fn rates based on inputs passed in to ``update`` previously."""
+        """Compute tp, fp, tn and fn rates based on inputs passed in to ``update`` previously."""
         results = torch.stack((self.tp, self.fp, self.tn, self.fn), dim=1)
 
         return {f"group_{i}": group / group.sum() for i, group in enumerate(results)}
@@ -247,7 +247,7 @@ class BinaryFairness(_AbstractGroupStatScores):
     def compute(
         self,
     ) -> Dict[str, torch.Tensor]:
-        """Computes fairness criteria based on inputs passed in to ``update`` previously."""
+        """Compute fairness criteria based on inputs passed in to ``update`` previously."""
         if self.task == "demographic_parity":
             return _compute_binary_demographic_parity(self.tp, self.fp, self.tn, self.fn)
 
