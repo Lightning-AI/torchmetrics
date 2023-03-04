@@ -108,7 +108,7 @@ def _reflection_pad_2d(inputs: Tensor, pad: int, outer_pad: int = 0) -> Tensor:
 
 
 def _uniform_filter(inputs: Tensor, window_size: int) -> Tensor:
-    """Applies uniform filtew with a window of a given size over the input image.
+    """Apply uniform filter with a window of a given size over the input image.
 
     Args:
         inputs: Input image
