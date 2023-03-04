@@ -53,6 +53,7 @@ from torchmetrics.image import (
     StructuralSimilarityIndexMeasure,
     UniversalImageQualityIndex,
 )
+from torchmetrics.nominal import CramersV, PearsonsContingencyCoefficient, TheilsU, TschuprowsT
 from torchmetrics.regression import MeanSquaredError
 
 _rand_input = lambda: torch.rand(10)
@@ -65,6 +66,7 @@ _image_input = lambda: torch.rand([8, 3, 16, 16])
 _panoptic_input = lambda: torch.multinomial(
     torch.tensor([1, 1, 0, 0, 0, 0, 1, 1]).float(), 40, replacement=True
 ).reshape(1, 5, 4, 2)
+_nominal_input = lambda: torch.randint(0, 4, (100,))
 
 
 @pytest.mark.parametrize(
@@ -106,7 +108,17 @@ _panoptic_input = lambda: torch.multinomial(
             BinaryROC,
             _rand_input,
             _binary_randint_input,
+            id="binary roc",
         ),
+        pytest.param(
+            partial(PearsonsContingencyCoefficient, num_classes=5),
+            _nominal_input,
+            _nominal_input,
+            id="pearson contigency coef",
+        ),
+        pytest.param(partial(TheilsU, num_classes=5), _nominal_input, _nominal_input, id="theils U"),
+        pytest.param(partial(TschuprowsT, num_classes=5), _nominal_input, _nominal_input, id="tschuprows T"),
+        pytest.param(partial(CramersV, num_classes=5), _nominal_input, _nominal_input, id="cramers V"),
         pytest.param(
             SpectralDistortionIndex,
             _image_input,
