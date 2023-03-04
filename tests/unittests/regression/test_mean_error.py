@@ -173,7 +173,6 @@ class TestMeanError(MetricTester):
     def test_mean_error_class(
         self, preds, target, ref_metric, metric_class, metric_functional, sk_fn, metric_args, ddp
     ):
-        # todo: `metric_functional` is unused
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -186,7 +185,6 @@ class TestMeanError(MetricTester):
     def test_mean_error_functional(
         self, preds, target, ref_metric, metric_class, metric_functional, sk_fn, metric_args
     ):
-        # todo: `metric_class` is unused
         self.run_functional_metric_test(
             preds=preds,
             target=target,
