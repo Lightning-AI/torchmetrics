@@ -59,7 +59,7 @@ def _binary_groups_stat_scores(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> List[Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]:
-    """Computes the true/false positives and true/false negatives rates for binary classification by group.
+    """Compute the true/false positives and true/false negatives rates for binary classification by group.
 
     Related to `Type I and Type II errors`_.
     """
@@ -113,7 +113,7 @@ def binary_groups_stat_rates(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Dict[str, torch.Tensor]:
-    r"""Computes the true/false positives and true/false negatives rates for binary classification by group.
+    r"""Compute the true/false positives and true/false negatives rates for binary classification by group.
 
     Related to `Type I and Type II errors`_.
 
@@ -331,7 +331,7 @@ def binary_fairness(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Dict[str, torch.Tensor]:
-    r"""This function is a simple wrapper to get the task specific versions of the metric.
+    r"""Compute either `Demographic parity`_ and `Equal opportunity`_ ratio for binary classification problems.
 
     This is done by setting the ``task`` argument to either ``'demographic_parity'``, ``'equal_opportunity'``
     or ``all``. See the documentation of :func:`_compute_binary_demographic_parity`
