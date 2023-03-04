@@ -12,6 +12,7 @@ ________________
 
 .. autoclass:: torchmetrics.TschuprowsT
     :noindex:
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________
