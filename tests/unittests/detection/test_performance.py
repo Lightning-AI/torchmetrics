@@ -33,5 +33,5 @@ def test_test_consecutive_runs_with_cpu():
     restuls_1 = run_mean_ap_benchmark(device="cpu")
     restuls_2 = run_mean_ap_benchmark(device="cpu")
 
-    for key in restuls_1.keys():
+    for key in restuls_1:
         assert np.isclose(restuls_1[key], restuls_2[key], atol=8.0e-1, rtol=8.0e-1)

@@ -49,7 +49,6 @@ def compute_area(input: List[Tensor], device: torch.device, iou_type: str = "bbo
     if iou_type == "bbox":
         return box_area(torch.stack(input).to(device))
     elif iou_type == "segm":
-
         input = [{"size": i[0], "counts": i[1]} for i in input]
         area = torch.tensor(mask_utils.area(input).astype("float")).to(device)
 
@@ -129,8 +128,7 @@ class COCOMetricResults(BaseMetricResults):
 def _segm_iou(
     det: List[Tuple[np.ndarray, np.ndarray]], gt: List[Tuple[np.ndarray, np.ndarray]], device: torch.device
 ) -> Tensor:
-    """
-    Compute IOU between detections and ground-truths using mask-IOU. Based on pycocotools toolkit for mask_utils
+    """Compute IOU between detections and ground-truths using mask-IOU. Based on pycocotools toolkit for mask_utils.
 
     Implementation is based on pycocotools toolkit for mask_utils.
 
@@ -570,7 +568,6 @@ class MeanAveragePrecision(Metric):
             ious:
                 IoU results for image and class.
         """
-
         gt = self.groundtruths[idx].to(self.device)
         det = self.detections[idx].to(self.device)
         gt_label_mask = (self.groundtruth_labels[idx] == class_id).nonzero().squeeze(1).to(self.device)

@@ -7,7 +7,7 @@ from torchmetrics.detection import MeanAveragePrecision
 from unittests.helpers import seed_all
 
 seed_all(42)
-total_time = dict()
+total_time = {}
 
 
 class UpdateTime:
