@@ -28,6 +28,7 @@ seed_all(42)
 
 
 def sk_auc(x, y, reorder=False):
+    """Comparison function for correctness of auc implementation."""
     x = x.flatten()
     y = y.flatten()
     if reorder:
@@ -81,6 +82,7 @@ class TestAUC(MetricTester):
     ],
 )
 def test_auc(x, y, expected, unsqueeze_x, unsqueeze_y):
+    """Test that auc function gives the expected result"""
     x = tensor(x)
     y = tensor(y)
 
