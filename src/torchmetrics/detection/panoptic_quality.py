@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import warnings
-from typing import Any, Collection
+from typing import Any, Collection, Optional, Sequence, Union
 
 import torch
 from torch import Tensor
@@ -27,6 +27,11 @@ from torchmetrics.functional.detection.panoptic_quality import (
     _validate_inputs,
 )
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["PanopticQuality.plot"]
 
 
 class PanopticQuality(Metric):
@@ -60,6 +65,7 @@ class PanopticQuality(Metric):
                 If ``things``, ``stuffs`` contain non-integer ``category_id``.
 
     Example:
+            >>> from torchmetrics import PanopticQuality
             >>> from torch import tensor
             >>> preds = tensor([[[[6, 0], [0, 0], [6, 0], [6, 0]],
             ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
@@ -146,3 +152,62 @@ class PanopticQuality(Metric):
     def compute(self) -> Tensor:
         """Compute panoptic quality based on inputs passed in to ``update`` previously."""
         return _panoptic_quality_compute(self.iou_sum, self.true_positives, self.false_positives, self.false_negatives)
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure object and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import tensor
+            >>> from torchmetrics import PanopticQuality
+            >>> preds = tensor([[[[6, 0], [0, 0], [6, 0], [6, 0]],
+            ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
+            ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
+            ...                  [[0, 0], [7, 0], [6, 0], [1, 0]],
+            ...                  [[0, 0], [7, 0], [7, 0], [7, 0]]]])
+            >>> target = tensor([[[[6, 0], [0, 1], [6, 0], [0, 1]],
+            ...                   [[0, 1], [0, 1], [6, 0], [0, 1]],
+            ...                   [[0, 1], [0, 1], [6, 0], [1, 0]],
+            ...                   [[0, 1], [7, 0], [1, 0], [1, 0]],
+            ...                   [[0, 1], [7, 0], [7, 0], [7, 0]]]])
+            >>> metric = PanopticQuality(things = {0, 1}, stuffs = {6, 7})
+            >>> metric.update(preds, target)
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics import PanopticQuality
+            >>> preds = tensor([[[[6, 0], [0, 0], [6, 0], [6, 0]],
+            ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
+            ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
+            ...                  [[0, 0], [7, 0], [6, 0], [1, 0]],
+            ...                  [[0, 0], [7, 0], [7, 0], [7, 0]]]])
+            >>> target = tensor([[[[6, 0], [0, 1], [6, 0], [0, 1]],
+            ...                   [[0, 1], [0, 1], [6, 0], [0, 1]],
+            ...                   [[0, 1], [0, 1], [6, 0], [1, 0]],
+            ...                   [[0, 1], [7, 0], [1, 0], [1, 0]],
+            ...                   [[0, 1], [7, 0], [7, 0], [7, 0]]]])
+            >>> metric = PanopticQuality(things = {0, 1}, stuffs = {6, 7})
+            >>> for _ in range(20):
+            ...     values.append(metric(preds, target))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        return self._plot(val, ax)

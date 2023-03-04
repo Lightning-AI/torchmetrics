@@ -35,6 +35,9 @@ else:
     mask_utils = None
     __doctest_skip__ = ["MeanAveragePrecision"]
 
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["MeanAveragePrecision.plot"]
+
 
 log = logging.getLogger(__name__)
 
@@ -973,6 +976,7 @@ class MeanAveragePrecision(Metric):
             ...   )
             ... ]
             >>> metric = MeanAveragePrecision()
+            >>> for _ in range(20):
             ...     values.append(metric(preds(), target))
             >>> fig_, ax_ = metric.plot(values)
         """
