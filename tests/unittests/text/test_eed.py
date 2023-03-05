@@ -80,12 +80,14 @@ class TestExtendedEditDistance(TextTester):
 
 # test blank edge cases
 def test_eed_empty_functional():
+    """Test that eed returns 0 when no input is provided."""
     hyp = []
     ref = [[]]
     assert extended_edit_distance(hyp, ref) == tensor(0.0)
 
 
 def test_eed_empty_class():
+    """Test that eed returns 0 when no input is provided."""
     eed_metric = ExtendedEditDistance()
     hyp = []
     ref = [[]]
@@ -93,12 +95,14 @@ def test_eed_empty_class():
 
 
 def test_eed_empty_with_non_empty_hyp_functional():
+    """Test that eed returns 0 when no reference is provided."""
     hyp = ["python"]
     ref = [[]]
     assert extended_edit_distance(hyp, ref) == tensor(0.0)
 
 
 def test_eed_empty_with_non_empty_hyp_class():
+    """Test that eed returns 0 when no reference is provided."""
     eed_metric = ExtendedEditDistance()
     hyp = ["python"]
     ref = [[]]
@@ -106,6 +110,7 @@ def test_eed_empty_with_non_empty_hyp_class():
 
 
 def test_eed_return_sentence_level_score_functional():
+    """Test that eed can return sentence level scores."""
     hyp = _inputs_single_sentence_multiple_references.preds
     ref = _inputs_single_sentence_multiple_references.targets
     _, sentence_eed = extended_edit_distance(hyp, ref, return_sentence_level_score=True)
@@ -113,6 +118,7 @@ def test_eed_return_sentence_level_score_functional():
 
 
 def test_eed_return_sentence_level_class():
+    """Test that eed can return sentence level scores."""
     metric = ExtendedEditDistance(return_sentence_level_score=True)
     hyp = _inputs_single_sentence_multiple_references.preds
     ref = _inputs_single_sentence_multiple_references.targets

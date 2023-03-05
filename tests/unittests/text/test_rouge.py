@@ -166,6 +166,7 @@ def test_rouge_metric_raises_errors_and_warnings():
 
 
 def test_rouge_metric_wrong_key_value_error():
+    """Test errors are raised on wrongly provided keys."""
     key = ("rouge1", "rouge")
 
     with pytest.raises(ValueError, match="Got unknown rouge key rouge. Expected to be one of"):
@@ -199,6 +200,7 @@ def test_rouge_metric_wrong_key_value_error():
 )
 @skip_on_connection_issues(reason="could not download nltk relevant data")
 def test_rouge_metric_normalizer_tokenizer(pl_rouge_metric_key):
+    """Test that rouge metric works for different rouge levels."""
     normalizer: Callable[[str], str] = lambda text: re.sub(r"[^a-z0-9]+", " ", text.lower())
     tokenizer: Callable[[str], Sequence[str]] = lambda text: re.split(r"\s+", text)
 

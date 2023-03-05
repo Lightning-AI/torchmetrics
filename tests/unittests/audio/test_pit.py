@@ -167,6 +167,7 @@ class TestPIT(MetricTester):
 
 
 def test_error_on_different_shape() -> None:
+    """Test that error is raised on different shapes of input."""
     metric = PermutationInvariantTraining(signal_noise_ratio, "max")
     with pytest.raises(
         RuntimeError,
