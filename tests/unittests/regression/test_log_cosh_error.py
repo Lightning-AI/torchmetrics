@@ -42,7 +42,7 @@ _multi_target_inputs = Input(
 )
 
 
-def sk_log_cosh_error(preds, target):
+def _sk_log_cosh_error(preds, target):
     preds, target = preds.numpy(), target.numpy()
     diff = preds - target
     if diff.ndim == 1:
@@ -69,7 +69,7 @@ class TestLogCoshError(MetricTester):
             preds=preds,
             target=target,
             metric_class=LogCoshError,
-            reference_metric=sk_log_cosh_error,
+            reference_metric=_sk_log_cosh_error,
             metric_args={"num_outputs": num_outputs},
         )
 
@@ -78,7 +78,7 @@ class TestLogCoshError(MetricTester):
             preds=preds,
             target=target,
             metric_functional=log_cosh_error,
-            reference_metric=sk_log_cosh_error,
+            reference_metric=_sk_log_cosh_error,
         )
 
     def test_log_cosh_error_differentiability(self, preds, target):

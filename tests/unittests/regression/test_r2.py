@@ -128,6 +128,7 @@ def test_error_on_different_shape(metric_class=R2Score):
 
 
 def test_error_on_multidim_tensors(metric_class=R2Score):
+    """Test that error is raised if a larger than 2D tensor is given as input."""
     metric = metric_class()
     with pytest.raises(
         ValueError,
@@ -137,6 +138,7 @@ def test_error_on_multidim_tensors(metric_class=R2Score):
 
 
 def test_error_on_too_few_samples(metric_class=R2Score):
+    """Test that error is raised if too few samples are provided."""
     metric = metric_class()
     with pytest.raises(ValueError, match="Needs at least two samples to calculate r2 score."):
         metric(torch.randn(1), torch.randn(1))
@@ -149,6 +151,7 @@ def test_error_on_too_few_samples(metric_class=R2Score):
 
 
 def test_warning_on_too_large_adjusted(metric_class=R2Score):
+    """Test that warning is raised if adjusted argument is set to more than or equal to the number of datapoints."""
     metric = metric_class(adjusted=10)
 
     with pytest.warns(

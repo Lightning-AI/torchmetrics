@@ -110,6 +110,7 @@ def test_error_on_different_shape():
 
 
 def test_error_on_multidim_tensors():
+    """Test that error is raised if a larger than 2D tensor is given as input."""
     metric = KLDivergence()
     with pytest.raises(ValueError, match="Expected both p and q distribution to be 2D but got 3 and 3 respectively"):
         metric(torch.randn(10, 20, 5), torch.randn(10, 20, 5))

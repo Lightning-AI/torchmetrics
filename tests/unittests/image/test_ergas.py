@@ -129,6 +129,7 @@ def test_error_on_invalid_shape(metric_class=ErrorRelativeGlobalDimensionlessSyn
 
 
 def test_error_on_invalid_type(metric_class=ErrorRelativeGlobalDimensionlessSynthesis):
+    """Test that error is raised if preds and target have different dtype."""
     metric = metric_class()
     with pytest.raises(TypeError, match="Expected `preds` and `target` to have the same data type.*"):
         metric(torch.randn([3, 16, 16]), torch.randn([3, 16, 16], dtype=torch.float64))

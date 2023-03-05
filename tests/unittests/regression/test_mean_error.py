@@ -115,7 +115,7 @@ def _baseline_symmetric_mape(
     return np.average(output_errors, weights=multioutput)
 
 
-def sk_weighted_mean_abs_percentage_error(target, preds):
+def _sk_weighted_mean_abs_percentage_error(target, preds):
     return np.sum(np.abs(target - preds)) / np.sum(np.abs(target))
 
 
@@ -161,7 +161,7 @@ def _multi_target_ref_metric(preds, target, sk_fn, metric_args):
         (
             WeightedMeanAbsolutePercentageError,
             weighted_mean_absolute_percentage_error,
-            sk_weighted_mean_abs_percentage_error,
+            _sk_weighted_mean_abs_percentage_error,
             {},
         ),
     ],

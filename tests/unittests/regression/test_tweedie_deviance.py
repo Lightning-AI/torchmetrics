@@ -122,6 +122,7 @@ def test_error_on_different_shape(metric_class=TweedieDevianceScore):
 
 
 def test_error_on_invalid_inputs(metric_class=TweedieDevianceScore):
+    """Test that error is raised on wrong argument combinations."""
     with pytest.raises(ValueError, match="Deviance Score is not defined for power=0.5."):
         metric_class(power=0.5)
 

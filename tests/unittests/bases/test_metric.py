@@ -89,6 +89,7 @@ def test_add_state():
 
 
 def test_add_state_persistent():
+    """Test that metric states are not added to the normal state dict."""
     a = DummyMetric()
 
     a.add_state("a", tensor(0), "sum", persistent=True)
@@ -98,6 +99,7 @@ def test_add_state_persistent():
 
 
 def test_reset():
+    """Test that reset method works as expected."""
     class A(DummyMetric):
         pass
 
