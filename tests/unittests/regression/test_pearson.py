@@ -19,7 +19,7 @@ import torch
 from scipy.stats import pearsonr
 
 from torchmetrics.functional.regression.pearson import pearson_corrcoef
-from torchmetrics.regression.pearson import PearsonCorrCoef
+from torchmetrics.regression.pearson import PearsonCorrCoef, _final_aggregation
 from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
@@ -121,3 +121,12 @@ def test_error_on_different_shape():
     metric = PearsonCorrCoef(num_outputs=2)
     with pytest.raises(ValueError, match="Expected argument `num_outputs` to match the second dimension of input.*"):
         metric(torch.randn(100, 5), torch.randn(100, 5))
+
+
+@pytest.mark.parametrize("shapes", [(5,), (1, 5), (2, 5)])
+def test_final_aggregation_function(shapes):
+    """Test that final aggregation function can take various shapes of input."""
+    input_fn = lambda: torch.rand(shapes)
+    output = _final_aggregation(input_fn(), input_fn(), input_fn(), input_fn(), input_fn(), torch.randint(10, shapes))
+    assert all(isinstance(out, torch.Tensor) for out in output)
+    assert all(out.ndim == input_fn().ndim - 1 for out in output)
