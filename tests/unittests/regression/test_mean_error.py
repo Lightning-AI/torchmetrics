@@ -69,7 +69,7 @@ def _baseline_symmetric_mape(
     sample_weight: Optional[np.ndarray] = None,
     multioutput: str = "uniform_average",
 ):
-    r"""Symmetric mean absolute percentage error regression loss (SMAPE_):
+    r"""Symmetric mean absolute percentage error regression loss (SMAPE_).
 
     .. math:: \text{SMAPE} = \frac{2}{n}\sum_1^n\frac{max(|   y_i - \hat{y_i} |}{| y_i | + | \hat{y_i} |, \epsilon)}
 

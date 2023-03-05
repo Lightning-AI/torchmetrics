@@ -122,7 +122,7 @@ def test_error_on_different_shape(metric_class=ErrorRelativeGlobalDimensionlessS
 
 
 def test_error_on_invalid_shape(metric_class=ErrorRelativeGlobalDimensionlessSynthesis):
-    """Check that error is raised when input is not 4D"""
+    """Check that error is raised when input is not 4D."""
     metric = metric_class()
     with pytest.raises(ValueError, match="Expected `preds` and `target` to have BxCxHxW shape.*"):
         metric(torch.randn([3, 16, 16]), torch.randn([3, 16, 16]))

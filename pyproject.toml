@@ -111,7 +111,6 @@ unfixable = ["F401"]
 "tests/**" = [
     "D102",  # Missing docstring in public method
     "D401",  # todo # First line of docstring should be in imperative mood: ...
-    "D415",  # todo # First line should end with a period, question mark, or exclamation point"
 ]
 
 [tool.ruff.pydocstyle]

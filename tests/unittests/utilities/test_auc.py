@@ -82,7 +82,7 @@ class TestAUC(MetricTester):
     ],
 )
 def test_auc(x, y, expected, unsqueeze_x, unsqueeze_y):
-    """Test that auc function gives the expected result"""
+    """Test that auc function gives the expected result."""
     x = tensor(x)
     y = tensor(y)
 

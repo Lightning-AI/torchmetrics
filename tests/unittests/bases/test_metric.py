@@ -134,6 +134,7 @@ def test_reset_compute():
 
 def test_update():
     """Test that `update` method works as expected."""
+
     class A(DummyMetric):
         def update(self, x):
             self.x += x
@@ -151,6 +152,7 @@ def test_update():
 
 def test_compute():
     """Test that `compute` method works as expected."""
+
     class A(DummyMetric):
         def update(self, x):
             self.x += x
@@ -176,7 +178,8 @@ def test_compute():
 
 
 def test_hash():
-    """Test that hashes for different metrics are different, even if states are the same"""
+    """Test that hashes for different metrics are different, even if states are the same."""
+
     class A(DummyMetric):
         pass
 
@@ -206,6 +209,7 @@ def test_hash():
 
 def test_forward():
     """Test that `forward` method works as expected."""
+
     class A(DummyMetric):
         def update(self, x):
             self.x += x

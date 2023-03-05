@@ -316,7 +316,7 @@ def _assert_dtype_support(
 
 
 class MetricTester:
-    """General test class for all metrics
+    """General test class for all metrics.
 
     Class used for efficiently run alot of parametrized tests in ddp mode. Makes sure that ddp is only setup once and
     that pool of processes are used for all tests. All tests should subclass from this and implement a new method called
