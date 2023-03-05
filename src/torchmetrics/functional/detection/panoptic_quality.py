@@ -11,12 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Collection, Dict, List, Set, Tuple
+from typing import Collection, Dict, Iterator, List, Set, Tuple
 
 import torch
 from torch import Tensor
 
 from torchmetrics.utilities import rank_zero_warn
+
+_Color = Tuple[int, int]
 
 
 def _nested_tuple(nested_list: List) -> Tuple:
@@ -200,6 +202,101 @@ def _prepocess_inputs(
     return out
 
 
+def _calculate_iou(
+    pred_color: _Color,
+    target_color: _Color,
+    pred_areas: Dict[_Color, float],
+    target_areas: Dict[_Color, float],
+    intersection_areas: Dict[Tuple[_Color, _Color], float],
+    void_color: _Color,
+) -> Tensor:
+    """Helper function that calculates the IoU from precomputed areas of segments and their intersections.
+
+    Args:
+        pred_color: The `(category_id, instance_id)`, or "color", of a predicted segment that is being matched with a
+            target segment.
+        target_color: The `(category_id, instance_id)`, or "color", of a ground truth segment that is being matched
+            with a predicted segment.
+        pred_areas: Mapping from colors of the predicted segments to their extents.
+        target_areas: Mapping from colors of the ground truth segments to their extents.
+        intersection_areas: Mapping from tuples of `(pred_color, target_color)` to their extent.
+        void_color: An additional color that is masked out during metrics calculation.
+
+    Returns:
+        The calculated IoU as a torch.Tensor containing a single scalar value.
+    """
+    if pred_color[0] != target_color[0]:
+        raise ValueError(
+            "Attempting to compute IoU on segments with different category ID: "
+            f"pred {pred_color[0]}, target {target_color[0]}"
+        )
+    if pred_color == void_color:
+        raise ValueError("Attempting to compute IoU on a void segment.")
+    intersection = intersection_areas[(pred_color, target_color)]
+    pred_area = pred_areas[pred_color]
+    target_area = target_areas[target_color]
+    pred_void_area = intersection_areas.get((pred_color, void_color), 0)
+    void_target_area = intersection_areas.get((void_color, target_color), 0)
+    union = pred_area - pred_void_area + target_area - void_target_area - intersection
+    return intersection / union
+
+
+def _filter_false_negatives(
+    target_areas: Dict[_Color, float],
+    target_segment_matched: Set[_Color],
+    intersection_areas: Dict[Tuple[_Color, _Color], float],
+    void_color: Tuple[int, int],
+) -> Iterator[int]:
+    """Filter false negative segments and yield their category IDs.
+
+    False negatives occur when a ground truth segment is not matched with a prediction.
+    Areas that are mostly void in the prediction are ignored.
+
+    Args:
+        target_areas: Mapping from colors of the ground truth segments to their extents.
+        target_segment_matched: Set of ground truth segments that have been matched to a prediction.
+        intersection_areas: Mapping from tuples of `(pred_color, target_color)` to their extent.
+        void_color: An additional color that is masked out during metrics calculation.
+
+    Yields:
+        Category IDs of segments that account for false negatives.
+    """
+    false_negative_colors = set(target_areas) - target_segment_matched
+    false_negative_colors.discard(void_color)
+    for target_color in false_negative_colors:
+        void_target_area = intersection_areas.get((void_color, target_color), 0)
+        if void_target_area / target_areas[target_color] <= 0.5:
+            yield target_color[0]
+
+
+def _filter_false_positives(
+    pred_areas: Dict[_Color, float],
+    pred_segment_matched: Set[_Color],
+    intersection_areas: Dict[Tuple[_Color, _Color], float],
+    void_color: Tuple[int, int],
+) -> Iterator[int]:
+    """Filter false positive segments and yield their category IDs.
+
+    False positives occur when a predicted segment is not matched with a corresponding target one.
+    Areas that are mostly void in the target are ignored.
+
+    Args:
+        pred_areas: Mapping from colors of the predicted segments to their extents.
+        pred_segment_matched: Set of predicted segments that have been matched to a ground truth.
+        intersection_areas: Mapping from tuples of `(pred_color, target_color)` to their extent.
+        void_color: An additional color that is masked out during metrics calculation.
+
+    Yields:
+        Category IDs of segments that account for false positives.
+    """
+    false_positive_colors = set(pred_areas) - pred_segment_matched
+    false_positive_colors.discard(void_color)
+    for pred_color in false_positive_colors:
+        pred_void_area = intersection_areas.get((pred_color, void_color), 0)
+        if pred_void_area / pred_areas[pred_color] <= 0.5:
+            yield pred_color[0]
+
+
 def _panoptic_quality_update_sample(
     flatten_preds: Tensor,
     flatten_target: Tensor,
@@ -220,7 +317,7 @@ def _panoptic_quality_update_sample(
         - IOU Sum
         - True positives
         - False positives
-        - False negatives
+        - False negatives.
     """
     device = flatten_preds.device
     n_categories = len(cat_id_to_continuous_id)
@@ -239,46 +336,26 @@ def _panoptic_quality_update_sample(
     # select intersection of things of same category with iou > 0.5
     pred_segment_matched = set()
     target_segment_matched = set()
-    for (pred_color, target_color), intersection in intersection_areas.items():
+    for pred_color, target_color in intersection_areas:
         # test only non void, matching category
         if target_color == void_color:
             continue
         if pred_color[0] != target_color[0]:
             continue
-        continuous_id = cat_id_to_continuous_id[pred_color[0]]
-        pred_area = pred_areas[pred_color]
-        target_area = target_areas[target_color]
-        pred_void_area = intersection_areas.get((pred_color, void_color), 0)
-        void_target_area = intersection_areas.get((void_color, target_color), 0)
-        union = pred_area - pred_void_area + target_area - void_target_area - intersection
-        iou = intersection / union
-
+        iou = _calculate_iou(pred_color, target_color, pred_areas, target_areas, intersection_areas, void_color)
         if iou > 0.5:
             pred_segment_matched.add(pred_color)
             target_segment_matched.add(target_color)
+            continuous_id = cat_id_to_continuous_id[target_color[0]]
             iou_sum[continuous_id] += iou
             true_positives[continuous_id] += 1
 
-    # count false negative: ground truth but not matched
-    # areas that are mostly void in the prediction are ignored
-    false_negative_colors = set(target_areas.keys()).difference(target_segment_matched)
-    false_negative_colors.discard(void_color)
-    for target_color in false_negative_colors:
-        void_target_area = intersection_areas.get((void_color, target_color), 0)
-        if void_target_area / target_areas[target_color] > 0.5:
-            continue
-        continuous_id = cat_id_to_continuous_id[target_color[0]]
+    for cat_id in _filter_false_negatives(target_areas, target_segment_matched, intersection_areas, void_color):
+        continuous_id = cat_id_to_continuous_id[cat_id]
         false_negatives[continuous_id] += 1
 
-    # count false positive: predicted but not matched
-    # areas that are mostly void in the target are ignored
-    false_positive_colors = set(pred_areas.keys()).difference(pred_segment_matched)
-    false_positive_colors.discard(void_color)
-    for pred_color in false_positive_colors:
-        pred_void_area = intersection_areas.get((pred_color, void_color), 0)
-        if pred_void_area / pred_areas[pred_color] > 0.5:
-            continue
-        continuous_id = cat_id_to_continuous_id[pred_color[0]]
+    for cat_id in _filter_false_positives(pred_areas, pred_segment_matched, intersection_areas, void_color):
+        continuous_id = cat_id_to_continuous_id[cat_id]
         false_positives[continuous_id] += 1
 
     return iou_sum, true_positives, false_positives, false_negatives
