@@ -47,7 +47,7 @@ def _class_test(
     key: str = None,
     **kwargs_update: Any,
 ):
-    """Function doing the actual comparison between class metric and reference metric.
+    """Comparison between class metric and reference metric.
 
     Args:
         rank: rank of current process
@@ -151,7 +151,7 @@ def _functional_test(
     key: str = None,
     **kwargs_update,
 ):
-    """Utility function doing the actual comparison between functional metric and reference metric.
+    """Comparison between functional metric and reference metric.
 
     Args:
         preds: torch tensor with predictions
@@ -238,7 +238,7 @@ class TextTester(MetricTester):
         key: str = None,
         **kwargs_update,
     ):
-        """Main method that should be used for testing functions. Call this inside testing method.
+        """Core method that should be used for testing functions. Call this inside testing method.
 
         Args:
             preds: torch tensor with predictions
@@ -283,7 +283,7 @@ class TextTester(MetricTester):
         key: str = None,
         **kwargs_update,
     ):
-        """Main method that should be used for testing class. Call this inside testing methods.
+        """Core method that should be used for testing class. Call this inside testing methods.
 
         Args:
             ddp: bool, if running in ddp mode or not
@@ -436,7 +436,7 @@ class TextTester(MetricTester):
 
 
 def skip_on_connection_issues(reason: str = "Unable to load checkpoints from HuggingFace `transformers`."):
-    """Wrapper which handles download related tests if they fail due to connection issues.
+    """Handle download related tests if they fail due to connection issues.
 
     The tests run normally if no connection issue arises, and they're marked as skipped otherwise.
     """

@@ -23,10 +23,11 @@ from unittests.text.helpers import TextTester
 from unittests.text.inputs import _inputs_single_reference, _inputs_single_sentence_multiple_references
 
 
-def rwth_manual_metric(preds, targets) -> Tensor:
-    """The results were obtained w.r.t.
+def _rwth_manual_metric(preds, targets) -> Tensor:
+    """Baseline implementation of metric.
 
-    the examples defined in `tests.text.inputs` with the script from https://github.com/rwth-i6/ExtendedEditDistance.
+    The results were obtained w.r.t. the examples defined in `tests.text.inputs` with the script from
+    https://github.com/rwth-i6/ExtendedEditDistance.
     """
     ans_1 = tensor(0.24248056001808083)
     ans_2 = tensor(0.19152276295133436)
@@ -51,7 +52,7 @@ class TestExtendedEditDistance(TextTester):
 
     @pytest.mark.parametrize("ddp", [False, True])
     def test_eed_class(self, preds, targets, ddp):
-        rwth_metric = partial(rwth_manual_metric)
+        rwth_metric = partial(_rwth_manual_metric)
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -61,7 +62,7 @@ class TestExtendedEditDistance(TextTester):
         )
 
     def test_eed_functional(self, preds, targets):
-        rwth_metric = partial(rwth_manual_metric)
+        rwth_metric = partial(_rwth_manual_metric)
         self.run_functional_metric_test(
             preds,
             targets,

@@ -35,7 +35,7 @@ CURRENT_PORT = START_PORT
 
 
 def setup_ddp(rank, world_size):
-    """Setup ddp environment."""
+    """Initialize ddp environment."""
     global CURRENT_PORT
 
     os.environ["MASTER_ADDR"] = "localhost"

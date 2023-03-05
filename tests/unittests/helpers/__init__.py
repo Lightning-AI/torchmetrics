@@ -18,7 +18,7 @@ import torch
 
 
 def seed_all(seed):
-    """Helper function for setting the seed of all computational frameworks."""
+    """Set the seed of all computational frameworks."""
     random.seed(seed)
     numpy.random.seed(seed)
     torch.manual_seed(seed)

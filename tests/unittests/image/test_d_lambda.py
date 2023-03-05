@@ -49,7 +49,7 @@ for size, channel, p, dtype in [
 
 
 def _baseline_d_lambda(preds: np.ndarray, target: np.ndarray, p: int = 1) -> float:
-    """A NumPy based implementation of Spectral Distortion Index, which uses UQI of TorchMetrics."""
+    """NumPy based implementation of Spectral Distortion Index, which uses UQI of TorchMetrics."""
     target, preds = torch.from_numpy(target), torch.from_numpy(preds)
     # Permute to ensure B x C x H x W (Pillow/NumPy stores in B x H x W x C)
     target = target.permute(0, 3, 1, 2)
