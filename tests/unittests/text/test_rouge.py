@@ -50,7 +50,7 @@ def _compute_rouge_score(
     metric: str,
     accumulate: Literal = ["avg", "best", None],
 ) -> Tensor:
-    """Evaluates rouge scores from rouge-score package for baseline evaluation."""
+    """Evaluate rouge scores from rouge-score package for baseline evaluation."""
     if isinstance(target, list) and all(isinstance(tgt, str) for tgt in target):
         target = [target] if isinstance(preds, str) else [[tgt] for tgt in target]
 

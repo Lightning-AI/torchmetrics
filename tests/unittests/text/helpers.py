@@ -47,7 +47,7 @@ def _class_test(
     key: str = None,
     **kwargs_update: Any,
 ):
-    """Utility function doing the actual comparison between class metric and reference metric.
+    """Function doing the actual comparison between class metric and reference metric.
 
     Args:
         rank: rank of current process

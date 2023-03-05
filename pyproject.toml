@@ -110,7 +110,6 @@ unfixable = ["F401"]
 "__init__.py" = ["D100"]
 "tests/**" = [
     "D102",  # Missing docstring in public method
-    "D401",  # todo # First line of docstring should be in imperative mood: ...
 ]
 
 [tool.ruff.pydocstyle]
