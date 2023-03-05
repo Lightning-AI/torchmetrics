@@ -39,7 +39,7 @@ inputs = Input(
 )
 
 
-def bss_eval_images_snr(preds: Tensor, target: Tensor, zero_mean: bool):
+def _bss_eval_images_snr(preds: Tensor, target: Tensor, zero_mean: bool):
     # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
     if zero_mean:
@@ -57,14 +57,14 @@ def bss_eval_images_snr(preds: Tensor, target: Tensor, zero_mean: bool):
     return torch.tensor(mss)
 
 
-def average_metric(preds: Tensor, target: Tensor, metric_func: Callable):
+def _average_metric(preds: Tensor, target: Tensor, metric_func: Callable):
     # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
     return metric_func(preds, target).mean()
 
 
-mireval_snr_zeromean = partial(bss_eval_images_snr, zero_mean=True)
-mireval_snr_nozeromean = partial(bss_eval_images_snr, zero_mean=False)
+mireval_snr_zeromean = partial(_bss_eval_images_snr, zero_mean=True)
+mireval_snr_nozeromean = partial(_bss_eval_images_snr, zero_mean=False)
 
 
 @pytest.mark.parametrize(
@@ -86,7 +86,7 @@ class TestSNR(MetricTester):
             preds,
             target,
             SignalNoiseRatio,
-            reference_metric=partial(average_metric, metric_func=ref_metric),
+            reference_metric=partial(_average_metric, metric_func=ref_metric),
             metric_args={"zero_mean": zero_mean},
         )
 

@@ -39,7 +39,7 @@ inputs = Input(
 speechmetrics_sisdr = speechmetrics.load("sisdr")
 
 
-def speechmetrics_si_sdr(preds: Tensor, target: Tensor, zero_mean: bool):
+def _speechmetrics_si_sdr(preds: Tensor, target: Tensor, zero_mean: bool):
     # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
     if zero_mean:
@@ -57,14 +57,14 @@ def speechmetrics_si_sdr(preds: Tensor, target: Tensor, zero_mean: bool):
     return torch.tensor(mss)
 
 
-def average_metric(preds, target, metric_func):
+def _average_metric(preds, target, metric_func):
     # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
     return metric_func(preds, target).mean()
 
 
-speechmetrics_si_sdr_zero_mean = partial(speechmetrics_si_sdr, zero_mean=True)
-speechmetrics_si_sdr_no_zero_mean = partial(speechmetrics_si_sdr, zero_mean=False)
+speechmetrics_si_sdr_zero_mean = partial(_speechmetrics_si_sdr, zero_mean=True)
+speechmetrics_si_sdr_no_zero_mean = partial(_speechmetrics_si_sdr, zero_mean=False)
 
 
 @pytest.mark.parametrize(
@@ -86,7 +86,7 @@ class TestSISDR(MetricTester):
             preds,
             target,
             ScaleInvariantSignalDistortionRatio,
-            reference_metric=partial(average_metric, metric_func=ref_metric),
+            reference_metric=partial(_average_metric, metric_func=ref_metric),
             metric_args={"zero_mean": zero_mean},
         )
 

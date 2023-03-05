@@ -40,7 +40,7 @@ inputs_16k = Input(
 )
 
 
-def stoi_original_batch(preds: Tensor, target: Tensor, fs: int, extended: bool):
+def _stoi_original_batch(preds: Tensor, target: Tensor, fs: int, extended: bool):
     # shape: preds [BATCH_SIZE, Time] , target [BATCH_SIZE, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, Time] , target [NUM_BATCHES*BATCH_SIZE, Time]
     target = target.detach().cpu().numpy()
@@ -52,16 +52,16 @@ def stoi_original_batch(preds: Tensor, target: Tensor, fs: int, extended: bool):
     return torch.tensor(mss)
 
 
-def average_metric(preds, target, metric_func):
+def _average_metric(preds, target, metric_func):
     # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
     return metric_func(preds, target).mean()
 
 
-stoi_original_batch_8k_ext = partial(stoi_original_batch, fs=8000, extended=True)
-stoi_original_batch_16k_ext = partial(stoi_original_batch, fs=16000, extended=True)
-stoi_original_batch_8k_noext = partial(stoi_original_batch, fs=8000, extended=False)
-stoi_original_batch_16k_noext = partial(stoi_original_batch, fs=16000, extended=False)
+stoi_original_batch_8k_ext = partial(_stoi_original_batch, fs=8000, extended=True)
+stoi_original_batch_16k_ext = partial(_stoi_original_batch, fs=16000, extended=True)
+stoi_original_batch_8k_noext = partial(_stoi_original_batch, fs=8000, extended=False)
+stoi_original_batch_16k_noext = partial(_stoi_original_batch, fs=16000, extended=False)
 
 
 @pytest.mark.parametrize(
@@ -85,7 +85,7 @@ class TestSTOI(MetricTester):
             preds,
             target,
             ShortTimeObjectiveIntelligibility,
-            reference_metric=partial(average_metric, metric_func=ref_metric),
+            reference_metric=partial(_average_metric, metric_func=ref_metric),
             metric_args={"fs": fs, "extended": extended},
         )
 
@@ -129,6 +129,7 @@ def test_error_on_different_shape(metric_class=ShortTimeObjectiveIntelligibility
 
 
 def test_on_real_audio():
+    """Test that metric works on real audio signal."""
     rate, ref = wavfile.read(_SAMPLE_AUDIO_SPEECH)
     rate, deg = wavfile.read(_SAMPLE_AUDIO_SPEECH_BAB_DB)
     assert torch.allclose(
