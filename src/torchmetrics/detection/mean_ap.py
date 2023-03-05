@@ -568,7 +568,6 @@ class MeanAveragePrecision(Metric):
             ious:
                 IoU results for image and class.
         """
-
         gt = self.groundtruths[idx]
         det = self.detections[idx]
         gt_label_mask = (self.groundtruth_labels[idx] == class_id).nonzero().squeeze(1).to(self.device)
