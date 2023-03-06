@@ -83,7 +83,6 @@ class TestR2Score(MetricTester):
         )
 
     def test_r2_functional(self, adjusted, multioutput, preds, target, ref_metric, num_outputs):
-        # todo: `num_outputs` is unused
         self.run_functional_metric_test(
             preds,
             target,
@@ -122,12 +121,14 @@ class TestR2Score(MetricTester):
 
 
 def test_error_on_different_shape(metric_class=R2Score):
+    """Test that error is raised on different shapes of input."""
     metric = metric_class()
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(100), torch.randn(50))
 
 
 def test_error_on_multidim_tensors(metric_class=R2Score):
+    """Test that error is raised if a larger than 2D tensor is given as input."""
     metric = metric_class()
     with pytest.raises(
         ValueError,
@@ -137,6 +138,7 @@ def test_error_on_multidim_tensors(metric_class=R2Score):
 
 
 def test_error_on_too_few_samples(metric_class=R2Score):
+    """Test that error is raised if too few samples are provided."""
     metric = metric_class()
     with pytest.raises(ValueError, match="Needs at least two samples to calculate r2 score."):
         metric(torch.randn(1), torch.randn(1))
@@ -149,6 +151,7 @@ def test_error_on_too_few_samples(metric_class=R2Score):
 
 
 def test_warning_on_too_large_adjusted(metric_class=R2Score):
+    """Test that warning is raised if adjusted argument is set to more than or equal to the number of datapoints."""
     metric = metric_class(adjusted=10)
 
     with pytest.warns(
@@ -159,3 +162,11 @@ def test_warning_on_too_large_adjusted(metric_class=R2Score):
 
     with pytest.warns(UserWarning, match="Division by zero in adjusted r2 score. Falls back to" " standard r2 score."):
         metric(torch.randn(11), torch.randn(11))
+
+
+def test_constant_target():
+    """Check for a near constant target that a value of 0 is returned."""
+    y_true = torch.tensor([-5.1608, -5.1609, -5.1608, -5.1608, -5.1608, -5.1608])
+    y_pred = torch.tensor([-3.9865, -5.4648, -5.0238, -4.3899, -5.6672, -4.7336])
+    score = r2_score(preds=y_pred, target=y_true)
+    assert score == 0

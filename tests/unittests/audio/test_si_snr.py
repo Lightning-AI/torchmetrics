@@ -39,7 +39,7 @@ inputs = Input(
 speechmetrics_sisdr = speechmetrics.load("sisdr")
 
 
-def speechmetrics_si_sdr(preds: Tensor, target: Tensor, zero_mean: bool = True):
+def _speechmetrics_si_sdr(preds: Tensor, target: Tensor, zero_mean: bool = True):
     # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
     if zero_mean:
@@ -57,7 +57,7 @@ def speechmetrics_si_sdr(preds: Tensor, target: Tensor, zero_mean: bool = True):
     return torch.tensor(mss)
 
 
-def average_metric(preds, target, metric_func):
+def _average_metric(preds, target, metric_func):
     # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
     return metric_func(preds, target).mean()
@@ -66,7 +66,7 @@ def average_metric(preds, target, metric_func):
 @pytest.mark.parametrize(
     "preds, target, ref_metric",
     [
-        (inputs.preds, inputs.target, speechmetrics_si_sdr),
+        (inputs.preds, inputs.target, _speechmetrics_si_sdr),
     ],
 )
 class TestSISNR(MetricTester):
@@ -81,7 +81,7 @@ class TestSISNR(MetricTester):
             preds,
             target,
             ScaleInvariantSignalNoiseRatio,
-            reference_metric=partial(average_metric, metric_func=ref_metric),
+            reference_metric=partial(_average_metric, metric_func=ref_metric),
         )
 
     def test_si_snr_functional(self, preds, target, ref_metric):
@@ -114,6 +114,7 @@ class TestSISNR(MetricTester):
 
 
 def test_error_on_different_shape(metric_class=ScaleInvariantSignalNoiseRatio):
+    """Test that error is raised on different shapes of input."""
     metric = metric_class()
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(100), torch.randn(50))

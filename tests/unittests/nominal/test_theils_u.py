@@ -50,6 +50,7 @@ _input_logits = Input(
 
 @pytest.fixture()
 def theils_u_matrix_input():
+    """Define input in matrix format for the metric."""
     matrix = torch.cat(
         [
             torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES * BATCH_SIZE, 1), dtype=torch.float),
@@ -160,6 +161,7 @@ class TestTheilsU(MetricTester):
 )
 @pytest.mark.parametrize(("nan_strategy", "nan_replace_value"), [("replace", 1.0), ("drop", None)])
 def test_theils_u_matrix(theils_u_matrix_input, nan_strategy, nan_replace_value):
+    """Test matrix version of metric works as expected."""
     tm_score = theils_u_matrix(theils_u_matrix_input, nan_strategy, nan_replace_value)
     reference_score = _dython_theils_u_matrix(theils_u_matrix_input, nan_strategy, nan_replace_value)
     assert torch.allclose(tm_score, reference_score, atol=1e-6)

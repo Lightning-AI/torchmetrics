@@ -14,7 +14,7 @@ if _SACREBLEU_AVAILABLE:
     from sacrebleu.metrics import TER as SacreTER  # noqa: N811
 
 
-def sacrebleu_ter_fn(
+def _sacrebleu_ter_fn(
     preds: Sequence[str],
     target: Sequence[Sequence[str]],
     normalized: bool,
@@ -59,7 +59,7 @@ class TestTER(TextTester):
             "lowercase": lowercase,
         }
         nltk_metric = partial(
-            sacrebleu_ter_fn,
+            _sacrebleu_ter_fn,
             normalized=normalize,
             no_punct=no_punctuation,
             asian_support=asian_support,
@@ -83,7 +83,7 @@ class TestTER(TextTester):
             "lowercase": lowercase,
         }
         nltk_metric = partial(
-            sacrebleu_ter_fn,
+            _sacrebleu_ter_fn,
             normalized=normalize,
             no_punct=no_punctuation,
             asian_support=asian_support,
@@ -116,12 +116,14 @@ class TestTER(TextTester):
 
 
 def test_ter_empty_functional():
+    """Test that zero is returned on empty input for functional metric."""
     preds = []
     targets = [[]]
     assert translation_edit_rate(preds, targets) == tensor(0.0)
 
 
 def test_ter_empty_class():
+    """Test that zero is returned on empty input for modular metric."""
     ter_metric = TranslationEditRate()
     preds = []
     targets = [[]]
@@ -129,12 +131,14 @@ def test_ter_empty_class():
 
 
 def test_ter_empty_with_non_empty_hyp_functional():
+    """Test that zero is returned on empty target input for functional metric."""
     preds = ["python"]
     targets = [[]]
     assert translation_edit_rate(preds, targets) == tensor(0.0)
 
 
 def test_ter_empty_with_non_empty_hyp_class():
+    """Test that zero is returned on empty target input for modular metric."""
     ter_metric = TranslationEditRate()
     preds = ["python"]
     targets = [[]]
@@ -142,6 +146,7 @@ def test_ter_empty_with_non_empty_hyp_class():
 
 
 def test_ter_return_sentence_level_score_functional():
+    """Test that functional metric can return sentence level scores."""
     preds = _inputs_single_sentence_multiple_references.preds
     targets = _inputs_single_sentence_multiple_references.targets
     _, sentence_ter = translation_edit_rate(preds, targets, return_sentence_level_score=True)
@@ -149,6 +154,7 @@ def test_ter_return_sentence_level_score_functional():
 
 
 def test_ter_return_sentence_level_class():
+    """Test that modular metric can return sentence level scores."""
     ter_metric = TranslationEditRate(return_sentence_level_score=True)
     preds = _inputs_single_sentence_multiple_references.preds
     targets = _inputs_single_sentence_multiple_references.targets

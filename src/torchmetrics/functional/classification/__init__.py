@@ -53,6 +53,12 @@ from torchmetrics.functional.classification.f_beta import (
     multilabel_fbeta_score,
 )
 from torchmetrics.functional.classification.generalized_dice import generalized_dice_score
+from torchmetrics.functional.classification.group_fairness import (  # noqa: F401
+    binary_fairness,
+    binary_groups_stat_rates,
+    demographic_parity,
+    equal_opportunity,
+)
 from torchmetrics.functional.classification.hamming import (
     binary_hamming_distance,
     hamming_distance,

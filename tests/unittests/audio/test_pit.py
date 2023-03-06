@@ -55,7 +55,7 @@ def naive_implementation_pit_scipy(
     metric_func: Callable,
     eval_func: str,
 ) -> Tuple[Tensor, Tensor]:
-    """A naive implementation of `Permutation Invariant Training` based on Scipy.
+    """Naive implementation of `Permutation Invariant Training` based on Scipy.
 
     Args:
         preds: predictions, shape[batch, spk, time]
@@ -167,6 +167,7 @@ class TestPIT(MetricTester):
 
 
 def test_error_on_different_shape() -> None:
+    """Test that error is raised on different shapes of input."""
     metric = PermutationInvariantTraining(signal_noise_ratio, "max")
     with pytest.raises(
         RuntimeError,
@@ -176,18 +177,21 @@ def test_error_on_different_shape() -> None:
 
 
 def test_error_on_wrong_eval_func() -> None:
+    """Test that error is raised on wrong `eval_func` argument."""
     metric = PermutationInvariantTraining(signal_noise_ratio, "xxx")
     with pytest.raises(ValueError, match='eval_func can only be "max" or "min"'):
         metric(torch.randn(3, 3, 10), torch.randn(3, 3, 10))
 
 
 def test_error_on_wrong_shape() -> None:
+    """Test that error is raised on wrong input shape."""
     metric = PermutationInvariantTraining(signal_noise_ratio, "max")
     with pytest.raises(ValueError, match="Inputs must be of shape *"):
         metric(torch.randn(3), torch.randn(3))
 
 
 def test_consistency_of_two_implementations() -> None:
+    """Test that both backend functions for computing metric (depending on torch version) returns the same result."""
     from torchmetrics.functional.audio.pit import (
         _find_best_perm_by_exhaustive_method,
         _find_best_perm_by_linear_sum_assignment,

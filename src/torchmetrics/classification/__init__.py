@@ -56,6 +56,7 @@ from torchmetrics.classification.f_beta import (
     MultilabelFBetaScore,
 )
 from torchmetrics.classification.generalized_dice import GeneralizedDiceScore  # noqa: F401
+from torchmetrics.classification.group_fairness import BinaryFairness, BinaryGroupStatRates
 from torchmetrics.classification.hamming import (
     BinaryHammingDistance,
     HammingDistance,
@@ -154,6 +155,8 @@ __all__ = [
     "MulticlassFBetaScore",
     "MultilabelF1Score",
     "MultilabelFBetaScore",
+    "BinaryFairness",
+    "BinaryGroupStatRates",
     "BinaryHammingDistance",
     "HammingDistance",
     "MulticlassHammingDistance",

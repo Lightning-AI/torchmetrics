@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added`RelativeAverageSpectralError` and `RootMeanSquaredErrorUsingSlidingWindow` to image package ([#816](https://github.com/PyTorchLightning/metrics/pull/816))
+
+
 - Added support for `SpecificityAtSensitivity` Metric ([#1432](https://github.com/Lightning-AI/metrics/pull/1432))
 
 
@@ -19,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     [#1481](https://github.com/Lightning-AI/metrics/pull/1481),
     [#1480](https://github.com/Lightning-AI/metrics/pull/1480),
     [#1490](https://github.com/Lightning-AI/metrics/pull/1490),
+    [#1581](https://github.com/Lightning-AI/metrics/pull/1581),
 )
 
 
@@ -26,6 +30,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 - Added `classes` to output from `MAP` metric ([#1419](https://github.com/Lightning-AI/metrics/pull/1419))
+
+
+- Added Binary group fairness metrics to classification package ([#1404](https://github.com/Lightning-AI/metrics/pull/1404))
+
+
+- Added new detection metric `PanopticQuality` ([#929](https://github.com/PyTorchLightning/metrics/pull/929))
 
 
 - Added `MinkowskiDistance` to regression package ([#1362](https://github.com/Lightning-AI/metrics/pull/1362))
@@ -91,6 +101,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 - Fixed the use of `ignore_index` in `MulticlassJaccardIndex` ([#1386](https://github.com/Lightning-AI/metrics/pull/1386))
+
+
+- Fixed evaluation of `R2Score` with near constant target ([#1576](https://github.com/Lightning-AI/metrics/pull/1576))
+
+
+- Fixed corner case for `PearsonCorrCoef` when running in ddp mode but only on single device ([#1587](https://github.com/Lightning-AI/metrics/pull/1587))
 
 
 ## [0.11.2] - 2023-02-21

@@ -8,22 +8,22 @@ from unittests.helpers.testers import MetricTester
 
 
 def compare_mean(values, weights):
-    """Reference implementation for mean aggregation."""
+    """Baseline implementation for mean aggregation."""
     return np.average(values.numpy(), weights=weights)
 
 
 def compare_sum(values, weights):
-    """Reference implementation for sum aggregation."""
+    """Baseline implementation for sum aggregation."""
     return np.sum(values.numpy())
 
 
 def compare_min(values, weights):
-    """Reference implementation for min aggregation."""
+    """Baseline implementation for min aggregation."""
     return np.min(values.numpy())
 
 
 def compare_max(values, weights):
-    """Reference implementation for max aggregation."""
+    """Baseline implementation for max aggregation."""
     return np.max(values.numpy())
 
 

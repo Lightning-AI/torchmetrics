@@ -83,6 +83,7 @@
 .. _MultiScaleSSIM: https://ece.uwaterloo.ca/~z70wang/publications/msssim.pdf
 .. _UniversalImageQualityIndex: https://ieeexplore.ieee.org/document/995823
 .. _SpectralDistortionIndex: https://www.semanticscholar.org/paper/Multispectral-and-panchromatic-data-fusion-without-Alparone-Aiazzi/b6db12e3785326577cb95fd743fecbf5bc66c7c9
+.. _RelativeAverageSpectralError: https://www.semanticscholar.org/paper/Data-Fusion.-Definitions-and-Architectures-Fusion-Wald/51b2b81e5124b3bb7ec53517a5dd64d8e348cadf
 .. _WMAPE: https://en.wikipedia.org/wiki/WMAPE
 .. _CER: https://rechtsprechung-im-ostseeraum.archiv.uni-greifswald.de/word-error-rate-character-error-rate-how-to-evaluate-a-model
 .. _MER: https://www.isca-speech.org/archive_v0/archive_papers/interspeech_2004/i04_2765.pdf
@@ -131,3 +132,5 @@
 .. _Panoptic Quality: https://arxiv.org/abs/1801.00868
 .. _torchmetrics mAP example: https://github.com/Lightning-AI/metrics/blob/master/examples/detection_map.py
 .. _Minkowski Distance: https://en.wikipedia.org/wiki/Minkowski_distance
+.. _Demographic parity: http://www.fairmlbook.org/
+.. _Equal opportunity: https://proceedings.neurips.cc/paper/2016/hash/9d2682367c3935defcb1f9e247a97c0d-Abstract.html

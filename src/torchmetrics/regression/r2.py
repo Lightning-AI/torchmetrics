@@ -32,6 +32,9 @@ class R2Score(Metric):
     .. math:: R^2_{adj} = 1 - \frac{(1-R^2)(n-1)}{n-k-1}
 
     where the parameter :math:`k` (the number of independent regressors) should be provided as the `adjusted` argument.
+    The score is only proper defined when :math:`SS_{tot}\neq 0`, which can happen for near constant targets. In this
+    case a score of 0 is returned. By definition the score is bounded between 0 and 1, where 1 corresponds to the
+    predictions exactly matching the targets.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
