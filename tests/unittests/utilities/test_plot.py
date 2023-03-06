@@ -19,6 +19,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 import torch
+from torch import tensor
 
 from torchmetrics.aggregation import MaxMetric, MeanMetric, MinMetric, SumMetric
 from torchmetrics.audio import (
@@ -47,6 +48,8 @@ from torchmetrics.classification import (
     MultilabelAveragePrecision,
     MultilabelConfusionMatrix,
 )
+from torchmetrics.detection import PanopticQuality
+from torchmetrics.detection.mean_ap import MeanAveragePrecision
 from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio
 from torchmetrics.image import (
     ErrorRelativeGlobalDimensionlessSynthesis,
@@ -68,6 +71,9 @@ _multilabel_rand_input = lambda: torch.rand(10, 3)
 _multilabel_randint_input = lambda: torch.randint(2, (10, 3))
 _audio_input = lambda: torch.randn(8000)
 _image_input = lambda: torch.rand([8, 3, 16, 16])
+_panoptic_input = lambda: torch.multinomial(
+    torch.tensor([1, 1, 0, 0, 0, 0, 1, 1]).float(), 40, replacement=True
+).reshape(1, 5, 4, 2)
 _nominal_input = lambda: torch.randint(0, 4, (100,))
 
 
@@ -192,6 +198,20 @@ _nominal_input = lambda: torch.randint(0, 4, (100,))
         pytest.param(MeanMetric, _rand_input, None, id="mean metric"),
         pytest.param(MinMetric, _rand_input, None, id="min metric"),
         pytest.param(MaxMetric, _rand_input, None, id="min metric"),
+        pytest.param(
+            MeanAveragePrecision,
+            lambda: [
+                {"boxes": tensor([[258.0, 41.0, 606.0, 285.0]]), "scores": tensor([0.536]), "labels": tensor([0])}
+            ],
+            lambda: [{"boxes": tensor([[214.0, 41.0, 562.0, 285.0]]), "labels": tensor([0])}],
+            id="mean average precision",
+        ),
+        pytest.param(
+            partial(PanopticQuality, things={0, 1}, stuffs={6, 7}),
+            _panoptic_input,
+            _panoptic_input,
+            id="panoptic quality",
+        ),
         pytest.param(BinaryAveragePrecision, _rand_input, _binary_randint_input, id="binary average precision"),
         pytest.param(
             partial(BinaryCalibrationError, n_bins=2, norm="l1"),
