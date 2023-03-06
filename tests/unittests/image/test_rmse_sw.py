@@ -59,6 +59,7 @@ class TestRootMeanSquareErrorWithSlidingWindow(MetricTester):
 
     @pytest.mark.parametrize("ddp", [False, True])
     def test_rmse_sw(self, preds, target, window_size, ddp):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
             preds,
@@ -69,6 +70,7 @@ class TestRootMeanSquareErrorWithSlidingWindow(MetricTester):
         )
 
     def test_rmse_sw_functional(self, preds, target, window_size):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             target,

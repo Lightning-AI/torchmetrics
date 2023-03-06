@@ -73,7 +73,7 @@ class TestRelativeAverageSpectralError(MetricTester):
 
     @pytest.mark.parametrize("ddp", [False])
     def test_rase(self, preds, target, window_size, ddp):
-        """Test class version of rase metric."""
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
             preds,
@@ -85,7 +85,7 @@ class TestRelativeAverageSpectralError(MetricTester):
         )
 
     def test_rase_functional(self, preds, target, window_size):
-        """Test functional version of rase metric."""
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             target,
