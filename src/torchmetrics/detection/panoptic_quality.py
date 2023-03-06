@@ -64,9 +64,9 @@ class PanopticQuality(Metric):
             TypeError:
                 If ``things``, ``stuffs`` contain non-integer ``category_id``.
 
-    Example:
-            >>> from torchmetrics import PanopticQuality
+    Example:ty
             >>> from torch import tensor
+            >>> from torchmetrics import PanopticQuali
             >>> preds = tensor([[[[6, 0], [0, 0], [6, 0], [6, 0]],
             ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
             ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
@@ -193,7 +193,7 @@ class PanopticQuality(Metric):
             :scale: 75
 
             >>> # Example plotting multiple values
-            >>> import torch
+            >>> from torch import tensor
             >>> from torchmetrics import PanopticQuality
             >>> preds = tensor([[[[6, 0], [0, 0], [6, 0], [6, 0]],
             ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
@@ -206,8 +206,9 @@ class PanopticQuality(Metric):
             ...                   [[0, 1], [7, 0], [1, 0], [1, 0]],
             ...                   [[0, 1], [7, 0], [7, 0], [7, 0]]]])
             >>> metric = PanopticQuality(things = {0, 1}, stuffs = {6, 7})
+            >>> vals = []
             >>> for _ in range(20):
-            ...     values.append(metric(preds, target))
-            >>> fig_, ax_ = metric.plot(values)
+            ...     vals.append(metric(preds, target))
+            >>> fig_, ax_ = metric.plot(vals)
         """
         return self._plot(val, ax)
