@@ -28,6 +28,7 @@ from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_13
 
 
 def test_prints():
+    """Test that the different rank zero only functions works as expected."""
     rank_zero_debug("DEBUG")
     rank_zero_info("INFO")
     rank_zero_warn("WARN")
@@ -46,6 +47,7 @@ def test_reduce():
 
 
 def test_class_reduce():
+    """Test that class reduce function works as expected."""
     num = torch.randint(1, 10, (100,)).float()
     denom = torch.randint(10, 20, (100,)).float()
     weights = torch.randint(1, 100, (100,)).float()
@@ -59,6 +61,7 @@ def test_class_reduce():
 
 
 def test_onehot():
+    """Test that casting to onehot works as expected."""
     test_tensor = tensor([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]])
     expected = torch.stack(
         [
@@ -83,6 +86,7 @@ def test_onehot():
 
 
 def test_to_categorical():
+    """Test that casting to categorical works as expected."""
     test_tensor = torch.stack(
         [
             torch.cat([torch.eye(5, dtype=int), torch.zeros((5, 5), dtype=int)]),
@@ -161,6 +165,7 @@ def test_check_full_state_update_fn(capsys, metric_class, expected):
     ],
 )
 def test_recursive_allclose(input, expected):
+    """Test the recursive allclose works as expected."""
     res = _allclose_recursive(*input)
     assert res == expected
 
