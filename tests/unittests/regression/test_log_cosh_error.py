@@ -62,8 +62,8 @@ class TestLogCoshError(MetricTester):
 
     @pytest.mark.parametrize("ddp", [True, False])
     def test_log_cosh_error_class(self, ddp, preds, target):
+        """Test class implementation of metric."""
         num_outputs = 1 if preds.ndim == 2 else num_targets
-        print(preds.shape)
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -74,6 +74,7 @@ class TestLogCoshError(MetricTester):
         )
 
     def test_log_cosh_error_functional(self, preds, target):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds=preds,
             target=target,
@@ -82,6 +83,7 @@ class TestLogCoshError(MetricTester):
         )
 
     def test_log_cosh_error_differentiability(self, preds, target):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         num_outputs = 1 if preds.ndim == 2 else num_targets
         self.run_differentiability_test(
             preds=preds,

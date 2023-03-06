@@ -58,6 +58,7 @@ class TestMultiScaleStructuralSimilarityIndexMeasure(MetricTester):
 
     @pytest.mark.parametrize("ddp", [False, True])
     def test_ms_ssim(self, preds, target, ddp):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
             preds,
@@ -68,6 +69,7 @@ class TestMultiScaleStructuralSimilarityIndexMeasure(MetricTester):
         )
 
     def test_ms_ssim_functional(self, preds, target):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             target,
@@ -77,6 +79,7 @@ class TestMultiScaleStructuralSimilarityIndexMeasure(MetricTester):
         )
 
     def test_ms_ssim_differentiability(self, preds, target):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         # We need to minimize this example to make the test tractable
         single_beta = (1.0,)
         _preds = preds[:, :, :, :16, :16]
