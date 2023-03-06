@@ -65,7 +65,7 @@ jobs:
           pip install -e . -U -q -r requirements/docs.txt -f https://download.pytorch.org/whl/torch_stable.html
           # install Texlive, see https://linuxconfig.org/how-to-install-latex-on-ubuntu-20-04-focal-fossa-linux
           sudo apt-get update
-          sudo apt-get install -y texlive-latex-extra dvipng texlive-pictures
+          sudo apt-get install -y texlive-latex-extra dvipng texlive-pictures texlive-fonts-recommended cm-super
           python --version
           pip --version
           pip list

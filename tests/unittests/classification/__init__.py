@@ -2,7 +2,7 @@ from torchmetrics import Metric
 
 
 class MetricWrapper(Metric):
-    """Metric wrapper,"""
+    """Metric wrapper."""
 
     def __init__(self, metric):
         super().__init__()

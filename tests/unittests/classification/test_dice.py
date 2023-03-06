@@ -76,6 +76,7 @@ def _scipy_dice(
     ],
 )
 def test_dice(pred, target, expected):
+    """Test that implementation returns the correct result."""
     score = dice(tensor(pred), tensor(target), ignore_index=0)
     assert score == expected
 

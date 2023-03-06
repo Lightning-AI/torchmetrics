@@ -55,6 +55,7 @@ from torchmetrics.classification.f_beta import (
     MultilabelF1Score,
     MultilabelFBetaScore,
 )
+from torchmetrics.classification.group_fairness import BinaryFairness, BinaryGroupStatRates
 from torchmetrics.classification.hamming import (
     BinaryHammingDistance,
     HammingDistance,
@@ -153,6 +154,8 @@ __all__ = [
     "MulticlassFBetaScore",
     "MultilabelF1Score",
     "MultilabelFBetaScore",
+    "BinaryFairness",
+    "BinaryGroupStatRates",
     "BinaryHammingDistance",
     "HammingDistance",
     "MulticlassHammingDistance",

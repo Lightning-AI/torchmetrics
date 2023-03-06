@@ -110,9 +110,6 @@ unfixable = ["F401"]
 "__init__.py" = ["D100"]
 "tests/**" = [
     "D102",  # Missing docstring in public method
-    "D103",  # Missing docstring in public function
-    "D401",  # todo # First line of docstring should be in imperative mood: ...
-    "D415",  # todo # First line should end with a period, question mark, or exclamation point"
 ]
 
 [tool.ruff.pydocstyle]
@@ -157,6 +154,7 @@ module = [
     "torchmetrics.classification.confusion_matrix",
     "torchmetrics.classification.exact_match",
     "torchmetrics.classification.f_beta",
+    "torchmetrics.classification.group_fairness",
     "torchmetrics.classification.hamming",
     "torchmetrics.classification.hinge",
     "torchmetrics.classification.jaccard",
@@ -176,6 +174,7 @@ module = [
     "torchmetrics.functional.classification.calibration_error",
     "torchmetrics.functional.classification.confusion_matrix",
     "torchmetrics.functional.classification.f_beta",
+    "torchmetrics.functional.classification.group_fairness",
     "torchmetrics.functional.classification.precision_recall_curve",
     "torchmetrics.functional.classification.ranking",
     "torchmetrics.functional.classification.recall_at_fixed_precision",

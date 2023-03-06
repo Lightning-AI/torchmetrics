@@ -40,7 +40,7 @@ for size, coef in [(182, 0.9), (182, 0.7)]:
     )
 
 
-def pytorch_ms_ssim(preds, target, data_range, kernel_size):
+def _pytorch_ms_ssim(preds, target, data_range, kernel_size):
     return ms_ssim(preds, target, data_range=data_range, win_size=kernel_size, size_average=False)
 
 
@@ -63,7 +63,7 @@ class TestMultiScaleStructuralSimilarityIndexMeasure(MetricTester):
             preds,
             target,
             MultiScaleStructuralSimilarityIndexMeasure,
-            partial(pytorch_ms_ssim, data_range=1.0, kernel_size=11),
+            partial(_pytorch_ms_ssim, data_range=1.0, kernel_size=11),
             metric_args={"data_range": 1.0, "kernel_size": 11},
         )
 
@@ -72,7 +72,7 @@ class TestMultiScaleStructuralSimilarityIndexMeasure(MetricTester):
             preds,
             target,
             multiscale_structural_similarity_index_measure,
-            partial(pytorch_ms_ssim, data_range=1.0, kernel_size=11),
+            partial(_pytorch_ms_ssim, data_range=1.0, kernel_size=11),
             metric_args={"data_range": 1.0, "kernel_size": 11},
         )
 

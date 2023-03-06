@@ -69,7 +69,7 @@ def _baseline_symmetric_mape(
     sample_weight: Optional[np.ndarray] = None,
     multioutput: str = "uniform_average",
 ):
-    r"""Symmetric mean absolute percentage error regression loss (SMAPE_):
+    r"""Symmetric mean absolute percentage error regression loss (SMAPE_).
 
     .. math:: \text{SMAPE} = \frac{2}{n}\sum_1^n\frac{max(|   y_i - \hat{y_i} |}{| y_i | + | \hat{y_i} |, \epsilon)}
 
@@ -115,7 +115,7 @@ def _baseline_symmetric_mape(
     return np.average(output_errors, weights=multioutput)
 
 
-def sk_weighted_mean_abs_percentage_error(target, preds):
+def _sk_weighted_mean_abs_percentage_error(target, preds):
     return np.sum(np.abs(target - preds)) / np.sum(np.abs(target))
 
 
@@ -161,7 +161,7 @@ def _multi_target_ref_metric(preds, target, sk_fn, metric_args):
         (
             WeightedMeanAbsolutePercentageError,
             weighted_mean_absolute_percentage_error,
-            sk_weighted_mean_abs_percentage_error,
+            _sk_weighted_mean_abs_percentage_error,
             {},
         ),
     ],
@@ -173,7 +173,6 @@ class TestMeanError(MetricTester):
     def test_mean_error_class(
         self, preds, target, ref_metric, metric_class, metric_functional, sk_fn, metric_args, ddp
     ):
-        # todo: `metric_functional` is unused
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -186,7 +185,6 @@ class TestMeanError(MetricTester):
     def test_mean_error_functional(
         self, preds, target, ref_metric, metric_class, metric_functional, sk_fn, metric_args
     ):
-        # todo: `metric_class` is unused
         self.run_functional_metric_test(
             preds=preds,
             target=target,
@@ -234,6 +232,7 @@ class TestMeanError(MetricTester):
     "metric_class", [MeanSquaredError, MeanAbsoluteError, MeanSquaredLogError, MeanAbsolutePercentageError]
 )
 def test_error_on_different_shape(metric_class):
+    """Test that error is raised on different shapes of input."""
     metric = metric_class()
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(100), torch.randn(50))

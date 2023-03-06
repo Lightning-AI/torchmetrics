@@ -384,7 +384,7 @@ def _errors_test_class_metric(
     exception_type: Type[Exception] = ValueError,
     kwargs_update: dict = None,
 ):
-    """Utility function doing checks about types, parameters and errors.
+    """Check types, parameters and errors.
 
     Args:
         indexes: torch tensor with indexes
@@ -412,7 +412,7 @@ def _errors_test_functional_metric(
     exception_type: Type[Exception] = ValueError,
     kwargs_update: dict = None,
 ):
-    """Utility function doing checks about types, parameters and errors.
+    """Check types, parameters and errors.
 
     Args:
         preds: torch tensor with predictions
