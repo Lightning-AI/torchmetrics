@@ -41,7 +41,11 @@ for size, channel, window_size, dtype in [
 
 
 def _sewar_rase(preds, target, window_size):
-    """Custom implementation since sewar only supports single image and aggregation therefore needs adjustments."""
+    """Baseline implementation of metric.
+
+    This custom implementation is nessesary since sewar only supports single image and aggregation therefore needs
+    adjustments.
+    """
     target_sum = torch.sum(_uniform_filter(target, window_size) / (window_size**2), dim=0)
     target_mean = target_sum / target.shape[0]
     target_mean = target_mean.mean(0)  # mean over image channels
@@ -63,7 +67,7 @@ def _sewar_rase(preds, target, window_size):
 
 @pytest.mark.parametrize("preds, target, window_size", [(i.preds, i.target, i.window_size) for i in _inputs])
 class TestRelativeAverageSpectralError(MetricTester):
-    """Testing of Relative Average Spectral Error"""
+    """Testing of Relative Average Spectral Error."""
 
     atol = 1e-2
 

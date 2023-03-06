@@ -28,8 +28,8 @@ class TestingMinMaxMetric(MinMaxMetric):
         return self.compute()
 
 
-def compare_fn(preds, target, base_fn):
-    """Comparing function for minmax wrapper."""
+def _compare_fn(preds, target, base_fn):
+    """Comparison function for minmax wrapper."""
     v_min, v_max = 1e6, -1e6  # pick some very large numbers for comparing
     for i in range(NUM_BATCHES):
         val = base_fn(preds[: (i + 1) * BATCH_SIZE], target[: (i + 1) * BATCH_SIZE]).cpu().numpy()
@@ -61,7 +61,7 @@ class TestMinMaxWrapper(MetricTester):
             preds=preds,
             target=target,
             metric_class=TestingMinMaxMetric,
-            reference_metric=partial(compare_fn, base_fn=deepcopy(base_metric)),
+            reference_metric=partial(_compare_fn, base_fn=deepcopy(base_metric)),
             metric_args={"base_metric": base_metric},
             check_batch=False,
             check_scriptable=False,

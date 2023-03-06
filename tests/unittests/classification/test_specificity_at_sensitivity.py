@@ -40,7 +40,7 @@ from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_
 seed_all(42)
 
 
-def specificity_at_sensitivity_x_multilabel(predictions, targets, min_sensitivity):
+def _specificity_at_sensitivity_x_multilabel(predictions, targets, min_sensitivity):
     # get fpr, tpr and thresholds
     fpr, sensitivity, thresholds = sk_roc_curve(targets, predictions, pos_label=1.0, drop_intermediate=False)
     # check if fpr is filled with nan (All positive samples),
@@ -76,7 +76,7 @@ def _sklearn_specificity_at_sensitivity_binary(preds, target, min_sensitivity, i
     if np.issubdtype(preds.dtype, np.floating) and not ((preds > 0) & (preds < 1)).all():
         preds = sigmoid(preds)
     target, preds = remove_ignore_index(target, preds, ignore_index)
-    return specificity_at_sensitivity_x_multilabel(preds, target, min_sensitivity)
+    return _specificity_at_sensitivity_x_multilabel(preds, target, min_sensitivity)
 
 
 @pytest.mark.parametrize("input", (_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]))
@@ -186,7 +186,7 @@ def _sklearn_specificity_at_sensitivity_multiclass(preds, target, min_sensitivit
     for i in range(NUM_CLASSES):
         target_temp = np.zeros_like(target)
         target_temp[target == i] = 1
-        res = specificity_at_sensitivity_x_multilabel(preds[:, i], target_temp, min_sensitivity)
+        res = _specificity_at_sensitivity_x_multilabel(preds[:, i], target_temp, min_sensitivity)
         specificity.append(res[0])
         thresholds.append(res[1])
     return specificity, thresholds

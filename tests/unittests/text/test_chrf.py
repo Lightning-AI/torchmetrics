@@ -14,7 +14,7 @@ if _SACREBLEU_AVAILABLE:
     from sacrebleu.metrics import CHRF
 
 
-def sacrebleu_chrf_fn(
+def _sacrebleu_chrf_fn(
     preds: Sequence[str],
     targets: Sequence[Sequence[str]],
     char_order: int,
@@ -59,7 +59,7 @@ class TestCHRFScore(TextTester):
             "whitespace": whitespace,
         }
         nltk_metric = partial(
-            sacrebleu_chrf_fn, char_order=char_order, word_order=word_order, lowercase=lowercase, whitespace=whitespace
+            _sacrebleu_chrf_fn, char_order=char_order, word_order=word_order, lowercase=lowercase, whitespace=whitespace
         )
 
         self.run_class_metric_test(
@@ -79,7 +79,7 @@ class TestCHRFScore(TextTester):
             "whitespace": whitespace,
         }
         nltk_metric = partial(
-            sacrebleu_chrf_fn, char_order=char_order, word_order=word_order, lowercase=lowercase, whitespace=whitespace
+            _sacrebleu_chrf_fn, char_order=char_order, word_order=word_order, lowercase=lowercase, whitespace=whitespace
         )
 
         self.run_functional_metric_test(
@@ -108,12 +108,14 @@ class TestCHRFScore(TextTester):
 
 
 def test_chrf_empty_functional():
+    """Test that eed returns 0 when no input is provided."""
     preds = []
     targets = [[]]
     assert chrf_score(preds, targets) == tensor(0.0)
 
 
 def test_chrf_empty_class():
+    """Test that eed returns 0 when no input is provided."""
     chrf = CHRFScore()
     preds = []
     targets = [[]]
@@ -121,6 +123,7 @@ def test_chrf_empty_class():
 
 
 def test_chrf_return_sentence_level_score_functional():
+    """Test that chrf can return sentence level scores."""
     preds = _inputs_single_sentence_multiple_references.preds
     targets = _inputs_single_sentence_multiple_references.targets
     _, chrf_sentence_score = chrf_score(preds, targets, return_sentence_level_score=True)
@@ -128,6 +131,7 @@ def test_chrf_return_sentence_level_score_functional():
 
 
 def test_chrf_return_sentence_level_class():
+    """Test that chrf can return sentence level scores."""
     chrf = CHRFScore(return_sentence_level_score=True)
     preds = _inputs_single_sentence_multiple_references.preds
     targets = _inputs_single_sentence_multiple_references.targets

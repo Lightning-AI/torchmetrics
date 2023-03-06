@@ -42,7 +42,8 @@ inputs_16k = Input(
 )
 
 
-def pesq_original_batch(preds: Tensor, target: Tensor, fs: int, mode: str):
+def _pesq_original_batch(preds: Tensor, target: Tensor, fs: int, mode: str):
+    """Comparison function."""
     # shape: preds [BATCH_SIZE, Time] , target [BATCH_SIZE, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, Time] , target [NUM_BATCHES*BATCH_SIZE, Time]
     target = target.detach().cpu().numpy()
@@ -54,15 +55,15 @@ def pesq_original_batch(preds: Tensor, target: Tensor, fs: int, mode: str):
     return torch.tensor(mss)
 
 
-def average_metric(preds, target, metric_func):
+def _average_metric(preds, target, metric_func):
     # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
     return metric_func(preds, target).mean()
 
 
-pesq_original_batch_8k_nb = partial(pesq_original_batch, fs=8000, mode="nb")
-pesq_original_batch_16k_nb = partial(pesq_original_batch, fs=16000, mode="nb")
-pesq_original_batch_16k_wb = partial(pesq_original_batch, fs=16000, mode="wb")
+pesq_original_batch_8k_nb = partial(_pesq_original_batch, fs=8000, mode="nb")
+pesq_original_batch_16k_nb = partial(_pesq_original_batch, fs=16000, mode="nb")
+pesq_original_batch_16k_wb = partial(_pesq_original_batch, fs=16000, mode="wb")
 
 
 @pytest.mark.parametrize(
@@ -88,7 +89,7 @@ class TestPESQ(MetricTester):
             preds,
             target,
             PerceptualEvaluationSpeechQuality,
-            reference_metric=partial(average_metric, metric_func=ref_metric),
+            reference_metric=partial(_average_metric, metric_func=ref_metric),
             metric_args={"fs": fs, "mode": mode, "n_processes": num_processes},
         )
 
@@ -126,12 +127,14 @@ class TestPESQ(MetricTester):
 
 
 def test_error_on_different_shape(metric_class=PerceptualEvaluationSpeechQuality):
+    """Test that an error is raised on different shapes of input."""
     metric = metric_class(16000, "nb")
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(100), torch.randn(50))
 
 
 def test_on_real_audio():
+    """Test that metric works as expected on real audio signals."""
     rate, ref = wavfile.read(_SAMPLE_AUDIO_SPEECH)
     rate, deg = wavfile.read(_SAMPLE_AUDIO_SPEECH_BAB_DB)
     pesq = perceptual_evaluation_speech_quality(torch.from_numpy(deg), torch.from_numpy(ref), rate, "wb")
