@@ -20,6 +20,11 @@ from typing_extensions import Literal
 from torchmetrics.functional.image.tv import _total_variation_compute, _total_variation_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["TotalVariation.plot"]
 
 
 class TotalVariation(Metric):
