@@ -52,7 +52,7 @@ class TestLPIPS(MetricTester):
     @pytest.mark.parametrize("net_type", ["vgg", "alex", "squeeze"])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_lpips(self, net_type, ddp):
-        """Test modular implementation for correctness."""
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp=ddp,
             preds=_inputs.img1,
@@ -65,7 +65,7 @@ class TestLPIPS(MetricTester):
         )
 
     def test_lpips_differentiability(self):
-        """Test for differentiability of LPIPS metric."""
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         self.run_differentiability_test(
             preds=_inputs.img1, target=_inputs.img2, metric_module=LearnedPerceptualImagePatchSimilarity
         )
@@ -79,7 +79,7 @@ class TestLPIPS(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_lpips_half_gpu(self):
-        """Test for half + gpu support."""
+        """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(_inputs.img1, _inputs.img2, LearnedPerceptualImagePatchSimilarity)
 
 

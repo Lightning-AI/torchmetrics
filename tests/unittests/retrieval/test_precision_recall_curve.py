@@ -125,6 +125,7 @@ class RetrievalPrecisionRecallCurveTester(MetricTester):
         metric_args: dict,
         reverse: bool = False,
     ):
+        """Test class implementation of metric."""
         _ref_metric_adapted = partial(reference_metric, reverse=reverse, **metric_args)
 
         super().run_class_metric_test(
@@ -161,6 +162,7 @@ class TestRetrievalPrecisionRecallCurve(RetrievalPrecisionRecallCurveTester):
         max_k,
         adaptive_k,
     ):
+        """Test class implementation of metric."""
         metric_args = {
             "max_k": max_k,
             "adaptive_k": adaptive_k,

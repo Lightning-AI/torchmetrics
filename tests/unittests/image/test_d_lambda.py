@@ -98,6 +98,7 @@ class TestSpectralDistortionIndex(MetricTester):
 
     @pytest.mark.parametrize("ddp", [True, False])
     def test_d_lambda(self, preds, target, p, ddp):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
             preds,
@@ -108,6 +109,7 @@ class TestSpectralDistortionIndex(MetricTester):
         )
 
     def test_d_lambda_functional(self, preds, target, p):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             target,
@@ -119,10 +121,12 @@ class TestSpectralDistortionIndex(MetricTester):
     # SpectralDistortionIndex half + cpu does not work due to missing support in torch.log
     @pytest.mark.xfail(reason="Spectral Distortion Index metric does not support cpu + half precision")
     def test_d_lambda_half_cpu(self, preds, target, p):
+        """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(preds, target, SpectralDistortionIndex, spectral_distortion_index, {"p": p})
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_d_lambda_half_gpu(self, preds, target, p):
+        """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(preds, target, SpectralDistortionIndex, spectral_distortion_index, {"p": p})
 
 

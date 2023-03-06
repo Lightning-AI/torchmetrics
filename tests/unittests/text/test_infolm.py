@@ -108,6 +108,7 @@ class TestInfoLM(TextTester):
     @pytest.mark.timeout(240)  # download may be too slow for default timeout
     @skip_on_connection_issues()
     def test_infolm_class(self, ddp, preds, targets, information_measure, idf, alpha, beta):
+        """Test class implementation of metric."""
         metric_args = {
             "model_name_or_path": MODEL_NAME,
             "information_measure": information_measure,
@@ -137,6 +138,7 @@ class TestInfoLM(TextTester):
 
     @skip_on_connection_issues()
     def test_infolm_functional(self, preds, targets, information_measure, idf, alpha, beta):
+        """Test functional implementation of metric."""
         metric_args = {
             "model_name_or_path": MODEL_NAME,
             "information_measure": information_measure,
@@ -164,6 +166,7 @@ class TestInfoLM(TextTester):
 
     @skip_on_connection_issues()
     def test_infolm_differentiability(self, preds, targets, information_measure, idf, alpha, beta):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         metric_args = {
             "model_name_or_path": MODEL_NAME,
             "information_measure": information_measure,

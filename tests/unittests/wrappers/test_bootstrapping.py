@@ -41,6 +41,7 @@ class TestBootStrapper(BootStrapper):
     """
 
     def update(self, *args) -> None:
+        """Update input where the permutation is also saved."""
         self.out = []
         for idx in range(self.num_bootstraps):
             size = len(args[0])
