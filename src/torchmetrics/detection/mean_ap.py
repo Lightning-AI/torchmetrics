@@ -30,13 +30,13 @@ if _TORCHVISION_GREATER_EQUAL_0_8:
     from torchvision.ops import box_area, box_convert, box_iou
 else:
     box_convert = box_iou = box_area = None
-    __doctest_skip__ = ["MeanAveragePrecision", "MeanAveragePrecision.plot"]
+    __doctest_skip__ = ["MeanAveragePrecision.plot", "MeanAveragePrecision"]
 
 if _PYCOCOTOOLS_AVAILABLE:
     import pycocotools.mask as mask_utils
 else:
     mask_utils = None
-    __doctest_skip__ = ["MeanAveragePrecision", "MeanAveragePrecision.plot"]
+    __doctest_skip__ = ["MeanAveragePrecision.plot", "MeanAveragePrecision"]
 
 
 log = logging.getLogger(__name__)
