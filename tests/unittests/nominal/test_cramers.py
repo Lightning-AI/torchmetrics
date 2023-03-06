@@ -110,6 +110,7 @@ class TestCramersV(MetricTester):
 
     @pytest.mark.parametrize("ddp", [False, True])
     def test_cramers_v(self, ddp, preds, target, bias_correction, nan_strategy, nan_replace_value):
+        """Test class implementation of metric."""
         metric_args = {
             "bias_correction": bias_correction,
             "nan_strategy": nan_strategy,

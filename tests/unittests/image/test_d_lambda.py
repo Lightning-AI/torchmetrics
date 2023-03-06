@@ -98,6 +98,7 @@ class TestSpectralDistortionIndex(MetricTester):
 
     @pytest.mark.parametrize("ddp", [True, False])
     def test_d_lambda(self, preds, target, p, ddp):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
             preds,
@@ -108,6 +109,7 @@ class TestSpectralDistortionIndex(MetricTester):
         )
 
     def test_d_lambda_functional(self, preds, target, p):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             target,

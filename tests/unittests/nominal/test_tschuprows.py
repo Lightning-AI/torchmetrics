@@ -91,6 +91,7 @@ class TestTschuprowsT(MetricTester):
 
     @pytest.mark.parametrize("ddp", [False, True])
     def test_tschuprows_ta(self, ddp, preds, target):
+        """Test class implementation of metric."""
         metric_args = {"bias_correction": False, "num_classes": NUM_CLASSES}
         self.run_class_metric_test(
             ddp=ddp,

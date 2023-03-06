@@ -61,6 +61,7 @@ class TestCLIPScore(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
     @skip_on_connection_issues()
     def test_clip_score(self, input, model_name_or_path, ddp):
+        """Test class implementation of metric."""
         # images are preds and targets are captions
         preds, target = input
         self.run_class_metric_test(
