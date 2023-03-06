@@ -70,6 +70,7 @@ class TestMultilabelRanking(MetricTester):
     @pytest.mark.parametrize("ignore_index", [None])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multilabel_ranking(self, input, metric, functional_metric, ref_metric, ddp, ignore_index):
+        """Test class implementation of metric."""
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -87,6 +88,7 @@ class TestMultilabelRanking(MetricTester):
 
     @pytest.mark.parametrize("ignore_index", [None])
     def test_multilabel_ranking_functional(self, input, metric, functional_metric, ref_metric, ignore_index):
+        """Test functional implementation of metric."""
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -114,6 +116,7 @@ class TestMultilabelRanking(MetricTester):
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multilabel_ranking_dtype_cpu(self, input, metric, functional_metric, ref_metric, dtype):
+        """Test dtype support of the metric on CPU."""
         preds, target = input
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
@@ -138,6 +141,7 @@ class TestMultilabelRanking(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multilabel_ranking_dtype_gpu(self, input, metric, functional_metric, ref_metric, dtype):
+        """Test dtype support of the metric on GPU."""
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,

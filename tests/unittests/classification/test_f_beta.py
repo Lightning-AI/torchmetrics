@@ -88,6 +88,7 @@ class TestBinaryFBetaScore(MetricTester):
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("ddp", [False, True])
     def test_binary_fbeta_score(self, ddp, input, module, functional, compare, ignore_index, multidim_average):
+        """Test class implementation of metric."""
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -110,6 +111,7 @@ class TestBinaryFBetaScore(MetricTester):
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     def test_binary_fbeta_score_functional(self, input, module, functional, compare, ignore_index, multidim_average):
+        """Test functional implementation of metric."""
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -215,6 +217,7 @@ class TestMulticlassFBetaScore(MetricTester):
     def test_multiclass_fbeta_score(
         self, ddp, input, module, functional, compare, ignore_index, multidim_average, average
     ):
+        """Test class implementation of metric."""
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -249,6 +252,7 @@ class TestMulticlassFBetaScore(MetricTester):
     def test_multiclass_fbeta_score_functional(
         self, input, module, functional, compare, ignore_index, multidim_average, average
     ):
+        """Test functional implementation of metric."""
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -459,6 +463,7 @@ class TestMultilabelFBetaScore(MetricTester):
     def test_multilabel_fbeta_score(
         self, ddp, input, module, functional, compare, ignore_index, multidim_average, average
     ):
+        """Test class implementation of metric."""
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -494,6 +499,7 @@ class TestMultilabelFBetaScore(MetricTester):
     def test_multilabel_fbeta_score_functional(
         self, input, module, functional, compare, ignore_index, multidim_average, average
     ):
+        """Test functional implementation of metric."""
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)

@@ -88,6 +88,7 @@ class TestBinaryPrecisionRecall(MetricTester):
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("ddp", [False, True])
     def test_binary_precision_recall(self, ddp, input, module, functional, compare, ignore_index, multidim_average):
+        """Test class implementation of metric."""
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -115,6 +116,7 @@ class TestBinaryPrecisionRecall(MetricTester):
     def test_binary_precision_recall_functional(
         self, input, module, functional, compare, ignore_index, multidim_average
     ):
+        """Test functional implementation of metric."""
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -218,6 +220,7 @@ class TestMulticlassPrecisionRecall(MetricTester):
     def test_multiclass_precision_recall(
         self, ddp, input, module, functional, compare, ignore_index, multidim_average, average
     ):
+        """Test class implementation of metric."""
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -252,6 +255,7 @@ class TestMulticlassPrecisionRecall(MetricTester):
     def test_multiclass_precision_recall_functional(
         self, input, module, functional, compare, ignore_index, multidim_average, average
     ):
+        """Test functional implementation of metric."""
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -453,6 +457,7 @@ class TestMultilabelPrecisionRecall(MetricTester):
     def test_multilabel_precision_recall(
         self, ddp, input, module, functional, compare, ignore_index, multidim_average, average
     ):
+        """Test class implementation of metric."""
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -488,6 +493,7 @@ class TestMultilabelPrecisionRecall(MetricTester):
     def test_multilabel_precision_recall_functional(
         self, input, module, functional, compare, ignore_index, multidim_average, average
     ):
+        """Test functional implementation of metric."""
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
