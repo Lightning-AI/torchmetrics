@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Collection, Dict, Iterator, List, Set, Tuple
+from typing import Collection, Dict, Iterator, List, Set, Tuple, cast
 
 import torch
 from torch import Tensor
@@ -326,12 +326,13 @@ def _panoptic_quality_update_sample(
     false_positives = torch.zeros(n_categories, dtype=torch.int, device=device)
     false_negatives = torch.zeros(n_categories, dtype=torch.int, device=device)
 
-    # calculate the area of each prediction, ground truth and pairwise intersection
-    pred_areas = _get_color_areas(flatten_preds)
-    target_areas = _get_color_areas(flatten_target)
+    # calculate the area of each prediction, ground truth and pairwise intersection.
+    # NOTE: mypy needs `cast()` because the annotation for `_get_color_areas` is too generic.
+    pred_areas = cast(Dict[_Color, Tensor], _get_color_areas(flatten_preds))
+    target_areas = cast(Dict[_Color, Tensor], _get_color_areas(flatten_target))
     # intersection matrix of shape [num_pixels, 2, 2]
     intersection_matrix = torch.transpose(torch.stack((flatten_preds, flatten_target), -1), -1, -2)
-    intersection_areas = _get_color_areas(intersection_matrix)
+    intersection_areas = cast(Dict[Tuple[_Color, _Color], Tensor], _get_color_areas(intersection_matrix))
 
     # select intersection of things of same category with iou > 0.5
     pred_segment_matched = set()
