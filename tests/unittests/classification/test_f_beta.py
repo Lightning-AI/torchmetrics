@@ -88,6 +88,7 @@ class TestBinaryFBetaScore(MetricTester):
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("ddp", [False, True])
     def test_binary_fbeta_score(self, ddp, input, module, functional, compare, ignore_index, multidim_average):
+        """Test class implementation of metric."""
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -110,6 +111,7 @@ class TestBinaryFBetaScore(MetricTester):
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     def test_binary_fbeta_score_functional(self, input, module, functional, compare, ignore_index, multidim_average):
+        """Test functional implementation of metric."""
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -131,6 +133,7 @@ class TestBinaryFBetaScore(MetricTester):
         )
 
     def test_binary_fbeta_score_differentiability(self, input, module, functional, compare):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -142,6 +145,7 @@ class TestBinaryFBetaScore(MetricTester):
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_binary_fbeta_score_half_cpu(self, input, module, functional, compare, dtype):
+        """Test dtype support of the metric on CPU."""
         preds, target = input
 
         if (preds < 0).any() and dtype == torch.half:
@@ -158,6 +162,7 @@ class TestBinaryFBetaScore(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_binary_fbeta_score_half_gpu(self, input, module, functional, compare, dtype):
+        """Test dtype support of the metric on GPU."""
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,
@@ -212,6 +217,7 @@ class TestMulticlassFBetaScore(MetricTester):
     def test_multiclass_fbeta_score(
         self, ddp, input, module, functional, compare, ignore_index, multidim_average, average
     ):
+        """Test class implementation of metric."""
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -246,6 +252,7 @@ class TestMulticlassFBetaScore(MetricTester):
     def test_multiclass_fbeta_score_functional(
         self, input, module, functional, compare, ignore_index, multidim_average, average
     ):
+        """Test functional implementation of metric."""
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -272,6 +279,7 @@ class TestMulticlassFBetaScore(MetricTester):
         )
 
     def test_multiclass_fbeta_score_differentiability(self, input, module, functional, compare):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -283,6 +291,7 @@ class TestMulticlassFBetaScore(MetricTester):
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multiclass_fbeta_score_half_cpu(self, input, module, functional, compare, dtype):
+        """Test dtype support of the metric on CPU."""
         preds, target = input
 
         if (preds < 0).any() and dtype == torch.half:
@@ -299,6 +308,7 @@ class TestMulticlassFBetaScore(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multiclass_fbeta_score_half_gpu(self, input, module, functional, compare, dtype):
+        """Test dtype support of the metric on GPU."""
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,
@@ -453,6 +463,7 @@ class TestMultilabelFBetaScore(MetricTester):
     def test_multilabel_fbeta_score(
         self, ddp, input, module, functional, compare, ignore_index, multidim_average, average
     ):
+        """Test class implementation of metric."""
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -488,6 +499,7 @@ class TestMultilabelFBetaScore(MetricTester):
     def test_multilabel_fbeta_score_functional(
         self, input, module, functional, compare, ignore_index, multidim_average, average
     ):
+        """Test functional implementation of metric."""
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -515,6 +527,7 @@ class TestMultilabelFBetaScore(MetricTester):
         )
 
     def test_multilabel_fbeta_score_differentiability(self, input, module, functional, compare):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -526,6 +539,7 @@ class TestMultilabelFBetaScore(MetricTester):
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multilabel_fbeta_score_half_cpu(self, input, module, functional, compare, dtype):
+        """Test dtype support of the metric on CPU."""
         preds, target = input
 
         if (preds < 0).any() and dtype == torch.half:
@@ -542,6 +556,7 @@ class TestMultilabelFBetaScore(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multilabel_fbeta_score_half_gpu(self, input, module, functional, compare, dtype):
+        """Test dtype support of the metric on GPU."""
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,

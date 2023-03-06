@@ -110,6 +110,7 @@ class TestCramersV(MetricTester):
 
     @pytest.mark.parametrize("ddp", [False, True])
     def test_cramers_v(self, ddp, preds, target, bias_correction, nan_strategy, nan_replace_value):
+        """Test class implementation of metric."""
         metric_args = {
             "bias_correction": bias_correction,
             "nan_strategy": nan_strategy,
@@ -132,6 +133,7 @@ class TestCramersV(MetricTester):
         )
 
     def test_cramers_v_functional(self, preds, target, bias_correction, nan_strategy, nan_replace_value):
+        """Test functional implementation of metric."""
         metric_args = {
             "bias_correction": bias_correction,
             "nan_strategy": nan_strategy,
@@ -148,6 +150,7 @@ class TestCramersV(MetricTester):
         )
 
     def test_cramers_v_differentiability(self, preds, target, bias_correction, nan_strategy, nan_replace_value):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         metric_args = {
             "bias_correction": bias_correction,
             "nan_strategy": nan_strategy,

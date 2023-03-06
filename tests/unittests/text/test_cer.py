@@ -42,7 +42,7 @@ class TestCharErrorRate(TextTester):
         )
 
     def test_cer_functional(self, preds, targets):
-        """Test functional version of cer."""
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             targets,

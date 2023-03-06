@@ -31,9 +31,11 @@ class DummyMetric(Metric):
         self._val_to_return = val_to_return
 
     def update(self, *args, **kwargs) -> None:
+        """Compute state."""
         self._num_updates += 1
 
     def compute(self):
+        """Compute result."""
         return tensor(self._val_to_return)
 
 

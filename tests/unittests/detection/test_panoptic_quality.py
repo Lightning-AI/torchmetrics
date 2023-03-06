@@ -101,6 +101,7 @@ class TestPanopticQuality(MetricTester):
         ],
     )
     def test_panoptic_quality_class(self, ddp, inputs, args, reference_metric):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp=ddp,
             preds=inputs.preds,
@@ -111,7 +112,8 @@ class TestPanopticQuality(MetricTester):
             metric_args=args,
         )
 
-    def test_panoptic_quality_fn(self):
+    def test_panoptic_quality_functional(self):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             _INPUTS_0.preds,
             _INPUTS_0.target,

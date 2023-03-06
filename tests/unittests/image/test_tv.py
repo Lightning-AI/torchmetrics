@@ -31,6 +31,7 @@ class TotalVariationTester(TotalVariation):
     """Tester class for `TotalVariation` metric overriding its update method."""
 
     def update(self, img, *args):
+        """Update metric."""
         super().update(img=img)
 
 
@@ -72,7 +73,7 @@ class TestTotalVariation(MetricTester):
 
     @pytest.mark.parametrize("ddp", [True, False])
     def test_total_variation(self, preds, target, reduction, ddp):
-        """Test modular implementation."""
+        """Test class implementation of metric."""
         if reduction is None and ddp:
             pytest.skip("reduction=None and ddp=True runs out of memory on CI hardware, but it does work")
         self.run_class_metric_test(
@@ -85,7 +86,7 @@ class TestTotalVariation(MetricTester):
         )
 
     def test_total_variation_functional(self, preds, target, reduction):
-        """Test for functional implementation."""
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             target,
