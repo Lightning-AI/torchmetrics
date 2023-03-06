@@ -39,7 +39,7 @@ from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_
 seed_all(42)
 
 
-def recall_at_precision_x_multilabel(predictions, targets, min_precision):
+def _recall_at_precision_x_multilabel(predictions, targets, min_precision):
     precision, recall, thresholds = sk_precision_recall_curve(targets, predictions)
 
     try:
@@ -57,7 +57,7 @@ def _sklearn_recall_at_fixed_precision_binary(preds, target, min_precision, igno
     if np.issubdtype(preds.dtype, np.floating) and not ((preds > 0) & (preds < 1)).all():
         preds = sigmoid(preds)
     target, preds = remove_ignore_index(target, preds, ignore_index)
-    return recall_at_precision_x_multilabel(preds, target, min_precision)
+    return _recall_at_precision_x_multilabel(preds, target, min_precision)
 
 
 @pytest.mark.parametrize("input", (_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]))
@@ -167,7 +167,7 @@ def _sklearn_recall_at_fixed_precision_multiclass(preds, target, min_precision, 
     for i in range(NUM_CLASSES):
         target_temp = np.zeros_like(target)
         target_temp[target == i] = 1
-        res = recall_at_precision_x_multilabel(preds[:, i], target_temp, min_precision)
+        res = _recall_at_precision_x_multilabel(preds[:, i], target_temp, min_precision)
         recall.append(res[0])
         thresholds.append(res[1])
     return recall, thresholds

@@ -82,6 +82,7 @@ def test_is_raises_errors_and_warnings():
 
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 def test_is_update_compute():
+    """Test that inception score works as expected."""
     metric = InceptionScore()
 
     for _ in range(2):
