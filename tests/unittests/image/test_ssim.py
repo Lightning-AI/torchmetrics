@@ -320,6 +320,7 @@ def test_ssim_unequal_kernel_size():
     [(i.preds, i.target) for i in _inputs],
 )
 def test_full_image_output(preds, target):
+    """Test that if full output should be returned, then its shape matches the input."""
     out = structural_similarity_index_measure(preds[0], target[0])
     assert isinstance(out, Tensor)
     assert out.numel() == 1

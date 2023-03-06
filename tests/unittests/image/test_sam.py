@@ -46,7 +46,7 @@ def _baseline_sam(
     target: Tensor,
     reduction: str = "elementwise_mean",
 ) -> Tensor:
-    """Reference implementation of spectral angle mapper."""
+    """Baseline implementation of spectral angle mapper."""
     reduction_options = ("elementwise_mean", "sum", "none")
     if reduction not in reduction_options:
         raise ValueError(f"reduction has to be one of {reduction_options}, got: {reduction}.")

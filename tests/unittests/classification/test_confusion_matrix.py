@@ -338,6 +338,7 @@ class TestMultilabelConfusionMatrix(MetricTester):
 
 
 def test_warning_on_nan():
+    """Test that a warning is given if division by zero happens during normalization of confusion matrix."""
     preds = torch.randint(3, size=(20,))
     target = torch.randint(3, size=(20,))
 
