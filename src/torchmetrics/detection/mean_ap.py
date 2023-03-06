@@ -23,6 +23,9 @@ from torchmetrics.utilities.data import _cumsum
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _PYCOCOTOOLS_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["MeanAveragePrecision.plot"]
+
 if _TORCHVISION_GREATER_EQUAL_0_8:
     from torchvision.ops import box_area, box_convert, box_iou
 else:
@@ -34,9 +37,6 @@ if _PYCOCOTOOLS_AVAILABLE:
 else:
     mask_utils = None
     __doctest_skip__ = ["MeanAveragePrecision"]
-
-if not _MATPLOTLIB_AVAILABLE:
-    __doctest_skip__ = ["MeanAveragePrecision.plot"]
 
 
 log = logging.getLogger(__name__)
