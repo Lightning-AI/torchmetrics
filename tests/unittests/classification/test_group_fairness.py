@@ -224,6 +224,7 @@ class TestBinaryFairness(BinaryFairnessTester):
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("ddp", [False, True])
     def test_binary_fairness(self, ddp, inputs, ignore_index):
+        """Test class implementation of metric."""
         preds, target, groups = inputs
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -241,6 +242,7 @@ class TestBinaryFairness(BinaryFairnessTester):
 
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     def test_binary_fairness_functional(self, inputs, ignore_index):
+        """Test functional implementation of metric."""
         preds, target, groups = inputs
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -259,8 +261,8 @@ class TestBinaryFairness(BinaryFairnessTester):
             fragment_kwargs=True,
         )
 
-    # @mock.patch("unittests.helpers.testers._assert_requires_grad", _assert_requires_grad)
     def test_binary_fairness_differentiability(self, inputs):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target, groups = inputs
         self.run_differentiability_test(
             preds=preds,
@@ -273,6 +275,7 @@ class TestBinaryFairness(BinaryFairnessTester):
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_binary_fairness_half_cpu(self, inputs, dtype):
+        """Test class implementation of metric."""
         preds, target, groups = inputs
 
         if (preds < 0).any() and dtype == torch.half:
@@ -290,6 +293,7 @@ class TestBinaryFairness(BinaryFairnessTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_binary_fairness_half_gpu(self, inputs, dtype):
+        """Test class implementation of metric."""
         preds, target, groups = inputs
         self.run_precision_test_gpu(
             preds=preds,

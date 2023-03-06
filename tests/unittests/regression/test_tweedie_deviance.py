@@ -66,6 +66,7 @@ class TestDevianceScore(MetricTester):
 
     @pytest.mark.parametrize("ddp", [True, False])
     def test_deviance_scores_class(self, ddp, preds, targets, power):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
             preds,
@@ -76,6 +77,7 @@ class TestDevianceScore(MetricTester):
         )
 
     def test_deviance_scores_functional(self, preds, targets, power):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             targets,
@@ -85,12 +87,14 @@ class TestDevianceScore(MetricTester):
         )
 
     def test_deviance_scores_differentiability(self, preds, targets, power):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         self.run_differentiability_test(
             preds, targets, metric_module=TweedieDevianceScore, metric_functional=tweedie_deviance_score
         )
 
     # Tweedie Deviance Score half + cpu does not work for power=[1,2] due to missing support in torch.log
     def test_deviance_scores_half_cpu(self, preds, targets, power):
+        """Test dtype support of the metric on CPU."""
         if not _TORCH_GREATER_EQUAL_1_9 or power in [1, 2]:
             pytest.xfail(reason="TweedieDevianceScore metric does not support cpu + half precision for older Pytorch")
         metric_args = {"power": power}
@@ -104,6 +108,7 @@ class TestDevianceScore(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_deviance_scores_half_gpu(self, preds, targets, power):
+        """Test dtype support of the metric on GPU."""
         metric_args = {"power": power}
         self.run_precision_test_gpu(
             preds,

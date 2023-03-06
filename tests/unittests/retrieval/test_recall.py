@@ -69,6 +69,7 @@ class TestRecall(RetrievalMetricTester):
         ignore_index: int,
         k: int,
     ):
+        """Test class implementation of metric."""
         metric_args = {"empty_target_action": empty_target_action, "top_k": k, "ignore_index": ignore_index}
 
         self.run_class_metric_test(
@@ -94,6 +95,7 @@ class TestRecall(RetrievalMetricTester):
         empty_target_action: str,
         k: int,
     ):
+        """Test class implementation of metric with ignore_index argument."""
         metric_args = {"empty_target_action": empty_target_action, "top_k": k, "ignore_index": -100}
 
         self.run_class_metric_test(
@@ -109,6 +111,7 @@ class TestRecall(RetrievalMetricTester):
     @pytest.mark.parametrize(**_default_metric_functional_input_arguments)
     @pytest.mark.parametrize("k", [None, 1, 4, 10])
     def test_functional_metric(self, preds: Tensor, target: Tensor, k: int):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds=preds,
             target=target,
@@ -120,6 +123,7 @@ class TestRecall(RetrievalMetricTester):
 
     @pytest.mark.parametrize(**_default_metric_class_input_arguments)
     def test_precision_cpu(self, indexes: Tensor, preds: Tensor, target: Tensor):
+        """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(
             indexes=indexes,
             preds=preds,
@@ -130,6 +134,7 @@ class TestRecall(RetrievalMetricTester):
 
     @pytest.mark.parametrize(**_default_metric_class_input_arguments)
     def test_precision_gpu(self, indexes: Tensor, preds: Tensor, target: Tensor):
+        """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(
             indexes=indexes,
             preds=preds,
@@ -148,6 +153,7 @@ class TestRecall(RetrievalMetricTester):
     def test_arguments_class_metric(
         self, indexes: Tensor, preds: Tensor, target: Tensor, message: str, metric_args: dict
     ):
+        """Test that specific errors are raised for incorrect input."""
         self.run_metric_class_arguments_test(
             indexes=indexes,
             preds=preds,
@@ -166,6 +172,7 @@ class TestRecall(RetrievalMetricTester):
         )
     )
     def test_arguments_functional_metric(self, preds: Tensor, target: Tensor, message: str, metric_args: dict):
+        """Test that specific errors are raised for incorrect input."""
         self.run_functional_metric_arguments_test(
             preds=preds,
             target=target,
