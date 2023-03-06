@@ -53,6 +53,7 @@ class TestBLEUScore(TextTester):
 
     @pytest.mark.parametrize("ddp", [False, True])
     def test_bleu_score_class(self, ddp, preds, targets, weights, n_gram, smooth_func, smooth):
+        """Test class implementation of metric."""
         metric_args = {"n_gram": n_gram, "smooth": smooth}
         compute_bleu_metric_nltk = partial(_compute_bleu_metric_nltk, weights=weights, smoothing_function=smooth_func)
 
@@ -79,6 +80,7 @@ class TestBLEUScore(TextTester):
         )
 
     def test_bleu_score_differentiability(self, preds, targets, weights, n_gram, smooth_func, smooth):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         metric_args = {"n_gram": n_gram, "smooth": smooth}
 
         self.run_differentiability_test(

@@ -52,6 +52,7 @@ class TestExtendedEditDistance(TextTester):
 
     @pytest.mark.parametrize("ddp", [False, True])
     def test_eed_class(self, preds, targets, ddp):
+        """Test class implementation of metric."""
         rwth_metric = partial(_rwth_manual_metric)
         self.run_class_metric_test(
             ddp=ddp,
@@ -72,6 +73,7 @@ class TestExtendedEditDistance(TextTester):
         )
 
     def test_eed_differentiability(self, preds, targets):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         self.run_differentiability_test(
             preds=preds,
             targets=targets,

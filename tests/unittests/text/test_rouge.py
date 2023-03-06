@@ -121,6 +121,7 @@ class TestROUGEScore(TextTester):
     @pytest.mark.parametrize("ddp", [False, True])
     @skip_on_connection_issues(reason="could not download nltk relevant data")
     def test_rouge_score_class(self, ddp, preds, targets, pl_rouge_metric_key, use_stemmer, accumulate):
+        """Test class implementation of metric."""
         metric_args = {"use_stemmer": use_stemmer, "accumulate": accumulate}
         rouge_level, metric = pl_rouge_metric_key.split("_")
         rouge_metric = partial(
