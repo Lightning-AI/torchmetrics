@@ -939,19 +939,15 @@ class MeanAveragePrecision(Metric):
 
             >>> from torch import tensor
             >>> from torchmetrics.detection.mean_ap import MeanAveragePrecision
-            >>> preds = [
-            ...   dict(
+            >>> preds = [dict(
             ...     boxes=tensor([[258.0, 41.0, 606.0, 285.0]]),
             ...     scores=tensor([0.536]),
             ...     labels=tensor([0]),
-            ...   )
-            ... ]
-            >>> target = [
-            ...   dict(
+            ... )]
+            >>> target = [dict(
             ...     boxes=tensor([[214.0, 41.0, 562.0, 285.0]]),
             ...     labels=tensor([0]),
-            ...   )
-            ... ]
+            ... )]
             >>> metric = MeanAveragePrecision()
             >>> metric.update(preds, target)
             >>> fig_, ax_ = metric.plot()
@@ -962,22 +958,19 @@ class MeanAveragePrecision(Metric):
             >>> # Example plotting multiple values
             >>> import torch
             >>> from torchmetrics.detection.mean_ap import MeanAveragePrecision
-            >>> preds = lambda: [
-            ...   dict(
+            >>> preds = lambda: [dict(
             ...     boxes=torch.tensor([[258.0, 41.0, 606.0, 285.0]]) + torch.randint(10, (1,4)),
             ...     scores=torch.tensor([0.536]) + 0.1*torch.rand(1),
             ...     labels=torch.tensor([0]),
-            ...   )
-            ... ]
-            >>> target = [
-            ...   dict(
+            ... )]
+            >>> target = [dict(
             ...     boxes=torch.tensor([[214.0, 41.0, 562.0, 285.0]]),
             ...     labels=torch.tensor([0]),
-            ...   )
-            ... ]
+            ... )]
             >>> metric = MeanAveragePrecision()
+            >>> vals = []
             >>> for _ in range(20):
-            ...     values.append(metric(preds(), target))
-            >>> fig_, ax_ = metric.plot(values)
+            ...     vals.append(metric(preds(), target))
+            >>> fig_, ax_ = metric.plot(vals)
         """
         return self._plot(val, ax)
