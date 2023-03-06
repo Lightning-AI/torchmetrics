@@ -101,14 +101,14 @@ def plot_single_or_multi_val(
     elif isinstance(val, dict):
         for i, (k, v) in enumerate(val.items()):
             ax.plot(i, v.detach().cpu(), marker="o", markersize=10, label=k)
-    else:
+    elif isinstance(val, Sequence):
         n_steps = len(val)
         if isinstance(val[0], dict):
-            val = {k: torch.stack([val[i][k] for i in range(n_steps)]) for k in val[0]}
+            val = {k: torch.stack([val[i][k] for i in range(n_steps)]) for k in val[0]}  # type: ignore
             for k, v in val.items():
                 ax.plot(v.detach().cpu(), marker="o", markersize=10, linestyle="-", label=k)
         else:
-            val = torch.stack(list(val), 0)
+            val = torch.stack(val, 0)  # type: ignore
             multi_series = val.ndim != 1
             val = val.T if multi_series else val.unsqueeze(0)
             for i, v in enumerate(val):
@@ -117,6 +117,8 @@ def plot_single_or_multi_val(
         ax.get_xaxis().set_visible(True)
         ax.set_xlabel("Step")
         ax.set_xticks(torch.arange(n_steps))
+    else:
+        raise ValueError("Got unknown format for argument `val`.")
 
     handles, labels = ax.get_legend_handles_labels()
     if handles and labels:
