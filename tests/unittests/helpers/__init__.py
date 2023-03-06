@@ -18,6 +18,7 @@ import torch
 
 
 def seed_all(seed):
+    """Set the seed of all computational frameworks."""
     random.seed(seed)
     numpy.random.seed(seed)
     torch.manual_seed(seed)

@@ -30,7 +30,7 @@ from unittests.text.inputs import (
 
 
 def _baseline_perplexity(preds, target, ignore_index):
-    """Reference Perplexity metrics based upon PyTorch Cross Entropy."""
+    """Baseline implementation of perplexity metric based upon PyTorch Cross Entropy."""
     preds = preds.reshape(-1, preds.shape[-1])
     target = target.reshape(-1)
     cross_entropy = F.cross_entropy(preds, target)

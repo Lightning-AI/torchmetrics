@@ -110,6 +110,7 @@ class TestPearsonCorrCoef(MetricTester):
 
 
 def test_error_on_different_shape():
+    """Test that error is raised on different shapes of input."""
     metric = PearsonCorrCoef(num_outputs=1)
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(100), torch.randn(50))
