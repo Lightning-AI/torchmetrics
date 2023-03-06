@@ -52,6 +52,7 @@ class TestMulticlassExactMatch(MetricTester):
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multiclass_exact_match(self, ddp, input, ignore_index, multidim_average):
+        """Test class implementation of metric."""
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -80,6 +81,7 @@ class TestMulticlassExactMatch(MetricTester):
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("ignore_index", [None, -1])
     def test_multiclass_exact_match_functional(self, input, ignore_index, multidim_average):
+        """Test functional implementation of metric."""
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -103,6 +105,7 @@ class TestMulticlassExactMatch(MetricTester):
         )
 
     def test_multiclass_exact_match_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -114,6 +117,7 @@ class TestMulticlassExactMatch(MetricTester):
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multiclass_exact_match_half_cpu(self, input, dtype):
+        """Test dtype support of the metric on CPU."""
         preds, target = input
 
         if (preds < 0).any() and dtype == torch.half:
@@ -130,6 +134,7 @@ class TestMulticlassExactMatch(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multiclass_exact_match_half_gpu(self, input, dtype):
+        """Test dtype support of the metric on GPU."""
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,
@@ -174,6 +179,7 @@ class TestMultilabelExactMatch(MetricTester):
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     def test_multilabel_exact_match(self, ddp, input, ignore_index, multidim_average):
+        """Test class implementation of metric."""
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -203,6 +209,7 @@ class TestMultilabelExactMatch(MetricTester):
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     def test_multilabel_exact_match_functional(self, input, ignore_index, multidim_average):
+        """Test functional implementation of metric."""
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -227,6 +234,7 @@ class TestMultilabelExactMatch(MetricTester):
         )
 
     def test_multilabel_exact_match_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -238,6 +246,7 @@ class TestMultilabelExactMatch(MetricTester):
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multilabel_exact_match_half_cpu(self, input, dtype):
+        """Test dtype support of the metric on CPU."""
         preds, target = input
 
         if (preds < 0).any() and dtype == torch.half:
@@ -254,6 +263,7 @@ class TestMultilabelExactMatch(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multilabel_exact_match_half_gpu(self, input, dtype):
+        """Test dtype support of the metric on GPU."""
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,

@@ -76,6 +76,7 @@ class TestSISNR(MetricTester):
 
     @pytest.mark.parametrize("ddp", [True, False])
     def test_si_snr(self, preds, target, ref_metric, ddp):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
             preds,
@@ -85,6 +86,7 @@ class TestSISNR(MetricTester):
         )
 
     def test_si_snr_functional(self, preds, target, ref_metric):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             target,
@@ -93,6 +95,7 @@ class TestSISNR(MetricTester):
         )
 
     def test_si_snr_differentiability(self, preds, target, ref_metric):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -101,10 +104,12 @@ class TestSISNR(MetricTester):
         )
 
     def test_si_snr_half_cpu(self, preds, target, ref_metric):
+        """Test dtype support of the metric on CPU."""
         pytest.xfail("SI-SNR metric does not support cpu + half precision")
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_si_snr_half_gpu(self, preds, target, ref_metric):
+        """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
