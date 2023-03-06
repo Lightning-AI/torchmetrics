@@ -51,6 +51,7 @@ class TestSacreBLEUScore(TextTester):
 
     @pytest.mark.parametrize("ddp", [False, True])
     def test_bleu_score_class(self, ddp, preds, targets, tokenize, lowercase):
+        """Test class implementation of metric."""
         metric_args = {"tokenize": tokenize, "lowercase": lowercase}
         original_sacrebleu = partial(_sacrebleu_fn, tokenize=tokenize, lowercase=lowercase)
 
@@ -64,6 +65,7 @@ class TestSacreBLEUScore(TextTester):
         )
 
     def test_bleu_score_functional(self, preds, targets, tokenize, lowercase):
+        """Test functional implementation of metric."""
         metric_args = {"tokenize": tokenize, "lowercase": lowercase}
         original_sacrebleu = partial(_sacrebleu_fn, tokenize=tokenize, lowercase=lowercase)
 
@@ -76,6 +78,7 @@ class TestSacreBLEUScore(TextTester):
         )
 
     def test_bleu_score_differentiability(self, preds, targets, tokenize, lowercase):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         metric_args = {"tokenize": tokenize, "lowercase": lowercase}
 
         self.run_differentiability_test(

@@ -80,6 +80,7 @@ class TestSTOI(MetricTester):
 
     @pytest.mark.parametrize("ddp", [True, False])
     def test_stoi(self, preds, target, ref_metric, fs, extended, ddp):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
             preds,
@@ -90,6 +91,7 @@ class TestSTOI(MetricTester):
         )
 
     def test_stoi_functional(self, preds, target, ref_metric, fs, extended):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             target,
@@ -99,6 +101,7 @@ class TestSTOI(MetricTester):
         )
 
     def test_stoi_differentiability(self, preds, target, ref_metric, fs, extended):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -108,10 +111,12 @@ class TestSTOI(MetricTester):
         )
 
     def test_stoi_half_cpu(self, preds, target, ref_metric, fs, extended):
+        """Test dtype support of the metric on CPU."""
         pytest.xfail("STOI metric does not support cpu + half precision")
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_stoi_half_gpu(self, preds, target, ref_metric, fs, extended):
+        """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(
             preds=preds,
             target=target,

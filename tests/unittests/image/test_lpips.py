@@ -52,7 +52,7 @@ class TestLPIPS(MetricTester):
     @pytest.mark.parametrize("net_type", ["vgg", "alex", "squeeze"])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_lpips(self, net_type, ddp):
-        """Test modular implementation for correctness."""
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp=ddp,
             preds=_inputs.img1,

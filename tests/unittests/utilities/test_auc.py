@@ -60,6 +60,7 @@ class TestAUC(MetricTester):
 
     @pytest.mark.parametrize("reorder", [True, False])
     def test_auc_functional(self, x, y, reorder):
+        """Test functional implementation."""
         self.run_functional_metric_test(
             x,
             y,
