@@ -194,7 +194,7 @@ class TestPrecision(RetrievalMetricTester):
         )
     )
     def test_arguments_functional_metric(self, preds: Tensor, target: Tensor, message: str, metric_args: dict):
-        """Test class implementation of metric with ignore_index argument."""
+        """Test that specific errors are raised for incorrect input."""
         self.run_functional_metric_arguments_test(
             preds=preds,
             target=target,

@@ -114,6 +114,7 @@ class TestMulticlassExactMatch(MetricTester):
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multiclass_exact_match_half_cpu(self, input, dtype):
+        """Test dtype support of the metric on CPU."""
         preds, target = input
 
         if (preds < 0).any() and dtype == torch.half:
@@ -130,6 +131,7 @@ class TestMulticlassExactMatch(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multiclass_exact_match_half_gpu(self, input, dtype):
+        """Test dtype support of the metric on GPU."""
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,
@@ -238,6 +240,7 @@ class TestMultilabelExactMatch(MetricTester):
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multilabel_exact_match_half_cpu(self, input, dtype):
+        """Test dtype support of the metric on CPU."""
         preds, target = input
 
         if (preds < 0).any() and dtype == torch.half:
@@ -254,6 +257,7 @@ class TestMultilabelExactMatch(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multilabel_exact_match_half_gpu(self, input, dtype):
+        """Test dtype support of the metric on GPU."""
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,

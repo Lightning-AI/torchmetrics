@@ -79,7 +79,7 @@ class TestLPIPS(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_lpips_half_gpu(self):
-        """Test for half + gpu support."""
+        """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(_inputs.img1, _inputs.img2, LearnedPerceptualImagePatchSimilarity)
 
 

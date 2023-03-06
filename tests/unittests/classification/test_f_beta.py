@@ -142,6 +142,7 @@ class TestBinaryFBetaScore(MetricTester):
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_binary_fbeta_score_half_cpu(self, input, module, functional, compare, dtype):
+        """Test dtype support of the metric on CPU."""
         preds, target = input
 
         if (preds < 0).any() and dtype == torch.half:
@@ -158,6 +159,7 @@ class TestBinaryFBetaScore(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_binary_fbeta_score_half_gpu(self, input, module, functional, compare, dtype):
+        """Test dtype support of the metric on GPU."""
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,
@@ -283,6 +285,7 @@ class TestMulticlassFBetaScore(MetricTester):
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multiclass_fbeta_score_half_cpu(self, input, module, functional, compare, dtype):
+        """Test dtype support of the metric on CPU."""
         preds, target = input
 
         if (preds < 0).any() and dtype == torch.half:
@@ -299,6 +302,7 @@ class TestMulticlassFBetaScore(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multiclass_fbeta_score_half_gpu(self, input, module, functional, compare, dtype):
+        """Test dtype support of the metric on GPU."""
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,
@@ -526,6 +530,7 @@ class TestMultilabelFBetaScore(MetricTester):
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multilabel_fbeta_score_half_cpu(self, input, module, functional, compare, dtype):
+        """Test dtype support of the metric on CPU."""
         preds, target = input
 
         if (preds < 0).any() and dtype == torch.half:
@@ -542,6 +547,7 @@ class TestMultilabelFBetaScore(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multilabel_fbeta_score_half_gpu(self, input, module, functional, compare, dtype):
+        """Test dtype support of the metric on GPU."""
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,

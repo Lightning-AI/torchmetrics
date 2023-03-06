@@ -73,6 +73,7 @@ class TestPearsonCorrCoef(MetricTester):
     @pytest.mark.parametrize("compute_on_cpu", [True, False])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_pearson_corrcoef(self, preds, target, compute_on_cpu, ddp):
+        """Test class implementation of metric."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_class_metric_test(
             ddp=ddp,
@@ -90,6 +91,7 @@ class TestPearsonCorrCoef(MetricTester):
         )
 
     def test_pearson_corrcoef_differentiability(self, preds, target):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_differentiability_test(
             preds=preds,
@@ -101,11 +103,13 @@ class TestPearsonCorrCoef(MetricTester):
     # Pearson half + cpu does not work due to missing support in torch.sqrt
     @pytest.mark.xfail(reason="PearsonCorrCoef metric does not support cpu + half precision")
     def test_pearson_corrcoef_half_cpu(self, preds, target):
+        """Test dtype support of the metric on CPU."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_precision_test_cpu(preds, target, partial(PearsonCorrCoef, num_outputs=num_outputs), pearson_corrcoef)
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_pearson_corrcoef_half_gpu(self, preds, target):
+        """Test dtype support of the metric on GPU."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_precision_test_gpu(preds, target, partial(PearsonCorrCoef, num_outputs=num_outputs), pearson_corrcoef)
 

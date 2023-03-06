@@ -173,6 +173,7 @@ class TestMeanError(MetricTester):
     def test_mean_error_class(
         self, preds, target, ref_metric, metric_class, metric_functional, sk_fn, metric_args, ddp
     ):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -197,6 +198,7 @@ class TestMeanError(MetricTester):
     def test_mean_error_differentiability(
         self, preds, target, ref_metric, metric_class, metric_functional, sk_fn, metric_args
     ):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -206,6 +208,7 @@ class TestMeanError(MetricTester):
         )
 
     def test_mean_error_half_cpu(self, preds, target, ref_metric, metric_class, metric_functional, sk_fn, metric_args):
+        """Test dtype support of the metric on CPU."""
         if metric_class == MeanSquaredLogError:
             # MeanSquaredLogError half + cpu does not work due to missing support in torch.log
             pytest.xfail("MeanSquaredLogError metric does not support cpu + half precision")
@@ -226,6 +229,7 @@ class TestMeanError(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_mean_error_half_gpu(self, preds, target, ref_metric, metric_class, metric_functional, sk_fn, metric_args):
+        """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(preds, target, metric_class, metric_functional)
 
 

@@ -83,6 +83,7 @@ class TestCosineSimilarity(MetricTester):
 
     @pytest.mark.parametrize("ddp", [True, False])
     def test_cosine_similarity(self, reduction, preds, target, ref_metric, ddp):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
             preds,
