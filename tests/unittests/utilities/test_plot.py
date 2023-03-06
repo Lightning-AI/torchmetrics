@@ -34,11 +34,18 @@ from torchmetrics.audio.pit import PermutationInvariantTraining
 from torchmetrics.classification import (
     BinaryAccuracy,
     BinaryAUROC,
+    BinaryAveragePrecision,
+    BinaryCalibrationError,
+    BinaryCohenKappa,
     BinaryConfusionMatrix,
     BinaryROC,
     MulticlassAccuracy,
     MulticlassAUROC,
+    MulticlassAveragePrecision,
+    MulticlassCalibrationError,
+    MulticlassCohenKappa,
     MulticlassConfusionMatrix,
+    MultilabelAveragePrecision,
     MultilabelConfusionMatrix,
 )
 from torchmetrics.detection import PanopticQuality
@@ -60,6 +67,7 @@ _rand_input = lambda: torch.rand(10)
 _binary_randint_input = lambda: torch.randint(2, (10,))
 _multiclass_randint_input = lambda: torch.randint(3, (10,))
 _multiclass_randn_input = lambda: torch.randn(10, 3).softmax(dim=-1)
+_multilabel_rand_input = lambda: torch.rand(10, 3)
 _multilabel_randint_input = lambda: torch.randint(2, (10, 3))
 _audio_input = lambda: torch.randn(8000)
 _image_input = lambda: torch.rand([8, 3, 16, 16])
@@ -203,6 +211,38 @@ _nominal_input = lambda: torch.randint(0, 4, (100,))
             _panoptic_input,
             _panoptic_input,
             id="panoptic quality",
+        ),
+        pytest.param(BinaryAveragePrecision, _rand_input, _binary_randint_input, id="binary average precision"),
+        pytest.param(
+            partial(BinaryCalibrationError, n_bins=2, norm="l1"),
+            _rand_input,
+            _binary_randint_input,
+            id="binary calibration error",
+        ),
+        pytest.param(BinaryCohenKappa, _rand_input, _binary_randint_input, id="binary cohen kappa"),
+        pytest.param(
+            partial(MulticlassAveragePrecision, num_classes=3),
+            _multiclass_randn_input,
+            _multiclass_randint_input,
+            id="multiclass average precision",
+        ),
+        pytest.param(
+            partial(MulticlassCalibrationError, num_classes=3, n_bins=3, norm="l1"),
+            _multiclass_randn_input,
+            _multiclass_randint_input,
+            id="multiclass calibration error",
+        ),
+        pytest.param(
+            partial(MulticlassCohenKappa, num_classes=3),
+            _multiclass_randn_input,
+            _multiclass_randint_input,
+            id="multiclass cohen kappa",
+        ),
+        pytest.param(
+            partial(MultilabelAveragePrecision, num_labels=3),
+            _multilabel_rand_input,
+            _multilabel_randint_input,
+            id="multilabel average precision",
         ),
     ],
 )
