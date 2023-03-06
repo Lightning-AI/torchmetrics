@@ -79,6 +79,7 @@ class TestErrorRelativeGlobalDimensionlessSynthesis(MetricTester):
 
     @pytest.mark.parametrize("ddp", [True, False])
     def test_ergas(self, reduction, preds, target, ratio, ddp):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
             preds,
@@ -89,6 +90,7 @@ class TestErrorRelativeGlobalDimensionlessSynthesis(MetricTester):
         )
 
     def test_ergas_functional(self, reduction, preds, target, ratio):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             target,
@@ -100,6 +102,7 @@ class TestErrorRelativeGlobalDimensionlessSynthesis(MetricTester):
     # ERGAS half + cpu does not work due to missing support in torch.log
     @pytest.mark.xfail(reason="ERGAS metric does not support cpu + half precision")
     def test_ergas_half_cpu(self, reduction, preds, target, ratio):
+        """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(
             preds,
             target,
@@ -109,6 +112,7 @@ class TestErrorRelativeGlobalDimensionlessSynthesis(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_ergas_half_gpu(self, reduction, preds, target, ratio):
+        """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(
             preds, target, ErrorRelativeGlobalDimensionlessSynthesis, error_relative_global_dimensionless_synthesis
         )

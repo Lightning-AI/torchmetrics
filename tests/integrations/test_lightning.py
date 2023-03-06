@@ -29,6 +29,7 @@ class DiffMetric(SumMetric):
     """DiffMetric inheritted from `SumMetric` by overidding its `update` method."""
 
     def update(self, value):
+        """Update state."""
         super().update(-value)
 
 

@@ -56,6 +56,7 @@ class TestMinkowskiDistance(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_minkowski_distance_class(self, preds, target, ref_metric, p, ddp, dist_sync_on_step):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -67,6 +68,7 @@ class TestMinkowskiDistance(MetricTester):
         )
 
     def test_minkowski_distance_functional(self, preds, target, ref_metric, p):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds=preds,
             target=target,
@@ -79,10 +81,12 @@ class TestMinkowskiDistance(MetricTester):
         not _TORCH_GREATER_EQUAL_1_9, reason="minkowski half + cpu not supported for older versions of pytorch"
     )
     def test_minkowski_distance_half_cpu(self, preds, target, ref_metric, p):
+        """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(preds, target, MinkowskiDistance, minkowski_distance, metric_args={"p": p})
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_minkowski_distance_half_gpu(self, preds, target, ref_metric, p):
+        """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(preds, target, MinkowskiDistance, minkowski_distance, metric_args={"p": p})
 
 

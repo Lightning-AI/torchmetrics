@@ -52,6 +52,7 @@ class TestTER(TextTester):
 
     @pytest.mark.parametrize("ddp", [False, True])
     def test_chrf_score_class(self, ddp, preds, targets, normalize, no_punctuation, asian_support, lowercase):
+        """Test class implementation of metric."""
         metric_args = {
             "normalize": normalize,
             "no_punctuation": no_punctuation,
@@ -76,6 +77,7 @@ class TestTER(TextTester):
         )
 
     def test_ter_score_functional(self, preds, targets, normalize, no_punctuation, asian_support, lowercase):
+        """Test functional implementation of metric."""
         metric_args = {
             "normalize": normalize,
             "no_punctuation": no_punctuation,
@@ -99,6 +101,7 @@ class TestTER(TextTester):
         )
 
     def test_chrf_score_differentiability(self, preds, targets, normalize, no_punctuation, asian_support, lowercase):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         metric_args = {
             "normalize": normalize,
             "no_punctuation": no_punctuation,

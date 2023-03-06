@@ -16,7 +16,7 @@ seed_all(42)
 
 
 class TestingMinMaxMetric(MinMaxMetric):
-    """wrap metric to fit testing framework."""
+    """Wrap metric to fit testing framework."""
 
     def compute(self):
         """Instead of returning dict, return as list."""
@@ -24,6 +24,7 @@ class TestingMinMaxMetric(MinMaxMetric):
         return [output_dict["raw"], output_dict["min"], output_dict["max"]]
 
     def forward(self, *args, **kwargs):
+        """Compute output for batch."""
         self.update(*args, **kwargs)
         return self.compute()
 
@@ -56,6 +57,7 @@ class TestMinMaxWrapper(MetricTester):
     atol = 1e-6
 
     def test_minmax_wrapper(self, preds, target, base_metric):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp=False,
             preds=preds,
