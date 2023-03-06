@@ -205,9 +205,9 @@ def _prepocess_inputs(
 def _calculate_iou(
     pred_color: _Color,
     target_color: _Color,
-    pred_areas: Dict[_Color, float],
-    target_areas: Dict[_Color, float],
-    intersection_areas: Dict[Tuple[_Color, _Color], float],
+    pred_areas: Dict[_Color, Tensor],
+    target_areas: Dict[_Color, Tensor],
+    intersection_areas: Dict[Tuple[_Color, _Color], Tensor],
     void_color: _Color,
 ) -> Tensor:
     """Helper function that calculates the IoU from precomputed areas of segments and their intersections.
@@ -242,9 +242,9 @@ def _calculate_iou(
 
 
 def _filter_false_negatives(
-    target_areas: Dict[_Color, float],
+    target_areas: Dict[_Color, Tensor],
     target_segment_matched: Set[_Color],
-    intersection_areas: Dict[Tuple[_Color, _Color], float],
+    intersection_areas: Dict[Tuple[_Color, _Color], Tensor],
     void_color: Tuple[int, int],
 ) -> Iterator[int]:
     """Filter false negative segments and yield their category IDs.
@@ -270,9 +270,9 @@ def _filter_false_negatives(
 
 
 def _filter_false_positives(
-    pred_areas: Dict[_Color, float],
+    pred_areas: Dict[_Color, Tensor],
     pred_segment_matched: Set[_Color],
-    intersection_areas: Dict[Tuple[_Color, _Color], float],
+    intersection_areas: Dict[Tuple[_Color, _Color], Tensor],
     void_color: Tuple[int, int],
 ) -> Iterator[int]:
     """Filter false positive segments and yield their category IDs.
