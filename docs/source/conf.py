@@ -404,6 +404,7 @@ doctest_global_setup = """
 import os
 import torch
 
+from torch import Tensor
 from torchmetrics import Metric
 
 """
