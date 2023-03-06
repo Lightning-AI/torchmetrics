@@ -66,7 +66,7 @@ class PanopticQuality(Metric):
 
     Example:ty
             >>> from torch import tensor
-            >>> from torchmetrics import PanopticQuali
+            >>> from torchmetrics import PanopticQuality
             >>> preds = tensor([[[[6, 0], [0, 0], [6, 0], [6, 0]],
             ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
             ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
