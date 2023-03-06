@@ -91,6 +91,7 @@ class TestBinaryConfusionMatrix(MetricTester):
         )
 
     def test_binary_confusion_matrix_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -187,6 +188,7 @@ class TestMulticlassConfusionMatrix(MetricTester):
         )
 
     def test_multiclass_confusion_matrix_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -299,6 +301,7 @@ class TestMultilabelConfusionMatrix(MetricTester):
         )
 
     def test_multilabel_confusion_matrix_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,

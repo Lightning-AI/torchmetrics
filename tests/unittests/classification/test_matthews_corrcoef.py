@@ -87,6 +87,7 @@ class TestBinaryMatthewsCorrCoef(MetricTester):
         )
 
     def test_binary_matthews_corrcoef_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -174,6 +175,7 @@ class TestMulticlassMatthewsCorrCoef(MetricTester):
         )
 
     def test_multiclass_matthews_corrcoef_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -259,6 +261,7 @@ class TestMultilabelMatthewsCorrCoef(MetricTester):
         )
 
     def test_multilabel_matthews_corrcoef_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,

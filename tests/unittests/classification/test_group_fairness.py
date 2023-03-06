@@ -259,8 +259,8 @@ class TestBinaryFairness(BinaryFairnessTester):
             fragment_kwargs=True,
         )
 
-    # @mock.patch("unittests.helpers.testers._assert_requires_grad", _assert_requires_grad)
     def test_binary_fairness_differentiability(self, inputs):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target, groups = inputs
         self.run_differentiability_test(
             preds=preds,

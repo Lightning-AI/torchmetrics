@@ -149,6 +149,7 @@ class TestCramersV(MetricTester):
         )
 
     def test_cramers_v_differentiability(self, preds, target, bias_correction, nan_strategy, nan_replace_value):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         metric_args = {
             "bias_correction": bias_correction,
             "nan_strategy": nan_strategy,

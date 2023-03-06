@@ -126,6 +126,7 @@ class TestBinarySpecificityAtSensitivity(MetricTester):
         )
 
     def test_binary_specificity_at_sensitivity_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -247,6 +248,7 @@ class TestMulticlassSpecificityAtSensitivity(MetricTester):
         )
 
     def test_multiclass_specificity_at_sensitivity_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -367,6 +369,7 @@ class TestMultilabelSpecificityAtSensitivity(MetricTester):
         )
 
     def test_multiclass_specificity_at_sensitivity_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,

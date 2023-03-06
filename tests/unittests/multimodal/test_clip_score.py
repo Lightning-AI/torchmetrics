@@ -89,6 +89,7 @@ class TestCLIPScore(MetricTester):
 
     @skip_on_connection_issues()
     def test_clip_score_differentiability(self, input, model_name_or_path):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,

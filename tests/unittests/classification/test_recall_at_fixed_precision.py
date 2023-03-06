@@ -107,6 +107,7 @@ class TestBinaryRecallAtFixedPrecision(MetricTester):
         )
 
     def test_binary_recall_at_fixed_precision_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -224,6 +225,7 @@ class TestMulticlassRecallAtFixedPrecision(MetricTester):
         )
 
     def test_multiclass_recall_at_fixed_precision_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -336,6 +338,7 @@ class TestMultilabelRecallAtFixedPrecision(MetricTester):
         )
 
     def test_multiclass_recall_at_fixed_precision_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,

@@ -83,6 +83,7 @@ class TestBinaryAUROC(MetricTester):
         )
 
     def test_binary_auroc_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -187,6 +188,7 @@ class TestMulticlassAUROC(MetricTester):
         )
 
     def test_multiclass_auroc_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -309,6 +311,7 @@ class TestMultilabelAUROC(MetricTester):
         )
 
     def test_multiclass_auroc_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,

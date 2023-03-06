@@ -87,6 +87,7 @@ class TestBinaryAveragePrecision(MetricTester):
         )
 
     def test_binary_average_precision_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -202,6 +203,7 @@ class TestMulticlassAveragePrecision(MetricTester):
         )
 
     def test_multiclass_average_precision_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -314,6 +316,7 @@ class TestMultilabelAveragePrecision(MetricTester):
         )
 
     def test_multiclass_average_precision_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,

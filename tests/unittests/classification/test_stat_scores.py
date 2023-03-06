@@ -112,6 +112,7 @@ class TestBinaryStatScores(MetricTester):
         )
 
     def test_binary_stat_scores_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -272,6 +273,7 @@ class TestMulticlassStatScores(MetricTester):
         )
 
     def test_multiclass_stat_scores_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -469,6 +471,7 @@ class TestMultilabelStatScores(MetricTester):
         )
 
     def test_multilabel_stat_scores_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
