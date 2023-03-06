@@ -158,6 +158,7 @@ def test_compare_fid(tmpdir, equal_size, feature=768):
 
 @pytest.mark.parametrize("reset_real_features", [True, False])
 def test_reset_real_features_arg(reset_real_features):
+    """Test that `reset_real_features` argument works as expected."""
     metric = FrechetInceptionDistance(feature=64, reset_real_features=reset_real_features)
 
     metric.update(torch.randint(0, 180, (2, 3, 299, 299), dtype=torch.uint8), real=True)

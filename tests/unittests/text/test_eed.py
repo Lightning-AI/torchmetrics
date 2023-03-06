@@ -23,10 +23,11 @@ from unittests.text.helpers import TextTester
 from unittests.text.inputs import _inputs_single_reference, _inputs_single_sentence_multiple_references
 
 
-def rwth_manual_metric(preds, targets) -> Tensor:
-    """The results were obtained w.r.t.
+def _rwth_manual_metric(preds, targets) -> Tensor:
+    """Baseline implementation of metric.
 
-    the examples defined in `tests.text.inputs` with the script from https://github.com/rwth-i6/ExtendedEditDistance.
+    The results were obtained w.r.t. the examples defined in `tests.text.inputs` with the script from
+    https://github.com/rwth-i6/ExtendedEditDistance.
     """
     ans_1 = tensor(0.24248056001808083)
     ans_2 = tensor(0.19152276295133436)
@@ -51,7 +52,7 @@ class TestExtendedEditDistance(TextTester):
 
     @pytest.mark.parametrize("ddp", [False, True])
     def test_eed_class(self, preds, targets, ddp):
-        rwth_metric = partial(rwth_manual_metric)
+        rwth_metric = partial(_rwth_manual_metric)
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -61,7 +62,7 @@ class TestExtendedEditDistance(TextTester):
         )
 
     def test_eed_functional(self, preds, targets):
-        rwth_metric = partial(rwth_manual_metric)
+        rwth_metric = partial(_rwth_manual_metric)
         self.run_functional_metric_test(
             preds,
             targets,
@@ -80,12 +81,14 @@ class TestExtendedEditDistance(TextTester):
 
 # test blank edge cases
 def test_eed_empty_functional():
+    """Test that eed returns 0 when no input is provided."""
     hyp = []
     ref = [[]]
     assert extended_edit_distance(hyp, ref) == tensor(0.0)
 
 
 def test_eed_empty_class():
+    """Test that eed returns 0 when no input is provided."""
     eed_metric = ExtendedEditDistance()
     hyp = []
     ref = [[]]
@@ -93,12 +96,14 @@ def test_eed_empty_class():
 
 
 def test_eed_empty_with_non_empty_hyp_functional():
+    """Test that eed returns 0 when no reference is provided."""
     hyp = ["python"]
     ref = [[]]
     assert extended_edit_distance(hyp, ref) == tensor(0.0)
 
 
 def test_eed_empty_with_non_empty_hyp_class():
+    """Test that eed returns 0 when no reference is provided."""
     eed_metric = ExtendedEditDistance()
     hyp = ["python"]
     ref = [[]]
@@ -106,6 +111,7 @@ def test_eed_empty_with_non_empty_hyp_class():
 
 
 def test_eed_return_sentence_level_score_functional():
+    """Test that eed can return sentence level scores."""
     hyp = _inputs_single_sentence_multiple_references.preds
     ref = _inputs_single_sentence_multiple_references.targets
     _, sentence_eed = extended_edit_distance(hyp, ref, return_sentence_level_score=True)
@@ -113,6 +119,7 @@ def test_eed_return_sentence_level_score_functional():
 
 
 def test_eed_return_sentence_level_class():
+    """Test that eed can return sentence level scores."""
     metric = ExtendedEditDistance(return_sentence_level_score=True)
     hyp = _inputs_single_sentence_multiple_references.preds
     ref = _inputs_single_sentence_multiple_references.targets

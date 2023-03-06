@@ -46,7 +46,7 @@ def _baseline_ergas(
     ratio: Union[int, float] = 4,
     reduction: str = "elementwise_mean",
 ) -> Tensor:
-    """Reference implementation of Erreur Relative Globale Adimensionnelle de Synthèse."""
+    """Baseline implementation of Erreur Relative Globale Adimensionnelle de Synthèse."""
     reduction_options = ("elementwise_mean", "sum", "none")
     if reduction not in reduction_options:
         raise ValueError(f"reduction has to be one of {reduction_options}, got: {reduction}.")
@@ -122,13 +122,14 @@ def test_error_on_different_shape(metric_class=ErrorRelativeGlobalDimensionlessS
 
 
 def test_error_on_invalid_shape(metric_class=ErrorRelativeGlobalDimensionlessSynthesis):
-    """Check that error is raised when input is not 4D"""
+    """Check that error is raised when input is not 4D."""
     metric = metric_class()
     with pytest.raises(ValueError, match="Expected `preds` and `target` to have BxCxHxW shape.*"):
         metric(torch.randn([3, 16, 16]), torch.randn([3, 16, 16]))
 
 
 def test_error_on_invalid_type(metric_class=ErrorRelativeGlobalDimensionlessSynthesis):
+    """Test that error is raised if preds and target have different dtype."""
     metric = metric_class()
     with pytest.raises(TypeError, match="Expected `preds` and `target` to have the same data type.*"):
         metric(torch.randn([3, 16, 16]), torch.randn([3, 16, 16], dtype=torch.float64))

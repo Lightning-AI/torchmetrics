@@ -115,12 +115,14 @@ class TestDevianceScore(MetricTester):
 
 
 def test_error_on_different_shape(metric_class=TweedieDevianceScore):
+    """Test that error is raised on different shapes of input."""
     metric = metric_class()
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(100), torch.randn(50))
 
 
 def test_error_on_invalid_inputs(metric_class=TweedieDevianceScore):
+    """Test that error is raised on wrong argument combinations."""
     with pytest.raises(ValueError, match="Deviance Score is not defined for power=0.5."):
         metric_class(power=0.5)
 

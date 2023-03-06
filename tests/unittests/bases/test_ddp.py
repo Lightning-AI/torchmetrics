@@ -98,6 +98,7 @@ def _test_ddp_compositional_tensor(rank: int, worldsize: int = NUM_PROCESSES) ->
     ],
 )
 def test_ddp(process):
+    """Test ddp functions."""
     pytest.pool.map(process, range(NUM_PROCESSES))
 
 

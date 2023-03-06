@@ -43,6 +43,7 @@ _input_logits = Input(
 
 @pytest.fixture()
 def tschuprows_matrix_input():
+    """Define input in matrix format for the metric."""
     return torch.cat(
         [
             torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES * BATCH_SIZE, 1), dtype=torch.float),
@@ -122,6 +123,7 @@ class TestTschuprowsT(MetricTester):
     torch.cuda.is_available(), reason="Tests fail on CUDA with the most up-to-date available pandas"
 )
 def test_tschuprows_t_matrix(tschuprows_matrix_input):
+    """Test matrix version of metric works as expected."""
     tm_score = tschuprows_t_matrix(tschuprows_matrix_input, bias_correction=False)
     reference_score = _pd_tschuprows_t_matrix(tschuprows_matrix_input)
     assert torch.allclose(tm_score, reference_score)
