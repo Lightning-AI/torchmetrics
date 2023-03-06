@@ -333,7 +333,6 @@ def test_top_k_multiclass(k, preds, target, average, expected):
     )
 
 
-@pytest.mark.parametrize("shape", [(10, 3), (10, 3, 5)])
 def test_top_k_ignore_index_multiclass():
     """Test that top_k argument works together with ignore_index."""
     preds_without = torch.randn(10, 3).softmax(dim=-1)

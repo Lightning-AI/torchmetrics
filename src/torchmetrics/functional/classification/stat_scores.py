@@ -375,8 +375,7 @@ def _multiclass_stat_scores_update(
             if 0 <= ignore_index <= num_classes - 1:
                 target_oh[target == ignore_index, :] = -1
             else:
-                if top_k == 0:
-                    preds_oh = preds_oh[..., :-1]
+                preds_oh = preds_oh[..., :-1] if top_k == 1 else preds_oh
                 target_oh = target_oh[..., :-1]
                 target_oh[target == num_classes, :] = -1
         sum_dim = [0, 1] if multidim_average == "global" else [1]
