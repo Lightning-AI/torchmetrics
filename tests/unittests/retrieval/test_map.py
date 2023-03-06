@@ -36,7 +36,7 @@ seed_all(42)
 
 
 def _average_precision_at_k(target: np.ndarray, preds: np.ndarray, top_k: Optional[int] = None):
-    """Wrapper around reference metric to account for top_k argument."""
+    """Wrap reference metric to account for top_k argument."""
     assert target.shape == preds.shape
     assert len(target.shape) == 1
     top_k = top_k or len(preds)

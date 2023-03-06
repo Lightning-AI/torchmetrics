@@ -32,6 +32,8 @@ class DiffMetric(SumMetric):
 
 
 def test_metric_lightning(tmpdir):
+    """Test that including a metric inside a lightning module calculates a simple sum correctly."""
+
     class TestModel(BoringModel):
         def __init__(self):
             super().__init__()
