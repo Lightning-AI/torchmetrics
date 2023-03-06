@@ -137,6 +137,7 @@ class TestInfoLM(TextTester):
 
     @skip_on_connection_issues()
     def test_infolm_functional(self, preds, targets, information_measure, idf, alpha, beta):
+        """Test functional implementation of metric."""
         metric_args = {
             "model_name_or_path": MODEL_NAME,
             "information_measure": information_measure,

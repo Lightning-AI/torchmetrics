@@ -102,6 +102,7 @@ class TestKendallRankCorrCoef(MetricTester):
         )
 
     def test_kendall_rank_corrcoef_functional(self, preds, target, alternative, variant):
+        """Test functional implementation of metric."""
         t_test = bool(alternative is not None)
         alternative = _adjust_alternative_to_scipy(alternative)
         metric_args = {"t_test": t_test, "alternative": alternative, "variant": variant}

@@ -102,6 +102,7 @@ class TestTschuprowsT(MetricTester):
         )
 
     def test_tschuprows_t_functional(self, preds, target):
+        """Test functional implementation of metric."""
         metric_args = {"bias_correction": False}
         self.run_functional_metric_test(
             preds, target, metric_functional=tschuprows_t, reference_metric=_pd_tschuprows_t, metric_args=metric_args

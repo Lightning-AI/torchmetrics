@@ -185,6 +185,7 @@ class TestMeanError(MetricTester):
     def test_mean_error_functional(
         self, preds, target, ref_metric, metric_class, metric_functional, sk_fn, metric_args
     ):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds=preds,
             target=target,

@@ -66,6 +66,7 @@ class TestBLEUScore(TextTester):
         )
 
     def test_bleu_score_functional(self, preds, targets, weights, n_gram, smooth_func, smooth):
+        """Test functional implementation of metric."""
         metric_args = {"n_gram": n_gram, "smooth": smooth}
         compute_bleu_metric_nltk = partial(_compute_bleu_metric_nltk, weights=weights, smoothing_function=smooth_func)
 

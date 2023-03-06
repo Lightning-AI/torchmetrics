@@ -93,6 +93,7 @@ class TestCosineSimilarity(MetricTester):
         )
 
     def test_cosine_similarity_functional(self, reduction, preds, target, ref_metric):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             target,

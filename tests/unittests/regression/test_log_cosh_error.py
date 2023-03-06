@@ -74,6 +74,7 @@ class TestLogCoshError(MetricTester):
         )
 
     def test_log_cosh_error_functional(self, preds, target):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds=preds,
             target=target,

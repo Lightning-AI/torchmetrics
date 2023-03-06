@@ -40,6 +40,7 @@ class TestMatchErrorRate(TextTester):
         )
 
     def test_mer_functional(self, preds, targets):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             targets,

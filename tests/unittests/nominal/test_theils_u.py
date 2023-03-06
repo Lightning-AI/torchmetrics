@@ -127,6 +127,7 @@ class TestTheilsU(MetricTester):
         )
 
     def test_theils_u_functional(self, preds, target, nan_strategy, nan_replace_value):
+        """Test functional implementation of metric."""
         metric_args = {
             "nan_strategy": nan_strategy,
             "nan_replace_value": nan_replace_value,

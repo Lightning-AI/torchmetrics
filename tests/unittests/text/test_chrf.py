@@ -72,6 +72,7 @@ class TestCHRFScore(TextTester):
         )
 
     def test_chrf_score_functional(self, preds, targets, char_order, word_order, lowercase, whitespace):
+        """Test functional implementation of metric."""
         metric_args = {
             "n_char_order": char_order,
             "n_word_order": word_order,

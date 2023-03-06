@@ -62,6 +62,7 @@ class TestExtendedEditDistance(TextTester):
         )
 
     def test_eed_functional(self, preds, targets):
+        """Test functional implementation of metric."""
         rwth_metric = partial(_rwth_manual_metric)
         self.run_functional_metric_test(
             preds,

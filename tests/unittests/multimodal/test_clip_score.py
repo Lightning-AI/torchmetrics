@@ -77,6 +77,7 @@ class TestCLIPScore(MetricTester):
 
     @skip_on_connection_issues()
     def test_clip_score_functional(self, input, model_name_or_path):
+        """Test functional implementation of metric."""
         preds, target = input
         self.run_functional_metric_test(
             preds=preds,

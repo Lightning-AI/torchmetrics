@@ -105,6 +105,7 @@ class TestPearsonsContingencyCoefficient(MetricTester):
         )
 
     def test_pearsons_t_functional(self, preds, target):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds, target, metric_functional=pearsons_contingency_coefficient, reference_metric=_pd_pearsons_t
         )

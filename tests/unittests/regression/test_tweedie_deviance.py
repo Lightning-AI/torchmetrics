@@ -76,6 +76,7 @@ class TestDevianceScore(MetricTester):
         )
 
     def test_deviance_scores_functional(self, preds, targets, power):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             targets,

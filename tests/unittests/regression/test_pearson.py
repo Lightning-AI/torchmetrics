@@ -84,6 +84,7 @@ class TestPearsonCorrCoef(MetricTester):
         )
 
     def test_pearson_corrcoef_functional(self, preds, target):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds=preds, target=target, metric_functional=pearson_corrcoef, reference_metric=_scipy_pearson
         )

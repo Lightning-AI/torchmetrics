@@ -105,6 +105,7 @@ class TestSpearmanCorrCoef(MetricTester):
         )
 
     def test_spearman_corrcoef_functional(self, preds, target):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(preds, target, spearman_corrcoef, _scipy_spearman)
 
     def test_spearman_corrcoef_differentiability(self, preds, target):

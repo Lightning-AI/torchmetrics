@@ -94,6 +94,7 @@ class TestConcordanceCorrCoef(MetricTester):
         )
 
     def test_concordance_corrcoef_functional(self, preds, target):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(preds, target, concordance_corrcoef, _scipy_concordance)
 
     def test_concordance_corrcoef_differentiability(self, preds, target):

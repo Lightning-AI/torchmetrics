@@ -151,6 +151,7 @@ class TestRPrecision(RetrievalMetricTester):
 
     @pytest.mark.parametrize(**_errors_test_functional_metric_parameters_default)
     def test_arguments_functional_metric(self, preds: Tensor, target: Tensor, message: str, metric_args: dict):
+        """Test functional implementation of metric."""
         self.run_functional_metric_arguments_test(
             preds=preds,
             target=target,

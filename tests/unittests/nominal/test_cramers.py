@@ -132,6 +132,7 @@ class TestCramersV(MetricTester):
         )
 
     def test_cramers_v_functional(self, preds, target, bias_correction, nan_strategy, nan_replace_value):
+        """Test functional implementation of metric."""
         metric_args = {
             "bias_correction": bias_correction,
             "nan_strategy": nan_strategy,

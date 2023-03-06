@@ -76,6 +76,7 @@ class TestExplainedVariance(MetricTester):
         )
 
     def test_explained_variance_functional(self, multioutput, preds, target, ref_metric):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             target,

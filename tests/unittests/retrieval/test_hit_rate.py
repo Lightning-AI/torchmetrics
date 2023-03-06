@@ -163,6 +163,7 @@ class TestHitRate(RetrievalMetricTester):
         )
     )
     def test_arguments_functional_metric(self, preds: Tensor, target: Tensor, message: str, metric_args: dict):
+        """Test functional implementation of metric."""
         self.run_functional_metric_arguments_test(
             preds=preds,
             target=target,

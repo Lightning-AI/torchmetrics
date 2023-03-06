@@ -75,6 +75,7 @@ class TestKLDivergence(MetricTester):
         )
 
     def test_kldivergence_functional(self, reduction, p, q, log_prob):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             p,
             q,

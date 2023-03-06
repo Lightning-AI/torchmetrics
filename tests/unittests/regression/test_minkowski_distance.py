@@ -67,6 +67,7 @@ class TestMinkowskiDistance(MetricTester):
         )
 
     def test_minkowski_distance_functional(self, preds, target, ref_metric, p):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds=preds,
             target=target,
