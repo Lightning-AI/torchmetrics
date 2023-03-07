@@ -357,7 +357,7 @@ def _panoptic_quality_update_sample(
 
     for cat_id in _filter_false_positives(pred_areas, pred_segment_matched, intersection_areas, void_color):
         continuous_id = cat_id_to_continuous_id[cat_id]
-        false_negatives[continuous_id] += 1
+        false_positives[continuous_id] += 1
 
     return iou_sum, true_positives, false_positives, false_negatives
 
