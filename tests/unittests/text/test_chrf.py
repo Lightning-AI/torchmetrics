@@ -14,7 +14,7 @@ if _SACREBLEU_AVAILABLE:
     from sacrebleu.metrics import CHRF
 
 
-def sacrebleu_chrf_fn(
+def _sacrebleu_chrf_fn(
     preds: Sequence[str],
     targets: Sequence[Sequence[str]],
     char_order: int,
@@ -48,11 +48,11 @@ def sacrebleu_chrf_fn(
 )
 @pytest.mark.skipif(not _SACREBLEU_AVAILABLE, reason="test requires sacrebleu")
 class TestCHRFScore(TextTester):
+    """Test class for `CHRFScore` metric."""
+
     @pytest.mark.parametrize("ddp", [False, True])
-    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_chrf_score_class(
-        self, ddp, dist_sync_on_step, preds, targets, char_order, word_order, lowercase, whitespace
-    ):
+    def test_chrf_score_class(self, ddp, preds, targets, char_order, word_order, lowercase, whitespace):
+        """Test class implementation of metric."""
         metric_args = {
             "n_char_order": char_order,
             "n_word_order": word_order,
@@ -60,7 +60,7 @@ class TestCHRFScore(TextTester):
             "whitespace": whitespace,
         }
         nltk_metric = partial(
-            sacrebleu_chrf_fn, char_order=char_order, word_order=word_order, lowercase=lowercase, whitespace=whitespace
+            _sacrebleu_chrf_fn, char_order=char_order, word_order=word_order, lowercase=lowercase, whitespace=whitespace
         )
 
         self.run_class_metric_test(
@@ -68,12 +68,12 @@ class TestCHRFScore(TextTester):
             preds=preds,
             targets=targets,
             metric_class=CHRFScore,
-            sk_metric=nltk_metric,
-            dist_sync_on_step=dist_sync_on_step,
+            reference_metric=nltk_metric,
             metric_args=metric_args,
         )
 
     def test_chrf_score_functional(self, preds, targets, char_order, word_order, lowercase, whitespace):
+        """Test functional implementation of metric."""
         metric_args = {
             "n_char_order": char_order,
             "n_word_order": word_order,
@@ -81,18 +81,19 @@ class TestCHRFScore(TextTester):
             "whitespace": whitespace,
         }
         nltk_metric = partial(
-            sacrebleu_chrf_fn, char_order=char_order, word_order=word_order, lowercase=lowercase, whitespace=whitespace
+            _sacrebleu_chrf_fn, char_order=char_order, word_order=word_order, lowercase=lowercase, whitespace=whitespace
         )
 
         self.run_functional_metric_test(
             preds,
             targets,
             metric_functional=chrf_score,
-            sk_metric=nltk_metric,
+            reference_metric=nltk_metric,
             metric_args=metric_args,
         )
 
     def test_chrf_score_differentiability(self, preds, targets, char_order, word_order, lowercase, whitespace):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         metric_args = {
             "n_char_order": char_order,
             "n_word_order": word_order,
@@ -110,12 +111,14 @@ class TestCHRFScore(TextTester):
 
 
 def test_chrf_empty_functional():
+    """Test that eed returns 0 when no input is provided."""
     preds = []
     targets = [[]]
     assert chrf_score(preds, targets) == tensor(0.0)
 
 
 def test_chrf_empty_class():
+    """Test that eed returns 0 when no input is provided."""
     chrf = CHRFScore()
     preds = []
     targets = [[]]
@@ -123,6 +126,7 @@ def test_chrf_empty_class():
 
 
 def test_chrf_return_sentence_level_score_functional():
+    """Test that chrf can return sentence level scores."""
     preds = _inputs_single_sentence_multiple_references.preds
     targets = _inputs_single_sentence_multiple_references.targets
     _, chrf_sentence_score = chrf_score(preds, targets, return_sentence_level_score=True)
@@ -130,6 +134,7 @@ def test_chrf_return_sentence_level_score_functional():
 
 
 def test_chrf_return_sentence_level_class():
+    """Test that chrf can return sentence level scores."""
     chrf = CHRFScore(return_sentence_level_score=True)
     preds = _inputs_single_sentence_multiple_references.preds
     targets = _inputs_single_sentence_multiple_references.targets

@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
 from torchmetrics.image.d_lambda import SpectralDistortionIndex  # noqa: F401
 from torchmetrics.image.ergas import ErrorRelativeGlobalDimensionlessSynthesis  # noqa: F401
 from torchmetrics.image.psnr import PeakSignalNoiseRatio  # noqa: F401
+from torchmetrics.image.rase import RelativeAverageSpectralError  # noqa: F401
+from torchmetrics.image.rmse_sw import RootMeanSquaredErrorUsingSlidingWindow  # noqa: F401
 from torchmetrics.image.sam import SpectralAngleMapper  # noqa: F401
 from torchmetrics.image.ssim import (  # noqa: F401
     MultiScaleStructuralSimilarityIndexMeasure,

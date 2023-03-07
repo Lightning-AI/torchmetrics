@@ -24,7 +24,7 @@ ______________________________________________________________________
 ![Conda](https://img.shields.io/conda/dn/conda-forge/torchmetrics)
 [![license](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/Lightning-AI/metrics/blob/master/LICENSE)
 
-[![CI testing - complete](https://github.com/Lightning-AI/metrics/actions/workflows/ci_test-full.yml/badge.svg?event=push)](https://github.com/Lightning-AI/metrics/actions/workflows/ci_test-full.yml)
+[![CI testing - complete](https://github.com/Lightning-AI/metrics/actions/workflows/ci-tests-full.yml/badge.svg?event=push)](https://github.com/Lightning-AI/metrics/actions/workflows/ci-tests-full.yml)
 [![Build Status](https://dev.azure.com/Lightning-AI/Metrics/_apis/build/status/Lightning-AI.metrics?branchName=master)](https://dev.azure.com/Lightning-AI/Metrics/_build/latest?definitionId=3&branchName=master)
 [![codecov](https://codecov.io/gh/Lightning-AI/metrics/branch/master/graph/badge.svg?token=NER6LPI3HS)](https://codecov.io/gh/Lightning-AI/metrics)
 
@@ -184,7 +184,6 @@ def metric_ddp(rank, world_size):
     n_epochs = 5
     # this shows iteration over multiple training epochs
     for n in range(n_epochs):
-
         # this will be replaced by a DataLoader with a DistributedSampler
         n_batches = 10
         for i in range(n_batches):
@@ -290,7 +289,7 @@ The lightning + TorchMetrics team is hard at work adding even more metrics.
 But we're looking for incredible contributors like you to submit new metrics
 and improve existing ones!
 
-Join our [Slack](https://www.pytorchlightning.ai/community) to get help become a contributor!
+Join our [Slack](https://www.pytorchlightning.ai/community) to get help with becoming a contributor!
 
 ## Community
 

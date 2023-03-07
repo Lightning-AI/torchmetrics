@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,8 +21,10 @@ from torch import Tensor
 
 from torchmetrics.functional.regression.tweedie_deviance import tweedie_deviance_score
 from torchmetrics.regression.tweedie_deviance import TweedieDevianceScore
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_9
+from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -44,7 +46,7 @@ _multi_target_inputs = Input(
 )
 
 
-def _sk_deviance(preds: Tensor, targets: Tensor, power: float):
+def _sklearn_deviance(preds: Tensor, targets: Tensor, power: float):
     sk_preds = preds.view(-1).numpy()
     sk_target = targets.view(-1).numpy()
     return mean_tweedie_deviance(sk_target, sk_preds, power=power)
@@ -60,36 +62,41 @@ def _sk_deviance(preds: Tensor, targets: Tensor, power: float):
     ],
 )
 class TestDevianceScore(MetricTester):
+    """Test class for `TweedieDevianceScore` metric."""
+
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_deviance_scores_class(self, ddp, dist_sync_on_step, preds, targets, power):
+    def test_deviance_scores_class(self, ddp, preds, targets, power):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
             preds,
             targets,
             TweedieDevianceScore,
-            partial(_sk_deviance, power=power),
-            dist_sync_on_step,
-            metric_args=dict(power=power),
+            partial(_sklearn_deviance, power=power),
+            metric_args={"power": power},
         )
 
     def test_deviance_scores_functional(self, preds, targets, power):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             targets,
             tweedie_deviance_score,
-            partial(_sk_deviance, power=power),
-            metric_args=dict(power=power),
+            partial(_sklearn_deviance, power=power),
+            metric_args={"power": power},
         )
 
-    def test_pearson_corrcoef_differentiability(self, preds, targets, power):
+    def test_deviance_scores_differentiability(self, preds, targets, power):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         self.run_differentiability_test(
             preds, targets, metric_module=TweedieDevianceScore, metric_functional=tweedie_deviance_score
         )
 
-    # Tweedie Deviance Score half + cpu does not work due to missing support in torch.log
-    @pytest.mark.xfail(reason="TweedieDevianceScore metric does not support cpu + half precision")
-    def test_pearson_corrcoef_half_cpu(self, preds, targets, power):
+    # Tweedie Deviance Score half + cpu does not work for power=[1,2] due to missing support in torch.log
+    def test_deviance_scores_half_cpu(self, preds, targets, power):
+        """Test dtype support of the metric on CPU."""
+        if not _TORCH_GREATER_EQUAL_1_9 or power in [1, 2]:
+            pytest.xfail(reason="TweedieDevianceScore metric does not support cpu + half precision for older Pytorch")
         metric_args = {"power": power}
         self.run_precision_test_cpu(
             preds,
@@ -100,7 +107,8 @@ class TestDevianceScore(MetricTester):
         )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-    def test_pearson_corrcoef_half_gpu(self, preds, targets, power):
+    def test_deviance_scores_half_gpu(self, preds, targets, power):
+        """Test dtype support of the metric on GPU."""
         metric_args = {"power": power}
         self.run_precision_test_gpu(
             preds,
@@ -112,12 +120,14 @@ class TestDevianceScore(MetricTester):
 
 
 def test_error_on_different_shape(metric_class=TweedieDevianceScore):
+    """Test that error is raised on different shapes of input."""
     metric = metric_class()
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(100), torch.randn(50))
 
 
 def test_error_on_invalid_inputs(metric_class=TweedieDevianceScore):
+    """Test that error is raised on wrong argument combinations."""
     with pytest.raises(ValueError, match="Deviance Score is not defined for power=0.5."):
         metric_class(power=0.5)
 

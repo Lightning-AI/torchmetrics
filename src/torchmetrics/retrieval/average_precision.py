@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,27 +11,34 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torch import Tensor, tensor
+from typing import Any, Optional
+
+from torch import Tensor
 
 from torchmetrics.functional.retrieval.average_precision import retrieval_average_precision
 from torchmetrics.retrieval.base import RetrievalMetric
 
 
 class RetrievalMAP(RetrievalMetric):
-    """Computes `Mean Average Precision`_.
+    """Compute `Mean Average Precision`_.
 
     Works with binary target data. Accepts float predictions from a model output.
 
-    Forward accepts
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (float tensor): ``(N, ...)``
-    - ``target`` (long or bool tensor): ``(N, ...)``
-    - ``indexes`` (long tensor): ``(N, ...)``
+    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, ...)``
+    - ``target`` (:class:`~torch.Tensor`): A long or bool tensor of shape ``(N, ...)``
+    - ``indexes`` (:class:`~torch.Tensor`): A long tensor of shape ``(N, ...)`` which indicate to which query a
+      prediction belongs
 
-    ``indexes``, ``preds`` and ``target`` must have the same dimension.
-    ``indexes`` indicate to which query a prediction belongs.
-    Predictions will be first grouped by ``indexes`` and then `MAP` will be computed as the mean
-    of the `Average Precisions` over each query.
+    As output to ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``rmap`` (:class:`~torch.Tensor`): A tensor with the mean average precision of the predictions ``preds``
+      w.r.t. the labels ``target``
+
+    All ``indexes``, ``preds`` and ``target`` must have the same dimension and will be flatten at the beginning,
+    so that for example, a tensor of shape ``(N, M)`` is treated as ``(N * M, )``. Predictions will be first grouped by
+    ``indexes`` and then will be computed as the mean of the metric over each query.
 
     Args:
         empty_target_action:
@@ -44,6 +51,7 @@ class RetrievalMAP(RetrievalMetric):
 
         ignore_index:
             Ignore predictions where the target is equal to this number.
+        top_k: consider only the top k elements for each query (default: ``None``, which considers them all)
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -51,8 +59,11 @@ class RetrievalMAP(RetrievalMetric):
             If ``empty_target_action`` is not one of ``error``, ``skip``, ``neg`` or ``pos``.
         ValueError:
             If ``ignore_index`` is not `None` or an integer.
+        ValueError:
+            If ``top_k`` is not ``None`` or an integer larger than 0.
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics import RetrievalMAP
         >>> indexes = tensor([0, 0, 0, 1, 1, 1, 1])
         >>> preds = tensor([0.2, 0.3, 0.5, 0.1, 0.3, 0.5, 0.2])
@@ -66,5 +77,22 @@ class RetrievalMAP(RetrievalMetric):
     higher_is_better: bool = True
     full_state_update: bool = False
 
+    def __init__(
+        self,
+        empty_target_action: str = "neg",
+        ignore_index: Optional[int] = None,
+        top_k: Optional[int] = None,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(
+            empty_target_action=empty_target_action,
+            ignore_index=ignore_index,
+            **kwargs,
+        )
+
+        if top_k is not None and not isinstance(top_k, int) and top_k <= 0:
+            raise ValueError(f"Argument ``top_k`` has to be a positive integer or None, but got {top_k}")
+        self.k = top_k
+
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
-        return retrieval_average_precision(preds, target)
+        return retrieval_average_precision(preds, target, top_k=self.k)

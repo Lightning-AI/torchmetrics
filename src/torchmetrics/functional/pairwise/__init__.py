@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,3 +15,4 @@ from torchmetrics.functional.pairwise.cosine import pairwise_cosine_similarity  
 from torchmetrics.functional.pairwise.euclidean import pairwise_euclidean_distance  # noqa: F401
 from torchmetrics.functional.pairwise.linear import pairwise_linear_similarity  # noqa: F401
 from torchmetrics.functional.pairwise.manhattan import pairwise_manhattan_distance  # noqa: F401
+from torchmetrics.functional.pairwise.minkowski import pairwise_minkowski_distance  # noqa: F401

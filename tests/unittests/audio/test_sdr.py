@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ inputs_2spk = Input(
 )
 
 
-def sdr_original_batch(preds: Tensor, target: Tensor, compute_permutation: bool = False) -> Tensor:
+def _sdr_original_batch(preds: Tensor, target: Tensor, compute_permutation: bool = False) -> Tensor:
     # shape: preds [BATCH_SIZE, spk, Time] , target [BATCH_SIZE, spk, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, spk, Time] , target [NUM_BATCHES*BATCH_SIZE, spk, Time]
     target = target.detach().cpu().numpy()
@@ -55,20 +55,20 @@ def sdr_original_batch(preds: Tensor, target: Tensor, compute_permutation: bool 
     return torch.tensor(mss)
 
 
-def average_metric(preds: Tensor, target: Tensor, metric_func: Callable) -> Tensor:
+def _average_metric(preds: Tensor, target: Tensor, metric_func: Callable) -> Tensor:
     # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
     return metric_func(preds, target).mean()
 
 
-original_impl_compute_permutation = partial(sdr_original_batch)
+original_impl_compute_permutation = partial(_sdr_original_batch)
 
 
 @pytest.mark.skipif(  # TODO: figure out why tests leads to cuda errors on latest torch
     _TORCH_GREATER_EQUAL_1_11 and torch.cuda.is_available(), reason="tests leads to cuda errors on latest torch"
 )
 @pytest.mark.parametrize(
-    "preds, target, sk_metric",
+    "preds, target, ref_metric",
     [
         (inputs_1spk.preds, inputs_1spk.target, original_impl_compute_permutation),
         # (inputs_1spk.preds, inputs_1spk.target, original_impl_no_compute_permutation, False),
@@ -77,31 +77,34 @@ original_impl_compute_permutation = partial(sdr_original_batch)
     ],
 )
 class TestSDR(MetricTester):
+    """Test class for `SingalDistortionRatio` metric."""
+
     atol = 1e-2
 
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_sdr(self, preds, target, sk_metric, ddp, dist_sync_on_step):
+    def test_sdr(self, preds, target, ref_metric, ddp):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
             preds,
             target,
             SignalDistortionRatio,
-            sk_metric=partial(average_metric, metric_func=sk_metric),
-            dist_sync_on_step=dist_sync_on_step,
+            reference_metric=partial(_average_metric, metric_func=ref_metric),
             metric_args={},
         )
 
-    def test_sdr_functional(self, preds, target, sk_metric):
+    def test_sdr_functional(self, preds, target, ref_metric):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             target,
             signal_distortion_ratio,
-            sk_metric,
+            ref_metric,
             metric_args={},
         )
 
-    def test_sdr_differentiability(self, preds, target, sk_metric):
+    def test_sdr_differentiability(self, preds, target, ref_metric):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -109,7 +112,8 @@ class TestSDR(MetricTester):
             metric_args={},
         )
 
-    def test_sdr_half_cpu(self, preds, target, sk_metric):
+    def test_sdr_half_cpu(self, preds, target, ref_metric):
+        """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(
             preds=preds,
             target=target,
@@ -119,7 +123,8 @@ class TestSDR(MetricTester):
         )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-    def test_sdr_half_gpu(self, preds, target, sk_metric):
+    def test_sdr_half_gpu(self, preds, target, ref_metric):
+        """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
@@ -130,14 +135,16 @@ class TestSDR(MetricTester):
 
 
 def test_error_on_different_shape(metric_class=SignalDistortionRatio):
+    """Test that error is raised on different shapes of input."""
     metric = metric_class()
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(100), torch.randn(50))
 
 
 def test_on_real_audio():
-    rate, ref = wavfile.read(_SAMPLE_AUDIO_SPEECH)
-    rate, deg = wavfile.read(_SAMPLE_AUDIO_SPEECH_BAB_DB)
+    """Test that metric works on real audio signal."""
+    _, ref = wavfile.read(_SAMPLE_AUDIO_SPEECH)
+    _, deg = wavfile.read(_SAMPLE_AUDIO_SPEECH_BAB_DB)
     assert torch.allclose(
         signal_distortion_ratio(torch.from_numpy(deg), torch.from_numpy(ref)).float(),
         torch.tensor(0.2211),

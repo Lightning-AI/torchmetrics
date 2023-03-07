@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,8 +24,9 @@ from torchmetrics.utilities.prints import rank_zero_warn
 
 
 class MetricTracker(ModuleList):
-    """A wrapper class that can help keeping track of a metric or metric collection over time and implement useful
-    methods. The wrapper implements the standard ``.update()``, ``.compute()``, ``.reset()`` methods that just
+    """A wrapper class that can help keeping track of a metric or metric collection over time.
+
+    The wrapper implements the standard ``.update()``, ``.compute()``, ``.reset()`` methods that just
     calls corresponding method of the currently tracked metric. However, the following additional methods are
     provided:
 
@@ -103,6 +104,8 @@ class MetricTracker(ModuleList):
             raise ValueError("Argument `maximize` should either be a single bool or list of bool")
         if isinstance(maximize, list) and isinstance(metric, MetricCollection) and len(maximize) != len(metric):
             raise ValueError("The len of argument `maximize` should match the length of the metric collection")
+        if isinstance(metric, Metric) and not isinstance(maximize, bool):
+            raise ValueError("Argument `maximize` should be a single bool when `metric` is a single Metric")
         self.maximize = maximize
 
         self._increment_called = False
@@ -113,17 +116,17 @@ class MetricTracker(ModuleList):
         return len(self) - 1  # subtract the base metric
 
     def increment(self) -> None:
-        """Creates a new instance of the input metric that will be updated next."""
+        """Create a new instance of the input metric that will be updated next."""
         self._increment_called = True
         self.append(deepcopy(self._base_metric))
 
-    def forward(self, *args, **kwargs) -> None:  # type: ignore
-        """Calls forward of the current metric being tracked."""
+    def forward(self, *args: Any, **kwargs: Any) -> None:
+        """Call forward of the current metric being tracked."""
         self._check_for_increment("forward")
         return self[-1](*args, **kwargs)
 
-    def update(self, *args, **kwargs) -> None:  # type: ignore
-        """Updates the current metric being tracked."""
+    def update(self, *args: Any, **kwargs: Any) -> None:
+        """Update the current metric being tracked."""
         self._check_for_increment("update")
         self[-1].update(*args, **kwargs)
 
@@ -132,8 +135,17 @@ class MetricTracker(ModuleList):
         self._check_for_increment("compute")
         return self[-1].compute()
 
-    def compute_all(self) -> Tensor:
-        """Compute the metric value for all tracked metrics."""
+    def compute_all(self) -> Union[Tensor, Dict[str, Tensor]]:
+        """Compute the metric value for all tracked metrics.
+
+        Return:
+            Either a single tensor if the tracked base object is a single metric, else if a metric collection is
+            provide a dict of tensors will be returned
+
+        Raises:
+            ValueError:
+                If `self.increment` have not been called before this method is called.
+        """
         self._check_for_increment("compute_all")
         # The i!=0 accounts for the self._base_metric should be ignored
         res = [metric.compute() for i, metric in enumerate(self) if i != 0]
@@ -143,11 +155,11 @@ class MetricTracker(ModuleList):
         return torch.stack(res, dim=0)
 
     def reset(self) -> None:
-        """Resets the current metric being tracked."""
+        """Reset the current metric being tracked."""
         self[-1].reset()
 
     def reset_all(self) -> None:
-        """Resets all metrics being tracked."""
+        """Reset all metrics being tracked."""
         for metric in self:
             metric.reset()
 
@@ -156,23 +168,37 @@ class MetricTracker(ModuleList):
     ) -> Union[
         None,
         float,
-        Tuple[int, float],
+        Tuple[float, int],
         Tuple[None, None],
         Dict[str, Union[float, None]],
-        Tuple[Dict[str, Union[int, None]], Dict[str, Union[float, None]]],
+        Tuple[Dict[str, Union[float, None]], Dict[str, Union[int, None]]],
     ]:
-        """Returns the highest metric out of all tracked.
+        """Return the highest metric out of all tracked.
 
         Args:
             return_step: If ``True`` will also return the step with the highest metric value.
 
         Returns:
-            The best metric value, and optionally the time-step.
+            Either a single value or a tuple, depends on the value of ``return_step`` and the object being tracked.
+
+
+            - If a single metric is being tracked and ``return_step=False`` then a single tensor will be returned
+            - If a single metric is being tracked and ``return_step=True`` then a 2-element tuple will be returned,
+              where the first value is optimal value and second value is the corresponding optimal step
+            - If a metric collection is being tracked and ``return_step=False`` then a single dict will be returned,
+              where keys correspond to the different values of the collection and the values are the optimal metric
+              value
+            - If a metric collection is being bracked and ``return_step=True`` then a 2-element tuple will be returned
+              where each is a dict, with keys corresponding to the different values of th collection and the values
+              of the first dict being the optimal values and the values of the second dict being the optimal step
+
+            In addtion the value in all cases may be ``None`` if the underlying metric does have a proper defined way
+            of being optimal.
         """
         if isinstance(self._base_metric, Metric):
             fn = torch.max if self.maximize else torch.min
             try:
-                value, idx = fn(self.compute_all(), 0)
+                value, idx = fn(self.compute_all(), 0)  # type: ignore[arg-type]
                 if return_step:
                     return value.item(), idx.item()
                 return value.item()
@@ -191,7 +217,7 @@ class MetricTracker(ModuleList):
             res = self.compute_all()
             maximize = self.maximize if isinstance(self.maximize, list) else len(res) * [self.maximize]
             value, idx = {}, {}
-            for i, (k, v) in enumerate(res.items()):
+            for i, (k, v) in enumerate(res.items()):  # type: ignore[union-attr]
                 try:
                     fn = torch.max if maximize[i] else torch.min
                     out = fn(v, 0)
@@ -210,5 +236,6 @@ class MetricTracker(ModuleList):
             return value
 
     def _check_for_increment(self, method: str) -> None:
+        """Check that a metric that can be updated/used for computations has been intialized."""
         if not self._increment_called:
             raise ValueError(f"`{method}` cannot be called before `.increment()` has been called")

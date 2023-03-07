@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,19 +28,22 @@ seed_all(42)
 
 # add extra argument to make the metric and reference fit into the testing framework
 class TotalVariationTester(TotalVariation):
+    """Tester class for `TotalVariation` metric overriding its update method."""
+
     def update(self, img, *args):
+        """Update metric."""
         super().update(img=img)
 
 
-def total_variaion_tester(preds, target, reduction="mean"):
+def _total_variaion_tester(preds, target, reduction="mean"):
     return total_variation(preds, reduction)
 
 
-def total_variation_kornia_tester(preds, target, reduction):
+def _total_variation_kornia_tester(preds, target, reduction):
     score = kornia_total_variation(preds).sum(-1)
     if reduction == "sum":
         return score.sum()
-    elif reduction == "mean":
+    if reduction == "mean":
         return score.mean()
     return score
 
@@ -66,10 +69,11 @@ for size, channel, dtype in [
 )
 @pytest.mark.parametrize("reduction", ["sum", "mean", None])
 class TestTotalVariation(MetricTester):
+    """Test class for `TotalVariation` metric."""
+
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_total_variation(self, preds, target, reduction, ddp, dist_sync_on_step):
-        """Test modular implementation."""
+    def test_total_variation(self, preds, target, reduction, ddp):
+        """Test class implementation of metric."""
         if reduction is None and ddp:
             pytest.skip("reduction=None and ddp=True runs out of memory on CI hardware, but it does work")
         self.run_class_metric_test(
@@ -77,18 +81,17 @@ class TestTotalVariation(MetricTester):
             preds,
             target,
             TotalVariationTester,
-            partial(total_variation_kornia_tester, reduction=reduction),
-            dist_sync_on_step,
+            partial(_total_variation_kornia_tester, reduction=reduction),
             metric_args={"reduction": reduction},
         )
 
     def test_total_variation_functional(self, preds, target, reduction):
-        """Test for functional implementation."""
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             target,
-            total_variaion_tester,
-            partial(total_variation_kornia_tester, reduction=reduction),
+            _total_variaion_tester,
+            partial(_total_variation_kornia_tester, reduction=reduction),
             metric_args={"reduction": reduction},
         )
 
@@ -98,17 +101,17 @@ class TestTotalVariation(MetricTester):
             preds,
             target,
             TotalVariationTester,
-            total_variaion_tester,
+            _total_variaion_tester,
         )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_sam_half_gpu(self, preds, target, reduction):
         """Test for half precision on GPU."""
-        self.run_precision_test_gpu(preds, target, TotalVariationTester, total_variaion_tester)
+        self.run_precision_test_gpu(preds, target, TotalVariationTester, _total_variaion_tester)
 
 
 def test_correct_args():
-    """that that arguments have the right type and sizes."""
+    """That that arguments have the right type and sizes."""
     with pytest.raises(ValueError, match="Expected argument `reduction`.*"):
         _ = TotalVariation(reduction="diff")
 

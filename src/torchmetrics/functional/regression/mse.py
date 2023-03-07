@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple
+from typing import Tuple, Union
 
 import torch
 from torch import Tensor
@@ -20,9 +20,9 @@ from torchmetrics.utilities.checks import _check_same_shape
 
 
 def _mean_squared_error_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, int]:
-    """Updates and returns variables required to compute Mean Squared Error.
+    """Update and returns variables required to compute Mean Squared Error.
 
-    Checks for same shape of input tensors.
+    Check for same shape of input tensors.
 
     Args:
         preds: Predicted tensor
@@ -35,8 +35,8 @@ def _mean_squared_error_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, i
     return sum_squared_error, n_obs
 
 
-def _mean_squared_error_compute(sum_squared_error: Tensor, n_obs: int, squared: bool = True) -> Tensor:
-    """Computes Mean Squared Error.
+def _mean_squared_error_compute(sum_squared_error: Tensor, n_obs: Union[int, Tensor], squared: bool = True) -> Tensor:
+    """Compute Mean Squared Error.
 
     Args:
         sum_squared_error: Sum of square of errors over all observations
@@ -54,7 +54,7 @@ def _mean_squared_error_compute(sum_squared_error: Tensor, n_obs: int, squared: 
 
 
 def mean_squared_error(preds: Tensor, target: Tensor, squared: bool = True) -> Tensor:
-    """Computes mean squared error.
+    """Compute mean squared error.
 
     Args:
         preds: estimated labels

@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ from unittests.retrieval.helpers import (
 seed_all(42)
 
 
-def _fallout_at_k(target: np.ndarray, preds: np.ndarray, k: int = None):
+def _fallout_at_k(target: np.ndarray, preds: np.ndarray, top_k: int = None):
     """Didn't find a reliable implementation of Fall-out in Information Retrieval, so, reimplementing here.
 
     See Wikipedia for `Fall-out`_ for more information about the metric definition.
@@ -42,22 +42,23 @@ def _fallout_at_k(target: np.ndarray, preds: np.ndarray, k: int = None):
     assert target.shape == preds.shape
     assert len(target.shape) == 1  # works only with single dimension inputs
 
-    k = len(preds) if k is None else k
+    top_k = len(preds) if top_k is None else top_k
 
     target = 1 - target
     if target.sum():
         order_indexes = np.argsort(preds, axis=0)[::-1]
-        relevant = np.sum(target[order_indexes][:k])
+        relevant = np.sum(target[order_indexes][:top_k])
         return relevant * 1.0 / target.sum()
     return np.NaN
 
 
 class TestFallOut(RetrievalMetricTester):
+    """Test class for `FallOut` metric."""
+
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize("ignore_index", [None, 1])  # avoid setting 0, otherwise test with all 0 targets will fail
-    @pytest.mark.parametrize("k", [None, 1, 4, 10])
+    @pytest.mark.parametrize("k", [None, 1, 10])
     @pytest.mark.parametrize(**_default_metric_class_input_arguments)
     def test_class_metric(
         self,
@@ -65,12 +66,12 @@ class TestFallOut(RetrievalMetricTester):
         indexes: Tensor,
         preds: Tensor,
         target: Tensor,
-        dist_sync_on_step: bool,
         empty_target_action: str,
         ignore_index: int,
         k: int,
     ):
-        metric_args = dict(empty_target_action=empty_target_action, k=k, ignore_index=ignore_index)
+        """Test class implementation of metric."""
+        metric_args = {"empty_target_action": empty_target_action, "top_k": k, "ignore_index": ignore_index}
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -78,14 +79,12 @@ class TestFallOut(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_class=RetrievalFallOut,
-            sk_metric=_fallout_at_k,
-            dist_sync_on_step=dist_sync_on_step,
+            reference_metric=_fallout_at_k,
             reverse=True,
             metric_args=metric_args,
         )
 
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize("k", [None, 1, 4, 10])
     @pytest.mark.parametrize(**_default_metric_class_input_arguments_ignore_index)
@@ -95,11 +94,11 @@ class TestFallOut(RetrievalMetricTester):
         indexes: Tensor,
         preds: Tensor,
         target: Tensor,
-        dist_sync_on_step: bool,
         empty_target_action: str,
         k: int,
     ):
-        metric_args = dict(empty_target_action=empty_target_action, k=k, ignore_index=-100)
+        """Test class implementation of metric with ignore_index argument."""
+        metric_args = {"empty_target_action": empty_target_action, "top_k": k, "ignore_index": -100}
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -107,8 +106,7 @@ class TestFallOut(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_class=RetrievalFallOut,
-            sk_metric=_fallout_at_k,
-            dist_sync_on_step=dist_sync_on_step,
+            reference_metric=_fallout_at_k,
             reverse=True,
             metric_args=metric_args,
         )
@@ -116,18 +114,20 @@ class TestFallOut(RetrievalMetricTester):
     @pytest.mark.parametrize(**_default_metric_functional_input_arguments)
     @pytest.mark.parametrize("k", [None, 1, 4, 10])
     def test_functional_metric(self, preds: Tensor, target: Tensor, k: int):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds=preds,
             target=target,
             metric_functional=retrieval_fall_out,
-            sk_metric=_fallout_at_k,
+            reference_metric=_fallout_at_k,
             reverse=True,
             metric_args={},
-            k=k,
+            top_k=k,
         )
 
     @pytest.mark.parametrize(**_default_metric_class_input_arguments)
     def test_precision_cpu(self, indexes: Tensor, preds: Tensor, target: Tensor):
+        """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(
             indexes=indexes,
             preds=preds,
@@ -138,6 +138,7 @@ class TestFallOut(RetrievalMetricTester):
 
     @pytest.mark.parametrize(**_default_metric_class_input_arguments)
     def test_precision_gpu(self, indexes: Tensor, preds: Tensor, target: Tensor):
+        """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(
             indexes=indexes,
             preds=preds,
@@ -156,6 +157,7 @@ class TestFallOut(RetrievalMetricTester):
     def test_arguments_class_metric(
         self, indexes: Tensor, preds: Tensor, target: Tensor, message: str, metric_args: dict
     ):
+        """Test that specific errors are raised for incorrect input."""
         self.run_metric_class_arguments_test(
             indexes=indexes,
             preds=preds,
@@ -174,6 +176,7 @@ class TestFallOut(RetrievalMetricTester):
         )
     )
     def test_arguments_functional_metric(self, preds: Tensor, target: Tensor, message: str, metric_args: dict):
+        """Test that specific errors are raised for incorrect input."""
         self.run_functional_metric_arguments_test(
             preds=preds,
             target=target,

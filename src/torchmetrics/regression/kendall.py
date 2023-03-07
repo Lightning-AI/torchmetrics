@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class KendallRankCorrCoef(Metric):
-    r"""Computes `Kendall Rank Correlation Coefficient`_:
+    r"""Compute `Kendall Rank Correlation Coefficient`_.
 
     .. math::
         tau_a = \frac{C - D}{C + D}
@@ -49,10 +49,15 @@ class KendallRankCorrCoef(Metric):
 
     Definitions according to Definition according to `The Treatment of Ties in Ranking Problems`_.
 
-    Forward accepts
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (float tensor): Sequence of data of either shape ``(N,)`` or ``(N,d)``
-    - ``target`` (float tensor): Sequence of data of either shape ``(N,)`` or ``(N,d)``
+    - ``preds`` (:class:`~torch.Tensor`): Sequence of data in float tensor of either shape ``(N,)`` or ``(N,d)``
+    - ``target`` (:class:`~torch.Tensor`): Sequence of data in float tensor of either shape ``(N,)`` or ``(N,d)``
+
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``kendall`` (:class:`~torch.Tensor`): A tensor with the correlation tau statistic,
+      and if it is not None, the p-value of corresponding statistical test.
 
     Args:
         variant: Indication of which variant of Kendall's tau to be used
@@ -69,37 +74,34 @@ class KendallRankCorrCoef(Metric):
         ValueError: If ``t_test=True`` and ``alternative=None``
 
     Example (single output regression):
-        >>> import torch
+        >>> from torch import tensor
         >>> from torchmetrics.regression import KendallRankCorrCoef
-        >>> preds = torch.tensor([2.5, 0.0, 2, 8])
-        >>> target = torch.tensor([3, -0.5, 2, 1])
+        >>> preds = tensor([2.5, 0.0, 2, 8])
+        >>> target = tensor([3, -0.5, 2, 1])
         >>> kendall = KendallRankCorrCoef()
         >>> kendall(preds, target)
         tensor(0.3333)
 
     Example (multi output regression):
-        >>> import torch
         >>> from torchmetrics.regression import KendallRankCorrCoef
-        >>> preds = torch.tensor([[2.5, 0.0], [2, 8]])
-        >>> target = torch.tensor([[3, -0.5], [2, 1]])
+        >>> preds = tensor([[2.5, 0.0], [2, 8]])
+        >>> target = tensor([[3, -0.5], [2, 1]])
         >>> kendall = KendallRankCorrCoef(num_outputs=2)
         >>> kendall(preds, target)
         tensor([1., 1.])
 
     Example (single output regression with t-test):
-        >>> import torch
         >>> from torchmetrics.regression import KendallRankCorrCoef
-        >>> preds = torch.tensor([2.5, 0.0, 2, 8])
-        >>> target = torch.tensor([3, -0.5, 2, 1])
+        >>> preds = tensor([2.5, 0.0, 2, 8])
+        >>> target = tensor([3, -0.5, 2, 1])
         >>> kendall = KendallRankCorrCoef(t_test=True, alternative='two-sided')
         >>> kendall(preds, target)
         (tensor(0.3333), tensor(0.4969))
 
     Example (multi output regression with t-test):
-        >>> import torch
         >>> from torchmetrics.regression import KendallRankCorrCoef
-        >>> preds = torch.tensor([[2.5, 0.0], [2, 8]])
-        >>> target = torch.tensor([[3, -0.5], [2, 1]])
+        >>> preds = tensor([[2.5, 0.0], [2, 8]])
+        >>> target = tensor([[3, -0.5], [2, 1]])
         >>> kendall = KendallRankCorrCoef(t_test=True, alternative='two-sided', num_outputs=2)
         >>> kendall(preds, target)
         (tensor([1., 1.]), tensor([nan, nan]))
@@ -125,20 +127,15 @@ class KendallRankCorrCoef(Metric):
         if t_test and alternative is None:
             raise ValueError("Argument `alternative` is required if `t_test=True` but got `None`.")
 
-        self.variant = _MetricVariant.from_str(variant)
-        self.alternative = _TestAlternative.from_str(alternative) if t_test and alternative else None
+        self.variant = _MetricVariant.from_str(str(variant))
+        self.alternative = _TestAlternative.from_str(str(alternative)) if t_test else None
         self.num_outputs = num_outputs
 
         self.add_state("preds", [], dist_reduce_fx="cat")
         self.add_state("target", [], dist_reduce_fx="cat")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
-        """Update variables required to compute Kendall rank correlation coefficient.
-
-        Args:
-            preds: Sequence of data of either shape ``(N,)`` or ``(N,d)``
-            target: Sequence of data of either shape ``(N,)`` or ``(N,d)``
-        """
+        """Update variables required to compute Kendall rank correlation coefficient."""
         self.preds, self.target = _kendall_corrcoef_update(
             preds,
             target,
@@ -148,15 +145,12 @@ class KendallRankCorrCoef(Metric):
         )
 
     def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-        """Compute Kendall rank correlation coefficient, and optionally p-value of corresponding statistical test.
-
-        Return:
-            Correlation tau statistic
-            (Optional) p-value of corresponding statistical test (asymptotic)
-        """
+        """Compute Kendall rank correlation coefficient, and optionally p-value of corresponding statistical test."""
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
-        tau, p_value = _kendall_corrcoef_compute(preds, target, self.variant, self.alternative)
+        tau, p_value = _kendall_corrcoef_compute(
+            preds, target, self.variant, self.alternative  # type: ignore[arg-type]  # todo
+        )
 
         if p_value is not None:
             return tau, p_value

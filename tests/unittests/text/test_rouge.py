@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ from typing_extensions import Literal
 from torchmetrics.functional.text.rouge import rouge_score
 from torchmetrics.text.rouge import ROUGEScore
 from torchmetrics.utilities.imports import _NLTK_AVAILABLE, _ROUGE_SCORE_AVAILABLE
-from unittests.text.helpers import TextTester
+from unittests.text.helpers import TextTester, skip_on_connection_issues
 from unittests.text.inputs import Input, _inputs_multiple_references, _inputs_single_sentence_single_reference
 
 if _ROUGE_SCORE_AVAILABLE:
@@ -50,7 +50,7 @@ def _compute_rouge_score(
     metric: str,
     accumulate: Literal = ["avg", "best", None],
 ) -> Tensor:
-    """Evaluates rouge scores from rouge-score package for baseline evaluation."""
+    """Evaluate rouge scores from rouge-score package for baseline evaluation."""
     if isinstance(target, list) and all(isinstance(tgt, str) for tgt in target):
         target = [target] if isinstance(preds, str) else [[tgt] for tgt in target]
 
@@ -116,11 +116,12 @@ def _compute_rouge_score(
 )
 @pytest.mark.parametrize("accumulate", ["avg", "best"])
 class TestROUGEScore(TextTester):
+    """Test class for `ROUGEScore` metric."""
+
     @pytest.mark.parametrize("ddp", [False, True])
-    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_rouge_score_class(
-        self, ddp, dist_sync_on_step, preds, targets, pl_rouge_metric_key, use_stemmer, accumulate
-    ):
+    @skip_on_connection_issues(reason="could not download nltk relevant data")
+    def test_rouge_score_class(self, ddp, preds, targets, pl_rouge_metric_key, use_stemmer, accumulate):
+        """Test class implementation of metric."""
         metric_args = {"use_stemmer": use_stemmer, "accumulate": accumulate}
         rouge_level, metric = pl_rouge_metric_key.split("_")
         rouge_metric = partial(
@@ -131,13 +132,14 @@ class TestROUGEScore(TextTester):
             preds=preds,
             targets=targets,
             metric_class=ROUGEScore,
-            sk_metric=rouge_metric,
-            dist_sync_on_step=dist_sync_on_step,
+            reference_metric=rouge_metric,
             metric_args=metric_args,
             key=pl_rouge_metric_key,
         )
 
+    @skip_on_connection_issues(reason="could not download nltk relevant data")
     def test_rouge_score_functional(self, preds, targets, pl_rouge_metric_key, use_stemmer, accumulate):
+        """Test functional implementation of metric."""
         metric_args = {"use_stemmer": use_stemmer, "accumulate": accumulate}
 
         rouge_level, metric = pl_rouge_metric_key.split("_")
@@ -148,7 +150,7 @@ class TestROUGEScore(TextTester):
             preds,
             targets,
             metric_functional=rouge_score,
-            sk_metric=rouge_metric,
+            reference_metric=rouge_metric,
             metric_args=metric_args,
             key=pl_rouge_metric_key,
         )
@@ -166,12 +168,13 @@ def test_rouge_metric_raises_errors_and_warnings():
 
 
 def test_rouge_metric_wrong_key_value_error():
+    """Test errors are raised on wrongly provided keys."""
     key = ("rouge1", "rouge")
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Got unknown rouge key rouge. Expected to be one of"):
         ROUGEScore(rouge_keys=key)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Got unknown rouge key rouge. Expected to be one of"):
         rouge_score(
             _inputs_single_sentence_single_reference.preds,
             _inputs_single_sentence_single_reference.targets,
@@ -197,7 +200,9 @@ def test_rouge_metric_wrong_key_value_error():
         "rougeLsum_fmeasure",
     ],
 )
+@skip_on_connection_issues(reason="could not download nltk relevant data")
 def test_rouge_metric_normalizer_tokenizer(pl_rouge_metric_key):
+    """Test that rouge metric works for different rouge levels."""
     normalizer: Callable[[str], str] = lambda text: re.sub(r"[^a-z0-9]+", " ", text.lower())
     tokenizer: Callable[[str], Sequence[str]] = lambda text: re.split(r"\s+", text)
 
@@ -235,6 +240,7 @@ def test_rouge_metric_normalizer_tokenizer(pl_rouge_metric_key):
     ],
 )
 @pytest.mark.parametrize("use_stemmer", [False, True])
+@skip_on_connection_issues(reason="could not download nltk relevant data")
 def test_rouge_lsum_score(pl_rouge_metric_key, use_stemmer):
     """Specific tests to verify the correctness of Rouge-L and Rouge-LSum metric."""
     rouge_level, metric = pl_rouge_metric_key.split("_")

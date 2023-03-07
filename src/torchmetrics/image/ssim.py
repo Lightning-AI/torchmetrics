@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,10 +20,25 @@ from typing_extensions import Literal
 from torchmetrics.functional.image.ssim import _multiscale_ssim_update, _ssim_check_inputs, _ssim_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["StructuralSimilarityIndexMeasure.plot", "MultiScaleStructuralSimilarityIndexMeasure.plot"]
 
 
 class StructuralSimilarityIndexMeasure(Metric):
-    """Computes Structual Similarity Index Measure (SSIM_).
+    """Compute Structual Similarity Index Measure (SSIM_).
+
+    As input to ``forward`` and ``update`` the metric accepts the following input
+
+    - ``preds`` (:class:`~torch.Tensor`): Predictions from model
+    - ``target`` (:class:`~torch.Tensor`): Ground truth values
+
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``ssim`` (:class:`~torch.Tensor`): if ``reduction!='none'`` returns float scalar tensor with average SSIM value
+      over sample else returns tensor of shape ``(N,)`` with SSIM values per sample
 
     Args:
         preds: estimated image
@@ -49,12 +64,9 @@ class StructuralSimilarityIndexMeasure(Metric):
             Mutually exclusive with ``return_full_image``
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    Return:
-        Tensor with SSIM score
-
     Example:
-        >>> from torchmetrics import StructuralSimilarityIndexMeasure
         >>> import torch
+        >>> from torchmetrics import StructuralSimilarityIndexMeasure
         >>> preds = torch.rand([3, 3, 256, 256])
         >>> target = preds * 0.75
         >>> ssim = StructuralSimilarityIndexMeasure(data_range=1.0)
@@ -65,6 +77,8 @@ class StructuralSimilarityIndexMeasure(Metric):
     higher_is_better: bool = True
     is_differentiable: bool = True
     full_state_update: bool = False
+    plot_lower_bound = 0.0
+    plot_upper_bound = 1.0
 
     preds: List[Tensor]
     target: List[Tensor]
@@ -108,13 +122,8 @@ class StructuralSimilarityIndexMeasure(Metric):
         self.return_full_image = return_full_image
         self.return_contrast_sensitivity = return_contrast_sensitivity
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
+    def update(self, preds: Tensor, target: Tensor) -> None:
+        """Update state with predictions and targets."""
         preds, target = _ssim_check_inputs(preds, target)
         similarity_pack = _ssim_update(
             preds,
@@ -144,7 +153,7 @@ class StructuralSimilarityIndexMeasure(Metric):
             self.similarity.append(similarity)
 
     def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-        """Computes SSIM over state."""
+        """Compute SSIM over state."""
         if self.reduction == "elementwise_mean":
             similarity = self.similarity / self.total
         elif self.reduction == "sum":
@@ -158,10 +167,67 @@ class StructuralSimilarityIndexMeasure(Metric):
 
         return similarity
 
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> import torch
+            >>> from torchmetrics import StructuralSimilarityIndexMeasure
+            >>> preds = torch.rand([3, 3, 256, 256])
+            >>> target = preds * 0.75
+            >>> metric = StructuralSimilarityIndexMeasure(data_range=1.0)
+            >>> metric.update(preds, target)
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics import StructuralSimilarityIndexMeasure
+            >>> preds = torch.rand([3, 3, 256, 256])
+            >>> target = preds * 0.75
+            >>> metric = StructuralSimilarityIndexMeasure(data_range=1.0)
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(preds, target))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        return self._plot(val, ax)
+
 
 class MultiScaleStructuralSimilarityIndexMeasure(Metric):
-    """Computes `MultiScaleSSIM`_, Multi-scale Structural Similarity Index Measure, which is a generalization of
-    Structural Similarity Index Measure by incorporating image details at different resolution scores.
+    """Compute `MultiScaleSSIM`_, Multi-scale Structural Similarity Index Measure.
+
+    This metric is is a generalization of Structural Similarity Index Measure by incorporating image details at
+    different resolution scores.
+
+    As input to ``forward`` and ``update`` the metric accepts the following input
+
+    - ``preds`` (:class:`~torch.Tensor`): Predictions from model
+    - ``target`` (:class:`~torch.Tensor`): Ground truth values
+
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``msssim`` (: :class:`~torch.Tensor`): if ``reduction!='none'`` returns float scalar tensor with average MSSSIM
+      value over sample else returns tensor of shape ``(N,)`` with SSIM values per sample
 
     Args:
         gaussian_kernel: If ``True`` (default), a gaussian kernel is used, if false a uniform kernel is used
@@ -202,15 +268,13 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         >>> ms_ssim = MultiScaleStructuralSimilarityIndexMeasure(data_range=1.0)
         >>> ms_ssim(preds, target)
         tensor(0.9627)
-
-    References:
-        [1] Multi-Scale Structural Similarity For Image Quality Assessment by Zhou Wang, Eero P. Simoncelli and Alan C.
-        Bovik `MultiScaleSSIM`_
     """
 
     higher_is_better: bool = True
     is_differentiable: bool = True
     full_state_update: bool = False
+    plot_lower_bound = 0.0
+    plot_upper_bound = 1.0
 
     preds: List[Tensor]
     target: List[Tensor]
@@ -269,13 +333,8 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
             raise ValueError("Argument `normalize` to be expected either `None` or one of 'relu' or 'simple'")
         self.normalize = normalize
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model of shape ``[N, C, H, W]``
-            target: Ground truth values of shape ``[N, C, H, W]``
-        """
+    def update(self, preds: Tensor, target: Tensor) -> None:
+        """Update state with predictions and targets."""
         preds, target = _ssim_check_inputs(preds, target)
         similarity = _multiscale_ssim_update(
             preds,
@@ -298,11 +357,54 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         self.total += preds.shape[0]
 
     def compute(self) -> Tensor:
-        """Computes MS-SSIM over state."""
-
+        """Compute MS-SSIM over state."""
         if self.reduction in ("none", None):
             return dim_zero_cat(self.similarity)
-        elif self.reduction == "sum":
+        if self.reduction == "sum":
             return self.similarity
-        else:
-            return self.similarity / self.total
+        return self.similarity / self.total
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> from torchmetrics import MultiScaleStructuralSimilarityIndexMeasure
+            >>> import torch
+            >>> preds = torch.rand([3, 3, 256, 256], generator=torch.manual_seed(42))
+            >>> target = preds * 0.75
+            >>> metric = MultiScaleStructuralSimilarityIndexMeasure(data_range=1.0)
+            >>> metric.update(preds, target)
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> from torchmetrics import MultiScaleStructuralSimilarityIndexMeasure
+            >>> import torch
+            >>> preds = torch.rand([3, 3, 256, 256], generator=torch.manual_seed(42))
+            >>> target = preds * 0.75
+            >>> metric = MultiScaleStructuralSimilarityIndexMeasure(data_range=1.0)
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(preds, target))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        return self._plot(val, ax)

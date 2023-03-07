@@ -315,39 +315,58 @@ autodoc_mock_imports = MOCK_PACKAGES
 # Resolve function
 # This function is used to populate the (source) links in the API
 def linkcode_resolve(domain, info):
-    def find_source():
-        # try to find the file and line number, based on code from numpy:
-        # https://github.com/numpy/numpy/blob/master/doc/source/conf.py#L286
-        obj = sys.modules[info["module"]]
-        for part in info["fullname"].split("."):
-            obj = getattr(obj, part)
-        fname = inspect.getsourcefile(obj)
-        # https://github.com/rtfd/readthedocs.org/issues/5735
-        if any(s in fname for s in ("readthedocs", "rtfd", "checkouts")):
-            # /home/docs/checkouts/readthedocs.org/user_builds/pytorch_lightning/checkouts/
-            #  devel/pytorch_lightning/utilities/cls_experiment.py#L26-L176
-            path_top = os.path.abspath(os.path.join("..", "..", "..", ".."))
-            fname = os.path.relpath(fname, start=path_top)
-        else:
-            # Local build, imitate master
-            fname = "master/" + os.path.relpath(fname, start=os.path.abspath(".."))
-        source, lineno = inspect.getsourcelines(obj)
-        return fname, lineno, lineno + len(source) - 1
+    # try to find the file and line number, based on code from numpy:
+    # https://github.com/numpy/numpy/blob/master/doc/source/conf.py#L424
 
     if domain != "py" or not info["module"]:
         return None
+
+    obj = _get_obj(info)
+    file_name = _get_file_name(obj)
+
+    if not file_name:
+        return None
+
+    line_str = _get_line_str(obj)
+    version_str = _get_version_str()
+
+    link = f"https://github.com/{github_user}/{github_repo}/blob/{version_str}/src/torchmetrics/{file_name}{line_str}"
+    return link
+
+
+def _get_obj(info):
+    module_name = info["module"]
+    full_name = info["fullname"]
+    sub_module = sys.modules.get(module_name)
+    obj = sub_module
+    for part in full_name.split("."):
+        obj = getattr(obj, part)
+    # strip decorators, which would resolve to the source of the decorator
+    obj = inspect.unwrap(obj)
+    return obj
+
+
+def _get_file_name(obj):
     try:
-        filename = "%s#L%d-L%d" % find_source()
-    except Exception:  # todo: specify the exception
-        filename = info["module"].replace(".", "/") + ".py"
-    # import subprocess
-    # tag = subprocess.Popen(['git', 'rev-parse', 'HEAD'], stdout=subprocess.PIPE,
-    #                        universal_newlines=True).communicate()[0][:-1]
-    branch = filename.split("/")[0]
-    # do mapping from latest tags to master
-    branch = {"latest": "master", "stable": "master"}.get(branch, branch)
-    filename = "/".join([branch] + filename.split("/")[1:])
-    return f"https://github.com/{github_user}/{github_repo}/blob/{filename}"
+        file_name = inspect.getsourcefile(obj)
+        file_name = os.path.relpath(file_name, start=os.path.dirname(torchmetrics.__file__))
+    except TypeError:  # This seems to happen when obj is a property
+        file_name = None
+    return file_name
+
+
+def _get_line_str(obj):
+    source, line_number = inspect.getsourcelines(obj)
+    line_str = "#L%d-L%d" % (line_number, line_number + len(source) - 1)
+    return line_str
+
+
+def _get_version_str():
+    if any(s in torchmetrics.__version__ for s in ("dev", "rc")):
+        version_str = "master"
+    else:
+        version_str = f"v{torchmetrics.__version__}"
+    return version_str
 
 
 autosummary_generate = True
@@ -385,11 +404,14 @@ doctest_global_setup = """
 import os
 import torch
 
+from torch import Tensor
 from torchmetrics import Metric
 
 """
 coverage_skip_undoc_in_source = True
 
+# jstor and sciencedirect cannot be accessed from python, but links work fine in a local doc
 linkcheck_ignore = [
-    "https://www.jstor.org/stable/2332303"  # jstor cannot be accessed from python, but link work fine in a local doc
+    "https://www.jstor.org/stable/2332303",
+    "https://www.sciencedirect.com/science/article/pii/S0047259X08000456",
 ]

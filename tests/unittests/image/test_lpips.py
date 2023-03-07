@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,26 +16,26 @@ from functools import partial
 
 import pytest
 import torch
-from lpips import LPIPS as LPIPS_reference
+from lpips import LPIPS as LPIPS_reference  # noqa: N811
 from torch import Tensor
 
 from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
-from torchmetrics.utilities.imports import _LPIPS_AVAILABLE
+from torchmetrics.utilities.imports import _LPIPS_AVAILABLE, _TORCH_GREATER_EQUAL_1_9
 from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
 Input = namedtuple("Input", ["img1", "img2"])
 
 _inputs = Input(
-    img1=torch.rand(int(NUM_BATCHES * 0.4), int(BATCH_SIZE / 16), 3, 100, 100),
-    img2=torch.rand(int(NUM_BATCHES * 0.4), int(BATCH_SIZE / 16), 3, 100, 100),
+    img1=torch.rand(4, 2, 3, 100, 100),
+    img2=torch.rand(4, 2, 3, 100, 100),
 )
 
 
-def _compare_fn(img1: Tensor, img2: Tensor, net_type: str, normalize: bool, reduction: str = "mean") -> Tensor:
-    """comparison function for tm implementation."""
+def _compare_fn(img1: Tensor, img2: Tensor, net_type: str, normalize: bool = False, reduction: str = "mean") -> Tensor:
+    """Comparison function for tm implementation."""
     ref = LPIPS_reference(net=net_type)
     res = ref(img1, img2, normalize=normalize).detach().cpu().numpy()
     if reduction == "mean":
@@ -45,41 +45,51 @@ def _compare_fn(img1: Tensor, img2: Tensor, net_type: str, normalize: bool, redu
 
 @pytest.mark.skipif(not _LPIPS_AVAILABLE, reason="test requires that lpips is installed")
 class TestLPIPS(MetricTester):
-    atol: float = 1e-4  # TODO lowered to pass on RTX3090 and PT 1.13
+    """Test class for `LearnedPerceptualImagePatchSimilarity` metric."""
+
+    atol: float = 1e-4
 
     @pytest.mark.parametrize("net_type", ["vgg", "alex", "squeeze"])
-    @pytest.mark.parametrize("normalize", [False, True])
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_lpips(self, net_type, normalize, ddp):
-        """test modular implementation for correctness."""
+    def test_lpips(self, net_type, ddp):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp=ddp,
             preds=_inputs.img1,
             target=_inputs.img2,
             metric_class=LearnedPerceptualImagePatchSimilarity,
-            sk_metric=partial(_compare_fn, net_type=net_type, normalize=normalize),
-            dist_sync_on_step=False,
+            reference_metric=partial(_compare_fn, net_type=net_type),
             check_scriptable=False,
             check_state_dict=False,
-            metric_args={"net_type": net_type, "normalize": normalize},
+            metric_args={"net_type": net_type},
         )
 
     def test_lpips_differentiability(self):
-        """test for differentiability of LPIPS metric."""
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         self.run_differentiability_test(
             preds=_inputs.img1, target=_inputs.img2, metric_module=LearnedPerceptualImagePatchSimilarity
         )
 
-    # LPIPS half + cpu does not work due to missing support in torch.min
-    @pytest.mark.xfail(reason="LPIPS metric does not support cpu + half precision")
+    # LPIPS half + cpu does not work due to missing support in torch.min for older version of torch
     def test_lpips_half_cpu(self):
-        """test for half + cpu support."""
+        """Test for half + cpu support."""
+        if not _TORCH_GREATER_EQUAL_1_9:
+            pytest.xfail(reason="LPIPS metric does not support cpu + half precision for v1.8.1 or lower of Pytorch")
         self.run_precision_test_cpu(_inputs.img1, _inputs.img2, LearnedPerceptualImagePatchSimilarity)
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_lpips_half_gpu(self):
-        """test for half + gpu support."""
+        """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(_inputs.img1, _inputs.img2, LearnedPerceptualImagePatchSimilarity)
+
+
+@pytest.mark.parametrize("normalize", [False, True])
+def test_normalize_arg(normalize):
+    """Test that normalize argument works as expected."""
+    metric = LearnedPerceptualImagePatchSimilarity(net_type="vgg", normalize=normalize)
+    res = metric(_inputs.img1[0], _inputs.img2[1])
+    res2 = _compare_fn(_inputs.img1[0], _inputs.img2[1], net_type="vgg", normalize=normalize)
+    assert res == res2
 
 
 @pytest.mark.skipif(not _LPIPS_AVAILABLE, reason="test requires that lpips is installed")
@@ -94,7 +104,7 @@ def test_error_on_wrong_init():
 
 @pytest.mark.skipif(not _LPIPS_AVAILABLE, reason="test requires that lpips is installed")
 @pytest.mark.parametrize(
-    "inp1, inp2",
+    ("inp1", "inp2"),
     [
         (torch.rand(1, 1, 28, 28), torch.rand(1, 3, 28, 28)),  # wrong number of channels
         (torch.rand(1, 3, 28, 28), torch.rand(1, 1, 28, 28)),  # wrong number of channels
@@ -103,7 +113,7 @@ def test_error_on_wrong_init():
     ],
 )
 def test_error_on_wrong_update(inp1, inp2):
-    """test error is raised on wrong input to update method."""
+    """Test error is raised on wrong input to update method."""
     metric = LearnedPerceptualImagePatchSimilarity()
     with pytest.raises(ValueError, match="Expected both input arguments to be normalized tensors .*"):
         metric(inp1, inp2)

@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ import torch
 
 
 def seed_all(seed):
+    """Set the seed of all computational frameworks."""
     random.seed(seed)
     numpy.random.seed(seed)
     torch.manual_seed(seed)

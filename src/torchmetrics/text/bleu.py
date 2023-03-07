@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,9 +28,18 @@ from torchmetrics.functional.text.bleu import _bleu_score_compute, _bleu_score_u
 class BLEUScore(Metric):
     """Calculate `BLEU score`_ of machine translated text with one or more references.
 
+    As input to ``forward`` and ``update`` the metric accepts the following input:
+
+    - ``preds`` (:class:`~Sequence`): An iterable of machine translated corpus
+    - ``target`` (:class:`~Sequence`): An iterable of iterables of reference corpus
+
+    As output of ``forward`` and ``update`` the metric returns the following output:
+
+    - ``bleu`` (:class:`~torch.Tensor`): A tensor with the BLEU Score
+
     Args:
         n_gram: Gram value ranged from 1 to 4
-        smooth: Whether or not to apply smoothing, see [2]
+        smooth: Whether or not to apply smoothing, see `Machine Translation Evolution`_
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
         weights:
             Weights used for unigrams, bigrams, etc. to calculate BLEU score.
@@ -43,16 +52,9 @@ class BLEUScore(Metric):
         >>> from torchmetrics import BLEUScore
         >>> preds = ['the cat is on the mat']
         >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
-        >>> metric = BLEUScore()
-        >>> metric(preds, target)
+        >>> bleu = BLEUScore()
+        >>> bleu(preds, target)
         tensor(0.7598)
-
-    References:
-        [1] BLEU: a Method for Automatic Evaluation of Machine Translation by Papineni,
-        Kishore, Salim Roukos, Todd Ward, and Wei-Jing Zhu `BLEU`_
-
-        [2] Automatic Evaluation of Machine Translation Quality Using Longest Common Subsequence
-        and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och `Machine Translation Evolution`_
     """
 
     is_differentiable: bool = False
@@ -84,12 +86,7 @@ class BLEUScore(Metric):
         self.add_state("denominator", torch.zeros(self.n_gram), dist_reduce_fx="sum")
 
     def update(self, preds: Sequence[str], target: Sequence[Sequence[str]]) -> None:
-        """Compute Precision Scores.
-
-        Args:
-            preds: An iterable of machine translated corpus
-            target: An iterable of iterables of reference corpus
-        """
+        """Update state with predictions and targets."""
         self.preds_len, self.target_len = _bleu_score_update(
             preds,
             target,
@@ -102,11 +99,7 @@ class BLEUScore(Metric):
         )
 
     def compute(self) -> Tensor:
-        """Calculate BLEU score.
-
-        Return:
-            Tensor with BLEU Score
-        """
+        """Calculate BLEU score."""
         return _bleu_score_compute(
             self.preds_len, self.target_len, self.numerator, self.denominator, self.n_gram, self.weights, self.smooth
         )

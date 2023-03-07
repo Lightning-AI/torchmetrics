@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -75,8 +75,7 @@ def _compute_f1_score(predicted_answer: str, target_answer: str) -> Tensor:
         return tensor(0.0)
     precision = 1.0 * num_same / tensor(len(predicted_tokens))
     recall = 1.0 * num_same / tensor(len(target_tokens))
-    f1 = (2 * precision * recall) / (precision + recall)
-    return f1
+    return (2 * precision * recall) / (precision + recall)
 
 
 def _compute_exact_match_score(prediction: str, ground_truth: str) -> Tensor:
@@ -88,14 +87,13 @@ def _metric_max_over_ground_truths(
     metric_fn: Callable[[str, str], Tensor], prediction: str, ground_truths: List[str]
 ) -> Tensor:
     """Calculate maximum score for a predicted answer with all reference answers."""
-    return max(metric_fn(prediction, truth) for truth in ground_truths)
+    return max(metric_fn(prediction, truth) for truth in ground_truths)  # type: ignore[type-var]
 
 
 def _squad_input_check(
     preds: PREDS_TYPE, targets: TARGETS_TYPE
 ) -> Tuple[Dict[str, str], List[Dict[str, List[Dict[str, List[Dict[str, Any]]]]]]]:
     """Check for types and convert the input to necessary format to compute the input."""
-
     if isinstance(preds, Dict):
         preds = [preds]
 
@@ -103,16 +101,16 @@ def _squad_input_check(
         targets = [targets]
 
     for pred in preds:
-        keys = pred.keys()
-        if "prediction_text" not in keys or "id" not in keys:
+        pred_keys = pred.keys()
+        if "prediction_text" not in pred_keys or "id" not in pred_keys:
             raise KeyError(
                 "Expected keys in a single prediction are 'prediction_text' and 'id'."
                 "Please make sure that 'prediction_text' maps to the answer string and 'id' maps to the key string."
             )
 
     for target in targets:
-        keys = target.keys()
-        if "answers" not in keys or "id" not in keys:
+        target_keys = target.keys()
+        if "answers" not in target_keys or "id" not in target_keys:
             raise KeyError(
                 "Expected keys in a single target are 'answers' and 'id'."
                 "Please make sure that 'answers' maps to a `SQuAD` format dictionary and 'id' maps to the key string.\n"
@@ -120,7 +118,7 @@ def _squad_input_check(
                 f"{SQuAD_FORMAT}"
             )
 
-        answers: Dict[str, Union[List[str], List[int]]] = target["answers"]  # type: ignore
+        answers: Dict[str, Union[List[str], List[int]]] = target["answers"]  # type: ignore[assignment]
         if "text" not in answers.keys():
             raise KeyError(
                 "Expected keys in a 'answers' are 'text'."
@@ -130,7 +128,7 @@ def _squad_input_check(
             )
 
     preds_dict = {prediction["id"]: prediction["prediction_text"] for prediction in preds}
-    _fn_answer = lambda tgt: dict(answers=[dict(text=txt) for txt in tgt["answers"]["text"]], id=tgt["id"])
+    _fn_answer = lambda tgt: {"answers": [{"text": txt} for txt in tgt["answers"]["text"]], "id": tgt["id"]}
     targets_dict = [{"paragraphs": [{"qas": [_fn_answer(target) for target in targets]}]}]
     return preds_dict, targets_dict
 
@@ -173,7 +171,7 @@ def _squad_update(
                 if qa["id"] not in preds:
                     rank_zero_warn(f"Unanswered question {qa['id']} will receive score 0.")
                     continue
-                ground_truths = list(map(lambda x: x["text"], qa["answers"]))
+                ground_truths = [x["text"] for x in qa["answers"]]
                 pred = preds[qa["id"]]
                 exact_match += _metric_max_over_ground_truths(_compute_exact_match_score, pred, ground_truths)
                 f1 += _metric_max_over_ground_truths(_compute_f1_score, pred, ground_truths)

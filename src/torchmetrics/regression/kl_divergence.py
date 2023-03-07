@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class KLDivergence(Metric):
-    r"""Computes the `KL divergence`_:
+    r"""Compute the `KL divergence`_.
 
     .. math::
         D_{KL}(P||Q) = \sum_{x\in\mathcal{X}} P(x) \log\frac{P(x)}{Q{x}}
@@ -32,9 +32,16 @@ class KLDivergence(Metric):
     over data and :math:`Q` is often a prior or approximation of :math:`P`. It should be noted that the KL divergence
     is a non-symetrical metric i.e. :math:`D_{KL}(P||Q) \neq D_{KL}(Q||P)`.
 
+    As input to ``forward`` and ``update`` the metric accepts the following input:
+
+    - ``p`` (:class:`~torch.Tensor`): a data distribution with shape ``(N, d)``
+    - ``q`` (:class:`~torch.Tensor`): prior or approximate distribution with shape ``(N, d)``
+
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``kl_divergence`` (:class:`~torch.Tensor`): A tensor with the KL divergence
+
     Args:
-        p: data distribution with shape ``[N, d]``
-        q: prior or approximate distribution with shape ``[N, d]``
         log_prob: bool indicating if input is log-probabilities or probabilities. If given as probabilities,
             will normalize to make sure the distributes sum to 1.
         reduction:
@@ -46,7 +53,6 @@ class KLDivergence(Metric):
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-
     Raises:
         TypeError:
             If ``log_prob`` is not an ``bool``.
@@ -57,10 +63,11 @@ class KLDivergence(Metric):
         Half precision is only support on GPU for this metric
 
     Example:
-        >>> import torch
-        >>> from torchmetrics.functional import kl_divergence
-        >>> p = torch.tensor([[0.36, 0.48, 0.16]])
-        >>> q = torch.tensor([[1/3, 1/3, 1/3]])
+        >>> from torch import tensor
+        >>> from torchmetrics import KLDivergence
+        >>> p = tensor([[0.36, 0.48, 0.16]])
+        >>> q = tensor([[1/3, 1/3, 1/3]])
+        >>> kl_divergence = KLDivergence()
         >>> kl_divergence(p, q)
         tensor(0.0853)
     """
@@ -68,6 +75,8 @@ class KLDivergence(Metric):
     higher_is_better: bool = False
     full_state_update: bool = False
     total: Tensor
+    # FIXME: Apply once minimal torch is 1.10. For torch<=1.9, jit does not support Union types
+    # measures: Union[Tensor, List[Tensor]]
 
     def __init__(
         self,
@@ -91,14 +100,20 @@ class KLDivergence(Metric):
             self.add_state("measures", [], dist_reduce_fx="cat")
         self.add_state("total", torch.tensor(0), dist_reduce_fx="sum")
 
-    def update(self, p: Tensor, q: Tensor) -> None:  # type: ignore
+    def update(self, p: Tensor, q: Tensor) -> None:
+        """Update metric states with predictions and targets."""
         measures, total = _kld_update(p, q, self.log_prob)
         if self.reduction is None or self.reduction == "none":
-            self.measures.append(measures)
+            self.measures.append(measures)  # type: ignore[operator,union-attr]
         else:
             self.measures += measures.sum()
             self.total += total
 
     def compute(self) -> Tensor:
-        measures = dim_zero_cat(self.measures) if self.reduction is None or self.reduction == "none" else self.measures
+        """Compute metric."""
+        measures: Tensor = (
+            dim_zero_cat(self.measures)  # type: ignore[arg-type]
+            if self.reduction in ["none", None]
+            else self.measures  # type: ignore[assignment]
+        )
         return _kld_compute(measures, self.total, self.reduction)

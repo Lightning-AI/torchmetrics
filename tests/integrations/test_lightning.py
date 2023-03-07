@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@ from unittest import mock
 import torch
 from pytorch_lightning import LightningModule, Trainer
 from torch import tensor
+from torch.nn import Linear
 from torch.utils.data import DataLoader
 
 from integrations.helpers import no_warning_call
@@ -25,11 +26,16 @@ from torchmetrics.classification import BinaryAccuracy, BinaryAveragePrecision
 
 
 class DiffMetric(SumMetric):
+    """DiffMetric inheritted from `SumMetric` by overidding its `update` method."""
+
     def update(self, value):
+        """Update state."""
         super().update(-value)
 
 
 def test_metric_lightning(tmpdir):
+    """Test that including a metric inside a lightning module calculates a simple sum correctly."""
+
     class TestModel(BoringModel):
         def __init__(self):
             super().__init__()
@@ -76,7 +82,7 @@ def test_metrics_reset(tmpdir):
             for stage in ["train", "val", "test"]:
                 acc = BinaryAccuracy()
                 acc.reset = mock.Mock(side_effect=acc.reset)
-                ap = BinaryAveragePrecision(num_classes=1, pos_label=1)
+                ap = BinaryAveragePrecision()
                 ap.reset = mock.Mock(side_effect=ap.reset)
                 self.add_module(f"acc_{stage}", acc)
                 self.add_module(f"ap_{stage}", ap)
@@ -300,3 +306,48 @@ def test_scriptable(tmpdir):
     output = model(rand_input)
     script_output = script_model(rand_input)
     assert torch.allclose(output, script_output)
+
+
+def test_dtype_in_pl_module_transfer(tmpdir):
+    """Test that metric states don't change dtype when .half() or .float() is called on the LightningModule."""
+
+    class BoringModel(LightningModule):
+        def __init__(self, metric_dtype=torch.float32):
+            super().__init__()
+            self.layer = Linear(32, 32)
+            self.metric = SumMetric()
+            self.metric.set_dtype(metric_dtype)
+
+        def forward(self, x):
+            return self.layer(x)
+
+        def training_step(self, batch, batch_idx):
+            pred = self.forward(batch)
+            loss = self(batch).sum()
+            self.metric.update(torch.flatten(pred), torch.flatten(batch))
+
+            return {"loss": loss}
+
+        def configure_optimizers(self):
+            return torch.optim.SGD(self.layer.parameters(), lr=0.1)
+
+    model = BoringModel()
+    assert model.metric.value.dtype == torch.float32
+    model = model.half()
+    assert model.metric.value.dtype == torch.float32
+
+    model = BoringModel()
+    assert model.metric.value.dtype == torch.float32
+    model = model.double()
+    assert model.metric.value.dtype == torch.float32
+
+    model = BoringModel(metric_dtype=torch.float16)
+    assert model.metric.value.dtype == torch.float16
+    model = model.float()
+    assert model.metric.value.dtype == torch.float16
+
+    model = BoringModel()
+    assert model.metric.value.dtype == torch.float32
+
+    model = model.type(torch.half)
+    assert model.metric.value.dtype == torch.float32

@@ -32,9 +32,9 @@ The example below shows how to use a metric in your `LightningModule <https://py
 
     class MyModel(LightningModule):
 
-        def __init__(self):
+        def __init__(self, num_classes):
             ...
-            self.accuracy = torchmetrics.Accuracy(task='multiclass')
+            self.accuracy = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
 
         def training_step(self, batch, batch_idx):
             x, y = batch
@@ -78,10 +78,10 @@ value by calling ``.compute()``.
 
     class MyModule(LightningModule):
 
-        def __init__(self):
+        def __init__(self, num_classes):
             ...
-            self.train_acc = torchmetrics.Accuracy(task='multiclass')
-            self.valid_acc = torchmetrics.Accuracy(task='multiclass')
+            self.train_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
+            self.valid_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
 
         def training_step(self, batch, batch_idx):
             x, y = batch
@@ -105,8 +105,8 @@ of the metrics.
 
         def __init__(self):
             ...
-            self.train_acc = torchmetrics.Accuracy(task='multiclass')
-            self.valid_acc = torchmetrics.Accuracy(task='multiclass')
+            self.train_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
+            self.valid_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
 
         def training_step(self, batch, batch_idx):
             x, y = batch
@@ -141,9 +141,9 @@ mixed as it can lead to wrong results.
 
         class MyModule(LightningModule):
 
-            def __init__(self):
+            def __init__(self, num_classes):
                 ...
-                self.valid_acc = torchmetrics.Accuracy(task='multiclass')
+                self.valid_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
 
             def validation_step(self, batch, batch_idx):
                 logits = self(x)
@@ -185,9 +185,9 @@ The following contains a list of pitfalls to be aware of:
 
     class MyModule(LightningModule):
 
-        def __init__(self):
+        def __init__(self, num_classes):
             ...
-            self.val_acc = nn.ModuleList([torchmetrics.Accuracy(task='multiclass') for _ in range(2)])
+            self.val_acc = nn.ModuleList([torchmetrics.Accuracy(task="multiclass", num_classes=num_classes) for _ in range(2)])
 
         def val_dataloader(self):
             return [DataLoader(...), DataLoader(...)]
@@ -217,3 +217,8 @@ The following contains a list of pitfalls to be aware of:
         # log step metric
         self.accuracy(preds, y)  # compute metrics
         self.log('train_acc_step', self.accuracy)  # log metric object
+
+* Using `~torchmetrics.MetricTracker` wrapper with Lightning is a special case, because the wrapper in itself is not a metric
+  i.e. it does not inherit from the base `~torchmetrics.Metric` class but instead from `~torch.nn.ModuleList`. Thus,
+  to log the output of this metric one needs to manually log the returned values (not the object) using `self.log`
+  and for epoch level logging this should be done in the appropriate `on_***_epoch_end` method.

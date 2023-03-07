@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,13 +22,8 @@ from torch import Tensor
 from torch.multiprocessing import set_start_method
 
 from torchmetrics import Metric
+from unittests import NUM_PROCESSES
 from unittests.helpers.testers import MetricTester, _assert_allclose, _assert_requires_grad, _assert_tensor
-
-try:
-    set_start_method("spawn")
-except RuntimeError:
-    pass
-
 
 TEXT_METRIC_INPUT = Union[Sequence[str], Sequence[Sequence[str]], Sequence[Sequence[Sequence[str]]]]
 NUM_BATCHES = 2
@@ -40,7 +35,7 @@ def _class_test(
     preds: TEXT_METRIC_INPUT,
     targets: TEXT_METRIC_INPUT,
     metric_class: Metric,
-    sk_metric: Callable,
+    ref_metric: Callable,
     dist_sync_on_step: bool,
     metric_args: dict = None,
     check_dist_sync_on_step: bool = True,
@@ -52,7 +47,7 @@ def _class_test(
     key: str = None,
     **kwargs_update: Any,
 ):
-    """Utility function doing the actual comparison between class metric and reference metric.
+    """Comparison between class metric and reference metric.
 
     Args:
         rank: rank of current process
@@ -60,7 +55,7 @@ def _class_test(
         preds: Sequence of predicted tokens or predicted sentences
         targets: Sequence of target tokens or target sentences
         metric_class: metric class that should be tested
-        sk_metric: callable function that is used for comparison
+        ref_metric: callable function that is used for comparison
         dist_sync_on_step: bool, if true will synchronize metric state across
             processes at each ``forward()``
         metric_args: dict with additional arguments used for class initialization
@@ -68,10 +63,12 @@ def _class_test(
             calculated per batch per device (and not just at the end)
         check_batch: bool, if true will check if the metric is also correctly
             calculated across devices for each batch (and not just at the end)
+        atol: absolute tolerance used for comparison of results
         device: determine which device to run on, either 'cuda' or 'cpu'
         fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `targets` among processes
+        check_scriptable: bool indicating if metric should also be tested if it can be scripted
         key: The key passed onto the `_assert_allclose` to compare the respective metric from the Dict output against
-            the sk_metric.
+            the ref_metric.
         kwargs_update: Additional keyword arguments that will be passed with preds and
             targets when running update on the metric.
     """
@@ -109,7 +106,7 @@ def _class_test(
                 for k, v in (kwargs_update if fragment_kwargs else batch_kwargs_update).items()
             }
 
-            sk_batch_result = sk_metric(ddp_preds, ddp_targets, **ddp_kwargs_upd)
+            sk_batch_result = ref_metric(ddp_preds, ddp_targets, **ddp_kwargs_upd)
             _assert_allclose(batch_result, sk_batch_result, atol=atol, key=key)
 
         elif check_batch and not metric.dist_sync_on_step:
@@ -117,7 +114,7 @@ def _class_test(
                 k: v.cpu() if isinstance(v, Tensor) else v
                 for k, v in (batch_kwargs_update if fragment_kwargs else kwargs_update).items()
             }
-            sk_batch_result = sk_metric(preds[i], targets[i], **batch_kwargs_update)
+            sk_batch_result = ref_metric(preds[i], targets[i], **batch_kwargs_update)
             _assert_allclose(batch_result, sk_batch_result, atol=atol, key=key)
 
     # check that metrics are hashable
@@ -137,7 +134,7 @@ def _class_test(
         k: torch.cat([v[i] for i in range(NUM_BATCHES)]).cpu() if isinstance(v, Tensor) else v
         for k, v in kwargs_update.items()
     }
-    sk_result = sk_metric(total_preds, total_targets, **total_kwargs_update)
+    sk_result = ref_metric(total_preds, total_targets, **total_kwargs_update)
     # assert after aggregation
     _assert_allclose(result, sk_result, atol=atol, key=key)
 
@@ -146,7 +143,7 @@ def _functional_test(
     preds: TEXT_METRIC_INPUT,
     targets: TEXT_METRIC_INPUT,
     metric_functional: Callable,
-    sk_metric: Callable,
+    ref_metric: Callable,
     metric_args: dict = None,
     atol: float = 1e-8,
     device: str = "cpu",
@@ -154,18 +151,19 @@ def _functional_test(
     key: str = None,
     **kwargs_update,
 ):
-    """Utility function doing the actual comparison between functional metric and reference metric.
+    """Comparison between functional metric and reference metric.
 
     Args:
         preds: torch tensor with predictions
         targets: torch tensor with targets
         metric_functional: metric functional that should be tested
-        sk_metric: callable function that is used for comparison
+        ref_metric: callable function that is used for comparison
         metric_args: dict with additional arguments used for class initialization
+        atol: absolute tolerance used for comparison of results
         device: determine which device to run on, either 'cuda' or 'cpu'
         fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `targets` among processes
         key: The key passed onto the `_assert_allclose` to compare the respective metric from the Dict output against
-            the sk_metric.
+            the ref_metric.
         kwargs_update: Additional keyword arguments that will be passed with preds and
             targets when running update on the metric.
     """
@@ -185,7 +183,7 @@ def _functional_test(
             k: v.cpu() if isinstance(v, Tensor) else v
             for k, v in (extra_kwargs if fragment_kwargs else kwargs_update).items()
         }
-        sk_result = sk_metric(preds[i], targets[i], **extra_kwargs)
+        sk_result = ref_metric(preds[i], targets[i], **extra_kwargs)
 
         # assert its the same
         _assert_allclose(tm_result, sk_result, atol=atol, key=key)
@@ -222,11 +220,11 @@ def _assert_half_support(
 
 
 class TextTester(MetricTester):
-    """Class used for efficiently run alot of parametrized tests in ddp mode. Makes sure that ddp is only setup
-    once and that pool of processes are used for all tests.
+    """Tester class for text.
 
-    All tests for text metrics should subclass from this and implement a new method called `test_metric_name` where the
-    method `self.run_metric_test` is called inside.
+    Class used for efficiently run alot of parametrized tests in ddp mode. Makes sure that ddp is only setup once and
+    that pool of processes are used for all tests. All tests for text metrics should subclass from this and implement
+    a new method called `test_metric_name` where the method `self.run_metric_test` is called inside.
     """
 
     def run_functional_metric_test(
@@ -234,23 +232,23 @@ class TextTester(MetricTester):
         preds: TEXT_METRIC_INPUT,
         targets: TEXT_METRIC_INPUT,
         metric_functional: Callable,
-        sk_metric: Callable,
+        reference_metric: Callable,
         metric_args: dict = None,
         fragment_kwargs: bool = False,
         key: str = None,
         **kwargs_update,
     ):
-        """Main method that should be used for testing functions. Call this inside testing method.
+        """Core method that should be used for testing functions. Call this inside testing method.
 
         Args:
             preds: torch tensor with predictions
             targets: torch tensor with targets
             metric_functional: metric class that should be tested
-            sk_metric: callable function that is used for comparison
+            reference_metric: callable function that is used for comparison
             metric_args: dict with additional arguments used for class initialization
             fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `targets` among processes
             key: The key passed onto the `_assert_allclose` to compare the respective metric from the Dict output
-                against the sk_metric.
+                against the ref_metric.
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 targets when running update on the metric.
         """
@@ -260,7 +258,7 @@ class TextTester(MetricTester):
             preds=preds,
             targets=targets,
             metric_functional=metric_functional,
-            sk_metric=sk_metric,
+            ref_metric=reference_metric,
             metric_args=metric_args,
             atol=self.atol,
             device=device,
@@ -275,8 +273,8 @@ class TextTester(MetricTester):
         preds: TEXT_METRIC_INPUT,
         targets: TEXT_METRIC_INPUT,
         metric_class: Metric,
-        sk_metric: Callable,
-        dist_sync_on_step: bool,
+        reference_metric: Callable,
+        dist_sync_on_step: bool = False,
         metric_args: dict = None,
         check_dist_sync_on_step: bool = True,
         check_batch: bool = True,
@@ -285,14 +283,14 @@ class TextTester(MetricTester):
         key: str = None,
         **kwargs_update,
     ):
-        """Main method that should be used for testing class. Call this inside testing methods.
+        """Core method that should be used for testing class. Call this inside testing methods.
 
         Args:
             ddp: bool, if running in ddp mode or not
             preds: torch tensor with predictions
             targets: torch tensor with targets
             metric_class: metric class that should be tested
-            sk_metric: callable function that is used for comparison
+            reference_metric: callable function that is used for comparison
             dist_sync_on_step: bool, if true will synchronize metric state across
                 processes at each ``forward()``
             metric_args: dict with additional arguments used for class initialization
@@ -301,9 +299,9 @@ class TextTester(MetricTester):
             check_batch: bool, if true will check if the metric is also correctly
                 calculated across devices for each batch (and not just at the end)
             fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `targets` among processes
-            check_scriptable:
+            check_scriptable: bool indicating if metric should also be tested if it can be scripted
             key: The key passed onto the `_assert_allclose` to compare the respective metric from the Dict output
-                against the sk_metric.
+                against the ref_metric.
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 targets when running update on the metric.
         """
@@ -313,13 +311,13 @@ class TextTester(MetricTester):
             if sys.platform == "win32":
                 pytest.skip("DDP not supported on windows")
 
-            self.pool.starmap(
+            pytest.pool.starmap(
                 partial(
                     _class_test,
                     preds=preds,
                     targets=targets,
                     metric_class=metric_class,
-                    sk_metric=sk_metric,
+                    ref_metric=reference_metric,
                     dist_sync_on_step=dist_sync_on_step,
                     metric_args=metric_args,
                     check_dist_sync_on_step=check_dist_sync_on_step,
@@ -330,7 +328,7 @@ class TextTester(MetricTester):
                     key=key,
                     **kwargs_update,
                 ),
-                [(rank, self.poolSize) for rank in range(self.poolSize)],
+                [(rank, NUM_PROCESSES) for rank in range(NUM_PROCESSES)],
             )
         else:
             device = "cuda" if (torch.cuda.is_available() and torch.cuda.device_count() > 0) else "cpu"
@@ -341,7 +339,7 @@ class TextTester(MetricTester):
                 preds=preds,
                 targets=targets,
                 metric_class=metric_class,
-                sk_metric=sk_metric,
+                ref_metric=reference_metric,
                 dist_sync_on_step=dist_sync_on_step,
                 metric_args=metric_args,
                 check_dist_sync_on_step=check_dist_sync_on_step,
@@ -363,7 +361,8 @@ class TextTester(MetricTester):
         metric_args: dict = None,
         **kwargs_update,
     ):
-        """Test if a metric can be used with half precision tensors on cpu
+        """Test if a metric can be used with half precision tensors on cpu.
+
         Args:
             preds: torch tensor with predictions
             targets: torch tensor with targets
@@ -387,7 +386,8 @@ class TextTester(MetricTester):
         metric_args: dict = None,
         **kwargs_update,
     ):
-        """Test if a metric can be used with half precision tensors on gpu
+        """Test if a metric can be used with half precision tensors on gpu.
+
         Args:
             preds: torch tensor with predictions
             targets: torch tensor with targets
@@ -417,10 +417,10 @@ class TextTester(MetricTester):
             preds: torch tensor with predictions
             targets: torch tensor with targets
             metric_module: the metric module to test
-            metric_functional:
+            metric_functional: the functional metric version to test
             metric_args: dict with additional arguments used for class initialization
             key: The key passed onto the `_assert_allclose` to compare the respective metric from the Dict output
-                against the sk_metric.
+                against the ref_metric.
         """
         metric_args = metric_args or {}
         # only floating point tensors can require grad
@@ -436,11 +436,11 @@ class TextTester(MetricTester):
 
 
 def skip_on_connection_issues(reason: str = "Unable to load checkpoints from HuggingFace `transformers`."):
-    """Wrapper which handles HF-related tests if they fail due to connection issues.
+    """Handle download related tests if they fail due to connection issues.
 
     The tests run normally if no connection issue arises, and they're marked as skipped otherwise.
     """
-    _error_msg_starts = ["We couldn't connect to", "Connection error", "Can't load"]
+    _error_msg_starts = ["We couldn't connect to", "Connection error", "Can't load", "`nltk` resource `punkt` is"]
 
     def test_decorator(function: Callable, *args: Any, **kwargs: Any) -> Optional[Callable]:
         @wraps(function)

@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ from torchmetrics.metric import Metric
 
 
 class R2Score(Metric):
-    r"""Computes r2 score also known as `R2 Score_Coefficient Determination`_:
+    r"""Compute r2 score also known as `R2 Score_Coefficient Determination`_.
 
     .. math:: R^2 = 1 - \frac{SS_{res}}{SS_{tot}}
 
@@ -32,11 +32,20 @@ class R2Score(Metric):
     .. math:: R^2_{adj} = 1 - \frac{(1-R^2)(n-1)}{n-k-1}
 
     where the parameter :math:`k` (the number of independent regressors) should be provided as the `adjusted` argument.
+    The score is only proper defined when :math:`SS_{tot}\neq 0`, which can happen for near constant targets. In this
+    case a score of 0 is returned. By definition the score is bounded between 0 and 1, where 1 corresponds to the
+    predictions exactly matching the targets.
 
-    Forward accepts
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (float tensor): ``(N,)`` or ``(N, M)`` (multioutput)
-    - ``target`` (float tensor): ``(N,)`` or ``(N, M)`` (multioutput)
+    - ``preds`` (:class:`~torch.Tensor`): Predictions from model in float tensor with shape ``(N,)``
+      or ``(N, M)`` (multioutput)
+    - ``target`` (:class:`~torch.Tensor`): Ground truth values in float tensor with shape ``(N,)``
+      or ``(N, M)`` (multioutput)
+
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``r2score`` (:class:`~torch.Tensor`): A tensor with the r2 score(s)
 
     In the case of multioutput, as default the variances will be uniformly averaged over the additional dimensions.
     Please see argument ``multioutput`` for changing this behavior.
@@ -107,12 +116,7 @@ class R2Score(Metric):
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
+        """Update state with predictions and targets."""
         sum_squared_error, sum_error, residual, total = _r2_score_update(preds, target)
 
         self.sum_squared_error += sum_squared_error
@@ -121,7 +125,7 @@ class R2Score(Metric):
         self.total += total
 
     def compute(self) -> Tensor:
-        """Computes r2 score over the metric states."""
+        """Compute r2 score over the metric states."""
         return _r2_score_compute(
             self.sum_squared_error, self.sum_error, self.residual, self.total, self.adjusted, self.multioutput
         )

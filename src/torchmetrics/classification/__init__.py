@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -55,6 +55,7 @@ from torchmetrics.classification.f_beta import (
     MultilabelF1Score,
     MultilabelFBetaScore,
 )
+from torchmetrics.classification.group_fairness import BinaryFairness, BinaryGroupStatRates
 from torchmetrics.classification.hamming import (
     BinaryHammingDistance,
     HammingDistance,
@@ -100,6 +101,11 @@ from torchmetrics.classification.specificity import (
     MulticlassSpecificity,
     MultilabelSpecificity,
     Specificity,
+)
+from torchmetrics.classification.specificity_at_sensitivity import (
+    BinarySpecificityAtSensitivity,
+    MulticlassSpecificityAtSensitivity,
+    MultilabelSpecificityAtSensitivity,
 )
 
 __all__ = [
@@ -148,6 +154,8 @@ __all__ = [
     "MulticlassFBetaScore",
     "MultilabelF1Score",
     "MultilabelFBetaScore",
+    "BinaryFairness",
+    "BinaryGroupStatRates",
     "BinaryHammingDistance",
     "HammingDistance",
     "MulticlassHammingDistance",
@@ -188,4 +196,7 @@ __all__ = [
     "MulticlassSpecificity",
     "MultilabelSpecificity",
     "Specificity",
+    "BinarySpecificityAtSensitivity",
+    "MulticlassSpecificityAtSensitivity",
+    "MultilabelSpecificityAtSensitivity",
 ]

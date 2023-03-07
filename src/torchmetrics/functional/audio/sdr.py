@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -40,9 +40,9 @@ def _symmetric_toeplitz(vector: Tensor) -> Tensor:
         vector: shape [..., L]
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics.functional.audio.sdr import _symmetric_toeplitz
-        >>> import torch
-        >>> v = torch.tensor([0, 1, 2, 3, 4])
+        >>> v = tensor([0, 1, 2, 3, 4])
         >>> _symmetric_toeplitz(v)
         tensor([[0, 1, 2, 3, 4],
                 [1, 0, 1, 2, 3],
@@ -61,10 +61,11 @@ def _symmetric_toeplitz(vector: Tensor) -> Tensor:
 
 
 def _compute_autocorr_crosscorr(target: Tensor, preds: Tensor, corr_len: int) -> Tuple[Tensor, Tensor]:
-    r"""Compute the auto correlation of `target` and the cross correlation of `target` and `preds` using the fast
-    Fourier transform (FFT). Let's denotes the symmetric Toeplitz matric of the auto correlation of `target` as
-    `R`, the cross correlation as 'b', then solving the equation `Rh=b` could have `h` as the coordinate of `preds`
-    in the column space of the `corr_len` shifts of `target`.
+    r"""Compute the auto correlation of `target` and the cross correlation of `target` and `preds`.
+
+    This calculation is done using the fast Fourier transform (FFT). Let's denotes the symmetric Toeplitz matric of the
+    auto correlation of `target` as `R`, the cross correlation as 'b', then solving the equation `Rh=b` could have `h`
+    as the coordinate of `preds` in the column space of the `corr_len` shifts of `target`.
 
     Args:
         target: the target (reference) signal of shape [..., time]
@@ -98,8 +99,7 @@ def signal_distortion_ratio(
     zero_mean: bool = False,
     load_diag: Optional[float] = None,
 ) -> Tensor:
-    r"""Calculates Signal to Distortion Ratio (SDR) metric. See `SDR ref1`_ and `SDR ref2`_ for details on the
-    metric.
+    r"""Calculate Signal to Distortion Ratio (SDR) metric. See `SDR ref1`_ and `SDR ref2`_ for details on the metric.
 
     .. note:
         The metric currently does not seem to work with Pytorch v1.11 and specific GPU hardware.
@@ -130,8 +130,8 @@ def signal_distortion_ratio(
             If ``preds`` and ``target`` does not have the same shape
 
     Example:
-        >>> from torchmetrics.functional.audio import signal_distortion_ratio
         >>> import torch
+        >>> from torchmetrics.functional.audio import signal_distortion_ratio
         >>> g = torch.manual_seed(1)
         >>> preds = torch.randn(8000)
         >>> target = torch.randn(8000)
@@ -177,15 +177,14 @@ def signal_distortion_ratio(
         # use preconditioned conjugate gradient
         sol = toeplitz_conjugate_gradient(r_0, b, n_iter=use_cg_iter)
     else:
-        if use_cg_iter is not None:
-            if not _FAST_BSS_EVAL_AVAILABLE:
-                warnings.warn(
-                    "The `use_cg_iter` parameter of `SDR` requires that `fast-bss-eval` is installed. "
-                    "To make this this warning disappear, you could install `fast-bss-eval` using "
-                    "`pip install fast-bss-eval` or set `use_cg_iter=None`. For this time, the solver "
-                    "provided by Pytorch is used.",
-                    UserWarning,
-                )
+        if use_cg_iter is not None and not _FAST_BSS_EVAL_AVAILABLE:
+            warnings.warn(
+                "The `use_cg_iter` parameter of `SDR` requires that `fast-bss-eval` is installed. "
+                "To make this this warning disappear, you could install `fast-bss-eval` using "
+                "`pip install fast-bss-eval` or set `use_cg_iter=None`. For this time, the solver "
+                "provided by Pytorch is used.",
+                UserWarning,
+            )
         # regular matrix solver
         r = _symmetric_toeplitz(r_0)  # the auto-correlation of the L shifts of `target`
         sol = solve(r, b)
@@ -199,13 +198,13 @@ def signal_distortion_ratio(
 
     if preds_dtype == torch.float64:
         return val
-    else:
-        return val.float()
+    return val.float()
 
 
 def scale_invariant_signal_distortion_ratio(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
-    """`Scale-invariant signal-to-distortion ratio`_ (SI-SDR). The SI-SDR value is in general considered an overall
-    measure of how good a source sound.
+    """`Scale-invariant signal-to-distortion ratio`_ (SI-SDR).
+
+    The SI-SDR value is in general considered an overall measure of how good a source sound.
 
     Args:
         preds: float tensor with shape ``(...,time)``
@@ -241,6 +240,4 @@ def scale_invariant_signal_distortion_ratio(preds: Tensor, target: Tensor, zero_
     noise = target_scaled - preds
 
     val = (torch.sum(target_scaled**2, dim=-1) + eps) / (torch.sum(noise**2, dim=-1) + eps)
-    val = 10 * torch.log10(val)
-
-    return val
+    return 10 * torch.log10(val)

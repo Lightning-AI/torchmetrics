@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple
+from typing import Tuple, Union
 
 import torch
 from torch import Tensor
@@ -20,16 +20,15 @@ from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.checks import _check_same_shape
 
 
-def _r2_score_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-    """Updates and returns variables required to compute R2 score.
+def _r2_score_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor, Tensor, int]:
+    """Update and returns variables required to compute R2 score.
 
-    Checks for same shape and 1D/2D input tensors.
+    Check for same shape and 1D/2D input tensors.
 
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
     """
-
     _check_same_shape(preds, target)
     if preds.ndim > 2:
         raise ValueError(
@@ -42,7 +41,6 @@ def _r2_score_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor, Ten
     residual = target - preds
     rss = torch.sum(residual * residual, dim=0)
     n_obs = target.size(0)
-
     return sum_squared_obs, sum_obs, rss, n_obs
 
 
@@ -50,11 +48,11 @@ def _r2_score_compute(
     sum_squared_obs: Tensor,
     sum_obs: Tensor,
     rss: Tensor,
-    n_obs: Tensor,
+    n_obs: Union[int, Tensor],
     adjusted: int = 0,
     multioutput: str = "uniform_average",
 ) -> Tensor:
-    """Computes R2 score.
+    """Compute R2 score.
 
     Args:
         sum_squared_obs: Sum of square of all observations
@@ -80,7 +78,15 @@ def _r2_score_compute(
 
     mean_obs = sum_obs / n_obs
     tss = sum_squared_obs - sum_obs * mean_obs
-    raw_scores = 1 - (rss / tss)
+
+    # Account for near constant targets
+    cond_rss = ~torch.isclose(rss, torch.zeros_like(rss), atol=1e-4)
+    cond_tss = ~torch.isclose(tss, torch.zeros_like(tss), atol=1e-4)
+    cond = cond_rss & cond_tss
+
+    raw_scores = torch.ones_like(rss)
+    raw_scores[cond] = 1 - (rss[cond] / tss[cond])
+    raw_scores[cond_rss & ~cond_tss] = 0.0
 
     if multioutput == "raw_values":
         r2 = raw_scores
@@ -118,7 +124,7 @@ def r2_score(
     adjusted: int = 0,
     multioutput: str = "uniform_average",
 ) -> Tensor:
-    r"""Computes r2 score also known as `R2 Score_Coefficient Determination`_:
+    r"""Compute r2 score also known as `R2 Score_Coefficient Determination`_.
 
     .. math:: R^2 = 1 - \frac{SS_{res}}{SS_{tot}}
 

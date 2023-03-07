@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,10 +13,11 @@
 # limitations under the License.
 from typing import Any, Sequence, Union
 
-import torch
 from torch import Tensor, tensor
+from typing_extensions import Literal
 
 from torchmetrics.functional.regression.explained_variance import (
+    ALLOWED_MULTIOUTPUT,
     _explained_variance_compute,
     _explained_variance_update,
 )
@@ -24,16 +25,22 @@ from torchmetrics.metric import Metric
 
 
 class ExplainedVariance(Metric):
-    r"""Computes `explained variance`_:
+    r"""Compute `explained variance`_.
 
     .. math:: \text{ExplainedVariance} = 1 - \frac{\text{Var}(y - \hat{y})}{\text{Var}(y)}
 
     Where :math:`y` is a tensor of target values, and :math:`\hat{y}` is a tensor of predictions.
 
-    Forward accepts
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (float tensor): ``(N,)`` or ``(N, ...)`` (multioutput)
-    - ``target`` (long tensor): ``(N,)`` or ``(N, ...)`` (multioutput)
+    - ``preds`` (:class:`~torch.Tensor`): Predictions from model in float tensor
+      with shape ``(N,)`` or ``(N, ...)`` (multioutput)
+    - ``target`` (:class:`~torch.Tensor`): Ground truth values in long tensor
+      with shape ``(N,)`` or ``(N, ...)`` (multioutput)
+
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``explained_variance`` (:class:`~torch.Tensor`): A tensor with the explained variance(s)
 
     In the case of multioutput, as default the variances will be uniformly averaged over the additional dimensions.
     Please see argument ``multioutput`` for changing this behavior.
@@ -54,15 +61,16 @@ class ExplainedVariance(Metric):
             If ``multioutput`` is not one of ``"raw_values"``, ``"uniform_average"`` or ``"variance_weighted"``.
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics import ExplainedVariance
-        >>> target = torch.tensor([3, -0.5, 2, 7])
-        >>> preds = torch.tensor([2.5, 0.0, 2, 8])
+        >>> target = tensor([3, -0.5, 2, 7])
+        >>> preds = tensor([2.5, 0.0, 2, 8])
         >>> explained_variance = ExplainedVariance()
         >>> explained_variance(preds, target)
         tensor(0.9572)
 
-        >>> target = torch.tensor([[0.5, 1], [-1, 1], [7, -6]])
-        >>> preds = torch.tensor([[0, 2], [-1, 2], [8, -5]])
+        >>> target = tensor([[0.5, 1], [-1, 1], [7, -6]])
+        >>> preds = tensor([[0, 2], [-1, 2], [8, -5]])
         >>> explained_variance = ExplainedVariance(multioutput='raw_values')
         >>> explained_variance(preds, target)
         tensor([0.9677, 1.0000])
@@ -78,16 +86,16 @@ class ExplainedVariance(Metric):
 
     def __init__(
         self,
-        multioutput: str = "uniform_average",
+        multioutput: Literal["raw_values", "uniform_average", "variance_weighted"] = "uniform_average",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        allowed_multioutput = ("raw_values", "uniform_average", "variance_weighted")
-        if multioutput not in allowed_multioutput:
+
+        if multioutput not in ALLOWED_MULTIOUTPUT:
             raise ValueError(
-                f"Invalid input to argument `multioutput`. Choose one of the following: {allowed_multioutput}"
+                f"Invalid input to argument `multioutput`. Choose one of the following: {ALLOWED_MULTIOUTPUT}"
             )
-        self.multioutput: str = multioutput
+        self.multioutput = multioutput
         self.add_state("sum_error", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("sum_squared_error", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("sum_target", default=tensor(0.0), dist_reduce_fx="sum")
@@ -95,12 +103,7 @@ class ExplainedVariance(Metric):
         self.add_state("n_obs", default=tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
+        """Update state with predictions and targets."""
         n_obs, sum_error, sum_squared_error, sum_target, sum_squared_target = _explained_variance_update(preds, target)
         self.n_obs = self.n_obs + n_obs
         self.sum_error = self.sum_error + sum_error
@@ -109,7 +112,7 @@ class ExplainedVariance(Metric):
         self.sum_squared_target = self.sum_squared_target + sum_squared_target
 
     def compute(self) -> Union[Tensor, Sequence[Tensor]]:
-        """Computes explained variance over state."""
+        """Compute explained variance over state."""
         return _explained_variance_compute(
             self.n_obs,
             self.sum_error,

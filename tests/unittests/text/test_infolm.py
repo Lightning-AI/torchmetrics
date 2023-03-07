@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ MAX_LENGTH = 30  # the selected model has default max_length = 20 and we have lo
 
 
 def reference_infolm_score(preds, target, model_name, information_measure, idf, alpha, beta):
-    """Currently, a reference package is not available.
+    """Baseline implementation is currently not available.
 
     We, therefore, are enforced to relied on hard-coded results for now. The results below were generated using scripts
     in https://github.com/stancld/infolm-docker.
@@ -99,13 +99,16 @@ def reference_infolm_score(preds, target, model_name, information_measure, idf, 
 )
 @pytest.mark.skipif(not _TRANSFORMERS_AVAILABLE, reason="test requires transformers")
 class TestInfoLM(TextTester):
+    """Test class for `InfoLM` metric."""
+
     # Set atol = 1e-4 as reference results are rounded
     atol = 1e-4
 
     @pytest.mark.parametrize("ddp", [False, True])
-    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
+    @pytest.mark.timeout(240)  # download may be too slow for default timeout
     @skip_on_connection_issues()
-    def test_infolm_class(self, ddp, dist_sync_on_step, preds, targets, information_measure, idf, alpha, beta):
+    def test_infolm_class(self, ddp, preds, targets, information_measure, idf, alpha, beta):
+        """Test class implementation of metric."""
         metric_args = {
             "model_name_or_path": MODEL_NAME,
             "information_measure": information_measure,
@@ -128,14 +131,14 @@ class TestInfoLM(TextTester):
             preds=preds,
             targets=targets,
             metric_class=InfoLM,
-            sk_metric=reference_metric,
-            dist_sync_on_step=dist_sync_on_step,
+            reference_metric=reference_metric,
             metric_args=metric_args,
             check_scriptable=False,  # huggingface transformers are not usually scriptable
         )
 
     @skip_on_connection_issues()
     def test_infolm_functional(self, preds, targets, information_measure, idf, alpha, beta):
+        """Test functional implementation of metric."""
         metric_args = {
             "model_name_or_path": MODEL_NAME,
             "information_measure": information_measure,
@@ -157,12 +160,13 @@ class TestInfoLM(TextTester):
             preds,
             targets,
             metric_functional=infolm,
-            sk_metric=reference_metric,
+            reference_metric=reference_metric,
             metric_args=metric_args,
         )
 
     @skip_on_connection_issues()
     def test_infolm_differentiability(self, preds, targets, information_measure, idf, alpha, beta):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         metric_args = {
             "model_name_or_path": MODEL_NAME,
             "information_measure": information_measure,

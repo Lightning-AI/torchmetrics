@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple
+from typing import Tuple, Union
 
 import torch
 from torch import Tensor
@@ -24,9 +24,9 @@ def _mean_absolute_percentage_error_update(
     target: Tensor,
     epsilon: float = 1.17e-06,
 ) -> Tuple[Tensor, int]:
-    """Updates and returns variables required to compute Mean Percentage Error.
+    """Update and returns variables required to compute Mean Percentage Error.
 
-    Checks for same shape of input tensors.
+    Check for same shape of input tensors.
 
     Args:
         preds: Predicted tensor
@@ -34,7 +34,6 @@ def _mean_absolute_percentage_error_update(
         epsilon: Specifies the lower bound for target values. Any target value below epsilon
             is set to epsilon (avoids ``ZeroDivisionError``).
     """
-
     _check_same_shape(preds, target)
 
     abs_diff = torch.abs(preds - target)
@@ -47,8 +46,8 @@ def _mean_absolute_percentage_error_update(
     return sum_abs_per_error, num_obs
 
 
-def _mean_absolute_percentage_error_compute(sum_abs_per_error: Tensor, num_obs: int) -> Tensor:
-    """Computes Mean Absolute Percentage Error.
+def _mean_absolute_percentage_error_compute(sum_abs_per_error: Tensor, num_obs: Union[int, Tensor]) -> Tensor:
+    """Compute Mean Absolute Percentage Error.
 
     Args:
         sum_abs_per_error: Sum of absolute value of percentage errors over all observations
@@ -62,12 +61,11 @@ def _mean_absolute_percentage_error_compute(sum_abs_per_error: Tensor, num_obs: 
         >>> _mean_absolute_percentage_error_compute(sum_abs_per_error, num_obs)
         tensor(0.2667)
     """
-
     return sum_abs_per_error / num_obs
 
 
 def mean_absolute_percentage_error(preds: Tensor, target: Tensor) -> Tensor:
-    """Computes mean absolute percentage error.
+    """Compute mean absolute percentage error.
 
     Args:
         preds: estimated labels
@@ -87,6 +85,4 @@ def mean_absolute_percentage_error(preds: Tensor, target: Tensor) -> Tensor:
         tensor(0.2667)
     """
     sum_abs_per_error, num_obs = _mean_absolute_percentage_error_update(preds, target)
-    mean_ape = _mean_absolute_percentage_error_compute(sum_abs_per_error, num_obs)
-
-    return mean_ape
+    return _mean_absolute_percentage_error_compute(sum_abs_per_error, num_obs)

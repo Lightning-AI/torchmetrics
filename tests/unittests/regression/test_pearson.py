@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,9 +19,10 @@ import torch
 from scipy.stats import pearsonr
 
 from torchmetrics.functional.regression.pearson import pearson_corrcoef
-from torchmetrics.regression.pearson import PearsonCorrCoef
+from torchmetrics.regression.pearson import PearsonCorrCoef, _final_aggregation
+from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -49,11 +50,10 @@ _multi_target_inputs2 = Input(
 )
 
 
-def _sk_pearsonr(preds, target):
+def _scipy_pearson(preds, target):
     if preds.ndim == 2:
         return [pearsonr(t.numpy(), p.numpy())[0] for t, p in zip(target.T, preds.T)]
-    else:
-        return pearsonr(target.numpy(), preds.numpy())[0]
+    return pearsonr(target.numpy(), preds.numpy())[0]
 
 
 @pytest.mark.parametrize(
@@ -65,29 +65,33 @@ def _sk_pearsonr(preds, target):
         (_multi_target_inputs2.preds, _multi_target_inputs2.target),
     ],
 )
-class TestPearsonCorrcoef(MetricTester):
+class TestPearsonCorrCoef(MetricTester):
+    """Test class for `PearsonCorrCoef` metric."""
+
     atol = 1e-3
 
     @pytest.mark.parametrize("compute_on_cpu", [True, False])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_pearson_corrcoef(self, preds, target, compute_on_cpu, ddp):
+        """Test class implementation of metric."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
             target=target,
             metric_class=PearsonCorrCoef,
-            sk_metric=_sk_pearsonr,
-            dist_sync_on_step=False,
+            reference_metric=_scipy_pearson,
             metric_args={"num_outputs": num_outputs, "compute_on_cpu": compute_on_cpu},
         )
 
     def test_pearson_corrcoef_functional(self, preds, target):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
-            preds=preds, target=target, metric_functional=pearson_corrcoef, sk_metric=_sk_pearsonr
+            preds=preds, target=target, metric_functional=pearson_corrcoef, reference_metric=_scipy_pearson
         )
 
     def test_pearson_corrcoef_differentiability(self, preds, target):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_differentiability_test(
             preds=preds,
@@ -99,16 +103,19 @@ class TestPearsonCorrcoef(MetricTester):
     # Pearson half + cpu does not work due to missing support in torch.sqrt
     @pytest.mark.xfail(reason="PearsonCorrCoef metric does not support cpu + half precision")
     def test_pearson_corrcoef_half_cpu(self, preds, target):
+        """Test dtype support of the metric on CPU."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_precision_test_cpu(preds, target, partial(PearsonCorrCoef, num_outputs=num_outputs), pearson_corrcoef)
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_pearson_corrcoef_half_gpu(self, preds, target):
+        """Test dtype support of the metric on GPU."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_precision_test_gpu(preds, target, partial(PearsonCorrCoef, num_outputs=num_outputs), pearson_corrcoef)
 
 
 def test_error_on_different_shape():
+    """Test that error is raised on different shapes of input."""
     metric = PearsonCorrCoef(num_outputs=1)
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(100), torch.randn(50))
@@ -120,3 +127,12 @@ def test_error_on_different_shape():
     metric = PearsonCorrCoef(num_outputs=2)
     with pytest.raises(ValueError, match="Expected argument `num_outputs` to match the second dimension of input.*"):
         metric(torch.randn(100, 5), torch.randn(100, 5))
+
+
+@pytest.mark.parametrize("shapes", [(5,), (1, 5), (2, 5)])
+def test_final_aggregation_function(shapes):
+    """Test that final aggregation function can take various shapes of input."""
+    input_fn = lambda: torch.rand(shapes)
+    output = _final_aggregation(input_fn(), input_fn(), input_fn(), input_fn(), input_fn(), torch.randint(10, shapes))
+    assert all(isinstance(out, torch.Tensor) for out in output)
+    assert all(out.ndim == input_fn().ndim - 1 for out in output)

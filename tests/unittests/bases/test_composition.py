@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ from torchmetrics.metric import CompositionalMetric, Metric
 
 
 class DummyMetric(Metric):
+    """DummyMetric class for testing composition component."""
+
     full_state_update = True
 
     def __init__(self, val_to_return):
@@ -29,14 +31,16 @@ class DummyMetric(Metric):
         self._val_to_return = val_to_return
 
     def update(self, *args, **kwargs) -> None:
+        """Compute state."""
         self._num_updates += 1
 
     def compute(self):
+        """Compute result."""
         return tensor(self._val_to_return)
 
 
 @pytest.mark.parametrize(
-    ["second_operand", "expected_result"],
+    ("second_operand", "expected_result"),
     [
         (DummyMetric(2), tensor(4)),
         (2, tensor(4)),
@@ -45,6 +49,7 @@ class DummyMetric(Metric):
     ],
 )
 def test_metrics_add(second_operand, expected_result):
+    """Test that `add` operator works and returns a compositional metric."""
     first_metric = DummyMetric(2)
 
     final_add = first_metric + second_operand
@@ -61,10 +66,11 @@ def test_metrics_add(second_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    ["second_operand", "expected_result"],
+    ("second_operand", "expected_result"),
     [(DummyMetric(3), tensor(2)), (3, tensor(2)), (3, tensor(2)), (tensor(3), tensor(2))],
 )
 def test_metrics_and(second_operand, expected_result):
+    """Test that `and` operator works and returns a compositional metric."""
     first_metric = DummyMetric(2)
 
     final_and = first_metric & second_operand
@@ -80,7 +86,7 @@ def test_metrics_and(second_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    ["second_operand", "expected_result"],
+    ("second_operand", "expected_result"),
     [
         (DummyMetric(2), tensor(True)),
         (2, tensor(True)),
@@ -89,6 +95,7 @@ def test_metrics_and(second_operand, expected_result):
     ],
 )
 def test_metrics_eq(second_operand, expected_result):
+    """Test that `eq` operator works and returns a compositional metric."""
     first_metric = DummyMetric(2)
 
     final_eq = first_metric == second_operand
@@ -101,7 +108,7 @@ def test_metrics_eq(second_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    ["second_operand", "expected_result"],
+    ("second_operand", "expected_result"),
     [
         (DummyMetric(2), tensor(2)),
         (2, tensor(2)),
@@ -110,6 +117,7 @@ def test_metrics_eq(second_operand, expected_result):
     ],
 )
 def test_metrics_floordiv(second_operand, expected_result):
+    """Test that `floordiv` operator works and returns a compositional metric."""
     first_metric = DummyMetric(5)
 
     final_floordiv = first_metric // second_operand
@@ -121,7 +129,7 @@ def test_metrics_floordiv(second_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    ["second_operand", "expected_result"],
+    ("second_operand", "expected_result"),
     [
         (DummyMetric(2), tensor(True)),
         (2, tensor(True)),
@@ -130,6 +138,7 @@ def test_metrics_floordiv(second_operand, expected_result):
     ],
 )
 def test_metrics_ge(second_operand, expected_result):
+    """Test that `ge` operator works and returns a compositional metric."""
     first_metric = DummyMetric(5)
 
     final_ge = first_metric >= second_operand
@@ -142,7 +151,7 @@ def test_metrics_ge(second_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    ["second_operand", "expected_result"],
+    ("second_operand", "expected_result"),
     [
         (DummyMetric(2), tensor(True)),
         (2, tensor(True)),
@@ -151,6 +160,7 @@ def test_metrics_ge(second_operand, expected_result):
     ],
 )
 def test_metrics_gt(second_operand, expected_result):
+    """Test that `gt` operator works and returns a compositional metric."""
     first_metric = DummyMetric(5)
 
     final_gt = first_metric > second_operand
@@ -163,7 +173,7 @@ def test_metrics_gt(second_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    ["second_operand", "expected_result"],
+    ("second_operand", "expected_result"),
     [
         (DummyMetric(2), tensor(False)),
         (2, tensor(False)),
@@ -172,6 +182,7 @@ def test_metrics_gt(second_operand, expected_result):
     ],
 )
 def test_metrics_le(second_operand, expected_result):
+    """Test that `le` operator works and returns a compositional metric."""
     first_metric = DummyMetric(5)
 
     final_le = first_metric <= second_operand
@@ -184,7 +195,7 @@ def test_metrics_le(second_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    ["second_operand", "expected_result"],
+    ("second_operand", "expected_result"),
     [
         (DummyMetric(2), tensor(False)),
         (2, tensor(False)),
@@ -193,6 +204,7 @@ def test_metrics_le(second_operand, expected_result):
     ],
 )
 def test_metrics_lt(second_operand, expected_result):
+    """Test that `lt` operator works and returns a compositional metric."""
     first_metric = DummyMetric(5)
 
     final_lt = first_metric < second_operand
@@ -205,10 +217,11 @@ def test_metrics_lt(second_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    ["second_operand", "expected_result"],
+    ("second_operand", "expected_result"),
     [(DummyMetric([2, 2, 2]), tensor(12)), (tensor([2, 2, 2]), tensor(12))],
 )
 def test_metrics_matmul(second_operand, expected_result):
+    """Test that `matmul` operator works and returns a compositional metric."""
     first_metric = DummyMetric([2, 2, 2])
 
     final_matmul = first_metric @ second_operand
@@ -220,7 +233,7 @@ def test_metrics_matmul(second_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    ["second_operand", "expected_result"],
+    ("second_operand", "expected_result"),
     [
         (DummyMetric(2), tensor(1)),
         (2, tensor(1)),
@@ -229,6 +242,7 @@ def test_metrics_matmul(second_operand, expected_result):
     ],
 )
 def test_metrics_mod(second_operand, expected_result):
+    """Test that `mod` operator works and returns a compositional metric."""
     first_metric = DummyMetric(5)
 
     final_mod = first_metric % second_operand
@@ -241,7 +255,7 @@ def test_metrics_mod(second_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    ["second_operand", "expected_result"],
+    ("second_operand", "expected_result"),
     [
         (DummyMetric(2), tensor(4)),
         (2, tensor(4)),
@@ -250,6 +264,7 @@ def test_metrics_mod(second_operand, expected_result):
     ],
 )
 def test_metrics_mul(second_operand, expected_result):
+    """Test that `mul` operator works and returns a compositional metric."""
     first_metric = DummyMetric(2)
 
     final_mul = first_metric * second_operand
@@ -265,7 +280,7 @@ def test_metrics_mul(second_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    ["second_operand", "expected_result"],
+    ("second_operand", "expected_result"),
     [
         (DummyMetric(2), tensor(False)),
         (2, tensor(False)),
@@ -274,6 +289,7 @@ def test_metrics_mul(second_operand, expected_result):
     ],
 )
 def test_metrics_ne(second_operand, expected_result):
+    """Test that `ne` operator works and returns a compositional metric."""
     first_metric = DummyMetric(2)
 
     final_ne = first_metric != second_operand
@@ -286,10 +302,11 @@ def test_metrics_ne(second_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    ["second_operand", "expected_result"],
+    ("second_operand", "expected_result"),
     [(DummyMetric([1, 0, 3]), tensor([-1, -2, 3])), (tensor([1, 0, 3]), tensor([-1, -2, 3]))],
 )
 def test_metrics_or(second_operand, expected_result):
+    """Test that `or` operator works and returns a compositional metric."""
     first_metric = DummyMetric([-1, -2, 3])
 
     final_or = first_metric | second_operand
@@ -305,7 +322,7 @@ def test_metrics_or(second_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    ["second_operand", "expected_result"],
+    ("second_operand", "expected_result"),
     [
         (DummyMetric(2), tensor(4)),
         (2, tensor(4)),
@@ -314,6 +331,7 @@ def test_metrics_or(second_operand, expected_result):
     ],
 )
 def test_metrics_pow(second_operand, expected_result):
+    """Test that `pow` operator works and returns a compositional metric."""
     first_metric = DummyMetric(2)
 
     final_pow = first_metric**second_operand
@@ -325,10 +343,11 @@ def test_metrics_pow(second_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    ["first_operand", "expected_result"],
+    ("first_operand", "expected_result"),
     [(5, tensor(2)), (5.0, tensor(2.0)), (tensor(5), tensor(2))],
 )
 def test_metrics_rfloordiv(first_operand, expected_result):
+    """Test that `rfloordiv` operator works and returns a compositional metric."""
     second_operand = DummyMetric(2)
 
     final_rfloordiv = first_operand // second_operand
@@ -340,10 +359,11 @@ def test_metrics_rfloordiv(first_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    ["first_operand", "expected_result"],
+    ("first_operand", "expected_result"),
     [pytest.param(tensor([2, 2, 2]), tensor(12))],
 )
 def test_metrics_rmatmul(first_operand, expected_result):
+    """Test that `rmatmul` operator works and returns a compositional metric."""
     second_operand = DummyMetric([2, 2, 2])
 
     final_rmatmul = first_operand @ second_operand
@@ -355,10 +375,11 @@ def test_metrics_rmatmul(first_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    ["first_operand", "expected_result"],
+    ("first_operand", "expected_result"),
     [pytest.param(tensor(2), tensor(2))],
 )
 def test_metrics_rmod(first_operand, expected_result):
+    """Test that `rmod` operator works and returns a compositional metric."""
     second_operand = DummyMetric(5)
 
     final_rmod = first_operand % second_operand
@@ -370,7 +391,7 @@ def test_metrics_rmod(first_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    "first_operand,expected_result",
+    ("first_operand", "expected_result"),
     [
         (DummyMetric(2), tensor(4)),
         (2, tensor(4)),
@@ -378,6 +399,7 @@ def test_metrics_rmod(first_operand, expected_result):
     ],
 )
 def test_metrics_rpow(first_operand, expected_result):
+    """Test that `rpow` operator works and returns a compositional metric."""
     second_operand = DummyMetric(2)
 
     final_rpow = first_operand**second_operand
@@ -388,7 +410,7 @@ def test_metrics_rpow(first_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    ["first_operand", "expected_result"],
+    ("first_operand", "expected_result"),
     [
         (DummyMetric(3), tensor(1)),
         (3, tensor(1)),
@@ -397,6 +419,7 @@ def test_metrics_rpow(first_operand, expected_result):
     ],
 )
 def test_metrics_rsub(first_operand, expected_result):
+    """Test that `rsub` operator works and returns a compositional metric."""
     second_operand = DummyMetric(2)
 
     final_rsub = first_operand - second_operand
@@ -407,7 +430,7 @@ def test_metrics_rsub(first_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    ["first_operand", "expected_result"],
+    ("first_operand", "expected_result"),
     [
         (DummyMetric(6), tensor(2.0)),
         (6, tensor(2.0)),
@@ -416,6 +439,7 @@ def test_metrics_rsub(first_operand, expected_result):
     ],
 )
 def test_metrics_rtruediv(first_operand, expected_result):
+    """Test that `rtruediv` operator works and returns a compositional metric."""
     second_operand = DummyMetric(3)
 
     final_rtruediv = first_operand / second_operand
@@ -426,7 +450,7 @@ def test_metrics_rtruediv(first_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    ["second_operand", "expected_result"],
+    ("second_operand", "expected_result"),
     [
         (DummyMetric(2), tensor(1)),
         (2, tensor(1)),
@@ -435,6 +459,7 @@ def test_metrics_rtruediv(first_operand, expected_result):
     ],
 )
 def test_metrics_sub(second_operand, expected_result):
+    """Test that `sub` operator works and returns a compositional metric."""
     first_metric = DummyMetric(3)
 
     final_sub = first_metric - second_operand
@@ -445,7 +470,7 @@ def test_metrics_sub(second_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    ["second_operand", "expected_result"],
+    ("second_operand", "expected_result"),
     [
         (DummyMetric(3), tensor(2.0)),
         (3, tensor(2.0)),
@@ -454,6 +479,7 @@ def test_metrics_sub(second_operand, expected_result):
     ],
 )
 def test_metrics_truediv(second_operand, expected_result):
+    """Test that `truediv` operator works and returns a compositional metric."""
     first_metric = DummyMetric(6)
 
     final_truediv = first_metric / second_operand
@@ -464,10 +490,11 @@ def test_metrics_truediv(second_operand, expected_result):
 
 
 @pytest.mark.parametrize(
-    ["second_operand", "expected_result"],
+    ("second_operand", "expected_result"),
     [(DummyMetric([1, 0, 3]), tensor([-2, -2, 0])), (tensor([1, 0, 3]), tensor([-2, -2, 0]))],
 )
 def test_metrics_xor(second_operand, expected_result):
+    """Test that `xor` operator works and returns a compositional metric."""
     first_metric = DummyMetric([-1, -2, 3])
 
     final_xor = first_metric ^ second_operand
@@ -483,6 +510,7 @@ def test_metrics_xor(second_operand, expected_result):
 
 
 def test_metrics_abs():
+    """Test that `abs` operator works and returns a compositional metric."""
     first_metric = DummyMetric(-1)
 
     final_abs = abs(first_metric)
@@ -493,6 +521,7 @@ def test_metrics_abs():
 
 
 def test_metrics_invert():
+    """Test that `invert` operator works and returns a compositional metric."""
     first_metric = DummyMetric(1)
 
     final_inverse = ~first_metric
@@ -502,6 +531,7 @@ def test_metrics_invert():
 
 
 def test_metrics_neg():
+    """Test that `neg` operator works and returns a compositional metric."""
     first_metric = DummyMetric(1)
 
     final_neg = neg(first_metric)
@@ -511,6 +541,7 @@ def test_metrics_neg():
 
 
 def test_metrics_pos():
+    """Test that `pos` operator works and returns a compositional metric."""
     first_metric = DummyMetric(-1)
 
     final_pos = pos(first_metric)
@@ -520,10 +551,11 @@ def test_metrics_pos():
 
 
 @pytest.mark.parametrize(
-    ["value", "idx", "expected_result"],
+    ("value", "idx", "expected_result"),
     [([1, 2, 3], 1, tensor(2)), ([[0, 1], [2, 3]], (1, 0), tensor(2)), ([[0, 1], [2, 3]], 1, tensor([2, 3]))],
 )
 def test_metrics_getitem(value, idx, expected_result):
+    """Test that `getitem` operator works and returns a compositional metric."""
     first_metric = DummyMetric(value)
 
     final_getitem = first_metric[idx]
@@ -533,7 +565,7 @@ def test_metrics_getitem(value, idx, expected_result):
 
 
 def test_compositional_metrics_update():
-    """test update method for compositional metrics."""
+    """Test update method for compositional metrics."""
     compos = DummyMetric(5) + DummyMetric(4)
 
     assert isinstance(compos, CompositionalMetric)

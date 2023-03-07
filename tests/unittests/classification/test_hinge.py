@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,16 +23,17 @@ from sklearn.preprocessing import OneHotEncoder
 
 from torchmetrics.classification.hinge import BinaryHingeLoss, MulticlassHingeLoss
 from torchmetrics.functional.classification.hinge import binary_hinge_loss, multiclass_hinge_loss
+from unittests import NUM_CLASSES
 from unittests.classification.inputs import _binary_cases, _multiclass_cases
-from unittests.helpers.testers import NUM_CLASSES, MetricTester, inject_ignore_index, remove_ignore_index
+from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
 torch.manual_seed(42)
 
 
-def _sk_binary_hinge_loss(preds, target, ignore_index):
+def _sklearn_binary_hinge_loss(preds, target, ignore_index):
     preds = preds.numpy().flatten()
     target = target.numpy().flatten()
-    if not ((0 < preds) & (preds < 1)).all():
+    if not ((preds > 0) & (preds < 1)).all():
         preds = sigmoid(preds)
 
     target, preds = remove_ignore_index(target, preds, ignore_index)
@@ -42,9 +43,12 @@ def _sk_binary_hinge_loss(preds, target, ignore_index):
 
 @pytest.mark.parametrize("input", (_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]))
 class TestBinaryHingeLoss(MetricTester):
+    """Test class for `BinaryHingeLoss` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_binary_hinge_loss(self, input, ddp, ignore_index):
+        """Test class implementation of metric."""
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -53,7 +57,7 @@ class TestBinaryHingeLoss(MetricTester):
             preds=preds,
             target=target,
             metric_class=BinaryHingeLoss,
-            sk_metric=partial(_sk_binary_hinge_loss, ignore_index=ignore_index),
+            reference_metric=partial(_sklearn_binary_hinge_loss, ignore_index=ignore_index),
             metric_args={
                 "ignore_index": ignore_index,
             },
@@ -61,6 +65,7 @@ class TestBinaryHingeLoss(MetricTester):
 
     @pytest.mark.parametrize("ignore_index", [None, -1])
     def test_binary_hinge_loss_functional(self, input, ignore_index):
+        """Test functional implementation of metric."""
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -68,13 +73,14 @@ class TestBinaryHingeLoss(MetricTester):
             preds=preds,
             target=target,
             metric_functional=binary_hinge_loss,
-            sk_metric=partial(_sk_binary_hinge_loss, ignore_index=ignore_index),
+            reference_metric=partial(_sklearn_binary_hinge_loss, ignore_index=ignore_index),
             metric_args={
                 "ignore_index": ignore_index,
             },
         )
 
     def test_binary_hinge_loss_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -85,6 +91,7 @@ class TestBinaryHingeLoss(MetricTester):
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_binary_hinge_loss_dtype_cpu(self, input, dtype):
+        """Test dtype support of the metric on CPU."""
         preds, target = input
         if dtype == torch.half:
             pytest.xfail(reason="torch.clamp does not support cpu + half")
@@ -99,6 +106,7 @@ class TestBinaryHingeLoss(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_binary_hinge_loss_dtype_gpu(self, input, dtype):
+        """Test dtype support of the metric on GPU."""
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,
@@ -109,10 +117,10 @@ class TestBinaryHingeLoss(MetricTester):
         )
 
 
-def _sk_multiclass_hinge_loss(preds, target, multiclass_mode, ignore_index):
+def _sklearn_multiclass_hinge_loss(preds, target, multiclass_mode, ignore_index):
     preds = preds.numpy()
     target = target.numpy().flatten()
-    if not ((0 < preds) & (preds < 1)).all():
+    if not ((preds > 0) & (preds < 1)).all():
         preds = softmax(preds, 1)
     preds = np.moveaxis(preds, 1, -1).reshape((-1, preds.shape[1]))
     target, preds = remove_ignore_index(target, preds, ignore_index)
@@ -126,18 +134,21 @@ def _sk_multiclass_hinge_loss(preds, target, multiclass_mode, ignore_index):
         for i in range(result.shape[0]):
             result[i] = sk_hinge(y_true=target[:, i], pred_decision=preds[:, i])
         return result
-    else:
-        return sk_hinge(target, preds)
+
+    return sk_hinge(target, preds)
 
 
 @pytest.mark.parametrize(
     "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
 )
 class TestMulticlassHingeLoss(MetricTester):
+    """Test class for `MulticlassHingeLoss` metric."""
+
     @pytest.mark.parametrize("multiclass_mode", ["crammer-singer", "one-vs-all"])
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multiclass_hinge_loss(self, input, ddp, multiclass_mode, ignore_index):
+        """Test class implementation of metric."""
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -146,7 +157,9 @@ class TestMulticlassHingeLoss(MetricTester):
             preds=preds,
             target=target,
             metric_class=MulticlassHingeLoss,
-            sk_metric=partial(_sk_multiclass_hinge_loss, multiclass_mode=multiclass_mode, ignore_index=ignore_index),
+            reference_metric=partial(
+                _sklearn_multiclass_hinge_loss, multiclass_mode=multiclass_mode, ignore_index=ignore_index
+            ),
             metric_args={
                 "num_classes": NUM_CLASSES,
                 "multiclass_mode": multiclass_mode,
@@ -157,6 +170,7 @@ class TestMulticlassHingeLoss(MetricTester):
     @pytest.mark.parametrize("multiclass_mode", ["crammer-singer", "one-vs-all"])
     @pytest.mark.parametrize("ignore_index", [None, -1])
     def test_multiclass_hinge_loss_functional(self, input, multiclass_mode, ignore_index):
+        """Test functional implementation of metric."""
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -164,7 +178,9 @@ class TestMulticlassHingeLoss(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multiclass_hinge_loss,
-            sk_metric=partial(_sk_multiclass_hinge_loss, multiclass_mode=multiclass_mode, ignore_index=ignore_index),
+            reference_metric=partial(
+                _sklearn_multiclass_hinge_loss, multiclass_mode=multiclass_mode, ignore_index=ignore_index
+            ),
             metric_args={
                 "num_classes": NUM_CLASSES,
                 "multiclass_mode": multiclass_mode,
@@ -173,6 +189,7 @@ class TestMulticlassHingeLoss(MetricTester):
         )
 
     def test_multiclass_hinge_loss_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -184,6 +201,7 @@ class TestMulticlassHingeLoss(MetricTester):
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multiclass_hinge_loss_dtype_cpu(self, input, dtype):
+        """Test dtype support of the metric on CPU."""
         preds, target = input
         if dtype == torch.half:
             pytest.xfail(reason="torch.clamp does not support cpu + half")
@@ -199,6 +217,7 @@ class TestMulticlassHingeLoss(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multiclass_hinge_loss_dtype_gpu(self, input, dtype):
+        """Test dtype support of the metric on GPU."""
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,

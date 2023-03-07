@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ from typing_extensions import Literal
 
 
 def _total_variation_update(img: Tensor) -> Tuple[Tensor, int]:
-    """Computes total variation statistics on current batch."""
+    """Compute total variation statistics on current batch."""
     if img.ndim != 4:
         raise RuntimeError(f"Expected input `img` to be an 4D tensor, but got {img.shape}")
     diff1 = img[..., 1:, :] - img[..., :-1, :]
@@ -36,16 +36,15 @@ def _total_variation_compute(
     """Compute final total variation score."""
     if reduction == "mean":
         return score.sum() / num_elements
-    elif reduction == "sum":
+    if reduction == "sum":
         return score.sum()
-    elif reduction is None or reduction == "none":
+    if reduction is None or reduction == "none":
         return score
-    else:
-        raise ValueError("Expected argument `reduction` to either be 'sum', 'mean', 'none' or None")
+    raise ValueError("Expected argument `reduction` to either be 'sum', 'mean', 'none' or None")
 
 
 def total_variation(img: Tensor, reduction: Literal["mean", "sum", "none", None] = "sum") -> Tensor:
-    """Computes total variation loss.
+    """Compute total variation loss.
 
     Args:
         img: A `Tensor` of shape `(N, C, H, W)` consisting of images

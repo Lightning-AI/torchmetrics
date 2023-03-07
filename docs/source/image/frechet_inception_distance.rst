@@ -14,3 +14,4 @@ ________________
 
 .. autoclass:: torchmetrics.image.fid.FrechetInceptionDistance
     :noindex:
+    :exclude-members: update, compute

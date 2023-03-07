@@ -27,30 +27,30 @@ def _compute_mer_metric_jiwer(preds: Union[str, List[str]], target: Union[str, L
     ],
 )
 class TestMatchErrorRate(TextTester):
-    @pytest.mark.parametrize("ddp", [False, True])
-    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_mer_class(self, ddp, dist_sync_on_step, preds, targets):
+    """Test class for `MatchErrorRate` metric."""
 
+    @pytest.mark.parametrize("ddp", [False, True])
+    def test_mer_class(self, ddp, preds, targets):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
             targets=targets,
             metric_class=MatchErrorRate,
-            sk_metric=_compute_mer_metric_jiwer,
-            dist_sync_on_step=dist_sync_on_step,
+            reference_metric=_compute_mer_metric_jiwer,
         )
 
     def test_mer_functional(self, preds, targets):
-
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             targets,
             metric_functional=match_error_rate,
-            sk_metric=_compute_mer_metric_jiwer,
+            reference_metric=_compute_mer_metric_jiwer,
         )
 
     def test_mer_differentiability(self, preds, targets):
-
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         self.run_differentiability_test(
             preds=preds,
             targets=targets,

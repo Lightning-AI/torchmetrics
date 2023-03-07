@@ -14,6 +14,7 @@ ________________
 
 .. autoclass:: torchmetrics.text.rouge.ROUGEScore
     :noindex:
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________

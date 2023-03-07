@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -171,8 +171,7 @@ class _TercomTokenizer:
         sentence = re.sub(r"(^|^[\u31f0-\u31ff])([\u31f0-\u31ff]+)(?=$|^[\u31f0-\u31ff])", r"\1 \2 ", sentence)
 
         sentence = re.sub(cls._ASIAN_PUNCTUATION, r" \1 ", sentence)
-        sentence = re.sub(cls._FULL_WIDTH_PUNCTUATION, r" \1 ", sentence)
-        return sentence
+        return re.sub(cls._FULL_WIDTH_PUNCTUATION, r" \1 ", sentence)
 
     @staticmethod
     def _remove_punct(sentence: str) -> str:
@@ -183,8 +182,7 @@ class _TercomTokenizer:
     def _remove_asian_punct(cls, sentence: str) -> str:
         """Remove asian punctuation from an input sentence string."""
         sentence = re.sub(cls._ASIAN_PUNCTUATION, r"", sentence)
-        sentence = re.sub(cls._FULL_WIDTH_PUNCTUATION, r"", sentence)
-        return sentence
+        return re.sub(cls._FULL_WIDTH_PUNCTUATION, r"", sentence)
 
 
 def _preprocess_sentence(sentence: str, tokenizer: _TercomTokenizer) -> str:
@@ -246,8 +244,7 @@ def _handle_corner_cases_during_shifting(
     target_start: int,
     length: int,
 ) -> bool:
-    """A helper function which returns ``True`` if any of corner cases has been met. Otherwise, ``False`` is
-    returned.
+    """Return ``True`` if any of corner cases has been met. Otherwise, ``False`` is returned.
 
     Args:
         alignments: A dictionary mapping aligned positions between a reference and a hypothesis.
@@ -314,12 +311,13 @@ def _shift_words(
     cached_edit_distance: _LevenshteinEditDistance,
     checked_candidates: int,
 ) -> Tuple[int, List[str], int]:
-    """Attempt to shift words to match a hypothesis with a reference. It returns the lowest number of required
-    edits between a hypothesis and a provided reference, a list of shifted words and number of checked candidates.
+    """Attempt to shift words to match a hypothesis with a reference.
 
-    Note that the filtering of possible shifts and shift selection are heavily based on somewhat arbitrary heuristics.
-    The code here follows as closely as possible the logic in Tercom, not always justifying the particular design
-    choices. (The paragraph copied from https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/lib_ter.py)
+    It returns the lowest number of required edits between a hypothesis and a provided reference, a list of shifted
+    words and number of checked candidates. Note that the filtering of possible shifts and shift selection are heavily
+    based on somewhat arbitrary heuristics. The code here follows as closely as possible the logic in Tercom, not
+    always justifying the particular design choices.
+    The paragraph copied from https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/lib_ter.py.
 
     Args:
         pred_words: A list of tokenized hypothesis sentence.
@@ -458,12 +456,10 @@ def _compute_ter_score_from_statistics(num_edits: Tensor, tgt_length: Tensor) ->
         A corpus-level TER score or 1 if reference_length == 0.
     """
     if tgt_length > 0 and num_edits > 0:
-        score = num_edits / tgt_length
-    elif tgt_length == 0 and num_edits > 0:
-        score = tensor(1.0)
-    else:
-        score = tensor(0.0)
-    return score
+        return num_edits / tgt_length
+    if tgt_length == 0 and num_edits > 0:
+        return tensor(1.0)
+    return tensor(0.0)
 
 
 def _ter_update(
@@ -479,9 +475,10 @@ def _ter_update(
     Args:
         preds: An iterable of hypothesis corpus.
         target: An iterable of iterables of reference corpus.
-        tokenizer:
+        tokenizer: An instance of ``_TercomTokenizer`` handling a sentence tokenization.
         total_num_edits: A total number of required edits to match hypothesis and reference sentences.
         total_tgt_length: A total average length of reference sentences.
+        sentence_ter: A list of sentence-level TER values
 
     Return:
         total_num_edits:
@@ -497,7 +494,7 @@ def _ter_update(
     """
     target, preds = _validate_inputs(target, preds)
 
-    for (pred, tgt) in zip(preds, target):
+    for pred, tgt in zip(preds, target):
         tgt_words_: List[List[str]] = [_preprocess_sentence(_tgt, tokenizer).split() for _tgt in tgt]
         pred_words_: List[str] = _preprocess_sentence(pred, tokenizer).split()
         num_edits, tgt_length = _compute_sentence_statistics(pred_words_, tgt_words_)
@@ -510,6 +507,7 @@ def _ter_update(
 
 def _ter_compute(total_num_edits: Tensor, total_tgt_length: Tensor) -> Tensor:
     """Compute TER based on pre-computed a total number of edits and a total average reference length.
+
     Args:
         total_num_edits: A total number of required edits to match hypothesis and reference sentences.
         total_tgt_length: A total average length of reference sentences.
@@ -529,8 +527,9 @@ def translation_edit_rate(
     asian_support: bool = False,
     return_sentence_level_score: bool = False,
 ) -> Union[Tensor, Tuple[Tensor, List[Tensor]]]:
-    """Calculate Translation edit rate (`TER`_)  of machine translated text with one or more references. This
-    implementation follows the implmenetaions from
+    """Calculate Translation edit rate (`TER`_)  of machine translated text with one or more references.
+
+    This implementation follows the implmenetaions from
     https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/ter.py. The `sacrebleu` implmenetation is a
     near-exact reimplementation of the Tercom algorithm, produces identical results on all "sane" outputs.
 

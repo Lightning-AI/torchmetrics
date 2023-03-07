@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +13,6 @@
 # limitations under the License.
 from typing import Any, List
 
-import torch
 from torch import Tensor
 from typing_extensions import Literal
 
@@ -23,7 +22,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class CosineSimilarity(Metric):
-    r"""Computes the `Cosine Similarity`_ between targets and predictions:
+    r"""Compute the `Cosine Similarity`_.
 
     .. math::
         cos_{sim}(x,y) = \frac{x \cdot y}{||x|| \cdot ||y||} =
@@ -31,19 +30,24 @@ class CosineSimilarity(Metric):
 
     where :math:`y` is a tensor of target values, and :math:`x` is a tensor of predictions.
 
-    Forward accepts
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (float tensor): ``(N,d)``
-    - ``target`` (float tensor): ``(N,d)``
+    - ``preds`` (:class:`~torch.Tensor`): Predicted float tensor with shape ``(N,d)``
+    - ``target`` (:class:`~torch.Tensor`): Ground truth float tensor with shape ``(N,d)``
+
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``cosine_similarity`` (:class:`~torch.Tensor`): A float tensor with the cosine similarity
 
     Args:
         reduction: how to reduce over the batch dimension using 'sum', 'mean' or 'none' (taking the individual scores)
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
+        >>> from torch import tensor
         >>> from torchmetrics import CosineSimilarity
-        >>> target = torch.tensor([[0, 1], [1, 1]])
-        >>> preds = torch.tensor([[0, 1], [0, 1]])
+        >>> target = tensor([[0, 1], [1, 1]])
+        >>> preds = tensor([[0, 1], [0, 1]])
         >>> cosine_similarity = CosineSimilarity(reduction = 'mean')
         >>> cosine_similarity(preds, target)
         tensor(0.8536)
@@ -69,18 +73,14 @@ class CosineSimilarity(Metric):
         self.add_state("target", [], dist_reduce_fx="cat")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
-        """Update metric states with predictions and targets.
-
-        Args:
-            preds: Predicted tensor with shape ``(N,d)``
-            target: Ground truth tensor with shape ``(N,d)``
-        """
+        """Update metric states with predictions and targets."""
         preds, target = _cosine_similarity_update(preds, target)
 
         self.preds.append(preds)
         self.target.append(target)
 
     def compute(self) -> Tensor:
+        """Compute metric."""
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         return _cosine_similarity_compute(preds, target, self.reduction)

@@ -11,10 +11,10 @@ from unittests.text.helpers import TextTester
 from unittests.text.inputs import _inputs_multiple_references, _inputs_single_sentence_multiple_references
 
 if _SACREBLEU_AVAILABLE:
-    from sacrebleu.metrics import TER as SacreTER
+    from sacrebleu.metrics import TER as SacreTER  # noqa: N811
 
 
-def sacrebleu_ter_fn(
+def _sacrebleu_ter_fn(
     preds: Sequence[str],
     target: Sequence[Sequence[str]],
     normalized: bool,
@@ -48,11 +48,11 @@ def sacrebleu_ter_fn(
 )
 @pytest.mark.skipif(not _SACREBLEU_AVAILABLE, reason="test requires sacrebleu")
 class TestTER(TextTester):
+    """Test class for `TranslationEditRate` metric."""
+
     @pytest.mark.parametrize("ddp", [False, True])
-    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_chrf_score_class(
-        self, ddp, dist_sync_on_step, preds, targets, normalize, no_punctuation, asian_support, lowercase
-    ):
+    def test_chrf_score_class(self, ddp, preds, targets, normalize, no_punctuation, asian_support, lowercase):
+        """Test class implementation of metric."""
         metric_args = {
             "normalize": normalize,
             "no_punctuation": no_punctuation,
@@ -60,7 +60,7 @@ class TestTER(TextTester):
             "lowercase": lowercase,
         }
         nltk_metric = partial(
-            sacrebleu_ter_fn,
+            _sacrebleu_ter_fn,
             normalized=normalize,
             no_punct=no_punctuation,
             asian_support=asian_support,
@@ -72,12 +72,12 @@ class TestTER(TextTester):
             preds=preds,
             targets=targets,
             metric_class=TranslationEditRate,
-            sk_metric=nltk_metric,
-            dist_sync_on_step=dist_sync_on_step,
+            reference_metric=nltk_metric,
             metric_args=metric_args,
         )
 
     def test_ter_score_functional(self, preds, targets, normalize, no_punctuation, asian_support, lowercase):
+        """Test functional implementation of metric."""
         metric_args = {
             "normalize": normalize,
             "no_punctuation": no_punctuation,
@@ -85,7 +85,7 @@ class TestTER(TextTester):
             "lowercase": lowercase,
         }
         nltk_metric = partial(
-            sacrebleu_ter_fn,
+            _sacrebleu_ter_fn,
             normalized=normalize,
             no_punct=no_punctuation,
             asian_support=asian_support,
@@ -96,11 +96,12 @@ class TestTER(TextTester):
             preds,
             targets,
             metric_functional=translation_edit_rate,
-            sk_metric=nltk_metric,
+            reference_metric=nltk_metric,
             metric_args=metric_args,
         )
 
     def test_chrf_score_differentiability(self, preds, targets, normalize, no_punctuation, asian_support, lowercase):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         metric_args = {
             "normalize": normalize,
             "no_punctuation": no_punctuation,
@@ -118,12 +119,14 @@ class TestTER(TextTester):
 
 
 def test_ter_empty_functional():
+    """Test that zero is returned on empty input for functional metric."""
     preds = []
     targets = [[]]
     assert translation_edit_rate(preds, targets) == tensor(0.0)
 
 
 def test_ter_empty_class():
+    """Test that zero is returned on empty input for modular metric."""
     ter_metric = TranslationEditRate()
     preds = []
     targets = [[]]
@@ -131,12 +134,14 @@ def test_ter_empty_class():
 
 
 def test_ter_empty_with_non_empty_hyp_functional():
+    """Test that zero is returned on empty target input for functional metric."""
     preds = ["python"]
     targets = [[]]
     assert translation_edit_rate(preds, targets) == tensor(0.0)
 
 
 def test_ter_empty_with_non_empty_hyp_class():
+    """Test that zero is returned on empty target input for modular metric."""
     ter_metric = TranslationEditRate()
     preds = ["python"]
     targets = [[]]
@@ -144,6 +149,7 @@ def test_ter_empty_with_non_empty_hyp_class():
 
 
 def test_ter_return_sentence_level_score_functional():
+    """Test that functional metric can return sentence level scores."""
     preds = _inputs_single_sentence_multiple_references.preds
     targets = _inputs_single_sentence_multiple_references.targets
     _, sentence_ter = translation_edit_rate(preds, targets, return_sentence_level_score=True)
@@ -151,6 +157,7 @@ def test_ter_return_sentence_level_score_functional():
 
 
 def test_ter_return_sentence_level_class():
+    """Test that modular metric can return sentence level scores."""
     ter_metric = TranslationEditRate(return_sentence_level_score=True)
     preds = _inputs_single_sentence_multiple_references.preds
     targets = _inputs_single_sentence_multiple_references.targets

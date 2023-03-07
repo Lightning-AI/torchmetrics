@@ -5,35 +5,105 @@ import re
 from functools import partial
 from importlib.util import module_from_spec, spec_from_file_location
 from itertools import chain
-from typing import List, Tuple
+from pathlib import Path
+from typing import Any, Iterable, Iterator, List, Optional, Tuple, Union
 
+from pkg_resources import Requirement, yield_lines
 from setuptools import find_packages, setup
 
 _PATH_ROOT = os.path.realpath(os.path.dirname(__file__))
 _PATH_SOURCE = os.path.join(_PATH_ROOT, "src")
 _PATH_REQUIRE = os.path.join(_PATH_ROOT, "requirements")
+_FREEZE_REQUIREMENTS = bool(int(os.environ.get("FREEZE_REQUIREMENTS", 0)))
 
 
-def _load_requirements(path_dir: str, file_name: str = "requirements.txt", comment_char: str = "#") -> List[str]:
+class _RequirementWithComment(Requirement):
+    strict_string = "# strict"
+
+    def __init__(self, *args: Any, comment: str = "", pip_argument: Optional[str] = None, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.comment = comment
+        assert pip_argument is None or pip_argument  # sanity check that it's not an empty str
+        self.pip_argument = pip_argument
+        self.strict = self.strict_string in comment.lower()
+
+    def adjust(self, unfreeze: bool) -> str:
+        """Remove version restrictions unless they are strict.
+
+        >>> _RequirementWithComment("arrow<=1.2.2,>=1.2.0", comment="# anything").adjust(False)
+        'arrow<=1.2.2,>=1.2.0'
+        >>> _RequirementWithComment("arrow<=1.2.2,>=1.2.0", comment="# strict").adjust(False)
+        'arrow<=1.2.2,>=1.2.0  # strict'
+        >>> _RequirementWithComment("arrow<=1.2.2,>=1.2.0", comment="# my name").adjust(True)
+        'arrow>=1.2.0'
+        >>> _RequirementWithComment("arrow>=1.2.0, <=1.2.2", comment="# strict").adjust(True)
+        'arrow<=1.2.2,>=1.2.0  # strict'
+        >>> _RequirementWithComment("arrow").adjust(True)
+        'arrow'
+        """
+        out = str(self)
+        if self.strict:
+            return f"{out}  {self.strict_string}"
+        if unfreeze:
+            for operator, version in self.specs:
+                if operator in ("<", "<="):
+                    # drop upper bound
+                    return out.replace(f"{operator}{version},", "")
+        return out
+
+
+def _parse_requirements(strs: Union[str, Iterable[str]]) -> Iterator[_RequirementWithComment]:
+    r"""Adapted from `pkg_resources.parse_requirements` to include comments.
+
+    >>> txt = ['# ignored', '', 'this # is an', '--piparg', 'example', 'foo # strict', 'thing', '-r different/file.txt']
+    >>> [r.adjust('none') for r in _parse_requirements(txt)]
+    ['this', 'example', 'foo  # strict', 'thing']
+    >>> txt = '\\n'.join(txt)
+    >>> [r.adjust('none') for r in _parse_requirements(txt)]
+    ['this', 'example', 'foo  # strict', 'thing']
+    """
+    lines = yield_lines(strs)
+    pip_argument = None
+    for line in lines:
+        # Drop comments -- a hash without a space may be in a URL.
+        if " #" in line:
+            comment_pos = line.find(" #")
+            line, comment = line[:comment_pos], line[comment_pos:]
+        else:
+            comment = ""
+        # If there is a line continuation, drop it, and append the next line.
+        if line.endswith("\\"):
+            line = line[:-2].strip()
+            try:
+                line += next(lines)
+            except StopIteration:
+                return
+        if "@" in line or re.search("https?://", line):
+            # skip lines with links like `pesq @ git+https://github.com/ludlows/python-pesq`
+            continue
+        # If there's a pip argument, save it
+        if line.startswith("--"):
+            pip_argument = line
+            continue
+        if line.startswith("-r "):
+            # linked requirement files are unsupported
+            continue
+        yield _RequirementWithComment(line, comment=comment, pip_argument=pip_argument)
+        pip_argument = None
+
+
+def _load_requirements(
+    path_dir: str, file_name: str = "requirements.txt", unfreeze: bool = not _FREEZE_REQUIREMENTS
+) -> List[str]:
     """Load requirements from a file.
 
     >>> _load_requirements(_PATH_ROOT)
     ['numpy...', 'torch..."]
     """
-    with open(os.path.join(path_dir, file_name)) as file:
-        lines = [ln.strip() for ln in file.readlines()]
-    reqs = []
-    for ln in lines:
-        # filer all comments
-        if comment_char in ln:
-            char_idx = min(ln.index(ch) for ch in comment_char)
-            ln = ln[:char_idx].strip()
-        # skip directly installed dependencies
-        if ln.startswith("http") or ln.startswith("git") or ln.startswith("-r") or "@" in ln:
-            continue
-        if ln:  # if requirement is not empty
-            reqs.append(ln)
-    return reqs
+    path = Path(path_dir) / file_name
+    assert path.exists(), (path_dir, file_name, path)
+    text = path.read_text()
+    return [req.adjust(unfreeze) for req in _parse_requirements(text)]
 
 
 def _load_readme_description(path_dir: str, homepage: str, version: str) -> str:
@@ -66,9 +136,7 @@ def _load_readme_description(path_dir: str, homepage: str, version: str) -> str:
     skip_begin = r"<!-- following section will be skipped from PyPI description -->"
     skip_end = r"<!-- end skipping PyPI description -->"
     # todo: wrap content as commented description
-    text = re.sub(rf"{skip_begin}.+?{skip_end}", "<!--  -->", text, flags=re.IGNORECASE + re.DOTALL)
-
-    return text
+    return re.sub(rf"{skip_begin}.+?{skip_end}", "<!--  -->", text, flags=re.IGNORECASE + re.DOTALL)
 
 
 def _load_py_module(fname, pkg="torchmetrics"):
@@ -87,7 +155,7 @@ LONG_DESCRIPTION = _load_readme_description(
 BASE_REQUIREMENTS = _load_requirements(path_dir=_PATH_ROOT, file_name="requirements.txt")
 
 
-def _prepare_extras(skip_files: Tuple[str] = ("devel.txt", "doctest.txt")):
+def _prepare_extras(skip_files: Tuple[str] = ("devel.txt", "doctest.txt", "integrate.txt", "docs.txt")):
     # find all extra requirements
     _load_req = partial(_load_requirements, path_dir=_PATH_REQUIRE)
     found_req_files = sorted(os.path.basename(p) for p in glob.glob(os.path.join(_PATH_REQUIRE, "*.txt")))

@@ -14,6 +14,7 @@ ________________
 
 .. autoclass:: torchmetrics.WordErrorRate
     :noindex:
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________

@@ -12,24 +12,28 @@ ________________
 
 .. autoclass:: torchmetrics.Recall
     :noindex:
+    :exclude-members: update, compute
 
 BinaryRecall
 ^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.BinaryRecall
     :noindex:
+    :exclude-members: update, compute
 
 MulticlassRecall
 ^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.MulticlassRecall
     :noindex:
+    :exclude-members: update, compute
 
 MultilabelRecall
 ^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.MultilabelRecall
     :noindex:
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________

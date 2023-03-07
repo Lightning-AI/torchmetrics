@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ import pytest
 import torch
 from torch import Tensor
 
+from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, NUM_CLASSES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, NUM_CLASSES
 
 seed_all(1)
 
@@ -32,6 +32,7 @@ def _logsoftmax(x: Tensor, dim: int = -1) -> Tensor:
 
 
 Input = namedtuple("Input", ["preds", "target"])
+GroupInput = namedtuple("GroupInput", ["preds", "target", "groups"])
 
 _input_binary_prob = Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE), target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE))
@@ -205,6 +206,34 @@ _multilabel_cases = (
     ),
 )
 
+
+_group_cases = (
+    pytest.param(
+        GroupInput(
+            preds=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
+            target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
+            groups=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
+        ),
+        id="input[single dim-labels]",
+    ),
+    pytest.param(
+        GroupInput(
+            preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
+            target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
+            groups=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
+        ),
+        id="input[single dim-probs]",
+    ),
+    pytest.param(
+        GroupInput(
+            preds=_inv_sigmoid(torch.rand(NUM_BATCHES, BATCH_SIZE)),
+            target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
+            groups=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
+        ),
+        id="input[single dim-logits]",
+    ),
+)
+
 # Generate edge multilabel edge case, where nothing matches (scores are undefined)
 __temp_preds = torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES))
 __temp_target = abs(__temp_preds - 1)
@@ -241,7 +270,7 @@ _input_multidim_multiclass = Input(
 
 
 # Generate plausible-looking inputs
-def generate_plausible_inputs_multilabel(num_classes=NUM_CLASSES, num_batches=NUM_BATCHES, batch_size=BATCH_SIZE):
+def _generate_plausible_inputs_multilabel(num_classes=NUM_CLASSES, num_batches=NUM_BATCHES, batch_size=BATCH_SIZE):
     correct_targets = torch.randint(high=num_classes, size=(num_batches, batch_size))
     preds = torch.rand(num_batches, batch_size, num_classes)
     targets = torch.zeros_like(preds, dtype=torch.long)
@@ -255,15 +284,15 @@ def generate_plausible_inputs_multilabel(num_classes=NUM_CLASSES, num_batches=NU
     return Input(preds=preds, target=targets)
 
 
-def generate_plausible_inputs_binary(num_batches=NUM_BATCHES, batch_size=BATCH_SIZE):
+def _generate_plausible_inputs_binary(num_batches=NUM_BATCHES, batch_size=BATCH_SIZE):
     targets = torch.randint(high=2, size=(num_batches, batch_size))
     preds = torch.rand(num_batches, batch_size) + torch.rand(num_batches, batch_size) * targets / 3
     return Input(preds=preds / (preds.max() + 0.01), target=targets)
 
 
-_input_multilabel_prob_plausible = generate_plausible_inputs_multilabel()
+_input_multilabel_prob_plausible = _generate_plausible_inputs_multilabel()
 
-_input_binary_prob_plausible = generate_plausible_inputs_binary()
+_input_binary_prob_plausible = _generate_plausible_inputs_binary()
 
 # randomly remove one class from the input
 _temp = torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE))

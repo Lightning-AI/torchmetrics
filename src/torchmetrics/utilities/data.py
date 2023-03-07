@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,12 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import sys
 from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Union
 
+import numpy as np
 import torch
 from torch import Tensor
 
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_12
+from torchmetrics.utilities.exceptions import TorchMetricsUserWarning
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_12, _XLA_AVAILABLE
+from torchmetrics.utilities.prints import rank_zero_warn
 
 METRIC_EPS = 1e-6
 
@@ -71,7 +75,7 @@ def to_onehot(
     label_tensor: Tensor,
     num_classes: Optional[int] = None,
 ) -> Tensor:
-    """Converts a dense label tensor to one-hot format.
+    """Convert  a dense label tensor to one-hot format.
 
     Args:
         label_tensor: dense label tensor, with shape [N, d1, d2, ...]
@@ -128,7 +132,7 @@ def select_topk(prob_tensor: Tensor, topk: int = 1, dim: int = 1) -> Tensor:
 
 
 def to_categorical(x: Tensor, argmax_dim: int = 1) -> Tensor:
-    """Converts a tensor of probabilities to a dense label tensor.
+    """Convert  a tensor of probabilities to a dense label tensor.
 
     Args:
         x: probabilities to get the categorical label [N, d1, d2, ...]
@@ -204,7 +208,9 @@ def _squeeze_if_scalar(data: Any) -> Any:
 
 
 def _bincount(x: Tensor, minlength: Optional[int] = None) -> Tensor:
-    """PyTorch currently does not support``torch.bincount`` for:
+    """Implement custom bincount.
+
+    PyTorch currently does not support ``torch.bincount`` for:
 
         - deterministic mode on GPU.
         - MPS devices
@@ -217,15 +223,33 @@ def _bincount(x: Tensor, minlength: Optional[int] = None) -> Tensor:
 
     Returns:
         Number of occurrences for each unique element in x
+
+    Example:
+        >>> x = torch.tensor([0,0,0,1,1,2,2,2,2])
+        >>> _bincount(x, minlength=3)
+        tensor([3, 2, 4])
+
     """
     if minlength is None:
         minlength = len(torch.unique(x))
-    if torch.are_deterministic_algorithms_enabled() or _TORCH_GREATER_EQUAL_1_12 and x.is_mps:
+    if torch.are_deterministic_algorithms_enabled() or _XLA_AVAILABLE or _TORCH_GREATER_EQUAL_1_12 and x.is_mps:
         output = torch.zeros(minlength, device=x.device, dtype=torch.long)
         for i in range(minlength):
             output[i] = (x == i).sum()
         return output
     return torch.bincount(x, minlength=minlength)
+
+
+def _cumsum(x: Tensor, dim: Optional[int] = 0, dtype: Optional[torch.dtype] = None) -> Tensor:
+    if torch.are_deterministic_algorithms_enabled() and x.is_cuda and x.is_floating_point() and sys.platform != "win32":
+        rank_zero_warn(
+            "You are trying to use a metric in deterministic mode on GPU that uses `torch.cumsum` which is currently"
+            "not supported. Instead the tensor will be casted to CPU, compute the `cumsum` and then casted back to GPU"
+            "Expect some slowdowns.",
+            TorchMetricsUserWarning,
+        )
+        return x.cpu().cumsum(dim=dim, dtype=dtype).cuda()
+    return torch.cumsum(x, dim=dim, dtype=dtype)
 
 
 def _flexible_bincount(x: Tensor) -> Tensor:
@@ -237,18 +261,17 @@ def _flexible_bincount(x: Tensor) -> Tensor:
     Returns:
         Number of occurrences for each unique element in x
     """
-
     # make sure elements in x start from 0
     x = x - x.min()
     unique_x = torch.unique(x)
 
-    output = _bincount(x, minlength=torch.max(unique_x) + 1)
+    output = _bincount(x, minlength=torch.max(unique_x) + 1)  # type: ignore[arg-type]
     # remove zeros from output tensor
     return output[unique_x]
 
 
 def allclose(tensor1: Tensor, tensor2: Tensor) -> bool:
-    """Wrapper of torch.allclose that is robust towards dtype difference."""
+    """Wrap torch.allclose to be robust towards dtype difference."""
     if tensor1.dtype != tensor2.dtype:
         tensor2 = tensor2.to(dtype=tensor1.dtype)
     return torch.allclose(tensor1, tensor2)

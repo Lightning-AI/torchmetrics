@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -76,8 +76,7 @@ def _drop_empty_rows_and_cols(confmat: Tensor) -> Tensor:
                 [2, 8]])
     """
     confmat = confmat[confmat.sum(1) != 0]
-    confmat = confmat[:, confmat.sum(0) != 0]
-    return confmat
+    return confmat[:, confmat.sum(0) != 0]
 
 
 def _compute_phi_squared_corrected(

@@ -13,8 +13,8 @@ _PROJECT_ROOT = os.path.dirname(_PACKAGE_ROOT)
 
 from torchmetrics import functional  # noqa: E402
 from torchmetrics.aggregation import CatMetric, MaxMetric, MeanMetric, MinMetric, SumMetric  # noqa: E402
+from torchmetrics.audio import PermutationInvariantTraining  # noqa: E402
 from torchmetrics.audio import (  # noqa: E402
-    PermutationInvariantTraining,
     ScaleInvariantSignalDistortionRatio,
     ScaleInvariantSignalNoiseRatio,
     SignalDistortionRatio,
@@ -43,10 +43,13 @@ from torchmetrics.classification import (  # noqa: E402
     StatScores,
 )
 from torchmetrics.collections import MetricCollection  # noqa: E402
+from torchmetrics.detection import PanopticQuality  # noqa: E402
 from torchmetrics.image import (  # noqa: E402
     ErrorRelativeGlobalDimensionlessSynthesis,
     MultiScaleStructuralSimilarityIndexMeasure,
     PeakSignalNoiseRatio,
+    RelativeAverageSpectralError,
+    RootMeanSquaredErrorUsingSlidingWindow,
     SpectralAngleMapper,
     SpectralDistortionIndex,
     StructuralSimilarityIndexMeasure,
@@ -54,9 +57,10 @@ from torchmetrics.image import (  # noqa: E402
     UniversalImageQualityIndex,
 )
 from torchmetrics.metric import Metric  # noqa: E402
-from torchmetrics.nominal import CramersV, PearsonsContingencyCoefficient, TheilsU, TschuprowsT  # noqa: E402
+from torchmetrics.nominal import CramersV  # noqa: E402
+from torchmetrics.nominal import PearsonsContingencyCoefficient, TheilsU, TschuprowsT  # noqa: E402
+from torchmetrics.regression import ConcordanceCorrCoef  # noqa: E402
 from torchmetrics.regression import (  # noqa: E402
-    ConcordanceCorrCoef,
     CosineSimilarity,
     ExplainedVariance,
     KendallRankCorrCoef,
@@ -66,6 +70,7 @@ from torchmetrics.regression import (  # noqa: E402
     MeanAbsolutePercentageError,
     MeanSquaredError,
     MeanSquaredLogError,
+    MinkowskiDistance,
     PearsonCorrCoef,
     R2Score,
     SpearmanCorrCoef,
@@ -73,8 +78,8 @@ from torchmetrics.regression import (  # noqa: E402
     TweedieDevianceScore,
     WeightedMeanAbsolutePercentageError,
 )
+from torchmetrics.retrieval import RetrievalFallOut  # noqa: E402
 from torchmetrics.retrieval import (  # noqa: E402
-    RetrievalFallOut,
     RetrievalHitRate,
     RetrievalMAP,
     RetrievalMRR,
@@ -99,13 +104,8 @@ from torchmetrics.text import (  # noqa: E402
     WordInfoLost,
     WordInfoPreserved,
 )
-from torchmetrics.wrappers import (  # noqa: E402
-    BootStrapper,
-    ClasswiseWrapper,
-    MetricTracker,
-    MinMaxMetric,
-    MultioutputWrapper,
-)
+from torchmetrics.wrappers import BootStrapper  # noqa: E402
+from torchmetrics.wrappers import ClasswiseWrapper, MetricTracker, MinMaxMetric, MultioutputWrapper  # noqa: E402
 
 __all__ = [
     "functional",
@@ -153,6 +153,7 @@ __all__ = [
     "MinMetric",
     "MultioutputWrapper",
     "MultiScaleStructuralSimilarityIndexMeasure",
+    "PanopticQuality",
     "PearsonCorrCoef",
     "PearsonsContingencyCoefficient",
     "PermutationInvariantTraining",
@@ -162,6 +163,7 @@ __all__ = [
     "PeakSignalNoiseRatio",
     "R2Score",
     "Recall",
+    "RelativeAverageSpectralError",
     "RetrievalFallOut",
     "RetrievalHitRate",
     "RetrievalMAP",
@@ -173,6 +175,7 @@ __all__ = [
     "RetrievalPrecisionRecallCurve",
     "RetrievalRecallAtFixedPrecision",
     "ROC",
+    "RootMeanSquaredErrorUsingSlidingWindow",
     "SacreBLEUScore",
     "SignalDistortionRatio",
     "ScaleInvariantSignalDistortionRatio",

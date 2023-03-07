@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,8 +21,9 @@ from scipy.stats import pearsonr
 
 from torchmetrics.functional.regression.concordance import concordance_corrcoef
 from torchmetrics.regression.concordance import ConcordanceCorrCoef
+from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -49,7 +50,7 @@ _multi_target_inputs2 = Input(
 )
 
 
-def _sk_concordance(preds, target):
+def _scipy_concordance(preds, target):
     preds, target = preds.numpy(), target.numpy()
     if preds.ndim == 2:
         mean_pred = np.mean(preds, axis=0)
@@ -76,26 +77,29 @@ def _sk_concordance(preds, target):
     ],
 )
 class TestConcordanceCorrCoef(MetricTester):
+    """Test class for `ConcordanceCorrCoef` metric."""
+
     atol = 1e-3
 
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_concordance_corrcoef(self, preds, target, ddp, dist_sync_on_step):
+    def test_concordance_corrcoef(self, preds, target, ddp):
+        """Test class implementation of metric."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_class_metric_test(
             ddp,
             preds,
             target,
             ConcordanceCorrCoef,
-            _sk_concordance,
-            dist_sync_on_step,
+            _scipy_concordance,
             metric_args={"num_outputs": num_outputs},
         )
 
     def test_concordance_corrcoef_functional(self, preds, target):
-        self.run_functional_metric_test(preds, target, concordance_corrcoef, _sk_concordance)
+        """Test functional implementation of metric."""
+        self.run_functional_metric_test(preds, target, concordance_corrcoef, _scipy_concordance)
 
     def test_concordance_corrcoef_differentiability(self, preds, target):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_differentiability_test(
             preds=preds,
@@ -107,6 +111,7 @@ class TestConcordanceCorrCoef(MetricTester):
     # Spearman half + cpu does not work due to missing support in torch.arange
     @pytest.mark.xfail(reason="Concordance metric does not support cpu + half precision")
     def test_concordance_corrcoef_half_cpu(self, preds, target):
+        """Test dtype support of the metric on CPU."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_precision_test_cpu(
             preds, target, partial(ConcordanceCorrCoef, num_outputs=num_outputs), concordance_corrcoef
@@ -114,6 +119,7 @@ class TestConcordanceCorrCoef(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_concordance_corrcoef_half_gpu(self, preds, target):
+        """Test dtype support of the metric on GPU."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_precision_test_gpu(
             preds, target, partial(ConcordanceCorrCoef, num_outputs=num_outputs), concordance_corrcoef
@@ -121,6 +127,7 @@ class TestConcordanceCorrCoef(MetricTester):
 
 
 def test_error_on_different_shape():
+    """Test that error is raised on different shapes of input."""
     metric = ConcordanceCorrCoef(num_outputs=1)
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(100), torch.randn(50))
