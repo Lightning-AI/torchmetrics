@@ -34,13 +34,13 @@ if _LPIPS_AVAILABLE:
         _LPIPS(pretrained=True, net="vgg")
 
     if _SKIP_SLOW_DOCTEST and not _try_proceed_with_timeout(_download_lpips):
-        __doctest_skip__ = ["LearnedPerceptualImagePatchSimilarity", "LPIPS"]
+        __doctest_skip__ = ["LearnedPerceptualImagePatchSimilarity", "LearnedPerceptualImagePatchSimilarity.plot"]
 else:
 
     class _LPIPS(Module):
         pass
 
-    __doctest_skip__ = ["LearnedPerceptualImagePatchSimilarity", "LPIPS"]
+    __doctest_skip__ = ["LearnedPerceptualImagePatchSimilarity", "LearnedPerceptualImagePatchSimilarity.plot"]
 
 
 class NoTrainLpips(_LPIPS):
@@ -194,12 +194,9 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> _ = torch.manual_seed(42)
-            >>> from torchmetrics import SpectralDistortionIndex
-            >>> preds = torch.rand([16, 3, 16, 16])
-            >>> target = torch.rand([16, 3, 16, 16])
-            >>> metric = SpectralDistortionIndex()
-            >>> metric.update(preds, target)
+            >>> from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
+            >>> metric = LearnedPerceptualImagePatchSimilarity()
+            >>> metric.update(torch.rand(10, 3, 100, 100), torch.rand(10, 3, 100, 100))
             >>> fig_, ax_ = metric.plot()
 
         .. plot::
@@ -207,14 +204,11 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> _ = torch.manual_seed(42)
-            >>> from torchmetrics import SpectralDistortionIndex
-            >>> preds = torch.rand([16, 3, 16, 16])
-            >>> target = torch.rand([16, 3, 16, 16])
-            >>> metric = SpectralDistortionIndex()
+            >>> from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
+            >>> metric = LearnedPerceptualImagePatchSimilarity()
             >>> values = [ ]
-            >>> for _ in range(10):
-            ...     values.append(metric(preds, target))
+            >>> for _ in range(3):
+            ...     values.append(metric(torch.rand(10, 3, 100, 100), torch.rand(10, 3, 100, 100)))
             >>> fig_, ax_ = metric.plot(values)
         """
         return self._plot(val, ax)

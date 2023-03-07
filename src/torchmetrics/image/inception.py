@@ -190,27 +190,23 @@ class InceptionScore(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> _ = torch.manual_seed(42)
-            >>> from torchmetrics import SpectralDistortionIndex
-            >>> preds = torch.rand([16, 3, 16, 16])
-            >>> target = torch.rand([16, 3, 16, 16])
-            >>> metric = SpectralDistortionIndex()
-            >>> metric.update(preds, target)
-            >>> fig_, ax_ = metric.plot()
+            >>> from torchmetrics.image.inception import InceptionScore
+            >>> metric = InceptionScore()
+            >>> metric.update(torch.randint(0, 255, (50, 3, 299, 299), dtype=torch.uint8))
+            >>> fig_, ax_ = metric.plot()  # the returned plot only shows the mean value by default
 
         .. plot::
             :scale: 75
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> _ = torch.manual_seed(42)
-            >>> from torchmetrics import SpectralDistortionIndex
-            >>> preds = torch.rand([16, 3, 16, 16])
-            >>> target = torch.rand([16, 3, 16, 16])
-            >>> metric = SpectralDistortionIndex()
+            >>> from torchmetrics.image.inception import InceptionScore
+            >>> metric = InceptionScore()
             >>> values = [ ]
-            >>> for _ in range(10):
-            ...     values.append(metric(preds, target))
+            >>> for _ in range(3):
+            ...     # we index by 0 such that only the mean value is plotted
+            ...     values.append(metric(torch.randint(0, 255, (50, 3, 299, 299), dtype=torch.uint8))[0])
             >>> fig_, ax_ = metric.plot(values)
         """
+        val = val or self.compute()[0]  # by default we select the mean to plot
         return self._plot(val, ax)

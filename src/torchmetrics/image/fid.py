@@ -330,12 +330,12 @@ class FrechetInceptionDistance(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> _ = torch.manual_seed(42)
-            >>> from torchmetrics import SpectralDistortionIndex
-            >>> preds = torch.rand([16, 3, 16, 16])
-            >>> target = torch.rand([16, 3, 16, 16])
-            >>> metric = SpectralDistortionIndex()
-            >>> metric.update(preds, target)
+            >>> from torchmetrics.image.fid import FrechetInceptionDistance
+            >>> imgs_dist1 = torch.randint(0, 200, (100, 3, 299, 299), dtype=torch.uint8)
+            >>> imgs_dist2 = torch.randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)
+            >>> metric = FrechetInceptionDistance(feature=64)
+            >>> metric.update(imgs_dist1, real=True)
+            >>> metric.update(imgs_dist2, real=False)
             >>> fig_, ax_ = metric.plot()
 
         .. plot::
@@ -343,14 +343,18 @@ class FrechetInceptionDistance(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> _ = torch.manual_seed(42)
-            >>> from torchmetrics import SpectralDistortionIndex
-            >>> preds = torch.rand([16, 3, 16, 16])
-            >>> target = torch.rand([16, 3, 16, 16])
-            >>> metric = SpectralDistortionIndex()
+            >>> from torchmetrics.image.kid import KernelInceptionDistance
+            >>> imgs_dist1 = lambda: torch.randint(0, 200, (100, 3, 299, 299), dtype=torch.uint8)
+            >>> imgs_dist2 = lambda: torch.randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)
+            >>> metric = FrechetInceptionDistance(feature=64)
             >>> values = [ ]
-            >>> for _ in range(10):
-            ...     values.append(metric(preds, target))
+            >>> for _ in range(3):
+            ...     metric.update(imgs_dist1(), real=True)
+            ...     metric.update(imgs_dist2(), real=False)
+            ...     values.append(metric.compute())
+            ...     metric.reset()
             >>> fig_, ax_ = metric.plot(values)
+
+
         """
         return self._plot(val, ax)

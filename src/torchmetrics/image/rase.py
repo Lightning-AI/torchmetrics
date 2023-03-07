@@ -113,12 +113,9 @@ class RelativeAverageSpectralError(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> _ = torch.manual_seed(42)
-            >>> from torchmetrics import SpectralDistortionIndex
-            >>> preds = torch.rand([16, 3, 16, 16])
-            >>> target = torch.rand([16, 3, 16, 16])
-            >>> metric = SpectralDistortionIndex()
-            >>> metric.update(preds, target)
+            >>> from torchmetrics import RelativeAverageSpectralError
+            >>> metric = RelativeAverageSpectralError()
+            >>> metric.update(torch.rand(4, 3, 16, 16), torch.rand(4, 3, 16, 16))
             >>> fig_, ax_ = metric.plot()
 
         .. plot::
@@ -127,13 +124,11 @@ class RelativeAverageSpectralError(Metric):
             >>> # Example plotting multiple values
             >>> import torch
             >>> _ = torch.manual_seed(42)
-            >>> from torchmetrics import SpectralDistortionIndex
-            >>> preds = torch.rand([16, 3, 16, 16])
-            >>> target = torch.rand([16, 3, 16, 16])
-            >>> metric = SpectralDistortionIndex()
+            >>> from torchmetrics import RelativeAverageSpectralError
+            >>> metric = RelativeAverageSpectralError()
             >>> values = [ ]
             >>> for _ in range(10):
-            ...     values.append(metric(preds, target))
+            ...     values.append(metric(torch.rand(4, 3, 16, 16), torch.rand(4, 3, 16, 16)))
             >>> fig_, ax_ = metric.plot(values)
         """
         return self._plot(val, ax)

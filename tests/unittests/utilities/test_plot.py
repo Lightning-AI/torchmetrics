@@ -50,11 +50,18 @@ from torchmetrics.classification import (
 from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio
 from torchmetrics.image import (
     ErrorRelativeGlobalDimensionlessSynthesis,
+    FrechetInceptionDistance,
+    InceptionScore,
+    KernelInceptionDistance,
+    LearnedPerceptualImagePatchSimilarity,
     MultiScaleStructuralSimilarityIndexMeasure,
     PeakSignalNoiseRatio,
+    RelativeAverageSpectralError,
+    RootMeanSquaredErrorUsingSlidingWindow,
     SpectralAngleMapper,
     SpectralDistortionIndex,
     StructuralSimilarityIndexMeasure,
+    TotalVariation,
     UniversalImageQualityIndex,
 )
 from torchmetrics.nominal import CramersV, PearsonsContingencyCoefficient, TheilsU, TschuprowsT
@@ -224,13 +231,26 @@ _nominal_input = lambda: torch.randint(0, 4, (100,))
             _multilabel_randint_input,
             id="multilabel average precision",
         ),
+        pytest.param(TotalVariation, _image_input, None, id="total variation"),
+        pytest.param(
+            RootMeanSquaredErrorUsingSlidingWindow,
+            _image_input,
+            _image_input,
+            id="root mean squared error using sliding window",
+        ),
+        pytest.param(RelativeAverageSpectralError, _image_input, _image_input, id="relative average spectral error"),
+        pytest.param(
+            LearnedPerceptualImagePatchSimilarity,
+            lambda: torch.rand(10, 3, 100, 100),
+            lambda: torch.rand(10, 3, 100, 100),
+            id="learned perceptual image patch similarity",
+        ),
     ],
 )
 @pytest.mark.parametrize("num_vals", [1, 5])
-def test_single_multi_val_plot_methods(metric_class: object, preds: Callable, target: Callable, num_vals: int):
+def test_plot_methods(metric_class: object, preds: Callable, target: Callable, num_vals: int):
     """Test the plot method of metrics that only output a single tensor scalar."""
     metric = metric_class()
-
     input = (lambda: (preds(),)) if target is None else lambda: (preds(), target())
 
     if num_vals == 1:
@@ -240,6 +260,64 @@ def test_single_multi_val_plot_methods(metric_class: object, preds: Callable, ta
         vals = []
         for _ in range(num_vals):
             vals.append(metric(*input()))
+        fig, ax = metric.plot(vals)
+
+    assert isinstance(fig, plt.Figure)
+    assert isinstance(ax, matplotlib.axes.Axes)
+
+
+@pytest.mark.parametrize(
+    ("metric_class", "preds", "target", "index_0"),
+    [
+        pytest.param(
+            partial(KernelInceptionDistance, feature=64, subsets=3, subset_size=20),
+            lambda: torch.randint(0, 200, (30, 3, 299, 299), dtype=torch.uint8),
+            lambda: torch.randint(0, 200, (30, 3, 299, 299), dtype=torch.uint8),
+            True,
+            id="kernel inception distance",
+        ),
+        pytest.param(
+            partial(FrechetInceptionDistance, feature=64),
+            lambda: torch.randint(0, 200, (30, 3, 299, 299), dtype=torch.uint8),
+            lambda: torch.randint(0, 200, (30, 3, 299, 299), dtype=torch.uint8),
+            False,
+            id="frechet inception distance",
+        ),
+        pytest.param(
+            partial(InceptionScore, feature=64),
+            lambda: torch.randint(0, 255, (50, 3, 299, 299), dtype=torch.uint8),
+            None,
+            True,
+            id="inception score",
+        ),
+    ],
+)
+@pytest.mark.parametrize("num_vals", [1, 2])
+def test_plot_methods_special_image_metrics(metric_class, preds, target, index_0, num_vals):
+    """Test the plot method of metrics that only output a single tensor scalar.
+
+    This takes care of FID, KID and inception score image metrics as these have a slightly different call and update
+    signature than other metrics.
+    """
+    metric = metric_class()
+
+    if num_vals == 1:
+        if target is None:
+            metric.update(preds())
+        else:
+            metric.update(preds(), real=True)
+            metric.update(target(), real=False)
+        fig, ax = metric.plot()
+    else:
+        vals = []
+        for _ in range(num_vals):
+            if target is None:
+                vals.append(metric(preds()))
+            else:
+                metric.update(preds(), real=True)
+                metric.update(target(), real=False)
+                vals.append(metric.compute() if not index_0 else metric.compute()[0])
+                metric.reset()
         fig, ax = metric.plot(vals)
 
     assert isinstance(fig, plt.Figure)
