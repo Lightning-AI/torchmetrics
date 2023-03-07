@@ -362,6 +362,37 @@ def universal_image_quality_index():
     return fig, ax
 
 
+def mean_average_precision():
+    """Plot MAP metric."""
+    from torchmetrics.detection.mean_ap import MeanAveragePrecision
+
+    preds = lambda: [
+        {
+            "boxes": torch.tensor([[258.0, 41.0, 606.0, 285.0]]) + torch.randint(10, (1, 4)),
+            "scores": torch.tensor([0.536]) + 0.1 * torch.rand(1),
+            "labels": torch.tensor([0]),
+        }
+    ]
+    target = [
+        {
+            "boxes": torch.tensor([[214.0, 41.0, 562.0, 285.0]]),
+            "labels": torch.tensor([0]),
+        }
+    ]
+
+    # plot single value
+    metric = MeanAveragePrecision()
+    metric.update(preds(), target)
+    fig, ax = metric.plot()
+
+    # plot multiple values
+    metric = MeanAveragePrecision()
+    vals = [metric(preds(), target) for _ in range(10)]
+    fig, ax = metric.plot(vals)
+
+    return fig, ax
+
+
 if __name__ == "__main__":
     metrics_func = {
         "accuracy": accuracy_example,
@@ -373,6 +404,7 @@ if __name__ == "__main__":
         "si-snr": si_snr_example,
         "stoi": stoi_example,
         "mean_squared_error": mean_squared_error_example,
+        "mean_average_precision": mean_average_precision,
         "confusion_matrix": confusion_matrix_example,
         "spectral_distortion_index": spectral_distortion_index_example,
         "error_relative_global_dimensionless_synthesis": error_relative_global_dimensionless_synthesis,

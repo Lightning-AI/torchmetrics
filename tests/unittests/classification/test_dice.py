@@ -95,6 +95,7 @@ class TestDiceBinary(MetricTester):
 
     @pytest.mark.parametrize("ddp", [False])
     def test_dice_class(self, ddp, preds, target, ignore_index):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -105,6 +106,7 @@ class TestDiceBinary(MetricTester):
         )
 
     def test_dice_fn(self, preds, target, ignore_index):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             target,
@@ -134,6 +136,7 @@ class TestDiceMulti(MetricTester):
 
     @pytest.mark.parametrize("ddp", [False])
     def test_dice_class(self, ddp, preds, target, ignore_index):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -144,6 +147,7 @@ class TestDiceMulti(MetricTester):
         )
 
     def test_dice_fn(self, preds, target, ignore_index):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             target,

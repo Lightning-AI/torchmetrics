@@ -82,6 +82,7 @@ class TestPESQ(MetricTester):
     @pytest.mark.parametrize("num_processes", [1, 2])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_pesq(self, preds, target, ref_metric, fs, mode, num_processes, ddp):
+        """Test class implementation of metric."""
         if num_processes != 1 and ddp:
             pytest.skip("Multiprocessing and ddp does not work together")
         self.run_class_metric_test(
@@ -95,6 +96,7 @@ class TestPESQ(MetricTester):
 
     @pytest.mark.parametrize("num_processes", [1, 2])
     def test_pesq_functional(self, preds, target, ref_metric, fs, mode, num_processes):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             target,
@@ -104,6 +106,7 @@ class TestPESQ(MetricTester):
         )
 
     def test_pesq_differentiability(self, preds, target, ref_metric, fs, mode):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -113,10 +116,12 @@ class TestPESQ(MetricTester):
         )
 
     def test_pesq_half_cpu(self, preds, target, ref_metric, fs, mode):
+        """Test dtype support of the metric on CPU."""
         pytest.xfail("PESQ metric does not support cpu + half precision")
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_pesq_half_gpu(self, preds, target, ref_metric, fs, mode):
+        """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(
             preds=preds,
             target=target,

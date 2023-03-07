@@ -70,6 +70,7 @@ class TestSpectralAngleMapper(MetricTester):
 
     @pytest.mark.parametrize("ddp", [True, False])
     def test_sam(self, reduction, preds, target, ddp):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
             preds,
@@ -80,6 +81,7 @@ class TestSpectralAngleMapper(MetricTester):
         )
 
     def test_sam_functional(self, reduction, preds, target):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             target,
@@ -91,6 +93,7 @@ class TestSpectralAngleMapper(MetricTester):
     # SAM half + cpu does not work due to missing support in torch.log
     @pytest.mark.xfail(reason="SAM metric does not support cpu + half precision")
     def test_sam_half_cpu(self, reduction, preds, target):
+        """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(
             preds,
             target,
@@ -100,6 +103,7 @@ class TestSpectralAngleMapper(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_sam_half_gpu(self, reduction, preds, target):
+        """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(preds, target, SpectralAngleMapper, spectral_angle_mapper)
 
 
