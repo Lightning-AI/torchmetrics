@@ -310,6 +310,21 @@ def test_device_and_dtype_transfer(tmpdir):
     assert metric.x.dtype == torch.float16
 
 
+def test_disable_of_normal_dtype_methods():
+    """Check that the default dtype changing methods does nothing."""
+    metric = DummyMetricSum()
+    assert metric.x.dtype == torch.float32
+
+    metric = metric.half()
+    assert metric.x.dtype == torch.float32
+
+    metric = metric.double()
+    assert metric.x.dtype == torch.float32
+
+    metric = metric.type(torch.half)
+    assert metric.x.dtype == torch.float32
+
+
 def test_warning_on_compute_before_update():
     """Test that an warning is raised if user tries to call compute before update."""
     metric = DummyMetricSum()
