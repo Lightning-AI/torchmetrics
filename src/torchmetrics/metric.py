@@ -145,6 +145,7 @@ class Metric(Module, ABC):
         self._to_sync = self.sync_on_compute
         self._should_unsync = True
         self._enable_grad = False
+        self._dtype_convert = False
 
         # initialize state
         self._defaults: Dict[str, Union[List, Tensor]] = {}
@@ -692,14 +693,23 @@ class Metric(Module, ABC):
         Arguments:
             dst_type (type or string): the desired type.
         """
-        return super().type(dst_type)
+        self._dtype_convert = True
+        out = super().type(dst_type)
+        out._dtype_convert = False
+        return out
 
     def _apply(self, fn: Callable) -> Module:
         """Overwrite _apply function such that we can also move metric states to the correct device.
 
-        This method is called by the base ``nn.Module`` class whenever `.to`, `.cuda`, etc. methods are called.
+        This method is called by the base ``nn.Module`` class whenever `.to`, `.cuda`, `.float`, `.half` etc. methods
+        are called. Dtype conversion is garded and will only happen through the special `set_dtype` method.
         """
         this = super()._apply(fn)
+        fs = str(fn)
+        cond = any(f in fs for f in ["Module.type", "Module.half", "Module.float", "Module.double", "Module.bfloat16"])
+        if not self._dtype_convert and cond:
+            return this
+
         # Also apply fn to metric states and defaults
         for key, value in this._defaults.items():
             if isinstance(value, Tensor):
