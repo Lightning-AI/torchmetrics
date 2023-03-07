@@ -553,9 +553,11 @@ class DummyMetric(Metric):
         self.add_state("x", tensor(0.0), dist_reduce_fx="sum")
 
     def update(self):
+        """Update state."""
         pass
 
     def compute(self):
+        """Compute value."""
         pass
 
 
@@ -570,9 +572,11 @@ class DummyListMetric(Metric):
         self.add_state("x", [], dist_reduce_fx="cat")
 
     def update(self, x=torch.tensor(1)):
+        """Update state."""
         self.x.append(x)
 
     def compute(self):
+        """Compute value."""
         return self.x
 
 
@@ -580,9 +584,11 @@ class DummyMetricSum(DummyMetric):
     """DummyMetricSum for testing core components."""
 
     def update(self, x):
+        """Update state."""
         self.x += x
 
     def compute(self):
+        """Compute value."""
         return self.x
 
 
@@ -590,9 +596,11 @@ class DummyMetricDiff(DummyMetric):
     """DummyMetricDiff for testing core components."""
 
     def update(self, y):
+        """Update state."""
         self.x -= y
 
     def compute(self):
+        """Compute value."""
         return self.x
 
 
@@ -600,6 +608,7 @@ class DummyMetricMultiOutput(DummyMetricSum):
     """DummyMetricMultiOutput for testing core components."""
 
     def compute(self):
+        """Compute value."""
         return [self.x, self.x]
 
 

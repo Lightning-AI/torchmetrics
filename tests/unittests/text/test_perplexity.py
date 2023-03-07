@@ -51,6 +51,7 @@ class TestPerplexity(MetricTester):
 
     @pytest.mark.parametrize("ddp", [False, True])
     def test_perplexity_class(self, ddp, preds, target, ignore_index):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -61,6 +62,7 @@ class TestPerplexity(MetricTester):
         )
 
     def test_perplexity_fn(self, preds, target, ignore_index):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             target,
@@ -70,6 +72,7 @@ class TestPerplexity(MetricTester):
         )
 
     def test_accuracy_differentiability(self, preds, target, ignore_index):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         self.run_differentiability_test(
             preds=preds,
             target=target,
