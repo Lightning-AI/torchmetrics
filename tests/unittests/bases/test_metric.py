@@ -308,9 +308,6 @@ def test_device_and_dtype_transfer(tmpdir):
     assert metric.x.dtype == torch.float16
     metric.reset()
     assert metric.x.dtype == torch.float16
-    import pdb
-
-    pdb.set_trace()
 
 
 def test_disable_of_normal_dtype_methods():
