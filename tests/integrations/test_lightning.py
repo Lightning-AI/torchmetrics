@@ -16,6 +16,7 @@ from unittest import mock
 import torch
 from pytorch_lightning import LightningModule, Trainer
 from torch import tensor
+from torch.nn import Linear
 from torch.utils.data import DataLoader
 
 from integrations.helpers import no_warning_call
@@ -300,3 +301,48 @@ def test_scriptable(tmpdir):
     output = model(rand_input)
     script_output = script_model(rand_input)
     assert torch.allclose(output, script_output)
+
+
+def test_dtype_in_pl_module_transfer(tmpdir):
+    """Test that metric states don't change dtype when .half() or .float() is called on the LightningModule."""
+
+    class BoringModel(LightningModule):
+        def __init__(self, metric_dtype=torch.float32):
+            super().__init__()
+            self.layer = Linear(32, 32)
+            self.metric = SumMetric()
+            self.metric.set_dtype(metric_dtype)
+
+        def forward(self, x):
+            return self.layer(x)
+
+        def training_step(self, batch, batch_idx):
+            pred = self.forward(batch)
+            loss = self(batch).sum()
+            self.metric.update(torch.flatten(pred), torch.flatten(batch))
+
+            return {"loss": loss}
+
+        def configure_optimizers(self):
+            return torch.optim.SGD(self.layer.parameters(), lr=0.1)
+
+    model = BoringModel()
+    assert model.metric.value.dtype == torch.float32
+    model = model.half()
+    assert model.metric.value.dtype == torch.float32
+
+    model = BoringModel()
+    assert model.metric.value.dtype == torch.float32
+    model = model.double()
+    assert model.metric.value.dtype == torch.float32
+
+    model = BoringModel(metric_dtype=torch.float16)
+    assert model.metric.value.dtype == torch.float16
+    model = model.float()
+    assert model.metric.value.dtype == torch.float16
+
+    model = BoringModel()
+    assert model.metric.value.dtype == torch.float32
+
+    model = model.type(torch.half)
+    assert model.metric.value.dtype == torch.float32

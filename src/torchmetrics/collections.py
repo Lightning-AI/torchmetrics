@@ -471,3 +471,13 @@ class MetricCollection(ModuleDict):
         if self.postfix:
             repr_str += f"{',' if not self.prefix else ''}\n  postfix={self.postfix}"
         return repr_str + "\n)"
+
+    def set_dtype(self, dst_type: Union[str, torch.dtype]) -> "MetricCollection":
+        """Transfer all metric state to specific dtype. Special version of standard `type` method.
+
+        Arguments:
+            dst_type (type or string): the desired type.
+        """
+        for _, m in self.items(keep_base=True, copy_state=False):
+            m.set_dtype(dst_type)
+        return self

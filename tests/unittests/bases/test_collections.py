@@ -91,11 +91,11 @@ def test_device_and_dtype_transfer_metriccollection(tmpdir):
     for _, metric in metric_collection.items():
         assert metric.x.is_cuda
 
-    metric_collection = metric_collection.double()
+    metric_collection = metric_collection.set_dtype(torch.double)
     for _, metric in metric_collection.items():
         assert metric.x.dtype == torch.float64
 
-    metric_collection = metric_collection.half()
+    metric_collection = metric_collection.set_dtype(torch.half)
     for _, metric in metric_collection.items():
         assert metric.x.dtype == torch.float16
 
