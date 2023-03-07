@@ -285,7 +285,7 @@ def test_plot_methods(metric_class: object, preds: Callable, target: Callable, n
         ),
         pytest.param(
             partial(InceptionScore, feature=64),
-            lambda: torch.randint(0, 255, (50, 3, 299, 299), dtype=torch.uint8),
+            lambda: torch.randint(0, 255, (30, 3, 299, 299), dtype=torch.uint8),
             None,
             True,
             id="inception score",
@@ -312,7 +312,7 @@ def test_plot_methods_special_image_metrics(metric_class, preds, target, index_0
         vals = []
         for _ in range(num_vals):
             if target is None:
-                vals.append(metric(preds()))
+                vals.append(metric(preds())[0])
             else:
                 metric.update(preds(), real=True)
                 metric.update(target(), real=False)
