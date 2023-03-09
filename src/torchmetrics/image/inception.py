@@ -28,7 +28,7 @@ if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["InceptionScore.plot"]
 
 
-__doctest_requires__ = {("InceptionScore", "IS"): ["torch_fidelity"]}
+__doctest_requires__ = {("InceptionScore", "InceptionScore.plot"): ["torch_fidelity"]}
 
 
 class InceptionScore(Metric):

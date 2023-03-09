@@ -35,7 +35,7 @@ else:
     class _FeatureExtractorInceptionV3(Module):
         pass
 
-    __doctest_skip__ = ["FrechetInceptionDistance", "FID"]
+    __doctest_skip__ = ["FrechetInceptionDistance", "FrechetInceptionDistance.plot"]
 
 
 if _SCIPY_AVAILABLE:

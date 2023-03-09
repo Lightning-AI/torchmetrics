@@ -27,7 +27,7 @@ from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["KernelInceptionDistance.plot"]
 
-__doctest_requires__ = {("KernelInceptionDistance", "KID"): ["torch_fidelity"]}
+__doctest_requires__ = {("KernelInceptionDistance", "KernelInceptionDistance.plot"): ["torch_fidelity"]}
 
 
 def maximum_mean_discrepancy(k_xx: Tensor, k_xy: Tensor, k_yy: Tensor) -> Tensor:
