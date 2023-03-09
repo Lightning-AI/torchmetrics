@@ -269,7 +269,8 @@ acc = torchmetrics.functional.classification.multiclass_accuracy(
 
 ### Covered domains and example metrics
 
-We currently have implemented metrics within the following domains:
+In total TorchMetrics contains [90+ metrics](https://torchmetrics.readthedocs.io/en/stable/all-metrics.html), which
+convers the following domains:
 
 - Audio
 - Classification
@@ -281,7 +282,51 @@ We currently have implemented metrics within the following domains:
 - Regression
 - Text
 
-In total TorchMetrics contains [90+ metrics](https://torchmetrics.readthedocs.io/en/stable/all-metrics.html)!
+Each domain may require some additional dependencies which can be installed with `pip install torchmetrics[audio]`,
+`pip install torchmetrics['image']` etc.
+
+### Additional features
+
+#### Plotting
+
+Visualization of metrics can be important to help understand what is going on with your machine learning algorithms.
+Torchmetrics have build-in plotting support (install dependencies with `pip install torchmetrics[visual]`) for nearly
+all modular metrics through the `.plot` method. Simply call the method to get a simple visualization of any metric!
+
+```python
+import torch
+from torchmetrics.classification import MulticlassAccuracy, MulticlassConfusionMatrix
+
+num_classes = 3
+
+# this will generate two distributions that comes more similar as iterations increase
+w = torch.randn(num_classes)
+target = lambda it: torch.multinomial((it * w).softmax(dim=-1), 100, replacement=True)
+preds = lambda it: torch.multinomial((it * w).softmax(dim=-1), 100, replacement=True)
+
+acc = MulticlassAccuracy(num_classes=num_classes, average="micro")
+acc_per_class = MulticlassAccuracy(num_classes=num_classes, average=None)
+confmat = MulticlassConfusionMatrix(num_classes=num_classes)
+
+# plot single value
+for i in range(5):
+    acc_per_class.update(preds(i), target(i))
+    confmat.update(preds(i), target(i))
+fig1, ax1 = acc_per_class.plot()
+fig2, ax2 = confmat.plot()
+
+# plot multiple values
+values = []
+for i in range(10):
+    values.append(acc(preds(i), target(i)))
+fig3, ax3 = acc.plot(values)
+```
+
+<p align="center">
+  <img src="docs/source/_static/images/plot_example.png" width="1000">
+</p>
+
+For examples of plotting different metrics try running [this example file](examples/plotting.py).
 
 ## Contribute!
 
