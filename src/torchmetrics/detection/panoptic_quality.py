@@ -11,13 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import warnings
 from typing import Any, Collection, Optional, Sequence, Union
 
 import torch
 from torch import Tensor
 
-from torchmetrics.functional.detection.panoptic_quality import (
+from torchmetrics.functional.detection._panoptic_quality_common import (
     _get_category_id_to_continuous_id,
     _get_void_color,
     _panoptic_quality_compute,
