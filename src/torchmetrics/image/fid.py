@@ -343,7 +343,7 @@ class FrechetInceptionDistance(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics.image.kid import KernelInceptionDistance
+            >>> from torchmetrics.image.fid import FrechetInceptionDistance
             >>> imgs_dist1 = lambda: torch.randint(0, 200, (100, 3, 299, 299), dtype=torch.uint8)
             >>> imgs_dist2 = lambda: torch.randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)
             >>> metric = FrechetInceptionDistance(feature=64)
