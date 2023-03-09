@@ -322,6 +322,10 @@ for i in range(10):
 fig3, ax3 = acc.plot(values)
 ```
 
+<p align="center">
+  <img src="docs/source/_static/images/plot_example.png" width="1000">
+</p>
+
 For examples of plotting different metrics try running [this example file](examples/plotting.py).
 
 ## Contribute!
