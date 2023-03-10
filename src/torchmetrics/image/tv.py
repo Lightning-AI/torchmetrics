@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any
+from typing import Any, Optional, Sequence, Union
 
 import torch
 from torch import Tensor, tensor
@@ -20,6 +20,11 @@ from typing_extensions import Literal
 from torchmetrics.functional.image.tv import _total_variation_compute, _total_variation_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["TotalVariation.plot"]
 
 
 class TotalVariation(Metric):
@@ -86,3 +91,44 @@ class TotalVariation(Metric):
         """Compute final total variation."""
         score = dim_zero_cat(self.score) if self.reduction is None or self.reduction == "none" else self.score
         return _total_variation_compute(score, self.num_elements, self.reduction)
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> import torch
+            >>> from torchmetrics import TotalVariation
+            >>> metric = TotalVariation()
+            >>> metric.update(torch.rand(5, 3, 28, 28))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics import TotalVariation
+            >>> metric = TotalVariation()
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(torch.rand(5, 3, 28, 28)))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        return self._plot(val, ax)
