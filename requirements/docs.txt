@@ -16,3 +16,4 @@ sphinx-copybutton>=0.3
 -r visual.txt
 -r audio.txt
 -r detection.txt
+-r image.txt
