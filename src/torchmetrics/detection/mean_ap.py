@@ -396,10 +396,10 @@ class MeanAveragePrecision(Metric):
             raise ModuleNotFoundError("When `iou_type` is set to 'segm', pycocotools need to be installed")
         self.iou_type = iou_type
         self.bbox_area_ranges = {
-            "all": (0**2, int(1e5**2)),
-            "small": (0**2, 32**2),
-            "medium": (32**2, 96**2),
-            "large": (96**2, int(1e5**2)),
+            "all": (float(0**2), float(1e5**2)),
+            "small": (float(0**2), float(32**2)),
+            "medium": (float(32**2), float(96**2)),
+            "large": (float(96**2), float(1e5**2)),
         }
 
         if not isinstance(class_metrics, bool):
