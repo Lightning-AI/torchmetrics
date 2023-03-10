@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
-from typing import Any, List
+from typing import Any, List, Optional, Sequence, Union
 
 import torch
 from torch import Tensor
@@ -21,7 +21,11 @@ from typing_extensions import Literal
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
-from torchmetrics.utilities.imports import _LPIPS_AVAILABLE
+from torchmetrics.utilities.imports import _LPIPS_AVAILABLE, _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["LearnedPerceptualImagePatchSimilarity.plot"]
 
 if _LPIPS_AVAILABLE:
     from lpips import LPIPS as _LPIPS
@@ -30,13 +34,13 @@ if _LPIPS_AVAILABLE:
         _LPIPS(pretrained=True, net="vgg")
 
     if _SKIP_SLOW_DOCTEST and not _try_proceed_with_timeout(_download_lpips):
-        __doctest_skip__ = ["LearnedPerceptualImagePatchSimilarity", "LPIPS"]
+        __doctest_skip__ = ["LearnedPerceptualImagePatchSimilarity", "LearnedPerceptualImagePatchSimilarity.plot"]
 else:
 
     class _LPIPS(Module):
         pass
 
-    __doctest_skip__ = ["LearnedPerceptualImagePatchSimilarity", "LPIPS"]
+    __doctest_skip__ = ["LearnedPerceptualImagePatchSimilarity", "LearnedPerceptualImagePatchSimilarity.plot"]
 
 
 class NoTrainLpips(_LPIPS):
@@ -167,3 +171,44 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
         if self.reduction == "sum":
             return self.sum_scores
         return None
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> import torch
+            >>> from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
+            >>> metric = LearnedPerceptualImagePatchSimilarity()
+            >>> metric.update(torch.rand(10, 3, 100, 100), torch.rand(10, 3, 100, 100))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
+            >>> metric = LearnedPerceptualImagePatchSimilarity()
+            >>> values = [ ]
+            >>> for _ in range(3):
+            ...     values.append(metric(torch.rand(10, 3, 100, 100), torch.rand(10, 3, 100, 100)))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        return self._plot(val, ax)
