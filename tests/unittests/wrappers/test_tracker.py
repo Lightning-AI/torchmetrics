@@ -190,7 +190,7 @@ def test_best_metric_for_not_well_defined_metric_collection(base_metric):
     ("input_to_tracker", "assert_type"),
     [
         (MultioutputWrapper(MeanSquaredError(), num_outputs=2), torch.Tensor),
-        (
+        (  # nested version
             MetricCollection(
                 {
                     "mse": MultioutputWrapper(MeanSquaredError(), num_outputs=2),

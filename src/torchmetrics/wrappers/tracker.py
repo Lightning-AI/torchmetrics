@@ -38,7 +38,7 @@ class MetricTracker(ModuleList):
     Out of the box, this wrapper class fully supports that the base metric being tracked is a single `Metric`, a
     `MetricCollection` or another `MetricWrapper` wrapped around a metric. However, multiple layers of nesting, such
     as using a `Metric` inside a `MetricWrapper` inside a `MetricCollection` is not fully supported, especially the
-    `.best_metric` method that cannot auto compute the best metric for such nested structures.
+    `.best_metric` method that cannot auto compute the best metric and index for such nested structures.
 
     Args:
         metric: instance of a ``torchmetrics.Metric`` or ``torchmetrics.MetricCollection``
@@ -192,7 +192,6 @@ class MetricTracker(ModuleList):
         Returns:
             Either a single value or a tuple, depends on the value of ``return_step`` and the object being tracked.
 
-
             - If a single metric is being tracked and ``return_step=False`` then a single tensor will be returned
             - If a single metric is being tracked and ``return_step=True`` then a 2-element tuple will be returned,
               where the first value is optimal value and second value is the corresponding optimal step
@@ -204,7 +203,7 @@ class MetricTracker(ModuleList):
               of the first dict being the optimal values and the values of the second dict being the optimal step
 
             In addtion the value in all cases may be ``None`` if the underlying metric does have a proper defined way
-            of being optimal.
+            of being optimal or in the case where a nested structure of metrics are being tracked.
         """
         res = self.compute_all()
         if isinstance(res, list):
@@ -259,4 +258,4 @@ class MetricTracker(ModuleList):
     def _check_for_increment(self, method: str) -> None:
         """Check that a metric that can be updated/used for computations has been intialized."""
         if not self._increment_called:
-            raise ValueError(f"`{method}` cannot be called before `.increment()` has been called")
+            raise ValueError(f"`{method}` cannot be called before `.increment()` has been called.")
