@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any, List, Optional, Sequence, Tuple, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -25,6 +25,11 @@ from torchmetrics.functional.regression.kendall import (
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["KendallRankCorrCoef.plot"]
 
 
 class KendallRankCorrCoef(Metric):
@@ -155,3 +160,44 @@ class KendallRankCorrCoef(Metric):
         if p_value is not None:
             return tau, p_value
         return tau
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import randn
+            >>> # Example plotting a single value
+            >>> from torchmetrics.regression import KendallRankCorrCoef
+            >>> metric = KendallRankCorrCoef()
+            >>> metric.update(randn(10,), randn(10,))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import randn
+            >>> # Example plotting multiple values
+            >>> from torchmetrics.regression import KendallRankCorrCoef
+            >>> metric = KendallRankCorrCoef()
+            >>> values = []
+            >>> for _ in range(10):
+            ...     values.append(metric(randn(10,), randn(10,)))
+            >>> fig, ax = metric.plot(values)
+        """
+        return self._plot(val, ax)
