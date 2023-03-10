@@ -73,6 +73,8 @@ from torchmetrics.regression import (
     CosineSimilarity,
     ExplainedVariance,
     KendallRankCorrCoef,
+    KLDivergence,
+    LogCoshError,
     MeanSquaredError,
 )
 
@@ -275,6 +277,13 @@ _nominal_input = lambda: torch.randint(0, 4, (100,))
         pytest.param(CosineSimilarity, _rand_input, _rand_input, id="cosine similarity"),
         pytest.param(ExplainedVariance, _rand_input, _rand_input, id="explained variance"),
         pytest.param(KendallRankCorrCoef, _rand_input, _rand_input, id="kendall rank corr coef"),
+        pytest.param(
+            KLDivergence,
+            lambda: torch.randn(10, 3).softmax(dim=-1),
+            lambda: torch.randn(10, 3).softmax(dim=-1),
+            id="kl divergence",
+        ),
+        pytest.param(LogCoshError, _rand_input, _rand_input, id="log cosh error"),
     ],
 )
 @pytest.mark.parametrize("num_vals", [1, 5])
