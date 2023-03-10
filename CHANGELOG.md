@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     [#1585](https://github.com/Lightning-AI/metrics/pull/1585),
     [#1593](https://github.com/Lightning-AI/metrics/pull/1593),
     [#1600](https://github.com/Lightning-AI/metrics/pull/1600),
+    [#1605](https://github.com/Lightning-AI/metrics/pull/1605),
 )
 
 
@@ -115,6 +116,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 - Fixed support in `MetricTracker` for `MultioutputWrapper` and nested structures ([#1608](https://github.com/Lightning-AI/metrics/pull/1608))
+
+
+- Fixed overflow error for specific cases in `MAP` when big areas are calculated ([#1607](https://github.com/Lightning-AI/metrics/pull/1607))
 
 
 ## [0.11.2] - 2023-02-21
