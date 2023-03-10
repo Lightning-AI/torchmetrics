@@ -104,19 +104,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+-
+
+
+## [0.11.4] - 2023-03-10
+
+### Fixed
 
 - Fixed evaluation of `R2Score` with near constant target ([#1576](https://github.com/Lightning-AI/metrics/pull/1576))
-
-
-- Fixed `dtype` conversion when metric is submodule ([#1583](https://github.com/Lightning-AI/metrics/pull/1583))
-
-
+- Fixed dtype conversion when metric is submodule ([#1583](https://github.com/Lightning-AI/metrics/pull/1583))
 - Fixed bug related to `top_k>1` and `ignore_index!=None` in `StatScores` based metrics ([#1589](https://github.com/Lightning-AI/metrics/pull/1589))
-
-
 - Fixed corner case for `PearsonCorrCoef` when running in ddp mode but only on single device ([#1587](https://github.com/Lightning-AI/metrics/pull/1587))
-
-
 - Fixed overflow error for specific cases in `MAP` when big areas are calculated ([#1607](https://github.com/Lightning-AI/metrics/pull/1607))
 
 
