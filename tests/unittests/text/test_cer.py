@@ -15,7 +15,7 @@ else:
     compute_measures = Callable
 
 
-def compare_fn(preds: Union[str, List[str]], target: Union[str, List[str]]):
+def _compare_fn(preds: Union[str, List[str]], target: Union[str, List[str]]):
     return cer(target, preds)
 
 
@@ -38,16 +38,16 @@ class TestCharErrorRate(TextTester):
             preds=preds,
             targets=targets,
             metric_class=CharErrorRate,
-            reference_metric=compare_fn,
+            reference_metric=_compare_fn,
         )
 
     def test_cer_functional(self, preds, targets):
-        """Test functional version of cer."""
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             targets,
             metric_functional=char_error_rate,
-            reference_metric=compare_fn,
+            reference_metric=_compare_fn,
         )
 
     def test_cer_differentiability(self, preds, targets):

@@ -55,6 +55,7 @@ class TestBinaryMatthewsCorrCoef(MetricTester):
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_binary_matthews_corrcoef(self, input, ddp, ignore_index):
+        """Test class implementation of metric."""
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -72,6 +73,7 @@ class TestBinaryMatthewsCorrCoef(MetricTester):
 
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     def test_binary_matthews_corrcoef_functional(self, input, ignore_index):
+        """Test functional implementation of metric."""
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -87,6 +89,7 @@ class TestBinaryMatthewsCorrCoef(MetricTester):
         )
 
     def test_binary_matthews_corrcoef_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -98,6 +101,7 @@ class TestBinaryMatthewsCorrCoef(MetricTester):
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_binary_matthews_corrcoef_dtype_cpu(self, input, dtype):
+        """Test dtype support of the metric on CPU."""
         preds, target = input
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
@@ -113,6 +117,7 @@ class TestBinaryMatthewsCorrCoef(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_binary_matthews_corrcoef_dtype_gpu(self, input, dtype):
+        """Test dtype support of the metric on GPU."""
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,
@@ -142,6 +147,7 @@ class TestMulticlassMatthewsCorrCoef(MetricTester):
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multiclass_matthews_corrcoef(self, input, ddp, ignore_index):
+        """Test class implementation of metric."""
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -159,6 +165,7 @@ class TestMulticlassMatthewsCorrCoef(MetricTester):
 
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     def test_multiclass_matthews_corrcoef_functional(self, input, ignore_index):
+        """Test functional implementation of metric."""
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -174,6 +181,7 @@ class TestMulticlassMatthewsCorrCoef(MetricTester):
         )
 
     def test_multiclass_matthews_corrcoef_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -185,6 +193,7 @@ class TestMulticlassMatthewsCorrCoef(MetricTester):
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multiclass_matthews_corrcoef_dtype_cpu(self, input, dtype):
+        """Test dtype support of the metric on CPU."""
         preds, target = input
         self.run_precision_test_cpu(
             preds=preds,
@@ -198,6 +207,7 @@ class TestMulticlassMatthewsCorrCoef(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multiclass_matthews_corrcoef_dtype_gpu(self, input, dtype):
+        """Test dtype support of the metric on GPU."""
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,
@@ -227,6 +237,7 @@ class TestMultilabelMatthewsCorrCoef(MetricTester):
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multilabel_matthews_corrcoef(self, input, ddp, ignore_index):
+        """Test class implementation of metric."""
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -244,6 +255,7 @@ class TestMultilabelMatthewsCorrCoef(MetricTester):
 
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     def test_multilabel_matthews_corrcoef_functional(self, input, ignore_index):
+        """Test functional implementation of metric."""
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -259,6 +271,7 @@ class TestMultilabelMatthewsCorrCoef(MetricTester):
         )
 
     def test_multilabel_matthews_corrcoef_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -270,6 +283,7 @@ class TestMultilabelMatthewsCorrCoef(MetricTester):
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multilabel_matthews_corrcoef_dtype_cpu(self, input, dtype):
+        """Test dtype support of the metric on CPU."""
         preds, target = input
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
@@ -285,6 +299,7 @@ class TestMultilabelMatthewsCorrCoef(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multilabel_matthews_corrcoef_dtype_gpu(self, input, dtype):
+        """Test dtype support of the metric on GPU."""
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,

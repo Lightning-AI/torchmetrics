@@ -138,6 +138,7 @@ class TestSSIM(MetricTester):
 
     @pytest.mark.parametrize("ddp", [True, False])
     def test_ssim_sk(self, preds, target, sigma, ddp):
+        """Test class implementation of metricvs skimage."""
         self.run_class_metric_test(
             ddp,
             preds,
@@ -152,6 +153,7 @@ class TestSSIM(MetricTester):
 
     @pytest.mark.parametrize("ddp", [True, False])
     def test_ssim_pt(self, preds, target, sigma, ddp):
+        """Test class implementation of metric vs pytorch_msssim."""
         self.run_class_metric_test(
             ddp,
             preds,
@@ -166,6 +168,7 @@ class TestSSIM(MetricTester):
 
     @pytest.mark.parametrize("ddp", [True, False])
     def test_ssim_without_gaussian_kernel(self, preds, target, sigma, ddp):
+        """Test class implementation of metric with gaussian kernel."""
         self.run_class_metric_test(
             ddp,
             preds,
@@ -181,6 +184,7 @@ class TestSSIM(MetricTester):
 
     @pytest.mark.parametrize("reduction_arg", ["sum", "elementwise_mean", None])
     def test_ssim_functional_sk(self, preds, target, sigma, reduction_arg):
+        """Test functional implementation of metric vs skimage."""
         self.run_functional_metric_test(
             preds,
             target,
@@ -191,6 +195,7 @@ class TestSSIM(MetricTester):
 
     @pytest.mark.parametrize("reduction_arg", ["sum", "elementwise_mean", None])
     def test_ssim_functional_pt(self, preds, target, sigma, reduction_arg):
+        """Test functional implementation of metric vs pytorch_msssim."""
         self.run_functional_metric_test(
             preds,
             target,
@@ -202,12 +207,14 @@ class TestSSIM(MetricTester):
     # SSIM half + cpu does not work due to missing support in torch.log
     @pytest.mark.xfail(reason="SSIM metric does not support cpu + half precision")
     def test_ssim_half_cpu(self, preds, target, sigma):
+        """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(
             preds, target, StructuralSimilarityIndexMeasure, structural_similarity_index_measure, {"data_range": 1.0}
         )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_ssim_half_gpu(self, preds, target, sigma):
+        """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(
             preds, target, StructuralSimilarityIndexMeasure, structural_similarity_index_measure, {"data_range": 1.0}
         )
@@ -320,6 +327,7 @@ def test_ssim_unequal_kernel_size():
     [(i.preds, i.target) for i in _inputs],
 )
 def test_full_image_output(preds, target):
+    """Test that if full output should be returned, then its shape matches the input."""
     out = structural_similarity_index_measure(preds[0], target[0])
     assert isinstance(out, Tensor)
     assert out.numel() == 1

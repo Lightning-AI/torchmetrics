@@ -54,6 +54,7 @@ class TestBinaryPrecisionRecallCurve(MetricTester):
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_binary_precision_recall_curve(self, input, ddp, ignore_index):
+        """Test class implementation of metric."""
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -71,6 +72,7 @@ class TestBinaryPrecisionRecallCurve(MetricTester):
 
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     def test_binary_precision_recall_curve_functional(self, input, ignore_index):
+        """Test functional implementation of metric."""
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -86,6 +88,7 @@ class TestBinaryPrecisionRecallCurve(MetricTester):
         )
 
     def test_binary_precision_recall_curve_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -97,6 +100,7 @@ class TestBinaryPrecisionRecallCurve(MetricTester):
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_binary_precision_recall_curve_dtype_cpu(self, input, dtype):
+        """Test dtype support of the metric on CPU."""
         preds, target = input
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
@@ -112,6 +116,7 @@ class TestBinaryPrecisionRecallCurve(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_binary_precision_recall_curve_dtype_gpu(self, input, dtype):
+        """Test dtype support of the metric on GPU."""
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,
@@ -124,6 +129,7 @@ class TestBinaryPrecisionRecallCurve(MetricTester):
 
     @pytest.mark.parametrize("threshold_fn", [lambda x: x, lambda x: x.numpy().tolist()], ids=["as tensor", "as list"])
     def test_binary_precision_recall_curve_threshold_arg(self, input, threshold_fn):
+        """Test that different types of `thresholds` argument lead to same result."""
         preds, target = input
 
         for pred, true in zip(preds, target):
@@ -173,6 +179,7 @@ class TestMulticlassPrecisionRecallCurve(MetricTester):
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multiclass_precision_recall_curve(self, input, ddp, ignore_index):
+        """Test class implementation of metric."""
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -191,6 +198,7 @@ class TestMulticlassPrecisionRecallCurve(MetricTester):
 
     @pytest.mark.parametrize("ignore_index", [None, -1])
     def test_multiclass_precision_recall_curve_functional(self, input, ignore_index):
+        """Test functional implementation of metric."""
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -207,6 +215,7 @@ class TestMulticlassPrecisionRecallCurve(MetricTester):
         )
 
     def test_multiclass_precision_recall_curve_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -218,6 +227,7 @@ class TestMulticlassPrecisionRecallCurve(MetricTester):
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multiclass_precision_recall_curve_dtype_cpu(self, input, dtype):
+        """Test dtype support of the metric on CPU."""
         preds, target = input
         if dtype == torch.half and not ((preds > 0) & (preds < 1)).all():
             pytest.xfail(reason="half support for torch.softmax on cpu not implemented")
@@ -233,6 +243,7 @@ class TestMulticlassPrecisionRecallCurve(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multiclass_precision_recall_curve_dtype_gpu(self, input, dtype):
+        """Test dtype support of the metric on GPU."""
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,
@@ -245,6 +256,7 @@ class TestMulticlassPrecisionRecallCurve(MetricTester):
 
     @pytest.mark.parametrize("threshold_fn", [lambda x: x, lambda x: x.numpy().tolist()], ids=["as tensor", "as list"])
     def test_multiclass_precision_recall_curve_threshold_arg(self, input, threshold_fn):
+        """Test that different types of `thresholds` argument lead to same result."""
         preds, target = input
         for pred, true in zip(preds, target):
             p1, r1, t1 = multiclass_precision_recall_curve(pred, true, num_classes=NUM_CLASSES, thresholds=None)
@@ -287,6 +299,7 @@ class TestMultilabelPrecisionRecallCurve(MetricTester):
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multilabel_precision_recall_curve(self, input, ddp, ignore_index):
+        """Test class implementation of metric."""
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -305,6 +318,7 @@ class TestMultilabelPrecisionRecallCurve(MetricTester):
 
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     def test_multilabel_precision_recall_curve_functional(self, input, ignore_index):
+        """Test functional implementation of metric."""
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -321,6 +335,7 @@ class TestMultilabelPrecisionRecallCurve(MetricTester):
         )
 
     def test_multiclass_precision_recall_curve_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -332,6 +347,7 @@ class TestMultilabelPrecisionRecallCurve(MetricTester):
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multilabel_precision_recall_curve_dtype_cpu(self, input, dtype):
+        """Test dtype support of the metric on CPU."""
         preds, target = input
         if dtype == torch.half and not ((preds > 0) & (preds < 1)).all():
             pytest.xfail(reason="half support for torch.softmax on cpu not implemented")
@@ -347,6 +363,7 @@ class TestMultilabelPrecisionRecallCurve(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multiclass_precision_recall_curve_dtype_gpu(self, input, dtype):
+        """Test dtype support of the metric on GPU."""
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,
@@ -359,6 +376,7 @@ class TestMultilabelPrecisionRecallCurve(MetricTester):
 
     @pytest.mark.parametrize("threshold_fn", [lambda x: x, lambda x: x.numpy().tolist()], ids=["as tensor", "as list"])
     def test_multilabel_precision_recall_curve_threshold_arg(self, input, threshold_fn):
+        """Test that different types of `thresholds` argument lead to same result."""
         preds, target = input
         for pred, true in zip(preds, target):
             p1, r1, t1 = multilabel_precision_recall_curve(pred, true, num_labels=NUM_CLASSES, thresholds=None)

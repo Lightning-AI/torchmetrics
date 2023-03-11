@@ -50,6 +50,7 @@ _input_logits = Input(
 
 @pytest.fixture()
 def theils_u_matrix_input():
+    """Define input in matrix format for the metric."""
     matrix = torch.cat(
         [
             torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES * BATCH_SIZE, 1), dtype=torch.float),
@@ -106,6 +107,7 @@ class TestTheilsU(MetricTester):
 
     @pytest.mark.parametrize("ddp", [False, True])
     def test_theils_u(self, ddp, preds, target, nan_strategy, nan_replace_value):
+        """Test class implementation of metric."""
         metric_args = {
             "nan_strategy": nan_strategy,
             "nan_replace_value": nan_replace_value,
@@ -126,6 +128,7 @@ class TestTheilsU(MetricTester):
         )
 
     def test_theils_u_functional(self, preds, target, nan_strategy, nan_replace_value):
+        """Test functional implementation of metric."""
         metric_args = {
             "nan_strategy": nan_strategy,
             "nan_replace_value": nan_replace_value,
@@ -140,6 +143,7 @@ class TestTheilsU(MetricTester):
         )
 
     def test_theils_u_differentiability(self, preds, target, nan_strategy, nan_replace_value):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         metric_args = {
             "nan_strategy": nan_strategy,
             "nan_replace_value": nan_replace_value,
@@ -160,6 +164,7 @@ class TestTheilsU(MetricTester):
 )
 @pytest.mark.parametrize(("nan_strategy", "nan_replace_value"), [("replace", 1.0), ("drop", None)])
 def test_theils_u_matrix(theils_u_matrix_input, nan_strategy, nan_replace_value):
+    """Test matrix version of metric works as expected."""
     tm_score = theils_u_matrix(theils_u_matrix_input, nan_strategy, nan_replace_value)
     reference_score = _dython_theils_u_matrix(theils_u_matrix_input, nan_strategy, nan_replace_value)
     assert torch.allclose(tm_score, reference_score, atol=1e-6)

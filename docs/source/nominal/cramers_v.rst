@@ -12,6 +12,7 @@ ________________
 
 .. autoclass:: torchmetrics.CramersV
     :noindex:
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________

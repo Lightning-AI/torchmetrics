@@ -55,7 +55,7 @@ def naive_implementation_pit_scipy(
     metric_func: Callable,
     eval_func: str,
 ) -> Tuple[Tensor, Tensor]:
-    """A naive implementation of `Permutation Invariant Training` based on Scipy.
+    """Naive implementation of `Permutation Invariant Training` based on Scipy.
 
     Args:
         preds: predictions, shape[batch, spk, time]
@@ -122,6 +122,7 @@ class TestPIT(MetricTester):
 
     @pytest.mark.parametrize("ddp", [True, False])
     def test_pit(self, preds, target, ref_metric, metric_func, eval_func, ddp):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
             preds,
@@ -132,6 +133,7 @@ class TestPIT(MetricTester):
         )
 
     def test_pit_functional(self, preds, target, ref_metric, metric_func, eval_func):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds=preds,
             target=target,
@@ -141,6 +143,8 @@ class TestPIT(MetricTester):
         )
 
     def test_pit_differentiability(self, preds, target, ref_metric, metric_func, eval_func):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+
         def pit_diff(preds, target, metric_func, eval_func):
             return permutation_invariant_training(preds, target, metric_func, eval_func)[0]
 
@@ -153,10 +157,12 @@ class TestPIT(MetricTester):
         )
 
     def test_pit_half_cpu(self, preds, target, ref_metric, metric_func, eval_func):
+        """Test dtype support of the metric on CPU."""
         pytest.xfail("PIT metric does not support cpu + half precision")
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_pit_half_gpu(self, preds, target, ref_metric, metric_func, eval_func):
+        """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
@@ -167,6 +173,7 @@ class TestPIT(MetricTester):
 
 
 def test_error_on_different_shape() -> None:
+    """Test that error is raised on different shapes of input."""
     metric = PermutationInvariantTraining(signal_noise_ratio, "max")
     with pytest.raises(
         RuntimeError,
@@ -176,18 +183,21 @@ def test_error_on_different_shape() -> None:
 
 
 def test_error_on_wrong_eval_func() -> None:
+    """Test that error is raised on wrong `eval_func` argument."""
     metric = PermutationInvariantTraining(signal_noise_ratio, "xxx")
     with pytest.raises(ValueError, match='eval_func can only be "max" or "min"'):
         metric(torch.randn(3, 3, 10), torch.randn(3, 3, 10))
 
 
 def test_error_on_wrong_shape() -> None:
+    """Test that error is raised on wrong input shape."""
     metric = PermutationInvariantTraining(signal_noise_ratio, "max")
     with pytest.raises(ValueError, match="Inputs must be of shape *"):
         metric(torch.randn(3), torch.randn(3))
 
 
 def test_consistency_of_two_implementations() -> None:
+    """Test that both backend functions for computing metric (depending on torch version) returns the same result."""
     from torchmetrics.functional.audio.pit import (
         _find_best_perm_by_exhaustive_method,
         _find_best_perm_by_linear_sum_assignment,

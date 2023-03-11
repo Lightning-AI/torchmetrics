@@ -39,7 +39,7 @@ from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_
 seed_all(42)
 
 
-def recall_at_precision_x_multilabel(predictions, targets, min_precision):
+def _recall_at_precision_x_multilabel(predictions, targets, min_precision):
     precision, recall, thresholds = sk_precision_recall_curve(targets, predictions)
 
     try:
@@ -57,7 +57,7 @@ def _sklearn_recall_at_fixed_precision_binary(preds, target, min_precision, igno
     if np.issubdtype(preds.dtype, np.floating) and not ((preds > 0) & (preds < 1)).all():
         preds = sigmoid(preds)
     target, preds = remove_ignore_index(target, preds, ignore_index)
-    return recall_at_precision_x_multilabel(preds, target, min_precision)
+    return _recall_at_precision_x_multilabel(preds, target, min_precision)
 
 
 @pytest.mark.parametrize("input", (_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]))
@@ -68,6 +68,7 @@ class TestBinaryRecallAtFixedPrecision(MetricTester):
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_binary_recall_at_fixed_precision(self, input, ddp, min_precision, ignore_index):
+        """Test class implementation of metric."""
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -89,6 +90,7 @@ class TestBinaryRecallAtFixedPrecision(MetricTester):
     @pytest.mark.parametrize("min_precision", [0.05, 0.5, 0.8])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     def test_binary_recall_at_fixed_precision_functional(self, input, min_precision, ignore_index):
+        """Test functional implementation of metric."""
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -107,6 +109,7 @@ class TestBinaryRecallAtFixedPrecision(MetricTester):
         )
 
     def test_binary_recall_at_fixed_precision_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -118,6 +121,7 @@ class TestBinaryRecallAtFixedPrecision(MetricTester):
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_binary_recall_at_fixed_precision_dtype_cpu(self, input, dtype):
+        """Test dtype support of the metric on CPU."""
         preds, target = input
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
@@ -133,6 +137,7 @@ class TestBinaryRecallAtFixedPrecision(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_binary_recall_at_fixed_precision_dtype_gpu(self, input, dtype):
+        """Test dtype support of the metric on GPU."""
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,
@@ -145,6 +150,7 @@ class TestBinaryRecallAtFixedPrecision(MetricTester):
 
     @pytest.mark.parametrize("min_precision", [0.05, 0.5, 0.8])
     def test_binary_recall_at_fixed_precision_threshold_arg(self, input, min_precision):
+        """Test that different types of `thresholds` argument lead to same result."""
         preds, target = input
 
         for pred, true in zip(preds, target):
@@ -167,7 +173,7 @@ def _sklearn_recall_at_fixed_precision_multiclass(preds, target, min_precision, 
     for i in range(NUM_CLASSES):
         target_temp = np.zeros_like(target)
         target_temp[target == i] = 1
-        res = recall_at_precision_x_multilabel(preds[:, i], target_temp, min_precision)
+        res = _recall_at_precision_x_multilabel(preds[:, i], target_temp, min_precision)
         recall.append(res[0])
         thresholds.append(res[1])
     return recall, thresholds
@@ -183,6 +189,7 @@ class TestMulticlassRecallAtFixedPrecision(MetricTester):
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multiclass_recall_at_fixed_precision(self, input, ddp, min_precision, ignore_index):
+        """Test class implementation of metric."""
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -205,6 +212,7 @@ class TestMulticlassRecallAtFixedPrecision(MetricTester):
     @pytest.mark.parametrize("min_precision", [0.05, 0.5, 0.8])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     def test_multiclass_recall_at_fixed_precision_functional(self, input, min_precision, ignore_index):
+        """Test functional implementation of metric."""
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -224,6 +232,7 @@ class TestMulticlassRecallAtFixedPrecision(MetricTester):
         )
 
     def test_multiclass_recall_at_fixed_precision_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -235,6 +244,7 @@ class TestMulticlassRecallAtFixedPrecision(MetricTester):
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multiclass_recall_at_fixed_precision_dtype_cpu(self, input, dtype):
+        """Test dtype support of the metric on CPU."""
         preds, target = input
         if dtype == torch.half and not ((preds > 0) & (preds < 1)).all():
             pytest.xfail(reason="half support for torch.softmax on cpu not implemented")
@@ -250,6 +260,7 @@ class TestMulticlassRecallAtFixedPrecision(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multiclass_recall_at_fixed_precision_dtype_gpu(self, input, dtype):
+        """Test dtype support of the metric on GPU."""
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,
@@ -262,6 +273,7 @@ class TestMulticlassRecallAtFixedPrecision(MetricTester):
 
     @pytest.mark.parametrize("min_precision", [0.05, 0.5, 0.8])
     def test_multiclass_recall_at_fixed_precision_threshold_arg(self, input, min_precision):
+        """Test that different types of `thresholds` argument lead to same result."""
         preds, target = input
         if (preds < 0).any():
             preds = preds.softmax(dim=-1)
@@ -295,6 +307,7 @@ class TestMultilabelRecallAtFixedPrecision(MetricTester):
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multilabel_recall_at_fixed_precision(self, input, ddp, min_precision, ignore_index):
+        """Test class implementation of metric."""
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -317,6 +330,7 @@ class TestMultilabelRecallAtFixedPrecision(MetricTester):
     @pytest.mark.parametrize("min_precision", [0.05, 0.5, 0.8])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     def test_multilabel_recall_at_fixed_precision_functional(self, input, min_precision, ignore_index):
+        """Test functional implementation of metric."""
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -336,6 +350,7 @@ class TestMultilabelRecallAtFixedPrecision(MetricTester):
         )
 
     def test_multiclass_recall_at_fixed_precision_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -347,6 +362,7 @@ class TestMultilabelRecallAtFixedPrecision(MetricTester):
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multilabel_recall_at_fixed_precision_dtype_cpu(self, input, dtype):
+        """Test dtype support of the metric on CPU."""
         preds, target = input
         if dtype == torch.half and not ((preds > 0) & (preds < 1)).all():
             pytest.xfail(reason="half support for torch.softmax on cpu not implemented")
@@ -362,6 +378,7 @@ class TestMultilabelRecallAtFixedPrecision(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multiclass_recall_at_fixed_precision_dtype_gpu(self, input, dtype):
+        """Test dtype support of the metric on GPU."""
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,
@@ -374,6 +391,7 @@ class TestMultilabelRecallAtFixedPrecision(MetricTester):
 
     @pytest.mark.parametrize("min_precision", [0.05, 0.5, 0.8])
     def test_multilabel_recall_at_fixed_precision_threshold_arg(self, input, min_precision):
+        """Test that different types of `thresholds` argument lead to same result."""
         preds, target = input
         if (preds < 0).any():
             preds = sigmoid(preds)
