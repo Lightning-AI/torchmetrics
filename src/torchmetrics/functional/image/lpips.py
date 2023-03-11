@@ -18,8 +18,10 @@
 # https://github.com/richzhang/PerceptualSimilarity/blob/master/lpips/pretrained_networks.py
 # and with adjustments from
 # https://github.com/richzhang/PerceptualSimilarity/pull/114/files
+# due to package no longer being maintained
 # Copyright (c) 2018, Richard Zhang, Phillip Isola, Alexei A. Efros, Eli Shechtman, Oliver Wang
 # All rights reserved.
+# License under BSD 2-clause
 
 from collections import namedtuple
 
@@ -61,6 +63,7 @@ class SqueezeNet(torch.nn.Module):
         pretrained_features = _get_net("squeezenet1_1", pretrained)
 
         self.N_slices = 7
+        slices = []
         feature_ranges = [range(2), range(2, 5), range(5, 8), range(8, 10), range(10, 11), range(11, 12), range(12, 13)]
         for feature_range in feature_ranges:
             slice = torch.nn.Sequential()
@@ -76,7 +79,7 @@ class SqueezeNet(torch.nn.Module):
     def forward(self, x):
         """Process input."""
         vgg_outputs = namedtuple("SqueezeOutputs", ["relu1", "relu2", "relu3", "relu4", "relu5", "relu6", "relu7"])
-        
+
         relus = []
         for slice in self.slices:
             x = slice(x)
@@ -266,7 +269,7 @@ class _LPIPS(nn.Module):
             net_type = Alexnet
             self.chns = [64, 192, 384, 256, 256]
         elif self.pnet_type == "squeeze":
-            net_type = Squeezenet
+            net_type = SqueezeNet
             self.chns = [64, 128, 256, 384, 384, 512, 512]
         self.L = len(self.chns)
 
