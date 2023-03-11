@@ -219,7 +219,7 @@ class MetricTracker(ModuleList):
         if isinstance(self._base_metric, Metric):
             fn = torch.max if self.maximize else torch.min
             try:
-                value, idx = fn(res, 0)  # type: ignore[arg-type]
+                value, idx = fn(res, 0)
                 if return_step:
                     return value.item(), idx.item()
                 return value.item()
@@ -237,7 +237,7 @@ class MetricTracker(ModuleList):
         else:  # this is a metric collection
             maximize = self.maximize if isinstance(self.maximize, list) else len(res) * [self.maximize]
             value, idx = {}, {}
-            for i, (k, v) in enumerate(res.items()):  # type: ignore[union-attr]
+            for i, (k, v) in enumerate(res.items()):
                 try:
                     fn = torch.max if maximize[i] else torch.min
                     out = fn(v, 0)
