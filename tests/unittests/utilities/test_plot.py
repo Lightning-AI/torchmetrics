@@ -68,7 +68,15 @@ from torchmetrics.image import (
     UniversalImageQualityIndex,
 )
 from torchmetrics.nominal import CramersV, PearsonsContingencyCoefficient, TheilsU, TschuprowsT
-from torchmetrics.regression import MeanSquaredError
+from torchmetrics.regression import (
+    ConcordanceCorrCoef,
+    CosineSimilarity,
+    ExplainedVariance,
+    KendallRankCorrCoef,
+    KLDivergence,
+    LogCoshError,
+    MeanSquaredError,
+)
 
 _rand_input = lambda: torch.rand(10)
 _binary_randint_input = lambda: torch.randint(2, (10,))
@@ -265,6 +273,17 @@ _nominal_input = lambda: torch.randint(0, 4, (100,))
             lambda: torch.rand(10, 3, 100, 100),
             id="learned perceptual image patch similarity",
         ),
+        pytest.param(ConcordanceCorrCoef, _rand_input, _rand_input, id="concordance corr coef"),
+        pytest.param(CosineSimilarity, _rand_input, _rand_input, id="cosine similarity"),
+        pytest.param(ExplainedVariance, _rand_input, _rand_input, id="explained variance"),
+        pytest.param(KendallRankCorrCoef, _rand_input, _rand_input, id="kendall rank corr coef"),
+        pytest.param(
+            KLDivergence,
+            lambda: torch.randn(10, 3).softmax(dim=-1),
+            lambda: torch.randn(10, 3).softmax(dim=-1),
+            id="kl divergence",
+        ),
+        pytest.param(LogCoshError, _rand_input, _rand_input, id="log cosh error"),
     ],
 )
 @pytest.mark.parametrize("num_vals", [1, 5])
