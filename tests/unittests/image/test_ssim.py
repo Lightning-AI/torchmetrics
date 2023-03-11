@@ -87,6 +87,7 @@ def _skimage_ssim(
                 sigma=sigma,
                 use_sample_covariance=False,
                 full=return_ssim_image,
+                channel_axis=-1,
             )
             results[i] = torch.from_numpy(np.asarray(res)).type(preds.dtype)
         return results if reduction_arg != "sum" else results.sum()
