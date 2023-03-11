@@ -53,59 +53,35 @@ def _get_net(net: str, pretrained: bool):
     return pretrained_features
 
 
-class Squeezenet(torch.nn.Module):
-    """Squeezenet implementation."""
+class SqueezeNet(torch.nn.Module):
+    """SqueezeNet implementation."""
 
-    def __init__(self, requires_grad: int = False, pretrained: int = True):
+    def __init__(self, requires_grad: bool = False, pretrained: bool = True) -> None:
         super().__init__()
         pretrained_features = _get_net("squeezenet1_1", pretrained)
 
-        self.slice1 = torch.nn.Sequential()
-        self.slice2 = torch.nn.Sequential()
-        self.slice3 = torch.nn.Sequential()
-        self.slice4 = torch.nn.Sequential()
-        self.slice5 = torch.nn.Sequential()
-        self.slice6 = torch.nn.Sequential()
-        self.slice7 = torch.nn.Sequential()
         self.N_slices = 7
-        for x in range(2):
-            self.slice1.add_module(str(x), pretrained_features[x])
-        for x in range(2, 5):
-            self.slice2.add_module(str(x), pretrained_features[x])
-        for x in range(5, 8):
-            self.slice3.add_module(str(x), pretrained_features[x])
-        for x in range(8, 10):
-            self.slice4.add_module(str(x), pretrained_features[x])
-        for x in range(10, 11):
-            self.slice5.add_module(str(x), pretrained_features[x])
-        for x in range(11, 12):
-            self.slice6.add_module(str(x), pretrained_features[x])
-        for x in range(12, 13):
-            self.slice7.add_module(str(x), pretrained_features[x])
+        feature_ranges = [range(2), range(2, 5), range(5, 8), range(8, 10), range(10, 11), range(11, 12), range(12, 13)]
+        for feature_range in feature_ranges:
+            slice = torch.nn.Sequential()
+            for i in feature_range:
+                slice.add_module(str(i), pretrained_features[i])
+            slices.append(slice)
+
+        self.slices = nn.ModuleList(slices)
         if not requires_grad:
             for param in self.parameters():
                 param.requires_grad = False
 
     def forward(self, x):
         """Process input."""
-        h = self.slice1(x)
-        h_relu1 = h
-        h = self.slice2(h)
-        h_relu2 = h
-        h = self.slice3(h)
-        h_relu3 = h
-        h = self.slice4(h)
-        h_relu4 = h
-        h = self.slice5(h)
-        h_relu5 = h
-        h = self.slice6(h)
-        h_relu6 = h
-        h = self.slice7(h)
-        h_relu7 = h
         vgg_outputs = namedtuple("SqueezeOutputs", ["relu1", "relu2", "relu3", "relu4", "relu5", "relu6", "relu7"])
-        out = vgg_outputs(h_relu1, h_relu2, h_relu3, h_relu4, h_relu5, h_relu6, h_relu7)
-
-        return out
+        
+        relus = []
+        for slice in self.slices:
+            x = slice(x)
+            relus.append(x)
+        return vgg_outputs(*relus)
 
 
 class Alexnet(torch.nn.Module):
