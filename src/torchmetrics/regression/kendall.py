@@ -125,7 +125,7 @@ class KendallRankCorrCoef(Metric):
         alternative: Optional[Literal["two-sided", "less", "greater"]] = "two-sided",
         num_outputs: int = 1,
         **kwargs: Any,
-    ):
+    ) -> None:
         super().__init__(**kwargs)
         if not isinstance(t_test, bool):
             raise ValueError(f"Argument `t_test` is expected to be of a type `bool`, but got {type(t_test)}.")

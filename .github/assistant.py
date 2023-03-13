@@ -140,7 +140,7 @@ class AssistantCLI:
             return "unittests"
 
         # parse domains
-        def _crop_path(fname: str, paths: List[str]):
+        def _crop_path(fname: str, paths: List[str]) -> str:
             for p in paths:
                 fname = fname.replace(p, "")
             return fname

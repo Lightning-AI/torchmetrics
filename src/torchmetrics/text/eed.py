@@ -68,7 +68,7 @@ class ExtendedEditDistance(Metric):
         deletion: float = 0.2,
         insertion: float = 1.0,
         **kwargs: Any,
-    ):
+    ) -> None:
         super().__init__(**kwargs)
 
         if language not in ("en", "ja"):
