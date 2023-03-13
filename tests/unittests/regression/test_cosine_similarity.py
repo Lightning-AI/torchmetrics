@@ -51,8 +51,7 @@ def _multi_target_ref_metric(preds, target, reduction, sk_fn=sk_cosine):
     if reduction == "sum":
         return col_sum
     if reduction == "mean":
-        mean = col_sum / len(col)
-        return mean
+        return col_sum / len(col)
     return col
 
 
@@ -65,8 +64,7 @@ def _single_target_ref_metric(preds, target, reduction, sk_fn=sk_cosine):
     if reduction == "sum":
         return col_sum
     if reduction == "mean":
-        mean = col_sum / len(col)
-        return mean
+        return col_sum / len(col)
     return col
 
 
