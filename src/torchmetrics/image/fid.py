@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from copy import deepcopy
-from typing import Any, List, Optional, Union
+from typing import Any, List, Optional, Sequence, Union
 
 import numpy as np
 import torch
@@ -22,7 +22,11 @@ from torch.nn import Module
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_info
-from torchmetrics.utilities.imports import _SCIPY_AVAILABLE, _TORCH_FIDELITY_AVAILABLE
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _SCIPY_AVAILABLE, _TORCH_FIDELITY_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["FrechetInceptionDistance.plot"]
 
 if _TORCH_FIDELITY_AVAILABLE:
     from torch_fidelity.feature_extractor_inceptionv3 import FeatureExtractorInceptionV3 as _FeatureExtractorInceptionV3
@@ -31,7 +35,7 @@ else:
     class _FeatureExtractorInceptionV3(Module):
         pass
 
-    __doctest_skip__ = ["FrechetInceptionDistance", "FID"]
+    __doctest_skip__ = ["FrechetInceptionDistance", "FrechetInceptionDistance.plot"]
 
 
 if _SCIPY_AVAILABLE:
@@ -303,3 +307,54 @@ class FrechetInceptionDistance(Metric):
             self.real_features_num_samples = real_features_num_samples
         else:
             super().reset()
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> import torch
+            >>> from torchmetrics.image.fid import FrechetInceptionDistance
+            >>> imgs_dist1 = torch.randint(0, 200, (100, 3, 299, 299), dtype=torch.uint8)
+            >>> imgs_dist2 = torch.randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)
+            >>> metric = FrechetInceptionDistance(feature=64)
+            >>> metric.update(imgs_dist1, real=True)
+            >>> metric.update(imgs_dist2, real=False)
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics.image.fid import FrechetInceptionDistance
+            >>> imgs_dist1 = lambda: torch.randint(0, 200, (100, 3, 299, 299), dtype=torch.uint8)
+            >>> imgs_dist2 = lambda: torch.randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)
+            >>> metric = FrechetInceptionDistance(feature=64)
+            >>> values = [ ]
+            >>> for _ in range(3):
+            ...     metric.update(imgs_dist1(), real=True)
+            ...     metric.update(imgs_dist2(), real=False)
+            ...     values.append(metric.compute())
+            ...     metric.reset()
+            >>> fig_, ax_ = metric.plot(values)
+
+
+        """
+        return self._plot(val, ax)
