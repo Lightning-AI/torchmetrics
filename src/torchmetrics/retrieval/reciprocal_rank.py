@@ -101,9 +101,9 @@ class RetrievalMRR(RetrievalMetric):
         .. plot::
             :scale: 75
 
-            >>> # Example plotting a single value
             >>> import torch
             >>> from torchmetrics.retrieval import RetrievalMRR
+            >>> # Example plotting a single value
             >>> metric = RetrievalMRR()
             >>> metric.update(torch.rand(10,), torch.randint(2, (10,)), indexes=torch.randint(2,(10,)))
             >>> fig_, ax_ = metric.plot()
@@ -111,8 +111,9 @@ class RetrievalMRR(RetrievalMetric):
         .. plot::
             :scale: 75
 
-            >>> # Example plotting multiple values
+            >>> import torch
             >>> from torchmetrics.retrieval import RetrievalMRR
+            >>> # Example plotting multiple values
             >>> metric = RetrievalMRR()
             >>> values = []
             >>> for _ in range(10):

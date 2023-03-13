@@ -102,9 +102,9 @@ class RetrievalRPrecision(RetrievalMetric):
         .. plot::
             :scale: 75
 
-            >>> # Example plotting a single value
             >>> import torch
             >>> from torchmetrics.retrieval import RetrievalRPrecision
+            >>> # Example plotting a single value
             >>> metric = RetrievalRPrecision()
             >>> metric.update(torch.rand(10,), torch.randint(2, (10,)), indexes=torch.randint(2,(10,)))
             >>> fig_, ax_ = metric.plot()
@@ -112,8 +112,9 @@ class RetrievalRPrecision(RetrievalMetric):
         .. plot::
             :scale: 75
 
-            >>> # Example plotting multiple values
+            >>> import torch
             >>> from torchmetrics.retrieval import RetrievalRPrecision
+            >>> # Example plotting multiple values
             >>> metric = RetrievalRPrecision()
             >>> values = []
             >>> for _ in range(10):
