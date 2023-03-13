@@ -75,8 +75,13 @@ from torchmetrics.regression import (
     KendallRankCorrCoef,
     KLDivergence,
     LogCoshError,
+    MeanAbsoluteError,
+    MeanAbsolutePercentageError,
     MeanSquaredError,
+    MeanSquaredLogError,
+    MinkowskiDistance,
 )
+from torchmetrics.retrieval import RetrievalMRR, RetrievalPrecision, RetrievalRecall, RetrievalRPrecision
 
 _rand_input = lambda: torch.rand(10)
 _binary_randint_input = lambda: torch.randint(2, (10,))
@@ -284,6 +289,10 @@ _nominal_input = lambda: torch.randint(0, 4, (100,))
             id="kl divergence",
         ),
         pytest.param(LogCoshError, _rand_input, _rand_input, id="log cosh error"),
+        pytest.param(MeanSquaredLogError, _rand_input, _rand_input, id="mean squared log error"),
+        pytest.param(MeanAbsoluteError, _rand_input, _rand_input, id="mean absolute error"),
+        pytest.param(MeanAbsolutePercentageError, _rand_input, _rand_input, id="mean absolute percentage error"),
+        pytest.param(partial(MinkowskiDistance, p=3), _rand_input, _rand_input, id="minkowski distance"),
     ],
 )
 @pytest.mark.parametrize("num_vals", [1, 5])
@@ -357,6 +366,35 @@ def test_plot_methods_special_image_metrics(metric_class, preds, target, index_0
                 metric.update(target(), real=False)
                 vals.append(metric.compute() if not index_0 else metric.compute()[0])
                 metric.reset()
+        fig, ax = metric.plot(vals)
+
+    assert isinstance(fig, plt.Figure)
+    assert isinstance(ax, matplotlib.axes.Axes)
+
+
+@pytest.mark.parametrize(
+    ("metric_class", "preds", "target", "indexes"),
+    [
+        pytest.param(RetrievalMRR, _rand_input, _binary_randint_input, _binary_randint_input, id="retrieval mrr"),
+        pytest.param(RetrievalPrecision, _rand_input, _binary_randint_input, _binary_randint_input, id="retrieval mrr"),
+        pytest.param(
+            RetrievalRPrecision, _rand_input, _binary_randint_input, _binary_randint_input, id="retrieval mrr"
+        ),
+        pytest.param(RetrievalRecall, _rand_input, _binary_randint_input, _binary_randint_input, id="retrieval mrr"),
+    ],
+)
+@pytest.mark.parametrize("num_vals", [1, 2])
+def test_plot_methods_retrieval(metric_class, preds, target, indexes, num_vals):
+    """Test the plot method for retrieval metrics by themselves, since retrieval metrics requires an extra argument."""
+    metric = metric_class()
+
+    if num_vals == 1:
+        metric.update(preds(), target(), indexes=indexes())
+        fig, ax = metric.plot()
+    else:
+        vals = []
+        for _ in range(num_vals):
+            vals.append(metric(preds(), target(), indexes=indexes()))
         fig, ax = metric.plot(vals)
 
     assert isinstance(fig, plt.Figure)
