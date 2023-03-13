@@ -101,9 +101,9 @@ class BinaryPrecisionRecallCurve(Metric):
         >>> target = torch.tensor([0, 1, 1, 0])
         >>> bprc = BinaryPrecisionRecallCurve(thresholds=None)
         >>> bprc(preds, target)  # doctest: +NORMALIZE_WHITESPACE
-        (tensor([0.6667, 0.5000, 0.0000, 1.0000]),
-         tensor([1.0000, 0.5000, 0.0000, 0.0000]),
-         tensor([0.5000, 0.7000, 0.8000]))
+        (tensor([0.5000, 0.6667, 0.5000, 0.0000, 1.0000]),
+         tensor([1.0000, 1.0000, 0.5000, 0.0000, 0.0000]),
+         tensor([0.0000, 0.5000, 0.7000, 0.8000]))
         >>> bprc = BinaryPrecisionRecallCurve(thresholds=5)
         >>> bprc(preds, target)  # doctest: +NORMALIZE_WHITESPACE
         (tensor([0.5000, 0.6667, 0.6667, 0.0000, 0.0000, 1.0000]),
@@ -215,12 +215,13 @@ class MulticlassPrecisionRecallCurve(Metric):
         >>> mcprc = MulticlassPrecisionRecallCurve(num_classes=5, thresholds=None)
         >>> precision, recall, thresholds = mcprc(preds, target)
         >>> precision  # doctest: +NORMALIZE_WHITESPACE
-        [tensor([1., 1.]), tensor([1., 1.]), tensor([0.2500, 0.0000, 1.0000]),
+        [tensor([0.2500, 1.0000, 1.0000]), tensor([0.2500, 1.0000, 1.0000]), tensor([0.2500, 0.0000, 1.0000]),
          tensor([0.2500, 0.0000, 1.0000]), tensor([0., 1.])]
         >>> recall
-        [tensor([1., 0.]), tensor([1., 0.]), tensor([1., 0., 0.]), tensor([1., 0., 0.]), tensor([nan, 0.])]
+        [tensor([1., 1., 0.]), tensor([1., 1., 0.]), tensor([1., 0., 0.]), tensor([1., 0., 0.]), tensor([nan, 0.])]
         >>> thresholds
-        [tensor(0.7500), tensor(0.7500), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor(0.0500)]
+        [tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]),
+         tensor(0.0500)]
         >>> mcprc = MulticlassPrecisionRecallCurve(num_classes=5, thresholds=5)
         >>> mcprc(preds, target)  # doctest: +NORMALIZE_WHITESPACE
         (tensor([[0.2500, 1.0000, 1.0000, 1.0000, 0.0000, 1.0000],
@@ -359,14 +360,13 @@ class MultilabelPrecisionRecallCurve(Metric):
         >>> mlprc = MultilabelPrecisionRecallCurve(num_labels=3, thresholds=None)
         >>> precision, recall, thresholds = mlprc(preds, target)
         >>> precision  # doctest: +NORMALIZE_WHITESPACE
-        [tensor([0.5000, 0.5000, 1.0000, 1.0000]), tensor([0.6667, 0.5000, 0.0000, 1.0000]),
+        [tensor([0.5000, 0.5000, 1.0000, 1.0000]), tensor([0.5000, 0.6667, 0.5000, 0.0000, 1.0000]),
          tensor([0.7500, 1.0000, 1.0000, 1.0000])]
         >>> recall  # doctest: +NORMALIZE_WHITESPACE
-        [tensor([1.0000, 0.5000, 0.5000, 0.0000]), tensor([1.0000, 0.5000, 0.0000, 0.0000]),
+        [tensor([1.0000, 0.5000, 0.5000, 0.0000]), tensor([1.0000, 1.0000, 0.5000, 0.0000, 0.0000]),
          tensor([1.0000, 0.6667, 0.3333, 0.0000])]
         >>> thresholds  # doctest: +NORMALIZE_WHITESPACE
-        [tensor([0.0500, 0.4500, 0.7500]), tensor([0.5500, 0.6500, 0.7500]),
-         tensor([0.0500, 0.3500, 0.7500])]
+        [tensor([0.0500, 0.4500, 0.7500]), tensor([0.0500, 0.5500, 0.6500, 0.7500]), tensor([0.0500, 0.3500, 0.7500])]
         >>> mlprc = MultilabelPrecisionRecallCurve(num_labels=3, thresholds=5)
         >>> mlprc(preds, target)  # doctest: +NORMALIZE_WHITESPACE
         (tensor([[0.5000, 0.5000, 1.0000, 1.0000, 0.0000, 1.0000],
@@ -447,11 +447,11 @@ class PrecisionRecallCurve:
         >>> pr_curve = PrecisionRecallCurve(task="binary")
         >>> precision, recall, thresholds = pr_curve(pred, target)
         >>> precision
-        tensor([0.6667, 0.5000, 1.0000, 1.0000])
+        tensor([0.5000, 0.6667, 0.5000, 1.0000, 1.0000])
         >>> recall
-        tensor([1.0000, 0.5000, 0.5000, 0.0000])
+        tensor([1.0000, 1.0000, 0.5000, 0.5000, 0.0000])
         >>> thresholds
-        tensor([0.1000, 0.4000, 0.8000])
+        tensor([0.0000, 0.1000, 0.4000, 0.8000])
 
         >>> pred = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
         ...                      [0.05, 0.75, 0.05, 0.05, 0.05],
@@ -461,12 +461,13 @@ class PrecisionRecallCurve:
         >>> pr_curve = PrecisionRecallCurve(task="multiclass", num_classes=5)
         >>> precision, recall, thresholds = pr_curve(pred, target)
         >>> precision
-        [tensor([1., 1.]), tensor([1., 1.]), tensor([0.2500, 0.0000, 1.0000]),
+        [tensor([0.2500, 1.0000, 1.0000]), tensor([0.2500, 1.0000, 1.0000]), tensor([0.2500, 0.0000, 1.0000]),
          tensor([0.2500, 0.0000, 1.0000]), tensor([0., 1.])]
         >>> recall
-        [tensor([1., 0.]), tensor([1., 0.]), tensor([1., 0., 0.]), tensor([1., 0., 0.]), tensor([nan, 0.])]
+        [tensor([1., 1., 0.]), tensor([1., 1., 0.]), tensor([1., 0., 0.]), tensor([1., 0., 0.]), tensor([nan, 0.])]
         >>> thresholds
-        [tensor(0.7500), tensor(0.7500), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor(0.0500)]
+        [tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]),
+         tensor(0.0500)]
     """
 
     def __new__(
