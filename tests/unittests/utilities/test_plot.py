@@ -75,7 +75,11 @@ from torchmetrics.regression import (
     KendallRankCorrCoef,
     KLDivergence,
     LogCoshError,
+    MeanAbsoluteError,
+    MeanAbsolutePercentageError,
     MeanSquaredError,
+    MeanSquaredLogError,
+    MinkowskiDistance,
 )
 from torchmetrics.retrieval import RetrievalMRR, RetrievalPrecision, RetrievalRecall, RetrievalRPrecision
 
@@ -285,6 +289,10 @@ _nominal_input = lambda: torch.randint(0, 4, (100,))
             id="kl divergence",
         ),
         pytest.param(LogCoshError, _rand_input, _rand_input, id="log cosh error"),
+        pytest.param(MeanSquaredLogError, _rand_input, _rand_input, id="mean squared log error"),
+        pytest.param(MeanAbsoluteError, _rand_input, _rand_input, id="mean absolute error"),
+        pytest.param(MeanAbsolutePercentageError, _rand_input, _rand_input, id="mean absolute percentage error"),
+        pytest.param(partial(MinkowskiDistance, p=3), _rand_input, _rand_input, id="minkowski distance"),
     ],
 )
 @pytest.mark.parametrize("num_vals", [1, 5])
