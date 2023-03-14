@@ -84,9 +84,9 @@ def _adjust_threshold_arg(
 ) -> Optional[Tensor]:
     """Convert threshold arg for list and int to tensor format."""
     if isinstance(thresholds, int):
-        thresholds = torch.linspace(0, 1, thresholds, device=device)
+        return torch.linspace(0, 1, thresholds, device=device)
     if isinstance(thresholds, list):
-        thresholds = torch.tensor(thresholds, device=device)
+        return torch.tensor(thresholds, device=device)
     return thresholds
 
 

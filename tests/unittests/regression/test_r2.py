@@ -46,7 +46,7 @@ def _single_target_ref_metric(preds, target, adjusted, multioutput):
     sk_target = target.view(-1).numpy()
     r2_score = sk_r2score(sk_target, sk_preds, multioutput=multioutput)
     if adjusted != 0:
-        r2_score = 1 - (1 - r2_score) * (sk_preds.shape[0] - 1) / (sk_preds.shape[0] - adjusted - 1)
+        return 1 - (1 - r2_score) * (sk_preds.shape[0] - 1) / (sk_preds.shape[0] - adjusted - 1)
     return r2_score
 
 
@@ -55,7 +55,7 @@ def _multi_target_ref_metric(preds, target, adjusted, multioutput):
     sk_target = target.view(-1, num_targets).numpy()
     r2_score = sk_r2score(sk_target, sk_preds, multioutput=multioutput)
     if adjusted != 0:
-        r2_score = 1 - (1 - r2_score) * (sk_preds.shape[0] - 1) / (sk_preds.shape[0] - adjusted - 1)
+        return 1 - (1 - r2_score) * (sk_preds.shape[0] - 1) / (sk_preds.shape[0] - adjusted - 1)
     return r2_score
 
 

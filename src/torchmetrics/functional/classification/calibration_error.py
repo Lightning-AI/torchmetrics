@@ -91,10 +91,10 @@ def _ce_compute(
         acc_bin, conf_bin, prop_bin = _binning_bucketize(confidences, accuracies, bin_boundaries)
 
     if norm == "l1":
-        ce = torch.sum(torch.abs(acc_bin - conf_bin) * prop_bin)
-    elif norm == "max":
+        return torch.sum(torch.abs(acc_bin - conf_bin) * prop_bin)
+    if norm == "max":
         ce = torch.max(torch.abs(acc_bin - conf_bin))
-    elif norm == "l2":
+    if norm == "l2":
         ce = torch.sum(torch.pow(acc_bin - conf_bin, 2) * prop_bin)
         # NOTE: debiasing is disabled in the wrapper functions. This implementation differs from that in sklearn.
         if debias:
@@ -102,7 +102,7 @@ def _ce_compute(
             # the equation in Verified Uncertainty Prediction (Kumar et al 2019)/
             debias_bins = (acc_bin * (acc_bin - 1) * prop_bin) / (prop_bin * accuracies.size()[0] - 1)
             ce += torch.sum(torch.nan_to_num(debias_bins))  # replace nans with zeros if nothing appeared in a bin
-        ce = torch.sqrt(ce) if ce > 0 else torch.tensor(0)
+        return torch.sqrt(ce) if ce > 0 else torch.tensor(0)
     return ce
 
 
