@@ -20,7 +20,7 @@ from torch.utils.data import Dataset
 class RandomDictStringDataset(Dataset):
     """Class for creating a dictionary of random strings."""
 
-    def __init__(self, size, length):
+    def __init__(self, size, length) -> None:
         self.len = length
         self.data = torch.randn(length, size)
 
@@ -36,7 +36,7 @@ class RandomDictStringDataset(Dataset):
 class RandomDataset(Dataset):
     """Random dataset for testing PL Module."""
 
-    def __init__(self, size, length):
+    def __init__(self, size, length) -> None:
         self.len = length
         self.data = torch.randn(length, size)
 
@@ -66,7 +66,7 @@ class BoringModel(LightningModule):
     model.training_epoch_end = None
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.layer = torch.nn.Linear(32, 2)
 

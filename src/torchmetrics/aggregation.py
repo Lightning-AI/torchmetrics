@@ -56,7 +56,7 @@ class BaseAggregator(Metric):
         default_value: Union[Tensor, List],
         nan_strategy: Union[str, float] = "error",
         **kwargs: Any,
-    ):
+    ) -> None:
         super().__init__(**kwargs)
         allowed_nan_strategy = ("error", "warn", "ignore")
         if nan_strategy not in allowed_nan_strategy and not isinstance(nan_strategy, float):
@@ -138,7 +138,7 @@ class MaxMetric(BaseAggregator):
         self,
         nan_strategy: Union[str, float] = "warn",
         **kwargs: Any,
-    ):
+    ) -> None:
         super().__init__(
             "max",
             -torch.tensor(float("inf")),
@@ -238,7 +238,7 @@ class MinMetric(BaseAggregator):
         self,
         nan_strategy: Union[str, float] = "warn",
         **kwargs: Any,
-    ):
+    ) -> None:
         super().__init__(
             "min",
             torch.tensor(float("inf")),
@@ -336,7 +336,7 @@ class SumMetric(BaseAggregator):
         self,
         nan_strategy: Union[str, float] = "warn",
         **kwargs: Any,
-    ):
+    ) -> None:
         super().__init__(
             "sum",
             torch.tensor(0.0),
@@ -435,7 +435,7 @@ class CatMetric(BaseAggregator):
         self,
         nan_strategy: Union[str, float] = "warn",
         **kwargs: Any,
-    ):
+    ) -> None:
         super().__init__("cat", [], nan_strategy, **kwargs)
 
     def update(self, value: Union[float, Tensor]) -> None:
@@ -496,7 +496,7 @@ class MeanMetric(BaseAggregator):
         self,
         nan_strategy: Union[str, float] = "warn",
         **kwargs: Any,
-    ):
+    ) -> None:
         super().__init__(
             "sum",
             torch.tensor(0.0),
