@@ -97,5 +97,4 @@ def relative_average_spectral_error(preds: Tensor, target: Tensor, window_size: 
     total_images = torch.tensor(0.0, device=target.device)
 
     rmse_map, target_sum, total_images = _rase_update(preds, target, window_size, rmse_map, target_sum, total_images)
-    rase = _rase_compute(rmse_map, target_sum, total_images, window_size)
-    return rase
+    return _rase_compute(rmse_map, target_sum, total_images, window_size)

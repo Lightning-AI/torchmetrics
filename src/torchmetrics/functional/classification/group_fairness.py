@@ -45,9 +45,7 @@ def _groups_validation(groups: torch.Tensor, num_groups: int) -> None:
 
 def _groups_format(groups: torch.Tensor) -> torch.Tensor:
     """Reshape groups to correspond to preds and target."""
-    groups = groups.reshape(groups.shape[0], -1)
-
-    return groups
+    return groups.reshape(groups.shape[0], -1)
 
 
 def _binary_groups_stat_scores(
@@ -80,9 +78,7 @@ def _binary_groups_stat_scores(
     group_preds = list(torch.split(preds, split_sizes, dim=0))
     group_target = list(torch.split(target, split_sizes, dim=0))
 
-    group_stats = [_binary_stat_scores_update(group_p, group_t) for group_p, group_t in zip(group_preds, group_target)]
-
-    return group_stats
+    return [_binary_stat_scores_update(group_p, group_t) for group_p, group_t in zip(group_preds, group_target)]
 
 
 def _groups_reduce(
