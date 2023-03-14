@@ -808,11 +808,11 @@ class Metric(Module, ABC):
         # if no kwargs filtered, return all kwargs as default
         if not filtered_kwargs and not exists_var_keyword:
             # no kwargs in update signature -> don't return any kwargs
-            filtered_kwargs = {}
-        elif exists_var_keyword:
+            return {}
+        if exists_var_keyword:
             # kwargs found in update signature -> return all kwargs to be sure to not omit any.
             # filtering logic is likely implemented within the update call.
-            filtered_kwargs = kwargs
+            return kwargs
         return filtered_kwargs
 
     def __hash__(self) -> int:
