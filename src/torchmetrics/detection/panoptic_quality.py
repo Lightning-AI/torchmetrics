@@ -96,7 +96,7 @@ class PanopticQuality(Metric):
         stuffs: Collection[int],
         allow_unknown_preds_category: bool = False,
         **kwargs: Any,
-    ):
+    ) -> None:
         super().__init__(**kwargs)
 
         things, stuffs = _parse_categories(things, stuffs)

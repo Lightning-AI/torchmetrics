@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import inspect
-import sys
 import unittest.mock as mock
 from functools import partial
 from typing import Any, Callable, Dict, Optional
@@ -28,6 +27,7 @@ from torch import Tensor
 from torchmetrics import Metric
 from torchmetrics.classification.group_fairness import BinaryFairness
 from torchmetrics.functional.classification.group_fairness import binary_fairness
+from torchmetrics.utilities.imports import _PYTHON_LOWER_3_8
 from unittests import THRESHOLD
 from unittests.classification.inputs import _group_cases
 from unittests.helpers import seed_all
@@ -216,7 +216,7 @@ class BinaryFairnessTester(MetricTester):
 
 @mock.patch("unittests.helpers.testers._assert_tensor", _assert_tensor)
 @mock.patch("unittests.helpers.testers._assert_allclose", _assert_allclose)
-@pytest.mark.skipif(sys.version_info.minor < 8, reason="`TestBinaryFairness` requires `python>=3.8`.")
+@pytest.mark.skipif(_PYTHON_LOWER_3_8, reason="`TestBinaryFairness` requires `python>=3.8`.")
 @pytest.mark.parametrize("inputs", _group_cases)
 class TestBinaryFairness(BinaryFairnessTester):
     """Test class for `BinaryFairness` metric."""

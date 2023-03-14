@@ -106,7 +106,7 @@ def _test_non_contiguous_tensors(rank):
     class DummyCatMetric(Metric):
         full_state_update = True
 
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
             self.add_state("x", default=[], dist_reduce_fx=None)
 
@@ -131,7 +131,7 @@ def _test_state_dict_is_synced(rank, tmpdir):
     class DummyCatMetric(Metric):
         full_state_update = True
 
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
             self.add_state("x", torch.tensor(0), dist_reduce_fx=torch.sum)
             self.add_state("c", torch.tensor(0), dist_reduce_fx=torch.sum)
