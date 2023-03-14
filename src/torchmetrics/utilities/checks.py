@@ -708,7 +708,7 @@ def check_forward_full_state_property(
 
     if not equal:  # we can stop early because the results did not match
         print("Recommended setting `full_state_update=True`")
-        return None
+        return
 
     # Do timings
     res = torch.zeros(2, len(num_update_to_compare), reps)
@@ -731,7 +731,7 @@ def check_forward_full_state_property(
 
     faster = (mean[1, -1] < mean[0, -1]).item()  # if faster on average, we recommend upgrading
     print(f"Recommended setting `full_state_update={not faster}`")
-    return None
+    return
 
 
 def is_overridden(method_name: str, instance: object, parent: object) -> bool:
