@@ -158,7 +158,8 @@ class AssistantCLI:
             return list(tm_modules)
         tm_modules = [f"unittests/{md}" for md in set(tm_modules)]
         not_exists = [p for p in tm_modules if os.path.exists(p)]
-        assert not not_exists, f"Missing following paths: {not_exists}"
+        if not_exists:
+            raise ValueError(f"Missing following paths: {not_exists}")
         return " ".join(tm_modules)
 
 
