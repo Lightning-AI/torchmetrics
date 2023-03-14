@@ -80,6 +80,8 @@ extend-select = [
     "PT",  # see: https://pypi.org/project/flake8-pytest-style
     "RET",  # see: https://pypi.org/project/flake8-return
     "SIM",  # see: https://pypi.org/project/flake8-simplify
+    "YTT",  # see: https://pypi.org/project/flake8-2020
+    "ANN",  # see: https://pypi.org/project/flake8-annotations
 ]
 ignore = [
     "E731",  # Do not assign a lambda expression, use a def
@@ -87,6 +89,8 @@ ignore = [
     "D100",  # Missing docstring in public module
     "D104",  # Missing docstring in public package
     "D107",  # Missing docstring in `__init__`
+    "ANN101",  # Missing type annotation for `self` in method
+    "ANN102",  # Missing type annotation for `cls` in classmethod
 ]
 # Exclude a variety of commonly ignored directories.
 exclude = [
@@ -102,6 +106,13 @@ exclude = [
 ]
 ignore-init-module-imports = true
 unfixable = ["F401"]
+
+[tool.ruff.per-file-ignores]
+"setup.py" = ["ANN202", "ANN401"]
+"src/**" = ["ANN401"]
+"tests/**" = [
+    "ANN001", "ANN002", "ANN003", "ANN201", "ANN202", "ANN204", "ANN205", "ANN401"
+]
 
 [tool.ruff.pydocstyle]
 # Use Google-style docstrings.

@@ -58,10 +58,11 @@ from torchmetrics.image import (  # noqa: E402
 )
 from torchmetrics.metric import Metric  # noqa: E402
 from torchmetrics.nominal import CramersV  # noqa: E402
-from torchmetrics.nominal import PearsonsContingencyCoefficient, TheilsU, TschuprowsT  # noqa: E402
+from torchmetrics.nominal import PearsonsContingencyCoefficient  # noqa: E402
+from torchmetrics.nominal import TheilsU, TschuprowsT  # noqa: E402
 from torchmetrics.regression import ConcordanceCorrCoef  # noqa: E402
+from torchmetrics.regression import CosineSimilarity  # noqa: E402
 from torchmetrics.regression import (  # noqa: E402
-    CosineSimilarity,
     ExplainedVariance,
     KendallRankCorrCoef,
     KLDivergence,
@@ -79,8 +80,8 @@ from torchmetrics.regression import (  # noqa: E402
     WeightedMeanAbsolutePercentageError,
 )
 from torchmetrics.retrieval import RetrievalFallOut  # noqa: E402
+from torchmetrics.retrieval import RetrievalHitRate  # noqa: E402
 from torchmetrics.retrieval import (  # noqa: E402
-    RetrievalHitRate,
     RetrievalMAP,
     RetrievalMRR,
     RetrievalNormalizedDCG,
