@@ -22,7 +22,7 @@ from unittest.mock import Mock
 import torch
 from torch import Tensor
 
-from torchmetrics import Metric
+from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import select_topk, to_onehot
 from torchmetrics.utilities.enums import DataType
 
