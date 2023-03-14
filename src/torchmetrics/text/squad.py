@@ -95,7 +95,7 @@ class SQuAD(Metric):
     def __init__(
         self,
         **kwargs: Any,
-    ):
+    ) -> None:
         super().__init__(**kwargs)
 
         self.add_state(name="f1_score", default=torch.tensor(0, dtype=torch.float), dist_reduce_fx="sum")

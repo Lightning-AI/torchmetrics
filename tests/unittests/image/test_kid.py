@@ -30,7 +30,7 @@ def test_no_train():
     """Assert that metric never leaves evaluation mode."""
 
     class MyModel(Module):
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
             self.metric = KernelInceptionDistance()
 
@@ -122,7 +122,7 @@ def test_kid_same_input(feature):
 
 
 class _ImgDataset(Dataset):
-    def __init__(self, imgs):
+    def __init__(self, imgs) -> None:
         self.imgs = imgs
 
     def __getitem__(self, idx):

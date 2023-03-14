@@ -69,7 +69,7 @@ class TranslationEditRate(Metric):
         asian_support: bool = False,
         return_sentence_level_score: bool = False,
         **kwargs: Any,
-    ):
+    ) -> None:
         super().__init__(**kwargs)
         if not isinstance(normalize, bool):
             raise ValueError(f"Expected argument `normalize` to be of type boolean but got {normalize}.")
