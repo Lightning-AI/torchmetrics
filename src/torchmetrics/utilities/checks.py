@@ -632,7 +632,7 @@ def check_forward_full_state_property(
     input_args: Optional[Dict[str, Any]] = None,
     num_update_to_compare: Sequence[int] = [10, 100, 1000],
     reps: int = 5,
-) -> bool:
+) -> None:
     """Check if the new ``full_state_update`` property works as intended.
 
     This function checks if the property can safely be set to ``False`` which will for most metrics results in a
@@ -708,7 +708,7 @@ def check_forward_full_state_property(
 
     if not equal:  # we can stop early because the results did not match
         print("Recommended setting `full_state_update=True`")
-        return False
+        return None
 
     # Do timings
     res = torch.zeros(2, len(num_update_to_compare), reps)
