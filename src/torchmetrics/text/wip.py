@@ -68,7 +68,7 @@ class WordInfoPreserved(Metric):
     def __init__(
         self,
         **kwargs: Any,
-    ):
+    ) -> None:
         super().__init__(**kwargs)
         self.add_state("errors", tensor(0.0), dist_reduce_fx="sum")
         self.add_state("target_total", tensor(0.0), dist_reduce_fx="sum")

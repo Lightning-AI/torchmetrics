@@ -75,7 +75,7 @@ class MultioutputWrapper(Metric):
         output_dim: int = -1,
         remove_nans: bool = True,
         squeeze_outputs: bool = True,
-    ):
+    ) -> None:
         super().__init__()
         self.metrics = ModuleList([deepcopy(base_metric) for _ in range(num_outputs)])
         self.output_dim = output_dim
