@@ -193,8 +193,7 @@ def _read_csv_from_url(baseline_url: str) -> Tensor:
             for idx, row in enumerate(http_request)
             if idx > 0
         ]
-        baseline = torch.tensor(baseline_list)[:, 1:]
-    return baseline
+        return torch.tensor(baseline_list)[:, 1:]
 
 
 def _load_baseline(
