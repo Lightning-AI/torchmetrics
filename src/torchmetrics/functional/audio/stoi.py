@@ -90,6 +90,6 @@ def short_time_objective_intelligibility(
         stoi_val = stoi_val.reshape(preds.shape[:-1])
 
     if keep_same_device:
-        stoi_val = stoi_val.to(preds.device)
+        return stoi_val.to(preds.device)
 
     return stoi_val

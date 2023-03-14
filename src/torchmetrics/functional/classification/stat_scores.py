@@ -1050,11 +1050,8 @@ def _reduce_stat_scores(
         ignore_mask = ignore_mask.sum(dim=0).bool()
 
     if average in (AverageMethod.NONE, None):
-        scores = torch.where(ignore_mask, tensor(float("nan"), device=scores.device), scores)
-    else:
-        scores = scores.sum()
-
-    return scores
+        return torch.where(ignore_mask, tensor(float("nan"), device=scores.device), scores)
+    return scores.sum()
 
 
 def stat_scores(

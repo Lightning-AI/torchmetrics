@@ -35,8 +35,7 @@ def _nominal_input_validation(nan_strategy: str, nan_replace_value: Optional[Uni
 def _compute_expected_freqs(confmat: Tensor) -> Tensor:
     """Compute the expected frequenceis from the provided confusion matrix."""
     margin_sum_rows, margin_sum_cols = confmat.sum(1), confmat.sum(0)
-    expected_freqs = torch.einsum("r, c -> rc", margin_sum_rows, margin_sum_cols) / confmat.sum()
-    return expected_freqs
+    return torch.einsum("r, c -> rc", margin_sum_rows, margin_sum_cols) / confmat.sum()
 
 
 def _compute_chi_squared(confmat: Tensor, bias_correction: bool) -> Tensor:
