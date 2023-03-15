@@ -271,7 +271,7 @@ def test_child_metric_state_dict():
     """Test that child metric states will be added to parent state dict."""
 
     class TestModule(Module):
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
             self.metric = DummyMetric()
             self.metric.add_state("a", tensor(0), persistent=True)
@@ -389,7 +389,7 @@ def test_device_if_child_module(metric_class):
     """Test that if a metric is a child module all values gets moved to the correct device."""
 
     class TestModule(Module):
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
             self.metric = metric_class()
             self.register_buffer("dummy", torch.zeros(1))

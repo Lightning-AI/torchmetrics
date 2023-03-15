@@ -60,7 +60,7 @@ class Perplexity(Metric):
         self,
         ignore_index: Optional[int] = None,
         **kwargs: Dict[str, Any],
-    ):
+    ) -> None:
         super().__init__(**kwargs)
         if ignore_index is not None and not isinstance(ignore_index, int):
             raise ValueError(f"Argument `ignore_index` expected to either be `None` or an `int` but got {ignore_index}")

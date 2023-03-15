@@ -548,7 +548,7 @@ class DummyMetric(Metric):
     name = "Dummy"
     full_state_update: Optional[bool] = True
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.add_state("x", tensor(0.0), dist_reduce_fx="sum")
 
@@ -567,7 +567,7 @@ class DummyListMetric(Metric):
     name = "DummyList"
     full_state_update: Optional[bool] = True
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.add_state("x", [], dist_reduce_fx="cat")
 
