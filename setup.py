@@ -141,7 +141,7 @@ def _load_readme_description(path_dir: str, homepage: str, version: str) -> str:
     return re.sub(rf"{skip_begin}.+?{skip_end}", "<!--  -->", text, flags=re.IGNORECASE + re.DOTALL)
 
 
-def _load_py_module(fname, pkg="torchmetrics"):
+def _load_py_module(fname: str, pkg: str = "torchmetrics"):
     spec = spec_from_file_location(os.path.join(pkg, fname), os.path.join(_PATH_SOURCE, pkg, fname))
     py = module_from_spec(spec)
     spec.loader.exec_module(py)
@@ -157,7 +157,7 @@ LONG_DESCRIPTION = _load_readme_description(
 BASE_REQUIREMENTS = _load_requirements(path_dir=_PATH_ROOT, file_name="requirements.txt")
 
 
-def _prepare_extras(skip_files: Tuple[str] = ("devel.txt", "doctest.txt", "integrate.txt", "docs.txt")):
+def _prepare_extras(skip_files: Tuple[str] = ("devel.txt", "doctest.txt", "integrate.txt", "docs.txt")) -> dict:
     # find all extra requirements
     _load_req = partial(_load_requirements, path_dir=_PATH_REQUIRE)
     found_req_files = sorted(os.path.basename(p) for p in glob.glob(os.path.join(_PATH_REQUIRE, "*.txt")))

@@ -72,7 +72,7 @@ class BLEUScore(Metric):
         smooth: bool = False,
         weights: Optional[Sequence[float]] = None,
         **kwargs: Any,
-    ):
+    ) -> None:
         super().__init__(**kwargs)
         self.n_gram = n_gram
         self.smooth = smooth

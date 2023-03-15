@@ -282,7 +282,7 @@ def test_collection_filtering():
     class DummyMetric(Metric):
         full_state_update = True
 
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
 
         def update(self, *args, kwarg):
@@ -294,7 +294,7 @@ def test_collection_filtering():
     class MyAccuracy(Metric):
         full_state_update = True
 
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
 
         def update(self, preds, target, kwarg2):

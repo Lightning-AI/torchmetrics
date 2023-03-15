@@ -146,7 +146,7 @@ class BERTScore(Metric):
         baseline_path: Optional[str] = None,
         baseline_url: Optional[str] = None,
         **kwargs: Any,
-    ):
+    ) -> None:
         super().__init__(**kwargs)
         self.model_name_or_path = model_name_or_path or _DEFAULT_MODEL
         self.num_layers = num_layers

@@ -127,7 +127,7 @@ class InfoLM(Metric):
         verbose: bool = True,
         return_sentence_level_score: bool = False,
         **kwargs: Dict[str, Any],
-    ):
+    ) -> None:
         super().__init__(**kwargs)
         self.model_name_or_path = model_name_or_path
         self.temperature = temperature

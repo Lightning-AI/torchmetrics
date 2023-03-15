@@ -102,7 +102,7 @@ class CHRFScore(Metric):
         whitespace: bool = False,
         return_sentence_level_score: bool = False,
         **kwargs: Any,
-    ):
+    ) -> None:
         super().__init__(**kwargs)
 
         if not isinstance(n_char_order, int) or n_char_order < 1:
