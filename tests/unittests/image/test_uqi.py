@@ -65,6 +65,7 @@ def _skimage_uqi(preds, target, data_range, multichannel, kernel_size):
         win_size=kernel_size,
         sigma=1.5,
         use_sample_covariance=False,
+        channel_axis=-1,
     )
 
 
