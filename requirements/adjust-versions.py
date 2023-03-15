@@ -61,7 +61,8 @@ def adjust(requires: str, torch_version: Optional[str] = None) -> str:
         import torch
 
         torch_version = torch.__version__
-    assert torch_version, f"invalid torch: {torch_version}"
+    if not torch_version:
+        raise ValueError(f"invalid torch: {torch_version}")
 
     # remove comments and strip whitespace
     requires = re.sub(rf"\s*#.*{os.linesep}", os.linesep, requires).strip()

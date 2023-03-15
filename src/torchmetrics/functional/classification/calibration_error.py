@@ -85,7 +85,7 @@ def _ce_compute(
         bin_boundaries = torch.linspace(0, 1, bin_boundaries + 1, dtype=torch.float, device=confidences.device)
 
     if norm not in {"l1", "l2", "max"}:
-        raise ValueError(f"Norm {norm} is not supported. Please select from l1, l2, or max. ")
+        raise ValueError(f"Argument `norm` is expected to be one of 'l1', 'l2', 'max' but got {norm}")
 
     with torch.no_grad():
         acc_bin, conf_bin, prop_bin = _binning_bucketize(confidences, accuracies, bin_boundaries)
