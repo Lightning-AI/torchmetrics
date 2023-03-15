@@ -36,7 +36,7 @@ def _create_inputs_masks() -> Input:
     _mask_unsqueeze_bool = lambda m: Tensor(mask.decode(m)).unsqueeze(0).bool()
     _masks_stack_bool = lambda ms: Tensor(np.stack([mask.decode(m) for m in ms])).bool()
 
-    _inputs_masks = Input(
+    return Input(
         preds=[
             [
                 {
@@ -61,7 +61,6 @@ def _create_inputs_masks() -> Input:
             ],
         ],
     )
-    return _inputs_masks
 
 
 _inputs = Input(
