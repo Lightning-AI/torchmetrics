@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Tuple
+from typing import Any, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -20,6 +20,11 @@ from torchmetrics import Metric
 from torchmetrics.functional.retrieval.precision_recall_curve import retrieval_precision_recall_curve
 from torchmetrics.utilities.checks import _check_retrieval_inputs
 from torchmetrics.utilities.data import _flexible_bincount, dim_zero_cat
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["RetrievalPrecision.plot"]
 
 
 def _retrieval_recall_at_fixed_precision(
@@ -309,3 +314,44 @@ class RetrievalRecallAtFixedPrecision(RetrievalPrecisionRecallCurve):
         precisions, recalls, top_k = super().compute()
 
         return _retrieval_recall_at_fixed_precision(precisions, recalls, top_k, self.min_precision)
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> import torch
+            >>> from torchmetrics.retrieval import RetrievalPrecision
+            >>> # Example plotting a single value
+            >>> metric = RetrievalPrecision()
+            >>> metric.update(torch.rand(10,), torch.randint(2, (10,)), indexes=torch.randint(2,(10,)))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> import torch
+            >>> from torchmetrics.retrieval import RetrievalPrecision
+            >>> # Example plotting multiple values
+            >>> metric = RetrievalPrecision()
+            >>> values = []
+            >>> for _ in range(10):
+            ...     values.append(metric(torch.rand(10,), torch.randint(2, (10,)), indexes=torch.randint(2,(10,))))
+            >>> fig, ax = metric.plot(values)
+        """
+        return self._plot(val, ax)
