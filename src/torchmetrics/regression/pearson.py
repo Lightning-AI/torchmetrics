@@ -22,7 +22,7 @@ from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 if not _MATPLOTLIB_AVAILABLE:
-    __doctest_skip__ = ["MeanSquaredError.plot"]
+    __doctest_skip__ = ["PearsonCorrCoef.plot"]
 
 
 def _final_aggregation(
@@ -187,8 +187,8 @@ class PearsonCorrCoef(Metric):
 
             >>> from torch import randn
             >>> # Example plotting a single value
-            >>> from torchmetrics.regression import MeanSquaredError
-            >>> metric = MeanSquaredError()
+            >>> from torchmetrics.regression import PearsonCorrCoef
+            >>> metric = PearsonCorrCoef()
             >>> metric.update(randn(10,), randn(10,))
             >>> fig_, ax_ = metric.plot()
 
@@ -197,8 +197,8 @@ class PearsonCorrCoef(Metric):
 
             >>> from torch import randn
             >>> # Example plotting multiple values
-            >>> from torchmetrics.regression import MeanSquaredError
-            >>> metric = MeanSquaredError()
+            >>> from torchmetrics.regression import PearsonCorrCoef
+            >>> metric = PearsonCorrCoef()
             >>> values = []
             >>> for _ in range(10):
             ...     values.append(metric(randn(10,), randn(10,)))
