@@ -22,10 +22,10 @@ import torch
 from torch import Tensor
 from torch.nn import Module
 
-from torchmetrics.utilities import apply_to_collection, rank_zero_warn
 from torchmetrics.utilities.data import (
     _flatten,
     _squeeze_if_scalar,
+    apply_to_collection,
     dim_zero_cat,
     dim_zero_max,
     dim_zero_mean,
@@ -35,6 +35,7 @@ from torchmetrics.utilities.data import (
 from torchmetrics.utilities.distributed import gather_all_tensors
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
+from torchmetrics.utilities.prints import rank_zero_warn
 
 
 def jit_distributed_available() -> bool:
@@ -808,11 +809,11 @@ class Metric(Module, ABC):
         # if no kwargs filtered, return all kwargs as default
         if not filtered_kwargs and not exists_var_keyword:
             # no kwargs in update signature -> don't return any kwargs
-            filtered_kwargs = {}
-        elif exists_var_keyword:
+            return {}
+        if exists_var_keyword:
             # kwargs found in update signature -> return all kwargs to be sure to not omit any.
             # filtering logic is likely implemented within the update call.
-            filtered_kwargs = kwargs
+            return kwargs
         return filtered_kwargs
 
     def __hash__(self) -> int:

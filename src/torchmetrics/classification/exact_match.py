@@ -119,7 +119,7 @@ class MulticlassExactMatch(Metric):
             dist_reduce_fx="sum" if self.multidim_average == "global" else "mean",
         )
 
-    def update(self, preds, target) -> None:
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Update metric states with predictions and targets."""
         if self.validate_args:
             _multiclass_stat_scores_tensor_validation(
