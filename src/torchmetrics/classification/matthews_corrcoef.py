@@ -115,8 +115,8 @@ class BinaryMatthewsCorrCoef(BinaryConfusionMatrix):
 
             >>> from torch import rand, randint
             >>> # Example plotting a single value
-            >>> from torchmetrics.classification import BinaryCalibrationError
-            >>> metric = BinaryCalibrationError(n_bins=2, norm='l1')
+            >>> from torchmetrics.classification import BinaryMatthewsCorrCoef
+            >>> metric = BinaryMatthewsCorrCoef()
             >>> metric.update(rand(10), randint(2,(10,)))
             >>> fig_, ax_ = metric.plot()
 
@@ -125,8 +125,8 @@ class BinaryMatthewsCorrCoef(BinaryConfusionMatrix):
 
             >>> from torch import rand, randint
             >>> # Example plotting multiple values
-            >>> from torchmetrics.classification import BinaryCalibrationError
-            >>> metric = BinaryCalibrationError(n_bins=2, norm='l1')
+            >>> from torchmetrics.classification import BinaryMatthewsCorrCoef
+            >>> metric = BinaryMatthewsCorrCoef()
             >>> values = [ ]
             >>> for _ in range(10):
             ...     values.append(metric(rand(10), randint(2,(10,))))
@@ -220,23 +220,23 @@ class MulticlassMatthewsCorrCoef(MulticlassConfusionMatrix):
         .. plot::
             :scale: 75
 
-            >>> from torch import rand, randint
-            >>> # Example plotting a single value
-            >>> from torchmetrics.classification import BinaryCalibrationError
-            >>> metric = BinaryCalibrationError(n_bins=2, norm='l1')
-            >>> metric.update(rand(10), randint(2,(10,)))
+            >>> from torch import randint
+            >>> # Example plotting a single value per class
+            >>> from torchmetrics.classification import MulticlassMatthewsCorrCoef
+            >>> metric = MulticlassMatthewsCorrCoef(num_classes=3)
+            >>> metric.update(randint(3, (20,)), randint(3, (20,)))
             >>> fig_, ax_ = metric.plot()
 
         .. plot::
             :scale: 75
 
-            >>> from torch import rand, randint
-            >>> # Example plotting multiple values
-            >>> from torchmetrics.classification import BinaryCalibrationError
-            >>> metric = BinaryCalibrationError(n_bins=2, norm='l1')
-            >>> values = [ ]
-            >>> for _ in range(10):
-            ...     values.append(metric(rand(10), randint(2,(10,))))
+            >>> from torch import randint
+            >>> # Example plotting a multiple values per class
+            >>> from torchmetrics.classification import MulticlassMatthewsCorrCoef
+            >>> metric = MulticlassMatthewsCorrCoef(num_classes=3)
+            >>> values = []
+            >>> for _ in range(20):
+            ...     values.append(metric(randint(3, (20,)), randint(3, (20,))))
             >>> fig_, ax_ = metric.plot(values)
         """
         return self._plot(val, ax)
@@ -328,9 +328,9 @@ class MultilabelMatthewsCorrCoef(MultilabelConfusionMatrix):
 
             >>> from torch import rand, randint
             >>> # Example plotting a single value
-            >>> from torchmetrics.classification import BinaryCalibrationError
-            >>> metric = BinaryCalibrationError(n_bins=2, norm='l1')
-            >>> metric.update(rand(10), randint(2,(10,)))
+            >>> from torchmetrics.classification import MultilabelMatthewsCorrCoef
+            >>> metric = MultilabelMatthewsCorrCoef(num_labels=3)
+            >>> metric.update(randint(2, (20, 3)), randint(2, (20, 3)))
             >>> fig_, ax_ = metric.plot()
 
         .. plot::
@@ -338,11 +338,11 @@ class MultilabelMatthewsCorrCoef(MultilabelConfusionMatrix):
 
             >>> from torch import rand, randint
             >>> # Example plotting multiple values
-            >>> from torchmetrics.classification import BinaryCalibrationError
-            >>> metric = BinaryCalibrationError(n_bins=2, norm='l1')
+            >>> from torchmetrics.classification import MultilabelMatthewsCorrCoef
+            >>> metric = MultilabelMatthewsCorrCoef(num_labels=3)
             >>> values = [ ]
             >>> for _ in range(10):
-            ...     values.append(metric(rand(10), randint(2,(10,))))
+            ...     values.append(metric(randint(2, (20, 3)), randint(2, (20, 3))))
             >>> fig_, ax_ = metric.plot(values)
         """
         return self._plot(val, ax)

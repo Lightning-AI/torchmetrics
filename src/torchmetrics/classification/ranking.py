@@ -132,9 +132,9 @@ class MultilabelCoverageError(Metric):
 
             >>> from torch import rand, randint
             >>> # Example plotting a single value
-            >>> from torchmetrics.classification import BinaryCalibrationError
-            >>> metric = BinaryCalibrationError(n_bins=2, norm='l1')
-            >>> metric.update(rand(10), randint(2,(10,)))
+            >>> from torchmetrics.classification import MultilabelCoverageError
+            >>> metric = MultilabelCoverageError(num_labels=3)
+            >>> metric.update(rand(20, 3), randint(2, (20, 3)))
             >>> fig_, ax_ = metric.plot()
 
         .. plot::
@@ -142,11 +142,11 @@ class MultilabelCoverageError(Metric):
 
             >>> from torch import rand, randint
             >>> # Example plotting multiple values
-            >>> from torchmetrics.classification import BinaryCalibrationError
-            >>> metric = BinaryCalibrationError(n_bins=2, norm='l1')
+            >>> from torchmetrics.classification import MultilabelCoverageError
+            >>> metric = MultilabelCoverageError(num_labels=3)
             >>> values = [ ]
             >>> for _ in range(10):
-            ...     values.append(metric(rand(10), randint(2,(10,))))
+            ...     values.append(metric(rand(20, 3), randint(2, (20, 3))))
             >>> fig_, ax_ = metric.plot(values)
         """
         return self._plot(val, ax)
@@ -247,9 +247,9 @@ class MultilabelRankingAveragePrecision(Metric):
 
             >>> from torch import rand, randint
             >>> # Example plotting a single value
-            >>> from torchmetrics.classification import BinaryCalibrationError
-            >>> metric = BinaryCalibrationError(n_bins=2, norm='l1')
-            >>> metric.update(rand(10), randint(2,(10,)))
+            >>> from torchmetrics.classification import MultilabelRankingAveragePrecision
+            >>> metric = MultilabelRankingAveragePrecision(num_labels=3)
+            >>> metric.update(rand(20, 3), randint(2, (20, 3)))
             >>> fig_, ax_ = metric.plot()
 
         .. plot::
@@ -257,11 +257,11 @@ class MultilabelRankingAveragePrecision(Metric):
 
             >>> from torch import rand, randint
             >>> # Example plotting multiple values
-            >>> from torchmetrics.classification import BinaryCalibrationError
-            >>> metric = BinaryCalibrationError(n_bins=2, norm='l1')
+            >>> from torchmetrics.classification import MultilabelRankingAveragePrecision
+            >>> metric = MultilabelRankingAveragePrecision(num_labels=3)
             >>> values = [ ]
             >>> for _ in range(10):
-            ...     values.append(metric(rand(10), randint(2,(10,))))
+            ...     values.append(metric(rand(20, 3), randint(2, (20, 3))))
             >>> fig_, ax_ = metric.plot(values)
         """
         return self._plot(val, ax)
@@ -364,9 +364,9 @@ class MultilabelRankingLoss(Metric):
 
             >>> from torch import rand, randint
             >>> # Example plotting a single value
-            >>> from torchmetrics.classification import BinaryCalibrationError
-            >>> metric = BinaryCalibrationError(n_bins=2, norm='l1')
-            >>> metric.update(rand(10), randint(2,(10,)))
+            >>> from torchmetrics.classification import MultilabelRankingLoss
+            >>> metric = MultilabelRankingLoss(num_labels=3)
+            >>> metric.update(rand(20, 3), randint(2, (20, 3)))
             >>> fig_, ax_ = metric.plot()
 
         .. plot::
@@ -374,11 +374,11 @@ class MultilabelRankingLoss(Metric):
 
             >>> from torch import rand, randint
             >>> # Example plotting multiple values
-            >>> from torchmetrics.classification import BinaryCalibrationError
-            >>> metric = BinaryCalibrationError(n_bins=2, norm='l1')
+            >>> from torchmetrics.classification import MultilabelRankingLoss
+            >>> metric = MultilabelRankingLoss(num_labels=3)
             >>> values = [ ]
             >>> for _ in range(10):
-            ...     values.append(metric(rand(10), randint(2,(10,))))
+            ...     values.append(metric(rand(20, 3), randint(2, (20, 3))))
             >>> fig_, ax_ = metric.plot(values)
         """
         return self._plot(val, ax)
