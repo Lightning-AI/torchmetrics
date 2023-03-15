@@ -80,6 +80,12 @@ from torchmetrics.regression import (
     MeanSquaredError,
     MeanSquaredLogError,
     MinkowskiDistance,
+    PearsonCorrCoef,
+    R2Score,
+    SpearmanCorrCoef,
+    SymmetricMeanAbsolutePercentageError,
+    TweedieDevianceScore,
+    WeightedMeanAbsolutePercentageError,
 )
 from torchmetrics.retrieval import RetrievalMRR, RetrievalPrecision, RetrievalRecall, RetrievalRPrecision
 
@@ -293,6 +299,12 @@ _nominal_input = lambda: torch.randint(0, 4, (100,))
         pytest.param(MeanAbsoluteError, _rand_input, _rand_input, id="mean absolute error"),
         pytest.param(MeanAbsolutePercentageError, _rand_input, _rand_input, id="mean absolute percentage error"),
         pytest.param(partial(MinkowskiDistance, p=3), _rand_input, _rand_input, id="minkowski distance"),
+        pytest.param(PearsonCorrCoef, _rand_input, _rand_input, id="pearson corr coef"),
+        pytest.param(R2Score, _rand_input, _rand_input, id="r2 score"),
+        pytest.param(SpearmanCorrCoef, _rand_input, _rand_input, id="spearman corr coef"),
+        pytest.param(SymmetricMeanAbsolutePercentageError, _rand_input, _rand_input, id="symmetric mape"),
+        pytest.param(TweedieDevianceScore, _rand_input, _rand_input, id="tweedie deviance score"),
+        pytest.param(WeightedMeanAbsolutePercentageError, _rand_input, _rand_input, id="weighted mape"),
     ],
 )
 @pytest.mark.parametrize("num_vals", [1, 5])
