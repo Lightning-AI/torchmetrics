@@ -32,7 +32,7 @@ class CompleteIntersectionOverUnion(IntersectionOverUnion):
              Additional keyword arguments, see :ref:`Metric kwargs` for more info.
     """
     _iou_type: str = "ciou"
-    _invalid_val: float = -2  # unsure, min val could be just -1.5 as well
+    _invalid_val: float = -2.0  # unsure, min val could be just -1.5 as well
 
     def __init__(
         self,

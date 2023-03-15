@@ -31,7 +31,7 @@ class GeneralizedIntersectionOverUnion(IntersectionOverUnion):
              Additional keyword arguments, see :ref:`Metric kwargs` for more info.
     """
     _iou_type: str = "giou"
-    _invalid_val: float = -1
+    _invalid_val: float = -1.0
 
     def __init__(
         self,

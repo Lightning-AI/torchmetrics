@@ -60,7 +60,7 @@ class IntersectionOverUnion(Metric):
     _iou_update_fn: Callable[[Tensor, Tensor, Optional[float], float], Tensor]
     _iou_compute_fn: Callable[[Tensor, bool], Tensor]
     _iou_type: str = "iou"
-    _invalid_val: float = 0
+    _invalid_val: float = 0.0
 
     def __init__(
         self,
