@@ -23,7 +23,7 @@ from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 if not _MATPLOTLIB_AVAILABLE:
-    __doctest_skip__ = ["RetrievalPrecision.plot"]
+    __doctest_skip__ = ["RetrievalFallOut.plot"]
 
 
 class RetrievalFallOut(RetrievalMetric):
@@ -157,9 +157,9 @@ class RetrievalFallOut(RetrievalMetric):
             :scale: 75
 
             >>> import torch
-            >>> from torchmetrics.retrieval import RetrievalPrecision
+            >>> from torchmetrics.retrieval import RetrievalFallOut
             >>> # Example plotting a single value
-            >>> metric = RetrievalPrecision()
+            >>> metric = RetrievalFallOut()
             >>> metric.update(torch.rand(10,), torch.randint(2, (10,)), indexes=torch.randint(2,(10,)))
             >>> fig_, ax_ = metric.plot()
 
@@ -167,9 +167,9 @@ class RetrievalFallOut(RetrievalMetric):
             :scale: 75
 
             >>> import torch
-            >>> from torchmetrics.retrieval import RetrievalPrecision
+            >>> from torchmetrics.retrieval import RetrievalFallOut
             >>> # Example plotting multiple values
-            >>> metric = RetrievalPrecision()
+            >>> metric = RetrievalFallOut()
             >>> values = []
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(10,), torch.randint(2, (10,)), indexes=torch.randint(2,(10,))))
