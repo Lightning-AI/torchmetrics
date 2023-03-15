@@ -29,7 +29,7 @@ Input = namedtuple("Input", ["preds", "target"])
 
 @dataclass
 class TestCaseData:
-    """Test data sample"""
+    """Test data sample."""
 
     data: Input
     result: Any
