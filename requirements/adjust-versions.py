@@ -20,6 +20,7 @@ from typing import Dict, Optional
 from packaging.version import Version
 
 VERSIONS = [
+    {"torch": "2.0.0", "torchvision": "0.15.0", "torchtext": "0.15.0"},  # stable
     {"torch": "1.14.0", "torchvision": "0.15.0", "torchtext": "0.15.0"},  # nightly
     {"torch": "1.13.1", "torchvision": "0.14.1", "torchtext": "0.14.1"},  # stable
     {"torch": "1.13.0", "torchvision": "0.14.0", "torchtext": "0.14.0"},
