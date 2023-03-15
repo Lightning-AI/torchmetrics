@@ -84,9 +84,10 @@ repos:
         additional_dependencies:
           - pep8-naming
           - flake8-pytest-style
+          - flake8-bandit
 
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.0.252
+    rev: v0.0.255
     hooks:
       - id: ruff
         args: ["--fix"]
