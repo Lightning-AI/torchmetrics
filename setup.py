@@ -23,7 +23,8 @@ class _RequirementWithComment(Requirement):
     def __init__(self, *args: Any, comment: str = "", pip_argument: Optional[str] = None, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.comment = comment
-        assert pip_argument is None or pip_argument  # sanity check that it's not an empty str
+        if pip_argument is not None and not pip_argument:
+            raise ValueError("Expected `pip_argument` to either be `None` or an str, but got an empty string")
         self.pip_argument = pip_argument
         self.strict = self.strict_string in comment.lower()
 
@@ -101,7 +102,8 @@ def _load_requirements(
     ['numpy...', 'torch..."]
     """
     path = Path(path_dir) / file_name
-    assert path.exists(), (path_dir, file_name, path)
+    if not path.exists():
+        raise ValueError("Path {path} not found for input dir {path_dir} and filename {file_name}.")
     text = path.read_text()
     return [req.adjust(unfreeze) for req in _parse_requirements(text)]
 
