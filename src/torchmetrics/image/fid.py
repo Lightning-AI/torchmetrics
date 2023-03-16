@@ -19,6 +19,7 @@ import torch
 from torch import Tensor
 from torch.autograd import Function
 from torch.nn import Module
+from torch.nn.functional import adaptive_avg_pool2d
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_info
@@ -30,10 +31,15 @@ if not _MATPLOTLIB_AVAILABLE:
 
 if _TORCH_FIDELITY_AVAILABLE:
     from torch_fidelity.feature_extractor_inceptionv3 import FeatureExtractorInceptionV3 as _FeatureExtractorInceptionV3
+    from torch_fidelity.helpers import vassert
+    from torch_fidelity.interpolate_compat_tensorflow import interpolate_bilinear_2d_like_tensorflow1x
 else:
 
     class _FeatureExtractorInceptionV3(Module):
         pass
+
+    vassert = None
+    interpolate_bilinear_2d_like_tensorflow1x = None
 
     __doctest_skip__ = ["FrechetInceptionDistance", "FrechetInceptionDistance.plot"]
 
@@ -59,9 +65,119 @@ class NoTrainInceptionV3(_FeatureExtractorInceptionV3):
         """Force network to always be in evaluation mode."""
         return super().train(False)
 
+    def _torch_fidelity_forward(self, x: Tensor) -> Tensor:
+        """Forward method of inception net.
+
+        Copy of the forward method from this file:
+        https://github.com/toshas/torch-fidelity/blob/master/torch_fidelity/feature_extractor_inceptionv3.py
+        with a single line change regarding the casting of `x` in the beginning.
+        """
+        vassert(torch.is_tensor(x) and x.dtype == torch.uint8, "Expecting image as torch.Tensor with dtype=torch.uint8")
+        features = {}
+        remaining_features = self.features_list.copy()
+
+        x = x.to(self._dtype) if hasattr(self, "_dtype") else x.to(torch.float)
+        # N x 3 x ? x ?
+
+        x = interpolate_bilinear_2d_like_tensorflow1x(
+            x,
+            size=(self.INPUT_IMAGE_SIZE, self.INPUT_IMAGE_SIZE),
+            align_corners=False,
+        )
+        # N x 3 x 299 x 299
+
+        # x = (x - 128) * torch.tensor(0.0078125, dtype=torch.float32, device=x.device)  # really happening in graph
+        x = (x - 128) / 128  # but this gives bit-exact output _of this step_ too
+        # N x 3 x 299 x 299
+
+        x = self.Conv2d_1a_3x3(x)
+        # N x 32 x 149 x 149
+        x = self.Conv2d_2a_3x3(x)
+        # N x 32 x 147 x 147
+        x = self.Conv2d_2b_3x3(x)
+        # N x 64 x 147 x 147
+        x = self.MaxPool_1(x)
+        # N x 64 x 73 x 73
+
+        if "64" in remaining_features:
+            features["64"] = adaptive_avg_pool2d(x, output_size=(1, 1)).squeeze(-1).squeeze(-1)
+            remaining_features.remove("64")
+            if len(remaining_features) == 0:
+                return tuple(features[a] for a in self.features_list)
+
+        x = self.Conv2d_3b_1x1(x)
+        # N x 80 x 73 x 73
+        x = self.Conv2d_4a_3x3(x)
+        # N x 192 x 71 x 71
+        x = self.MaxPool_2(x)
+        # N x 192 x 35 x 35
+
+        if "192" in remaining_features:
+            features["192"] = adaptive_avg_pool2d(x, output_size=(1, 1)).squeeze(-1).squeeze(-1)
+            remaining_features.remove("192")
+            if len(remaining_features) == 0:
+                return tuple(features[a] for a in self.features_list)
+
+        x = self.Mixed_5b(x)
+        # N x 256 x 35 x 35
+        x = self.Mixed_5c(x)
+        # N x 288 x 35 x 35
+        x = self.Mixed_5d(x)
+        # N x 288 x 35 x 35
+        x = self.Mixed_6a(x)
+        # N x 768 x 17 x 17
+        x = self.Mixed_6b(x)
+        # N x 768 x 17 x 17
+        x = self.Mixed_6c(x)
+        # N x 768 x 17 x 17
+        x = self.Mixed_6d(x)
+        # N x 768 x 17 x 17
+        x = self.Mixed_6e(x)
+        # N x 768 x 17 x 17
+
+        if "768" in remaining_features:
+            features["768"] = adaptive_avg_pool2d(x, output_size=(1, 1)).squeeze(-1).squeeze(-1)
+            remaining_features.remove("768")
+            if len(remaining_features) == 0:
+                return tuple(features[a] for a in self.features_list)
+
+        x = self.Mixed_7a(x)
+        # N x 1280 x 8 x 8
+        x = self.Mixed_7b(x)
+        # N x 2048 x 8 x 8
+        x = self.Mixed_7c(x)
+        # N x 2048 x 8 x 8
+        x = self.AvgPool(x)
+        # N x 2048 x 1 x 1
+
+        x = torch.flatten(x, 1)
+        # N x 2048
+
+        if "2048" in remaining_features:
+            features["2048"] = x
+            remaining_features.remove("2048")
+            if len(remaining_features) == 0:
+                return tuple(features[a] for a in self.features_list)
+
+        if "logits_unbiased" in remaining_features:
+            x = x.mm(self.fc.weight.T)
+            # N x 1008 (num_classes)
+            features["logits_unbiased"] = x
+            remaining_features.remove("logits_unbiased")
+            if len(remaining_features) == 0:
+                return tuple(features[a] for a in self.features_list)
+
+            x = x + self.fc.bias.unsqueeze(0)
+        else:
+            x = self.fc(x)
+            # N x 1008 (num_classes)
+
+        features["logits"] = x
+        return tuple(features[a] for a in self.features_list)
+
     def forward(self, x: Tensor) -> Tensor:
         """Forward pass of neural network with reshaping of output."""
-        out = super().forward(x)
+        out = self._torch_fidelity_forward(x)
         return out[0].reshape(x.shape[0], -1)
 
 
@@ -306,6 +422,17 @@ class FrechetInceptionDistance(Metric):
             self.real_features_num_samples = real_features_num_samples
         else:
             super().reset()
+
+    def set_dtype(self, dst_type: Union[str, torch.dtype]) -> "Metric":
+        """Transfer all metric state to specific dtype. Special version of standard `type` method.
+
+        Arguments:
+            dst_type (type or string): the desired type.
+        """
+        out = super().set_dtype(dst_type)
+        if isinstance(out.inception, NoTrainInceptionV3):
+            out.inception._dtype = dst_type
+        return out
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
