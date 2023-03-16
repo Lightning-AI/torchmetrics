@@ -26,23 +26,23 @@ from torchmetrics.functional.detection._panoptic_quality_common import (
 )
 
 
-def panoptic_quality(
+def modified_panoptic_quality(
     preds: Tensor,
     target: Tensor,
     things: Collection[int],
     stuffs: Collection[int],
     allow_unknown_preds_category: bool = False,
 ) -> Tensor:
-    r"""Compute `Panoptic Quality`_ for panoptic segmentations.
+    r"""Compute `Modified Panoptic Quality`_ for panoptic segmentations.
+
+    The metric was introduced in https://arxiv.org/abs/1905.01220 Section 4, and is an adaptation of the original
+    "Panoptic Quality" where the metric for a stuff class is computed as
 
     .. math::
-        PQ = \frac{IOU}{TP + 0.5 FP + 0.5 FN}
+        PQ^{\dagger}_c = \frac{IOU_c}{|S_c|}
 
-    where IOU, TP, FP and FN are respectively the sum of the intersection over union for true positives, the number of
-    true postitives, false positives and false negatives. This metric is inspired by the PQ implementation of
-    panopticapi, a standard implementation for the PQ metric for object detection.
-    The metric was introduced in https://arxiv.org/abs/1801.00868.
-
+    where IOU_c is the sum of the intersection over union of all matching segments for a given class, and \|S_c| is
+    the overall number of segments in the ground truth for that class.
 
     .. note:
         Points in the target tensor that do not map to a known category ID are automatically ignored in the metric
@@ -80,18 +80,10 @@ def panoptic_quality(
 
     Example:
         >>> from torch import tensor
-        >>> preds = tensor([[[[6, 0], [0, 0], [6, 0], [6, 0]],
-        ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
-        ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
-        ...                  [[0, 0], [7, 0], [6, 0], [1, 0]],
-        ...                  [[0, 0], [7, 0], [7, 0], [7, 0]]]])
-        >>> target = tensor([[[[6, 0], [0, 1], [6, 0], [0, 1]],
-        ...                   [[0, 1], [0, 1], [6, 0], [0, 1]],
-        ...                   [[0, 1], [0, 1], [6, 0], [1, 0]],
-        ...                   [[0, 1], [7, 0], [1, 0], [1, 0]],
-        ...                   [[0, 1], [7, 0], [7, 0], [7, 0]]]])
-        >>> panoptic_quality(preds, target, things = {0, 1}, stuffs = {6, 7})
-        tensor(0.5463, dtype=torch.float64)
+        >>> preds = tensor([[[0, 0], [0, 1], [6, 0], [7, 0], [0, 2], [1, 0]]])
+        >>> target = tensor([[[0, 1], [0, 0], [6, 0], [7, 0], [6, 0], [255, 0]]])
+        >>> modified_panoptic_quality(preds, target, things = {0, 1}, stuffs = {6, 7})
+        tensor(0.7667, dtype=torch.float64)
     """
     things, stuffs = _parse_categories(things, stuffs)
     _validate_inputs(preds, target)
@@ -100,6 +92,10 @@ def panoptic_quality(
     flatten_preds = _prepocess_inputs(things, stuffs, preds, void_color, allow_unknown_preds_category)
     flatten_target = _prepocess_inputs(things, stuffs, target, void_color, True)
     iou_sum, true_positives, false_positives, false_negatives = _panoptic_quality_update(
-        flatten_preds, flatten_target, cat_id_to_continuous_id, void_color
+        flatten_preds,
+        flatten_target,
+        cat_id_to_continuous_id,
+        void_color,
+        modified_metric_stuffs=stuffs,
     )
     return _panoptic_quality_compute(iou_sum, true_positives, false_positives, false_negatives)
