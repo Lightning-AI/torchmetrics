@@ -27,7 +27,7 @@ jobs:
           pytorch-version: ${{ matrix.pytorch-version }}
           pypi-dir: ${{ env.PYPI_CACHE }}
 
-      - name: Install dependencies
+      - name: Install package & dependencies
         run: |
           pip --version
           pip install -e . -U -q -r requirements/docs.txt --find-links $PYTORCH_URL -f $PYPI_CACHE
@@ -71,7 +71,7 @@ jobs:
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}-${{ hashFiles('requirements/docs.txt') }}
           restore-keys: ${{ runner.os }}-pip-
 
-      - name: Install dependencies
+      - name: Install dependencies & package
         run: |
           # install Texlive, see https://linuxconfig.org/how-to-install-latex-on-ubuntu-20-04-focal-fossa-linux
           sudo apt-get update
