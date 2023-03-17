@@ -54,6 +54,7 @@ _INPUTS_0 = Input(
 )
 _INPUTS_1 = Input(
     # Shape of input tensors is (num_batches, batch_size, num_points, 2).
+    # NOTE: IoU for stuff category 6 is < 0.5, modified PQ behaves differently there.
     preds=torch.tensor([[0, 0], [0, 1], [6, 0], [7, 0], [0, 2], [1, 0]]).reshape((1, 1, 6, 2)).repeat(2, 1, 1, 1),
     target=torch.tensor([[0, 1], [0, 0], [6, 0], [7, 0], [6, 0], [255, 0]]).reshape((1, 1, 6, 2)).repeat(2, 1, 1, 1),
 )
