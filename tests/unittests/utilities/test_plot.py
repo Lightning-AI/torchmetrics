@@ -80,8 +80,25 @@ from torchmetrics.regression import (
     MeanSquaredError,
     MeanSquaredLogError,
     MinkowskiDistance,
+    PearsonCorrCoef,
+    R2Score,
+    SpearmanCorrCoef,
+    SymmetricMeanAbsolutePercentageError,
+    TweedieDevianceScore,
+    WeightedMeanAbsolutePercentageError,
 )
-from torchmetrics.retrieval import RetrievalMRR, RetrievalPrecision, RetrievalRecall, RetrievalRPrecision
+from torchmetrics.retrieval import (
+    RetrievalFallOut,
+    RetrievalHitRate,
+    RetrievalMAP,
+    RetrievalMRR,
+    RetrievalNormalizedDCG,
+    RetrievalPrecision,
+    RetrievalPrecisionRecallCurve,
+    RetrievalRecall,
+    RetrievalRecallAtFixedPrecision,
+    RetrievalRPrecision,
+)
 
 _rand_input = lambda: torch.rand(10)
 _binary_randint_input = lambda: torch.randint(2, (10,))
@@ -293,6 +310,12 @@ _nominal_input = lambda: torch.randint(0, 4, (100,))
         pytest.param(MeanAbsoluteError, _rand_input, _rand_input, id="mean absolute error"),
         pytest.param(MeanAbsolutePercentageError, _rand_input, _rand_input, id="mean absolute percentage error"),
         pytest.param(partial(MinkowskiDistance, p=3), _rand_input, _rand_input, id="minkowski distance"),
+        pytest.param(PearsonCorrCoef, _rand_input, _rand_input, id="pearson corr coef"),
+        pytest.param(R2Score, _rand_input, _rand_input, id="r2 score"),
+        pytest.param(SpearmanCorrCoef, _rand_input, _rand_input, id="spearman corr coef"),
+        pytest.param(SymmetricMeanAbsolutePercentageError, _rand_input, _rand_input, id="symmetric mape"),
+        pytest.param(TweedieDevianceScore, _rand_input, _rand_input, id="tweedie deviance score"),
+        pytest.param(WeightedMeanAbsolutePercentageError, _rand_input, _rand_input, id="weighted mape"),
     ],
 )
 @pytest.mark.parametrize("num_vals", [1, 5])
@@ -376,16 +399,49 @@ def test_plot_methods_special_image_metrics(metric_class, preds, target, index_0
     ("metric_class", "preds", "target", "indexes"),
     [
         pytest.param(RetrievalMRR, _rand_input, _binary_randint_input, _binary_randint_input, id="retrieval mrr"),
-        pytest.param(RetrievalPrecision, _rand_input, _binary_randint_input, _binary_randint_input, id="retrieval mrr"),
         pytest.param(
-            RetrievalRPrecision, _rand_input, _binary_randint_input, _binary_randint_input, id="retrieval mrr"
+            RetrievalPrecision, _rand_input, _binary_randint_input, _binary_randint_input, id="retrieval precision"
         ),
-        pytest.param(RetrievalRecall, _rand_input, _binary_randint_input, _binary_randint_input, id="retrieval mrr"),
+        pytest.param(
+            RetrievalRPrecision, _rand_input, _binary_randint_input, _binary_randint_input, id="retrieval r precision"
+        ),
+        pytest.param(RetrievalRecall, _rand_input, _binary_randint_input, _binary_randint_input, id="retrieval recall"),
+        pytest.param(
+            RetrievalFallOut, _rand_input, _binary_randint_input, _binary_randint_input, id="retrieval fallout"
+        ),
+        pytest.param(
+            RetrievalHitRate, _rand_input, _binary_randint_input, _binary_randint_input, id="retrieval hitrate"
+        ),
+        pytest.param(RetrievalMAP, _rand_input, _binary_randint_input, _binary_randint_input, id="retrieval map"),
+        pytest.param(
+            RetrievalNormalizedDCG,
+            _rand_input,
+            _binary_randint_input,
+            _binary_randint_input,
+            id="retrieval normalized dcg",
+        ),
+        pytest.param(
+            RetrievalRecallAtFixedPrecision,
+            _rand_input,
+            _binary_randint_input,
+            _binary_randint_input,
+            id="retrieval recall at fixed precision",
+        ),
+        pytest.param(
+            RetrievalPrecisionRecallCurve,
+            _rand_input,
+            _binary_randint_input,
+            _binary_randint_input,
+            id="retrieval precision recall curve",
+        ),
     ],
 )
 @pytest.mark.parametrize("num_vals", [1, 2])
 def test_plot_methods_retrieval(metric_class, preds, target, indexes, num_vals):
     """Test the plot method for retrieval metrics by themselves, since retrieval metrics requires an extra argument."""
+    if num_vals != 1 and metric_class == RetrievalPrecisionRecallCurve:  # curves does not support multiple step plot
+        pytest.skip("curve objects does not support plotting multiple steps")
+
     metric = metric_class()
 
     if num_vals == 1:
@@ -394,7 +450,8 @@ def test_plot_methods_retrieval(metric_class, preds, target, indexes, num_vals):
     else:
         vals = []
         for _ in range(num_vals):
-            vals.append(metric(preds(), target(), indexes=indexes()))
+            res = metric(preds(), target(), indexes=indexes())
+            vals.append(res[0] if isinstance(res, tuple) else res)
         fig, ax = metric.plot(vals)
 
     assert isinstance(fig, plt.Figure)
