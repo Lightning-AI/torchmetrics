@@ -38,15 +38,33 @@ from torchmetrics.classification import (
     BinaryCalibrationError,
     BinaryCohenKappa,
     BinaryConfusionMatrix,
+    BinaryMatthewsCorrCoef,
+    BinaryPrecision,
+    BinaryRecall,
+    BinaryRecallAtFixedPrecision,
     BinaryROC,
+    BinarySpecificity,
     MulticlassAccuracy,
     MulticlassAUROC,
     MulticlassAveragePrecision,
     MulticlassCalibrationError,
     MulticlassCohenKappa,
     MulticlassConfusionMatrix,
+    MulticlassMatthewsCorrCoef,
+    MulticlassPrecision,
+    MulticlassRecall,
+    MulticlassRecallAtFixedPrecision,
+    MulticlassSpecificity,
     MultilabelAveragePrecision,
     MultilabelConfusionMatrix,
+    MultilabelCoverageError,
+    MultilabelMatthewsCorrCoef,
+    MultilabelPrecision,
+    MultilabelRankingAveragePrecision,
+    MultilabelRankingLoss,
+    MultilabelRecall,
+    MultilabelRecallAtFixedPrecision,
+    MultilabelSpecificity,
 )
 from torchmetrics.detection import PanopticQuality
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
@@ -281,6 +299,94 @@ _nominal_input = lambda: torch.randint(0, 4, (100,))
             _multilabel_randint_input,
             id="multilabel average precision",
         ),
+        pytest.param(BinarySpecificity, _rand_input, _binary_randint_input, id="binary specificity"),
+        pytest.param(
+            partial(MulticlassSpecificity, num_classes=3),
+            _multiclass_randn_input,
+            _multiclass_randint_input,
+            id="multiclass specificity",
+        ),
+        pytest.param(
+            partial(MultilabelSpecificity, num_labels=3),
+            _multilabel_rand_input,
+            _multilabel_randint_input,
+            id="multilabel specificity",
+        ),
+        pytest.param(
+            partial(BinaryRecallAtFixedPrecision, min_precision=0.5),
+            _rand_input,
+            _binary_randint_input,
+            id="binary recall at fixed precision",
+        ),
+        pytest.param(
+            partial(MulticlassRecallAtFixedPrecision, num_classes=3, min_precision=0.5),
+            _multiclass_randn_input,
+            _multiclass_randint_input,
+            id="multiclass recall at fixed precision",
+        ),
+        pytest.param(
+            partial(MultilabelRecallAtFixedPrecision, num_labels=3, min_precision=0.5),
+            _multilabel_rand_input,
+            _multilabel_randint_input,
+            id="multilabel recall at fixed precision",
+        ),
+        pytest.param(
+            partial(MultilabelCoverageError, num_labels=3),
+            _multilabel_rand_input,
+            _multilabel_randint_input,
+            id="multilabel coverage error",
+        ),
+        pytest.param(
+            partial(MultilabelRankingAveragePrecision, num_labels=3),
+            _multilabel_rand_input,
+            _multilabel_randint_input,
+            id="multilabel ranking average precision",
+        ),
+        pytest.param(
+            partial(MultilabelRankingLoss, num_labels=3),
+            _multilabel_rand_input,
+            _multilabel_randint_input,
+            id="multilabel ranking loss",
+        ),
+        pytest.param(BinaryPrecision, _rand_input, _binary_randint_input, id="binary precision"),
+        pytest.param(
+            partial(MulticlassPrecision, num_classes=3),
+            _multiclass_randn_input,
+            _multiclass_randint_input,
+            id="multiclass precision",
+        ),
+        pytest.param(
+            partial(MultilabelPrecision, num_labels=3),
+            _multilabel_rand_input,
+            _multilabel_randint_input,
+            id="multilabel precision",
+        ),
+        pytest.param(BinaryRecall, _rand_input, _binary_randint_input, id="binary recall"),
+        pytest.param(
+            partial(MulticlassRecall, num_classes=3),
+            _multiclass_randn_input,
+            _multiclass_randint_input,
+            id="multiclass recall",
+        ),
+        pytest.param(
+            partial(MultilabelRecall, num_labels=3),
+            _multilabel_rand_input,
+            _multilabel_randint_input,
+            id="multilabel recall",
+        ),
+        pytest.param(BinaryMatthewsCorrCoef, _rand_input, _binary_randint_input, id="binary matthews corr coef"),
+        pytest.param(
+            partial(MulticlassMatthewsCorrCoef, num_classes=3),
+            _multiclass_randn_input,
+            _multiclass_randint_input,
+            id="multiclass matthews corr coef",
+        ),
+        pytest.param(
+            partial(MultilabelMatthewsCorrCoef, num_labels=3),
+            _multilabel_rand_input,
+            _multilabel_randint_input,
+            id="multilabel matthews corr coef",
+        ),
         pytest.param(TotalVariation, _image_input, None, id="total variation"),
         pytest.param(
             RootMeanSquaredErrorUsingSlidingWindow,
@@ -330,7 +436,8 @@ def test_plot_methods(metric_class: object, preds: Callable, target: Callable, n
     else:
         vals = []
         for _ in range(num_vals):
-            vals.append(metric(*input()))
+            val = metric(*input())
+            vals.append(val[0] if isinstance(val, tuple) else val)
         fig, ax = metric.plot(vals)
 
     assert isinstance(fig, plt.Figure)
