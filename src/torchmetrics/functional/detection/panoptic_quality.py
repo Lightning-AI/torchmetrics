@@ -41,7 +41,6 @@ def panoptic_quality(
     where IOU, TP, FP and FN are respectively the sum of the intersection over union for true positives, the number of
     true postitives, false positives and false negatives. This metric is inspired by the PQ implementation of
     panopticapi, a standard implementation for the PQ metric for object detection.
-    The metric was introduced in https://arxiv.org/abs/1801.00868.
 
 
     .. note:

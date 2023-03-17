@@ -36,8 +36,8 @@ if not _MATPLOTLIB_AVAILABLE:
 class ModifiedPanopticQuality(Metric):
     r"""Compute `Modified Panoptic Quality`_ for panoptic segmentations.
 
-    The metric was introduced in https://arxiv.org/abs/1905.01220 Section 4, and is an adaptation of the original
-    "Panoptic Quality" where the metric for a stuff class is computed as
+    The metric was introduced in `Seamless Scene Segmentation paper`_, and is an adaptation of the original
+    `Panoptic Quality`_ where the metric for a stuff class is computed as
 
     .. math::
         PQ^{\dagger}_c = \frac{IOU_c}{|S_c|}
