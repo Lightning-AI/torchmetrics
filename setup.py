@@ -14,7 +14,7 @@ from setuptools import find_packages, setup
 _PATH_ROOT = os.path.realpath(os.path.dirname(__file__))
 _PATH_SOURCE = os.path.join(_PATH_ROOT, "src")
 _PATH_REQUIRE = os.path.join(_PATH_ROOT, "requirements")
-_FREEZE_REQUIREMENTS = os.environ.get("FREEZE_REQUIREMENTS", 0).lower() in (1, "1", "true")
+_FREEZE_REQUIREMENTS = os.environ.get("FREEZE_REQUIREMENTS", "0").lower() in ("1", "true")
 
 
 class _RequirementWithComment(Requirement):
