@@ -292,7 +292,7 @@ class MulticlassRecallAtFixedPrecision(MulticlassPrecisionRecallCurve):
         .. plot::
             :scale: 75
 
-            >>> from torch import randint
+            >>> from torch import rand, randint
             >>> # Example plotting a multiple values per class
             >>> from torchmetrics.classification import MulticlassRecallAtFixedPrecision
             >>> metric = MulticlassRecallAtFixedPrecision(num_classes=3, min_precision=0.5)
