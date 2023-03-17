@@ -596,7 +596,7 @@ class Metric(Module, ABC):
             ModuleNotFoundError:
                 If `matplotlib` is not installed
         """
-        val = val or self.compute()
+        val = val if val is not None else self.compute()
         fig, ax = plot_single_or_multi_val(
             val,
             ax=ax,
