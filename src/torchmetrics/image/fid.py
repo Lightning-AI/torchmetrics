@@ -71,33 +71,26 @@ class NoTrainInceptionV3(_FeatureExtractorInceptionV3):
         Copy of the forward method from this file:
         https://github.com/toshas/torch-fidelity/blob/master/torch_fidelity/feature_extractor_inceptionv3.py
         with a single line change regarding the casting of `x` in the beginning.
+
+        Corresponding license file (Apache License, Version 2.0):
+        https://github.com/toshas/torch-fidelity/blob/master/LICENSE.md
         """
         vassert(torch.is_tensor(x) and x.dtype == torch.uint8, "Expecting image as torch.Tensor with dtype=torch.uint8")
         features = {}
         remaining_features = self.features_list.copy()
 
         x = x.to(self._dtype) if hasattr(self, "_dtype") else x.to(torch.float)
-        # N x 3 x ? x ?
-
         x = interpolate_bilinear_2d_like_tensorflow1x(
             x,
             size=(self.INPUT_IMAGE_SIZE, self.INPUT_IMAGE_SIZE),
             align_corners=False,
         )
-        # N x 3 x 299 x 299
-
-        # x = (x - 128) * torch.tensor(0.0078125, dtype=torch.float32, device=x.device)  # really happening in graph
-        x = (x - 128) / 128  # but this gives bit-exact output _of this step_ too
-        # N x 3 x 299 x 299
+        x = (x - 128) / 128
 
         x = self.Conv2d_1a_3x3(x)
-        # N x 32 x 149 x 149
         x = self.Conv2d_2a_3x3(x)
-        # N x 32 x 147 x 147
         x = self.Conv2d_2b_3x3(x)
-        # N x 64 x 147 x 147
         x = self.MaxPool_1(x)
-        # N x 64 x 73 x 73
 
         if "64" in remaining_features:
             features["64"] = adaptive_avg_pool2d(x, output_size=(1, 1)).squeeze(-1).squeeze(-1)
@@ -106,11 +99,8 @@ class NoTrainInceptionV3(_FeatureExtractorInceptionV3):
                 return tuple(features[a] for a in self.features_list)
 
         x = self.Conv2d_3b_1x1(x)
-        # N x 80 x 73 x 73
         x = self.Conv2d_4a_3x3(x)
-        # N x 192 x 71 x 71
         x = self.MaxPool_2(x)
-        # N x 192 x 35 x 35
 
         if "192" in remaining_features:
             features["192"] = adaptive_avg_pool2d(x, output_size=(1, 1)).squeeze(-1).squeeze(-1)
@@ -119,21 +109,13 @@ class NoTrainInceptionV3(_FeatureExtractorInceptionV3):
                 return tuple(features[a] for a in self.features_list)
 
         x = self.Mixed_5b(x)
-        # N x 256 x 35 x 35
         x = self.Mixed_5c(x)
-        # N x 288 x 35 x 35
         x = self.Mixed_5d(x)
-        # N x 288 x 35 x 35
         x = self.Mixed_6a(x)
-        # N x 768 x 17 x 17
         x = self.Mixed_6b(x)
-        # N x 768 x 17 x 17
         x = self.Mixed_6c(x)
-        # N x 768 x 17 x 17
         x = self.Mixed_6d(x)
-        # N x 768 x 17 x 17
         x = self.Mixed_6e(x)
-        # N x 768 x 17 x 17
 
         if "768" in remaining_features:
             features["768"] = adaptive_avg_pool2d(x, output_size=(1, 1)).squeeze(-1).squeeze(-1)
@@ -142,16 +124,10 @@ class NoTrainInceptionV3(_FeatureExtractorInceptionV3):
                 return tuple(features[a] for a in self.features_list)
 
         x = self.Mixed_7a(x)
-        # N x 1280 x 8 x 8
         x = self.Mixed_7b(x)
-        # N x 2048 x 8 x 8
         x = self.Mixed_7c(x)
-        # N x 2048 x 8 x 8
         x = self.AvgPool(x)
-        # N x 2048 x 1 x 1
-
         x = torch.flatten(x, 1)
-        # N x 2048
 
         if "2048" in remaining_features:
             features["2048"] = x
@@ -170,7 +146,6 @@ class NoTrainInceptionV3(_FeatureExtractorInceptionV3):
             x = x + self.fc.bias.unsqueeze(0)
         else:
             x = self.fc(x)
-            # N x 1008 (num_classes)
 
         features["logits"] = x
         return tuple(features[a] for a in self.features_list)
@@ -266,6 +241,10 @@ class FrechetInceptionDistance(Metric):
     range. All images will be resized to 299 x 299 which is the size of the original training data. The boolian
     flag ``real`` determines if the images should update the statistics of the real distribution or the
     fake distribution.
+
+    This metric is known to be unstable in its calculatations, and we recommend for the best results using this metric
+    that you calculate using `torch.float64` (default is `torch.float32`) which can be set using the `.set_dtype`
+    method of the metric.
 
     .. note:: using this metrics requires you to have ``scipy`` install. Either install as ``pip install
         torchmetrics[image]`` or ``pip install scipy``
