@@ -110,6 +110,7 @@ jobs:
       run: python -m pytest torchmetrics --reruns 3 --reruns-delay 2
 
     - name: Freeze PIL (hotfix)
+      if: ${{ runner.python-version != '3.11' }}
       # import of PILLOW_VERSION which they recently removed in v9.0 in favor of __version__
       run: pip install "Pillow<9.0"  # It messes with torchvision
 
