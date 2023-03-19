@@ -7,6 +7,9 @@ on:  # Trigger the workflow on push or pull request, but only for the master bra
   pull_request:
     branches: [master, "release/*"]
     types: [opened, reopened, ready_for_review, synchronize]
+  schedule:
+    # At the end of every day
+    - cron: "0 0 * * *"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-${{ github.head_ref }}
@@ -49,7 +52,7 @@ jobs:
           - {os: 'windows-2019', python-version: '3.8', pytorch-version: '1.8.1', requires: 'oldest'}
     env:
       PYTORCH_URL: "https://download.pytorch.org/whl/cpu/torch_stable.html"
-      FREEZE_REQUIREMENTS: 1
+      FREEZE_REQUIREMENTS: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}
       PYPI_CACHE: "_ci-cache_PyPI"
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
