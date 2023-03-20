@@ -130,6 +130,7 @@ Or directly from conda
    pages/quickstart
    all-metrics
    pages/overview
+   pages/plotting
    pages/implement
    pages/lightning
 

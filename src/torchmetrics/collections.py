@@ -14,7 +14,7 @@
 # this is just a bypass for this module name collision with build-in one
 from collections import OrderedDict
 from copy import deepcopy
-from typing import Any, Dict, Hashable, Iterable, List, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, Hashable, Iterable, List, Literal, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -23,6 +23,11 @@ from torch.nn import Module, ModuleDict
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import _flatten_dict, allclose
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["MetricCollection.plot", "MetricCollection.plot_all"]
 
 
 class MetricCollection(ModuleDict):
@@ -482,3 +487,61 @@ class MetricCollection(ModuleDict):
         for _, m in self.items(keep_base=True, copy_state=False):
             m.set_dtype(dst_type)
         return self
+
+    def plot(
+        self, val: Optional[Union[Dict, Sequence[Dict]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> Sequence[_PLOT_OUT_TYPE]:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import randn
+            >>> # Example plotting a single value
+            >>> from torchmetrics.regression import CosineSimilarity
+            >>> metric = CosineSimilarity()
+            >>> metric.update(randn(10,), randn(10,))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import randn
+            >>> # Example plotting multiple values
+            >>> from torchmetrics.regression import CosineSimilarity
+            >>> metric = CosineSimilarity()
+            >>> values = []
+            >>> for _ in range(10):
+            ...     values.append(metric(randn(10,), randn(10,)))
+            >>> fig, ax = metric.plot(values)
+        """
+        val = val or self.compute()
+        fig_axs = []
+        for k, m in self.items(keep_base=True, copy_state=False):
+            if isinstance(val, dict):
+                fig, ax = m.plot(val[k])
+            elif isinstance(val, Sequence):
+                fig, ax = m.plot([v[k] for v in val])
+            fig_axs.append((fig, ax))
+        return fig_axs
+
+    def plot_together(self, val: Optional[Dict] = None, plot_type: Literal["lines", "radar"] = "lines") -> None:
+        """Plot everything together."""
+        if plot_type == "lines":
+            self._plot_lines(val)
+        elif plot_type == "radar":
+            self._plot_radar(val)
+        else:
+            raise ValueError("unknown plot type")
