@@ -90,7 +90,7 @@ class SqueezeNet(torch.nn.Module):
 class Alexnet(torch.nn.Module):
     """Alexnet implementation."""
 
-    def __init__(self, requires_grad=False, pretrained=True):
+    def __init__(self, requires_grad=False, pretrained=True) -> None:
         super().__init__()
         alexnet_pretrained_features = _get_net("alexnet", pretrained)
 
@@ -135,7 +135,7 @@ class Alexnet(torch.nn.Module):
 class Vgg16(torch.nn.Module):
     """Vgg16 implementation."""
 
-    def __init__(self, requires_grad=False, pretrained=True):
+    def __init__(self, requires_grad=False, pretrained=True) -> None:
         super().__init__()
         vgg_pretrained_features = _get_net("vgg16", pretrained)
 
@@ -196,7 +196,7 @@ def normalize_tensor(in_feat, eps=1e-10):
 class ScalingLayer(nn.Module):
     """Scaling layer."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.register_buffer("shift", torch.Tensor([-0.030, -0.088, -0.188])[None, :, None, None])
         self.register_buffer("scale", torch.Tensor([0.458, 0.448, 0.450])[None, :, None, None])
@@ -209,7 +209,7 @@ class ScalingLayer(nn.Module):
 class NetLinLayer(nn.Module):
     """A single linear layer which does a 1x1 conv."""
 
-    def __init__(self, chn_in, chn_out=1, use_dropout=False):
+    def __init__(self, chn_in, chn_out=1, use_dropout=False) -> None:
         super().__init__()
 
         layers = (
@@ -240,7 +240,7 @@ class _LPIPS(nn.Module):
         use_dropout=True,
         model_path=None,
         eval_mode=True,
-    ):
+    ) -> None:
         """Initializes a perceptual loss torch.nn.Module.
 
         Args:
