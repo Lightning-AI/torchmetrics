@@ -14,12 +14,17 @@
 from unittest import mock
 
 import torch
-from lightning import LightningModule, Trainer
+from lightning_utilities import module_available
 from torch import tensor
 from torch.nn import Linear
 
+if module_available("lightning"):
+    from lightning import LightningModule, Trainer
+else:
+    from pytorch_lightning import LightningModule, Trainer
+
 from integrations.helpers import no_warning_call
-from integrations.lightning.boring_model import BoringModel, RandomDataset
+from integrations.lightning.boring_model import BoringModel
 from torchmetrics import MetricCollection, SumMetric
 from torchmetrics.classification import BinaryAccuracy, BinaryAveragePrecision
 

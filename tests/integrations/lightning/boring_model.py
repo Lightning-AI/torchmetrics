@@ -13,8 +13,13 @@
 # limitations under the License.
 
 import torch
-from lightning import LightningModule
+from lightning_utilities import module_available
 from torch.utils.data import Dataset
+
+if module_available("lightning"):
+    from lightning import LightningModule
+else:
+    from pytorch_lightning import LightningModule
 
 
 class RandomDictStringDataset(Dataset):
