@@ -48,37 +48,37 @@ class PanopticQuality(Metric):
         computation.
 
     Args:
-            things:
-                Set of ``category_id`` for countable things.
-            stuffs:
-                Set of ``category_id`` for uncountable stuffs.
-            allow_unknown_preds_category:
-                Boolean flag to specify if unknown categories in the predictions are to be ignored in the metric
-                computation or raise an exception when found.
+        things:
+            Set of ``category_id`` for countable things.
+        stuffs:
+            Set of ``category_id`` for uncountable stuffs.
+        allow_unknown_preds_category:
+            Boolean flag to specify if unknown categories in the predictions are to be ignored in the metric
+            computation or raise an exception when found.
 
 
     Raises:
-            ValueError:
-                If ``things``, ``stuffs`` have at least one common ``category_id``.
-            TypeError:
-                If ``things``, ``stuffs`` contain non-integer ``category_id``.
+        ValueError:
+            If ``things``, ``stuffs`` have at least one common ``category_id``.
+        TypeError:
+            If ``things``, ``stuffs`` contain non-integer ``category_id``.
 
     Example:
-            >>> from torch import tensor
-            >>> from torchmetrics import PanopticQuality
-            >>> preds = tensor([[[[6, 0], [0, 0], [6, 0], [6, 0]],
-            ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
-            ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
-            ...                  [[0, 0], [7, 0], [6, 0], [1, 0]],
-            ...                  [[0, 0], [7, 0], [7, 0], [7, 0]]]])
-            >>> target = tensor([[[[6, 0], [0, 1], [6, 0], [0, 1]],
-            ...                   [[0, 1], [0, 1], [6, 0], [0, 1]],
-            ...                   [[0, 1], [0, 1], [6, 0], [1, 0]],
-            ...                   [[0, 1], [7, 0], [1, 0], [1, 0]],
-            ...                   [[0, 1], [7, 0], [7, 0], [7, 0]]]])
-            >>> panoptic_quality = PanopticQuality(things = {0, 1}, stuffs = {6, 7})
-            >>> panoptic_quality(preds, target)
-            tensor(0.5463, dtype=torch.float64)
+        >>> from torch import tensor
+        >>> from torchmetrics import PanopticQuality
+        >>> preds = tensor([[[[6, 0], [0, 0], [6, 0], [6, 0]],
+        ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
+        ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
+        ...                  [[0, 0], [7, 0], [6, 0], [1, 0]],
+        ...                  [[0, 0], [7, 0], [7, 0], [7, 0]]]])
+        >>> target = tensor([[[[6, 0], [0, 1], [6, 0], [0, 1]],
+        ...                   [[0, 1], [0, 1], [6, 0], [0, 1]],
+        ...                   [[0, 1], [0, 1], [6, 0], [1, 0]],
+        ...                   [[0, 1], [7, 0], [1, 0], [1, 0]],
+        ...                   [[0, 1], [7, 0], [7, 0], [7, 0]]]])
+        >>> panoptic_quality = PanopticQuality(things = {0, 1}, stuffs = {6, 7})
+        >>> panoptic_quality(preds, target)
+        tensor(0.5463, dtype=torch.float64)
 
     """
     is_differentiable: bool = False
