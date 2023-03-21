@@ -25,4 +25,5 @@ if _TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_13:
     from torchmetrics.functional.detection.ciou import complete_intersection_over_union  # noqa: F401
     from torchmetrics.functional.detection.diou import distance_intersection_over_union  # noqa: F401
 
+from torchmetrics.functional.detection.modified_panoptic_quality import modified_panoptic_quality  # noqa: F401
 from torchmetrics.functional.detection.panoptic_quality import panoptic_quality  # noqa: F401
