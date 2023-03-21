@@ -7,6 +7,8 @@
 Modified Panoptic Quality
 #########################
 
+.. include:: ../links.rst
+
 Module Interface
 ________________
 
