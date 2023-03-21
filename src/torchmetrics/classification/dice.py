@@ -19,10 +19,10 @@ from typing_extensions import Literal
 
 from torchmetrics.functional.classification.dice import _dice_compute
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.prints import rank_zero_warn
 from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+from torchmetrics.utilities.prints import rank_zero_warn
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["Dice.plot"]
