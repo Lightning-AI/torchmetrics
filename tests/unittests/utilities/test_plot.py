@@ -433,32 +433,51 @@ _nominal_input = lambda: torch.randint(0, 4, (100,))
         pytest.param(SymmetricMeanAbsolutePercentageError, _rand_input, _rand_input, id="symmetric mape"),
         pytest.param(TweedieDevianceScore, _rand_input, _rand_input, id="tweedie deviance score"),
         pytest.param(WeightedMeanAbsolutePercentageError, _rand_input, _rand_input, id="weighted mape"),
-        pytest.param(Dice, id="dice"),
-        pytest.param(MulticlassExactMatch, id="multiclass exact match"),
-        pytest.param(MultilabelExactMatch, id="multilabel exact match"),
-        pytest.param(BinaryHammingDistance, id="binary hamming distance"),
+        pytest.param(Dice, _multiclass_randint_input, _multiclass_randint_input, id="dice"),
         pytest.param(
-            MulticlassHammingDistance,
+            partial(MulticlassExactMatch, num_classes=3),
+            lambda: torch.randint(3, (20, 5)),
+            lambda: torch.randint(3, (20, 5)),
+            id="multiclass exact match",
+        ),
+        pytest.param(
+            partial(MultilabelExactMatch, num_labels=3),
+            lambda: torch.randint(2, (20, 3, 5)),
+            lambda: torch.randint(2, (20, 3, 5)),
+            id="multilabel exact match",
+        ),
+        pytest.param(BinaryHammingDistance, _rand_input, _binary_randint_input, id="binary hamming distance"),
+        pytest.param(
+            partial(MulticlassHammingDistance, num_classes=3),
             _multiclass_randn_input,
             _multiclass_randint_input,
             id="multiclass hamming distance",
         ),
         pytest.param(
-            MultilabelHammingDistance,
+            partial(MultilabelHammingDistance, num_labels=3),
             _multilabel_rand_input,
             _multilabel_randint_input,
             id="multilabel hamming distance",
         ),
-        pytest.param(BinaryHingeLoss, id="binary hinge loss"),
+        pytest.param(BinaryHingeLoss, _rand_input, _binary_randint_input, id="binary hinge loss"),
         pytest.param(
-            MulticlassHingeLoss, _multiclass_randn_input, _multiclass_randint_input, id="multiclass hinge loss"
+            partial(MulticlassHingeLoss, num_classes=3),
+            _multiclass_randn_input,
+            _multiclass_randint_input,
+            id="multiclass hinge loss",
         ),
-        pytest.param(BinaryJaccardIndex, id="binary jaccard index"),
+        pytest.param(BinaryJaccardIndex, _rand_input, _binary_randint_input, id="binary jaccard index"),
         pytest.param(
-            MulticlassJaccardIndex, _multiclass_randn_input, _multiclass_randint_input, id="multiclass jaccard index"
+            partial(MulticlassJaccardIndex, num_classes=3),
+            _multiclass_randn_input,
+            _multiclass_randint_input,
+            id="multiclass jaccard index",
         ),
         pytest.param(
-            MultilabelJaccardIndex, _multilabel_rand_input, _multilabel_randint_input, id="multilabel jaccard index"
+            partial(MultilabelJaccardIndex, num_labels=3),
+            _multilabel_rand_input,
+            _multilabel_randint_input,
+            id="multilabel jaccard index",
         ),
     ],
 )
