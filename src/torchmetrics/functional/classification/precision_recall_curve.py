@@ -214,7 +214,7 @@ def _binary_precision_recall_curve_update_vectorized(
     """
     len_t = len(thresholds)
     preds_t = (preds.unsqueeze(-1) >= thresholds.unsqueeze(0)).long()  # num_samples x num_thresholds
-    unique_mapping = preds_t + 2 * target.unsqueeze(-1) + 4 * torch.arange(len_t, device=target.device)
+    unique_mapping = preds_t + 2 * target.long().unsqueeze(-1) + 4 * torch.arange(len_t, device=target.device)
     bins = _bincount(unique_mapping.flatten(), minlength=4 * len_t)
     return bins.reshape(len_t, 2, 2)
 
@@ -473,7 +473,7 @@ def _multiclass_precision_recall_curve_update_vectorized(
     len_t = len(thresholds)
     preds_t = (preds.unsqueeze(-1) >= thresholds.unsqueeze(0).unsqueeze(0)).long()
     target_t = torch.nn.functional.one_hot(target, num_classes=num_classes)
-    unique_mapping = preds_t + 2 * target_t.unsqueeze(-1)
+    unique_mapping = preds_t + 2 * target_t.long().unsqueeze(-1)
     unique_mapping += 4 * torch.arange(num_classes, device=preds.device).unsqueeze(0).unsqueeze(-1)
     unique_mapping += 4 * num_classes * torch.arange(len_t, device=preds.device)
     bins = _bincount(unique_mapping.flatten(), minlength=4 * num_classes * len_t)
@@ -717,7 +717,7 @@ def _multilabel_precision_recall_curve_update(
     len_t = len(thresholds)
     # num_samples x num_labels x num_thresholds
     preds_t = (preds.unsqueeze(-1) >= thresholds.unsqueeze(0).unsqueeze(0)).long()
-    unique_mapping = preds_t + 2 * target.unsqueeze(-1)
+    unique_mapping = preds_t + 2 * target.long().unsqueeze(-1)
     unique_mapping += 4 * torch.arange(num_labels, device=preds.device).unsqueeze(0).unsqueeze(-1)
     unique_mapping += 4 * num_labels * torch.arange(len_t, device=preds.device)
     unique_mapping = unique_mapping[unique_mapping >= 0]
