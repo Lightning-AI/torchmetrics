@@ -72,13 +72,14 @@ class IntersectionOverUnion(Metric):
         iou_compute_fn: Callable[[Tensor, bool], Tensor] = _iou_compute,
         **kwargs: Any,
     ) -> None:
+        super().__init__(**kwargs)
+
         if not _TORCHVISION_GREATER_EQUAL_0_8:
             raise ModuleNotFoundError(
                 f"Metric `{self._iou_type.upper()}` requires that `torchvision` version 0.8.0 or newer is installed."
                 " Please install with `pip install torchvision>=0.8` or `pip install torchmetrics[detection]`."
             )
 
-        super().__init__(**kwargs)
         self._iou_update_fn = iou_update_fn
         self._iou_compute_fn = iou_compute_fn
 
@@ -88,8 +89,15 @@ class IntersectionOverUnion(Metric):
 
         self.box_format = box_format
         self.iou_threshold = iou_threshold
+
+        if not isinstance(class_metrics, bool):
+            raise ValueError("Expected argument `class_metrics` to be a boolean")
         self.class_metrics = class_metrics
+
+        if not isinstance(respect_labels, bool):
+            raise ValueError("Expected argument `respect_labels` to be a boolean")
         self.respect_labels = respect_labels
+
         self.add_state("detections", default=[], dist_reduce_fx=None)
         self.add_state("detection_scores", default=[], dist_reduce_fx=None)
         self.add_state("detection_labels", default=[], dist_reduce_fx=None)
@@ -146,14 +154,12 @@ class IntersectionOverUnion(Metric):
         _input_validator(preds, target)
 
         for p, t in zip(preds, target):
-            det_boxes = _fix_empty_tensors(p["boxes"])
-            det_boxes = box_convert(det_boxes, in_fmt=self.box_format, out_fmt="xyxy")
+            det_boxes = self._get_safe_item_values(p["boxes"])
             self.detections.append(det_boxes)
             self.detection_labels.append(p["labels"])
             self.detection_scores.append(p["scores"])
 
-            gt_boxes = _fix_empty_tensors(t["boxes"])
-            gt_boxes = box_convert(gt_boxes, in_fmt=self.box_format, out_fmt="xyxy")
+            gt_boxes = self._get_safe_item_values(t["boxes"])
             self.groundtruths.append(gt_boxes)
             self.groundtruth_labels.append(t["labels"])
 
@@ -163,9 +169,16 @@ class IntersectionOverUnion(Metric):
 
             ious = self._iou_update_fn(det_boxes, gt_boxes, self.iou_threshold, self._invalid_val)
             if self.respect_labels and not label_eq:
-                labels_not_eq = p["labels"].unsqueeze(0).T - t["labels"].unsqueeze(0) != 0
+                label_diff = p["labels"].unsqueeze(0).T - t["labels"].unsqueeze(0)
+                labels_not_eq = label_diff != 0.0
                 ious[labels_not_eq] = self._invalid_val
-            self.results.append(ious)
+            self.results.append(ious.to(dtype=torch.float, device=self.device))
+
+    def _get_safe_item_values(self, boxes: Tensor) -> Tensor:
+        boxes = _fix_empty_tensors(boxes)
+        if boxes.numel() > 0:
+            boxes = box_convert(boxes, in_fmt=self.box_format, out_fmt="xyxy")
+        return boxes
 
     def _get_gt_classes(self) -> List:
         """Returns a list of unique classes found in ground truth and detection data."""
