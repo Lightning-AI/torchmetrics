@@ -1,1 +1,1 @@
-lightning>=2.0.0, <3.0.0
+lightning>=1.6, <3.0.0
