@@ -90,9 +90,6 @@ def _dython_cramers_v_matrix(matrix, bias_correction, nan_strategy, nan_replace_
 
 
 @pytest.mark.skipif(compare_version("pandas", operator.lt, "1.3.2"), reason="`dython` package requires `pandas>=1.3.2`")
-@pytest.mark.skipif(  # TODO: testing on CUDA fails with pandas 1.3.5, and newer is not available for python 3.7
-    torch.cuda.is_available(), reason="Tests fail on CUDA with the most up-to-date available pandas"
-)
 @pytest.mark.parametrize(
     "preds, target",
     [
@@ -167,9 +164,6 @@ class TestCramersV(MetricTester):
 
 
 @pytest.mark.skipif(compare_version("pandas", operator.lt, "1.3.2"), reason="`dython` package requires `pandas>=1.3.2`")
-@pytest.mark.skipif(  # TODO: testing on CUDA fails with pandas 1.3.5, and newer is not available for python 3.7
-    torch.cuda.is_available(), reason="Tests fail on CUDA with the most up-to-date available pandas"
-)
 @pytest.mark.parametrize("bias_correction", [False, True])
 @pytest.mark.parametrize(("nan_strategy", "nan_replace_value"), [("replace", 1.0), ("drop", None)])
 def test_cramers_v_matrix(cramers_matrix_input, bias_correction, nan_strategy, nan_replace_value):
