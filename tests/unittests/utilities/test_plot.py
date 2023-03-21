@@ -117,6 +117,14 @@ from torchmetrics.retrieval import (
     RetrievalRecallAtFixedPrecision,
     RetrievalRPrecision,
 )
+from torchmetrics.text import (
+    CharErrorRate,
+    ExtendedEditDistance,
+    MatchErrorRate,
+    WordErrorRate,
+    WordInfoLost,
+    WordInfoPreserved,
+)
 from torchmetrics.wrappers import BootStrapper, ClasswiseWrapper, MetricTracker, MinMaxMetric, MultioutputWrapper
 
 _rand_input = lambda: torch.rand(10)
@@ -131,6 +139,8 @@ _panoptic_input = lambda: torch.multinomial(
     torch.tensor([1, 1, 0, 0, 0, 0, 1, 1]).float(), 40, replacement=True
 ).reshape(1, 5, 4, 2)
 _nominal_input = lambda: torch.randint(0, 4, (100,))
+_text_input_1 = lambda: ["this is the prediction", "there is an other sample"]
+_text_input_2 = lambda: ["this is the reference", "there is another one"]
 
 
 @pytest.mark.parametrize(
@@ -441,6 +451,12 @@ _nominal_input = lambda: torch.randint(0, 4, (100,))
             _multilabel_rand_input,
             id="multioutput wrapper",
         ),
+        pytest.param(WordInfoPreserved, _text_input_1, _text_input_2, id="word info preserved"),
+        pytest.param(WordInfoLost, _text_input_1, _text_input_2, id="word info lost"),
+        pytest.param(WordErrorRate, _text_input_1, _text_input_2, id="word error rate"),
+        pytest.param(CharErrorRate, _text_input_1, _text_input_2, id="character error rate"),
+        pytest.param(ExtendedEditDistance, _text_input_1, _text_input_2, id="extended edit distance"),
+        pytest.param(MatchErrorRate, _text_input_1, _text_input_2, id="match error rate"),
     ],
 )
 @pytest.mark.parametrize("num_vals", [1, 5])
