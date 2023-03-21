@@ -14,10 +14,9 @@
 from unittest import mock
 
 import torch
-from pytorch_lightning import LightningModule, Trainer
+from lightning import LightningModule, Trainer
 from torch import tensor
 from torch.nn import Linear
-from torch.utils.data import DataLoader
 
 from integrations.helpers import no_warning_call
 from integrations.lightning.boring_model import BoringModel, RandomDataset
