@@ -102,7 +102,7 @@ class ROUGEScore(Metric):
         accumulate: Literal["avg", "best"] = "best",
         rouge_keys: Union[str, Tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),
         **kwargs: Any,
-    ):
+    ) -> None:
         super().__init__(**kwargs)
         if use_stemmer or "rougeLsum" in rouge_keys:
             if not _NLTK_AVAILABLE:

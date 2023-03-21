@@ -4,6 +4,11 @@ name: "Docs check"
 on:
 - pull_request
 
+env:
+  PYTORCH_URL: "https://download.pytorch.org/whl/cpu/torch_stable.html"
+  FREEZE_REQUIREMENTS: 1
+  PYPI_CACHE: "_ci-cache_PyPI"
+
 jobs:
 
   test-docs:
@@ -15,19 +20,18 @@ jobs:
         with:
           python-version: 3.8
 
-      # Note: This uses an internal pip API and may not always work
-      # https://github.com/actions/cache/blob/master/examples.md#multiple-oss-in-a-workflow
-      - name: Cache pip
-        uses: actions/cache@v3
+      - name: source cashing
+        uses: ./.github/actions/pull-caches
         with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
-          restore-keys: ${{ runner.os }}-pip-
+          requires: ${{ matrix.requires }}
+          pytorch-version: ${{ matrix.pytorch-version }}
+          pypi-dir: ${{ env.PYPI_CACHE }}
 
-      - name: Install dependencies
+      - name: Install package & dependencies
         run: |
-          pip install -e . -U -q -r requirements/docs.txt -f https://download.pytorch.org/whl/cpu/torch_stable.html
-          python --version ; pip --version ; pip list
+          pip --version
+          pip install -e . -U -q -r requirements/docs.txt --find-links $PYTORCH_URL -f $PYPI_CACHE
+          pip list
         shell: bash
 
       - name: Test Documentation
@@ -44,12 +48,19 @@ jobs:
 
   make-docs:
     runs-on: ubuntu-20.04
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
         with:
           python-version: 3.8
+
+      - name: source cashing
+        uses: ./.github/actions/pull-caches
+        with:
+          requires: ${{ matrix.requires }}
+          pytorch-version: ${{ matrix.pytorch-version }}
+          pypi-dir: ${{ env.PYPI_CACHE }}
 
       # Note: This uses an internal pip API and may not always work
       # https://github.com/actions/cache/blob/master/examples.md#multiple-oss-in-a-workflow
@@ -60,23 +71,25 @@ jobs:
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}-${{ hashFiles('requirements/docs.txt') }}
           restore-keys: ${{ runner.os }}-pip-
 
-      - name: Install dependencies
+      - name: Install dependencies & package
         run: |
-          pip install -e . -U -q -r requirements/docs.txt -f https://download.pytorch.org/whl/torch_stable.html
           # install Texlive, see https://linuxconfig.org/how-to-install-latex-on-ubuntu-20-04-focal-fossa-linux
           sudo apt-get update
           sudo apt-get install -y texlive-latex-extra dvipng texlive-pictures texlive-fonts-recommended cm-super
-          python --version
           pip --version
+          pip install -e . -U -q -r requirements/docs.txt --find-links $PYTORCH_URL -f $PYPI_CACHE
           pip list
         shell: bash
 
       - name: Make Documentation
-        # First run the same pipeline as Read-The-Docs
         working-directory: ./docs
-        run: |
-          make clean
-          make html --debug SPHINXOPTS="-W --keep-going" -b linkcheck
+        run: make html --debug SPHINXOPTS="-W --keep-going"
+
+      - name: Check External Links (Optional)
+        working-directory: ./docs
+        run: make --jobs $(nproc) linkcheck
+        # ToDO: comment on PR if any link failed
+        continue-on-error: true
 
       - name: Upload built docs
         uses: actions/upload-artifact@v3

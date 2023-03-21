@@ -37,7 +37,7 @@ def test_metric_lightning(tmpdir):
     """Test that including a metric inside a lightning module calculates a simple sum correctly."""
 
     class TestModel(BoringModel):
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
             self.metric = SumMetric()
             self.sum = 0.0
@@ -75,7 +75,7 @@ def test_metrics_reset(tmpdir):
     """
 
     class TestModel(LightningModule):
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
             self.layer = torch.nn.Linear(32, 1)
 
@@ -189,7 +189,7 @@ def test_metric_lightning_log(tmpdir):
     """Test logging a metric object and that the metric state gets reset after each epoch."""
 
     class TestModel(BoringModel):
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
             self.metric_step = SumMetric()
             self.metric_epoch = SumMetric()
@@ -232,7 +232,7 @@ def test_metric_collection_lightning_log(tmpdir):
     """Test that MetricCollection works with Lightning modules."""
 
     class TestModel(BoringModel):
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
             self.metric = MetricCollection([SumMetric(), DiffMetric()])
             self.sum = torch.tensor(0.0)
@@ -274,7 +274,7 @@ def test_scriptable(tmpdir):
     """Test that lightning modules can still be scripted even if metrics cannot."""
 
     class TestModel(BoringModel):
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
             # the metric is not used in the module's `forward`
             # so the module should be exportable to TorchScript
@@ -312,7 +312,7 @@ def test_dtype_in_pl_module_transfer(tmpdir):
     """Test that metric states don't change dtype when .half() or .float() is called on the LightningModule."""
 
     class BoringModel(LightningModule):
-        def __init__(self, metric_dtype=torch.float32):
+        def __init__(self, metric_dtype=torch.float32) -> None:
             super().__init__()
             self.layer = Linear(32, 32)
             self.metric = SumMetric()

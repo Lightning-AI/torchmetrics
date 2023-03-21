@@ -38,15 +38,33 @@ from torchmetrics.classification import (
     BinaryCalibrationError,
     BinaryCohenKappa,
     BinaryConfusionMatrix,
+    BinaryMatthewsCorrCoef,
+    BinaryPrecision,
+    BinaryRecall,
+    BinaryRecallAtFixedPrecision,
     BinaryROC,
+    BinarySpecificity,
     MulticlassAccuracy,
     MulticlassAUROC,
     MulticlassAveragePrecision,
     MulticlassCalibrationError,
     MulticlassCohenKappa,
     MulticlassConfusionMatrix,
+    MulticlassMatthewsCorrCoef,
+    MulticlassPrecision,
+    MulticlassRecall,
+    MulticlassRecallAtFixedPrecision,
+    MulticlassSpecificity,
     MultilabelAveragePrecision,
     MultilabelConfusionMatrix,
+    MultilabelCoverageError,
+    MultilabelMatthewsCorrCoef,
+    MultilabelPrecision,
+    MultilabelRankingAveragePrecision,
+    MultilabelRankingLoss,
+    MultilabelRecall,
+    MultilabelRecallAtFixedPrecision,
+    MultilabelSpecificity,
 )
 from torchmetrics.detection import PanopticQuality
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
@@ -75,7 +93,29 @@ from torchmetrics.regression import (
     KendallRankCorrCoef,
     KLDivergence,
     LogCoshError,
+    MeanAbsoluteError,
+    MeanAbsolutePercentageError,
     MeanSquaredError,
+    MeanSquaredLogError,
+    MinkowskiDistance,
+    PearsonCorrCoef,
+    R2Score,
+    SpearmanCorrCoef,
+    SymmetricMeanAbsolutePercentageError,
+    TweedieDevianceScore,
+    WeightedMeanAbsolutePercentageError,
+)
+from torchmetrics.retrieval import (
+    RetrievalFallOut,
+    RetrievalHitRate,
+    RetrievalMAP,
+    RetrievalMRR,
+    RetrievalNormalizedDCG,
+    RetrievalPrecision,
+    RetrievalPrecisionRecallCurve,
+    RetrievalRecall,
+    RetrievalRecallAtFixedPrecision,
+    RetrievalRPrecision,
 )
 
 _rand_input = lambda: torch.rand(10)
@@ -259,6 +299,94 @@ _nominal_input = lambda: torch.randint(0, 4, (100,))
             _multilabel_randint_input,
             id="multilabel average precision",
         ),
+        pytest.param(BinarySpecificity, _rand_input, _binary_randint_input, id="binary specificity"),
+        pytest.param(
+            partial(MulticlassSpecificity, num_classes=3),
+            _multiclass_randn_input,
+            _multiclass_randint_input,
+            id="multiclass specificity",
+        ),
+        pytest.param(
+            partial(MultilabelSpecificity, num_labels=3),
+            _multilabel_rand_input,
+            _multilabel_randint_input,
+            id="multilabel specificity",
+        ),
+        pytest.param(
+            partial(BinaryRecallAtFixedPrecision, min_precision=0.5),
+            _rand_input,
+            _binary_randint_input,
+            id="binary recall at fixed precision",
+        ),
+        pytest.param(
+            partial(MulticlassRecallAtFixedPrecision, num_classes=3, min_precision=0.5),
+            _multiclass_randn_input,
+            _multiclass_randint_input,
+            id="multiclass recall at fixed precision",
+        ),
+        pytest.param(
+            partial(MultilabelRecallAtFixedPrecision, num_labels=3, min_precision=0.5),
+            _multilabel_rand_input,
+            _multilabel_randint_input,
+            id="multilabel recall at fixed precision",
+        ),
+        pytest.param(
+            partial(MultilabelCoverageError, num_labels=3),
+            _multilabel_rand_input,
+            _multilabel_randint_input,
+            id="multilabel coverage error",
+        ),
+        pytest.param(
+            partial(MultilabelRankingAveragePrecision, num_labels=3),
+            _multilabel_rand_input,
+            _multilabel_randint_input,
+            id="multilabel ranking average precision",
+        ),
+        pytest.param(
+            partial(MultilabelRankingLoss, num_labels=3),
+            _multilabel_rand_input,
+            _multilabel_randint_input,
+            id="multilabel ranking loss",
+        ),
+        pytest.param(BinaryPrecision, _rand_input, _binary_randint_input, id="binary precision"),
+        pytest.param(
+            partial(MulticlassPrecision, num_classes=3),
+            _multiclass_randn_input,
+            _multiclass_randint_input,
+            id="multiclass precision",
+        ),
+        pytest.param(
+            partial(MultilabelPrecision, num_labels=3),
+            _multilabel_rand_input,
+            _multilabel_randint_input,
+            id="multilabel precision",
+        ),
+        pytest.param(BinaryRecall, _rand_input, _binary_randint_input, id="binary recall"),
+        pytest.param(
+            partial(MulticlassRecall, num_classes=3),
+            _multiclass_randn_input,
+            _multiclass_randint_input,
+            id="multiclass recall",
+        ),
+        pytest.param(
+            partial(MultilabelRecall, num_labels=3),
+            _multilabel_rand_input,
+            _multilabel_randint_input,
+            id="multilabel recall",
+        ),
+        pytest.param(BinaryMatthewsCorrCoef, _rand_input, _binary_randint_input, id="binary matthews corr coef"),
+        pytest.param(
+            partial(MulticlassMatthewsCorrCoef, num_classes=3),
+            _multiclass_randn_input,
+            _multiclass_randint_input,
+            id="multiclass matthews corr coef",
+        ),
+        pytest.param(
+            partial(MultilabelMatthewsCorrCoef, num_labels=3),
+            _multilabel_rand_input,
+            _multilabel_randint_input,
+            id="multilabel matthews corr coef",
+        ),
         pytest.param(TotalVariation, _image_input, None, id="total variation"),
         pytest.param(
             RootMeanSquaredErrorUsingSlidingWindow,
@@ -284,6 +412,16 @@ _nominal_input = lambda: torch.randint(0, 4, (100,))
             id="kl divergence",
         ),
         pytest.param(LogCoshError, _rand_input, _rand_input, id="log cosh error"),
+        pytest.param(MeanSquaredLogError, _rand_input, _rand_input, id="mean squared log error"),
+        pytest.param(MeanAbsoluteError, _rand_input, _rand_input, id="mean absolute error"),
+        pytest.param(MeanAbsolutePercentageError, _rand_input, _rand_input, id="mean absolute percentage error"),
+        pytest.param(partial(MinkowskiDistance, p=3), _rand_input, _rand_input, id="minkowski distance"),
+        pytest.param(PearsonCorrCoef, _rand_input, _rand_input, id="pearson corr coef"),
+        pytest.param(R2Score, _rand_input, _rand_input, id="r2 score"),
+        pytest.param(SpearmanCorrCoef, _rand_input, _rand_input, id="spearman corr coef"),
+        pytest.param(SymmetricMeanAbsolutePercentageError, _rand_input, _rand_input, id="symmetric mape"),
+        pytest.param(TweedieDevianceScore, _rand_input, _rand_input, id="tweedie deviance score"),
+        pytest.param(WeightedMeanAbsolutePercentageError, _rand_input, _rand_input, id="weighted mape"),
     ],
 )
 @pytest.mark.parametrize("num_vals", [1, 5])
@@ -298,7 +436,8 @@ def test_plot_methods(metric_class: object, preds: Callable, target: Callable, n
     else:
         vals = []
         for _ in range(num_vals):
-            vals.append(metric(*input()))
+            val = metric(*input())
+            vals.append(val[0] if isinstance(val, tuple) else val)
         fig, ax = metric.plot(vals)
 
     assert isinstance(fig, plt.Figure)
@@ -357,6 +496,69 @@ def test_plot_methods_special_image_metrics(metric_class, preds, target, index_0
                 metric.update(target(), real=False)
                 vals.append(metric.compute() if not index_0 else metric.compute()[0])
                 metric.reset()
+        fig, ax = metric.plot(vals)
+
+    assert isinstance(fig, plt.Figure)
+    assert isinstance(ax, matplotlib.axes.Axes)
+
+
+@pytest.mark.parametrize(
+    ("metric_class", "preds", "target", "indexes"),
+    [
+        pytest.param(RetrievalMRR, _rand_input, _binary_randint_input, _binary_randint_input, id="retrieval mrr"),
+        pytest.param(
+            RetrievalPrecision, _rand_input, _binary_randint_input, _binary_randint_input, id="retrieval precision"
+        ),
+        pytest.param(
+            RetrievalRPrecision, _rand_input, _binary_randint_input, _binary_randint_input, id="retrieval r precision"
+        ),
+        pytest.param(RetrievalRecall, _rand_input, _binary_randint_input, _binary_randint_input, id="retrieval recall"),
+        pytest.param(
+            RetrievalFallOut, _rand_input, _binary_randint_input, _binary_randint_input, id="retrieval fallout"
+        ),
+        pytest.param(
+            RetrievalHitRate, _rand_input, _binary_randint_input, _binary_randint_input, id="retrieval hitrate"
+        ),
+        pytest.param(RetrievalMAP, _rand_input, _binary_randint_input, _binary_randint_input, id="retrieval map"),
+        pytest.param(
+            RetrievalNormalizedDCG,
+            _rand_input,
+            _binary_randint_input,
+            _binary_randint_input,
+            id="retrieval normalized dcg",
+        ),
+        pytest.param(
+            RetrievalRecallAtFixedPrecision,
+            _rand_input,
+            _binary_randint_input,
+            _binary_randint_input,
+            id="retrieval recall at fixed precision",
+        ),
+        pytest.param(
+            RetrievalPrecisionRecallCurve,
+            _rand_input,
+            _binary_randint_input,
+            _binary_randint_input,
+            id="retrieval precision recall curve",
+        ),
+    ],
+)
+@pytest.mark.parametrize("num_vals", [1, 2])
+def test_plot_methods_retrieval(metric_class, preds, target, indexes, num_vals):
+    """Test the plot method for retrieval metrics by themselves, since retrieval metrics requires an extra argument."""
+    if num_vals != 1 and metric_class == RetrievalPrecisionRecallCurve:  # curves does not support multiple step plot
+        pytest.skip("curve objects does not support plotting multiple steps")
+
+    metric = metric_class()
+
+    if num_vals == 1:
+        metric.update(preds(), target(), indexes=indexes())
+        fig, ax = metric.plot()
+    else:
+        vals = []
+        for _ in range(num_vals):
+            res = metric(preds(), target(), indexes=indexes())
+            vals.append(res[0] if isinstance(res, tuple) else res)
         fig, ax = metric.plot(vals)
 
     assert isinstance(fig, plt.Figure)
