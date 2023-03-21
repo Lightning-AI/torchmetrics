@@ -14,7 +14,7 @@ from setuptools import find_packages, setup
 _PATH_ROOT = os.path.realpath(os.path.dirname(__file__))
 _PATH_SOURCE = os.path.join(_PATH_ROOT, "src")
 _PATH_REQUIRE = os.path.join(_PATH_ROOT, "requirements")
-_FREEZE_REQUIREMENTS = bool(int(os.environ.get("FREEZE_REQUIREMENTS", 0)))
+_FREEZE_REQUIREMENTS = os.environ.get("FREEZE_REQUIREMENTS", "0").lower() in ("1", "true")
 
 
 class _RequirementWithComment(Requirement):
@@ -23,7 +23,8 @@ class _RequirementWithComment(Requirement):
     def __init__(self, *args: Any, comment: str = "", pip_argument: Optional[str] = None, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.comment = comment
-        assert pip_argument is None or pip_argument  # sanity check that it's not an empty str
+        if pip_argument is not None and not pip_argument:
+            raise ValueError("Expected `pip_argument` to either be `None` or an str, but got an empty string")
         self.pip_argument = pip_argument
         self.strict = self.strict_string in comment.lower()
 
@@ -101,7 +102,8 @@ def _load_requirements(
     ['numpy...', 'torch..."]
     """
     path = Path(path_dir) / file_name
-    assert path.exists(), (path_dir, file_name, path)
+    if not path.exists():
+        raise ValueError("Path {path} not found for input dir {path_dir} and filename {file_name}.")
     text = path.read_text()
     return [req.adjust(unfreeze) for req in _parse_requirements(text)]
 
@@ -139,7 +141,7 @@ def _load_readme_description(path_dir: str, homepage: str, version: str) -> str:
     return re.sub(rf"{skip_begin}.+?{skip_end}", "<!--  -->", text, flags=re.IGNORECASE + re.DOTALL)
 
 
-def _load_py_module(fname, pkg="torchmetrics"):
+def _load_py_module(fname: str, pkg: str = "torchmetrics"):
     spec = spec_from_file_location(os.path.join(pkg, fname), os.path.join(_PATH_SOURCE, pkg, fname))
     py = module_from_spec(spec)
     spec.loader.exec_module(py)
@@ -155,7 +157,7 @@ LONG_DESCRIPTION = _load_readme_description(
 BASE_REQUIREMENTS = _load_requirements(path_dir=_PATH_ROOT, file_name="requirements.txt")
 
 
-def _prepare_extras(skip_files: Tuple[str] = ("devel.txt", "doctest.txt", "integrate.txt", "docs.txt")):
+def _prepare_extras(skip_files: Tuple[str] = ("devel.txt", "doctest.txt", "integrate.txt", "docs.txt")) -> dict:
     # find all extra requirements
     _load_req = partial(_load_requirements, path_dir=_PATH_REQUIRE)
     found_req_files = sorted(os.path.basename(p) for p in glob.glob(os.path.join(_PATH_REQUIRE, "*.txt")))

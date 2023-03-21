@@ -124,5 +124,5 @@ class TestKendallRankCorrCoef(MetricTester):
 def _adjust_alternative_to_scipy(alternative):
     """Scipy<1.8.0 supports only two-sided hypothesis testing."""
     if alternative is not None and not compare_version("scipy", operator.ge, "1.8.0"):
-        alternative = "two-sided"
+        return "two-sided"
     return alternative

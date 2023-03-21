@@ -114,7 +114,7 @@ def _r2_score_compute(
         elif adjusted == n_obs - 1:
             rank_zero_warn("Division by zero in adjusted r2 score. Falls back to" " standard r2 score.", UserWarning)
         else:
-            r2 = 1 - (1 - r2) * (n_obs - 1) / (n_obs - adjusted - 1)
+            return 1 - (1 - r2) * (n_obs - 1) / (n_obs - adjusted - 1)
     return r2
 
 
