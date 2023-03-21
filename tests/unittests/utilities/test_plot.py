@@ -460,7 +460,7 @@ _text_input_2 = lambda: ["this is the reference", "there is another one"]
             partial(MultioutputWrapper, base_metric=MeanSquaredError(), num_outputs=3),
             _multilabel_rand_input,
             _multilabel_rand_input,
-            id="multioutput wrapper",
+            id="multioutput wrapper",)
         pytest.param(Dice, _multiclass_randint_input, _multiclass_randint_input, id="dice"),
         pytest.param(
             partial(MulticlassExactMatch, num_classes=3),
