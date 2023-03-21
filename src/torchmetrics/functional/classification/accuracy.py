@@ -33,7 +33,6 @@ from torchmetrics.functional.classification.stat_scores import (
 )
 from torchmetrics.utilities.compute import _safe_divide
 from torchmetrics.utilities.enums import ClassificationTask
-from torchmetrics.utilities.exceptions import MisConfigurationError
 
 
 def _accuracy_reduce(
