@@ -11,6 +11,8 @@ sphinx-paramlinks>=0.5.1
 sphinx-togglebutton>=0.2
 sphinx-copybutton>=0.3
 
+lightning>=1.8.0, <3.0.0
+
 # integrations
 -r integrate.txt
 -r visual.txt
