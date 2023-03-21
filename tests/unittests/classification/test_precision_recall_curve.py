@@ -11,11 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import operator
 from functools import partial
 
 import numpy as np
 import pytest
 import torch
+from lightning_utilities import compare_version
 from scipy.special import expit as sigmoid
 from scipy.special import softmax
 from sklearn.metrics import precision_recall_curve as sk_precision_recall_curve
@@ -53,6 +55,7 @@ class TestBinaryPrecisionRecallCurve(MetricTester):
 
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.skipif(compare_version("sklearn", operator.lt, "1.1.0"), reason="Restricted to latest `sklearn`")
     def test_binary_precision_recall_curve(self, input, ddp, ignore_index):
         """Test class implementation of metric."""
         preds, target = input
@@ -71,6 +74,7 @@ class TestBinaryPrecisionRecallCurve(MetricTester):
         )
 
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
+    @pytest.mark.skipif(compare_version("sklearn", operator.lt, "1.1.0"), reason="Restricted to latest `sklearn`")
     def test_binary_precision_recall_curve_functional(self, input, ignore_index):
         """Test functional implementation of metric."""
         preds, target = input
@@ -178,6 +182,7 @@ class TestMulticlassPrecisionRecallCurve(MetricTester):
 
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.skipif(compare_version("sklearn", operator.lt, "1.1.0"), reason="Restricted to latest `sklearn`")
     def test_multiclass_precision_recall_curve(self, input, ddp, ignore_index):
         """Test class implementation of metric."""
         preds, target = input
@@ -197,6 +202,7 @@ class TestMulticlassPrecisionRecallCurve(MetricTester):
         )
 
     @pytest.mark.parametrize("ignore_index", [None, -1])
+    @pytest.mark.skipif(compare_version("sklearn", operator.lt, "1.1.0"), reason="Restricted to latest `sklearn`")
     def test_multiclass_precision_recall_curve_functional(self, input, ignore_index):
         """Test functional implementation of metric."""
         preds, target = input
@@ -298,6 +304,7 @@ class TestMultilabelPrecisionRecallCurve(MetricTester):
 
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.skipif(compare_version("sklearn", operator.lt, "1.1.0"), reason="Restricted to latest `sklearn`")
     def test_multilabel_precision_recall_curve(self, input, ddp, ignore_index):
         """Test class implementation of metric."""
         preds, target = input
@@ -317,6 +324,7 @@ class TestMultilabelPrecisionRecallCurve(MetricTester):
         )
 
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
+    @pytest.mark.skipif(compare_version("sklearn", operator.lt, "1.1.0"), reason="Restricted to latest `sklearn`")
     def test_multilabel_precision_recall_curve_functional(self, input, ignore_index):
         """Test functional implementation of metric."""
         preds, target = input
