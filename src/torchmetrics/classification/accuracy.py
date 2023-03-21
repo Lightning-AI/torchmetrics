@@ -20,7 +20,6 @@ from torchmetrics.classification.stat_scores import BinaryStatScores, Multiclass
 from torchmetrics.functional.classification.accuracy import _accuracy_reduce
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.enums import ClassificationTask
-from torchmetrics.utilities.exceptions import MisConfigurationError
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
