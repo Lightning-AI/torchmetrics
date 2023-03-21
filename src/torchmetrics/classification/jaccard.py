@@ -118,20 +118,20 @@ class BinaryJaccardIndex(BinaryConfusionMatrix):
         .. plot::
             :scale: 75
 
-            >>> from torch import rand, randint
             >>> # Example plotting a single value
-            >>> from torchmetrics.classification import BinaryAccuracy
-            >>> metric = BinaryAccuracy()
+            >>> from torch import rand, randint
+            >>> from torchmetrics.classification import BinaryJaccardIndex
+            >>> metric = BinaryJaccardIndex()
             >>> metric.update(rand(10), randint(2,(10,)))
             >>> fig_, ax_ = metric.plot()
 
         .. plot::
             :scale: 75
 
-            >>> from torch import rand, randint
             >>> # Example plotting multiple values
-            >>> from torchmetrics.classification import BinaryAccuracy
-            >>> metric = BinaryAccuracy()
+            >>> from torch import rand, randint
+            >>> from torchmetrics.classification import BinaryJaccardIndex
+            >>> metric = BinaryJaccardIndex()
             >>> values = [ ]
             >>> for _ in range(10):
             ...     values.append(metric(rand(10), randint(2,(10,))))
@@ -244,20 +244,20 @@ class MulticlassJaccardIndex(MulticlassConfusionMatrix):
         .. plot::
             :scale: 75
 
-            >>> from torch import randint
             >>> # Example plotting a single value per class
-            >>> from torchmetrics.classification import MulticlassAccuracy
-            >>> metric = MulticlassAccuracy(num_classes=3, average=None)
+            >>> from torch import randint
+            >>> from torchmetrics.classification import MulticlassJaccardIndex
+            >>> metric = MulticlassJaccardIndex(num_classes=3, average=None)
             >>> metric.update(randint(3, (20,)), randint(3, (20,)))
             >>> fig_, ax_ = metric.plot()
 
         .. plot::
             :scale: 75
 
-            >>> from torch import randint
             >>> # Example plotting a multiple values per class
-            >>> from torchmetrics.classification import MulticlassAccuracy
-            >>> metric = MulticlassAccuracy(num_classes=3, average=None)
+            >>> from torch import randint
+            >>> from torchmetrics.classification import MulticlassJaccardIndex
+            >>> metric = MulticlassJaccardIndex(num_classes=3, average=None)
             >>> values = []
             >>> for _ in range(20):
             ...     values.append(metric(randint(3, (20,)), randint(3, (20,))))
@@ -374,20 +374,20 @@ class MultilabelJaccardIndex(MultilabelConfusionMatrix):
         .. plot::
             :scale: 75
 
-            >>> from torch import rand, randint
             >>> # Example plotting a single value
-            >>> from torchmetrics.classification import MultilabelAccuracy
-            >>> metric = MultilabelAccuracy(num_labels=3)
+            >>> from torch import rand, randint
+            >>> from torchmetrics.classification import MultilabelJaccardIndex
+            >>> metric = MultilabelJaccardIndex(num_labels=3)
             >>> metric.update(randint(2, (20, 3)), randint(2, (20, 3)))
             >>> fig_, ax_ = metric.plot()
 
         .. plot::
             :scale: 75
 
-            >>> from torch import rand, randint
             >>> # Example plotting multiple values
-            >>> from torchmetrics.classification import MultilabelAccuracy
-            >>> metric = MultilabelAccuracy(num_labels=3)
+            >>> from torch import rand, randint
+            >>> from torchmetrics.classification import MultilabelJaccardIndex
+            >>> metric = MultilabelJaccardIndex(num_labels=3)
             >>> values = [ ]
             >>> for _ in range(10):
             ...     values.append(metric(randint(2, (20, 3)), randint(2, (20, 3))))

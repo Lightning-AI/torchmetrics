@@ -261,23 +261,23 @@ class Dice(Metric):
         .. plot::
             :scale: 75
 
-            >>> from torch import rand, randint
             >>> # Example plotting a single value
-            >>> from torchmetrics.classification import BinaryAccuracy
-            >>> metric = BinaryAccuracy()
-            >>> metric.update(rand(10), randint(2,(10,)))
+            >>> from torch import randint
+            >>> from torchmetrics.classification import Dice
+            >>> metric = Dice()
+            >>> metric.update(randint(2,(10,)), randint(2,(10,)))
             >>> fig_, ax_ = metric.plot()
 
         .. plot::
             :scale: 75
 
-            >>> from torch import rand, randint
             >>> # Example plotting multiple values
-            >>> from torchmetrics.classification import BinaryAccuracy
-            >>> metric = BinaryAccuracy()
+            >>> from torch import randint
+            >>> from torchmetrics.classification import Dice
+            >>> metric = Dice()
             >>> values = [ ]
             >>> for _ in range(10):
-            ...     values.append(metric(rand(10), randint(2,(10,))))
+            ...     values.append(metric(randint(2,(10,)), randint(2,(10,))))
             >>> fig_, ax_ = metric.plot(values)
         """
         return self._plot(val, ax)

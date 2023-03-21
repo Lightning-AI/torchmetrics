@@ -165,11 +165,11 @@ class MulticlassExactMatch(Metric):
         .. plot::
             :scale: 75
 
-            >>> from torch import randint
             >>> # Example plotting a single value per class
-            >>> from torchmetrics.classification import MulticlassAccuracy
-            >>> metric = MulticlassAccuracy(num_classes=3, average=None)
-            >>> metric.update(randint(3, (20,)), randint(3, (20,)))
+            >>> from torch import randint
+            >>> from torchmetrics.classification import MulticlassExactMatch
+            >>> metric = MulticlassExactMatch(num_classes=3)
+            >>> metric.update(randint(3, (20,5)), randint(3, (20,5)))
             >>> fig_, ax_ = metric.plot()
 
         .. plot::
@@ -177,11 +177,11 @@ class MulticlassExactMatch(Metric):
 
             >>> from torch import randint
             >>> # Example plotting a multiple values per class
-            >>> from torchmetrics.classification import MulticlassAccuracy
-            >>> metric = MulticlassAccuracy(num_classes=3, average=None)
+            >>> from torchmetrics.classification import MulticlassExactMatch
+            >>> metric = MulticlassExactMatch(num_classes=3)
             >>> values = []
             >>> for _ in range(20):
-            ...     values.append(metric(randint(3, (20,)), randint(3, (20,))))
+            ...     values.append(metric(randint(3, (20,5)), randint(3, (20,5))))
             >>> fig_, ax_ = metric.plot(values)
         """
         return self._plot(val, ax)
@@ -327,23 +327,23 @@ class MultilabelExactMatch(Metric):
         .. plot::
             :scale: 75
 
-            >>> from torch import rand, randint
             >>> # Example plotting a single value
-            >>> from torchmetrics.classification import MultilabelAccuracy
-            >>> metric = MultilabelAccuracy(num_labels=3)
-            >>> metric.update(randint(2, (20, 3)), randint(2, (20, 3)))
+            >>> from torch import rand, randint
+            >>> from torchmetrics.classification import MultilabelExactMatch
+            >>> metric = MultilabelExactMatch(num_labels=3)
+            >>> metric.update(randint(2, (20, 3, 5)), randint(2, (20, 3, 5)))
             >>> fig_, ax_ = metric.plot()
 
         .. plot::
             :scale: 75
 
-            >>> from torch import rand, randint
             >>> # Example plotting multiple values
-            >>> from torchmetrics.classification import MultilabelAccuracy
-            >>> metric = MultilabelAccuracy(num_labels=3)
+            >>> from torch import rand, randint
+            >>> from torchmetrics.classification import MultilabelExactMatch
+            >>> metric = MultilabelExactMatch(num_labels=3)
             >>> values = [ ]
             >>> for _ in range(10):
-            ...     values.append(metric(randint(2, (20, 3)), randint(2, (20, 3))))
+            ...     values.append(metric(randint(2, (20, 3, 5)), randint(2, (20, 3, 5))))
             >>> fig_, ax_ = metric.plot(values)
         """
         return self._plot(val, ax)
