@@ -51,8 +51,7 @@ def _multi_target_ref_metric(preds, target, reduction, sk_fn=sk_cosine):
     if reduction == "sum":
         return col_sum
     if reduction == "mean":
-        mean = col_sum / len(col)
-        return mean
+        return col_sum / len(col)
     return col
 
 
@@ -65,8 +64,7 @@ def _single_target_ref_metric(preds, target, reduction, sk_fn=sk_cosine):
     if reduction == "sum":
         return col_sum
     if reduction == "mean":
-        mean = col_sum / len(col)
-        return mean
+        return col_sum / len(col)
     return col
 
 
@@ -83,6 +81,7 @@ class TestCosineSimilarity(MetricTester):
 
     @pytest.mark.parametrize("ddp", [True, False])
     def test_cosine_similarity(self, reduction, preds, target, ref_metric, ddp):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
             preds,
@@ -93,6 +92,7 @@ class TestCosineSimilarity(MetricTester):
         )
 
     def test_cosine_similarity_functional(self, reduction, preds, target, ref_metric):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             target,

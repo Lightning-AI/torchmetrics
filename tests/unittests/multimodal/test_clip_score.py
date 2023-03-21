@@ -61,6 +61,7 @@ class TestCLIPScore(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
     @skip_on_connection_issues()
     def test_clip_score(self, input, model_name_or_path, ddp):
+        """Test class implementation of metric."""
         # images are preds and targets are captions
         preds, target = input
         self.run_class_metric_test(
@@ -77,6 +78,7 @@ class TestCLIPScore(MetricTester):
 
     @skip_on_connection_issues()
     def test_clip_score_functional(self, input, model_name_or_path):
+        """Test functional implementation of metric."""
         preds, target = input
         self.run_functional_metric_test(
             preds=preds,
@@ -88,6 +90,7 @@ class TestCLIPScore(MetricTester):
 
     @skip_on_connection_issues()
     def test_clip_score_differentiability(self, input, model_name_or_path):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,

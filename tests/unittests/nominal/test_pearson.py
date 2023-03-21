@@ -94,6 +94,7 @@ class TestPearsonsContingencyCoefficient(MetricTester):
 
     @pytest.mark.parametrize("ddp", [False, True])
     def test_pearsons_ta(self, ddp, preds, target):
+        """Test class implementation of metric."""
         metric_args = {"num_classes": NUM_CLASSES}
         self.run_class_metric_test(
             ddp=ddp,
@@ -105,11 +106,13 @@ class TestPearsonsContingencyCoefficient(MetricTester):
         )
 
     def test_pearsons_t_functional(self, preds, target):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds, target, metric_functional=pearsons_contingency_coefficient, reference_metric=_pd_pearsons_t
         )
 
     def test_pearsons_t_differentiability(self, preds, target):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         metric_args = {"num_classes": NUM_CLASSES}
         self.run_differentiability_test(
             preds,

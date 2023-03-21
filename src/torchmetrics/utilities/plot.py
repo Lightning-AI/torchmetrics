@@ -13,7 +13,7 @@
 # limitations under the License.
 from itertools import product
 from math import ceil, floor, sqrt
-from typing import Any, Generator, List, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, Generator, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 import torch
@@ -59,7 +59,7 @@ def _error_on_missing_matplotlib() -> None:
 
 @style_change(_style)
 def plot_single_or_multi_val(
-    val: Union[Tensor, Sequence[Tensor]],
+    val: Union[Tensor, Sequence[Tensor], Dict[str, Tensor], Sequence[Dict[str, Tensor]]],
     ax: Optional[_AX_TYPE] = None,  # type: ignore[valid-type]
     higher_is_better: Optional[bool] = None,
     lower_bound: Optional[float] = None,
@@ -98,16 +98,27 @@ def plot_single_or_multi_val(
             for i, v in enumerate(val):
                 label = f"{legend_name} {i}" if legend_name else f"{i}"
                 ax.plot(i, v.detach().cpu(), marker="o", markersize=10, linestyle="None", label=label)
-    else:
-        val = torch.stack(list(val), 0)
-        multi_series = val.ndim != 1
-        val = val.T if multi_series else val.unsqueeze(0)
-        for i, v in enumerate(val):
-            label = (f"{legend_name} {i}" if legend_name else f"{i}") if multi_series else ""
-            ax.plot(v.detach().cpu(), marker="o", markersize=10, linestyle="-", label=label)
+    elif isinstance(val, dict):
+        for i, (k, v) in enumerate(val.items()):
+            ax.plot(i, v.detach().cpu(), marker="o", markersize=10, label=k)
+    elif isinstance(val, Sequence):
+        n_steps = len(val)
+        if isinstance(val[0], dict):
+            val = {k: torch.stack([val[i][k] for i in range(n_steps)]) for k in val[0]}  # type: ignore
+            for k, v in val.items():
+                ax.plot(v.detach().cpu(), marker="o", markersize=10, linestyle="-", label=k)
+        else:
+            val = torch.stack(val, 0)  # type: ignore
+            multi_series = val.ndim != 1
+            val = val.T if multi_series else val.unsqueeze(0)
+            for i, v in enumerate(val):
+                label = (f"{legend_name} {i}" if legend_name else f"{i}") if multi_series else ""
+                ax.plot(v.detach().cpu(), marker="o", markersize=10, linestyle="-", label=label)
         ax.get_xaxis().set_visible(True)
         ax.set_xlabel("Step")
-        ax.set_xticks(torch.arange(val.shape[1]))
+        ax.set_xticks(torch.arange(n_steps))
+    else:
+        raise ValueError("Got unknown format for argument `val`.")
 
     handles, labels = ax.get_legend_handles_labels()
     if handles and labels:

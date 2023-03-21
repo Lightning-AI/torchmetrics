@@ -35,6 +35,11 @@ class MetricTracker(ModuleList):
         -``MetricTracker.compute_all()``: get the metric value for all steps
         -``MetricTracker.best_metric()``: returns the best value
 
+    Out of the box, this wrapper class fully supports that the base metric being tracked is a single `Metric`, a
+    `MetricCollection` or another `MetricWrapper` wrapped around a metric. However, multiple layers of nesting, such
+    as using a `Metric` inside a `MetricWrapper` inside a `MetricCollection` is not fully supported, especially the
+    `.best_metric` method that cannot auto compute the best metric and index for such nested structures.
+
     Args:
         metric: instance of a ``torchmetrics.Metric`` or ``torchmetrics.MetricCollection``
             to keep track of at each timestep.
@@ -135,12 +140,13 @@ class MetricTracker(ModuleList):
         self._check_for_increment("compute")
         return self[-1].compute()
 
-    def compute_all(self) -> Union[Tensor, Dict[str, Tensor]]:
+    def compute_all(self) -> Any:
         """Compute the metric value for all tracked metrics.
 
         Return:
-            Either a single tensor if the tracked base object is a single metric, else if a metric collection is
-            provide a dict of tensors will be returned
+            By default will try stacking the results from all increaments into a single tensor if the tracked base
+            object is a single metric. If a metric collection is provided a dict of stacked tensors will be returned.
+            If the stacking process fails a list of the computed results will be returned.
 
         Raises:
             ValueError:
@@ -149,10 +155,15 @@ class MetricTracker(ModuleList):
         self._check_for_increment("compute_all")
         # The i!=0 accounts for the self._base_metric should be ignored
         res = [metric.compute() for i, metric in enumerate(self) if i != 0]
-        if isinstance(self._base_metric, MetricCollection):
-            keys = res[0].keys()
-            return {k: torch.stack([r[k] for r in res], dim=0) for k in keys}
-        return torch.stack(res, dim=0)
+        try:
+            if isinstance(res[0], dict):
+                keys = res[0].keys()
+                return {k: torch.stack([r[k] for r in res], dim=0) for k in keys}
+            if isinstance(res[0], list):
+                return torch.stack([torch.stack(r, dim=0) for r in res], 0)
+            return torch.stack(res, dim=0)
+        except TypeError:  # fallback solution to just return as it is if we cannot succesfully stack
+            return res
 
     def reset(self) -> None:
         """Reset the current metric being tracked."""
@@ -181,7 +192,6 @@ class MetricTracker(ModuleList):
         Returns:
             Either a single value or a tuple, depends on the value of ``return_step`` and the object being tracked.
 
-
             - If a single metric is being tracked and ``return_step=False`` then a single tensor will be returned
             - If a single metric is being tracked and ``return_step=True`` then a 2-element tuple will be returned,
               where the first value is optimal value and second value is the corresponding optimal step
@@ -193,16 +203,27 @@ class MetricTracker(ModuleList):
               of the first dict being the optimal values and the values of the second dict being the optimal step
 
             In addtion the value in all cases may be ``None`` if the underlying metric does have a proper defined way
-            of being optimal.
+            of being optimal or in the case where a nested structure of metrics are being tracked.
         """
+        res = self.compute_all()
+        if isinstance(res, list):
+            rank_zero_warn(
+                "Encounted nested structure. You are probably using a metric collection inside a metric collection, or"
+                " a metric wrapper inside a metric collection, which is not supported by `.best_metric()` method."
+                "Returning `None` instead. Please consider "
+            )
+            if return_step:
+                return None, None
+            return None
+
         if isinstance(self._base_metric, Metric):
             fn = torch.max if self.maximize else torch.min
             try:
-                value, idx = fn(self.compute_all(), 0)  # type: ignore[arg-type]
+                value, idx = fn(res, 0)
                 if return_step:
                     return value.item(), idx.item()
                 return value.item()
-            except ValueError as error:
+            except (ValueError, RuntimeError) as error:
                 rank_zero_warn(
                     f"Encountered the following error when trying to get the best metric: {error}"
                     "this is probably due to the 'best' not being defined for this metric."
@@ -214,15 +235,14 @@ class MetricTracker(ModuleList):
                 return None
 
         else:  # this is a metric collection
-            res = self.compute_all()
             maximize = self.maximize if isinstance(self.maximize, list) else len(res) * [self.maximize]
             value, idx = {}, {}
-            for i, (k, v) in enumerate(res.items()):  # type: ignore[union-attr]
+            for i, (k, v) in enumerate(res.items()):
                 try:
                     fn = torch.max if maximize[i] else torch.min
                     out = fn(v, 0)
                     value[k], idx[k] = out[0].item(), out[1].item()
-                except ValueError as error:
+                except (ValueError, RuntimeError) as error:
                     rank_zero_warn(
                         f"Encountered the following error when trying to get the best metric for metric {k}:"
                         f"{error} this is probably due to the 'best' not being defined for this metric."
@@ -238,4 +258,4 @@ class MetricTracker(ModuleList):
     def _check_for_increment(self, method: str) -> None:
         """Check that a metric that can be updated/used for computations has been intialized."""
         if not self._increment_called:
-            raise ValueError(f"`{method}` cannot be called before `.increment()` has been called")
+            raise ValueError(f"`{method}` cannot be called before `.increment()` has been called.")

@@ -25,15 +25,17 @@ class DummyMetric(Metric):
 
     full_state_update = True
 
-    def __init__(self, val_to_return):
+    def __init__(self, val_to_return) -> None:
         super().__init__()
         self.add_state("_num_updates", tensor(0), dist_reduce_fx="sum")
         self._val_to_return = val_to_return
 
     def update(self, *args, **kwargs) -> None:
+        """Compute state."""
         self._num_updates += 1
 
     def compute(self):
+        """Compute result."""
         return tensor(self._val_to_return)
 
 
