@@ -66,7 +66,8 @@ def _sklearn_accuracy_binary(preds, target, ignore_index, multidim_average):
     return np.stack(res)
 
 
-def test_accuracy_raises_invalid_task(self):
+def test_accuracy_raises_invalid_task():
+    """Tests accuracy task enum from Accuracy."""
     task = "NotValidTask"
     ignore_index = None
     multidim_average = "global"
@@ -75,7 +76,8 @@ def test_accuracy_raises_invalid_task(self):
         Accuracy(threshold=THRESHOLD, task=task, ignore_index=ignore_index, multidim_average=multidim_average)
 
 
-def test_accuracy_functional_raises_invalid_task(self):
+def test_accuracy_functional_raises_invalid_task():
+    """Tests accuracy task enum from functional.accuracy."""
     preds, target = _input_binary
     task = "NotValidTask"
     ignore_index = None
