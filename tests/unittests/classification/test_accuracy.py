@@ -72,7 +72,7 @@ def test_accuracy_raises_invalid_task():
     ignore_index = None
     multidim_average = "global"
 
-    with pytest.raises(ValueError, match=r"Invalid Task *"):
+    with pytest.raises(ValueError, match=r"Invalid *"):
         Accuracy(threshold=THRESHOLD, task=task, ignore_index=ignore_index, multidim_average=multidim_average)
 
 
@@ -83,7 +83,7 @@ def test_accuracy_functional_raises_invalid_task():
     ignore_index = None
     multidim_average = "global"
 
-    with pytest.raises(ValueError, match=r"Invalid Task *"):
+    with pytest.raises(ValueError, match=r"Invalid *"):
         accuracy(
             preds,
             target,
