@@ -44,7 +44,7 @@ def test_metric_lightning(tmpdir):
         def __init__(self) -> None:
             super().__init__()
             self.metric = SumMetric()
-            self.register_buffer("sum", torch.tensor(0.0)
+            self.register_buffer("sum", torch.tensor(0.0))
 
         def training_step(self, batch, batch_idx):
             x = batch
@@ -180,7 +180,7 @@ def test_metric_lightning_log(tmpdir):
             super().__init__()
             self.metric_step = SumMetric()
             self.metric_epoch = SumMetric()
-            self.register_buffer("sum", torch.tensor(0.0)
+            self.register_buffer("sum", torch.tensor(0.0))
             self.outs = []
 
         def on_train_epoch_start(self):
@@ -225,8 +225,8 @@ def test_metric_collection_lightning_log(tmpdir):
         def __init__(self) -> None:
             super().__init__()
             self.metric = MetricCollection([SumMetric(), DiffMetric()])
-            self.register_buffer("sum", torch.tensor(0.0)
-            self.register_buffer("diff", torch.tensor(0.0)
+            self.register_buffer("sum", torch.tensor(0.0))
+            self.register_buffer("diff", torch.tensor(0.0))
 
         def training_step(self, batch, batch_idx):
             x = batch
@@ -269,7 +269,7 @@ def test_scriptable(tmpdir):
             # the metric is not used in the module's `forward`
             # so the module should be exportable to TorchScript
             self.metric = SumMetric()
-            self.register_buffer("sum", torch.tensor(0.0)
+            self.register_buffer("sum", torch.tensor(0.0))
 
         def training_step(self, batch, batch_idx):
             x = batch
