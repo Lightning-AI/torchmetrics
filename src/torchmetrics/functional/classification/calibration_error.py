@@ -39,8 +39,6 @@ def _binning_bucketize(
     Returns:
         tuple with binned accuracy, binned confidence and binned probabilities
     """
-    # import pdb
-    # pdb.set_trace()
     accuracies = accuracies.to(dtype=confidences.dtype)
     acc_bin = torch.zeros(len(bin_boundaries), device=confidences.device, dtype=confidences.dtype)
     conf_bin = torch.zeros(len(bin_boundaries), device=confidences.device, dtype=confidences.dtype)
