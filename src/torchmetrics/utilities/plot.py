@@ -248,25 +248,23 @@ def plot_confusion_matrix(
 
 
 @style_change(_style)
-def plot_binary_roc_curve(
-    tpr: Tensor,
-    fpr: Tensor,
+def plot_curve(
+    x: Union[Tensor, List[Tensor]],
+    y: Union[Tensor, List[Tensor]],
     ax: Optional[_AX_TYPE] = None,  # type: ignore[valid-type]
-    roc_auc: Optional[Union[float, Tensor]] = None,
+    label_names: Optional[Tuple[str, str]] = None,
     name: Optional[str] = None,
-    **kwargs: Any,
 ) -> _PLOT_OUT_TYPE:
     """Inspired by: https://github.com/scikit-learn/scikit-learn/blob/main/sklearn/metrics/_plot/roc_curve.py.
 
     Plots the roc curve
 
     Args:
-        tpr: Tensor containing the values for True Positive Rate
-        fpr: Tensor containing the values for False Positive Rate
+        x: Tensor containing x points to plot
+        y: Tensor containing y points to plot
         ax: Axis from a figure
-        roc_auc: AUROC score (computed separately)
+        label_names: something
         name: Custom name to describe the classifier
-        kwargs: additional keyword arguments for line drawing
 
     Returns:
         A tuple consisting of the figure and respective ax objects (or array of ax objects) of the generated figure
@@ -278,22 +276,34 @@ def plot_binary_roc_curve(
     _error_on_missing_matplotlib()
     fig, ax = plt.subplots() if ax is None else (None, ax)
 
-    if isinstance(roc_auc, Tensor):
-        assert roc_auc.numel() == 1, "roc_auc Tensor must consist of only one element"
-        roc_auc = roc_auc.item()
+    if isinstance(x, Tensor) and isinstance(y, Tensor):
+        ax.plot(x.detach().cpu(), y.detach().cpu())
+        if label_names is not None:
+            ax.set_xlabel(label_names[0])
+            ax.set_ylabel(label_names[1])
+    elif isinstance(x, list) and isinstance(y, list):
+        pass
+    else:
+        raise ValueError(
+            f"Unknown format for argument `x` and `y`. Expected either list or tensors but got {type(x)} and {type(y)}."
+        )
 
-    line_kwargs = {}
-    if roc_auc is not None and name is not None:
-        line_kwargs["label"] = f"{name} (AUC = {roc_auc:0.2f})"
-    elif roc_auc is not None:
-        line_kwargs["label"] = f"AUC = {roc_auc:0.2f}"
-    elif name is not None:
-        line_kwargs["label"] = name
+    # if x.numel() != y.numel():
+    #     raise ValueError(f"Expected argument `x` and `y` to have same length but got {x.numel()} and {y.numel()}")
 
-    line_kwargs.update(**kwargs)
+    # if isinstance(roc_auc, Tensor):
+    #     assert roc_auc.numel() == 1, "roc_auc Tensor must consist of only one element"
+    #     roc_auc = roc_auc.item()
 
-    ax.plot(fpr.detach().cpu(), tpr.detach().cpu(), **line_kwargs)
-    ax.set_xlabel("False Positive Rate")
-    ax.set_ylabel("True Positive Rate")
+    # # line_kwargs = {}
+    # # if roc_auc is not None and name is not None:
+    # #     line_kwargs["label"] = f"{name} (AUC = {roc_auc:0.2f})"
+    # # elif roc_auc is not None:
+    # #     line_kwargs["label"] = f"AUC = {roc_auc:0.2f}"
+    # # elif name is not None:
+    # #     line_kwargs["label"] = name
+
+    ax.grid(True)
+    ax.set_ylabel(name if name is not None else None)
 
     return fig, ax

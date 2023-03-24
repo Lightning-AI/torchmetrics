@@ -38,10 +38,10 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.enums import ClassificationTask
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
-from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_binary_roc_curve
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_curve
 
 if not _MATPLOTLIB_AVAILABLE:
-    __doctest_skip__ = ["BinaryROC.plot"]
+    __doctest_skip__ = ["BinaryROC.plot", "MulticlassROC.plot", "MultilabelROC.plot"]
 
 
 class BinaryROC(BinaryPrecisionRecallCurve):
@@ -165,7 +165,7 @@ class BinaryROC(BinaryPrecisionRecallCurve):
             fpr, tpr, _ = self.compute()
         roc_auc = self.__compute_auroc()
         name = self.__class__.__name__ if name is None else name
-        fig, ax = plot_binary_roc_curve(tpr, fpr, ax=ax, roc_auc=roc_auc, name=name)
+        fig, ax = plot_curve(tpr, fpr, ax=ax, roc_auc=roc_auc, name=name)
         return fig, ax
 
 

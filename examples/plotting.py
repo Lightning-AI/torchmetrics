@@ -393,9 +393,31 @@ def mean_average_precision() -> tuple:
     return fig, ax
 
 
+def roc_example() -> tuple:
+    """Plot roc metric."""
+    from torchmetrics.classification import BinaryROC, MulticlassROC
+
+    p = lambda: torch.rand(20)
+    t = lambda: torch.randint(2, (20,))
+
+    metric = BinaryROC()
+    metric.update(p(), t())
+    fig, ax = metric.plot()
+
+    p = lambda: torch.randn(200, 5)
+    t = lambda: torch.randint(5, (200,))
+
+    metric = MulticlassROC(5)
+    metric.update(p(), t())
+    fig, ax = metric.plot()
+
+    return fig, ax
+
+
 if __name__ == "__main__":
     metrics_func = {
         "accuracy": accuracy_example,
+        "roc": roc_example,
         "pesq": pesq_example,
         "pit": pit_example,
         "sdr": sdr_example,

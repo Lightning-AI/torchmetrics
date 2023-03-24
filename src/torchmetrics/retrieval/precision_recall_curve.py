@@ -21,7 +21,7 @@ from torchmetrics.functional.retrieval.precision_recall_curve import retrieval_p
 from torchmetrics.utilities.checks import _check_retrieval_inputs
 from torchmetrics.utilities.data import _flexible_bincount, dim_zero_cat
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
-from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_binary_roc_curve
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_curve
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["RetrievalPrecisionRecallCurve.plot", "RetrievalRecallAtFixedPrecision.plot"]
@@ -257,7 +257,7 @@ class RetrievalPrecisionRecallCurve(Metric):
         """
         if precision is None or recall is None:
             precision, recall, _ = self.compute()
-        fig, ax = plot_binary_roc_curve(precision, recall, ax=ax)
+        fig, ax = plot_curve(precision, recall, ax=ax)
         return fig, ax
 
 
