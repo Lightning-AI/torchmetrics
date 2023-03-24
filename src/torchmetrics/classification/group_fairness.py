@@ -11,9 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 import torch
+from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.functional.classification.group_fairness import (
@@ -24,6 +25,11 @@ from torchmetrics.functional.classification.group_fairness import (
 from torchmetrics.functional.classification.stat_scores import _binary_stat_scores_arg_validation
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["BinaryFairness.plot"]
 
 
 class _AbstractGroupStatScores(Metric):
@@ -260,3 +266,44 @@ class BinaryFairness(_AbstractGroupStatScores):
                 **_compute_binary_equal_opportunity(self.tp, self.fp, self.tn, self.fn),
             }
         return None
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure object and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import rand, randint
+            >>> # Example plotting a single value
+            >>> from torchmetrics.classification import BinaryFairness
+            >>> metric = BinaryFairness(2)
+            >>> metric.update(rand(20), randint(2,(20,)), randint(2,(20,)))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import rand, randint, ones
+            >>> # Example plotting multiple values
+            >>> from torchmetrics.classification import BinaryFairness
+            >>> metric = BinaryFairness(2)
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(rand(20), randint(2,(20,)), ones(20).long()))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        return self._plot(val, ax)

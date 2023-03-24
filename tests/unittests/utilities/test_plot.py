@@ -38,6 +38,9 @@ from torchmetrics.classification import (
     BinaryCalibrationError,
     BinaryCohenKappa,
     BinaryConfusionMatrix,
+    BinaryF1Score,
+    BinaryFairness,
+    BinaryFBetaScore,
     BinaryHammingDistance,
     BinaryHingeLoss,
     BinaryJaccardIndex,
@@ -55,6 +58,8 @@ from torchmetrics.classification import (
     MulticlassCohenKappa,
     MulticlassConfusionMatrix,
     MulticlassExactMatch,
+    MulticlassF1Score,
+    MulticlassFBetaScore,
     MulticlassHammingDistance,
     MulticlassHingeLoss,
     MulticlassJaccardIndex,
@@ -67,6 +72,8 @@ from torchmetrics.classification import (
     MultilabelConfusionMatrix,
     MultilabelCoverageError,
     MultilabelExactMatch,
+    MultilabelF1Score,
+    MultilabelFBetaScore,
     MultilabelHammingDistance,
     MultilabelJaccardIndex,
     MultilabelMatthewsCorrCoef,
@@ -489,6 +496,32 @@ _text_input_2 = lambda: ["this is the reference", "there is another one"]
             _multilabel_randint_input,
             id="multilabel jaccard index",
         ),
+        pytest.param(BinaryF1Score, _rand_input, _binary_randint_input, id="binary f1 score"),
+        pytest.param(partial(BinaryFBetaScore, beta=2.0), _rand_input, _binary_randint_input, id="binary fbeta score"),
+        pytest.param(
+            partial(MulticlassF1Score, num_classes=3),
+            _multiclass_randn_input,
+            _multiclass_randint_input,
+            id="multiclass f1 score",
+        ),
+        pytest.param(
+            partial(MulticlassFBetaScore, beta=2.0, num_classes=3),
+            _multiclass_randn_input,
+            _multiclass_randint_input,
+            id="multiclass fbeta score",
+        ),
+        pytest.param(
+            partial(MultilabelF1Score, num_labels=3),
+            _multilabel_rand_input,
+            _multilabel_randint_input,
+            id="multilabel f1 score",
+        ),
+        pytest.param(
+            partial(MultilabelFBetaScore, beta=2.0, num_labels=3),
+            _multilabel_rand_input,
+            _multilabel_randint_input,
+            id="multilabel fbeta score",
+        ),
         pytest.param(WordInfoPreserved, _text_input_1, _text_input_2, id="word info preserved"),
         pytest.param(WordInfoLost, _text_input_1, _text_input_2, id="word info lost"),
         pytest.param(WordErrorRate, _text_input_1, _text_input_2, id="word error rate"),
@@ -614,6 +647,13 @@ def test_plot_methods_special_image_metrics(metric_class, preds, target, index_0
             _binary_randint_input,
             id="retrieval precision recall curve",
         ),
+        pytest.param(
+            partial(BinaryFairness, num_groups=2),
+            _rand_input,
+            _binary_randint_input,
+            lambda: torch.ones(10).long(),
+            id="binary fairness",
+        ),
     ],
 )
 @pytest.mark.parametrize("num_vals", [1, 2])
@@ -625,12 +665,12 @@ def test_plot_methods_retrieval(metric_class, preds, target, indexes, num_vals):
     metric = metric_class()
 
     if num_vals == 1:
-        metric.update(preds(), target(), indexes=indexes())
+        metric.update(preds(), target(), indexes())
         fig, ax = metric.plot()
     else:
         vals = []
         for _ in range(num_vals):
-            res = metric(preds(), target(), indexes=indexes())
+            res = metric(preds(), target(), indexes())
             vals.append(res[0] if isinstance(res, tuple) else res)
         fig, ax = metric.plot(vals)
 
