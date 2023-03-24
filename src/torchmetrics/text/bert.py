@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 from warnings import warn
 
 import torch
@@ -23,7 +23,11 @@ from torchmetrics.functional.text.bert import bert_score
 from torchmetrics.functional.text.helper_embedding_metric import _preprocess_text
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
-from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TRANSFORMERS_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["BERTScore.plot"]
 
 # Default model recommended in the original implementation.
 _DEFAULT_MODEL = "roberta-large"
@@ -37,9 +41,9 @@ if _TRANSFORMERS_AVAILABLE:
         AutoModel.from_pretrained(_DEFAULT_MODEL)
 
     if _SKIP_SLOW_DOCTEST and not _try_proceed_with_timeout(_download_model):
-        __doctest_skip__ = ["BERTScore"]
+        __doctest_skip__ = ["BERTScore", "BERTScore.plot"]
 else:
-    __doctest_skip__ = ["BERTScore"]
+    __doctest_skip__ = ["BERTScore", "BERTScore.plot"]
 
 
 def _get_input_dict(input_ids: List[Tensor], attention_mask: List[Tensor]) -> Dict[str, Tensor]:
@@ -240,3 +244,51 @@ class BERTScore(Metric):
             baseline_path=self.baseline_path,
             baseline_url=self.baseline_url,
         )
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> from torchmetrics.text.bert import BERTScore
+            >>> metric = BERTScore()
+            >>> preds = ["hello there", "general kenobi"]
+            >>> target = ["hello there", "master kenobi"]
+            >>> metric.update(preds, target)
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> from torchmetrics.text.bert import BERTScore
+            >>> metric = BERTScore()
+            >>> preds = ["hello there", "general kenobi"]
+            >>> target = ["hello there", "master kenobi"]
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     val = metric(preds, target)
+            ...     val = {k: torch.tensor(v).mean() for k,v in val.items()}  # convert into single value per key
+            ...     values.append(val)
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        if val is None:  # default average score across sentences
+            val = self.compute()
+            val = {k: torch.tensor(v).mean() for k, v in val.items()}
+        return self._plot(val, ax)
