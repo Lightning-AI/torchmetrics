@@ -285,6 +285,8 @@ class FrechetInceptionDistance(Metric):
 
     def compute(self) -> Tensor:
         """Calculate FID score based on accumulated extracted features from the two distributions."""
+        if self.real_features_num_samples < 2 or self.fake_features_num_samples < 2:
+            raise RuntimeError("More than one sample is required for both the real and fake distributed to compute FID")
         mean_real = (self.real_features_sum / self.real_features_num_samples).unsqueeze(0)
         mean_fake = (self.fake_features_sum / self.fake_features_num_samples).unsqueeze(0)
 
