@@ -263,8 +263,8 @@ def plot_curve(
         x: Tensor containing x points to plot
         y: Tensor containing y points to plot
         ax: Axis from a figure
-        label_names: something
-        name: Custom name to describe the classifier
+        label_names: Tuple containing the names of the x and y axis
+        name: Custom name to describe the metric
 
     Returns:
         A tuple consisting of the figure and respective ax objects (or array of ax objects) of the generated figure
@@ -282,7 +282,10 @@ def plot_curve(
             ax.set_xlabel(label_names[0])
             ax.set_ylabel(label_names[1])
     elif isinstance(x, list) and isinstance(y, list):
-        pass
+        for i, (x_, y_) in enumerate(zip(x, y)):
+            ax.plot(x_.detach().cpu(), y_.detach().cpu(), label=f"{name}_{i}")
+            ax.legend()
+
     else:
         raise ValueError(
             f"Unknown format for argument `x` and `y`. Expected either list or tensors but got {type(x)} and {type(y)}."
