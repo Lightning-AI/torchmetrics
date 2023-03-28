@@ -133,6 +133,13 @@ class TestBinaryCalibrationError(MetricTester):
         )
 
 
+def test_binary_with_zero_pred():
+    """Test that metric works with edge case where confidence is zero for a bin."""
+    preds = torch.tensor([1.0, 1.0, 1.0, 1.0, 0.0])
+    target = torch.tensor([0, 0, 1, 1, 1])
+    assert binary_calibration_error(preds, target, n_bins=2, norm="l1") == torch.tensor(0.6)
+
+
 def _netcal_multiclass_calibration_error(preds, target, n_bins, norm, ignore_index):
     preds = preds.numpy()
     target = target.numpy().flatten()
