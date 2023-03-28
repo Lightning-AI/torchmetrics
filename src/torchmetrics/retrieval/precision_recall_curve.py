@@ -225,16 +225,14 @@ class RetrievalPrecisionRecallCurve(Metric):
 
     def plot(
         self,
-        precision: Optional[Union[Tensor, Sequence[Tensor]]] = None,
-        recall: Optional[Union[Tensor, Sequence[Tensor]]] = None,
+        curve: Optional[Tuple[Tensor, Tensor, Tensor]] = None,
         ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
         Args:
-            precision: precision score provided by calling `metric.forward` or `metric.compute`
-            recall: recall score provided by calling `metric.forward` or `metric.compute`
-                If no value is provided, will automatically call `metric.compute` and plot that result.
+            curve: the output of either `metric.compute` or `metric.forward`. If no value is provided, will
+                automatically call `metric.compute` and plot that result.
             ax: An matplotlib axis object. If provided will add plot to that axis
 
         Returns:
@@ -255,10 +253,13 @@ class RetrievalPrecisionRecallCurve(Metric):
             >>> fig_, ax_ = metric.plot()
 
         """
-        if precision is None or recall is None:
-            precision, recall, _ = self.compute()
-        fig, ax = plot_curve(precision, recall, ax=ax)
-        return fig, ax
+        curve = curve or self.compute()
+        return plot_curve(
+            curve,
+            ax=ax,
+            label_names=("False positive rate", "True positive rate"),
+            name=self.__class__.__name__,
+        )
 
 
 class RetrievalRecallAtFixedPrecision(RetrievalPrecisionRecallCurve):
