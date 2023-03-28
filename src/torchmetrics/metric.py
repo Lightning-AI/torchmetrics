@@ -124,7 +124,7 @@ class Metric(Module, ABC):
                 f"Expected keyword argument `dist_sync_fn` to be an callable function but got {self.dist_sync_fn}"
             )
 
-        self.distributed_available_fn = kwargs.pop("distributed_available_fn", jit_distributed_available)
+        self.distributed_available_fn = kwargs.pop("distributed_available_fn", None) or jit_distributed_available
 
         self.sync_on_compute = kwargs.pop("sync_on_compute", True)
         if not isinstance(self.sync_on_compute, bool):

@@ -65,6 +65,10 @@ def _skimage_ssim(
     gaussian_weights=True,
     reduction_arg="elementwise_mean",
 ):
+    if isinstance(data_range, tuple):
+        preds = preds.clamp(min=data_range[0], max=data_range[1])
+        target = target.clamp(min=data_range[0], max=data_range[1])
+        data_range = data_range[1] - data_range[0]
     if len(preds.shape) == 4:
         c, h, w = preds.shape[-3:]
         sk_preds = preds.view(-1, c, h, w).permute(0, 2, 3, 1).numpy()
@@ -137,17 +141,18 @@ class TestSSIM(MetricTester):
 
     atol = 6e-3
 
+    @pytest.mark.parametrize("data_range", [1.0, (0.1, 1.0)])
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_ssim_sk(self, preds, target, sigma, ddp):
+    def test_ssim_sk(self, preds, target, sigma, data_range, ddp):
         """Test class implementation of metricvs skimage."""
         self.run_class_metric_test(
             ddp,
             preds,
             target,
             StructuralSimilarityIndexMeasure,
-            partial(_skimage_ssim, data_range=1.0, sigma=sigma, kernel_size=None),
+            partial(_skimage_ssim, data_range=data_range, sigma=sigma, kernel_size=None),
             metric_args={
-                "data_range": 1.0,
+                "data_range": data_range,
                 "sigma": sigma,
             },
         )
