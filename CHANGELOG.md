@@ -79,6 +79,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added support for python 3.11 ([#1612](https://github.com/Lightning-AI/metrics/pull/1612))
 
 
+- Added support for auto clamping of input for metrics that uses the `data_range` ([#1606](argument https://github.com/Lightning-AI/metrics/pull/1606))
+
+
 - Added `ModifiedPanopticQuality` metric to detection package ([#1627](https://github.com/Lightning-AI/metrics/pull/1627))
 
 
@@ -118,6 +121,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fixed support in `MetricTracker` for `MultioutputWrapper` and nested structures ([#1608](https://github.com/Lightning-AI/metrics/pull/1608))
+
+
+- Fixed integration with `jsonargparse` and `LightningCLI` ([#1651](https://github.com/Lightning-AI/metrics/pull/1651))
 
 
 - Fixed corner case in calibration error for zero confidence input ([#1648](https://github.com/Lightning-AI/metrics/pull/1648))
