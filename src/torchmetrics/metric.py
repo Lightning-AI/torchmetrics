@@ -138,8 +138,8 @@ class Metric(Module, ABC):
 
         # initialize
         self._update_signature = inspect.signature(self.update)
-        self.update: Callable = self._wrap_update(self.update)  # type: ignore[assignment]
-        self.compute: Callable = self._wrap_compute(self.compute)  # type: ignore[assignment]
+        self.update: Callable = self._wrap_update(self.update)  # type: ignore[method-assign]
+        self.compute: Callable = self._wrap_compute(self.compute)  # type: ignore[method-assign]
         self._computed = None
         self._forward_cache = None
         self._update_count = 0
@@ -639,8 +639,8 @@ class Metric(Module, ABC):
         # manually restore update and compute functions for pickling
         self.__dict__.update(state)
         self._update_signature = inspect.signature(self.update)
-        self.update: Callable = self._wrap_update(self.update)  # type: ignore[assignment]
-        self.compute: Callable = self._wrap_compute(self.compute)  # type: ignore[assignment]
+        self.update: Callable = self._wrap_update(self.update)  # type: ignore[method-assign]
+        self.compute: Callable = self._wrap_compute(self.compute)  # type: ignore[method-assign]
 
     def __setattr__(self, name: str, value: Any) -> None:
         """Overwrite default method to prevent specific attributes from being set by user."""
