@@ -129,6 +129,12 @@ def test_error_on_different_shape():
         metric(torch.randn(100, 5), torch.randn(100, 5))
 
 
+def test_1d_input_allowed():
+    """Check that both input of the form [N,] and [N,1] is allowed with default num_outputs argument."""
+    assert isinstance(pearson_corrcoef(torch.randn(10, 1), torch.randn(10, 1)), torch.Tensor)
+    assert isinstance(pearson_corrcoef(torch.randn(10), torch.randn(10)), torch.Tensor)
+
+
 @pytest.mark.parametrize("shapes", [(5,), (1, 5), (2, 5)])
 def test_final_aggregation_function(shapes):
     """Test that final aggregation function can take various shapes of input."""
