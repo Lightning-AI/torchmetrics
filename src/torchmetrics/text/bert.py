@@ -291,4 +291,4 @@ class BERTScore(Metric):
         if val is None:  # default average score across sentences
             val = self.compute()
             val = {k: torch.tensor(v).mean() for k, v in val.items()}
-        return self._plot(val, ax)
+        return self._plot(val, ax)  # type: ignore
