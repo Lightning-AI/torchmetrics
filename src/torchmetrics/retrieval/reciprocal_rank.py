@@ -77,6 +77,8 @@ class RetrievalMRR(RetrievalMetric):
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
+    plot_lower_bound = 0.0
+    plot_upper_bound = 1.0
 
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
         return retrieval_reciprocal_rank(preds, target)

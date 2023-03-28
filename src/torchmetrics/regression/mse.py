@@ -57,6 +57,7 @@ class MeanSquaredError(Metric):
     higher_is_better = False
     full_state_update = False
     plot_lower_bound = 0.0
+
     sum_squared_error: Tensor
     total: Tensor
 

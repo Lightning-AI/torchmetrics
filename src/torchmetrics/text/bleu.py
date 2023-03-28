@@ -60,6 +60,8 @@ class BLEUScore(Metric):
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = True
+    plot_lower_bound = 0.0
+    plot_upper_bound = 1.0
 
     preds_len: Tensor
     target_len: Tensor

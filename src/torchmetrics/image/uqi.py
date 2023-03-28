@@ -52,7 +52,6 @@ class UniversalImageQualityIndex(Metric):
         data_range: Range of the image. If ``None``, it is determined from the image (max - min)
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-
     Return:
         Tensor with UniversalImageQualityIndex score
 

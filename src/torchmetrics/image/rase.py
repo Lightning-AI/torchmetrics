@@ -62,6 +62,7 @@ class RelativeAverageSpectralError(Metric):
     higher_is_better: bool = False
     is_differentiable: bool = True
     full_state_update: bool = False
+    plot_lower_bound = 0.0
 
     preds: List[Tensor]
     target: List[Tensor]

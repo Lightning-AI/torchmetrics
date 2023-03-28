@@ -208,6 +208,7 @@ class FrechetInceptionDistance(Metric):
     higher_is_better: bool = False
     is_differentiable: bool = False
     full_state_update: bool = False
+    plot_lower_bound = 0.0
 
     real_features_sum: Tensor
     real_features_cov_sum: Tensor

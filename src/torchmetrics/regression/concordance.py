@@ -66,6 +66,8 @@ class ConcordanceCorrCoef(PearsonCorrCoef):
         >>> concordance(preds, target)
         tensor([0.7273, 0.9887])
     """
+    plot_lower_bound = -1.0
+    plot_upper_bound = 1.0
 
     def compute(self) -> Tensor:
         """Compute final concordance correlation coefficient over metric states."""

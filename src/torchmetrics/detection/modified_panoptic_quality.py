@@ -77,6 +77,8 @@ class ModifiedPanopticQuality(Metric):
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
+    plot_lower_bound = 0.0
+    plot_upper_bound = 1.0
 
     iou_sum: Tensor
     true_positives: Tensor

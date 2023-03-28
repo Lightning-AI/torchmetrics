@@ -67,6 +67,8 @@ class CharErrorRate(Metric):
     is_differentiable: bool = False
     higher_is_better: bool = False
     full_state_update: bool = False
+    plot_lower_bound = 0.0
+    plot_upper_bound = 1.0
 
     errors: Tensor
     total: Tensor

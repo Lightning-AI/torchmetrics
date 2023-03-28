@@ -112,6 +112,8 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
     is_differentiable: bool = True
     higher_is_better: bool = False
     full_state_update: bool = False
+    plot_lower_bound = 0.0
+    plot_upper_bound = 1.0
 
     real_features: List[Tensor]
     fake_features: List[Tensor]

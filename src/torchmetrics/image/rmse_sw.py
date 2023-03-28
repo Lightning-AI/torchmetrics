@@ -55,12 +55,14 @@ class RootMeanSquaredErrorUsingSlidingWindow(Metric):
         ValueError: If ``window_size`` is not a positive integer.
     """
 
-    rmse_val_sum: Tensor
-    rmse_map: Optional[Tensor] = None
-    total_images: Tensor
     higher_is_better: bool = False
     is_differentiable: bool = True
     full_state_update: bool = False
+    plot_lower_bound = 0.0
+
+    rmse_val_sum: Tensor
+    rmse_map: Optional[Tensor] = None
+    total_images: Tensor
 
     def __init__(
         self,
