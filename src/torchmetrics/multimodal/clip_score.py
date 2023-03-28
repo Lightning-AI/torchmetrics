@@ -156,7 +156,7 @@ class CLIPScore(Metric):
             >>> metric = CLIPScore(model_name_or_path="openai/clip-vit-base-patch16")
             >>> values = [ ]
             >>> for _ in range(10):
-            ...     values.append(torch.randint(255, (3, 224, 224)), "a photo of a cat")
+            ...     values.append(metric(torch.randint(255, (3, 224, 224)), "a photo of a cat"))
             >>> fig_, ax_ = metric.plot(values)
         """
         return self._plot(val, ax)
