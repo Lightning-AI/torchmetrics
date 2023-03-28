@@ -27,7 +27,7 @@ from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _NLTK_AVAILABL
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 if not _MATPLOTLIB_AVAILABLE:
-    __doctest_skip__ = ["CharErrorRate.plot"]
+    __doctest_skip__ = ["ROUGEScore.plot"]
 
 
 __doctest_requires__ = {("ROUGEScore",): ["nltk"]}
