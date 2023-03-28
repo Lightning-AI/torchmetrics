@@ -94,6 +94,8 @@ class BinarySpecificityAtSensitivity(BinaryPrecisionRecallCurve):
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
+    plot_lower_bound = 0.0
+    plot_upper_bound = 1.0
 
     def __init__(
         self,
@@ -181,6 +183,9 @@ class MulticlassSpecificityAtSensitivity(MulticlassPrecisionRecallCurve):
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
+    plot_lower_bound = 0.0
+    plot_upper_bound = 1.0
+    plot_legend_name = "Class"
 
     def __init__(
         self,
@@ -277,6 +282,9 @@ class MultilabelSpecificityAtSensitivity(MultilabelPrecisionRecallCurve):
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
+    plot_lower_bound = 0.0
+    plot_upper_bound = 1.0
+    plot_legend_name = "Label"
 
     def __init__(
         self,

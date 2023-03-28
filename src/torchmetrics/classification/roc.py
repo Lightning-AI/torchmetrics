@@ -115,6 +115,8 @@ class BinaryROC(BinaryPrecisionRecallCurve):
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
+    plot_lower_bound = 0.0
+    plot_upper_bound = 1.0
 
     def compute(self) -> Tuple[Tensor, Tensor, Tensor]:
         """Compute metric."""
@@ -265,6 +267,9 @@ class MulticlassROC(MulticlassPrecisionRecallCurve):
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
+    plot_lower_bound = 0.0
+    plot_upper_bound = 1.0
+    plot_legend_name = "Class"
 
     def compute(self) -> Tuple[Tensor, Tensor, Tensor]:
         """Compute metric."""
@@ -370,6 +375,9 @@ class MultilabelROC(MultilabelPrecisionRecallCurve):
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
+    plot_lower_bound = 0.0
+    plot_upper_bound = 1.0
+    plot_legend_name = "Label"
 
     def compute(self) -> Tuple[Tensor, Tensor, Tensor]:
         """Compute metric."""

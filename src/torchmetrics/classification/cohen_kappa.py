@@ -217,6 +217,7 @@ class MulticlassCohenKappa(MulticlassConfusionMatrix):
     full_state_update: bool = False
     plot_lower_bound = 0.0
     plot_upper_bound = 1.0
+    plot_legend_name = "Class"
 
     def __init__(
         self,
