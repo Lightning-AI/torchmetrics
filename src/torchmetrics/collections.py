@@ -24,7 +24,7 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import _flatten_dict, allclose
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
-from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["MetricCollection.plot", "MetricCollection.plot_all"]
@@ -489,59 +489,88 @@ class MetricCollection(ModuleDict):
         return self
 
     def plot(
-        self, val: Optional[Union[Dict, Sequence[Dict]]] = None, ax: Optional[_AX_TYPE] = None
+        self,
+        val: Optional[Union[Dict, Sequence[Dict]]] = None,
+        ax: Optional[Union[_AX_TYPE, Sequence[_AX_TYPE]]] = None,
+        together: bool = False,
     ) -> Sequence[_PLOT_OUT_TYPE]:
         """Plot a single or multiple values from the metric.
+
+        The plot method have two modes of operation. If argument `together` is set to `False` (default), the `.plot`
+        method of each metric will be called individually and the result will be list of figures. If `together` is set
+        to `True`, the values of all metrics will instead be plotted in the same figure.
 
         Args:
             val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
                 If no value is provided, will automatically call `metric.compute` and plot that result.
-            ax: An matplotlib axis object. If provided will add plot to that axis
+            ax: Either a single instance of matplotlib axis object or an sequence of matplotlib axis objects. If
+                provided, will add the plots to the provided axis objects. If not provided, will create a new. If
+                argument `together` is set to `True`, a single object is expected. If `together` is set to `False`,
+                the number of axis objects needs to be the same lenght as the number of metrics in the collection.
+            together: If `True`, will plot all metrics in the same axis. If `False`, will plot each metric in a separate
 
         Returns:
-            Figure and Axes object
+            Either instal tupel of Figure and Axes object or an sequence of tuples with Figure and Axes object for each
+            metric in the collection.
 
         Raises:
             ModuleNotFoundError:
                 If `matplotlib` is not installed
+            ValueError:
+                If `together` is not an bool
+            ValueError:
+                If `ax` is not an instance of matplotlib axis object or a sequence of matplotlib axis objects
 
         .. plot::
             :scale: 75
 
-            >>> from torch import randn
             >>> # Example plotting a single value
-            >>> from torchmetrics.regression import CosineSimilarity
-            >>> metric = CosineSimilarity()
-            >>> metric.update(randn(10,), randn(10,))
-            >>> fig_, ax_ = metric.plot()
+            >>> import torch
+            >>> from torchmetrics import MetricCollection
+            >>> from torchmetrics.classification import BinaryAccuracy, BinaryPrecision, BinaryRecall
+            >>> metrics = MetricCollection([BinaryAccuracy(), BinaryPrecision(), BinaryRecall()])
+            >>> metrics.update(torch.rand(10), torch.randint(2, (10,)))
+            >>> fig_, ax_ = metrics.plot()
 
         .. plot::
             :scale: 75
 
-            >>> from torch import randn
             >>> # Example plotting multiple values
-            >>> from torchmetrics.regression import CosineSimilarity
-            >>> metric = CosineSimilarity()
+            >>> import torch
+            >>> from torchmetrics import MetricCollection
+            >>> from torchmetrics.classification import BinaryAccuracy, BinaryPrecision, BinaryRecall
+            >>> metrics = MetricCollection([BinaryAccuracy(), BinaryPrecision(), BinaryRecall()])
             >>> values = []
             >>> for _ in range(10):
-            ...     values.append(metric(randn(10,), randn(10,)))
+            ...     values.append(metrics(torch.rand(10), torch.randint(2, (10,))))
             >>> fig, ax = metric.plot(values)
         """
-        val = val or self.compute()
-        fig_axs = []
-        for k, m in self.items(keep_base=True, copy_state=False):
-            if isinstance(val, dict):
-                fig, ax = m.plot(val[k])
-            elif isinstance(val, Sequence):
-                fig, ax = m.plot([v[k] for v in val])
-            fig_axs.append((fig, ax))
-        return fig_axs
+        if not isinstance(together, bool):
+            raise ValueError(f"Expected argument `together` to be a boolean, but got {type(together)}")
+        if ax is not None:
+            if together and not isinstance(ax, _AX_TYPE):
+                raise ValueError(
+                    f"Expected argument `ax` to be a matplotlib axis object, but got {type(ax)} when `together=True`"
+                )
+            if (
+                not together
+                and not isinstance(ax, Sequence)
+                and not all(isinstance(a, _AX_TYPE) for a in ax)
+                and len(ax) != len(self)
+            ):
+                raise ValueError(
+                    f"Expected argument `ax` to be a sequence of matplotlib axis objects with the same length as the "
+                    f"number of metrics in the collection, but got {type(ax)} with len {len(ax)} when `together=False`"
+                )
 
-    def plot_together(self, val: Optional[Dict] = None, plot_type: Literal["lines", "radar"] = "lines") -> None:
-        """Plot everything together."""
-        if plot_type == "lines":
-            self._plot_lines(val)
-        elif plot_type == "radar":
-            self._plot_radar(val)
-        else:
-            raise ValueError("unknown plot type")
+        val = val or self.compute()
+        if together:
+            return plot_single_or_multi_val(val, ax=ax)
+        fig_axs = []
+        for i, (k, m) in enumerate(self.items(keep_base=True, copy_state=False)):
+            if isinstance(val, dict):
+                f, a = m.plot(val[k], ax=ax[i] if ax is not None else ax)
+            elif isinstance(val, Sequence):
+                f, a = m.plot([v[k] for v in val], ax=ax[i] if ax is not None else ax)
+            fig_axs.append((f, a))
+        return fig_axs
