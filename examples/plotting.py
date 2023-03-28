@@ -395,7 +395,7 @@ def mean_average_precision() -> tuple:
 
 def roc_example() -> tuple:
     """Plot roc metric."""
-    from torchmetrics.classification import BinaryROC, MulticlassROC
+    from torchmetrics.classification import BinaryROC, MulticlassROC, MultilabelROC
 
     p = lambda: torch.rand(20)
     t = lambda: torch.randint(2, (20,))
@@ -410,6 +410,12 @@ def roc_example() -> tuple:
     metric = MulticlassROC(5)
     metric.update(p(), t())
     fig, ax = metric.plot()
+
+    p = lambda: torch.rand(20, 2)
+    t = lambda: torch.randint(2, (20, 2))
+
+    metric = MultilabelROC(2)
+    metric.update(p(), t())
 
     return fig, ax
 
