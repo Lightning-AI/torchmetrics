@@ -46,6 +46,7 @@ from torchmetrics.classification import (
     BinaryJaccardIndex,
     BinaryMatthewsCorrCoef,
     BinaryPrecision,
+    BinaryPrecisionRecallCurve,
     BinaryRecall,
     BinaryRecallAtFixedPrecision,
     BinaryROC,
@@ -65,8 +66,10 @@ from torchmetrics.classification import (
     MulticlassJaccardIndex,
     MulticlassMatthewsCorrCoef,
     MulticlassPrecision,
+    MulticlassPrecisionRecallCurve,
     MulticlassRecall,
     MulticlassRecallAtFixedPrecision,
+    MulticlassROC,
     MulticlassSpecificity,
     MultilabelAveragePrecision,
     MultilabelConfusionMatrix,
@@ -78,10 +81,12 @@ from torchmetrics.classification import (
     MultilabelJaccardIndex,
     MultilabelMatthewsCorrCoef,
     MultilabelPrecision,
+    MultilabelPrecisionRecallCurve,
     MultilabelRankingAveragePrecision,
     MultilabelRankingLoss,
     MultilabelRecall,
     MultilabelRecallAtFixedPrecision,
+    MultilabelROC,
     MultilabelSpecificity,
 )
 from torchmetrics.detection import PanopticQuality
@@ -194,12 +199,6 @@ _text_input_2 = lambda: ["this is the reference", "there is another one"]
             _multiclass_randn_input,
             _multiclass_randint_input,
             id="multiclass auroc and average=None",
-        ),
-        pytest.param(
-            BinaryROC,
-            _rand_input,
-            _binary_randint_input,
-            id="binary roc",
         ),
         pytest.param(
             partial(PearsonsContingencyCoefficient, num_classes=5),
@@ -715,3 +714,59 @@ def test_confusion_matrix_plotter(metric_class, preds, target, labels, use_label
     cond1 = isinstance(axs, matplotlib.axes.Axes)
     cond2 = isinstance(axs, np.ndarray) and all(isinstance(a, matplotlib.axes.Axes) for a in axs)
     assert cond1 or cond2
+
+
+@pytest.mark.parametrize(
+    ("metric_class", "preds", "target"),
+    [
+        pytest.param(
+            BinaryROC,
+            lambda: torch.rand(
+                100,
+            ),
+            lambda: torch.randint(0, 2, size=(100,)),
+            id="binary roc",
+        ),
+        pytest.param(
+            partial(MulticlassROC, num_classes=3),
+            lambda: torch.randn(100, 3).softmax(dim=-1),
+            lambda: torch.randint(0, 3, size=(100,)),
+            id="multiclass roc",
+        ),
+        pytest.param(
+            partial(MultilabelROC, num_labels=3),
+            lambda: torch.rand(100, 3),
+            lambda: torch.randint(0, 2, size=(100, 3)),
+            id="multilabel roc",
+        ),
+        pytest.param(
+            BinaryPrecisionRecallCurve,
+            lambda: torch.rand(
+                100,
+            ),
+            lambda: torch.randint(0, 2, size=(100,)),
+            id="binary precision recall curve",
+        ),
+        pytest.param(
+            partial(MulticlassPrecisionRecallCurve, num_classes=3),
+            lambda: torch.randn(100, 3).softmax(dim=-1),
+            lambda: torch.randint(0, 3, size=(100,)),
+            id="multiclass precision recall curve",
+        ),
+        pytest.param(
+            partial(MultilabelPrecisionRecallCurve, num_labels=3),
+            lambda: torch.rand(100, 3),
+            lambda: torch.randint(0, 2, size=(100, 3)),
+            id="multilabel precision recall curve",
+        ),
+    ],
+)
+@pytest.mark.parametrize("thresholds", [None, 10])
+@pytest.mark.parametrize("score", [False, True])
+def test_plot_method_curve_metrics(metric_class, preds, target, thresholds, score):
+    """Test that the plot method works for metrics that plot curve objects."""
+    metric = metric_class(thresholds=thresholds)
+    metric.update(preds(), target())
+    fig, ax = metric.plot(score=score)
+    assert isinstance(fig, plt.Figure)
+    assert isinstance(ax, matplotlib.axes.Axes)
