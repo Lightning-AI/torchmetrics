@@ -383,7 +383,7 @@ def accuracy(
     top_k: Optional[int] = 1,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Tensor:
+) -> Optional[Tensor]:
     r"""Compute `Accuracy`_.
 
     .. math::
