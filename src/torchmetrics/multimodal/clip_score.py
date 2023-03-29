@@ -72,7 +72,7 @@ class CLIPScore(Metric):
         >>> metric = CLIPScore(model_name_or_path="openai/clip-vit-base-patch16")
         >>> score = metric(torch.randint(255, (3, 224, 224)), "a photo of a cat")
         >>> print(score.detach())
-        tensor(25.0936)
+        tensor(24.7691)
     """
 
     is_differentiable: bool = False
