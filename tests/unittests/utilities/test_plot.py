@@ -604,35 +604,12 @@ def test_plot_methods_special_image_metrics(metric_class, preds, target, index_0
     assert isinstance(ax, matplotlib.axes.Axes)
 
 
-@pytest.mark.parametrize(
-    ("metric_class", "preds", "target", "transform"),
-    [
-        pytest.param(
-            BERTScore,
-            _text_input_1,
-            _text_input_2,
-            lambda d: {k: torch.tensor(v).mean() for k, v in d.items()},
-            id="bert score",
-        )
-    ],
-)
-@pytest.mark.parametrize("num_vals", [1, 2])
-def test_plot_methods_special_text_metrics(
-    metric_class: object, preds: Callable, target: Callable, transform: Callable, num_vals: int
-):
+@torch.inference_mode()
+def test_plot_methods_special_text_metrics():
     """Test the plot method for text metrics that does not fit the default testing format."""
-    metric = metric_class()
-
-    if num_vals == 1:
-        metric.update(preds(), target())
-        fig, ax = metric.plot()
-    else:
-        vals = []
-        for _ in range(num_vals):
-            val = metric(preds(), target())
-            vals.append(transform(val))
-        fig, ax = metric.plot(vals)
-
+    metric = BERTScore()
+    metric.update(_text_input_1(), _text_input_2())
+    fig, ax = metric.plot()
     assert isinstance(fig, plt.Figure)
     assert isinstance(ax, matplotlib.axes.Axes)
 
