@@ -64,7 +64,7 @@ class MeanAbsolutePercentageError(Metric):
     is_differentiable: bool = True
     higher_is_better: bool = False
     full_state_update: bool = False
-    plot_lower_bound = 0.0
+    plot_lower_bound: float = 0.0
 
     sum_abs_per_error: Tensor
     total: Tensor

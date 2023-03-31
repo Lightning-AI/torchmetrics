@@ -352,8 +352,8 @@ class MeanAveragePrecision(Metric):
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = True
-    plot_lower_bound = 0.0
-    plot_upper_bound = 1.0
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     detections: List[Tensor]
     detection_scores: List[Tensor]

@@ -87,8 +87,8 @@ class SQuAD(Metric):
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
-    plot_lower_bound = 0.0
-    plot_upper_bound = 100.0
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 100.0
 
     f1_score: Tensor
     exact_match: Tensor

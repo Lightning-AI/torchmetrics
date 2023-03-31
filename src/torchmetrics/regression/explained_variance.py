@@ -83,8 +83,8 @@ class ExplainedVariance(Metric):
     is_differentiable: bool = True
     higher_is_better: bool = True
     full_state_update: bool = False
-    plot_lower_bound = 0.0
-    plot_upper_bound = 1.0
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     n_obs: Tensor
     sum_error: Tensor

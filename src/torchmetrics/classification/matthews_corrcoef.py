@@ -79,8 +79,8 @@ class BinaryMatthewsCorrCoef(BinaryConfusionMatrix):
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
-    plot_lower_bound = 0.0
-    plot_upper_bound = 1.0
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     def __init__(
         self,
@@ -188,9 +188,9 @@ class MulticlassMatthewsCorrCoef(MulticlassConfusionMatrix):
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
-    plot_lower_bound = 0.0
-    plot_upper_bound = 1.0
-    plot_legend_name = "Class"
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
+    plot_legend_name: str = "Class"
 
     def __init__(
         self,
@@ -296,9 +296,9 @@ class MultilabelMatthewsCorrCoef(MultilabelConfusionMatrix):
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
-    plot_lower_bound = 0.0
-    plot_upper_bound = 1.0
-    plot_legend_name = "Label"
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
+    plot_legend_name: str = "Label"
 
     def __init__(
         self,

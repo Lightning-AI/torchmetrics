@@ -55,7 +55,7 @@ class MinkowskiDistance(Metric):
     is_differentiable: Optional[bool] = True
     higher_is_better: Optional[bool] = False
     full_state_update: Optional[bool] = False
-    plot_lower_bound = 0.0
+    plot_lower_bound: float = 0.0
 
     minkowski_dist_sum: Tensor
 

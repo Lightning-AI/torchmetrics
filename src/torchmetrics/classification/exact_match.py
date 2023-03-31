@@ -95,9 +95,9 @@ class MulticlassExactMatch(Metric):
     is_differentiable = False
     higher_is_better = True
     full_state_update: bool = False
-    plot_lower_bound = 0.0
-    plot_upper_bound = 1.0
-    plot_legend_name = "Class"
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
+    plot_legend_name: str = "Class"
 
     def __init__(
         self,
@@ -256,9 +256,9 @@ class MultilabelExactMatch(Metric):
     is_differentiable = False
     higher_is_better = True
     full_state_update: bool = False
-    plot_lower_bound = 0.0
-    plot_upper_bound = 1.0
-    plot_legend_name = "Label"
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
+    plot_legend_name: str = "Label"
 
     def __init__(
         self,

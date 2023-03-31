@@ -89,8 +89,8 @@ class BinarySpecificity(BinaryStatScores):
         >>> metric(preds, target)
         tensor([0.0000, 0.3333])
     """
-    plot_lower_bound = 0.0
-    plot_upper_bound = 1.0
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     def compute(self) -> Tensor:
         """Compute metric."""
@@ -234,9 +234,9 @@ class MulticlassSpecificity(MulticlassStatScores):
         tensor([[0.7500, 0.7500, 0.7500],
                 [0.8000, 0.6667, 0.5000]])
     """
-    plot_lower_bound = 0.0
-    plot_upper_bound = 1.0
-    plot_legend_name = "Class"
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
+    plot_legend_name: str = "Class"
 
     def compute(self) -> Tensor:
         """Compute metric."""
@@ -376,9 +376,9 @@ class MultilabelSpecificity(MultilabelStatScores):
         tensor([[0., 0., 0.],
                 [0., 0., 1.]])
     """
-    plot_lower_bound = 0.0
-    plot_upper_bound = 1.0
-    plot_legend_name = "Label"
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
+    plot_legend_name: str = "Label"
 
     def compute(self) -> Tensor:
         """Compute metric."""

@@ -60,8 +60,8 @@ class ExtendedEditDistance(Metric):
     higher_is_better: bool = False
     is_differentiable: bool = False
     full_state_update: bool = False
-    plot_lower_bound = 0.0
-    plot_upper_bound = 1.0
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     sentence_eed: List[Tensor]
 

@@ -78,9 +78,9 @@ class MultilabelCoverageError(Metric):
     higher_is_better: bool = False
     is_differentiable: bool = False
     full_state_update: bool = False
-    plot_lower_bound = 0.0
-    plot_upper_bound = 1.0
-    plot_legend_name = "Label"
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
+    plot_legend_name: str = "Label"
 
     def __init__(
         self,
@@ -196,9 +196,9 @@ class MultilabelRankingAveragePrecision(Metric):
     higher_is_better: bool = True
     is_differentiable: bool = False
     full_state_update: bool = False
-    plot_lower_bound = 0.0
-    plot_upper_bound = 1.0
-    plot_legend_name = "Label"
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
+    plot_legend_name: str = "Label"
 
     def __init__(
         self,
@@ -316,9 +316,9 @@ class MultilabelRankingLoss(Metric):
     higher_is_better: bool = False
     is_differentiable: bool = False
     full_state_update: bool = False
-    plot_lower_bound = 0.0
-    plot_upper_bound = 1.0
-    plot_legend_name = "Label"
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
+    plot_legend_name: str = "Label"
 
     def __init__(
         self,

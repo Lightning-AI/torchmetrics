@@ -65,7 +65,7 @@ class TotalVariation(Metric):
     full_state_update: bool = False
     is_differentiable: bool = True
     higher_is_better: bool = False
-    plot_lower_bound = 0.0
+    plot_lower_bound: float = 0.0
 
     def __init__(self, reduction: Literal["mean", "sum", "none", None] = "sum", **kwargs: Any) -> None:
         super().__init__(**kwargs)
