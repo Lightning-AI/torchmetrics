@@ -20,3 +20,5 @@ lightning>=1.8.0, <3.0.0
 -r detection.txt
 -r image.txt
 -r multimodal.txt
+-r text.txt
+-r text_test.txt
