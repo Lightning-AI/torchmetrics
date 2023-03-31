@@ -69,8 +69,8 @@ class PermutationInvariantTraining(Metric):
     is_differentiable: bool = True
     sum_pit_metric: Tensor
     total: Tensor
-    plot_lower_bound = -10.0
-    plot_upper_bound = 1.0
+    plot_lower_bound: float = -10.0
+    plot_upper_bound: float = 1.0
 
     def __init__(
         self,
