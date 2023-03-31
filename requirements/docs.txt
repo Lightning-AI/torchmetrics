@@ -19,3 +19,4 @@ lightning>=1.8.0, <3.0.0
 -r audio.txt
 -r detection.txt
 -r image.txt
+-r multimodal.txt
