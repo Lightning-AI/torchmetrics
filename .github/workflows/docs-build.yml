@@ -51,6 +51,8 @@ jobs:
       - name: Install package & dependencies
         run: |
           sudo apt-get update && sudo apt-get install -y cmake
+          mkdir -p $PYPI_CACHE
+          ls -lh $PYPI_CACHE
           pip --version
           pip install -e . -U -q -r requirements/docs.txt --find-links $PYTORCH_URL -f $PYPI_CACHE
           pip list
@@ -95,6 +97,8 @@ jobs:
           # install Texlive, see https://linuxconfig.org/how-to-install-latex-on-ubuntu-20-04-focal-fossa-linux
           sudo apt-get update
           sudo apt-get install -y texlive-latex-extra dvipng texlive-pictures texlive-fonts-recommended cm-super
+          mkdir -p $PYPI_CACHE
+          ls -lh $PYPI_CACHE
           pip --version
           pip install -e . -U -q -r requirements/docs.txt --find-links $PYTORCH_URL -f $PYPI_CACHE
           pip list
