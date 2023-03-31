@@ -53,7 +53,7 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y cmake
           pip --version
-          pip install . -U -r requirements/docs.txt --find-links $PYPI_CACHE -f $PYTORCH_URL
+          pip install . -U -r requirements/docs.txt --find-links $PYPI_CACHE -f $TORCH_URL
           pip list
 
       - name: Test Documentation
@@ -96,7 +96,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y texlive-latex-extra dvipng texlive-pictures texlive-fonts-recommended cm-super
           pip --version
-          pip install . -U -r requirements/docs.txt --find-links $PYPI_CACHE -f $PYTORCH_URL
+          pip install . -U -r requirements/docs.txt --find-links $PYPI_CACHE -f $TORCH_URL
           pip list
         shell: bash
 
