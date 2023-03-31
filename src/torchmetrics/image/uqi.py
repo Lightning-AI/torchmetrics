@@ -52,7 +52,6 @@ class UniversalImageQualityIndex(Metric):
         data_range: Range of the image. If ``None``, it is determined from the image (max - min)
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-
     Return:
         Tensor with UniversalImageQualityIndex score
 
@@ -69,8 +68,8 @@ class UniversalImageQualityIndex(Metric):
     is_differentiable: bool = True
     higher_is_better: bool = True
     full_state_update: bool = False
-    plot_lower_bound = 0.0
-    plot_upper_bound = 1.0
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     preds: List[Tensor]
     target: List[Tensor]

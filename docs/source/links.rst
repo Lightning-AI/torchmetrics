@@ -135,3 +135,4 @@
 .. _Minkowski Distance: https://en.wikipedia.org/wiki/Minkowski_distance
 .. _Demographic parity: http://www.fairmlbook.org/
 .. _Equal opportunity: https://proceedings.neurips.cc/paper/2016/hash/9d2682367c3935defcb1f9e247a97c0d-Abstract.html
+.. _Seamless Scene Segmentation paper: https://arxiv.org/abs/1905.01220

@@ -214,7 +214,7 @@ def _binary_precision_recall_curve_update_vectorized(
     """
     len_t = len(thresholds)
     preds_t = (preds.unsqueeze(-1) >= thresholds.unsqueeze(0)).long()  # num_samples x num_thresholds
-    unique_mapping = preds_t + 2 * target.unsqueeze(-1) + 4 * torch.arange(len_t, device=target.device)
+    unique_mapping = preds_t + 2 * target.long().unsqueeze(-1) + 4 * torch.arange(len_t, device=target.device)
     bins = _bincount(unique_mapping.flatten(), minlength=4 * len_t)
     return bins.reshape(len_t, 2, 2)
 
@@ -267,15 +267,11 @@ def _binary_precision_recall_curve_compute(
     precision = tps / (tps + fps)
     recall = tps / tps[-1]
 
-    # stop when full recall attained and reverse the outputs so recall is decreasing
-    last_ind = torch.where(tps == tps[-1])[0][0]
-    sl = slice(0, last_ind.item() + 1)
-
     # need to call reversed explicitly, since including that to slice would
     # introduce negative strides that are not yet supported in pytorch
-    precision = torch.cat([reversed(precision[sl]), torch.ones(1, dtype=precision.dtype, device=precision.device)])
-    recall = torch.cat([reversed(recall[sl]), torch.zeros(1, dtype=recall.dtype, device=recall.device)])
-    thresholds = reversed(thresholds[sl]).detach().clone()
+    precision = torch.cat([precision.flip(0), torch.ones(1, dtype=precision.dtype, device=precision.device)])
+    recall = torch.cat([recall.flip(0), torch.zeros(1, dtype=recall.dtype, device=recall.device)])
+    thresholds = thresholds.flip(0).detach().clone()
     return precision, recall, thresholds
 
 
@@ -338,9 +334,9 @@ def binary_precision_recall_curve(
         >>> preds = torch.tensor([0, 0.5, 0.7, 0.8])
         >>> target = torch.tensor([0, 1, 1, 0])
         >>> binary_precision_recall_curve(preds, target, thresholds=None)  # doctest: +NORMALIZE_WHITESPACE
-        (tensor([0.6667, 0.5000, 0.0000, 1.0000]),
-         tensor([1.0000, 0.5000, 0.0000, 0.0000]),
-         tensor([0.5000, 0.7000, 0.8000]))
+        (tensor([0.5000, 0.6667, 0.5000, 0.0000, 1.0000]),
+         tensor([1.0000, 1.0000, 0.5000, 0.0000, 0.0000]),
+         tensor([0.0000, 0.5000, 0.7000, 0.8000]))
         >>> binary_precision_recall_curve(preds, target, thresholds=5)  # doctest: +NORMALIZE_WHITESPACE
         (tensor([0.5000, 0.6667, 0.6667, 0.0000, 0.0000, 1.0000]),
          tensor([1., 1., 1., 0., 0., 0.]),
@@ -473,7 +469,7 @@ def _multiclass_precision_recall_curve_update_vectorized(
     len_t = len(thresholds)
     preds_t = (preds.unsqueeze(-1) >= thresholds.unsqueeze(0).unsqueeze(0)).long()
     target_t = torch.nn.functional.one_hot(target, num_classes=num_classes)
-    unique_mapping = preds_t + 2 * target_t.unsqueeze(-1)
+    unique_mapping = preds_t + 2 * target_t.long().unsqueeze(-1)
     unique_mapping += 4 * torch.arange(num_classes, device=preds.device).unsqueeze(0).unsqueeze(-1)
     unique_mapping += 4 * num_classes * torch.arange(len_t, device=preds.device)
     bins = _bincount(unique_mapping.flatten(), minlength=4 * num_classes * len_t)
@@ -607,12 +603,13 @@ def multiclass_precision_recall_curve(
         ...    preds, target, num_classes=5, thresholds=None
         ... )
         >>> precision  # doctest: +NORMALIZE_WHITESPACE
-        [tensor([1., 1.]), tensor([1., 1.]), tensor([0.2500, 0.0000, 1.0000]),
+        [tensor([0.2500, 1.0000, 1.0000]), tensor([0.2500, 1.0000, 1.0000]), tensor([0.2500, 0.0000, 1.0000]),
          tensor([0.2500, 0.0000, 1.0000]), tensor([0., 1.])]
         >>> recall
-        [tensor([1., 0.]), tensor([1., 0.]), tensor([1., 0., 0.]), tensor([1., 0., 0.]), tensor([nan, 0.])]
+        [tensor([1., 1., 0.]), tensor([1., 1., 0.]), tensor([1., 0., 0.]), tensor([1., 0., 0.]), tensor([nan, 0.])]
         >>> thresholds
-        [tensor([0.7500]), tensor([0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500])]
+        [tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]),
+         tensor([0.0500])]
         >>> multiclass_precision_recall_curve(
         ...     preds, target, num_classes=5, thresholds=5
         ... )  # doctest: +NORMALIZE_WHITESPACE
@@ -717,7 +714,7 @@ def _multilabel_precision_recall_curve_update(
     len_t = len(thresholds)
     # num_samples x num_labels x num_thresholds
     preds_t = (preds.unsqueeze(-1) >= thresholds.unsqueeze(0).unsqueeze(0)).long()
-    unique_mapping = preds_t + 2 * target.unsqueeze(-1)
+    unique_mapping = preds_t + 2 * target.long().unsqueeze(-1)
     unique_mapping += 4 * torch.arange(num_labels, device=preds.device).unsqueeze(0).unsqueeze(-1)
     unique_mapping += 4 * num_labels * torch.arange(len_t, device=preds.device)
     unique_mapping = unique_mapping[unique_mapping >= 0]
@@ -837,14 +834,13 @@ def multilabel_precision_recall_curve(
         ...    preds, target, num_labels=3, thresholds=None
         ... )
         >>> precision  # doctest: +NORMALIZE_WHITESPACE
-        [tensor([0.5000, 0.5000, 1.0000, 1.0000]), tensor([0.6667, 0.5000, 0.0000, 1.0000]),
+        [tensor([0.5000, 0.5000, 1.0000, 1.0000]), tensor([0.5000, 0.6667, 0.5000, 0.0000, 1.0000]),
          tensor([0.7500, 1.0000, 1.0000, 1.0000])]
         >>> recall  # doctest: +NORMALIZE_WHITESPACE
-        [tensor([1.0000, 0.5000, 0.5000, 0.0000]), tensor([1.0000, 0.5000, 0.0000, 0.0000]),
+        [tensor([1.0000, 0.5000, 0.5000, 0.0000]), tensor([1.0000, 1.0000, 0.5000, 0.0000, 0.0000]),
          tensor([1.0000, 0.6667, 0.3333, 0.0000])]
         >>> thresholds  # doctest: +NORMALIZE_WHITESPACE
-        [tensor([0.0500, 0.4500, 0.7500]), tensor([0.5500, 0.6500, 0.7500]),
-         tensor([0.0500, 0.3500, 0.7500])]
+        [tensor([0.0500, 0.4500, 0.7500]), tensor([0.0500, 0.5500, 0.6500, 0.7500]), tensor([0.0500, 0.3500, 0.7500])]
         >>> multilabel_precision_recall_curve(
         ...     preds, target, num_labels=3, thresholds=5
         ... )  # doctest: +NORMALIZE_WHITESPACE
@@ -887,15 +883,15 @@ def precision_recall_curve(
     :func:`multilabel_precision_recall_curve` for the specific details of each argument influence and examples.
 
     Legacy Example:
-        >>> pred = torch.tensor([0.0, 1.0, 2.0, 3.0])
+        >>> pred = torch.tensor([0, 0.1, 0.8, 0.4])
         >>> target = torch.tensor([0, 1, 1, 0])
         >>> precision, recall, thresholds = precision_recall_curve(pred, target, task='binary')
         >>> precision
-        tensor([0.6667, 0.5000, 0.0000, 1.0000])
+        tensor([0.5000, 0.6667, 0.5000, 1.0000, 1.0000])
         >>> recall
-        tensor([1.0000, 0.5000, 0.0000, 0.0000])
+        tensor([1.0000, 1.0000, 0.5000, 0.5000, 0.0000])
         >>> thresholds
-        tensor([0.7311, 0.8808, 0.9526])
+        tensor([0.0000, 0.1000, 0.4000, 0.8000])
 
         >>> pred = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
         ...                      [0.05, 0.75, 0.05, 0.05, 0.05],
@@ -904,12 +900,13 @@ def precision_recall_curve(
         >>> target = torch.tensor([0, 1, 3, 2])
         >>> precision, recall, thresholds = precision_recall_curve(pred, target, task='multiclass', num_classes=5)
         >>> precision
-        [tensor([1., 1.]), tensor([1., 1.]), tensor([0.2500, 0.0000, 1.0000]),
+        [tensor([0.2500, 1.0000, 1.0000]), tensor([0.2500, 1.0000, 1.0000]), tensor([0.2500, 0.0000, 1.0000]),
          tensor([0.2500, 0.0000, 1.0000]), tensor([0., 1.])]
         >>> recall
-        [tensor([1., 0.]), tensor([1., 0.]), tensor([1., 0., 0.]), tensor([1., 0., 0.]), tensor([nan, 0.])]
+        [tensor([1., 1., 0.]), tensor([1., 1., 0.]), tensor([1., 0., 0.]), tensor([1., 0., 0.]), tensor([nan, 0.])]
         >>> thresholds
-        [tensor([0.7500]), tensor([0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500])]
+        [tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]),
+         tensor([0.0500])]
     """
     task = ClassificationTask.from_str(task)
     if task == ClassificationTask.BINARY:

@@ -54,7 +54,9 @@ class StructuralSimilarityIndexMeasure(Metric):
             - ``'sum'``: takes the sum
             - ``'none'`` or ``None``: no reduction will be applied
 
-        data_range: Range of the image. If ``None``, it is determined from the image (max - min)
+        data_range:
+            the range of the data. If None, it is determined from the data (max - min). If a tuple is provided then
+            the range is calculated as the difference and input is clamped between the values.
         k1: Parameter of SSIM.
         k2: Parameter of SSIM.
         return_full_image: If true, the full ``ssim`` image is returned as a second argument.
@@ -77,8 +79,8 @@ class StructuralSimilarityIndexMeasure(Metric):
     higher_is_better: bool = True
     is_differentiable: bool = True
     full_state_update: bool = False
-    plot_lower_bound = 0.0
-    plot_upper_bound = 1.0
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     preds: List[Tensor]
     target: List[Tensor]
@@ -89,7 +91,7 @@ class StructuralSimilarityIndexMeasure(Metric):
         sigma: Union[float, Sequence[float]] = 1.5,
         kernel_size: Union[int, Sequence[int]] = 11,
         reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
-        data_range: Optional[float] = None,
+        data_range: Optional[Union[float, Tuple[float, float]]] = None,
         k1: float = 0.01,
         k2: float = 0.03,
         return_full_image: bool = False,
@@ -239,7 +241,10 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
             - ``'sum'``: takes the sum
             - ``'none'`` or ``None``: no reduction will be applied
 
-        data_range: Range of the image. If ``None``, it is determined from the image (max - min)
+        data_range:
+            the range of the data. If None, it is determined from the data (max - min). If a tuple is provided then
+            the range is calculated as the difference and input is clamped between the values.
+            The ``data_range`` must be given when ``dim`` is not None.
         k1: Parameter of structural similarity index measure.
         k2: Parameter of structural similarity index measure.
         betas: Exponent parameters for individual similarities and contrastive sensitivies returned by different image
@@ -273,8 +278,8 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
     higher_is_better: bool = True
     is_differentiable: bool = True
     full_state_update: bool = False
-    plot_lower_bound = 0.0
-    plot_upper_bound = 1.0
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     preds: List[Tensor]
     target: List[Tensor]
@@ -285,7 +290,7 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         kernel_size: Union[int, Sequence[int]] = 11,
         sigma: Union[float, Sequence[float]] = 1.5,
         reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
-        data_range: Optional[float] = None,
+        data_range: Optional[Union[float, Tuple[float, float]]] = None,
         k1: float = 0.01,
         k2: float = 0.03,
         betas: Tuple[float, ...] = (0.0448, 0.2856, 0.3001, 0.2363, 0.1333),

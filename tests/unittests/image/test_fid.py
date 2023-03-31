@@ -199,3 +199,27 @@ def test_normalize_arg_false():
     metric = FrechetInceptionDistance(normalize=False)
     with pytest.raises(ValueError, match="Expecting image as torch.Tensor with dtype=torch.uint8"):
         metric.update(img, real=True)
+
+
+def test_not_enough_samples():
+    """Test that an error is raised if not enough samples were provided."""
+    img = torch.randint(0, 255, (1, 3, 299, 299), dtype=torch.uint8)
+    metric = FrechetInceptionDistance()
+    metric.update(img, real=True)
+    metric.update(img, real=False)
+    with pytest.raises(
+        RuntimeError, match="More than one sample is required for both the real and fake distributed to compute FID"
+    ):
+        metric.compute()
+
+
+def test_dtype_transfer_to_submodule():
+    """Test that change in dtype also changes the default inception net."""
+    imgs = torch.randn(1, 3, 256, 256)
+    imgs = ((imgs.clamp(-1, 1) / 2 + 0.5) * 255).to(torch.uint8)
+
+    metric = FrechetInceptionDistance(feature=64)
+    metric.set_dtype(torch.float64)
+
+    out = metric.inception(imgs)
+    assert out.dtype == torch.float64

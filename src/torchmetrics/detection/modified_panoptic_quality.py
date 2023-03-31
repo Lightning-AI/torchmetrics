@@ -30,18 +30,20 @@ from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 if not _MATPLOTLIB_AVAILABLE:
-    __doctest_skip__ = ["PanopticQuality.plot"]
+    __doctest_skip__ = ["ModifiedPanopticQuality.plot"]
 
 
-class PanopticQuality(Metric):
-    r"""Compute the `Panoptic Quality`_ for panoptic segmentations.
+class ModifiedPanopticQuality(Metric):
+    r"""Compute `Modified Panoptic Quality`_ for panoptic segmentations.
 
-        .. math::
-            PQ = \frac{IOU}{TP + 0.5 FP + 0.5 FN}
+    The metric was introduced in `Seamless Scene Segmentation paper`_, and is an adaptation of the original
+    `Panoptic Quality`_ where the metric for a stuff class is computed as
 
-        where IOU, TP, FP and FN are respectively the sum of the intersection over union for true positives,
-        the number of true postitives, false positives and false negatives. This metric is inspired by the PQ
-        implementation of panopticapi, a standard implementation for the PQ metric for panoptic segmentation.
+    .. math::
+        PQ^{\dagger}_c = \frac{IOU_c}{|S_c|}
+
+    where IOU_c is the sum of the intersection over union of all matching segments for a given class, and \|S_c| is
+    the overall number of segments in the ground truth for that class.
 
     .. note:
         Points in the target tensor that do not map to a known category ID are automatically ignored in the metric
@@ -65,21 +67,12 @@ class PanopticQuality(Metric):
 
     Example:
         >>> from torch import tensor
-        >>> from torchmetrics import PanopticQuality
-        >>> preds = tensor([[[[6, 0], [0, 0], [6, 0], [6, 0]],
-        ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
-        ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
-        ...                  [[0, 0], [7, 0], [6, 0], [1, 0]],
-        ...                  [[0, 0], [7, 0], [7, 0], [7, 0]]]])
-        >>> target = tensor([[[[6, 0], [0, 1], [6, 0], [0, 1]],
-        ...                   [[0, 1], [0, 1], [6, 0], [0, 1]],
-        ...                   [[0, 1], [0, 1], [6, 0], [1, 0]],
-        ...                   [[0, 1], [7, 0], [1, 0], [1, 0]],
-        ...                   [[0, 1], [7, 0], [7, 0], [7, 0]]]])
-        >>> panoptic_quality = PanopticQuality(things = {0, 1}, stuffs = {6, 7})
-        >>> panoptic_quality(preds, target)
-        tensor(0.5463, dtype=torch.float64)
-
+        >>> from torchmetrics import ModifiedPanopticQuality
+        >>> preds = tensor([[[0, 0], [0, 1], [6, 0], [7, 0], [0, 2], [1, 0]]])
+        >>> target = tensor([[[0, 1], [0, 0], [6, 0], [7, 0], [6, 0], [255, 0]]])
+        >>> pq_modified = ModifiedPanopticQuality(things = {0, 1}, stuffs = {6, 7})
+        >>> pq_modified(preds, target)
+        tensor(0.7667, dtype=torch.float64)
     """
     is_differentiable: bool = False
     higher_is_better: bool = True
@@ -143,7 +136,11 @@ class PanopticQuality(Metric):
         )
         flatten_target = _prepocess_inputs(self.things, self.stuffs, target, self.void_color, True)
         iou_sum, true_positives, false_positives, false_negatives = _panoptic_quality_update(
-            flatten_preds, flatten_target, self.cat_id_to_continuous_id, self.void_color
+            flatten_preds,
+            flatten_target,
+            self.cat_id_to_continuous_id,
+            self.void_color,
+            modified_metric_stuffs=self.stuffs,
         )
         self.iou_sum += iou_sum
         self.true_positives += true_positives
@@ -175,7 +172,7 @@ class PanopticQuality(Metric):
             :scale: 75
 
             >>> from torch import tensor
-            >>> from torchmetrics import PanopticQuality
+            >>> from torchmetrics import ModifiedPanopticQuality
             >>> preds = tensor([[[[6, 0], [0, 0], [6, 0], [6, 0]],
             ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
             ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
@@ -186,7 +183,7 @@ class PanopticQuality(Metric):
             ...                   [[0, 1], [0, 1], [6, 0], [1, 0]],
             ...                   [[0, 1], [7, 0], [1, 0], [1, 0]],
             ...                   [[0, 1], [7, 0], [7, 0], [7, 0]]]])
-            >>> metric = PanopticQuality(things = {0, 1}, stuffs = {6, 7})
+            >>> metric = ModifiedPanopticQuality(things = {0, 1}, stuffs = {6, 7})
             >>> metric.update(preds, target)
             >>> fig_, ax_ = metric.plot()
 
@@ -195,7 +192,7 @@ class PanopticQuality(Metric):
 
             >>> # Example plotting multiple values
             >>> from torch import tensor
-            >>> from torchmetrics import PanopticQuality
+            >>> from torchmetrics import ModifiedPanopticQuality
             >>> preds = tensor([[[[6, 0], [0, 0], [6, 0], [6, 0]],
             ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
             ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
@@ -206,7 +203,7 @@ class PanopticQuality(Metric):
             ...                   [[0, 1], [0, 1], [6, 0], [1, 0]],
             ...                   [[0, 1], [7, 0], [1, 0], [1, 0]],
             ...                   [[0, 1], [7, 0], [7, 0], [7, 0]]]])
-            >>> metric = PanopticQuality(things = {0, 1}, stuffs = {6, 7})
+            >>> metric = ModifiedPanopticQuality(things = {0, 1}, stuffs = {6, 7})
             >>> vals = []
             >>> for _ in range(20):
             ...     vals.append(metric(preds, target))
