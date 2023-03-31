@@ -69,6 +69,9 @@ class SpearmanCorrCoef(Metric):
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
+    plot_lower_bound: float = -1.0
+    plot_upper_bound: float = 1.0
+
     preds: List[Tensor]
     target: List[Tensor]
 
