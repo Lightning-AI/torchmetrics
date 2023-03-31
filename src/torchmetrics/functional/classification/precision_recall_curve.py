@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from typing import List, Optional, Sequence, Tuple, Union
 
 import torch
@@ -161,6 +160,7 @@ def _binary_precision_recall_curve_format(
     target: Tensor,
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
+    format_input: bool = True,
 ) -> Tuple[Tensor, Tensor, Optional[Tensor]]:
     """Convert all input to the right format.
 
@@ -176,8 +176,10 @@ def _binary_precision_recall_curve_format(
         preds = preds[idx]
         target = target[idx]
 
-    if not torch.all((preds >= 0) * (preds <= 1)):
-        preds = preds.sigmoid()
+    if format_input:
+        if not torch.all((preds >= 0) * (preds <= 1)):
+            preds = preds.sigmoid()
+        target = target.long()
 
     thresholds = _adjust_threshold_arg(thresholds, preds.device)
     return preds, target, thresholds
@@ -281,6 +283,7 @@ def binary_precision_recall_curve(
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    format_input: bool = True,
 ) -> Tuple[Tensor, Tensor, Tensor]:
     r"""Compute the precision-recall curve for binary tasks.
 
@@ -321,6 +324,7 @@ def binary_precision_recall_curve(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        format_input: if input should be formatted
 
     Returns:
         (tuple): a tuple of 3 tensors containing:
@@ -345,7 +349,9 @@ def binary_precision_recall_curve(
     if validate_args:
         _binary_precision_recall_curve_arg_validation(thresholds, ignore_index)
         _binary_precision_recall_curve_tensor_validation(preds, target, ignore_index)
-    preds, target, thresholds = _binary_precision_recall_curve_format(preds, target, thresholds, ignore_index)
+    preds, target, thresholds = _binary_precision_recall_curve_format(
+        preds, target, thresholds, ignore_index, format_input
+    )
     state = _binary_precision_recall_curve_update(preds, target, thresholds)
     return _binary_precision_recall_curve_compute(state, thresholds)
 
