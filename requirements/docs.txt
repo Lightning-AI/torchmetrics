@@ -17,5 +17,6 @@ sphinx-copybutton>=0.3
 -r audio.txt
 -r detection.txt
 -r image.txt
+-r multimodal.txt
 -r text.txt
 -r text_test.txt
