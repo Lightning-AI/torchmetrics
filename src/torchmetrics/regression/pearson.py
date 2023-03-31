@@ -111,6 +111,8 @@ class PearsonCorrCoef(Metric):
     is_differentiable = True
     higher_is_better = None  # both -1 and 1 are optimal
     full_state_update: bool = True
+    plot_lower_bound: float = -1.0
+    plot_upper_bound: float = 1.0
     preds: List[Tensor]
     target: List[Tensor]
     mean_x: Tensor

@@ -101,6 +101,8 @@ class BinaryHammingDistance(BinaryStatScores):
     is_differentiable: bool = False
     higher_is_better: bool = False
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     def compute(self) -> Tensor:
         """Compute metric."""
@@ -248,6 +250,9 @@ class MulticlassHammingDistance(MulticlassStatScores):
     is_differentiable: bool = False
     higher_is_better: bool = False
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
+    plot_legend_name: str = "Class"
 
     def compute(self) -> Tensor:
         """Compute metric."""
@@ -393,6 +398,9 @@ class MultilabelHammingDistance(MultilabelStatScores):
     is_differentiable: bool = False
     higher_is_better: bool = False
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
+    plot_legend_name: str = "Label"
 
     def compute(self) -> Tensor:
         """Compute metric."""

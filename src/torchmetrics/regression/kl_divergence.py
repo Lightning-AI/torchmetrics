@@ -79,6 +79,8 @@ class KLDivergence(Metric):
     is_differentiable: bool = True
     higher_is_better: bool = False
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+
     total: Tensor
     # FIXME: Apply once minimal torch is 1.10. For torch<=1.9, jit does not support Union types
     # measures: Union[Tensor, List[Tensor]]
