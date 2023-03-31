@@ -141,9 +141,18 @@ from torchmetrics.retrieval import (
     RetrievalRPrecision,
 )
 from torchmetrics.text import (
+    BERTScore,
+    BLEUScore,
     CharErrorRate,
+    CHRFScore,
     ExtendedEditDistance,
+    InfoLM,
     MatchErrorRate,
+    Perplexity,
+    ROUGEScore,
+    SacreBLEUScore,
+    SQuAD,
+    TranslationEditRate,
     WordErrorRate,
     WordInfoLost,
     WordInfoPreserved,
@@ -164,6 +173,8 @@ _panoptic_input = lambda: torch.multinomial(
 _nominal_input = lambda: torch.randint(0, 4, (100,))
 _text_input_1 = lambda: ["this is the prediction", "there is an other sample"]
 _text_input_2 = lambda: ["this is the reference", "there is another one"]
+_text_input_3 = lambda: ["the cat is on the mat"]
+_text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
 
 
 @pytest.mark.parametrize(
@@ -546,9 +557,27 @@ _text_input_2 = lambda: ["this is the reference", "there is another one"]
         pytest.param(CharErrorRate, _text_input_1, _text_input_2, id="character error rate"),
         pytest.param(ExtendedEditDistance, _text_input_1, _text_input_2, id="extended edit distance"),
         pytest.param(MatchErrorRate, _text_input_1, _text_input_2, id="match error rate"),
+        pytest.param(BLEUScore, _text_input_3, _text_input_4, id="bleu score"),
+        pytest.param(CHRFScore, _text_input_3, _text_input_4, id="bleu score"),
+        pytest.param(
+            partial(InfoLM, model_name_or_path="google/bert_uncased_L-2_H-128_A-2", idf=False),
+            _text_input_1,
+            _text_input_2,
+            id="info lm",
+        ),
+        pytest.param(Perplexity, lambda: torch.rand(2, 8, 5), lambda: torch.randint(5, (2, 8)), id="perplexity"),
+        pytest.param(ROUGEScore, lambda: "My name is John", lambda: "Is your name John", id="rouge score"),
+        pytest.param(SacreBLEUScore, _text_input_3, _text_input_4, id="sacre bleu score"),
+        pytest.param(
+            SQuAD,
+            lambda: [{"prediction_text": "1976", "id": "56e10a3be3433e1400422b22"}],
+            lambda: [{"answers": {"answer_start": [97], "text": ["1976"]}, "id": "56e10a3be3433e1400422b22"}],
+            id="squad",
+        ),
+        pytest.param(TranslationEditRate, _text_input_3, _text_input_4, id="translation edit rate"),
     ],
 )
-@pytest.mark.parametrize("num_vals", [1, 5])
+@pytest.mark.parametrize("num_vals", [1, 3])
 def test_plot_methods(metric_class: object, preds: Callable, target: Callable, num_vals: int):
     """Test the plot method of metrics that only output a single tensor scalar."""
     metric = metric_class()
@@ -622,6 +651,17 @@ def test_plot_methods_special_image_metrics(metric_class, preds, target, index_0
                 metric.reset()
         fig, ax = metric.plot(vals)
 
+    assert isinstance(fig, plt.Figure)
+    assert isinstance(ax, matplotlib.axes.Axes)
+
+
+@pytest.mark.skipif(not hasattr(torch, "inference_mode"), reason="`inference_mode` is not supported")
+def test_plot_methods_special_text_metrics():
+    """Test the plot method for text metrics that does not fit the default testing format."""
+    metric = BERTScore()
+    with torch.inference_mode():
+        metric.update(_text_input_1(), _text_input_2())
+        fig, ax = metric.plot()
     assert isinstance(fig, plt.Figure)
     assert isinstance(ax, matplotlib.axes.Axes)
 
