@@ -1,17 +1,38 @@
-name: "Docs check"
-# https://github.com/marketplace/actions/sphinx-build
+name: Build Docs
 
 on:
-- pull_request
+  push:
+    branches: ["master", "release/*"]
+    tags: ["*"]
+  # use this event type to share secrets with forks.
+  # it's important that the PR head SHA is checked out to run the changes
+  pull_request:
+    branches: ["master", "release/*"]
+    paths:
+      - ".github/workflows/docs-build.yml"
+      - "requirements/**"
+      - "docs/**"
+      - "src/**"
+      - "setup.py"
+      - "pyproject.toml"  # includes metadata used in the package creation
+      - "!*.md"
+      - "!**/*.md"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.head_ref }}
+  cancel-in-progress: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}
+
+defaults:
+  run:
+    shell: bash
 
 env:
-  PYTORCH_URL: "https://download.pytorch.org/whl/cpu/torch_stable.html"
-  FREEZE_REQUIREMENTS: 1
+  FREEZE_REQUIREMENTS: "1"
+  TORCH_URL: "https://download.pytorch.org/whl/cpu/torch_stable.html"
   PYPI_CACHE: "_ci-cache_PyPI"
 
 jobs:
-
-  test-docs:
+  make-doctest:
     runs-on: ubuntu-20.04
     timeout-minutes: 20
     steps:
@@ -29,10 +50,10 @@ jobs:
 
       - name: Install package & dependencies
         run: |
+          sudo apt-get update && sudo apt-get install -y cmake
           pip --version
           pip install -e . -U -q -r requirements/docs.txt --find-links $PYTORCH_URL -f $PYPI_CACHE
           pip list
-        shell: bash
 
       - name: Test Documentation
         env:
@@ -40,13 +61,11 @@ jobs:
           PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: 'python'
         working-directory: ./docs
         run: |
-          # First run the same pipeline as Read-The-Docs
-          sudo apt-get update && sudo apt-get install -y cmake
           make doctest
           make coverage
-        shell: bash
 
-  make-docs:
+
+  make-html:
     runs-on: ubuntu-20.04
     timeout-minutes: 20
     steps:
@@ -94,39 +113,41 @@ jobs:
       - name: Upload built docs
         uses: actions/upload-artifact@v3
         with:
-          name: docs-build
+          name: docs-${{ github.sha }}
           path: docs/build/
-        if: always()
+          retention-days: ${{ steps.keep-artifact.outputs.DAYS }}
 
-  paper-JOSS:
-    runs-on: ubuntu-20.04
-    timeout-minutes: 10
+  deploy-docs:
+    needs: [make-doctest, make-html]
+    if: github.repository_owner == 'Lightning-AI' && github.event_name == 'push'
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Build PDF
-        uses: openjournals/openjournals-draft-action@v.1.0
+      - uses: actions/download-artifact@v3
         with:
-          journal: joss
-          # This should be the path to the paper within your repo.
-          paper-path: ./docs/paper_JOSS/paper.md
-      - name: Upload
-        uses: actions/upload-artifact@v3
-        with:
-          name: JOSS paper
-          # This is the output path where Pandoc will write the compiled
-          # PDF. Note, this should be the same directory as the input paper.md
-          path: ./docs/paper_JOSS/paper.pdf
+          name: docs-${{ github.sha }}
+          path: docs/build/
 
-  paper-cite:
-    runs-on: ubuntu-20.04
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
         with:
-          python-version: 3.8
-      - name: Validate
-        run: |
-          pip install -q cffconvert
-          cffconvert --validate -i CITATION.cff
+          credentials_json: ${{ secrets.GCS_SA_KEY }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: ${{ secrets.GCS_PROJECT }}
+
+      # Uploading docs to GCS, so they can be served on lightning.ai
+      - name: Upload docs/metrics/stable to GCS 🪣
+        if: startsWith(github.ref, 'refs/heads/release/')
+        run: gsutil -m rsync -d -R docs/build/html/ gs://lightning-docs-metrics/stable
+
+      # Uploading docs to GCS, so they can be served on lightning.ai
+      - name: Upload docs/metrics/latest to GCS 🪣
+        if: github.ref == 'refs/heads/master'
+        run: gsutil -m rsync -d -R docs/build/html/ gs://lightning-docs-metrics/latest
+
+      # Uploading docs to GCS, so they can be served on lightning.ai
+      - name: Upload docs/metrics/release to GCS 🪣
+        if: startsWith(github.ref, 'refs/tags/')
+        run: gsutil -m rsync -d -R docs/build/html/ gs://lightning-docs-metrics/${{  github.ref_name }}
