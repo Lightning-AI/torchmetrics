@@ -14,6 +14,8 @@
 from collections import namedtuple
 from functools import partial
 
+import matplotlib
+import matplotlib.pyplot as plt
 import pytest
 import torch
 from transformers import CLIPModel as _CLIPModel
@@ -115,3 +117,13 @@ class TestCLIPScore(MetricTester):
             ValueError, match="Expected all images to be 3d but found image that has either more or less"
         ):
             metric(torch.randint(255, (64, 64)), "28-year-old chef found dead in San Francisco mall")
+
+    @skip_on_connection_issues()
+    def test_plot_method(self, input, model_name_or_path):
+        """Test the plot method of CLIPScore seperately in this file due to the skipping conditions."""
+        metric = CLIPScore(model_name_or_path=model_name_or_path)
+        preds, target = input
+        metric.update(preds[0], target[0])
+        fig, ax = metric.plot()
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, matplotlib.axes.Axes)
