@@ -623,12 +623,13 @@ def test_plot_methods_special_image_metrics(metric_class, preds, target, index_0
     assert isinstance(ax, matplotlib.axes.Axes)
 
 
-@torch.inference_mode()
+@pytest.mark.skipif(not hasattr(torch, "inference_mode"), reason="`inference_mode` is not supported")
 def test_plot_methods_special_text_metrics():
     """Test the plot method for text metrics that does not fit the default testing format."""
     metric = BERTScore()
-    metric.update(_text_input_1(), _text_input_2())
-    fig, ax = metric.plot()
+    with torch.inference_mode():
+        metric.update(_text_input_1(), _text_input_2())
+        fig, ax = metric.plot()
     assert isinstance(fig, plt.Figure)
     assert isinstance(ax, matplotlib.axes.Axes)
 
