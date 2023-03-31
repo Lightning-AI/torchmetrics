@@ -148,6 +148,7 @@ from torchmetrics.text import (
     WordInfoLost,
     WordInfoPreserved,
 )
+from torchmetrics.wrappers import BootStrapper, ClasswiseWrapper, MetricTracker, MinMaxMetric, MultioutputWrapper
 
 _rand_input = lambda: torch.rand(10)
 _binary_randint_input = lambda: torch.randint(2, (10,))
@@ -449,6 +450,24 @@ _text_input_2 = lambda: ["this is the reference", "there is another one"]
         pytest.param(SymmetricMeanAbsolutePercentageError, _rand_input, _rand_input, id="symmetric mape"),
         pytest.param(TweedieDevianceScore, _rand_input, _rand_input, id="tweedie deviance score"),
         pytest.param(WeightedMeanAbsolutePercentageError, _rand_input, _rand_input, id="weighted mape"),
+        pytest.param(
+            partial(BootStrapper, base_metric=BinaryAccuracy()), _rand_input, _binary_randint_input, id="bootstrapper"
+        ),
+        pytest.param(
+            partial(ClasswiseWrapper, metric=MulticlassAccuracy(num_classes=3, average=None)),
+            _multiclass_randn_input,
+            _multiclass_randint_input,
+            id="classwise wrapper",
+        ),
+        pytest.param(
+            partial(MinMaxMetric, base_metric=BinaryAccuracy()), _rand_input, _binary_randint_input, id="minmax wrapper"
+        ),
+        pytest.param(
+            partial(MultioutputWrapper, base_metric=MeanSquaredError(), num_outputs=3),
+            _multilabel_rand_input,
+            _multilabel_rand_input,
+            id="multioutput wrapper",
+        ),
         pytest.param(Dice, _multiclass_randint_input, _multiclass_randint_input, id="dice"),
         pytest.param(
             partial(MulticlassExactMatch, num_classes=3),
@@ -768,5 +787,17 @@ def test_plot_method_curve_metrics(metric_class, preds, target, thresholds, scor
     metric = metric_class(thresholds=thresholds)
     metric.update(preds(), target())
     fig, ax = metric.plot(score=score)
+    assert isinstance(fig, plt.Figure)
+    assert isinstance(ax, matplotlib.axes.Axes)
+
+
+def test_tracker_plotter():
+    """Test tracker that uses specialized plot function."""
+    tracker = MetricTracker(BinaryAccuracy())
+    for _ in range(5):
+        tracker.increment()
+        for _ in range(5):
+            tracker.update(torch.randint(2, (10,)), torch.randint(2, (10,)))
+    fig, ax = tracker.plot()  # plot all epochs
     assert isinstance(fig, plt.Figure)
     assert isinstance(ax, matplotlib.axes.Axes)
