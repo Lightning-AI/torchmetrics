@@ -4,19 +4,8 @@ on:
   push:
     branches: ["master", "release/*"]
     tags: ["*"]
-  # use this event type to share secrets with forks.
-  # it's important that the PR head SHA is checked out to run the changes
   pull_request:
     branches: ["master", "release/*"]
-    paths:
-      - ".github/workflows/docs-build.yml"
-      - "requirements/**"
-      - "docs/**"
-      - "src/**"
-      - "setup.py"
-      - "pyproject.toml"  # includes metadata used in the package creation
-      - "!*.md"
-      - "!**/*.md"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-${{ github.head_ref }}
