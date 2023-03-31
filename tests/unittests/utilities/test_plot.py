@@ -38,11 +38,15 @@ from torchmetrics.classification import (
     BinaryCalibrationError,
     BinaryCohenKappa,
     BinaryConfusionMatrix,
+    BinaryF1Score,
+    BinaryFairness,
+    BinaryFBetaScore,
     BinaryHammingDistance,
     BinaryHingeLoss,
     BinaryJaccardIndex,
     BinaryMatthewsCorrCoef,
     BinaryPrecision,
+    BinaryPrecisionRecallCurve,
     BinaryRecall,
     BinaryRecallAtFixedPrecision,
     BinaryROC,
@@ -55,26 +59,34 @@ from torchmetrics.classification import (
     MulticlassCohenKappa,
     MulticlassConfusionMatrix,
     MulticlassExactMatch,
+    MulticlassF1Score,
+    MulticlassFBetaScore,
     MulticlassHammingDistance,
     MulticlassHingeLoss,
     MulticlassJaccardIndex,
     MulticlassMatthewsCorrCoef,
     MulticlassPrecision,
+    MulticlassPrecisionRecallCurve,
     MulticlassRecall,
     MulticlassRecallAtFixedPrecision,
+    MulticlassROC,
     MulticlassSpecificity,
     MultilabelAveragePrecision,
     MultilabelConfusionMatrix,
     MultilabelCoverageError,
     MultilabelExactMatch,
+    MultilabelF1Score,
+    MultilabelFBetaScore,
     MultilabelHammingDistance,
     MultilabelJaccardIndex,
     MultilabelMatthewsCorrCoef,
     MultilabelPrecision,
+    MultilabelPrecisionRecallCurve,
     MultilabelRankingAveragePrecision,
     MultilabelRankingLoss,
     MultilabelRecall,
     MultilabelRecallAtFixedPrecision,
+    MultilabelROC,
     MultilabelSpecificity,
 )
 from torchmetrics.detection import PanopticQuality
@@ -188,12 +200,6 @@ _text_input_2 = lambda: ["this is the reference", "there is another one"]
             _multiclass_randn_input,
             _multiclass_randint_input,
             id="multiclass auroc and average=None",
-        ),
-        pytest.param(
-            BinaryROC,
-            _rand_input,
-            _binary_randint_input,
-            id="binary roc",
         ),
         pytest.param(
             partial(PearsonsContingencyCoefficient, num_classes=5),
@@ -508,6 +514,32 @@ _text_input_2 = lambda: ["this is the reference", "there is another one"]
             _multilabel_randint_input,
             id="multilabel jaccard index",
         ),
+        pytest.param(BinaryF1Score, _rand_input, _binary_randint_input, id="binary f1 score"),
+        pytest.param(partial(BinaryFBetaScore, beta=2.0), _rand_input, _binary_randint_input, id="binary fbeta score"),
+        pytest.param(
+            partial(MulticlassF1Score, num_classes=3),
+            _multiclass_randn_input,
+            _multiclass_randint_input,
+            id="multiclass f1 score",
+        ),
+        pytest.param(
+            partial(MulticlassFBetaScore, beta=2.0, num_classes=3),
+            _multiclass_randn_input,
+            _multiclass_randint_input,
+            id="multiclass fbeta score",
+        ),
+        pytest.param(
+            partial(MultilabelF1Score, num_labels=3),
+            _multilabel_rand_input,
+            _multilabel_randint_input,
+            id="multilabel f1 score",
+        ),
+        pytest.param(
+            partial(MultilabelFBetaScore, beta=2.0, num_labels=3),
+            _multilabel_rand_input,
+            _multilabel_randint_input,
+            id="multilabel fbeta score",
+        ),
         pytest.param(WordInfoPreserved, _text_input_1, _text_input_2, id="word info preserved"),
         pytest.param(WordInfoLost, _text_input_1, _text_input_2, id="word info lost"),
         pytest.param(WordErrorRate, _text_input_1, _text_input_2, id="word error rate"),
@@ -633,6 +665,13 @@ def test_plot_methods_special_image_metrics(metric_class, preds, target, index_0
             _binary_randint_input,
             id="retrieval precision recall curve",
         ),
+        pytest.param(
+            partial(BinaryFairness, num_groups=2),
+            _rand_input,
+            _binary_randint_input,
+            lambda: torch.ones(10).long(),
+            id="binary fairness",
+        ),
     ],
 )
 @pytest.mark.parametrize("num_vals", [1, 2])
@@ -644,12 +683,12 @@ def test_plot_methods_retrieval(metric_class, preds, target, indexes, num_vals):
     metric = metric_class()
 
     if num_vals == 1:
-        metric.update(preds(), target(), indexes=indexes())
+        metric.update(preds(), target(), indexes())
         fig, ax = metric.plot()
     else:
         vals = []
         for _ in range(num_vals):
-            res = metric(preds(), target(), indexes=indexes())
+            res = metric(preds(), target(), indexes())
             vals.append(res[0] if isinstance(res, tuple) else res)
         fig, ax = metric.plot(vals)
 
@@ -694,6 +733,62 @@ def test_confusion_matrix_plotter(metric_class, preds, target, labels, use_label
     cond1 = isinstance(axs, matplotlib.axes.Axes)
     cond2 = isinstance(axs, np.ndarray) and all(isinstance(a, matplotlib.axes.Axes) for a in axs)
     assert cond1 or cond2
+
+
+@pytest.mark.parametrize(
+    ("metric_class", "preds", "target"),
+    [
+        pytest.param(
+            BinaryROC,
+            lambda: torch.rand(
+                100,
+            ),
+            lambda: torch.randint(0, 2, size=(100,)),
+            id="binary roc",
+        ),
+        pytest.param(
+            partial(MulticlassROC, num_classes=3),
+            lambda: torch.randn(100, 3).softmax(dim=-1),
+            lambda: torch.randint(0, 3, size=(100,)),
+            id="multiclass roc",
+        ),
+        pytest.param(
+            partial(MultilabelROC, num_labels=3),
+            lambda: torch.rand(100, 3),
+            lambda: torch.randint(0, 2, size=(100, 3)),
+            id="multilabel roc",
+        ),
+        pytest.param(
+            BinaryPrecisionRecallCurve,
+            lambda: torch.rand(
+                100,
+            ),
+            lambda: torch.randint(0, 2, size=(100,)),
+            id="binary precision recall curve",
+        ),
+        pytest.param(
+            partial(MulticlassPrecisionRecallCurve, num_classes=3),
+            lambda: torch.randn(100, 3).softmax(dim=-1),
+            lambda: torch.randint(0, 3, size=(100,)),
+            id="multiclass precision recall curve",
+        ),
+        pytest.param(
+            partial(MultilabelPrecisionRecallCurve, num_labels=3),
+            lambda: torch.rand(100, 3),
+            lambda: torch.randint(0, 2, size=(100, 3)),
+            id="multilabel precision recall curve",
+        ),
+    ],
+)
+@pytest.mark.parametrize("thresholds", [None, 10])
+@pytest.mark.parametrize("score", [False, True])
+def test_plot_method_curve_metrics(metric_class, preds, target, thresholds, score):
+    """Test that the plot method works for metrics that plot curve objects."""
+    metric = metric_class(thresholds=thresholds)
+    metric.update(preds(), target())
+    fig, ax = metric.plot(score=score)
+    assert isinstance(fig, plt.Figure)
+    assert isinstance(ax, matplotlib.axes.Axes)
 
 
 def test_tracker_plotter():
