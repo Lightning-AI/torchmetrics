@@ -383,7 +383,7 @@ def accuracy(
     top_k: Optional[int] = 1,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Optional[Tensor]:
+) -> Tensor:
     r"""Compute `Accuracy`_.
 
     .. math::
@@ -430,4 +430,4 @@ def accuracy(
         return multilabel_accuracy(
             preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
         )
-    return None
+    return None  # type: ignore[return-value]
