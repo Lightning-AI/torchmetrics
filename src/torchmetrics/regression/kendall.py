@@ -111,10 +111,12 @@ class KendallRankCorrCoef(Metric):
         >>> kendall(preds, target)
         (tensor([1., 1.]), tensor([nan, nan]))
     """
-
     is_differentiable = False
     higher_is_better = None
     full_state_update = True
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
+
     preds: List[Tensor]
     target: List[Tensor]
 

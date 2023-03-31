@@ -79,8 +79,8 @@ class StructuralSimilarityIndexMeasure(Metric):
     higher_is_better: bool = True
     is_differentiable: bool = True
     full_state_update: bool = False
-    plot_lower_bound = 0.0
-    plot_upper_bound = 1.0
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     preds: List[Tensor]
     target: List[Tensor]
@@ -278,8 +278,8 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
     higher_is_better: bool = True
     is_differentiable: bool = True
     full_state_update: bool = False
-    plot_lower_bound = 0.0
-    plot_upper_bound = 1.0
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     preds: List[Tensor]
     target: List[Tensor]
