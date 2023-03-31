@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any, List, Optional, Sequence, Tuple, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -32,6 +32,15 @@ from torchmetrics.functional.classification.specificity_at_sensitivity import (
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat as _cat
 from torchmetrics.utilities.enums import ClassificationTask
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = [
+        "BinarySpecificityAtSensitivity.plot",
+        "MulticlassSpecificityAtSensitivity.plot",
+        "MultilabelSpecificityAtSensitivity.plot",
+    ]
 
 
 class BinarySpecificityAtSensitivity(BinaryPrecisionRecallCurve):
