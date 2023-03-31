@@ -43,6 +43,7 @@ _input_logits = Input(
 
 @pytest.fixture()
 def tschuprows_matrix_input():
+    """Define input in matrix format for the metric."""
     return torch.cat(
         [
             torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES * BATCH_SIZE, 1), dtype=torch.float),
@@ -90,6 +91,7 @@ class TestTschuprowsT(MetricTester):
 
     @pytest.mark.parametrize("ddp", [False, True])
     def test_tschuprows_ta(self, ddp, preds, target):
+        """Test class implementation of metric."""
         metric_args = {"bias_correction": False, "num_classes": NUM_CLASSES}
         self.run_class_metric_test(
             ddp=ddp,
@@ -101,12 +103,14 @@ class TestTschuprowsT(MetricTester):
         )
 
     def test_tschuprows_t_functional(self, preds, target):
+        """Test functional implementation of metric."""
         metric_args = {"bias_correction": False}
         self.run_functional_metric_test(
             preds, target, metric_functional=tschuprows_t, reference_metric=_pd_tschuprows_t, metric_args=metric_args
         )
 
     def test_tschuprows_t_differentiability(self, preds, target):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         metric_args = {"bias_correction": False, "num_classes": NUM_CLASSES}
         self.run_differentiability_test(
             preds,
@@ -122,6 +126,7 @@ class TestTschuprowsT(MetricTester):
     torch.cuda.is_available(), reason="Tests fail on CUDA with the most up-to-date available pandas"
 )
 def test_tschuprows_t_matrix(tschuprows_matrix_input):
+    """Test matrix version of metric works as expected."""
     tm_score = tschuprows_t_matrix(tschuprows_matrix_input, bias_correction=False)
     reference_score = _pd_tschuprows_t_matrix(tschuprows_matrix_input)
     assert torch.allclose(tm_score, reference_score)

@@ -74,8 +74,8 @@ class CramersV(Metric):
     full_state_update: bool = False
     is_differentiable: bool = False
     higher_is_better: bool = True
-    plot_lower_bound = 0.0
-    plot_upper_bound = 1.0
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
     confmat: Tensor
 
     def __init__(
@@ -85,7 +85,7 @@ class CramersV(Metric):
         nan_strategy: Literal["replace", "drop"] = "replace",
         nan_replace_value: Optional[Union[int, float]] = 0.0,
         **kwargs: Any,
-    ):
+    ) -> None:
         super().__init__(**kwargs)
         self.num_classes = num_classes
         self.bias_correction = bias_correction

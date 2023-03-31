@@ -27,6 +27,7 @@ class TestWordInfoPreserved(TextTester):
 
     @pytest.mark.parametrize("ddp", [False, True])
     def test_wip_class(self, ddp, preds, targets):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -36,6 +37,7 @@ class TestWordInfoPreserved(TextTester):
         )
 
     def test_wip_functional(self, preds, targets):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             targets,
@@ -44,6 +46,7 @@ class TestWordInfoPreserved(TextTester):
         )
 
     def test_wip_differentiability(self, preds, targets):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         self.run_differentiability_test(
             preds=preds,
             targets=targets,

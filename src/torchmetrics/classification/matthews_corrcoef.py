@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional
+from typing import Any, Optional, Sequence, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -20,6 +20,15 @@ from torchmetrics.classification import BinaryConfusionMatrix, MulticlassConfusi
 from torchmetrics.functional.classification.matthews_corrcoef import _matthews_corrcoef_reduce
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.enums import ClassificationTask
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = [
+        "BinaryMatthewsCorrCoef.plot",
+        "MulticlassMatthewsCorrCoef.plot",
+        "MultilabelMatthewsCorrCoef.plot",
+    ]
 
 
 class BinaryMatthewsCorrCoef(BinaryConfusionMatrix):
@@ -70,6 +79,8 @@ class BinaryMatthewsCorrCoef(BinaryConfusionMatrix):
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     def __init__(
         self,
@@ -83,6 +94,47 @@ class BinaryMatthewsCorrCoef(BinaryConfusionMatrix):
     def compute(self) -> Tensor:
         """Compute metric."""
         return _matthews_corrcoef_reduce(self.confmat)
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure object and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import rand, randint
+            >>> # Example plotting a single value
+            >>> from torchmetrics.classification import BinaryMatthewsCorrCoef
+            >>> metric = BinaryMatthewsCorrCoef()
+            >>> metric.update(rand(10), randint(2,(10,)))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import rand, randint
+            >>> # Example plotting multiple values
+            >>> from torchmetrics.classification import BinaryMatthewsCorrCoef
+            >>> metric = BinaryMatthewsCorrCoef()
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(rand(10), randint(2,(10,))))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        return self._plot(val, ax)
 
 
 class MulticlassMatthewsCorrCoef(MulticlassConfusionMatrix):
@@ -136,6 +188,9 @@ class MulticlassMatthewsCorrCoef(MulticlassConfusionMatrix):
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
+    plot_legend_name: str = "Class"
 
     def __init__(
         self,
@@ -149,6 +204,47 @@ class MulticlassMatthewsCorrCoef(MulticlassConfusionMatrix):
     def compute(self) -> Tensor:
         """Compute metric."""
         return _matthews_corrcoef_reduce(self.confmat)
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure object and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import randint
+            >>> # Example plotting a single value per class
+            >>> from torchmetrics.classification import MulticlassMatthewsCorrCoef
+            >>> metric = MulticlassMatthewsCorrCoef(num_classes=3)
+            >>> metric.update(randint(3, (20,)), randint(3, (20,)))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import randint
+            >>> # Example plotting a multiple values per class
+            >>> from torchmetrics.classification import MulticlassMatthewsCorrCoef
+            >>> metric = MulticlassMatthewsCorrCoef(num_classes=3)
+            >>> values = []
+            >>> for _ in range(20):
+            ...     values.append(metric(randint(3, (20,)), randint(3, (20,))))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        return self._plot(val, ax)
 
 
 class MultilabelMatthewsCorrCoef(MultilabelConfusionMatrix):
@@ -200,6 +296,9 @@ class MultilabelMatthewsCorrCoef(MultilabelConfusionMatrix):
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
+    plot_legend_name: str = "Label"
 
     def __init__(
         self,
@@ -214,6 +313,47 @@ class MultilabelMatthewsCorrCoef(MultilabelConfusionMatrix):
     def compute(self) -> Tensor:
         """Compute metric."""
         return _matthews_corrcoef_reduce(self.confmat)
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure object and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import rand, randint
+            >>> # Example plotting a single value
+            >>> from torchmetrics.classification import MultilabelMatthewsCorrCoef
+            >>> metric = MultilabelMatthewsCorrCoef(num_labels=3)
+            >>> metric.update(randint(2, (20, 3)), randint(2, (20, 3)))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import rand, randint
+            >>> # Example plotting multiple values
+            >>> from torchmetrics.classification import MultilabelMatthewsCorrCoef
+            >>> metric = MultilabelMatthewsCorrCoef(num_labels=3)
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(randint(2, (20, 3)), randint(2, (20, 3))))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        return self._plot(val, ax)
 
 
 class MatthewsCorrCoef:

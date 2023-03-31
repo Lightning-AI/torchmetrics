@@ -33,7 +33,7 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.enums import ClassificationTask
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
-from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["BinaryAUROC.plot", "MulticlassAUROC.plot", "MultilabelAUROC.plot"]
@@ -99,8 +99,8 @@ class BinaryAUROC(BinaryPrecisionRecallCurve):
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
-    plot_lower_bound = 0.0
-    plot_upper_bound = 1.0
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     def __init__(
         self,
@@ -140,15 +140,24 @@ class BinaryAUROC(BinaryPrecisionRecallCurve):
         .. plot::
             :scale: 75
 
-            >>> from torch import randn, randint
-            >>> import torch.nn.functional as F
-            >>> # Example plotting a combined value across all classes
+            >>> # Example plotting a single
+            >>> import torch
             >>> from torchmetrics.classification import BinaryAUROC
-            >>> preds = F.softmax(randn(20, 2), dim=1)
-            >>> target = randint(2, (20,))
             >>> metric = BinaryAUROC()
-            >>> metric.update(preds[:, 1], target)
+            >>> metric.update(torch.rand(20,), torch.randint(2, (20,)))
             >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics.classification import BinaryAUROC
+            >>> metric = BinaryAUROC()
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(torch.rand(20,), torch.randint(2, (20,))))
+            >>> fig_, ax_ = metric.plot(values)
         """
         return self._plot(val, ax)
 
@@ -230,9 +239,9 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
-    plot_lower_bound = 0.0
-    plot_upper_bound = 1.0
-    plot_legend_name = "Class"
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
+    plot_legend_name: str = "Class"
 
     def __init__(
         self,
@@ -276,12 +285,24 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
         .. plot::
             :scale: 75
 
-            >>> from torch import randn, randint
-            >>> # Example plotting a combined value across all classes
+            >>> # Example plotting a single
+            >>> import torch
             >>> from torchmetrics.classification import MulticlassAUROC
-            >>> metric = MulticlassAUROC(num_classes=3, average="macro")
-            >>> metric.update(randn(20, 3), randint(3, (20,)))
+            >>> metric = MulticlassAUROC(num_classes=3)
+            >>> metric.update(torch.randn(20, 3), torch.randint(3,(20,)))
             >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics.classification import MulticlassAUROC
+            >>> metric = MulticlassAUROC(num_classes=3)
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(torch.randn(20, 3), torch.randint(3, (20,))))
+            >>> fig_, ax_ = metric.plot(values)
         """
         return self._plot(val, ax)
 
@@ -365,9 +386,9 @@ class MultilabelAUROC(MultilabelPrecisionRecallCurve):
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
-    plot_lower_bound = 0.0
-    plot_upper_bound = 1.0
-    plot_legend_name = "Class"
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
+    plot_legend_name: str = "Label"
 
     def __init__(
         self,
@@ -411,19 +432,24 @@ class MultilabelAUROC(MultilabelPrecisionRecallCurve):
         .. plot::
             :scale: 75
 
-            >>> from torch import tensor
+            >>> # Example plotting a single
+            >>> import torch
             >>> from torchmetrics.classification import MultilabelAUROC
-            >>> preds = tensor([[0.75, 0.05, 0.35],
-            ...                [0.45, 0.75, 0.05],
-            ...                [0.05, 0.55, 0.75],
-            ...                [0.05, 0.65, 0.05]])
-            >>> target = tensor([[1, 0, 1],
-            ...                [0, 0, 0],
-            ...                [0, 1, 1],
-            ...                [1, 1, 1]])
-            >>> metric = MultilabelAUROC(num_labels=3, average="macro", thresholds=None)
-            >>> metric.update(preds, target)
+            >>> metric = MultilabelAUROC(num_labels=3)
+            >>> metric.update(torch.rand(20,3), torch.randint(2, (20,3)))
             >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics.classification import MultilabelAUROC
+            >>> metric = MultilabelAUROC(num_labels=3)
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(torch.rand(20,3), torch.randint(2, (20,3))))
+            >>> fig_, ax_ = metric.plot(values)
         """
         return self._plot(val, ax)
 

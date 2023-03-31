@@ -16,20 +16,15 @@ from typing import Any, Optional, Sequence, Union
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.classification.stat_scores import BinaryStatScores, MulticlassStatScores, MultilabelStatScores
 from torchmetrics.functional.classification.accuracy import _accuracy_reduce
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.enums import ClassificationTask
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
-from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["BinaryAccuracy.plot", "MulticlassAccuracy.plot", "MultilabelAccuracy.plot"]
-
-from torchmetrics.classification.stat_scores import (  # isort:skip
-    BinaryStatScores,
-    MulticlassStatScores,
-    MultilabelStatScores,
-)
 
 
 class BinaryAccuracy(BinaryStatScores):
@@ -96,8 +91,8 @@ class BinaryAccuracy(BinaryStatScores):
     is_differentiable = False
     higher_is_better = True
     full_state_update: bool = False
-    plot_lower_bound = 0.0
-    plot_upper_bound = 1.0
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     def compute(self) -> Tensor:
         """Compute accuracy based on inputs passed in to ``update`` previously."""
@@ -242,9 +237,9 @@ class MulticlassAccuracy(MulticlassStatScores):
     is_differentiable = False
     higher_is_better = True
     full_state_update: bool = False
-    plot_lower_bound = 0.0
-    plot_upper_bound = 1.0
-    plot_legend_name = "Class"
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
+    plot_legend_name: str = "Class"
 
     def compute(self) -> Tensor:
         """Compute accuracy based on inputs passed in to ``update`` previously."""
@@ -389,9 +384,9 @@ class MultilabelAccuracy(MultilabelStatScores):
     is_differentiable = False
     higher_is_better = True
     full_state_update: bool = False
-    plot_lower_bound = 0.0
-    plot_upper_bound = 1.0
-    plot_legend_name = "Label"
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
+    plot_legend_name: str = "Label"
 
     def compute(self) -> Tensor:
         """Compute accuracy based on inputs passed in to ``update`` previously."""

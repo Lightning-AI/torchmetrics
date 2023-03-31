@@ -19,7 +19,7 @@ from typing_extensions import Literal
 from torchmetrics.functional.audio.pit import permutation_invariant_training
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
-from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 __doctest_requires__ = {"PermutationInvariantTraining": ["pit"]}
 
@@ -69,8 +69,8 @@ class PermutationInvariantTraining(Metric):
     is_differentiable: bool = True
     sum_pit_metric: Tensor
     total: Tensor
-    plot_lower_bound = -10.0
-    plot_upper_bound = 1.0
+    plot_lower_bound: float = -10.0
+    plot_upper_bound: float = 1.0
 
     def __init__(
         self,

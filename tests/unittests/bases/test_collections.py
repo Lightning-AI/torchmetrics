@@ -41,6 +41,7 @@ seed_all(42)
 
 
 def test_metric_collection(tmpdir):
+    """Test that updating the metric collection is equal to individually updating metrics in the collection."""
     m1 = DummyMetricSum()
     m2 = DummyMetricDiff()
 
@@ -79,6 +80,7 @@ def test_metric_collection(tmpdir):
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="Test requires GPU.")
 def test_device_and_dtype_transfer_metriccollection(tmpdir):
+    """Test that metrics in the collection correctly gets updated their dtype and device."""
     m1 = DummyMetricSum()
     m2 = DummyMetricDiff()
 
@@ -91,11 +93,11 @@ def test_device_and_dtype_transfer_metriccollection(tmpdir):
     for _, metric in metric_collection.items():
         assert metric.x.is_cuda
 
-    metric_collection = metric_collection.double()
+    metric_collection = metric_collection.set_dtype(torch.double)
     for _, metric in metric_collection.items():
         assert metric.x.dtype == torch.float64
 
-    metric_collection = metric_collection.half()
+    metric_collection = metric_collection.set_dtype(torch.half)
     for _, metric in metric_collection.items():
         assert metric.x.dtype == torch.float16
 
@@ -240,6 +242,7 @@ def test_metric_collection_repr():
 
 
 def test_metric_collection_same_order():
+    """Test that metrics are stored internally in the same order, regardless of input order."""
     m1 = DummyMetricSum()
     m2 = DummyMetricDiff()
     col1 = MetricCollection({"a": m1, "b": m2})
@@ -249,6 +252,7 @@ def test_metric_collection_same_order():
 
 
 def test_collection_add_metrics():
+    """Test that `add_metrics` function called multiple times works as expected."""
     m1 = DummyMetricSum()
     m2 = DummyMetricDiff()
 
@@ -264,6 +268,7 @@ def test_collection_add_metrics():
 
 
 def test_collection_check_arg():
+    """Test that the `_check_arg` method works as expected."""
     assert MetricCollection._check_arg(None, "prefix") is None
     assert MetricCollection._check_arg("sample", "prefix") == "sample"
 
@@ -277,7 +282,7 @@ def test_collection_filtering():
     class DummyMetric(Metric):
         full_state_update = True
 
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
 
         def update(self, *args, kwarg):
@@ -289,7 +294,7 @@ def test_collection_filtering():
     class MyAccuracy(Metric):
         full_state_update = True
 
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
 
         def update(self, preds, target, kwarg2):

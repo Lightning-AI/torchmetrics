@@ -18,7 +18,7 @@ from torch import Tensor, tensor
 from torchmetrics.functional.audio.pesq import perceptual_evaluation_speech_quality
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _PESQ_AVAILABLE
-from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 __doctest_requires__ = {"PerceptualEvaluationSpeechQuality": ["pesq"]}
 
@@ -85,8 +85,8 @@ class PerceptualEvaluationSpeechQuality(Metric):
     full_state_update: bool = False
     is_differentiable: bool = False
     higher_is_better: bool = True
-    plot_lower_bound = 1.0
-    plot_upper_bound = 4.5
+    plot_lower_bound: float = 1.0
+    plot_upper_bound: float = 4.5
 
     def __init__(
         self,

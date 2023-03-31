@@ -40,9 +40,9 @@ class UserTokenizer:
     successfully in batches.
     """
 
-    CLS_TOKEN = "<cls>"
-    SEP_TOKEN = "<sep>"
-    PAD_TOKEN = "<pad>"
+    CLS_TOKEN = "<cls>"  # noqa: S105
+    SEP_TOKEN = "<sep>"  # noqa: S105
+    PAD_TOKEN = "<pad>"  # noqa: S105
 
     def __init__(self) -> None:
         self.word2vec = {

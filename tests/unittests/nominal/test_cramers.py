@@ -50,6 +50,7 @@ _input_logits = Input(
 
 @pytest.fixture()
 def cramers_matrix_input():
+    """Define input in matrix format for the metric."""
     matrix = torch.cat(
         [
             torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES * BATCH_SIZE, 1), dtype=torch.float),
@@ -109,6 +110,7 @@ class TestCramersV(MetricTester):
 
     @pytest.mark.parametrize("ddp", [False, True])
     def test_cramers_v(self, ddp, preds, target, bias_correction, nan_strategy, nan_replace_value):
+        """Test class implementation of metric."""
         metric_args = {
             "bias_correction": bias_correction,
             "nan_strategy": nan_strategy,
@@ -131,6 +133,7 @@ class TestCramersV(MetricTester):
         )
 
     def test_cramers_v_functional(self, preds, target, bias_correction, nan_strategy, nan_replace_value):
+        """Test functional implementation of metric."""
         metric_args = {
             "bias_correction": bias_correction,
             "nan_strategy": nan_strategy,
@@ -147,6 +150,7 @@ class TestCramersV(MetricTester):
         )
 
     def test_cramers_v_differentiability(self, preds, target, bias_correction, nan_strategy, nan_replace_value):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         metric_args = {
             "bias_correction": bias_correction,
             "nan_strategy": nan_strategy,
@@ -169,6 +173,7 @@ class TestCramersV(MetricTester):
 @pytest.mark.parametrize("bias_correction", [False, True])
 @pytest.mark.parametrize(("nan_strategy", "nan_replace_value"), [("replace", 1.0), ("drop", None)])
 def test_cramers_v_matrix(cramers_matrix_input, bias_correction, nan_strategy, nan_replace_value):
+    """Test matrix version of metric works as expected."""
     tm_score = cramers_v_matrix(cramers_matrix_input, bias_correction, nan_strategy, nan_replace_value)
     reference_score = _dython_cramers_v_matrix(cramers_matrix_input, bias_correction, nan_strategy, nan_replace_value)
     assert torch.allclose(tm_score, reference_score)

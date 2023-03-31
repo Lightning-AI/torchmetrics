@@ -12,26 +12,36 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from copy import deepcopy
-from typing import Any, List, Optional, Union
+from typing import Any, List, Optional, Sequence, Union
 
 import numpy as np
 import torch
 from torch import Tensor
 from torch.autograd import Function
 from torch.nn import Module
+from torch.nn.functional import adaptive_avg_pool2d
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_info
-from torchmetrics.utilities.imports import _SCIPY_AVAILABLE, _TORCH_FIDELITY_AVAILABLE
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _SCIPY_AVAILABLE, _TORCH_FIDELITY_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["FrechetInceptionDistance.plot"]
 
 if _TORCH_FIDELITY_AVAILABLE:
     from torch_fidelity.feature_extractor_inceptionv3 import FeatureExtractorInceptionV3 as _FeatureExtractorInceptionV3
+    from torch_fidelity.helpers import vassert
+    from torch_fidelity.interpolate_compat_tensorflow import interpolate_bilinear_2d_like_tensorflow1x
 else:
 
     class _FeatureExtractorInceptionV3(Module):
         pass
 
-    __doctest_skip__ = ["FrechetInceptionDistance", "FID"]
+    vassert = None
+    interpolate_bilinear_2d_like_tensorflow1x = None
+
+    __doctest_skip__ = ["FrechetInceptionDistance", "FrechetInceptionDistance.plot"]
 
 
 if _SCIPY_AVAILABLE:
@@ -55,9 +65,94 @@ class NoTrainInceptionV3(_FeatureExtractorInceptionV3):
         """Force network to always be in evaluation mode."""
         return super().train(False)
 
+    def _torch_fidelity_forward(self, x: Tensor) -> Tensor:
+        """Forward method of inception net.
+
+        Copy of the forward method from this file:
+        https://github.com/toshas/torch-fidelity/blob/master/torch_fidelity/feature_extractor_inceptionv3.py
+        with a single line change regarding the casting of `x` in the beginning.
+
+        Corresponding license file (Apache License, Version 2.0):
+        https://github.com/toshas/torch-fidelity/blob/master/LICENSE.md
+        """
+        vassert(torch.is_tensor(x) and x.dtype == torch.uint8, "Expecting image as torch.Tensor with dtype=torch.uint8")
+        features = {}
+        remaining_features = self.features_list.copy()
+
+        x = x.to(self._dtype) if hasattr(self, "_dtype") else x.to(torch.float)
+        x = interpolate_bilinear_2d_like_tensorflow1x(
+            x,
+            size=(self.INPUT_IMAGE_SIZE, self.INPUT_IMAGE_SIZE),
+            align_corners=False,
+        )
+        x = (x - 128) / 128
+
+        x = self.Conv2d_1a_3x3(x)
+        x = self.Conv2d_2a_3x3(x)
+        x = self.Conv2d_2b_3x3(x)
+        x = self.MaxPool_1(x)
+
+        if "64" in remaining_features:
+            features["64"] = adaptive_avg_pool2d(x, output_size=(1, 1)).squeeze(-1).squeeze(-1)
+            remaining_features.remove("64")
+            if len(remaining_features) == 0:
+                return tuple(features[a] for a in self.features_list)
+
+        x = self.Conv2d_3b_1x1(x)
+        x = self.Conv2d_4a_3x3(x)
+        x = self.MaxPool_2(x)
+
+        if "192" in remaining_features:
+            features["192"] = adaptive_avg_pool2d(x, output_size=(1, 1)).squeeze(-1).squeeze(-1)
+            remaining_features.remove("192")
+            if len(remaining_features) == 0:
+                return tuple(features[a] for a in self.features_list)
+
+        x = self.Mixed_5b(x)
+        x = self.Mixed_5c(x)
+        x = self.Mixed_5d(x)
+        x = self.Mixed_6a(x)
+        x = self.Mixed_6b(x)
+        x = self.Mixed_6c(x)
+        x = self.Mixed_6d(x)
+        x = self.Mixed_6e(x)
+
+        if "768" in remaining_features:
+            features["768"] = adaptive_avg_pool2d(x, output_size=(1, 1)).squeeze(-1).squeeze(-1)
+            remaining_features.remove("768")
+            if len(remaining_features) == 0:
+                return tuple(features[a] for a in self.features_list)
+
+        x = self.Mixed_7a(x)
+        x = self.Mixed_7b(x)
+        x = self.Mixed_7c(x)
+        x = self.AvgPool(x)
+        x = torch.flatten(x, 1)
+
+        if "2048" in remaining_features:
+            features["2048"] = x
+            remaining_features.remove("2048")
+            if len(remaining_features) == 0:
+                return tuple(features[a] for a in self.features_list)
+
+        if "logits_unbiased" in remaining_features:
+            x = x.mm(self.fc.weight.T)
+            # N x 1008 (num_classes)
+            features["logits_unbiased"] = x
+            remaining_features.remove("logits_unbiased")
+            if len(remaining_features) == 0:
+                return tuple(features[a] for a in self.features_list)
+
+            x = x + self.fc.bias.unsqueeze(0)
+        else:
+            x = self.fc(x)
+
+        features["logits"] = x
+        return tuple(features[a] for a in self.features_list)
+
     def forward(self, x: Tensor) -> Tensor:
         """Forward pass of neural network with reshaping of output."""
-        out = super().forward(x)
+        out = self._torch_fidelity_forward(x)
         return out[0].reshape(x.shape[0], -1)
 
 
@@ -81,20 +176,19 @@ class MatrixSquareRoot(Function):
     @staticmethod
     def backward(ctx: Any, grad_output: Tensor) -> Tensor:
         """Backward pass for matrix square root."""
-        grad_input = None
-        if ctx.needs_input_grad[0]:
-            (sqrtm,) = ctx.saved_tensors
-            sqrtm = sqrtm.data.cpu().numpy().astype(np.float_)
-            gm = grad_output.data.cpu().numpy().astype(np.float_)
+        if not ctx.needs_input_grad[0]:
+            return None
+        (sqrtm,) = ctx.saved_tensors
+        sqrtm = sqrtm.data.cpu().numpy().astype(np.float_)
+        gm = grad_output.data.cpu().numpy().astype(np.float_)
 
-            # Given a positive semi-definite matrix X,
-            # since X = X^{1/2}X^{1/2}, we can compute the gradient of the
-            # matrix square root dX^{1/2} by solving the Sylvester equation:
-            # dX = (d(X^{1/2})X^{1/2} + X^{1/2}(dX^{1/2}).
-            grad_sqrtm = scipy.linalg.solve_sylvester(sqrtm, sqrtm, gm)
+        # Given a positive semi-definite matrix X,
+        # since X = X^{1/2}X^{1/2}, we can compute the gradient of the
+        # matrix square root dX^{1/2} by solving the Sylvester equation:
+        # dX = (d(X^{1/2})X^{1/2} + X^{1/2}(dX^{1/2}).
+        grad_sqrtm = scipy.linalg.solve_sylvester(sqrtm, sqrtm, gm)
 
-            grad_input = torch.from_numpy(grad_sqrtm).to(grad_output)
-        return grad_input
+        return torch.from_numpy(grad_sqrtm).to(grad_output)
 
 
 sqrtm = MatrixSquareRoot.apply
@@ -147,6 +241,10 @@ class FrechetInceptionDistance(Metric):
     range. All images will be resized to 299 x 299 which is the size of the original training data. The boolian
     flag ``real`` determines if the images should update the statistics of the real distribution or the
     fake distribution.
+
+    This metric is known to be unstable in its calculatations, and we recommend for the best results using this metric
+    that you calculate using `torch.float64` (default is `torch.float32`) which can be set using the `.set_dtype`
+    method of the metric.
 
     .. note:: using this metrics requires you to have ``scipy`` install. Either install as ``pip install
         torchmetrics[image]`` or ``pip install scipy``
@@ -205,6 +303,7 @@ class FrechetInceptionDistance(Metric):
     higher_is_better: bool = False
     is_differentiable: bool = False
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
 
     real_features_sum: Tensor
     real_features_cov_sum: Tensor
@@ -282,6 +381,8 @@ class FrechetInceptionDistance(Metric):
 
     def compute(self) -> Tensor:
         """Calculate FID score based on accumulated extracted features from the two distributions."""
+        if self.real_features_num_samples < 2 or self.fake_features_num_samples < 2:
+            raise RuntimeError("More than one sample is required for both the real and fake distributed to compute FID")
         mean_real = (self.real_features_sum / self.real_features_num_samples).unsqueeze(0)
         mean_fake = (self.fake_features_sum / self.fake_features_num_samples).unsqueeze(0)
 
@@ -303,3 +404,65 @@ class FrechetInceptionDistance(Metric):
             self.real_features_num_samples = real_features_num_samples
         else:
             super().reset()
+
+    def set_dtype(self, dst_type: Union[str, torch.dtype]) -> "Metric":
+        """Transfer all metric state to specific dtype. Special version of standard `type` method.
+
+        Arguments:
+            dst_type (type or string): the desired type.
+        """
+        out = super().set_dtype(dst_type)
+        if isinstance(out.inception, NoTrainInceptionV3):
+            out.inception._dtype = dst_type
+        return out
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> import torch
+            >>> from torchmetrics.image.fid import FrechetInceptionDistance
+            >>> imgs_dist1 = torch.randint(0, 200, (100, 3, 299, 299), dtype=torch.uint8)
+            >>> imgs_dist2 = torch.randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)
+            >>> metric = FrechetInceptionDistance(feature=64)
+            >>> metric.update(imgs_dist1, real=True)
+            >>> metric.update(imgs_dist2, real=False)
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics.image.fid import FrechetInceptionDistance
+            >>> imgs_dist1 = lambda: torch.randint(0, 200, (100, 3, 299, 299), dtype=torch.uint8)
+            >>> imgs_dist2 = lambda: torch.randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)
+            >>> metric = FrechetInceptionDistance(feature=64)
+            >>> values = [ ]
+            >>> for _ in range(3):
+            ...     metric.update(imgs_dist1(), real=True)
+            ...     metric.update(imgs_dist2(), real=False)
+            ...     values.append(metric.compute())
+            ...     metric.reset()
+            >>> fig_, ax_ = metric.plot(values)
+
+
+        """
+        return self._plot(val, ax)

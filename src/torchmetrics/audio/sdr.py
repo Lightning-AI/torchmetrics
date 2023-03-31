@@ -18,7 +18,7 @@ from torch import Tensor, tensor
 from torchmetrics.functional.audio.sdr import scale_invariant_signal_distortion_ratio, signal_distortion_ratio
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
-from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 __doctest_requires__ = {"SignalDistortionRatio": ["fast_bss_eval"]}
 
@@ -85,8 +85,8 @@ class SignalDistortionRatio(Metric):
     full_state_update: bool = False
     is_differentiable: bool = True
     higher_is_better: bool = True
-    plot_lower_bound = -20.0
-    plot_upper_bound = 1.0
+    plot_lower_bound: float = -20.0
+    plot_upper_bound: float = 1.0
 
     def __init__(
         self,
@@ -195,8 +195,8 @@ class ScaleInvariantSignalDistortionRatio(Metric):
     higher_is_better = True
     sum_si_sdr: Tensor
     total: Tensor
-    plot_lower_bound = -40.0
-    plot_upper_bound = 20.0
+    plot_lower_bound: float = -40.0
+    plot_upper_bound: float = 20.0
 
     def __init__(
         self,

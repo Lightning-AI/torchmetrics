@@ -45,29 +45,31 @@ The example below shows how to use a metric in your `LightningModule <https://py
             self.log('train_acc_step', self.accuracy)
             ...
 
-        def training_epoch_end(self, outs):
+        def on_train_epoch_end(self):
             # log epoch metric
             self.log('train_acc_epoch', self.accuracy)
 
-Metric logging in Lightning happens through the ``self.log`` or ``self.log_dict`` method. Both methods only support the logging of *scalar-tensors*.
-While the vast majority of metrics in torchmetrics returns a scalar tensor, some metrics such as :class:`~torchmetrics.ConfusionMatrix`, :class:`~torchmetrics.ROC`,
-:class:`~torchmetrics.MeanAveragePrecision`, :class:`~torchmetrics.ROUGEScore` return outputs that are non-scalar tensors (often dicts or list of tensors) and should therefore be
-dealt with separately. For info about the return type and shape please look at the documentation for the ``compute`` method for each metric you want to log.
+Metric logging in Lightning happens through the ``self.log`` or ``self.log_dict`` method. Both methods only support the
+logging of *scalar-tensors*. While the vast majority of metrics in torchmetrics returns a scalar tensor, some metrics
+such as :class:`~torchmetrics.ConfusionMatrix`, :class:`~torchmetrics.ROC`, :class:`~torchmetrics.MeanAveragePrecision`,
+:class:`~torchmetrics.ROUGEScore` return outputs that are non-scalar tensors (often dicts or list of tensors) and should
+therefore be dealt with separately. For info about the return type and shape please look at the documentation for the
+``compute`` method for each metric you want to log.
 
 ********************
 Logging TorchMetrics
 ********************
 
-Logging metrics can be done in two ways: either logging the metric object directly or the computed metric values. When :class:`~torchmetrics.Metric` objects, which return a scalar tensor
-are logged directly in Lightning using the LightningModule `self.log <https://pytorch-lightning.readthedocs.io/en/stable/extensions/logging.html#logging-from-a-lightningmodule>`_ method,
-Lightning will log the metric based on ``on_step`` and ``on_epoch`` flags present in ``self.log(...)``. If ``on_epoch`` is True, the logger automatically logs the end of epoch metric
-value by calling ``.compute()``.
+Logging metrics can be done in two ways: either logging the metric object directly or the computed metric values.
+When :class:`~torchmetrics.Metric` objects, which return a scalar tensor are logged directly in Lightning using the
+LightningModule `self.log <https://pytorch-lightning.readthedocs.io/en/stable/extensions/logging.html#logging-from-a-lightningmodule>`_
+method, Lightning will log the metric based on ``on_step`` and ``on_epoch`` flags present in ``self.log(...)``. If
+``on_epoch`` is True, the logger automatically logs the end of epoch metric value by calling ``.compute()``.
 
 .. note::
 
-    ``sync_dist``, ``sync_dist_op``, ``sync_dist_group``, ``reduce_fx`` and ``tbptt_reduce_fx``
-    flags from ``self.log(...)`` don't affect the metric logging in any manner. The metric class
-    contains its own distributed synchronization logic.
+    ``sync_dist``, ``sync_dist_group`` and ``reduce_fx`` flags from ``self.log(...)`` don't affect the metric logging
+    in any manner. The metric class contains its own distributed synchronization logic.
 
     This however is only true for metrics that inherit the base class ``Metric``,
     and thus the functional metric API provides no support for in-built distributed synchronization
@@ -96,8 +98,8 @@ value by calling ``.compute()``.
             self.valid_acc(logits, y)
             self.log('valid_acc', self.valid_acc, on_step=True, on_epoch=True)
 
-As an alternative to logging the metric object and letting Lightning take care of when to reset the metric etc. you can also manually log the output
-of the metrics.
+As an alternative to logging the metric object and letting Lightning take care of when to reset the metric etc. you can
+also manually log the output of the metrics.
 
 .. testcode:: python
 
@@ -115,7 +117,7 @@ of the metrics.
             batch_value = self.train_acc(preds, y)
             self.log('train_acc_step', batch_value)
 
-        def training_epoch_end(self, outputs):
+        def on_train_epoch_end(self):
             self.train_acc.reset()
 
         def validation_step(self, batch, batch_idx):
@@ -123,19 +125,20 @@ of the metrics.
             ...
             self.valid_acc.update(logits, y)
 
-        def validation_epoch_end(self, outputs):
+        def on_validation_epoch_end(self, outputs):
             self.log('valid_acc_epoch', self.valid_acc.compute())
             self.valid_acc.reset()
 
-Note that logging metrics this way will require you to manually reset the metrics at the end of the epoch yourself. In general, we recommend logging
-the metric object to make sure that metrics are correctly computed and reset. Additionally, we highly recommend that the two ways of logging are not
-mixed as it can lead to wrong results.
+Note that logging metrics this way will require you to manually reset the metrics at the end of the epoch yourself.
+In general, we recommend logging the metric object to make sure that metrics are correctly computed and reset.
+Additionally, we highly recommend that the two ways of logging are not mixed as it can lead to wrong results.
 
 .. note::
 
-    When using any Modular metric, calling ``self.metric(...)`` or ``self.metric.forward(...)`` serves the dual purpose of calling ``self.metric.update()``
-    on its input and simultaneously returning the metric value over the provided input. So if you are logging a metric *only* on epoch-level (as in the
-    example above), it is recommended to call ``self.metric.update()`` directly to avoid the extra computation.
+    When using any Modular metric, calling ``self.metric(...)`` or ``self.metric.forward(...)`` serves the dual purpose
+    of calling ``self.metric.update()`` on its input and simultaneously returning the metric value over the provided
+    input. So if you are logging a metric *only* on epoch-level (as in the example above), it is recommended to call
+    ``self.metric.update()`` directly to avoid the extra computation.
 
     .. testcode:: python
 
@@ -157,25 +160,6 @@ Common Pitfalls
 ***************
 
 The following contains a list of pitfalls to be aware of:
-
-* If using metrics in data parallel mode (dp), the metric update/logging should be done
-  in the ``<mode>_step_end`` method (where ``<mode>`` is either ``training``, ``validation``
-  or ``test``). This is because ``dp`` split the batches during the forward pass and metric states are destroyed after each forward pass, thus leading to wrong accumulation. In practice do the following:
-
-.. testcode:: python
-
-    class MyModule(LightningModule):
-
-        def training_step(self, batch, batch_idx):
-            data, target = batch
-            preds = self(data)
-            # ...
-            return {'loss': loss, 'preds': preds, 'target': target}
-
-        def training_step_end(self, outputs):
-            # update and log
-            self.metric(outputs['preds'], outputs['target'])
-            self.log('metric', self.metric)
 
 * Modular metrics contain internal states that should belong to only one DataLoader. In case you are using multiple DataLoaders,
   it is recommended to initialize a separate modular metric instances for each DataLoader and use them separately. The same holds

@@ -65,6 +65,7 @@ class TestKLDivergence(MetricTester):
 
     @pytest.mark.parametrize("ddp", [True, False])
     def test_kldivergence(self, reduction, p, q, log_prob, ddp):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
             p,
@@ -75,6 +76,7 @@ class TestKLDivergence(MetricTester):
         )
 
     def test_kldivergence_functional(self, reduction, p, q, log_prob):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             p,
             q,
@@ -84,6 +86,7 @@ class TestKLDivergence(MetricTester):
         )
 
     def test_kldivergence_differentiability(self, reduction, p, q, log_prob):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         self.run_differentiability_test(
             p,
             q,
@@ -95,20 +98,24 @@ class TestKLDivergence(MetricTester):
     # KLDivergence half + cpu does not work due to missing support in torch.clamp
     @pytest.mark.xfail(reason="KLDivergence metric does not support cpu + half precision")
     def test_kldivergence_half_cpu(self, reduction, p, q, log_prob):
+        """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(p, q, KLDivergence, kl_divergence, {"log_prob": log_prob, "reduction": reduction})
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-    def test_r2_half_gpu(self, reduction, p, q, log_prob):
+    def test_kldivergence_half_gpu(self, reduction, p, q, log_prob):
+        """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(p, q, KLDivergence, kl_divergence, {"log_prob": log_prob, "reduction": reduction})
 
 
 def test_error_on_different_shape():
+    """Test that error is raised on different shapes of input."""
     metric = KLDivergence()
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(100), torch.randn(50))
 
 
 def test_error_on_multidim_tensors():
+    """Test that error is raised if a larger than 2D tensor is given as input."""
     metric = KLDivergence()
     with pytest.raises(ValueError, match="Expected both p and q distribution to be 2D but got 3 and 3 respectively"):
         metric(torch.randn(10, 20, 5), torch.randn(10, 20, 5))

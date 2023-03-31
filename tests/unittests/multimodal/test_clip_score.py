@@ -14,6 +14,8 @@
 from collections import namedtuple
 from functools import partial
 
+import matplotlib
+import matplotlib.pyplot as plt
 import pytest
 import torch
 from transformers import CLIPModel as _CLIPModel
@@ -61,6 +63,7 @@ class TestCLIPScore(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
     @skip_on_connection_issues()
     def test_clip_score(self, input, model_name_or_path, ddp):
+        """Test class implementation of metric."""
         # images are preds and targets are captions
         preds, target = input
         self.run_class_metric_test(
@@ -77,6 +80,7 @@ class TestCLIPScore(MetricTester):
 
     @skip_on_connection_issues()
     def test_clip_score_functional(self, input, model_name_or_path):
+        """Test functional implementation of metric."""
         preds, target = input
         self.run_functional_metric_test(
             preds=preds,
@@ -88,6 +92,7 @@ class TestCLIPScore(MetricTester):
 
     @skip_on_connection_issues()
     def test_clip_score_differentiability(self, input, model_name_or_path):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -112,3 +117,13 @@ class TestCLIPScore(MetricTester):
             ValueError, match="Expected all images to be 3d but found image that has either more or less"
         ):
             metric(torch.randint(255, (64, 64)), "28-year-old chef found dead in San Francisco mall")
+
+    @skip_on_connection_issues()
+    def test_plot_method(self, input, model_name_or_path):
+        """Test the plot method of CLIPScore seperately in this file due to the skipping conditions."""
+        metric = CLIPScore(model_name_or_path=model_name_or_path)
+        preds, target = input
+        metric.update(preds[0], target[0])
+        fig, ax = metric.plot()
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, matplotlib.axes.Axes)

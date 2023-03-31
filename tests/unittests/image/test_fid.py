@@ -47,7 +47,7 @@ def test_no_train():
     """Assert that metric never leaves evaluation mode."""
 
     class MyModel(Module):
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
             self.metric = FrechetInceptionDistance()
 
@@ -108,7 +108,7 @@ def test_fid_same_input(feature):
 
 
 class _ImgDataset(Dataset):
-    def __init__(self, imgs):
+    def __init__(self, imgs) -> None:
         self.imgs = imgs
 
     def __getitem__(self, idx):
@@ -158,6 +158,7 @@ def test_compare_fid(tmpdir, equal_size, feature=768):
 
 @pytest.mark.parametrize("reset_real_features", [True, False])
 def test_reset_real_features_arg(reset_real_features):
+    """Test that `reset_real_features` argument works as expected."""
     metric = FrechetInceptionDistance(feature=64, reset_real_features=reset_real_features)
 
     metric.update(torch.randint(0, 180, (2, 3, 299, 299), dtype=torch.uint8), real=True)
@@ -198,3 +199,27 @@ def test_normalize_arg_false():
     metric = FrechetInceptionDistance(normalize=False)
     with pytest.raises(ValueError, match="Expecting image as torch.Tensor with dtype=torch.uint8"):
         metric.update(img, real=True)
+
+
+def test_not_enough_samples():
+    """Test that an error is raised if not enough samples were provided."""
+    img = torch.randint(0, 255, (1, 3, 299, 299), dtype=torch.uint8)
+    metric = FrechetInceptionDistance()
+    metric.update(img, real=True)
+    metric.update(img, real=False)
+    with pytest.raises(
+        RuntimeError, match="More than one sample is required for both the real and fake distributed to compute FID"
+    ):
+        metric.compute()
+
+
+def test_dtype_transfer_to_submodule():
+    """Test that change in dtype also changes the default inception net."""
+    imgs = torch.randn(1, 3, 256, 256)
+    imgs = ((imgs.clamp(-1, 1) / 2 + 0.5) * 255).to(torch.uint8)
+
+    metric = FrechetInceptionDistance(feature=64)
+    metric.set_dtype(torch.float64)
+
+    out = metric.inception(imgs)
+    assert out.dtype == torch.float64

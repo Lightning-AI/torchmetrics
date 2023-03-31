@@ -18,7 +18,7 @@ from torch import Tensor, tensor
 from torchmetrics.functional.audio.stoi import short_time_objective_intelligibility
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _PYSTOI_AVAILABLE
-from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 __doctest_requires__ = {"ShortTimeObjectiveIntelligibility": ["pystoi"]}
 
@@ -77,8 +77,8 @@ class ShortTimeObjectiveIntelligibility(Metric):
     full_state_update: bool = False
     is_differentiable: bool = False
     higher_is_better: bool = True
-    plot_lower_bound = -20.0
-    plot_upper_bound = 5.0
+    plot_lower_bound: float = -20.0
+    plot_upper_bound: float = 5.0
 
     def __init__(
         self,

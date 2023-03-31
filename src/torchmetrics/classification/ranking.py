@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional
+from typing import Any, Optional, Sequence, Union
 
 import torch
 from torch import Tensor
@@ -26,6 +26,15 @@ from torchmetrics.functional.classification.ranking import (
     _ranking_reduce,
 )
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = [
+        "MultilabelCoverageError.plot",
+        "MultilabelRankingAveragePrecision.plot",
+        "MultilabelRankingLoss.plot",
+    ]
 
 
 class MultilabelCoverageError(Metric):
@@ -69,6 +78,9 @@ class MultilabelCoverageError(Metric):
     higher_is_better: bool = False
     is_differentiable: bool = False
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
+    plot_legend_name: str = "Label"
 
     def __init__(
         self,
@@ -100,6 +112,47 @@ class MultilabelCoverageError(Metric):
     def compute(self) -> Tensor:
         """Compute metric."""
         return _ranking_reduce(self.measure, self.total)
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure object and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import rand, randint
+            >>> # Example plotting a single value
+            >>> from torchmetrics.classification import MultilabelCoverageError
+            >>> metric = MultilabelCoverageError(num_labels=3)
+            >>> metric.update(rand(20, 3), randint(2, (20, 3)))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import rand, randint
+            >>> # Example plotting multiple values
+            >>> from torchmetrics.classification import MultilabelCoverageError
+            >>> metric = MultilabelCoverageError(num_labels=3)
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(rand(20, 3), randint(2, (20, 3))))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        return self._plot(val, ax)
 
 
 class MultilabelRankingAveragePrecision(Metric):
@@ -143,6 +196,9 @@ class MultilabelRankingAveragePrecision(Metric):
     higher_is_better: bool = True
     is_differentiable: bool = False
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
+    plot_legend_name: str = "Label"
 
     def __init__(
         self,
@@ -174,6 +230,47 @@ class MultilabelRankingAveragePrecision(Metric):
     def compute(self) -> Tensor:
         """Compute metric."""
         return _ranking_reduce(self.measure, self.total)
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure object and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import rand, randint
+            >>> # Example plotting a single value
+            >>> from torchmetrics.classification import MultilabelRankingAveragePrecision
+            >>> metric = MultilabelRankingAveragePrecision(num_labels=3)
+            >>> metric.update(rand(20, 3), randint(2, (20, 3)))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import rand, randint
+            >>> # Example plotting multiple values
+            >>> from torchmetrics.classification import MultilabelRankingAveragePrecision
+            >>> metric = MultilabelRankingAveragePrecision(num_labels=3)
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(rand(20, 3), randint(2, (20, 3))))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        return self._plot(val, ax)
 
 
 class MultilabelRankingLoss(Metric):
@@ -219,6 +316,9 @@ class MultilabelRankingLoss(Metric):
     higher_is_better: bool = False
     is_differentiable: bool = False
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
+    plot_legend_name: str = "Label"
 
     def __init__(
         self,
@@ -250,3 +350,44 @@ class MultilabelRankingLoss(Metric):
     def compute(self) -> Tensor:
         """Compute metric."""
         return _ranking_reduce(self.measure, self.total)
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure object and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import rand, randint
+            >>> # Example plotting a single value
+            >>> from torchmetrics.classification import MultilabelRankingLoss
+            >>> metric = MultilabelRankingLoss(num_labels=3)
+            >>> metric.update(rand(20, 3), randint(2, (20, 3)))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import rand, randint
+            >>> # Example plotting multiple values
+            >>> from torchmetrics.classification import MultilabelRankingLoss
+            >>> metric = MultilabelRankingLoss(num_labels=3)
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(rand(20, 3), randint(2, (20, 3))))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        return self._plot(val, ax)

@@ -94,6 +94,7 @@ class TestSpearmanCorrCoef(MetricTester):
 
     @pytest.mark.parametrize("ddp", [True, False])
     def test_spearman_corrcoef(self, preds, target, ddp):
+        """Test class implementation of metric."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_class_metric_test(
             ddp,
@@ -105,9 +106,11 @@ class TestSpearmanCorrCoef(MetricTester):
         )
 
     def test_spearman_corrcoef_functional(self, preds, target):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(preds, target, spearman_corrcoef, _scipy_spearman)
 
     def test_spearman_corrcoef_differentiability(self, preds, target):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_differentiability_test(
             preds=preds,
@@ -119,6 +122,7 @@ class TestSpearmanCorrCoef(MetricTester):
     # Spearman half + cpu does not work due to missing support in torch.arange
     @pytest.mark.xfail(reason="Spearman metric does not support cpu + half precision")
     def test_spearman_corrcoef_half_cpu(self, preds, target):
+        """Test dtype support of the metric on CPU."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_precision_test_cpu(
             preds, target, partial(SpearmanCorrCoef, num_outputs=num_outputs), spearman_corrcoef
@@ -126,6 +130,7 @@ class TestSpearmanCorrCoef(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_spearman_corrcoef_half_gpu(self, preds, target):
+        """Test dtype support of the metric on GPU."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_precision_test_gpu(
             preds, target, partial(SpearmanCorrCoef, num_outputs=num_outputs), spearman_corrcoef
@@ -133,6 +138,7 @@ class TestSpearmanCorrCoef(MetricTester):
 
 
 def test_error_on_different_shape():
+    """Test that error is raised when the preds and target shapes are not what is expected of the metric."""
     metric = SpearmanCorrCoef(num_outputs=1)
     with pytest.raises(TypeError, match="Expected `preds` and `target` both to be floating point tensors.*"):
         metric(torch.randint(5, (100,)), torch.randn(100))
