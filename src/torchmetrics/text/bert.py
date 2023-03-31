@@ -279,6 +279,7 @@ class BERTScore(Metric):
             :scale: 75
 
             >>> # Example plotting multiple values
+            >>> import torch
             >>> from torchmetrics.text.bert import BERTScore
             >>> metric = BERTScore()
             >>> preds = ["hello there", "general kenobi"]
