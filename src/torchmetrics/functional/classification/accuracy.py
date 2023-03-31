@@ -430,4 +430,4 @@ def accuracy(
         return multilabel_accuracy(
             preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
         )
-    raise ValueError(f"Not handled value: {task}") # this is for compliant of mypy
+    raise ValueError(f"Not handled value: {task}")  # this is for compliant of mypy
