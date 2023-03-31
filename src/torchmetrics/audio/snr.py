@@ -64,8 +64,8 @@ class SignalNoiseRatio(Metric):
     higher_is_better: bool = True
     sum_snr: Tensor
     total: Tensor
-    plot_lower_bound = -20.0
-    plot_upper_bound = 5.0
+    plot_lower_bound: float = -20.0
+    plot_upper_bound: float = 5.0
 
     def __init__(
         self,
@@ -164,8 +164,8 @@ class ScaleInvariantSignalNoiseRatio(Metric):
     sum_si_snr: Tensor
     total: Tensor
     higher_is_better = True
-    plot_lower_bound = -20.0
-    plot_upper_bound = 10.0
+    plot_lower_bound: float = -20.0
+    plot_upper_bound: float = 10.0
 
     def __init__(
         self,
