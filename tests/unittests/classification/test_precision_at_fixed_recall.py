@@ -26,7 +26,7 @@ from torchmetrics.classification.precision_fixed_recall import (
     MulticlassPrecisionAtFixedRecall,
     MultilabelPrecisionAtFixedRecall,
 )
-from torchmetrics.functional.classification.precision_at_fixed_recall import (
+from torchmetrics.functional.classification.precision_fixed_recall import (
     binary_precision_at_fixed_recall,
     multiclass_precision_at_fixed_recall,
     multilabel_precision_at_fixed_recall,

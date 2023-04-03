@@ -77,7 +77,7 @@ from torchmetrics.functional.classification.matthews_corrcoef import (
     multiclass_matthews_corrcoef,
     multilabel_matthews_corrcoef,
 )
-from torchmetrics.functional.classification.precision_at_fixed_recall import (
+from torchmetrics.functional.classification.precision_fixed_recall import (
     binary_precision_at_fixed_recall,
     multiclass_precision_at_fixed_recall,
     multilabel_precision_at_fixed_recall,
@@ -103,7 +103,7 @@ from torchmetrics.functional.classification.ranking import (
     multilabel_ranking_average_precision,
     multilabel_ranking_loss,
 )
-from torchmetrics.functional.classification.recall_at_fixed_precision import (
+from torchmetrics.functional.classification.recall_fixed_precision import (
     binary_recall_at_fixed_precision,
     multiclass_recall_at_fixed_precision,
     multilabel_recall_at_fixed_precision,
@@ -115,7 +115,7 @@ from torchmetrics.functional.classification.specificity import (
     multilabel_specificity,
     specificity,
 )
-from torchmetrics.functional.classification.specificity_at_sensitivity import (
+from torchmetrics.functional.classification.specificity_sensitivity import (
     binary_specificity_at_sensitivity,
     multiclass_specificity_at_sensitivity,
     multilabel_specificity_at_sensitivity,

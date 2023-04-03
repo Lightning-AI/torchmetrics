@@ -21,8 +21,8 @@ from torchmetrics.classification.precision_recall_curve import (
     MulticlassPrecisionRecallCurve,
     MultilabelPrecisionRecallCurve,
 )
-from torchmetrics.functional.classification.precision_at_fixed_recall import _precision_at_recall
-from torchmetrics.functional.classification.recall_at_fixed_precision import (
+from torchmetrics.functional.classification.precision_fixed_recall import _precision_at_recall
+from torchmetrics.functional.classification.recall_fixed_precision import (
     _binary_recall_at_fixed_precision_arg_validation,
     _binary_recall_at_fixed_precision_compute,
     _multiclass_recall_at_fixed_precision_arg_compute,
