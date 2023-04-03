@@ -115,7 +115,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
--
+- Support for python 3.7 ([#1640](https://github.com/Lightning-AI/metrics/pull/1640))
 
 
 ### Fixed
