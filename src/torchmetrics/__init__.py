@@ -37,12 +37,12 @@ from torchmetrics.classification import (  # noqa: E402
     JaccardIndex,
     MatthewsCorrCoef,
     Precision,
+    PrecisionAtFixedRecall,
     PrecisionRecallCurve,
     Recall,
+    RecallAtFixedPrecision,
     Specificity,
     StatScores,
-    RecallAtFixedPrecision,
-    PrecisionAtFixedRecall,
 )
 from torchmetrics.collections import MetricCollection  # noqa: E402
 from torchmetrics.detection import ModifiedPanopticQuality, PanopticQuality  # noqa: E402
