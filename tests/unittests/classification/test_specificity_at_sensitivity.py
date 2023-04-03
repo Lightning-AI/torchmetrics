@@ -21,7 +21,7 @@ from scipy.special import expit as sigmoid
 from scipy.special import softmax
 from sklearn.metrics import roc_curve as sk_roc_curve
 
-from torchmetrics.classification.specificity_at_sensitivity import (
+from torchmetrics.classification.specificity_sensitivity import (
     BinarySpecificityAtSensitivity,
     MulticlassSpecificityAtSensitivity,
     MultilabelSpecificityAtSensitivity,
