@@ -21,6 +21,7 @@ from torchmetrics.classification.precision_recall_curve import (
     MulticlassPrecisionRecallCurve,
     MultilabelPrecisionRecallCurve,
 )
+from torchmetrics.functional.classification.precision_at_fixed_recall import _precision_at_recall
 from torchmetrics.functional.classification.recall_at_fixed_precision import (
     _binary_recall_at_fixed_precision_arg_validation,
     _binary_recall_at_fixed_precision_compute,
@@ -44,10 +45,10 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class BinaryPrecisionAtFixedRecall(BinaryPrecisionRecallCurve):
-    r"""Compute the highest possible recall value given the minimum precision thresholds provided.
+    r"""Compute the highest possible precision value given the minimum recall thresholds provided.
 
-    This is done by first calculating the precision-recall curve for different thresholds and the find the recall for
-    a given precision level.
+    This is done by first calculating the precision-recall curve for different thresholds and the find the precision for
+    a given recall level.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -63,7 +64,7 @@ class BinaryPrecisionAtFixedRecall(BinaryPrecisionRecallCurve):
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``recall`` (:class:`~torch.Tensor`): A scalar tensor with the maximum recall for the given precision level
+    - ``precision`` (:class:`~torch.Tensor`): A scalar tensor with the maximum precision for the given recall level
     - ``threshold`` (:class:`~torch.Tensor`): A scalar tensor with the corresponding threshold level
 
     .. note::
@@ -74,7 +75,7 @@ class BinaryPrecisionAtFixedRecall(BinaryPrecisionRecallCurve):
        of size :math:`\mathcal{O}(n_{thresholds})` (constant memory).
 
     Args:
-        min_precision: float value specifying minimum precision threshold.
+        min_recall: float value specifying minimum recall threshold.
         thresholds:
             Can be one of:
 
@@ -95,10 +96,10 @@ class BinaryPrecisionAtFixedRecall(BinaryPrecisionRecallCurve):
         >>> from torchmetrics.classification import BinaryPrecisionAtFixedRecall
         >>> preds = tensor([0, 0.5, 0.7, 0.8])
         >>> target = tensor([0, 1, 1, 0])
-        >>> metric = BinaryPrecisionAtFixedRecall(min_precision=0.5, thresholds=None)
+        >>> metric = BinaryPrecisionAtFixedRecall(min_recall=0.5, thresholds=None)
         >>> metric(preds, target)
         (tensor(1.), tensor(0.5000))
-        >>> metric = BinaryPrecisionAtFixedRecall(min_precision=0.5, thresholds=5)
+        >>> metric = BinaryPrecisionAtFixedRecall(min_recall=0.5, thresholds=5)
         >>> metric(preds, target)
         (tensor(1.), tensor(0.5000))
     """
@@ -110,7 +111,7 @@ class BinaryPrecisionAtFixedRecall(BinaryPrecisionRecallCurve):
 
     def __init__(
         self,
-        min_precision: float,
+        min_recall: float,
         thresholds: Optional[Union[int, List[float], Tensor]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
@@ -118,14 +119,16 @@ class BinaryPrecisionAtFixedRecall(BinaryPrecisionRecallCurve):
     ) -> None:
         super().__init__(thresholds, ignore_index, validate_args=False, **kwargs)
         if validate_args:
-            _binary_recall_at_fixed_precision_arg_validation(min_precision, thresholds, ignore_index)
+            _binary_recall_at_fixed_precision_arg_validation(min_recall, thresholds, ignore_index)
         self.validate_args = validate_args
-        self.min_precision = min_precision
+        self.min_recall = min_recall
 
     def compute(self) -> Tuple[Tensor, Tensor]:
         """Compute metric."""
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
-        return _binary_recall_at_fixed_precision_compute(state, self.thresholds, self.min_precision)
+        return _binary_recall_at_fixed_precision_compute(
+            state, self.thresholds, self.min_recall, reduce_fn=_precision_at_recall
+        )
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
@@ -150,7 +153,7 @@ class BinaryPrecisionAtFixedRecall(BinaryPrecisionRecallCurve):
             >>> from torch import rand, randint
             >>> # Example plotting a single value
             >>> from torchmetrics.classification import BinaryPrecisionAtFixedRecall
-            >>> metric = BinaryPrecisionAtFixedRecall(min_precision=0.5)
+            >>> metric = BinaryPrecisionAtFixedRecall(min_recall=0.5)
             >>> metric.update(rand(10), randint(2,(10,)))
             >>> fig_, ax_ = metric.plot()  # the returned plot only shows the maximum recall value by default
 
@@ -160,7 +163,7 @@ class BinaryPrecisionAtFixedRecall(BinaryPrecisionRecallCurve):
             >>> from torch import rand, randint
             >>> # Example plotting multiple values
             >>> from torchmetrics.classification import BinaryPrecisionAtFixedRecall
-            >>> metric = BinaryPrecisionAtFixedRecall(min_precision=0.5)
+            >>> metric = BinaryPrecisionAtFixedRecall(min_recall=0.5)
             >>> values = [ ]
             >>> for _ in range(10):
             ...     # we index by 0 such that only the maximum recall value is plotted
@@ -172,10 +175,10 @@ class BinaryPrecisionAtFixedRecall(BinaryPrecisionRecallCurve):
 
 
 class MulticlassPrecisionAtFixedRecall(MulticlassPrecisionRecallCurve):
-    r"""Compute the highest possible recall value given the minimum precision thresholds provided.
+    r"""Compute the highest possible precision value given the minimum recall thresholds provided.
 
-    This is done by first calculating the precision-recall curve for different thresholds and the find the recall for
-    a given precision level.
+    This is done by first calculating the precision-recall curve for different thresholds and the find the precision for
+    a given recall level.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -191,8 +194,8 @@ class MulticlassPrecisionAtFixedRecall(MulticlassPrecisionRecallCurve):
 
     As output to ``forward`` and ``compute`` the metric returns a tuple of either 2 tensors or 2 lists containing:
 
-    - ``recall`` (:class:`~torch.Tensor`): A 1d tensor of size ``(n_classes, )`` with the maximum recall for the
-      given precision level per class
+    - ``precision`` (:class:`~torch.Tensor`): A 1d tensor of size ``(n_classes, )`` with the maximum precision for the
+      given recall level per class
     - ``threshold`` (:class:`~torch.Tensor`): A 1d tensor of size ``(n_classes, )`` with the corresponding threshold
       level per class
 
@@ -205,7 +208,7 @@ class MulticlassPrecisionAtFixedRecall(MulticlassPrecisionRecallCurve):
 
     Args:
         num_classes: Integer specifing the number of classes
-        min_precision: float value specifying minimum precision threshold.
+        min_recall: float value specifying minimum recall threshold.
         thresholds:
             Can be one of:
 
@@ -229,10 +232,10 @@ class MulticlassPrecisionAtFixedRecall(MulticlassPrecisionRecallCurve):
         ...                 [0.05, 0.05, 0.75, 0.05, 0.05],
         ...                 [0.05, 0.05, 0.05, 0.75, 0.05]])
         >>> target = tensor([0, 1, 3, 2])
-        >>> metric = MulticlassPrecisionAtFixedRecall(num_classes=5, min_precision=0.5, thresholds=None)
+        >>> metric = MulticlassPrecisionAtFixedRecall(num_classes=5, min_recall=0.5, thresholds=None)
         >>> metric(preds, target)
         (tensor([1., 1., 0., 0., 0.]), tensor([7.5000e-01, 7.5000e-01, 1.0000e+06, 1.0000e+06, 1.0000e+06]))
-        >>> mcrafp = MulticlassPrecisionAtFixedRecall(num_classes=5, min_precision=0.5, thresholds=5)
+        >>> mcrafp = MulticlassPrecisionAtFixedRecall(num_classes=5, min_recall=0.5, thresholds=5)
         >>> mcrafp(preds, target)
         (tensor([1., 1., 0., 0., 0.]), tensor([7.5000e-01, 7.5000e-01, 1.0000e+06, 1.0000e+06, 1.0000e+06]))
     """
@@ -246,7 +249,7 @@ class MulticlassPrecisionAtFixedRecall(MulticlassPrecisionRecallCurve):
     def __init__(
         self,
         num_classes: int,
-        min_precision: float,
+        min_recall: float,
         thresholds: Optional[Union[int, List[float], Tensor]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
@@ -256,15 +259,15 @@ class MulticlassPrecisionAtFixedRecall(MulticlassPrecisionRecallCurve):
             num_classes=num_classes, thresholds=thresholds, ignore_index=ignore_index, validate_args=False, **kwargs
         )
         if validate_args:
-            _multiclass_recall_at_fixed_precision_arg_validation(num_classes, min_precision, thresholds, ignore_index)
+            _multiclass_recall_at_fixed_precision_arg_validation(num_classes, min_recall, thresholds, ignore_index)
         self.validate_args = validate_args
-        self.min_precision = min_precision
+        self.min_recall = min_recall
 
     def compute(self) -> Tuple[Tensor, Tensor]:
         """Compute metric."""
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _multiclass_recall_at_fixed_precision_arg_compute(
-            state, self.num_classes, self.thresholds, self.min_precision
+            state, self.num_classes, self.thresholds, self.min_recall, reduce_fn=_precision_at_recall
         )
 
     def plot(
@@ -290,7 +293,7 @@ class MulticlassPrecisionAtFixedRecall(MulticlassPrecisionRecallCurve):
             >>> from torch import rand, randint
             >>> # Example plotting a single value per class
             >>> from torchmetrics.classification import MulticlassPrecisionAtFixedRecall
-            >>> metric = MulticlassPrecisionAtFixedRecall(num_classes=3, min_precision=0.5)
+            >>> metric = MulticlassPrecisionAtFixedRecall(num_classes=3, min_recall=0.5)
             >>> metric.update(rand(20, 3).softmax(dim=-1), randint(3, (20,)))
             >>> fig_, ax_ = metric.plot()  # the returned plot only shows the maximum recall value by default
 
@@ -300,7 +303,7 @@ class MulticlassPrecisionAtFixedRecall(MulticlassPrecisionRecallCurve):
             >>> from torch import rand, randint
             >>> # Example plotting a multiple values per class
             >>> from torchmetrics.classification import MulticlassPrecisionAtFixedRecall
-            >>> metric = MulticlassPrecisionAtFixedRecall(num_classes=3, min_precision=0.5)
+            >>> metric = MulticlassPrecisionAtFixedRecall(num_classes=3, min_recall=0.5)
             >>> values = []
             >>> for _ in range(20):
             ...     # we index by 0 such that only the maximum recall value is plotted
@@ -312,10 +315,10 @@ class MulticlassPrecisionAtFixedRecall(MulticlassPrecisionRecallCurve):
 
 
 class MultilabelPrecisionAtFixedRecall(MultilabelPrecisionRecallCurve):
-    r"""Compute the highest possible recall value given the minimum precision thresholds provided.
+    r"""Compute the highest possible precision value given the minimum recall thresholds provided.
 
-    This is done by first calculating the precision-recall curve for different thresholds and the find the recall for
-    a given precision level.
+    This is done by first calculating the precision-recall curve for different thresholds and the find the precision for
+    a given recall level.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -331,8 +334,8 @@ class MultilabelPrecisionAtFixedRecall(MultilabelPrecisionRecallCurve):
 
     As output to ``forward`` and ``compute`` the metric returns a tuple of either 2 tensors or 2 lists containing:
 
-    - ``recall`` (:class:`~torch.Tensor`): A 1d tensor of size ``(n_classes, )`` with the maximum recall for the
-      given precision level per class
+    - ``precision`` (:class:`~torch.Tensor`): A 1d tensor of size ``(n_classes, )`` with the maximum precision for the
+      given recall level per class
     - ``threshold`` (:class:`~torch.Tensor`): A 1d tensor of size ``(n_classes, )`` with the corresponding threshold
       level per class
 
@@ -345,7 +348,7 @@ class MultilabelPrecisionAtFixedRecall(MultilabelPrecisionRecallCurve):
 
     Args:
         num_labels: Integer specifing the number of labels
-        min_precision: float value specifying minimum precision threshold.
+        min_recall: float value specifying minimum recall threshold.
         thresholds:
             Can be one of:
 
@@ -372,10 +375,10 @@ class MultilabelPrecisionAtFixedRecall(MultilabelPrecisionRecallCurve):
         ...                  [0, 0, 0],
         ...                  [0, 1, 1],
         ...                  [1, 1, 1]])
-        >>> metric = MultilabelPrecisionAtFixedRecall(num_labels=3, min_precision=0.5, thresholds=None)
+        >>> metric = MultilabelPrecisionAtFixedRecall(num_labels=3, min_recall=0.5, thresholds=None)
         >>> metric(preds, target)
         (tensor([1., 1., 1.]), tensor([0.0500, 0.5500, 0.0500]))
-        >>> mlrafp = MultilabelPrecisionAtFixedRecall(num_labels=3, min_precision=0.5, thresholds=5)
+        >>> mlrafp = MultilabelPrecisionAtFixedRecall(num_labels=3, min_recall=0.5, thresholds=5)
         >>> mlrafp(preds, target)
         (tensor([1., 1., 1.]), tensor([0.0000, 0.5000, 0.0000]))
     """
@@ -389,7 +392,7 @@ class MultilabelPrecisionAtFixedRecall(MultilabelPrecisionRecallCurve):
     def __init__(
         self,
         num_labels: int,
-        min_precision: float,
+        min_recall: float,
         thresholds: Optional[Union[int, List[float], Tensor]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
@@ -399,15 +402,15 @@ class MultilabelPrecisionAtFixedRecall(MultilabelPrecisionRecallCurve):
             num_labels=num_labels, thresholds=thresholds, ignore_index=ignore_index, validate_args=False, **kwargs
         )
         if validate_args:
-            _multilabel_recall_at_fixed_precision_arg_validation(num_labels, min_precision, thresholds, ignore_index)
+            _multilabel_recall_at_fixed_precision_arg_validation(num_labels, min_recall, thresholds, ignore_index)
         self.validate_args = validate_args
-        self.min_precision = min_precision
+        self.min_recall = min_recall
 
     def compute(self) -> Tuple[Tensor, Tensor]:
         """Compute metric."""
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _multilabel_recall_at_fixed_precision_arg_compute(
-            state, self.num_labels, self.thresholds, self.ignore_index, self.min_precision
+            state, self.num_labels, self.thresholds, self.ignore_index, self.min_recall, reduce_fn=_precision_at_recall
         )
 
     def plot(
@@ -433,7 +436,7 @@ class MultilabelPrecisionAtFixedRecall(MultilabelPrecisionRecallCurve):
             >>> from torch import rand, randint
             >>> # Example plotting a single value
             >>> from torchmetrics.classification import MultilabelPrecisionAtFixedRecall
-            >>> metric = MultilabelPrecisionAtFixedRecall(num_labels=3, min_precision=0.5)
+            >>> metric = MultilabelPrecisionAtFixedRecall(num_labels=3, min_recall=0.5)
             >>> metric.update(rand(20, 3), randint(2, (20, 3)))
             >>> fig_, ax_ = metric.plot()  # the returned plot only shows the maximum recall value by default
 
@@ -443,7 +446,7 @@ class MultilabelPrecisionAtFixedRecall(MultilabelPrecisionRecallCurve):
             >>> from torch import rand, randint
             >>> # Example plotting multiple values
             >>> from torchmetrics.classification import MultilabelPrecisionAtFixedRecall
-            >>> metric = MultilabelPrecisionAtFixedRecall(num_labels=3, min_precision=0.5)
+            >>> metric = MultilabelPrecisionAtFixedRecall(num_labels=3, min_recall=0.5)
             >>> values = [ ]
             >>> for _ in range(10):
             ...     # we index by 0 such that only the maximum recall value is plotted
@@ -469,7 +472,7 @@ class PrecisionAtFixedRecall:
     def __new__(
         cls,
         task: Literal["binary", "multiclass", "multilabel"],
-        min_precision: float,
+        min_recall: float,
         thresholds: Optional[Union[int, List[float], Tensor]] = None,
         num_classes: Optional[int] = None,
         num_labels: Optional[int] = None,
@@ -480,15 +483,15 @@ class PrecisionAtFixedRecall:
         """Initialize task metric."""
         task = ClassificationTask.from_str(task)
         if task == ClassificationTask.BINARY:
-            return BinaryPrecisionAtFixedRecall(min_precision, thresholds, ignore_index, validate_args, **kwargs)
+            return BinaryPrecisionAtFixedRecall(min_recall, thresholds, ignore_index, validate_args, **kwargs)
         if task == ClassificationTask.MULTICLASS:
             assert isinstance(num_classes, int)
             return MulticlassPrecisionAtFixedRecall(
-                num_classes, min_precision, thresholds, ignore_index, validate_args, **kwargs
+                num_classes, min_recall, thresholds, ignore_index, validate_args, **kwargs
             )
         if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelPrecisionAtFixedRecall(
-                num_labels, min_precision, thresholds, ignore_index, validate_args, **kwargs
+                num_labels, min_recall, thresholds, ignore_index, validate_args, **kwargs
             )
         return None

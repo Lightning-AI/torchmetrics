@@ -77,7 +77,7 @@ from torchmetrics.functional.classification.matthews_corrcoef import (
     multiclass_matthews_corrcoef,
     multilabel_matthews_corrcoef,
 )
-from torchmetrics.functional.classification.precision_at_fixed_recall(
+from torchmetrics.functional.classification.precision_at_fixed_recall import (
     binary_precision_at_fixed_recall,
     multiclass_precision_at_fixed_recall,
     multilabel_precision_at_fixed_recall,
