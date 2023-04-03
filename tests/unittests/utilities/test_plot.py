@@ -787,21 +787,23 @@ def test_plot_method_collection(together, num_vals):
     )
     if num_vals == 1:
         m_collection.update(torch.randint(0, 2, size=(10,)), torch.randint(0, 2, size=(10,)))
-        fig, ax = m_collection.plot(together=together)
+        fig_ax = m_collection.plot(together=together)
     else:
         vals = []
         for _ in range(num_vals):
             vals.append(m_collection(torch.randint(0, 2, size=(10,)), torch.randint(0, 2, size=(10,))))
-        fig, ax = m_collection.plot(val=vals, together=together)
+        fig_ax = m_collection.plot(val=vals, together=together)
 
     if together:
+        assert isinstance(fig_ax, tuple)
+        assert len(fig_ax) == 2
+        fig, ax = fig_ax
         assert isinstance(fig, plt.Figure)
         assert isinstance(ax, matplotlib.axes.Axes)
     else:
-        assert isinstance(fig, list)
-        assert isinstance(ax, list)
-        assert all(isinstance(f, plt.Figure) for f in fig)
-        assert all(isinstance(a, matplotlib.axes.Axes) for a in ax)
+        assert isinstance(fig_ax, list)
+        assert all(isinstance(f[0], plt.Figure) for f in fig_ax)
+        assert all(isinstance(f[1], matplotlib.axes.Axes) for f in fig_ax)
 
 
 @pytest.mark.parametrize(
