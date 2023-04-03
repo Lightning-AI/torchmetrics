@@ -94,7 +94,7 @@ jobs:
         pypi-dir: ${{ env.PYPI_CACHE }}
 
     - name: Temp numba bump (for py3.11)
-      if: ${{ runner.python-version == '3.11' }}
+      if: ${{ matrix.python-version == '3.11' }}
       # ToDo: remove after full 0.57.0 release
       run: pip install "numba>=0.57.0rc1" -U --pre
 
@@ -116,7 +116,7 @@ jobs:
       run: python -m pytest torchmetrics --reruns 3 --reruns-delay 2
 
     - name: Freeze PIL (hotfix)
-      if: ${{ runner.python-version != '3.11' }}
+      if: ${{ matrix.python-version != '3.11' }}
       # import of PILLOW_VERSION which they recently removed in v9.0 in favor of __version__
       run: pip install "Pillow<9.0"  # It messes with torchvision
 
