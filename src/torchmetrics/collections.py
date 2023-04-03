@@ -14,7 +14,7 @@
 # this is just a bypass for this module name collision with build-in one
 from collections import OrderedDict
 from copy import deepcopy
-from typing import Any, Dict, Hashable, Iterable, List, Literal, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, Hashable, Iterable, List, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -530,7 +530,7 @@ class MetricCollection(ModuleDict):
             >>> from torchmetrics.classification import BinaryAccuracy, BinaryPrecision, BinaryRecall
             >>> metrics = MetricCollection([BinaryAccuracy(), BinaryPrecision(), BinaryRecall()])
             >>> metrics.update(torch.rand(10), torch.randint(2, (10,)))
-            >>> fig_, ax_ = metrics.plot()
+            >>> fig_ax_ = metrics.plot()
 
         .. plot::
             :scale: 75
@@ -543,7 +543,7 @@ class MetricCollection(ModuleDict):
             >>> values = []
             >>> for _ in range(10):
             ...     values.append(metrics(torch.rand(10), torch.randint(2, (10,))))
-            >>> fig, ax = metric.plot(values)
+            >>> fig_, ax_ = metrics.plot(values, together=True)
         """
         if not isinstance(together, bool):
             raise ValueError(f"Expected argument `together` to be a boolean, but got {type(together)}")

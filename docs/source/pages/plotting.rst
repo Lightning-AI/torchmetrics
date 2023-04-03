@@ -58,8 +58,7 @@ Plotting a single step
 
 At the most basic level the ``.plot`` method can be used to plot the value from a single step. This can be done in two
 ways:
-* Either ``.plot`` method is called with no input, and internally ``metric.compute()`` is called and that value is
-  plotted
+* Either ``.plot`` method is called with no input, and internally ``metric.compute()`` is called and that value is plotted
 * ``.plot`` is called on a single returned value by the metric, for example from ``metric.forward()``
 
 In both cases it will generate a plot like this (Accuracy as an example):
@@ -71,7 +70,7 @@ In both cases it will generate a plot like this (Accuracy as an example):
         metric.update(torch.rand(10,), torch.randint(2, (10,)))
     fig, ax = metric.plot()
 
-.. image:: binary_accuracy.png
+.. image:: ../_static/images/binary_accuracy.png
    :height: 100px
    :width: 200 px
    :scale: 50 %
@@ -91,7 +90,7 @@ that case calling ``.plot`` will return a figure similar to this:
         metric.update(torch.randint(3, (10,)), torch.randint(3, (10,)))
     fig, ax = metric.plot()
 
-.. image:: multiclass_accuracy.png
+.. image:: ../_static/images/multiclass_accuracy.png
    :height: 100px
    :width: 200 px
    :scale: 50 %
@@ -110,7 +109,7 @@ metric:
         metric.update(torch.randint(3, (10,)), torch.randint(3, (10,)))
     fig, ax = metric.plot()
 
-.. image:: confusionmatrix.png
+.. image:: ../_static/images/confusion_matrix.png
    :height: 100px
    :width: 200 px
    :scale: 50 %
@@ -149,7 +148,7 @@ a model over time, we could do it like this:
         metric.reset()
     fig, ax = metric.plot(values)
 
-.. image:: binary_accuracy_multistep.png
+.. image:: ../_static/images/binary_accuracy_multistep.png
    :height: 100px
    :width: 200 px
    :scale: 50 %
@@ -185,7 +184,7 @@ collection of binary classification metrics and redirecting the output of ``.plo
         collection.reset()
     collection.plot(val=values, ax=ax)
 
-.. image:: binary_accuracy_multistep.png
+.. image:: ../_static/images/binary_accuracy_multistep.png
    :height: 100px
    :width: 200 px
    :scale: 50 %
@@ -212,7 +211,7 @@ is only possible if all the metrics in the collection returns a scalar tensor.
         collection.reset()
     collection.plot(val=values, together=True)
 
-.. image:: collection_binary_together.png
+.. image:: ../_static/images/collection_binary_together.png
    :height: 100px
    :width: 200 px
    :scale: 50 %
@@ -269,7 +268,7 @@ to rely on ``MetricTracker`` to keep track of the metrics over multiple steps.
     ]
     tracker.plot(val=scalar_results, ax=ax3)
 
-.. image:: tracker_binary.png
+.. image:: ../_static/images/tracker_binary.png
    :height: 100px
    :width: 200 px
    :scale: 50 %
