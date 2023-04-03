@@ -5,6 +5,7 @@ from typing_extensions import Literal
 from torchmetrics.audio.pit import PermutationInvariantTraining
 from torchmetrics.audio.sdr import ScaleInvariantSignalDistortionRatio, SignalDistortionRatio
 from torchmetrics.audio.snr import ScaleInvariantSignalNoiseRatio, SignalNoiseRatio
+from torchmetrics.utilities import _future_warning
 
 
 class _PermutationInvariantTraining(PermutationInvariantTraining):
@@ -14,7 +15,7 @@ class _PermutationInvariantTraining(PermutationInvariantTraining):
         eval_func: Literal["max", "min"] = "max",
         **kwargs: Any,
     ) -> None:
-        raise DeprecationWarning(
+        _future_warning(
             "Importing `PermutationInvariantTraining` from TM root was deprecated and will be removed in 2.0; "
             "use importing from domain specific sub-package `torchmetrics.audio` instead."
         )
@@ -27,7 +28,7 @@ class _ScaleInvariantSignalDistortionRatio(ScaleInvariantSignalDistortionRatio):
         zero_mean: bool = False,
         **kwargs: Any,
     ) -> None:
-        raise DeprecationWarning(
+        _future_warning(
             "Importing `ScaleInvariantSignalDistortionRatio` from TM root was deprecated and will be removed in 2.0; "
             "use importing from domain specific sub-package `torchmetrics.audio` instead."
         )
@@ -39,7 +40,7 @@ class _ScaleInvariantSignalNoiseRatio(ScaleInvariantSignalNoiseRatio):
         self,
         **kwargs: Any,
     ) -> None:
-        raise DeprecationWarning(
+        _future_warning(
             "Importing `ScaleInvariantSignalNoiseRatio` from TM root was deprecated and will be removed in 2.0; "
             "use importing from domain specific sub-package `torchmetrics.audio` instead."
         )
@@ -55,7 +56,7 @@ class _SignalDistortionRatio(SignalDistortionRatio):
         load_diag: Optional[float] = None,
         **kwargs: Any,
     ) -> None:
-        raise DeprecationWarning(
+        _future_warning(
             "Importing `SignalDistortionRatio` from TM root was deprecated and will be removed in 2.0; "
             "use importing from domain specific sub-package `torchmetrics.audio` instead."
         )
@@ -70,7 +71,7 @@ class _SignalNoiseRatio(SignalNoiseRatio):
         zero_mean: bool = False,
         **kwargs: Any,
     ) -> None:
-        raise DeprecationWarning(
+        _future_warning(
             "Importing `SignalNoiseRatio` from TM root was deprecated and will be removed in 2.0; "
             "use importing from domain specific sub-package `torchmetrics.audio` instead."
         )
