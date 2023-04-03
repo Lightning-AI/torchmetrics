@@ -41,6 +41,8 @@ from torchmetrics.classification import (  # noqa: E402
     Recall,
     Specificity,
     StatScores,
+    RecallAtFixedPrecision,
+    PrecisionAtFixedRecall,
 )
 from torchmetrics.collections import MetricCollection  # noqa: E402
 from torchmetrics.detection import ModifiedPanopticQuality, PanopticQuality  # noqa: E402
@@ -161,10 +163,12 @@ __all__ = [
     "PermutationInvariantTraining",
     "Perplexity",
     "Precision",
+    "PrecisionAtFixedRecall",
     "PrecisionRecallCurve",
     "PeakSignalNoiseRatio",
     "R2Score",
     "Recall",
+    "RecallAtFixedPrecision",
     "RelativeAverageSpectralError",
     "RetrievalFallOut",
     "RetrievalHitRate",

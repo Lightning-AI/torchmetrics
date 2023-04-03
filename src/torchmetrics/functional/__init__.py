@@ -30,6 +30,8 @@ from torchmetrics.functional.classification.matthews_corrcoef import matthews_co
 from torchmetrics.functional.classification.precision_recall import precision, recall
 from torchmetrics.functional.classification.precision_recall_curve import precision_recall_curve
 from torchmetrics.functional.classification.roc import roc
+from torchmetrics.functional.classification.recall_at_fixed_precision import recall_at_fixed_precision
+from torchmetrics.functional.classification.precision_at_fixed_recall import precision_at_fixed_recall
 from torchmetrics.functional.classification.specificity import specificity
 from torchmetrics.functional.classification.stat_scores import stat_scores
 from torchmetrics.functional.detection.modified_panoptic_quality import modified_panoptic_quality
