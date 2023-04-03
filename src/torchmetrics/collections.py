@@ -496,7 +496,7 @@ class MetricCollection(ModuleDict):
     ) -> Sequence[_PLOT_OUT_TYPE]:
         """Plot a single or multiple values from the metric.
 
-        The plot method have two modes of operation. If argument `together` is set to `False` (default), the `.plot`
+        The plot method has two modes of operation. If argument `together` is set to `False` (default), the `.plot`
         method of each metric will be called individually and the result will be list of figures. If `together` is set
         to `True`, the values of all metrics will instead be plotted in the same figure.
 

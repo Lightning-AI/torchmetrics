@@ -10,13 +10,13 @@ Plotting
 ########
 
 .. note::
-    The visualzation/plotting interface of Torchmetrics requires ``matplotlib`` to be installed. Install with either
-    ``pip install matplotlib`` or ``pip install 'torchmetrics[visual]'``. If the ladder option is chosen the
+    The visualization/plotting interface of Torchmetrics requires ``matplotlib`` to be installed. Install with either
+    ``pip install matplotlib`` or ``pip install 'torchmetrics[visual]'``. If the latter option is chosen the
     `Scienceplot package <https://github.com/garrettj403/SciencePlots>`_ is also installed and all plots in
     Torchmetrics will default to using that style.
 
 Torchmetrics comes with build-in support for quick visualization of your metrics, by simply using the ``.plot`` method
-that all modular metrics implement. This is method provides a consist interface for basic plotting of all metrics.
+that all modular metrics implement. This method provides a consistent interface for basic plotting of all metrics.
 
 .. code-block:: python
 
@@ -27,7 +27,7 @@ that all modular metrics implement. This is method provides a consist interface 
 
 ``.plot`` will always return two objects: ``fig`` is an instance of :class:`~matplotlib.figure.Figure` which contains
 figure level attributes and `ax` is an instance of :class:`~matplotlib.axes.Axes` that contains all the elements of the
-plot. These two objects allow to change attributes of the plot after it is created. For example if you wanted to make
+plot. These two objects allow to change attributes of the plot after it is created. For example, if you want to make
 the fontsize of the x-axis a bit bigger and give the figure a nice title and finally save it on the above example, it
 could be do like this:
 
@@ -132,9 +132,9 @@ Plotting multi steps
 ********************
 
 In the above examples we have only plotted a single step/single value, but it is also possible to plot multiple steps
-from the same metric. This is often the case when training a machine learning model, were you are tracking one or
+from the same metric. This is often the case when training a machine learning model, where you are tracking one or
 metrics that you want to plot as they are changing over time. This can be done by provided a sequence of outputs from
-any metric, computed using ``metric.forward`` or ``metric.compute``. For example, if we wanted to plot the accuracy of
+any metric, computed using ``metric.forward`` or ``metric.compute``. For example, if we want to plot the accuracy of
 a model over time, we could do it like this:
 
 .. code-block:: python
@@ -155,7 +155,7 @@ a model over time, we could do it like this:
    :alt: multistep accuracy plot
    :align: right
 
-Do note that metrics that does not return simple scalar tensors, such as `ConfusionMatrix`, `ROC` that have specialized
+Do note that metrics that do not return simple scalar tensors, such as `ConfusionMatrix`, `ROC` that have specialized
 visualzation does not support plotting multiple steps, out of the box and the user needs to manually plot the values
 for each step.
 
@@ -191,7 +191,7 @@ collection of binary classification metrics and redirecting the output of ``.plo
    :alt: multistep accuracy plot
    :align: right
 
-However, the ``plot`` method of ``MetricCollection`` also support an additional argument called ``together`` that will
+However, the ``plot`` method of ``MetricCollection`` also supports an additional argument called ``together`` that will
 automatically try to plot all the metrics in the collection together in the same plot (with appropriate labels). This
 is only possible if all the metrics in the collection returns a scalar tensor.
 
