@@ -84,8 +84,7 @@ jobs:
         sudo apt install -y ffmpeg dvipng texlive-latex-extra texlive-fonts-recommended cm-super
     - name: Setup Windows
       if: ${{ runner.os == 'windows' }}
-      run: |
-        choco install ffmpeg
+      run: choco install ffmpeg
 
     - name: source cashing
       uses: ./.github/actions/pull-caches
@@ -93,6 +92,11 @@ jobs:
         requires: ${{ matrix.requires }}
         pytorch-version: ${{ matrix.pytorch-version }}
         pypi-dir: ${{ env.PYPI_CACHE }}
+
+    - name: Temp numba bump (for py3.11)
+      if: ${{ runner.python-version == '3.11' }}
+      # ToDo: remove after full 0.57.0 release
+      run: pip install "numba>=0.57.0rc1" -U --pre
 
     - name: Install pkg
       timeout-minutes: 25
