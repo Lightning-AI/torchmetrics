@@ -96,7 +96,7 @@ jobs:
     - name: Temp numba bump (for py3.11)
       if: ${{ matrix.python-version == '3.11' }}
       # ToDo: remove after full 0.57.0 release
-      run: pip install "numba>=0.57.0rc1" -U --pre
+      run: pip install "numba>=0.57.0rc1" "llvmlite>=0.40.0" -U --pre
 
     - name: Install pkg
       timeout-minutes: 25
