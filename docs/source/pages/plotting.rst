@@ -5,6 +5,10 @@
     import matplotlib.pyplot as plt
     import torchmetrics
 
+    import os
+    os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
+
+
 ########
 Plotting
 ########
@@ -16,12 +20,12 @@ Plotting
     Torchmetrics will default to using that style.
 
 Torchmetrics comes with build-in support for quick visualization of your metrics, by simply using the ``.plot`` method
-that all modular metrics implement. This is method provides a consist interface
+that all modular metrics implement. This is method provides a consist interface for basic plotting of all metrics.
 
 .. testcode:: python
 
     metric = AnyMetricYouLike()
-    for _ in range(N):
+    for _ in range(num_updates):
         metric.update(preds[i], target[i])
     fig, ax = metric.plot()
 
@@ -46,7 +50,7 @@ support an optional `ax` argument where you can pass in the subaxises you want t
     fig, ax = plt.subplots(nrows=1, ncols=2)
     metric1 = Metric1()
     metric2 = Metric2()
-    for _ in range(N):
+    for _ in range(num_updates):
         metric1.update(preds[i], target[i])
         metric2.update(preds[i], target[i])
     metric1.plot(ax=ax[0])
@@ -67,7 +71,7 @@ In both cases it will generate a plot like this (Accuracy as an example):
 .. testcode:: python
 
     metric = torchmetrics.Accuracy(task="binary")
-    for _ in range(N):
+    for _ in range(num_updates):
         metric.update(torch.rand(10,), torch.randint(2, (10,)))
     fig, ax = metric.plot()
 
@@ -87,7 +91,7 @@ that case calling ``.plot`` will return a figure similar to this:
 .. testcode:: python
 
     metric = torchmetrics.Accuracy(task="multiclass", num_classes=3, average=None)
-    for _ in range(N):
+    for _ in range(num_updates):
         metric.update(torch.randint(3, (10,)), torch.randint(3, (10,)))
     fig, ax = metric.plot()
 
@@ -105,8 +109,8 @@ metric:
 
 .. testcode:: python
 
-    metric = torchmetrics.ConfusionMatrix(num_classes=3)
-    for _ in range(N):
+    metric = torchmetrics.ConfusionMatrix(task="multiclass", num_classes=3)
+    for _ in range(num_updates):
         metric.update(torch.randint(3, (10,)), torch.randint(3, (10,)))
     fig, ax = metric.plot()
 
@@ -128,26 +132,28 @@ However, you would still need to initialize the corresponding metric class to ge
     )
     fig, ax = plot_class.plot(value)
 
-**********************
+********************
 Plotting multi steps
-**********************
+********************
 
-In the above examples we have only plotted a single step, but it is also possible to plot multiple steps. This can be
-done by provided a sequence of outputs from any metric, for example computed using ``metric.forward`` or
-``metric.compute``. For example, if we wanted to plot the accuracy of a model over time, we could do it like this:
+In the above examples we have only plotted a single step/single value, but it is also possible to plot multiple steps
+from the same metric. This is often the case when training a machine learning model, were you are tracking one or
+metrics that you want to plot as they are changing over time. This can be done by provided a sequence of outputs from
+any metric, computed using ``metric.forward`` or ``metric.compute``. For example, if we wanted to plot the accuracy of
+a model over time, we could do it like this:
 
 .. testcode:: python
 
     metric = torchmetrics.Accuracy(task="binary")
     values = [ ]
-    for _ in range(num_steps)
-        for _ in range(N):
-            metric.update(torch.rand(10,), torch.randint(2, (10,)))
+    for step in range(num_steps):
+        for _ in range(num_updates):
+            metric.update(preds(step), target(step))
         values.append(metric.compute())  # save value
         metric.reset()
-    fig, ax = metric.plot(metric.compute())
+    fig, ax = metric.plot(values)
 
-.. image:: multistep_accuracy.png
+.. image:: binary_accuracy_multistep.png
    :height: 100px
    :width: 200 px
    :scale: 50 %
@@ -162,20 +168,114 @@ for each step.
 Plotting a collection of metrics
 ********************************
 
-``MetricCollection`` also supports `.plot` method and by default it works by just returinging a collection of plots for all
-its members
+``MetricCollection`` also supports `.plot` method and by default it works by just returning a collection of plots for
+all its members. Thus, instead of returning a single (fig, ax) pair, calling `.plot` method of ``MetricCollection`` will
+return a sequence of such pairs, one for each member in the collection. In the following example we are forming a
+collection of binary classification metrics and redirecting the output of ``.plot`` to different subplots:
 
-Additionally, ``MetricCollection`` also implements the specialized `.plot_together` method that will combine all the
-metrics into a single plot in one of two styles:
-* `plot_type="lines"` will create a line plot similar
-* `plot_type="radar"` will create a radar plot
+.. testcode:: python
 
-The default output of ``MetricCollection.plot`` is a list of (fig, ax) pairs for each metric in the collection.
+    collection = torchmetrics.MetricCollection(
+        torchmetrics.Accuracy(task="binary"),
+        torchmetrics.Recall(task="binary"),
+        torchmetrics.Precision(task="binary"),
+    )
+    fig, ax = plt.subplots(nrows=1, ncols=3)
+    values = [ ]
+    for step in range(num_steps):
+        for _ in range(num_updates):
+            collection.update(preds(step), target(step))
+        values.append(collection.compute())
+        collection.reset()
+    collection.plot(val=values, ax=ax)
+
+.. image:: binary_accuracy_multistep.png
+   :height: 100px
+   :width: 200 px
+   :scale: 50 %
+   :alt: multistep accuracy plot
+   :align: right
+
+However, the ``plot`` method of ``MetricCollection`` also support an additional argument called ``together`` that will
+automatically try to plot all the metrics in the collection together in the same plot (with appropriate labels). This
+is only possible if all the metrics in the collection returns a scalar tensor.
+
+.. testcode:: python
+
+    collection = torchmetrics.MetricCollection(
+        torchmetrics.Accuracy(task="binary"),
+        torchmetrics.Recall(task="binary"),
+        torchmetrics.Precision(task="binary"),
+    )
+    values = [ ]
+    fig, ax = plt.subplots(figsize=(6.8, 4.8))
+    for step in range(num_steps):
+        for _ in range(num_updates):
+            collection.update(preds(step), target(step))
+        values.append(collection.compute())
+        collection.reset()
+    collection.plot(val=values, together=True)
+
+.. image:: collection_binary_together.png
+   :height: 100px
+   :width: 200 px
+   :scale: 50 %
+   :alt: multistep accuracy plot
+   :align: right
+
 
 ***************
 Advance example
 ***************
 
-In the following we are going to show how to use the ``.plot`` method to create a more advanced plot.
-We are going to combine the functionality of several metrics using ``MetricCollection`` and plot them together. In
-addition we are going to rely on ``MetricTracker`` to keep track of the metrics and plot them as they are updated.
+In the following we are going to show how to use the ``.plot`` method to create a more advanced plot. We are going to
+combine the functionality of several metrics using ``MetricCollection`` and plot them together. In addition we are going
+to rely on ``MetricTracker`` to keep track of the metrics over multiple steps.
+
+.. testcode:: python
+
+    # Define collection that is a mix of metrics that return a scalar tensors and not
+    confmat = torchmetrics.ConfusionMatrix(task="binary")
+    roc = torchmetrics.ROC(task="binary")
+    collection = torchmetrics.MetricCollection(
+        torchmetrics.Accuracy(task="binary"),
+        torchmetrics.Recall(task="binary"),
+        torchmetrics.Precision(task="binary"),
+        confmat,
+        roc,
+    )
+
+    # Define tracker over the collection to easy keep track of the metrics over multiple steps
+    tracker = torchmetrics.wrappers.MetricTracker(collection)
+
+    # Run "training" loop
+    for step in range(num_steps):
+        tracker.increment()
+        for _ in range(N):
+            tracker.update(preds(step), target(step))
+
+    # Extract all metrics from all steps
+    all_results = tracker.compute_all()
+
+    # Constuct a single figure with appropriate layout for all metrics
+    fig = plt.figure(layout="constrained")
+    ax1 = plt.subplot(2, 2, 1)
+    ax2 = plt.subplot(2, 2, 2)
+    ax3 = plt.subplot(2, 2, (3, 4))
+
+    # ConfusionMatrix and ROC we just plot the last step, notice how we call the plot method of those metrics
+    confmat.plot(val=all_results[-1]['BinaryConfusionMatrix'], ax=ax1)
+    roc.plot(all_results[-1]["BinaryROC"], ax=ax2)
+
+    # For the remainig we plot the full history, but we need to extract the scalar values from the results
+    scalar_results = [
+        {k: v for k, v in ar.items() if isinstance(v, torch.Tensor) and v.numel() == 1} for ar in all_results
+    ]
+    tracker.plot(val=scalar_results, ax=ax3)
+
+.. image:: tracker_binary.png
+   :height: 100px
+   :width: 200 px
+   :scale: 50 %
+   :alt: multistep accuracy plot
+   :align: right
