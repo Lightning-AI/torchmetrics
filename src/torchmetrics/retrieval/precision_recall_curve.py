@@ -111,7 +111,7 @@ class RetrievalPrecisionRecallCurve(Metric):
 
     Example:
         >>> from torch import tensor
-        >>> from torchmetrics import RetrievalPrecisionRecallCurve
+        >>> from torchmetrics.retrieval import RetrievalPrecisionRecallCurve
         >>> indexes = tensor([0, 0, 0, 0, 1, 1, 1])
         >>> preds = tensor([0.4, 0.01, 0.5, 0.6, 0.2, 0.3, 0.5])
         >>> target = tensor([True, False, False, True, True, False, True])
@@ -314,7 +314,7 @@ class RetrievalRecallAtFixedPrecision(RetrievalPrecisionRecallCurve):
 
     Example:
         >>> from torch import tensor
-        >>> from torchmetrics import RetrievalRecallAtFixedPrecision
+        >>> from torchmetrics.retrieval import RetrievalRecallAtFixedPrecision
         >>> indexes = tensor([0, 0, 0, 0, 1, 1, 1])
         >>> preds = tensor([0.4, 0.01, 0.5, 0.6, 0.2, 0.3, 0.5])
         >>> target = tensor([True, False, False, True, True, False, True])

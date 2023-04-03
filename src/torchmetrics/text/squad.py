@@ -81,7 +81,7 @@ class SQuAD(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
-        >>> from torchmetrics import SQuAD
+        >>> from torchmetrics.text import SQuAD
         >>> preds = [{"prediction_text": "1976", "id": "56e10a3be3433e1400422b22"}]
         >>> target = [{"answers": {"answer_start": [97], "text": ["1976"]}, "id": "56e10a3be3433e1400422b22"}]
         >>> squad = SQuAD()
@@ -142,7 +142,7 @@ class SQuAD(Metric):
             :scale: 75
 
             >>> # Example plotting a single value
-            >>> from torchmetrics import SQuAD
+            >>> from torchmetrics.text import SQuAD
             >>> metric = SQuAD()
             >>> preds = [{"prediction_text": "1976", "id": "56e10a3be3433e1400422b22"}]
             >>> target = [{"answers": {"answer_start": [97], "text": ["1976"]}, "id": "56e10a3be3433e1400422b22"}]
@@ -153,7 +153,7 @@ class SQuAD(Metric):
             :scale: 75
 
             >>> # Example plotting multiple values
-            >>> from torchmetrics import SQuAD
+            >>> from torchmetrics.text import SQuAD
             >>> metric = SQuAD()
             >>> preds = [{"prediction_text": "1976", "id": "56e10a3be3433e1400422b22"}]
             >>> target = [{"answers": {"answer_start": [97], "text": ["1976"]}, "id": "56e10a3be3433e1400422b22"}]

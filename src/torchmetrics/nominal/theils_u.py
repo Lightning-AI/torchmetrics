@@ -51,7 +51,7 @@ class TheilsU(Metric):
         Theil's U Statistic: Tensor
 
     Example:
-        >>> from torchmetrics import TheilsU
+        >>> from torchmetrics.nominal import TheilsU
         >>> _ = torch.manual_seed(42)
         >>> preds = torch.randint(10, (10,))
         >>> target = torch.randint(10, (10,))
@@ -121,7 +121,7 @@ class TheilsU(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics import TheilsU
+            >>> from torchmetrics.nominal import TheilsU
             >>> metric = TheilsU(num_classes=10)
             >>> metric.update(torch.randint(10, (10,)), torch.randint(10, (10,)))
             >>> fig_, ax_ = metric.plot()
@@ -131,7 +131,7 @@ class TheilsU(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics import TheilsU
+            >>> from torchmetrics.nominal import TheilsU
             >>> metric = TheilsU(num_classes=10)
             >>> values = [ ]
             >>> for _ in range(10):
