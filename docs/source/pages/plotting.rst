@@ -18,7 +18,7 @@ Plotting
 Torchmetrics comes with build-in support for quick visualization of your metrics, by simply using the ``.plot`` method
 that all modular metrics implement. This is method provides a consist interface for basic plotting of all metrics.
 
-.. testcode:: python
+.. code-block:: python
 
     metric = AnyMetricYouLike()
     for _ in range(num_updates):
@@ -31,7 +31,7 @@ plot. These two objects allow to change attributes of the plot after it is creat
 the fontsize of the x-axis a bit bigger and give the figure a nice title and finally save it on the above example, it
 could be do like this:
 
-.. testcode:: python
+.. code-block:: python
 
     ax.set_fontsize(fs=20)
     fig.set_title("This is a nice plot")
@@ -40,7 +40,7 @@ could be do like this:
 If you want to include a Torchmetrics plot in a bigger figure that have subfigures and subaxises all ``.plot`` methods
 support an optional `ax` argument where you can pass in the subaxises you want the plot to be inserted into:
 
-.. testcode:: python
+.. code-block:: python
 
     # combine plotting of two metrics into one figure
     fig, ax = plt.subplots(nrows=1, ncols=2)
@@ -63,7 +63,7 @@ ways:
 
 In both cases it will generate a plot like this (Accuracy as an example):
 
-.. testcode:: python
+.. code-block:: python
 
     metric = torchmetrics.Accuracy(task="binary")
     for _ in range(num_updates):
@@ -83,7 +83,7 @@ to be optimal. This is true for all metrics that return a scalar tensor.
 Some metrics returns multiple values (such as an tensor with multiple elements or an dict of scalar tensors), and in
 that case calling ``.plot`` will return a figure similar to this:
 
-.. testcode:: python
+.. code-block:: python
 
     metric = torchmetrics.Accuracy(task="multiclass", num_classes=3, average=None)
     for _ in range(num_updates):
@@ -102,7 +102,7 @@ for all metrics that returns a scalar tensor, but if the metric returns a tensor
 ``.plot`` method will return a specialized plot for that particular metric. Take for example the ``ConfusionMatrix``
 metric:
 
-.. testcode:: python
+.. code-block:: python
 
     metric = torchmetrics.ConfusionMatrix(task="multiclass", num_classes=3)
     for _ in range(num_updates):
@@ -119,7 +119,7 @@ metric:
 If you prefer to use the functional interface of Torchmetrics, you can also plot the values returned by the functional.
 However, you would still need to initialize the corresponding metric class to get the information about the metric:
 
-.. testcode:: python
+.. code-block:: python
 
     plot_class = torchmetrics.Accuracy(task="multiclass", num_classes=3)
     value = torchmetrics.functional.accuracy(
@@ -137,7 +137,7 @@ metrics that you want to plot as they are changing over time. This can be done b
 any metric, computed using ``metric.forward`` or ``metric.compute``. For example, if we wanted to plot the accuracy of
 a model over time, we could do it like this:
 
-.. testcode:: python
+.. code-block:: python
 
     metric = torchmetrics.Accuracy(task="binary")
     values = [ ]
@@ -168,7 +168,7 @@ all its members. Thus, instead of returning a single (fig, ax) pair, calling `.p
 return a sequence of such pairs, one for each member in the collection. In the following example we are forming a
 collection of binary classification metrics and redirecting the output of ``.plot`` to different subplots:
 
-.. testcode:: python
+.. code-block:: python
 
     collection = torchmetrics.MetricCollection(
         torchmetrics.Accuracy(task="binary"),
@@ -195,7 +195,7 @@ However, the ``plot`` method of ``MetricCollection`` also support an additional 
 automatically try to plot all the metrics in the collection together in the same plot (with appropriate labels). This
 is only possible if all the metrics in the collection returns a scalar tensor.
 
-.. testcode:: python
+.. code-block:: python
 
     collection = torchmetrics.MetricCollection(
         torchmetrics.Accuracy(task="binary"),
@@ -227,7 +227,7 @@ In the following we are going to show how to use the ``.plot`` method to create 
 combine the functionality of several metrics using ``MetricCollection`` and plot them together. In addition we are going
 to rely on ``MetricTracker`` to keep track of the metrics over multiple steps.
 
-.. testcode:: python
+.. code-block:: python
 
     # Define collection that is a mix of metrics that return a scalar tensors and not
     confmat = torchmetrics.ConfusionMatrix(task="binary")
