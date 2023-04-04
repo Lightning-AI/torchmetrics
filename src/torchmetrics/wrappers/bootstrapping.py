@@ -74,7 +74,7 @@ class BootStrapper(Metric):
 
     Example::
         >>> from pprint import pprint
-        >>> from torchmetrics import BootStrapper
+        >>> from torchmetrics.wrappers import BootStrapper
         >>> from torchmetrics.classification import MulticlassAccuracy
         >>> _ = torch.manual_seed(123)
         >>> base_metric = MulticlassAccuracy(num_classes=5, average='micro')

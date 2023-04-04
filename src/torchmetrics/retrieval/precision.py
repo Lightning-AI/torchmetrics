@@ -72,7 +72,7 @@ class RetrievalPrecision(RetrievalMetric):
 
     Example:
         >>> from torch import tensor
-        >>> from torchmetrics import RetrievalPrecision
+        >>> from torchmetrics.retrieval import RetrievalPrecision
         >>> indexes = tensor([0, 0, 0, 1, 1, 1, 1])
         >>> preds = tensor([0.2, 0.3, 0.5, 0.1, 0.3, 0.5, 0.2])
         >>> target = tensor([False, False, True, False, True, False, True])

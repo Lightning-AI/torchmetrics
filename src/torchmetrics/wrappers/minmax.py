@@ -41,7 +41,7 @@ class MinMaxMetric(Metric):
 
     Example::
         >>> import torch
-        >>> from torchmetrics import MinMaxMetric
+        >>> from torchmetrics.wrappers import MinMaxMetric
         >>> from torchmetrics.classification import BinaryAccuracy
         >>> from pprint import pprint
         >>> base_metric = BinaryAccuracy()
