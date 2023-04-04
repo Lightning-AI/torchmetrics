@@ -84,7 +84,7 @@ class _SignalDistortionRatio(SignalDistortionRatio):
     >>> from torchmetrics.functional import signal_distortion_ratio
     >>> preds = torch.randn(4, 2, 8000)  # [batch, spk, time]
     >>> target = torch.randn(4, 2, 8000)
-    >>> pit = _PermutationInvariantTraining(_signal_distortion_ratio, 'max')
+    >>> pit = _PermutationInvariantTraining(signal_distortion_ratio, 'max')
     >>> pit(preds, target)
     tensor(-11.6051)
     """
