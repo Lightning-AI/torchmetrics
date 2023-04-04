@@ -77,9 +77,6 @@ def _pd_pearsons_t_matrix(matrix):
 
 
 @pytest.mark.skipif(compare_version("pandas", operator.lt, "1.3.2"), reason="`dython` package requires `pandas>=1.3.2`")
-@pytest.mark.skipif(  # TODO: testing on CUDA fails with pandas 1.3.5, and newer is not available for python 3.7
-    torch.cuda.is_available(), reason="Tests fail on CUDA with the most up-to-date available pandas"
-)
 @pytest.mark.parametrize(
     "preds, target",
     [
@@ -124,9 +121,6 @@ class TestPearsonsContingencyCoefficient(MetricTester):
 
 
 @pytest.mark.skipif(compare_version("pandas", operator.lt, "1.3.2"), reason="`dython` package requires `pandas>=1.3.2`")
-@pytest.mark.skipif(  # TODO: testing on CUDA fails with pandas 1.3.5, and newer is not available for python 3.7
-    torch.cuda.is_available(), reason="Tests fail on CUDA with the most up-to-date available pandas"
-)
 def test_pearsons_contingency_coefficient_matrix(pearson_matrix_input):
     """Test matrix version of metric works as expected."""
     tm_score = pearsons_contingency_coefficient_matrix(pearson_matrix_input)
