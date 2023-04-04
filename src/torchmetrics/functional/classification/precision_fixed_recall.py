@@ -198,10 +198,14 @@ def multiclass_precision_at_fixed_recall(
         ...                       [0.05, 0.05, 0.75, 0.05, 0.05],
         ...                       [0.05, 0.05, 0.05, 0.75, 0.05]])
         >>> target = torch.tensor([0, 1, 3, 2])
-        >>> multiclass_precision_at_fixed_recall(preds, target, num_classes=5, min_recall=0.5, thresholds=None)
-        (tensor([1.0000, 1.0000, 0.2500, 0.2500, 0.0000]), tensor([7.5000e-01, 7.5000e-01, 5.0000e-02, 5.0000e-02, 1.0000e+06]))
-        >>> multiclass_precision_at_fixed_recall(preds, target, num_classes=5, min_recall=0.5, thresholds=5)
-        (tensor([1.0000, 1.0000, 0.2500, 0.2500, 0.0000]), tensor([7.5000e-01, 7.5000e-01, 0.0000e+00, 0.0000e+00, 1.0000e+06]))
+        >>> multiclass_precision_at_fixed_recall(  # doctest: +NORMALIZE_WHITESPACE
+        ...     preds, target, num_classes=5, min_recall=0.5, thresholds=None)
+        (tensor([1.0000, 1.0000, 0.2500, 0.2500, 0.0000]),
+         tensor([7.5000e-01, 7.5000e-01, 5.0000e-02, 5.0000e-02, 1.0000e+06]))
+        >>> multiclass_precision_at_fixed_recall(  # doctest: +NORMALIZE_WHITESPACE
+        ...     preds, target, num_classes=5, min_recall=0.5, thresholds=5)
+        (tensor([1.0000, 1.0000, 0.2500, 0.2500, 0.0000]),
+         tensor([7.5000e-01, 7.5000e-01, 0.0000e+00, 0.0000e+00, 1.0000e+06]))
     """
     if validate_args:
         _multiclass_recall_at_fixed_precision_arg_validation(num_classes, min_recall, thresholds, ignore_index)

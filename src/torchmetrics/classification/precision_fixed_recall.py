@@ -233,11 +233,13 @@ class MulticlassPrecisionAtFixedRecall(MulticlassPrecisionRecallCurve):
         ...                 [0.05, 0.05, 0.05, 0.75, 0.05]])
         >>> target = tensor([0, 1, 3, 2])
         >>> metric = MulticlassPrecisionAtFixedRecall(num_classes=5, min_recall=0.5, thresholds=None)
-        >>> metric(preds, target)
-        (tensor([1.0000, 1.0000, 0.2500, 0.2500, 0.0000]), tensor([7.5000e-01, 7.5000e-01, 5.0000e-02, 5.0000e-02, 1.0000e+06]))
+        >>> metric(preds, target)  # doctest: +NORMALIZE_WHITESPACE
+        (tensor([1.0000, 1.0000, 0.2500, 0.2500, 0.0000]),
+         tensor([7.5000e-01, 7.5000e-01, 5.0000e-02, 5.0000e-02, 1.0000e+06]))
         >>> mcrafp = MulticlassPrecisionAtFixedRecall(num_classes=5, min_recall=0.5, thresholds=5)
-        >>> mcrafp(preds, target)
-        (tensor([1.0000, 1.0000, 0.2500, 0.2500, 0.0000]), tensor([7.5000e-01, 7.5000e-01, 0.0000e+00, 0.0000e+00, 1.0000e+06]))
+        >>> mcrafp(preds, target)  # doctest: +NORMALIZE_WHITESPACE
+        (tensor([1.0000, 1.0000, 0.2500, 0.2500, 0.0000]),
+         tensor([7.5000e-01, 7.5000e-01, 0.0000e+00, 0.0000e+00, 1.0000e+06]))
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
