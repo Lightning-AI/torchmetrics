@@ -106,6 +106,7 @@ class MultioutputWrapper(Metric):
 
             if self.squeeze_outputs:
                 selected_args = [arg.squeeze(self.output_dim) for arg in selected_args]
+                selected_kwargs = {k: v.squeeze(self.output_dim) for k, v in selected_kwargs.items()}
             args_kwargs_by_output.append((selected_args, selected_kwargs))
         return args_kwargs_by_output
 
