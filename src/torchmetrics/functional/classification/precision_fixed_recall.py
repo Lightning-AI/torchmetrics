@@ -84,7 +84,7 @@ def binary_precision_at_fixed_recall(
     Additional dimension ``...`` will be flattened into the batch dimension.
 
     The implementation both supports calculating the metric in a non-binned but accurate version and a binned version
-    that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
+    that is less accurate but more memory efficient. Setting the `thresholds` argument to ``None`` will activate the
     non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
     argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
     size :math:`\mathcal{O}(n_{thresholds})` (constant memory).
@@ -96,12 +96,12 @@ def binary_precision_at_fixed_recall(
         thresholds:
             Can be one of:
 
-            - If set to `None`, will use a non-binned approach where thresholds are dynamically calculated from
+            - If set to ``None``, will use a non-binned approach where thresholds are dynamically calculated from
               all the data. Most accurate but also most memory consuming approach.
-            - If set to an `int` (larger than 1), will use that number of thresholds linearly spaced from
+            - If set to an ``int`` (larger than 1), will use that number of thresholds linearly spaced from
               0 to 1 as bins for the calculation.
-            - If set to an `list` of floats, will use the indicated thresholds in the list as bins for the calculation
-            - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
+            - If set to an ``list`` of floats, will use the indicated thresholds in the list as bins for the calculation
+            - If set to an 1d :class:`~torch.Tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
         ignore_index:
@@ -120,9 +120,9 @@ def binary_precision_at_fixed_recall(
         >>> preds = torch.tensor([0, 0.5, 0.7, 0.8])
         >>> target = torch.tensor([0, 1, 1, 0])
         >>> binary_precision_at_fixed_recall(preds, target, min_recall=0.5, thresholds=None)
-        (tensor(1.), tensor(0.5000))
+        (tensor(0.6667), tensor(0.5000))
         >>> binary_precision_at_fixed_recall(preds, target, min_recall=0.5, thresholds=5)
-        (tensor(1.), tensor(0.5000))
+        (tensor(0.6667), tensor(0.5000))
     """
     if validate_args:
         _binary_recall_at_fixed_precision_arg_validation(min_recall, thresholds, ignore_index)
@@ -159,7 +159,7 @@ def multiclass_precision_at_fixed_recall(
     Additional dimension ``...`` will be flattened into the batch dimension.
 
     The implementation both supports calculating the metric in a non-binned but accurate version and a binned version
-    that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
+    that is less accurate but more memory efficient. Setting the `thresholds` argument to ``None`` will activate the
     non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
     argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
     size :math:`\mathcal{O}(n_{thresholds} \times n_{classes})` (constant memory).
@@ -172,12 +172,12 @@ def multiclass_precision_at_fixed_recall(
         thresholds:
             Can be one of:
 
-            - If set to `None`, will use a non-binned approach where thresholds are dynamically calculated from
+            - If set to ``None``, will use a non-binned approach where thresholds are dynamically calculated from
               all the data. Most accurate but also most memory consuming approach.
-            - If set to an `int` (larger than 1), will use that number of thresholds linearly spaced from
+            - If set to an ``int`` (larger than 1), will use that number of thresholds linearly spaced from
               0 to 1 as bins for the calculation.
-            - If set to an `list` of floats, will use the indicated thresholds in the list as bins for the calculation
-            - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
+            - If set to an ``list`` of floats, will use the indicated thresholds in the list as bins for the calculation
+            - If set to an 1d :class:`~torch.Tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
         ignore_index:
@@ -199,9 +199,9 @@ def multiclass_precision_at_fixed_recall(
         ...                       [0.05, 0.05, 0.05, 0.75, 0.05]])
         >>> target = torch.tensor([0, 1, 3, 2])
         >>> multiclass_precision_at_fixed_recall(preds, target, num_classes=5, min_recall=0.5, thresholds=None)
-        (tensor([1., 1., 0., 0., 0.]), tensor([7.5000e-01, 7.5000e-01, 1.0000e+06, 1.0000e+06, 1.0000e+06]))
+        (tensor([1.0000, 1.0000, 0.2500, 0.2500, 0.0000]), tensor([7.5000e-01, 7.5000e-01, 5.0000e-02, 5.0000e-02, 1.0000e+06]))
         >>> multiclass_precision_at_fixed_recall(preds, target, num_classes=5, min_recall=0.5, thresholds=5)
-        (tensor([1., 1., 0., 0., 0.]), tensor([7.5000e-01, 7.5000e-01, 1.0000e+06, 1.0000e+06, 1.0000e+06]))
+        (tensor([1.0000, 1.0000, 0.2500, 0.2500, 0.0000]), tensor([7.5000e-01, 7.5000e-01, 0.0000e+00, 0.0000e+00, 1.0000e+06]))
     """
     if validate_args:
         _multiclass_recall_at_fixed_precision_arg_validation(num_classes, min_recall, thresholds, ignore_index)
@@ -240,7 +240,7 @@ def multilabel_precision_at_fixed_recall(
     Additional dimension ``...`` will be flattened into the batch dimension.
 
     The implementation both supports calculating the metric in a non-binned but accurate version and a binned version
-    that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
+    that is less accurate but more memory efficient. Setting the `thresholds` argument to ``None`` will activate the
     non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
     argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
     size :math:`\mathcal{O}(n_{thresholds} \times n_{labels})` (constant memory).
@@ -253,12 +253,12 @@ def multilabel_precision_at_fixed_recall(
         thresholds:
             Can be one of:
 
-            - If set to `None`, will use a non-binned approach where thresholds are dynamically calculated from
+            - If set to ``None``, will use a non-binned approach where thresholds are dynamically calculated from
               all the data. Most accurate but also most memory consuming approach.
-            - If set to an `int` (larger than 1), will use that number of thresholds linearly spaced from
+            - If set to an ``int`` (larger than 1), will use that number of thresholds linearly spaced from
               0 to 1 as bins for the calculation.
-            - If set to an `list` of floats, will use the indicated thresholds in the list as bins for the calculation
-            - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
+            - If set to an ``list`` of floats, will use the indicated thresholds in the list as bins for the calculation
+            - If set to an 1d :class:`~torch.Tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
         ignore_index:
@@ -283,9 +283,9 @@ def multilabel_precision_at_fixed_recall(
         ...                        [0, 1, 1],
         ...                        [1, 1, 1]])
         >>> multilabel_precision_at_fixed_recall(preds, target, num_labels=3, min_recall=0.5, thresholds=None)
-        (tensor([1., 1., 1.]), tensor([0.0500, 0.5500, 0.0500]))
+        (tensor([1.0000, 0.6667, 1.0000]), tensor([0.7500, 0.5500, 0.3500]))
         >>> multilabel_precision_at_fixed_recall(preds, target, num_labels=3, min_recall=0.5, thresholds=5)
-        (tensor([1., 1., 1.]), tensor([0.0000, 0.5000, 0.0000]))
+        (tensor([1.0000, 0.6667, 1.0000]), tensor([0.7500, 0.5000, 0.2500]))
     """
     if validate_args:
         _multilabel_recall_at_fixed_precision_arg_validation(num_labels, min_recall, thresholds, ignore_index)

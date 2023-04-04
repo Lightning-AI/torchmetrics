@@ -69,7 +69,7 @@ class BinaryPrecisionAtFixedRecall(BinaryPrecisionRecallCurve):
 
     .. note::
        The implementation both supports calculating the metric in a non-binned but accurate version and a
-       binned version that is less accurate but more memory efficient. Setting the `thresholds` argument to `None`
+       binned version that is less accurate but more memory efficient. Setting the `thresholds` argument to ``None``
        will activate the non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting
        the `thresholds` argument to either an integer, list or a 1d tensor will use a binned version that uses memory
        of size :math:`\mathcal{O}(n_{thresholds})` (constant memory).
@@ -79,12 +79,12 @@ class BinaryPrecisionAtFixedRecall(BinaryPrecisionRecallCurve):
         thresholds:
             Can be one of:
 
-            - If set to `None`, will use a non-binned approach where thresholds are dynamically calculated from
+            - If set to ``None``, will use a non-binned approach where thresholds are dynamically calculated from
               all the data. Most accurate but also most memory consuming approach.
-            - If set to an `int` (larger than 1), will use that number of thresholds linearly spaced from
+            - If set to an ``int`` (larger than 1), will use that number of thresholds linearly spaced from
               0 to 1 as bins for the calculation.
-            - If set to an `list` of floats, will use the indicated thresholds in the list as bins for the calculation
-            - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
+            - If set to an ``list`` of floats, will use the indicated thresholds in the list as bins for the calculation
+            - If set to an 1d :class:`~torch.Tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
@@ -98,10 +98,10 @@ class BinaryPrecisionAtFixedRecall(BinaryPrecisionRecallCurve):
         >>> target = tensor([0, 1, 1, 0])
         >>> metric = BinaryPrecisionAtFixedRecall(min_recall=0.5, thresholds=None)
         >>> metric(preds, target)
-        (tensor(1.), tensor(0.5000))
+        (tensor(0.6667), tensor(0.5000))
         >>> metric = BinaryPrecisionAtFixedRecall(min_recall=0.5, thresholds=5)
         >>> metric(preds, target)
-        (tensor(1.), tensor(0.5000))
+        (tensor(0.6667), tensor(0.5000))
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -201,7 +201,7 @@ class MulticlassPrecisionAtFixedRecall(MulticlassPrecisionRecallCurve):
 
     .. note::
        The implementation both supports calculating the metric in a non-binned but accurate version and a binned version
-       that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
+       that is less accurate but more memory efficient. Setting the `thresholds` argument to ``None`` will activate the
        non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
        argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
        size :math:`\mathcal{O}(n_{thresholds} \times n_{classes})` (constant memory).
@@ -212,12 +212,12 @@ class MulticlassPrecisionAtFixedRecall(MulticlassPrecisionRecallCurve):
         thresholds:
             Can be one of:
 
-            - If set to `None`, will use a non-binned approach where thresholds are dynamically calculated from
+            - If set to ``None``, will use a non-binned approach where thresholds are dynamically calculated from
               all the data. Most accurate but also most memory consuming approach.
-            - If set to an `int` (larger than 1), will use that number of thresholds linearly spaced from
+            - If set to an ``int`` (larger than 1), will use that number of thresholds linearly spaced from
               0 to 1 as bins for the calculation.
-            - If set to an `list` of floats, will use the indicated thresholds in the list as bins for the calculation
-            - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
+            - If set to an ``list`` of floats, will use the indicated thresholds in the list as bins for the calculation
+            - If set to an 1d :class:`~torch.Tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
@@ -234,10 +234,10 @@ class MulticlassPrecisionAtFixedRecall(MulticlassPrecisionRecallCurve):
         >>> target = tensor([0, 1, 3, 2])
         >>> metric = MulticlassPrecisionAtFixedRecall(num_classes=5, min_recall=0.5, thresholds=None)
         >>> metric(preds, target)
-        (tensor([1., 1., 0., 0., 0.]), tensor([7.5000e-01, 7.5000e-01, 1.0000e+06, 1.0000e+06, 1.0000e+06]))
+        (tensor([1.0000, 1.0000, 0.2500, 0.2500, 0.0000]), tensor([7.5000e-01, 7.5000e-01, 5.0000e-02, 5.0000e-02, 1.0000e+06]))
         >>> mcrafp = MulticlassPrecisionAtFixedRecall(num_classes=5, min_recall=0.5, thresholds=5)
         >>> mcrafp(preds, target)
-        (tensor([1., 1., 0., 0., 0.]), tensor([7.5000e-01, 7.5000e-01, 1.0000e+06, 1.0000e+06, 1.0000e+06]))
+        (tensor([1.0000, 1.0000, 0.2500, 0.2500, 0.0000]), tensor([7.5000e-01, 7.5000e-01, 0.0000e+00, 0.0000e+00, 1.0000e+06]))
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -341,7 +341,7 @@ class MultilabelPrecisionAtFixedRecall(MultilabelPrecisionRecallCurve):
 
     .. note::
        The implementation both supports calculating the metric in a non-binned but accurate version and a binned version
-       that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
+       that is less accurate but more memory efficient. Setting the `thresholds` argument to ``None`` will activate the
        non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
        argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
        size :math:`\mathcal{O}(n_{thresholds} \times n_{labels})` (constant memory).
@@ -352,12 +352,12 @@ class MultilabelPrecisionAtFixedRecall(MultilabelPrecisionRecallCurve):
         thresholds:
             Can be one of:
 
-            - If set to `None`, will use a non-binned approach where thresholds are dynamically calculated from
+            - If set to ``None``, will use a non-binned approach where thresholds are dynamically calculated from
               all the data. Most accurate but also most memory consuming approach.
-            - If set to an `int` (larger than 1), will use that number of thresholds linearly spaced from
+            - If set to an ``int`` (larger than 1), will use that number of thresholds linearly spaced from
               0 to 1 as bins for the calculation.
-            - If set to an `list` of floats, will use the indicated thresholds in the list as bins for the calculation
-            - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
+            - If set to an ``list`` of floats, will use the indicated thresholds in the list as bins for the calculation
+            - If set to an 1d :class:`~torch.Tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
@@ -377,10 +377,10 @@ class MultilabelPrecisionAtFixedRecall(MultilabelPrecisionRecallCurve):
         ...                  [1, 1, 1]])
         >>> metric = MultilabelPrecisionAtFixedRecall(num_labels=3, min_recall=0.5, thresholds=None)
         >>> metric(preds, target)
-        (tensor([1., 1., 1.]), tensor([0.0500, 0.5500, 0.0500]))
+        (tensor([1.0000, 0.6667, 1.0000]), tensor([0.7500, 0.5500, 0.3500]))
         >>> mlrafp = MultilabelPrecisionAtFixedRecall(num_labels=3, min_recall=0.5, thresholds=5)
         >>> mlrafp(preds, target)
-        (tensor([1., 1., 1.]), tensor([0.0000, 0.5000, 0.0000]))
+        (tensor([1.0000, 0.6667, 1.0000]), tensor([0.7500, 0.5000, 0.2500]))
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None

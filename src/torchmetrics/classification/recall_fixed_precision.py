@@ -68,7 +68,7 @@ class BinaryRecallAtFixedPrecision(BinaryPrecisionRecallCurve):
 
     .. note::
        The implementation both supports calculating the metric in a non-binned but accurate version and a
-       binned version that is less accurate but more memory efficient. Setting the `thresholds` argument to `None`
+       binned version that is less accurate but more memory efficient. Setting the `thresholds` argument to ``None``
        will activate the non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting
        the `thresholds` argument to either an integer, list or a 1d tensor will use a binned version that uses memory
        of size :math:`\mathcal{O}(n_{thresholds})` (constant memory).
@@ -78,12 +78,12 @@ class BinaryRecallAtFixedPrecision(BinaryPrecisionRecallCurve):
         thresholds:
             Can be one of:
 
-            - If set to `None`, will use a non-binned approach where thresholds are dynamically calculated from
+            - If set to ``None``, will use a non-binned approach where thresholds are dynamically calculated from
               all the data. Most accurate but also most memory consuming approach.
-            - If set to an `int` (larger than 1), will use that number of thresholds linearly spaced from
+            - If set to an ``int`` (larger than 1), will use that number of thresholds linearly spaced from
               0 to 1 as bins for the calculation.
-            - If set to an `list` of floats, will use the indicated thresholds in the list as bins for the calculation
-            - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
+            - If set to an ``list`` of floats, will use the indicated thresholds in the list as bins for the calculation
+            - If set to an 1d :class:`~torch.Tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
@@ -198,7 +198,7 @@ class MulticlassRecallAtFixedPrecision(MulticlassPrecisionRecallCurve):
 
     .. note::
        The implementation both supports calculating the metric in a non-binned but accurate version and a binned version
-       that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
+       that is less accurate but more memory efficient. Setting the `thresholds` argument to ``None`` will activate the
        non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
        argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
        size :math:`\mathcal{O}(n_{thresholds} \times n_{classes})` (constant memory).
@@ -211,10 +211,10 @@ class MulticlassRecallAtFixedPrecision(MulticlassPrecisionRecallCurve):
 
             - If set to `None`, will use a non-binned approach where thresholds are dynamically calculated from
               all the data. Most accurate but also most memory consuming approach.
-            - If set to an `int` (larger than 1), will use that number of thresholds linearly spaced from
+            - If set to an ``int`` (larger than 1), will use that number of thresholds linearly spaced from
               0 to 1 as bins for the calculation.
-            - If set to an `list` of floats, will use the indicated thresholds in the list as bins for the calculation
-            - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
+            - If set to an ``list`` of floats, will use the indicated thresholds in the list as bins for the calculation
+            - If set to an 1d :class:`~torch.Tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
@@ -338,7 +338,7 @@ class MultilabelRecallAtFixedPrecision(MultilabelPrecisionRecallCurve):
 
     .. note::
        The implementation both supports calculating the metric in a non-binned but accurate version and a binned version
-       that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
+       that is less accurate but more memory efficient. Setting the `thresholds` argument to ```None``` will activate the
        non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
        argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
        size :math:`\mathcal{O}(n_{thresholds} \times n_{labels})` (constant memory).
@@ -349,12 +349,12 @@ class MultilabelRecallAtFixedPrecision(MultilabelPrecisionRecallCurve):
         thresholds:
             Can be one of:
 
-            - If set to `None`, will use a non-binned approach where thresholds are dynamically calculated from
+            - If set to ``None``, will use a non-binned approach where thresholds are dynamically calculated from
               all the data. Most accurate but also most memory consuming approach.
-            - If set to an `int` (larger than 1), will use that number of thresholds linearly spaced from
+            - If set to an ``int`` (larger than 1), will use that number of thresholds linearly spaced from
               0 to 1 as bins for the calculation.
-            - If set to an `list` of floats, will use the indicated thresholds in the list as bins for the calculation
-            - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
+            - If set to an ``list`` of floats, will use the indicated thresholds in the list as bins for the calculation
+            - If set to an 1d :class:`~torch.Tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
