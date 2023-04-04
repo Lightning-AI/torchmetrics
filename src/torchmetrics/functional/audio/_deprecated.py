@@ -13,7 +13,7 @@ def _permutation_invariant_training(
     preds: Tensor, target: Tensor, metric_func: Callable, eval_func: Literal["max", "min"] = "max", **kwargs: Any
 ) -> Tuple[Tensor, Tensor]:
     _future_warning(
-        "Importing as `from torchmetrics.functional import permutation_invariant_training` was deprecated"
+        "Importing `permutation_invariant_training` from `torchmetrics.functional` was deprecated and will be removed in 2.0. Import `permutation_invariant_training` from `torchmetrics.audio` instead."
         " and will be removed in 2.0; use importing from domain specific sub-package `torchmetrics.audio` instead."
     )
     return permutation_invariant_training(

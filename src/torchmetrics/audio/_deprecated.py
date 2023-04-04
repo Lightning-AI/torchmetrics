@@ -16,7 +16,7 @@ class _PermutationInvariantTraining(PermutationInvariantTraining):
         **kwargs: Any,
     ) -> None:
         _future_warning(
-            "Importing as `from torchmetrics import PermutationInvariantTraining` was deprecated"
+            "Importing `PermutationInvariantTraining` from `torchmetrics` was deprecated and will be removed in 2.0. Import `PermutationInvariantTraining` from `torchmetrics.audio` instead."
             " and will be removed in 2.0; use importing from domain specific sub-package `torchmetrics.audio` instead."
         )
         return super().__init__(metric_func=metric_func, eval_func=eval_func, **kwargs)
