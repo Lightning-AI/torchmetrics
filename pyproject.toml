@@ -92,6 +92,7 @@ ignore = [
     "D107",  # Missing docstring in `__init__`
     "ANN101",  # Missing type annotation for `self` in method
     "ANN102",  # Missing type annotation for `cls` in classmethod
+    "S301",  # `pickle` and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue  # todo
 ]
 # Exclude a variety of commonly ignored directories.
 exclude = [
