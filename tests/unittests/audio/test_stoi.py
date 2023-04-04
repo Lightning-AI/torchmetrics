@@ -20,8 +20,8 @@ from pystoi import stoi as stoi_backend
 from scipy.io import wavfile
 from torch import Tensor
 
-from torchmetrics.audio.stoi import ShortTimeObjectiveIntelligibility
-from torchmetrics.functional.audio.stoi import short_time_objective_intelligibility
+from torchmetrics.audio import ShortTimeObjectiveIntelligibility
+from torchmetrics.functional.audio import short_time_objective_intelligibility
 from unittests.audio import _SAMPLE_AUDIO_SPEECH, _SAMPLE_AUDIO_SPEECH_BAB_DB
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester

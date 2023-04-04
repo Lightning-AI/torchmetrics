@@ -20,7 +20,7 @@ from torchmetrics.functional.audio._deprecated import (
     _scale_invariant_signal_noise_ratio as scale_invariant_signal_noise_ratio,
 )
 from torchmetrics.functional.audio._deprecated import _signal_distortion_ratio as signal_distortion_ratio
-from torchmetrics.functional.audio._deprecated import _signal_distortion_ratioas
+from torchmetrics.functional.audio._deprecated import _signal_distortion_ratioas as signal_distortion_ratioas
 from torchmetrics.functional.audio._deprecated import _signal_noise_ratio as signal_noise_ratio
 from torchmetrics.functional.classification.accuracy import accuracy
 from torchmetrics.functional.classification.auroc import auroc
