@@ -85,7 +85,7 @@ class CHRFScore(Metric):
             If ``beta`` is smaller than 0.
 
     Example:
-        >>> from torchmetrics import CHRFScore
+        >>> from torchmetrics.text import CHRFScore
         >>> preds = ['the cat is on the mat']
         >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
         >>> chrf = CHRFScore()
@@ -227,7 +227,7 @@ class CHRFScore(Metric):
             :scale: 75
 
             >>> # Example plotting a single value
-            >>> from torchmetrics import CHRFScore
+            >>> from torchmetrics.text import CHRFScore
             >>> metric = CHRFScore()
             >>> preds = ['the cat is on the mat']
             >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
@@ -238,7 +238,7 @@ class CHRFScore(Metric):
             :scale: 75
 
             >>> # Example plotting multiple values
-            >>> from torchmetrics import CHRFScore
+            >>> from torchmetrics.text import CHRFScore
             >>> metric = CHRFScore()
             >>> preds = ['the cat is on the mat']
             >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
