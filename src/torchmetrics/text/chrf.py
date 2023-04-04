@@ -166,12 +166,9 @@ class CHRFScore(Metric):
 
     def _convert_states_to_dicts(self) -> _DICT_STATES_TYPES:
         """Convert global metric states to the n-gram dictionaries to be passed in ``_chrf_score_update``."""
-        n_grams_dicts: Dict[str, Dict[int, Tensor]] = {
-            name: n_gram_dict
-            for name, n_gram_dict in zip(
-                _DICT_STATES_NAMES, _prepare_n_grams_dicts(self.n_char_order, self.n_word_order)
-            )
-        }
+        n_grams_dicts: Dict[str, Dict[int, Tensor]] = dict(
+            zip(_DICT_STATES_NAMES, _prepare_n_grams_dicts(self.n_char_order, self.n_word_order))
+        )
 
         for (n_gram_level, n_gram_order), text in self._get_text_n_gram_iterator():
             for n in range(1, n_gram_order + 1):
@@ -184,7 +181,7 @@ class CHRFScore(Metric):
 
     def _update_states_from_dicts(self, n_grams_dicts_tuple: _DICT_STATES_TYPES) -> None:
         """Update global metric states based on the n-gram dictionaries calculated on the current batch."""
-        n_grams_dicts = {name: n_gram_dict for name, n_gram_dict, in zip(_DICT_STATES_NAMES, n_grams_dicts_tuple)}
+        n_grams_dicts = dict(zip(_DICT_STATES_NAMES, n_grams_dicts_tuple))
         for (n_gram_level, n_gram_order), text in self._get_text_n_gram_iterator():
             for n in range(1, n_gram_order + 1):
                 dict_name = self._get_dict_name(text, n_gram_level)
