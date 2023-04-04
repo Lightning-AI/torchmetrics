@@ -65,7 +65,7 @@ class PanopticQuality(Metric):
 
     Example:
         >>> from torch import tensor
-        >>> from torchmetrics import PanopticQuality
+        >>> from torchmetrics.detection import PanopticQuality
         >>> preds = tensor([[[[6, 0], [0, 0], [6, 0], [6, 0]],
         ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
         ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
@@ -175,7 +175,7 @@ class PanopticQuality(Metric):
             :scale: 75
 
             >>> from torch import tensor
-            >>> from torchmetrics import PanopticQuality
+            >>> from torchmetrics.detection import PanopticQuality
             >>> preds = tensor([[[[6, 0], [0, 0], [6, 0], [6, 0]],
             ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
             ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
@@ -195,7 +195,7 @@ class PanopticQuality(Metric):
 
             >>> # Example plotting multiple values
             >>> from torch import tensor
-            >>> from torchmetrics import PanopticQuality
+            >>> from torchmetrics.detection import PanopticQuality
             >>> preds = tensor([[[[6, 0], [0, 0], [6, 0], [6, 0]],
             ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
             ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],

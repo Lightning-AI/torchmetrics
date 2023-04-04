@@ -67,7 +67,7 @@ class PearsonsContingencyCoefficient(Metric):
             If `nan_strategy` is equal to `'replace'` and `nan_replace_value` is not an `int` or `float`
 
     Example:
-        >>> from torchmetrics import PearsonsContingencyCoefficient
+        >>> from torchmetrics.nominal import PearsonsContingencyCoefficient
         >>> _ = torch.manual_seed(42)
         >>> preds = torch.randint(0, 4, (100,))
         >>> target = torch.round(preds + torch.randn(100)).clamp(0, 4)
@@ -142,7 +142,7 @@ class PearsonsContingencyCoefficient(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics import PearsonsContingencyCoefficient
+            >>> from torchmetrics.nominal import PearsonsContingencyCoefficient
             >>> metric = PearsonsContingencyCoefficient(num_classes=5)
             >>> metric.update(torch.randint(0, 4, (100,)), torch.randint(0, 4, (100,)))
             >>> fig_, ax_ = metric.plot()
@@ -152,7 +152,7 @@ class PearsonsContingencyCoefficient(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics import PearsonsContingencyCoefficient
+            >>> from torchmetrics.nominal import PearsonsContingencyCoefficient
             >>> metric = PearsonsContingencyCoefficient(num_classes=5)
             >>> values = [ ]
             >>> for _ in range(10):

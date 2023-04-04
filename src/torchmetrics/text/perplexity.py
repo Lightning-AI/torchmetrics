@@ -47,7 +47,7 @@ class Perplexity(Metric):
             Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Examples:
-        >>> from torchmetrics import Perplexity
+        >>> from torchmetrics.text import Perplexity
         >>> import torch
         >>> preds = torch.rand(2, 8, 5, generator=torch.manual_seed(22))
         >>> target = torch.randint(5, (2, 8), generator=torch.manual_seed(22))
@@ -106,7 +106,7 @@ class Perplexity(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics import Perplexity
+            >>> from torchmetrics.text import Perplexity
             >>> metric = Perplexity()
             >>> metric.update(torch.rand(2, 8, 5), torch.randint(5, (2, 8)))
             >>> fig_, ax_ = metric.plot()
@@ -116,7 +116,7 @@ class Perplexity(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics import Perplexity
+            >>> from torchmetrics.text import Perplexity
             >>> metric = Perplexity()
             >>> values = [ ]
             >>> for _ in range(10):
