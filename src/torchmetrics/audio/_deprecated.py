@@ -9,6 +9,18 @@ from torchmetrics.utilities import __deprecated_root_import_class
 
 
 class _PermutationInvariantTraining(PermutationInvariantTraining):
+    """Wrapper for deprecated import.
+
+    >>> import torch
+    >>> from torchmetrics.functional import _scale_invariant_signal_noise_ratio
+    >>> _ = torch.manual_seed(42)
+    >>> preds = torch.randn(3, 2, 5) # [batch, spk, time]
+    >>> target = torch.randn(3, 2, 5) # [batch, spk, time]
+    >>> pit = _PermutationInvariantTraining(_scale_invariant_signal_noise_ratio, 'max')
+    >>> pit(preds, target)
+    tensor(-2.1065)
+    """
+
     def __init__(
         self,
         metric_func: Callable,
@@ -20,6 +32,16 @@ class _PermutationInvariantTraining(PermutationInvariantTraining):
 
 
 class _ScaleInvariantSignalDistortionRatio(ScaleInvariantSignalDistortionRatio):
+    """Wrapper for deprecated import.
+
+    >>> from torch import tensor
+    >>> target = tensor([3.0, -0.5, 2.0, 7.0])
+    >>> preds = tensor([2.5, 0.0, 2.0, 8.0])
+    >>> si_sdr = _ScaleInvariantSignalDistortionRatio()
+    >>> si_sdr(preds, target)
+    tensor(18.4030)
+    """
+
     def __init__(
         self,
         zero_mean: bool = False,
@@ -30,6 +52,16 @@ class _ScaleInvariantSignalDistortionRatio(ScaleInvariantSignalDistortionRatio):
 
 
 class _ScaleInvariantSignalNoiseRatio(ScaleInvariantSignalNoiseRatio):
+    """Wrapper for deprecated import.
+
+    >>> from torch import tensor
+    >>> target = tensor([3.0, -0.5, 2.0, 7.0])
+    >>> preds = tensor([2.5, 0.0, 2.0, 8.0])
+    >>> si_snr = _ScaleInvariantSignalNoiseRatio()
+    >>> si_snr(preds, target)
+    tensor(15.0918)
+    """
+
     def __init__(
         self,
         **kwargs: Any,
@@ -39,6 +71,24 @@ class _ScaleInvariantSignalNoiseRatio(ScaleInvariantSignalNoiseRatio):
 
 
 class _SignalDistortionRatio(SignalDistortionRatio):
+    """Wrapper for deprecated import.
+
+    >>> import torch
+    >>> g = torch.manual_seed(1)
+    >>> preds = torch.randn(8000)
+    >>> target = torch.randn(8000)
+    >>> sdr = _SignalDistortionRatio()
+    >>> sdr(preds, target)
+    tensor(-12.0589)
+    >>> # use with pit
+    >>> from torchmetrics.functional import _signal_distortion_ratio
+    >>> preds = torch.randn(4, 2, 8000)  # [batch, spk, time]
+    >>> target = torch.randn(4, 2, 8000)
+    >>> pit = _PermutationInvariantTraining(_signal_distortion_ratio, 'max')
+    >>> pit(preds, target)
+    tensor(-11.6051)
+    """
+
     def __init__(
         self,
         use_cg_iter: Optional[int] = None,
@@ -54,6 +104,16 @@ class _SignalDistortionRatio(SignalDistortionRatio):
 
 
 class _SignalNoiseRatio(SignalNoiseRatio):
+    """Wrapper for deprecated import.
+
+    >>> from torch import tensor
+    >>> target = tensor([3.0, -0.5, 2.0, 7.0])
+    >>> preds = tensor([2.5, 0.0, 2.0, 8.0])
+    >>> snr = _SignalNoiseRatio()
+    >>> snr(preds, target)
+    tensor(16.1805)
+    """
+
     def __init__(
         self,
         zero_mean: bool = False,
