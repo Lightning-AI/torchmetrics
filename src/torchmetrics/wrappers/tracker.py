@@ -299,7 +299,7 @@ class MetricTracker(ModuleList):
             >>> fig_, ax_ = tracker.plot()  # plot all epochs
 
         """
-        val = val if val is not None else [val for val in self.compute_all()]
+        val = val if val is not None else list(self.compute_all())
         fig, ax = plot_single_or_multi_val(
             val,
             ax=ax,
