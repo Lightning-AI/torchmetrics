@@ -16,8 +16,8 @@ class _PermutationInvariantTraining(PermutationInvariantTraining):
         **kwargs: Any,
     ) -> None:
         _future_warning(
-            "Importing `PermutationInvariantTraining` from TM root was deprecated and will be removed in 2.0; "
-            "use importing from domain specific sub-package `torchmetrics.audio` instead."
+            "Importing as `from torchmetrics import PermutationInvariantTraining` was deprecated"
+            " and will be removed in 2.0; use importing from domain specific sub-package `torchmetrics.audio` instead."
         )
         return super().__init__(metric_func=metric_func, eval_func=eval_func, **kwargs)
 
@@ -29,8 +29,8 @@ class _ScaleInvariantSignalDistortionRatio(ScaleInvariantSignalDistortionRatio):
         **kwargs: Any,
     ) -> None:
         _future_warning(
-            "Importing `ScaleInvariantSignalDistortionRatio` from TM root was deprecated and will be removed in 2.0; "
-            "use importing from domain specific sub-package `torchmetrics.audio` instead."
+            "Importing as `from torchmetrics import ScaleInvariantSignalDistortionRatio` was deprecated"
+            " and will be removed in 2.0; use importing from domain specific sub-package `torchmetrics.audio` instead."
         )
         return super().__init__(zero_mean=zero_mean, **kwargs)
 
@@ -41,8 +41,8 @@ class _ScaleInvariantSignalNoiseRatio(ScaleInvariantSignalNoiseRatio):
         **kwargs: Any,
     ) -> None:
         _future_warning(
-            "Importing `ScaleInvariantSignalNoiseRatio` from TM root was deprecated and will be removed in 2.0; "
-            "use importing from domain specific sub-package `torchmetrics.audio` instead."
+            "Importing as `from torchmetrics import ScaleInvariantSignalNoiseRatio` was deprecated"
+            " and will be removed in 2.0; use importing from domain specific sub-package `torchmetrics.audio` instead."
         )
         return super().__init__(**kwargs)
 
@@ -57,8 +57,8 @@ class _SignalDistortionRatio(SignalDistortionRatio):
         **kwargs: Any,
     ) -> None:
         _future_warning(
-            "Importing `SignalDistortionRatio` from TM root was deprecated and will be removed in 2.0; "
-            "use importing from domain specific sub-package `torchmetrics.audio` instead."
+            "Importing as `from torchmetrics import SignalDistortionRatio` was deprecated"
+            " and will be removed in 2.0; use importing from domain specific sub-package `torchmetrics.audio` instead."
         )
         return super().__init__(
             use_cg_iter=use_cg_iter, filter_length=filter_length, zero_mean=zero_mean, load_diag=load_diag, **kwargs
@@ -72,7 +72,7 @@ class _SignalNoiseRatio(SignalNoiseRatio):
         **kwargs: Any,
     ) -> None:
         _future_warning(
-            "Importing `SignalNoiseRatio` from TM root was deprecated and will be removed in 2.0; "
-            "use importing from domain specific sub-package `torchmetrics.audio` instead."
+            "Importing as `from torchmetrics import SignalNoiseRatio` was deprecated"
+            " and will be removed in 2.0; use importing from domain specific sub-package `torchmetrics.audio` instead."
         )
         return super().__init__(zero_mean=zero_mean, **kwargs)
