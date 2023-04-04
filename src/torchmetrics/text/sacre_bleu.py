@@ -71,7 +71,7 @@ class SacreBLEUScore(BLEUScore):
 
 
     Example:
-        >>> from torchmetrics import SacreBLEUScore
+        >>> from torchmetrics.text import SacreBLEUScore
         >>> preds = ['the cat is on the mat']
         >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
         >>> sacre_bleu = SacreBLEUScore()
@@ -144,7 +144,7 @@ class SacreBLEUScore(BLEUScore):
             :scale: 75
 
             >>> # Example plotting a single value
-            >>> from torchmetrics import SacreBLEUScore
+            >>> from torchmetrics.text import SacreBLEUScore
             >>> metric = SacreBLEUScore()
             >>> preds = ['the cat is on the mat']
             >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
@@ -155,7 +155,7 @@ class SacreBLEUScore(BLEUScore):
             :scale: 75
 
             >>> # Example plotting multiple values
-            >>> from torchmetrics import SacreBLEUScore
+            >>> from torchmetrics.text import SacreBLEUScore
             >>> metric = SacreBLEUScore()
             >>> preds = ['the cat is on the mat']
             >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
