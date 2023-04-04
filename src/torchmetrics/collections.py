@@ -384,7 +384,7 @@ class MetricCollection(ModuleDict):
         simply initialize each metric in the collection as its own group
         """
         if isinstance(self._enable_compute_groups, list):
-            self._groups = {i: k for i, k in enumerate(self._enable_compute_groups)}
+            self._groups = dict(enumerate(self._enable_compute_groups))
             for v in self._groups.values():
                 for metric in v:
                     if metric not in self:
