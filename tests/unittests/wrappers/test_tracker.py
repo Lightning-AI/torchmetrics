@@ -15,14 +15,14 @@
 import pytest
 import torch
 
-from torchmetrics import MeanAbsoluteError, MeanSquaredError, MetricCollection, MultioutputWrapper
+from torchmetrics import MeanAbsoluteError, MeanSquaredError, MetricCollection
 from torchmetrics.classification import (
     MulticlassAccuracy,
     MulticlassConfusionMatrix,
     MulticlassPrecision,
     MulticlassRecall,
 )
-from torchmetrics.wrappers import MetricTracker
+from torchmetrics.wrappers import MetricTracker, MultioutputWrapper
 from unittests.helpers import seed_all
 
 seed_all(42)

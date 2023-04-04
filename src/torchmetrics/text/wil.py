@@ -53,7 +53,7 @@ class WordInfoLost(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Examples:
-        >>> from torchmetrics import WordInfoLost
+        >>> from torchmetrics.text import WordInfoLost
         >>> preds = ["this is the prediction", "there is an other sample"]
         >>> target = ["this is the reference", "there is another one"]
         >>> wil = WordInfoLost()
@@ -111,7 +111,7 @@ class WordInfoLost(Metric):
             :scale: 75
 
             >>> # Example plotting a single value
-            >>> from torchmetrics import WordInfoLost
+            >>> from torchmetrics.text import WordInfoLost
             >>> metric = WordInfoLost()
             >>> preds = ["this is the prediction", "there is an other sample"]
             >>> target = ["this is the reference", "there is another one"]
@@ -122,7 +122,7 @@ class WordInfoLost(Metric):
             :scale: 75
 
             >>> # Example plotting multiple values
-            >>> from torchmetrics import WordInfoLost
+            >>> from torchmetrics.text import WordInfoLost
             >>> metric = WordInfoLost()
             >>> preds = ["this is the prediction", "there is an other sample"]
             >>> target = ["this is the reference", "there is another one"]
