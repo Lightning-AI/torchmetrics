@@ -6,7 +6,7 @@ from typing_extensions import Literal
 from torchmetrics.functional.audio.pit import permutation_invariant_training, pit_permutate
 from torchmetrics.functional.audio.sdr import scale_invariant_signal_distortion_ratio, signal_distortion_ratio
 from torchmetrics.functional.audio.snr import scale_invariant_signal_noise_ratio, signal_noise_ratio
-from torchmetrics.utilities.prints import __deprecated_root_import_func
+from torchmetrics.utilities.prints import _deprecated_root_import_func
 
 
 def _permutation_invariant_training(
@@ -27,7 +27,7 @@ def _permutation_invariant_training(
     tensor([[[-0.0579,  0.3560, -0.9604],
              [-0.1719,  0.3205,  0.2951]]])
     """
-    __deprecated_root_import_func("permutation_invariant_training")
+    _deprecated_root_import_func("permutation_invariant_training", "audio")
     return permutation_invariant_training(
         preds=preds, target=target, metric_func=metric_func, eval_func=eval_func, **kwargs
     )
@@ -35,7 +35,7 @@ def _permutation_invariant_training(
 
 def _pit_permutate(preds: Tensor, perm: Tensor) -> Tensor:
     """Wrapper for deprecated import."""
-    __deprecated_root_import_func("pit_permutate")
+    _deprecated_root_import_func("pit_permutate", "audio")
     return pit_permutate(preds=preds, perm=perm)
 
 
@@ -48,7 +48,7 @@ def _scale_invariant_signal_distortion_ratio(preds: Tensor, target: Tensor, zero
     >>> _scale_invariant_signal_distortion_ratio(preds, target)
     tensor(18.4030)
     """
-    __deprecated_root_import_func("scale_invariant_signal_distortion_ratio")
+    _deprecated_root_import_func("scale_invariant_signal_distortion_ratio", "audio")
     return scale_invariant_signal_distortion_ratio(preds=preds, target=target, zero_mean=zero_mean)
 
 
@@ -80,7 +80,7 @@ def _signal_distortion_ratio(
             [1, 0],
             [0, 1]])
     """
-    __deprecated_root_import_func("signal_distortion_ratio")
+    _deprecated_root_import_func("signal_distortion_ratio", "audio")
     return signal_distortion_ratio(
         preds=preds,
         target=target,
@@ -100,7 +100,7 @@ def _scale_invariant_signal_noise_ratio(preds: Tensor, target: Tensor) -> Tensor
     >>> _scale_invariant_signal_noise_ratio(preds, target)
     tensor(15.0918)
     """
-    __deprecated_root_import_func("scale_invariant_signal_noise_ratio")
+    _deprecated_root_import_func("scale_invariant_signal_noise_ratio", "audio")
     return scale_invariant_signal_noise_ratio(preds=preds, target=target)
 
 
@@ -113,5 +113,5 @@ def _signal_noise_ratio(preds: Tensor, target: Tensor, zero_mean: bool = False) 
     >>> _signal_noise_ratio(preds, target)
     tensor(16.1805)
     """
-    __deprecated_root_import_func("signal_noise_ratio")
+    _deprecated_root_import_func("signal_noise_ratio", "audio")
     return signal_noise_ratio(preds=preds, target=target, zero_mean=zero_mean)
