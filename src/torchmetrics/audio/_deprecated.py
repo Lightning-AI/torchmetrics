@@ -5,7 +5,7 @@ from typing_extensions import Literal
 from torchmetrics.audio.pit import PermutationInvariantTraining
 from torchmetrics.audio.sdr import ScaleInvariantSignalDistortionRatio, SignalDistortionRatio
 from torchmetrics.audio.snr import ScaleInvariantSignalNoiseRatio, SignalNoiseRatio
-from torchmetrics.utilities import __deprecated_root_import_class
+from torchmetrics.utilities.prints import __deprecated_root_import_class
 
 
 class _PermutationInvariantTraining(PermutationInvariantTraining):
