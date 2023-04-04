@@ -56,7 +56,7 @@ rank_zero_warn = rank_zero_only(_warn)
 _future_warning = partial(warnings.warn, category=FutureWarning)
 
 
-def __deprecated_root_import_class(name: str) -> None:
+def _deprecated_root_import_class(name: str) -> None:
     _future_warning(
         f"Importing `{name}` from `torchmetrics` was deprecated and will be removed in 2.0."
         f" Import `{name}` from `torchmetrics.audio` instead."
