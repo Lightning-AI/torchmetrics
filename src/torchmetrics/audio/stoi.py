@@ -64,7 +64,7 @@ class ShortTimeObjectiveIntelligibility(Metric):
 
     Example:
         >>> import torch
-        >>> from torchmetrics.audio.stoi import ShortTimeObjectiveIntelligibility
+        >>> from torchmetrics.audio import ShortTimeObjectiveIntelligibility
         >>> g = torch.manual_seed(1)
         >>> preds = torch.randn(8000)
         >>> target = torch.randn(8000)
@@ -131,7 +131,7 @@ class ShortTimeObjectiveIntelligibility(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics.audio.stoi import ShortTimeObjectiveIntelligibility
+            >>> from torchmetrics.audio import ShortTimeObjectiveIntelligibility
             >>> g = torch.manual_seed(1)
             >>> preds = torch.randn(8000)
             >>> target = torch.randn(8000)
@@ -144,7 +144,7 @@ class ShortTimeObjectiveIntelligibility(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics.audio.stoi import ShortTimeObjectiveIntelligibility
+            >>> from torchmetrics.audio import ShortTimeObjectiveIntelligibility
             >>> metric = ShortTimeObjectiveIntelligibility(8000, False)
             >>> g = torch.manual_seed(1)
             >>> preds = torch.randn(8000)

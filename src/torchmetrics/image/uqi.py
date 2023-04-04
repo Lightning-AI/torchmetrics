@@ -57,7 +57,7 @@ class UniversalImageQualityIndex(Metric):
 
     Example:
         >>> import torch
-        >>> from torchmetrics import UniversalImageQualityIndex
+        >>> from torchmetrics.image import UniversalImageQualityIndex
         >>> preds = torch.rand([16, 1, 16, 16])
         >>> target = preds * 0.75
         >>> uqi = UniversalImageQualityIndex()
@@ -130,7 +130,7 @@ class UniversalImageQualityIndex(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics import UniversalImageQualityIndex
+            >>> from torchmetrics.image import UniversalImageQualityIndex
             >>> preds = torch.rand([16, 1, 16, 16])
             >>> target = preds * 0.75
             >>> metric = UniversalImageQualityIndex()
@@ -142,7 +142,7 @@ class UniversalImageQualityIndex(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics import UniversalImageQualityIndex
+            >>> from torchmetrics.image import UniversalImageQualityIndex
             >>> preds = torch.rand([16, 1, 16, 16])
             >>> target = preds * 0.75
             >>> metric = UniversalImageQualityIndex()
