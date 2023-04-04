@@ -14,8 +14,9 @@ def _permutation_invariant_training(
 ) -> Tuple[Tensor, Tensor]:
     """Wrapper for deprecated import.
 
-    >>> preds = torch.tensor([[[-0.0579,  0.3560, -0.9604], [-0.1719,  0.3205,  0.2951]]])
-    >>> target = torch.tensor([[[ 1.0958, -0.1648,  0.5228], [-0.4100,  1.1942, -0.5103]]])
+    >>> from torch import tensor
+    >>> preds = tensor([[[-0.0579,  0.3560, -0.9604], [-0.1719,  0.3205,  0.2951]]])
+    >>> target = tensor([[[ 1.0958, -0.1648,  0.5228], [-0.4100,  1.1942, -0.5103]]])
     >>> best_metric, best_perm = _permutation_invariant_training(
     ...     preds, target, _scale_invariant_signal_distortion_ratio, 'max')
     >>> best_metric
@@ -41,8 +42,9 @@ def _pit_permutate(preds: Tensor, perm: Tensor) -> Tensor:
 def _scale_invariant_signal_distortion_ratio(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
     """Wrapper for deprecated import.
 
-    >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
-    >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
+    >>> from torch import tensor
+    >>> target = tensor([3.0, -0.5, 2.0, 7.0])
+    >>> preds = tensor([2.5, 0.0, 2.0, 8.0])
     >>> _scale_invariant_signal_distortion_ratio(preds, target)
     tensor(18.4030)
     """
@@ -92,9 +94,9 @@ def _signal_distortion_ratio(
 def _scale_invariant_signal_noise_ratio(preds: Tensor, target: Tensor) -> Tensor:
     """Wrapper for deprecated import.
 
-    >>> import torch
-    >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
-    >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
+    >>> from torch import tensor
+    >>> target = tensor([3.0, -0.5, 2.0, 7.0])
+    >>> preds = tensor([2.5, 0.0, 2.0, 8.0])
     >>> _scale_invariant_signal_noise_ratio(preds, target)
     tensor(15.0918)
     """
@@ -105,8 +107,9 @@ def _scale_invariant_signal_noise_ratio(preds: Tensor, target: Tensor) -> Tensor
 def _signal_noise_ratio(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
     """Wrapper for deprecated import.
 
-    >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
-    >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
+    >>> from torch import tensor
+    >>> target = tensor([3.0, -0.5, 2.0, 7.0])
+    >>> preds = tensor([2.5, 0.0, 2.0, 8.0])
     >>> _signal_noise_ratio(preds, target)
     tensor(16.1805)
     """

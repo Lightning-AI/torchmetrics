@@ -12,11 +12,11 @@ class _PermutationInvariantTraining(PermutationInvariantTraining):
     """Wrapper for deprecated import.
 
     >>> import torch
-    >>> from torchmetrics.functional import _scale_invariant_signal_noise_ratio
+    >>> from torchmetrics.functional import scale_invariant_signal_noise_ratio
     >>> _ = torch.manual_seed(42)
     >>> preds = torch.randn(3, 2, 5) # [batch, spk, time]
     >>> target = torch.randn(3, 2, 5) # [batch, spk, time]
-    >>> pit = _PermutationInvariantTraining(_scale_invariant_signal_noise_ratio, 'max')
+    >>> pit = _PermutationInvariantTraining(scale_invariant_signal_noise_ratio, 'max')
     >>> pit(preds, target)
     tensor(-2.1065)
     """
