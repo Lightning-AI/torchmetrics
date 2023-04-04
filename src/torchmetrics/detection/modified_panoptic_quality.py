@@ -67,7 +67,7 @@ class ModifiedPanopticQuality(Metric):
 
     Example:
         >>> from torch import tensor
-        >>> from torchmetrics import ModifiedPanopticQuality
+        >>> from torchmetrics.detection import ModifiedPanopticQuality
         >>> preds = tensor([[[0, 0], [0, 1], [6, 0], [7, 0], [0, 2], [1, 0]]])
         >>> target = tensor([[[0, 1], [0, 0], [6, 0], [7, 0], [6, 0], [255, 0]]])
         >>> pq_modified = ModifiedPanopticQuality(things = {0, 1}, stuffs = {6, 7})
@@ -172,7 +172,7 @@ class ModifiedPanopticQuality(Metric):
             :scale: 75
 
             >>> from torch import tensor
-            >>> from torchmetrics import ModifiedPanopticQuality
+            >>> from torchmetrics.detection import ModifiedPanopticQuality
             >>> preds = tensor([[[[6, 0], [0, 0], [6, 0], [6, 0]],
             ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
             ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
@@ -192,7 +192,7 @@ class ModifiedPanopticQuality(Metric):
 
             >>> # Example plotting multiple values
             >>> from torch import tensor
-            >>> from torchmetrics import ModifiedPanopticQuality
+            >>> from torchmetrics.detection import ModifiedPanopticQuality
             >>> preds = tensor([[[[6, 0], [0, 0], [6, 0], [6, 0]],
             ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
             ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],

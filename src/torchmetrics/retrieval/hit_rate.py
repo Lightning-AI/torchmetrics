@@ -70,7 +70,7 @@ class RetrievalHitRate(RetrievalMetric):
 
     Example:
         >>> from torch import tensor
-        >>> from torchmetrics import RetrievalHitRate
+        >>> from torchmetrics.retrieval import RetrievalHitRate
         >>> indexes = tensor([0, 0, 0, 1, 1, 1, 1])
         >>> preds = tensor([0.2, 0.3, 0.5, 0.1, 0.3, 0.5, 0.2])
         >>> target = tensor([True, False, False, False, True, False, True])

@@ -168,7 +168,10 @@ def _ssim_update(
 
     if return_contrast_sensitivity:
         contrast_sensitivity = upper / lower
-        contrast_sensitivity = contrast_sensitivity[..., pad_h:-pad_h, pad_w:-pad_w]
+        if is_3d:
+            contrast_sensitivity = contrast_sensitivity[..., pad_h:-pad_h, pad_w:-pad_w, pad_d:-pad_d]
+        else:
+            contrast_sensitivity = contrast_sensitivity[..., pad_h:-pad_h, pad_w:-pad_w]
         return ssim_idx.reshape(ssim_idx.shape[0], -1).mean(-1), contrast_sensitivity.reshape(
             contrast_sensitivity.shape[0], -1
         ).mean(-1)
