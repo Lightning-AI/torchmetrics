@@ -11,9 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torchmetrics.functional.audio.pit import permutation_invariant_training, pit_permutate
-from torchmetrics.functional.audio.sdr import scale_invariant_signal_distortion_ratio, signal_distortion_ratio
-from torchmetrics.functional.audio.snr import scale_invariant_signal_noise_ratio, signal_noise_ratio
+from torchmetrics.functional.audio._deprecated import _permutation_invariant_training as permutation_invariant_training
+from torchmetrics.functional.audio._deprecated import _pit_permutate as pit_permutate
+from torchmetrics.functional.audio._deprecated import (
+    _scale_invariant_signal_distortion_ratio as scale_invariant_signal_distortion_ratio,
+)
+from torchmetrics.functional.audio._deprecated import (
+    _scale_invariant_signal_noise_ratio as scale_invariant_signal_noise_ratio,
+)
+from torchmetrics.functional.audio._deprecated import _signal_distortion_ratio as signal_distortion_ratio
+from torchmetrics.functional.audio._deprecated import _signal_noise_ratio as signal_noise_ratio
 from torchmetrics.functional.classification.accuracy import accuracy
 from torchmetrics.functional.classification.auroc import auroc
 from torchmetrics.functional.classification.average_precision import average_precision

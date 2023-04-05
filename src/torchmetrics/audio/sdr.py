@@ -139,7 +139,7 @@ class SignalDistortionRatio(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics.audio.sdr import SignalDistortionRatio
+            >>> from torchmetrics.audio import SignalDistortionRatio
             >>> metric = SignalDistortionRatio()
             >>> metric.update(torch.rand(8000), torch.rand(8000))
             >>> fig_, ax_ = metric.plot()
@@ -149,7 +149,7 @@ class SignalDistortionRatio(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics.audio.sdr import SignalDistortionRatio
+            >>> from torchmetrics.audio import SignalDistortionRatio
             >>> metric = SignalDistortionRatio()
             >>> values = [ ]
             >>> for _ in range(10):
