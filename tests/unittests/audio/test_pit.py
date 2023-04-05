@@ -22,10 +22,14 @@ from scipy.optimize import linear_sum_assignment
 from torch import Tensor
 
 from torchmetrics.audio import PermutationInvariantTraining
-from torchmetrics.functional import (
+from torchmetrics.functional.audio import (
     permutation_invariant_training,
     scale_invariant_signal_distortion_ratio,
     signal_noise_ratio,
+)
+from torchmetrics.functional.audio.pit import (
+    _find_best_perm_by_exhaustive_method,
+    _find_best_perm_by_linear_sum_assignment,
 )
 from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
@@ -198,11 +202,6 @@ def test_error_on_wrong_shape() -> None:
 
 def test_consistency_of_two_implementations() -> None:
     """Test that both backend functions for computing metric (depending on torch version) returns the same result."""
-    from torchmetrics.functional.audio.pit import (
-        _find_best_perm_by_exhaustive_method,
-        _find_best_perm_by_linear_sum_assignment,
-    )
-
     shapes_test = [(5, 2, 2), (4, 3, 3), (4, 4, 4), (3, 5, 5)]
     for shp in shapes_test:
         metric_mtx = torch.randn(size=shp)
