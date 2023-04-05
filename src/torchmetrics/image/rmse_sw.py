@@ -43,7 +43,7 @@ class RootMeanSquaredErrorUsingSlidingWindow(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
-        >>> from torchmetrics import RootMeanSquaredErrorUsingSlidingWindow
+        >>> from torchmetrics.image import RootMeanSquaredErrorUsingSlidingWindow
         >>> g = torch.manual_seed(22)
         >>> preds = torch.rand(4, 3, 16, 16)
         >>> target = torch.rand(4, 3, 16, 16)
@@ -115,7 +115,7 @@ class RootMeanSquaredErrorUsingSlidingWindow(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics import RootMeanSquaredErrorUsingSlidingWindow
+            >>> from torchmetrics.image import RootMeanSquaredErrorUsingSlidingWindow
             >>> metric = RootMeanSquaredErrorUsingSlidingWindow()
             >>> metric.update(torch.rand(4, 3, 16, 16), torch.rand(4, 3, 16, 16))
             >>> fig_, ax_ = metric.plot()
@@ -125,7 +125,7 @@ class RootMeanSquaredErrorUsingSlidingWindow(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics import RootMeanSquaredErrorUsingSlidingWindow
+            >>> from torchmetrics.image import RootMeanSquaredErrorUsingSlidingWindow
             >>> metric = RootMeanSquaredErrorUsingSlidingWindow()
             >>> values = [ ]
             >>> for _ in range(10):

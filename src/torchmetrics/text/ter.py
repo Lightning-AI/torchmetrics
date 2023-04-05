@@ -51,7 +51,7 @@ class TranslationEditRate(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
-        >>> from torchmetrics import TranslationEditRate
+        >>> from torchmetrics.text import TranslationEditRate
         >>> preds = ['the cat is on the mat']
         >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
         >>> ter = TranslationEditRate()
@@ -135,7 +135,7 @@ class TranslationEditRate(Metric):
             :scale: 75
 
             >>> # Example plotting a single value
-            >>> from torchmetrics import TranslationEditRate
+            >>> from torchmetrics.text import TranslationEditRate
             >>> metric = TranslationEditRate()
             >>> preds = ['the cat is on the mat']
             >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
@@ -146,7 +146,7 @@ class TranslationEditRate(Metric):
             :scale: 75
 
             >>> # Example plotting multiple values
-            >>> from torchmetrics import TranslationEditRate
+            >>> from torchmetrics.text import TranslationEditRate
             >>> metric = TranslationEditRate()
             >>> preds = ['the cat is on the mat']
             >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
