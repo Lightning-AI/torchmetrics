@@ -139,7 +139,7 @@ class SignalDistortionRatio(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics.audio.sdr import SignalDistortionRatio
+            >>> from torchmetrics.audio import SignalDistortionRatio
             >>> metric = SignalDistortionRatio()
             >>> metric.update(torch.rand(8000), torch.rand(8000))
             >>> fig_, ax_ = metric.plot()
@@ -149,7 +149,7 @@ class SignalDistortionRatio(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics.audio.sdr import SignalDistortionRatio
+            >>> from torchmetrics.audio import SignalDistortionRatio
             >>> metric = SignalDistortionRatio()
             >>> values = [ ]
             >>> for _ in range(10):
@@ -183,7 +183,7 @@ class ScaleInvariantSignalDistortionRatio(Metric):
 
     Example:
         >>> from torch import tensor
-        >>> from torchmetrics import ScaleInvariantSignalDistortionRatio
+        >>> from torchmetrics.audio import ScaleInvariantSignalDistortionRatio
         >>> target = tensor([3.0, -0.5, 2.0, 7.0])
         >>> preds = tensor([2.5, 0.0, 2.0, 8.0])
         >>> si_sdr = ScaleInvariantSignalDistortionRatio()
@@ -242,7 +242,7 @@ class ScaleInvariantSignalDistortionRatio(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics.audio.sdr import ScaleInvariantSignalDistortionRatio
+            >>> from torchmetrics.audio import ScaleInvariantSignalDistortionRatio
             >>> target = torch.randn(5)
             >>> preds = torch.randn(5)
             >>> metric = ScaleInvariantSignalDistortionRatio()
@@ -254,7 +254,7 @@ class ScaleInvariantSignalDistortionRatio(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics.audio.sdr import ScaleInvariantSignalDistortionRatio
+            >>> from torchmetrics.audio import ScaleInvariantSignalDistortionRatio
             >>> target = torch.randn(5)
             >>> preds = torch.randn(5)
             >>> metric = ScaleInvariantSignalDistortionRatio()

@@ -54,7 +54,7 @@ class TotalVariation(Metric):
 
     Example:
         >>> import torch
-        >>> from torchmetrics import TotalVariation
+        >>> from torchmetrics.image import TotalVariation
         >>> _ = torch.manual_seed(42)
         >>> tv = TotalVariation()
         >>> img = torch.rand(5, 3, 28, 28)
@@ -115,7 +115,7 @@ class TotalVariation(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics import TotalVariation
+            >>> from torchmetrics.image import TotalVariation
             >>> metric = TotalVariation()
             >>> metric.update(torch.rand(5, 3, 28, 28))
             >>> fig_, ax_ = metric.plot()
@@ -125,7 +125,7 @@ class TotalVariation(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics import TotalVariation
+            >>> from torchmetrics.image import TotalVariation
             >>> metric = TotalVariation()
             >>> values = [ ]
             >>> for _ in range(10):
