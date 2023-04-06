@@ -4,6 +4,8 @@ from functools import partial
 import pytest
 
 from torchmetrics import (
+    ModifiedPanopticQuality,
+    PanopticQuality,
     PermutationInvariantTraining,
     ScaleInvariantSignalDistortionRatio,
     ScaleInvariantSignalNoiseRatio,
@@ -16,6 +18,7 @@ from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio
 @pytest.mark.parametrize(
     "metric_cls",
     [
+        # Audio
         pytest.param(
             partial(PermutationInvariantTraining, scale_invariant_signal_noise_ratio), id="PermutationInvariantTraining"
         ),
@@ -23,6 +26,9 @@ from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio
         ScaleInvariantSignalNoiseRatio,
         SignalDistortionRatio,
         SignalNoiseRatio,
+        # Detection
+        ModifiedPanopticQuality,
+        PanopticQuality,
     ],
 )
 def test_import_from_root_package(metric_cls):
