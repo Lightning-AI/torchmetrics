@@ -39,8 +39,8 @@ from torchmetrics.functional.classification.precision_recall_curve import precis
 from torchmetrics.functional.classification.roc import roc
 from torchmetrics.functional.classification.specificity import specificity
 from torchmetrics.functional.classification.stat_scores import stat_scores
-from torchmetrics.functional.detection import modified_panoptic_quality
-from torchmetrics.functional.detection.panoptic_qualities import panoptic_quality
+from torchmetrics.functional.detection._deprecated import _modified_panoptic_quality as modified_panoptic_quality
+from torchmetrics.functional.detection._deprecated import _panoptic_quality as panoptic_quality
 from torchmetrics.functional.image.d_lambda import spectral_distortion_index
 from torchmetrics.functional.image.ergas import error_relative_global_dimensionless_synthesis
 from torchmetrics.functional.image.gradients import image_gradients
