@@ -2,8 +2,7 @@ from typing import Collection
 
 from torch import Tensor
 
-from torchmetrics.functional import modified_panoptic_quality
-from torchmetrics.functional.detection.panoptic_qualities import panoptic_quality
+from torchmetrics.functional.detection.panoptic_qualities import modified_panoptic_quality, panoptic_quality
 from torchmetrics.utilities.prints import _deprecated_root_import_func
 
 
@@ -52,7 +51,7 @@ def _panoptic_quality(
     ...                   [[0, 1], [0, 1], [6, 0], [1, 0]],
     ...                   [[0, 1], [7, 0], [1, 0], [1, 0]],
     ...                   [[0, 1], [7, 0], [7, 0], [7, 0]]]])
-    >>> panoptic_quality(preds, target, things = {0, 1}, stuffs = {6, 7})
+    >>> _panoptic_quality(preds, target, things = {0, 1}, stuffs = {6, 7})
     tensor(0.5463, dtype=torch.float64)
     """
     _deprecated_root_import_func("panoptic_quality", "detection")
