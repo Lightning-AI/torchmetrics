@@ -19,7 +19,7 @@ import pytest
 import torch
 
 from torchmetrics.detection import ModifiedPanopticQuality
-from torchmetrics.functional import modified_panoptic_quality
+from torchmetrics.functional.detection import modified_panoptic_quality
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
