@@ -4,11 +4,21 @@ from functools import partial
 import pytest
 
 from torchmetrics import (
+    ErrorRelativeGlobalDimensionlessSynthesis,
+    MultiScaleStructuralSimilarityIndexMeasure,
+    PeakSignalNoiseRatio,
     PermutationInvariantTraining,
+    RelativeAverageSpectralError,
+    RootMeanSquaredErrorUsingSlidingWindow,
     ScaleInvariantSignalDistortionRatio,
     ScaleInvariantSignalNoiseRatio,
     SignalDistortionRatio,
     SignalNoiseRatio,
+    SpectralAngleMapper,
+    SpectralDistortionIndex,
+    StructuralSimilarityIndexMeasure,
+    TotalVariation,
+    UniversalImageQualityIndex,
 )
 from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio
 
@@ -23,6 +33,17 @@ from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio
         ScaleInvariantSignalNoiseRatio,
         SignalDistortionRatio,
         SignalNoiseRatio,
+        # Image
+        ErrorRelativeGlobalDimensionlessSynthesis,
+        MultiScaleStructuralSimilarityIndexMeasure,
+        PeakSignalNoiseRatio,
+        RelativeAverageSpectralError,
+        RootMeanSquaredErrorUsingSlidingWindow,
+        SpectralAngleMapper,
+        SpectralDistortionIndex,
+        StructuralSimilarityIndexMeasure,
+        TotalVariation,
+        UniversalImageQualityIndex,
     ],
 )
 def test_import_from_root_package(metric_cls):
