@@ -87,9 +87,13 @@ from torchmetrics.retrieval._deprecated import _RetrievalMAP as RetrievalMAP  # 
 from torchmetrics.retrieval._deprecated import _RetrievalMRR as RetrievalMRR  # noqa: E402
 from torchmetrics.retrieval._deprecated import _RetrievalNormalizedDCG as RetrievalNormalizedDCG  # noqa: E402
 from torchmetrics.retrieval._deprecated import _RetrievalPrecision as RetrievalPrecision  # noqa: E402
-from torchmetrics.retrieval._deprecated import _RetrievalPrecisionRecallCurve as RetrievalPrecisionRecallCurve  # noqa: E402
+from torchmetrics.retrieval._deprecated import (  # noqa: E402
+    _RetrievalPrecisionRecallCurve as RetrievalPrecisionRecallCurve,
+)
 from torchmetrics.retrieval._deprecated import _RetrievalRecall as RetrievalRecall  # noqa: E402
-from torchmetrics.retrieval._deprecated import _RetrievalRecallAtFixedPrecision as RetrievalRecallAtFixedPrecision  # noqa: E402
+from torchmetrics.retrieval._deprecated import (  # noqa: E402
+    _RetrievalRecallAtFixedPrecision as RetrievalRecallAtFixedPrecision,
+)
 from torchmetrics.retrieval._deprecated import _RetrievalRPrecision as RetrievalRPrecision  # noqa: E402
 from torchmetrics.text import (  # noqa: E402
     BLEUScore,

@@ -162,11 +162,10 @@ class _RetrievalNormalizedDCG(RetrievalNormalizedDCG):
 class _RetrievalPrecision(RetrievalPrecision):
     """Wrapper for deprecated import.
     >>> from torch import tensor
-    >>> from torchmetrics.retrieval import RetrievalPrecision
     >>> indexes = tensor([0, 0, 0, 1, 1, 1, 1])
     >>> preds = tensor([0.2, 0.3, 0.5, 0.1, 0.3, 0.5, 0.2])
     >>> target = tensor([False, False, True, False, True, False, True])
-    >>> p2 = RetrievalPrecision(top_k=2)
+    >>> p2 = _RetrievalPrecision(top_k=2)
     >>> p2(preds, target, indexes=indexes)
     tensor(0.5000).
     """
