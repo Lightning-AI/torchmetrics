@@ -5,6 +5,16 @@ import pytest
 
 from torchmetrics import (
     PermutationInvariantTraining,
+    RetrievalFallOut,
+    RetrievalHitRate,
+    RetrievalMAP,
+    RetrievalMRR,
+    RetrievalNormalizedDCG,
+    RetrievalPrecision,
+    RetrievalPrecisionRecallCurve,
+    RetrievalRecall,
+    RetrievalRecallAtFixedPrecision,
+    RetrievalRPrecision,
     ScaleInvariantSignalDistortionRatio,
     ScaleInvariantSignalNoiseRatio,
     SignalDistortionRatio,
@@ -23,6 +33,17 @@ from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio
         ScaleInvariantSignalNoiseRatio,
         SignalDistortionRatio,
         SignalNoiseRatio,
+        # Info Retrieval
+        RetrievalFallOut,
+        RetrievalHitRate,
+        RetrievalMAP,
+        RetrievalMRR,
+        RetrievalNormalizedDCG,
+        RetrievalPrecision,
+        RetrievalPrecisionRecallCurve,
+        RetrievalRecall,
+        RetrievalRecallAtFixedPrecision,
+        RetrievalRPrecision,
     ],
 )
 def test_import_from_root_package(metric_cls):
