@@ -11,5 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torchmetrics.functional.detection.panoptic_qualities import modified_panoptic_quality  # noqa: F401
-from torchmetrics.functional.detection.panoptic_qualities import panoptic_quality
+from torchmetrics.functional.detection.panoptic_qualities import modified_panoptic_quality, panoptic_quality
+
+__all__ = ["modified_panoptic_quality", "panoptic_quality"]
