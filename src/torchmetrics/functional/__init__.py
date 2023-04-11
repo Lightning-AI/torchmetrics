@@ -39,8 +39,8 @@ from torchmetrics.functional.classification.precision_recall_curve import precis
 from torchmetrics.functional.classification.roc import roc
 from torchmetrics.functional.classification.specificity import specificity
 from torchmetrics.functional.classification.stat_scores import stat_scores
-from torchmetrics.functional.detection.modified_panoptic_quality import modified_panoptic_quality
-from torchmetrics.functional.detection.panoptic_quality import panoptic_quality
+from torchmetrics.functional.detection._deprecated import _modified_panoptic_quality as modified_panoptic_quality
+from torchmetrics.functional.detection._deprecated import _panoptic_quality as panoptic_quality
 from torchmetrics.functional.image._deprecated import (
     _error_relative_global_dimensionless_synthesis as error_relative_global_dimensionless_synthesis,
 )
@@ -155,7 +155,6 @@ __all__ = [
     "mean_squared_error",
     "mean_squared_log_error",
     "minkowski_distance",
-    "modified_panoptic_quality",
     "multiscale_structural_similarity_index_measure",
     "pairwise_cosine_similarity",
     "pairwise_euclidean_distance",

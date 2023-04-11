@@ -7,6 +7,8 @@ from torchmetrics import (
     ErrorRelativeGlobalDimensionlessSynthesis,
     MultiScaleStructuralSimilarityIndexMeasure,
     PeakSignalNoiseRatio,
+    ModifiedPanopticQuality,
+    PanopticQuality,
     PermutationInvariantTraining,
     RelativeAverageSpectralError,
     RootMeanSquaredErrorUsingSlidingWindow,
@@ -26,6 +28,7 @@ from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio
 @pytest.mark.parametrize(
     "metric_cls",
     [
+        # Audio
         pytest.param(
             partial(PermutationInvariantTraining, scale_invariant_signal_noise_ratio), id="PermutationInvariantTraining"
         ),
@@ -33,6 +36,9 @@ from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio
         ScaleInvariantSignalNoiseRatio,
         SignalDistortionRatio,
         SignalNoiseRatio,
+        # Detection
+        ModifiedPanopticQuality,
+        PanopticQuality,
         # Image
         ErrorRelativeGlobalDimensionlessSynthesis,
         MultiScaleStructuralSimilarityIndexMeasure,
