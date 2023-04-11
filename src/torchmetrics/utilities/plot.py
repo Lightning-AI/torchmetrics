@@ -13,7 +13,7 @@
 # limitations under the License.
 from itertools import product
 from math import ceil, floor, sqrt
-from typing import Any, Dict, Generator, List, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, Generator, List, Optional, Sequence, Tuple, Union, no_type_check
 
 import numpy as np
 import torch
@@ -173,7 +173,7 @@ def _get_col_row_split(n: int) -> Tuple[int, int]:
     return ceil(nsq), ceil(nsq)
 
 
-def trim_axs(axs: Union[_AX_TYPE, np.ndarray], nb: int) -> np.ndarray:  # type: ignore[valid-type]
+def trim_axs(axs: Union[_AX_TYPE, np.ndarray], nb: int) -> Union[np.ndarray, _AX_TYPE]:  # type: ignore[valid-type]
     """Reduce `axs` to `nb` Axes.
 
     All further Axes are removed from the figure.
@@ -188,9 +188,10 @@ def trim_axs(axs: Union[_AX_TYPE, np.ndarray], nb: int) -> np.ndarray:  # type: 
 
 
 @style_change(_style)
+@no_type_check
 def plot_confusion_matrix(
     confmat: Tensor,
-    ax: Optional[_AX_TYPE] = None,  # type: ignore[valid-type],
+    ax: Optional[_AX_TYPE] = None,
     add_text: bool = True,
     labels: Optional[List[Union[int, str]]] = None,
 ) -> _PLOT_OUT_TYPE:
