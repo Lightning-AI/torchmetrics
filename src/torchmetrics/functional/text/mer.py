@@ -62,10 +62,7 @@ def _mer_compute(errors: Tensor, total: Tensor) -> Tensor:
     return errors / total
 
 
-def match_error_rate(
-    preds: Union[str, List[str]],
-    target: Union[str, List[str]],
-) -> Tensor:
+def match_error_rate(preds: Union[str, List[str]], target: Union[str, List[str]]) -> Tensor:
     """Match error rate is a metric of the performance of an automatic speech recognition system.
 
     This value indicates the percentage of words that were incorrectly predicted and inserted. The lower the value, the
