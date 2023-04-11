@@ -5,10 +5,10 @@ import pytest
 
 from torchmetrics import (
     ErrorRelativeGlobalDimensionlessSynthesis,
-    MultiScaleStructuralSimilarityIndexMeasure,
-    PeakSignalNoiseRatio,
     ModifiedPanopticQuality,
+    MultiScaleStructuralSimilarityIndexMeasure,
     PanopticQuality,
+    PeakSignalNoiseRatio,
     PermutationInvariantTraining,
     RelativeAverageSpectralError,
     RootMeanSquaredErrorUsingSlidingWindow,
