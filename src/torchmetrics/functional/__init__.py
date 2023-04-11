@@ -67,13 +67,14 @@ from torchmetrics.functional.image._deprecated import (
 from torchmetrics.functional.image._deprecated import _total_variation as total_variation
 from torchmetrics.functional.image._deprecated import _universal_image_quality_index as universal_image_quality_index
 from torchmetrics.functional.nominal import (
+    cramers_v,
+    cramers_v_matrix,
     pearsons_contingency_coefficient,
     pearsons_contingency_coefficient_matrix,
     theils_u,
     theils_u_matrix,
     tschuprows_t,
     tschuprows_t_matrix,
-cramers_v, cramers_v_matrix
 )
 from torchmetrics.functional.pairwise import (
     pairwise_cosine_similarity,
