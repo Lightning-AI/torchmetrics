@@ -137,7 +137,7 @@ class _InformationMeasure:
         self.beta = beta or 0
 
     def __call__(self, preds_distribution: Tensor, target_distribtuion: Tensor) -> Tensor:
-        information_measure_function = getattr(self, f"_calculate_{self.information_measure}")
+        information_measure_function = getattr(self, f"_calculate_{self.information_measure.value}")
         return torch.nan_to_num(information_measure_function(preds_distribution, target_distribtuion))
 
     @staticmethod
