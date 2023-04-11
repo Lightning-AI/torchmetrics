@@ -47,18 +47,24 @@ from torchmetrics.classification import (  # noqa: E402
 from torchmetrics.collections import MetricCollection  # noqa: E402
 from torchmetrics.detection._deprecated import _ModifiedPanopticQuality as ModifiedPanopticQuality  # noqa: E402
 from torchmetrics.detection._deprecated import _PanopticQuality as PanopticQuality  # noqa: E402
-from torchmetrics.image import (  # noqa: E402
-    ErrorRelativeGlobalDimensionlessSynthesis,
-    MultiScaleStructuralSimilarityIndexMeasure,
-    PeakSignalNoiseRatio,
-    RelativeAverageSpectralError,
-    RootMeanSquaredErrorUsingSlidingWindow,
-    SpectralAngleMapper,
-    SpectralDistortionIndex,
-    StructuralSimilarityIndexMeasure,
-    TotalVariation,
-    UniversalImageQualityIndex,
+from torchmetrics.image._deprecated import (  # noqa: E402
+    _ErrorRelativeGlobalDimensionlessSynthesis as ErrorRelativeGlobalDimensionlessSynthesis,
 )
+from torchmetrics.image._deprecated import (  # noqa: E402
+    _MultiScaleStructuralSimilarityIndexMeasure as MultiScaleStructuralSimilarityIndexMeasure,
+)
+from torchmetrics.image._deprecated import _PeakSignalNoiseRatio as PeakSignalNoiseRatio  # noqa: E402
+from torchmetrics.image._deprecated import _RelativeAverageSpectralError as RelativeAverageSpectralError  # noqa: E402
+from torchmetrics.image._deprecated import (  # noqa: E402
+    _RootMeanSquaredErrorUsingSlidingWindow as RootMeanSquaredErrorUsingSlidingWindow,
+)
+from torchmetrics.image._deprecated import _SpectralAngleMapper as SpectralAngleMapper  # noqa: E402
+from torchmetrics.image._deprecated import _SpectralDistortionIndex as SpectralDistortionIndex  # noqa: E402
+from torchmetrics.image._deprecated import (  # noqa: E402
+    _StructuralSimilarityIndexMeasure as StructuralSimilarityIndexMeasure,
+)
+from torchmetrics.image._deprecated import _TotalVariation as TotalVariation  # noqa: E402
+from torchmetrics.image._deprecated import _UniversalImageQualityIndex as UniversalImageQualityIndex  # noqa: E402
 from torchmetrics.metric import Metric  # noqa: E402
 from torchmetrics.nominal import CramersV  # noqa: E402
 from torchmetrics.nominal import PearsonsContingencyCoefficient  # noqa: E402

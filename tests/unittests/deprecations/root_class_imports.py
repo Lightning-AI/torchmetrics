@@ -4,9 +4,14 @@ from functools import partial
 import pytest
 
 from torchmetrics import (
+    ErrorRelativeGlobalDimensionlessSynthesis,
     ModifiedPanopticQuality,
+    MultiScaleStructuralSimilarityIndexMeasure,
     PanopticQuality,
+    PeakSignalNoiseRatio,
     PermutationInvariantTraining,
+    RelativeAverageSpectralError,
+    RootMeanSquaredErrorUsingSlidingWindow,
     RetrievalFallOut,
     RetrievalHitRate,
     RetrievalMAP,
@@ -21,6 +26,11 @@ from torchmetrics import (
     ScaleInvariantSignalNoiseRatio,
     SignalDistortionRatio,
     SignalNoiseRatio,
+    SpectralAngleMapper,
+    SpectralDistortionIndex,
+    StructuralSimilarityIndexMeasure,
+    TotalVariation,
+    UniversalImageQualityIndex,
 )
 from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio
 
@@ -39,6 +49,17 @@ from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio
         # Detection
         ModifiedPanopticQuality,
         PanopticQuality,
+        # Image
+        ErrorRelativeGlobalDimensionlessSynthesis,
+        MultiScaleStructuralSimilarityIndexMeasure,
+        PeakSignalNoiseRatio,
+        RelativeAverageSpectralError,
+        RootMeanSquaredErrorUsingSlidingWindow,
+        SpectralAngleMapper,
+        SpectralDistortionIndex,
+        StructuralSimilarityIndexMeasure,
+        TotalVariation,
+        UniversalImageQualityIndex,
         # Info Retrieval
         RetrievalFallOut,
         RetrievalHitRate,
