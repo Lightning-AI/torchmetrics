@@ -41,19 +41,27 @@ from torchmetrics.functional.classification.specificity import specificity
 from torchmetrics.functional.classification.stat_scores import stat_scores
 from torchmetrics.functional.detection._deprecated import _modified_panoptic_quality as modified_panoptic_quality
 from torchmetrics.functional.detection._deprecated import _panoptic_quality as panoptic_quality
-from torchmetrics.functional.image.d_lambda import spectral_distortion_index
-from torchmetrics.functional.image.ergas import error_relative_global_dimensionless_synthesis
-from torchmetrics.functional.image.gradients import image_gradients
-from torchmetrics.functional.image.psnr import peak_signal_noise_ratio
-from torchmetrics.functional.image.rase import relative_average_spectral_error
-from torchmetrics.functional.image.rmse_sw import root_mean_squared_error_using_sliding_window
-from torchmetrics.functional.image.sam import spectral_angle_mapper
-from torchmetrics.functional.image.ssim import (
-    multiscale_structural_similarity_index_measure,
-    structural_similarity_index_measure,
+from torchmetrics.functional.image._deprecated import (
+    _error_relative_global_dimensionless_synthesis as error_relative_global_dimensionless_synthesis,
 )
-from torchmetrics.functional.image.tv import total_variation
-from torchmetrics.functional.image.uqi import universal_image_quality_index
+from torchmetrics.functional.image._deprecated import _image_gradients as image_gradients
+from torchmetrics.functional.image._deprecated import (
+    _multiscale_structural_similarity_index_measure as multiscale_structural_similarity_index_measure,
+)
+from torchmetrics.functional.image._deprecated import _peak_signal_noise_ratio as peak_signal_noise_ratio
+from torchmetrics.functional.image._deprecated import (
+    _relative_average_spectral_error as relative_average_spectral_error,
+)
+from torchmetrics.functional.image._deprecated import (
+    _root_mean_squared_error_using_sliding_window as root_mean_squared_error_using_sliding_window,
+)
+from torchmetrics.functional.image._deprecated import _spectral_angle_mapper as spectral_angle_mapper
+from torchmetrics.functional.image._deprecated import _spectral_distortion_index as spectral_distortion_index
+from torchmetrics.functional.image._deprecated import (
+    _structural_similarity_index_measure as structural_similarity_index_measure,
+)
+from torchmetrics.functional.image._deprecated import _total_variation as total_variation
+from torchmetrics.functional.image._deprecated import _universal_image_quality_index as universal_image_quality_index
 from torchmetrics.functional.nominal.cramers import cramers_v, cramers_v_matrix
 from torchmetrics.functional.nominal.pearson import (
     pearsons_contingency_coefficient,
