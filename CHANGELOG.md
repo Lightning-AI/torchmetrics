@@ -113,7 +113,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Deprecated
 
--
+- Deprecated domain metrics import from package root (
+    [#1685](https://github.com/Lightning-AI/metrics/pull/1685),
+    [#1694](https://github.com/Lightning-AI/metrics/pull/1694),
+    [#1696](https://github.com/Lightning-AI/metrics/pull/1696),
+    [#1699](https://github.com/Lightning-AI/metrics/pull/1699),
+    [#1703](https://github.com/Lightning-AI/metrics/pull/1703),
+)
 
 
 ### Removed
