@@ -205,6 +205,7 @@ class _RetrievalPrecisionRecallCurve(RetrievalPrecisionRecallCurve):
     >>> top_k
     tensor([1, 2, 3, 4])
     """
+
     def __init__(
         self,
         max_k: Optional[int] = None,
@@ -215,7 +216,11 @@ class _RetrievalPrecisionRecallCurve(RetrievalPrecisionRecallCurve):
     ) -> None:
         _deprecated_root_import_class("", "retrieval")
         return super().__init__(
-            max_k=max_k, adaptive_k=adaptive_k, empty_target_action=empty_target_action, ignore_index=ignore_index, **kwargs
+            max_k=max_k,
+            adaptive_k=adaptive_k,
+            empty_target_action=empty_target_action,
+            ignore_index=ignore_index,
+            **kwargs,
         )
 
 
@@ -270,6 +275,4 @@ class _RetrievalMRR(RetrievalMRR):
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("", "retrieval")
-        return super().__init__(
-            empty_target_action=empty_target_action, ignore_index=ignore_index, **kwargs
-        )
+        return super().__init__(empty_target_action=empty_target_action, ignore_index=ignore_index, **kwargs)
