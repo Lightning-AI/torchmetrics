@@ -168,7 +168,7 @@ class _RetrievalPrecision(RetrievalPrecision):
     >>> target = tensor([False, False, True, False, True, False, True])
     >>> p2 = _RetrievalPrecision(top_k=2)
     >>> p2(preds, target, indexes=indexes)
-    tensor(0.5000).
+    tensor(0.5000)
     """
 
     def __init__(
@@ -205,17 +205,17 @@ class _RetrievalPrecisionRecallCurve(RetrievalPrecisionRecallCurve):
     >>> top_k
     tensor([1, 2, 3, 4])
     """
-
     def __init__(
         self,
+        max_k: Optional[int] = None,
+        adaptive_k: bool = False,
         empty_target_action: str = "neg",
         ignore_index: Optional[int] = None,
-        top_k: Optional[int] = None,
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("", "retrieval")
         return super().__init__(
-            empty_target_action=empty_target_action, ignore_index=ignore_index, top_k=top_k, **kwargs
+            max_k=max_k, adaptive_k=adaptive_k, empty_target_action=empty_target_action, ignore_index=ignore_index, **kwargs
         )
 
 
@@ -267,10 +267,9 @@ class _RetrievalMRR(RetrievalMRR):
         self,
         empty_target_action: str = "neg",
         ignore_index: Optional[int] = None,
-        top_k: Optional[int] = None,
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("", "retrieval")
         return super().__init__(
-            empty_target_action=empty_target_action, ignore_index=ignore_index, top_k=top_k, **kwargs
+            empty_target_action=empty_target_action, ignore_index=ignore_index, **kwargs
         )

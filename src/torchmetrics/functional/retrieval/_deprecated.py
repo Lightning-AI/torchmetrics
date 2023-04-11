@@ -121,7 +121,7 @@ def _retrieval_recall(preds: Tensor, target: Tensor, top_k: Optional[int] = None
     >>> preds = tensor([0.2, 0.3, 0.5])
     >>> target = tensor([True, False, True])
     >>> _retrieval_recall(preds, target, top_k=2)
-    tensor(0.5000
+    tensor(0.5000)
     """
     _deprecated_root_import_func("retrieval_recall", "retrieval")
     return retrieval_recall(preds=preds, target=target, top_k=top_k)
