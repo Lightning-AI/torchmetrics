@@ -70,12 +70,9 @@ In both cases it will generate a plot like this (Accuracy as an example):
         metric.update(torch.rand(10,), torch.randint(2, (10,)))
     fig, ax = metric.plot()
 
-.. image:: ../_static/images/binary_accuracy.png
-   :height: 100px
-   :width: 200 px
-   :scale: 50 %
-   :alt: binary accuracy plot
-   :align: right
+.. plot:: pyplots/binary_accuracy.py
+    :scale: 100
+    :include-source: false
 
 A single point plot is not that informative in itself, but if available we will try to include additional information
 such as the lower and upper bounds the particular metric can take an if the metric should be minimized or maximized
@@ -90,12 +87,9 @@ that case calling ``.plot`` will return a figure similar to this:
         metric.update(torch.randint(3, (10,)), torch.randint(3, (10,)))
     fig, ax = metric.plot()
 
-.. image:: ../_static/images/multiclass_accuracy.png
-   :height: 100px
-   :width: 200 px
-   :scale: 50 %
-   :alt: multiclass accuracy plot
-   :align: right
+.. plot:: pyplots/multiclass_accuracy.py
+    :scale: 100
+    :include-source: false
 
 Here, each element is assumed to be an independent metric and plotted as its own point for comparing. The above is true
 for all metrics that returns a scalar tensor, but if the metric returns a tensor with multiple elements then the
@@ -109,12 +103,9 @@ metric:
         metric.update(torch.randint(3, (10,)), torch.randint(3, (10,)))
     fig, ax = metric.plot()
 
-.. image:: ../_static/images/confusion_matrix.png
-   :height: 100px
-   :width: 200 px
-   :scale: 50 %
-   :alt: confusionmatrix plot
-   :align: right
+.. plot:: pyplots//confusion_matrix.py
+    :scale: 100
+    :include-source: false
 
 If you prefer to use the functional interface of Torchmetrics, you can also plot the values returned by the functional.
 However, you would still need to initialize the corresponding metric class to get the information about the metric:
@@ -148,12 +139,9 @@ a model over time, we could do it like this:
         metric.reset()
     fig, ax = metric.plot(values)
 
-.. image:: ../_static/images/binary_accuracy_multistep.png
-   :height: 100px
-   :width: 200 px
-   :scale: 50 %
-   :alt: multistep accuracy plot
-   :align: right
+.. plot:: pyplots/binary_accuracy_multistep.py
+    :scale: 100
+    :include-source: false
 
 Do note that metrics that do not return simple scalar tensors, such as `ConfusionMatrix`, `ROC` that have specialized
 visualzation does not support plotting multiple steps, out of the box and the user needs to manually plot the values
@@ -184,12 +172,9 @@ collection of binary classification metrics and redirecting the output of ``.plo
         collection.reset()
     collection.plot(val=values, ax=ax)
 
-.. image:: ../_static/images/binary_accuracy_multistep.png
-   :height: 100px
-   :width: 200 px
-   :scale: 50 %
-   :alt: multistep accuracy plot
-   :align: right
+.. plot:: pyplots/binary_accuracy_multistep.py
+    :scale: 100
+    :include-source: false
 
 However, the ``plot`` method of ``MetricCollection`` also supports an additional argument called ``together`` that will
 automatically try to plot all the metrics in the collection together in the same plot (with appropriate labels). This
@@ -211,13 +196,9 @@ is only possible if all the metrics in the collection returns a scalar tensor.
         collection.reset()
     collection.plot(val=values, together=True)
 
-.. image:: ../_static/images/collection_binary_together.png
-   :height: 100px
-   :width: 200 px
-   :scale: 50 %
-   :alt: multistep accuracy plot
-   :align: right
-
+.. plot:: pyplots/collection_binary_together.py
+    :scale: 100
+    :include-source: false
 
 ***************
 Advance example
@@ -268,9 +249,6 @@ to rely on ``MetricTracker`` to keep track of the metrics over multiple steps.
     ]
     tracker.plot(val=scalar_results, ax=ax3)
 
-.. image:: ../_static/images/tracker_binary.png
-   :height: 100px
-   :width: 200 px
-   :scale: 50 %
-   :alt: multistep accuracy plot
-   :align: right
+.. plot:: pyplots/tracker_binary.py
+    :scale: 100
+    :include-source: false

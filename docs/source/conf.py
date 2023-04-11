@@ -106,6 +106,7 @@ extensions = [
 
 # Set that source code from plotting is always included
 plot_include_source = True
+plot_html_show_source_link = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
