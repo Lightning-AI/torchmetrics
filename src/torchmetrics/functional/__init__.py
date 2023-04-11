@@ -91,15 +91,17 @@ from torchmetrics.functional.regression.spearman import spearman_corrcoef
 from torchmetrics.functional.regression.symmetric_mape import symmetric_mean_absolute_percentage_error
 from torchmetrics.functional.regression.tweedie_deviance import tweedie_deviance_score
 from torchmetrics.functional.regression.wmape import weighted_mean_absolute_percentage_error
-from torchmetrics.functional.retrieval.average_precision import retrieval_average_precision
-from torchmetrics.functional.retrieval.fall_out import retrieval_fall_out
-from torchmetrics.functional.retrieval.hit_rate import retrieval_hit_rate
-from torchmetrics.functional.retrieval.ndcg import retrieval_normalized_dcg
-from torchmetrics.functional.retrieval.precision import retrieval_precision
-from torchmetrics.functional.retrieval.precision_recall_curve import retrieval_precision_recall_curve
-from torchmetrics.functional.retrieval.r_precision import retrieval_r_precision
-from torchmetrics.functional.retrieval.recall import retrieval_recall
-from torchmetrics.functional.retrieval.reciprocal_rank import retrieval_reciprocal_rank
+from torchmetrics.functional.retrieval._deprecated import _retrieval_average_precision as retrieval_average_precision
+from torchmetrics.functional.retrieval._deprecated import _retrieval_fall_out as retrieval_fall_out
+from torchmetrics.functional.retrieval._deprecated import _retrieval_hit_rate as retrieval_hit_rate
+from torchmetrics.functional.retrieval._deprecated import _retrieval_normalized_dcg as retrieval_normalized_dcg
+from torchmetrics.functional.retrieval._deprecated import _retrieval_precision as retrieval_precision
+from torchmetrics.functional.retrieval._deprecated import (
+    _retrieval_precision_recall_curve as retrieval_precision_recall_curve,
+)
+from torchmetrics.functional.retrieval._deprecated import _retrieval_r_precision as retrieval_r_precision
+from torchmetrics.functional.retrieval._deprecated import _retrieval_recall as retrieval_recall
+from torchmetrics.functional.retrieval._deprecated import _retrieval_reciprocal_rank as retrieval_reciprocal_rank
 from torchmetrics.functional.text.bleu import bleu_score
 from torchmetrics.functional.text.cer import char_error_rate
 from torchmetrics.functional.text.chrf import chrf_score
