@@ -90,18 +90,20 @@ from torchmetrics.regression import (  # noqa: E402
     TweedieDevianceScore,
     WeightedMeanAbsolutePercentageError,
 )
-from torchmetrics.retrieval import RetrievalFallOut  # noqa: E402
-from torchmetrics.retrieval import RetrievalHitRate  # noqa: E402
-from torchmetrics.retrieval import (  # noqa: E402
-    RetrievalMAP,
-    RetrievalMRR,
-    RetrievalNormalizedDCG,
-    RetrievalPrecision,
-    RetrievalPrecisionRecallCurve,
-    RetrievalRecall,
-    RetrievalRecallAtFixedPrecision,
-    RetrievalRPrecision,
+from torchmetrics.retrieval._deprecated import _RetrievalFallOut as RetrievalFallOut  # noqa: E402
+from torchmetrics.retrieval._deprecated import _RetrievalHitRate as RetrievalHitRate  # noqa: E402
+from torchmetrics.retrieval._deprecated import _RetrievalMAP as RetrievalMAP  # noqa: E402
+from torchmetrics.retrieval._deprecated import _RetrievalMRR as RetrievalMRR  # noqa: E402
+from torchmetrics.retrieval._deprecated import _RetrievalNormalizedDCG as RetrievalNormalizedDCG  # noqa: E402
+from torchmetrics.retrieval._deprecated import _RetrievalPrecision as RetrievalPrecision  # noqa: E402
+from torchmetrics.retrieval._deprecated import (  # noqa: E402
+    _RetrievalPrecisionRecallCurve as RetrievalPrecisionRecallCurve,
 )
+from torchmetrics.retrieval._deprecated import _RetrievalRecall as RetrievalRecall  # noqa: E402
+from torchmetrics.retrieval._deprecated import (  # noqa: E402
+    _RetrievalRecallAtFixedPrecision as RetrievalRecallAtFixedPrecision,
+)
+from torchmetrics.retrieval._deprecated import _RetrievalRPrecision as RetrievalRPrecision  # noqa: E402
 from torchmetrics.text import (  # noqa: E402
     BLEUScore,
     CharErrorRate,
