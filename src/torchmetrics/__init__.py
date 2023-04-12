@@ -102,20 +102,18 @@ from torchmetrics.retrieval._deprecated import (  # noqa: E402
     _RetrievalRecallAtFixedPrecision as RetrievalRecallAtFixedPrecision,
 )
 from torchmetrics.retrieval._deprecated import _RetrievalRPrecision as RetrievalRPrecision  # noqa: E402
-from torchmetrics.text import (  # noqa: E402
-    BLEUScore,
-    CharErrorRate,
-    CHRFScore,
-    ExtendedEditDistance,
-    MatchErrorRate,
-    Perplexity,
-    SacreBLEUScore,
-    SQuAD,
-    TranslationEditRate,
-    WordErrorRate,
-    WordInfoLost,
-    WordInfoPreserved,
-)
+from torchmetrics.text._deprecated import _BLEUScore as BLEUScore  # noqa: E402
+from torchmetrics.text._deprecated import _CharErrorRate as CharErrorRate  # noqa: E402
+from torchmetrics.text._deprecated import _CHRFScore as CHRFScore  # noqa: E402
+from torchmetrics.text._deprecated import _ExtendedEditDistance as ExtendedEditDistance  # noqa: E402
+from torchmetrics.text._deprecated import _MatchErrorRate as MatchErrorRate  # noqa: E402
+from torchmetrics.text._deprecated import _Perplexity as Perplexity  # noqa: E402
+from torchmetrics.text._deprecated import _SacreBLEUScore as SacreBLEUScore  # noqa: E402
+from torchmetrics.text._deprecated import _SQuAD as SQuAD  # noqa: E402
+from torchmetrics.text._deprecated import _TranslationEditRate as TranslationEditRate  # noqa: E402
+from torchmetrics.text._deprecated import _WordErrorRate as WordErrorRate  # noqa: E402
+from torchmetrics.text._deprecated import _WordInfoLost as WordInfoLost  # noqa: E402
+from torchmetrics.text._deprecated import _WordInfoPreserved as WordInfoPreserved  # noqa: E402
 from torchmetrics.wrappers import BootStrapper  # noqa: E402
 from torchmetrics.wrappers import ClasswiseWrapper, MetricTracker, MinMaxMetric, MultioutputWrapper  # noqa: E402
 
