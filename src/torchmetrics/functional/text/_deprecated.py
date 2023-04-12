@@ -26,8 +26,8 @@ from torchmetrics.functional.text.wip import word_information_preserved
 from torchmetrics.utilities.imports import _NLTK_AVAILABLE, _TRANSFORMERS_AVAILABLE
 from torchmetrics.utilities.prints import _deprecated_root_import_func
 
-if not _NLTK_AVAILABLE:
-    __doctest_skip__ = ["_rouge_score"]
+__doctest_requires__ = {("_rouge_score"): ["nltk"]}
+
 if not _TRANSFORMERS_AVAILABLE:
     __doctest_skip__ = ["_bert_score", "_infolm"]
 
