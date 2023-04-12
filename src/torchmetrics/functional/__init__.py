@@ -102,24 +102,24 @@ from torchmetrics.functional.retrieval._deprecated import (
 from torchmetrics.functional.retrieval._deprecated import _retrieval_r_precision as retrieval_r_precision
 from torchmetrics.functional.retrieval._deprecated import _retrieval_recall as retrieval_recall
 from torchmetrics.functional.retrieval._deprecated import _retrieval_reciprocal_rank as retrieval_reciprocal_rank
-from torchmetrics.functional.text.bleu import bleu_score
-from torchmetrics.functional.text.cer import char_error_rate
-from torchmetrics.functional.text.chrf import chrf_score
-from torchmetrics.functional.text.eed import extended_edit_distance
-from torchmetrics.functional.text.mer import match_error_rate
-from torchmetrics.functional.text.perplexity import perplexity
-from torchmetrics.functional.text.rouge import rouge_score
-from torchmetrics.functional.text.sacre_bleu import sacre_bleu_score
-from torchmetrics.functional.text.squad import squad
-from torchmetrics.functional.text.ter import translation_edit_rate
-from torchmetrics.functional.text.wer import word_error_rate
-from torchmetrics.functional.text.wil import word_information_lost
-from torchmetrics.functional.text.wip import word_information_preserved
+from torchmetrics.functional.text._deprecated import _bleu_score as bleu_score
+from torchmetrics.functional.text._deprecated import _char_error_rate as char_error_rate
+from torchmetrics.functional.text._deprecated import _chrf_score as chrf_score
+from torchmetrics.functional.text._deprecated import _extended_edit_distance as extended_edit_distance
+from torchmetrics.functional.text._deprecated import _match_error_rate as match_error_rate
+from torchmetrics.functional.text._deprecated import _perplexity as perplexity
+from torchmetrics.functional.text._deprecated import _rouge_score as rouge_score
+from torchmetrics.functional.text._deprecated import _sacre_bleu_score as sacre_bleu_score
+from torchmetrics.functional.text._deprecated import _squad as squad
+from torchmetrics.functional.text._deprecated import _translation_edit_rate as translation_edit_rate
+from torchmetrics.functional.text._deprecated import _word_error_rate as word_error_rate
+from torchmetrics.functional.text._deprecated import _word_information_lost as word_information_lost
+from torchmetrics.functional.text._deprecated import _word_information_preserved as word_information_preserved
 from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 
 if _TRANSFORMERS_AVAILABLE:
-    from torchmetrics.functional.text.bert import bert_score  # noqa: F401
-    from torchmetrics.functional.text.infolm import infolm  # noqa: F401
+    from torchmetrics.functional.text._deprecated import _bert_score as bert_score  # noqa: F401
+    from torchmetrics.functional.text._deprecated import _infolm as infolm  # noqa: F401
 
 __all__ = [
     "accuracy",
