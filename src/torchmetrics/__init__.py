@@ -112,7 +112,6 @@ from torchmetrics.text._deprecated import _TranslationEditRate as TranslationEdi
 from torchmetrics.text._deprecated import _WordErrorRate as WordErrorRate  # noqa: E402
 from torchmetrics.text._deprecated import _WordInfoLost as WordInfoLost  # noqa: E402
 from torchmetrics.text._deprecated import _WordInfoPreserved as WordInfoPreserved  # noqa: E402
-
 from torchmetrics.wrappers import (  # noqa: E402
     BootStrapper,
     ClasswiseWrapper,
