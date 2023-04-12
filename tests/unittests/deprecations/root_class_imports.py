@@ -4,12 +4,18 @@ from functools import partial
 import pytest
 
 from torchmetrics import (
+    BLEUScore,
+    CharErrorRate,
+    CHRFScore,
     ErrorRelativeGlobalDimensionlessSynthesis,
+    ExtendedEditDistance,
+    MatchErrorRate,
     ModifiedPanopticQuality,
     MultiScaleStructuralSimilarityIndexMeasure,
     PanopticQuality,
     PeakSignalNoiseRatio,
     PermutationInvariantTraining,
+    Perplexity,
     RelativeAverageSpectralError,
     RetrievalFallOut,
     RetrievalHitRate,
@@ -22,15 +28,21 @@ from torchmetrics import (
     RetrievalRecallAtFixedPrecision,
     RetrievalRPrecision,
     RootMeanSquaredErrorUsingSlidingWindow,
+    SacreBLEUScore,
     ScaleInvariantSignalDistortionRatio,
     ScaleInvariantSignalNoiseRatio,
     SignalDistortionRatio,
     SignalNoiseRatio,
     SpectralAngleMapper,
     SpectralDistortionIndex,
+    SQuAD,
     StructuralSimilarityIndexMeasure,
     TotalVariation,
+    TranslationEditRate,
     UniversalImageQualityIndex,
+    WordErrorRate,
+    WordInfoLost,
+    WordInfoPreserved,
 )
 from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio
 
@@ -71,6 +83,19 @@ from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio
         RetrievalRecall,
         RetrievalRecallAtFixedPrecision,
         RetrievalRPrecision,
+        # Text
+        BLEUScore,
+        CharErrorRate,
+        CHRFScore,
+        ExtendedEditDistance,
+        MatchErrorRate,
+        Perplexity,
+        SacreBLEUScore,
+        SQuAD,
+        TranslationEditRate,
+        WordErrorRate,
+        WordInfoLost,
+        WordInfoPreserved,
     ],
 )
 def test_import_from_root_package(metric_cls):
