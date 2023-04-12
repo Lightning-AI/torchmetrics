@@ -89,7 +89,7 @@ ______________________________________________________________________
 
 ## What is TorchMetrics
 
-TorchMetrics is a collection of 90+ PyTorch metrics implementations and an easy-to-use API to create custom metrics. It offers:
+TorchMetrics is a collection of 100+ PyTorch metrics implementations and an easy-to-use API to create custom metrics. It offers:
 
 - A standardized interface to increase reproducibility
 - Reduces boilerplate
@@ -269,7 +269,7 @@ acc = torchmetrics.functional.classification.multiclass_accuracy(
 
 ### Covered domains and example metrics
 
-In total TorchMetrics contains [90+ metrics](https://torchmetrics.readthedocs.io/en/stable/all-metrics.html), which
+In total TorchMetrics contains [100+ metrics](https://torchmetrics.readthedocs.io/en/stable/all-metrics.html), which
 convers the following domains:
 
 - Audio
