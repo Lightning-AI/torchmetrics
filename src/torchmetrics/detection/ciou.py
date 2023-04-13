@@ -11,7 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional
+from typing import Any, Callable, Optional
+
+from torch import Tensor
 
 from torchmetrics.detection.iou import IntersectionOverUnion
 from torchmetrics.functional.detection.ciou import _ciou_compute, _ciou_update
@@ -29,7 +31,7 @@ class CompleteIntersectionOverUnion(IntersectionOverUnion):
         class_metrics:
             Option to enable per-class metrics for IoU. Has a performance impact.
         kwargs:
-             Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
     """
     _iou_type: str = "ciou"
     _invalid_val: float = -2.0  # unsure, min val could be just -1.5 as well
@@ -46,6 +48,12 @@ class CompleteIntersectionOverUnion(IntersectionOverUnion):
                 f"Metric `{self._iou_type.upper()}` requires that `torchvision` version 0.13.0 or newer is installed."
                 " Please install with `pip install torchvision>=0.13` or `pip install torchmetrics[detection]`."
             )
-        super().__init__(
-            box_format, iou_threshold, class_metrics, iou_update_fn=_ciou_update, iou_compute_fn=_ciou_compute, **kwargs
-        )
+        super().__init__(box_format, iou_threshold, class_metrics, **kwargs)
+
+    @staticmethod
+    def _iou_update_fn(*args: Any, **kwargs: Any) -> Tensor:
+        return _ciou_update(*args, **kwargs)
+
+    @staticmethod
+    def _iou_compute_fn(*args: Any, **kwargs: Any) -> Tensor:
+        return _ciou_compute(*args, **kwargs)

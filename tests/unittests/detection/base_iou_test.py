@@ -61,6 +61,13 @@ _inputs = Input(
         ],
         [
             {
+                "boxes": Tensor([[296.55, 93.96, 314.97, 152.79], [298.55, 98.96, 314.97, 151.79]]),
+                "scores": Tensor([0.236, 0.56]),
+                "labels": IntTensor([4, 5]),
+            }
+        ],
+        [
+            {
                 "boxes": Tensor([[328.94, 97.05, 342.49, 122.98]]),
                 "scores": Tensor([0.456]),
                 "labels": IntTensor([4]),
@@ -85,6 +92,12 @@ _inputs = Input(
         ],
     ],
     target=[
+        [
+            {
+                "boxes": Tensor([[300.00, 100.00, 315.00, 150.00]]),
+                "labels": IntTensor([5]),
+            }
+        ],
         [
             {
                 "boxes": Tensor([[300.00, 100.00, 315.00, 150.00]]),

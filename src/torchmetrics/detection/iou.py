@@ -20,7 +20,7 @@ from torch import Tensor
 from torchmetrics.detection.helpers import _fix_empty_tensors, _input_validator
 from torchmetrics.functional.detection.iou import _iou_compute, _iou_update
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.data import dim_zero_cat, dim_zero_mean
+from torchmetrics.utilities.data import dim_zero_cat
 
 # from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.imports import _TORCHVISION_GREATER_EQUAL_0_8
@@ -44,7 +44,7 @@ class IntersectionOverUnion(Metric):
         respect_labels:
             Replace IoU values with the `invalid_val` if the labels do not match.
         kwargs:
-             Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
@@ -57,8 +57,6 @@ class IntersectionOverUnion(Metric):
     groundtruth_labels: List[Tensor]
     results: List[Tensor]
     labels_eq: List[Tensor]
-    _iou_update_fn: Callable[[Tensor, Tensor, Optional[float], float], Tensor]
-    _iou_compute_fn: Callable[[Tensor, bool], Tensor]
     _iou_type: str = "iou"
     _invalid_val: float = 0.0
 
@@ -68,8 +66,6 @@ class IntersectionOverUnion(Metric):
         iou_threshold: Optional[float] = None,
         class_metrics: bool = False,
         respect_labels: bool = True,
-        iou_update_fn: Callable[[Tensor, Tensor, Optional[float], float], Tensor] = _iou_update,
-        iou_compute_fn: Callable[[Tensor, bool], Tensor] = _iou_compute,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -79,9 +75,6 @@ class IntersectionOverUnion(Metric):
                 f"Metric `{self._iou_type.upper()}` requires that `torchvision` version 0.8.0 or newer is installed."
                 " Please install with `pip install torchvision>=0.8` or `pip install torchmetrics[detection]`."
             )
-
-        self._iou_update_fn = iou_update_fn
-        self._iou_compute_fn = iou_compute_fn
 
         allowed_box_formats = ("xyxy", "xywh", "cxcywh")
         if box_format not in allowed_box_formats:
@@ -105,6 +98,14 @@ class IntersectionOverUnion(Metric):
         self.add_state("groundtruth_labels", default=[], dist_reduce_fx=None)
         self.add_state("results", default=[], dist_reduce_fx=None)
         self.add_state("labels_eq", default=[], dist_reduce_fx=None)
+
+    @staticmethod
+    def _iou_update_fn(*args: Any, **kwargs: Any) -> Tensor:
+        return _iou_update(*args, **kwargs)
+
+    @staticmethod
+    def _iou_compute_fn(*args: Any, **kwargs: Any) -> Tensor:
+        return _iou_compute(*args, **kwargs)
 
     def update(self, preds: List[Dict[str, Tensor]], target: List[Dict[str, Tensor]]) -> None:
         """Add detections and ground truth to the metric.
@@ -165,7 +166,7 @@ class IntersectionOverUnion(Metric):
 
             label_eq = torch.equal(p["labels"], t["labels"])
             # Workaround to persist state, which only works with tensors
-            self.labels_eq.append(torch.tensor([label_eq], dtype=torch.bool, device=self.device))
+            self.labels_eq.append(torch.tensor([label_eq], dtype=torch.int, device=self.device))
 
             ious = self._iou_update_fn(det_boxes, gt_boxes, self.iou_threshold, self._invalid_val)
             if self.respect_labels and not label_eq:
