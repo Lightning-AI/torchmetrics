@@ -65,6 +65,7 @@ def generalized_intersection_over_union(
             Return the average value instead of the complete IoU matrix.
 
     Example:
+        >>> import torch
         >>> from torchmetrics.functional.detection import generalized_intersection_over_union
         >>> preds = torch.Tensor([[100, 100, 200, 200]])
         >>> target = torch.Tensor([[110, 110, 210, 210]])
