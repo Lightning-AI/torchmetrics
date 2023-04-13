@@ -13,5 +13,9 @@
 # limitations under the License.
 from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 
+__all__ = []
+
 if _TRANSFORMERS_AVAILABLE:
     from torchmetrics.functional.multimodal.clip_score import clip_score  # noqa: F401
+
+    __all__.append("clip_score")
