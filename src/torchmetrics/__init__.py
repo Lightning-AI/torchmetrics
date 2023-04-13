@@ -66,12 +66,10 @@ from torchmetrics.image._deprecated import (  # noqa: E402
 from torchmetrics.image._deprecated import _TotalVariation as TotalVariation  # noqa: E402
 from torchmetrics.image._deprecated import _UniversalImageQualityIndex as UniversalImageQualityIndex  # noqa: E402
 from torchmetrics.metric import Metric  # noqa: E402
-from torchmetrics.nominal import CramersV  # noqa: E402
-from torchmetrics.nominal import PearsonsContingencyCoefficient  # noqa: E402
-from torchmetrics.nominal import TheilsU, TschuprowsT  # noqa: E402
-from torchmetrics.regression import ConcordanceCorrCoef  # noqa: E402
-from torchmetrics.regression import CosineSimilarity  # noqa: E402
+from torchmetrics.nominal import CramersV, PearsonsContingencyCoefficient, TheilsU, TschuprowsT  # noqa: E402
 from torchmetrics.regression import (  # noqa: E402
+    ConcordanceCorrCoef,
+    CosineSimilarity,
     ExplainedVariance,
     KendallRankCorrCoef,
     KLDivergence,
@@ -114,8 +112,13 @@ from torchmetrics.text._deprecated import _TranslationEditRate as TranslationEdi
 from torchmetrics.text._deprecated import _WordErrorRate as WordErrorRate  # noqa: E402
 from torchmetrics.text._deprecated import _WordInfoLost as WordInfoLost  # noqa: E402
 from torchmetrics.text._deprecated import _WordInfoPreserved as WordInfoPreserved  # noqa: E402
-from torchmetrics.wrappers import BootStrapper  # noqa: E402
-from torchmetrics.wrappers import ClasswiseWrapper, MetricTracker, MinMaxMetric, MultioutputWrapper  # noqa: E402
+from torchmetrics.wrappers import (  # noqa: E402
+    BootStrapper,
+    ClasswiseWrapper,
+    MetricTracker,
+    MinMaxMetric,
+    MultioutputWrapper,
+)
 
 __all__ = [
     "functional",
