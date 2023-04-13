@@ -16,30 +16,13 @@ from contextlib import nullcontext as does_not_raise
 
 import pytest
 import torch
-from scipy.linalg import sqrtm as scipy_sqrtm
 from torch.nn import Module
 from torch.utils.data import Dataset
 
-from torchmetrics.image.fid import FrechetInceptionDistance, sqrtm
+from torchmetrics.image.fid import FrechetInceptionDistance
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
 torch.manual_seed(42)
-
-
-@pytest.mark.parametrize("matrix_size", [2, 10, 100, 500])
-def test_matrix_sqrt(matrix_size):
-    """Test that metrix sqrt function works as expected."""
-
-    def generate_cov(n):
-        data = torch.randn(2 * n, n)
-        return (data - data.mean(dim=0)).T @ (data - data.mean(dim=0))
-
-    cov1 = generate_cov(matrix_size)
-    cov2 = generate_cov(matrix_size)
-
-    scipy_res = scipy_sqrtm((cov1 @ cov2).numpy()).real
-    tm_res = sqrtm(cov1 @ cov2)
-    assert torch.allclose(torch.tensor(scipy_res).float().trace(), tm_res.trace())
 
 
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
