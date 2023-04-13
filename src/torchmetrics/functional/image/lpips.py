@@ -22,12 +22,12 @@
 # Copyright (c) 2018, Richard Zhang, Phillip Isola, Alexei A. Efros, Eli Shechtman, Oliver Wang
 # All rights reserved.
 # License under BSD 2-clause
-
+import inspect
+import os
 from collections import namedtuple
+from typing import Optional, Tuple, Union
 
 import torch
-import torchvision
-from packaging import version
 from torch import Tensor, nn
 from torchvision import models as tv
 from typing_extensions import Literal
@@ -76,7 +76,7 @@ class SqueezeNet(torch.nn.Module):
             for param in self.parameters():
                 param.requires_grad = False
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
         """Process input."""
         vgg_outputs = namedtuple("SqueezeOutputs", ["relu1", "relu2", "relu3", "relu4", "relu5", "relu6", "relu7"])
 
@@ -90,7 +90,7 @@ class SqueezeNet(torch.nn.Module):
 class Alexnet(torch.nn.Module):
     """Alexnet implementation."""
 
-    def __init__(self, requires_grad=False, pretrained=True) -> None:
+    def __init__(self, requires_grad: bool = False, pretrained: bool = True) -> None:
         super().__init__()
         alexnet_pretrained_features = _get_net("alexnet", pretrained)
 
@@ -114,7 +114,7 @@ class Alexnet(torch.nn.Module):
             for param in self.parameters():
                 param.requires_grad = False
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
         """Process input."""
         h = self.slice1(x)
         h_relu1 = h
@@ -127,15 +127,13 @@ class Alexnet(torch.nn.Module):
         h = self.slice5(h)
         h_relu5 = h
         alexnet_outputs = namedtuple("AlexnetOutputs", ["relu1", "relu2", "relu3", "relu4", "relu5"])
-        out = alexnet_outputs(h_relu1, h_relu2, h_relu3, h_relu4, h_relu5)
-
-        return out
+        return alexnet_outputs(h_relu1, h_relu2, h_relu3, h_relu4, h_relu5)
 
 
 class Vgg16(torch.nn.Module):
     """Vgg16 implementation."""
 
-    def __init__(self, requires_grad=False, pretrained=True) -> None:
+    def __init__(self, requires_grad: bool = False, pretrained: bool = True) -> None:
         super().__init__()
         vgg_pretrained_features = _get_net("vgg16", pretrained)
 
@@ -159,7 +157,7 @@ class Vgg16(torch.nn.Module):
             for param in self.parameters():
                 param.requires_grad = False
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
         """Process input."""
         h = self.slice1(x)
         h_relu1_2 = h
@@ -172,22 +170,20 @@ class Vgg16(torch.nn.Module):
         h = self.slice5(h)
         h_relu5_3 = h
         vgg_outputs = namedtuple("VggOutputs", ["relu1_2", "relu2_2", "relu3_3", "relu4_3", "relu5_3"])
-        out = vgg_outputs(h_relu1_2, h_relu2_2, h_relu3_3, h_relu4_3, h_relu5_3)
-
-        return out
+        return vgg_outputs(h_relu1_2, h_relu2_2, h_relu3_3, h_relu4_3, h_relu5_3)
 
 
-def spatial_average(in_tens, keepdim=True):
+def spatial_average(in_tens: Tensor, keepdim: bool = True) -> Tensor:
     """Spatial averaging over heigh and width of images."""
     return in_tens.mean([2, 3], keepdim=keepdim)
 
 
-def upsample(in_tens, out_hw=(64, 64)):  # assumes scale factor is same for H and W
+def upsample(in_tens: Tensor, out_hw: Tuple[int] = (64, 64)) -> Tensor:  # assumes scale factor is same for H and W
     """Upsample input with bilinear interpolation."""
     return nn.Upsample(size=out_hw, mode="bilinear", align_corners=False)(in_tens)
 
 
-def normalize_tensor(in_feat, eps=1e-10):
+def normalize_tensor(in_feat: Tensor, eps: float = 1e-10) -> Tensor:
     """Normalize tensors."""
     norm_factor = torch.sqrt(torch.sum(in_feat**2, dim=1, keepdim=True))
     return in_feat / (norm_factor + eps)
@@ -201,7 +197,7 @@ class ScalingLayer(nn.Module):
         self.register_buffer("shift", torch.Tensor([-0.030, -0.088, -0.188])[None, :, None, None])
         self.register_buffer("scale", torch.Tensor([0.458, 0.448, 0.450])[None, :, None, None])
 
-    def forward(self, inp):
+    def forward(self, inp: Tensor) -> Tensor:
         """Process input."""
         return (inp - self.shift) / self.scale
 
@@ -209,22 +205,16 @@ class ScalingLayer(nn.Module):
 class NetLinLayer(nn.Module):
     """A single linear layer which does a 1x1 conv."""
 
-    def __init__(self, chn_in, chn_out=1, use_dropout=False) -> None:
+    def __init__(self, chn_in: int, chn_out: int = 1, use_dropout: bool = False) -> None:
         super().__init__()
 
-        layers = (
-            [
-                nn.Dropout(),
-            ]
-            if (use_dropout)
-            else []
-        )
+        layers = [nn.Dropout()] if use_dropout else []
         layers += [
             nn.Conv2d(chn_in, chn_out, 1, stride=1, padding=0, bias=False),
         ]
         self.model = nn.Sequential(*layers)
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
         """Process input."""
         return self.model(x)
 
@@ -232,14 +222,14 @@ class NetLinLayer(nn.Module):
 class _LPIPS(nn.Module):
     def __init__(
         self,
-        pretrained=True,
-        net="alex",
-        spatial=False,
-        pnet_rand=False,
-        pnet_tune=False,
-        use_dropout=True,
-        model_path=None,
-        eval_mode=True,
+        pretrained: bool = True,
+        net: Literal["alex", "vgg", "squeeze"] = "alex",
+        spatial: bool = False,
+        pnet_rand: bool = False,
+        pnet_tune: bool = False,
+        use_dropout: bool = True,
+        model_path: Optional[str] = None,
+        eval_mode: bool = True,
     ) -> None:
         """Initializes a perceptual loss torch.nn.Module.
 
@@ -259,7 +249,6 @@ class _LPIPS(nn.Module):
         self.pnet_tune = pnet_tune
         self.pnet_rand = pnet_rand
         self.spatial = spatial
-        self.version = version
         self.scaling_layer = ScalingLayer()
 
         if self.pnet_type in ["vgg", "vgg16"]:
@@ -289,9 +278,6 @@ class _LPIPS(nn.Module):
 
         if pretrained:
             if model_path is None:
-                import inspect
-                import os
-
                 model_path = os.path.abspath(
                     os.path.join(inspect.getfile(self.__init__), "..", f"lpips_models/{net}.pth")
                 )
@@ -301,15 +287,13 @@ class _LPIPS(nn.Module):
         if eval_mode:
             self.eval()
 
-    def forward(self, in0, in1, retperlayer=False, normalize=False):
+    def forward(self, in0: Tensor, in1: Tensor, retperlayer: bool = False, normalize: bool = False) -> Tensor:
         if normalize:  # turn on this flag if input is [0,1] so it can be adjusted to [-1, +1]
             in0 = 2 * in0 - 1
             in1 = 2 * in1 - 1
 
         # v0.0 - original release had a bug, where input was not scaled
-        in0_input, in1_input = (
-            (self.scaling_layer(in0), self.scaling_layer(in1)) if self.version == "0.1" else (in0, in1)
-        )
+        in0_input, in1_input = self.scaling_layer(in0), self.scaling_layer(in1)
         outs0, outs1 = self.net.forward(in0_input), self.net.forward(in1_input)
         feats0, feats1, diffs = {}, {}, {}
 
@@ -345,7 +329,7 @@ def _valid_img(img: Tensor, normalize: bool) -> bool:
     return img.ndim == 4 and img.shape[1] == 3 and value_check
 
 
-def _lpips_update(img1, img2, net, normalize):
+def _lpips_update(img1: Tensor, img2: Tensor, net: nn.Module, normalize: bool) -> Tuple[Tensor, Union[int, Tensor]]:
     if not (_valid_img(img1, normalize) and _valid_img(img2, normalize)):
         raise ValueError(
             "Expected both input arguments to be normalized tensors with shape [N, 3, H, W]."
@@ -357,7 +341,7 @@ def _lpips_update(img1, img2, net, normalize):
     return loss, img1.shape[0]
 
 
-def _lpips_compute(sum_scores, total, reduction):
+def _lpips_compute(sum_scores: Tensor, total: Union[Tensor, int], reduction: Literal["sum", "mean"] = "mean") -> Tensor:
     return sum_scores / total if reduction == "mean" else sum_scores
 
 
