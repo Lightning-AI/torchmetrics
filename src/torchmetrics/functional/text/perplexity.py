@@ -26,7 +26,8 @@ def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> None:
 
     Args:
         preds:
-            Probabilities assigned to each token in a sequence with shape [batch_size, seq_len, vocab_size].
+            Logits or a unnormalized score assigned to each token in a sequence with shape [batch_size, seq_len,
+            vocab_size]. Scores will be normalized internally using softmax.
         target:
             Ground truth values with a shape [batch_size, seq_len].
 
@@ -70,7 +71,8 @@ def _perplexity_update(preds: Tensor, target: Tensor, ignore_index: Optional[int
 
     Args:
         preds:
-            Probabilities assigned to each token in a sequence with shape [batch_size, seq_len, vocab_size].
+            Logits or a unnormalized score assigned to each token in a sequence with shape [batch_size, seq_len,
+            vocab_size]. Scores will be normalized internally using softmax.
         target:
             Ground truth values with a shape [batch_size, seq_len].
         ignore_index:
@@ -118,7 +120,8 @@ def perplexity(preds: Tensor, target: Tensor, ignore_index: Optional[int] = None
 
     Args:
         preds:
-            Log probabilities assigned to each token in a sequence with shape [batch_size, seq_len, vocab_size].
+            Logits or a unnormalized score assigned to each token in a sequence with shape [batch_size, seq_len,
+            vocab_size], which is the output of a language model. Scores will be normalized internally using softmax.
         target:
             Ground truth values with a shape [batch_size, seq_len].
         ignore_index:
