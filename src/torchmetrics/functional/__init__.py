@@ -11,9 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torchmetrics.functional.audio.pit import permutation_invariant_training, pit_permutate
-from torchmetrics.functional.audio.sdr import scale_invariant_signal_distortion_ratio, signal_distortion_ratio
-from torchmetrics.functional.audio.snr import scale_invariant_signal_noise_ratio, signal_noise_ratio
+from torchmetrics.functional.audio._deprecated import _permutation_invariant_training as permutation_invariant_training
+from torchmetrics.functional.audio._deprecated import _pit_permutate as pit_permutate
+from torchmetrics.functional.audio._deprecated import (
+    _scale_invariant_signal_distortion_ratio as scale_invariant_signal_distortion_ratio,
+)
+from torchmetrics.functional.audio._deprecated import (
+    _scale_invariant_signal_noise_ratio as scale_invariant_signal_noise_ratio,
+)
+from torchmetrics.functional.audio._deprecated import _signal_distortion_ratio as signal_distortion_ratio
+from torchmetrics.functional.audio._deprecated import _signal_noise_ratio as signal_noise_ratio
 from torchmetrics.functional.classification.accuracy import accuracy
 from torchmetrics.functional.classification.auroc import auroc
 from torchmetrics.functional.classification.average_precision import average_precision
@@ -32,21 +39,29 @@ from torchmetrics.functional.classification.precision_recall_curve import precis
 from torchmetrics.functional.classification.roc import roc
 from torchmetrics.functional.classification.specificity import specificity
 from torchmetrics.functional.classification.stat_scores import stat_scores
-from torchmetrics.functional.detection.modified_panoptic_quality import modified_panoptic_quality
-from torchmetrics.functional.detection.panoptic_quality import panoptic_quality
-from torchmetrics.functional.image.d_lambda import spectral_distortion_index
-from torchmetrics.functional.image.ergas import error_relative_global_dimensionless_synthesis
-from torchmetrics.functional.image.gradients import image_gradients
-from torchmetrics.functional.image.psnr import peak_signal_noise_ratio
-from torchmetrics.functional.image.rase import relative_average_spectral_error
-from torchmetrics.functional.image.rmse_sw import root_mean_squared_error_using_sliding_window
-from torchmetrics.functional.image.sam import spectral_angle_mapper
-from torchmetrics.functional.image.ssim import (
-    multiscale_structural_similarity_index_measure,
-    structural_similarity_index_measure,
+from torchmetrics.functional.detection._deprecated import _modified_panoptic_quality as modified_panoptic_quality
+from torchmetrics.functional.detection._deprecated import _panoptic_quality as panoptic_quality
+from torchmetrics.functional.image._deprecated import (
+    _error_relative_global_dimensionless_synthesis as error_relative_global_dimensionless_synthesis,
 )
-from torchmetrics.functional.image.tv import total_variation
-from torchmetrics.functional.image.uqi import universal_image_quality_index
+from torchmetrics.functional.image._deprecated import _image_gradients as image_gradients
+from torchmetrics.functional.image._deprecated import (
+    _multiscale_structural_similarity_index_measure as multiscale_structural_similarity_index_measure,
+)
+from torchmetrics.functional.image._deprecated import _peak_signal_noise_ratio as peak_signal_noise_ratio
+from torchmetrics.functional.image._deprecated import (
+    _relative_average_spectral_error as relative_average_spectral_error,
+)
+from torchmetrics.functional.image._deprecated import (
+    _root_mean_squared_error_using_sliding_window as root_mean_squared_error_using_sliding_window,
+)
+from torchmetrics.functional.image._deprecated import _spectral_angle_mapper as spectral_angle_mapper
+from torchmetrics.functional.image._deprecated import _spectral_distortion_index as spectral_distortion_index
+from torchmetrics.functional.image._deprecated import (
+    _structural_similarity_index_measure as structural_similarity_index_measure,
+)
+from torchmetrics.functional.image._deprecated import _total_variation as total_variation
+from torchmetrics.functional.image._deprecated import _universal_image_quality_index as universal_image_quality_index
 from torchmetrics.functional.nominal.cramers import cramers_v, cramers_v_matrix
 from torchmetrics.functional.nominal.pearson import (
     pearsons_contingency_coefficient,
@@ -76,33 +91,35 @@ from torchmetrics.functional.regression.spearman import spearman_corrcoef
 from torchmetrics.functional.regression.symmetric_mape import symmetric_mean_absolute_percentage_error
 from torchmetrics.functional.regression.tweedie_deviance import tweedie_deviance_score
 from torchmetrics.functional.regression.wmape import weighted_mean_absolute_percentage_error
-from torchmetrics.functional.retrieval.average_precision import retrieval_average_precision
-from torchmetrics.functional.retrieval.fall_out import retrieval_fall_out
-from torchmetrics.functional.retrieval.hit_rate import retrieval_hit_rate
-from torchmetrics.functional.retrieval.ndcg import retrieval_normalized_dcg
-from torchmetrics.functional.retrieval.precision import retrieval_precision
-from torchmetrics.functional.retrieval.precision_recall_curve import retrieval_precision_recall_curve
-from torchmetrics.functional.retrieval.r_precision import retrieval_r_precision
-from torchmetrics.functional.retrieval.recall import retrieval_recall
-from torchmetrics.functional.retrieval.reciprocal_rank import retrieval_reciprocal_rank
-from torchmetrics.functional.text.bleu import bleu_score
-from torchmetrics.functional.text.cer import char_error_rate
-from torchmetrics.functional.text.chrf import chrf_score
-from torchmetrics.functional.text.eed import extended_edit_distance
-from torchmetrics.functional.text.mer import match_error_rate
-from torchmetrics.functional.text.perplexity import perplexity
-from torchmetrics.functional.text.rouge import rouge_score
-from torchmetrics.functional.text.sacre_bleu import sacre_bleu_score
-from torchmetrics.functional.text.squad import squad
-from torchmetrics.functional.text.ter import translation_edit_rate
-from torchmetrics.functional.text.wer import word_error_rate
-from torchmetrics.functional.text.wil import word_information_lost
-from torchmetrics.functional.text.wip import word_information_preserved
+from torchmetrics.functional.retrieval._deprecated import _retrieval_average_precision as retrieval_average_precision
+from torchmetrics.functional.retrieval._deprecated import _retrieval_fall_out as retrieval_fall_out
+from torchmetrics.functional.retrieval._deprecated import _retrieval_hit_rate as retrieval_hit_rate
+from torchmetrics.functional.retrieval._deprecated import _retrieval_normalized_dcg as retrieval_normalized_dcg
+from torchmetrics.functional.retrieval._deprecated import _retrieval_precision as retrieval_precision
+from torchmetrics.functional.retrieval._deprecated import (
+    _retrieval_precision_recall_curve as retrieval_precision_recall_curve,
+)
+from torchmetrics.functional.retrieval._deprecated import _retrieval_r_precision as retrieval_r_precision
+from torchmetrics.functional.retrieval._deprecated import _retrieval_recall as retrieval_recall
+from torchmetrics.functional.retrieval._deprecated import _retrieval_reciprocal_rank as retrieval_reciprocal_rank
+from torchmetrics.functional.text._deprecated import _bleu_score as bleu_score
+from torchmetrics.functional.text._deprecated import _char_error_rate as char_error_rate
+from torchmetrics.functional.text._deprecated import _chrf_score as chrf_score
+from torchmetrics.functional.text._deprecated import _extended_edit_distance as extended_edit_distance
+from torchmetrics.functional.text._deprecated import _match_error_rate as match_error_rate
+from torchmetrics.functional.text._deprecated import _perplexity as perplexity
+from torchmetrics.functional.text._deprecated import _rouge_score as rouge_score
+from torchmetrics.functional.text._deprecated import _sacre_bleu_score as sacre_bleu_score
+from torchmetrics.functional.text._deprecated import _squad as squad
+from torchmetrics.functional.text._deprecated import _translation_edit_rate as translation_edit_rate
+from torchmetrics.functional.text._deprecated import _word_error_rate as word_error_rate
+from torchmetrics.functional.text._deprecated import _word_information_lost as word_information_lost
+from torchmetrics.functional.text._deprecated import _word_information_preserved as word_information_preserved
 from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 
 if _TRANSFORMERS_AVAILABLE:
-    from torchmetrics.functional.text.bert import bert_score  # noqa: F401
-    from torchmetrics.functional.text.infolm import infolm  # noqa: F401
+    from torchmetrics.functional.text._deprecated import _bert_score as bert_score  # noqa: F401
+    from torchmetrics.functional.text._deprecated import _infolm as infolm  # noqa: F401
 
 __all__ = [
     "accuracy",
@@ -140,7 +157,6 @@ __all__ = [
     "mean_squared_error",
     "mean_squared_log_error",
     "minkowski_distance",
-    "modified_panoptic_quality",
     "multiscale_structural_similarity_index_measure",
     "pairwise_cosine_similarity",
     "pairwise_euclidean_distance",

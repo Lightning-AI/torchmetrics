@@ -37,23 +37,24 @@ jobs:
           - {os: 'ubuntu-22.04', python-version: '3.8', pytorch-version: '1.13.1'}
           - {os: 'ubuntu-22.04', python-version: '3.10', pytorch-version: '1.13.1'}
           - {os: 'ubuntu-22.04', python-version: '3.10', pytorch-version: '2.0.0'}
+          - {os: 'ubuntu-22.04', python-version: '3.11', pytorch-version: '2.0.0'}
           - {os: 'macOS-11', python-version: '3.8', pytorch-version: '1.13.1'}
           - {os: 'macOS-11', python-version: '3.9', pytorch-version: '1.13.1'}
           - {os: 'macOS-11', python-version: '3.10', pytorch-version: '2.0.0'}
+          - {os: 'macOS-11', python-version: '3.11', pytorch-version: '2.0.0'}
           - {os: 'windows-2022', python-version: '3.8', pytorch-version: '1.13.1'}
           - {os: 'windows-2022', python-version: '3.9', pytorch-version: '1.13.1'}
           - {os: 'windows-2022', python-version: '3.10', pytorch-version: '2.0.0'}
+          - {os: 'windows-2022', python-version: '3.11', pytorch-version: '2.0.0'}
           # the oldest configurations
-          - {os: 'ubuntu-20.04', python-version: '3.7', pytorch-version: '1.8.1', requires: 'oldest'}
           - {os: 'ubuntu-20.04', python-version: '3.8', pytorch-version: '1.8.1', requires: 'oldest'}
-          - {os: 'macOS-11', python-version: '3.7', pytorch-version: '1.8.1', requires: 'oldest'}
           - {os: 'macOS-11', python-version: '3.8', pytorch-version: '1.8.1', requires: 'oldest'}
-          - {os: 'windows-2019', python-version: '3.7', pytorch-version: '1.8.1', requires: 'oldest'}
           - {os: 'windows-2019', python-version: '3.8', pytorch-version: '1.8.1', requires: 'oldest'}
     env:
       PYTORCH_URL: "https://download.pytorch.org/whl/cpu/torch_stable.html"
       FREEZE_REQUIREMENTS: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}
       PYPI_CACHE: "_ci-cache_PyPI"
+      TOKENIZERS_PARALLELISM: false
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
     # seems that MacOS jobs take much more than orger OS
@@ -80,8 +81,7 @@ jobs:
         sudo apt install -y ffmpeg dvipng texlive-latex-extra texlive-fonts-recommended cm-super
     - name: Setup Windows
       if: ${{ runner.os == 'windows' }}
-      run: |
-        choco install ffmpeg
+      run: choco install ffmpeg
 
     - name: source cashing
       uses: ./.github/actions/pull-caches
@@ -89,6 +89,11 @@ jobs:
         requires: ${{ matrix.requires }}
         pytorch-version: ${{ matrix.pytorch-version }}
         pypi-dir: ${{ env.PYPI_CACHE }}
+
+    - name: Temp numba bump (for py3.11)
+      if: ${{ matrix.python-version == '3.11' }}
+      # ToDo: remove after full 0.57.0 release
+      run: pip install "numba~=0.57.0rc1"
 
     - name: Install pkg
       timeout-minutes: 25
@@ -108,6 +113,7 @@ jobs:
       run: python -m pytest torchmetrics --reruns 3 --reruns-delay 2
 
     - name: Freeze PIL (hotfix)
+      if: ${{ matrix.python-version != '3.11' }}
       # import of PILLOW_VERSION which they recently removed in v9.0 in favor of __version__
       run: pip install "Pillow<9.0"  # It messes with torchvision
 

@@ -263,7 +263,7 @@ class MeanAveragePrecision(Metric):
 
     Example:
         >>> from torch import tensor
-        >>> from torchmetrics.detection.mean_ap import MeanAveragePrecision
+        >>> from torchmetrics.detection import MeanAveragePrecision
         >>> preds = [
         ...   dict(
         ...     boxes=tensor([[258.0, 41.0, 606.0, 285.0]]),
