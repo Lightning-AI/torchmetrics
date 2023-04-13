@@ -47,7 +47,7 @@ def _ssim_update(
     gaussian_kernel: bool = True,
     sigma: Union[float, Sequence[float]] = 1.5,
     kernel_size: Union[int, Sequence[int]] = 11,
-    data_range: Optional[float] = None,
+    data_range: Optional[Union[float, Tuple[float, float]]] = None,
     k1: float = 0.01,
     k2: float = 0.03,
     return_full_image: bool = False,
@@ -109,6 +109,10 @@ def _ssim_update(
 
     if data_range is None:
         data_range = max(preds.max() - preds.min(), target.max() - target.min())
+    elif isinstance(data_range, tuple):
+        preds = torch.clamp(preds, min=data_range[0], max=data_range[1])
+        target = torch.clamp(target, min=data_range[0], max=data_range[1])
+        data_range = data_range[1] - data_range[0]
 
     c1 = pow(k1 * data_range, 2)
     c2 = pow(k2 * data_range, 2)
@@ -164,7 +168,10 @@ def _ssim_update(
 
     if return_contrast_sensitivity:
         contrast_sensitivity = upper / lower
-        contrast_sensitivity = contrast_sensitivity[..., pad_h:-pad_h, pad_w:-pad_w]
+        if is_3d:
+            contrast_sensitivity = contrast_sensitivity[..., pad_h:-pad_h, pad_w:-pad_w, pad_d:-pad_d]
+        else:
+            contrast_sensitivity = contrast_sensitivity[..., pad_h:-pad_h, pad_w:-pad_w]
         return ssim_idx.reshape(ssim_idx.shape[0], -1).mean(-1), contrast_sensitivity.reshape(
             contrast_sensitivity.shape[0], -1
         ).mean(-1)
@@ -202,7 +209,7 @@ def structural_similarity_index_measure(
     sigma: Union[float, Sequence[float]] = 1.5,
     kernel_size: Union[int, Sequence[int]] = 11,
     reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
-    data_range: Optional[float] = None,
+    data_range: Optional[Union[float, Tuple[float, float]]] = None,
     k1: float = 0.01,
     k2: float = 0.03,
     return_full_image: bool = False,
@@ -224,7 +231,9 @@ def structural_similarity_index_measure(
             - ``'sum'``: takes the sum
             - ``'none'`` or ``None``: no reduction will be applied
 
-        data_range: Range of the image. If ``None``, it is determined from the image (max - min)
+        data_range:
+            the range of the data. If None, it is determined from the data (max - min). If a tuple is provided then
+            the range is calculated as the difference and input is clamped between the values.
         k1: Parameter of SSIM.
         k2: Parameter of SSIM.
         return_full_image: If true, the full ``ssim`` image is returned as a second argument.
@@ -283,7 +292,7 @@ def _get_normalized_sim_and_cs(
     gaussian_kernel: bool = True,
     sigma: Union[float, Sequence[float]] = 1.5,
     kernel_size: Union[int, Sequence[int]] = 11,
-    data_range: Optional[float] = None,
+    data_range: Optional[Union[float, Tuple[float, float]]] = None,
     k1: float = 0.01,
     k2: float = 0.03,
     normalize: Optional[Literal["relu", "simple"]] = None,
@@ -311,7 +320,7 @@ def _multiscale_ssim_update(
     gaussian_kernel: bool = True,
     sigma: Union[float, Sequence[float]] = 1.5,
     kernel_size: Union[int, Sequence[int]] = 11,
-    data_range: Optional[float] = None,
+    data_range: Optional[Union[float, Tuple[float, float]]] = None,
     k1: float = 0.01,
     k2: float = 0.03,
     betas: Union[Tuple[float, float, float, float, float], Tuple[float, ...]] = (
@@ -436,7 +445,7 @@ def multiscale_structural_similarity_index_measure(
     sigma: Union[float, Sequence[float]] = 1.5,
     kernel_size: Union[int, Sequence[int]] = 11,
     reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
-    data_range: Optional[float] = None,
+    data_range: Optional[Union[float, Tuple[float, float]]] = None,
     k1: float = 0.01,
     k2: float = 0.03,
     betas: Tuple[float, ...] = (0.0448, 0.2856, 0.3001, 0.2363, 0.1333),
@@ -459,7 +468,9 @@ def multiscale_structural_similarity_index_measure(
             - ``'sum'``: takes the sum
             - ``'none'`` or ``None``: no reduction will be applied
 
-        data_range: Range of the image. If ``None``, it is determined from the image (max - min)
+        data_range:
+            the range of the data. If None, it is determined from the data (max - min). If a tuple is provided then
+            the range is calculated as the difference and input is clamped between the values.
         k1: Parameter of structural similarity index measure.
         k2: Parameter of structural similarity index measure.
         betas: Exponent parameters for individual similarities and contrastive sensitivies returned by different image

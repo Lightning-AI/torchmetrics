@@ -25,6 +25,12 @@ from torch import Tensor, tensor
 
 from torchmetrics import Metric
 from torchmetrics.functional.text.chrf import _chrf_score_compute, _chrf_score_update, _prepare_n_grams_dicts
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["CHRFScore.plot"]
+
 
 _N_GRAM_LEVELS = ("char", "word")
 _TEXT_LEVELS = ("preds", "target", "matching")
@@ -79,7 +85,7 @@ class CHRFScore(Metric):
             If ``beta`` is smaller than 0.
 
     Example:
-        >>> from torchmetrics import CHRFScore
+        >>> from torchmetrics.text import CHRFScore
         >>> preds = ['the cat is on the mat']
         >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
         >>> chrf = CHRFScore()
@@ -90,6 +96,8 @@ class CHRFScore(Metric):
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = True
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     sentence_chrf_score: Optional[List[Tensor]] = None
 
@@ -158,12 +166,9 @@ class CHRFScore(Metric):
 
     def _convert_states_to_dicts(self) -> _DICT_STATES_TYPES:
         """Convert global metric states to the n-gram dictionaries to be passed in ``_chrf_score_update``."""
-        n_grams_dicts: Dict[str, Dict[int, Tensor]] = {
-            name: n_gram_dict
-            for name, n_gram_dict in zip(
-                _DICT_STATES_NAMES, _prepare_n_grams_dicts(self.n_char_order, self.n_word_order)
-            )
-        }
+        n_grams_dicts: Dict[str, Dict[int, Tensor]] = dict(
+            zip(_DICT_STATES_NAMES, _prepare_n_grams_dicts(self.n_char_order, self.n_word_order))
+        )
 
         for (n_gram_level, n_gram_order), text in self._get_text_n_gram_iterator():
             for n in range(1, n_gram_order + 1):
@@ -176,7 +181,7 @@ class CHRFScore(Metric):
 
     def _update_states_from_dicts(self, n_grams_dicts_tuple: _DICT_STATES_TYPES) -> None:
         """Update global metric states based on the n-gram dictionaries calculated on the current batch."""
-        n_grams_dicts = {name: n_gram_dict for name, n_gram_dict, in zip(_DICT_STATES_NAMES, n_grams_dicts_tuple)}
+        n_grams_dicts = dict(zip(_DICT_STATES_NAMES, n_grams_dicts_tuple))
         for (n_gram_level, n_gram_order), text in self._get_text_n_gram_iterator():
             for n in range(1, n_gram_order + 1):
                 dict_name = self._get_dict_name(text, n_gram_level)
@@ -197,3 +202,46 @@ class CHRFScore(Metric):
     def _get_text_n_gram_iterator(self) -> Iterator[Tuple[Tuple[str, int], str]]:
         """Get iterator over char/word and reference/hypothesis/matching n-gram level."""
         return itertools.product(zip(_N_GRAM_LEVELS, [self.n_char_order, self.n_word_order]), _TEXT_LEVELS)
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> from torchmetrics.text import CHRFScore
+            >>> metric = CHRFScore()
+            >>> preds = ['the cat is on the mat']
+            >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
+            >>> metric.update(preds, target)
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> from torchmetrics.text import CHRFScore
+            >>> metric = CHRFScore()
+            >>> preds = ['the cat is on the mat']
+            >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(preds, target))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        return self._plot(val, ax)

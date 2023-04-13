@@ -66,7 +66,7 @@ class RetrievalRPrecision(RetrievalMetric):
 
     Example:
         >>> from torch import tensor
-        >>> from torchmetrics import RetrievalRPrecision
+        >>> from torchmetrics.retrieval import RetrievalRPrecision
         >>> indexes = tensor([0, 0, 0, 1, 1, 1, 1])
         >>> preds = tensor([0.2, 0.3, 0.5, 0.1, 0.3, 0.5, 0.2])
         >>> target = tensor([False, False, True, False, True, False, True])
@@ -78,6 +78,8 @@ class RetrievalRPrecision(RetrievalMetric):
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
         return retrieval_r_precision(preds, target)

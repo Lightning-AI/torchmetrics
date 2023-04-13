@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Tuple, Union
+from typing import Any, List, Optional, Tuple, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -21,27 +21,21 @@ from torchmetrics.classification.precision_recall_curve import (
     MulticlassPrecisionRecallCurve,
     MultilabelPrecisionRecallCurve,
 )
-from torchmetrics.functional.classification.auroc import (
-    _binary_auroc_arg_validation,
-    _binary_auroc_compute,
-    _multiclass_auroc_arg_validation,
-    _multiclass_auroc_compute,
-    _multilabel_auroc_arg_validation,
-    _multilabel_auroc_compute,
-)
+from torchmetrics.functional.classification.auroc import _reduce_auroc
 from torchmetrics.functional.classification.roc import (
     _binary_roc_compute,
     _multiclass_roc_compute,
     _multilabel_roc_compute,
 )
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.compute import _auc_compute_without_check
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.enums import ClassificationTask
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
-from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_binary_roc_curve
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_curve
 
 if not _MATPLOTLIB_AVAILABLE:
-    __doctest_skip__ = ["BinaryROC.plot"]
+    __doctest_skip__ = ["BinaryROC.plot", "MulticlassROC.plot", "MultilabelROC.plot"]
 
 
 class BinaryROC(BinaryPrecisionRecallCurve):
@@ -115,32 +109,28 @@ class BinaryROC(BinaryPrecisionRecallCurve):
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     def compute(self) -> Tuple[Tensor, Tensor, Tensor]:
         """Compute metric."""
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _binary_roc_compute(state, self.thresholds)
 
-    def __compute_auroc(self) -> Tensor:
-        """Compute Area under ROC curve from BinaryAUROC metric to show AUROC value together with ROC plot."""
-        state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
-        return _binary_auroc_compute(state, self.thresholds, max_fpr=None)
-
     def plot(
         self,
-        fpr: Optional[Union[Tensor, Sequence[Tensor]]] = None,
-        tpr: Optional[Union[Tensor, Sequence[Tensor]]] = None,
+        curve: Optional[Tuple[Tensor, Tensor, Tensor]] = None,
+        score: Optional[Union[Tensor, bool]] = None,
         ax: Optional[_AX_TYPE] = None,
-        name: Optional[str] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
         Args:
-            fpr: False Postive Rate provided by calling `metric.forward` or `metric.compute`
-            tpr: True Postive Rate provided by calling `metric.forward` or `metric.compute`
-                If no value is provided, will automatically call `metric.compute` and plot that result.
+            curve: the output of either `metric.compute` or `metric.forward`. If no value is provided, will
+                automatically call `metric.compute` and plot that result.
+            score: Provide a area-under-the-curve score to be displayed on the plot. If `True` and no curve is provided,
+                will automatically compute the score.
             ax: An matplotlib axis object. If provided will add plot to that axis
-            name: Custom name to describe the classifier
 
         Returns:
             Figure and Axes object
@@ -161,12 +151,15 @@ class BinaryROC(BinaryPrecisionRecallCurve):
             >>> metric.update(preds[:, 1], target)
             >>> fig_, ax_ = metric.plot()
         """
-        if fpr is None or tpr is None:
-            fpr, tpr, _ = self.compute()
-        roc_auc = self.__compute_auroc()
-        name = self.__class__.__name__ if name is None else name
-        fig, ax = plot_binary_roc_curve(tpr, fpr, ax=ax, roc_auc=roc_auc, name=name)
-        return fig, ax
+        curve = curve or self.compute()
+        score = _auc_compute_without_check(curve[0], curve[1], 1.0) if not curve and score is True else None
+        return plot_curve(
+            curve,
+            score=score,
+            ax=ax,
+            label_names=("False positive rate", "True positive rate"),
+            name=self.__class__.__name__,
+        )
 
 
 class MulticlassROC(MulticlassPrecisionRecallCurve):
@@ -265,11 +258,58 @@ class MulticlassROC(MulticlassPrecisionRecallCurve):
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
+    plot_legend_name: str = "Class"
 
-    def compute(self) -> Tuple[Tensor, Tensor, Tensor]:
+    def compute(self) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
         """Compute metric."""
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _multiclass_roc_compute(state, self.num_classes, self.thresholds)
+
+    def plot(
+        self,
+        curve: Optional[Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]] = None,
+        score: Optional[Union[Tensor, bool]] = None,
+        ax: Optional[_AX_TYPE] = None,
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            curve: the output of either `metric.compute` or `metric.forward`. If no value is provided, will
+                automatically call `metric.compute` and plot that result.
+            score: Provide a area-under-the-curve score to be displayed on the plot. If `True` and no curve is provided,
+                will automatically compute the score.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import randn, randint
+            >>> import torch.nn.functional as F
+            >>> from torchmetrics.classification import BinaryROC
+            >>> preds = F.softmax(randn(20, 2), dim=1)
+            >>> target = randint(2, (20,))
+            >>> metric = BinaryROC()
+            >>> metric.update(preds[:, 1], target)
+            >>> fig_, ax_ = metric.plot()
+        """
+        curve = curve or self.compute()
+        score = _reduce_auroc(curve[0], curve[1], average=None) if not curve and score is True else None
+        return plot_curve(
+            curve,
+            score=score,
+            ax=ax,
+            label_names=("False positive rate", "True positive rate"),
+            name=self.__class__.__name__,
+        )
 
 
 class MultilabelROC(MultilabelPrecisionRecallCurve):
@@ -370,11 +410,58 @@ class MultilabelROC(MultilabelPrecisionRecallCurve):
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
+    plot_legend_name: str = "Label"
 
-    def compute(self) -> Tuple[Tensor, Tensor, Tensor]:
+    def compute(self) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
         """Compute metric."""
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _multilabel_roc_compute(state, self.num_labels, self.thresholds, self.ignore_index)
+
+    def plot(
+        self,
+        curve: Optional[Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]] = None,
+        score: Optional[Union[Tensor, bool]] = None,
+        ax: Optional[_AX_TYPE] = None,
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            curve: the output of either `metric.compute` or `metric.forward`. If no value is provided, will
+                automatically call `metric.compute` and plot that result.
+            score: Provide a area-under-the-curve score to be displayed on the plot. If `True` and no curve is provided,
+                will automatically compute the score.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import randn, randint
+            >>> import torch.nn.functional as F
+            >>> from torchmetrics.classification import BinaryROC
+            >>> preds = F.softmax(randn(20, 2), dim=1)
+            >>> target = randint(2, (20,))
+            >>> metric = BinaryROC()
+            >>> metric.update(preds[:, 1], target)
+            >>> fig_, ax_ = metric.plot()
+        """
+        curve = curve or self.compute()
+        score = _reduce_auroc(curve[0], curve[1], average=None) if not curve and score is True else None
+        return plot_curve(
+            curve,
+            score=score,
+            ax=ax,
+            label_names=("False positive rate", "True positive rate"),
+            name=self.__class__.__name__,
+        )
 
 
 class ROC:

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from copy import deepcopy
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -20,7 +20,12 @@ from torch.nn import ModuleList
 
 from torchmetrics.collections import MetricCollection
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
 from torchmetrics.utilities.prints import rank_zero_warn
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["MetricTracker.plot"]
 
 
 class MetricTracker(ModuleList):
@@ -47,7 +52,7 @@ class MetricTracker(ModuleList):
             better (``True``) or lower is better (``False``).
 
     Example (single metric):
-        >>> from torchmetrics import MetricTracker
+        >>> from torchmetrics.wrappers import MetricTracker
         >>> from torchmetrics.classification import MulticlassAccuracy
         >>> _ = torch.manual_seed(42)
         >>> tracker = MetricTracker(MulticlassAccuracy(num_classes=10, average='micro'))
@@ -71,7 +76,9 @@ class MetricTracker(ModuleList):
         tensor([0.1120, 0.0880, 0.1260, 0.0800, 0.1020])
 
     Example (multiple metrics using MetricCollection):
-        >>> from torchmetrics import MetricTracker, MetricCollection, MeanSquaredError, ExplainedVariance
+        >>> from torchmetrics.wrappers import MetricTracker
+        >>> from torchmetrics import MetricCollection
+        >>> from torchmetrics.regression import MeanSquaredError, ExplainedVariance
         >>> _ = torch.manual_seed(42)
         >>> tracker = MetricTracker(MetricCollection([MeanSquaredError(), ExplainedVariance()]), maximize=[False, True])
         >>> for epoch in range(5):
@@ -259,3 +266,43 @@ class MetricTracker(ModuleList):
         """Check that a metric that can be updated/used for computations has been intialized."""
         if not self._increment_called:
             raise ValueError(f"`{method}` cannot be called before `.increment()` has been called.")
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> import torch
+            >>> from torchmetrics import MetricTracker
+            >>> from torchmetrics.classification import BinaryAccuracy
+            >>> tracker = MetricTracker(BinaryAccuracy())
+            >>> for epoch in range(5):
+            ...     tracker.increment()
+            ...     for batch_idx in range(5):
+            ...         tracker.update(torch.randint(2, (10,)), torch.randint(2, (10,)))
+            >>> fig_, ax_ = tracker.plot()  # plot all epochs
+
+        """
+        val = val if val is not None else list(self.compute_all())
+        fig, ax = plot_single_or_multi_val(
+            val,
+            ax=ax,
+            name=self.__class__.__name__,
+        )
+        return fig, ax

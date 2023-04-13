@@ -69,7 +69,7 @@ class RetrievalFallOut(RetrievalMetric):
             If ``top_k`` parameter is not `None` or an integer larger than 0.
 
     Example:
-        >>> from torchmetrics import RetrievalFallOut
+        >>> from torchmetrics.retrieval import RetrievalFallOut
         >>> indexes = tensor([0, 0, 0, 1, 1, 1, 1])
         >>> preds = tensor([0.2, 0.3, 0.5, 0.1, 0.3, 0.5, 0.2])
         >>> target = tensor([False, False, True, False, True, False, True])
@@ -81,6 +81,8 @@ class RetrievalFallOut(RetrievalMetric):
     is_differentiable: bool = False
     higher_is_better: bool = False
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     def __init__(
         self,

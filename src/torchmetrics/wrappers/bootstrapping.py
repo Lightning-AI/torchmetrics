@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from copy import deepcopy
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Sequence, Union
 
 import torch
 from torch import Tensor
@@ -20,6 +20,11 @@ from torch.nn import ModuleList
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import apply_to_collection
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["BootStrapper.plot"]
 
 
 def _bootstrap_sampler(
@@ -69,7 +74,7 @@ class BootStrapper(Metric):
 
     Example::
         >>> from pprint import pprint
-        >>> from torchmetrics import BootStrapper
+        >>> from torchmetrics.wrappers import BootStrapper
         >>> from torchmetrics.classification import MulticlassAccuracy
         >>> _ = torch.manual_seed(123)
         >>> base_metric = MulticlassAccuracy(num_classes=5, average='micro')
@@ -150,3 +155,44 @@ class BootStrapper(Metric):
         if self.raw:
             output_dict["raw"] = computed_vals
         return output_dict
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> import torch
+            >>> from torchmetrics import BootStrapper, MeanSquaredError
+            >>> metric = BootStrapper(MeanSquaredError(), num_bootstraps=20)
+            >>> metric.update(torch.randn(100,), torch.randn(100,))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics import BootStrapper, MeanSquaredError
+            >>> metric = BootStrapper(MeanSquaredError(), num_bootstraps=20)
+            >>> values = [ ]
+            >>> for _ in range(3):
+            ...     values.append(metric(torch.randn(100,), torch.randn(100,)))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        return self._plot(val, ax)

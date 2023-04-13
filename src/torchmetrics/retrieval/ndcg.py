@@ -70,7 +70,7 @@ class RetrievalNormalizedDCG(RetrievalMetric):
 
     Example:
         >>> from torch import tensor
-        >>> from torchmetrics import RetrievalNormalizedDCG
+        >>> from torchmetrics.retrieval import RetrievalNormalizedDCG
         >>> indexes = tensor([0, 0, 0, 1, 1, 1, 1])
         >>> preds = tensor([0.2, 0.3, 0.5, 0.1, 0.3, 0.5, 0.2])
         >>> target = tensor([False, False, True, False, True, False, True])
@@ -82,6 +82,8 @@ class RetrievalNormalizedDCG(RetrievalMetric):
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     def __init__(
         self,

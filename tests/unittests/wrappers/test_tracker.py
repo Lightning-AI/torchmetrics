@@ -15,14 +15,14 @@
 import pytest
 import torch
 
-from torchmetrics import MeanAbsoluteError, MeanSquaredError, MetricCollection, MultioutputWrapper
+from torchmetrics import MeanAbsoluteError, MeanSquaredError, MetricCollection
 from torchmetrics.classification import (
     MulticlassAccuracy,
     MulticlassConfusionMatrix,
     MulticlassPrecision,
     MulticlassRecall,
 )
-from torchmetrics.wrappers import MetricTracker
+from torchmetrics.wrappers import MetricTracker, MultioutputWrapper
 from unittests.helpers import seed_all
 
 seed_all(42)
@@ -197,7 +197,7 @@ def test_best_metric_for_not_well_defined_metric_collection(base_metric):
                     "mae": MultioutputWrapper(MeanAbsoluteError(), num_outputs=2),
                 }
             ),
-            list,
+            dict,
         ),
     ],
 )
@@ -212,5 +212,11 @@ def test_metric_tracker_and_collection_multioutput(input_to_tracker, assert_type
     all_res = tracker.compute_all()
     assert isinstance(all_res, assert_type)
     best_metric, which_epoch = tracker.best_metric(return_step=True)
-    assert best_metric is None
-    assert which_epoch is None
+    if isinstance(best_metric, dict):
+        for v in best_metric.values():
+            assert v is None
+        for v in which_epoch.values():
+            assert v is None
+    else:
+        assert best_metric is None
+        assert which_epoch is None

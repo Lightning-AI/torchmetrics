@@ -47,7 +47,7 @@ class RelativeAverageSpectralError(Metric):
         Relative Average Spectral Error (RASE)
 
     Example:
-        >>> from torchmetrics import RelativeAverageSpectralError
+        >>> from torchmetrics.image import RelativeAverageSpectralError
         >>> g = torch.manual_seed(22)
         >>> preds = torch.rand(4, 3, 16, 16)
         >>> target = torch.rand(4, 3, 16, 16)
@@ -62,6 +62,7 @@ class RelativeAverageSpectralError(Metric):
     higher_is_better: bool = False
     is_differentiable: bool = True
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
 
     preds: List[Tensor]
     target: List[Tensor]
@@ -113,7 +114,7 @@ class RelativeAverageSpectralError(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics import RelativeAverageSpectralError
+            >>> from torchmetrics.image import RelativeAverageSpectralError
             >>> metric = RelativeAverageSpectralError()
             >>> metric.update(torch.rand(4, 3, 16, 16), torch.rand(4, 3, 16, 16))
             >>> fig_, ax_ = metric.plot()
@@ -124,7 +125,7 @@ class RelativeAverageSpectralError(Metric):
             >>> # Example plotting multiple values
             >>> import torch
             >>> _ = torch.manual_seed(42)
-            >>> from torchmetrics import RelativeAverageSpectralError
+            >>> from torchmetrics.image import RelativeAverageSpectralError
             >>> metric = RelativeAverageSpectralError()
             >>> values = [ ]
             >>> for _ in range(10):

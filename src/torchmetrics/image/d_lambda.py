@@ -55,7 +55,7 @@ class SpectralDistortionIndex(Metric):
     Example:
         >>> import torch
         >>> _ = torch.manual_seed(42)
-        >>> from torchmetrics import SpectralDistortionIndex
+        >>> from torchmetrics.image import SpectralDistortionIndex
         >>> preds = torch.rand([16, 3, 16, 16])
         >>> target = torch.rand([16, 3, 16, 16])
         >>> sdi = SpectralDistortionIndex()
@@ -66,8 +66,8 @@ class SpectralDistortionIndex(Metric):
     higher_is_better: bool = True
     is_differentiable: bool = True
     full_state_update: bool = False
-    plot_lower_bound = 0.0
-    plot_upper_bound = 1.0
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     preds: List[Tensor]
     target: List[Tensor]
@@ -127,7 +127,7 @@ class SpectralDistortionIndex(Metric):
             >>> # Example plotting a single value
             >>> import torch
             >>> _ = torch.manual_seed(42)
-            >>> from torchmetrics import SpectralDistortionIndex
+            >>> from torchmetrics.image import SpectralDistortionIndex
             >>> preds = torch.rand([16, 3, 16, 16])
             >>> target = torch.rand([16, 3, 16, 16])
             >>> metric = SpectralDistortionIndex()
@@ -140,7 +140,7 @@ class SpectralDistortionIndex(Metric):
             >>> # Example plotting multiple values
             >>> import torch
             >>> _ = torch.manual_seed(42)
-            >>> from torchmetrics import SpectralDistortionIndex
+            >>> from torchmetrics.image import SpectralDistortionIndex
             >>> preds = torch.rand([16, 3, 16, 16])
             >>> target = torch.rand([16, 3, 16, 16])
             >>> metric = SpectralDistortionIndex()

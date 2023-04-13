@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional, Tuple, no_type_check
+from typing import Any, Callable, Optional, Sequence, Tuple, Union, no_type_check
 
 import torch
 from torch import Tensor
@@ -21,6 +21,11 @@ from torchmetrics.functional.classification.dice import _dice_compute
 from torchmetrics.functional.classification.stat_scores import _stat_scores_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["Dice.plot"]
 
 
 class Dice(Metric):
@@ -51,7 +56,7 @@ class Dice(Metric):
 
     Args:
         num_classes:
-            Number of classes. Necessary for ``'macro'``, ``'weighted'`` and ``None`` average methods.
+            Number of classes. Necessary for ``'macro'``, and ``None`` average methods.
         threshold:
             Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
             of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
@@ -111,7 +116,7 @@ class Dice(Metric):
 
     Raises:
         ValueError:
-            If ``average`` is none of ``"micro"``, ``"macro"``, ``"weighted"``, ``"samples"``, ``"none"``, ``None``.
+            If ``average`` is none of ``"micro"``, ``"macro"``, ``"samples"``, ``"none"``, ``None``.
         ValueError:
             If ``mdmc_average`` is not one of ``None``, ``"samplewise"``, ``"global"``.
         ValueError:
@@ -131,6 +136,9 @@ class Dice(Metric):
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
+    plot_legend_name: str = "Class"
 
     @no_type_check
     def __init__(
@@ -138,7 +146,7 @@ class Dice(Metric):
         zero_division: int = 0,
         num_classes: Optional[int] = None,
         threshold: float = 0.5,
-        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+        average: Optional[Literal["micro", "macro", "none"]] = "micro",
         mdmc_average: Optional[str] = "global",
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
@@ -146,7 +154,7 @@ class Dice(Metric):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        allowed_average = ("micro", "macro", "weighted", "samples", "none", None)
+        allowed_average = ("micro", "macro", "samples", "none", None)
         if average not in allowed_average:
             raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
 
@@ -235,3 +243,44 @@ class Dice(Metric):
         """Compute metric."""
         tp, fp, _, fn = self._get_final_stats()
         return _dice_compute(tp, fp, fn, self.average, self.mdmc_reduce, self.zero_division)
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure object and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> from torch import randint
+            >>> from torchmetrics.classification import Dice
+            >>> metric = Dice()
+            >>> metric.update(randint(2,(10,)), randint(2,(10,)))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> from torch import randint
+            >>> from torchmetrics.classification import Dice
+            >>> metric = Dice()
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(randint(2,(10,)), randint(2,(10,))))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        return self._plot(val, ax)
