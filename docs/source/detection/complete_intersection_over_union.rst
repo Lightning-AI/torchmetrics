@@ -12,7 +12,7 @@ ________________
 
 .. autoclass:: torchmetrics.detection.ciou.CompleteIntersectionOverUnion
     :noindex:
-
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________

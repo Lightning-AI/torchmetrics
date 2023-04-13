@@ -12,7 +12,7 @@ ________________
 
 .. autoclass:: torchmetrics.detection.diou.DistanceIntersectionOverUnion
     :noindex:
-
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________

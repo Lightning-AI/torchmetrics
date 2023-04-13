@@ -12,7 +12,7 @@ ________________
 
 .. autoclass:: torchmetrics.detection.giou.GeneralizedIntersectionOverUnion
     :noindex:
-
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________
