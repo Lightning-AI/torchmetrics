@@ -229,6 +229,8 @@ class FrechetInceptionDistance(Metric):
 
     Raises:
         ValueError:
+            If torch version is lower than 1.9
+        ModuleNotFoundError:
             If ``feature`` is set to an ``int`` (default settings) and ``torch-fidelity`` is not installed
         ValueError:
             If ``feature`` is set to an ``int`` not in [64, 192, 768, 2048]
