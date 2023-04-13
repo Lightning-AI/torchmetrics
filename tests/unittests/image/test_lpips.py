@@ -29,8 +29,8 @@ seed_all(42)
 Input = namedtuple("Input", ["img1", "img2"])
 
 _inputs = Input(
-    img1=torch.rand(4, 2, 3, 100, 100),
-    img2=torch.rand(4, 2, 3, 100, 100),
+    img1=torch.rand(4, 2, 3, 50, 50),
+    img2=torch.rand(4, 2, 3, 50, 50),
 )
 
 
