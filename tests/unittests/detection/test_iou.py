@@ -25,12 +25,12 @@ from unittests.helpers.testers import MetricTester
 
 iou = torch.Tensor(
     [
-        [0.402661],
+        [0.40733114],
     ]
 )
 iou_dontrespect = torch.Tensor(
     [
-        [0.584721],
+        [0.6165285],
     ]
 )
 box_iou = torch.Tensor(

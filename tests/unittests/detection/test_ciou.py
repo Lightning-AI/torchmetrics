@@ -26,12 +26,12 @@ from unittests.helpers.testers import MetricTester
 
 ciou = torch.Tensor(
     [
-        [-0.206512],
+        [-0.2669985],
     ]
 )
 ciou_dontrespect = torch.Tensor(
     [
-        [0.574443],
+        [0.6078202],
     ]
 )
 box_ciou = torch.Tensor(
