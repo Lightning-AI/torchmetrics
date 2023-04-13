@@ -18,8 +18,8 @@ import numpy as np
 import pytest
 import torch
 
-from torchmetrics.detection.panoptic_quality import PanopticQuality
-from torchmetrics.functional.detection.panoptic_quality import panoptic_quality
+from torchmetrics.detection.panoptic_qualities import PanopticQuality
+from torchmetrics.functional.detection.panoptic_qualities import panoptic_quality
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 

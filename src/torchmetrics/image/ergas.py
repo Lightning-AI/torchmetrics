@@ -56,7 +56,7 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
 
     Example:
         >>> import torch
-        >>> from torchmetrics import ErrorRelativeGlobalDimensionlessSynthesis
+        >>> from torchmetrics.image import ErrorRelativeGlobalDimensionlessSynthesis
         >>> preds = torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42))
         >>> target = preds * 0.75
         >>> ergas = ErrorRelativeGlobalDimensionlessSynthesis()
@@ -124,7 +124,7 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics import ErrorRelativeGlobalDimensionlessSynthesis
+            >>> from torchmetrics.image import ErrorRelativeGlobalDimensionlessSynthesis
             >>> preds = torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42))
             >>> target = preds * 0.75
             >>> metric = ErrorRelativeGlobalDimensionlessSynthesis()
@@ -136,7 +136,7 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics import ErrorRelativeGlobalDimensionlessSynthesis
+            >>> from torchmetrics.image import ErrorRelativeGlobalDimensionlessSynthesis
             >>> preds = torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42))
             >>> target = preds * 0.75
             >>> metric = ErrorRelativeGlobalDimensionlessSynthesis()

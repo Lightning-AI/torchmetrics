@@ -67,7 +67,7 @@ class PeakSignalNoiseRatio(Metric):
             If ``dim`` is not ``None`` and ``data_range`` is not given.
 
     Example:
-        >>> from torchmetrics import PeakSignalNoiseRatio
+        >>> from torchmetrics.image import PeakSignalNoiseRatio
         >>> psnr = PeakSignalNoiseRatio()
         >>> preds = torch.tensor([[0.0, 1.0], [2.0, 3.0]])
         >>> target = torch.tensor([[3.0, 2.0], [1.0, 0.0]])
@@ -174,7 +174,7 @@ class PeakSignalNoiseRatio(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics import PeakSignalNoiseRatio
+            >>> from torchmetrics.image import PeakSignalNoiseRatio
             >>> metric = PeakSignalNoiseRatio()
             >>> preds = torch.tensor([[0.0, 1.0], [2.0, 3.0]])
             >>> target = torch.tensor([[3.0, 2.0], [1.0, 0.0]])
@@ -186,7 +186,7 @@ class PeakSignalNoiseRatio(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics import PeakSignalNoiseRatio
+            >>> from torchmetrics.image import PeakSignalNoiseRatio
             >>> metric = PeakSignalNoiseRatio()
             >>> preds = torch.tensor([[0.0, 1.0], [2.0, 3.0]])
             >>> target = torch.tensor([[3.0, 2.0], [1.0, 0.0]])

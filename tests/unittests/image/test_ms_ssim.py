@@ -96,3 +96,13 @@ class TestMultiScaleStructuralSimilarityIndexMeasure(MetricTester):
                 "betas": single_beta,
             },
         )
+
+
+def test_ms_ssim_contrast_sensitivity():
+    """Test that the contrast sensitivity is correctly computed with 3d input."""
+    preds = torch.rand(1, 1, 182, 182, 182)
+    target = torch.rand(1, 1, 182, 182, 182)
+    out = multiscale_structural_similarity_index_measure(
+        preds, target, data_range=1.0, kernel_size=11, betas=(1.0, 0.5, 0.25)
+    )
+    assert isinstance(out, torch.Tensor)
