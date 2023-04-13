@@ -211,4 +211,7 @@ __all__ = [
     "MultilabelPrecisionAtFixedRecall",
     "PrecisionAtFixedRecall",
     "RecallAtFixedPrecision",
+    "BinaryPrecisionAtFixedRecall",
+    "MulticlassPrecisionAtFixedRecall",
+    "MultilabelPrecisionAtFixedRecall"
 ]

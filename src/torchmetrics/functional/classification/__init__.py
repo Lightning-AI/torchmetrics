@@ -127,6 +127,12 @@ from torchmetrics.functional.classification.stat_scores import (
     multilabel_stat_scores,
     stat_scores,
 )
+from torchmetrics.functional.classification.precision_fixed_recall import (
+
+binary_precision_at_fixed_recall,
+multilabel_precision_at_fixed_recall,
+multiclass_precision_at_fixed_recall,
+)
 
 __all__ = [
     "accuracy",
@@ -216,4 +222,7 @@ __all__ = [
     "multiclass_stat_scores",
     "multilabel_stat_scores",
     "stat_scores",
+    "binary_precision_at_fixed_recall",
+"multilabel_precision_at_fixed_recall",
+"multiclass_precision_at_fixed_recall",
 ]

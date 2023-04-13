@@ -42,8 +42,9 @@ from torchmetrics.functional.classification import (
     roc,
     specificity,
     stat_scores,
-    precision_at_fixed_recall,
-    recall_at_fixed_precision,
+    binary_precision_at_fixed_recall,
+multilabel_precision_at_fixed_recall,
+multiclass_precision_at_fixed_recall,
 )
 from torchmetrics.functional.detection._deprecated import _modified_panoptic_quality as modified_panoptic_quality
 from torchmetrics.functional.detection._deprecated import _panoptic_quality as panoptic_quality
@@ -225,5 +226,7 @@ __all__ = [
     "word_error_rate",
     "word_information_lost",
     "word_information_preserved",
-    "precision_at_fixed_recall", "recall_at_fixed_precision"
+    "binary_precision_at_fixed_recall",
+"multilabel_precision_at_fixed_recall",
+"multiclass_precision_at_fixed_recall",
 ]
