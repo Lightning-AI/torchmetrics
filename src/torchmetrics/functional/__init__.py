@@ -25,6 +25,7 @@ from torchmetrics.functional.classification import (
     accuracy,
     auroc,
     average_precision,
+    binary_precision_at_fixed_recall,
     calibration_error,
     cohen_kappa,
     confusion_matrix,
@@ -36,15 +37,14 @@ from torchmetrics.functional.classification import (
     hinge_loss,
     jaccard_index,
     matthews_corrcoef,
+    multiclass_precision_at_fixed_recall,
+    multilabel_precision_at_fixed_recall,
     precision,
     precision_recall_curve,
     recall,
     roc,
     specificity,
     stat_scores,
-    binary_precision_at_fixed_recall,
-multilabel_precision_at_fixed_recall,
-multiclass_precision_at_fixed_recall,
 )
 from torchmetrics.functional.detection._deprecated import _modified_panoptic_quality as modified_panoptic_quality
 from torchmetrics.functional.detection._deprecated import _panoptic_quality as panoptic_quality
@@ -227,6 +227,6 @@ __all__ = [
     "word_information_lost",
     "word_information_preserved",
     "binary_precision_at_fixed_recall",
-"multilabel_precision_at_fixed_recall",
-"multiclass_precision_at_fixed_recall",
+    "multilabel_precision_at_fixed_recall",
+    "multiclass_precision_at_fixed_recall",
 ]
