@@ -37,8 +37,8 @@ could be do like this:
     fig.set_title("This is a nice plot")
     fig.save_fig("my_awesome_plot.png")
 
-If you want to include a Torchmetrics plot in a bigger figure that have subfigures and subaxises all ``.plot`` methods
-support an optional `ax` argument where you can pass in the subaxises you want the plot to be inserted into:
+If you want to include a Torchmetrics plot in a bigger figure that has subfigures and subaxes, all ``.plot`` methods
+support an optional `ax` argument where you can pass in the subaxes you want the plot to be inserted into:
 
 .. code-block:: python
 
@@ -75,9 +75,9 @@ In both cases it will generate a plot like this (Accuracy as an example):
     :include-source: false
 
 A single point plot is not that informative in itself, but if available we will try to include additional information
-such as the lower and upper bounds the particular metric can take an if the metric should be minimized or maximized
+such as the lower and upper bounds the particular metric can take and if the metric should be minimized or maximized
 to be optimal. This is true for all metrics that return a scalar tensor.
-Some metrics returns multiple values (such as an tensor with multiple elements or an dict of scalar tensors), and in
+Some metrics return multiple values (such as an tensor with multiple elements or a dict of scalar tensors), and in
 that case calling ``.plot`` will return a figure similar to this:
 
 .. code-block:: python
@@ -92,7 +92,7 @@ that case calling ``.plot`` will return a figure similar to this:
     :include-source: false
 
 Here, each element is assumed to be an independent metric and plotted as its own point for comparing. The above is true
-for all metrics that returns a scalar tensor, but if the metric returns a tensor with multiple elements then the
+for all metrics that return a scalar tensor, but if the metric returns a tensor with multiple elements then the
 ``.plot`` method will return a specialized plot for that particular metric. Take for example the ``ConfusionMatrix``
 metric:
 
@@ -124,7 +124,7 @@ Plotting multi steps
 
 In the above examples we have only plotted a single step/single value, but it is also possible to plot multiple steps
 from the same metric. This is often the case when training a machine learning model, where you are tracking one or
-metrics that you want to plot as they are changing over time. This can be done by provided a sequence of outputs from
+multiple metrics that you want to plot as they are changing over time. This can be done by providing a sequence of outputs from
 any metric, computed using ``metric.forward`` or ``metric.compute``. For example, if we want to plot the accuracy of
 a model over time, we could do it like this:
 
@@ -178,7 +178,7 @@ collection of binary classification metrics and redirecting the output of ``.plo
 
 However, the ``plot`` method of ``MetricCollection`` also supports an additional argument called ``together`` that will
 automatically try to plot all the metrics in the collection together in the same plot (with appropriate labels). This
-is only possible if all the metrics in the collection returns a scalar tensor.
+is only possible if all the metrics in the collection return a scalar tensor.
 
 .. code-block:: python
 
