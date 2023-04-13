@@ -26,8 +26,10 @@ from torchmetrics.utilities import rank_zero_info
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCH_FIDELITY_AVAILABLE, _TORCH_GREATER_EQUAL_1_9
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
+__doctest_skip__ = ["FrechetInceptionDistance.__init__"] if not _TORCH_GREATER_EQUAL_1_9 else []
+
 if not _MATPLOTLIB_AVAILABLE:
-    __doctest_skip__ = ["FrechetInceptionDistance.plot"]
+    __doctest_skip__ += ["FrechetInceptionDistance.plot"]
 
 if _TORCH_FIDELITY_AVAILABLE:
     from torch_fidelity.feature_extractor_inceptionv3 import FeatureExtractorInceptionV3 as _FeatureExtractorInceptionV3
