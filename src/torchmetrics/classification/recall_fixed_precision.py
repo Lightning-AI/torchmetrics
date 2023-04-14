@@ -108,9 +108,6 @@ class BinaryRecallAtFixedPrecision(BinaryPrecisionRecallCurve):
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
 
-    preds: Union[List[Tensor], Tensor]
-    target: Union[List[Tensor], Tensor]
-
     def __init__(
         self,
         min_precision: float,
@@ -127,7 +124,11 @@ class BinaryRecallAtFixedPrecision(BinaryPrecisionRecallCurve):
 
     def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
         """Compute metric."""
-        state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
+        state = (
+            (dim_zero_cat(self.preds), dim_zero_cat(self.target))  # type: ignore[arg-type]
+            if self.thresholds is None
+            else self.confmat
+        )
         return _binary_recall_at_fixed_precision_compute(state, self.thresholds, self.min_precision)
 
     def plot(  # type: ignore[override]
@@ -246,9 +247,6 @@ class MulticlassRecallAtFixedPrecision(MulticlassPrecisionRecallCurve):
     plot_upper_bound: float = 1.0
     plot_legend_name: str = "Class"
 
-    preds: Union[List[Tensor], Tensor]
-    target: Union[List[Tensor], Tensor]
-
     def __init__(
         self,
         num_classes: int,
@@ -268,7 +266,11 @@ class MulticlassRecallAtFixedPrecision(MulticlassPrecisionRecallCurve):
 
     def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
         """Compute metric."""
-        state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
+        state = (
+            (dim_zero_cat(self.preds), dim_zero_cat(self.target))  # type: ignore[arg-type]
+            if self.thresholds is None
+            else self.confmat
+        )
         return _multiclass_recall_at_fixed_precision_arg_compute(
             state, self.num_classes, self.thresholds, self.min_precision
         )
@@ -392,9 +394,6 @@ class MultilabelRecallAtFixedPrecision(MultilabelPrecisionRecallCurve):
     plot_upper_bound: float = 1.0
     plot_legend_name: str = "Label"
 
-    preds: Union[List[Tensor], Tensor]
-    target: Union[List[Tensor], Tensor]
-
     def __init__(
         self,
         num_labels: int,
@@ -414,7 +413,11 @@ class MultilabelRecallAtFixedPrecision(MultilabelPrecisionRecallCurve):
 
     def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
         """Compute metric."""
-        state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
+        state = (
+            (dim_zero_cat(self.preds), dim_zero_cat(self.target))  # type: ignore[arg-type]
+            if self.thresholds is None
+            else self.confmat
+        )
         return _multilabel_recall_at_fixed_precision_arg_compute(
             state, self.num_labels, self.thresholds, self.ignore_index, self.min_precision
         )
