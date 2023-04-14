@@ -183,7 +183,7 @@ class FrechetInceptionDistance(Metric):
     r"""Calculate Fréchet inception distance (FID_) which is used to access the quality of generated images.
 
     .. math::
-        FID = |\mu - \mu_w| + tr(\Sigma + \Sigma_w - 2(\Sigma \Sigma_w)^{\frac{1}{2}})
+        FID = \|\mu - \mu_w\|^2 + tr(\Sigma + \Sigma_w - 2(\Sigma \Sigma_w)^{\frac{1}{2}})
 
     where :math:`\mathcal{N}(\mu, \Sigma)` is the multivariate normal distribution estimated from Inception v3
     (`fid ref1`_) features calculated on real life images and :math:`\mathcal{N}(\mu_w, \Sigma_w)` is the
@@ -202,8 +202,7 @@ class FrechetInceptionDistance(Metric):
     that you calculate using `torch.float64` (default is `torch.float32`) which can be set using the `.set_dtype`
     method of the metric.
 
-    .. note:: using this metrics requires you to have ``scipy`` install. Either install as ``pip install
-        torchmetrics[image]`` or ``pip install scipy``
+    .. note:: using this metrics requires you to have torch 1.9 or higer installed
 
     .. note:: using this metric with the default feature extractor requires that ``torch-fidelity``
         is installed. Either install as ``pip install torchmetrics[image]`` or
