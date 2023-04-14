@@ -32,6 +32,20 @@ class CompleteIntersectionOverUnion(IntersectionOverUnion):
             Option to enable per-class metrics for IoU. Has a performance impact.
         kwargs:
             Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+
+    Example:
+        >>> import torch
+        >>> from torchmetrics.detection import CompleteIntersectionOverUnion
+        >>> preds = torch.Tensor([[100, 100, 200, 200]])
+        >>> target = torch.Tensor([[110, 110, 210, 210]])
+        >>> metric = CompleteIntersectionOverUnion()
+        >>> metric(preds, target)
+        tensor(0.6724)
+
+    Raises:
+        ModuleNotFoundError:
+            If torchvision is not installed with version 0.13.0 or newer.
+
     """
     _iou_type: str = "ciou"
     _invalid_val: float = -2.0  # unsure, min val could be just -1.5 as well

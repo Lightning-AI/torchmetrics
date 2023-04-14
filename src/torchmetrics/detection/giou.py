@@ -31,6 +31,19 @@ class GeneralizedIntersectionOverUnion(IntersectionOverUnion):
             Option to enable per-class metrics for IoU. Has a performance impact.
         kwargs:
             Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+
+    Example:
+        >>> import torch
+        >>> from torchmetrics.detection import GeneralizedIntersectionOverUnion
+        >>> preds = torch.Tensor([[100, 100, 200, 200]])
+        >>> target = torch.Tensor([[110, 110, 210, 210]])
+        >>> metric = GeneralizedIntersectionOverUnion()
+        >>> metric(preds, target)
+        tensor(0.6641)
+
+    Raises:
+        ModuleNotFoundError:
+            If torchvision is not installed with version 0.8.0 or newer.
     """
     _iou_type: str = "giou"
     _invalid_val: float = -1.0
