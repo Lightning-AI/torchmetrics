@@ -21,7 +21,7 @@ from torchmetrics.classification.precision_recall_curve import (
     MulticlassPrecisionRecallCurve,
     MultilabelPrecisionRecallCurve,
 )
-from torchmetrics.functional.classification.specificity_at_sensitivity import (
+from torchmetrics.functional.classification.specificity_sensitivity import (
     _binary_specificity_at_sensitivity_arg_validation,
     _binary_specificity_at_sensitivity_compute,
     _multiclass_specificity_at_sensitivity_arg_validation,
