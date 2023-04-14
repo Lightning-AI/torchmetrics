@@ -28,6 +28,34 @@ __doctest_requires__ = {("DistanceIntersectionOverUnion", "DistanceIntersectionO
 class DistanceIntersectionOverUnion(IntersectionOverUnion):
     r"""Computes Distance Intersection Over Union (DIoU) <https://arxiv.org/abs/1911.08287v1>`_.
 
+    As input to ``forward`` and ``update`` the metric accepts the following input:
+
+    - ``preds`` (:class:`~List`): A list consisting of dictionaries each containing the key-values
+      (each dictionary corresponds to a single image). Parameters that should be provided per dict
+
+        - boxes: (:class:`~torch.FloatTensor`) of shape ``(num_boxes, 4)`` containing ``num_boxes`` detection
+          boxes of the format specified in the constructor.
+          By default, this method expects ``(xmin, ymin, xmax, ymax)`` in absolute image coordinates.
+        - scores: :class:`~torch.FloatTensor` of shape ``(num_boxes)`` containing detection scores for the boxes.
+        - labels: :class:`~torch.IntTensor` of shape ``(num_boxes)`` containing 0-indexed detection classes for
+          the boxes.
+
+    - ``target`` (:class:`~List`) A list consisting of dictionaries each containing the key-values
+      (each dictionary corresponds to a single image). Parameters that should be provided per dict:
+
+        - boxes: :class:`~torch.FloatTensor` of shape ``(num_boxes, 4)`` containing ``num_boxes`` ground truth
+          boxes of the format specified in the constructor.
+          By default, this method expects ``(xmin, ymin, xmax, ymax)`` in absolute image coordinates.
+        - labels: :class:`~torch.IntTensor` of shape ``(num_boxes)`` containing 0-indexed ground truth
+          classes for the boxes.
+
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``diou_dict``: A dictionary containing the following key-values:
+
+        - diou: (:class:`~torch.Tensor`)
+        - diou/cl_{cl}: (:class:`~torch.Tensor`), if argument ``class metrics=True``
+
     Args:
         box_format:
             Input format of given boxes. Supported formats are ``['xyxy', 'xywh', 'cxcywh']``.
