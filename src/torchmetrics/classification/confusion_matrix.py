@@ -478,7 +478,7 @@ class ConfusionMatrix:
             return BinaryConfusionMatrix(threshold, **kwargs)
         if task == ClassificationTask.MULTICLASS:
             if not isinstance(num_classes, int):
-                raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_classes)} was passed.`")
+                raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
             return MulticlassConfusionMatrix(num_classes, **kwargs)
         if task == ClassificationTask.MULTILABEL:
             if not isinstance(num_labels, int):

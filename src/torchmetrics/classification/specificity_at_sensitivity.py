@@ -349,7 +349,7 @@ class SpecificityAtSensitivity:
             return BinarySpecificityAtSensitivity(min_sensitivity, thresholds, ignore_index, validate_args, **kwargs)
         if task == ClassificationTask.MULTICLASS:
             if not isinstance(num_classes, int):
-                raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_classes)} was passed.`")
+                raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
             return MulticlassSpecificityAtSensitivity(
                 num_classes, min_sensitivity, thresholds, ignore_index, validate_args, **kwargs
             )

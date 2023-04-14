@@ -1091,7 +1091,7 @@ def stat_scores(
         return binary_stat_scores(preds, target, threshold, multidim_average, ignore_index, validate_args)
     if task == ClassificationTask.MULTICLASS:
         if not isinstance(num_classes, int):
-            raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_classes)} was passed.`")
+            raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
         if not isinstance(top_k, int):
             raise ValueError(f"`num_labels` is expected to be `int` but `{type(top_k)} was passed.`")
         return multiclass_stat_scores(

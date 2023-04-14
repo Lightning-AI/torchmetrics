@@ -371,6 +371,6 @@ class CalibrationError:
             return BinaryCalibrationError(**kwargs)
         if task == ClassificationTaskNoMultilabel.MULTICLASS:
             if not isinstance(num_classes, int):
-                raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_classes)} was passed.`")
+                raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
             return MulticlassCalibrationError(num_classes, **kwargs)
         return None

@@ -483,7 +483,7 @@ class RecallAtFixedPrecision:
             return BinaryRecallAtFixedPrecision(min_precision, thresholds, ignore_index, validate_args, **kwargs)
         if task == ClassificationTask.MULTICLASS:
             if not isinstance(num_classes, int):
-                raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_classes)} was passed.`")
+                raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
             return MulticlassRecallAtFixedPrecision(
                 num_classes, min_precision, thresholds, ignore_index, validate_args, **kwargs
             )

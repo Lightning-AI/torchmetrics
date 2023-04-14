@@ -354,6 +354,6 @@ def calibration_error(
         return binary_calibration_error(preds, target, n_bins, norm, ignore_index, validate_args)
     if task == ClassificationTaskNoMultilabel.MULTICLASS:
         if not isinstance(num_classes, int):
-            raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_classes)} was passed.`")
+            raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
         return multiclass_calibration_error(preds, target, num_classes, n_bins, norm, ignore_index, validate_args)
     raise ValueError(f"Expected argument `task` to either be `'binary'` or `'multiclass'` but got {task}")

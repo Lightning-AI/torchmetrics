@@ -344,7 +344,7 @@ def jaccard_index(
         return binary_jaccard_index(preds, target, threshold, ignore_index, validate_args)
     if task == ClassificationTask.MULTICLASS:
         if not isinstance(num_classes, int):
-            raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_classes)} was passed.`")
+            raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
         return multiclass_jaccard_index(preds, target, num_classes, average, ignore_index, validate_args)
     if task == ClassificationTask.MULTILABEL:
         if not isinstance(num_labels, int):
