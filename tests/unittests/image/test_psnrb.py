@@ -11,149 +11,89 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from collections import namedtuple
-from functools import partial
+import math
 
 import numpy as np
 import pytest
 import torch
-from skimage.metrics import (
-    peak_signal_noise_ratio_with_blocked_effect as skimage_peak_signal_noise_ratio_with_blocked_effect,
-)
+from sewar.utils import _compute_bef
 
-from torchmetrics.functional import peak_signal_noise_ratio
 from torchmetrics.functional.image.psnrb import peak_signal_noise_ratio_with_blocked_effect
 from torchmetrics.image import PeakSignalNoiseRatioWithBlockedEffect
+from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
-Input = namedtuple("Input", ["preds", "target"])
-
-_input_size = (NUM_BATCHES, BATCH_SIZE, 32, 32)
-_inputs = [
-    Input(
-        preds=torch.randint(n_cls_pred, _input_size, dtype=torch.float),
-        target=torch.randint(n_cls_target, _input_size, dtype=torch.float),
-    )
-    for n_cls_pred, n_cls_target in [(10, 10), (5, 10), (10, 5)]
-]
-
-
-def _to_sk_peak_signal_noise_ratio_inputs(value, dim):
-    value = value.numpy()
-    batches = value[None] if value.ndim == len(_input_size) - 1 else value
-
-    if dim is None:
-        return [batches]
-
-    num_dims = np.size(dim)
-    if not num_dims:
-        return batches
-
-    inputs = []
-    for batch in batches:
-        batch = np.moveaxis(batch, dim, np.arange(-num_dims, 0))
-        psnr_input_shape = batch.shape[-num_dims:]
-        inputs.extend(batch.reshape(-1, *psnr_input_shape))
-    return inputs
-
-
-def _skimage_psnr(preds, target, data_range, reduction, dim):
-    sk_preds_lists = _to_sk_peak_signal_noise_ratio_inputs(preds, dim=dim)
-    sk_target_lists = _to_sk_peak_signal_noise_ratio_inputs(target, dim=dim)
-    np_reduce_map = {"elementwise_mean": np.mean, "none": np.array, "sum": np.sum}
-    return np_reduce_map[reduction](
-        [
-            skimage_peak_signal_noise_ratio_with_blocked_effect(sk_target, sk_preds, data_range=data_range)
-            for sk_target, sk_preds in zip(sk_target_lists, sk_preds_lists)
-        ]
-    )
-
-
-def _base_e_sk_psnr(preds, target, data_range, reduction, dim):
-    return _skimage_psnr(preds, target, data_range, reduction, dim) * np.log(10)
-
-
-@pytest.mark.parametrize(
-    "preds, target, data_range, reduction, dim",
-    [
-        (_inputs[0].preds, _inputs[0].target, 10, "elementwise_mean", None),
-        (_inputs[1].preds, _inputs[1].target, 10, "elementwise_mean", None),
-        (_inputs[2].preds, _inputs[2].target, 5, "elementwise_mean", None),
-        (_inputs[2].preds, _inputs[2].target, 5, "elementwise_mean", 1),
-        (_inputs[2].preds, _inputs[2].target, 5, "elementwise_mean", (1, 2)),
-        (_inputs[2].preds, _inputs[2].target, 5, "sum", (1, 2)),
-    ],
+_input = (
+    (torch.rand(NUM_BATCHES, BATCH_SIZE, 1, 16, 16), torch.rand(NUM_BATCHES, BATCH_SIZE, 1, 16, 16)),
+    (
+        torch.randint(0, 255, (NUM_BATCHES, BATCH_SIZE, 1, 16, 16)),
+        torch.randint(0, 255, (NUM_BATCHES, BATCH_SIZE, 1, 16, 16)),
+    ),
 )
-@pytest.mark.parametrize(
-    "base, ref_metric",
-    [
-        (10.0, _skimage_psnrb),
-        (2.718281828459045, _base_e_sk_psnrb),
-    ],
-)
+
+
+def _ref_metric(preds, target):
+    """Reference implementation of PSNRB metric.
+
+    Inspired by
+    https://github.com/andrewekhalel/sewar/blob/master/sewar/full_ref.py
+    that also supports batched inputs.
+    """
+    preds = preds.numpy()
+    target = target.numpy()
+    imdff = np.double(target) - np.double(preds)
+
+    mse = np.mean(np.square(imdff.flatten()))
+    bef = sum([_compute_bef(p.squeeze()) for p in preds])
+    mse_b = mse + bef
+
+    if np.amax(preds) > 2:
+        psnr_b = 10 * math.log10((target.max() - target.min()) ** 2 / mse_b)
+    else:
+        psnr_b = 10 * math.log10(1 / mse_b)
+
+    return psnr_b
+
+
+@pytest.mark.parametrize("preds, target", _input)
 class TestPSNR(MetricTester):
+    """Test class for PSNRB metric."""
+
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_psnr(self, preds, target, data_range, base, reduction, dim, ref_metric, ddp, dist_sync_on_step):
-        _args = {"data_range": data_range, "base": base, "reduction": reduction, "dim": dim}
-        self.run_class_metric_test(
-            ddp,
-            preds,
-            target,
-            PeakSignalNoiseRatioWithBlockedEffect,
-            partial(ref_metric, data_range=data_range, reduction=reduction, dim=dim),
-            metric_args=_args,
-            dist_sync_on_step=dist_sync_on_step,
-        )
+    def test_psnr(self, preds, target, ddp):
+        """Test that modular PSNRB metric returns the same result as the reference implementation."""
+        self.run_class_metric_test(ddp, preds, target, PeakSignalNoiseRatioWithBlockedEffect, _ref_metric)
 
-    def test_psnr_functional(self, preds, target, ref_metric, data_range, base, reduction, dim):
-        _args = {"data_range": data_range, "base": base, "reduction": reduction, "dim": dim}
-        self.run_functional_metric_test(
-            preds,
-            target,
-            peak_signal_noise_ratio_with_blocked_effect,
-            partial(ref_metric, data_range=data_range, reduction=reduction, dim=dim),
-            metric_args=_args,
-        )
+    def test_psnr_functional(self, preds, target):
+        """Test that functional PSNRB metric returns the same result as the reference implementation."""
+        self.run_functional_metric_test(preds, target, peak_signal_noise_ratio_with_blocked_effect, _ref_metric)
 
-    # PSNR half + cpu does not work due to missing support in torch.log
-    @pytest.mark.xfail(reason="PSNR metric does not support cpu + half precision")
-    def test_psnr_half_cpu(self, preds, target, data_range, reduction, dim, base, ref_metric):
+    def test_psnr_half_cpu(self, preds, target):
+        """Test that PSNRB metric works with half precision on cpu."""
+        if target.max() - target.min() < 2:
+            pytest.xfail("PSNRB metric does not support cpu + half precision")
         self.run_precision_test_cpu(
             preds,
             target,
+            PeakSignalNoiseRatioWithBlockedEffect,
             peak_signal_noise_ratio_with_blocked_effect,
-            {"data_range": data_range, "base": base, "reduction": reduction, "dim": dim},
         )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-    def test_psnr_half_gpu(self, preds, target, data_range, reduction, dim, base, ref_metric):
+    def test_psnr_half_gpu(self, preds, target):
+        """Test that PSNRB metric works with half precision on gpu."""
         self.run_precision_test_gpu(
             preds,
             target,
             PeakSignalNoiseRatioWithBlockedEffect,
-            peak_signal_noise_ratio,
-            {"data_range": data_range, "base": base, "reduction": reduction, "dim": dim},
+            peak_signal_noise_ratio_with_blocked_effect,
         )
 
 
-@pytest.mark.parametrize("reduction", ["none", "sum"])
-def test_reduction_for_dim_none(reduction):
-    match = f"The `reduction={reduction}` will not have any effect when `dim` is None."
-    with pytest.warns(UserWarning, match=match):
-        PeakSignalNoiseRatioWithBlockedEffect(reduction=reduction, dim=None)
-
-    with pytest.warns(UserWarning, match=match):
-        peak_signal_noise_ratio_with_blocked_effect(_inputs[0].preds, _inputs[0].target, reduction=reduction, dim=None)
-
-
-def test_missing_data_range():
-    with pytest.raises(ValueError):
-        PeakSignalNoiseRatioWithBlockedEffect(data_range=None, dim=0)
-
-    with pytest.raises(ValueError):
-        peak_signal_noise_ratio_with_blocked_effect(_inputs[0].preds, _inputs[0].target, data_range=None, dim=0)
+def test_error_on_color_images():
+    """Test that appropriate error is raised when color images are passed to PSNRB metric."""
+    with pytest.raises(ValueError, match="``psnrb metric expects grayscale images.*"):
+        peak_signal_noise_ratio_with_blocked_effect(torch.rand(1, 3, 16, 16), torch.rand(1, 3, 16, 16))

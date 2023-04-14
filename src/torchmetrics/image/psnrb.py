@@ -17,9 +17,13 @@ import torch
 from torch import Tensor, tensor
 from typing_extensions import Literal
 
-from torchmetrics.functional.image.psnr import _psnr_compute, _psnr_update
+from torchmetrics.functional.image.psnrb import _psnrb_compute, _psnrb_update
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["PeakSignalNoiseRatioWithBlockedEffect.plot"]
 
 
 class PeakSignalNoiseRatioWithBlockedEffect(Metric):
@@ -28,119 +32,108 @@ class PeakSignalNoiseRatioWithBlockedEffect(Metric):
     .. math::
         \text{PSNRB}(I, J) = 10 * \log_{10} \left(\frac{\max(I)^2}{\text{MSE}(I, J)-\text{B}(I, J)}\right)
 
-    Where :math:`\text{MSE}` denotes the `mean-squared-error`_ function.
+    Where :math:`\text{MSE}` denotes the `mean-squared-error`_ function. This metric is a modified version of PSNR that
+    better supports evaluation of images with blocked artifacts, that oftens occur in compressed images.
+
+    .. note::
+        Metric only supports grayscale images. If you have RGB images, please convert them to grayscale first.
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 
-    - ``preds`` (:class:`~torch.Tensor`): Predictions from model of shape ``(N,C,H,W)``
-    - ``target`` (:class:`~torch.Tensor`): Ground truth values of shape ``(N,C,H,W)``
+    - ``preds`` (:class:`~torch.Tensor`): Predictions from model of shape ``(N,1,H,W)``
+    - ``target`` (:class:`~torch.Tensor`): Ground truth values of shape ``(N,1,H,W)``
 
     As output of `forward` and `compute` the metric returns the following output
 
-    - ``psnrb`` (:class:`~torch.Tensor`): if ``reduction!='none'`` returns float scalar tensor with average PSNR value
-      over sample else returns tensor of shape ``(N,)`` with PSNR values per sample
+    - ``psnrb`` (:class:`~torch.Tensor`): float scalar tensor with aggregated PSNRB value
 
     Args:
-        data_range:
-            the range of the data. If None, it is determined from the data (max - min).
-            The ``data_range`` must be given when ``dim`` is not None.
-        base: a base of a logarithm to use.
-        reduction: a method to reduce metric scores over labels:
-
-            - ``'elementwise_mean'``: takes the mean (default)
-            - ``'sum'``: takes the sum
-            - ``'none'`` or ``None``: no reduction will be applied
-
-        dim:
-            Dimensions to reduce PSNR scores over, provided as either an integer or a list of integers. Default is
-            None meaning scores will be reduced across all dimensions and all batches.
+        block_size: integer indication the block size
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    Raises:
-        ValueError:
-            If ``dim`` is not ``None`` and ``data_range`` is not given.
-
     Example:
+        >>> import torch
         >>> from torchmetrics.image import PeakSignalNoiseRatioWithBlockedEffect
-        >>> psnrb = PeakSignalNoiseRatioWithBlockedEffect()
-        >>> preds = torch.tensor([[0.0, 1.0], [2.0, 3.0]])
-        >>> target = torch.tensor([[3.0, 2.0], [1.0, 0.0]])
-        >>> psnrb(preds, target)
-        tensor(2.5527)
-
-    .. note::
-        Half precision is only support on GPU for this metric
+        >>> metric = PeakSignalNoiseRatioWithBlockedEffect()
+        >>> _ = torch.manual_seed(42)
+        >>> preds = torch.rand(2, 1, 10, 10)
+        >>> target = torch.rand(2, 1, 10, 10)
+        >>> metric(preds, target)
+        tensor(7.2893)
     """
     is_differentiable: bool = True
     higher_is_better: bool = True
     full_state_update: bool = False
 
-    min_target: Tensor
-    max_target: Tensor
+    sum_squared_error: Tensor
+    total: Tensor
+    bef: Tensor
+    data_range: Tensor
 
     def __init__(
         self,
-        data_range: Optional[float] = None,
-        base: float = 10.0,
-        reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
-        dim: Optional[Union[int, Tuple[int, ...]]] = None,
+        block_size: int = 8,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
+        if not isinstance(block_size, int) and block_size < 1:
+            raise ValueError("Argument ``block_size`` should be a positive integer")
+        self.block_size = block_size
 
-        if dim is None and reduction != "elementwise_mean":
-            rank_zero_warn(f"The `reduction={reduction}` will not have any effect when `dim` is None.")
+        self.add_state("sum_squared_error", default=tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
+        self.add_state("bef", default=tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("data_range", default=tensor(0), dist_reduce_fx="max")
 
-        if dim is None:
-            self.add_state("sum_squared_error", default=tensor(0.0), dist_reduce_fx="sum")
-            self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
-        else:
-            self.add_state("sum_squared_error", default=[], dist_reduce_fx="cat")
-            self.add_state("total", default=[], dist_reduce_fx="cat")
-
-        if data_range is None:
-            if dim is not None:
-                # Maybe we could use `torch.amax(target, dim=dim) - torch.amin(target, dim=dim)` in PyTorch 1.7 to
-                # calculate `data_range` in the future.
-                raise ValueError("The `data_range` must be given when `dim` is not None.")
-
-            self.data_range = None
-            self.add_state("min_target", default=tensor(0.0), dist_reduce_fx=torch.min)
-            self.add_state("max_target", default=tensor(0.0), dist_reduce_fx=torch.max)
-        else:
-            self.add_state("data_range", default=tensor(float(data_range)), dist_reduce_fx="mean")
-        self.base = base
-        self.reduction = reduction
-        self.dim = tuple(dim) if isinstance(dim, Sequence) else dim
-
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
-        sum_squared_error, n_obs = _psnr_update(preds, target, dim=self.dim)
-        if self.dim is None:
-            if self.data_range is None:
-                # keep track of min and max target values
-                self.min_target = min(target.min(), self.min_target)
-                self.max_target = max(target.max(), self.max_target)
-
-            self.sum_squared_error += sum_squared_error
-            self.total += n_obs
-        else:
-            self.sum_squared_error.append(sum_squared_error)
-            self.total.append(n_obs)
+    def update(self, preds: Tensor, target: Tensor) -> None:
+        """Update state with predictions and targets."""
+        sum_squared_error, bef, n_obs = _psnrb_update(preds, target, block_size=self.block_size)
+        self.sum_squared_error += sum_squared_error
+        self.bef += bef
+        self.total += n_obs
+        self.data_range = torch.maximum(self.data_range, torch.max(target) - torch.min(target))
 
     def compute(self) -> Tensor:
         """Compute peak signal-to-noise ratio over state."""
-        data_range = self.data_range if self.data_range is not None else self.max_target - self.min_target
+        return _psnrb_compute(self.sum_squared_error, self.bef, self.total, self.data_range)
 
-        if self.dim is None:
-            sum_squared_error = self.sum_squared_error
-            total = self.total
-        else:
-            sum_squared_error = torch.cat([values.flatten() for values in self.sum_squared_error])
-            total = torch.cat([values.flatten() for values in self.total])
-        return _psnr_compute(sum_squared_error, total, data_range, base=self.base, reduction=self.reduction)
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> import torch
+            >>> from torchmetrics.image import PeakSignalNoiseRatioWithBlockedEffect
+            >>> metric = PeakSignalNoiseRatioWithBlockedEffect()
+            >>> metric.update(torch.rand(2, 1, 10, 10), torch.rand(2, 1, 10, 10))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics.image import PeakSignalNoiseRatioWithBlockedEffect
+            >>> metric = PeakSignalNoiseRatioWithBlockedEffect()
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(torch.rand(2, 1, 10, 10), torch.rand(2, 1, 10, 10)))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        return self._plot(val, ax)
