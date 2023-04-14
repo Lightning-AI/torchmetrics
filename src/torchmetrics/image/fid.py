@@ -43,6 +43,9 @@ else:
 
     __doctest_skip__ = ["FrechetInceptionDistance", "FrechetInceptionDistance.plot"]
 
+if not _TORCH_GREATER_EQUAL_1_9:
+    __doctest_skip__ = ["FrechetInceptionDistance", "FrechetInceptionDistance.plot"]
+
 
 class NoTrainInceptionV3(_FeatureExtractorInceptionV3):
     """Module that nevers leaves evaluation mode."""
