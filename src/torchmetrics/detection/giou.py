@@ -169,7 +169,7 @@ class GeneralizedIntersectionOverUnion(IntersectionOverUnion):
             ...        "labels": torch.tensor([5]),
             ...    }
             ... ]
-            >>> metric = IntersectionOverUnion()
+            >>> metric = GeneralizedIntersectionOverUnion()
             >>> vals = []
             >>> for _ in range(20):
             ...     vals.append(metric(preds, target()))
