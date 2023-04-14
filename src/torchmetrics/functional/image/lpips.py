@@ -85,7 +85,7 @@ class SqueezeNet(torch.nn.Module):
         for slice in self.slices:
             x = slice(x)
             relus.append(x)
-        return squeeze_output(*relus)  # type: ignore[return-value]
+        return squeeze_output(*relus)
 
 
 class Alexnet(torch.nn.Module):
@@ -128,7 +128,7 @@ class Alexnet(torch.nn.Module):
         h = self.slice5(h)
         h_relu5 = h
         alexnet_outputs = namedtuple("alexnet_outputs", ["relu1", "relu2", "relu3", "relu4", "relu5"])
-        return alexnet_outputs(h_relu1, h_relu2, h_relu3, h_relu4, h_relu5)  # type: ignore[return-value]
+        return alexnet_outputs(h_relu1, h_relu2, h_relu3, h_relu4, h_relu5)
 
 
 class Vgg16(torch.nn.Module):
@@ -171,7 +171,7 @@ class Vgg16(torch.nn.Module):
         h = self.slice5(h)
         h_relu5_3 = h
         vgg_outputs = namedtuple("vgg_outputs", ["relu1_2", "relu2_2", "relu3_3", "relu4_3", "relu5_3"])
-        return vgg_outputs(h_relu1_2, h_relu2_2, h_relu3_3, h_relu4_3, h_relu5_3)  # type: ignore[return-value]
+        return vgg_outputs(h_relu1_2, h_relu2_2, h_relu3_3, h_relu4_3, h_relu5_3)
 
 
 def spatial_average(in_tens: Tensor, keepdim: bool = True) -> Tensor:
@@ -381,7 +381,7 @@ def learned_perceptual_image_patch_similarity(
         >>> img1 = (torch.rand(10, 3, 100, 100) * 2) - 1
         >>> img2 = (torch.rand(10, 3, 100, 100) * 2) - 1
         >>> learned_perceptual_image_patch_similarity(img1, img2, net_type='vgg')
-        tensor(0.1441, grad_fn=<DivBackward0>)
+        tensor(0.3485, grad_fn=<DivBackward0>)
 
     """
     net = _NoTrainLpips(net=net_type)

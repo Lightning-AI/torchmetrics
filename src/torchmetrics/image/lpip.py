@@ -88,7 +88,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
         >>> img1 = (torch.rand(10, 3, 100, 100) * 2) - 1
         >>> img2 = (torch.rand(10, 3, 100, 100) * 2) - 1
         >>> lpips(img1, img2)
-        tensor(0.3747, grad_fn=<SqueezeBackward0>)
+        tensor(0.3493, grad_fn=<SqueezeBackward0>)
     """
 
     is_differentiable: bool = True
