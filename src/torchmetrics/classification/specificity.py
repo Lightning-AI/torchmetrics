@@ -479,7 +479,7 @@ class Specificity:
             if not isinstance(num_classes, int):
                 raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
             if not isinstance(top_k, int):
-                raise ValueError(f"`num_labels` is expected to be `int` but `{type(top_k)} was passed.`")
+                raise ValueError(f"`top_k` is expected to be `int` but `{type(top_k)} was passed.`")
             return MulticlassSpecificity(num_classes, top_k, average, **kwargs)
         if task == ClassificationTask.MULTILABEL:
             if not isinstance(num_labels, int):
