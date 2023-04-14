@@ -16,7 +16,11 @@ from typing import Any, Optional, Sequence, Union
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.classification import BinaryConfusionMatrix, MulticlassConfusionMatrix, MultilabelConfusionMatrix
+from torchmetrics.classification.confusion_matrix import (
+    BinaryConfusionMatrix,
+    MulticlassConfusionMatrix,
+    MultilabelConfusionMatrix,
+)
 from torchmetrics.functional.classification.jaccard import (
     _jaccard_index_reduce,
     _multiclass_jaccard_index_arg_validation,
