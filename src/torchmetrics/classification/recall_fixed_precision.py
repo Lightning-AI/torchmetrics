@@ -108,6 +108,9 @@ class BinaryRecallAtFixedPrecision(BinaryPrecisionRecallCurve):
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
 
+    preds: Union[List[Tensor], Tensor]
+    target: Union[List[Tensor], Tensor]
+
     def __init__(
         self,
         min_precision: float,
@@ -122,12 +125,12 @@ class BinaryRecallAtFixedPrecision(BinaryPrecisionRecallCurve):
         self.validate_args = validate_args
         self.min_precision = min_precision
 
-    def compute(self) -> Tuple[Tensor, Tensor]:
+    def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
         """Compute metric."""
-        state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
+        state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
         return _binary_recall_at_fixed_precision_compute(state, self.thresholds, self.min_precision)
 
-    def plot(
+    def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -243,6 +246,9 @@ class MulticlassRecallAtFixedPrecision(MulticlassPrecisionRecallCurve):
     plot_upper_bound: float = 1.0
     plot_legend_name: str = "Class"
 
+    preds: Union[List[Tensor], Tensor]
+    target: Union[List[Tensor], Tensor]
+
     def __init__(
         self,
         num_classes: int,
@@ -260,14 +266,14 @@ class MulticlassRecallAtFixedPrecision(MulticlassPrecisionRecallCurve):
         self.validate_args = validate_args
         self.min_precision = min_precision
 
-    def compute(self) -> Tuple[Tensor, Tensor]:
+    def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
         """Compute metric."""
-        state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
+        state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
         return _multiclass_recall_at_fixed_precision_arg_compute(
             state, self.num_classes, self.thresholds, self.min_precision
         )
 
-    def plot(
+    def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -386,6 +392,9 @@ class MultilabelRecallAtFixedPrecision(MultilabelPrecisionRecallCurve):
     plot_upper_bound: float = 1.0
     plot_legend_name: str = "Label"
 
+    preds: Union[List[Tensor], Tensor]
+    target: Union[List[Tensor], Tensor]
+
     def __init__(
         self,
         num_labels: int,
@@ -403,14 +412,14 @@ class MultilabelRecallAtFixedPrecision(MultilabelPrecisionRecallCurve):
         self.validate_args = validate_args
         self.min_precision = min_precision
 
-    def compute(self) -> Tuple[Tensor, Tensor]:
+    def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
         """Compute metric."""
-        state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
+        state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
         return _multilabel_recall_at_fixed_precision_arg_compute(
             state, self.num_labels, self.thresholds, self.ignore_index, self.min_precision
         )
 
-    def plot(
+    def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -466,7 +475,7 @@ class RecallAtFixedPrecision:
     :func:`MultilabelRecallAtFixedPrecision` for the specific details of each argument influence and examples.
     """
 
-    def __new__(
+    def __new__(  # type: ignore[misc]
         cls,
         task: Literal["binary", "multiclass", "multilabel"],
         min_precision: float,
@@ -491,4 +500,4 @@ class RecallAtFixedPrecision:
             return MultilabelRecallAtFixedPrecision(
                 num_labels, min_precision, thresholds, ignore_index, validate_args, **kwargs
             )
-        return None
+        return None  # type: ignore[return-value]
