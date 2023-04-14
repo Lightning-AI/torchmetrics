@@ -636,9 +636,11 @@ def confusion_matrix(
     if task == ClassificationTask.BINARY:
         return binary_confusion_matrix(preds, target, threshold, normalize, ignore_index, validate_args)
     if task == ClassificationTask.MULTICLASS:
-        assert isinstance(num_classes, int)
+        if not isinstance(num_classes, int):
+            raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_classes)} was passed.`")
         return multiclass_confusion_matrix(preds, target, num_classes, normalize, ignore_index, validate_args)
     if task == ClassificationTask.MULTILABEL:
-        assert isinstance(num_labels, int)
+        if not isinstance(num_labels, int):
+            raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
         return multilabel_confusion_matrix(preds, target, num_labels, threshold, normalize, ignore_index, validate_args)
     return None

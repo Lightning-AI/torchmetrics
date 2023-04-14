@@ -512,9 +512,11 @@ class AveragePrecision:
         if task == ClassificationTask.BINARY:
             return BinaryAveragePrecision(**kwargs)
         if task == ClassificationTask.MULTICLASS:
-            assert isinstance(num_classes, int)
+            if not isinstance(num_classes, int):
+                raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_classes)} was passed.`")
             return MulticlassAveragePrecision(num_classes, average, **kwargs)
         if task == ClassificationTask.MULTILABEL:
-            assert isinstance(num_labels, int)
+            if not isinstance(num_labels, int):
+                raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
             return MultilabelAveragePrecision(num_labels, average, **kwargs)
         return None

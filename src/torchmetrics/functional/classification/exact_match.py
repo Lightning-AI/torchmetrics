@@ -243,10 +243,10 @@ def exact_match(
     """
     task = ClassificationTaskNoBinary.from_str(task)
     if task == ClassificationTaskNoBinary.MULTICLASS:
-        assert num_classes is not None
+        assert num_classes is not None  # noqa: S101  # needed for mypy
         return multiclass_exact_match(preds, target, num_classes, multidim_average, ignore_index, validate_args)
     if task == ClassificationTaskNoBinary.MULTILABEL:
-        assert num_labels is not None
+        assert num_labels is not None  # noqa: S101  # needed for mypy
         return multilabel_exact_match(
             preds, target, num_labels, threshold, multidim_average, ignore_index, validate_args
         )
