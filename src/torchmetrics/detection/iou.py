@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections import defaultdict
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 
 import torch
 from torch import Tensor
@@ -21,8 +21,12 @@ from torchmetrics.detection.helpers import _fix_empty_tensors, _input_validator
 from torchmetrics.functional.detection.iou import _iou_compute, _iou_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
-# from torchmetrics.utilities import rank_zero_warn
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["IntersectionOverUnion.plot", "IntersectionOverUnion.plot"]
+
 from torchmetrics.utilities.imports import _TORCHVISION_GREATER_EQUAL_0_8
 
 if _TORCHVISION_GREATER_EQUAL_0_8:
@@ -49,11 +53,22 @@ class IntersectionOverUnion(Metric):
     Example:
         >>> import torch
         >>> from torchmetrics.detection import IntersectionOverUnion
-        >>> preds = torch.Tensor([[100, 100, 200, 200]])
-        >>> target = torch.Tensor([[110, 110, 210, 210]])
+        >>> preds = [
+        ...    {
+        ...        "boxes": torch.tensor([[296.55, 93.96, 314.97, 152.79], [298.55, 98.96, 314.97, 151.79]]),
+        ...        "scores": torch.tensor([0.236, 0.56]),
+        ...        "labels": torch.tensor([4, 5]),
+        ...    }
+        ... ]
+        >>> target = [
+        ...    {
+        ...        "boxes": torch.tensor([[300.00, 100.00, 315.00, 150.00]]),
+        ...        "labels": torch.tensor([5]),
+        ...    }
+        ... ]
         >>> metric = IntersectionOverUnion()
         >>> metric(preds, target)
-        tensor(0.6807)
+        {'iou': tensor(0.4307)}
 
     Raises:
         ModuleNotFoundError:
@@ -220,3 +235,69 @@ class IntersectionOverUnion(Metric):
                 {f"{self._iou_type}/cl_{cl}": dim_zero_cat(class_results[cl]).mean() for cl in class_results}
             )
         return results
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure object and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> import torch
+            >>> from torchmetrics.detection import IntersectionOverUnion
+            >>> preds = [
+            ...    {
+            ...        "boxes": torch.tensor([[296.55, 93.96, 314.97, 152.79], [298.55, 98.96, 314.97, 151.79]]),
+            ...        "scores": torch.tensor([0.236, 0.56]),
+            ...        "labels": torch.tensor([4, 5]),
+            ...    }
+            ... ]
+            >>> target = [
+            ...    {
+            ...        "boxes": torch.tensor([[300.00, 100.00, 315.00, 150.00]]),
+            ...        "labels": torch.tensor([5]),
+            ...    }
+            ... ]
+            >>> metric = IntersectionOverUnion()
+            >>> metric.update(preds, target)
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics.detection import IntersectionOverUnion
+            >>> preds = [
+            ...    {
+            ...        "boxes": torch.tensor([[296.55, 93.96, 314.97, 152.79], [298.55, 98.96, 314.97, 151.79]]),
+            ...        "scores": torch.tensor([0.236, 0.56]),
+            ...        "labels": torch.tensor([4, 5]),
+            ...    }
+            ... ]
+            >>> target = lambda : [
+            ...    {
+            ...        "boxes": torch.tensor([[300.00, 100.00, 315.00, 150.00]]) + torch.randint(-10, 10, (1, 4)),
+            ...        "labels": torch.tensor([5]),
+            ...    }
+            ... ]
+            >>> metric = IntersectionOverUnion()
+            >>> vals = []
+            >>> for _ in range(20):
+            ...     vals.append(metric(preds, target()))
+            >>> fig_, ax_ = metric.plot(vals)
+        """
+        return self._plot(val, ax)
