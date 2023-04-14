@@ -157,6 +157,7 @@ from torchmetrics.text import (
     WordInfoLost,
     WordInfoPreserved,
 )
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_9
 from torchmetrics.wrappers import BootStrapper, ClasswiseWrapper, MetricTracker, MinMaxMetric, MultioutputWrapper
 
 _rand_input = lambda: torch.rand(10)
@@ -613,6 +614,7 @@ def test_plot_methods(metric_class: object, preds: Callable, target: Callable, n
             lambda: torch.randint(0, 200, (30, 3, 299, 299), dtype=torch.uint8),
             False,
             id="frechet inception distance",
+            marks=pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_9, reason="test requires torch>=1.9"),
         ),
         pytest.param(
             partial(InceptionScore, feature=64),
