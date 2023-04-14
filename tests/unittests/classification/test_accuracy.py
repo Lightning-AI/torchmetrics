@@ -20,10 +20,15 @@ from scipy.special import expit as sigmoid
 from sklearn.metrics import accuracy_score as sk_accuracy
 from sklearn.metrics import confusion_matrix as sk_confusion_matrix
 
-from torchmetrics.classification.accuracy import BinaryAccuracy, MulticlassAccuracy, MultilabelAccuracy
-from torchmetrics.functional.classification.accuracy import binary_accuracy, multiclass_accuracy, multilabel_accuracy
+from torchmetrics.classification.accuracy import Accuracy, BinaryAccuracy, MulticlassAccuracy, MultilabelAccuracy
+from torchmetrics.functional.classification.accuracy import (
+    accuracy,
+    binary_accuracy,
+    multiclass_accuracy,
+    multilabel_accuracy,
+)
 from unittests import NUM_CLASSES, THRESHOLD
-from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
+from unittests.classification.inputs import _binary_cases, _input_binary, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
@@ -59,6 +64,34 @@ def _sklearn_accuracy_binary(preds, target, ignore_index, multidim_average):
         true, pred = remove_ignore_index(true, pred, ignore_index)
         res.append(_sklearn_accuracy(true, pred))
     return np.stack(res)
+
+
+def test_accuracy_raises_invalid_task():
+    """Tests accuracy task enum from Accuracy."""
+    task = "NotValidTask"
+    ignore_index = None
+    multidim_average = "global"
+
+    with pytest.raises(ValueError, match=r"Invalid *"):
+        Accuracy(threshold=THRESHOLD, task=task, ignore_index=ignore_index, multidim_average=multidim_average)
+
+
+def test_accuracy_functional_raises_invalid_task():
+    """Tests accuracy task enum from functional.accuracy."""
+    preds, target = _input_binary
+    task = "NotValidTask"
+    ignore_index = None
+    multidim_average = "global"
+
+    with pytest.raises(ValueError, match=r"Invalid *"):
+        accuracy(
+            preds,
+            target,
+            threshold=THRESHOLD,
+            task=task,
+            ignore_index=ignore_index,
+            multidim_average=multidim_average,
+        )
 
 
 @pytest.mark.parametrize("input", _binary_cases)

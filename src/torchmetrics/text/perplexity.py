@@ -32,8 +32,9 @@ class Perplexity(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~torch.Tensor`): Probabilities assigned to each token in a sequence with shape
-        [batch_size, seq_len, vocab_size]
+    - ``preds`` (:class:`~torch.Tensor`): Logits or a unnormalized score assigned to each token in a sequence with shape
+        [batch_size, seq_len, vocab_size], which is the output of a language model. Scores will be normalized internally
+        using softmax.
     - ``target`` (:class:`~torch.Tensor`): Ground truth values with a shape [batch_size, seq_len]
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
@@ -47,7 +48,7 @@ class Perplexity(Metric):
             Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Examples:
-        >>> from torchmetrics import Perplexity
+        >>> from torchmetrics.text import Perplexity
         >>> import torch
         >>> preds = torch.rand(2, 8, 5, generator=torch.manual_seed(22))
         >>> target = torch.randint(5, (2, 8), generator=torch.manual_seed(22))
@@ -106,7 +107,7 @@ class Perplexity(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics import Perplexity
+            >>> from torchmetrics.text import Perplexity
             >>> metric = Perplexity()
             >>> metric.update(torch.rand(2, 8, 5), torch.randint(5, (2, 8)))
             >>> fig_, ax_ = metric.plot()
@@ -116,7 +117,7 @@ class Perplexity(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics import Perplexity
+            >>> from torchmetrics.text import Perplexity
             >>> metric = Perplexity()
             >>> values = [ ]
             >>> for _ in range(10):

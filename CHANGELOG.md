@@ -85,6 +85,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added support for plotting of aggregation metrics through `.plot()` method ([#1485](https://github.com/Lightning-AI/metrics/pull/1485))
 
 
+- Added support for python 3.11 ([#1612](https://github.com/Lightning-AI/metrics/pull/1612))
+
+
 - Added support for auto clamping of input for metrics that uses the `data_range` ([#1606](argument https://github.com/Lightning-AI/metrics/pull/1606))
 
 
@@ -116,12 +119,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Deprecated
 
--
+- Deprecated domain metrics import from package root (
+    [#1685](https://github.com/Lightning-AI/metrics/pull/1685),
+    [#1694](https://github.com/Lightning-AI/metrics/pull/1694),
+    [#1696](https://github.com/Lightning-AI/metrics/pull/1696),
+    [#1699](https://github.com/Lightning-AI/metrics/pull/1699),
+    [#1703](https://github.com/Lightning-AI/metrics/pull/1703),
+)
 
 
 ### Removed
 
--
+- Support for python 3.7 ([#1640](https://github.com/Lightning-AI/metrics/pull/1640))
 
 
 ### Fixed
@@ -139,6 +148,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 - Fix precision-recall curve based computations for float target ([#1642](https://github.com/Lightning-AI/metrics/pull/1642))
+
+
+- Fixed missing kwarg squeeze in `MultiOutputWrapper` ([#1675](https://github.com/Lightning-AI/torchmetrics/pull/1675))
+
+
+- Fixed padding removal for 3d input in `MSSSIM` ([#1674](https://github.com/Lightning-AI/torchmetrics/pull/1674))
 
 
 ## [0.11.4] - 2023-03-10

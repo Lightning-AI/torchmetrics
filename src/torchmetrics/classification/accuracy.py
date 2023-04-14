@@ -480,16 +480,25 @@ class Accuracy:
     ) -> Metric:
         """Initialize task metric."""
         task = ClassificationTask.from_str(task)
+
         kwargs.update(
             {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
         )
+
         if task == ClassificationTask.BINARY:
             return BinaryAccuracy(threshold, **kwargs)
         if task == ClassificationTask.MULTICLASS:
-            assert isinstance(num_classes, int)
-            assert isinstance(top_k, int)
+            if not isinstance(num_classes, int):
+                raise ValueError(
+                    f"Optional arg `num_classes` must be type `int` when task is {task}. Got {type(num_classes)}"
+                )
+            if not isinstance(top_k, int):
+                raise ValueError(f"Optional arg `top_k` must be type `int` when task is {task}. Got {type(top_k)}")
             return MulticlassAccuracy(num_classes, top_k, average, **kwargs)
         if task == ClassificationTask.MULTILABEL:
-            assert isinstance(num_labels, int)
+            if not isinstance(num_labels, int):
+                raise ValueError(
+                    f"Optional arg `num_labels` must be type `int` when task is {task}. Got {type(num_labels)}"
+                )
             return MultilabelAccuracy(num_labels, threshold, average, **kwargs)
-        return None
+        raise ValueError(f"Not handled value: {task}")  # this is for compliant of mypy

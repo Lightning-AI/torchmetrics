@@ -134,3 +134,12 @@ def test_reset_called_correctly():
     res = cf(tensor([[1, 1]]), tensor([[0, 0]]))
     assert torch.allclose(res[0], tensor([[0, 1], [0, 0]]))
     assert torch.allclose(res[1], tensor([[0, 1], [0, 0]]))
+
+
+def test_squeeze_argument():
+    """Test that the squeeze_outputs argument works as expected."""
+    m = MultioutputWrapper(ConfusionMatrix(task="binary"), num_outputs=3)
+    m.update(torch.randint(2, (10, 3)), torch.randint(2, (10, 3)))  # as args
+    m.update(preds=torch.randint(2, (10, 3)), target=torch.randint(2, (10, 3)))  # as kwargs
+    val = m.compute()
+    assert val.shape == (3, 2, 2)

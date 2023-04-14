@@ -54,7 +54,7 @@ class BLEUScore(Metric):
         ValueError: If a length of a list of weights is not ``None`` and not equal to ``n_gram``.
 
     Example:
-        >>> from torchmetrics import BLEUScore
+        >>> from torchmetrics.text import BLEUScore
         >>> preds = ['the cat is on the mat']
         >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
         >>> bleu = BLEUScore()
@@ -132,7 +132,7 @@ class BLEUScore(Metric):
             :scale: 75
 
             >>> # Example plotting a single value
-            >>> from torchmetrics import BLEUScore
+            >>> from torchmetrics.text import BLEUScore
             >>> metric = BLEUScore()
             >>> preds = ['the cat is on the mat']
             >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
@@ -143,7 +143,7 @@ class BLEUScore(Metric):
             :scale: 75
 
             >>> # Example plotting multiple values
-            >>> from torchmetrics import BLEUScore
+            >>> from torchmetrics.text import BLEUScore
             >>> metric = BLEUScore()
             >>> preds = ['the cat is on the mat']
             >>> target = [['there is a cat on the mat', 'a cat is on the mat']]

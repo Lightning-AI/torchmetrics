@@ -52,7 +52,7 @@ class MetricTracker(ModuleList):
             better (``True``) or lower is better (``False``).
 
     Example (single metric):
-        >>> from torchmetrics import MetricTracker
+        >>> from torchmetrics.wrappers import MetricTracker
         >>> from torchmetrics.classification import MulticlassAccuracy
         >>> _ = torch.manual_seed(42)
         >>> tracker = MetricTracker(MulticlassAccuracy(num_classes=10, average='micro'))
@@ -76,7 +76,9 @@ class MetricTracker(ModuleList):
         tensor([0.1120, 0.0880, 0.1260, 0.0800, 0.1020])
 
     Example (multiple metrics using MetricCollection):
-        >>> from torchmetrics import MetricTracker, MetricCollection, MeanSquaredError, ExplainedVariance
+        >>> from torchmetrics.wrappers import MetricTracker
+        >>> from torchmetrics import MetricCollection
+        >>> from torchmetrics.regression import MeanSquaredError, ExplainedVariance
         >>> _ = torch.manual_seed(42)
         >>> tracker = MetricTracker(MetricCollection([MeanSquaredError(), ExplainedVariance()]), maximize=[False, True])
         >>> for epoch in range(5):
@@ -297,7 +299,7 @@ class MetricTracker(ModuleList):
             >>> fig_, ax_ = tracker.plot()  # plot all epochs
 
         """
-        val = val if val is not None else [val for val in self.compute_all()]
+        val = val if val is not None else list(self.compute_all())
         fig, ax = plot_single_or_multi_val(
             val,
             ax=ax,
