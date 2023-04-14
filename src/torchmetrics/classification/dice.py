@@ -126,7 +126,7 @@ class Dice(Metric):
 
     Example:
         >>> from torch import tensor
-        >>> from torchmetrics import Dice
+        >>> from torchmetrics.classification import Dice
         >>> preds  = tensor([2, 0, 2, 1])
         >>> target = tensor([1, 1, 2, 0])
         >>> dice = Dice(average='micro')
