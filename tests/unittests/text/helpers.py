@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import contextlib
 import pickle
 import sys
 from functools import partial, wraps
@@ -23,11 +22,8 @@ from torch import Tensor
 from torch.multiprocessing import set_start_method
 
 from torchmetrics import Metric
+from unittests import NUM_PROCESSES
 from unittests.helpers.testers import MetricTester, _assert_allclose, _assert_requires_grad, _assert_tensor
-
-with contextlib.suppress(RuntimeError):
-    set_start_method("spawn")
-
 
 TEXT_METRIC_INPUT = Union[Sequence[str], Sequence[Sequence[str]], Sequence[Sequence[Sequence[str]]]]
 NUM_BATCHES = 2
@@ -51,7 +47,7 @@ def _class_test(
     key: str = None,
     **kwargs_update: Any,
 ):
-    """Utility function doing the actual comparison between class metric and reference metric.
+    """Comparison between class metric and reference metric.
 
     Args:
         rank: rank of current process
@@ -155,7 +151,7 @@ def _functional_test(
     key: str = None,
     **kwargs_update,
 ):
-    """Utility function doing the actual comparison between functional metric and reference metric.
+    """Comparison between functional metric and reference metric.
 
     Args:
         preds: torch tensor with predictions
@@ -242,7 +238,7 @@ class TextTester(MetricTester):
         key: str = None,
         **kwargs_update,
     ):
-        """Main method that should be used for testing functions. Call this inside testing method.
+        """Core method that should be used for testing functions. Call this inside testing method.
 
         Args:
             preds: torch tensor with predictions
@@ -287,7 +283,7 @@ class TextTester(MetricTester):
         key: str = None,
         **kwargs_update,
     ):
-        """Main method that should be used for testing class. Call this inside testing methods.
+        """Core method that should be used for testing class. Call this inside testing methods.
 
         Args:
             ddp: bool, if running in ddp mode or not
@@ -315,7 +311,7 @@ class TextTester(MetricTester):
             if sys.platform == "win32":
                 pytest.skip("DDP not supported on windows")
 
-            self.pool.starmap(
+            pytest.pool.starmap(
                 partial(
                     _class_test,
                     preds=preds,
@@ -332,7 +328,7 @@ class TextTester(MetricTester):
                     key=key,
                     **kwargs_update,
                 ),
-                [(rank, self.pool_size) for rank in range(self.pool_size)],
+                [(rank, NUM_PROCESSES) for rank in range(NUM_PROCESSES)],
             )
         else:
             device = "cuda" if (torch.cuda.is_available() and torch.cuda.device_count() > 0) else "cpu"
@@ -440,7 +436,7 @@ class TextTester(MetricTester):
 
 
 def skip_on_connection_issues(reason: str = "Unable to load checkpoints from HuggingFace `transformers`."):
-    """Wrapper which handles download related tests if they fail due to connection issues.
+    """Handle download related tests if they fail due to connection issues.
 
     The tests run normally if no connection issue arises, and they're marked as skipped otherwise.
     """

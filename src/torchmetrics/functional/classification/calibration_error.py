@@ -40,11 +40,11 @@ def _binning_bucketize(
         tuple with binned accuracy, binned confidence and binned probabilities
     """
     accuracies = accuracies.to(dtype=confidences.dtype)
-    acc_bin = torch.zeros(len(bin_boundaries) - 1, device=confidences.device, dtype=confidences.dtype)
-    conf_bin = torch.zeros(len(bin_boundaries) - 1, device=confidences.device, dtype=confidences.dtype)
-    count_bin = torch.zeros(len(bin_boundaries) - 1, device=confidences.device, dtype=confidences.dtype)
+    acc_bin = torch.zeros(len(bin_boundaries), device=confidences.device, dtype=confidences.dtype)
+    conf_bin = torch.zeros(len(bin_boundaries), device=confidences.device, dtype=confidences.dtype)
+    count_bin = torch.zeros(len(bin_boundaries), device=confidences.device, dtype=confidences.dtype)
 
-    indices = torch.bucketize(confidences, bin_boundaries) - 1
+    indices = torch.bucketize(confidences, bin_boundaries, right=True) - 1
 
     count_bin.scatter_add_(dim=0, index=indices, src=torch.ones_like(confidences))
 
@@ -85,16 +85,16 @@ def _ce_compute(
         bin_boundaries = torch.linspace(0, 1, bin_boundaries + 1, dtype=torch.float, device=confidences.device)
 
     if norm not in {"l1", "l2", "max"}:
-        raise ValueError(f"Norm {norm} is not supported. Please select from l1, l2, or max. ")
+        raise ValueError(f"Argument `norm` is expected to be one of 'l1', 'l2', 'max' but got {norm}")
 
     with torch.no_grad():
         acc_bin, conf_bin, prop_bin = _binning_bucketize(confidences, accuracies, bin_boundaries)
 
     if norm == "l1":
-        ce = torch.sum(torch.abs(acc_bin - conf_bin) * prop_bin)
-    elif norm == "max":
+        return torch.sum(torch.abs(acc_bin - conf_bin) * prop_bin)
+    if norm == "max":
         ce = torch.max(torch.abs(acc_bin - conf_bin))
-    elif norm == "l2":
+    if norm == "l2":
         ce = torch.sum(torch.pow(acc_bin - conf_bin, 2) * prop_bin)
         # NOTE: debiasing is disabled in the wrapper functions. This implementation differs from that in sklearn.
         if debias:
@@ -102,7 +102,7 @@ def _ce_compute(
             # the equation in Verified Uncertainty Prediction (Kumar et al 2019)/
             debias_bins = (acc_bin * (acc_bin - 1) * prop_bin) / (prop_bin * accuracies.size()[0] - 1)
             ce += torch.sum(torch.nan_to_num(debias_bins))  # replace nans with zeros if nothing appeared in a bin
-        ce = torch.sqrt(ce) if ce > 0 else torch.tensor(0)
+        return torch.sqrt(ce) if ce > 0 else torch.tensor(0)
     return ce
 
 
@@ -144,10 +144,10 @@ def binary_calibration_error(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""`Top-label Calibration Error`_ for binary tasks. The expected calibration error can be used to quantify how
-    well a given model is calibrated e.g. how well the predicted output probabilities of the model matches the
-    actual probabilities of the ground truth distribution.
+    r"""`Top-label Calibration Error`_ for binary tasks.
 
+    The expected calibration error can be used to quantify how well a given model is calibrated e.g. how well the
+    predicted output probabilities of the model matches the actual probabilities of the ground truth distribution.
     Three different norms are implemented, each corresponding to variations on the calibration error metric.
 
     .. math::
@@ -252,10 +252,10 @@ def multiclass_calibration_error(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""`Top-label Calibration Error`_ for multiclass tasks. The expected calibration error can be used to quantify
-    how well a given model is calibrated e.g. how well the predicted output probabilities of the model matches the
-    actual probabilities of the ground truth distribution.
+    r"""`Top-label Calibration Error`_ for multiclass tasks.
 
+    The expected calibration error can be used to quantify how well a given model is calibrated e.g. how well the
+    predicted output probabilities of the model matches the actual probabilities of the ground truth distribution.
     Three different norms are implemented, each corresponding to variations on the calibration error metric.
 
     .. math::
@@ -324,10 +324,10 @@ def calibration_error(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""`Top-label Calibration Error`_. The expected calibration error can be used to quantify how well a given
-    model is calibrated e.g. how well the predicted output probabilities of the model matches the actual
-    probabilities of the ground truth distribution.
+    r"""`Top-label Calibration Error`_.
 
+    The expected calibration error can be used to quantify how well a given model is calibrated e.g. how well the
+    predicted output probabilities of the model matches the actual probabilities of the ground truth distribution.
     Three different norms are implemented, each corresponding to variations on the calibration error metric.
 
     .. math::

@@ -118,9 +118,10 @@ def _compute_sklearn_metric(
             res = metric(trg, pds, **kwargs)
             sk_results.append(res)
 
-    if len(sk_results) > 0:
-        return np.mean(sk_results)
-    return np.array(0.0)
+    sk_results = np.array(sk_results)
+    sk_results[np.isnan(sk_results)] = 0.0  # this is needed with old versions of sklearn
+
+    return sk_results.mean() if len(sk_results) > 0 else np.array(0.0)
 
 
 def _concat_tests(*tests: Tuple[Dict]) -> Dict:
@@ -383,7 +384,7 @@ def _errors_test_class_metric(
     exception_type: Type[Exception] = ValueError,
     kwargs_update: dict = None,
 ):
-    """Utility function doing checks about types, parameters and errors.
+    """Check types, parameters and errors.
 
     Args:
         indexes: torch tensor with indexes
@@ -411,7 +412,7 @@ def _errors_test_functional_metric(
     exception_type: Type[Exception] = ValueError,
     kwargs_update: dict = None,
 ):
-    """Utility function doing checks about types, parameters and errors.
+    """Check types, parameters and errors.
 
     Args:
         preds: torch tensor with predictions
@@ -428,6 +429,8 @@ def _errors_test_functional_metric(
 
 
 class RetrievalMetricTester(MetricTester):
+    """General tester class for retrieval metrics."""
+
     atol: float = 1e-6
 
     def run_class_metric_test(
@@ -441,6 +444,7 @@ class RetrievalMetricTester(MetricTester):
         metric_args: dict,
         reverse: bool = False,
     ):
+        """Test class implementation of metric."""
         _ref_metric_adapted = partial(_compute_sklearn_metric, metric=reference_metric, reverse=reverse, **metric_args)
 
         super().run_class_metric_test(
@@ -464,6 +468,7 @@ class RetrievalMetricTester(MetricTester):
         reverse: bool = False,
         **kwargs,
     ):
+        """Test functional implementation of metric."""
         _ref_metric_adapted = partial(_compute_sklearn_metric, metric=reference_metric, reverse=reverse, **metric_args)
 
         super().run_functional_metric_test(
@@ -484,6 +489,8 @@ class RetrievalMetricTester(MetricTester):
         metric_module: Metric,
         metric_functional: Callable,
     ):
+        """Test dtype support of the metric on CPU."""
+
         def metric_functional_ignore_indexes(preds, target, indexes, empty_target_action):
             return metric_functional(preds, target)
 
@@ -504,6 +511,7 @@ class RetrievalMetricTester(MetricTester):
         metric_module: Metric,
         metric_functional: Callable,
     ):
+        """Test dtype support of the metric on GPU."""
         if not torch.cuda.is_available():
             pytest.skip("Test requires GPU")
 
@@ -530,6 +538,7 @@ class RetrievalMetricTester(MetricTester):
         exception_type: Type[Exception] = ValueError,
         kwargs_update: dict = None,
     ):
+        """Test that specific errors are raised for incorrect input."""
         _errors_test_class_metric(
             indexes=indexes,
             preds=preds,
@@ -550,6 +559,7 @@ class RetrievalMetricTester(MetricTester):
         exception_type: Type[Exception] = ValueError,
         kwargs_update: dict = None,
     ):
+        """Test that specific errors are raised for incorrect input."""
         _errors_test_functional_metric(
             preds=preds,
             target=target,

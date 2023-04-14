@@ -30,9 +30,10 @@ from torchmetrics.functional.classification.hamming import (
     multiclass_hamming_distance,
     multilabel_hamming_distance,
 )
+from unittests import NUM_CLASSES, THRESHOLD
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index, remove_ignore_index
+from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
 seed_all(42)
 
@@ -58,22 +59,25 @@ def _sklearn_hamming_distance_binary(preds, target, ignore_index, multidim_avera
     if multidim_average == "global":
         target, preds = remove_ignore_index(target, preds, ignore_index)
         return _sklearn_hamming_loss(target, preds)
-    else:
-        res = []
-        for pred, true in zip(preds, target):
-            pred = pred.flatten()
-            true = true.flatten()
-            true, pred = remove_ignore_index(true, pred, ignore_index)
-            res.append(_sklearn_hamming_loss(true, pred))
-        return np.stack(res)
+
+    res = []
+    for pred, true in zip(preds, target):
+        pred = pred.flatten()
+        true = true.flatten()
+        true, pred = remove_ignore_index(true, pred, ignore_index)
+        res.append(_sklearn_hamming_loss(true, pred))
+    return np.stack(res)
 
 
 @pytest.mark.parametrize("input", _binary_cases)
 class TestBinaryHammingDistance(MetricTester):
+    """Test class for `BinaryHammingDistance` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("ddp", [False, True])
     def test_binary_hamming_distance(self, ddp, input, ignore_index, multidim_average):
+        """Test class implementation of metric."""
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -96,6 +100,7 @@ class TestBinaryHammingDistance(MetricTester):
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     def test_binary_hamming_distance_functional(self, input, ignore_index, multidim_average):
+        """Test functional implementation of metric."""
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -117,6 +122,7 @@ class TestBinaryHammingDistance(MetricTester):
         )
 
     def test_binary_hamming_distance_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -128,6 +134,7 @@ class TestBinaryHammingDistance(MetricTester):
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_binary_hamming_distance_dtype_cpu(self, input, dtype):
+        """Test dtype support of the metric on CPU."""
         preds, target = input
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
@@ -143,6 +150,7 @@ class TestBinaryHammingDistance(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_binary_hamming_distance_dtype_gpu(self, input, dtype):
+        """Test dtype support of the metric on GPU."""
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,
@@ -165,7 +173,7 @@ def _sklearn_hamming_distance_multiclass_global(preds, target, ignore_index, ave
     hamming_per_class[np.isnan(hamming_per_class)] = 1.0
     if average == "macro":
         return hamming_per_class.mean()
-    elif average == "weighted":
+    if average == "weighted":
         weights = confmat.sum(1)
         return ((weights * hamming_per_class) / weights.sum()).sum()
     return hamming_per_class
@@ -206,11 +214,14 @@ def _sklearn_hamming_distance_multiclass(preds, target, ignore_index, multidim_a
 
 @pytest.mark.parametrize("input", _multiclass_cases)
 class TestMulticlassHammingDistance(MetricTester):
+    """Test class for `MulticlassHammingDistance` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multiclass_hamming_distance(self, ddp, input, ignore_index, multidim_average, average):
+        """Test class implementation of metric."""
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -242,6 +253,7 @@ class TestMulticlassHammingDistance(MetricTester):
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     def test_multiclass_hamming_distance_functional(self, input, ignore_index, multidim_average, average):
+        """Test functional implementation of metric."""
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -267,6 +279,7 @@ class TestMulticlassHammingDistance(MetricTester):
         )
 
     def test_multiclass_hamming_distance_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -278,6 +291,7 @@ class TestMulticlassHammingDistance(MetricTester):
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multiclass_hamming_distance_dtype_cpu(self, input, dtype):
+        """Test dtype support of the metric on CPU."""
         preds, target = input
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
@@ -293,6 +307,7 @@ class TestMulticlassHammingDistance(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multiclass_hamming_distance_dtype_gpu(self, input, dtype):
+        """Test dtype support of the metric on GPU."""
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,
@@ -322,13 +337,14 @@ def _sklearn_hamming_distance_multilabel_global(preds, target, ignore_index, ave
 
     if average == "macro":
         return res.mean(0)
-    elif average == "weighted":
+    if average == "weighted":
         weights = np.stack(weights, 0).astype(float)
         weights_norm = weights.sum(-1, keepdims=True)
         weights_norm[weights_norm == 0] = 1.0
         return ((weights * res) / weights_norm).sum(-1)
-    elif average is None or average == "none":
+    if average is None or average == "none":
         return res
+    return None
 
 
 def _sklearn_hamming_distance_multilabel_local(preds, target, ignore_index, average):
@@ -353,13 +369,14 @@ def _sklearn_hamming_distance_multilabel_local(preds, target, ignore_index, aver
     res = np.stack(hamming, 0)
     if average == "macro":
         return res.mean(-1)
-    elif average == "weighted":
+    if average == "weighted":
         weights = np.stack(weights, 0).astype(float)
         weights_norm = weights.sum(-1, keepdims=True)
         weights_norm[weights_norm == 0] = 1.0
         return ((weights * res) / weights_norm).sum(-1)
-    elif average is None or average == "none":
+    if average is None or average == "none":
         return res
+    return None
 
 
 def _sklearn_hamming_distance_multilabel(preds, target, ignore_index, multidim_average, average):
@@ -379,11 +396,14 @@ def _sklearn_hamming_distance_multilabel(preds, target, ignore_index, multidim_a
 
 @pytest.mark.parametrize("input", _multilabel_cases)
 class TestMultilabelHammingDistance(MetricTester):
+    """Test class for `MultilabelHammingDistance` metric."""
+
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", None])
     def test_multilabel_hamming_distance(self, ddp, input, ignore_index, multidim_average, average):
+        """Test class implementation of metric."""
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -416,6 +436,7 @@ class TestMultilabelHammingDistance(MetricTester):
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", None])
     def test_multilabel_hamming_distance_functional(self, input, ignore_index, multidim_average, average):
+        """Test functional implementation of metric."""
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -442,6 +463,7 @@ class TestMultilabelHammingDistance(MetricTester):
         )
 
     def test_multilabel_hamming_distance_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -453,6 +475,7 @@ class TestMultilabelHammingDistance(MetricTester):
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multilabel_hamming_distance_dtype_cpu(self, input, dtype):
+        """Test dtype support of the metric on CPU."""
         preds, target = input
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
@@ -468,6 +491,7 @@ class TestMultilabelHammingDistance(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multilabel_hamming_distance_dtype_gpu(self, input, dtype):
+        """Test dtype support of the metric on GPU."""
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,

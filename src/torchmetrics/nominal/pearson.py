@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Union
+from typing import Any, Optional, Sequence, Union
 
 import torch
 from torch import Tensor
@@ -23,11 +23,17 @@ from torchmetrics.functional.nominal.pearson import (
 )
 from torchmetrics.functional.nominal.utils import _nominal_input_validation
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["PearsonsContingencyCoefficient.plot"]
 
 
 class PearsonsContingencyCoefficient(Metric):
-    r"""Compute `Pearson's Contingency Coefficient`_ statistic measuring the association between two categorical
-    (nominal) data series.
+    r"""Compute `Pearson's Contingency Coefficient`_ statistic.
+
+    This metric measures the association between two categorical (nominal) data series.
 
     .. math::
         Pearson = \sqrt{\frac{\chi^2 / n}{1 + \chi^2 / n}}
@@ -73,6 +79,8 @@ class PearsonsContingencyCoefficient(Metric):
     full_state_update: bool = False
     is_differentiable: bool = False
     higher_is_better: bool = True
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
     confmat: Tensor
 
     def __init__(
@@ -81,7 +89,7 @@ class PearsonsContingencyCoefficient(Metric):
         nan_strategy: Literal["replace", "drop"] = "replace",
         nan_replace_value: Optional[Union[int, float]] = 0.0,
         **kwargs: Any,
-    ):
+    ) -> None:
         super().__init__(**kwargs)
         self.num_classes = num_classes
 
@@ -111,5 +119,44 @@ class PearsonsContingencyCoefficient(Metric):
         self.confmat += confmat
 
     def compute(self) -> Tensor:
-        """Computer Pearson's Contingency Coefficient statistic."""
+        """Compute Pearson's Contingency Coefficient statistic."""
         return _pearsons_contingency_coefficient_compute(self.confmat)
+
+    def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> import torch
+            >>> from torchmetrics import PearsonsContingencyCoefficient
+            >>> metric = PearsonsContingencyCoefficient(num_classes=5)
+            >>> metric.update(torch.randint(0, 4, (100,)), torch.randint(0, 4, (100,)))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics import PearsonsContingencyCoefficient
+            >>> metric = PearsonsContingencyCoefficient(num_classes=5)
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(torch.randint(0, 4, (100,)), torch.randint(0, 4, (100,))))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        return self._plot(val, ax)

@@ -17,6 +17,7 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.functional.classification.auroc import _reduce_auroc
 from torchmetrics.functional.classification.precision_recall_curve import (
     _adjust_threshold_arg,
     _binary_precision_recall_curve_arg_validation,
@@ -36,13 +37,25 @@ from torchmetrics.functional.classification.precision_recall_curve import (
     _multilabel_precision_recall_curve_update,
 )
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.compute import _auc_compute_without_check
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.enums import ClassificationTask
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_curve
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = [
+        "BinaryPrecisionRecallCurve.plot",
+        "MulticlassPrecisionRecallCurve.plot",
+        "MultilabelPrecisionRecallCurve.plot",
+    ]
 
 
 class BinaryPrecisionRecallCurve(Metric):
-    r"""Compute the precision-recall curve for binary tasks. The curve consist of multiple pairs of precision and
-    recall values evaluated at different thresholds, such that the tradeoff between the two values can been seen.
+    r"""Compute the precision-recall curve for binary tasks.
+
+    The curve consist of multiple pairs of precision and recall values evaluated at different thresholds, such that the
+    tradeoff between the two values can been seen.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -99,9 +112,9 @@ class BinaryPrecisionRecallCurve(Metric):
         >>> target = torch.tensor([0, 1, 1, 0])
         >>> bprc = BinaryPrecisionRecallCurve(thresholds=None)
         >>> bprc(preds, target)  # doctest: +NORMALIZE_WHITESPACE
-        (tensor([0.6667, 0.5000, 0.0000, 1.0000]),
-         tensor([1.0000, 0.5000, 0.0000, 0.0000]),
-         tensor([0.5000, 0.7000, 0.8000]))
+        (tensor([0.5000, 0.6667, 0.5000, 0.0000, 1.0000]),
+         tensor([1.0000, 1.0000, 0.5000, 0.0000, 0.0000]),
+         tensor([0.0000, 0.5000, 0.7000, 0.8000]))
         >>> bprc = BinaryPrecisionRecallCurve(thresholds=5)
         >>> bprc(preds, target)  # doctest: +NORMALIZE_WHITESPACE
         (tensor([0.5000, 0.6667, 0.6667, 0.0000, 0.0000, 1.0000]),
@@ -154,11 +167,50 @@ class BinaryPrecisionRecallCurve(Metric):
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _binary_precision_recall_curve_compute(state, self.thresholds)
 
+    def plot(
+        self,
+        curve: Optional[Tuple[Tensor, Tensor, Tensor]] = None,
+        score: Optional[Union[Tensor, bool]] = None,
+        ax: Optional[_AX_TYPE] = None,
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single curve from the metric.
+
+        Args:
+            curve: the output of either `metric.compute` or `metric.forward`. If no value is provided, will
+                automatically call `metric.compute` and plot that result.
+            score: Provide a area-under-the-curve score to be displayed on the plot. If `True` and no curve is provided,
+                will automatically compute the score.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import randn, randint
+            >>> import torch.nn.functional as F
+            >>> from torchmetrics.classification import BinaryROC
+            >>> preds = F.softmax(randn(20, 2), dim=1)
+            >>> target = randint(2, (20,))
+            >>> metric = BinaryROC()
+            >>> metric.update(preds[:, 1], target)
+            >>> fig_, ax_ = metric.plot()
+        """
+        curve = curve or self.compute()
+        score = _auc_compute_without_check(curve[0], curve[1], 1.0) if not curve and score is True else None
+        return plot_curve(curve, score=score, ax=ax, label_names=("Precision", "Recall"), name=self.__class__.__name__)
+
 
 class MulticlassPrecisionRecallCurve(Metric):
-    r"""Compute the precision-recall curve for multiclass tasks. The curve consist of multiple pairs of precision
-    and recall values evaluated at different thresholds, such that the tradeoff between the two values can been
-    seen.
+    r"""Compute the precision-recall curve for multiclass tasks.
+
+    The curve consist of multiple pairs of precision and recall values evaluated at different thresholds, such that the
+    tradeoff between the two values can been seen.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -195,7 +247,7 @@ class MulticlassPrecisionRecallCurve(Metric):
             - If set to an `int` (larger than 1), will use that number of thresholds linearly spaced from
               0 to 1 as bins for the calculation.
             - If set to an `list` of floats, will use the indicated thresholds in the list as bins for the calculation
-            - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
+            - If set to a 1D `tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
@@ -212,12 +264,13 @@ class MulticlassPrecisionRecallCurve(Metric):
         >>> mcprc = MulticlassPrecisionRecallCurve(num_classes=5, thresholds=None)
         >>> precision, recall, thresholds = mcprc(preds, target)
         >>> precision  # doctest: +NORMALIZE_WHITESPACE
-        [tensor([1., 1.]), tensor([1., 1.]), tensor([0.2500, 0.0000, 1.0000]),
+        [tensor([0.2500, 1.0000, 1.0000]), tensor([0.2500, 1.0000, 1.0000]), tensor([0.2500, 0.0000, 1.0000]),
          tensor([0.2500, 0.0000, 1.0000]), tensor([0., 1.])]
         >>> recall
-        [tensor([1., 0.]), tensor([1., 0.]), tensor([1., 0., 0.]), tensor([1., 0., 0.]), tensor([nan, 0.])]
+        [tensor([1., 1., 0.]), tensor([1., 1., 0.]), tensor([1., 0., 0.]), tensor([1., 0., 0.]), tensor([nan, 0.])]
         >>> thresholds
-        [tensor(0.7500), tensor(0.7500), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor(0.0500)]
+        [tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]),
+         tensor(0.0500)]
         >>> mcprc = MulticlassPrecisionRecallCurve(num_classes=5, thresholds=5)
         >>> mcprc(preds, target)  # doctest: +NORMALIZE_WHITESPACE
         (tensor([[0.2500, 1.0000, 1.0000, 1.0000, 0.0000, 1.0000],
@@ -284,11 +337,50 @@ class MulticlassPrecisionRecallCurve(Metric):
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _multiclass_precision_recall_curve_compute(state, self.num_classes, self.thresholds)
 
+    def plot(
+        self,
+        curve: Optional[Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]] = None,
+        score: Optional[Union[Tensor, bool]] = None,
+        ax: Optional[_AX_TYPE] = None,
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            curve: the output of either `metric.compute` or `metric.forward`. If no value is provided, will
+                automatically call `metric.compute` and plot that result.
+            score: Provide a area-under-the-curve score to be displayed on the plot. If `True` and no curve is provided,
+                will automatically compute the score.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import randn, randint
+            >>> import torch.nn.functional as F
+            >>> from torchmetrics.classification import BinaryROC
+            >>> preds = F.softmax(randn(20, 2), dim=1)
+            >>> target = randint(2, (20,))
+            >>> metric = BinaryROC()
+            >>> metric.update(preds[:, 1], target)
+            >>> fig_, ax_ = metric.plot()
+        """
+        curve = curve or self.compute()
+        score = _reduce_auroc(curve[0], curve[1], average=None) if not curve and score is True else None
+        return plot_curve(curve, score=score, ax=ax, label_names=("Precision", "Recall"), name=self.__class__.__name__)
+
 
 class MultilabelPrecisionRecallCurve(Metric):
-    r"""Compute the precision-recall curve for multilabel tasks. The curve consist of multiple pairs of precision
-    and recall values evaluated at different thresholds, such that the tradeoff between the two values can been
-    seen.
+    r"""Compute the precision-recall curve for multilabel tasks.
+
+    The curve consist of multiple pairs of precision and recall values evaluated at different thresholds, such that the
+    tradeoff between the two values can been seen.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -355,14 +447,13 @@ class MultilabelPrecisionRecallCurve(Metric):
         >>> mlprc = MultilabelPrecisionRecallCurve(num_labels=3, thresholds=None)
         >>> precision, recall, thresholds = mlprc(preds, target)
         >>> precision  # doctest: +NORMALIZE_WHITESPACE
-        [tensor([0.5000, 0.5000, 1.0000, 1.0000]), tensor([0.6667, 0.5000, 0.0000, 1.0000]),
+        [tensor([0.5000, 0.5000, 1.0000, 1.0000]), tensor([0.5000, 0.6667, 0.5000, 0.0000, 1.0000]),
          tensor([0.7500, 1.0000, 1.0000, 1.0000])]
         >>> recall  # doctest: +NORMALIZE_WHITESPACE
-        [tensor([1.0000, 0.5000, 0.5000, 0.0000]), tensor([1.0000, 0.5000, 0.0000, 0.0000]),
+        [tensor([1.0000, 0.5000, 0.5000, 0.0000]), tensor([1.0000, 1.0000, 0.5000, 0.0000, 0.0000]),
          tensor([1.0000, 0.6667, 0.3333, 0.0000])]
         >>> thresholds  # doctest: +NORMALIZE_WHITESPACE
-        [tensor([0.0500, 0.4500, 0.7500]), tensor([0.5500, 0.6500, 0.7500]),
-         tensor([0.0500, 0.3500, 0.7500])]
+        [tensor([0.0500, 0.4500, 0.7500]), tensor([0.0500, 0.5500, 0.6500, 0.7500]), tensor([0.0500, 0.3500, 0.7500])]
         >>> mlprc = MultilabelPrecisionRecallCurve(num_labels=3, thresholds=5)
         >>> mlprc(preds, target)  # doctest: +NORMALIZE_WHITESPACE
         (tensor([[0.5000, 0.5000, 1.0000, 1.0000, 0.0000, 1.0000],
@@ -425,10 +516,50 @@ class MultilabelPrecisionRecallCurve(Metric):
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _multilabel_precision_recall_curve_compute(state, self.num_labels, self.thresholds, self.ignore_index)
 
+    def plot(
+        self,
+        curve: Optional[Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]] = None,
+        score: Optional[Union[Tensor, bool]] = None,
+        ax: Optional[_AX_TYPE] = None,
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            curve: the output of either `metric.compute` or `metric.forward`. If no value is provided, will
+                automatically call `metric.compute` and plot that result.
+            score: Provide a area-under-the-curve score to be displayed on the plot. If `True` and no curve is provided,
+                will automatically compute the score.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import randn, randint
+            >>> import torch.nn.functional as F
+            >>> from torchmetrics.classification import BinaryROC
+            >>> preds = F.softmax(randn(20, 2), dim=1)
+            >>> target = randint(2, (20,))
+            >>> metric = BinaryROC()
+            >>> metric.update(preds[:, 1], target)
+            >>> fig_, ax_ = metric.plot()
+        """
+        curve = curve or self.compute()
+        score = _reduce_auroc(curve[0], curve[1], average=None) if not curve and score is True else None
+        return plot_curve(curve, score=score, ax=ax, label_names=("Precision", "Recall"), name=self.__class__.__name__)
+
 
 class PrecisionRecallCurve:
-    r"""Compute the precision-recall curve. The curve consist of multiple pairs of precision and recall values
-    evaluated at different thresholds, such that the tradeoff between the two values can been seen.
+    r"""Compute the precision-recall curve.
+
+    The curve consist of multiple pairs of precision and recall values evaluated at different thresholds, such that the
+    tradeoff between the two values can been seen.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
@@ -441,11 +572,11 @@ class PrecisionRecallCurve:
         >>> pr_curve = PrecisionRecallCurve(task="binary")
         >>> precision, recall, thresholds = pr_curve(pred, target)
         >>> precision
-        tensor([0.6667, 0.5000, 1.0000, 1.0000])
+        tensor([0.5000, 0.6667, 0.5000, 1.0000, 1.0000])
         >>> recall
-        tensor([1.0000, 0.5000, 0.5000, 0.0000])
+        tensor([1.0000, 1.0000, 0.5000, 0.5000, 0.0000])
         >>> thresholds
-        tensor([0.1000, 0.4000, 0.8000])
+        tensor([0.0000, 0.1000, 0.4000, 0.8000])
 
         >>> pred = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
         ...                      [0.05, 0.75, 0.05, 0.05, 0.05],
@@ -455,12 +586,13 @@ class PrecisionRecallCurve:
         >>> pr_curve = PrecisionRecallCurve(task="multiclass", num_classes=5)
         >>> precision, recall, thresholds = pr_curve(pred, target)
         >>> precision
-        [tensor([1., 1.]), tensor([1., 1.]), tensor([0.2500, 0.0000, 1.0000]),
+        [tensor([0.2500, 1.0000, 1.0000]), tensor([0.2500, 1.0000, 1.0000]), tensor([0.2500, 0.0000, 1.0000]),
          tensor([0.2500, 0.0000, 1.0000]), tensor([0., 1.])]
         >>> recall
-        [tensor([1., 0.]), tensor([1., 0.]), tensor([1., 0., 0.]), tensor([1., 0., 0.]), tensor([nan, 0.])]
+        [tensor([1., 1., 0.]), tensor([1., 1., 0.]), tensor([1., 0., 0.]), tensor([1., 0., 0.]), tensor([nan, 0.])]
         >>> thresholds
-        [tensor(0.7500), tensor(0.7500), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor(0.0500)]
+        [tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]),
+         tensor(0.0500)]
     """
 
     def __new__(
@@ -484,3 +616,4 @@ class PrecisionRecallCurve:
         if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelPrecisionRecallCurve(num_labels, **kwargs)
+        return None

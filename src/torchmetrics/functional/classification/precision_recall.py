@@ -47,17 +47,17 @@ def _precision_recall_reduce(
     different_stat = fp if stat == "precision" else fn  # this is what differs between the two scores
     if average == "binary":
         return _safe_divide(tp, tp + different_stat)
-    elif average == "micro":
+    if average == "micro":
         tp = tp.sum(dim=0 if multidim_average == "global" else 1)
         fn = fn.sum(dim=0 if multidim_average == "global" else 1)
         different_stat = different_stat.sum(dim=0 if multidim_average == "global" else 1)
         return _safe_divide(tp, tp + different_stat)
-    else:
-        score = _safe_divide(tp, tp + different_stat)
-        if average is None or average == "none":
-            return score
-        weights = tp + fn if average == "weighted" else torch.ones_like(score)
-        return _safe_divide(weights * score, weights.sum(-1, keepdim=True)).sum(-1)
+
+    score = _safe_divide(tp, tp + different_stat)
+    if average is None or average == "none":
+        return score
+    weights = tp + fn if average == "weighted" else torch.ones_like(score)
+    return _safe_divide(weights * score, weights.sum(-1, keepdim=True)).sum(-1)
 
 
 def binary_precision(

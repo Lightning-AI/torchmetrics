@@ -60,7 +60,7 @@ def _get_embeddings_and_idf_scale(
     all_layers: bool = False,
     idf: bool = False,
     verbose: bool = False,
-    user_forward_fn: Callable[[Module, Dict[str, Tensor]], Tensor] = None,
+    user_forward_fn: Optional[Callable[[Module, Dict[str, Tensor]], Tensor]] = None,
 ) -> Tuple[Tensor, Tensor]:
     """Calculate sentence embeddings and the inverse-document-frequency scaling factor.
 
@@ -132,13 +132,12 @@ def _get_embeddings_and_idf_scale(
 
 
 def _get_scaled_precision_or_recall(cos_sim: Tensor, metric: str, idf_scale: Tensor) -> Tensor:
-    """Helper function that calculates precision or recall, transpose it and scale it with idf_scale factor."""
+    """Calculate precision or recall, transpose it and scale it with idf_scale factor."""
     dim = 3 if metric == "precision" else 2
     res = cos_sim.max(dim=dim).values
     res = torch.einsum("bls, bs -> bls", res, idf_scale).sum(-1)
     # We transpose the results and squeeze if possible to match the format of the original BERTScore implementation
-    res = res.transpose(0, 1).squeeze()
-    return res
+    return res.transpose(0, 1).squeeze()
 
 
 def _get_precision_recall_f1(
@@ -169,24 +168,22 @@ def _get_precision_recall_f1(
 
 def _get_hash(model_name_or_path: Optional[str] = None, num_layers: Optional[int] = None, idf: bool = False) -> str:
     """Compute `BERT_score`_ (copied and adjusted)."""
-    msg = f"{model_name_or_path}_L{num_layers}{'_idf' if idf else '_no-idf'}"
-    return msg
+    return f"{model_name_or_path}_L{num_layers}{'_idf' if idf else '_no-idf'}"
 
 
 def _read_csv_from_local_file(baseline_path: str) -> Tensor:
-    """Helper function which reads baseline the csv file from the local file.
+    """Read baseline from csv file from the local file.
 
     This method implemented to avoid `pandas` dependency.
     """
     with open(baseline_path) as fname:
         csv_file = csv.reader(fname)
         baseline_list = [[float(item) for item in row] for idx, row in enumerate(csv_file) if idx > 0]
-    baseline = torch.tensor(baseline_list)[:, 1:]
-    return baseline
+    return torch.tensor(baseline_list)[:, 1:]
 
 
 def _read_csv_from_url(baseline_url: str) -> Tensor:
-    """Helper function which reads the baseline csv file from URL.
+    """Read baseline from csv file from URL.
 
     This method is implemented to avoid `pandas` dependency.
     """
@@ -196,8 +193,7 @@ def _read_csv_from_url(baseline_url: str) -> Tensor:
             for idx, row in enumerate(http_request)
             if idx > 0
         ]
-        baseline = torch.tensor(baseline_list)[:, 1:]
-    return baseline
+        return torch.tensor(baseline_list)[:, 1:]
 
 
 def _load_baseline(
@@ -249,7 +245,7 @@ def bert_score(
     all_layers: bool = False,
     model: Optional[Module] = None,
     user_tokenizer: Any = None,
-    user_forward_fn: Callable[[Module, Dict[str, Tensor]], Tensor] = None,
+    user_forward_fn: Optional[Callable[[Module, Dict[str, Tensor]], Tensor]] = None,
     verbose: bool = False,
     idf: bool = False,
     device: Optional[Union[str, torch.device]] = None,
@@ -262,12 +258,12 @@ def bert_score(
     baseline_path: Optional[str] = None,
     baseline_url: Optional[str] = None,
 ) -> Dict[str, Union[List[float], str]]:
-    """`Bert_score Evaluating Text Generation`_ leverages the pre-trained contextual embeddings from BERT and
-    matches words in candidate and reference sentences by cosine similarity.
+    """`Bert_score Evaluating Text Generation`_ for text similirity matching.
 
-    It has been shown to correlate with human judgment on sentence-level and system-level evaluation.
-    Moreover, BERTScore computes precision, recall, and F1 measure, which can be useful for evaluating different
-    language generation tasks.
+    This metric leverages the pre-trained contextual embeddings from BERT and matches words in candidate and reference
+    sentences by cosine similarity. It has been shown to correlate with human judgment on sentence-level and
+    system-level evaluation. Moreover, BERTScore computes precision, recall, and F1 measure, which can be useful for
+    evaluating different language generation tasks.
 
     This implemenation follows the original implementation from `BERT_score`_.
 

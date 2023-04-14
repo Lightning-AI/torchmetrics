@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple
+from typing import Tuple, Union
 
 import torch
 from torch import Tensor
@@ -29,14 +29,14 @@ def _mean_absolute_error_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, 
         target: Ground truth tensor
     """
     _check_same_shape(preds, target)
-    preds = preds if preds.is_floating_point else preds.float()
-    target = target if target.is_floating_point else target.float()
+    preds = preds if preds.is_floating_point else preds.float()  # type: ignore[truthy-function] # todo
+    target = target if target.is_floating_point else target.float()  # type: ignore[truthy-function] # todo
     sum_abs_error = torch.sum(torch.abs(preds - target))
     n_obs = target.numel()
     return sum_abs_error, n_obs
 
 
-def _mean_absolute_error_compute(sum_abs_error: Tensor, n_obs: int) -> Tensor:
+def _mean_absolute_error_compute(sum_abs_error: Tensor, n_obs: Union[int, Tensor]) -> Tensor:
     """Compute Mean Absolute Error.
 
     Args:

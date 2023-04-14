@@ -12,17 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Sequence, Union
 
 import torch
 from torch import Tensor
 
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["MinMaxMetric.plot"]
 
 
 class MinMaxMetric(Metric):
-    """Wrapper Metric that tracks both the minimum and maximum of a scalar/tensor across an experiment. The min/max
-    value will be updated each time ``.compute`` is called.
+    """Wrapper metric that tracks both the minimum and maximum of a scalar/tensor across an experiment.
+
+    The min/max value will be updated each time ``.compute`` is called.
 
     Args:
         base_metric:
@@ -90,15 +96,58 @@ class MinMaxMetric(Metric):
         return {"raw": val, "max": self.max_val, "min": self.min_val}
 
     def reset(self) -> None:
-        """Sets ``max_val`` and ``min_val`` to the initialization bounds and resets the base metric."""
+        """Set ``max_val`` and ``min_val`` to the initialization bounds and resets the base metric."""
         super().reset()
         self._base_metric.reset()
 
     @staticmethod
     def _is_suitable_val(val: Union[int, float, Tensor]) -> bool:
-        """Utility function that checks whether min/max value."""
+        """Check whether min/max is a scalar value."""
         if isinstance(val, (int, float)):
             return True
         if isinstance(val, Tensor):
             return val.numel() == 1
         return False
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> import torch
+            >>> from torchmetrics import MinMaxMetric
+            >>> from torchmetrics.classification import BinaryAccuracy
+            >>> metric = MinMaxMetric(BinaryAccuracy())
+            >>> metric.update(torch.randint(2, (20,)), torch.randint(2, (20,)))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics import MinMaxMetric
+            >>> from torchmetrics.classification import BinaryAccuracy
+            >>> metric = MinMaxMetric(BinaryAccuracy())
+            >>> values = [ ]
+            >>> for _ in range(3):
+            ...     values.append(metric(torch.randint(2, (20,)), torch.randint(2, (20,))))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        return self._plot(val, ax)

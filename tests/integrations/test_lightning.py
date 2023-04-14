@@ -16,6 +16,7 @@ from unittest import mock
 import torch
 from pytorch_lightning import LightningModule, Trainer
 from torch import tensor
+from torch.nn import Linear
 from torch.utils.data import DataLoader
 
 from integrations.helpers import no_warning_call
@@ -25,13 +26,18 @@ from torchmetrics.classification import BinaryAccuracy, BinaryAveragePrecision
 
 
 class DiffMetric(SumMetric):
+    """DiffMetric inheritted from `SumMetric` by overidding its `update` method."""
+
     def update(self, value):
+        """Update state."""
         super().update(-value)
 
 
 def test_metric_lightning(tmpdir):
+    """Test that including a metric inside a lightning module calculates a simple sum correctly."""
+
     class TestModel(BoringModel):
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
             self.metric = SumMetric()
             self.sum = 0.0
@@ -43,7 +49,7 @@ def test_metric_lightning(tmpdir):
 
             return self.step(x)
 
-        def training_epoch_end(self, outs):
+        def on_training_epoch_end(self):
             if not torch.allclose(self.sum, self.metric.compute()):
                 raise ValueError("Sum and computed value must be equal")
             self.sum = 0.0
@@ -65,11 +71,11 @@ def test_metric_lightning(tmpdir):
 def test_metrics_reset(tmpdir):
     """Tests that metrics are reset correctly after the end of the train/val/test epoch.
 
-    Taken from:     `Metric Test for Reset`_
+    Taken from: `Metric Test for Reset`_
     """
 
-    class TestModel(LightningModule):
-        def __init__(self):
+    class TestModel(BoringModel):
+        def __init__(self) -> None:
             super().__init__()
             self.layer = torch.nn.Linear(32, 1)
 
@@ -116,23 +122,6 @@ def test_metrics_reset(tmpdir):
         def test_step(self, batch, batch_idx, *args, **kwargs):
             return self._step("test", batch)
 
-        def configure_optimizers(self):
-            optimizer = torch.optim.SGD(self.layer.parameters(), lr=0.1)
-            lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1)
-            return [optimizer], [lr_scheduler]
-
-        @staticmethod
-        def train_dataloader():
-            return DataLoader(RandomDataset(32, 64), batch_size=2)
-
-        @staticmethod
-        def val_dataloader():
-            return DataLoader(RandomDataset(32, 64), batch_size=2)
-
-        @staticmethod
-        def test_dataloader():
-            return DataLoader(RandomDataset(32, 64), batch_size=2)
-
         def _assert_epoch_end(self, stage):
             acc = self._modules[f"acc_{stage}"]
             ap = self._modules[f"ap_{stage}"]
@@ -140,13 +129,13 @@ def test_metrics_reset(tmpdir):
             acc.reset.asset_not_called()
             ap.reset.assert_not_called()
 
-        def train_epoch_end(self, outputs):
+        def on_train_epoch_end(self):
             self._assert_epoch_end("train")
 
-        def validation_epoch_end(self, outputs):
+        def on_validation_epoch_end(self):
             self._assert_epoch_end("val")
 
-        def test_epoch_end(self, outputs):
+        def on_test_epoch_end(self):
             self._assert_epoch_end("test")
 
     def _assert_called(model, stage):
@@ -183,11 +172,12 @@ def test_metric_lightning_log(tmpdir):
     """Test logging a metric object and that the metric state gets reset after each epoch."""
 
     class TestModel(BoringModel):
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
             self.metric_step = SumMetric()
             self.metric_epoch = SumMetric()
             self.sum = torch.tensor(0.0)
+            self.outs = []
 
         def on_train_epoch_start(self):
             self.sum = torch.tensor(0.0)
@@ -197,10 +187,12 @@ def test_metric_lightning_log(tmpdir):
             self.metric_step(x.sum())
             self.sum += x.sum()
             self.log("sum_step", self.metric_step, on_epoch=True, on_step=False)
-            return {"loss": self.step(x), "data": x}
+            self.outs.append(x)
+            return self.step(x)
 
-        def training_epoch_end(self, outs):
-            self.log("sum_epoch", self.metric_epoch(torch.stack([o["data"] for o in outs]).sum()))
+        def on_train_epoch_end(self):
+            self.log("sum_epoch", self.metric_epoch(torch.stack(self.outs)))
+            self.outs = []
 
     model = TestModel()
 
@@ -226,7 +218,7 @@ def test_metric_collection_lightning_log(tmpdir):
     """Test that MetricCollection works with Lightning modules."""
 
     class TestModel(BoringModel):
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
             self.metric = MetricCollection([SumMetric(), DiffMetric()])
             self.sum = torch.tensor(0.0)
@@ -240,7 +232,7 @@ def test_metric_collection_lightning_log(tmpdir):
             self.log_dict({f"{k}_step": v for k, v in metric_vals.items()})
             return self.step(x)
 
-        def training_epoch_end(self, outputs):
+        def on_train_epoch_end(self):
             metric_vals = self.metric.compute()
             self.log_dict({f"{k}_epoch": v for k, v in metric_vals.items()})
 
@@ -268,7 +260,7 @@ def test_scriptable(tmpdir):
     """Test that lightning modules can still be scripted even if metrics cannot."""
 
     class TestModel(BoringModel):
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
             # the metric is not used in the module's `forward`
             # so the module should be exportable to TorchScript
@@ -300,3 +292,48 @@ def test_scriptable(tmpdir):
     output = model(rand_input)
     script_output = script_model(rand_input)
     assert torch.allclose(output, script_output)
+
+
+def test_dtype_in_pl_module_transfer(tmpdir):
+    """Test that metric states don't change dtype when .half() or .float() is called on the LightningModule."""
+
+    class BoringModel(LightningModule):
+        def __init__(self, metric_dtype=torch.float32) -> None:
+            super().__init__()
+            self.layer = Linear(32, 32)
+            self.metric = SumMetric()
+            self.metric.set_dtype(metric_dtype)
+
+        def forward(self, x):
+            return self.layer(x)
+
+        def training_step(self, batch, batch_idx):
+            pred = self.forward(batch)
+            loss = self(batch).sum()
+            self.metric.update(torch.flatten(pred), torch.flatten(batch))
+
+            return {"loss": loss}
+
+        def configure_optimizers(self):
+            return torch.optim.SGD(self.layer.parameters(), lr=0.1)
+
+    model = BoringModel()
+    assert model.metric.value.dtype == torch.float32
+    model = model.half()
+    assert model.metric.value.dtype == torch.float32
+
+    model = BoringModel()
+    assert model.metric.value.dtype == torch.float32
+    model = model.double()
+    assert model.metric.value.dtype == torch.float32
+
+    model = BoringModel(metric_dtype=torch.float16)
+    assert model.metric.value.dtype == torch.float16
+    model = model.float()
+    assert model.metric.value.dtype == torch.float16
+
+    model = BoringModel()
+    assert model.metric.value.dtype == torch.float32
+
+    model = model.type(torch.half)
+    assert model.metric.value.dtype == torch.float32

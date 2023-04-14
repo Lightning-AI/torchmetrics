@@ -35,10 +35,11 @@ def perceptual_evaluation_speech_quality(
     keep_same_device: bool = False,
     n_processes: int = 1,
 ) -> Tensor:
-    r"""Calculate `Perceptual Evaluation of Speech Quality`_ (PESQ). It's a recognized industry standard for audio
-    quality that takes into considerations characteristics such as: audio sharpness, call volume, background noise,
-    clipping, audio interference ect. PESQ returns a score between -0.5 and 4.5 with the higher scores indicating a
-    better quality.
+    r"""Calculate `Perceptual Evaluation of Speech Quality`_ (PESQ).
+
+    It's a recognized industry standard for audio quality that takes into considerations characteristics such as: audio
+    sharpness, call volume, background noise, clipping, audio interference ect. PESQ returns a score between -0.5 and
+    4.5 with the higher scores indicating a better quality.
 
     This metric is a wrapper for the `pesq package`_. Note that input will be moved to `cpu` to perform the metric
     calculation.
@@ -110,6 +111,6 @@ def perceptual_evaluation_speech_quality(
         pesq_val = pesq_val.reshape(preds.shape[:-1])
 
     if keep_same_device:
-        pesq_val = pesq_val.to(preds.device)
+        return pesq_val.to(preds.device)
 
     return pesq_val

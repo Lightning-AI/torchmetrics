@@ -21,20 +21,28 @@ from torchmetrics.classification.precision_recall_curve import (
     MulticlassPrecisionRecallCurve,
     MultilabelPrecisionRecallCurve,
 )
+from torchmetrics.functional.classification.auroc import _reduce_auroc
 from torchmetrics.functional.classification.roc import (
     _binary_roc_compute,
     _multiclass_roc_compute,
     _multilabel_roc_compute,
 )
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.compute import _auc_compute_without_check
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.enums import ClassificationTask
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_curve
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["BinaryROC.plot", "MulticlassROC.plot", "MultilabelROC.plot"]
 
 
 class BinaryROC(BinaryPrecisionRecallCurve):
-    r"""Compute the Receiver Operating Characteristic (ROC) for binary tasks. The curve consist of multiple pairs of
-    true positive rate (TPR) and false positive rate (FPR) values evaluated at different thresholds, such that the
-    tradeoff between the two values can be seen.
+    r"""Compute the Receiver Operating Characteristic (ROC) for binary tasks.
+
+    The curve consist of multiple pairs of true positive rate (TPR) and false positive rate (FPR) values evaluated at
+    different thresholds, such that the tradeoff between the two values can be seen.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -101,17 +109,64 @@ class BinaryROC(BinaryPrecisionRecallCurve):
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     def compute(self) -> Tuple[Tensor, Tensor, Tensor]:
         """Compute metric."""
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _binary_roc_compute(state, self.thresholds)
 
+    def plot(
+        self,
+        curve: Optional[Tuple[Tensor, Tensor, Tensor]] = None,
+        score: Optional[Union[Tensor, bool]] = None,
+        ax: Optional[_AX_TYPE] = None,
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            curve: the output of either `metric.compute` or `metric.forward`. If no value is provided, will
+                automatically call `metric.compute` and plot that result.
+            score: Provide a area-under-the-curve score to be displayed on the plot. If `True` and no curve is provided,
+                will automatically compute the score.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import randn, randint
+            >>> import torch.nn.functional as F
+            >>> from torchmetrics.classification import BinaryROC
+            >>> preds = F.softmax(randn(20, 2), dim=1)
+            >>> target = randint(2, (20,))
+            >>> metric = BinaryROC()
+            >>> metric.update(preds[:, 1], target)
+            >>> fig_, ax_ = metric.plot()
+        """
+        curve = curve or self.compute()
+        score = _auc_compute_without_check(curve[0], curve[1], 1.0) if not curve and score is True else None
+        return plot_curve(
+            curve,
+            score=score,
+            ax=ax,
+            label_names=("False positive rate", "True positive rate"),
+            name=self.__class__.__name__,
+        )
+
 
 class MulticlassROC(MulticlassPrecisionRecallCurve):
-    r"""Compute the Receiver Operating Characteristic (ROC) for binary tasks. The curve consist of multiple pairs of
-    true positive rate (TPR) and false positive rate (FPR) values evaluated at different thresholds, such that the
-    tradeoff between the two values can be seen.
+    r"""Compute the Receiver Operating Characteristic (ROC) for binary tasks.
+
+    The curve consist of multiple pairs of true positive rate (TPR) and false positive rate (FPR) values evaluated at
+    different thresholds, such that the tradeoff between the two values can be seen.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -203,17 +258,65 @@ class MulticlassROC(MulticlassPrecisionRecallCurve):
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
+    plot_legend_name: str = "Class"
 
-    def compute(self) -> Tuple[Tensor, Tensor, Tensor]:
+    def compute(self) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
         """Compute metric."""
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _multiclass_roc_compute(state, self.num_classes, self.thresholds)
 
+    def plot(
+        self,
+        curve: Optional[Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]] = None,
+        score: Optional[Union[Tensor, bool]] = None,
+        ax: Optional[_AX_TYPE] = None,
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            curve: the output of either `metric.compute` or `metric.forward`. If no value is provided, will
+                automatically call `metric.compute` and plot that result.
+            score: Provide a area-under-the-curve score to be displayed on the plot. If `True` and no curve is provided,
+                will automatically compute the score.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import randn, randint
+            >>> import torch.nn.functional as F
+            >>> from torchmetrics.classification import BinaryROC
+            >>> preds = F.softmax(randn(20, 2), dim=1)
+            >>> target = randint(2, (20,))
+            >>> metric = BinaryROC()
+            >>> metric.update(preds[:, 1], target)
+            >>> fig_, ax_ = metric.plot()
+        """
+        curve = curve or self.compute()
+        score = _reduce_auroc(curve[0], curve[1], average=None) if not curve and score is True else None
+        return plot_curve(
+            curve,
+            score=score,
+            ax=ax,
+            label_names=("False positive rate", "True positive rate"),
+            name=self.__class__.__name__,
+        )
+
 
 class MultilabelROC(MultilabelPrecisionRecallCurve):
-    r"""Compute the Receiver Operating Characteristic (ROC) for binary tasks. The curve consist of multiple pairs of
-    true positive rate (TPR) and false positive rate (FPR) values evaluated at different thresholds, such that the
-    tradeoff between the two values can be seen.
+    r"""Compute the Receiver Operating Characteristic (ROC) for binary tasks.
+
+    The curve consist of multiple pairs of true positive rate (TPR) and false positive rate (FPR) values evaluated at
+    different thresholds, such that the tradeoff between the two values can be seen.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -307,17 +410,65 @@ class MultilabelROC(MultilabelPrecisionRecallCurve):
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
+    plot_legend_name: str = "Label"
 
-    def compute(self) -> Tuple[Tensor, Tensor, Tensor]:
+    def compute(self) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
         """Compute metric."""
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _multilabel_roc_compute(state, self.num_labels, self.thresholds, self.ignore_index)
 
+    def plot(
+        self,
+        curve: Optional[Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]] = None,
+        score: Optional[Union[Tensor, bool]] = None,
+        ax: Optional[_AX_TYPE] = None,
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            curve: the output of either `metric.compute` or `metric.forward`. If no value is provided, will
+                automatically call `metric.compute` and plot that result.
+            score: Provide a area-under-the-curve score to be displayed on the plot. If `True` and no curve is provided,
+                will automatically compute the score.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import randn, randint
+            >>> import torch.nn.functional as F
+            >>> from torchmetrics.classification import BinaryROC
+            >>> preds = F.softmax(randn(20, 2), dim=1)
+            >>> target = randint(2, (20,))
+            >>> metric = BinaryROC()
+            >>> metric.update(preds[:, 1], target)
+            >>> fig_, ax_ = metric.plot()
+        """
+        curve = curve or self.compute()
+        score = _reduce_auroc(curve[0], curve[1], average=None) if not curve and score is True else None
+        return plot_curve(
+            curve,
+            score=score,
+            ax=ax,
+            label_names=("False positive rate", "True positive rate"),
+            name=self.__class__.__name__,
+        )
+
 
 class ROC:
-    r"""Compute the Receiver Operating Characteristic (ROC). The curve consist of multiple pairs of true positive
-    rate (TPR) and false positive rate (FPR) values evaluated at different thresholds, such that the tradeoff
-    between the two values can be seen.
+    r"""Compute the Receiver Operating Characteristic (ROC).
+
+    The curve consist of multiple pairs of true positive rate (TPR) and false positive rate (FPR) values evaluated at
+    different thresholds, such that the tradeoff between the two values can be seen.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
@@ -396,3 +547,4 @@ class ROC:
         if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelROC(num_labels, **kwargs)
+        return None

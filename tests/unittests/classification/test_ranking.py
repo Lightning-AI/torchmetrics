@@ -32,9 +32,10 @@ from torchmetrics.functional.classification.ranking import (
     multilabel_ranking_loss,
 )
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_9
+from unittests import NUM_CLASSES
 from unittests.classification.inputs import _multilabel_cases
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_CLASSES, MetricTester, inject_ignore_index
+from unittests.helpers.testers import MetricTester, inject_ignore_index
 
 seed_all(42)
 
@@ -64,9 +65,12 @@ def _sklearn_ranking(preds, target, fn, ignore_index):
     "input", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5])
 )
 class TestMultilabelRanking(MetricTester):
+    """Test class for `MultilabelRanking` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multilabel_ranking(self, input, metric, functional_metric, ref_metric, ddp, ignore_index):
+        """Test class implementation of metric."""
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -84,6 +88,7 @@ class TestMultilabelRanking(MetricTester):
 
     @pytest.mark.parametrize("ignore_index", [None])
     def test_multilabel_ranking_functional(self, input, metric, functional_metric, ref_metric, ignore_index):
+        """Test functional implementation of metric."""
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -99,6 +104,7 @@ class TestMultilabelRanking(MetricTester):
         )
 
     def test_multilabel_ranking_differentiability(self, input, metric, functional_metric, ref_metric):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -110,6 +116,7 @@ class TestMultilabelRanking(MetricTester):
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multilabel_ranking_dtype_cpu(self, input, metric, functional_metric, ref_metric, dtype):
+        """Test dtype support of the metric on CPU."""
         preds, target = input
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
@@ -134,6 +141,7 @@ class TestMultilabelRanking(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multilabel_ranking_dtype_gpu(self, input, metric, functional_metric, ref_metric, dtype):
+        """Test dtype support of the metric on GPU."""
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,

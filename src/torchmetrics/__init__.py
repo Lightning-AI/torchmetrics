@@ -43,12 +43,14 @@ from torchmetrics.classification import (  # noqa: E402
     StatScores,
 )
 from torchmetrics.collections import MetricCollection  # noqa: E402
-from torchmetrics.detection import PanopticQuality  # noqa: E402
+from torchmetrics.detection import ModifiedPanopticQuality, PanopticQuality  # noqa: E402
 from torchmetrics.image import (  # noqa: E402
     ErrorRelativeGlobalDimensionlessSynthesis,
     MultiScaleStructuralSimilarityIndexMeasure,
     PeakSignalNoiseRatio,
     PeakSignalNoiseRatioWithBlockedEffect,
+    RelativeAverageSpectralError,
+    RootMeanSquaredErrorUsingSlidingWindow,
     SpectralAngleMapper,
     SpectralDistortionIndex,
     StructuralSimilarityIndexMeasure,
@@ -57,10 +59,11 @@ from torchmetrics.image import (  # noqa: E402
 )
 from torchmetrics.metric import Metric  # noqa: E402
 from torchmetrics.nominal import CramersV  # noqa: E402
-from torchmetrics.nominal import PearsonsContingencyCoefficient, TheilsU, TschuprowsT  # noqa: E402
+from torchmetrics.nominal import PearsonsContingencyCoefficient  # noqa: E402
+from torchmetrics.nominal import TheilsU, TschuprowsT  # noqa: E402
 from torchmetrics.regression import ConcordanceCorrCoef  # noqa: E402
+from torchmetrics.regression import CosineSimilarity  # noqa: E402
 from torchmetrics.regression import (  # noqa: E402
-    CosineSimilarity,
     ExplainedVariance,
     KendallRankCorrCoef,
     KLDivergence,
@@ -69,6 +72,7 @@ from torchmetrics.regression import (  # noqa: E402
     MeanAbsolutePercentageError,
     MeanSquaredError,
     MeanSquaredLogError,
+    MinkowskiDistance,
     PearsonCorrCoef,
     R2Score,
     SpearmanCorrCoef,
@@ -77,8 +81,8 @@ from torchmetrics.regression import (  # noqa: E402
     WeightedMeanAbsolutePercentageError,
 )
 from torchmetrics.retrieval import RetrievalFallOut  # noqa: E402
+from torchmetrics.retrieval import RetrievalHitRate  # noqa: E402
 from torchmetrics.retrieval import (  # noqa: E402
-    RetrievalHitRate,
     RetrievalMAP,
     RetrievalMRR,
     RetrievalNormalizedDCG,
@@ -149,6 +153,7 @@ __all__ = [
     "MetricTracker",
     "MinMaxMetric",
     "MinMetric",
+    "ModifiedPanopticQuality",
     "MultioutputWrapper",
     "MultiScaleStructuralSimilarityIndexMeasure",
     "PanopticQuality",
@@ -162,6 +167,7 @@ __all__ = [
     "PeakSignalNoiseRatioWithBlockedEffect",
     "R2Score",
     "Recall",
+    "RelativeAverageSpectralError",
     "RetrievalFallOut",
     "RetrievalHitRate",
     "RetrievalMAP",
@@ -173,6 +179,7 @@ __all__ = [
     "RetrievalPrecisionRecallCurve",
     "RetrievalRecallAtFixedPrecision",
     "ROC",
+    "RootMeanSquaredErrorUsingSlidingWindow",
     "SacreBLEUScore",
     "SignalDistortionRatio",
     "ScaleInvariantSignalDistortionRatio",

@@ -20,8 +20,9 @@ from skimage.metrics import structural_similarity
 
 from torchmetrics.functional.image.uqi import universal_image_quality_index
 from torchmetrics.image.uqi import UniversalImageQualityIndex
+from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -64,6 +65,7 @@ def _skimage_uqi(preds, target, data_range, multichannel, kernel_size):
         win_size=kernel_size,
         sigma=1.5,
         use_sample_covariance=False,
+        channel_axis=-1,
     )
 
 
@@ -73,10 +75,13 @@ def _skimage_uqi(preds, target, data_range, multichannel, kernel_size):
 )
 @pytest.mark.parametrize("kernel_size", [5, 11])
 class TestUQI(MetricTester):
+    """Test class for `UniversalImageQualityIndex` metric."""
+
     atol = 6e-3
 
     @pytest.mark.parametrize("ddp", [True, False])
     def test_uqi(self, preds, target, multichannel, kernel_size, ddp):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
             preds,
@@ -87,6 +92,7 @@ class TestUQI(MetricTester):
         )
 
     def test_uqi_functional(self, preds, target, multichannel, kernel_size):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             target,
@@ -98,12 +104,14 @@ class TestUQI(MetricTester):
     # UQI half + cpu does not work due to missing support in torch.log
     @pytest.mark.xfail(reason="UQI metric does not support cpu + half precision")
     def test_uqi_half_cpu(self, preds, target, multichannel, kernel_size):
+        """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(
             preds, target, UniversalImageQualityIndex, universal_image_quality_index, {"data_range": 1.0}
         )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_uqi_half_gpu(self, preds, target, multichannel, kernel_size):
+        """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(
             preds, target, UniversalImageQualityIndex, universal_image_quality_index, {"data_range": 1.0}
         )

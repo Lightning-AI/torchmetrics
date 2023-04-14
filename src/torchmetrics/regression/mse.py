@@ -18,7 +18,7 @@ from torch import Tensor, tensor
 from torchmetrics.functional.regression.mse import _mean_squared_error_compute, _mean_squared_error_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
-from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["MeanSquaredError.plot"]
@@ -56,7 +56,8 @@ class MeanSquaredError(Metric):
     is_differentiable = True
     higher_is_better = False
     full_state_update = False
-    plot_options: dict = {"lower_bound": 0.0}
+    plot_lower_bound: float = 0.0
+
     sum_squared_error: Tensor
     total: Tensor
 
@@ -93,8 +94,7 @@ class MeanSquaredError(Metric):
             ax: An matplotlib axis object. If provided will add plot to that axis
 
         Returns:
-            fig: Figure object
-            ax: Axes object
+            Figure and Axes object
 
         Raises:
             ModuleNotFoundError:
@@ -122,8 +122,4 @@ class MeanSquaredError(Metric):
             ...     values.append(metric(randn(10,), randn(10,)))
             >>> fig, ax = metric.plot(values)
         """
-        val = val or self.compute()
-        fig, ax = plot_single_or_multi_val(
-            val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
-        )
-        return fig, ax
+        return self._plot(val, ax)

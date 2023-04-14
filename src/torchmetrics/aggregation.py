@@ -11,14 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import warnings
-from typing import Any, Callable, List, Union
+from typing import Any, Callable, List, Optional, Sequence, Union
 
 import torch
 from torch import Tensor
 
 from torchmetrics.metric import Metric
+from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["SumMetric.plot", "MeanMetric.plot", "MaxMetric.plot", "MinMetric.plot"]
 
 
 class BaseAggregator(Metric):
@@ -43,7 +48,7 @@ class BaseAggregator(Metric):
     value: Tensor
     is_differentiable = None
     higher_is_better = None
-    full_state_update = False
+    full_state_update: bool = False
 
     def __init__(
         self,
@@ -51,7 +56,7 @@ class BaseAggregator(Metric):
         default_value: Union[Tensor, List],
         nan_strategy: Union[str, float] = "error",
         **kwargs: Any,
-    ):
+    ) -> None:
         super().__init__(**kwargs)
         allowed_nan_strategy = ("error", "warn", "ignore")
         if nan_strategy not in allowed_nan_strategy and not isinstance(nan_strategy, float):
@@ -64,9 +69,7 @@ class BaseAggregator(Metric):
         self.add_state("value", default=default_value, dist_reduce_fx=fn)
 
     def _cast_and_nan_check_input(self, x: Union[float, Tensor]) -> Tensor:
-        """Convert  input x to a tensor if not already and afterwards checks for nans that either give an error,
-        warning or just ignored.
-        """
+        """Convert input ``x`` to a tensor and check for Nans."""
         if not isinstance(x, Tensor):
             x = torch.as_tensor(x, dtype=torch.float32, device=self.device)
 
@@ -74,12 +77,13 @@ class BaseAggregator(Metric):
         if nans.any():
             if self.nan_strategy == "error":
                 raise RuntimeError("Encounted `nan` values in tensor")
-            if self.nan_strategy == "warn":
-                warnings.warn("Encounted `nan` values in tensor. Will be removed.", UserWarning)
-                x = x[~nans]
-            elif self.nan_strategy == "ignore":
+            if self.nan_strategy in ("ignore", "warn"):
+                if self.nan_strategy == "warn":
+                    rank_zero_warn("Encounted `nan` values in tensor. Will be removed.", UserWarning)
                 x = x[~nans]
             else:
+                if not isinstance(self.nan_strategy, float):
+                    raise ValueError(f"`nan_strategy` shall be float but you pass {self.nan_strategy}")
                 x[nans] = self.nan_strategy
 
         return x.float()
@@ -128,13 +132,13 @@ class MaxMetric(BaseAggregator):
         tensor(3.)
     """
 
-    full_state_update = True
+    full_state_update: bool = True
 
     def __init__(
         self,
         nan_strategy: Union[str, float] = "warn",
         **kwargs: Any,
-    ):
+    ) -> None:
         super().__init__(
             "max",
             -torch.tensor(float("inf")),
@@ -152,6 +156,45 @@ class MaxMetric(BaseAggregator):
         value = self._cast_and_nan_check_input(value)
         if value.numel():  # make sure tensor not empty
             self.value = torch.max(self.value, torch.max(value))
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> from torchmetrics import MaxMetric
+            >>> metric = MaxMetric()
+            >>> metric.update([1, 2, 3])
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> from torchmetrics import MaxMetric
+            >>> metric = MaxMetric()
+            >>> values = [ ]
+            >>> for i in range(10):
+            ...     values.append(metric(i))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        return self._plot(val, ax)
 
 
 class MinMetric(BaseAggregator):
@@ -189,13 +232,13 @@ class MinMetric(BaseAggregator):
         tensor(1.)
     """
 
-    full_state_update = True
+    full_state_update: bool = True
 
     def __init__(
         self,
         nan_strategy: Union[str, float] = "warn",
         **kwargs: Any,
-    ):
+    ) -> None:
         super().__init__(
             "min",
             torch.tensor(float("inf")),
@@ -213,6 +256,45 @@ class MinMetric(BaseAggregator):
         value = self._cast_and_nan_check_input(value)
         if value.numel():  # make sure tensor not empty
             self.value = torch.min(self.value, torch.min(value))
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> from torchmetrics import MinMetric
+            >>> metric = MinMetric()
+            >>> metric.update([1, 2, 3])
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> from torchmetrics import MinMetric
+            >>> metric = MinMetric()
+            >>> values = [ ]
+            >>> for i in range(10):
+            ...     values.append(metric(i))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        return self._plot(val, ax)
 
 
 class SumMetric(BaseAggregator):
@@ -254,7 +336,7 @@ class SumMetric(BaseAggregator):
         self,
         nan_strategy: Union[str, float] = "warn",
         **kwargs: Any,
-    ):
+    ) -> None:
         super().__init__(
             "sum",
             torch.tensor(0.0),
@@ -272,6 +354,46 @@ class SumMetric(BaseAggregator):
         value = self._cast_and_nan_check_input(value)
         if value.numel():
             self.value += value.sum()
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> from torchmetrics import SumMetric
+            >>> metric = SumMetric()
+            >>> metric.update([1, 2, 3])
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> from torch import rand, randint
+            >>> from torchmetrics import SumMetric
+            >>> metric = SumMetric()
+            >>> values = [ ]
+            >>> for i in range(10):
+            ...     values.append(metric([i, i+1]))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        return self._plot(val, ax)
 
 
 class CatMetric(BaseAggregator):
@@ -313,7 +435,7 @@ class CatMetric(BaseAggregator):
         self,
         nan_strategy: Union[str, float] = "warn",
         **kwargs: Any,
-    ):
+    ) -> None:
         super().__init__("cat", [], nan_strategy, **kwargs)
 
     def update(self, value: Union[float, Tensor]) -> None:
@@ -374,7 +496,7 @@ class MeanMetric(BaseAggregator):
         self,
         nan_strategy: Union[str, float] = "warn",
         **kwargs: Any,
-    ):
+    ) -> None:
         super().__init__(
             "sum",
             torch.tensor(0.0),
@@ -407,3 +529,42 @@ class MeanMetric(BaseAggregator):
     def compute(self) -> Tensor:
         """Compute the aggregated value."""
         return self.value / self.weight
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> from torchmetrics import MeanMetric
+            >>> metric = MeanMetric()
+            >>> metric.update([1, 2, 3])
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> from torchmetrics import MeanMetric
+            >>> metric = MeanMetric()
+            >>> values = [ ]
+            >>> for i in range(10):
+            ...     values.append(metric([i, i+1]))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        return self._plot(val, ax)

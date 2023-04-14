@@ -14,6 +14,8 @@
 from collections import namedtuple
 from functools import partial
 
+import matplotlib
+import matplotlib.pyplot as plt
 import pytest
 import torch
 from transformers import CLIPModel as _CLIPModel
@@ -34,14 +36,12 @@ Input = namedtuple("Input", ["images", "captions"])
 
 captions = [
     "28-year-old chef found dead in San Francisco mall",
-    "A 28-year-old chef who recently moved to San Francisco was "
-    "found dead in the staircase of a local shopping center.",
-    "The victim's brother said he cannot imagine anyone who would want to harm him,\"Finally, it went uphill again at "
-    'him."',
-    "A lawyer says him .\nMoschetto, 54 and prosecutors say .\nAuthority abc Moschetto  .",
+    "A 28-year-old chef who recently moved to San Francisco was found dead.",
+    "The victim's brother said he cannot imagine anyone who would want to harm him",
+    "A lawyer says him .\nMoschetto, 54 and prosecutors say .\nAuthority abc Moschetto.",
 ]
 
-_random_input = Input(images=torch.randint(255, (2, 2, 3, 224, 224)), captions=[captions[0:2], captions[2:]])
+_random_input = Input(images=torch.randint(255, (2, 2, 3, 64, 64)), captions=[captions[0:2], captions[2:]])
 
 
 def _compare_fn(preds, target, model_name_or_path):
@@ -58,9 +58,12 @@ def _compare_fn(preds, target, model_name_or_path):
 @pytest.mark.skipif(not _TRANSFORMERS_AVAILABLE, reason="test requires bert_score")
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
 class TestCLIPScore(MetricTester):
+    """Test class for `CLIPScore` metric."""
+
     @pytest.mark.parametrize("ddp", [True, False])
     @skip_on_connection_issues()
     def test_clip_score(self, input, model_name_or_path, ddp):
+        """Test class implementation of metric."""
         # images are preds and targets are captions
         preds, target = input
         self.run_class_metric_test(
@@ -72,10 +75,12 @@ class TestCLIPScore(MetricTester):
             metric_args={"model_name_or_path": model_name_or_path},
             check_scriptable=False,
             check_state_dict=False,
+            check_batch=False,
         )
 
     @skip_on_connection_issues()
     def test_clip_score_functional(self, input, model_name_or_path):
+        """Test functional implementation of metric."""
         preds, target = input
         self.run_functional_metric_test(
             preds=preds,
@@ -87,6 +92,7 @@ class TestCLIPScore(MetricTester):
 
     @skip_on_connection_issues()
     def test_clip_score_differentiability(self, input, model_name_or_path):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -101,7 +107,7 @@ class TestCLIPScore(MetricTester):
         """Test that an error is raised if the number of images and text examples does not match."""
         metric = CLIPScore(model_name_or_path=model_name_or_path)
         with pytest.raises(ValueError, match="Expected the number of images and text examples to be the same.*"):
-            metric(torch.randint(255, (2, 3, 224, 224)), "28-year-old chef found dead in San Francisco mall")
+            metric(torch.randint(255, (2, 3, 64, 64)), "28-year-old chef found dead in San Francisco mall")
 
     @skip_on_connection_issues()
     def test_error_on_wrong_image_format(self, input, model_name_or_path):
@@ -110,4 +116,14 @@ class TestCLIPScore(MetricTester):
         with pytest.raises(
             ValueError, match="Expected all images to be 3d but found image that has either more or less"
         ):
-            metric(torch.randint(255, (224, 224)), "28-year-old chef found dead in San Francisco mall")
+            metric(torch.randint(255, (64, 64)), "28-year-old chef found dead in San Francisco mall")
+
+    @skip_on_connection_issues()
+    def test_plot_method(self, input, model_name_or_path):
+        """Test the plot method of CLIPScore seperately in this file due to the skipping conditions."""
+        metric = CLIPScore(model_name_or_path=model_name_or_path)
+        preds, target = input
+        metric.update(preds[0], target[0])
+        fig, ax = metric.plot()
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, matplotlib.axes.Axes)

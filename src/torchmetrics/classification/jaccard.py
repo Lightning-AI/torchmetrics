@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional
+from typing import Any, Optional, Sequence, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -24,6 +24,11 @@ from torchmetrics.functional.classification.jaccard import (
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.enums import ClassificationTask
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["BinaryJaccardIndex.plot", "MulticlassJaccardIndex.plot", "MultilabelJaccardIndex.plot"]
 
 
 class BinaryJaccardIndex(BinaryConfusionMatrix):
@@ -77,6 +82,8 @@ class BinaryJaccardIndex(BinaryConfusionMatrix):
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     def __init__(
         self,
@@ -92,6 +99,47 @@ class BinaryJaccardIndex(BinaryConfusionMatrix):
     def compute(self) -> Tensor:
         """Compute metric."""
         return _jaccard_index_reduce(self.confmat, average="binary")
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure object and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> from torch import rand, randint
+            >>> from torchmetrics.classification import BinaryJaccardIndex
+            >>> metric = BinaryJaccardIndex()
+            >>> metric.update(rand(10), randint(2,(10,)))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> from torch import rand, randint
+            >>> from torchmetrics.classification import BinaryJaccardIndex
+            >>> metric = BinaryJaccardIndex()
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(rand(10), randint(2,(10,))))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        return self._plot(val, ax)
 
 
 class MulticlassJaccardIndex(MulticlassConfusionMatrix):
@@ -153,10 +201,12 @@ class MulticlassJaccardIndex(MulticlassConfusionMatrix):
         >>> metric(preds, target)
         tensor(0.6667)
     """
-
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
+    plot_legend_name: str = "Class"
 
     def __init__(
         self,
@@ -176,7 +226,48 @@ class MulticlassJaccardIndex(MulticlassConfusionMatrix):
 
     def compute(self) -> Tensor:
         """Compute metric."""
-        return _jaccard_index_reduce(self.confmat, average=self.average)
+        return _jaccard_index_reduce(self.confmat, average=self.average, ignore_index=self.ignore_index)
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure object and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value per class
+            >>> from torch import randint
+            >>> from torchmetrics.classification import MulticlassJaccardIndex
+            >>> metric = MulticlassJaccardIndex(num_classes=3, average=None)
+            >>> metric.update(randint(3, (20,)), randint(3, (20,)))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a multiple values per class
+            >>> from torch import randint
+            >>> from torchmetrics.classification import MulticlassJaccardIndex
+            >>> metric = MulticlassJaccardIndex(num_classes=3, average=None)
+            >>> values = []
+            >>> for _ in range(20):
+            ...     values.append(metric(randint(3, (20,)), randint(3, (20,))))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        return self._plot(val, ax)
 
 
 class MultilabelJaccardIndex(MultilabelConfusionMatrix):
@@ -240,6 +331,9 @@ class MultilabelJaccardIndex(MultilabelConfusionMatrix):
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
+    plot_legend_name: str = "Label"
 
     def __init__(
         self,
@@ -266,6 +360,47 @@ class MultilabelJaccardIndex(MultilabelConfusionMatrix):
     def compute(self) -> Tensor:
         """Compute metric."""
         return _jaccard_index_reduce(self.confmat, average=self.average)
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> from torch import rand, randint
+            >>> from torchmetrics.classification import MultilabelJaccardIndex
+            >>> metric = MultilabelJaccardIndex(num_labels=3)
+            >>> metric.update(randint(2, (20, 3)), randint(2, (20, 3)))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> from torch import rand, randint
+            >>> from torchmetrics.classification import MultilabelJaccardIndex
+            >>> metric = MultilabelJaccardIndex(num_labels=3)
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(randint(2, (20, 3)), randint(2, (20, 3))))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        return self._plot(val, ax)
 
 
 class JaccardIndex:
@@ -314,3 +449,4 @@ class JaccardIndex:
         if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelJaccardIndex(num_labels, threshold, average, **kwargs)
+        return None

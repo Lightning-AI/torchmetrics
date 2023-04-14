@@ -11,15 +11,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Sequence, Union
+from typing import Any, Optional, Sequence, Union
 
 from torch import Tensor, tensor
+from typing_extensions import Literal
 
 from torchmetrics.functional.regression.explained_variance import (
+    ALLOWED_MULTIOUTPUT,
     _explained_variance_compute,
     _explained_variance_update,
 )
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["ExplainedVariance.plot"]
 
 
 class ExplainedVariance(Metric):
@@ -76,6 +83,9 @@ class ExplainedVariance(Metric):
     is_differentiable: bool = True
     higher_is_better: bool = True
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
+
     n_obs: Tensor
     sum_error: Tensor
     sum_squared_error: Tensor
@@ -84,16 +94,16 @@ class ExplainedVariance(Metric):
 
     def __init__(
         self,
-        multioutput: str = "uniform_average",
+        multioutput: Literal["raw_values", "uniform_average", "variance_weighted"] = "uniform_average",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        allowed_multioutput = ("raw_values", "uniform_average", "variance_weighted")
-        if multioutput not in allowed_multioutput:
+
+        if multioutput not in ALLOWED_MULTIOUTPUT:
             raise ValueError(
-                f"Invalid input to argument `multioutput`. Choose one of the following: {allowed_multioutput}"
+                f"Invalid input to argument `multioutput`. Choose one of the following: {ALLOWED_MULTIOUTPUT}"
             )
-        self.multioutput: str = multioutput
+        self.multioutput = multioutput
         self.add_state("sum_error", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("sum_squared_error", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("sum_target", default=tensor(0.0), dist_reduce_fx="sum")
@@ -119,3 +129,44 @@ class ExplainedVariance(Metric):
             self.sum_squared_target,
             self.multioutput,
         )
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import randn
+            >>> # Example plotting a single value
+            >>> from torchmetrics.regression import ExplainedVariance
+            >>> metric = ExplainedVariance()
+            >>> metric.update(randn(10,), randn(10,))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import randn
+            >>> # Example plotting multiple values
+            >>> from torchmetrics.regression import ExplainedVariance
+            >>> metric = ExplainedVariance()
+            >>> values = []
+            >>> for _ in range(10):
+            ...     values.append(metric(randn(10,), randn(10,)))
+            >>> fig, ax = metric.plot(values)
+        """
+        return self._plot(val, ax)

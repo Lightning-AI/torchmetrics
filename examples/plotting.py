@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 import torch
 
 
-def pesq_example():
+def pesq_example() -> tuple:
     """Plot PESQ audio example."""
     from torchmetrics.audio.pesq import PerceptualEvaluationSpeechQuality
 
@@ -37,7 +37,7 @@ def pesq_example():
     return fig, ax
 
 
-def pit_example():
+def pit_example() -> tuple:
     """Plot PIT audio example."""
     from torchmetrics.audio.pit import PermutationInvariantTraining
     from torchmetrics.functional import scale_invariant_signal_noise_ratio
@@ -58,7 +58,7 @@ def pit_example():
     return fig, ax
 
 
-def sdr_example():
+def sdr_example() -> tuple:
     """Plot SDR audio example."""
     from torchmetrics.audio.sdr import SignalDistortionRatio
 
@@ -78,7 +78,7 @@ def sdr_example():
     return fig, ax
 
 
-def si_sdr_example():
+def si_sdr_example() -> tuple:
     """Plot SI-SDR audio example."""
     from torchmetrics.audio.sdr import ScaleInvariantSignalDistortionRatio
 
@@ -98,7 +98,7 @@ def si_sdr_example():
     return fig, ax
 
 
-def snr_example():
+def snr_example() -> tuple:
     """Plot SNR audio example."""
     from torchmetrics.audio.snr import SignalNoiseRatio
 
@@ -118,7 +118,7 @@ def snr_example():
     return fig, ax
 
 
-def si_snr_example():
+def si_snr_example() -> tuple:
     """Plot SI-SNR example."""
     from torchmetrics.audio.snr import ScaleInvariantSignalNoiseRatio
 
@@ -138,7 +138,7 @@ def si_snr_example():
     return fig, ax
 
 
-def stoi_example():
+def stoi_example() -> tuple:
     """Plot STOI example."""
     from torchmetrics.audio.stoi import ShortTimeObjectiveIntelligibility
 
@@ -158,7 +158,7 @@ def stoi_example():
     return fig, ax
 
 
-def accuracy_example():
+def accuracy_example() -> tuple:
     """Plot Accuracy example."""
     from torchmetrics.classification import MulticlassAccuracy
 
@@ -189,7 +189,7 @@ def accuracy_example():
     return fig, ax
 
 
-def mean_squared_error_example():
+def mean_squared_error_example() -> tuple:
     """Plot mean squared error example."""
     from torchmetrics.regression import MeanSquaredError
 
@@ -208,7 +208,7 @@ def mean_squared_error_example():
     return fig, ax
 
 
-def confusion_matrix_example():
+def confusion_matrix_example() -> tuple:
     """Plot confusion matrix example."""
     from torchmetrics.classification import MulticlassConfusionMatrix
 
@@ -222,10 +222,208 @@ def confusion_matrix_example():
     return fig, ax
 
 
-if __name__ == "__main__":
+def spectral_distortion_index_example() -> tuple:
+    """Plot spectral distortion index example example."""
+    from torchmetrics.image.d_lambda import SpectralDistortionIndex
 
+    p = lambda: torch.rand([16, 3, 16, 16])
+    t = lambda: torch.rand([16, 3, 16, 16])
+
+    # plot single value
+    metric = SpectralDistortionIndex()
+    metric.update(p(), t())
+    fig, ax = metric.plot()
+
+    # plot multiple values
+    metric = SpectralDistortionIndex()
+    vals = [metric(p(), t()) for _ in range(10)]
+    fig, ax = metric.plot(vals)
+
+    return fig, ax
+
+
+def error_relative_global_dimensionless_synthesis() -> tuple:
+    """Plot error relative global dimensionless synthesis example."""
+    from torchmetrics.image.ergas import ErrorRelativeGlobalDimensionlessSynthesis
+
+    p = lambda: torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42))
+    t = lambda: torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42))
+
+    # plot single value
+    metric = ErrorRelativeGlobalDimensionlessSynthesis()
+    metric.update(p(), t())
+    fig, ax = metric.plot()
+
+    # plot multiple values
+    metric = ErrorRelativeGlobalDimensionlessSynthesis()
+    vals = [metric(p(), t()) for _ in range(10)]
+    fig, ax = metric.plot(vals)
+
+    return fig, ax
+
+
+def peak_signal_noise_ratio() -> tuple:
+    """Plot peak signal noise ratio example."""
+    from torchmetrics.image.psnr import PeakSignalNoiseRatio
+
+    p = lambda: torch.tensor([[0.0, 1.0], [2.0, 3.0]])
+    t = lambda: torch.tensor([[3.0, 2.0], [1.0, 0.0]])
+
+    # plot single value
+    metric = PeakSignalNoiseRatio()
+    metric.update(p(), t())
+    fig, ax = metric.plot()
+
+    # plot multiple values
+    metric = PeakSignalNoiseRatio()
+    vals = [metric(p(), t()) for _ in range(10)]
+    fig, ax = metric.plot(vals)
+
+    return fig, ax
+
+
+def spectral_angle_mapper() -> tuple:
+    """Plot spectral angle mapper example."""
+    from torchmetrics.image.sam import SpectralAngleMapper
+
+    p = lambda: torch.rand([16, 3, 16, 16], generator=torch.manual_seed(42))
+    t = lambda: torch.rand([16, 3, 16, 16], generator=torch.manual_seed(123))
+
+    # plot single value
+    metric = SpectralAngleMapper()
+    metric.update(p(), t())
+    fig, ax = metric.plot()
+
+    # plot multiple values
+    metric = SpectralAngleMapper()
+    vals = [metric(p(), t()) for _ in range(10)]
+    fig, ax = metric.plot(vals)
+
+    return fig, ax
+
+
+def structural_similarity_index_measure() -> tuple:
+    """Plot structural similarity index measure example."""
+    from torchmetrics.image.ssim import StructuralSimilarityIndexMeasure
+
+    p = lambda: torch.rand([3, 3, 256, 256], generator=torch.manual_seed(42))
+    t = lambda: p() * 0.75
+
+    # plot single value
+    metric = StructuralSimilarityIndexMeasure()
+    metric.update(p(), t())
+    fig, ax = metric.plot()
+
+    # plot multiple values
+    metric = StructuralSimilarityIndexMeasure()
+    vals = [metric(p(), t()) for _ in range(10)]
+    fig, ax = metric.plot(vals)
+
+    return fig, ax
+
+
+def multiscale_structural_similarity_index_measure() -> tuple:
+    """Plot multiscale structural similarity index measure example."""
+    from torchmetrics.image.ssim import MultiScaleStructuralSimilarityIndexMeasure
+
+    p = lambda: torch.rand([3, 3, 256, 256], generator=torch.manual_seed(42))
+    t = lambda: p() * 0.75
+
+    # plot single value
+    metric = MultiScaleStructuralSimilarityIndexMeasure()
+    metric.update(p(), t())
+    fig, ax = metric.plot()
+
+    # plot multiple values
+    metric = MultiScaleStructuralSimilarityIndexMeasure()
+    vals = [metric(p(), t()) for _ in range(10)]
+    fig, ax = metric.plot(vals)
+
+    return fig, ax
+
+
+def universal_image_quality_index() -> tuple:
+    """Plot universal image quality index example."""
+    from torchmetrics.image.uqi import UniversalImageQualityIndex
+
+    p = lambda: torch.rand([16, 1, 16, 16])
+    t = lambda: p() * 0.75
+
+    # plot single value
+    metric = UniversalImageQualityIndex()
+    metric.update(p(), t())
+    fig, ax = metric.plot()
+
+    # plot multiple values
+    metric = UniversalImageQualityIndex()
+    vals = [metric(p(), t()) for _ in range(10)]
+    fig, ax = metric.plot(vals)
+
+    return fig, ax
+
+
+def mean_average_precision() -> tuple:
+    """Plot MAP metric."""
+    from torchmetrics.detection.mean_ap import MeanAveragePrecision
+
+    preds = lambda: [
+        {
+            "boxes": torch.tensor([[258.0, 41.0, 606.0, 285.0]]) + torch.randint(10, (1, 4)),
+            "scores": torch.tensor([0.536]) + 0.1 * torch.rand(1),
+            "labels": torch.tensor([0]),
+        }
+    ]
+    target = [
+        {
+            "boxes": torch.tensor([[214.0, 41.0, 562.0, 285.0]]),
+            "labels": torch.tensor([0]),
+        }
+    ]
+
+    # plot single value
+    metric = MeanAveragePrecision()
+    metric.update(preds(), target)
+    fig, ax = metric.plot()
+
+    # plot multiple values
+    metric = MeanAveragePrecision()
+    vals = [metric(preds(), target) for _ in range(10)]
+    fig, ax = metric.plot(vals)
+
+    return fig, ax
+
+
+def roc_example() -> tuple:
+    """Plot roc metric."""
+    from torchmetrics.classification import BinaryROC, MulticlassROC, MultilabelROC
+
+    p = lambda: torch.rand(20)
+    t = lambda: torch.randint(2, (20,))
+
+    metric = BinaryROC()
+    metric.update(p(), t())
+    fig, ax = metric.plot()
+
+    p = lambda: torch.randn(200, 5)
+    t = lambda: torch.randint(5, (200,))
+
+    metric = MulticlassROC(5)
+    metric.update(p(), t())
+    fig, ax = metric.plot()
+
+    p = lambda: torch.rand(20, 2)
+    t = lambda: torch.randint(2, (20, 2))
+
+    metric = MultilabelROC(2)
+    metric.update(p(), t())
+
+    return fig, ax
+
+
+if __name__ == "__main__":
     metrics_func = {
         "accuracy": accuracy_example,
+        "roc": roc_example,
         "pesq": pesq_example,
         "pit": pit_example,
         "sdr": sdr_example,
@@ -234,7 +432,15 @@ if __name__ == "__main__":
         "si-snr": si_snr_example,
         "stoi": stoi_example,
         "mean_squared_error": mean_squared_error_example,
+        "mean_average_precision": mean_average_precision,
         "confusion_matrix": confusion_matrix_example,
+        "spectral_distortion_index": spectral_distortion_index_example,
+        "error_relative_global_dimensionless_synthesis": error_relative_global_dimensionless_synthesis,
+        "peak_signal_noise_ratio": peak_signal_noise_ratio,
+        "spectral_angle_mapper": spectral_angle_mapper,
+        "structural_similarity_index_measure": structural_similarity_index_measure,
+        "multiscale_structural_similarity_index_measure": multiscale_structural_similarity_index_measure,
+        "universal_image_quality_index": universal_image_quality_index,
     }
 
     parser = argparse.ArgumentParser(description="Example script for plotting metrics.")

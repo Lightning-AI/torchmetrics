@@ -49,8 +49,11 @@ def _compute_bleu_metric_nltk(preds, targets, weights, smoothing_function, **kwa
     [(_inputs_multiple_references.preds, _inputs_multiple_references.targets)],
 )
 class TestBLEUScore(TextTester):
+    """Test class for `BLEUScore` metric."""
+
     @pytest.mark.parametrize("ddp", [False, True])
     def test_bleu_score_class(self, ddp, preds, targets, weights, n_gram, smooth_func, smooth):
+        """Test class implementation of metric."""
         metric_args = {"n_gram": n_gram, "smooth": smooth}
         compute_bleu_metric_nltk = partial(_compute_bleu_metric_nltk, weights=weights, smoothing_function=smooth_func)
 
@@ -64,6 +67,7 @@ class TestBLEUScore(TextTester):
         )
 
     def test_bleu_score_functional(self, preds, targets, weights, n_gram, smooth_func, smooth):
+        """Test functional implementation of metric."""
         metric_args = {"n_gram": n_gram, "smooth": smooth}
         compute_bleu_metric_nltk = partial(_compute_bleu_metric_nltk, weights=weights, smoothing_function=smooth_func)
 
@@ -76,6 +80,7 @@ class TestBLEUScore(TextTester):
         )
 
     def test_bleu_score_differentiability(self, preds, targets, weights, n_gram, smooth_func, smooth):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         metric_args = {"n_gram": n_gram, "smooth": smooth}
 
         self.run_differentiability_test(
@@ -88,18 +93,21 @@ class TestBLEUScore(TextTester):
 
 
 def test_bleu_empty_functional():
+    """Test that bleu returns 0 when no input is provided."""
     hyp = [[]]
     ref = [[[]]]
     assert bleu_score(hyp, ref) == tensor(0.0)
 
 
 def test_no_4_gram_functional():
+    """Test that bleu returns 0 for 4 gram."""
     preds = ["My full pytorch-lightning"]
     targets = [["My full pytorch-lightning test", "Completely Different"]]
     assert bleu_score(preds, targets) == tensor(0.0)
 
 
 def test_bleu_empty_class():
+    """Test that bleu returns 0 when no input is provided."""
     bleu = BLEUScore()
     preds = [[]]
     targets = [[[]]]
@@ -107,6 +115,7 @@ def test_bleu_empty_class():
 
 
 def test_no_4_gram_class():
+    """Test that bleu returns 0 for 4 gram."""
     bleu = BLEUScore()
     preds = ["My full pytorch-lightning"]
     targets = [["My full pytorch-lightning test", "Completely Different"]]
@@ -114,6 +123,7 @@ def test_no_4_gram_class():
 
 
 def test_no_and_uniform_weights_functional():
+    """Test that implementation works with no weights and uniform weights, and it gives the same result."""
     preds = ["My full pytorch-lightning"]
     targets = [["My full pytorch-lightning test", "Completely Different"]]
     no_weights_score = bleu_score(preds, targets, n_gram=2)
@@ -122,6 +132,7 @@ def test_no_and_uniform_weights_functional():
 
 
 def test_no_and_uniform_weights_class():
+    """Test that implementation works with no weights and uniform weights, and it gives the same result."""
     no_weights_bleu = BLEUScore(n_gram=2)
     uniform_weights_bleu = BLEUScore(n_gram=2, weights=[0.5, 0.5])
 

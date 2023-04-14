@@ -108,8 +108,7 @@ def theils_u(
     nan_strategy: Literal["replace", "drop"] = "replace",
     nan_replace_value: Optional[Union[int, float]] = 0.0,
 ) -> Tensor:
-    r"""Compute `Theil's U`_ statistic (Uncertainty Coefficient) measuring the association between two categorical
-    (nominal) data series.
+    r"""Compute `Theil's U`_ statistic (Uncertainty Coef.) measuring the association between two nominal data series.
 
     .. math::
         U(X|Y) = \frac{H(X) - H(X|Y)}{H(X)}

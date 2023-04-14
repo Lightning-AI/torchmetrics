@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 from warnings import warn
 
 import torch
@@ -23,7 +23,11 @@ from torchmetrics.functional.text.bert import bert_score
 from torchmetrics.functional.text.helper_embedding_metric import _preprocess_text
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
-from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TRANSFORMERS_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["BERTScore.plot"]
 
 # Default model recommended in the original implementation.
 _DEFAULT_MODEL = "roberta-large"
@@ -37,24 +41,24 @@ if _TRANSFORMERS_AVAILABLE:
         AutoModel.from_pretrained(_DEFAULT_MODEL)
 
     if _SKIP_SLOW_DOCTEST and not _try_proceed_with_timeout(_download_model):
-        __doctest_skip__ = ["BERTScore"]
+        __doctest_skip__ = ["BERTScore", "BERTScore.plot"]
 else:
-    __doctest_skip__ = ["BERTScore"]
+    __doctest_skip__ = ["BERTScore", "BERTScore.plot"]
 
 
 def _get_input_dict(input_ids: List[Tensor], attention_mask: List[Tensor]) -> Dict[str, Tensor]:
     """Create an input dictionary of ``input_ids`` and ``attention_mask`` for BERTScore calculation."""
-    output_dict = {"input_ids": torch.cat(input_ids), "attention_mask": torch.cat(attention_mask)}
-    return output_dict
+    return {"input_ids": torch.cat(input_ids), "attention_mask": torch.cat(attention_mask)}
 
 
 class BERTScore(Metric):
-    """`Bert_score Evaluating Text Generation`_ leverages the pre-trained contextual embeddings from BERT and
-    matches words in candidate and reference sentences by cosine similarity. It has been shown to correlate with
-    human judgment on sentence-level and system-level evaluation. Moreover, BERTScore computes precision, recall,
-    and F1 measure, which can be useful for evaluating different language generation tasks.
+    """`Bert_score Evaluating Text Generation`_ for measuring text similarity.
 
-    This implemenation follows the original implementation from `BERT_score`_.
+    BERT leverages the pre-trained contextual embeddings from BERT and matches words in candidate and reference
+    sentences by cosine similarity. It has been shown to correlate with human judgment on sentence-level and
+    system-level evaluation. Moreover, BERTScore computes precision, recall, and F1 measure, which can be useful for
+    evaluating different language generation tasks. This implemenation follows the original implementation from
+    `BERT_score`_.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -120,6 +124,8 @@ class BERTScore(Metric):
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     preds_input_ids: List[Tensor]
     preds_attention_mask: List[Tensor]
@@ -133,7 +139,7 @@ class BERTScore(Metric):
         all_layers: bool = False,
         model: Optional[Module] = None,
         user_tokenizer: Optional[Any] = None,
-        user_forward_fn: Callable[[Module, Dict[str, Tensor]], Tensor] = None,
+        user_forward_fn: Optional[Callable[[Module, Dict[str, Tensor]], Tensor]] = None,
         verbose: bool = False,
         idf: bool = False,
         device: Optional[Union[str, torch.device]] = None,
@@ -146,7 +152,7 @@ class BERTScore(Metric):
         baseline_path: Optional[str] = None,
         baseline_url: Optional[str] = None,
         **kwargs: Any,
-    ):
+    ) -> None:
         super().__init__(**kwargs)
         self.model_name_or_path = model_name_or_path or _DEFAULT_MODEL
         self.num_layers = num_layers
@@ -240,3 +246,52 @@ class BERTScore(Metric):
             baseline_path=self.baseline_path,
             baseline_url=self.baseline_url,
         )
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> from torchmetrics.text.bert import BERTScore
+            >>> metric = BERTScore()
+            >>> preds = ["hello there", "general kenobi"]
+            >>> target = ["hello there", "master kenobi"]
+            >>> metric.update(preds, target)
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics.text.bert import BERTScore
+            >>> metric = BERTScore()
+            >>> preds = ["hello there", "general kenobi"]
+            >>> target = ["hello there", "master kenobi"]
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     val = metric(preds, target)
+            ...     val = {k: torch.tensor(v).mean() for k,v in val.items()}  # convert into single value per key
+            ...     values.append(val)
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        if val is None:  # default average score across sentences
+            val = self.compute()  # type: ignore
+            val = {k: torch.tensor(v).mean() for k, v in val.items()}  # type: ignore
+        return self._plot(val, ax)

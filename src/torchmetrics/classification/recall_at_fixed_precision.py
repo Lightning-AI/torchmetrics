@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any, List, Optional, Sequence, Tuple, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -32,12 +32,22 @@ from torchmetrics.functional.classification.recall_at_fixed_precision import (
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.enums import ClassificationTask
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = [
+        "BinaryRecallAtFixedPrecision.plot",
+        "MulticlassRecallAtFixedPrecision.plot",
+        "MultilabelRecallAtFixedPrecision.plot",
+    ]
 
 
 class BinaryRecallAtFixedPrecision(BinaryPrecisionRecallCurve):
-    r"""Compute the highest possible recall value given the minimum precision thresholds provided. This is done by
-    first calculating the precision-recall curve for different thresholds and the find the recall for a given
-    precision level.
+    r"""Compute the highest possible recall value given the minimum precision thresholds provided.
+
+    This is done by first calculating the precision-recall curve for different thresholds and the find the recall for
+    a given precision level.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -95,6 +105,8 @@ class BinaryRecallAtFixedPrecision(BinaryPrecisionRecallCurve):
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     def __init__(
         self,
@@ -115,11 +127,55 @@ class BinaryRecallAtFixedPrecision(BinaryPrecisionRecallCurve):
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _binary_recall_at_fixed_precision_compute(state, self.thresholds, self.min_precision)
 
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure object and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import rand, randint
+            >>> # Example plotting a single value
+            >>> from torchmetrics.classification import BinaryRecallAtFixedPrecision
+            >>> metric = BinaryRecallAtFixedPrecision(min_precision=0.5)
+            >>> metric.update(rand(10), randint(2,(10,)))
+            >>> fig_, ax_ = metric.plot()  # the returned plot only shows the maximum recall value by default
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import rand, randint
+            >>> # Example plotting multiple values
+            >>> from torchmetrics.classification import BinaryRecallAtFixedPrecision
+            >>> metric = BinaryRecallAtFixedPrecision(min_precision=0.5)
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     # we index by 0 such that only the maximum recall value is plotted
+            ...     values.append(metric(rand(10), randint(2,(10,)))[0])
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        val = val or self.compute()[0]  # by default we select the maximum recall value to plot
+        return self._plot(val, ax)
+
 
 class MulticlassRecallAtFixedPrecision(MulticlassPrecisionRecallCurve):
-    r"""Compute the highest possible recall value given the minimum precision thresholds provided. This is done by
-    first calculating the precision-recall curve for different thresholds and the find the recall for a given
-    precision level.
+    r"""Compute the highest possible recall value given the minimum precision thresholds provided.
+
+    This is done by first calculating the precision-recall curve for different thresholds and the find the recall for
+    a given precision level.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -183,6 +239,9 @@ class MulticlassRecallAtFixedPrecision(MulticlassPrecisionRecallCurve):
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
+    plot_legend_name: str = "Class"
 
     def __init__(
         self,
@@ -208,11 +267,55 @@ class MulticlassRecallAtFixedPrecision(MulticlassPrecisionRecallCurve):
             state, self.num_classes, self.thresholds, self.min_precision
         )
 
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure object and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import rand, randint
+            >>> # Example plotting a single value per class
+            >>> from torchmetrics.classification import MulticlassRecallAtFixedPrecision
+            >>> metric = MulticlassRecallAtFixedPrecision(num_classes=3, min_precision=0.5)
+            >>> metric.update(rand(20, 3).softmax(dim=-1), randint(3, (20,)))
+            >>> fig_, ax_ = metric.plot()  # the returned plot only shows the maximum recall value by default
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import rand, randint
+            >>> # Example plotting a multiple values per class
+            >>> from torchmetrics.classification import MulticlassRecallAtFixedPrecision
+            >>> metric = MulticlassRecallAtFixedPrecision(num_classes=3, min_precision=0.5)
+            >>> values = []
+            >>> for _ in range(20):
+            ...     # we index by 0 such that only the maximum recall value is plotted
+            ...     values.append(metric(rand(20, 3).softmax(dim=-1), randint(3, (20,)))[0])
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        val = val or self.compute()[0]  # by default we select the maximum recall value to plot
+        return self._plot(val, ax)
+
 
 class MultilabelRecallAtFixedPrecision(MultilabelPrecisionRecallCurve):
-    r"""Compute the highest possible recall value given the minimum precision thresholds provided. This is done by
-    first calculating the precision-recall curve for different thresholds and the find the recall for a given
-    precision level.
+    r"""Compute the highest possible recall value given the minimum precision thresholds provided.
+
+    This is done by first calculating the precision-recall curve for different thresholds and the find the recall for
+    a given precision level.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -279,6 +382,9 @@ class MultilabelRecallAtFixedPrecision(MultilabelPrecisionRecallCurve):
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
+    plot_legend_name: str = "Label"
 
     def __init__(
         self,
@@ -304,11 +410,55 @@ class MultilabelRecallAtFixedPrecision(MultilabelPrecisionRecallCurve):
             state, self.num_labels, self.thresholds, self.ignore_index, self.min_precision
         )
 
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure object and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import rand, randint
+            >>> # Example plotting a single value
+            >>> from torchmetrics.classification import MultilabelRecallAtFixedPrecision
+            >>> metric = MultilabelRecallAtFixedPrecision(num_labels=3, min_precision=0.5)
+            >>> metric.update(rand(20, 3), randint(2, (20, 3)))
+            >>> fig_, ax_ = metric.plot()  # the returned plot only shows the maximum recall value by default
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import rand, randint
+            >>> # Example plotting multiple values
+            >>> from torchmetrics.classification import MultilabelRecallAtFixedPrecision
+            >>> metric = MultilabelRecallAtFixedPrecision(num_labels=3, min_precision=0.5)
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     # we index by 0 such that only the maximum recall value is plotted
+            ...     values.append(metric(rand(20, 3), randint(2, (20, 3)))[0])
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        val = val or self.compute()[0]  # by default we select the maximum recall value to plot
+        return self._plot(val, ax)
+
 
 class RecallAtFixedPrecision:
-    r"""Compute the highest possible recall value given the minimum precision thresholds provided. This is done by
-    first calculating the precision-recall curve for different thresholds and the find the recall for a given
-    precision level.
+    r"""Compute the highest possible recall value given the minimum precision thresholds provided.
+
+    This is done by first calculating the precision-recall curve for different thresholds and the find the recall for
+    a given precision level.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
@@ -341,3 +491,4 @@ class RecallAtFixedPrecision:
             return MultilabelRecallAtFixedPrecision(
                 num_labels, min_precision, thresholds, ignore_index, validate_args, **kwargs
             )
+        return None

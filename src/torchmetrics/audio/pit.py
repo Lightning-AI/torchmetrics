@@ -19,7 +19,7 @@ from typing_extensions import Literal
 from torchmetrics.functional.audio.pit import permutation_invariant_training
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
-from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 __doctest_requires__ = {"PermutationInvariantTraining": ["pit"]}
 
@@ -28,8 +28,10 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class PermutationInvariantTraining(Metric):
-    """Calculate `Permutation invariant training`_ (PIT) that can evaluate models for speaker independent multi-
-    talker speech separation in a permutation invariant way.
+    """Calculate `Permutation invariant training`_ (PIT).
+
+    This metric can evaluate models for speaker independent multi-talker speech separation in a permutation
+    invariant way.
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 
@@ -67,7 +69,8 @@ class PermutationInvariantTraining(Metric):
     is_differentiable: bool = True
     sum_pit_metric: Tensor
     total: Tensor
-    plot_options: dict = {"lower_bound": -10.0, "upper_bound": 1.0}
+    plot_lower_bound: float = -10.0
+    plot_upper_bound: float = 1.0
 
     def __init__(
         self,
@@ -142,8 +145,4 @@ class PermutationInvariantTraining(Metric):
             ...     values.append(metric(preds, target))
             >>> fig_, ax_ = metric.plot(values)
         """
-        val = val or self.compute()
-        fig, ax = plot_single_or_multi_val(
-            val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
-        )
-        return fig, ax
+        return self._plot(val, ax)

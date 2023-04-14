@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List
+from typing import Any, Dict, List, Optional, Sequence, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -20,11 +20,17 @@ from torchmetrics.functional.image.d_lambda import _spectral_distortion_index_co
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["SpectralDistortionIndex.plot"]
 
 
 class SpectralDistortionIndex(Metric):
-    """Compute Spectral Distortion Index (SpectralDistortionIndex_) also now as D_lambda is used to compare the
-    spectral distortion between two images.
+    """Compute Spectral Distortion Index (SpectralDistortionIndex_) also now as D_lambda.
+
+    The metric is used to compare the spectral distortion between two images.
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 
@@ -60,6 +66,8 @@ class SpectralDistortionIndex(Metric):
     higher_is_better: bool = True
     is_differentiable: bool = True
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     preds: List[Tensor]
     target: List[Tensor]
@@ -95,3 +103,50 @@ class SpectralDistortionIndex(Metric):
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         return _spectral_distortion_index_compute(preds, target, self.p, self.reduction)
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> import torch
+            >>> _ = torch.manual_seed(42)
+            >>> from torchmetrics import SpectralDistortionIndex
+            >>> preds = torch.rand([16, 3, 16, 16])
+            >>> target = torch.rand([16, 3, 16, 16])
+            >>> metric = SpectralDistortionIndex()
+            >>> metric.update(preds, target)
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> _ = torch.manual_seed(42)
+            >>> from torchmetrics import SpectralDistortionIndex
+            >>> preds = torch.rand([16, 3, 16, 16])
+            >>> target = torch.rand([16, 3, 16, 16])
+            >>> metric = SpectralDistortionIndex()
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(preds, target))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        return self._plot(val, ax)

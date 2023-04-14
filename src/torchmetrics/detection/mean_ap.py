@@ -19,19 +19,24 @@ import torch
 from torch import IntTensor, Tensor
 
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.imports import _PYCOCOTOOLS_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
+from torchmetrics.utilities.data import _cumsum
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _PYCOCOTOOLS_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["MeanAveragePrecision.plot"]
 
 if _TORCHVISION_GREATER_EQUAL_0_8:
     from torchvision.ops import box_area, box_convert, box_iou
 else:
     box_convert = box_iou = box_area = None
-    __doctest_skip__ = ["MeanAveragePrecision"]
+    __doctest_skip__ = ["MeanAveragePrecision.plot", "MeanAveragePrecision"]
 
 if _PYCOCOTOOLS_AVAILABLE:
     import pycocotools.mask as mask_utils
 else:
     mask_utils = None
-    __doctest_skip__ = ["MeanAveragePrecision"]
+    __doctest_skip__ = ["MeanAveragePrecision.plot", "MeanAveragePrecision"]
 
 
 log = logging.getLogger(__name__)
@@ -43,19 +48,16 @@ def compute_area(input: List[Any], iou_type: str = "bbox") -> Tensor:
     Default output for empty input is :class:`~torch.Tensor`
     """
     if len(input) == 0:
-
         return Tensor([])
 
     if iou_type == "bbox":
         return box_area(torch.stack(input))
-    elif iou_type == "segm":
-
+    if iou_type == "segm":
         input = [{"size": i[0], "counts": i[1]} for i in input]
         area = torch.tensor(mask_utils.area(input).astype("float"))
-
         return area
-    else:
-        raise Exception(f"IOU type {iou_type} is not supported")
+
+    raise Exception(f"IOU type {iou_type} is not supported")
 
 
 def compute_iou(
@@ -66,10 +68,9 @@ def compute_iou(
     """Compute IOU between detections and ground-truth using the specified iou_type."""
     if iou_type == "bbox":
         return box_iou(torch.stack(det), torch.stack(gt))
-    elif iou_type == "segm":
+    if iou_type == "segm":
         return _segm_iou(det, gt)
-    else:
-        raise Exception(f"IOU type {iou_type} is not supported")
+    raise Exception(f"IOU type {iou_type} is not supported")
 
 
 class BaseMetricResults(dict):
@@ -200,11 +201,10 @@ def _fix_empty_tensors(boxes: Tensor) -> Tensor:
 
 class MeanAveragePrecision(Metric):
     r"""Compute the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)`_ for object detection predictions.
-    Optionally, the mAP and mAR values can be calculated per class.
 
-    Predicted boxes and targets have to be in Pascal VOC format
-    (xmin-top left, ymin-top left, xmax-bottom right, ymax-bottom right).
-    See the :meth:`update` method for more information about the input format to this metric.
+    Predicted boxes and targets have to be in Pascal VOC format (xmin-top left, ymin-top left, xmax-bottom right,
+    ymax-bottom right). The metric can both compute the mAP and mAR values per class or as an global average over all
+    classes.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -352,6 +352,8 @@ class MeanAveragePrecision(Metric):
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = True
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     detections: List[Tensor]
     detection_scores: List[Tensor]
@@ -392,10 +394,10 @@ class MeanAveragePrecision(Metric):
             raise ModuleNotFoundError("When `iou_type` is set to 'segm', pycocotools need to be installed")
         self.iou_type = iou_type
         self.bbox_area_ranges = {
-            "all": (0**2, int(1e5**2)),
-            "small": (0**2, 32**2),
-            "medium": (32**2, 96**2),
-            "large": (96**2, int(1e5**2)),
+            "all": (float(0**2), float(1e5**2)),
+            "small": (float(0**2), float(32**2)),
+            "medium": (float(32**2), float(96**2)),
+            "large": (float(96**2), float(1e5**2)),
         }
 
         if not isinstance(class_metrics, bool):
@@ -413,7 +415,6 @@ class MeanAveragePrecision(Metric):
         _input_validator(preds, target, iou_type=self.iou_type)
 
         for item in preds:
-
             detections = self._get_safe_item_values(item)
 
             self.detections.append(detections)
@@ -444,26 +445,22 @@ class MeanAveragePrecision(Metric):
             if boxes.numel() > 0:
                 boxes = box_convert(boxes, in_fmt=self.box_format, out_fmt="xyxy")
             return boxes
-        elif self.iou_type == "segm":
+        if self.iou_type == "segm":
             masks = []
-
             for i in item["masks"].cpu().numpy():
                 rle = mask_utils.encode(np.asfortranarray(i))
                 masks.append((tuple(rle["size"]), rle["counts"]))
-
             return tuple(masks)
-        else:
-            raise Exception(f"IOU type {self.iou_type} is not supported")
+        raise Exception(f"IOU type {self.iou_type} is not supported")
 
     def _get_classes(self) -> List:
-        """Returns a list of unique classes found in ground truth and detection data."""
+        """Return a list of unique classes found in ground truth and detection data."""
         if len(self.detection_labels) > 0 or len(self.groundtruth_labels) > 0:
             return torch.cat(self.detection_labels + self.groundtruth_labels).unique().tolist()
         return []
 
     def _compute_iou(self, idx: int, class_id: int, max_det: int) -> Tensor:
-        """Compute the Intersection over Union (IoU) for ground truth and detection bounding boxes for the given
-        image and class.
+        """Compute the Intersection over Union (IoU) between bounding boxes for the given image and class.
 
         Args:
             idx:
@@ -499,13 +496,12 @@ class MeanAveragePrecision(Metric):
         if len(det) > max_det:
             det = det[:max_det]
 
-        ious = compute_iou(det, gt, self.iou_type).to(self.device)
-        return ious
+        return compute_iou(det, gt, self.iou_type).to(self.device)
 
     def __evaluate_image_gt_no_preds(
         self, gt: Tensor, gt_label_mask: Tensor, area_range: Tuple[int, int], nb_iou_thrs: int
     ) -> Dict[str, Any]:
-        """Some GT but no predictions."""
+        """Evaluate images with a ground truth but no predictions."""
         # GTs
         gt = [gt[i] for i in gt_label_mask]
         nb_gt = len(gt)
@@ -529,7 +525,7 @@ class MeanAveragePrecision(Metric):
     def __evaluate_image_preds_no_gt(
         self, det: Tensor, idx: int, det_label_mask: Tensor, max_det: int, area_range: Tuple[int, int], nb_iou_thrs: int
     ) -> Dict[str, Any]:
-        """Some predictions but no GT."""
+        """Evaluate images with a prediction but no ground truth."""
         # GTs
         nb_gt = 0
 
@@ -729,8 +725,7 @@ class MeanAveragePrecision(Metric):
             else:
                 prec = prec[:, :, area_inds, mdet_inds]
 
-        mean_prec = torch.tensor([-1.0]) if len(prec[prec > -1]) == 0 else torch.mean(prec[prec > -1])
-        return mean_prec
+        return torch.tensor([-1.0]) if len(prec[prec > -1]) == 0 else torch.mean(prec[prec > -1])
 
     def _calculate(self, class_ids: List) -> Tuple[MAPMetricResults, MARMetricResults]:
         """Calculate the precision and recall for all supplied classes to calculate mAP/mAR.
@@ -865,8 +860,8 @@ class MeanAveragePrecision(Metric):
         tps = torch.logical_and(det_matches, torch.logical_not(det_ignore))
         fps = torch.logical_and(torch.logical_not(det_matches), torch.logical_not(det_ignore))
 
-        tp_sum = torch.cumsum(tps, axis=1, dtype=torch.float)
-        fp_sum = torch.cumsum(fps, axis=1, dtype=torch.float)
+        tp_sum = _cumsum(tps, dim=1, dtype=torch.float)
+        fp_sum = _cumsum(fps, dim=1, dtype=torch.float)
         for idx, (tp, fp) in enumerate(zip(tp_sum, fp_sum)):
             nd = len(tp)
             rc = tp / npig
@@ -880,7 +875,6 @@ class MeanAveragePrecision(Metric):
             diff_zero = torch.zeros((1,), device=pr.device)
             diff = torch.ones((1,), device=pr.device)
             while not torch.all(diff == 0):
-
                 diff = torch.clamp(torch.cat(((pr[1:] - pr[:-1]), diff_zero), 0), min=0)
                 pr += diff
 
@@ -924,3 +918,61 @@ class MeanAveragePrecision(Metric):
         metrics[f"mar_{self.max_detection_thresholds[-1]}_per_class"] = mar_max_dets_per_class_values
         metrics.classes = torch.tensor(classes, dtype=torch.int)
         return metrics
+
+    def plot(
+        self, val: Optional[Union[Dict[str, Tensor], Sequence[Dict[str, Tensor]]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure object and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import tensor
+            >>> from torchmetrics.detection.mean_ap import MeanAveragePrecision
+            >>> preds = [dict(
+            ...     boxes=tensor([[258.0, 41.0, 606.0, 285.0]]),
+            ...     scores=tensor([0.536]),
+            ...     labels=tensor([0]),
+            ... )]
+            >>> target = [dict(
+            ...     boxes=tensor([[214.0, 41.0, 562.0, 285.0]]),
+            ...     labels=tensor([0]),
+            ... )]
+            >>> metric = MeanAveragePrecision()
+            >>> metric.update(preds, target)
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics.detection.mean_ap import MeanAveragePrecision
+            >>> preds = lambda: [dict(
+            ...     boxes=torch.tensor([[258.0, 41.0, 606.0, 285.0]]) + torch.randint(10, (1,4)),
+            ...     scores=torch.tensor([0.536]) + 0.1*torch.rand(1),
+            ...     labels=torch.tensor([0]),
+            ... )]
+            >>> target = [dict(
+            ...     boxes=torch.tensor([[214.0, 41.0, 562.0, 285.0]]),
+            ...     labels=torch.tensor([0]),
+            ... )]
+            >>> metric = MeanAveragePrecision()
+            >>> vals = []
+            >>> for _ in range(20):
+            ...     vals.append(metric(preds(), target))
+            >>> fig_, ax_ = metric.plot(vals)
+        """
+        return self._plot(val, ax)

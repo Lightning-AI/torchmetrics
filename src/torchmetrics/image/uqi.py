@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence
+from typing import Any, List, Optional, Sequence, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -20,6 +20,11 @@ from torchmetrics.functional.image.uqi import _uqi_compute, _uqi_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["UniversalImageQualityIndex.plot"]
 
 
 class UniversalImageQualityIndex(Metric):
@@ -47,7 +52,6 @@ class UniversalImageQualityIndex(Metric):
         data_range: Range of the image. If ``None``, it is determined from the image (max - min)
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-
     Return:
         Tensor with UniversalImageQualityIndex score
 
@@ -64,6 +68,8 @@ class UniversalImageQualityIndex(Metric):
     is_differentiable: bool = True
     higher_is_better: bool = True
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     preds: List[Tensor]
     target: List[Tensor]
@@ -101,3 +107,48 @@ class UniversalImageQualityIndex(Metric):
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         return _uqi_compute(preds, target, self.kernel_size, self.sigma, self.reduction, self.data_range)
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> import torch
+            >>> from torchmetrics import UniversalImageQualityIndex
+            >>> preds = torch.rand([16, 1, 16, 16])
+            >>> target = preds * 0.75
+            >>> metric = UniversalImageQualityIndex()
+            >>> metric.update(preds, target)
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics import UniversalImageQualityIndex
+            >>> preds = torch.rand([16, 1, 16, 16])
+            >>> target = preds * 0.75
+            >>> metric = UniversalImageQualityIndex()
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(preds, target))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        return self._plot(val, ax)

@@ -11,22 +11,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import warnings
-from typing import Any, Set
+from typing import Any, Collection, Optional, Sequence, Union
 
 import torch
 from torch import Tensor
 
-from torchmetrics.functional.detection.panoptic_quality import (
+from torchmetrics.functional.detection._panoptic_quality_common import (
     _get_category_id_to_continuous_id,
     _get_void_color,
     _panoptic_quality_compute,
     _panoptic_quality_update,
-    _prepocess_image,
-    _validate_categories,
+    _parse_categories,
+    _prepocess_inputs,
     _validate_inputs,
 )
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["PanopticQuality.plot"]
 
 
 class PanopticQuality(Metric):
@@ -37,42 +41,51 @@ class PanopticQuality(Metric):
 
         where IOU, TP, FP and FN are respectively the sum of the intersection over union for true positives,
         the number of true postitives, false positives and false negatives. This metric is inspired by the PQ
-        implementati on of panopticapi, a standard implementation for the PQ metric for object detection.
+        implementation of panopticapi, a standard implementation for the PQ metric for panoptic segmentation.
 
     .. note:
-        Metric is currently experimental
+        Points in the target tensor that do not map to a known category ID are automatically ignored in the metric
+        computation.
 
     Args:
-            things:
-                Set of ``category_id`` for countable things.
-            stuffs:
-                Set of ``category_id`` for uncountable stuffs.
-            allow_unknown_preds_category:
-                Bool indication if unknown categories in preds is allowed
+        things:
+            Set of ``category_id`` for countable things.
+        stuffs:
+            Set of ``category_id`` for uncountable stuffs.
+        allow_unknown_preds_category:
+            Boolean flag to specify if unknown categories in the predictions are to be ignored in the metric
+            computation or raise an exception when found.
+
 
     Raises:
-            ValueError:
-                If ``things``, ``stuffs`` share the same ``category_id``.
+        ValueError:
+            If ``things``, ``stuffs`` have at least one common ``category_id``.
+        TypeError:
+            If ``things``, ``stuffs`` contain non-integer ``category_id``.
 
     Example:
-            >>> from torch import tensor
-            >>> preds = tensor([[[6, 0], [0, 0], [6, 0], [6, 0]],
-            ...                 [[0, 0], [0, 0], [6, 0], [0, 1]],
-            ...                 [[0, 0], [0, 0], [6, 0], [0, 1]],
-            ...                 [[0, 0], [7, 0], [6, 0], [1, 0]],
-            ...                 [[0, 0], [7, 0], [7, 0], [7, 0]]])
-            >>> target = tensor([[[6, 0], [0, 1], [6, 0], [0, 1]],
-            ...                  [[0, 1], [0, 1], [6, 0], [0, 1]],
-            ...                  [[0, 1], [0, 1], [6, 0], [1, 0]],
-            ...                  [[0, 1], [7, 0], [1, 0], [1, 0]],
-            ...                  [[0, 1], [7, 0], [7, 0], [7, 0]]])
-            >>> panoptic_quality = PanopticQuality(things = {0, 1}, stuffs = {6, 7})
-            >>> panoptic_quality(preds, target)
-            tensor(0.5463, dtype=torch.float64)
+        >>> from torch import tensor
+        >>> from torchmetrics import PanopticQuality
+        >>> preds = tensor([[[[6, 0], [0, 0], [6, 0], [6, 0]],
+        ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
+        ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
+        ...                  [[0, 0], [7, 0], [6, 0], [1, 0]],
+        ...                  [[0, 0], [7, 0], [7, 0], [7, 0]]]])
+        >>> target = tensor([[[[6, 0], [0, 1], [6, 0], [0, 1]],
+        ...                   [[0, 1], [0, 1], [6, 0], [0, 1]],
+        ...                   [[0, 1], [0, 1], [6, 0], [1, 0]],
+        ...                   [[0, 1], [7, 0], [1, 0], [1, 0]],
+        ...                   [[0, 1], [7, 0], [7, 0], [7, 0]]]])
+        >>> panoptic_quality = PanopticQuality(things = {0, 1}, stuffs = {6, 7})
+        >>> panoptic_quality(preds, target)
+        tensor(0.5463, dtype=torch.float64)
+
     """
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     iou_sum: Tensor
     true_positives: Tensor
@@ -81,17 +94,14 @@ class PanopticQuality(Metric):
 
     def __init__(
         self,
-        things: Set[int],
-        stuffs: Set[int],
+        things: Collection[int],
+        stuffs: Collection[int],
         allow_unknown_preds_category: bool = False,
         **kwargs: Any,
-    ):
+    ) -> None:
         super().__init__(**kwargs)
 
-        # todo: better testing for correctness of metric
-        warnings.warn("This is experimental version and are actively working on its stability.")
-
-        _validate_categories(things, stuffs)
+        things, stuffs = _parse_categories(things, stuffs)
         self.things = things
         self.stuffs = stuffs
         self.void_color = _get_void_color(things, stuffs)
@@ -109,27 +119,29 @@ class PanopticQuality(Metric):
         r"""Update state with predictions and targets.
 
         Args:
-            preds: panoptic detection of shape ``[height, width, 2]`` containing
-                the pair ``(category_id, instance_id)`` for each pixel of the image.
+            preds: panoptic detection of shape ``[batch, *spatial_dims, 2]`` containing
+                the pair ``(category_id, instance_id)`` for each point.
                 If the ``category_id`` refer to a stuff, the instance_id is ignored.
 
-            target: ground truth of shape ``[height, width, 2]`` containing
+            target: ground truth of shape ``[batch, *spatial_dims, 2]`` containing
                 the pair ``(category_id, instance_id)`` for each pixel of the image.
                 If the ``category_id`` refer to a stuff, the instance_id is ignored.
 
         Raises:
             TypeError:
-                If ``preds`` or ``target`` is not an ``torch.Tensor``
+                If ``preds`` or ``target`` is not an ``torch.Tensor``.
             ValueError:
-                If ``preds`` or ``target`` has different shape.
+                If ``preds`` and ``target`` have different shape.
             ValueError:
-                If ``preds`` is not a 3D tensor where the final dimension have size 2
+                If ``preds`` has less than 3 dimensions.
+            ValueError:
+                If the final dimension of ``preds`` has size != 2.
         """
         _validate_inputs(preds, target)
-        flatten_preds = _prepocess_image(
+        flatten_preds = _prepocess_inputs(
             self.things, self.stuffs, preds, self.void_color, self.allow_unknown_preds_category
         )
-        flatten_target = _prepocess_image(self.things, self.stuffs, target, self.void_color, True)
+        flatten_target = _prepocess_inputs(self.things, self.stuffs, target, self.void_color, True)
         iou_sum, true_positives, false_positives, false_negatives = _panoptic_quality_update(
             flatten_preds, flatten_target, self.cat_id_to_continuous_id, self.void_color
         )
@@ -139,5 +151,65 @@ class PanopticQuality(Metric):
         self.false_negatives += false_negatives
 
     def compute(self) -> Tensor:
-        """Computes panoptic quality based on inputs passed in to ``update`` previously."""
+        """Compute panoptic quality based on inputs passed in to ``update`` previously."""
         return _panoptic_quality_compute(self.iou_sum, self.true_positives, self.false_positives, self.false_negatives)
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure object and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import tensor
+            >>> from torchmetrics import PanopticQuality
+            >>> preds = tensor([[[[6, 0], [0, 0], [6, 0], [6, 0]],
+            ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
+            ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
+            ...                  [[0, 0], [7, 0], [6, 0], [1, 0]],
+            ...                  [[0, 0], [7, 0], [7, 0], [7, 0]]]])
+            >>> target = tensor([[[[6, 0], [0, 1], [6, 0], [0, 1]],
+            ...                   [[0, 1], [0, 1], [6, 0], [0, 1]],
+            ...                   [[0, 1], [0, 1], [6, 0], [1, 0]],
+            ...                   [[0, 1], [7, 0], [1, 0], [1, 0]],
+            ...                   [[0, 1], [7, 0], [7, 0], [7, 0]]]])
+            >>> metric = PanopticQuality(things = {0, 1}, stuffs = {6, 7})
+            >>> metric.update(preds, target)
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> from torch import tensor
+            >>> from torchmetrics import PanopticQuality
+            >>> preds = tensor([[[[6, 0], [0, 0], [6, 0], [6, 0]],
+            ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
+            ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
+            ...                  [[0, 0], [7, 0], [6, 0], [1, 0]],
+            ...                  [[0, 0], [7, 0], [7, 0], [7, 0]]]])
+            >>> target = tensor([[[[6, 0], [0, 1], [6, 0], [0, 1]],
+            ...                   [[0, 1], [0, 1], [6, 0], [0, 1]],
+            ...                   [[0, 1], [0, 1], [6, 0], [1, 0]],
+            ...                   [[0, 1], [7, 0], [1, 0], [1, 0]],
+            ...                   [[0, 1], [7, 0], [7, 0], [7, 0]]]])
+            >>> metric = PanopticQuality(things = {0, 1}, stuffs = {6, 7})
+            >>> vals = []
+            >>> for _ in range(20):
+            ...     vals.append(metric(preds, target))
+            >>> fig_, ax_ = metric.plot(vals)
+        """
+        return self._plot(val, ax)

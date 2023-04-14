@@ -22,10 +22,11 @@ from unittest.mock import Mock
 import torch
 from torch import Tensor
 
+from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import select_topk, to_onehot
 from torchmetrics.utilities.enums import DataType
 
-_DOCTEST_DOWNLOAD_TIMEOUT = os.environ.get("DOCTEST_DOWNLOAD_TIMEOUT", 120)
+_DOCTEST_DOWNLOAD_TIMEOUT = int(os.environ.get("DOCTEST_DOWNLOAD_TIMEOUT", 120))
 _SKIP_SLOW_DOCTEST = bool(os.environ.get("SKIP_SLOW_DOCTEST", 0))
 
 
@@ -54,9 +55,7 @@ def _basic_input_validation(
     if target.is_floating_point():
         raise ValueError("The `target` has to be an integer tensor.")
 
-    if ignore_index is None and target.min() < 0:
-        raise ValueError("The `target` has to be a non-negative tensor.")
-    elif ignore_index is not None and ignore_index >= 0 and target.min() < 0:
+    if (ignore_index is None and target.min() < 0) or (ignore_index and ignore_index >= 0 and target.min() < 0):
         raise ValueError("The `target` has to be a non-negative tensor.")
 
     preds_float = preds.is_floating_point()
@@ -74,9 +73,11 @@ def _basic_input_validation(
 
 
 def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> Tuple[DataType, int]:
-    """Check that the shape and type of inputs are consistent with each other and fall into one of the
-    allowed input types (see the documentation of docstring of ``_input_format_classification``). It does not check
-    for consistency of number of classes, other functions take care of that.
+    """Check that the shape and type of inputs are consistent with each other.
+
+    The input types needs to be one of allowed input types (see the documentation of docstring of
+    ``_input_format_classification``). It does not check for consistency of number of classes, other functions take
+    care of that.
 
     It returns the name of the case in which the inputs fall, and the implied number of classes (from the ``C`` dim for
     multi-class data, or extra dim(s) for multi-label data).
@@ -150,9 +151,7 @@ def _check_num_classes_mc(
     multiclass: Optional[bool],
     implied_classes: int,
 ) -> None:
-    """Check that the consistency of `num_classes` with the data and `multiclass` param for (multi-
-    dimensional) multi-class data.
-    """
+    """Check consistency of `num_classes`, data and `multiclass` param for (multi-dimensional) multi-class data."""
     if num_classes == 1 and multiclass is not False:
         raise ValueError(
             "You have set `num_classes=1`, but predictions are integers."
@@ -175,9 +174,7 @@ def _check_num_classes_mc(
 
 
 def _check_num_classes_ml(num_classes: int, multiclass: Optional[bool], implied_classes: int) -> None:
-    """Check that the consistency of ``num_classes`` with the data and ``multiclass`` param for multi-label
-    data.
-    """
+    """Check that the consistency of ``num_classes`` with the data and ``multiclass`` param for multi-label data."""
     if multiclass and num_classes != 2:
         raise ValueError(
             "Your have set `multiclass=True`, but `num_classes` is not equal to 2."
@@ -215,7 +212,7 @@ def _check_classification_inputs(
     top_k: Optional[int],
     ignore_index: Optional[int] = None,
 ) -> DataType:
-    """Performs error checking on inputs for classification.
+    """Perform error checking on inputs for classification.
 
     This ensures that preds and target take one of the shape/type combinations that are
     specified in ``_input_format_classification`` docstring. It also checks the cases of
@@ -433,7 +430,7 @@ def _input_format_classification(
             num_classes = preds.shape[1]
             preds = select_topk(preds, top_k or 1)
         else:
-            num_classes = num_classes if num_classes else max(preds.max(), target.max()) + 1
+            num_classes = num_classes or int(max(preds.max().item(), target.max().item()) + 1)
             preds = to_onehot(preds, max(2, num_classes))
 
         target = to_onehot(target, max(2, num_classes))
@@ -615,29 +612,31 @@ def _check_retrieval_target_and_prediction_types(
 
 
 def _allclose_recursive(res1: Any, res2: Any, atol: float = 1e-6) -> bool:
-    """Utility function for recursively asserting that two results are within a certain tolerance."""
+    """Recursively asserting that two results are within a certain tolerance."""
     # single output compare
     if isinstance(res1, Tensor):
         return torch.allclose(res1, res2, atol=atol)
-    elif isinstance(res1, str):
+    if isinstance(res1, str):
         return res1 == res2
-    elif isinstance(res1, Sequence):
+    if isinstance(res1, Sequence):
         return all(_allclose_recursive(r1, r2) for r1, r2 in zip(res1, res2))
-    elif isinstance(res1, Mapping):
+    if isinstance(res1, Mapping):
         return all(_allclose_recursive(res1[k], res2[k]) for k in res1)
     return res1 == res2
 
 
 @no_type_check
 def check_forward_full_state_property(
-    metric_class,
-    init_args: Dict[str, Any] = {},
-    input_args: Dict[str, Any] = {},
+    metric_class: Metric,
+    init_args: Optional[Dict[str, Any]] = None,
+    input_args: Optional[Dict[str, Any]] = None,
     num_update_to_compare: Sequence[int] = [10, 100, 1000],
     reps: int = 5,
-) -> bool:
-    """Utility function for checking if the new ``full_state_update`` property can safely be set to ``False`` which
-    will for most metrics results in a speedup when using ``forward``.
+) -> None:
+    """Check if the new ``full_state_update`` property works as intended.
+
+    This function checks if the property can safely be set to ``False`` which will for most metrics results in a
+    speedup when using ``forward``.
 
     Args:
         metric_class: metric class object that should be checked
@@ -678,6 +677,8 @@ def check_forward_full_state_property(
         ... )
         Recommended setting `full_state_update=True`
     """
+    init_args = init_args or {}
+    input_args = input_args or {}
 
     class FullState(metric_class):
         full_state_update = True
@@ -730,6 +731,7 @@ def check_forward_full_state_property(
 
     faster = (mean[1, -1] < mean[0, -1]).item()  # if faster on average, we recommend upgrading
     print(f"Recommended setting `full_state_update={not faster}`")
+    return
 
 
 def is_overridden(method_name: str, instance: object, parent: object) -> bool:
@@ -758,7 +760,7 @@ def is_overridden(method_name: str, instance: object, parent: object) -> bool:
 
 
 def _try_proceed_with_timeout(fn: Callable, timeout: int = _DOCTEST_DOWNLOAD_TIMEOUT) -> bool:
-    """Function for checking if a certain function is taking too long to execute.
+    """Check if a certain function is taking too long to execute.
 
     Function will only be executed if running inside a doctest context. Currently does not support Windows.
 

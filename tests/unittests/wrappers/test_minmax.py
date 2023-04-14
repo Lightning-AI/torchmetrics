@@ -8,14 +8,15 @@ from torch import Tensor
 from torchmetrics import MeanSquaredError
 from torchmetrics.classification import BinaryAccuracy, BinaryConfusionMatrix, MulticlassAccuracy
 from torchmetrics.wrappers import MinMaxMetric
+from unittests import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
 
 class TestingMinMaxMetric(MinMaxMetric):
-    """wrap metric to fit testing framework."""
+    """Wrap metric to fit testing framework."""
 
     def compute(self):
         """Instead of returning dict, return as list."""
@@ -23,12 +24,13 @@ class TestingMinMaxMetric(MinMaxMetric):
         return [output_dict["raw"], output_dict["min"], output_dict["max"]]
 
     def forward(self, *args, **kwargs):
+        """Compute output for batch."""
         self.update(*args, **kwargs)
         return self.compute()
 
 
-def compare_fn(preds, target, base_fn):
-    """Comparing function for minmax wrapper."""
+def _compare_fn(preds, target, base_fn):
+    """Comparison function for minmax wrapper."""
     v_min, v_max = 1e6, -1e6  # pick some very large numbers for comparing
     for i in range(NUM_BATCHES):
         val = base_fn(preds[: (i + 1) * BATCH_SIZE], target[: (i + 1) * BATCH_SIZE]).cpu().numpy()
@@ -55,12 +57,13 @@ class TestMinMaxWrapper(MetricTester):
     atol = 1e-6
 
     def test_minmax_wrapper(self, preds, target, base_metric):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp=False,
             preds=preds,
             target=target,
             metric_class=TestingMinMaxMetric,
-            reference_metric=partial(compare_fn, base_fn=deepcopy(base_metric)),
+            reference_metric=partial(_compare_fn, base_fn=deepcopy(base_metric)),
             metric_args={"base_metric": base_metric},
             check_batch=False,
             check_scriptable=False,

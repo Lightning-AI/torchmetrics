@@ -21,8 +21,9 @@ from torch.nn import functional as F  # noqa: N812
 
 from torchmetrics.functional.image.sam import spectral_angle_mapper
 from torchmetrics.image.sam import SpectralAngleMapper
+from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -45,7 +46,7 @@ def _baseline_sam(
     target: Tensor,
     reduction: str = "elementwise_mean",
 ) -> Tensor:
-    """Reference implementation of spectral angle mapper."""
+    """Baseline implementation of spectral angle mapper."""
     reduction_options = ("elementwise_mean", "sum", "none")
     if reduction not in reduction_options:
         raise ValueError(f"reduction has to be one of {reduction_options}, got: {reduction}.")
@@ -53,12 +54,10 @@ def _baseline_sam(
     sam_score = torch.clamp(similarity, -1, 1).acos()
     # reduction
     if reduction == "sum":
-        to_return = torch.sum(sam_score)
-    elif reduction == "elementwise_mean":
-        to_return = torch.mean(sam_score)
-    else:
-        to_return = sam_score
-    return to_return
+        return torch.sum(sam_score)
+    if reduction == "elementwise_mean":
+        return torch.mean(sam_score)
+    return sam_score
 
 
 @pytest.mark.parametrize("reduction", ["sum", "elementwise_mean"])
@@ -67,8 +66,11 @@ def _baseline_sam(
     [(i.preds, i.target) for i in _inputs],
 )
 class TestSpectralAngleMapper(MetricTester):
+    """Test class for `SpectralAngleMapper` metric."""
+
     @pytest.mark.parametrize("ddp", [True, False])
     def test_sam(self, reduction, preds, target, ddp):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
             preds,
@@ -79,6 +81,7 @@ class TestSpectralAngleMapper(MetricTester):
         )
 
     def test_sam_functional(self, reduction, preds, target):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             target,
@@ -90,6 +93,7 @@ class TestSpectralAngleMapper(MetricTester):
     # SAM half + cpu does not work due to missing support in torch.log
     @pytest.mark.xfail(reason="SAM metric does not support cpu + half precision")
     def test_sam_half_cpu(self, reduction, preds, target):
+        """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(
             preds,
             target,
@@ -99,6 +103,7 @@ class TestSpectralAngleMapper(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_sam_half_gpu(self, reduction, preds, target):
+        """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(preds, target, SpectralAngleMapper, spectral_angle_mapper)
 
 

@@ -18,7 +18,7 @@ from torch import Tensor, tensor
 from torchmetrics.functional.audio.snr import scale_invariant_signal_noise_ratio, signal_noise_ratio
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
-from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["SignalNoiseRatio.plot", "ScaleInvariantSignalNoiseRatio.plot"]
@@ -64,7 +64,8 @@ class SignalNoiseRatio(Metric):
     higher_is_better: bool = True
     sum_snr: Tensor
     total: Tensor
-    plot_options: dict = {"lower_bound": -20.0, "upper_bound": 5.0}
+    plot_lower_bound: float = -20.0
+    plot_upper_bound: float = 5.0
 
     def __init__(
         self,
@@ -127,11 +128,7 @@ class SignalNoiseRatio(Metric):
             ...     values.append(metric(torch.rand(4), torch.rand(4)))
             >>> fig_, ax_ = metric.plot(values)
         """
-        val = val or self.compute()
-        fig, ax = plot_single_or_multi_val(
-            val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
-        )
-        return fig, ax
+        return self._plot(val, ax)
 
 
 class ScaleInvariantSignalNoiseRatio(Metric):
@@ -167,7 +164,8 @@ class ScaleInvariantSignalNoiseRatio(Metric):
     sum_si_snr: Tensor
     total: Tensor
     higher_is_better = True
-    plot_options: dict = {"lower_bound": -20.0, "upper_bound": 10.0}
+    plot_lower_bound: float = -20.0
+    plot_upper_bound: float = 10.0
 
     def __init__(
         self,
@@ -226,8 +224,4 @@ class ScaleInvariantSignalNoiseRatio(Metric):
             ...     values.append(metric(torch.rand(4), torch.rand(4)))
             >>> fig_, ax_ = metric.plot(values)
         """
-        val = val or self.compute()
-        fig, ax = plot_single_or_multi_val(
-            val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
-        )
-        return fig, ax
+        return self._plot(val, ax)

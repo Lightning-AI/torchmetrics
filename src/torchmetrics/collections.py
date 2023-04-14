@@ -165,7 +165,7 @@ class MetricCollection(ModuleDict):
 
     @torch.jit.unused
     def forward(self, *args: Any, **kwargs: Any) -> Dict[str, Any]:
-        """Iteratively call forward for each metric.
+        """Call forward for each metric sequentially.
 
         Positional arguments (args) will be passed to every metric in the collection, while keyword arguments (kwargs)
         will be filtered based on the signature of the individual metric.
@@ -175,7 +175,7 @@ class MetricCollection(ModuleDict):
         return {self._set_name(k): v for k, v in res.items()}
 
     def update(self, *args: Any, **kwargs: Any) -> None:
-        """Iteratively call update for each metric.
+        """Call update for each metric sequentially.
 
         Positional arguments (args) will be passed to every metric in the collection, while keyword arguments (kwargs)
         will be filtered based on the signature of the individual metric.
@@ -202,7 +202,7 @@ class MetricCollection(ModuleDict):
                 self._groups_checked = True
 
     def _merge_compute_groups(self) -> None:
-        """Iterates over the collection of metrics, checking if the state of each metric matches another.
+        """Iterate over the collection of metrics, checking if the state of each metric matches another.
 
         If so, their compute groups will be merged into one. The complexity of the method is approximately
         ``O(number_of_metrics_in_collection ** 2)``, as all metrics need to be compared to all other metrics.
@@ -228,8 +228,7 @@ class MetricCollection(ModuleDict):
             # Stop when we iterate over everything and do not merge any groups
             if len(self._groups) == n_groups:
                 break
-            else:
-                n_groups = len(self._groups)
+            n_groups = len(self._groups)
 
         # Re-index groups
         temp = deepcopy(self._groups)
@@ -288,7 +287,7 @@ class MetricCollection(ModuleDict):
         return {self._set_name(k): v for k, v in res.items()}
 
     def reset(self) -> None:
-        """Iteratively call reset for each metric."""
+        """Call reset for each metric sequentially."""
         for _, m in self.items(keep_base=True, copy_state=False):
             m.reset()
         if self._enable_compute_groups and self._groups_checked:
@@ -296,7 +295,8 @@ class MetricCollection(ModuleDict):
             self._compute_groups_create_state_ref()
 
     def clone(self, prefix: Optional[str] = None, postfix: Optional[str] = None) -> "MetricCollection":
-        """Make a copy of the metric collection
+        """Make a copy of the metric collection.
+
         Args:
             prefix: a string to append in front of the metric keys
             postfix: a string to append after the keys of the output dict.
@@ -310,7 +310,7 @@ class MetricCollection(ModuleDict):
         return mc
 
     def persistent(self, mode: bool = True) -> None:
-        """Method for post-init to change if metric states should be saved to its state_dict."""
+        """Change if metric states should be saved to its state_dict after initialization."""
         for _, m in self.items(keep_base=True, copy_state=False):
             m.persistent(mode)
 
@@ -405,8 +405,7 @@ class MetricCollection(ModuleDict):
     def _set_name(self, base: str) -> str:
         """Adjust name of metric with both prefix and postfix."""
         name = base if self.prefix is None else self.prefix + base
-        name = name if self.postfix is None else name + self.postfix
-        return name
+        return name if self.postfix is None else name + self.postfix
 
     def _to_renamed_ordered_dict(self) -> OrderedDict:
         od = OrderedDict()
@@ -466,10 +465,20 @@ class MetricCollection(ModuleDict):
         raise ValueError(f"Expected input `{name}` to be a string, but got {type(arg)}")
 
     def __repr__(self) -> str:
-        """Returns the representation of the metric collection including all metrics in the collection."""
+        """Return the representation of the metric collection including all metrics in the collection."""
         repr_str = super().__repr__()[:-2]
         if self.prefix:
             repr_str += f",\n  prefix={self.prefix}{',' if self.postfix else ''}"
         if self.postfix:
             repr_str += f"{',' if not self.prefix else ''}\n  postfix={self.postfix}"
         return repr_str + "\n)"
+
+    def set_dtype(self, dst_type: Union[str, torch.dtype]) -> "MetricCollection":
+        """Transfer all metric state to specific dtype. Special version of standard `type` method.
+
+        Arguments:
+            dst_type (type or string): the desired type.
+        """
+        for _, m in self.items(keep_base=True, copy_state=False):
+            m.set_dtype(dst_type)
+        return self

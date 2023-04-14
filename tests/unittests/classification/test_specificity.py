@@ -26,9 +26,10 @@ from torchmetrics.functional.classification.specificity import (
     multiclass_specificity,
     multilabel_specificity,
 )
+from unittests import NUM_CLASSES, THRESHOLD
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index
+from unittests.helpers.testers import MetricTester, inject_ignore_index
 
 seed_all(42)
 
@@ -63,26 +64,29 @@ def _baseline_specificity_binary(preds, target, ignore_index, multidim_average):
             preds = preds[~idx]
         tn, fp, _, _ = sk_confusion_matrix(y_true=target, y_pred=preds, labels=[0, 1]).ravel()
         return _calc_specificity(tn, fp)
-    else:
-        res = []
-        for pred, true in zip(preds, target):
-            pred = pred.flatten()
-            true = true.flatten()
-            if ignore_index is not None:
-                idx = true == ignore_index
-                true = true[~idx]
-                pred = pred[~idx]
-            tn, fp, _, _ = sk_confusion_matrix(y_true=true, y_pred=pred, labels=[0, 1]).ravel()
-            res.append(_calc_specificity(tn, fp))
-        return np.stack(res)
+
+    res = []
+    for pred, true in zip(preds, target):
+        pred = pred.flatten()
+        true = true.flatten()
+        if ignore_index is not None:
+            idx = true == ignore_index
+            true = true[~idx]
+            pred = pred[~idx]
+        tn, fp, _, _ = sk_confusion_matrix(y_true=true, y_pred=pred, labels=[0, 1]).ravel()
+        res.append(_calc_specificity(tn, fp))
+    return np.stack(res)
 
 
 @pytest.mark.parametrize("input", _binary_cases)
 class TestBinarySpecificity(MetricTester):
+    """Test class for `BinarySpecificity` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("ddp", [False, True])
     def test_binary_specificity(self, ddp, input, ignore_index, multidim_average):
+        """Test class implementation of metric."""
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -105,6 +109,7 @@ class TestBinarySpecificity(MetricTester):
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     def test_binary_specificity_functional(self, input, ignore_index, multidim_average):
+        """Test functional implementation of metric."""
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -126,6 +131,7 @@ class TestBinarySpecificity(MetricTester):
         )
 
     def test_binary_specificity_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -137,6 +143,7 @@ class TestBinarySpecificity(MetricTester):
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_binary_specificity_dtype_cpu(self, input, dtype):
+        """Test dtype support of the metric on CPU."""
         preds, target = input
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
@@ -152,6 +159,7 @@ class TestBinarySpecificity(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_binary_specificity_dtype_gpu(self, input, dtype):
+        """Test dtype support of the metric on GPU."""
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,
@@ -183,11 +191,12 @@ def _baseline_specificity_multiclass_global(preds, target, ignore_index, average
     res = _calc_specificity(tn, fp)
     if average == "macro":
         return res.mean(0)
-    elif average == "weighted":
+    if average == "weighted":
         w = tp + fn
         return (res * (w / w.sum()).reshape(-1, 1)).sum(0)
-    elif average is None or average == "none":
+    if average is None or average == "none":
         return res
+    return None
 
 
 def _baseline_specificity_multiclass_local(preds, target, ignore_index, average):
@@ -232,11 +241,14 @@ def _baseline_specificity_multiclass(preds, target, ignore_index, multidim_avera
 
 @pytest.mark.parametrize("input", _multiclass_cases)
 class TestMulticlassSpecificity(MetricTester):
+    """Test class for `MulticlassSpecificity` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", None])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multiclass_specificity(self, ddp, input, ignore_index, multidim_average, average):
+        """Test class implementation of metric."""
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -268,6 +280,7 @@ class TestMulticlassSpecificity(MetricTester):
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", None])
     def test_multiclass_specificity_functional(self, input, ignore_index, multidim_average, average):
+        """Test functional implementation of metric."""
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -293,6 +306,7 @@ class TestMulticlassSpecificity(MetricTester):
         )
 
     def test_multiclass_specificity_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -304,6 +318,7 @@ class TestMulticlassSpecificity(MetricTester):
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multiclass_specificity_dtype_cpu(self, input, dtype):
+        """Test dtype support of the metric on CPU."""
         preds, target = input
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
@@ -319,6 +334,7 @@ class TestMulticlassSpecificity(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multiclass_specificity_dtype_gpu(self, input, dtype):
+        """Test dtype support of the metric on GPU."""
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,
@@ -370,11 +386,12 @@ def _baseline_specificity_multilabel_global(preds, target, ignore_index, average
     res = _calc_specificity(tn, fp)
     if average == "macro":
         return res.mean(0)
-    elif average == "weighted":
+    if average == "weighted":
         w = res[:, 0] + res[:, 3]
         return (res * (w / w.sum()).reshape(-1, 1)).sum(0)
-    elif average is None or average == "none":
+    if average is None or average == "none":
         return res
+    return None
 
 
 def _baseline_specificity_multilabel_local(preds, target, ignore_index, average):
@@ -400,13 +417,14 @@ def _baseline_specificity_multilabel_local(preds, target, ignore_index, average)
     res = np.stack(specificity, 0)
     if average == "micro" or average is None or average == "none":
         return res
-    elif average == "macro":
+    if average == "macro":
         return res.mean(-1)
-    elif average == "weighted":
+    if average == "weighted":
         w = res[:, 0, :] + res[:, 3, :]
         return (res * (w / w.sum())[:, np.newaxis]).sum(-1)
-    elif average is None or average == "none":
+    if average is None or average == "none":
         return np.moveaxis(res, 1, -1)
+    return None
 
 
 def _baseline_specificity_multilabel(preds, target, ignore_index, multidim_average, average):
@@ -425,11 +443,14 @@ def _baseline_specificity_multilabel(preds, target, ignore_index, multidim_avera
 
 @pytest.mark.parametrize("input", _multilabel_cases)
 class TestMultilabelSpecificity(MetricTester):
+    """Test class for `MultilabelSpecificity` metric."""
+
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", None])
     def test_multilabel_specificity(self, ddp, input, ignore_index, multidim_average, average):
+        """Test class implementation of metric."""
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -462,6 +483,7 @@ class TestMultilabelSpecificity(MetricTester):
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", None])
     def test_multilabel_specificity_functional(self, input, ignore_index, multidim_average, average):
+        """Test functional implementation of metric."""
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -488,6 +510,7 @@ class TestMultilabelSpecificity(MetricTester):
         )
 
     def test_multilabel_specificity_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -499,6 +522,7 @@ class TestMultilabelSpecificity(MetricTester):
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multilabel_specificity_dtype_cpu(self, input, dtype):
+        """Test dtype support of the metric on CPU."""
         preds, target = input
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
@@ -514,6 +538,7 @@ class TestMultilabelSpecificity(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multilabel_specificity_dtype_gpu(self, input, dtype):
+        """Test dtype support of the metric on GPU."""
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,

@@ -19,7 +19,7 @@ from typing_extensions import Literal
 
 from torchmetrics.functional.regression.utils import _check_data_shape_to_num_outputs
 from torchmetrics.utilities.checks import _check_same_shape
-from torchmetrics.utilities.data import _bincount, dim_zero_cat
+from torchmetrics.utilities.data import _bincount, _cumsum, dim_zero_cat
 from torchmetrics.utilities.enums import EnumStr
 
 
@@ -91,7 +91,7 @@ def _convert_sequence_to_dense_rank(x: Tensor, sort: bool = False) -> Tensor:
     if sort:
         x = x.sort(dim=0).values
     _ones = torch.zeros(1, x.shape[1], dtype=torch.int32, device=x.device)
-    return torch.cat([_ones, (x[1:] != x[:-1]).int()], dim=0).cumsum(0)
+    return _cumsum(torch.cat([_ones, (x[1:] != x[:-1]).int()], dim=0), dim=0)
 
 
 def _get_ties(x: Tensor) -> Tuple[Tensor, Tensor, Tensor]:
@@ -162,23 +162,20 @@ def _calculate_tau(
 ) -> Tensor:
     """Calculate Kendall's tau from metric metadata."""
     if variant == _MetricVariant.A:
-        tau = con_min_dis_pairs / (concordant_pairs + discordant_pairs)
-    elif variant == _MetricVariant.B:
+        return con_min_dis_pairs / (concordant_pairs + discordant_pairs)
+    if variant == _MetricVariant.B:
         total_combinations: Tensor = n_total * (n_total - 1) // 2
         denominator = (total_combinations - preds_ties) * (total_combinations - target_ties)
-        tau = con_min_dis_pairs / torch.sqrt(denominator)
-    else:
-        preds_unique = torch.tensor([len(p.unique()) for p in preds.T], dtype=preds.dtype, device=preds.device)
-        target_unique = torch.tensor([len(t.unique()) for t in target.T], dtype=target.dtype, device=target.device)
-        min_classes = torch.minimum(preds_unique, target_unique)
-        tau = 2 * con_min_dis_pairs / ((min_classes - 1) / min_classes * n_total**2)
+        return con_min_dis_pairs / torch.sqrt(denominator)
 
-    return tau
+    preds_unique = torch.tensor([len(p.unique()) for p in preds.T], dtype=preds.dtype, device=preds.device)
+    target_unique = torch.tensor([len(t.unique()) for t in target.T], dtype=target.dtype, device=target.device)
+    min_classes = torch.minimum(preds_unique, target_unique)
+    return 2 * con_min_dis_pairs / ((min_classes - 1) / min_classes * n_total**2)
 
 
 def _get_p_value_for_t_value_from_dist(t_value: Tensor) -> Tensor:
-    """Obtain p-value for a given Tensor of t-values. Handle ``nan`` which cannot be passed into torch
-    distributions.
+    """Obtain p-value for a given Tensor of t-values. Handle ``nan`` which cannot be passed into torch distributions.
 
     When t-value is ``nan``, a resulted p-value should be alson ``nan``.
     """

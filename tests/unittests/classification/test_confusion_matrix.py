@@ -29,9 +29,10 @@ from torchmetrics.functional.classification.confusion_matrix import (
     multiclass_confusion_matrix,
     multilabel_confusion_matrix,
 )
+from unittests import NUM_CLASSES, THRESHOLD
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index, remove_ignore_index
+from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
 seed_all(42)
 
@@ -49,10 +50,13 @@ def _sklearn_confusion_matrix_binary(preds, target, normalize=None, ignore_index
 
 @pytest.mark.parametrize("input", _binary_cases)
 class TestBinaryConfusionMatrix(MetricTester):
+    """Test class for `BinaryConfusionMatrix` metric."""
+
     @pytest.mark.parametrize("normalize", ["true", "pred", "all", None])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_binary_confusion_matrix(self, input, ddp, normalize, ignore_index):
+        """Test class implementation of metric."""
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -72,6 +76,7 @@ class TestBinaryConfusionMatrix(MetricTester):
     @pytest.mark.parametrize("normalize", ["true", "pred", "all", None])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     def test_binary_confusion_matrix_functional(self, input, normalize, ignore_index):
+        """Test functional implementation of metric."""
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -88,6 +93,7 @@ class TestBinaryConfusionMatrix(MetricTester):
         )
 
     def test_binary_confusion_matrix_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -99,6 +105,7 @@ class TestBinaryConfusionMatrix(MetricTester):
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_binary_confusion_matrix_dtype_cpu(self, input, dtype):
+        """Test dtype support of the metric on CPU."""
         preds, target = input
 
         if (preds < 0).any() and dtype == torch.half:
@@ -115,6 +122,7 @@ class TestBinaryConfusionMatrix(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_binary_confusion_matrix_dtype_gpu(self, input, dtype):
+        """Test dtype support of the metric on GPU."""
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,
@@ -139,10 +147,13 @@ def _sklearn_confusion_matrix_multiclass(preds, target, normalize=None, ignore_i
 
 @pytest.mark.parametrize("input", _multiclass_cases)
 class TestMulticlassConfusionMatrix(MetricTester):
+    """Test class for `MultiClassConfusionMatrix` metric."""
+
     @pytest.mark.parametrize("normalize", ["true", "pred", "all", None])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multiclass_confusion_matrix(self, input, ddp, normalize, ignore_index):
+        """Test class implementation of metric."""
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -164,6 +175,7 @@ class TestMulticlassConfusionMatrix(MetricTester):
     @pytest.mark.parametrize("normalize", ["true", "pred", "all", None])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     def test_multiclass_confusion_matrix_functional(self, input, normalize, ignore_index):
+        """Test functional implementation of metric."""
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -182,6 +194,7 @@ class TestMulticlassConfusionMatrix(MetricTester):
         )
 
     def test_multiclass_confusion_matrix_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -193,6 +206,7 @@ class TestMulticlassConfusionMatrix(MetricTester):
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multiclass_confusion_matrix_dtype_cpu(self, input, dtype):
+        """Test dtype support of the metric on CPU."""
         preds, target = input
 
         self.run_precision_test_cpu(
@@ -207,6 +221,7 @@ class TestMulticlassConfusionMatrix(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multiclass_confusion_matrix_dtype_gpu(self, input, dtype):
+        """Test dtype support of the metric on GPU."""
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,
@@ -216,6 +231,18 @@ class TestMulticlassConfusionMatrix(MetricTester):
             metric_args={"num_classes": NUM_CLASSES},
             dtype=dtype,
         )
+
+
+def test_multiclass_overflow():
+    """Test that multiclass computations does not overflow even on byte input."""
+    preds = torch.randint(20, (100,)).byte()
+    target = torch.randint(20, (100,)).byte()
+
+    m = MulticlassConfusionMatrix(num_classes=20)
+    res = m(preds, target)
+
+    compare = sk_confusion_matrix(target, preds)
+    assert torch.allclose(res, torch.tensor(compare))
 
 
 def _sklearn_confusion_matrix_multilabel(preds, target, normalize=None, ignore_index=None):
@@ -237,10 +264,13 @@ def _sklearn_confusion_matrix_multilabel(preds, target, normalize=None, ignore_i
 
 @pytest.mark.parametrize("input", _multilabel_cases)
 class TestMultilabelConfusionMatrix(MetricTester):
+    """Test class for `MultilabelConfusionMatrix` metric."""
+
     @pytest.mark.parametrize("normalize", ["true", "pred", "all", None])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multilabel_confusion_matrix(self, input, ddp, normalize, ignore_index):
+        """Test class implementation of metric."""
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -262,6 +292,7 @@ class TestMultilabelConfusionMatrix(MetricTester):
     @pytest.mark.parametrize("normalize", ["true", "pred", "all", None])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     def test_multilabel_confusion_matrix_functional(self, input, normalize, ignore_index):
+        """Test functional implementation of metric."""
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -280,6 +311,7 @@ class TestMultilabelConfusionMatrix(MetricTester):
         )
 
     def test_multilabel_confusion_matrix_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -291,6 +323,7 @@ class TestMultilabelConfusionMatrix(MetricTester):
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multilabel_confusion_matrix_dtype_cpu(self, input, dtype):
+        """Test dtype support of the metric on CPU."""
         preds, target = input
 
         if (preds < 0).any() and dtype == torch.half:
@@ -307,6 +340,7 @@ class TestMultilabelConfusionMatrix(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multilabel_confusion_matrix_dtype_gpu(self, input, dtype):
+        """Test dtype support of the metric on GPU."""
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,
@@ -319,6 +353,7 @@ class TestMultilabelConfusionMatrix(MetricTester):
 
 
 def test_warning_on_nan():
+    """Test that a warning is given if division by zero happens during normalization of confusion matrix."""
     preds = torch.randint(3, size=(20,))
     target = torch.randint(3, size=(20,))
 

@@ -21,8 +21,9 @@ import torch
 from torchmetrics.functional.image.d_lambda import spectral_distortion_index
 from torchmetrics.functional.image.uqi import universal_image_quality_index
 from torchmetrics.image.d_lambda import SpectralDistortionIndex
+from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -48,7 +49,7 @@ for size, channel, p, dtype in [
 
 
 def _baseline_d_lambda(preds: np.ndarray, target: np.ndarray, p: int = 1) -> float:
-    """A NumPy based implementation of Spectral Distortion Index, which uses UQI of TorchMetrics."""
+    """NumPy based implementation of Spectral Distortion Index, which uses UQI of TorchMetrics."""
     target, preds = torch.from_numpy(target), torch.from_numpy(preds)
     # Permute to ensure B x C x H x W (Pillow/NumPy stores in B x H x W x C)
     target = target.permute(0, 3, 1, 2)
@@ -91,10 +92,13 @@ def _np_d_lambda(preds, target, p):
     [(i.preds, i.target, i.p) for i in _inputs],
 )
 class TestSpectralDistortionIndex(MetricTester):
+    """Test class for `SpectralDistortionIndex` metric."""
+
     atol = 6e-3
 
     @pytest.mark.parametrize("ddp", [True, False])
     def test_d_lambda(self, preds, target, p, ddp):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
             preds,
@@ -105,6 +109,7 @@ class TestSpectralDistortionIndex(MetricTester):
         )
 
     def test_d_lambda_functional(self, preds, target, p):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             target,
@@ -116,10 +121,12 @@ class TestSpectralDistortionIndex(MetricTester):
     # SpectralDistortionIndex half + cpu does not work due to missing support in torch.log
     @pytest.mark.xfail(reason="Spectral Distortion Index metric does not support cpu + half precision")
     def test_d_lambda_half_cpu(self, preds, target, p):
+        """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(preds, target, SpectralDistortionIndex, spectral_distortion_index, {"p": p})
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_d_lambda_half_gpu(self, preds, target, p):
+        """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(preds, target, SpectralDistortionIndex, spectral_distortion_index, {"p": p})
 
 

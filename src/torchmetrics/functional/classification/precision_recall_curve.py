@@ -21,7 +21,7 @@ from typing_extensions import Literal
 
 from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.compute import _safe_divide
-from torchmetrics.utilities.data import _bincount
+from torchmetrics.utilities.data import _bincount, _cumsum
 from torchmetrics.utilities.enums import ClassificationTask
 
 
@@ -31,7 +31,9 @@ def _binary_clf_curve(
     sample_weights: Optional[Sequence] = None,
     pos_label: int = 1,
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    """Calculate the TPs and false positives for all unique thresholds in the preds tensor. Adapted from
+    """Calculate the TPs and false positives for all unique thresholds in the preds tensor.
+
+    Adapted from
     https://github.com/scikit-learn/scikit-learn/blob/main/sklearn/metrics/_ranking.py.
 
     Args:
@@ -65,12 +67,12 @@ def _binary_clf_curve(
         distinct_value_indices = torch.where(preds[1:] - preds[:-1])[0]
         threshold_idxs = F.pad(distinct_value_indices, [0, 1], value=target.size(0) - 1)
         target = (target == pos_label).to(torch.long)
-        tps = torch.cumsum(target * weight, dim=0)[threshold_idxs]
+        tps = _cumsum(target * weight, dim=0)[threshold_idxs]
 
         if sample_weights is not None:
             # express fps as a cumsum to ensure fps is increasing even in
             # the presence of floating point errors
-            fps = torch.cumsum((1 - target) * weight, dim=0)[threshold_idxs]
+            fps = _cumsum((1 - target) * weight, dim=0)[threshold_idxs]
         else:
             fps = 1 + threshold_idxs - tps
 
@@ -80,11 +82,11 @@ def _binary_clf_curve(
 def _adjust_threshold_arg(
     thresholds: Optional[Union[int, List[float], Tensor]] = None, device: Optional[torch.device] = None
 ) -> Optional[Tensor]:
-    """Utility function for converting the threshold arg for list and int to tensor format."""
+    """Convert threshold arg for list and int to tensor format."""
     if isinstance(thresholds, int):
-        thresholds = torch.linspace(0, 1, thresholds, device=device)
+        return torch.linspace(0, 1, thresholds, device=device)
     if isinstance(thresholds, list):
-        thresholds = torch.tensor(thresholds, device=device)
+        return torch.tensor(thresholds, device=device)
     return thresholds
 
 
@@ -102,18 +104,17 @@ def _binary_precision_recall_curve_arg_validation(
             "Expected argument `thresholds` to either be an integer, list of floats or"
             f" tensor of floats, but got {thresholds}"
         )
-    else:
-        if isinstance(thresholds, int) and thresholds < 2:
-            raise ValueError(
-                f"If argument `thresholds` is an integer, expected it to be larger than 1, but got {thresholds}"
-            )
-        if isinstance(thresholds, list) and not all(isinstance(t, float) and 0 <= t <= 1 for t in thresholds):
-            raise ValueError(
-                "If argument `thresholds` is a list, expected all elements to be floats in the [0,1] range,"
-                f" but got {thresholds}"
-            )
-        if isinstance(thresholds, Tensor) and not thresholds.ndim == 1:
-            raise ValueError("If argument `thresholds` is an tensor, expected the tensor to be 1d")
+    if isinstance(thresholds, int) and thresholds < 2:
+        raise ValueError(
+            f"If argument `thresholds` is an integer, expected it to be larger than 1, but got {thresholds}"
+        )
+    if isinstance(thresholds, list) and not all(isinstance(t, float) and 0 <= t <= 1 for t in thresholds):
+        raise ValueError(
+            "If argument `thresholds` is a list, expected all elements to be floats in the [0,1] range,"
+            f" but got {thresholds}"
+        )
+    if isinstance(thresholds, Tensor) and not thresholds.ndim == 1:
+        raise ValueError("If argument `thresholds` is an tensor, expected the tensor to be 1d")
 
     if ignore_index is not None and not isinstance(ignore_index, int):
         raise ValueError(f"Expected argument `ignore_index` to either be `None` or an integer, but got {ignore_index}")
@@ -187,18 +188,59 @@ def _binary_precision_recall_curve_update(
     target: Tensor,
     thresholds: Optional[Tensor],
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    """Returns the state to calculate the pr-curve with.
+    """Return the state to calculate the pr-curve with.
 
     If thresholds is `None` the direct preds and targets are used. If thresholds is not `None` we compute a multi
     threshold confusion matrix.
     """
     if thresholds is None:
         return preds, target
+    if preds.numel() <= 50_000:
+        update_fn = _binary_precision_recall_curve_update_vectorized
+    else:
+        update_fn = _binary_precision_recall_curve_update_loop
+    return update_fn(preds, target, thresholds)
+
+
+def _binary_precision_recall_curve_update_vectorized(
+    preds: Tensor,
+    target: Tensor,
+    thresholds: Tensor,
+) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+    """Return the multi-threshold confusion matrix to calculate the pr-curve with.
+
+    This implementation is vectorized and faster than `_binary_precision_recall_curve_update_loop` for small
+    numbers of samples (up to 50k) but less memory- and time-efficient for more samples.
+    """
     len_t = len(thresholds)
     preds_t = (preds.unsqueeze(-1) >= thresholds.unsqueeze(0)).long()  # num_samples x num_thresholds
-    unique_mapping = preds_t + 2 * target.unsqueeze(-1) + 4 * torch.arange(len_t, device=target.device)
+    unique_mapping = preds_t + 2 * target.long().unsqueeze(-1) + 4 * torch.arange(len_t, device=target.device)
     bins = _bincount(unique_mapping.flatten(), minlength=4 * len_t)
     return bins.reshape(len_t, 2, 2)
+
+
+def _binary_precision_recall_curve_update_loop(
+    preds: Tensor,
+    target: Tensor,
+    thresholds: Tensor,
+) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+    """Return the multi-threshold confusion matrix to calculate the pr-curve with.
+
+    This implementation loops over thresholds and is more memory-efficient than
+    `_binary_precision_recall_curve_update_vectorized`. However, it is slowwer for small
+    numbers of samples (up to 50k).
+    """
+    len_t = len(thresholds)
+    target = target == 1
+    confmat = thresholds.new_empty((len_t, 2, 2), dtype=torch.int64)
+    # Iterate one threshold at a time to conserve memory
+    for i in range(len_t):
+        preds_t = preds >= thresholds[i]
+        confmat[i, 1, 1] = (target & preds_t).sum()
+        confmat[i, 0, 1] = ((~target) & preds_t).sum()
+        confmat[i, 1, 0] = (target & (~preds_t)).sum()
+    confmat[:, 0, 0] = len(preds_t) - confmat[:, 0, 1] - confmat[:, 1, 0] - confmat[:, 1, 1]
+    return confmat
 
 
 def _binary_precision_recall_curve_compute(
@@ -220,21 +262,16 @@ def _binary_precision_recall_curve_compute(
         precision = torch.cat([precision, torch.ones(1, dtype=precision.dtype, device=precision.device)])
         recall = torch.cat([recall, torch.zeros(1, dtype=recall.dtype, device=recall.device)])
         return precision, recall, thresholds
-    else:
-        fps, tps, thresholds = _binary_clf_curve(state[0], state[1], pos_label=pos_label)
-        precision = tps / (tps + fps)
-        recall = tps / tps[-1]
 
-        # stop when full recall attained and reverse the outputs so recall is decreasing
-        last_ind = torch.where(tps == tps[-1])[0][0]
-        sl = slice(0, last_ind.item() + 1)
+    fps, tps, thresholds = _binary_clf_curve(state[0], state[1], pos_label=pos_label)
+    precision = tps / (tps + fps)
+    recall = tps / tps[-1]
 
-        # need to call reversed explicitly, since including that to slice would
-        # introduce negative strides that are not yet supported in pytorch
-        precision = torch.cat([reversed(precision[sl]), torch.ones(1, dtype=precision.dtype, device=precision.device)])
-        recall = torch.cat([reversed(recall[sl]), torch.zeros(1, dtype=recall.dtype, device=recall.device)])
-        thresholds = reversed(thresholds[sl]).detach().clone()
-
+    # need to call reversed explicitly, since including that to slice would
+    # introduce negative strides that are not yet supported in pytorch
+    precision = torch.cat([precision.flip(0), torch.ones(1, dtype=precision.dtype, device=precision.device)])
+    recall = torch.cat([recall.flip(0), torch.zeros(1, dtype=recall.dtype, device=recall.device)])
+    thresholds = thresholds.flip(0).detach().clone()
     return precision, recall, thresholds
 
 
@@ -245,8 +282,10 @@ def binary_precision_recall_curve(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    r"""Compute the precision-recall curve for binary tasks. The curve consist of multiple pairs of precision and
-    recall values evaluated at different thresholds, such that the tradeoff between the two values can been seen.
+    r"""Compute the precision-recall curve for binary tasks.
+
+    The curve consist of multiple pairs of precision and recall values evaluated at different thresholds, such that the
+    tradeoff between the two values can been seen.
 
     Accepts the following input tensors:
 
@@ -295,9 +334,9 @@ def binary_precision_recall_curve(
         >>> preds = torch.tensor([0, 0.5, 0.7, 0.8])
         >>> target = torch.tensor([0, 1, 1, 0])
         >>> binary_precision_recall_curve(preds, target, thresholds=None)  # doctest: +NORMALIZE_WHITESPACE
-        (tensor([0.6667, 0.5000, 0.0000, 1.0000]),
-         tensor([1.0000, 0.5000, 0.0000, 0.0000]),
-         tensor([0.5000, 0.7000, 0.8000]))
+        (tensor([0.5000, 0.6667, 0.5000, 0.0000, 1.0000]),
+         tensor([1.0000, 1.0000, 0.5000, 0.0000, 0.0000]),
+         tensor([0.0000, 0.5000, 0.7000, 0.8000]))
         >>> binary_precision_recall_curve(preds, target, thresholds=5)  # doctest: +NORMALIZE_WHITESPACE
         (tensor([0.5000, 0.6667, 0.6667, 0.0000, 0.0000, 1.0000]),
          tensor([1., 1., 1., 0., 0., 0.]),
@@ -402,22 +441,64 @@ def _multiclass_precision_recall_curve_update(
     num_classes: int,
     thresholds: Optional[Tensor],
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    """Returns the state to calculate the pr-curve with.
+    """Return the state to calculate the pr-curve with.
 
     If thresholds is `None` the direct preds and targets are used. If thresholds is not `None` we compute a multi
     threshold confusion matrix.
     """
     if thresholds is None:
         return preds, target
+    if preds.numel() * num_classes <= 1_000_000:
+        update_fn = _multiclass_precision_recall_curve_update_vectorized
+    else:
+        update_fn = _multiclass_precision_recall_curve_update_loop
+    return update_fn(preds, target, num_classes, thresholds)
+
+
+def _multiclass_precision_recall_curve_update_vectorized(
+    preds: Tensor,
+    target: Tensor,
+    num_classes: int,
+    thresholds: Tensor,
+) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+    """Return the multi-threshold confusion matrix to calculate the pr-curve with.
+
+    This implementation is vectorized and faster than `_binary_precision_recall_curve_update_loop` for small
+    numbers of samples but less memory- and time-efficient for more samples.
+    """
     len_t = len(thresholds)
-    # num_samples x num_classes x num_thresholds
     preds_t = (preds.unsqueeze(-1) >= thresholds.unsqueeze(0).unsqueeze(0)).long()
     target_t = torch.nn.functional.one_hot(target, num_classes=num_classes)
-    unique_mapping = preds_t + 2 * target_t.unsqueeze(-1)
+    unique_mapping = preds_t + 2 * target_t.long().unsqueeze(-1)
     unique_mapping += 4 * torch.arange(num_classes, device=preds.device).unsqueeze(0).unsqueeze(-1)
     unique_mapping += 4 * num_classes * torch.arange(len_t, device=preds.device)
     bins = _bincount(unique_mapping.flatten(), minlength=4 * num_classes * len_t)
     return bins.reshape(len_t, num_classes, 2, 2)
+
+
+def _multiclass_precision_recall_curve_update_loop(
+    preds: Tensor,
+    target: Tensor,
+    num_classes: int,
+    thresholds: Tensor,
+) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+    """Return the state to calculate the pr-curve with.
+
+    This implementation loops over thresholds and is more memory-efficient than
+    `_binary_precision_recall_curve_update_vectorized`. However, it is slowwer for small
+    numbers of samples.
+    """
+    len_t = len(thresholds)
+    target_t = torch.nn.functional.one_hot(target, num_classes=num_classes)
+    confmat = thresholds.new_empty((len_t, num_classes, 2, 2), dtype=torch.int64)
+    # Iterate one threshold at a time to conserve memory
+    for i in range(len_t):
+        preds_t = preds >= thresholds[i]
+        confmat[i, :, 1, 1] = (target_t & preds_t).sum(dim=0)
+        confmat[i, :, 0, 1] = ((~target_t) & preds_t).sum(dim=0)
+        confmat[i, :, 1, 0] = (target_t & (~preds_t)).sum(dim=0)
+    confmat[:, :, 0, 0] = len(preds_t) - confmat[:, :, 0, 1] - confmat[:, :, 1, 0] - confmat[:, :, 1, 1]
+    return confmat
 
 
 def _multiclass_precision_recall_curve_compute(
@@ -439,13 +520,13 @@ def _multiclass_precision_recall_curve_compute(
         precision = torch.cat([precision, torch.ones(1, num_classes, dtype=precision.dtype, device=precision.device)])
         recall = torch.cat([recall, torch.zeros(1, num_classes, dtype=recall.dtype, device=recall.device)])
         return precision.T, recall.T, thresholds
-    else:
-        precision, recall, thresholds = [], [], []
-        for i in range(num_classes):
-            res = _binary_precision_recall_curve_compute([state[0][:, i], state[1]], thresholds=None, pos_label=i)
-            precision.append(res[0])
-            recall.append(res[1])
-            thresholds.append(res[2])
+
+    precision, recall, thresholds = [], [], []
+    for i in range(num_classes):
+        res = _binary_precision_recall_curve_compute([state[0][:, i], state[1]], thresholds=None, pos_label=i)
+        precision.append(res[0])
+        recall.append(res[1])
+        thresholds.append(res[2])
     return precision, recall, thresholds
 
 
@@ -457,9 +538,10 @@ def multiclass_precision_recall_curve(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    r"""Compute the precision-recall curve for multiclass tasks. The curve consist of multiple pairs of precision
-    and recall values evaluated at different thresholds, such that the tradeoff between the two values can been
-    seen.
+    r"""Compute the precision-recall curve for multiclass tasks.
+
+    The curve consist of multiple pairs of precision and recall values evaluated at different thresholds, such that the
+    tradeoff between the two values can been seen.
 
     Accepts the following input tensors:
 
@@ -521,12 +603,13 @@ def multiclass_precision_recall_curve(
         ...    preds, target, num_classes=5, thresholds=None
         ... )
         >>> precision  # doctest: +NORMALIZE_WHITESPACE
-        [tensor([1., 1.]), tensor([1., 1.]), tensor([0.2500, 0.0000, 1.0000]),
+        [tensor([0.2500, 1.0000, 1.0000]), tensor([0.2500, 1.0000, 1.0000]), tensor([0.2500, 0.0000, 1.0000]),
          tensor([0.2500, 0.0000, 1.0000]), tensor([0., 1.])]
         >>> recall
-        [tensor([1., 0.]), tensor([1., 0.]), tensor([1., 0., 0.]), tensor([1., 0., 0.]), tensor([nan, 0.])]
+        [tensor([1., 1., 0.]), tensor([1., 1., 0.]), tensor([1., 0., 0.]), tensor([1., 0., 0.]), tensor([nan, 0.])]
         >>> thresholds
-        [tensor([0.7500]), tensor([0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500])]
+        [tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]),
+         tensor([0.0500])]
         >>> multiclass_precision_recall_curve(
         ...     preds, target, num_classes=5, thresholds=5
         ... )  # doctest: +NORMALIZE_WHITESPACE
@@ -621,7 +704,7 @@ def _multilabel_precision_recall_curve_update(
     num_labels: int,
     thresholds: Optional[Tensor],
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    """Returns the state to calculate the pr-curve with.
+    """Return the state to calculate the pr-curve with.
 
     If thresholds is `None` the direct preds and targets are used. If thresholds is not `None` we compute a multi
     threshold confusion matrix.
@@ -631,7 +714,7 @@ def _multilabel_precision_recall_curve_update(
     len_t = len(thresholds)
     # num_samples x num_labels x num_thresholds
     preds_t = (preds.unsqueeze(-1) >= thresholds.unsqueeze(0).unsqueeze(0)).long()
-    unique_mapping = preds_t + 2 * target.unsqueeze(-1)
+    unique_mapping = preds_t + 2 * target.long().unsqueeze(-1)
     unique_mapping += 4 * torch.arange(num_labels, device=preds.device).unsqueeze(0).unsqueeze(-1)
     unique_mapping += 4 * num_labels * torch.arange(len_t, device=preds.device)
     unique_mapping = unique_mapping[unique_mapping >= 0]
@@ -659,19 +742,19 @@ def _multilabel_precision_recall_curve_compute(
         precision = torch.cat([precision, torch.ones(1, num_labels, dtype=precision.dtype, device=precision.device)])
         recall = torch.cat([recall, torch.zeros(1, num_labels, dtype=recall.dtype, device=recall.device)])
         return precision.T, recall.T, thresholds
-    else:
-        precision, recall, thresholds = [], [], []
-        for i in range(num_labels):
-            preds = state[0][:, i]
-            target = state[1][:, i]
-            if ignore_index is not None:
-                idx = target == ignore_index
-                preds = preds[~idx]
-                target = target[~idx]
-            res = _binary_precision_recall_curve_compute([preds, target], thresholds=None, pos_label=1)
-            precision.append(res[0])
-            recall.append(res[1])
-            thresholds.append(res[2])
+
+    precision, recall, thresholds = [], [], []
+    for i in range(num_labels):
+        preds = state[0][:, i]
+        target = state[1][:, i]
+        if ignore_index is not None:
+            idx = target == ignore_index
+            preds = preds[~idx]
+            target = target[~idx]
+        res = _binary_precision_recall_curve_compute([preds, target], thresholds=None, pos_label=1)
+        precision.append(res[0])
+        recall.append(res[1])
+        thresholds.append(res[2])
     return precision, recall, thresholds
 
 
@@ -683,9 +766,10 @@ def multilabel_precision_recall_curve(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    r"""Compute the precision-recall curve for multilabel tasks. The curve consist of multiple pairs of precision
-    and recall values evaluated at different thresholds, such that the tradeoff between the two values can been
-    seen.
+    r"""Compute the precision-recall curve for multilabel tasks.
+
+    The curve consist of multiple pairs of precision and recall values evaluated at different thresholds, such that the
+    tradeoff between the two values can been seen.
 
     Accepts the following input tensors:
 
@@ -750,14 +834,13 @@ def multilabel_precision_recall_curve(
         ...    preds, target, num_labels=3, thresholds=None
         ... )
         >>> precision  # doctest: +NORMALIZE_WHITESPACE
-        [tensor([0.5000, 0.5000, 1.0000, 1.0000]), tensor([0.6667, 0.5000, 0.0000, 1.0000]),
+        [tensor([0.5000, 0.5000, 1.0000, 1.0000]), tensor([0.5000, 0.6667, 0.5000, 0.0000, 1.0000]),
          tensor([0.7500, 1.0000, 1.0000, 1.0000])]
         >>> recall  # doctest: +NORMALIZE_WHITESPACE
-        [tensor([1.0000, 0.5000, 0.5000, 0.0000]), tensor([1.0000, 0.5000, 0.0000, 0.0000]),
+        [tensor([1.0000, 0.5000, 0.5000, 0.0000]), tensor([1.0000, 1.0000, 0.5000, 0.0000, 0.0000]),
          tensor([1.0000, 0.6667, 0.3333, 0.0000])]
         >>> thresholds  # doctest: +NORMALIZE_WHITESPACE
-        [tensor([0.0500, 0.4500, 0.7500]), tensor([0.5500, 0.6500, 0.7500]),
-         tensor([0.0500, 0.3500, 0.7500])]
+        [tensor([0.0500, 0.4500, 0.7500]), tensor([0.0500, 0.5500, 0.6500, 0.7500]), tensor([0.0500, 0.3500, 0.7500])]
         >>> multilabel_precision_recall_curve(
         ...     preds, target, num_labels=3, thresholds=5
         ... )  # doctest: +NORMALIZE_WHITESPACE
@@ -789,8 +872,10 @@ def precision_recall_curve(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    r"""Compute the precision-recall curve. The curve consist of multiple pairs of precision and recall values
-    evaluated at different thresholds, such that the tradeoff between the two values can been seen.
+    r"""Compute the precision-recall curve.
+
+    The curve consist of multiple pairs of precision and recall values evaluated at different thresholds, such that the
+    tradeoff between the two values can been seen.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
@@ -798,15 +883,15 @@ def precision_recall_curve(
     :func:`multilabel_precision_recall_curve` for the specific details of each argument influence and examples.
 
     Legacy Example:
-        >>> pred = torch.tensor([0.0, 1.0, 2.0, 3.0])
+        >>> pred = torch.tensor([0, 0.1, 0.8, 0.4])
         >>> target = torch.tensor([0, 1, 1, 0])
         >>> precision, recall, thresholds = precision_recall_curve(pred, target, task='binary')
         >>> precision
-        tensor([0.6667, 0.5000, 0.0000, 1.0000])
+        tensor([0.5000, 0.6667, 0.5000, 1.0000, 1.0000])
         >>> recall
-        tensor([1.0000, 0.5000, 0.0000, 0.0000])
+        tensor([1.0000, 1.0000, 0.5000, 0.5000, 0.0000])
         >>> thresholds
-        tensor([0.7311, 0.8808, 0.9526])
+        tensor([0.0000, 0.1000, 0.4000, 0.8000])
 
         >>> pred = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
         ...                      [0.05, 0.75, 0.05, 0.05, 0.05],
@@ -815,12 +900,13 @@ def precision_recall_curve(
         >>> target = torch.tensor([0, 1, 3, 2])
         >>> precision, recall, thresholds = precision_recall_curve(pred, target, task='multiclass', num_classes=5)
         >>> precision
-        [tensor([1., 1.]), tensor([1., 1.]), tensor([0.2500, 0.0000, 1.0000]),
+        [tensor([0.2500, 1.0000, 1.0000]), tensor([0.2500, 1.0000, 1.0000]), tensor([0.2500, 0.0000, 1.0000]),
          tensor([0.2500, 0.0000, 1.0000]), tensor([0., 1.])]
         >>> recall
-        [tensor([1., 0.]), tensor([1., 0.]), tensor([1., 0., 0.]), tensor([1., 0., 0.]), tensor([nan, 0.])]
+        [tensor([1., 1., 0.]), tensor([1., 1., 0.]), tensor([1., 0., 0.]), tensor([1., 0., 0.]), tensor([nan, 0.])]
         >>> thresholds
-        [tensor([0.7500]), tensor([0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500])]
+        [tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]),
+         tensor([0.0500])]
     """
     task = ClassificationTask.from_str(task)
     if task == ClassificationTask.BINARY:
@@ -831,3 +917,4 @@ def precision_recall_curve(
     if task == ClassificationTask.MULTILABEL:
         assert isinstance(num_labels, int)
         return multilabel_precision_recall_curve(preds, target, num_labels, thresholds, ignore_index, validate_args)
+    return None

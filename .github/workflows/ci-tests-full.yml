@@ -7,6 +7,9 @@ on:  # Trigger the workflow on push or pull request, but only for the master bra
   pull_request:
     branches: [master, "release/*"]
     types: [opened, reopened, ready_for_review, synchronize]
+  schedule:
+    # At the end of every day
+    - cron: "0 0 * * *"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-${{ github.head_ref }}
@@ -28,15 +31,18 @@ jobs:
       fail-fast: false
       matrix:
         os: ['ubuntu-20.04']
-        python-version: ['3.8']
-        pytorch-version: ['1.9.1', '1.10.2', '1.11.0', '1.12.1']
+        python-version: ['3.9']
+        pytorch-version: ['1.9.1', '1.10.2', '1.11.0', '1.12.1', '1.13.1', '2.0.0']
         include:
           - {os: 'ubuntu-22.04', python-version: '3.8', pytorch-version: '1.13.1'}
           - {os: 'ubuntu-22.04', python-version: '3.10', pytorch-version: '1.13.1'}
+          - {os: 'ubuntu-22.04', python-version: '3.10', pytorch-version: '2.0.0'}
           - {os: 'macOS-11', python-version: '3.8', pytorch-version: '1.13.1'}
           - {os: 'macOS-11', python-version: '3.9', pytorch-version: '1.13.1'}
+          - {os: 'macOS-11', python-version: '3.10', pytorch-version: '2.0.0'}
           - {os: 'windows-2022', python-version: '3.8', pytorch-version: '1.13.1'}
           - {os: 'windows-2022', python-version: '3.9', pytorch-version: '1.13.1'}
+          - {os: 'windows-2022', python-version: '3.10', pytorch-version: '2.0.0'}
           # the oldest configurations
           - {os: 'ubuntu-20.04', python-version: '3.7', pytorch-version: '1.8.1', requires: 'oldest'}
           - {os: 'ubuntu-20.04', python-version: '3.8', pytorch-version: '1.8.1', requires: 'oldest'}
@@ -45,13 +51,14 @@ jobs:
           - {os: 'windows-2019', python-version: '3.7', pytorch-version: '1.8.1', requires: 'oldest'}
           - {os: 'windows-2019', python-version: '3.8', pytorch-version: '1.8.1', requires: 'oldest'}
     env:
-      PYTEST_ARTEFACT: test-results-${{ matrix.os }}-py${{ matrix.python-version }}-${{ matrix.requires }}.xml
-      PYTORCH_URL: https://download.pytorch.org/whl/cpu/torch_stable.html
-      FREEZE_REQUIREMENTS: 1
+      PYTORCH_URL: "https://download.pytorch.org/whl/cpu/torch_stable.html"
+      FREEZE_REQUIREMENTS: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}
+      PYPI_CACHE: "_ci-cache_PyPI"
+      TOKENIZERS_PARALLELISM: false
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
     # seems that MacOS jobs take much more than orger OS
-    timeout-minutes: 120
+    timeout-minutes: 90
 
     steps:
     - uses: actions/checkout@v3
@@ -71,30 +78,25 @@ jobs:
       run: |
         echo 'UNITTEST_TIMEOUT=--timeout=120' >> $GITHUB_ENV
         sudo apt update --fix-missing
-        sudo apt install -y ffmpeg
+        sudo apt install -y ffmpeg dvipng texlive-latex-extra texlive-fonts-recommended cm-super
     - name: Setup Windows
       if: ${{ runner.os == 'windows' }}
       run: |
         choco install ffmpeg
 
-    - name: Set PyTorch version
-      if: inputs.requires != 'oldest'
-      run: |
-        pip install packaging -q
-        python ./requirements/adjust-versions.py requirements.txt ${{ matrix.pytorch-version }}
-
-    - name: full cashing
-      uses: ./.github/actions/caching
+    - name: source cashing
+      uses: ./.github/actions/pull-caches
       with:
         requires: ${{ matrix.requires }}
-        python-version: ${{ matrix.python-version }}
+        pytorch-version: ${{ matrix.pytorch-version }}
+        pypi-dir: ${{ env.PYPI_CACHE }}
 
     - name: Install pkg
       timeout-minutes: 25
       run: |
         pip --version
-        pip install -e . -U --find-links $PYTORCH_URL
-        pip install -r requirements/doctest.txt -U
+        pip install -e . -U --find-links $PYTORCH_URL -f $PYPI_CACHE
+        pip install -r requirements/doctest.txt -U -f $PYPI_CACHE
         pip list
 
     # todo: copy this to install checks
@@ -112,12 +114,13 @@ jobs:
 
     - name: Install all dependencies
       run: |
-        pip install cython  # needed for installing `pycocotools` in latest config
+        pip install -q cython  # needed for installing `pycocotools` in latest config
         python ./requirements/adjust-versions.py requirements.txt
         for fpath in `ls requirements/*.txt`; do
             python ./requirements/adjust-versions.py $fpath
         done
-        pip install --requirement requirements/devel.txt -U --find-links $PYTORCH_URL
+        pip install --requirement requirements/devel.txt -U \
+          --find-links $PYTORCH_URL -f $PYPI_CACHE
         pip list
 
     - name: Sanity check
@@ -131,23 +134,20 @@ jobs:
       if: ${{ needs.check-diff.outputs.test-dirs != '' }}
       with:
         requires: ${{ matrix.requires }}
+        codecov-token: ${{ secrets.CODECOV_TOKEN }}
         python-version: ${{ matrix.python-version }}
         pytorch-version: ${{ steps.info.outputs.TORCH }}
         dirs: ${{ needs.check-diff.outputs.test-dirs }}
         test-timeout: ${{ env.UNITTEST_TIMEOUT }}
 
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
+    - name: update cashing
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+      uses: ./.github/actions/push-caches
       with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        file: tests/coverage.xml
-        flags: cpu,pip,unitests,${{ runner.os }},python${{ matrix.python-version }},torch${{ steps.info.outputs.TORCH }}
-        env_vars: OS,PYTHON
-        name: codecov-umbrella
-        fail_ci_if_error: false
+        pypi-dir: ${{ env.PYPI_CACHE }}
 
 
-  guardian:
+  testing-guardian:
     runs-on: ubuntu-latest
     needs: pytester
     if: always()
