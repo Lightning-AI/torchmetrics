@@ -29,7 +29,6 @@ from typing import Optional, Tuple, Union
 
 import torch
 from torch import Tensor, nn
-from torchvision import models as tv
 from typing_extensions import Literal
 
 from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_13
@@ -42,6 +41,9 @@ _weight_map = {
 
 if not _TORCHVISION_AVAILABLE:
     __doctest_skip__ = ["learned_perceptual_image_patch_similarity"]
+    tv = None
+else:
+    from torchvision import models as tv
 
 
 def _get_net(net: str, pretrained: bool) -> nn.Module:
