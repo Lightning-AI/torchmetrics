@@ -23,7 +23,6 @@ def _compute_bef(x: Tensor, block_size: int = 8) -> Tensor:
 
     Args:
         x: input image
-        dim: dimension to calculate block over
         block_size: integer indication the block size
 
     Returns:
@@ -41,7 +40,7 @@ def _compute_bef(x: Tensor, block_size: int = 8) -> Tensor:
         width,
     ) = x.shape
     if channels > 1:
-        raise ValueError(f"``psnrb metric expects grayscale images, but got an images with {channels} channels.")
+        raise ValueError(f"`psnrb` metric expects grayscale images, but got images with {channels} channels.")
 
     h = torch.arange(width - 1)
     h_b = torch.tensor(range(block_size - 1, width - 1, block_size))
@@ -92,8 +91,7 @@ def _psnrb_update(preds: Tensor, target: Tensor, block_size: int = 8) -> Tuple[T
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
-        block_size:
-            Integer indication the block size
+        block_size: Integer indication the block size
     """
     sum_squared_error = torch.sum(torch.pow(preds - target, 2))
     n_obs = tensor(target.numel(), device=target.device)
